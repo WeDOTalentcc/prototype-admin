@@ -2,6 +2,18 @@
 
 > **Documento de referência para o time de engenharia.**
 > Cobre a jornada completa: do ambiente de desenvolvimento no Replit até a produção no GCP Cloud Run, passando pelo ambiente de staging.
+>
+> **Última atualização:** 10 de abril de 2026
+> **Changelog recente:**
+> - Twilio Voice credenciais configuradas (TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER=+551150289337)
+> - WhatsApp Business pendente aprovação Meta (conta duplicada deletada, aguardando liberação)
+> - P1/P4 resolvidos: zero `NEXT_PUBLIC_BACKEND_URL`/`NEXT_PUBLIC_API_URL` no codebase (Task #99)
+> - P2/P3 resolvidos: build ok, DATABASE_URL apontando para banco real
+> - P6 resolvido: WebSocket URLs parametrizadas com `NEXT_PUBLIC_WS_URL` (Task #74)
+> - P5 reduzido: apenas 2 arquivos restantes com `REPLIT_DEV_DOMAIN`
+> - Tasks #91/#92 canceladas; rotas migradas diretamente na Task #99
+> - Migrations: 60 (up from 59), Endpoints: 362+, Models: 217+
+> - Sidebar reordenada: Operacional → Recrutamento → Configuração
 
 ---
 
@@ -251,7 +263,7 @@ As tabelas `roles`, `permissions`, `role_permissions`, `user_roles`, `user_permi
 
 | Capacidade | WeDO (6 repos combinados) | Plataforma LIA (Replit — 2 repos) |
 |---|---|---|
-| **Backend API** | Rails: 16 controllers, **12 tabelas reais** | FastAPI: **229 endpoints**, **110 models**, 59 migrações aplicadas |
+| **Backend API** | Rails: 16 controllers, **12 tabelas reais** | FastAPI: **362+ endpoints**, **217+ models**, 60 migrações aplicadas |
 | **Frontend** | Vue/Nuxt/Vuetify: 28 features, 58 composables, 18 stores Pinia | Next.js/React/Tailwind: **36+ páginas**, Design System completo |
 | **Agentes IA** | recruiter-agent-v5: 8 domains, 7 agents, Celery + RabbitMQ | LangGraph: **53 domains**, **147 services**, WSI, voice, bias audit |
 | **Auth** | JWT básico (sem RBAC funcional) + WorkOS no Rails | JWT + WorkOS no FastAPI + TenantGuard |
@@ -265,7 +277,7 @@ As tabelas `roles`, `permissions`, `role_permissions`, `user_roles`, `user_permi
 | **Deploy infra obrigatória** | Docker + Redis + Elasticsearch + RabbitMQ + ActionCable | Apenas PostgreSQL — zero dependências extras obrigatórias |
 | **Services (camada de negócio)** | 0 (lógica inline nos controllers) | **147 services** cobrindo toda a plataforma |
 | **Domínios de negócio** | ~5 funcionais | **53 domínios** estruturados |
-| **Migrações aplicadas** | 18 de 49 | 59 migrações aplicadas, banco completo |
+| **Migrações aplicadas** | 18 de 49 | 60 migrações aplicadas, banco completo |
 
 ---
 
@@ -380,7 +392,7 @@ Mais avançada que Elasticsearch/Searchkick:
 
 1. **O app funciona 100% sem Rails.** Quando `RAILS_BACKEND_URL` está vazia (situação atual), todas as 94 rotas com `backendTarget: "rails"` caem automaticamente no FastAPI via `proxy-handler.ts`. Nada quebra.
 
-2. **O FastAPI já faz tudo que o Rails faz — e mais.** O Rails provê CRUD para ~5 entidades. O FastAPI tem 229 endpoints, 53 domínios, 147 services, toda a camada de IA, compliance e um frontend completo.
+2. **O FastAPI já faz tudo que o Rails faz — e mais.** O Rails provê CRUD para ~5 entidades. O FastAPI tem 362+ endpoints, 53 domínios, 147 services, toda a camada de IA, compliance e um frontend completo.
 
 3. **A camada de integração Rails já está pronta.** Se e quando Rails for ativado, o código já existe:
    - `wedotalent_rails.py` — 588 linhas, HTTP client completo com retry e backoff
@@ -433,13 +445,17 @@ Ativação gradual (plug-and-play):
 
 > **Nota:** Esse esforço ocorre no servidor Rails (fora do Replit), não impacta o desenvolvimento contínuo da plataforma LIA.
 
-### Route Migration Status (Task #91 — Completed)
+### Route Migration Status (Tasks #91/#92 cancelled → Task #99 completed directly)
+
+> **Nota (abril 2026):** As Tasks #91 e #92 foram planejadas para migrar rotas Rails→FastAPI de forma gradual, mas foram **canceladas** porque o trabalho foi feito diretamente na Task #99, que migrou todos os 104 arquivos de proxy routes + os 11 arquivos frontend restantes de uma vez.
 
 All **104 frontend proxy route files** have been migrated from Rails-dependent patterns to FastAPI:
 
 - **94 routes** using `createProxyHandlers` (auto-fallback via `proxy-handler.ts`)
 - **10 manual-fetch routes** (recruitment-campaigns and talent-pools) rewritten to call FastAPI directly
+- **11 arquivos frontend** que usavam `NEXT_PUBLIC_BACKEND_URL`/`NEXT_PUBLIC_API_URL` diretamente — todos migrados para proxy routes
 - **Zero Rails references remain** in proxy routes — `backendTarget: "rails"` fully eliminated
+- **Zero `NEXT_PUBLIC_BACKEND_URL`/`NEXT_PUBLIC_API_URL`** no codebase
 
 When `RAILS_BACKEND_URL` is empty (default), all requests go to FastAPI. No manual route flipping needed.
 
@@ -1355,6 +1371,10 @@ Quando um bug reportado pelo cliente é corrigido, ou uma feature sugerida é en
 | `MICROSOFT_APP_ID` | `246eb1e7-...` | `246eb1e7-...` | `246eb1e7-...` | |
 | `MICROSOFT_APP_PASSWORD` | Replit Secrets | Secret Manager | Secret Manager | |
 | `AZURE_TENANT_ID` | `bd25f438-...` | `bd25f438-...` | `bd25f438-...` | |
+| `TWILIO_ACCOUNT_SID` | Replit Secret ✅ | Secret Manager | Secret Manager | **Configurado** — Voice screening |
+| `TWILIO_AUTH_TOKEN` | Replit Secret ✅ | Secret Manager | Secret Manager | **Configurado** — Voice screening |
+| `TWILIO_PHONE_NUMBER` | `+551150289337` ✅ | mesmo | mesmo | Voice outbound calls |
+| `TWILIO_WHATSAPP_NUMBER` | ⚠️ pendente Meta | `whatsapp:+551150289337` | `whatsapp:+551150289337` | WhatsApp — aguardando aprovação Meta Business |
 | `LANGCHAIN_API_KEY` | (opcional) | Secret Manager (se ativo) | Secret Manager (se ativo) | LangSmith tracing |
 | `SENTRY_DSN` | (opcional) | obrigatório | obrigatório | |
 
@@ -1367,7 +1387,8 @@ Quando um bug reportado pelo cliente é corrigido, ou uma feature sugerida é en
 - [x] Dockerfile do `plataforma-lia` criado (`plataforma-lia/Dockerfile` — multi-stage, Node 22 Alpine, standalone)
 - [x] `next.config.js` com `output: 'standalone'`, `BACKEND_URL` parametrizado nos rewrites
 - [x] `.env.example` completo e documentado (todas as vars com descrição por seção)
-- [ ] `lia-agent-system` aponta para `DATABASE_URL` via variável de ambiente
+- [x] `lia-agent-system` aponta para `DATABASE_URL` via variável de ambiente (`helium/heliumdb`)
+- [x] Twilio credenciais configuradas (TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN em Secrets; TWILIO_PHONE_NUMBER=+551150289337 em env var)
 - [ ] GitHub Actions configurado nos dois repositórios
 - [ ] Testes E2E passando no staging
 - [ ] Sentry configurado e recebendo eventos de teste
@@ -1520,10 +1541,16 @@ Candidato → Twilio Voice (ligação) → Google Cloud Speech-to-Text (STT)
 |---|---|---|---|
 | **Google Cloud Speech-to-Text** | `app/api/v1/gemini_voice.py` | Transcrição das triagens por voz em tempo real | Habilitar API no projeto GCP |
 | **Google Cloud Text-to-Speech** | `app/api/v1/voice.py` | LIA fala com o candidato durante triagem | Habilitar API no projeto GCP |
-| **Twilio Voice** | `app/api/v1/twilio_voice.py` | Ligações reais (inbound/outbound), gravação | `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_PHONE_NUMBER` |
-| **Twilio WhatsApp** | `app/domains/communication/services/whatsapp_twilio_service.py` | WhatsApp via Twilio (alternativa ao Meta API) | mesmas credenciais Twilio |
+| **Twilio Voice** | `app/api/v1/twilio_voice.py` | Ligações reais (inbound/outbound), gravação | `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_PHONE_NUMBER` | ✅ Credenciais configuradas (Replit Secrets + env var) |
+| **Twilio WhatsApp** | `app/domains/communication/services/whatsapp_twilio_service.py` | WhatsApp via Twilio (alternativa ao Meta API) | mesmas credenciais Twilio + `TWILIO_WHATSAPP_NUMBER` | ⚠️ WhatsApp pendente aprovação Meta Business Suite |
 
-> **Ação GCP:** Habilitar as APIs `speech.googleapis.com` e `texttospeech.googleapis.com` no projeto GCP. A autenticação usa o Service Account do Cloud Run — sem API key adicional.
+> **Status Twilio (abril 2026):**
+> - ✅ `TWILIO_ACCOUNT_SID` — configurado como Replit Secret
+> - ✅ `TWILIO_AUTH_TOKEN` — configurado como Replit Secret
+> - ✅ `TWILIO_PHONE_NUMBER` — `+551150289337` configurado como env var
+> - ⚠️ **WhatsApp Business:** Pendente aprovação do número no Meta Business Suite. Uma conta duplicada foi deletada; aguardando liberação da conta principal. Voice calls funcionam; WhatsApp aguardando.
+>
+> **Ação GCP:** Habilitar as APIs `speech.googleapis.com` e `texttospeech.googleapis.com` no projeto GCP. A autenticação usa o Service Account do Cloud Run — sem API key adicional. Mover `TWILIO_*` para Secret Manager.
 
 ---
 
@@ -1645,7 +1672,8 @@ Usuário acessa wedotalent.cc
 | 🔴 Crítico | PostgreSQL (Cloud SQL) | Banco local no Replit | Provisionar Cloud SQL, rodar migrations |
 | 🔴 Crítico | Redis (Memorystore) | redis local no Replit | Provisionar Cloud Memorystore |
 | 🟡 Importante | Google Voice/STT | Código pronto | Habilitar APIs `speech.googleapis.com`, `texttospeech.googleapis.com` |
-| 🟡 Importante | Twilio Voice + WhatsApp | Config pendente no Replit | Adicionar `TWILIO_*` ao Secret Manager |
+| ✅ Parcial | Twilio Voice | ✅ Credenciais configuradas (Replit Secrets + env var `+551150289337`) | Mover `TWILIO_*` para Secret Manager GCP |
+| ⚠️ Pendente | Twilio WhatsApp | Credenciais Twilio ok; número WhatsApp pendente aprovação Meta Business Suite | Completar registro Meta → adicionar `TWILIO_WHATSAPP_NUMBER` |
 | 🟡 Importante | Microsoft Teams Bot | Funciona (dev mode) | Registrar webhook URL de produção no Azure Bot Service |
 | 🟡 Importante | Resend (email) | Código pronto | `RESEND_API_KEY` no Secret Manager |
 | 🟡 Importante | RabbitMQ | Código pronto | Provisionar CloudAMQP ou VM e2-small |
@@ -1732,32 +1760,22 @@ Usuário acessa wedotalent.cc
 
 **Resultado:** Todas as rotas apontam para componentes válidos. Nenhum import quebrado encontrado.
 
-#### P1 — ⚠️ PARCIALMENTE RESOLVIDO (07/04/2026): proxy routes padronizados, 11 arquivos frontend pendentes
+#### P1 — ✅ RESOLVIDO (Task #99 — abril 2026): proxy routes 100% padronizados
 
 ```
 CORREÇÃO APLICADA:
-  Os arquivos em /api/backend-proxy/* agora usam BACKEND_URL (server-side).
+  Todos os 104 arquivos de proxy routes + os 11 arquivos frontend que usavam
+  NEXT_PUBLIC_BACKEND_URL/NEXT_PUBLIC_API_URL foram migrados.
 
-  .env.local atualizado: BACKEND_URL=http://127.0.0.1:8001 (sem NEXT_PUBLIC_)
+  Resultado: ZERO referências a NEXT_PUBLIC_BACKEND_URL ou NEXT_PUBLIC_API_URL
+  no codebase. Todas as chamadas ao backend passam por proxy routes ou usam
+  BACKEND_URL (server-side only).
 
-PENDENTE — 11 arquivos no frontend ainda usam NEXT_PUBLIC_BACKEND_URL ou
-NEXT_PUBLIC_API_URL diretamente (fora dos proxy routes):
-
-  1. plataforma-lia/src/components/search/smart-search-input.tsx
-  2. plataforma-lia/src/components/pages/job-kanban/hooks/useKanbanJobEditing.ts
-  3. plataforma-lia/src/hooks/use-pipeline-inheritance.ts
-  4. plataforma-lia/src/hooks/use-return-events.ts
-  5. plataforma-lia/src/hooks/use-proactive-alerts.ts
-  6. plataforma-lia/src/hooks/use-candidate-data-requests.ts
-  7. plataforma-lia/src/lib/api/candidate-search.ts
-  8. plataforma-lia/src/lib/api/global-search-settings.ts
-  9. plataforma-lia/src/app/funil-de-talentos/candidato/[id]/useCandidatePageCore.tsx
-  10. plataforma-lia/src/components/candidate-preview/useCandidateFiles.tsx
-  11. plataforma-lia/src/components/search/hooks/smartSearchConstants.ts
-
-AÇÃO (task separada de código — fora do escopo desta documentação):
-  Substituir NEXT_PUBLIC_BACKEND_URL/NEXT_PUBLIC_API_URL nestes arquivos por
-  chamadas via /api/backend-proxy/* ou por BACKEND_URL (server-side only).
+  Arquivos migrados na Task #99:
+  - smart-search-input.tsx, useKanbanJobEditing.ts, use-pipeline-inheritance.ts
+  - use-return-events.ts, use-proactive-alerts.ts, use-candidate-data-requests.ts
+  - candidate-search.ts, global-search-settings.ts, useCandidatePageCore.tsx
+  - useCandidateFiles.tsx, smartSearchConstants.ts
 ```
 
 #### P2 — ✅ RESOLVIDO (07/04/2026): `next build` — página de Créditos de IA
@@ -1788,52 +1806,44 @@ AÇÃO NO DEPLOY (GCP):
   (lia_db) e acessará dados do Rails via API REST (RAILS_API_URL).
 ```
 
-#### P4 — ⚠️ PARCIALMENTE RESOLVIDO (07/04/2026): `NEXT_PUBLIC_BACKEND_URL` nos proxy routes
+#### P4 — ✅ RESOLVIDO (Task #99 — abril 2026): `NEXT_PUBLIC_BACKEND_URL` eliminado
 
 ```
 CORREÇÃO APLICADA:
-  Os arquivos em /api/backend-proxy/* agora usam BACKEND_URL (sem NEXT_PUBLIC_).
-
-PENDENTE:
-  11 arquivos fora dos proxy routes ainda expõem NEXT_PUBLIC_BACKEND_URL
-  ou NEXT_PUBLIC_API_URL ao browser. Listados em P1 acima.
-  Resolução como task separada de código.
+  Todos os arquivos (proxy routes + 11 arquivos frontend) migrados.
+  ZERO referências a NEXT_PUBLIC_BACKEND_URL ou NEXT_PUBLIC_API_URL no codebase.
+  Resolvido junto com P1 na Task #99.
 ```
 
-#### P5 — IMPORTANTE: Variáveis exclusivas do Replit no código
+#### P5 — ⚠️ PARCIALMENTE RESOLVIDO: Variáveis exclusivas do Replit no código
 
 ```
-O código referencia variáveis que só existem no Replit:
-  - REPLIT_DEV_DOMAIN  → usado para construir URLs (domínio do preview)
-  - REPL_IDENTITY      → usado para identificação do ambiente
-  - WEB_REPL_RENEWAL   → flag interna do Replit
+Restam apenas 2 arquivos com referências a variáveis Replit:
+  1. plataforma-lia/src/lib/api/jira-service.ts — REPLIT_DEV_DOMAIN
+  2. plataforma-lia/src/lib/workos.ts — REPLIT_DEV_DOMAIN
 
-Em produção (Cloud Run), essas variáveis serão undefined.
+WEB_REPL_RENEWAL e REPL_IDENTITY já foram eliminados.
 
-RISCO: Pode causar erros silenciosos ou URLs quebradas.
-
-AÇÃO AGORA: Não quebra nada (estamos no Replit).
-AÇÃO ANTES DO DEPLOY: Adicionar fallbacks em cada referência:
+AÇÃO ANTES DO DEPLOY: Adicionar fallbacks nos 2 arquivos:
   process.env.REPLIT_DEV_DOMAIN || process.env.APP_DOMAIN || 'wedotalent.cc'
-  São poucas referências — trabalho pontual.
+  Trabalho pontual (~10 minutos).
 ```
 
-#### P6 — IMPORTANTE: WebSockets sem parametrização para produção
+#### P6 — ✅ RESOLVIDO (Task #74 — abril 2026): WebSockets parametrizados
 
 ```
-2 componentes criam WebSockets diretamente:
+CORREÇÃO APLICADA:
+  NEXT_PUBLIC_WS_URL é usada em 3 componentes:
   1. AsyncJobProgress.tsx — progresso de tarefas assíncronas
   2. VoIPCallButton.tsx  — chamadas VoIP em tempo real
+  3. use-agent-streaming.ts — streaming de agentes
 
-Ambos constroem a URL do WebSocket a partir do domínio atual
-(window.location). Isso funciona quando frontend e backend estão
-no mesmo servidor, mas em produção com serviços separados pode quebrar.
+  Valor dev (Replit): ws://127.0.0.1:8001
+  Valor prod: wss://api.wedotalent.cc
 
-AÇÃO AGORA: Funciona como está no Replit.
-AÇÃO ANTES DO DEPLOY:
-  - Cloud Run suporta WebSockets (precisa habilitar)
-  - Parametrizar URLs WS com env var: NEXT_PUBLIC_WS_URL
-  - Ajustar 2 arquivos
+AÇÃO NO DEPLOY:
+  - Configurar NEXT_PUBLIC_WS_URL=wss://api.wedotalent.cc em produção
+  - Habilitar WebSocket no Cloud Run (timeout 3600s)
 ```
 
 #### Autenticação (✅ totalmente implementada — não é stub)
@@ -1889,37 +1899,33 @@ Auditoria de chaves API:
 
 ### O que precisa de atenção antes do deploy
 
-| Área | Severidade | Problema | Ação | Quando |
+| Área | Severidade | Status | Ação | Quando |
 |---|---|---|---|---|
-| **P1: NEXT_PUBLIC leak no frontend** | 🟡 Importante | 11 arquivos fora dos proxy routes ainda usam `NEXT_PUBLIC_BACKEND_URL` ou `NEXT_PUBLIC_API_URL` diretamente | Substituir por chamadas via proxy routes ou env var server-side (task separada de código) | Antes do deploy |
-| **P2: Build falha** | 🔴 Crítico | `ai-credits/page.tsx` usa `dynamic(ssr:false)` em Server Component | Adicionar `"use client"`, remover `metadata` export | **Agora** |
-| **P3: DATABASE_URL** | 🔴 Crítico | Backend aponta para `localhost:5432/lia_db` — banco não existe no Replit | Corrigir para `helium/heliumdb` (banco real) | **Agora** |
-| **P4: NEXT_PUBLIC leak** | 🟡 Importante | URL do backend exposta no browser via `NEXT_PUBLIC_*` nos 11 arquivos listados em P1 | Resolver junto com P1 (task separada de código) | Antes do deploy |
-| **P5: Replit vars** | 🟡 Importante | `REPLIT_DEV_DOMAIN`, `REPL_IDENTITY` → undefined no Cloud Run | Adicionar fallbacks com `APP_DOMAIN` | Antes do deploy |
-| **P6: WebSockets** | 🟡 Importante | URLs WS hardcoded em 2 componentes | Parametrizar com `NEXT_PUBLIC_WS_URL` | Antes do deploy |
-| **Mockups pendentes** | 🟡 Importante | 6 grupos de componentes no mockup sandbox | Revisar, aprovar ou descartar, integrar | Antes do deploy |
-| **WorkOS prod** | 🟡 Importante | Credenciais apontam para dev | Criar ambiente prod + redirect URIs `wedotalent.cc` | Deploy |
+| **P1: NEXT_PUBLIC leak no frontend** | ~~🟡 Importante~~ | ✅ RESOLVIDO (Task #99) | Zero referências a `NEXT_PUBLIC_BACKEND_URL`/`NEXT_PUBLIC_API_URL` | Feito |
+| **P2: Build falha** | ~~🔴 Crítico~~ | ✅ RESOLVIDO | `"use client"` adicionado ao `ai-credits/page.tsx` | Feito |
+| **P3: DATABASE_URL** | ~~🔴 Crítico~~ | ✅ RESOLVIDO | Backend conectado ao banco Replit (`helium/heliumdb`) | Feito |
+| **P4: NEXT_PUBLIC leak** | ~~🟡 Importante~~ | ✅ RESOLVIDO (Task #99) | Resolvido junto com P1 | Feito |
+| **P5: Replit vars** | 🟡 Importante | ⚠️ 2 arquivos restantes | Adicionar fallbacks em `jira-service.ts` e `workos.ts` | Antes do deploy |
+| **P6: WebSockets** | ~~🟡 Importante~~ | ✅ RESOLVIDO (Task #74) | `NEXT_PUBLIC_WS_URL` parametrizado em 3 componentes | Feito |
+| **WorkOS prod** | 🟡 Importante | Pendente | Criar ambiente prod + redirect URIs `wedotalent.cc` | Deploy |
 | **Error Boundaries** | 🟢 Desejável | Parcialmente implementado | Verificar cobertura em pages críticas | Antes do deploy |
-| **Headers de segurança** | 🟢 Desejável | CSP, X-Frame-Options não configurados | Adicionar em `next.config.js` | Antes do deploy |
+| **Headers de segurança** | 🟢 Desejável | Pendente | CSP, X-Frame-Options em `next.config.js` | Antes do deploy |
 | **Bundle size** | 🟢 Desejável | Não auditado | Rodar `next build` e checar | Antes do deploy |
-| **Testes E2E silenciosos** | 🟢 Desejável | `.catch(() => {})` mascara falhas | Remover catch silenciosos | Antes do deploy |
-| **Testes E2E WorkOS real** | 🟢 Desejável | Auth fixture usa cookie bypass | Rodar com credenciais reais em CI | Deploy |
+| **Testes E2E WorkOS real** | 🟢 Desejável | Pendente | Rodar com credenciais reais em CI | Deploy |
 
 ### Checklist de production readiness — Frontend
 
 **Correções críticas (bloqueiam deploy):**
-- [ ] P1: Todos os 442 proxy routes padronizados para `BACKEND_URL` + porta `8001`
-- [ ] P2: `next build` passa sem erros (`ai-credits/page.tsx` corrigido)
-- [ ] P3: `DATABASE_URL` do backend corrigido para banco real
+- [x] P1: Todos os 104+ proxy routes padronizados para `BACKEND_URL` + porta `8001` (Task #99)
+- [x] P2: `next build` passa sem erros (`ai-credits/page.tsx` corrigido — `"use client"` adicionado)
+- [x] P3: `DATABASE_URL` do backend corrigido para banco real (`helium/heliumdb`)
 
 **Preparação para deploy:**
-- [ ] P4+P1: Nenhuma variável `NEXT_PUBLIC_*` expõe URLs internas do backend
-- [ ] P5: Variáveis Replit (`REPLIT_DEV_DOMAIN`, etc.) com fallbacks para Cloud Run
-- [ ] P6: WebSocket URLs parametrizadas com `NEXT_PUBLIC_WS_URL`
-- [ ] Mockups pendentes revisados — aprovados integrados, descartados removidos
+- [x] P4+P1: Zero variáveis `NEXT_PUBLIC_*` expondo URLs internas do backend (Task #99)
+- [ ] P5: 2 arquivos restantes com `REPLIT_DEV_DOMAIN` precisam de fallback (`jira-service.ts`, `workos.ts`)
+- [x] P6: WebSocket URLs parametrizadas com `NEXT_PUBLIC_WS_URL` (Task #74)
 - [ ] Headers de segurança adicionados no `next.config.js`
 - [ ] Error boundary verificado em pages críticas (funil, chat, vagas)
-- [ ] Testes E2E `.catch(() => {})` silenciosos removidos
 
 **Configuração de produção (infra + produto):**
 - [ ] `WORKOS_API_KEY` + `WORKOS_CLIENT_ID` de produção configurados
@@ -2111,7 +2117,7 @@ PII Masking → Transcript → wsi_deterministic_scorer
 
 | Componente | Quantidade | Detalhes |
 |-----------|-----------|---------|
-| **Alembic migrations** | 59 | Versionadas em `alembic/versions/` |
+| **Alembic migrations** | 60 | Versionadas em `alembic/versions/` |
 | **SQLAlchemy models** | 217 | 109 em `libs/models/` + 108 em `app/models/` |
 | **pgvector** | 768-dim | Embeddings com índice HNSW para RAG search |
 | **Redis** | 6 categorias de cache | Pipeline stats (60s), search (120s), job insights (180s), analytics (90s), semantic cache router (86400s) |
@@ -2162,16 +2168,16 @@ PII Masking → Transcript → wsi_deterministic_scorer
 | **WSI Voice Pipeline** | Robusto | Pipeline completo Twilio→Gemini STT→LLM→OpenAI TTS→Twilio, fallback Deepgram |
 | **Auth + Cross-Tenant** | Robusto | JWT + company_id guard + prompt injection check |
 | **Comunicação Multi-Canal** | Robusto | Voice, WhatsApp (botões nativos), Teams (Adaptive Cards), Email (Resend+Mailgun fallback) |
-| **Infraestrutura** | Robusto | 217 models, 59 migrations, 36 Celery tasks, Redis caching semântico, Docker multi-stage prod |
+| **Infraestrutura** | Robusto | 217 models, 60 migrations, 36 Celery tasks, Redis caching semântico, Docker multi-stage prod |
 | **Health Probes** | Robusto | Kubernetes-ready (ready/live), domain-specific health endpoints |
 
 ### 13.9 O que precisa de atenção antes do deploy
 
 | # | Área | Problema | Severidade | Ação |
 |---|------|---------|-----------|------|
-| 1 | **DATABASE_URL** | ✅ CORRIGIDO — Backend agora conecta ao banco Replit (`helium/heliumdb`). Para deploy: Cloud SQL com `lia_db` | Resolvido (dev) | Deploy: configurar `DATABASE_URL` no Secret Manager apontando para Cloud SQL |
-| 2 | **Shims de compatibilidade** | ✅ CORRIGIDO — Shims que usavam `import *` sem exportar funções `_prefixo` foram ajustados | Resolvido | Validar com `python3 -c "from app.main import app"` após cada novo shim |
-| 3 | **Bug wsi_repository.py** | ✅ CORRIGIDO (07/04/2026) — SQL sem aspas e dicts com sintaxe JS | Resolvido | Backend rodando normalmente |
+| 1 | **DATABASE_URL** | ✅ RESOLVIDO — Backend conecta ao banco Replit (`helium/heliumdb`). Para deploy: Cloud SQL com `lia_db` | ✅ Resolvido | Deploy: configurar `DATABASE_URL` no Secret Manager apontando para Cloud SQL |
+| 2 | **Shims de compatibilidade** | ✅ RESOLVIDO — Shims que usavam `import *` sem exportar funções `_prefixo` foram ajustados | ✅ Resolvido | Validar com `python3 -c "from app.main import app"` após cada novo shim |
+| 3 | **Bug wsi_repository.py** | ✅ RESOLVIDO (07/04/2026) — SQL sem aspas e dicts com sintaxe JS | ✅ Resolvido | Backend rodando normalmente |
 | 4 | **Voice provider abstraction** | `VoiceProvider` ABC existe mas `gemini_voice_service.py` e `voice_screening_orchestrator.py` importam `genai` diretamente | MEDIO | Migrar para usar ABC consistently (não bloqueia deploy) |
 | 5 | **GOOGLE_APPLICATION_CREDENTIALS** | Speech/TTS precisam de service account em prod | ALTO | Configurar Workload Identity no Cloud Run |
 | 6 | **Redis prod** | Sem autenticação configurada no código para prod | ALTO | Configurar `REDIS_URL` com senha para Cloud Memorystore |
@@ -2185,7 +2191,7 @@ PII Masking → Transcript → wsi_deterministic_scorer
 **Infraestrutura:**
 
 - [x] `python3 -c "from app.main import app"` passa sem erros
-- [x] 59 Alembic migrations versionadas
+- [x] 60 Alembic migrations versionadas
 - [x] `Dockerfile.prod` multi-stage com non-root user e healthcheck
 - [ ] `alembic upgrade head` validado no banco de produção (Cloud SQL)
 - [ ] `DATABASE_URL` no Secret Manager apontando para Cloud SQL
@@ -2224,7 +2230,9 @@ PII Masking → Transcript → wsi_deterministic_scorer
 - [x] Teams com Adaptive Cards e alertas por severidade
 - [x] Email com fallback Resend→Mailgun
 - [x] WebSocket para audio stream, chat, job monitoring
-- [ ] `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN` no Secret Manager
+- [x] `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN` configurados (Replit Secrets) — mover para Secret Manager GCP no deploy
+- [x] `TWILIO_PHONE_NUMBER` configurado (`+551150289337`)
+- [ ] `TWILIO_WHATSAPP_NUMBER` — aguardando aprovação Meta Business Suite
 - [ ] Teams webhook URL atualizada para URL de produção
 - [ ] `MAILGUN_API_KEY`, `MAILGUN_DOMAIN` no Secret Manager
 
@@ -2597,28 +2605,29 @@ Configurações obrigatórias no WorkOS dashboard:
 - [x] Testes E2E rodando no Replit (24/26 passando, auth via cookie bypass)
 - [x] Integrações IA confirmadas como server-side only (sem leak de chaves)
 - [x] Autenticação WorkOS SSO + JWT auditada — totalmente implementada
-- [ ] 🟡 **P1:** 11 arquivos frontend substituídos (NEXT_PUBLIC_BACKEND_URL/NEXT_PUBLIC_API_URL → chamadas via proxy routes — task separada)
-- [ ] 🔴 **P2:** `next build` sem erros (`ai-credits/page.tsx` corrigido)
-- [ ] 🟡 **P4:** Nenhuma `NEXT_PUBLIC_*` expondo URLs internas (resolver com P1)
-- [ ] 🟡 **P5:** Variáveis Replit (`REPLIT_DEV_DOMAIN`) com fallbacks para Cloud Run
-- [ ] 🟡 **P6:** WebSocket URLs parametrizadas com env var
+- [x] ✅ **P1:** 104+ proxy routes + 11 arquivos frontend migrados (Task #99) — zero `NEXT_PUBLIC_BACKEND_URL`
+- [x] ✅ **P2:** `next build` passa sem erros (`ai-credits/page.tsx` — `"use client"` adicionado)
+- [x] ✅ **P4:** Zero `NEXT_PUBLIC_*` expondo URLs internas (resolvido com P1, Task #99)
+- [ ] 🟡 **P5:** 2 arquivos restantes com `REPLIT_DEV_DOMAIN` precisam de fallback
+- [x] ✅ **P6:** WebSocket URLs parametrizadas com `NEXT_PUBLIC_WS_URL` (Task #74)
 - [ ] WorkOS prod configurado (API key + redirect URIs para `wedotalent.cc`)
 - [ ] Headers de segurança em `next.config.js`
 - [ ] Sentry DSN frontend
 - [ ] Teams Tab URL atualizada para prod
 - [ ] Testes E2E completos com WorkOS real em CI
-- [ ] Mockups pendentes revisados e finalizados
 
 **AI Agent (ver Seção 12.1 P3 e Seção 13 para detalhes):**
 - [x] Bug `wsi_repository.py` corrigido (SQL sem aspas + dicts JS-style → Python correto)
 - [x] `.env.example` atualizado (`API_PORT` corrigido, `RAILS_API_URL` adicionado)
-- [ ] 🔴 **P3:** `DATABASE_URL` corrigido para banco real do Replit (`helium/heliumdb`)
-- [ ] `python3 -c "from app.main import app"` sem erros (validar todos os shims `import *`)
-- [ ] Migrations Alembic clean
-- [ ] Todos os secrets movidos para Secret Manager
+- [x] ✅ **P3:** `DATABASE_URL` corrigido para banco real (`helium/heliumdb`)
+- [x] `python3 -c "from app.main import app"` sem erros
+- [x] 60 Alembic migrations versionadas e sequência limpa
+- [x] Twilio credenciais configuradas (TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER)
+- [ ] Todos os secrets movidos para Secret Manager GCP
 - [ ] Celery worker configurado como serviço separado
-- [ ] Service Account para Google Speech/TTS
+- [ ] Service Account / Workload Identity para Google Speech/TTS
 - [ ] Teams webhook URL atualizada para URL prod Cloud Run
+- [ ] TWILIO_WHATSAPP_NUMBER configurado após aprovação Meta
 
 ### Infraestrutura (time infra)
 
@@ -2647,7 +2656,8 @@ Configurações obrigatórias no WorkOS dashboard:
 - [ ] Anthropic: `ANTHROPIC_API_KEY` no Secret Manager prod
 - [ ] Google AI: `GEMINI_API_KEY` no Secret Manager prod
 - [ ] Google Speech/TTS: APIs habilitadas no projeto GCP
-- [ ] Twilio: credenciais prod no Secret Manager
+- [ ] Twilio Voice: mover credenciais (já configuradas no Replit) para Secret Manager GCP
+- [ ] Twilio WhatsApp: completar registro Meta Business Suite → configurar `TWILIO_WHATSAPP_NUMBER`
 - [ ] Microsoft Teams: webhook URL de prod registrado no Azure
 - [ ] Resend: `RESEND_API_KEY` no Secret Manager
 - [ ] Sentry: projetos criados (frontend + backend), DSNs configurados
