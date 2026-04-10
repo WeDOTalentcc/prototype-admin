@@ -10,7 +10,8 @@ function getAuthHeaders(req: NextRequest): Record<string, string> {
 }
 
 // POST /api/backend-proxy/agent-templates/:id/publish
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
-  const res = await fetch(`${BACKEND_URL}/api/v1/agent-templates/${params.id}/publish`, { method: "POST", headers: getAuthHeaders(req) })
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const res = await fetch(`${BACKEND_URL}/api/v1/agent-templates/${id}/publish`, { method: "POST", headers: getAuthHeaders(req) })
   return new NextResponse(await res.text(), { status: res.status, headers: { "Content-Type": "application/json" } })
 }

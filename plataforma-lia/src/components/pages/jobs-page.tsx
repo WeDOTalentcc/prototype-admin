@@ -91,14 +91,14 @@ export function JobsPage(props: JobsPageProps) {
           <div className="p-2.5 max-w-full overflow-x-auto">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <div className="h-6 w-48 bg-lia-interactive-active dark:bg-lia-bg-secondary rounded-md animate-pulse motion-reduce:animate-none" />
-                <div className="h-4 w-64 bg-lia-interactive-active dark:bg-lia-bg-secondary rounded-md animate-pulse motion-reduce:animate-none mt-2" />
+                <div className="h-6 w-48 bg-lia-interactive-active dark:bg-lia-bg-secondary rounded-lg animate-pulse motion-reduce:animate-none" />
+                <div className="h-4 w-64 bg-lia-interactive-active dark:bg-lia-bg-secondary rounded-lg animate-pulse motion-reduce:animate-none mt-2" />
               </div>
-              <div className="h-8 w-24 bg-lia-interactive-active dark:bg-lia-bg-secondary rounded-md animate-pulse motion-reduce:animate-none" />
+              <div className="h-8 w-24 bg-lia-interactive-active dark:bg-lia-bg-secondary rounded-lg animate-pulse motion-reduce:animate-none" />
             </div>
             <div className="space-y-2 mt-6">
               {Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="h-12 bg-lia-interactive-active dark:bg-lia-bg-secondary rounded-md animate-pulse motion-reduce:animate-none" />
+                <div key={i} className="h-12 bg-lia-interactive-active dark:bg-lia-bg-secondary rounded-lg animate-pulse motion-reduce:animate-none" />
               ))}
             </div>
           </div>
@@ -157,7 +157,7 @@ export function JobsPage(props: JobsPageProps) {
                 aria-selected={activeFilter === filter.id}
                 className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer font-['Open_Sans',sans-serif] ${
                   activeFilter === filter.id
-                    ? 'bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-btn-primary-hover'
+                    ? 'bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-btn-primary-hover shadow-sm'
                     : 'text-lia-text-secondary hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover'
                 }`}
               >

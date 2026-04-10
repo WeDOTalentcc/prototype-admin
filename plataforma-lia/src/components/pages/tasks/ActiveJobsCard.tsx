@@ -179,13 +179,13 @@ function SortDropdown({ jobSortBy, setJobSortBy }: { jobSortBy: string; setJobSo
         <ArrowUpDown className="w-3.5 h-3.5" />
         Ordenar
       </Button>
-      <div className="absolute right-0 top-full mt-1 w-40 bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity motion-reduce:transition-none duration-200 z-10">
+      <div className="absolute right-0 top-full mt-1 w-40 bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity motion-reduce:transition-none duration-200 z-10">
         <div className="py-1">
           {options.map(({ value, label }) => (
             <button
               key={value}
               onClick={() => setJobSortBy(value)}
-              className={`w-full px-3 py-1.5 text-left text-xs hover:bg-lia-bg-secondary dark:hover:bg-lia-bg-inverse ${
+              className={`w-full px-3 py-1.5 text-left text-xs hover:bg-lia-interactive-hover transition-colors ${
                 jobSortBy === value ? 'bg-lia-interactive-active text-lia-text-primary dark:bg-lia-bg-elevated font-semibold' : ''
               }`}
             >
@@ -242,7 +242,7 @@ function JobFiltersPanel({
   uniqueDepartments: string[]; activeJobFiltersCount: number; clearJobFilters: () => void
 }) {
   return (
-    <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 rounded-md p-3 space-y-3 border border-lia-border-subtle dark:border-lia-border-subtle">
+    <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 rounded-lg p-3 space-y-3 border border-lia-border-subtle dark:border-lia-border-subtle">
       <div className="flex items-center justify-between">
         <span className="text-xs font-open-sans font-semibold text-lia-text-primary">Filtros Avançados</span>
         {activeJobFiltersCount > 0 && (

@@ -25,7 +25,7 @@ const JobsHeader = memo(function JobsHeader({
   onCreateJob,
 }: JobsHeaderProps) {
   return (
-    <div className="space-y-4 border-b border-lia-border-subtle dark:border-lia-border-subtle px-6 py-4" data-testid="jobs-header">
+    <div className="space-y-4 px-6 py-4" data-testid="jobs-header">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
@@ -38,10 +38,10 @@ const JobsHeader = memo(function JobsHeader({
               <Badge variant="outline" className="border-lia-border-default dark:border-lia-border-default text-lia-text-secondary">
                 {metrics.totalJobs} total
               </Badge>
-              <Badge className="bg-status-success/20 text-status-success dark:text-status-success border-status-success/30/30">
+              <Badge variant="success" className="">
                 {metrics.activeJobs} ativas
               </Badge>
-              <Badge variant="outline" className="border-status-warning/30/30 text-status-warning dark:text-status-warning">
+              <Badge variant="warning" className="">
                 {metrics.draftJobs} rascunhos
               </Badge>
             </div>

@@ -222,13 +222,13 @@ export function JobsListContent(props: JobsListContentProps) {
         />
 
         {!(chatMode === 'job-creation' && isChatFullscreen) && (
-        <div className={`h-full bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md transition-[width,height] duration-300 min-w-0 overflow-hidden ${
+        <div className={`h-full bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-xl transition-[width,height] duration-300 min-w-0 overflow-hidden ${
           isTableCollapsed ? 'w-14 flex-shrink-0' : 'flex-1'
         }`}>
           {isTableCollapsed ? (
             <div className="h-full flex flex-col items-center py-4 gap-3">
               <Button variant="ghost" size="sm" onClick={toggleTableExpansion}
-                className="h-10 w-10 p-0 rounded-md hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse" title="Expandir tabela de vagas">
+                className="h-10 w-10 p-0 rounded-lg hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse" title="Expandir tabela de vagas">
                 <ChevronRight className="w-5 h-5 text-lia-text-primary" />
               </Button>
               <div className="flex flex-col items-center gap-2 text-lia-text-primary">
@@ -250,7 +250,7 @@ export function JobsListContent(props: JobsListContentProps) {
                     <span className="text-xs font-medium text-lia-text-primary" aria-live="polite" aria-atomic="true">Vagas ({filteredJobs.length})</span>
                   </div>
                   <Button variant="ghost" size="sm" onClick={toggleTableExpansion}
-                    className="h-7 w-7 p-0 rounded-md hover:bg-lia-interactive-active dark:hover:bg-lia-bg-inverse" title="Contrair tabela">
+                    className="h-7 w-7 p-0 rounded-lg hover:bg-lia-interactive-active dark:hover:bg-lia-bg-inverse" title="Contrair tabela">
                     <ChevronLeft className="w-4 h-4 text-lia-text-primary" />
                   </Button>
                 </div>
