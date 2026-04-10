@@ -110,26 +110,22 @@ jobs:
             --allow-unauthenticated \
             --quiet
 
-      - name: Deploy Worker (Cloud Run Job — always-running)
+      - name: Deploy Worker to Cloud Run (continuous service)
         run: |
-          gcloud run jobs deploy lia-worker${{ steps.env.outputs.service_suffix }} \
+          gcloud run deploy lia-worker${{ steps.env.outputs.service_suffix }} \
             --project ${{ env.GCP_PROJECT }} \
             --image ${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT }}/lia/lia-worker:${{ github.sha }} \
             --region ${{ env.GCP_REGION }} \
+            --platform managed \
+            --no-allow-unauthenticated \
+            --no-cpu-throttling \
             --memory 1Gi \
             --cpu 2 \
-            --task-timeout 86400s \
-            --max-retries 3 \
+            --min-instances 1 \
+            --max-instances 5 \
+            --timeout 900 \
             --set-env-vars "APP_ENV=${{ steps.env.outputs.env_name }},CELERY_CONCURRENCY=2" \
             --set-secrets "DATABASE_URL=DATABASE_URL:latest,REDIS_URL=REDIS_URL:latest,ANTHROPIC_API_KEY=ANTHROPIC_API_KEY:latest" \
-            --quiet
-
-      - name: Execute Worker Job
-        run: |
-          gcloud run jobs execute lia-worker${{ steps.env.outputs.service_suffix }} \
-            --project ${{ env.GCP_PROJECT }} \
-            --region ${{ env.GCP_REGION }} \
-            --async \
             --quiet
 
       - name: Smoke test API

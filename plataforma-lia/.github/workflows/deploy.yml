@@ -103,4 +103,9 @@ jobs:
           SERVICE_URL=$(gcloud run services describe lia-frontend${{ steps.env.outputs.service_suffix }} \
             --region ${{ env.GCP_REGION }} --format='value(status.url)')
           echo "Service URL: $SERVICE_URL"
-          curl -sf --max-time 30 "$SERVICE_URL/api/health" || echo "⚠️ Smoke test failed (non-blocking)"
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 "$SERVICE_URL/" || true)
+          if [ "$HTTP_STATUS" = "200" ]; then
+            echo "✅ Smoke test passed (HTTP $HTTP_STATUS)"
+          else
+            echo "⚠️ Smoke test returned HTTP $HTTP_STATUS (non-blocking)"
+          fi

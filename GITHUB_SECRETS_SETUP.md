@@ -112,7 +112,8 @@ durante a fase inicial. Após estabilização:
 - `lia-frontend`: `--allow-unauthenticated` (necessário — serve o app web)
 - `lia-api`: `--allow-unauthenticated` (necessário — recebe webhooks Twilio/Teams
   e requisições autenticadas via JWT do frontend)
-- `lia-worker`: Cloud Run **Job** (não serviço — Celery worker sem HTTP listener)
+- `lia-worker`: Cloud Run Service com `--no-cpu-throttling --min-instances=1`
+  (Celery worker contínuo com HTTP health wrapper em `scripts/worker_health.py`)
 
 ## Primeiros passos
 

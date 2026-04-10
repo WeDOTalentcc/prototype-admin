@@ -886,7 +886,7 @@ Arquivo: `lia-agent-system/.github/workflows/deploy.yml` (já criado)
 
 - Trigger: push em `develop` (staging) ou `main` (production)
 - Jobs: Security Scan (bandit + pip-audit) → Build API + Worker → Push Artifact Registry → Deploy Cloud Run
-- Deploya `lia-api` (Cloud Run Service, Gunicorn) + `lia-worker` (Cloud Run Job, Celery)
+- Deploya `lia-api` (Cloud Run Service, Gunicorn) + `lia-worker` (Cloud Run Service, Celery + health wrapper, --no-cpu-throttling --min-instances=1)
 - Secrets sensíveis via GCP Secret Manager (não GitHub Secrets)
 - Alembic upgrade head roda no startup do container
 
