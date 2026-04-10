@@ -460,6 +460,26 @@ gcloud compute backend-services add-backend lia-api-bs \
   --network-endpoint-group-region=$REGION
 ```
 
+### 8.4.1 Backend Services — Staging
+
+```bash
+gcloud compute backend-services create lia-frontend-staging-bs \
+  --global \
+  --load-balancing-scheme=EXTERNAL_MANAGED
+gcloud compute backend-services add-backend lia-frontend-staging-bs \
+  --global \
+  --network-endpoint-group=lia-frontend-staging-neg \
+  --network-endpoint-group-region=$REGION
+
+gcloud compute backend-services create lia-api-staging-bs \
+  --global \
+  --load-balancing-scheme=EXTERNAL_MANAGED
+gcloud compute backend-services add-backend lia-api-staging-bs \
+  --global \
+  --network-endpoint-group=lia-api-staging-neg \
+  --network-endpoint-group-region=$REGION
+```
+
 ### 8.5 URL Map (roteamento por domínio)
 
 ```bash
@@ -469,13 +489,26 @@ gcloud compute url-maps create lia-lb \
 gcloud compute url-maps add-host-rule lia-lb \
   --hosts="api.wedotalent.cc" \
   --path-matcher-name="api-matcher"
-
 gcloud compute url-maps add-path-matcher lia-lb \
   --path-matcher-name="api-matcher" \
   --default-service=lia-api-bs
+
+gcloud compute url-maps add-host-rule lia-lb \
+  --hosts="staging.wedotalent.cc" \
+  --path-matcher-name="staging-frontend-matcher"
+gcloud compute url-maps add-path-matcher lia-lb \
+  --path-matcher-name="staging-frontend-matcher" \
+  --default-service=lia-frontend-staging-bs
+
+gcloud compute url-maps add-host-rule lia-lb \
+  --hosts="api-staging.wedotalent.cc" \
+  --path-matcher-name="staging-api-matcher"
+gcloud compute url-maps add-path-matcher lia-lb \
+  --path-matcher-name="staging-api-matcher" \
+  --default-service=lia-api-staging-bs
 ```
 
-### 8.6 HTTPS Proxy e Forwarding Rule
+### 8.6 HTTPS Proxy e Forwarding Rules
 
 ```bash
 gcloud compute target-https-proxies create lia-https-proxy \
@@ -487,6 +520,22 @@ gcloud compute forwarding-rules create lia-https-rule \
   --target-https-proxy=lia-https-proxy \
   --ports=443 \
   --address=lia-lb-ip
+```
+
+### 8.6.1 HTTP → HTTPS Redirect
+
+```bash
+gcloud compute url-maps import lia-http-redirect-map \
+  --source=/dev/stdin <<'EOF'
+kind: compute#urlMap
+name: lia-http-redirect-map
+defaultUrlRedirect:
+  httpsRedirect: true
+  redirectResponseCode: MOVED_PERMANENTLY_DEFAULT
+EOF
+
+gcloud compute target-http-proxies create lia-http-proxy \
+  --url-map=lia-http-redirect-map
 
 gcloud compute forwarding-rules create lia-http-redirect \
   --global \
@@ -565,13 +614,68 @@ echo -n "postgresql+asyncpg://lia_user:PASSWORD@/lia_db_staging?host=/cloudsql/$
   gcloud secrets create DATABASE_URL_STAGING --data-file=- --replication-policy=automatic
 ```
 
-### 9.3 Services staging
+### 9.3 Cloud Run — Staging Services (primeiro deploy manual)
 
-O CI/CD cria automaticamente os serviços `-staging` ao fazer push para `develop`.
-Os serviços usam `--min-instances 0` para economizar custos quando inativos.
+```bash
+IMAGE_FE="${REGION}-docker.pkg.dev/${PROJECT_ID}/lia/lia-frontend:latest"
+IMAGE_API="${REGION}-docker.pkg.dev/${PROJECT_ID}/lia/lia-api:latest"
+IMAGE_WORKER="${REGION}-docker.pkg.dev/${PROJECT_ID}/lia/lia-worker:latest"
+
+gcloud run deploy lia-frontend-staging \
+  --project $PROJECT_ID \
+  --image $IMAGE_FE \
+  --region $REGION \
+  --platform managed \
+  --port 3000 \
+  --memory 512Mi \
+  --cpu 1 \
+  --min-instances 0 \
+  --max-instances 3 \
+  --set-env-vars "NODE_ENV=production,BACKEND_URL=https://lia-api-staging-HASH.a.run.app" \
+  --allow-unauthenticated \
+  --vpc-connector lia-connector
+
+gcloud run deploy lia-api-staging \
+  --project $PROJECT_ID \
+  --image $IMAGE_API \
+  --region $REGION \
+  --platform managed \
+  --port 8000 \
+  --memory 1Gi \
+  --cpu 1 \
+  --min-instances 0 \
+  --max-instances 5 \
+  --timeout 120 \
+  --set-env-vars "APP_ENV=staging,DEBUG=false,LOG_LEVEL=INFO,APP_BASE_URL=https://staging.wedotalent.cc" \
+  --set-secrets "DATABASE_URL=DATABASE_URL_STAGING:latest,REDIS_URL=REDIS_URL:latest,SECRET_KEY=SECRET_KEY_STAGING:latest,ANTHROPIC_API_KEY=ANTHROPIC_API_KEY:latest" \
+  --add-cloudsql-instances "${PROJECT_ID}:${REGION}:lia-postgres" \
+  --vpc-connector lia-connector \
+  --allow-unauthenticated
+
+gcloud run deploy lia-worker-staging \
+  --project $PROJECT_ID \
+  --image $IMAGE_WORKER \
+  --region $REGION \
+  --platform managed \
+  --no-cpu-throttling \
+  --memory 512Mi \
+  --cpu 1 \
+  --min-instances 0 \
+  --max-instances 2 \
+  --timeout 900 \
+  --set-env-vars "APP_ENV=staging,CELERY_CONCURRENCY=1" \
+  --set-secrets "DATABASE_URL=DATABASE_URL_STAGING:latest,REDIS_URL=REDIS_URL:latest,ANTHROPIC_API_KEY=ANTHROPIC_API_KEY:latest" \
+  --add-cloudsql-instances "${PROJECT_ID}:${REGION}:lia-postgres" \
+  --vpc-connector lia-connector \
+  --no-allow-unauthenticated
+```
+
+> Após o primeiro deploy manual, o CI/CD (push para `develop`) atualiza automaticamente.
+> Staging usa `--min-instances 0` para escalar a zero quando inativo (~$0 quando sem tráfego).
 
 - [ ] Banco staging criado
 - [ ] Secrets staging criados
+- [ ] Serviços staging deployados
 
 ---
 
@@ -629,7 +733,34 @@ curl -sf -o /dev/null -w "HTTP %{http_code}" "${FRONTEND_URL}/"
 gcloud run services logs read lia-api \
   --region=$REGION --limit=20 \
   --format="table(timestamp,textPayload)"
+
+API_URL=$(gcloud run services describe lia-api \
+  --region=$REGION --format='value(status.url)')
+curl -sf "${API_URL}/api/v1/health/ready" | python3 -m json.tool
 ```
+
+> O endpoint `/api/v1/health/ready` verifica conexão com banco e Redis.
+> Se retornar `"database": "ok"`, a conectividade Cloud Run → Cloud SQL está funcionando.
+
+### 10.5.1 Testar conectividade Cloud Run → Redis (Memorystore)
+
+```bash
+curl -sf "${API_URL}/api/v1/health/ready" | python3 -c "
+import sys, json
+data = json.load(sys.stdin)
+redis_ok = data.get('redis', data.get('cache', 'unknown'))
+print(f'Redis status: {redis_ok}')
+if redis_ok != 'ok':
+    print('⚠️  Redis connectivity issue — check VPC connector and REDIS_URL')
+    sys.exit(1)
+print('✅ Cloud Run → Memorystore connectivity OK')
+"
+```
+
+> Se o health/ready não incluir status do Redis, verificar manualmente nos logs:
+> ```bash
+> gcloud run services logs read lia-api --region=$REGION --limit=50 | grep -i redis
+> ```
 
 ### 10.6 Testar DNS
 
@@ -657,13 +788,15 @@ curl -sf "${WORKER_URL}/health" | python3 -m json.tool
 ```
 
 - [ ] APIs habilitadas confirmadas
-- [ ] Cloud SQL conecta
-- [ ] Redis responde PONG
+- [ ] Cloud SQL conecta (gcloud sql connect)
+- [ ] Redis responde PONG (redis-cli)
 - [ ] Health endpoints da API retornam 200
 - [ ] Frontend retorna 200
-- [ ] DNS resolve para IP do LB
-- [ ] SSL válido e ACTIVE
-- [ ] Worker health OK
+- [ ] Cloud Run → Cloud SQL connectivity OK (/api/v1/health/ready → database: ok)
+- [ ] Cloud Run → Memorystore connectivity OK (/api/v1/health/ready → redis: ok)
+- [ ] DNS resolve para IP do LB (todos os 5 records)
+- [ ] SSL válido e ACTIVE (wedotalent.cc + api.wedotalent.cc)
+- [ ] Worker health OK (/health → status: ok)
 
 ---
 
