@@ -176,7 +176,7 @@ export function AudioRecordButton({
  "h-8 w-8 transition-colors",
           isRecording
             ? "text-status-error hover:text-status-error hover:bg-status-error/10 animate-pulse motion-reduce:animate-none"
-            : "lia-text-secondary hover:text-lia-text-primary hover:bg-lia-interactive-hover"
+            : "text-lia-border-strong hover:text-lia-text-primary hover:bg-lia-interactive-hover"
         )}
       >
         {isTranscribing ? (

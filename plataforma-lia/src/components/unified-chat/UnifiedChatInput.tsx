@@ -214,7 +214,7 @@ export function UnifiedChatInput({
           rows={1}
           className={cn(
             "w-full resize-none bg-transparent px-3 py-2.5",
-            "text-sm text-lia-text-primary placeholder:text-lia-text-disabled",
+            "text-sm text-lia-text-primary placeholder:text-lia-border-strong",
             "focus:outline-none disabled:opacity-50",
             "font-['Open_Sans',sans-serif]",
             showContext ? "pt-1.5" : ""
@@ -231,7 +231,7 @@ export function UnifiedChatInput({
                 type="button"
                 onClick={() => setShowPlusMenu(!showPlusMenu)}
                 disabled={isBusy}
-                className="p-1.5 rounded-md text-lia-text-disabled hover:text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none disabled:opacity-40"
+                className="p-1.5 rounded-md text-lia-border-strong hover:text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none disabled:opacity-40"
                 title="Adicionar"
                 aria-label="Menu de adicao"
               >
@@ -287,7 +287,7 @@ export function UnifiedChatInput({
                 type="button"
                 onClick={() => setShowSettings(!showSettings)}
                 disabled={isBusy}
-                className="p-1.5 rounded-md text-lia-text-disabled hover:text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none disabled:opacity-40"
+                className="p-1.5 rounded-md text-lia-border-strong hover:text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none disabled:opacity-40"
                 title="Configuracoes de contexto"
                 aria-label="Configuracoes de conversa"
               >
@@ -343,7 +343,7 @@ export function UnifiedChatInput({
 
           <div className="flex items-center gap-1">
             {/* Auto label (like Notion) */}
-            <span className="text-xs text-lia-text-disabled font-['Open_Sans',sans-serif] mr-1">
+            <span className="text-xs text-lia-border-strong font-['Open_Sans',sans-serif] mr-1">
               Auto
             </span>
 
@@ -362,7 +362,7 @@ export function UnifiedChatInput({
                 "p-1.5 rounded-md transition-colors motion-reduce:transition-none",
                 canSend
                   ? "text-wedo-cyan hover:bg-wedo-cyan/10"
-                  : "text-lia-text-disabled"
+                  : "text-lia-border-strong"
               )}
               aria-label="Enviar mensagem"
             >
