@@ -81,7 +81,7 @@ class ArchetypeSearchRequest(BaseModel):
     search_pearch: bool = Field(True, description="Buscar na Pearch AI")
     pearch_type: str = Field("fast", pattern="^(fast|pro)$")
     local_limit: int = Field(20, ge=1, le=100)
-    pearch_limit: int = Field(15, ge=1, le=50)
+    pearch_limit: int = Field(15, ge=0, le=50)
     show_emails: bool = False
     show_phone_numbers: bool = False
     calculate_lia_score: bool = Field(True, description="Calcular score LIA para cada candidato")

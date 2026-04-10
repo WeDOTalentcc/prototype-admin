@@ -415,7 +415,7 @@ class SearchRequestDTO(BaseModel):
     
     # Limites
     local_limit: int = Field(20, ge=1, le=100)
-    pearch_limit: int = Field(15, ge=1, le=50)
+    pearch_limit: int = Field(15, ge=0, le=50)
     
     # Opções de contato
     show_emails: bool = Field(False)

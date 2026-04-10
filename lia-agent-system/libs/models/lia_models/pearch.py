@@ -306,7 +306,7 @@ class HybridSearchRequest(BaseModel):
     
     # Limites
     local_limit: int = Field(20, ge=1, le=100, description="Limite de resultados locais")
-    pearch_limit: int = Field(15, ge=1, le=100, description="Limite de resultados Pearch")
+    pearch_limit: int = Field(15, ge=0, le=100, description="Limite de resultados Pearch")
     
     # Opções Pearch
     show_emails: bool = Field(False, description="Mostrar emails (+2 créditos)")
