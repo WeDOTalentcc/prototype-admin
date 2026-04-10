@@ -281,7 +281,7 @@ export function PipelineOverviewPage() {
           "flex flex-col flex-1 min-w-0 overflow-hidden transition-all duration-300",
           showPreview && "mr-0"
         )}>
-          <div className="px-6 py-5 border-b border-lia-border-subtle flex-shrink-0">
+          <div className="px-6 py-5 flex-shrink-0">
             <div className="flex items-center justify-between">
               <div>
                 <h1 className="text-lg font-semibold text-lia-text-primary">
@@ -406,7 +406,7 @@ export function PipelineOverviewPage() {
                           "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium border transition-colors",
                           isActive
                             ? "text-lia-text-primary border-lia-border-medium"
-                            : "bg-white text-lia-text-secondary border-lia-border-subtle hover:border-lia-border-medium hover:text-lia-text-primary"
+                            : "bg-lia-bg-primary text-lia-text-secondary border-lia-border-subtle hover:border-lia-border-medium hover:text-lia-text-primary"
                         )}
                         style={isActive ? {
                           backgroundColor: hexToRgba(s.color || "#6B7280", 0.08),
@@ -436,7 +436,7 @@ export function PipelineOverviewPage() {
               </div>
             ) : (
               <div className="h-full flex flex-col">
-                <div className="px-6 py-3 border-b border-lia-border-subtle bg-lia-bg-secondary flex-shrink-0 flex items-center justify-between">
+                <div className="px-6 py-3 bg-lia-bg-secondary flex-shrink-0 flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     {selectedStageData && (
                       <div
@@ -514,11 +514,8 @@ export function PipelineOverviewPage() {
         </div>
 
         {showPreview && previewCandidate && (
-          <div className="flex-shrink-0 w-[420px] border-l border-lia-border-subtle relative">
-            <div
-              className="absolute left-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-lia-border-medium transition-colors z-10"
-            />
-            <div className="bg-lia-bg-primary h-full overflow-hidden">
+          <div className="flex-shrink-0 w-[420px] relative pl-2">
+            <div className="bg-lia-bg-primary h-full overflow-hidden rounded-xl border border-lia-border-subtle shadow-sm">
               <CandidatePreview
                 candidate={candidateItemToRecord(previewCandidate)}
                 isOpen={showPreview}
@@ -711,35 +708,35 @@ function PipelineCandidateCard({
             </>
           )}
         </div>
-
-        {visibleScores.length > 0 && (
-          <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
-            {visibleScores.map(({ id, icon: Icon, value, label }) => (
-              <Tooltip key={id}>
-                <TooltipTrigger asChild>
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      onOpenScoreModal(candidate, id)
-                    }}
-                    className="flex items-center gap-0.5 cursor-pointer hover:scale-105 transition-transform rounded-full"
-                    aria-label={`${label}: ${value != null ? formatScorePercent(value, 0) : "N/A"}`}
-                  >
-                    <Icon className="w-3.5 h-3.5 text-lia-text-secondary" strokeWidth={2} />
-                    <span className="text-[11px] font-semibold text-lia-text-secondary">
-                      {formatScorePercent(value as number, 0)}
-                    </span>
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent side="top" className="text-xs">
-                  {label}: {formatScorePercent(value as number, 0)}
-                </TooltipContent>
-              </Tooltip>
-            ))}
-          </div>
-        )}
       </div>
+
+      {visibleScores.length > 0 && (
+        <div className="flex items-center gap-1.5 flex-shrink-0">
+          {visibleScores.map(({ id, icon: Icon, value, label }) => (
+            <Tooltip key={id}>
+              <TooltipTrigger asChild>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    onOpenScoreModal(candidate, id)
+                  }}
+                  className="flex items-center gap-0.5 cursor-pointer hover:scale-105 transition-transform rounded-full"
+                  aria-label={`${label}: ${value != null ? formatScorePercent(value, 0) : "N/A"}`}
+                >
+                  <Icon className="w-3.5 h-3.5 text-lia-text-secondary" strokeWidth={2} />
+                  <span className="text-[11px] font-semibold text-lia-text-secondary">
+                    {formatScorePercent(value as number, 0)}
+                  </span>
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="top" className="text-xs">
+                {label}: {formatScorePercent(value as number, 0)}
+              </TooltipContent>
+            </Tooltip>
+          ))}
+        </div>
+      )}
 
       <div className="flex items-center gap-1 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
         <Tooltip>
