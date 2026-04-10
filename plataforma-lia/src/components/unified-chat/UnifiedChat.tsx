@@ -217,7 +217,7 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
   const hasMessages = chatMessages.length > 0
   const hasDynamicPanel = !!dynamicPanel
 
-  if (renderMode === "overlay" && !isOpen) return null
+  if (renderMode === "overlay" && !isOpen && mode !== "fullscreen") return null
 
   const isInline = renderMode === "inline"
   const effectiveMode: ChatMode = isInline ? "sidebar" : mode
