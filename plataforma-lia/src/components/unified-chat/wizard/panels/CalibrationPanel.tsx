@@ -2,7 +2,7 @@
 
 import React from "react"
 import { cn } from "@/lib/utils"
-import { User, CheckCircle, XCircle, Target } from "lucide-react"
+import { User, CheckCircle, XCircle, Target, ThumbsUp, ThumbsDown } from "lucide-react"
 import type { CalibrationData, CalibrationCandidate } from "../wizard-types"
 
 interface Props {
@@ -13,43 +13,109 @@ interface Props {
 
 /**
  * CalibrationPanel — present candidates for calibration.
- * Follows CalibrationCardModal.tsx pattern (split profile + criteria).
+ * Enforces minimum 3 profile approvals before allowing advancement.
  */
 export function CalibrationPanel({ data, onApprove, onReject }: Props) {
   const d = data as unknown as CalibrationData
   const candidates = d.candidates || []
   const threshold = d.threshold || 3
+  const approvedCount = d.approved_count || 0
+  const canAdvance = approvedCount >= threshold
+
+  const handleApproveCandidate = (candidateId: string) => {
+    window.dispatchEvent(new CustomEvent("lia:wizard-edit-question", {
+      detail: { type: "calibration_approve", candidateId },
+    }))
+  }
+
+  const handleRejectCandidate = (candidateId: string) => {
+    window.dispatchEvent(new CustomEvent("lia:wizard-edit-question", {
+      detail: { type: "calibration_reject", candidateId },
+    }))
+  }
 
   return (
     <div className="flex flex-col">
       {/* Progress header */}
-      <div className="px-4 py-2.5 border-b border-lia-border-subtle flex items-center justify-between">
-        <span className="text-xs text-lia-text-secondary font-['Open_Sans',sans-serif]">
-          Calibracao: {d.approved_count || 0}/{threshold} perfis
-        </span>
-        {d.complete && (
-          <span className="px-2 py-0.5 rounded bg-status-success/10 text-status-success text-[10px] font-medium font-['Open_Sans',sans-serif]">
-            Completa
+      <div className="px-4 py-2.5 border-b border-lia-border-subtle">
+        <div className="flex items-center justify-between">
+          <span className="text-xs text-lia-text-secondary font-['Open_Sans',sans-serif]">
+            Calibracao: {approvedCount}/{threshold} perfis
           </span>
+          {d.complete && (
+            <span className="px-2 py-0.5 rounded bg-status-success/10 text-status-success text-[10px] font-medium font-['Open_Sans',sans-serif]">
+              Completa
+            </span>
+          )}
+        </div>
+        {/* Progress bar */}
+        <div className="mt-1.5 h-1.5 rounded-full bg-lia-bg-tertiary overflow-hidden">
+          <div
+            className={cn(
+              "h-full rounded-full transition-all duration-300",
+              canAdvance ? "bg-status-success" : "bg-wedo-cyan"
+            )}
+            style={{ width: `${Math.min(100, (approvedCount / threshold) * 100)}%` }}
+          />
+        </div>
+        {!canAdvance && (
+          <p className="text-[10px] text-status-warning font-['Open_Sans',sans-serif] mt-1">
+            Avalie pelo menos {threshold} perfis para continuar
+          </p>
         )}
       </div>
 
       {/* Candidate cards */}
       <div className="px-4 py-3 space-y-2">
-        {candidates.map((c, i) => (
-          <CandidateCard key={i} candidate={c} />
+        {candidates.map((c) => (
+          <CandidateCard
+            key={c.id}
+            candidate={c}
+            onApproveCandidate={handleApproveCandidate}
+            onRejectCandidate={handleRejectCandidate}
+          />
         ))}
         {candidates.length === 0 && (
-          <p className="text-xs text-lia-text-tertiary font-['Open_Sans',sans-serif] text-center py-4">
-            Aguardando candidatos para calibracao...
-          </p>
+          <div className="text-center py-4">
+            <div className="w-5 h-5 mx-auto mb-2 border-2 border-wedo-cyan border-t-transparent rounded-full animate-spin" />
+            <p className="text-xs text-lia-text-tertiary font-['Open_Sans',sans-serif]">
+              Aguardando candidatos para calibracao...
+            </p>
+          </div>
         )}
       </div>
+
+      {/* Advance footer */}
+      {candidates.length > 0 && (
+        <div className="flex-shrink-0 px-4 py-3 border-t border-lia-border-subtle bg-lia-bg-primary">
+          <button
+            onClick={onApprove}
+            disabled={!canAdvance}
+            className={cn(
+              "w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-md text-sm font-medium transition-colors font-['Open_Sans',sans-serif]",
+              canAdvance
+                ? "bg-wedo-cyan text-white hover:bg-wedo-cyan/90"
+                : "bg-lia-bg-tertiary text-lia-text-disabled cursor-not-allowed"
+            )}
+          >
+            <CheckCircle className="w-4 h-4" />
+            {canAdvance ? "Calibracao completa — Avancar" : `Faltam ${threshold - approvedCount} perfis`}
+          </button>
+        </div>
+      )}
     </div>
   )
 }
 
-function CandidateCard({ candidate }: { candidate: CalibrationCandidate }) {
+function CandidateCard({
+  candidate,
+  onApproveCandidate,
+  onRejectCandidate,
+}: {
+  candidate: CalibrationCandidate
+  onApproveCandidate: (id: string) => void
+  onRejectCandidate: (id: string) => void
+}) {
   const decided = !!candidate.decision
 
   return (
@@ -87,7 +153,7 @@ function CandidateCard({ candidate }: { candidate: CalibrationCandidate }) {
 
       {/* Match criteria */}
       {candidate.match_criteria?.length > 0 && (
-        <div className="px-3 pb-2.5 flex flex-wrap gap-1">
+        <div className="px-3 pb-2 flex flex-wrap gap-1">
           {candidate.match_criteria.map((mc, i) => (
             <span
               key={i}
@@ -99,6 +165,27 @@ function CandidateCard({ candidate }: { candidate: CalibrationCandidate }) {
               {mc.criterion}
             </span>
           ))}
+        </div>
+      )}
+
+      {/* Action buttons — only if not decided */}
+      {!decided && (
+        <div className="flex border-t border-lia-border-subtle">
+          <button
+            onClick={() => onRejectCandidate(candidate.id)}
+            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium text-status-error hover:bg-status-error/5 transition-colors font-['Open_Sans',sans-serif]"
+          >
+            <ThumbsDown className="w-3.5 h-3.5" />
+            Rejeitar
+          </button>
+          <div className="w-px bg-lia-border-subtle" />
+          <button
+            onClick={() => onApproveCandidate(candidate.id)}
+            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium text-status-success hover:bg-status-success/5 transition-colors font-['Open_Sans',sans-serif]"
+          >
+            <ThumbsUp className="w-3.5 h-3.5" />
+            Aprovar
+          </button>
         </div>
       )}
     </div>

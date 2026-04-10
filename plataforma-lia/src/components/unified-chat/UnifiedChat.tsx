@@ -5,13 +5,11 @@ import { cn } from "@/lib/utils"
 import { useLiaFloat, useLiaChatContext } from "@/contexts/lia-float-context"
 import { useAuthStore } from "@/stores/auth-store"
 import { HITLConfirmCard } from "@/components/lia-float/HITLConfirmCard"
-import { DynamicContextPanel } from "@/components/lia-float/panels"
+import { DynamicContextPanel } from "./wizard/DynamicContextPanel"
 import { SwitchTaskModal } from "@/components/lia-float/SwitchTaskModal"
-import { BackgroundAgentsStatus } from "@/components/lia-float/BackgroundAgentsStatus"
-import { BackgroundTaskNotification } from "@/components/lia-float/BackgroundTaskNotification"
-import { FairnessWarningBanner } from "@/components/fairness-warning-banner"
 import { useNavigationIntent } from "@/hooks/use-navigation-intent"
-import { useCvScreening } from "@/hooks/use-cv-screening"
+import { useWizardIntegration } from "./wizard/useWizardIntegration"
+import { ProgressiveDisclosure } from "./wizard/ProgressiveDisclosure"
 import { UnifiedChatHeader } from "./UnifiedChatHeader"
 import { UnifiedChatInput } from "./UnifiedChatInput"
 import { UnifiedChatEmptyState } from "./UnifiedChatEmptyState"
@@ -41,8 +39,6 @@ interface Props {
  * - HITL confirmation cards (all modes)
  * - DynamicContextPanel split view (sidebar expands, fullscreen adds panel)
  * - Auto-scroll, streaming, thinking indicators
- * - Background task notifications
- * - Fairness warning banners
  */
 export function UnifiedChat({ renderMode = "overlay", initialMode, className }: Props) {
   const [mode, setMode] = useState<ChatMode>(initialMode ?? getStoredMode())
@@ -65,7 +61,6 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
 
   const {
     chatMessages,
-    addChatMessage,
     setChatMessages,
     chatConversationId,
     setChatConversationId,
@@ -80,59 +75,30 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
     chatIsThinking,
     chatThinkingSteps,
     chatHitlPending,
-    chatBackgroundTasks,
-    clearBackgroundTask,
-    chatFairnessWarnings,
-    dismissFairnessWarnings,
   } = useLiaChatContext()
 
   const { detect: detectNavIntent } = useNavigationIntent()
-  const { screenCv, isScreening } = useCvScreening()
+
+  // Wire wizard integration (file→wizard, question events, slash commands)
+  const { handleSlashCommand } = useWizardIntegration({
+    isWizardActive: !!dynamicPanel,
+    currentStage: dynamicPanel?.stage ?? null,
+    sendMessage: sendChatMessage,
+  })
 
   // Persist mode preference
   useEffect(() => {
     localStorage.setItem(MODE_STORAGE_KEY, mode)
   }, [mode])
 
-  // F3: Prefill message listener
-  useEffect(() => {
-    const handler = (e: Event) => {
-      const detail = (e as CustomEvent<{ message: string }>).detail
-      if (detail?.message) {
-        setInputText(detail.message)
-      }
-    }
-    window.addEventListener("lia:prefill-message", handler)
-    return () => window.removeEventListener("lia:prefill-message", handler)
-  }, [])
-
-  const handleSend = useCallback(async () => {
+  const handleSend = useCallback(() => {
     const text = inputText.trim()
     if (!text) return
-
-    // If file is attached, screen it via CV upload API
-    if (attachedFile) {
-      const result = await screenCv({
-        file: attachedFile,
-        onProgress: (step) => {
-          addChatMessage({
-            id: "progress-" + Date.now(),
-            sender: "lia",
-            content: step,
-            timestamp: new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
-          })
-        },
-      })
-      if (result.message) {
-        addChatMessage({
-          id: "cv-result-" + Date.now(),
-          sender: "lia",
-          content: result.message,
-          timestamp: new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
-        })
-      }
+    // Intercept slash commands before sending to backend
+    if (text.startsWith("/") && handleSlashCommand(text)) {
+      setInputText("")
+      return
     }
-
     sendChatMessage(text)
     setInputText("")
     setAttachedFile(null)
@@ -146,7 +112,7 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
         }))
       }
     })
-  }, [inputText, sendChatMessage, detectNavIntent, attachedFile, screenCv, addChatMessage])
+  }, [inputText, sendChatMessage, detectNavIntent, handleSlashCommand])
 
   const handleSuggestionClick = useCallback((prompt: string) => {
     setInputText(prompt)
@@ -197,39 +163,12 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
     if (e.target) e.target.value = ""
   }, [])
 
-  // F1: Map background tasks to the simpler BackgroundTask shape
-  const bgTasks = chatBackgroundTasks.map(t => ({
-    id: t.task_id,
-    type: t.task_type,
-    label: t.label,
-    status: t.status,
-    progress: t.progress,
-    message: t.message,
-    result: t.result,
-  }))
-  const completedTasks = bgTasks.filter(t => t.status === "completed" || t.status === "failed")
-  const runningTasks = bgTasks.filter(t => t.status === "running")
-
-  // F1: When viewing a background task result, add it as a LIA message
-  const handleViewTaskResult = useCallback((task: { id: string; result?: Record<string, unknown> }) => {
-    const resultContent = task.result
-      ? JSON.stringify(task.result, null, 2)
-      : "Resultado não disponível."
-    addChatMessage({
-      id: `bg-result-${task.id}-${Date.now()}`,
-      sender: "lia",
-      content: resultContent,
-      timestamp: new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
-    })
-    clearBackgroundTask(task.id)
-  }, [addChatMessage, clearBackgroundTask])
-
   const conversationTitle = chatMessages.find(m => m.sender === "user")?.content?.slice(0, 40) || null
   const hasMessages = chatMessages.length > 0
   const hasDynamicPanel = !!dynamicPanel
 
-  // For overlay mode, don't render if closed (except fullscreen mode which is always visible)
-  if (renderMode === "overlay" && !isOpen && mode !== "fullscreen") return null
+  // For overlay mode, don't render if closed
+  if (renderMode === "overlay" && !isOpen) return null
 
   const isInline = renderMode === "inline"
   const effectiveMode: ChatMode = isInline ? "sidebar" : mode
@@ -244,17 +183,17 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
       className={cn(
         "flex bg-lia-bg-primary transition-[width] duration-200 ease-in-out motion-reduce:transition-none",
         isInline
-          ? `${sidebarWidth} flex-shrink-0 border-r border-lia-border-subtle h-full order-first`
+          ? `${sidebarWidth} flex-shrink-0 border-l border-lia-border-subtle h-full`
           : mode === "fullscreen"
             ? "fixed inset-0 z-50"
-            : "fixed bottom-4 left-20 w-[360px] h-[520px] z-30 rounded-xl border border-lia-border-subtle",
+            : "fixed bottom-4 right-4 w-[360px] h-[520px] z-30 rounded-xl border border-lia-border-subtle",
         className
       )}
       data-chat-mode={effectiveMode}
       data-render-mode={renderMode}
     >
       {/* Chat column */}
-      <div className="flex flex-col flex-1 min-w-0 min-h-0 overflow-hidden">
+      <div className="flex flex-col flex-1 min-w-0">
         {/* Header */}
         <UnifiedChatHeader
           mode={effectiveMode}
@@ -264,8 +203,6 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
           onSwitchTask={() => setShowSwitchTask(true)}
           conversationTitle={conversationTitle}
           isConnected={chatIsConnected}
-          onRename={(newTitle) => { if (chatConversationId) { fetch("/api/backend-proxy/conversations/" + chatConversationId, { method: "PATCH", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify({ title: newTitle }) }) } }}
-          onDelete={() => { if (chatConversationId) { fetch("/api/backend-proxy/conversations/" + chatConversationId, { method: "DELETE", credentials: "include" }).then(() => { handleNewChat() }) } }}
         />
 
         {/* Content area */}
@@ -278,7 +215,6 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
             isThinking={chatIsThinking}
             thinkingSteps={chatThinkingSteps}
             userName={userName}
-            conversationId={chatConversationId}
           />
         ) : (
           <UnifiedChatEmptyState
@@ -287,37 +223,23 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
           />
         )}
 
-        {/* F1: Background task completed notifications — between messages and HITL */}
-        {completedTasks.length > 0 && (
-          <div className="px-4 pb-2 space-y-2">
-            {completedTasks.map(task => (
-              <BackgroundTaskNotification
-                key={task.id}
-                task={task}
-                onDismiss={(taskId) => clearBackgroundTask(taskId)}
-                onViewResult={handleViewTaskResult}
-              />
-            ))}
-          </div>
-        )}
-
         {/* HITL Confirmation — inline above input (all modes) */}
         {chatHitlPending && (
           <div className="px-4 pb-2">
             <HITLConfirmCard
               action={chatHitlPending.action}
               description={chatHitlPending.description}
-              onConfirm={(autoConfirm) => sendApproval(true)}
+              onConfirm={() => sendApproval(true)}
               onCancel={() => sendApproval(false)}
             />
           </div>
         )}
 
-        {/* F2: Fairness warnings — above input */}
-        {chatFairnessWarnings.length > 0 && (
-          <FairnessWarningBanner
-            warnings={chatFairnessWarnings}
-            onDismiss={dismissFairnessWarnings}
+        {/* Progressive disclosure tips (wizard active) */}
+        {hasDynamicPanel && (
+          <ProgressiveDisclosure
+            currentStage={dynamicPanel?.stage ?? null}
+            interactionCount={chatMessages.filter(m => m.sender === "user").length}
           />
         )}
 
@@ -336,20 +258,21 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
           fileInputRef={fileInputRef}
           onFileButtonClick={handleFileButtonClick}
           onFileAttach={handleFileAttach}
-          currentScope="page"
-          onScopeChange={(scope) => { /* Scope toggle: page uses contextPage, universal uses all tools */ }}
         />
-
-        {/* F1: Background agents status — after input */}
-        {runningTasks.length > 0 && (
-          <BackgroundAgentsStatus tasks={runningTasks} />
-        )}
       </div>
 
       {/* Split View: DynamicContextPanel (sidebar + fullscreen) */}
       {hasDynamicPanel && (
         <div className="w-[340px] flex-shrink-0 border-l border-lia-border-subtle overflow-y-auto">
-          <DynamicContextPanel panel={dynamicPanel} />
+          <DynamicContextPanel
+            stage={dynamicPanel?.stage ?? null}
+            data={dynamicPanel?.data ?? {}}
+            requiresApproval={dynamicPanel?.requires_approval ?? false}
+            onApprove={() => sendApproval(true)}
+            onReject={() => sendApproval(false)}
+            onClose={closeDynamicPanel}
+            onUpdate={(updates) => sendChatMessage(JSON.stringify({ type: "wizard_update", updates }))}
+          />
         </div>
       )}
 

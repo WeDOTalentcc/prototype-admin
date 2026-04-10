@@ -1,18 +1,56 @@
 "use client"
 
-import React from "react"
+import React, { Suspense, lazy } from "react"
 import { X } from "lucide-react"
 import type { WizardStage } from "./wizard-types"
 import { STAGE_LABELS } from "./wizard-types"
-import { JdEnrichmentPanel } from "./panels/JdEnrichmentPanel"
-import { CompetencyPanel } from "./panels/CompetencyPanel"
-import { WsiQuestionsPanel } from "./panels/WsiQuestionsPanel"
-import { SalaryPanel } from "./panels/SalaryPanel"
-import { EligibilityPanel } from "./panels/EligibilityPanel"
-import { ReviewPanel } from "./panels/ReviewPanel"
-import { PublishPanel } from "./panels/PublishPanel"
-import { CalibrationPanel } from "./panels/CalibrationPanel"
-import { HandoffPanel } from "./panels/HandoffPanel"
+import { WizardErrorBoundary } from "./WizardErrorBoundary"
+
+// Lazy-load all panels for code splitting
+const IntakePanel = lazy(() =>
+  import("./panels/IntakePanel").then((m) => ({ default: m.IntakePanel }))
+)
+const JdEnrichmentPanel = lazy(() =>
+  import("./panels/JdEnrichmentPanel").then((m) => ({ default: m.JdEnrichmentPanel }))
+)
+const BigFivePanel = lazy(() =>
+  import("./panels/BigFivePanel").then((m) => ({ default: m.BigFivePanel }))
+)
+const SalaryPanel = lazy(() =>
+  import("./panels/SalaryPanel").then((m) => ({ default: m.SalaryPanel }))
+)
+const CompetencyPanel = lazy(() =>
+  import("./panels/CompetencyPanel").then((m) => ({ default: m.CompetencyPanel }))
+)
+const WsiQuestionsPanel = lazy(() =>
+  import("./panels/WsiQuestionsPanel").then((m) => ({ default: m.WsiQuestionsPanel }))
+)
+const EligibilityPanel = lazy(() =>
+  import("./panels/EligibilityPanel").then((m) => ({ default: m.EligibilityPanel }))
+)
+const ReviewPanel = lazy(() =>
+  import("./panels/ReviewPanel").then((m) => ({ default: m.ReviewPanel }))
+)
+const PublishPanel = lazy(() =>
+  import("./panels/PublishPanel").then((m) => ({ default: m.PublishPanel }))
+)
+const CalibrationPanel = lazy(() =>
+  import("./panels/CalibrationPanel").then((m) => ({ default: m.CalibrationPanel }))
+)
+const HandoffPanel = lazy(() =>
+  import("./panels/HandoffPanel").then((m) => ({ default: m.HandoffPanel }))
+)
+const DonePanel = lazy(() =>
+  import("./panels/DonePanel").then((m) => ({ default: m.DonePanel }))
+)
+
+function PanelLoader() {
+  return (
+    <div className="flex items-center justify-center p-8">
+      <div className="w-5 h-5 border-2 border-wedo-cyan border-t-transparent rounded-full animate-spin" />
+    </div>
+  )
+}
 
 interface Props {
   stage: WizardStage | null
@@ -28,7 +66,7 @@ interface Props {
  * DynamicContextPanel — routes to the correct wizard panel based on stage.
  *
  * Renders in the 340px split-view column of UnifiedChat.
- * Design: lia-bg-primary, lia-border-subtle, Open Sans.
+ * All panels are lazy-loaded with Suspense for code splitting.
  */
 export function DynamicContextPanel({
   stage,
@@ -51,16 +89,22 @@ export function DynamicContextPanel({
         {onClose && (
           <button
             onClick={onClose}
-            className="p-1 rounded-md text-lia-text-disabled hover:text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none"
+            className="flex items-center gap-1 px-2 py-1 rounded-md text-xs text-lia-text-disabled hover:text-status-error hover:bg-status-error/5 transition-colors motion-reduce:transition-none font-['Open_Sans',sans-serif]"
+            title="Cancelar criacao"
           >
-            <X className="w-4 h-4" />
+            <X className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Cancelar</span>
           </button>
         )}
       </div>
 
-      {/* Panel content — scrollable */}
+      {/* Panel content — scrollable, with Suspense + ErrorBoundary */}
       <div className="flex-1 overflow-y-auto">
-        {renderPanel(stage, data, requiresApproval, onApprove, onReject, onUpdate)}
+        <WizardErrorBoundary>
+          <Suspense fallback={<PanelLoader />}>
+            {renderPanel(stage, data, requiresApproval, onApprove, onReject, onUpdate)}
+          </Suspense>
+        </WizardErrorBoundary>
       </div>
     </div>
   )
@@ -75,6 +119,8 @@ function renderPanel(
   onUpdate?: (updates: Record<string, unknown>) => void,
 ) {
   switch (stage) {
+    case "intake":
+      return <IntakePanel data={data} onUpdate={onUpdate} />
     case "jd_enrichment":
       return (
         <JdEnrichmentPanel
@@ -84,6 +130,8 @@ function renderPanel(
           onReject={onReject}
         />
       )
+    case "bigfive":
+      return <BigFivePanel data={data} />
     case "salary":
       return <SalaryPanel data={data} onUpdate={onUpdate} />
     case "competency":
@@ -113,6 +161,8 @@ function renderPanel(
       )
     case "handoff":
       return <HandoffPanel data={data} />
+    case "done":
+      return <DonePanel data={data} />
     default:
       return (
         <div className="p-4 text-sm text-lia-text-secondary font-['Open_Sans',sans-serif]">

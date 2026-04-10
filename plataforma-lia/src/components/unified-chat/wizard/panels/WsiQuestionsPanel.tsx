@@ -45,6 +45,9 @@ export function WsiQuestionsPanel({ data, requiresApproval, onApprove, onReject 
   }
 
   const handleRemoveQuestion = (index: number) => {
+    // Enforce minimum question count
+    const minQuestions = mode === "compact" ? 7 : 12
+    if (questions.length <= minQuestions) return
     window.dispatchEvent(new CustomEvent("lia:wizard-remove-question", {
       detail: { index },
     }))
@@ -52,6 +55,8 @@ export function WsiQuestionsPanel({ data, requiresApproval, onApprove, onReject 
 
   const techCount = questions.filter((q) => q.block === "technical").length
   const behavCount = questions.filter((q) => q.block === "behavioral").length
+  const minQuestions = mode === "compact" ? 7 : 12
+  const isAtMinimum = questions.length <= minQuestions
 
   return (
     <div className="flex flex-col">
@@ -59,7 +64,7 @@ export function WsiQuestionsPanel({ data, requiresApproval, onApprove, onReject 
       <div className="px-4 py-3 border-b border-lia-border-subtle">
         <div className="flex items-center gap-3 text-xs font-['Open_Sans',sans-serif]">
           <span className="text-lia-text-secondary">
-            {questions.length} perguntas
+            {questions.length} perguntas {isAtMinimum && `(min: ${minQuestions})`}
           </span>
           <span className="w-px h-3 bg-lia-border-subtle" />
           <span className="text-lia-text-secondary">{techCount} tecnicas</span>

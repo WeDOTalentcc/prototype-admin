@@ -1,6 +1,6 @@
 "use client"
 
-import React from "react"
+import React, { useState, useEffect } from "react"
 import { cn } from "@/lib/utils"
 import { CheckCircle, AlertTriangle, XCircle, Sparkles, Shield } from "lucide-react"
 import type { JdEnrichmentData } from "../wizard-types"
@@ -154,14 +154,10 @@ export function JdEnrichmentPanel({ data, requiresApproval, onApprove, onReject 
           )}
         </div>
       ) : (
-        <div className="px-4 py-8 text-center">
-          <p className="text-sm text-lia-text-secondary font-['Open_Sans',sans-serif]">
-            Enriquecendo JD...
-          </p>
-        </div>
+        <JdLoadingState />
       )}
 
-      {/* HITL Approval footer */}
+      {/* HITL Approval footer — only when enriched and approval needed */}
       {requiresApproval && enriched && (
         <div className="flex-shrink-0 px-4 py-3 border-t border-lia-border-subtle bg-lia-bg-primary flex items-center gap-2">
           <button
@@ -178,6 +174,43 @@ export function JdEnrichmentPanel({ data, requiresApproval, onApprove, onReject 
           </button>
         </div>
       )}
+    </div>
+  )
+}
+
+function JdLoadingState() {
+  const [timedOut, setTimedOut] = useState(false)
+
+  useEffect(() => {
+    const timer = setTimeout(() => setTimedOut(true), 30000)
+    return () => clearTimeout(timer)
+  }, [])
+
+  if (timedOut) {
+    return (
+      <div className="px-4 py-8 text-center space-y-3">
+        <p className="text-sm text-status-warning font-medium font-['Open_Sans',sans-serif]">
+          O enriquecimento esta demorando mais que o esperado.
+        </p>
+        <p className="text-xs text-lia-text-tertiary font-['Open_Sans',sans-serif]">
+          Verifique a conexao ou tente novamente no chat.
+        </p>
+        <button
+          onClick={() => setTimedOut(false)}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-lia-border-subtle text-xs font-medium text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors font-['Open_Sans',sans-serif]"
+        >
+          Aguardar mais
+        </button>
+      </div>
+    )
+  }
+
+  return (
+    <div className="px-4 py-8 text-center space-y-2">
+      <div className="w-5 h-5 mx-auto border-2 border-wedo-cyan border-t-transparent rounded-full animate-spin" />
+      <p className="text-sm text-lia-text-secondary font-['Open_Sans',sans-serif]">
+        Enriquecendo JD...
+      </p>
     </div>
   )
 }

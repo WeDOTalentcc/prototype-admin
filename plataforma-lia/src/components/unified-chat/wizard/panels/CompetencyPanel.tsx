@@ -21,8 +21,17 @@ export function CompetencyPanel({ data, onUpdate }: Props) {
   const distribution = d.distribution
   const tree = d.competency_tree || []
 
-  const techSkills = tree.filter((c) => c.block === "technical")
-  const behavSkills = tree.filter((c) => c.block === "behavioral")
+  // Deduplicate skills by name
+  const dedup = (items: typeof tree) => {
+    const seen = new Set<string>()
+    return items.filter((c) => {
+      if (seen.has(c.skill)) return false
+      seen.add(c.skill)
+      return true
+    })
+  }
+  const techSkills = dedup(tree.filter((c) => c.block === "technical"))
+  const behavSkills = dedup(tree.filter((c) => c.block === "behavioral"))
 
   const handleModeSelect = (m: ScreeningMode) => {
     onUpdate?.({ screening_mode: m })

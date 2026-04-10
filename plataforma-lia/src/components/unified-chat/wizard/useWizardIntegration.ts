@@ -97,17 +97,66 @@ export function useWizardIntegration({
     }
   }, [currentStage])
 
-  // D.1: /commands → wizard
+  // D.1: /commands → wizard (supports cross @mention+/command)
   const handleSlashCommand = useCallback((command: string) => {
-    const cmd = command.toLowerCase().trim()
-    if (cmd === "/criar vaga" || cmd === "/nova vaga") {
+    const cmd = command.trim()
+    const cmdLower = cmd.toLowerCase()
+
+    // Simple commands
+    if (cmdLower === "/criar vaga" || cmdLower === "/nova vaga") {
       sendMessage("Criar nova vaga")
       return true
     }
-    if (cmd === "/ajuda") {
+    if (cmdLower === "/ajuda") {
       sendMessage("/ajuda")
       return true
     }
+    if (cmdLower === "/pipeline") {
+      sendMessage("Mostrar pipeline de vagas abertas")
+      return true
+    }
+    if (cmdLower === "/relatorio") {
+      sendMessage("Gerar relatorio semanal de recrutamento")
+      return true
+    }
+
+    // Cross: /command @mention (e.g., "/buscar @NomeCandidato")
+    const crossMatch = cmd.match(/^\/(\w+)\s+@(.+)$/i)
+    if (crossMatch) {
+      const action = crossMatch[1].toLowerCase()
+      const mention = crossMatch[2].trim()
+
+      if (action === "buscar") {
+        sendMessage(`Buscar candidato: ${mention}`)
+        return true
+      }
+      if (action === "pipeline") {
+        sendMessage(`Pipeline da vaga: ${mention}`)
+        return true
+      }
+      if (action === "relatorio") {
+        sendMessage(`Relatorio da vaga: ${mention}`)
+        return true
+      }
+      if (action === "feedback") {
+        sendMessage(`Enviar feedback para: ${mention}`)
+        return true
+      }
+      if (action === "agendar") {
+        sendMessage(`Agendar entrevista com: ${mention}`)
+        return true
+      }
+      // Unknown cross command — send as-is
+      sendMessage(cmd)
+      return true
+    }
+
+    // /command without match — pass through
+    if (cmdLower.startsWith("/buscar")) {
+      sendMessage(cmd.replace(/^\/buscar\s*/i, "Buscar: "))
+      return true
+    }
+
     return false
   }, [sendMessage])
 

@@ -1,11 +1,12 @@
 "use client"
 
 import React from "react"
-import { CheckCircle, XCircle, ClipboardCheck } from "lucide-react"
+import { CheckCircle, XCircle, ClipboardCheck, Settings } from "lucide-react"
 import type { ReviewData } from "../wizard-types"
 
 interface Props {
   data: Record<string, unknown>
+  onUpdate?: (updates: Record<string, unknown>) => void
 }
 
 const CHECK_LABELS: Record<string, string> = {
@@ -14,11 +15,18 @@ const CHECK_LABELS: Record<string, string> = {
   has_questions: "Perguntas geradas",
   has_seniority: "Senioridade definida",
   quality_score_ok: "Quality score >= 50",
+  has_eligibility: "Elegibilidade configurada",
+  has_salary: "Faixa salarial definida",
 }
 
-export function ReviewPanel({ data }: Props) {
+export function ReviewPanel({ data, onUpdate }: Props) {
   const d = data as unknown as ReviewData
   const readiness = d.readiness || { ready: false, checks: {}, missing: [] }
+  const defaultsApplied = d.defaults_applied || []
+
+  const handleApplyDefaults = () => {
+    onUpdate?.({ action: "apply_defaults" })
+  }
 
   return (
     <div className="px-4 py-3 space-y-3">
@@ -56,6 +64,24 @@ export function ReviewPanel({ data }: Props) {
             Pendencias: {readiness.missing?.join(", ")}
           </p>
         </div>
+      )}
+
+      {/* Applied defaults */}
+      {defaultsApplied.length > 0 && (
+        <div className="text-[10px] text-lia-text-tertiary font-['Open_Sans',sans-serif]">
+          Defaults aplicados: {defaultsApplied.join(", ")}
+        </div>
+      )}
+
+      {/* Apply defaults button */}
+      {!readiness.ready && (
+        <button
+          onClick={handleApplyDefaults}
+          className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-md border border-lia-border-subtle text-xs font-medium text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors font-['Open_Sans',sans-serif]"
+        >
+          <Settings className="w-3.5 h-3.5" />
+          Aplicar defaults da empresa
+        </button>
       )}
     </div>
   )

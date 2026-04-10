@@ -7,11 +7,20 @@ import React, { Suspense, lazy } from "react"
  *
  * Lazy-loads wizard panels to reduce initial bundle size.
  * Only loads a panel when the wizard reaches that stage.
+ *
+ * NOTE: DynamicContextPanel now handles lazy loading internally.
+ * This module is kept for backward compatibility and direct imports.
  */
 
 // Lazy imports for each panel
+const IntakePanel = lazy(() =>
+  import("./panels/IntakePanel").then((m) => ({ default: m.IntakePanel }))
+)
 const JdEnrichmentPanel = lazy(() =>
   import("./panels/JdEnrichmentPanel").then((m) => ({ default: m.JdEnrichmentPanel }))
+)
+const BigFivePanel = lazy(() =>
+  import("./panels/BigFivePanel").then((m) => ({ default: m.BigFivePanel }))
 )
 const CompetencyPanel = lazy(() =>
   import("./panels/CompetencyPanel").then((m) => ({ default: m.CompetencyPanel }))
@@ -37,6 +46,9 @@ const CalibrationPanel = lazy(() =>
 const HandoffPanel = lazy(() =>
   import("./panels/HandoffPanel").then((m) => ({ default: m.HandoffPanel }))
 )
+const DonePanel = lazy(() =>
+  import("./panels/DonePanel").then((m) => ({ default: m.DonePanel }))
+)
 
 function PanelLoader() {
   return (
@@ -47,7 +59,9 @@ function PanelLoader() {
 }
 
 export {
+  IntakePanel,
   JdEnrichmentPanel,
+  BigFivePanel,
   CompetencyPanel,
   WsiQuestionsPanel,
   SalaryPanel,
@@ -56,6 +70,7 @@ export {
   PublishPanel,
   CalibrationPanel,
   HandoffPanel,
+  DonePanel,
   PanelLoader,
   Suspense,
 }

@@ -1,7 +1,7 @@
 "use client"
 
-import React from "react"
-import { Globe, Mail, Phone, MessageCircle, Rocket } from "lucide-react"
+import React, { useState } from "react"
+import { Globe, Mail, Phone, MessageCircle, Rocket, Check, Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { PublishData } from "../wizard-types"
 
@@ -10,32 +10,63 @@ interface Props {
   onUpdate?: (updates: Record<string, unknown>) => void
 }
 
-const PLATFORM_ICONS: Record<string, string> = {
-  linkedin: "LinkedIn",
-  indeed: "Indeed",
-  website: "Website",
-}
+const ALL_PLATFORMS = [
+  { id: "linkedin", label: "LinkedIn" },
+  { id: "indeed", label: "Indeed" },
+  { id: "website", label: "Website" },
+]
 
-export function PublishPanel({ data }: Props) {
+export function PublishPanel({ data, onUpdate }: Props) {
   const d = data as unknown as PublishData
+  const [isPublishing, setIsPublishing] = useState(false)
+  const selectedPlatforms = new Set(d.platforms || [])
+
+  const togglePlatform = (platformId: string) => {
+    const updated = new Set(selectedPlatforms)
+    if (updated.has(platformId)) {
+      updated.delete(platformId)
+    } else {
+      updated.add(platformId)
+    }
+    onUpdate?.({ platforms: Array.from(updated) })
+  }
+
+  const toggleAutoScreen = () => {
+    onUpdate?.({ auto_screen: !d.auto_screen })
+  }
+
+  const handlePublish = () => {
+    setIsPublishing(true)
+    onUpdate?.({ action: "publish" })
+  }
 
   return (
     <div className="px-4 py-3 space-y-4">
-      {/* Platforms */}
+      {/* Platform toggles */}
       <div>
-        <div className="flex items-center gap-1.5 mb-1.5">
+        <div className="flex items-center gap-1.5 mb-2">
           <Globe className="w-4 h-4 text-wedo-cyan" />
           <span className="text-xs font-medium text-lia-text-secondary font-['Open_Sans',sans-serif]">Plataformas</span>
         </div>
-        <div className="flex flex-wrap gap-1.5">
-          {(d.platforms || []).map((p, i) => (
-            <span key={i} className="px-2 py-0.5 rounded bg-wedo-cyan/10 text-wedo-cyan text-xs font-medium font-['Open_Sans',sans-serif]">
-              {PLATFORM_ICONS[p] || p}
-            </span>
-          ))}
-          {(!d.platforms || d.platforms.length === 0) && (
-            <span className="text-xs text-lia-text-tertiary font-['Open_Sans',sans-serif]">Nenhuma selecionada</span>
-          )}
+        <div className="space-y-1.5">
+          {ALL_PLATFORMS.map((p) => {
+            const selected = selectedPlatforms.has(p.id)
+            return (
+              <button
+                key={p.id}
+                onClick={() => togglePlatform(p.id)}
+                className={cn(
+                  "w-full flex items-center justify-between px-3 py-2 rounded-md border text-sm transition-colors font-['Open_Sans',sans-serif]",
+                  selected
+                    ? "border-wedo-cyan bg-wedo-cyan/5 text-wedo-cyan"
+                    : "border-lia-border-subtle text-lia-text-secondary hover:bg-lia-bg-secondary"
+                )}
+              >
+                <span>{p.label}</span>
+                {selected && <Check className="w-4 h-4" />}
+              </button>
+            )
+          })}
         </div>
       </div>
 
@@ -63,7 +94,10 @@ export function PublishPanel({ data }: Props) {
       )}
 
       {/* Auto-screen toggle */}
-      <div className="flex items-center justify-between p-2.5 rounded-md bg-lia-bg-secondary border border-lia-border-subtle">
+      <button
+        onClick={toggleAutoScreen}
+        className="w-full flex items-center justify-between p-2.5 rounded-md bg-lia-bg-secondary border border-lia-border-subtle hover:bg-lia-interactive-hover transition-colors"
+      >
         <span className="text-xs text-lia-text-primary font-['Open_Sans',sans-serif]">Auto-screening</span>
         <span className={cn(
           "text-xs font-medium font-['Open_Sans',sans-serif]",
@@ -71,13 +105,48 @@ export function PublishPanel({ data }: Props) {
         )}>
           {d.auto_screen ? "Ativo" : "Inativo"}
         </span>
-      </div>
+      </button>
 
       {/* Share link */}
       {d.share_link && (
         <div className="p-2.5 rounded-md bg-wedo-cyan/5 border border-wedo-cyan/20">
           <p className="text-xs text-wedo-cyan font-medium font-['Open_Sans',sans-serif] mb-1">Link de compartilhamento</p>
           <p className="text-xs text-lia-text-primary font-['Open_Sans',sans-serif] break-all">{d.share_link}</p>
+        </div>
+      )}
+
+      {/* Publish button */}
+      {!d.job_id && (
+        <button
+          onClick={handlePublish}
+          disabled={isPublishing || selectedPlatforms.size === 0}
+          className={cn(
+            "w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-semibold transition-colors font-['Open_Sans',sans-serif]",
+            isPublishing || selectedPlatforms.size === 0
+              ? "bg-lia-bg-tertiary text-lia-text-disabled cursor-not-allowed"
+              : "bg-wedo-cyan text-white hover:bg-wedo-cyan/90"
+          )}
+        >
+          {isPublishing ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin" />
+              Publicando...
+            </>
+          ) : (
+            <>
+              <Rocket className="w-4 h-4" />
+              Publicar Vaga
+            </>
+          )}
+        </button>
+      )}
+
+      {/* Published success */}
+      {d.job_id && (
+        <div className="p-3 rounded-lg bg-status-success/5 border border-status-success/20 text-center">
+          <Check className="w-5 h-5 text-status-success mx-auto mb-1" />
+          <p className="text-sm font-medium text-status-success font-['Open_Sans',sans-serif]">Vaga publicada!</p>
+          <p className="text-xs text-lia-text-secondary font-['Open_Sans',sans-serif] mt-0.5">ID: {d.job_id}</p>
         </div>
       )}
     </div>
