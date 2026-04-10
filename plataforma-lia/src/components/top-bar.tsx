@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useCallback } from "react"
 import { useAuth } from "@/contexts/auth-context"
 import { Button } from "@/components/ui/button"
 import {
@@ -33,6 +33,9 @@ import {
   X
 } from "lucide-react"
 import { NotificationSystem } from "@/components/notification-system"
+import { WeeklyDigestOverlay } from "@/components/notifications/weekly-digest-overlay"
+import { useWeeklyDigest } from "@/hooks/use-weekly-digest"
+import type { Notification as AppNotification } from "@/hooks/use-notifications"
 
 interface TopBarProps {
   onNavigate?: (page: string) => void
@@ -52,6 +55,17 @@ export function TopBar({ onNavigate, currentPage }: TopBarProps = {}) {
 
   // User data from auth context
   const { user: authUser } = useAuth()
+
+  const weeklyDigest = useWeeklyDigest({ enabled: true, triggerOnMonday: true, userId: authUser?.email })
+
+  const handleNotificationClick = useCallback((notification: AppNotification) => {
+    if (
+      notification.proactive_type === 'weekly_digest' ||
+      (notification.category === 'system' && notification.title?.toLowerCase().includes('resumo semanal'))
+    ) {
+      weeklyDigest.reload()
+    }
+  }, [weeklyDigest])
 
   const roleLabels: Record<string, string> = {
     admin: "Administrador(a)",
@@ -112,6 +126,14 @@ export function TopBar({ onNavigate, currentPage }: TopBarProps = {}) {
 
   return (
     <div className="px-2 py-3">
+      {weeklyDigest.isVisible && weeklyDigest.digest && (
+        <WeeklyDigestOverlay
+          digest={weeklyDigest.digest}
+          recruiterName={authUser?.name?.split(' ')[0]}
+          onDismiss={weeklyDigest.dismiss}
+        />
+      )}
+
       <div className="flex items-center justify-between">
         {/* Empty left side */}
         <div className="flex-1" />
@@ -119,7 +141,7 @@ export function TopBar({ onNavigate, currentPage }: TopBarProps = {}) {
         {/* Right Side - Notifications, Workspace */}
         <div className="flex items-center space-x-1.5">
           {/* Notifications */}
-          <NotificationSystem userId="default_user" />
+          <NotificationSystem userId={authUser?.email || "default_user"} onNotificationClick={handleNotificationClick} />
 
           {/* User Menu with Avatar */}
           <DropdownMenu>
