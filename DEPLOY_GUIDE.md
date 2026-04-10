@@ -1974,7 +1974,7 @@ Requisição do usuário
         │
         ▼
 ┌───────────────────────┐
-│  FastAPI Router       │  ← 362 endpoints (REST + WebSocket)
+│  FastAPI Router       │  ← 362+ endpoints (REST + WebSocket)
 │  (Port 8001)          │     organizados em 56 domínios
 └────────┬──────────────┘
          │
@@ -3280,10 +3280,10 @@ NÃO NECESSÁRIO:
 | Dimensão | Replit: `lia-agent-system` | wedocc2026: `ats_api` + `recruiter_agent_v5` |
 |----------|--------------------------|----------------------------------------------|
 | **Framework** | FastAPI 0.115.5 (Python 3.11+) | Rails 7.1 (Ruby) + FastAPI/Flask (Python) |
-| **Endpoints** | 362 (REST + WebSocket) | ~30 Rails routes + deploy docs mencionam endpoints |
+| **Endpoints** | 362+ (REST + WebSocket) | ~30 Rails routes + deploy docs mencionam endpoints |
 | **Domínios** | 57 diretórios de domínio em DDD | 8 domínios no v5 (applies, autonomous, evaluation, insights, jobs, messaging, scheduling, sourcing) |
 | **Models** | 217 SQLAlchemy (109 libs + 108 app) | 18 Rails models (Account, User, Job, Candidate, Apply, etc.) |
-| **Migrations** | 59 Alembic | 20 Rails migrations |
+| **Migrations** | 60 Alembic | 20 Rails migrations |
 | **Multi-tenant** | PostgreSQL RLS (`app.company_id`) + JWT + WorkOS SSO/SCIM | Apartment gem (schema-based) — elevator **comentado** |
 | **Auth** | JWT HS256 (30min access, 7d refresh) + WorkOS SSO + Cross-Tenant Guard + Prompt Injection Guard | JWT HS256 (24h token) — `authorize_request` duplicado |
 | **Search** | pgvector (768-dim HNSW/IVFFlat) | Elasticsearch via Searchkick |
@@ -3297,7 +3297,7 @@ NÃO NECESSÁRIO:
 | **SSL** | Strip de `sslmode=` — precisa config manual | `sslmode: require` em production (OK) |
 
 **Observações:**
-- `lia-agent-system` é 10x maior que `ats_api` em models (217 vs 18) e endpoints (362 vs ~30)
+- `lia-agent-system` é 10x maior que `ats_api` em models (217 vs 18) e endpoints (362+ vs ~30)
 - Multi-tenant no Replit é mais robusto (RLS + JWT guard + WorkOS), mas o Apartment do Rails é mais maduro em isolamento de schema
 - `recruiter_agent_v5` tem 912 arquivos de código Python mas **sem CI/CD** e **100% Gemini** (vendor lock-in crítico)
 - A Rails bridge (`ats_api`) está ativa — o Replit backend conecta a ele via `rails_adapter.py`
