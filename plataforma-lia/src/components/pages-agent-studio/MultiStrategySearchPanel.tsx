@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-expressions */
 "use client"
 
 import React, { useState } from "react"
