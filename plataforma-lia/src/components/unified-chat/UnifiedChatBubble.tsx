@@ -20,19 +20,21 @@ export function UnifiedChatBubble({ onOpen }: Props) {
     <button
       onClick={onOpen}
       className={cn(
-        "fixed bottom-6 left-20 z-30",
-        "w-12 h-12 rounded-full",
-        "bg-lia-bg-primary border border-lia-border-subtle",
+        "fixed bottom-6 left-6 z-50",
+        "w-14 h-14 rounded-full",
+        "bg-transparent",
         "flex items-center justify-center",
-        "hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none",
+        "transition-transform motion-reduce:transition-none",
+        "hover:scale-110",
+        "focus-visible:outline-none",
         "group"
       )}
       title="Abrir LIA (⌘⇧K)"
       aria-label="Abrir chat com a LIA"
     >
       <Brain
-        className="w-5 h-5 text-wedo-cyan group-hover:scale-110 transition-transform motion-reduce:transition-none"
-        strokeWidth={1.5}
+        className="w-9 h-9 text-wedo-cyan drop-shadow-lia-md group-hover:drop-shadow-lia-lg transition-all motion-reduce:transition-none"
+        strokeWidth={2}
       />
 
       {/* Connection dot */}
