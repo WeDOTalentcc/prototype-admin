@@ -218,6 +218,8 @@ from app.api.v1.voice_screening import router as voice_screening_router
 from app.api.v1.audit_timeline import router as audit_timeline_router
 from app.api.v1.candidate_compare import router as candidate_compare_router
 from app.api.v1.company_retention import router as company_retention_router
+from app.api.v1.onboarding import router as onboarding_router
+from app.api.v1.whatsapp_webhook import router as whatsapp_webhook_router
 from app.api.v1.cultural_fit import router as cultural_fit_router
 from app.api.v1.email_tracking import communication_webhook_router
 from app.api.v1.email_tracking import router as email_tracking_router
@@ -562,6 +564,8 @@ def register_all_routes(app: FastAPI) -> None:
     app.include_router(multi_strategy_router, prefix="/api/v1", tags=["multi-strategy"])
     app.include_router(digital_twins_router, prefix="/api/v1", tags=["digital-twins"])
     app.include_router(voice_screening_router, prefix="/api/v1", tags=["voice-screening"])
+    app.include_router(onboarding_router, tags=["onboarding"])
+    app.include_router(whatsapp_webhook_router, tags=["whatsapp"])
 
     # ── Public (no /api/v1 prefix) ────────────────────────────────────────────
     app.include_router(candidate_portal.router, tags=["candidate-portal"])
