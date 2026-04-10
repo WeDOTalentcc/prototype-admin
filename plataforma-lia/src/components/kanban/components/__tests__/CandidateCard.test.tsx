@@ -68,7 +68,6 @@ vi.mock('../../utils/badge-utils', () => ({
 }))
 
 vi.mock('lucide-react', () => {
-  // eslint-disable-next-line react/display-name
   const icon = (name: string) => {
     const IconComponent = () => <span data-testid={`icon-${name}`} />
     IconComponent.displayName = name
