@@ -1,7 +1,7 @@
 "use client"
 
 import { useCallback, useEffect } from "react"
-import type { WizardStagePayload } from "./wizard-types"
+// Types imported as needed by consumers
 
 /**
  * useWizardIntegration — Phase D.1 Cross-feature integration.
@@ -19,14 +19,18 @@ interface Props {
   isWizardActive: boolean
   currentStage: string | null
   sendMessage: (text: string) => void
-  onWizardStage?: (payload: WizardStagePayload) => void
+}
+
+// Type-safe custom event helper
+function onCustomEvent(name: string, handler: (e: CustomEvent) => void) {
+  window.addEventListener(name, handler as EventListener)
+  return () => window.removeEventListener(name, handler as EventListener)
 }
 
 export function useWizardIntegration({
   isWizardActive,
   currentStage,
   sendMessage,
-  onWizardStage,
 }: Props) {
 
   // D.1: File upload → wizard intake
@@ -47,12 +51,9 @@ export function useWizardIntegration({
       }
     }
 
-    window.addEventListener("lia:file-upload-confirmed" as any, handleFileConfirmed)
-    window.addEventListener("lia:file-upload-cv" as any, handleFileUpload)
-    return () => {
-      window.removeEventListener("lia:file-upload-confirmed" as any, handleFileConfirmed)
-      window.removeEventListener("lia:file-upload-cv" as any, handleFileUpload)
-    }
+    const cleanupConfirmed = onCustomEvent("lia:file-upload-confirmed", handleFileConfirmed)
+    const cleanupCv = onCustomEvent("lia:file-upload-cv", handleFileUpload)
+    return () => { cleanupConfirmed(); cleanupCv() }
   }, [sendMessage])
 
   // D.1: Wizard question edit/regenerate/remove + calibration events
@@ -86,14 +87,10 @@ export function useWizardIntegration({
       sendMessage(`Remover pergunta ${(index || 0) + 1}`)
     }
 
-    window.addEventListener("lia:wizard-edit-question" as any, handleEditQuestion)
-    window.addEventListener("lia:wizard-regenerate-question" as any, handleRegenerateQuestion)
-    window.addEventListener("lia:wizard-remove-question" as any, handleRemoveQuestion)
-    return () => {
-      window.removeEventListener("lia:wizard-edit-question" as any, handleEditQuestion)
-      window.removeEventListener("lia:wizard-regenerate-question" as any, handleRegenerateQuestion)
-      window.removeEventListener("lia:wizard-remove-question" as any, handleRemoveQuestion)
-    }
+    const c1 = onCustomEvent("lia:wizard-edit-question", handleEditQuestion)
+    const c2 = onCustomEvent("lia:wizard-regenerate-question", handleRegenerateQuestion)
+    const c3 = onCustomEvent("lia:wizard-remove-question", handleRemoveQuestion)
+    return () => { c1(); c2(); c3() }
   }, [isWizardActive, sendMessage])
 
   // Prefill message listener (used by DonePanel "Criar outra vaga")
@@ -104,10 +101,7 @@ export function useWizardIntegration({
         sendMessage(message)
       }
     }
-    window.addEventListener("lia:prefill-message" as any, handlePrefill)
-    return () => {
-      window.removeEventListener("lia:prefill-message" as any, handlePrefill)
-    }
+    return onCustomEvent("lia:prefill-message", handlePrefill)
   }, [sendMessage])
 
   // D.1: Handoff auto-navigation

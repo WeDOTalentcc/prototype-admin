@@ -89,7 +89,7 @@ export function WsiQuestionsPanel({ data, requiresApproval, onApprove, onReject 
             onToggle={() => setExpandedId(expandedId === idx ? null : idx)}
             onEdit={handleEditQuestion}
             onRegenerate={handleRegenerateQuestion}
-            onRemove={handleRemoveQuestion}
+            onRemove={isAtMinimum ? undefined : handleRemoveQuestion}
           />
         ))}
       </div>
@@ -214,7 +214,9 @@ function QuestionCard({
             </button>
             <button
               onClick={() => onRemove?.(index)}
-              className="flex items-center gap-1 px-2 py-1 rounded text-[10px] font-medium text-status-error hover:bg-status-error/10 transition-colors motion-reduce:transition-none font-['Open_Sans',sans-serif]"
+              disabled={!onRemove}
+              className="flex items-center gap-1 px-2 py-1 rounded text-[10px] font-medium transition-colors motion-reduce:transition-none font-['Open_Sans',sans-serif] disabled:opacity-30 disabled:cursor-not-allowed text-status-error hover:bg-status-error/10 disabled:hover:bg-transparent"
+              aria-label={`Remover pergunta ${index + 1}`}
             >
               <Trash2 className="w-3 h-3" />
               Remover
