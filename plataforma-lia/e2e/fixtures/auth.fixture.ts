@@ -1,5 +1,9 @@
 import { test as base, expect, Page } from '@playwright/test';
 
+const AUTH_DOMAIN = process.env.PLAYWRIGHT_BASE_URL
+  ? new URL(process.env.PLAYWRIGHT_BASE_URL).hostname
+  : 'localhost';
+
 export interface AuthFixture {
   authenticatedPage: Page;
   login: (email?: string, password?: string) => Promise<void>;
@@ -11,13 +15,13 @@ export const test = base.extend<AuthFixture>({
       {
         name: 'lia_access_token',
         value: 'e2e-test-token',
-        domain: 'localhost',
+        domain: AUTH_DOMAIN,
         path: '/',
       },
       {
         name: 'lia_auth_method',
         value: 'jwt',
-        domain: 'localhost',
+        domain: AUTH_DOMAIN,
         path: '/',
       },
     ]);
@@ -33,13 +37,13 @@ export const test = base.extend<AuthFixture>({
         {
           name: 'lia_access_token',
           value: 'e2e-test-token',
-          domain: 'localhost',
+          domain: AUTH_DOMAIN,
           path: '/',
         },
         {
           name: 'lia_auth_method',
           value: 'jwt',
-          domain: 'localhost',
+          domain: AUTH_DOMAIN,
           path: '/',
         },
       ]);
