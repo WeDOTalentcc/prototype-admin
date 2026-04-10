@@ -18,6 +18,7 @@ export async function POST(
   { params: pRaw }: { params: Promise<{ listId: string }> }
 ) {
   try {
+    const { listId } = await pRaw
     const { searchParams } = new URL(request.url)
     const queryString = searchParams.toString()
     const bodyResult = await validateBody(request, _bodySchema)

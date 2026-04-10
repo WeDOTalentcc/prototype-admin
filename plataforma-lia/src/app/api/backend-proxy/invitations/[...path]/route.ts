@@ -10,8 +10,8 @@ export async function GET(
   { params: pRaw }: { params: Promise<{ path: string[] }> }
 ) {
   try {
-    const pathSegments = path || []
-    const path = pathSegments.join('/')
+    const { path: pathSegments } = await pRaw
+    const path = (pathSegments || []).join('/')
     const { searchParams } = new URL(request.url)
     const queryString = searchParams.toString()
     
@@ -52,8 +52,8 @@ export async function POST(
   { params: pRaw }: { params: Promise<{ path: string[] }> }
 ) {
   try {
-    const pathSegments = path || []
-    const path = pathSegments.join('/')
+    const { path: pathSegments } = await pRaw
+    const path = (pathSegments || []).join('/')
     const bodyResult = await validateBody(request, _bodySchema)
 
     if (!bodyResult.success) return bodyResult.response
