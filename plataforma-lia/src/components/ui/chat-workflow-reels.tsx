@@ -544,7 +544,7 @@ export function ChatWorkflowReels({
 
         <div
           ref={scrollRef}
-          className="overflow-x-auto scrollbar-none pb-1"
+          className="overflow-x-auto overflow-y-visible scrollbar-none pb-1"
           style={{
             scrollbarWidth: "none",
             msOverflowStyle: "none",
@@ -554,7 +554,7 @@ export function ChatWorkflowReels({
           onMouseLeave={handleMouseLeave}
           onMouseDown={onMouseDown}
         >
-          <div className="flex items-end gap-0 min-w-max px-1 py-2">
+          <div className="flex items-end gap-0 min-w-max px-1 pt-4 pb-2">
             {stages.map((stage, idx) => {
               const currentIndex = nodeIndex++
               return (

@@ -155,7 +155,7 @@ export function UnifiedChatHeader({
         {/* New chat */}
         <button
           onClick={onNewChat}
-          className="p-1.5 rounded-md text-lia-text-disabled hover:text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none"
+          className="p-1.5 rounded-md text-lia-border-strong hover:text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none"
           title="Nova conversa"
           aria-label="Nova conversa"
         >
@@ -166,7 +166,7 @@ export function UnifiedChatHeader({
         {onSwitchTask && (
           <button
             onClick={onSwitchTask}
-            className="p-1.5 rounded-md text-lia-text-disabled hover:text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none"
+            className="p-1.5 rounded-md text-lia-border-strong hover:text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none"
             title="Trocar conversa (⌘K)"
             aria-label="Trocar conversa"
           >
@@ -178,7 +178,7 @@ export function UnifiedChatHeader({
         <div className="relative">
           <button
             onClick={() => setShowModeMenu(!showModeMenu)}
-            className="p-1.5 rounded-md text-lia-text-disabled hover:text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none"
+            className="p-1.5 rounded-md text-lia-border-strong hover:text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none"
             title="Mudar modo de exibição"
             aria-label="Modo de exibição"
           >
@@ -222,7 +222,7 @@ export function UnifiedChatHeader({
         {mode !== "fullscreen" && (
           <button
             onClick={onClose}
-            className="p-1.5 rounded-md text-lia-text-disabled hover:text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none"
+            className="p-1.5 rounded-md text-lia-border-strong hover:text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none"
             title="Fechar"
             aria-label="Fechar chat"
           >
@@ -234,7 +234,7 @@ export function UnifiedChatHeader({
         <div className="relative">
           <button
             onClick={() => setShowOptionsMenu(!showOptionsMenu)}
-            className="p-1.5 rounded-md text-lia-text-disabled hover:text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none"
+            className="p-1.5 rounded-md text-lia-border-strong hover:text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none"
             title="Opções"
             aria-label="Opções da conversa"
           >
