@@ -1391,7 +1391,7 @@ Quando um bug reportado pelo cliente é corrigido, ou uma feature sugerida é en
 - [x] Twilio credenciais configuradas (TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN em Secrets; TWILIO_PHONE_NUMBER=+551150289337 em env var)
 - [ ] GitHub Actions configurado nos dois repositórios
 - [ ] Testes E2E passando no staging
-- [ ] Sentry configurado e recebendo eventos de teste
+- [x] Sentry configurado e recebendo eventos — org `talensesgroup-wedotalent` ativo, 4 issues rastreadas
 - [ ] Bot Teams funcionando com Tenant ID correto (`bd25f438-...`)
 
 ### Infraestrutura (time infra)
@@ -2404,7 +2404,7 @@ OPÇÃO C (status quo — sem Rails):
 FastAPI/Alembic owns: TUDO — todas as tabelas ativas existem via Alembic.
               → Migrations via `alembic upgrade head`
               → FastAPI é a fonte de verdade para todos os domínios
-              → 59 migrações aplicadas, banco completo
+              → 60 migrações aplicadas, banco completo
 
 Rails owns (opt-in futuro): apenas tabelas com dados legados de clientes reais.
               → Migrations via `rails db:migrate` (ActiveRecord)
@@ -2660,7 +2660,7 @@ Configurações obrigatórias no WorkOS dashboard:
 - [ ] Twilio WhatsApp: completar registro Meta Business Suite → configurar `TWILIO_WHATSAPP_NUMBER`
 - [ ] Microsoft Teams: webhook URL de prod registrado no Azure
 - [ ] Resend: `RESEND_API_KEY` no Secret Manager
-- [ ] Sentry: projetos criados (frontend + backend), DSNs configurados
+- [x] Sentry: ativo em dev (org `talensesgroup-wedotalent`, 4 issues rastreadas) — configurar DSN prod no Secret Manager
 - [ ] WhatsApp Meta: (se pronto) credenciais de prod
 
 ### Validação funcional (time completo)
@@ -3124,7 +3124,7 @@ Quando Rails passar a servir um domínio com dados legados, o código FastAPI eq
 
 | Componente | Status | Detalhes |
 |---|---|---|
-| **PostgreSQL** | 🟢 **Obrigatório** | Banco de dados principal. Alembic roda 59 migrações. Cloud SQL no GCP. |
+| **PostgreSQL** | 🟢 **Obrigatório** | Banco de dados principal. Alembic roda 60 migrações. Cloud SQL no GCP. |
 | **pgvector** | 🟢 **Obrigatório** | Extensão PostgreSQL para embeddings semânticos. Habilitar no Cloud SQL. |
 | **Redis** | 🟡 **Recomendado** | Cache, token budget, HITL, Celery results. Sem Redis: Celery usa backend alternativo, HITL pode ter problemas. Cloud Memorystore no GCP. |
 | **Celery workers** | 🟡 **Recomendado** | Background jobs (12+ tasks). Sem Celery: operações assíncronas ficam pendentes. Segundo Cloud Run service. |
@@ -3208,7 +3208,7 @@ NÃO NECESSÁRIO:
 | Componente | Stack | Arquivos | Métricas-Chave |
 |-----------|-------|----------|---------------|
 | **plataforma-lia** (frontend) | Next.js 15, React 19, Tailwind, Shadcn/Radix, Zustand, SWR | 2.090 em `src/` | 32 páginas, 1.201 componentes, 152 hooks, 35 services, 20 stores |
-| **lia-agent-system** (backend) | Python 3.11+, FastAPI 0.115.5, SQLAlchemy 2.0.36, LangGraph 0.2.53, Celery 5.4.0 | 1.820 `.py` em `app/` + 169 em `libs/` | 362 endpoints, 57 domínios, 217 models, 59 migrations, 388 test files |
+| **lia-agent-system** (backend) | Python 3.11+, FastAPI 0.115.5, SQLAlchemy 2.0.36, LangGraph 0.2.53, Celery 5.4.0 | 1.820 `.py` em `app/` + 169 em `libs/` | 362+ endpoints, 57 domínios, 217 models, 60 migrations, 388 test files |
 
 **Total Replit:** ~4.079 arquivos de código (excl. node_modules, __pycache__)
 
