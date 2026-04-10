@@ -185,7 +185,7 @@ export function CandidatePreview({
         </div>
       </TooltipProvider>
 
-      {(jobId || c.vacancy_id || c.vacancy_candidate_id) && (
+      {!!(jobId || c.vacancy_id || c.vacancy_candidate_id) && (
         <PipelineDecisionBar
           candidate={c}
           jobId={jobId}
