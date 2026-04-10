@@ -547,10 +547,9 @@ export function JobPublishModal({
                             <span className="text-xs font-medium text-lia-text-primary truncate">{channel.name}</span>
                           </div>
                           {!channel.connected && channel.notConfiguredMessage && (
-                            <Info
-                              className="w-3.5 h-3.5 text-lia-text-secondary flex-shrink-0 ml-auto"
-                              title="Clique para saber como configurar"
-                            />
+                            <span title="Clique para saber como configurar">
+                              <Info className="w-3.5 h-3.5 text-lia-text-secondary flex-shrink-0 ml-auto" />
+                            </span>
                           )}
                           {!channel.connected && !channel.notConfiguredMessage && (
                             <a

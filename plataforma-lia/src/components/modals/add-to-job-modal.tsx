@@ -156,14 +156,6 @@ const [jobs, setJobs] = useState<JobDisplay[]>([])
     }
   }, [open])
 
-  useEffect(() => {
-    if (selectedJobId) {
-      checkDuplicates(selectedJobId)
-    } else {
-      setDuplicateIds([])
-    }
-  }, [selectedJobId, candidateIds, checkDuplicates])
-
   const checkDuplicates = useCallback(async (jobId: string) => {
     try {
       const job = jobs.find(j => j.id === jobId)
@@ -191,6 +183,15 @@ const [jobs, setJobs] = useState<JobDisplay[]>([])
       setDuplicateIds([])
     }
   }, [jobs, effectiveCandidateIds, setDuplicateIds])
+
+  useEffect(() => {
+    if (selectedJobId) {
+      checkDuplicates(selectedJobId)
+    } else {
+      setDuplicateIds([])
+    }
+  }, [selectedJobId, candidateIds, checkDuplicates])
+
   const loadJobs = async () => {
     setIsLoading(true)
     try {
