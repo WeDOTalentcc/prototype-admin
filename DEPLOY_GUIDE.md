@@ -2660,6 +2660,9 @@ Configurações obrigatórias no WorkOS dashboard:
 
 ### Validação funcional (time completo)
 
+> **Plano detalhado:** ver `VALIDATION_PLAN.md` para checklist completo com 50+ smoke tests,
+> critérios go/no-go, runbook de rollback, e testes de isolamento multi-tenant.
+
 - [ ] Login Google SSO (via WorkOS)
 - [ ] Login Microsoft SSO (via WorkOS)
 - [ ] Criação de vaga

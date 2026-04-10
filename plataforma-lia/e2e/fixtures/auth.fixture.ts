@@ -1,8 +1,13 @@
 import { test as base, expect, Page } from '@playwright/test';
 
-const AUTH_DOMAIN = process.env.PLAYWRIGHT_BASE_URL
-  ? new URL(process.env.PLAYWRIGHT_BASE_URL).hostname
-  : 'localhost';
+let AUTH_DOMAIN = 'localhost';
+try {
+  if (process.env.PLAYWRIGHT_BASE_URL) {
+    AUTH_DOMAIN = new URL(process.env.PLAYWRIGHT_BASE_URL).hostname;
+  }
+} catch {
+  console.warn(`Invalid PLAYWRIGHT_BASE_URL: "${process.env.PLAYWRIGHT_BASE_URL}", falling back to localhost`);
+}
 
 export interface AuthFixture {
   authenticatedPage: Page;
