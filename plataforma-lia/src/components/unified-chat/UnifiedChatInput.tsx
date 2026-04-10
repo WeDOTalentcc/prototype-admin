@@ -5,6 +5,10 @@ import { Send, Plus, Loader2, SlidersHorizontal, Paperclip, FileText, XCircle, A
 import { cn } from "@/lib/utils"
 import { AudioRecordButton } from "@/components/ui/audio-record-button"
 import type { ChatMode } from "./unified-chat-types"
+import { useMentionAutocomplete } from "./useMentionAutocomplete"
+import { useSlashCommands } from "./useSlashCommands"
+import { MentionDropdown } from "./MentionDropdown"
+import { SlashCommandDropdown } from "./SlashCommandDropdown"
 
 interface Props {
   mode: ChatMode
@@ -44,7 +48,84 @@ export function UnifiedChatInput({
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const [showPlusMenu, setShowPlusMenu] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
+  const [cursorPosition, setCursorPosition] = useState(0)
   const isBusy = isStreaming || isCreating
+
+  // --- Mention autocomplete ---
+  const mention = useMentionAutocomplete({
+    inputText,
+    selectionStart: cursorPosition,
+    onInsertMention: useCallback((triggerStart: number, mentionToken: string) => {
+      setInputText(prev => {
+        const before = prev.slice(0, triggerStart)
+        const after = prev.slice(cursorPosition)
+        return before + mentionToken + " " + after
+      })
+      // Move cursor after the inserted mention
+      setTimeout(() => {
+        const el = textareaRef.current
+        if (el) {
+          const newPos = triggerStart + mentionToken.length + 1
+          el.selectionStart = newPos
+          el.selectionEnd = newPos
+          setCursorPosition(newPos)
+        }
+      }, 0)
+    }, [setInputText, cursorPosition]),
+  })
+
+  // --- Slash commands ---
+  const slash = useSlashCommands({
+    inputText,
+    selectionStart: cursorPosition,
+    onExecuteCommand: useCallback((commandId: string) => {
+      if (commandId === "nova-conversa") {
+        setInputText("")
+        // Could dispatch a "new conversation" event here
+      }
+    }, [setInputText]),
+    onPrefillInput: useCallback((text: string) => {
+      setInputText(text)
+      setTimeout(() => {
+        const el = textareaRef.current
+        if (el) {
+          el.selectionStart = text.length
+          el.selectionEnd = text.length
+          setCursorPosition(text.length)
+          el.focus()
+        }
+      }, 0)
+    }, [setInputText]),
+  })
+
+  // Close other dropdowns when one opens (mutex)
+  useEffect(() => {
+    if (mention.isOpen) {
+      setShowPlusMenu(false)
+      setShowSettings(false)
+    }
+  }, [mention.isOpen])
+
+  useEffect(() => {
+    if (slash.isOpen) {
+      setShowPlusMenu(false)
+      setShowSettings(false)
+    }
+  }, [slash.isOpen])
+
+  useEffect(() => {
+    if (showPlusMenu) {
+      mention.close()
+      slash.close()
+    }
+  }, [showPlusMenu])
+
+  useEffect(() => {
+    if (showSettings) {
+      mention.close()
+      slash.close()
+    }
+  }, [showSettings])
 
   // Auto-resize textarea
   const adjustHeight = useCallback(() => {
@@ -60,11 +141,25 @@ export function UnifiedChatInput({
   }, [inputText, adjustHeight])
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    // Delegate to mention dropdown first
+    if (mention.isOpen && mention.handleKeyDown(e)) return
+    // Then slash commands
+    if (slash.isOpen && slash.handleKeyDown(e)) return
+
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault()
       if (!isDisabled && inputText.trim()) onSend()
     }
-  }, [isDisabled, inputText, onSend])
+  }, [mention, slash, isDisabled, inputText, onSend])
+
+  const handleChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setInputText(e.target.value)
+    setCursorPosition(e.target.selectionStart ?? 0)
+  }, [setInputText])
+
+  const handleSelect = useCallback((e: React.SyntheticEvent<HTMLTextAreaElement>) => {
+    setCursorPosition((e.target as HTMLTextAreaElement).selectionStart ?? 0)
+  }, [])
 
   const canSend = !isDisabled && !isBusy && inputText.trim().length > 0
   const showContext = contextPage && contextPage !== "Chat LIA"
@@ -93,7 +188,7 @@ export function UnifiedChatInput({
 
       {/* Input container */}
       <div className={cn(
-        "rounded-xl border bg-lia-bg-primary transition-colors motion-reduce:transition-none",
+        "relative rounded-xl border bg-lia-bg-primary transition-colors motion-reduce:transition-none",
         "focus-within:border-wedo-cyan focus-within:ring-1 focus-within:ring-wedo-cyan/30",
         "border-lia-border-subtle"
       )}>
@@ -110,9 +205,11 @@ export function UnifiedChatInput({
         <textarea
           ref={textareaRef}
           value={inputText}
-          onChange={(e) => setInputText(e.target.value)}
+          onChange={handleChange}
+          onSelect={handleSelect}
+          onClick={handleSelect}
           onKeyDown={handleKeyDown}
-          placeholder="Faça qualquer coisa com a LIA..."
+          placeholder="Faca qualquer coisa com a LIA..."
           disabled={isBusy}
           rows={1}
           className={cn(
@@ -136,7 +233,7 @@ export function UnifiedChatInput({
                 disabled={isBusy}
                 className="p-1.5 rounded-md text-lia-text-disabled hover:text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none disabled:opacity-40"
                 title="Adicionar"
-                aria-label="Menu de adição"
+                aria-label="Menu de adicao"
               >
                 <Plus className="w-4 h-4" />
               </button>
@@ -160,11 +257,15 @@ export function UnifiedChatInput({
                         setInputText(prev => prev + "@")
                         textareaRef.current?.focus()
                         setShowPlusMenu(false)
+                        setTimeout(() => {
+                          const el = textareaRef.current
+                          if (el) setCursorPosition(el.selectionStart)
+                        }, 0)
                       }}
                       className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-lia-text-secondary hover:bg-lia-bg-secondary font-['Open_Sans',sans-serif]"
                     >
                       <AtSign className="w-4 h-4" />
-                      Inserir @menção
+                      Inserir @mencao
                     </button>
                   </div>
                 </>
@@ -187,8 +288,8 @@ export function UnifiedChatInput({
                 onClick={() => setShowSettings(!showSettings)}
                 disabled={isBusy}
                 className="p-1.5 rounded-md text-lia-text-disabled hover:text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none disabled:opacity-40"
-                title="Configurações de contexto"
-                aria-label="Configurações de conversa"
+                title="Configuracoes de contexto"
+                aria-label="Configuracoes de conversa"
               >
                 <SlidersHorizontal className="w-4 h-4" />
               </button>
@@ -212,9 +313,9 @@ export function UnifiedChatInput({
                       )}
                     >
                       <FileSearch className="w-4 h-4" />
-                      <span className="flex-1 text-left">Contexto da página</span>
+                      <span className="flex-1 text-left">Contexto da pagina</span>
                       {currentScope === "page" && (
-                        <span className="text-wedo-cyan text-xs">✓</span>
+                        <span className="text-wedo-cyan text-xs">&#10003;</span>
                       )}
                     </button>
                     <button
@@ -231,7 +332,7 @@ export function UnifiedChatInput({
                       <Globe className="w-4 h-4" />
                       <span className="flex-1 text-left">Universal</span>
                       {currentScope === "universal" && (
-                        <span className="text-wedo-cyan text-xs">✓</span>
+                        <span className="text-wedo-cyan text-xs">&#10003;</span>
                       )}
                     </button>
                   </div>
@@ -272,6 +373,24 @@ export function UnifiedChatInput({
             </button>
           </div>
         </div>
+
+        {/* Mention dropdown - positioned above the input container */}
+        {mention.isOpen && (
+          <MentionDropdown
+            items={mention.items}
+            selectedIndex={mention.selectedIndex}
+            onSelect={mention.selectItem}
+          />
+        )}
+
+        {/* Slash command dropdown - positioned above the input container */}
+        {slash.isOpen && (
+          <SlashCommandDropdown
+            items={slash.items}
+            selectedIndex={slash.selectedIndex}
+            onSelect={slash.selectItem}
+          />
+        )}
       </div>
     </div>
   )
