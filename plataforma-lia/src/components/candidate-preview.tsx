@@ -6,6 +6,7 @@ import { Activity, FileText, Brain, UserCheck } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { CandidatePreviewHeader } from "@/components/candidate-preview/CandidatePreviewHeader"
 import { CandidatePreviewActionBar } from "@/components/candidate-preview/CandidatePreviewActionBar"
+import { PipelineDecisionBar } from "@/components/candidate-preview/PipelineDecisionBar"
 import { CandidatePreviewModals } from "@/components/candidate-preview/CandidatePreviewModals"
 import { CandidateFilesTab } from "@/components/candidate-preview/CandidateFilesTab"
 import { CandidateActivitiesTab } from "@/components/candidate-preview/CandidateActivitiesTab"
@@ -38,6 +39,7 @@ interface CandidatePreviewProps {
   onSchedule?: (candidate: Record<string, unknown>) => void
   onAddToList?: (candidate: Record<string, unknown>) => void
   jobId?: string
+  onCandidateUpdated?: () => void
 }
 
 export function CandidatePreview({
@@ -65,6 +67,7 @@ export function CandidatePreview({
   onSchedule,
   onAddToList,
   jobId,
+  onCandidateUpdated,
 }: CandidatePreviewProps) {
   const core = useCandidatePreviewCore(candidate)
   const {
@@ -181,6 +184,14 @@ export function CandidatePreview({
           />
         </div>
       </TooltipProvider>
+
+      {(jobId || c.vacancy_id || c.vacancy_candidate_id) && (
+        <PipelineDecisionBar
+          candidate={c}
+          jobId={jobId}
+          onCandidateUpdated={onCandidateUpdated}
+        />
+      )}
 
       <div className="border-b border-lia-border-subtle dark:border-lia-border-subtle flex items-center">
         <div className="flex overflow-x-auto">
