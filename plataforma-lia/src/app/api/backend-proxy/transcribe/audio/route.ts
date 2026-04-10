@@ -33,7 +33,10 @@ export async function POST(request: NextRequest) {
 
       if (response.ok) {
         const data = await response.json()
-        return NextResponse.json(data)
+        return NextResponse.json({
+          text: data.transcription || data.text || "",
+          metadata: data.metadata,
+        })
       }
 
     } catch (backendError) {

@@ -554,7 +554,7 @@ export function ChatWorkflowReels({
           onMouseLeave={handleMouseLeave}
           onMouseDown={onMouseDown}
         >
-          <div className="flex items-end gap-0 min-w-max px-1 pt-4 pb-2">
+          <div className="flex items-end gap-0 min-w-max px-1 pt-8 pb-2">
             {stages.map((stage, idx) => {
               const currentIndex = nodeIndex++
               return (
