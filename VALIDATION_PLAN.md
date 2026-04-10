@@ -152,7 +152,7 @@
 ### 3.1 Configuração para staging
 
 Os testes E2E existentes usam URLs relativas (`/dashboard`, `/vagas/nova`, etc.).
-Para rodar contra staging, basta configurar a variável `BASE_URL`:
+Para rodar contra staging, basta configurar a variável `PLAYWRIGHT_BASE_URL`:
 
 ```bash
 # Rodar contra staging
@@ -200,7 +200,7 @@ quanto em staging (`staging.wedotalent.cc`) sem alteração manual.
 Para go-live, rodar apenas os testes marcados `@smoke` — os mais críticos:
 
 ```bash
-BASE_URL=https://staging.wedotalent.cc npx playwright test --grep @smoke
+PLAYWRIGHT_BASE_URL=https://staging.wedotalent.cc npx playwright test --grep @smoke
 ```
 
 Testes que devem ter tag `@smoke`: login, criar vaga (complete flow), mover candidato,
