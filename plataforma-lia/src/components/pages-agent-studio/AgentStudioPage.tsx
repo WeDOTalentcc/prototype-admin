@@ -13,7 +13,7 @@ import {
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
 
 interface SourcingAgent {
   id: string
@@ -681,6 +681,7 @@ function CreateAgentModal({ initialTemplate, onClose, onCreated }: {
             </div>
             {initialTemplate ? `Criar Agente — ${initialTemplate.display_name}` : "Criar Agente"}
           </DialogTitle>
+          <DialogDescription className="sr-only">Configure o nome e parâmetros do novo agente de sourcing</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-5 py-4">

@@ -8,7 +8,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
 import {
   textStyles, cardStyles, badgeStyles, buttonStyles
 } from "@/lib/design-tokens"
@@ -153,6 +153,8 @@ export default function CalibrationCardModal({
     return (
       <Dialog open onOpenChange={onClose}>
         <DialogContent className="max-w-md">
+          <DialogTitle className="sr-only">Calibração concluída</DialogTitle>
+          <DialogDescription className="sr-only">Resultado da calibração do agente</DialogDescription>
           <div className="flex flex-col items-center py-8">
             <CheckCircle className="w-16 h-16 text-green-500 mb-4" />
             <h3 className={textStyles.h3}>Calibração concluída!</h3>
@@ -177,6 +179,8 @@ export default function CalibrationCardModal({
   return (
     <Dialog open onOpenChange={onClose}>
       <DialogContent className="max-w-5xl max-h-[90vh] overflow-hidden p-0">
+        <DialogTitle className="sr-only">Calibração de candidatos</DialogTitle>
+        <DialogDescription className="sr-only">Avalie candidatos para calibrar o agente de sourcing</DialogDescription>
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-3 border-b border-gray-200">
           <button onClick={onClose} className="flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900">

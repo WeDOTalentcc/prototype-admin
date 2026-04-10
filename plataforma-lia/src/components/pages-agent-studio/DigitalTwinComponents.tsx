@@ -8,7 +8,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Progress } from "@/components/ui/progress"
 import {
@@ -168,6 +168,7 @@ export function EvaluateWithTwinModal({
             <Brain className="w-5 h-5 inline mr-2 text-purple-600" />
             Avaliação Digital Twin
           </DialogTitle>
+          <DialogDescription className="sr-only">Resultado da avaliação do candidato pelo Digital Twin</DialogDescription>
         </DialogHeader>
 
         {isLoading ? (

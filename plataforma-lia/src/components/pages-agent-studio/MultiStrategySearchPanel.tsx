@@ -95,11 +95,16 @@ export default function MultiStrategySearchPanel({
           limit: 50,
         }),
       })
+      if (!res.ok) {
+        console.error("Multi-strategy search error:", res.status)
+        setStrategiesInProgress(new Set())
+        return
+      }
       const data = await res.json()
       setResult(data)
       setStrategiesInProgress(new Set())
 
-      if (onAddToWorkflowRail) onAddToWorkflowRail(jobTitle.trim(), data.total_unique || 0)
+      if (onAddToWorkflowRail) onAddToWorkflowRail(jobTitle.trim(), data?.total_unique || 0)
     } catch (err) {
       console.error("Multi-strategy search failed:", err)
       setStrategiesInProgress(new Set())

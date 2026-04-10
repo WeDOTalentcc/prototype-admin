@@ -17,6 +17,7 @@ import { TemplatesPage } from "@/components/pages/templates-page"
 import LiaLibraryPage from "@/components/pages/lia-library-page"
 import SettingsPageEnhanced from "@/components/pages/settings-page-enhanced"
 import AgentStudioPage from "@/components/pages-agent-studio/AgentStudioPage"
+import CalibrationCardModal from "@/components/pages-agent-studio/CalibrationCardModal"
 import { ModuleUpsell } from "@/components/module-access/module-upsell"
 import { hasModuleAccess } from "@/utils/license-manager"
 import { useAuth } from "@/contexts/auth-context"
@@ -38,6 +39,7 @@ export function DashboardApp({ initialPage = "Chat LIA" }: DashboardAppProps) {
   const [pendingChatConversationId, setPendingChatConversationId] = useState<string | null>(null)
   const [pendingJobOpen, setPendingJobOpen] = useState<{ jobId: string; jobTitle: string } | null>(null)
   const [pendingCandidateOpen, setPendingCandidateOpen] = useState<{ candidateId: string; candidateName: string } | null>(null)
+  const [calibratingAgentId, setCalibratingAgentId] = useState<string | null>(null)
   const { isAuthenticated, user, logout } = useAuth()
   const router = useRouter()
   const { recentItems, addRecentItem, removeRecentItem, clearAll: clearRecentItems } = useRecentItems()
@@ -192,7 +194,25 @@ export function DashboardApp({ initialPage = "Chat LIA" }: DashboardAppProps) {
       case "Tarefas":
         return <TasksPage onNavigate={handleNavigate} />
       case "Agent Studio":
-        return <AgentStudioPage />
+        return (
+          <>
+            <AgentStudioPage
+              onStartCalibration={(agentId) => setCalibratingAgentId(agentId)}
+              onNavigateToJob={(jobId) => {
+                setPendingJobOpen({ jobId, jobTitle: "" })
+                setCurrentPage("Vagas")
+              }}
+            />
+            {calibratingAgentId && (
+              <CalibrationCardModal
+                agentId={calibratingAgentId}
+                isOpen={!!calibratingAgentId}
+                onClose={() => setCalibratingAgentId(null)}
+                onCalibrationComplete={() => setCalibratingAgentId(null)}
+              />
+            )}
+          </>
+        )
       case "Visão do Pipeline":
         return <PipelineOverviewPage />
       case "Configurações":
