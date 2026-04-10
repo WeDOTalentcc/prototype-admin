@@ -46,6 +46,13 @@ interface MenuSection {
 
 const BASE_MENU_SECTIONS: MenuSection[] = [
   {
+    label: "Operacional",
+    items: [
+      { icon: MessageCircle, label: "Chat LIA", isCore: true },
+      { icon: Target, label: "Tarefas", isCore: true },
+    ],
+  },
+  {
     label: "Recrutamento",
     items: [
       { icon: Briefcase, label: "Vagas", isCore: true },
@@ -59,13 +66,6 @@ const BASE_MENU_SECTIONS: MenuSection[] = [
         seeAllTarget: "Funil de Talentos",
       },
       { icon: GitBranch, label: "Visão do Pipeline", isCore: true },
-    ],
-  },
-  {
-    label: "Operacional",
-    items: [
-      { icon: MessageCircle, label: "Chat LIA", isCore: true },
-      { icon: Target, label: "Tarefas", isCore: true },
     ],
   },
   {
