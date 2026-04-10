@@ -17,8 +17,8 @@ const RAILS_URL = process.env.RAILS_BACKEND_URL || "http://localhost:3000"
 const FASTAPI_URL = process.env.BACKEND_URL || "http://localhost:8000"
 
 export async function GET(request: NextRequest, { params: pRaw }: { params: Promise<{ path: string[] }> }) {
-  const { path } = await pRaw;
-  const path = path?.join("/") || ""
+  const { path: pathSegments } = await pRaw;
+  const path = pathSegments?.join("/") || ""
   const headers = buildHeaders(request)
 
   // FastAPI routes: context, state (have user_id in path)
@@ -35,8 +35,8 @@ export async function GET(request: NextRequest, { params: pRaw }: { params: Prom
 }
 
 export async function POST(request: NextRequest, { params: pRaw }: { params: Promise<{ path: string[] }> }) {
-  const { path } = await pRaw;
-  const path = path?.join("/") || ""
+  const { path: pathSegments } = await pRaw;
+  const path = pathSegments?.join("/") || ""
   const headers = buildHeaders(request)
   const body = await request.text()
 
@@ -61,8 +61,8 @@ export async function POST(request: NextRequest, { params: pRaw }: { params: Pro
 }
 
 export async function PATCH(request: NextRequest, { params: pRaw }: { params: Promise<{ path: string[] }> }) {
-  const { path } = await pRaw;
-  const path = path?.join("/") || ""
+  const { path: pathSegments } = await pRaw;
+  const path = pathSegments?.join("/") || ""
   const headers = buildHeaders(request)
   const body = await request.text()
 
