@@ -7,7 +7,7 @@ GitHub para que os workflows de CI/CD funcionem corretamente.
 
 | Repositório | URL | Descrição |
 |---|---|---|
-| `wedocc2026/ats-front-copia` | github.com/wedocc2026/ats-front-copia | Frontend Next.js |
+| `wedocc2026/plataforma-lia` | github.com/wedocc2026/plataforma-lia | Frontend Next.js |
 | `wedocc2026/lia-agent-system` | github.com/wedocc2026/lia-agent-system | Backend FastAPI |
 
 ## Secrets Compartilhados (ambos os repos)
@@ -25,7 +25,7 @@ A service account precisa dos seguintes papéis IAM:
 - `roles/artifactregistry.writer` — Push Docker images
 - `roles/iam.serviceAccountUser` — Act as service account
 
-## Secrets do Frontend (`ats-front-copia`)
+## Secrets do Frontend (`plataforma-lia`)
 
 | Secret | Descrição | Exemplo |
 |---|---|---|
@@ -96,6 +96,23 @@ gcloud artifacts repositories create lia \
   --location=us-east1 \
   --description="LIA Platform Docker images"
 ```
+
+## Política de Security Scans
+
+Os scans de segurança (npm audit, bandit, pip-audit) são configurados como
+**non-blocking** (`continue-on-error: true`) para não impedir deploys
+durante a fase inicial. Após estabilização:
+
+1. Remover `continue-on-error` dos steps de security scan
+2. Mudar `needs: security` para bloquear o deploy se o scan falhar
+3. Configurar alertas Dependabot nos repositórios GitHub
+
+## API pública vs autenticada
+
+- `lia-frontend`: `--allow-unauthenticated` (necessário — serve o app web)
+- `lia-api`: `--allow-unauthenticated` (necessário — recebe webhooks Twilio/Teams
+  e requisições autenticadas via JWT do frontend)
+- `lia-worker`: `--no-allow-unauthenticated` (privado — só recebe tasks via Redis)
 
 ## Primeiros passos
 
