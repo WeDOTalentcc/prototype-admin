@@ -328,8 +328,8 @@ export function useTasksCore(onNavigate?: (page: string) => void) {
 
     try {
       const [tasksRes, summaryRes, alertsRes, jobsRes] = await Promise.allSettled([
-        fetch(`${API_BASE}/tasks?limit=50&status=pending&user_id=${encodeURIComponent(currentUserId)}`),
-        fetch(`${API_BASE}/tasks/summary?user_id=${encodeURIComponent(currentUserId)}`),
+        fetch(`${API_BASE}/tasks?limit=50&status=pending`),
+        fetch(`${API_BASE}/tasks/summary`),
         fetch(`${API_BASE}/alerts?limit=20&status=active`),
         fetch(`${API_BASE}/job-vacancies?limit=20`),
       ])
