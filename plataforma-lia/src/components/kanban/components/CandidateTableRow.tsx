@@ -360,6 +360,6 @@ const CandidateTableRowComponent = memo(function CandidateTableRow({
   )
 })
 
-CandidateTableRowComponent.displayName = "CandidateTableRow"
+CandidateTableRowComponent.displayName ="CandidateTableRow"
 
 export const CandidateTableRow = CandidateTableRowComponent

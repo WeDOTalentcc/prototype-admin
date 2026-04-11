@@ -1,12 +1,12 @@
 "use client"
 
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+import { Button } from"@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
+import { Badge } from"@/components/ui/badge"
 import {
   Plus, CheckCircle, Edit, Eye
-} from "lucide-react"
-import { onboardingTemplates } from "./onboarding-page.types"
+} from"lucide-react"
+import { onboardingTemplates } from"./onboarding-page.types"
 
 export function OnboardingTemplates() {
   return (
@@ -31,7 +31,7 @@ export function OnboardingTemplates() {
                   <CardTitle className="text-xs">{template.name}</CardTitle>
                   <p className="text-sm text-lia-text-primary mt-1">{template.description}</p>
                 </div>
-                <Badge variant={template.isActive ? "default" : "secondary"}>
+                <Badge variant={template.isActive ?"default" :"secondary"}>
                   {template.isActive ? 'Ativo' : 'Inativo'}
                 </Badge>
               </div>

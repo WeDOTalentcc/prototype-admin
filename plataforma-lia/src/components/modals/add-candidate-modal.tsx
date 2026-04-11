@@ -1,24 +1,24 @@
 "use client"
 
-import React, { useState } from "react"
-import { DEMO_VALUES } from "@/lib/pricing"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Badge } from "@/components/ui/badge"
-import { Card, CardContent } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { LIAIcon } from "@/components/ui/lia-icon"
+import React, { useState } from"react"
+import { DEMO_VALUES } from"@/lib/pricing"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from"@/components/ui/dialog"
+import { Button } from"@/components/ui/button"
+import { Input } from"@/components/ui/input"
+import { Label } from"@/components/ui/label"
+import { Textarea } from"@/components/ui/textarea"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from"@/components/ui/select"
+import { Badge } from"@/components/ui/badge"
+import { Card, CardContent } from"@/components/ui/card"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from"@/components/ui/tabs"
+import { LIAIcon } from"@/components/ui/lia-icon"
 import {
   User, Mail, Phone, Briefcase, MapPin, Calendar, FileText, Link,
   Plus, X, Upload, UserPlus, Brain, CheckCircle, AlertCircle,
   Linkedin, Github, Globe, DollarSign, Building, GraduationCap,
   Languages, Award, Target, Zap
-} from "lucide-react"
-import { textStyles, buttonStyles, cardStyles, badgeStyles } from "@/lib/design-tokens"
+} from"lucide-react"
+import { textStyles, buttonStyles, cardStyles, badgeStyles } from"@/lib/design-tokens"
 
 interface AddCandidateModalProps {
   isOpen: boolean
@@ -49,25 +49,25 @@ export function AddCandidateModal({ isOpen, onClose, onAdd }: AddCandidateModalP
 
   // Form states
   const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    position: "",
-    location: "",
-    workModel: "híbrido",
-    contractType: "CLT",
-    currentCompany: "",
-    experience: "",
-    education: "",
-    expectedSalary: "",
-    currentSalary: "",
-    linkedin: "",
-    github: "",
-    portfolio: "",
-    resume: "",
-    languages: "",
-    certifications: "",
-    about: ""
+    name:"",
+    email:"",
+    phone:"",
+    position:"",
+    location:"",
+    workModel:"híbrido",
+    contractType:"CLT",
+    currentCompany:"",
+    experience:"",
+    education:"",
+    expectedSalary:"",
+    currentSalary:"",
+    linkedin:"",
+    github:"",
+    portfolio:"",
+    resume:"",
+    languages:"",
+    certifications:"",
+    about:""
   })
 
   const handleInputChange = (field: string, value: string) => {
@@ -93,17 +93,12 @@ export function AddCandidateModal({ isOpen, onClose, onAdd }: AddCandidateModalP
       setLiaAnalysis({
         score: Math.floor(Math.random() * 30) + 70,
         fitScore: Math.floor(Math.random() * 30) + 70,
-        strengths: [
-          "Experiência sólida na área",
-          "Habilidades técnicas alinhadas",
-          "Boa formação acadêmica"
+        strengths: ["Experiência sólida na área","Habilidades técnicas alinhadas","Boa formação acadêmica"
         ],
-        improvements: [
-          "Verificar disponibilidade para início",
-          "Alinhar expectativa salarial"
+        improvements: ["Verificar disponibilidade para início","Alinhar expectativa salarial"
         ],
-        recommendation: "Candidato com alto potencial. Recomendo prosseguir com entrevista.",
-        suggestedSkills: ["React", "TypeScript", "Node.js", "AWS"],
+        recommendation:"Candidato com alto potencial. Recomendo prosseguir com entrevista.",
+        suggestedSkills: ["React","TypeScript","Node.js","AWS"],
         culturalFit: 85,
         technicalFit: 88,
         softSkills: {
@@ -131,25 +126,25 @@ export function AddCandidateModal({ isOpen, onClose, onAdd }: AddCandidateModalP
 
     // Reset form
     setFormData({
-      name: "",
-      email: "",
-      phone: "",
-      position: "",
-      location: "",
-      workModel: "híbrido",
-      contractType: "CLT",
-      currentCompany: "",
-      experience: "",
-      education: "",
-      expectedSalary: "",
-      currentSalary: "",
-      linkedin: "",
-      github: "",
-      portfolio: "",
-      resume: "",
-      languages: "",
-      certifications: "",
-      about: ""
+      name:"",
+      email:"",
+      phone:"",
+      position:"",
+      location:"",
+      workModel:"híbrido",
+      contractType:"CLT",
+      currentCompany:"",
+      experience:"",
+      education:"",
+      expectedSalary:"",
+      currentSalary:"",
+      linkedin:"",
+      github:"",
+      portfolio:"",
+      resume:"",
+      languages:"",
+      certifications:"",
+      about:""
     })
     setSkills([])
     setLiaAnalysis(null)

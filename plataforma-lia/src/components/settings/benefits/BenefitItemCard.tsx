@@ -1,11 +1,11 @@
 "use client"
 
 
-import { CURRENCY_SYMBOL } from "@/lib/pricing"
-import React from "react"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Switch } from "@/components/ui/switch"
+import { CURRENCY_SYMBOL } from"@/lib/pricing"
+import React from"react"
+import { Button } from"@/components/ui/button"
+import { Badge } from"@/components/ui/badge"
+import { Switch } from"@/components/ui/switch"
 import {
   DollarSign,
   Star,
@@ -13,8 +13,8 @@ import {
   Clock,
   Pencil,
   Trash2,
-} from "lucide-react"
-import { textStyles } from "@/lib/design-tokens"
+} from"lucide-react"
+import { textStyles } from"@/lib/design-tokens"
 
 interface Benefit {
   id?: string
@@ -35,23 +35,23 @@ interface Benefit {
 }
 
 const SENIORITY_LEVELS = [
-  { id: "all", name: "Todos os Níveis" },
-  { id: "junior", name: "Júnior" },
-  { id: "pleno", name: "Pleno" },
-  { id: "senior", name: "Sênior" },
-  { id: "coordinator", name: "Coordenação+" },
-  { id: "manager", name: "Gerência+" },
-  { id: "director", name: "Diretoria" },
-  { id: "c-level", name: "C-Level" },
+  { id:"all", name:"Todos os Níveis" },
+  { id:"junior", name:"Júnior" },
+  { id:"pleno", name:"Pleno" },
+  { id:"senior", name:"Sênior" },
+  { id:"coordinator", name:"Coordenação+" },
+  { id:"manager", name:"Gerência+" },
+  { id:"director", name:"Diretoria" },
+  { id:"c-level", name:"C-Level" },
 ]
 
 const WAITING_PERIODS = [
-  { id: 0, name: "Imediato" },
-  { id: 30, name: "30 dias" },
-  { id: 60, name: "60 dias" },
-  { id: 90, name: "90 dias" },
-  { id: 180, name: "6 meses" },
-  { id: 365, name: "1 ano" },
+  { id: 0, name:"Imediato" },
+  { id: 30, name:"30 dias" },
+  { id: 60, name:"60 dias" },
+  { id: 90, name:"90 dias" },
+  { id: 180, name:"6 meses" },
+  { id: 365, name:"1 ano" },
 ]
 
 interface BenefitItemCardProps {
@@ -70,43 +70,43 @@ export const BenefitItemCard = React.memo(function BenefitItemCard({
   onDelete,
 }: BenefitItemCardProps) {
   const formatBenefitValue = (b: Benefit) => {
-    if (b.value_type === "monetary" && b.value) {
-      const prefix = b.is_discount ? "Desconto: " : ""
-      return prefix + CURRENCY_SYMBOL + " " +  b.value.toLocaleString("pt-BR", { minimumFractionDigits: 2 })
+    if (b.value_type ==="monetary" && b.value) {
+      const prefix = b.is_discount ?"Desconto:" :""
+      return prefix + CURRENCY_SYMBOL +"" +  b.value.toLocaleString("pt-BR", { minimumFractionDigits: 2 })
     }
-    if (b.value_type === "percentage" && b.percentage_value) {
-      return b.percentage_value + "%"
+    if (b.value_type ==="percentage" && b.percentage_value) {
+      return b.percentage_value +"%"
     }
-    if (b.value_type === "informative") {
-      return b.value_details || "Informativo"
+    if (b.value_type ==="informative") {
+      return b.value_details ||"Informativo"
     }
-    return "-"
+    return"-"
   }
 
   const getSeniorityLabel = (levels: string[]) => {
     if (!levels || levels.length === 0 || levels.includes("all")) {
-      return "Todos"
+      return"Todos"
     }
     if (levels.length === 1) {
       return SENIORITY_LEVELS.find((l) => l.id === levels[0])?.name || levels[0]
     }
-    return levels.length + " níveis"
+    return levels.length +" níveis"
   }
 
   const getWaitingPeriodLabel = (days: number) => {
     const period = WAITING_PERIODS.find((p) => p.id === days)
-    return period ? period.name : days + " dias"
+    return period ? period.name : days +" dias"
   }
 
-  const activeClass = !benefit.is_active ? "opacity-60" : ""
+  const activeClass = !benefit.is_active ?"opacity-60" :""
 
   return (
     <div
-      className={"p-3 flex items-center justify-between hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover/50 transition-colors motion-reduce:transition-none " + activeClass}
+      className={"p-3 flex items-center justify-between hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover/50 transition-colors motion-reduce:transition-none" + activeClass}
     >
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-1">
-          <h4 className={textStyles.subtitle + " truncate"}>
+          <h4 className={textStyles.subtitle +" truncate"}>
             {benefit.name}
           </h4>
           {benefit.is_highlighted && (
@@ -121,8 +121,8 @@ export const BenefitItemCard = React.memo(function BenefitItemCard({
             </Badge>
           )}
         </div>
-        <p className={textStyles.description + " truncate mb-1.5"}>
-          {benefit.description || "Sem descrição"}
+        <p className={textStyles.description +" truncate mb-1.5"}>
+          {benefit.description ||"Sem descrição"}
         </p>
         <div className="flex items-center gap-3 text-xs text-lia-text-secondary">
           <span className="flex items-center gap-1">
@@ -147,7 +147,7 @@ export const BenefitItemCard = React.memo(function BenefitItemCard({
           checked={benefit.is_active}
           onCheckedChange={() => onToggleStatus(benefit)}
           disabled={!isEditingBenefits}
-          className={!isEditingBenefits ? "opacity-60" : ""}
+          className={!isEditingBenefits ?"opacity-60" :""}
         />
         {isEditingBenefits && (
           <>

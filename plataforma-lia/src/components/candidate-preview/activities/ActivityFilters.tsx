@@ -1,8 +1,8 @@
 "use client"
 
-import { Activity, GitBranch, List, PlusCircle } from "lucide-react"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
+import { Activity, GitBranch, List, PlusCircle } from"lucide-react"
+import { Badge } from"@/components/ui/badge"
+import { Button } from"@/components/ui/button"
 
 export type ActivityFilterType = 'all' | 'emails' | 'interviews' | 'lia' | 'applications' | 'tests' | 'offers' | 'evaluations'
 export type ActivityViewType = 'list' | 'timeline'

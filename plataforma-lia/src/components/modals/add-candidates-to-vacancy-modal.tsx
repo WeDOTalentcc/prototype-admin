@@ -1,16 +1,16 @@
 "use client"
 
-import { useState, useEffect, useMemo, useCallback, useRef } from "react"
-import { createPortal } from "react-dom"
-import { liaApi, JobVacancy } from "@/services/lia-api"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Briefcase, Search, Loader2, Users, Check, Building2, MapPin, Star, X, AlertCircle } from "lucide-react"
-import { Badge } from "@/components/ui/badge"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { cn } from "@/lib/utils"
+import { useState, useEffect, useMemo, useCallback, useRef } from"react"
+import { createPortal } from"react-dom"
+import { liaApi, JobVacancy } from"@/services/lia-api"
+import { Button } from"@/components/ui/button"
+import { Input } from"@/components/ui/input"
+import { Briefcase, Search, Loader2, Users, Check, Building2, MapPin, Star, X, AlertCircle } from"lucide-react"
+import { Badge } from"@/components/ui/badge"
+import { ScrollArea } from"@/components/ui/scroll-area"
+import { cn } from"@/lib/utils"
 import { textStyles, cardStyles, badgeStyles } from '@/lib/design-tokens'
-import { toast } from "sonner"
+import { toast } from"sonner"
 
 interface AddCandidatesToVacancyModalProps {
   isOpen: boolean
@@ -196,12 +196,12 @@ const [vacancies, setVacancies] = useState<VacancyDisplay[]>([])
         throw new Error('Falha ao adicionar candidatos')
       }
       
-      toast.success("Candidatos adicionados!", { description: `${candidateIds.length} candidato(s) adicionado(s) à vaga "${selectedVacancy?.title}"` })
+      toast.success("Candidatos adicionados!", { description: `${candidateIds.length} candidato(s) adicionado(s) à vaga"${selectedVacancy?.title}"` })
       
       onSuccess?.()
       onClose()
     } catch (error) {
-      toast.error("Erro ao adicionar candidatos", { description: "Tente novamente" })
+      toast.error("Erro ao adicionar candidatos", { description:"Tente novamente" })
     } finally {
       setIsSubmitting(false)
     }
@@ -236,11 +236,10 @@ const [vacancies, setVacancies] = useState<VacancyDisplay[]>([])
             setSelectedVacancyId(vacancy.id)
           }
         }}
-        className={cn(
-          "p-3 rounded-md cursor-pointer transition-colors outline-none",
+        className={cn("p-3 rounded-md cursor-pointer transition-colors outline-none",
           selectedVacancyId === vacancy.id
-            ? "bg-lia-bg-tertiary border-2 border-lia-border-medium"
-            : "hover:bg-lia-interactive-hover border-2 border-transparent focus:ring-2 focus:ring-lia-border-default/50"
+            ?"bg-lia-bg-tertiary border-2 border-lia-border-medium"
+            :"hover:bg-lia-interactive-hover border-2 border-transparent focus:ring-2 focus:ring-lia-border-default/50"
         )}
       >
         <div className="flex items-start justify-between">
@@ -307,7 +306,7 @@ const [vacancies, setVacancies] = useState<VacancyDisplay[]>([])
         ref={modalRef}
         className={`relative ${cardStyles.default} w-full max-w-md mx-4 max-h-[90vh] overflow-hidden flex flex-col`}
       >
-        <div className=" p-5">
+        <div className="p-5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Briefcase className="w-5 h-5 text-lia-text-secondary" />

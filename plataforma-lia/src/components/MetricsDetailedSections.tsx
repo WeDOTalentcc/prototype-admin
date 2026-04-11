@@ -1,19 +1,19 @@
 "use client"
 
-import React from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
+import React from"react"
+import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
+import { Badge } from"@/components/ui/badge"
+import { Button } from"@/components/ui/button"
 import {
   TrendingUp, Clock, Users, Target, CheckCircle,
   Phone, Award, Zap, AlertCircle, Activity, Timer
-} from "lucide-react"
-import { LiaMetricsChart } from "./lia-metrics-chart"
-import { textStyles } from "@/lib/design-tokens"
+} from"lucide-react"
+import { LiaMetricsChart } from"./lia-metrics-chart"
+import { textStyles } from"@/lib/design-tokens"
 import {
   SourceMetricItem, StatusBreakdownItem,
   generateTimeSeriesData,
-} from "./useMetricsCalculations"
+} from"./useMetricsCalculations"
 
 interface MetricsDetailedSectionsProps {
   contactRate: number

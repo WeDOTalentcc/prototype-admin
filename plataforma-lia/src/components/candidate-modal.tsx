@@ -1,22 +1,22 @@
 "use client"
 
 
-import { CURRENCY_SYMBOL } from "@/lib/pricing"
-import { useState } from "react"
-import { useModalA11y } from "@/hooks/use-modal-a11y"
+import { CURRENCY_SYMBOL } from"@/lib/pricing"
+import { useState } from"react"
+import { useModalA11y } from"@/hooks/use-modal-a11y"
 import { textStyles, buttonStyles, cardStyles, badgeStyles } from '@/lib/design-tokens'
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { CandidateAvatar } from "@/components/candidate-profile/CandidateAvatar"
-import { CandidateSkillsList } from "@/components/candidate-profile/CandidateSkillsList"
+import { Button } from"@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
+import { Badge } from"@/components/ui/badge"
+import { CandidateAvatar } from"@/components/candidate-profile/CandidateAvatar"
+import { CandidateSkillsList } from"@/components/candidate-profile/CandidateSkillsList"
 import {
   X, MessageCircle, Calendar, Clock, User, Phone, Mail, MapPin,
   Star, TrendingUp, Eye, Share2, Download, FileText, Edit,
   BrainCircuit, Target, Building, Briefcase, GraduationCap,
   ChevronRight, ThumbsUp, ThumbsDown, Plus, Send, History,
   Video, Linkedin, Globe, AlertCircle, CheckCircle, ArrowRight
-} from "lucide-react"
+} from"lucide-react"
 
 interface ModalCandidate {
   id?: string | number
@@ -34,57 +34,57 @@ interface CandidateModalProps {
 
 // Mock data for candidate details
 const mockCandidateDetails = {
-  fullName: "Maria Santos Silva",
-  email: "maria.santos@email.com",
-  phone: "+55 11 99999-1234",
-  location: "São Paulo, SP",
-  linkedinUrl: "https://linkedin.com/in/mariasantos",
-  portfolio: "https://mariasantos.design",
-  currentCompany: "TechCorp",
-  currentRole: "UX Designer",
-  experience: "6 anos",
+  fullName:"Maria Santos Silva",
+  email:"maria.santos@email.com",
+  phone:"+55 11 99999-1234",
+  location:"São Paulo, SP",
+  linkedinUrl:"https://linkedin.com/in/mariasantos",
+  portfolio:"https://mariasantos.design",
+  currentCompany:"TechCorp",
+  currentRole:"UX Designer",
+  experience:"6 anos",
   education: [
     {
-      degree: "Bacharelado em Design",
-      institution: "ESPM",
-      year: "2018",
-      location: "São Paulo, SP"
+      degree:"Bacharelado em Design",
+      institution:"ESPM",
+      year:"2018",
+      location:"São Paulo, SP"
     }
   ],
-  skills: ["Figma", "Sketch", "Prototyping", "User Research", "Design System", "Adobe Creative Suite"],
-  languages: ["Português (Nativo)", "Inglês (Avançado)", "Espanhol (Intermediário)"],
+  skills: ["Figma","Sketch","Prototyping","User Research","Design System","Adobe Creative Suite"],
+  languages: ["Português (Nativo)","Inglês (Avançado)","Espanhol (Intermediário)"],
   salary: {
     current: `${CURRENCY_SYMBOL} 7.500`,
     expected: `${CURRENCY_SYMBOL} 9.000 - ${CURRENCY_SYMBOL} 12.000`
   },
-  availability: "Disponível em 30 dias",
-  source: "LinkedIn",
-  appliedDate: "2025-03-15",
+  availability:"Disponível em 30 dias",
+  source:"LinkedIn",
+  appliedDate:"2025-03-15",
   liaScore: 8.7,
   skillsMatch: 92,
-  status: "Em triagem",
-  tags: ["Destaque", "Portfolio Excelente", "Referenciada"],
+  status:"Em triagem",
+  tags: ["Destaque","Portfolio Excelente","Referenciada"],
 
   // Histórico de movimentações
   movementHistory: [
     {
       id: 1,
       from: null,
-      to: "applied",
-      toName: "Aplicaram",
-      date: "2025-03-15T10:30:00",
-      user: "Sistema",
-      notes: "Candidatura recebida via LinkedIn"
+      to:"applied",
+      toName:"Aplicaram",
+      date:"2025-03-15T10:30:00",
+      user:"Sistema",
+      notes:"Candidatura recebida via LinkedIn"
     },
     {
       id: 2,
-      from: "applied",
-      fromName: "Aplicaram",
-      to: "screening",
-      toName: "Triagem",
-      date: "2025-03-16T14:20:00",
-      user: "Ana Silva",
-      notes: "Aprovada na triagem inicial - perfil compatível"
+      from:"applied",
+      fromName:"Aplicaram",
+      to:"screening",
+      toName:"Triagem",
+      date:"2025-03-16T14:20:00",
+      user:"Ana Silva",
+      notes:"Aprovada na triagem inicial - perfil compatível"
     }
   ],
 
@@ -92,17 +92,17 @@ const mockCandidateDetails = {
   notes: [
     {
       id: 1,
-      author: "Ana Silva",
-      date: "2025-03-16T14:25:00",
-      content: "Candidata com portfolio excepcional, muita experiência em produtos digitais. Recomendo seguir para entrevista técnica.",
-      type: "positive"
+      author:"Ana Silva",
+      date:"2025-03-16T14:25:00",
+      content:"Candidata com portfolio excepcional, muita experiência em produtos digitais. Recomendo seguir para entrevista técnica.",
+      type:"positive"
     },
     {
       id: 2,
-      author: "João Costa",
-      date: "2025-03-15T16:45:00",
-      content: "Score LIA muito alto, skills matching perfeito para nossa necessidade. Verificar disponibilidade para início.",
-      type: "neutral"
+      author:"João Costa",
+      date:"2025-03-15T16:45:00",
+      content:"Score LIA muito alto, skills matching perfeito para nossa necessidade. Verificar disponibilidade para início.",
+      type:"neutral"
     }
   ],
 
@@ -110,24 +110,24 @@ const mockCandidateDetails = {
   interactions: [
     {
       id: 1,
-      type: "email",
-      title: "Email de confirmação enviado",
-      date: "2025-03-15T10:35:00",
-      description: "Confirmação de recebimento da candidatura"
+      type:"email",
+      title:"Email de confirmação enviado",
+      date:"2025-03-15T10:35:00",
+      description:"Confirmação de recebimento da candidatura"
     },
     {
       id: 2,
-      type: "view",
-      title: "CV visualizado",
-      date: "2025-03-16T09:15:00",
-      description: "Visualizado por Ana Silva"
+      type:"view",
+      title:"CV visualizado",
+      date:"2025-03-16T09:15:00",
+      description:"Visualizado por Ana Silva"
     },
     {
       id: 3,
-      type: "call",
-      title: "Ligação agendada",
-      date: "2025-03-17T14:00:00",
-      description: "Entrevista telefônica marcada para amanhã"
+      type:"call",
+      title:"Ligação agendada",
+      date:"2025-03-17T14:00:00",
+      description:"Entrevista telefônica marcada para amanhã"
     }
   ]
 }
@@ -135,7 +135,7 @@ const mockCandidateDetails = {
 export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, onAddNote }: CandidateModalProps) {
   const [activeTab, setActiveTab] = useState("overview")
   const [newNote, setNewNote] = useState("")
-  const [noteType, setNoteType] = useState<"positive" | "neutral" | "negative">("neutral")
+  const [noteType, setNoteType] = useState<"positive" |"neutral" |"negative">("neutral")
   const dialogRef = useModalA11y(isOpen, onClose)
 
   if (!isOpen || !candidate) return null
@@ -147,7 +147,7 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
 
     const note = {
       id: Date.now(),
-      author: "Ana Silva", // Current user
+      author:"Ana Silva", // Current user
       date: new Date().toISOString(),
       content: newNote,
       type: noteType
@@ -166,7 +166,7 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
       to: newStatus,
       toName: newStatus,
       date: new Date().toISOString(),
-      user: "Ana Silva",
+      user:"Ana Silva",
       notes: `Movido para ${newStatus} via modal`
     }
 
@@ -226,7 +226,7 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
                 <span className="text-lia-text-secondary">
                   {candidateData.currentRole} • {candidateData.experience}
                 </span>
-                <Badge className={`${candidateData.status === 'Em triagem' ? 'bg-status-warning/15 text-status-warning' : 'bg-lia-bg-tertiary text-lia-text-secondary'}`}>
+                <Badge className={`${candidateData.status === 'Em triagem' ? '' : 'bg-lia-bg-tertiary text-lia-text-secondary'}`}>
                   {candidateData.status}
                 </Badge>
               </div>
@@ -271,7 +271,7 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
         </div>
 
         {/* Tabs */}
-        <div className=" bg-lia-bg-primary">
+        <div className="bg-lia-bg-primary">
           <div className="flex gap-8 px-6">
             {[
               { id: 'overview', label: 'Visão Geral', icon: User },
@@ -610,7 +610,7 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
                   <div key={interaction.id} className="flex gap-4 p-4 bg-lia-bg-secondary rounded-xl">
 
                     <div className="mt-1">
-                      {getInteractionIcon(interaction.type || "")}
+                      {getInteractionIcon(interaction.type ||"")}
                     </div>
 
                     <div className="flex-1">

@@ -1,21 +1,21 @@
 "use client"
 
-import React, { useState, useMemo } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Badge } from "@/components/ui/badge"
-import { Textarea } from "@/components/ui/textarea"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import React, { useState, useMemo } from"react"
+import { Button } from"@/components/ui/button"
+import { Input } from"@/components/ui/input"
+import { Label } from"@/components/ui/label"
+import { Checkbox } from"@/components/ui/checkbox"
+import { Badge } from"@/components/ui/badge"
+import { Textarea } from"@/components/ui/textarea"
+import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue
-} from "@/components/ui/select"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+} from"@/components/ui/select"
+import { Popover, PopoverContent, PopoverTrigger } from"@/components/ui/popover"
 import { 
   Loader2, 
   Calendar as CalendarIcon, 
@@ -26,8 +26,8 @@ import {
   Users,
   ChevronLeft,
   ChevronRight
-} from "lucide-react"
-import { InterviewSlot, InterviewSchedulingData } from "../types"
+} from"lucide-react"
+import { InterviewSlot, InterviewSchedulingData } from"../types"
 
 interface PanelProps {
   initialData?: Record<string, unknown>
@@ -35,36 +35,32 @@ interface PanelProps {
   isLoading?: boolean
 }
 
-type InterviewType = "presencial" | "teams" | "meet" | "telefone"
+type InterviewType ="presencial" |"teams" |"meet" |"telefone"
 type Duration = 30 | 45 | 60 | 90
 
 const INTERVIEW_TYPES: { value: InterviewType; label: string; icon: React.ReactNode }[] = [
-  { value: "presencial", label: "Presencial", icon: <MapPin className="h-4 w-4" /> },
-  { value: "teams", label: "Teams", icon: <Video className="h-4 w-4" /> },
-  { value: "meet", label: "Google Meet", icon: <Video className="h-4 w-4" /> },
-  { value: "telefone", label: "Telefone", icon: <Phone className="h-4 w-4" /> }
+  { value:"presencial", label:"Presencial", icon: <MapPin className="h-4 w-4" /> },
+  { value:"teams", label:"Teams", icon: <Video className="h-4 w-4" /> },
+  { value:"meet", label:"Google Meet", icon: <Video className="h-4 w-4" /> },
+  { value:"telefone", label:"Telefone", icon: <Phone className="h-4 w-4" /> }
 ]
 
 const DURATION_OPTIONS: { value: Duration; label: string }[] = [
-  { value: 30, label: "30 minutos" },
-  { value: 45, label: "45 minutos" },
-  { value: 60, label: "1 hora" },
-  { value: 90, label: "1h30" }
+  { value: 30, label:"30 minutos" },
+  { value: 45, label:"45 minutos" },
+  { value: 60, label:"1 hora" },
+  { value: 90, label:"1h30" }
 ]
 
 const MOCK_INTERVIEWERS = [
-  { id: "1", name: "Ana Silva", role: "Tech Lead" },
-  { id: "2", name: "Carlos Santos", role: "Engineering Manager" },
-  { id: "3", name: "Maria Oliveira", role: "HR Business Partner" },
-  { id: "4", name: "João Costa", role: "Senior Developer" },
-  { id: "5", name: "Fernanda Lima", role: "Product Manager" }
+  { id:"1", name:"Ana Silva", role:"Tech Lead" },
+  { id:"2", name:"Carlos Santos", role:"Engineering Manager" },
+  { id:"3", name:"Maria Oliveira", role:"HR Business Partner" },
+  { id:"4", name:"João Costa", role:"Senior Developer" },
+  { id:"5", name:"Fernanda Lima", role:"Product Manager" }
 ]
 
-const TIME_SLOTS = [
-  "08:00", "08:30", "09:00", "09:30", "10:00", "10:30",
-  "11:00", "11:30", "12:00", "12:30", "13:00", "13:30",
-  "14:00", "14:30", "15:00", "15:30", "16:00", "16:30",
-  "17:00", "17:30", "18:00"
+const TIME_SLOTS = ["08:00","08:30","09:00","09:30","10:00","10:30","11:00","11:30","12:00","12:30","13:00","13:30","14:00","14:30","15:00","15:30","16:00","16:30","17:00","17:30","18:00"
 ]
 
 function formatDate(date: Date): string {
@@ -73,9 +69,9 @@ function formatDate(date: Date): string {
 
 function formatDisplayDate(date: Date): string {
   return date.toLocaleDateString("pt-BR", {
-    weekday: "long",
-    day: "numeric",
-    month: "long"
+    weekday:"long",
+    day:"numeric",
+    month:"long"
   })
 }
 
@@ -92,8 +88,8 @@ export function InterviewSchedulingPanel({
   onSubmit,
   isLoading = false
 }: PanelProps) {
-  const candidateName = (initialData.candidate_name as string) || "Candidato"
-  const candidateId = (initialData.candidate_id as string) || ""
+  const candidateName = (initialData.candidate_name as string) ||"Candidato"
+  const candidateId = (initialData.candidate_id as string) ||""
 
   const [selectedDate, setSelectedDate] = useState<Date>(() => {
     const tomorrow = new Date()
@@ -179,7 +175,7 @@ export function InterviewSchedulingPanel({
   }
 
   const days = getDaysInMonth(currentMonth)
-  const monthLabel = currentMonth.toLocaleDateString("pt-BR", { month: "long", year: "numeric" })
+  const monthLabel = currentMonth.toLocaleDateString("pt-BR", { month:"long", year:"numeric" })
 
   return (
     <div className="space-y-6">
@@ -216,7 +212,7 @@ export function InterviewSchedulingPanel({
               </Button>
             </div>
             <div className="grid grid-cols-7 gap-1 text-center mb-2">
-              {["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"].map((day) => (
+              {["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"].map((day) => (
                 <div
                   key={day}
                   className="text-xs font-medium py-1 text-lia-text-tertiary"
@@ -494,8 +490,7 @@ export function InterviewSchedulingPanel({
             <Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none mr-2" />
             Agendando...
           </>
-        ) : (
-          "Agendar Entrevista"
+        ) : ("Agendar Entrevista"
         )}
       </Button>
     </div>

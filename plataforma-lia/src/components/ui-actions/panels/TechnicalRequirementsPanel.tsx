@@ -1,22 +1,22 @@
 "use client"
 
-import React, { useState, useRef, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Badge } from "@/components/ui/badge"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import React, { useState, useRef, useEffect } from"react"
+import { Button } from"@/components/ui/button"
+import { Input } from"@/components/ui/input"
+import { Label } from"@/components/ui/label"
+import { Checkbox } from"@/components/ui/checkbox"
+import { Badge } from"@/components/ui/badge"
+import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from"@/components/ui/tabs"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue
-} from "@/components/ui/select"
-import { Loader2, Plus, X, Search } from "lucide-react"
-import { TECHNOLOGY_CATALOG, TechRequirement, TechnicalRequirementsData } from "../types"
+} from"@/components/ui/select"
+import { Loader2, Plus, X, Search } from"lucide-react"
+import { TECHNOLOGY_CATALOG, TechRequirement, TechnicalRequirementsData } from"../types"
 
 interface PanelProps {
   initialData?: Record<string, unknown>
@@ -25,16 +25,16 @@ interface PanelProps {
 }
 
 type TechCategory = keyof typeof TECHNOLOGY_CATALOG
-type TechLevel = "Básico" | "Intermediário" | "Avançado" | "Expert"
+type TechLevel ="Básico" |"Intermediário" |"Avançado" |"Expert"
 
-const LEVEL_OPTIONS: TechLevel[] = ["Básico", "Intermediário", "Avançado", "Expert"]
+const LEVEL_OPTIONS: TechLevel[] = ["Básico","Intermediário","Avançado","Expert"]
 
 const CATEGORY_LABELS: Record<TechCategory, { label: string; icon: string }> = {
-  languages: { label: "Linguagens", icon: "💻" },
-  frameworks: { label: "Frameworks", icon: "🔧" },
-  databases: { label: "Bancos de Dados", icon: "🗄️" },
-  cloud_devops: { label: "Cloud/DevOps", icon: "☁️" },
-  tools: { label: "Ferramentas", icon: "🛠️" }
+  languages: { label:"Linguagens", icon:"💻" },
+  frameworks: { label:"Frameworks", icon:"🔧" },
+  databases: { label:"Bancos de Dados", icon:"🗄️" },
+  cloud_devops: { label:"Cloud/DevOps", icon:"☁️" },
+  tools: { label:"Ferramentas", icon:"🛠️" }
 }
 
 export function TechnicalRequirementsPanel({
@@ -50,9 +50,9 @@ export function TechnicalRequirementsPanel({
 
   const handleAddRequirement = (name: string, category: TechCategory) => {
     const newRequirement: TechRequirement = {
-      id: `${category}_${name.toLowerCase().replace(/[^a-z0-9]/g, "_")}_${Date.now()}`,
+      id: `${category}_${name.toLowerCase().replace(/[^a-z0-9]/g,"_")}_${Date.now()}`,
       name,
-      level: "Intermediário",
+      level:"Intermediário",
       required: false,
       category
     }
@@ -214,7 +214,7 @@ export function TechnicalRequirementsPanel({
               requirements.map((req) => (
                 <Badge
                   key={req.id}
-                  variant={req.required ? "secondary" : "outline"}
+                  variant={req.required ?"secondary" :"outline"}
                   className="text-xs dark:border-lia-border-default"
                 >
                   {req.name} ({req.level.charAt(0)})
@@ -223,7 +223,7 @@ export function TechnicalRequirementsPanel({
             )}
           </div>
           <div className="mt-3 text-xs text-lia-text-tertiary">
-            {requirements.filter((r) => r.required).length} obrigatórias,{" "}
+            {requirements.filter((r) => r.required).length} obrigatórias,{""}
             {requirements.filter((r) => !r.required).length} desejáveis
           </div>
         </CardContent>
@@ -240,8 +240,7 @@ export function TechnicalRequirementsPanel({
             <Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none mr-2" />
             Salvando...
           </>
-        ) : (
-          "Concluído"
+        ) : ("Concluído"
         )}
       </Button>
     </div>
@@ -286,22 +285,22 @@ function TechAutocomplete({
   }, [])
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "ArrowDown") {
+    if (e.key ==="ArrowDown") {
       e.preventDefault()
       setSelectedIndex((prev) =>
         prev < availableTechs.length - 1 ? prev + 1 : prev
       )
-    } else if (e.key === "ArrowUp") {
+    } else if (e.key ==="ArrowUp") {
       e.preventDefault()
       setSelectedIndex((prev) => (prev > 0 ? prev - 1 : 0))
-    } else if (e.key === "Enter") {
+    } else if (e.key ==="Enter") {
       e.preventDefault()
       if (availableTechs[selectedIndex]) {
         handleAdd(availableTechs[selectedIndex])
       } else if (search.trim()) {
         handleAdd(search.trim())
       }
-    } else if (e.key === "Escape") {
+    } else if (e.key ==="Escape") {
       setShowSuggestions(false)
     }
   }
@@ -360,7 +359,7 @@ function TechAutocomplete({
                 key={tech}
                 type="button"
                 className={`w-full text-left px-3 py-2 text-sm hover:bg-lia-bg-tertiary/50 dark:hover:bg-lia-bg-inverse ${
- index === selectedIndex ? "bg-lia-bg-tertiary dark:bg-lia-bg-elevated" : ""
+ index === selectedIndex ?"bg-lia-bg-tertiary dark:bg-lia-bg-elevated" :""
                 }`}
                 onClick={() => handleAdd(tech)}
                 onMouseEnter={() => setSelectedIndex(index)}
@@ -374,7 +373,7 @@ function TechAutocomplete({
               className="w-full text-left px-3 py-2 text-sm hover:bg-lia-bg-tertiary/50 bg-lia-bg-tertiary dark:bg-lia-bg-elevated dark:hover:bg-lia-border-medium"
               onClick={() => handleAdd(search.trim())}
             >
-              Adicionar "{search.trim()}"
+              Adicionar"{search.trim()}"
             </button>
           ) : null}
         </div>

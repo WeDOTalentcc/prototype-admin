@@ -1,14 +1,14 @@
 "use client"
 
-import React from "react"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Check, RotateCcw, ArrowRight } from "lucide-react"
-import { cn } from "@/lib/utils"
+import React from"react"
+import { Badge } from"@/components/ui/badge"
+import { Button } from"@/components/ui/button"
+import { Check, RotateCcw, ArrowRight } from"lucide-react"
+import { cn } from"@/lib/utils"
 
 interface DiffItem {
   question_id: string
-  action: "modified" | "added" | "removed"
+  action:"modified" |"added" |"removed"
   before?: string
   after?: string
   reason?: string
@@ -33,14 +33,14 @@ export function QuestionDiffView({
 
   const getActionBadge = (action: string) => {
     switch (action) {
-      case "modified":
-        return { label: "Modificada", className: "text-micro px-1.5 py-0 h-4 border bg-wedo-cyan/10 border-wedo-cyan/30" , style: {} }
-      case "added":
-        return { label: "Nova", className: "text-micro px-1.5 py-0 h-4 bg-status-success/10 text-status-success border border-status-success/30" , style: {} }
-      case "removed":
-        return { label: "Removida", className: "text-micro px-1.5 py-0 h-4 bg-status-error/10 text-status-error border border-status-error/30", style: {} }
+      case"modified":
+        return { label:"Modificada", className:"text-micro px-1.5 py-0 h-4 border bg-wedo-cyan/10 border-wedo-cyan/30" , style: {} }
+      case"added":
+        return { label:"Nova", className:"text-micro px-1.5 py-0 h-4  border border-status-success/30" , style: {} }
+      case"removed":
+        return { label:"Removida", className:"text-micro px-1.5 py-0 h-4  border border-status-error/30", style: {} }
       default:
-        return { label: action, className: "text-micro px-1.5 py-0 h-4 bg-lia-bg-tertiary text-lia-text-secondary border border-lia-border-subtle", style: {} }
+        return { label: action, className:"text-micro px-1.5 py-0 h-4 bg-lia-bg-tertiary text-lia-text-secondary border border-lia-border-subtle", style: {} }
     }
   }
 

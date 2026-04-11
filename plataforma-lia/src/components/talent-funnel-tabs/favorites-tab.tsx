@@ -1,22 +1,22 @@
 "use client"
 
-import { useState, useMemo, useCallback } from "react"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { EmptyState } from "@/components/ui/empty-state"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
+import { useState, useMemo, useCallback } from"react"
+import { Badge } from"@/components/ui/badge"
+import { Button } from"@/components/ui/button"
+import { EmptyState } from"@/components/ui/empty-state"
+import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
+import { Input } from"@/components/ui/input"
+import { Textarea } from"@/components/ui/textarea"
 import {
   Pin, Star, Search, MapPin,
   BarChart3, X, StickyNote,
   TrendingUp
-} from "lucide-react"
+} from"lucide-react"
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover"
+} from"@/components/ui/popover"
 import { textStyles, buttonStyles, cardStyles, badgeStyles } from '@/lib/design-tokens'
 import {
   UnifiedCandidateTable,
@@ -34,7 +34,7 @@ import {
   type TableSortConfig,
   getColumnDefinition,
   COLUMN_PRESETS
-} from "@/components/tables"
+} from"@/components/tables"
 
 interface FavoritesTabProps {
   candidates: TableCandidate[]
@@ -293,7 +293,7 @@ export function FavoritesTab({
                       <span className="text-xs text-lia-text-primary block mb-1.5">Localizações</span>
                       <div className="flex flex-wrap gap-1">
                         {Array.from(new Set(filteredCandidates.map(c => ((c.location || '') as string).split(',')[0]).filter(Boolean))).slice(0, 3).map((loc, idx) => (
-                          <Badge key={idx} variant="secondary" className="text-xs bg-status-success/15 text-status-success dark:bg-status-success/10 dark:text-status-success">
+                          <Badge key={idx} variant="secondary" className="text-xs  dark:bg-status-success/10 dark:text-status-success">
                             <MapPin className="w-2.5 h-2.5 mr-0.5" />
                             {loc}
                           </Badge>

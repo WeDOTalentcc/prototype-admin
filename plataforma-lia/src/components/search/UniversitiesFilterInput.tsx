@@ -1,13 +1,13 @@
 "use client"
 
-import { useState, useRef, useEffect, useCallback } from "react"
-import { X, Brain, Loader2, Search, RotateCcw, Save, List } from "lucide-react"
-import { cn } from "@/lib/utils"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { UniversityPresetsModal } from "./UniversityPresetsModal"
-import { useUIPreferencesStore } from "@/stores/ui-preferences-store"
+import { useState, useRef, useEffect, useCallback } from"react"
+import { X, Brain, Loader2, Search, RotateCcw, Save, List } from"lucide-react"
+import { cn } from"@/lib/utils"
+import { Badge } from"@/components/ui/badge"
+import { Button } from"@/components/ui/button"
+import { Input } from"@/components/ui/input"
+import { UniversityPresetsModal } from"./UniversityPresetsModal"
+import { useUIPreferencesStore } from"@/stores/ui-preferences-store"
 
 interface UniversitiesFilterInputProps {
   value: string[]
@@ -16,63 +16,13 @@ interface UniversitiesFilterInputProps {
   showPresets?: boolean
 }
 
-const POPULAR_UNIVERSITIES = [
-  "Harvard University",
-  "Stanford University",
-  "MIT (Massachusetts Institute of Technology)",
-  "Yale University",
-  "Princeton University",
-  "Columbia University",
-  "University of Pennsylvania",
-  "Brown University",
-  "Cornell University",
-  "Dartmouth College",
-  "UC Berkeley",
-  "UCLA",
-  "University of Michigan",
-  "University of Chicago",
-  "Northwestern University",
-  "Duke University",
-  "Caltech",
-  "Carnegie Mellon University",
-  "NYU (New York University)",
-  "University of Texas at Austin",
-  "Oxford University",
-  "Cambridge University",
-  "Imperial College London",
-  "London School of Economics",
-  "University College London",
-  "ETH Zurich",
-  "EPFL",
-  "USP (Universidade de São Paulo)",
-  "Unicamp",
-  "UFRJ",
-  "PUC-Rio",
-  "FGV",
-  "Insper",
-  "ITA",
-  "Mackenzie",
-  "UFMG",
-  "UFRGS",
-  "UFPR",
-  "UnB",
-  "Tsinghua University",
-  "Peking University",
-  "National University of Singapore",
-  "University of Melbourne",
-  "University of Sydney",
-  "University of Toronto",
-  "McGill University",
-  "KAIST",
-  "Seoul National University",
-  "University of Tokyo",
-  "Kyoto University",
+const POPULAR_UNIVERSITIES = ["Harvard University","Stanford University","MIT (Massachusetts Institute of Technology)","Yale University","Princeton University","Columbia University","University of Pennsylvania","Brown University","Cornell University","Dartmouth College","UC Berkeley","UCLA","University of Michigan","University of Chicago","Northwestern University","Duke University","Caltech","Carnegie Mellon University","NYU (New York University)","University of Texas at Austin","Oxford University","Cambridge University","Imperial College London","London School of Economics","University College London","ETH Zurich","EPFL","USP (Universidade de São Paulo)","Unicamp","UFRJ","PUC-Rio","FGV","Insper","ITA","Mackenzie","UFMG","UFRGS","UFPR","UnB","Tsinghua University","Peking University","National University of Singapore","University of Melbourne","University of Sydney","University of Toronto","McGill University","KAIST","Seoul National University","University of Tokyo","Kyoto University",
 ]
 
 export function UniversitiesFilterInput({
   value,
   onChange,
-  placeholder = "Type university name and press Enter",
+  placeholder ="Type university name and press Enter",
   showPresets = true
 }: UniversitiesFilterInputProps) {
   const { getCustomPresets, setCustomPresets: setCustomPresetsInStore } = useUIPreferencesStore()
@@ -106,7 +56,7 @@ export function UniversitiesFilterInput({
     .slice(0, 8)
 
   const dropdownItems = showAskAI 
-    ? [{ type: 'ai' as const, label: `Ask AI for "${inputValue}"`, university: null }, 
+    ? [{ type: 'ai' as const, label: `Ask AI for"${inputValue}"`, university: null }, 
        ...allSuggestions.map(u => ({ type: 'university' as const, label: u, university: u }))]
     : allSuggestions.map(u => ({ type: 'university' as const, label: u, university: u }))
 
@@ -365,10 +315,9 @@ export function UniversitiesFilterInput({
                     addUniversity(item.university)
                   }
                 }}
-                className={cn(
-                  "w-full text-left px-3 py-2 text-sm transition-colors",
-                  focusedIndex === index ? "bg-lia-bg-tertiary" : "hover:bg-lia-bg-secondary",
-                  item.type === 'ai' && ""
+                className={cn("w-full text-left px-3 py-2 text-sm transition-colors",
+                  focusedIndex === index ?"bg-lia-bg-tertiary" :"hover:bg-lia-bg-secondary",
+                  item.type === 'ai' &&""
                 )}
               >
                 {item.type === 'ai' ? (

@@ -1,13 +1,13 @@
 "use client"
 
-import { useState, useCallback } from "react"
-import { X, Pin, Brain, Loader2, Search, Zap } from "lucide-react"
-import { cn } from "@/lib/utils"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { useSemanticSearch, type SemanticSuggestion } from "@/hooks/useSemanticSearch"
-import { useTagInputState } from "@/hooks/useTagInputState"
+import { useState, useCallback } from"react"
+import { X, Pin, Brain, Loader2, Search, Zap } from"lucide-react"
+import { cn } from"@/lib/utils"
+import { Badge } from"@/components/ui/badge"
+import { Button } from"@/components/ui/button"
+import { Input } from"@/components/ui/input"
+import { useSemanticSearch, type SemanticSuggestion } from"@/hooks/useSemanticSearch"
+import { useTagInputState } from"@/hooks/useTagInputState"
 
 export interface SkillItem {
   name: string
@@ -20,20 +20,13 @@ interface SkillsFilterInputProps {
   placeholder?: string
 }
 
-const POPULAR_SKILLS = [
-  "Python", "JavaScript", "TypeScript", "React", "Node.js", "Java", "C#", 
-  "SQL", "AWS", "Docker", "Kubernetes", "Machine Learning", "Data Science",
-  "Project Management", "Agile", "Scrum", "Leadership", "Communication",
-  "Excel", "Power BI", "Tableau", "Figma", "Adobe XD", "UI Design", "UX Design",
-  "Go", "Rust", "Ruby", "PHP", "Swift", "Kotlin", "Terraform", "Azure", "GCP",
-  "MongoDB", "PostgreSQL", "Redis", "Elasticsearch", "GraphQL", "REST API",
-  "Git", "Linux", "Microservices", "DevOps", "CI/CD", "TDD", "Clean Code"
+const POPULAR_SKILLS = ["Python","JavaScript","TypeScript","React","Node.js","Java","C#","SQL","AWS","Docker","Kubernetes","Machine Learning","Data Science","Project Management","Agile","Scrum","Leadership","Communication","Excel","Power BI","Tableau","Figma","Adobe XD","UI Design","UX Design","Go","Rust","Ruby","PHP","Swift","Kotlin","Terraform","Azure","GCP","MongoDB","PostgreSQL","Redis","Elasticsearch","GraphQL","REST API","Git","Linux","Microservices","DevOps","CI/CD","TDD","Clean Code"
 ]
 
 export function SkillsFilterInput({
   value,
   onChange,
-  placeholder = "Digite skill e pressione Enter (ex: Python, React, AWS)"
+  placeholder ="Digite skill e pressione Enter (ex: Python, React, AWS)"
 }: SkillsFilterInputProps) {
   const {
     inputValue, setInputValue,
@@ -51,7 +44,7 @@ export function SkillsFilterInput({
     search: searchSemantic,
     clearSuggestions,
     cached: isCached
-  } = useSemanticSearch({ domain: "skills", debounceMs: 400 })
+  } = useSemanticSearch({ domain:"skills", debounceMs: 400 })
 
   const existingSkillNames = value.map(s => s.name.toLowerCase())
 
@@ -75,7 +68,7 @@ export function SkillsFilterInput({
   const showAskAI = inputValue.trim().length >= 2
   const dropdownItems = [
     ...semanticItems,
-    ...(showAskAI && semanticItems.length === 0 ? [{ type: 'ai' as const, label: `Buscar com IA "${inputValue}"`, confidence: 0, is_synonym: false, is_related: false }] : []),
+    ...(showAskAI && semanticItems.length === 0 ? [{ type: 'ai' as const, label: `Buscar com IA"${inputValue}"`, confidence: 0, is_synonym: false, is_related: false }] : []),
     ...filteredSuggestions.map(s => ({ type: 'skill' as const, label: s, confidence: 0, is_synonym: false, is_related: false }))
   ]
 
@@ -257,10 +250,9 @@ export function SkillsFilterInput({
                     addSkill(item.label)
                   }
                 }}
-                className={cn(
-                  "w-full text-left px-3 py-2 text-sm transition-colors",
-                  focusedIndex === index ? "bg-lia-bg-tertiary" : "hover:bg-lia-bg-secondary",
-                  item.type === 'ai' && ""
+                className={cn("w-full text-left px-3 py-2 text-sm transition-colors",
+                  focusedIndex === index ?"bg-lia-bg-tertiary" :"hover:bg-lia-bg-secondary",
+                  item.type === 'ai' &&""
                 )}
               >
                 {item.type === 'ai' ? (

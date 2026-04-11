@@ -1,19 +1,19 @@
 "use client"
 
-import { formatBRL } from "@/lib/pricing"
+import { formatBRL } from"@/lib/pricing"
 
-import React from "react"
-import { Badge } from "@/components/ui/badge"
+import React from"react"
+import { Badge } from"@/components/ui/badge"
 import {
   Calendar, Clock, MapPin, DollarSign, Heart, Shield, Building, Lock, Globe,
   ChevronRight, ClipboardList, Lightbulb,
   Brain, CheckCircle, Target, BarChart3,
   FileText, Layers3, CalendarCheck, Settings, MessageSquare, Phone,
   ChevronDown, ChevronUp
-} from "lucide-react"
-import { type Job } from "@/components/jobs"
-import { type ScreeningConfig } from "@/hooks/useScreeningConfig"
-import { WSI_BLOCKS, WSI_AUTOMATIC_MESSAGES, formatMessageWithVariables } from "@/components/jobs/jobsPageConstants"
+} from"lucide-react"
+import { type Job } from"@/components/jobs"
+import { type ScreeningConfig } from"@/hooks/useScreeningConfig"
+import { WSI_BLOCKS, WSI_AUTOMATIC_MESSAGES, formatMessageWithVariables } from"@/components/jobs/jobsPageConstants"
 import {
   type TechnicalRequirement,
   type BehavioralCompetency,
@@ -22,7 +22,7 @@ import {
   type InterviewStage,
   type Language,
   type ScreeningQuestion,
-} from "../job-preview.types"
+} from"../job-preview.types"
 
 interface JobScreeningSectionProps {
   previewJob: Job
@@ -223,7 +223,7 @@ export function JobScreeningSection({
                                     </Badge>
                                   )}
                                   {lang.required && (
-                                    <Badge className="text-[0.625rem] leading-none px-1.5 py-0.5 bg-status-error/10 text-status-error border border-status-error/30">
+                                    <Badge className="text-[0.625rem] leading-none px-1.5 py-0.5  border border-status-error/30">
                                       Obrigatório
                                     </Badge>
                                   )}
@@ -508,7 +508,7 @@ export function JobScreeningSection({
                                     {block.editable && blockQuestions.length > 0 && (
                                       <>
                                         {eliminatoryCount > 0 && (
-                                          <Badge className="text-micro px-1.5 py-0 bg-status-error/10 text-status-error border border-status-error/30">
+                                          <Badge className="text-micro px-1.5 py-0  border border-status-error/30">
                                             {eliminatoryCount} Elim.
                                           </Badge>
                                         )}
@@ -577,11 +577,11 @@ export function JobScreeningSection({
                                               <div className="flex items-center gap-1.5 mb-1 flex-wrap">
                                                 <Badge className={`text-[0.625rem] leading-none px-1.5 py-0.5 rounded-full ${
                                                   item.category === 'behavioral' || item.category === 'Comportamental'
-                                                    ? 'bg-wedo-purple/15 text-wedo-purple border border-wedo-purple/30'
+                                                    ? ' border border-wedo-purple/30'
                                                     : item.category === 'technical' || item.category === 'Técnica'
-                                                    ? 'bg-wedo-cyan/10 text-wedo-cyan-dark border border-wedo-cyan/30'
+                                                    ? '-dark border border-wedo-cyan/30'
                                                     : item.category === 'eligibility' || item.category === 'Elegibilidade'
-                                                    ? 'bg-status-success/15 text-status-success border border-status-success/30'
+                                                    ? ' border border-status-success/30'
                                                     : 'bg-lia-bg-tertiary text-lia-text-secondary border border-lia-border-subtle'
                                                 }`}>
                                                   {item.category === 'behavioral' ? 'Comport.' 
@@ -591,7 +591,7 @@ export function JobScreeningSection({
                                                     : item.category || 'Geral'}
                                                 </Badge>
                                                 {(item.type === 'eliminatory' || item.required) && (
-                                                  <Badge className="text-[0.625rem] leading-none px-1.5 py-0.5 rounded-full bg-status-error/10 text-status-error border border-status-error/30">
+                                                  <Badge className="text-[0.625rem] leading-none px-1.5 py-0.5 rounded-full  border border-status-error/30">
                                                     Eliminatória
                                                   </Badge>
                                                 )}
@@ -705,17 +705,17 @@ export function JobScreeningSection({
                         <div className="flex items-center gap-3 mb-3 mt-3 pb-3">
                           <span className="text-[0.625rem] text-lia-text-tertiary">Canais:</span>
                           <div className="flex items-center gap-2">
-                            <div className={`flex items-center gap-1 px-1.5 py-0.5 rounded-md ${(screeningConfig?.channels?.whatsapp?.enabled ?? true) ? 'bg-status-success/10 text-status-success' : 'bg-lia-bg-tertiary text-lia-text-secondary'}`}>
+                            <div className={`flex items-center gap-1 px-1.5 py-0.5 rounded-md ${(screeningConfig?.channels?.whatsapp?.enabled ?? true) ? '' : 'bg-lia-bg-tertiary text-lia-text-secondary'}`}>
                               <MessageSquare className="w-2.5 h-2.5" />
                               <span className="text-[0.625rem] font-medium">WhatsApp</span>
                               {(screeningConfig?.channels?.whatsapp?.enabled ?? true) && <CheckCircle className="w-2.5 h-2.5" />}
                             </div>
-                            <div className={`flex items-center gap-1 px-1.5 py-0.5 rounded-md ${(screeningConfig?.channels?.chat_web?.enabled ?? true) ? 'bg-status-success/10 text-status-success' : 'bg-lia-bg-tertiary text-lia-text-secondary'}`}>
+                            <div className={`flex items-center gap-1 px-1.5 py-0.5 rounded-md ${(screeningConfig?.channels?.chat_web?.enabled ?? true) ? '' : 'bg-lia-bg-tertiary text-lia-text-secondary'}`}>
                               <Globe className="w-2.5 h-2.5" />
                               <span className="text-[0.625rem] font-medium">Chat Web</span>
                               {(screeningConfig?.channels?.chat_web?.enabled ?? true) && <CheckCircle className="w-2.5 h-2.5" />}
                             </div>
-                            <div className={`flex items-center gap-1 px-1.5 py-0.5 rounded-md ${(screeningConfig?.channels?.phone?.enabled ?? false) ? 'bg-status-success/10 text-status-success' : 'bg-lia-bg-tertiary text-lia-text-secondary'}`}>
+                            <div className={`flex items-center gap-1 px-1.5 py-0.5 rounded-md ${(screeningConfig?.channels?.phone?.enabled ?? false) ? '' : 'bg-lia-bg-tertiary text-lia-text-secondary'}`}>
                               <Phone className="w-2.5 h-2.5" />
                               <span className="text-[0.625rem] font-medium">Ligação</span>
                               {(screeningConfig?.channels?.phone?.enabled ?? false) && <CheckCircle className="w-2.5 h-2.5" />}
@@ -746,7 +746,7 @@ export function JobScreeningSection({
                           </div>
                           <div className="flex items-center justify-between">
                             <span className="text-[0.625rem] text-lia-text-tertiary">Fallback</span>
-                            <Badge className="text-[0.625rem] leading-none px-1.5 py-0.5 bg-wedo-orange/15 text-wedo-orange">Revisão Manual</Badge>
+                            <Badge className="text-[0.625rem] leading-none px-1.5 py-0.5">Revisão Manual</Badge>
                           </div>
                         </div>
 

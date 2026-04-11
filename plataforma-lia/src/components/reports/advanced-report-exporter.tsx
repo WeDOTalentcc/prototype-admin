@@ -1,14 +1,14 @@
 "use client"
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+import { useState } from"react"
+import { Button } from"@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
+import { Badge } from"@/components/ui/badge"
 import {
   Download, FileText, Table, Image, Mail, Calendar, Settings,
   CheckCircle, AlertCircle, Clock, Target, BarChart3, PieChart,
   TrendingUp, Users, DollarSign, Star, Zap, RefreshCw
-} from "lucide-react"
+} from"lucide-react"
 
 interface ReportTemplate {
   id: string

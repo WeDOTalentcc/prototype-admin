@@ -74,9 +74,9 @@ const CandidateBadges = memo(function CandidateBadges({
           <Badge
             key={i}
             variant={COLOR_TO_VARIANT[badge.color]}
-            className={cn("gap-1", compact && "px-1 py-0")}
+            className={cn("gap-1", compact &&"px-1 py-0")}
           >
-            {IconComponent && <IconComponent className={cn("w-3 h-3", compact && "w-2.5 h-2.5")} />}
+            {IconComponent && <IconComponent className={cn("w-3 h-3", compact &&"w-2.5 h-2.5")} />}
             {badge.label}
           </Badge>
         )

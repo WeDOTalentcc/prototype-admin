@@ -1,16 +1,16 @@
 "use client"
 
-import React from "react"
-import { CURRENCY_SYMBOL, formatBRLCompact } from "@/lib/pricing"
-import { SCREENING_STATUS_LABELS } from "@/types/screening"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
+import React from"react"
+import { CURRENCY_SYMBOL, formatBRLCompact } from"@/lib/pricing"
+import { SCREENING_STATUS_LABELS } from"@/types/screening"
+import { Button } from"@/components/ui/button"
+import { Badge } from"@/components/ui/badge"
 import {
   Calendar, Clock, MapPin, DollarSign, Heart, Shield, Building, Lock, Globe,
   Expand, X, ChevronRight,
-} from "lucide-react"
-import { type Job } from "@/components/jobs"
-import { getStatusColor } from "@/components/jobs/jobsPageConstants"
+} from"lucide-react"
+import { type Job } from"@/components/jobs"
+import { getStatusColor } from"@/components/jobs/jobsPageConstants"
 
 interface JobPreviewHeaderProps {
   previewJob: Job
@@ -80,12 +80,12 @@ export function JobPreviewHeader({ previewJob, onClose, onJobClick }: JobPreview
                 </Badge>
               )}
               {previewJob.level && (
-                <Badge className="text-[0.625rem] leading-none px-1.5 py-0.5 bg-status-warning/10 text-status-warning border border-status-warning/30">
+                <Badge className="text-[0.625rem] leading-none px-1.5 py-0.5  border border-status-warning/30">
                   {previewJob.level}
                 </Badge>
               )}
               {previewJob.location && (
-                <Badge className="text-[0.625rem] leading-none px-1.5 py-0.5 bg-wedo-cyan/10 text-wedo-cyan-dark border border-wedo-cyan/30 flex items-center gap-0.5">
+                <Badge className="text-[0.625rem] leading-none px-1.5 py-0.5 -dark border border-wedo-cyan/30 flex items-center gap-0.5">
                   <MapPin className="w-2.5 h-2.5" />
                   {previewJob.location}
                 </Badge>
@@ -101,13 +101,13 @@ export function JobPreviewHeader({ previewJob, onClose, onJobClick }: JobPreview
                 </Badge>
               )}
               {(previewJob.visibility === 'confidential' || previewJob.isConfidential) && (
-                <Badge variant="outline" className="text-[0.625rem] leading-none px-1.5 py-0.5 bg-wedo-orange/10 text-wedo-orange border-wedo-orange/30">
+                <Badge variant="outline" className="text-[0.625rem] leading-none px-1.5 py-0.5  border-wedo-orange/30">
                   <Shield className="w-2.5 h-2.5 mr-0.5" />
                   Confidencial
                 </Badge>
               )}
               {previewJob.visibility === 'internal' && (
-                <Badge variant="outline" className="text-[0.625rem] leading-none px-1.5 py-0.5 bg-wedo-cyan/10 text-wedo-cyan-dark border-wedo-cyan/30">
+                <Badge variant="outline" className="text-[0.625rem] leading-none px-1.5 py-0.5 -dark border-wedo-cyan/30">
                   <Building className="w-2.5 h-2.5 mr-0.5" />
                   Interna
                 </Badge>
@@ -119,7 +119,7 @@ export function JobPreviewHeader({ previewJob, onClose, onJobClick }: JobPreview
                 </Badge>
               )}
               {(previewJob.publishedLinkedIn || previewJob.publishedWebsite) ? (
-                <Badge variant="outline" className="text-[0.625rem] leading-none px-1.5 py-0.5 bg-status-success/10 text-status-success border-status-success/30 flex items-center gap-0.5">
+                <Badge variant="outline" className="text-[0.625rem] leading-none px-1.5 py-0.5  border-status-success/30 flex items-center gap-0.5">
                   <Globe className="w-2.5 h-2.5" />
                   Publicada
                 </Badge>
@@ -130,7 +130,7 @@ export function JobPreviewHeader({ previewJob, onClose, onJobClick }: JobPreview
                 </Badge>
               )}
               {(previewJob.salaryRange?.min || previewJob.salaryRange?.max || (previewJob as unknown as Record<string, number | undefined>).salaryMin || (previewJob as unknown as Record<string, number | undefined>).salaryMax) && (
-                <Badge className="text-[0.625rem] leading-none px-1.5 py-0.5 bg-status-success/10 text-status-success border border-status-success/30 flex items-center gap-0.5">
+                <Badge className="text-[0.625rem] leading-none px-1.5 py-0.5  border border-status-success/30 flex items-center gap-0.5">
                   <DollarSign className="w-2.5 h-2.5" />
                   {(() => {
                     const min = previewJob.salaryRange?.min || (previewJob as unknown as Record<string, number | undefined>).salaryMin

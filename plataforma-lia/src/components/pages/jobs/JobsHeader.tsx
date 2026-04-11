@@ -1,11 +1,11 @@
 "use client"
 
-import React, { memo } from "react"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Briefcase, Plus, LayoutGrid, List, Kanban } from "lucide-react"
-import type { JobMetrics } from "./types"
+import React, { memo } from"react"
+import { Button } from"@/components/ui/button"
+import { Badge } from"@/components/ui/badge"
+import { Tabs, TabsList, TabsTrigger } from"@/components/ui/tabs"
+import { Briefcase, Plus, LayoutGrid, List, Kanban } from"lucide-react"
+import type { JobMetrics } from"./types"
 
 interface JobsHeaderProps {
   metrics: JobMetrics | null
@@ -38,10 +38,10 @@ const JobsHeader = memo(function JobsHeader({
               <Badge variant="outline" className="border-lia-border-default dark:border-lia-border-default text-lia-text-secondary">
                 {metrics.totalJobs} total
               </Badge>
-              <Badge variant="success" className="">
+              <Badge variant="success" >
                 {metrics.activeJobs} ativas
               </Badge>
-              <Badge variant="warning" className="">
+              <Badge variant="warning" >
                 {metrics.draftJobs} rascunhos
               </Badge>
             </div>

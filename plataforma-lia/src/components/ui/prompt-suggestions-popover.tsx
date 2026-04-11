@@ -1,20 +1,20 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useState } from"react"
 import { 
   Lightbulb, Brain, Search, Users, Mail, Calendar, 
   FileText, Target, Zap, BarChart3, MessageSquare,
   UserCheck, Send, Plus, RefreshCcw, Building,
   Globe, Briefcase, X, ChevronRight
-} from "lucide-react"
-import { Button } from "@/components/ui/button"
+} from"lucide-react"
+import { Button } from"@/components/ui/button"
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover"
-import { Badge } from "@/components/ui/badge"
-import { cn } from "@/lib/utils"
+} from"@/components/ui/popover"
+import { Badge } from"@/components/ui/badge"
+import { cn } from"@/lib/utils"
 
 export interface PromptSuggestion {
   id: string
@@ -38,10 +38,10 @@ interface PromptSuggestionsPopoverProps {
 }
 
 const CATEGORY_LABELS = {
-  vagas: { label: 'Vagas', color: 'bg-wedo-cyan/15 text-wedo-cyan-dark' },
-  candidatos: { label: 'Candidatos', color: 'bg-status-success/15 text-status-success' },
-  comunicacao: { label: 'Comunicação', color: 'bg-wedo-purple/15 text-wedo-purple' },
-  analytics: { label: 'Analytics', color: 'bg-wedo-orange/15 text-wedo-orange' },
+  vagas: { label: 'Vagas', color: '' },
+  candidatos: { label: 'Candidatos', color: '' },
+  comunicacao: { label: 'Comunicação', color: '' },
+  analytics: { label: 'Analytics', color: '' },
   automacao: { label: 'Automação', color: 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-primary' }
 }
 
@@ -215,7 +215,7 @@ export function PromptSuggestionsPopover({
   const handleSelect = (command: string) => {
     let finalCommand = command
     if (context.jobTitle) {
-      finalCommand = command.replace('esta vaga', `a vaga "${context.jobTitle}"`)
+      finalCommand = command.replace('esta vaga', `a vaga"${context.jobTitle}"`)
     }
     onSelect(finalCommand)
     setIsOpen(false)
@@ -231,11 +231,8 @@ export function PromptSuggestionsPopover({
         <Button
           variant="ghost"
           size="sm"
-          className={cn(
- "h-7 px-2 gap-1.5 text-xs font-medium transition-colors",
-            "hover:bg-lia-interactive-hover hover:text-lia-text-primary",
-            "border border-transparent hover:border-lia-border-default",
-            isOpen && "bg-lia-interactive-hover text-lia-text-secondary border-lia-border-default",
+          className={cn("h-7 px-2 gap-1.5 text-xs font-medium transition-colors","hover:bg-lia-interactive-hover hover:text-lia-text-primary","border border-transparent hover:border-lia-border-default",
+            isOpen &&"bg-lia-interactive-hover text-lia-text-secondary border-lia-border-default",
             className
           )}
         >
@@ -264,11 +261,10 @@ export function PromptSuggestionsPopover({
           <div className="flex flex-wrap gap-1">
             <button
               onClick={() => setActiveCategory(null)}
-              className={cn(
- "px-2 py-0.5 rounded-md text-xs font-medium transition-colors",
+              className={cn("px-2 py-0.5 rounded-md text-xs font-medium transition-colors",
                 !activeCategory 
-                  ? "bg-lia-btn-primary-bg text-lia-btn-primary-text" 
-                  : "bg-lia-bg-tertiary text-lia-text-secondary hover:bg-lia-interactive-active dark:bg-lia-bg-elevated"
+                  ?"bg-lia-btn-primary-bg text-lia-btn-primary-text" 
+                  :"bg-lia-bg-tertiary text-lia-text-secondary hover:bg-lia-interactive-active dark:bg-lia-bg-elevated"
               )}
             >
               Todas
@@ -277,11 +273,10 @@ export function PromptSuggestionsPopover({
               <button
                 key={key}
                 onClick={() => setActiveCategory(activeCategory === key ? null : key)}
-                className={cn(
- "px-2 py-0.5 rounded-md text-xs font-medium transition-colors",
+                className={cn("px-2 py-0.5 rounded-md text-xs font-medium transition-colors",
                   activeCategory === key 
-                    ? "bg-lia-btn-primary-bg text-lia-btn-primary-text" 
-                    : "bg-lia-bg-tertiary text-lia-text-secondary hover:bg-lia-interactive-active dark:bg-lia-bg-elevated"
+                    ?"bg-lia-btn-primary-bg text-lia-btn-primary-text" 
+                    :"bg-lia-bg-tertiary text-lia-text-secondary hover:bg-lia-interactive-active dark:bg-lia-bg-elevated"
                 )}
               >
                 {label}

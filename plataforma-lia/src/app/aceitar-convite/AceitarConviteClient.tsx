@@ -1,13 +1,13 @@
 "use client"
 
-import { useState, useEffect, Suspense } from "react"
-import { useSearchParams, useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import Image from "next/image"
-import Link from "next/link"
-import { toast } from "sonner"
+import { useState, useEffect, Suspense } from"react"
+import { useSearchParams, useRouter } from"next/navigation"
+import { Button } from"@/components/ui/button"
+import { Card, CardContent } from"@/components/ui/card"
+import { Badge } from"@/components/ui/badge"
+import Image from"next/image"
+import Link from"next/link"
+import { toast } from"sonner"
 import {
   Loader2,
   CheckCircle,
@@ -16,7 +16,7 @@ import {
   Building2,
   Calendar,
   Briefcase
-} from "lucide-react"
+} from"lucide-react"
 
 interface InvitationInfo {
   name: string
@@ -27,7 +27,7 @@ interface InvitationInfo {
   valid: boolean
 }
 
-type PageState = "loading" | "valid" | "expired" | "accepted" | "error"
+type PageState ="loading" |"valid" |"expired" |"accepted" |"error"
 
 function AceitarConviteContent() {
   const searchParams = useSearchParams()
@@ -52,10 +52,10 @@ function AceitarConviteContent() {
         
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}))
-          if (response.status === 410 || errorData.details?.code === "EXPIRED") {
+          if (response.status === 410 || errorData.details?.code ==="EXPIRED") {
             setPageState("expired")
           } else {
-            setError(errorData.details?.detail || errorData.error || "Convite inválido")
+            setError(errorData.details?.detail || errorData.error ||"Convite inválido")
             setPageState("error")
           }
           return
@@ -81,14 +81,14 @@ function AceitarConviteContent() {
 
     try {
       const response = await fetch("/api/backend-proxy/invitations/accept", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+        method:"POST",
+        headers: {"Content-Type":"application/json" },
         body: JSON.stringify({ token }),
       })
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
-        throw new Error(errorData.details?.detail || errorData.error || "Erro ao aceitar convite")
+        throw new Error(errorData.details?.detail || errorData.error ||"Erro ao aceitar convite")
       }
 
       setPageState("accepted")
@@ -98,7 +98,7 @@ function AceitarConviteContent() {
         router.push("/login")
       }, 2000)
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : String(err) || "Erro ao aceitar convite. Tente novamente.")
+      setError(err instanceof Error ? err.message : String(err) ||"Erro ao aceitar convite. Tente novamente.")
     } finally {
       setIsAccepting(false)
     }
@@ -108,9 +108,9 @@ function AceitarConviteContent() {
     try {
       const date = new Date(dateString)
       return date.toLocaleDateString("pt-BR", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric"
+        day:"2-digit",
+        month:"2-digit",
+        year:"numeric"
       })
     } catch {
       return dateString
@@ -119,15 +119,15 @@ function AceitarConviteContent() {
 
   const getRoleName = (role: string) => {
     const roleNames: Record<string, string> = {
-      admin: "Administrador",
-      recruiter: "Recrutador",
-      manager: "Gestor",
-      viewer: "Visualizador"
+      admin:"Administrador",
+      recruiter:"Recrutador",
+      manager:"Gestor",
+      viewer:"Visualizador"
     }
-    return roleNames[role?.toLowerCase()] || role || "Membro"
+    return roleNames[role?.toLowerCase()] || role ||"Membro"
   }
 
-  if (pageState === "loading") {
+  if (pageState ==="loading") {
     return (
       <div className="min-h-screen flex items-center justify-center bg-lia-bg-primary" role="status" aria-live="polite" aria-label="Carregando...">
         <Card className="w-full max-w-md mx-4 border-0">
@@ -140,7 +140,7 @@ function AceitarConviteContent() {
     )
   }
 
-  if (pageState === "expired") {
+  if (pageState ==="expired") {
     return (
       <div className="min-h-screen flex items-center justify-center bg-lia-bg-primary p-4">
         <Card className="w-full max-w-md border-0">
@@ -180,7 +180,7 @@ function AceitarConviteContent() {
     )
   }
 
-  if (pageState === "error") {
+  if (pageState ==="error") {
     return (
       <div className="min-h-screen flex items-center justify-center bg-lia-bg-primary p-4">
         <Card className="w-full max-w-md border-0">
@@ -205,7 +205,7 @@ function AceitarConviteContent() {
                 Convite Inválido
               </h2>
               <p className="text-lia-text-secondary text-sm mb-6">
-                {error || "O link de convite é inválido. Por favor, verifique o link ou solicite um novo convite."}
+                {error ||"O link de convite é inválido. Por favor, verifique o link ou solicite um novo convite."}
               </p>
               
               <Link href="/login">
@@ -220,7 +220,7 @@ function AceitarConviteContent() {
     )
   }
 
-  if (pageState === "accepted") {
+  if (pageState ==="accepted") {
     return (
       <div className="min-h-screen flex items-center justify-center bg-lia-bg-primary p-4">
         <Card className="w-full max-w-md border-0">
@@ -359,10 +359,10 @@ function AceitarConviteContent() {
           </Button>
 
           <p className="text-center text-xs text-lia-text-tertiary mt-4">
-            Ao aceitar, você concorda com os{" "}
+            Ao aceitar, você concorda com os{""}
             <Link href="/privacidade" className="text-lia-text-secondary dark:text-lia-text-tertiary hover:underline">
               Termos de Uso
-            </Link>{" "}
+            </Link>{""}
             da plataforma.
           </p>
         </CardContent>

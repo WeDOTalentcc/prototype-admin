@@ -1,16 +1,16 @@
 "use client"
 
-import { useState, useRef, useEffect, useCallback } from "react"
-import { X, Search, Save, List, RotateCcw } from "lucide-react"
-import { cn } from "@/lib/utils"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { RadiusDropdown, RadiusValue } from "./RadiusDropdown"
-import { TimezoneDropdown } from "./TimezoneDropdown"
-import { LocationPresetsModal, LocationItem } from "./LocationPresetsModal"
+import { useState, useRef, useEffect, useCallback } from"react"
+import { X, Search, Save, List, RotateCcw } from"lucide-react"
+import { cn } from"@/lib/utils"
+import { Badge } from"@/components/ui/badge"
+import { Button } from"@/components/ui/button"
+import { Input } from"@/components/ui/input"
+import { RadiusDropdown, RadiusValue } from"./RadiusDropdown"
+import { TimezoneDropdown } from"./TimezoneDropdown"
+import { LocationPresetsModal, LocationItem } from"./LocationPresetsModal"
 export type { LocationItem }
-import { LOCATION_CITIES as CITIES, LOCATION_COUNTRIES as COUNTRIES, LOCATION_REGIONS as REGIONS, LocationData } from "@/data/location-data"
+import { LOCATION_CITIES as CITIES, LOCATION_COUNTRIES as COUNTRIES, LOCATION_REGIONS as REGIONS, LocationData } from"@/data/location-data"
 
 interface LocationFilterInputProps {
   value: LocationItem[]
@@ -33,7 +33,7 @@ export function LocationFilterInput({
   onRadiusChange,
   timezone = null,
   onTimezoneChange,
-  placeholder = "Type location and press Enter (city, country, or region)",
+  placeholder ="Type location and press Enter (city, country, or region)",
   showRadius = true,
   showTimezone = true,
   showPresets = true
@@ -262,9 +262,8 @@ export function LocationFilterInput({
                   <button
                     key={`item-${item.label}`}
                     onClick={() => item.data && addLocation(item.data)}
-                    className={cn(
-                      "w-full text-left px-3 py-2 text-sm transition-colors",
-                      focusedIndex === currentSelectableIndex ? "bg-lia-bg-tertiary" : "hover:bg-lia-bg-secondary"
+                    className={cn("w-full text-left px-3 py-2 text-sm transition-colors",
+                      focusedIndex === currentSelectableIndex ?"bg-lia-bg-tertiary" :"hover:bg-lia-bg-secondary"
                     )}
                   >
                     <span className="text-lia-text-primary">{item.label}</span>

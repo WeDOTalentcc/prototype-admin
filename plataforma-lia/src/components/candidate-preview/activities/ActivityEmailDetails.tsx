@@ -1,10 +1,10 @@
 "use client"
 
-import React from "react"
-import { Badge } from "@/components/ui/badge"
-import { CheckCircle, Mail } from "lucide-react"
+import React from"react"
+import { Badge } from"@/components/ui/badge"
+import { CheckCircle, Mail } from"lucide-react"
 import { textStyles } from '@/lib/design-tokens'
-import type { Activity as ActivityData } from "@/data/demo-activities"
+import type { Activity as ActivityData } from"@/data/demo-activities"
 
 interface ActivityEmailDetailsProps {
   activity: ActivityData & { details: NonNullable<ActivityData['details']> }

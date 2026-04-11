@@ -1,16 +1,16 @@
 "use client"
 
-import { useState, useEffect, useMemo } from "react"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
+import { useState, useEffect, useMemo } from"react"
+import { Card, CardContent } from"@/components/ui/card"
+import { Badge } from"@/components/ui/badge"
+import { Button } from"@/components/ui/button"
 import {
   ChevronDown, ChevronUp, CheckCircle, AlertTriangle, XCircle,
   Target, Clock, Trophy, BarChart3, Star, ShieldAlert, Layers,
   Mic, Mic2, BookOpen, Zap, Info, AlertCircle, Loader2
-} from "lucide-react"
-import { liaApi } from "@/services/lia-api"
-import type { WSIResultDetails } from "@/services/lia-api/types/wsi.types"
+} from"lucide-react"
+import { liaApi } from"@/services/lia-api"
+import type { WSIResultDetails } from"@/services/lia-api/types/wsi.types"
 
 interface WSIDetailedReportProps {
   resultId: string
@@ -21,67 +21,67 @@ interface WSIDetailedReportProps {
   onRequestReview?: (resultId: string) => void
 }
 
-type TabKey = "respostas" | "parecer" | "ranking"
+type TabKey ="respostas" |"parecer" |"ranking"
 
 const TABS: { key: TabKey; label: string }[] = [
-  { key: "respostas", label: "Respostas e Avaliação" },
-  { key: "parecer", label: "Parecer e Feedback" },
-  { key: "ranking", label: "Ranking e Comparativo" },
+  { key:"respostas", label:"Respostas e Avaliação" },
+  { key:"parecer", label:"Parecer e Feedback" },
+  { key:"ranking", label:"Ranking e Comparativo" },
 ]
 
 const severidadeConfig = {
-  alta: { label: "ALTA", color: "text-status-error", bg: "bg-status-error/10", border: "border-status-error/30", dot: "bg-status-error" },
-  media: { label: "MÉDIA", color: "text-status-warning", bg: "bg-status-warning/10", border: "border-status-warning/30", dot: "bg-status-warning" },
-  baixa: { label: "BAIXA", color: "text-lia-text-tertiary", bg: "bg-lia-bg-secondary", border: "border-lia-border-subtle", dot: "bg-lia-text-tertiary" },
+  alta: { label:"ALTA", color:"text-status-error", bg:"bg-status-error/10", border:"border-status-error/30", dot:"bg-status-error" },
+  media: { label:"MÉDIA", color:"text-status-warning", bg:"bg-status-warning/10", border:"border-status-warning/30", dot:"bg-status-warning" },
+  baixa: { label:"BAIXA", color:"text-lia-text-tertiary", bg:"bg-lia-bg-secondary", border:"border-lia-border-subtle", dot:"bg-lia-text-tertiary" },
 }
 
 const gapConfig = {
-  ok: { label: "Alinhado", icon: CheckCircle, color: "text-status-success", bg: "bg-status-success/10", border: "border-status-success/30" },
-  aligned: { label: "Alinhado", icon: CheckCircle, color: "text-status-success", bg: "bg-status-success/10", border: "border-status-success/30" },
-  acima: { label: "Acima do esperado", icon: Star, color: "text-wedo-cyan-dark", bg: "bg-wedo-cyan/10", border: "border-wedo-cyan/30" },
-  above: { label: "Acima do esperado", icon: Star, color: "text-wedo-cyan-dark", bg: "bg-wedo-cyan/10", border: "border-wedo-cyan/30" },
-  gap: { label: "Gap identificado", icon: AlertTriangle, color: "text-status-warning", bg: "bg-status-warning/10", border: "border-status-warning/30" },
-  below: { label: "Gap identificado", icon: AlertTriangle, color: "text-status-warning", bg: "bg-status-warning/10", border: "border-status-warning/30" },
-  critical_gap: { label: "Gap crítico", icon: XCircle, color: "text-status-error", bg: "bg-status-error/10", border: "border-status-error/30" },
+  ok: { label:"Alinhado", icon: CheckCircle, color:"text-status-success", bg:"bg-status-success/10", border:"border-status-success/30" },
+  aligned: { label:"Alinhado", icon: CheckCircle, color:"text-status-success", bg:"bg-status-success/10", border:"border-status-success/30" },
+  acima: { label:"Acima do esperado", icon: Star, color:"text-wedo-cyan-dark", bg:"bg-wedo-cyan/10", border:"border-wedo-cyan/30" },
+  above: { label:"Acima do esperado", icon: Star, color:"text-wedo-cyan-dark", bg:"bg-wedo-cyan/10", border:"border-wedo-cyan/30" },
+  gap: { label:"Gap identificado", icon: AlertTriangle, color:"text-status-warning", bg:"bg-status-warning/10", border:"border-status-warning/30" },
+  below: { label:"Gap identificado", icon: AlertTriangle, color:"text-status-warning", bg:"bg-status-warning/10", border:"border-status-warning/30" },
+  critical_gap: { label:"Gap crítico", icon: XCircle, color:"text-status-error", bg:"bg-status-error/10", border:"border-status-error/30" },
 }
 
 function getClassificacao(score: number): { label: string; color: string } {
-  if (score >= 4.5) return { label: "Excepcional", color: "text-status-success" }
-  if (score >= 4.0) return { label: "Excelente", color: "text-status-success" }
-  if (score >= 3.5) return { label: "Alto", color: "text-wedo-cyan-dark" }
-  if (score >= 3.0) return { label: "Médio", color: "text-status-warning" }
-  if (score >= 2.25) return { label: "Abaixo da média", color: "text-wedo-orange" }
-  return { label: "Regular / Baixo", color: "text-status-error" }
+  if (score >= 4.5) return { label:"Excepcional", color:"text-status-success" }
+  if (score >= 4.0) return { label:"Excelente", color:"text-status-success" }
+  if (score >= 3.5) return { label:"Alto", color:"text-wedo-cyan-dark" }
+  if (score >= 3.0) return { label:"Médio", color:"text-status-warning" }
+  if (score >= 2.25) return { label:"Abaixo da média", color:"text-wedo-orange" }
+  return { label:"Regular / Baixo", color:"text-status-error" }
 }
 
 function getDecisionConfig(decision?: string) {
   switch (decision) {
-    case "approve":
-    case "approved":
-      return { label: "Aprovado", badge: "bg-status-success/15 text-status-success", confidence: "Alta confiança" }
-    case "reject":
-    case "rejected":
-      return { label: "Reprovado", badge: "bg-status-error/15 text-status-error", confidence: "" }
+    case"approve":
+    case"approved":
+      return { label:"Aprovado", badge:"", confidence:"Alta confiança" }
+    case"reject":
+    case"rejected":
+      return { label:"Reprovado", badge:"", confidence:"" }
     default:
-      return { label: "Revisão Necessária", badge: "bg-status-warning/15 text-status-warning", confidence: "Revisão recomendada" }
+      return { label:"Revisão Necessária", badge:"", confidence:"Revisão recomendada" }
   }
 }
 
 const dreyfusLabel = (n?: number) => {
-  if (n == null) return "—"
-  return ["", "Iniciante", "Básico", "Intermediário", "Avançado", "Especialista"][n] ?? String(n)
+  if (n == null) return"—"
+  return ["","Iniciante","Básico","Intermediário","Avançado","Especialista"][n] ?? String(n)
 }
 
 const bloomLabel = (n?: number) => {
-  if (n == null) return "—"
-  return ["", "Recordar", "Compreender", "Aplicar", "Analisar", "Avaliar"][n] ?? String(n)
+  if (n == null) return"—"
+  return ["","Recordar","Compreender","Aplicar","Analisar","Avaliar"][n] ?? String(n)
 }
 
 const starComponents = [
-  { key: "S", label: "Situação", desc: "Contexto descrito" },
-  { key: "T", label: "Tarefa", desc: "Objetivo claro" },
-  { key: "A", label: "Ação", desc: "O que foi feito" },
-  { key: "R", label: "Resultado", desc: "Impacto mensurável" },
+  { key:"S", label:"Situação", desc:"Contexto descrito" },
+  { key:"T", label:"Tarefa", desc:"Objetivo claro" },
+  { key:"A", label:"Ação", desc:"O que foi feito" },
+  { key:"R", label:"Resultado", desc:"Impacto mensurável" },
 ]
 
 function ReportHeader({ data, candidateName, candidateTitle }: { data: WSIResultDetails; candidateName?: string; candidateTitle?: string }) {
@@ -99,7 +99,7 @@ function ReportHeader({ data, candidateName, candidateTitle }: { data: WSIResult
           </div>
           <div>
             <h1 className="text-base font-semibold text-lia-text-primary">
-              Detalhes da Triagem WSI — {candidateName || "Candidato"}
+              Detalhes da Triagem WSI — {candidateName ||"Candidato"}
             </h1>
             {candidateTitle && (
               <p className="text-xs text-lia-text-tertiary">{candidateTitle}</p>
@@ -108,7 +108,7 @@ function ReportHeader({ data, candidateName, candidateTitle }: { data: WSIResult
         </div>
         <div className="flex items-center gap-2">
           <Badge className={`${decision.badge} text-xs font-medium px-3 py-1 rounded-full`}>
-            {scores.decision === "approve" || scores.decision === "approved" ? (
+            {scores.decision ==="approve" || scores.decision ==="approved" ? (
               <><CheckCircle className="w-3.5 h-3.5 mr-1" />{decision.label}</>
             ) : (
               <><Clock className="w-3.5 h-3.5 mr-1" />{decision.label}</>
@@ -154,7 +154,7 @@ function ReportHeader({ data, candidateName, candidateTitle }: { data: WSIResult
           <p className="text-xs text-lia-text-tertiary">Modo de triagem</p>
           <p className="font-semibold text-lia-text-secondary flex items-center gap-1">
             <Layers className="w-3.5 h-3.5 text-lia-text-tertiary" />
-            {session.screening_type === "voice" ? "Voz" : "Texto"} · {session.mode === "compact" ? "Compact" : "Compact+"} · {data.responses.length} perguntas
+            {session.screening_type ==="voice" ?"Voz" :"Texto"} · {session.mode ==="compact" ?"Compact" :"Compact+"} · {data.responses.length} perguntas
           </p>
         </div>
       </div>
@@ -166,9 +166,9 @@ function ScoresByDimension({ data }: { data: WSIResultDetails }) {
   const scores = data.scores
   const session = data.session
   const dims = [
-    { label: "Geral", value: scores.overall_wsi, pct: Math.round((scores.overall_wsi / 5) * 100) },
-    { label: "Comp. Técnicas", value: scores.technical_wsi, pct: Math.round((scores.technical_wsi / 5) * 100) },
-    { label: "Comp. Comportamentais", value: scores.behavioral_wsi, pct: Math.round((scores.behavioral_wsi / 5) * 100) },
+    { label:"Geral", value: scores.overall_wsi, pct: Math.round((scores.overall_wsi / 5) * 100) },
+    { label:"Comp. Técnicas", value: scores.technical_wsi, pct: Math.round((scores.technical_wsi / 5) * 100) },
+    { label:"Comp. Comportamentais", value: scores.behavioral_wsi, pct: Math.round((scores.behavioral_wsi / 5) * 100) },
   ]
 
   return (
@@ -190,8 +190,8 @@ function ScoresByDimension({ data }: { data: WSIResultDetails }) {
       <div className="mt-4 pt-3 border-t border-lia-border-subtle space-y-2">
         <div className="flex items-center gap-3">
           <span className="flex items-center gap-1 text-xs text-lia-text-tertiary bg-lia-bg-secondary px-2 py-1 rounded-full">
-            {session.screening_type === "voice" ? <Mic className="w-3 h-3" /> : <Target className="w-3 h-3" />}
-            {session.screening_type === "voice" ? "Triagem por Voz" : "Triagem por Texto"}
+            {session.screening_type ==="voice" ? <Mic className="w-3 h-3" /> : <Target className="w-3 h-3" />}
+            {session.screening_type ==="voice" ?"Triagem por Voz" :"Triagem por Texto"}
           </span>
           {scores.percentile != null && (
             <span className="text-xs text-lia-text-tertiary">Top {scores.percentile}%</span>
@@ -221,11 +221,11 @@ function ResponseCard({ response, index, isOpen, onToggle }: {
   isOpen: boolean
   onToggle: () => void
 }) {
-  const gapKey = (response.gap_status || "ok") as keyof typeof gapConfig
+  const gapKey = (response.gap_status ||"ok") as keyof typeof gapConfig
   const gap = gapConfig[gapKey] || gapConfig.ok
   const GapIcon = gap.icon
   const starData = (response.star || response.scores.star || {}) as Record<string, boolean>
-  const scoreColor = response.scores.final_score >= 4.5 ? "text-status-success" : response.scores.final_score >= 3.5 ? "text-status-warning" : "text-status-error"
+  const scoreColor = response.scores.final_score >= 4.5 ?"text-status-success" : response.scores.final_score >= 3.5 ?"text-status-warning" :"text-status-error"
 
   return (
     <div>
@@ -277,8 +277,8 @@ function ResponseCard({ response, index, isOpen, onToggle }: {
                       title={desc}
                       className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold border ${
                         present
-                          ? "bg-status-success/10 border-status-success/30 text-status-success"
-                          : "bg-lia-bg-secondary border-lia-border-subtle text-lia-text-tertiary"
+                          ?"bg-status-success/10 border-status-success/30 text-status-success"
+                          :"bg-lia-bg-secondary border-lia-border-subtle text-lia-text-tertiary"
                       }`}
                     >
                       {present
@@ -299,10 +299,10 @@ function ResponseCard({ response, index, isOpen, onToggle }: {
 
           <div className="grid grid-cols-4 gap-2">
             {[
-              { label: "Autodeclaração", value: response.scores.autodeclaration?.toFixed(1) ?? "—" },
-              { label: "Contexto", value: response.scores.context?.toFixed(1) ?? "—" },
-              { label: "Bloom", value: bloomLabel(response.scores.bloom_level), sub: response.scores.bloom_level ? `Nível ${response.scores.bloom_level}` : undefined },
-              { label: "Dreyfus", value: dreyfusLabel(response.scores.dreyfus_level), sub: response.scores.dreyfus_level ? `Nível ${response.scores.dreyfus_level}` : undefined },
+              { label:"Autodeclaração", value: response.scores.autodeclaration?.toFixed(1) ??"—" },
+              { label:"Contexto", value: response.scores.context?.toFixed(1) ??"—" },
+              { label:"Bloom", value: bloomLabel(response.scores.bloom_level), sub: response.scores.bloom_level ? `Nível ${response.scores.bloom_level}` : undefined },
+              { label:"Dreyfus", value: dreyfusLabel(response.scores.dreyfus_level), sub: response.scores.dreyfus_level ? `Nível ${response.scores.dreyfus_level}` : undefined },
             ].map((s) => (
               <div key={s.label} className="bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-subtle rounded-lg p-2 text-center">
                 <p className="text-[9px] text-lia-text-tertiary mb-1">{s.label}</p>
@@ -393,8 +393,8 @@ function TabRespostas({ data }: { data: WSIResultDetails }) {
 function TabParecer({ data }: { data: WSIResultDetails }) {
   const report = data.report
   const feedback = data.feedback
-  const isApproved = data.scores.decision === "approve" || data.scores.decision === "approved"
-  const isPending = !isApproved && data.scores.decision !== "reject" && data.scores.decision !== "rejected"
+  const isApproved = data.scores.decision ==="approve" || data.scores.decision ==="approved"
+  const isPending = !isApproved && data.scores.decision !=="reject" && data.scores.decision !=="rejected"
 
   const strengths = (report?.technical_analysis as { strengths?: string[] })?.strengths || feedback?.technical_strengths || []
   const gaps = (report?.technical_analysis as { gaps?: { text: string; severity: string }[] })?.gaps || []
@@ -416,7 +416,7 @@ function TabParecer({ data }: { data: WSIResultDetails }) {
           <div className="flex items-center gap-2 mb-3">
             <AlertCircle className="w-4 h-4 text-status-warning" />
             <h2 className="text-sm font-semibold text-status-warning">Pontos de Atenção</h2>
-            <span className="ml-auto text-[10px] bg-status-warning/15 text-status-warning px-2 py-0.5 rounded-full font-medium border border-status-warning/30">
+            <span className="ml-auto text-[10px]  px-2 py-0.5 rounded-full font-medium border border-status-warning/30">
               Revisão humana recomendada
             </span>
           </div>
@@ -455,7 +455,7 @@ function TabParecer({ data }: { data: WSIResultDetails }) {
             </p>
             <ul className="space-y-2">
               {gaps.map((g: { text: string; severity: string }, i: number) => {
-                const sev = severidadeConfig[(g.severity || "baixa") as keyof typeof severidadeConfig] || severidadeConfig.baixa
+                const sev = severidadeConfig[(g.severity ||"baixa") as keyof typeof severidadeConfig] || severidadeConfig.baixa
                 return (
                   <li key={i} className={`flex items-start gap-2.5 text-xs text-lia-text-secondary rounded-lg border px-3 py-2 ${sev.bg} ${sev.border}`}>
                     <div className={`w-1.5 h-1.5 rounded-full mt-1.5 shrink-0 ${sev.dot}`} />
@@ -475,16 +475,14 @@ function TabParecer({ data }: { data: WSIResultDetails }) {
           <div className="bg-status-success/10 border border-status-success/30 rounded-lg p-4">
             <p className="text-sm font-semibold text-status-success mb-1">Fortemente Recomendado</p>
             <p className="text-xs text-lia-text-secondary leading-relaxed">
-              {(report?.recommendation as { text?: string })?.text ||
-                "Perfil alinhado com os requisitos da posição. Recomendamos avançar para a próxima etapa."}
+              {(report?.recommendation as { text?: string })?.text ||"Perfil alinhado com os requisitos da posição. Recomendamos avançar para a próxima etapa."}
             </p>
           </div>
         ) : (
           <div className="bg-status-warning/10 border border-status-warning/30 rounded-lg p-4">
             <p className="text-sm font-semibold text-status-warning mb-1">Revisão Humana Recomendada</p>
             <p className="text-xs text-lia-text-secondary leading-relaxed">
-              {(report?.recommendation as { text?: string })?.text ||
-                "O perfil demonstrado precisa de avaliação adicional antes de uma decisão."}
+              {(report?.recommendation as { text?: string })?.text ||"O perfil demonstrado precisa de avaliação adicional antes de uma decisão."}
             </p>
           </div>
         )}
@@ -568,7 +566,7 @@ export function WSIDetailedReport({
       const result = await liaApi.wsiGetResultDetails(resultId)
       setData(result)
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro ao carregar detalhes")
+      setError(err instanceof Error ? err.message :"Erro ao carregar detalhes")
     } finally {
       setLoading(false)
     }
@@ -588,14 +586,14 @@ export function WSIDetailedReport({
       <Card className="border-status-error/30">
         <CardContent className="py-6 flex items-center justify-center">
           <AlertCircle className="w-5 h-5 text-status-error" />
-          <span className="ml-2 text-sm text-status-error">{error || "Dados não encontrados"}</span>
+          <span className="ml-2 text-sm text-status-error">{error ||"Dados não encontrados"}</span>
         </CardContent>
       </Card>
     )
   }
 
-  const isApproved = data.scores.decision === "approve" || data.scores.decision === "approved"
-  const isRejected = data.scores.decision === "reject" || data.scores.decision === "rejected"
+  const isApproved = data.scores.decision ==="approve" || data.scores.decision ==="approved"
+  const isRejected = data.scores.decision ==="reject" || data.scores.decision ==="rejected"
 
   return (
     <div className="max-w-[820px] mx-auto space-y-4">
@@ -607,8 +605,8 @@ export function WSIDetailedReport({
             key={tab.key}
             className={`flex-1 py-2 text-xs font-medium rounded-md transition-colors ${
               activeTab === tab.key
-                ? "bg-lia-text-primary text-lia-bg-primary"
-                : "text-lia-text-tertiary hover:bg-lia-bg-secondary"
+                ?"bg-lia-text-primary text-lia-bg-primary"
+                :"text-lia-text-tertiary hover:bg-lia-bg-secondary"
             }`}
             onClick={() => setActiveTab(tab.key)}
           >
@@ -617,9 +615,9 @@ export function WSIDetailedReport({
         ))}
       </div>
 
-      {activeTab === "respostas" && <TabRespostas data={data} />}
-      {activeTab === "parecer" && <TabParecer data={data} />}
-      {activeTab === "ranking" && <TabRanking />}
+      {activeTab ==="respostas" && <TabRespostas data={data} />}
+      {activeTab ==="parecer" && <TabParecer data={data} />}
+      {activeTab ==="ranking" && <TabRanking />}
 
       <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-subtle rounded-xl p-4 flex items-center justify-between shadow-lia-sm">
         <span className="text-xs text-lia-text-tertiary">Decisão do Recrutador</span>

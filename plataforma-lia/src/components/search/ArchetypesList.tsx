@@ -7,12 +7,12 @@
  * Portabilidade Vue: mapeia para componente ArchetypesList.vue.
  */
 
-import React from "react"
+import React from"react"
 import {
   Brain, Wand2, Loader2, Target, Search, MapPin, Building2, Plus, Pencil, Trash2,
-} from "lucide-react"
-import { Badge } from "@/components/ui/badge"
-import type { ArchetypeData, BackendEntities } from "@/components/search/expandable-ai-prompt.types"
+} from"lucide-react"
+import { Badge } from"@/components/ui/badge"
+import type { ArchetypeData, BackendEntities } from"@/components/search/expandable-ai-prompt.types"
 
 interface ArchetypesListProps {
   archetypes: ArchetypeData[]
@@ -81,7 +81,7 @@ export function ArchetypesList({
             {Object.keys(parsedEntities).length > 0 && (
               <div className="flex flex-wrap gap-1.5 mt-2">
                 {parsedEntities.job_title && (
-                  <Badge variant="secondary" className="text-micro bg-wedo-cyan/10 text-wedo-cyan-dark border-lia-border-default dark:border-lia-border-default">
+                  <Badge variant="secondary" className="text-micro -dark border-lia-border-default dark:border-lia-border-default">
                     {parsedEntities.job_title}
                   </Badge>
                 )}
@@ -221,7 +221,7 @@ export function ArchetypesList({
           ) : (
             filteredArchetypes.map((arch) => {
               const archExtended = arch as ArchetypeData & { query?: string; emoji?: string }
-              const query = archExtended.query || (arch.criteria as Record<string, unknown> | undefined)?.query as string || arch.description || ""
+              const query = archExtended.query || (arch.criteria as Record<string, unknown> | undefined)?.query as string || arch.description ||""
               return (
                 <div
                   key={arch.id}
@@ -252,7 +252,7 @@ export function ArchetypesList({
                   </div>
 
                   <div className="flex items-start gap-2.5 pr-16">
-                    <span className="text-lg flex-shrink-0">{archExtended.emoji || "🎯"}</span>
+                    <span className="text-lg flex-shrink-0">{archExtended.emoji ||"🎯"}</span>
                     <div className="flex-1 min-w-0">
                       <div className="text-sm font-medium text-lia-text-primary truncate">{arch.name}</div>
                       {arch.description && (

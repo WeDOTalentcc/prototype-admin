@@ -1,16 +1,16 @@
 "use client"
 
-import React from "react"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { X, Brain, Download, Share2, FileText } from "lucide-react"
-import { useScreeningGuide } from "./lia-screening/useScreeningGuide"
-import { ScreeningOverviewSection } from "./lia-screening/ScreeningOverviewSection"
-import { ScreeningApproachSection } from "./lia-screening/ScreeningApproachSection"
-import { ScreeningQuestionsSection } from "./lia-screening/ScreeningQuestionsSection"
-import { ScreeningPresentationSection } from "./lia-screening/ScreeningPresentationSection"
-import { ScreeningFeedbackSection } from "./lia-screening/ScreeningFeedbackSection"
-import { ScreeningTimelineSection } from "./lia-screening/ScreeningTimelineSection"
+import React from"react"
+import { Button } from"@/components/ui/button"
+import { Badge } from"@/components/ui/badge"
+import { X, Brain, Download, Share2, FileText } from"lucide-react"
+import { useScreeningGuide } from"./lia-screening/useScreeningGuide"
+import { ScreeningOverviewSection } from"./lia-screening/ScreeningOverviewSection"
+import { ScreeningApproachSection } from"./lia-screening/ScreeningApproachSection"
+import { ScreeningQuestionsSection } from"./lia-screening/ScreeningQuestionsSection"
+import { ScreeningPresentationSection } from"./lia-screening/ScreeningPresentationSection"
+import { ScreeningFeedbackSection } from"./lia-screening/ScreeningFeedbackSection"
+import { ScreeningTimelineSection } from"./lia-screening/ScreeningTimelineSection"
 
 interface LiaScreeningGuideProps {
   isOpen: boolean
@@ -166,7 +166,7 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
         <div className="p-6 border-t border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-secondary dark:bg-lia-bg-secondary">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Badge variant="outline" className="bg-status-success/15 text-status-success">
+              <Badge variant="outline" >
                 Roteiro Personalizado para {j.str('title')}
               </Badge>
               <Badge variant="outline" className="text-xs">

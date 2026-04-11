@@ -1,14 +1,14 @@
 "use client"
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+import { useState } from"react"
+import { Button } from"@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
+import { Badge } from"@/components/ui/badge"
 import {
   Download, FileText, FileSpreadsheet, File, Image,
   Calendar, Filter, Mail, Share2, Settings, Clock,
   CheckCircle, AlertCircle
-} from "lucide-react"
+} from"lucide-react"
 
 interface ExportConfig {
   format: 'csv' | 'excel' | 'pdf' | 'png' | 'json'
@@ -85,14 +85,14 @@ export function ExportTools({ data, className }: ExportToolsProps) {
       format: 'excel' as const,
       label: 'Excel',
       description: 'Planilha com dados e gráficos',
-      color: 'bg-status-success/15 text-status-success border-status-success/30',
+      color: ' border-status-success/30',
       recommended: true
     },
     {
       format: 'pdf' as const,
       label: 'PDF',
       description: 'Relatório executivo completo',
-      color: 'bg-status-error/15 text-status-error border-status-error/30',
+      color: ' border-status-error/30',
       recommended: false
     },
     {
@@ -106,7 +106,7 @@ export function ExportTools({ data, className }: ExportToolsProps) {
       format: 'png' as const,
       label: 'PNG',
       description: 'Imagem dos gráficos',
-      color: 'bg-wedo-purple/15 text-wedo-purple border-wedo-purple/30',
+      color: ' border-wedo-purple/30',
       recommended: false
     },
     {

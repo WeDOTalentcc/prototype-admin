@@ -1,9 +1,9 @@
 "use client"
 
-import React from "react"
-import { X } from "lucide-react"
-import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
+import React from"react"
+import { X } from"lucide-react"
+import { Badge } from"@/components/ui/badge"
+import { Input } from"@/components/ui/input"
 
 export interface TagInputProps {
   placeholder: string
@@ -21,9 +21,9 @@ export function TagInput({ placeholder, tags, onAdd, onRemove }: TagInputProps) 
         className="h-8 text-xs"
         onKeyDown={(e) => {
           const value = (e.target as HTMLInputElement).value.trim()
-          if (e.key === "Enter" && value && !tags.includes(value)) {
+          if (e.key ==="Enter" && value && !tags.includes(value)) {
             onAdd(value)
-            ;(e.target as HTMLInputElement).value = ""
+            ;(e.target as HTMLInputElement).value =""
           }
         }}
       />

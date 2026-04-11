@@ -1,8 +1,8 @@
 "use client"
 
-import React from "react"
-import { Badge } from "@/components/ui/badge"
-import { LIAIcon } from "@/components/ui/lia-icon"
+import React from"react"
+import { Badge } from"@/components/ui/badge"
+import { LIAIcon } from"@/components/ui/lia-icon"
 
 interface SavedTemplate {
   id: string

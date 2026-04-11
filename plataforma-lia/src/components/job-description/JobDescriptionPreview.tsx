@@ -1,10 +1,10 @@
 "use client";
 
-import { formatBRL } from "@/lib/pricing";
-import { cn } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
+import { formatBRL } from"@/lib/pricing";
+import { cn } from"@/lib/utils";
+import { Badge } from"@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card";
+import { Separator } from"@/components/ui/separator";
 import { 
   Lightbulb, 
   AlertTriangle, 
@@ -14,7 +14,7 @@ import {
   Users,
   CheckCircle2,
   Circle
-} from "lucide-react";
+} from"lucide-react";
 import {
   JobDescriptionPreviewData,
   Responsibility,
@@ -22,14 +22,14 @@ import {
   SECTION_TITLES,
   WORK_MODEL_LABELS,
   CONTRACT_TYPE_LABELS,
-} from "./types";
+} from"./types";
 
 interface JobDescriptionPreviewProps {
   data: JobDescriptionPreviewData;
   onEditResponsibility?: (index: number, resp: Responsibility) => void;
   onRemoveResponsibility?: (index: number) => void;
-  onEditCompetency?: (type: "technical" | "behavioral", index: number, comp: Competency) => void;
-  onRemoveCompetency?: (type: "technical" | "behavioral", index: number) => void;
+  onEditCompetency?: (type:"technical" |"behavioral", index: number, comp: Competency) => void;
+  onRemoveCompetency?: (type:"technical" |"behavioral", index: number) => void;
   className?: string;
 }
 
@@ -46,7 +46,7 @@ function SuggestionBadge({ isNew }: { isNew: boolean }) {
 function AlertBadge({ message }: { message?: string }) {
   if (!message) return null;
   return (
-    <Badge variant="outline" className="ml-2 bg-status-warning/10 text-status-warning border-status-warning/30/30 text-xs">
+    <Badge variant="outline" className="ml-2  border-status-warning/30/30 text-xs">
       <AlertTriangle className="w-3 h-3 mr-1" />
       {message}
     </Badge>
@@ -55,7 +55,7 @@ function AlertBadge({ message }: { message?: string }) {
 
 function MetadataRow({ data }: { data: JobDescriptionPreviewData }) {
   const workModelLabel = WORK_MODEL_LABELS[data.work_model];
-  const workModelDisplay = data.work_model === "hibrido" && data.office_days_per_week
+  const workModelDisplay = data.work_model ==="hibrido" && data.office_days_per_week
     ? `${workModelLabel} (${data.office_days_per_week}x/semana)`
     : workModelLabel;
 
@@ -102,9 +102,8 @@ function CompletenessIndicator({ score }: { score: number }) {
       ) : (
         <Circle className="w-4 h-4 text-status-warning" />
       )}
-      <span className={cn(
- "text-sm font-medium",
-        isComplete ? "text-status-success" : "text-status-warning"
+      <span className={cn("text-sm font-medium",
+        isComplete ?"text-status-success" :"text-status-warning"
       )}>
         {percentage}% completo
       </span>
@@ -120,9 +119,9 @@ export function JobDescriptionPreview({
   onRemoveCompetency,
   className,
 }: JobDescriptionPreviewProps) {
-  const requiredTech = data.technical_competencies.filter(c => c.level === "required");
-  const niceTech = data.technical_competencies.filter(c => c.level === "nice_to_have");
-  const requiredBeh = data.behavioral_competencies.filter(c => c.level === "required");
+  const requiredTech = data.technical_competencies.filter(c => c.level ==="required");
+  const niceTech = data.technical_competencies.filter(c => c.level ==="nice_to_have");
+  const requiredBeh = data.behavioral_competencies.filter(c => c.level ==="required");
 
   return (
     <Card className={cn("w-full", className)}>
@@ -151,8 +150,8 @@ export function JobDescriptionPreview({
         </div>
         
         {data.is_affirmative && (
-          <Badge className="w-fit mt-2 bg-wedo-purple/10 text-wedo-purple border-wedo-purple/30/30">
-            🏳️‍🌈 {data.affirmative_type || "Vaga Afirmativa"}
+          <Badge className="w-fit mt-2  border-wedo-purple/30/30">
+            🏳️‍🌈 {data.affirmative_type ||"Vaga Afirmativa"}
           </Badge>
         )}
       </CardHeader>
@@ -161,7 +160,7 @@ export function JobDescriptionPreview({
         {data.company && (
           <section>
             <h3 className="text-lg font-semibold mb-2">{SECTION_TITLES.about}</h3>
-            <p className="text-lia-text-tertiary">{data.company.about || "[Descrição da empresa]"}</p>
+            <p className="text-lia-text-tertiary">{data.company.about ||"[Descrição da empresa]"}</p>
           </section>
         )}
 
@@ -306,7 +305,7 @@ export function JobDescriptionPreview({
               {data.compensation.market_comparison && (
                 <p className="flex items-center gap-2">
                   <strong>Comparativa de Mercado:</strong>
-                  <Badge variant="outline" className="text-xs bg-wedo-cyan/10 text-wedo-cyan-dark border-wedo-cyan/30/30">
+                  <Badge variant="outline" className="text-xs -dark border-wedo-cyan/30/30">
                     {data.compensation.market_comparison}
                   </Badge>
                 </p>
@@ -321,8 +320,8 @@ export function JobDescriptionPreview({
               )}
               {data.compensation.benefits.length > 0 && (
                 <p>
-                  <strong>Benefícios:</strong>{" "}
-                  {data.compensation.benefits.map(b => b.name).join(", ")}
+                  <strong>Benefícios:</strong>{""}
+                  {data.compensation.benefits.map(b => b.name).join(",")}
                 </p>
               )}
             </div>

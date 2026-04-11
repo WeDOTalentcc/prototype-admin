@@ -1,16 +1,16 @@
 "use client"
 
 
-import { CURRENCY_SYMBOL, formatBRLCompact } from "@/lib/pricing"
-import React from "react"
-import { Badge } from "@/components/ui/badge"
+import { CURRENCY_SYMBOL, formatBRLCompact } from"@/lib/pricing"
+import React from"react"
+import { Badge } from"@/components/ui/badge"
 import {
   Clock, Shield, Target, TrendingUp, Lightbulb, BarChart3, AlertCircle,
   Share2, Linkedin, Briefcase, Brain, Globe
-} from "lucide-react"
-import { type Job } from "@/components/jobs"
-import { type JobVacancyMetrics } from "@/services/lia-api"
-import { textStyles } from "@/lib/design-tokens"
+} from"lucide-react"
+import { type Job } from"@/components/jobs"
+import { type JobVacancyMetrics } from"@/services/lia-api"
+import { textStyles } from"@/lib/design-tokens"
 
 interface JobPipelineSectionProps {
   previewJob: Job

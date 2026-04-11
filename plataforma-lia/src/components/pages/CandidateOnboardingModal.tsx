@@ -1,16 +1,16 @@
 "use client"
 
-import { formatBRL } from "@/lib/pricing"
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { formatBRL } from"@/lib/pricing"
+import { useState } from"react"
+import { Button } from"@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
+import { Badge } from"@/components/ui/badge"
+import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
 import {
   CheckCircle, Clock, FileText, Mail, Phone,
   Eye, Calendar, MessageSquare, X
-} from "lucide-react"
-import { type ApprovedCandidate, kanbanStages } from "./onboarding-premium-types"
+} from"lucide-react"
+import { type ApprovedCandidate, kanbanStages } from"./onboarding-premium-types"
 
 interface CandidateOnboardingModalProps {
   candidate: ApprovedCandidate
@@ -59,8 +59,8 @@ export function CandidateOnboardingModal({ candidate, onClose }: CandidateOnboar
               onClick={() => setActiveTab(tab.id as Parameters<typeof setActiveTab>[0])}
               className={`flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors motion-reduce:transition-none ${
                 activeTab === tab.id
-                  ? "text-lia-text-secondary rounded-lg bg-lia-bg-tertiary dark:border-lia-border-medium"
-                  : "text-lia-text-secondary hover:text-lia-text-primary"
+                  ?"text-lia-text-secondary rounded-lg bg-lia-bg-tertiary dark:border-lia-border-medium"
+                  :"text-lia-text-secondary hover:text-lia-text-primary"
               }`}
             >
               <tab.icon className="w-4 h-4" />

@@ -1,13 +1,13 @@
 "use client"
 
-import React, { useState, useCallback, useEffect } from "react"
-import { useModalA11y } from "@/hooks/use-modal-a11y"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Brain, RefreshCw, Eye, X, Mail, Phone, MapPin, Linkedin, Globe, CheckCircle, AlertCircle, Calendar, Heart, ChevronRight } from "lucide-react"
-import { textStyles } from "@/lib/design-tokens"
+import React, { useState, useCallback, useEffect } from"react"
+import { useModalA11y } from"@/hooks/use-modal-a11y"
+import { Button } from"@/components/ui/button"
+import { Badge } from"@/components/ui/badge"
+import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
+import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
+import { Brain, RefreshCw, Eye, X, Mail, Phone, MapPin, Linkedin, Globe, CheckCircle, AlertCircle, Calendar, Heart, ChevronRight } from"lucide-react"
+import { textStyles } from"@/lib/design-tokens"
 
 interface Candidate {
   id: string; name: string; role: string; email: string; phone: string
@@ -172,7 +172,7 @@ export function QuickViewModal({ isOpen, onClose, candidate, onNavigateToFull }:
                 {candidate.role} • {candidate.experience} • {candidate.location}
               </p>
               <div className="flex items-center gap-3 mt-2">
-                <Badge variant="outline" className="bg-status-success/10 text-status-success">
+                <Badge variant="outline" >
                   {candidate.matchPercentage}% Match
                 </Badge>
                 <Badge variant="outline">
@@ -241,8 +241,8 @@ export function QuickViewModal({ isOpen, onClose, candidate, onNavigateToFull }:
                           <div className="flex items-center justify-between text-xs">
                             <span>Prioridade:</span>
                             <Badge className={`text-xs ${
- liaInsights.candidateStatus?.priority === 'alta' ? 'bg-status-error/15 text-status-error' :
-                              liaInsights.candidateStatus?.priority === 'média' ? 'bg-status-warning/15 text-status-warning' :
+ liaInsights.candidateStatus?.priority === 'alta' ? '' :
+                              liaInsights.candidateStatus?.priority === 'média' ? '' :
                               'bg-lia-bg-tertiary text-lia-text-primary'
                             }`}>
                               {liaInsights.candidateStatus?.priority?.toUpperCase()}
@@ -271,8 +271,8 @@ export function QuickViewModal({ isOpen, onClose, candidate, onNavigateToFull }:
                               <span className="text-xs text-status-success">{step.action}</span>
                               <div className="flex items-center gap-2 mt-1">
                                 <Badge className={`text-xs ${
- step.priority === 'alta' ? 'bg-status-error/15 text-status-error' :
-                                  step.priority === 'média' ? 'bg-status-warning/15 text-status-warning' :
+ step.priority === 'alta' ? '' :
+                                  step.priority === 'média' ? '' :
                                   'bg-lia-bg-tertiary text-lia-text-primary'
                                 }`}>
                                   {step.priority}

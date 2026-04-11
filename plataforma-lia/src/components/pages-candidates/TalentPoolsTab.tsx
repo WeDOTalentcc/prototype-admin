@@ -1,19 +1,19 @@
 "use client"
 
-import React, { useState } from "react"
-import { Database, Plus, Users, Bot, ArrowRight } from "lucide-react"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
+import React, { useState } from"react"
+import { Database, Plus, Users, Bot, ArrowRight } from"lucide-react"
+import { Card, CardContent } from"@/components/ui/card"
+import { Badge } from"@/components/ui/badge"
+import { Button } from"@/components/ui/button"
 import {
   textStyles, cardStyles, badgeStyles, buttonStyles,
   actionButtonStyles
-} from "@/lib/design-tokens"
-import { useTalentPools, TalentPoolSummary } from "@/components/pages-talent-pools/useTalentPools"
-import { CreatePoolModal } from "@/components/pages-talent-pools/TalentPoolPage"
+} from"@/lib/design-tokens"
+import { useTalentPools, TalentPoolSummary } from"@/components/pages-talent-pools/useTalentPools"
+import { CreatePoolModal } from"@/components/pages-talent-pools/TalentPoolPage"
 
 /**
- * TalentPoolsTab — tab content for "Bancos Vivos" in the Funil de Talentos page.
+ * TalentPoolsTab — tab content for"Bancos Vivos" in the Funil de Talentos page.
  *
  * Shows grid of pool cards with summary stats.
  * Integrates with existing tab system via useCandidatesActions.
@@ -92,9 +92,9 @@ export default function TalentPoolsTab({ onSelectPool }: TalentPoolsTabProps) {
 
 function PoolCard({ pool, onClick }: { pool: TalentPoolSummary; onClick: () => void }) {
   const statusConfig = {
-    active: { label: "Ativo", style: badgeStyles.success },
-    paused: { label: "Pausado", style: badgeStyles.warning },
-    archived: { label: "Arquivado", style: badgeStyles.error },
+    active: { label:"Ativo", style: badgeStyles.success },
+    paused: { label:"Pausado", style: badgeStyles.warning },
+    archived: { label:"Arquivado", style: badgeStyles.error },
   }
   const status = statusConfig[pool.status]
 

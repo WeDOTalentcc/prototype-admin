@@ -1,16 +1,16 @@
 "use client"
 
-import { useState, useRef, useEffect, useCallback } from "react"
-import { X, Search, ChevronDown } from "lucide-react"
-import { cn } from "@/lib/utils"
-import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
-import { COMPANY_HQ_CITIES, COMPANY_HQ_REGIONS } from "@/data/location-data"
+import { useState, useRef, useEffect, useCallback } from"react"
+import { X, Search, ChevronDown } from"lucide-react"
+import { cn } from"@/lib/utils"
+import { Badge } from"@/components/ui/badge"
+import { Input } from"@/components/ui/input"
+import { COMPANY_HQ_CITIES, COMPANY_HQ_REGIONS } from"@/data/location-data"
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover"
+} from"@/components/ui/popover"
 
 export type CompanyHQTimeFilter = 'current_past' | 'current_only'
 
@@ -47,7 +47,7 @@ export function CompanyHQLocationsInput({
   onChange,
   timeFilter = 'current_past',
   onTimeFilterChange,
-  placeholder = "Examples: San Francisco / United States / NYC / ...",
+  placeholder ="Examples: San Francisco / United States / NYC / ...",
   disabled = false
 }: CompanyHQLocationsInputProps) {
   const [inputValue, setInputValue] = useState("")
@@ -140,16 +140,15 @@ export function CompanyHQLocationsInput({
         <Popover open={!disabled && isTimeFilterOpen} onOpenChange={disabled ? undefined : setIsTimeFilterOpen}>
           <PopoverTrigger asChild>
             <button 
-              className={cn(
-                "flex items-center gap-2 px-2.5 py-1 rounded-md border text-xs transition-colors",
+              className={cn("flex items-center gap-2 px-2.5 py-1 rounded-md border text-xs transition-colors",
                 disabled 
-                  ? "border-lia-border-subtle bg-lia-bg-tertiary text-lia-text-tertiary cursor-not-allowed" 
-                  : "border-lia-border-subtle hover:bg-lia-bg-secondary text-lia-text-primary"
+                  ?"border-lia-border-subtle bg-lia-bg-tertiary text-lia-text-tertiary cursor-not-allowed" 
+                  :"border-lia-border-subtle hover:bg-lia-bg-secondary text-lia-text-primary"
               )}
               disabled={disabled}
             >
               <span>{currentTimeOption?.label}</span>
-              <ChevronDown className={cn("w-3.5 h-3.5", disabled ? "text-lia-text-disabled" : "text-lia-text-tertiary")} />
+              <ChevronDown className={cn("w-3.5 h-3.5", disabled ?"text-lia-text-disabled" :"text-lia-text-tertiary")} />
             </button>
           </PopoverTrigger>
           <PopoverContent className="w-80 p-0" align="start">
@@ -161,9 +160,8 @@ export function CompanyHQLocationsInput({
                     onTimeFilterChange?.(option.value)
                     setIsTimeFilterOpen(false)
                   }}
-                  className={cn(
-                    "w-full text-left px-3 py-2 hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none",
-                    timeFilter === option.value && "bg-lia-bg-secondary"
+                  className={cn("w-full text-left px-3 py-2 hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none",
+                    timeFilter === option.value &&"bg-lia-bg-secondary"
                   )}
                 >
                   <div className="flex items-center justify-between">
@@ -200,7 +198,7 @@ export function CompanyHQLocationsInput({
 
       <div className="relative">
         <div className="relative">
-          <Search className={cn("absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4", disabled ? "text-lia-text-disabled" : "text-lia-text-tertiary")} />
+          <Search className={cn("absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4", disabled ?"text-lia-text-disabled" :"text-lia-text-tertiary")} />
           <Input
             ref={inputRef}
             value={inputValue}
@@ -209,9 +207,8 @@ export function CompanyHQLocationsInput({
             onFocus={() => !disabled && inputValue.length > 0 && setIsDropdownOpen(true)}
             placeholder={placeholder}
             disabled={disabled}
-            className={cn(
-              "pl-9 pr-3 border-lia-border-subtle focus:ring-1 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20 focus:border-lia-border-medium",
-              disabled && "bg-lia-bg-tertiary cursor-not-allowed"
+            className={cn("pl-9 pr-3 border-lia-border-subtle focus:ring-1 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20 focus:border-lia-border-medium",
+              disabled &&"bg-lia-bg-tertiary cursor-not-allowed"
             )}
           />
         </div>
@@ -230,9 +227,8 @@ export function CompanyHQLocationsInput({
                   <button
                     key={location.name}
                     onClick={() => addLocation(location.name)}
-                    className={cn(
-                      "w-full text-left px-3 py-2 text-sm transition-colors",
-                      focusedIndex === index ? "bg-lia-bg-tertiary" : "hover:bg-lia-bg-secondary"
+                    className={cn("w-full text-left px-3 py-2 text-sm transition-colors",
+                      focusedIndex === index ?"bg-lia-bg-tertiary" :"hover:bg-lia-bg-secondary"
                     )}
                   >
                     <span className="text-lia-text-primary">{location.name}</span>
@@ -250,9 +246,8 @@ export function CompanyHQLocationsInput({
                   <button
                     key={location.name}
                     onClick={() => addLocation(location.name)}
-                    className={cn(
-                      "w-full text-left px-3 py-2 text-sm transition-colors",
-                      focusedIndex === (filteredCities.length + index) ? "bg-lia-bg-tertiary" : "hover:bg-lia-bg-secondary"
+                    className={cn("w-full text-left px-3 py-2 text-sm transition-colors",
+                      focusedIndex === (filteredCities.length + index) ?"bg-lia-bg-tertiary" :"hover:bg-lia-bg-secondary"
                     )}
                   >
                     <span className="text-lia-text-primary">{location.name}</span>

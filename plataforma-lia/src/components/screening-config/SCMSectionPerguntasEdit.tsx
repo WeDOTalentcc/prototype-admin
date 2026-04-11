@@ -1,20 +1,20 @@
 "use client"
 
-import React from "react"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
+import React from"react"
+import { Badge } from"@/components/ui/badge"
+import { Button } from"@/components/ui/button"
 import { toast } from 'sonner'
 import {
   AlertTriangle, Archive, Brain, CheckCircle, CheckCircle2, ChevronDown,
   ChevronUp, Loader2, Play, X
-} from "lucide-react"
+} from"lucide-react"
 import { WSI_BLOCKS, WSI_AUTOMATIC_MESSAGES, formatMessageWithVariables, getBloomComplexity, getEstimatedTime } from '@/components/jobs/jobsPageConstants'
 import { CompanyBankQuestions } from './CompanyBankQuestions'
 import { CompanyDefaultQuestions } from './CompanyDefaultQuestions'
 import { CustomQuestions } from './CustomQuestions'
 import { SCMQuestionDetailView } from './SCMQuestionDetail'
 import type { ScreeningQuestionItem } from './SCMScreeningTypes'
-import type { useScreeningConfigManagerCore } from "./hooks/useScreeningConfigManagerCore"
+import type { useScreeningConfigManagerCore } from"./hooks/useScreeningConfigManagerCore"
 
 type Props = ReturnType<typeof useScreeningConfigManagerCore>
 
@@ -403,7 +403,7 @@ export function SCMSectionPerguntasEdit({
                   <div className="flex items-center gap-2">
                     {block.editable && blockQuestions.length > 0 && (
                       <>
-                        {eliminatoryCount > 0 && <Badge className="text-micro px-2 py-0.5 bg-status-error/10 text-status-error border border-status-error/30">{eliminatoryCount} Eliminatória{eliminatoryCount > 1 ? 's' : ''}</Badge>}
+                        {eliminatoryCount > 0 && <Badge className="text-micro px-2 py-0.5  border border-status-error/30">{eliminatoryCount} Eliminatória{eliminatoryCount > 1 ? 's' : ''}</Badge>}
                         {informativeCount > 0 && <Badge className="text-micro px-2 py-0.5 bg-lia-bg-tertiary text-lia-text-primary">{informativeCount} Informativa{informativeCount > 1 ? 's' : ''}</Badge>}
                       </>
                     )}
@@ -471,7 +471,7 @@ export function SCMSectionPerguntasEdit({
                                       {isDeactivated ? (
                                         <Badge className="text-micro px-2 py-0.5 h-5 rounded-full bg-lia-bg-tertiary text-lia-text-tertiary border border-lia-border-subtle">Inativa</Badge>
                                       ) : (
-                                        <Badge className="text-micro px-2 py-0.5 h-5 rounded-full bg-status-success/10 text-status-success border border-status-success/30 dark:bg-status-success/20 dark:border-status-success/30">
+                                        <Badge className="text-micro px-2 py-0.5 h-5 rounded-full  border border-status-success/30 dark:bg-status-success/20 dark:border-status-success/30">
                                           <CheckCircle className="w-3 h-3 mr-1" />Aceita
                                         </Badge>
                                       )}

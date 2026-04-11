@@ -1,6 +1,6 @@
 "use client"
 
-import * as React from "react"
+import * as React from"react"
 import { 
   User, 
   Briefcase, 
@@ -14,22 +14,22 @@ import {
   Variable,
   Search,
   ChevronRight
-} from "lucide-react"
+} from"lucide-react"
 
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
+import { cn } from"@/lib/utils"
+import { Button } from"@/components/ui/button"
+import { Badge } from"@/components/ui/badge"
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover"
+} from"@/components/ui/popover"
 import { 
   VARIABLE_REGISTRY, 
   formatVariable,
   type VariableGroup,
   type TemplateVariable 
-} from "@/lib/template-variables"
+} from"@/lib/template-variables"
 
 const iconMap: Record<string, React.ElementType> = {
   user: User,
@@ -53,8 +53,8 @@ export interface VariableSelectorProps {
   trigger?: React.ReactNode
   disabled?: boolean
   className?: string
-  side?: "top" | "right" | "bottom" | "left"
-  align?: "start" | "center" | "end"
+  side?:"top" |"right" |"bottom" |"left"
+  align?:"start" |"center" |"end"
 }
 
 export function VariableSelector({
@@ -62,8 +62,8 @@ export function VariableSelector({
   trigger,
   disabled = false,
   className,
-  side = "bottom",
-  align = "end"
+  side ="bottom",
+  align ="end"
 }: VariableSelectorProps) {
   const [open, setOpen] = React.useState(false)
   const [searchQuery, setSearchQuery] = React.useState("")
@@ -154,11 +154,10 @@ export function VariableSelector({
           <div className="flex flex-wrap gap-1">
             <button
               onClick={() => setActiveGroup(null)}
-              className={cn(
- "px-2 py-0.5 rounded-md text-micro font-medium transition-colors",
+              className={cn("px-2 py-0.5 rounded-md text-micro font-medium transition-colors",
                 !activeGroup 
-                  ? "bg-lia-btn-primary-bg text-lia-btn-primary-text" 
-                  : "bg-lia-bg-tertiary text-lia-text-secondary hover:bg-lia-interactive-active"
+                  ?"bg-lia-btn-primary-bg text-lia-btn-primary-text" 
+                  :"bg-lia-bg-tertiary text-lia-text-secondary hover:bg-lia-interactive-active"
               )}
             >
               Todas
@@ -167,11 +166,10 @@ export function VariableSelector({
               <button
                 key={group.id}
                 onClick={() => setActiveGroup(activeGroup === group.id ? null : group.id)}
-                className={cn(
- "px-2 py-0.5 rounded-md text-micro font-medium transition-colors",
+                className={cn("px-2 py-0.5 rounded-md text-micro font-medium transition-colors",
                   activeGroup === group.id 
-                    ? "bg-lia-btn-primary-bg text-lia-btn-primary-text" 
-                    : "bg-lia-bg-tertiary text-lia-text-secondary hover:bg-lia-interactive-active"
+                    ?"bg-lia-btn-primary-bg text-lia-btn-primary-text" 
+                    :"bg-lia-bg-tertiary text-lia-text-secondary hover:bg-lia-interactive-active"
                 )}
               >
                 {group.label}

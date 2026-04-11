@@ -1,20 +1,20 @@
 "use client"
 
-import { useState } from "react"
-import { X, ChevronRight, Save } from "lucide-react"
-import { cn } from "@/lib/utils"
+import { useState } from"react"
+import { X, ChevronRight, Save } from"lucide-react"
+import { cn } from"@/lib/utils"
 import { badgeStyles } from '@/lib/design-tokens'
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Badge } from "@/components/ui/badge"
+import { Button } from"@/components/ui/button"
+import { Input } from"@/components/ui/input"
+import { Label } from"@/components/ui/label"
+import { Badge } from"@/components/ui/badge"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
+} from"@/components/ui/select"
 import type { SearchFilters } from './hooks/useAdvancedFiltersCore'
 import { globalJobPresets } from './advancedFiltersTypes'
 import { JobTitlesSection } from './job-filters/JobTitlesSection'
@@ -39,21 +39,21 @@ export const JobFiltersSection = ({
   const [savePresetDescription, setSavePresetDescription] = useState("")
   const [customPresets, setCustomPresets] = useState<Array<{id: string, name: string, description: string, titles: string[]}>>([])
   const [selectedPreset, setSelectedPreset] = useState<typeof globalJobPresets[0] | null>(null)
-  const [presetTarget, setPresetTarget] = useState<"titles" | "pastTitles">("titles")
+  const [presetTarget, setPresetTarget] = useState<"titles" |"pastTitles">("titles")
 
   const handleClearAllJobFilters = () => {
-    updateFilter("job", "titles", [] as string[])
-    updateFilter("job", "pastTitles", [] as string[])
-    updateFilter("job", "levels", [] as string[])
-    updateFilter("job", "roles", [] as string[])
-    updateFilter("job", "titleScope", "current_only")
-    updateFilter("job", "timeInRoleMin", "no_limit")
-    updateFilter("job", "timeInRoleMax", "no_limit")
-    updateFilter("job", "minAverageTenure", "no_limit")
+    updateFilter("job","titles", [] as string[])
+    updateFilter("job","pastTitles", [] as string[])
+    updateFilter("job","levels", [] as string[])
+    updateFilter("job","roles", [] as string[])
+    updateFilter("job","titleScope","current_only")
+    updateFilter("job","timeInRoleMin","no_limit")
+    updateFilter("job","timeInRoleMax","no_limit")
+    updateFilter("job","minAverageTenure","no_limit")
   }
 
-  const handleApplyPreset = (preset: typeof globalJobPresets[0], target: "titles" | "pastTitles" = "titles") => {
-    const currentArray = target === "titles" ? filters.job?.titles : filters.job?.pastTitles
+  const handleApplyPreset = (preset: typeof globalJobPresets[0], target:"titles" |"pastTitles" ="titles") => {
+    const currentArray = target ==="titles" ? filters.job?.titles : filters.job?.pastTitles
     preset.titles.forEach(title => {
       if (!currentArray?.includes(title)) {
         addToArray("job", target, title)
@@ -65,7 +65,7 @@ export const JobFiltersSection = ({
   }
 
   const handleSavePreset = () => {
-    const currentTitles = presetTarget === "titles"
+    const currentTitles = presetTarget ==="titles"
       ? (filters.job?.titles || [])
       : (filters.job?.pastTitles || [])
     if (currentTitles.length === 0 || !savePresetName.trim()) return
@@ -84,12 +84,12 @@ export const JobFiltersSection = ({
     setPresetTarget("titles")
   }
 
-  const handleOpenPresetsModal = (target: "titles" | "pastTitles") => {
+  const handleOpenPresetsModal = (target:"titles" |"pastTitles") => {
     setPresetTarget(target)
     setShowPresetsModal(true)
   }
 
-  const handleOpenSavePresetModal = (target: "titles" | "pastTitles") => {
+  const handleOpenSavePresetModal = (target:"titles" |"pastTitles") => {
     setSavePresetName(`Novo Preset (${new Date().toLocaleDateString('pt-BR')})`)
     setPresetTarget(target)
     setShowSavePresetModal(true)
@@ -146,7 +146,7 @@ export const JobFiltersSection = ({
                   </button>
                 )}
                 <h3 className="font-medium text-lia-text-primary">
-                  {selectedPreset ? `${selectedPreset.name} (${selectedPreset.titles.length})` : "Presets de Cargos"}
+                  {selectedPreset ? `${selectedPreset.name} (${selectedPreset.titles.length})` :"Presets de Cargos"}
                 </h3>
               </div>
               <div className="flex items-center gap-2">
@@ -154,7 +154,7 @@ export const JobFiltersSection = ({
                   <>
                     <Select
                       value={presetTarget}
-                      onValueChange={(value) => setPresetTarget(value as "titles" | "pastTitles")}
+                      onValueChange={(value) => setPresetTarget(value as"titles" |"pastTitles")}
                     >
                       <SelectTrigger className="h-8 w-[140px] text-xs border-lia-border-subtle">
                         <SelectValue />
@@ -303,16 +303,16 @@ export const JobFiltersSection = ({
 
               <div className="p-3 rounded-xl bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle">
                 <div className="text-xs text-lia-text-secondary mb-2">
-                  {(presetTarget === "titles" ? filters.job?.titles?.length : filters.job?.pastTitles?.length) || 0} cargos {presetTarget === "pastTitles" ? "anteriores " : ""}serão salvos:
+                  {(presetTarget ==="titles" ? filters.job?.titles?.length : filters.job?.pastTitles?.length) || 0} cargos {presetTarget ==="pastTitles" ?"anteriores" :""}serão salvos:
                 </div>
                 <div className="flex flex-wrap gap-1 max-h-24 overflow-y-auto">
-                  {(presetTarget === "titles" ? filters.job?.titles : filters.job?.pastTitles)?.slice(0, 10).map(title => (
+                  {(presetTarget ==="titles" ? filters.job?.titles : filters.job?.pastTitles)?.slice(0, 10).map(title => (
                     <span key={title} className="text-micro px-1.5 py-0.5 bg-lia-interactive-active rounded-full text-lia-text-primary">
                       {title}
                     </span>
                   ))}
-                  {((presetTarget === "titles" ? filters.job?.titles?.length : filters.job?.pastTitles?.length) || 0) > 10 && (
-                    <span className="text-micro text-lia-text-tertiary">+{((presetTarget === "titles" ? filters.job?.titles?.length : filters.job?.pastTitles?.length) || 0) - 10} mais</span>
+                  {((presetTarget ==="titles" ? filters.job?.titles?.length : filters.job?.pastTitles?.length) || 0) > 10 && (
+                    <span className="text-micro text-lia-text-tertiary">+{((presetTarget ==="titles" ? filters.job?.titles?.length : filters.job?.pastTitles?.length) || 0) - 10} mais</span>
                   )}
                 </div>
               </div>
@@ -329,7 +329,7 @@ export const JobFiltersSection = ({
               <Button
                 size="sm"
                 onClick={handleSavePreset}
-                disabled={!savePresetName.trim() || ((presetTarget === "titles" ? filters.job?.titles?.length : filters.job?.pastTitles?.length) || 0) === 0}
+                disabled={!savePresetName.trim() || ((presetTarget ==="titles" ? filters.job?.titles?.length : filters.job?.pastTitles?.length) || 0) === 0}
                 className="bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
               >
                 <Save className="w-3.5 h-3.5 mr-1.5" />
@@ -357,7 +357,7 @@ const TagInput = ({
   const [inputValue, setInputValue] = useState("")
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && inputValue.trim()) {
+    if (e.key ==="Enter" && inputValue.trim()) {
       e.preventDefault()
       onAdd(inputValue)
       setInputValue("")

@@ -1,12 +1,12 @@
 "use client"
 
 
-import { CURRENCY_SYMBOL } from "@/lib/pricing"
-import React, { useState } from "react"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { cn } from "@/lib/utils"
+import { CURRENCY_SYMBOL } from"@/lib/pricing"
+import React, { useState } from"react"
+import { Badge } from"@/components/ui/badge"
+import { Button } from"@/components/ui/button"
+import { Input } from"@/components/ui/input"
+import { cn } from"@/lib/utils"
 import { 
   DollarSign, 
   TrendingUp, 
@@ -17,14 +17,14 @@ import {
   Send,
   PenLine,
   Brain
-} from "lucide-react"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+} from"lucide-react"
+import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
 import type { 
   CompensationAnalysisResult, 
   SalaryRange, 
   CompetitivenessStatus,
   DataSource
-} from "./compensation-analysis-panel"
+} from"./compensation-analysis-panel"
 
 export interface CompensationChatMessageProps {
   analysis: CompensationAnalysisResult | null
@@ -197,8 +197,7 @@ export function CompensationChatMessage({
 
       <div className="flex-1 space-y-3">
         <div className="rounded-xl rounded-tl-sm bg-lia-bg-primary border border-lia-border-subtle p-4 space-y-4">
-          <div className={cn(
- "flex items-center gap-2 p-2 rounded-md border",
+          <div className={cn("flex items-center gap-2 p-2 rounded-md border",
             statusConfig.bgClassName,
             statusConfig.borderClassName
           )}>
@@ -244,11 +243,10 @@ export function CompensationChatMessage({
               <span className="text-lia-text-tertiary">Posição no mercado:</span>
               <Badge 
                 variant="outline" 
-                className={cn(
- "text-micro h-5",
+                className={cn("text-micro h-5",
                   analysis.salary.percentileVsMarket >= 50 
-                    ? "border-status-success/30 bg-status-success/10 text-status-success dark:border-status-success/30 dark:bg-status-success/30"
-                    : "border-status-warning/30 bg-status-warning/10 text-status-warning dark:border-status-warning/30 dark:bg-status-warning/30"
+                    ?"border-status-success/30  dark:border-status-success/30 dark:bg-status-success/30"
+                    :"border-status-warning/30  dark:border-status-warning/30 dark:bg-status-warning/30"
                 )}
               >
                 Percentil {analysis.salary.percentileVsMarket}

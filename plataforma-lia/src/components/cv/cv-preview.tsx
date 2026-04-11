@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useEffect } from "react"
+import React, { useState, useEffect } from"react"
 import {
   Dialog,
   DialogContent,
@@ -8,23 +8,23 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-} from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Label } from "@/components/ui/label"
-import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+} from"@/components/ui/dialog"
+import { Button } from"@/components/ui/button"
+import { Input } from"@/components/ui/input"
+import { Textarea } from"@/components/ui/textarea"
+import { Label } from"@/components/ui/label"
+import { Badge } from"@/components/ui/badge"
+import { Progress } from"@/components/ui/progress"
+import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { ScrollArea } from "@/components/ui/scroll-area"
+} from"@/components/ui/select"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from"@/components/ui/tabs"
+import { ScrollArea } from"@/components/ui/scroll-area"
 import {
   User,
   Mail,
@@ -45,10 +45,10 @@ import {
   Tag,
   FileText,
   Edit,
-} from "lucide-react"
-import { cn } from "@/lib/utils"
-import { LIAIcon } from "@/components/ui/lia-icon"
-import type { ParsedCVResponse } from "./cv-upload-modal"
+} from"lucide-react"
+import { cn } from"@/lib/utils"
+import { LIAIcon } from"@/components/ui/lia-icon"
+import type { ParsedCVResponse } from"./cv-upload-modal"
 
 interface Experience {
   company: string
@@ -172,9 +172,8 @@ export function CVPreview({
 
     try {
       const response = await fetch("/api/backend-proxy/cv-parser/confirm", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+        method:"POST",
+        headers: {"Content-Type":"application/json",
         },
         body: JSON.stringify({
           parsed_cv: editedCV,
@@ -187,7 +186,7 @@ export function CVPreview({
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
-        throw new Error(errorData.error || errorData.detail || "Erro ao criar candidato")
+        throw new Error(errorData.error || errorData.detail ||"Erro ao criar candidato")
       }
 
       const data = await response.json()
@@ -196,10 +195,10 @@ export function CVPreview({
         onConfirm(data.candidate_id)
         handleClose()
       } else {
-        throw new Error(data.message || "Erro ao criar candidato")
+        throw new Error(data.message ||"Erro ao criar candidato")
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro ao criar candidato")
+      setError(err instanceof Error ? err.message :"Erro ao criar candidato")
     } finally {
       setIsSubmitting(false)
     }
@@ -216,15 +215,15 @@ export function CVPreview({
   }
 
   const getConfidenceColor = (score: number) => {
-    if (score >= 0.8) return "text-status-success bg-status-success/15"
-    if (score >= 0.6) return "text-status-warning bg-status-warning/15"
-    return "text-wedo-orange bg-wedo-orange/15"
+    if (score >= 0.8) return"text-status-success bg-status-success/15"
+    if (score >= 0.6) return"text-status-warning bg-status-warning/15"
+    return"text-wedo-orange bg-wedo-orange/15"
   }
 
   const getConfidenceLabel = (score: number) => {
-    if (score >= 0.8) return "Alta"
-    if (score >= 0.6) return "Média"
-    return "Baixa"
+    if (score >= 0.8) return"Alta"
+    if (score >= 0.6) return"Média"
+    return"Baixa"
   }
 
   return (
@@ -236,8 +235,7 @@ export function CVPreview({
               <LIAIcon size="sm" />
               <DialogTitle>Revisão de Currículo</DialogTitle>
             </div>
-            <div className={cn(
- "flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium",
+            <div className={cn("flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium",
               getConfidenceColor(editedCV.confidence_score)
             )}>
               <Brain className="w-3 h-3 text-wedo-cyan" />
@@ -258,7 +256,7 @@ export function CVPreview({
               </p>
               <p className="text-xs text-status-warning mt-1">
                 {parsedData.duplicate_warning.message}
-                {" - "}
+                {" -"}
                 <span className="font-medium">
                   {parsedData.duplicate_warning.existing_candidate_name}
                 </span>
@@ -325,7 +323,7 @@ export function CVPreview({
                     <Input
                       id="email"
                       type="email"
-                      value={editedCV.email || ""}
+                      value={editedCV.email ||""}
                       onChange={(e) => handleInputChange("email", e.target.value)}
                       className="pl-10"
                     />
@@ -338,7 +336,7 @@ export function CVPreview({
                     <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-lia-text-secondary" />
                     <Input
                       id="phone"
-                      value={editedCV.phone || ""}
+                      value={editedCV.phone ||""}
                       onChange={(e) => handleInputChange("phone", e.target.value)}
                       className="pl-10"
                     />
@@ -351,7 +349,7 @@ export function CVPreview({
                     <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-lia-text-secondary" />
                     <Input
                       id="location"
-                      value={editedCV.location || ""}
+                      value={editedCV.location ||""}
                       onChange={(e) => handleInputChange("location", e.target.value)}
                       className="pl-10"
                     />
@@ -364,7 +362,7 @@ export function CVPreview({
                     <Linkedin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-lia-text-secondary" />
                     <Input
                       id="linkedin"
-                      value={editedCV.linkedin || ""}
+                      value={editedCV.linkedin ||""}
                       onChange={(e) => handleInputChange("linkedin", e.target.value)}
                       className="pl-10"
                       placeholder="linkedin.com/in/..."
@@ -378,7 +376,7 @@ export function CVPreview({
                     <Github className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-lia-text-secondary" />
                     <Input
                       id="github"
-                      value={editedCV.github || ""}
+                      value={editedCV.github ||""}
                       onChange={(e) => handleInputChange("github", e.target.value)}
                       className="pl-10"
                       placeholder="github.com/..."
@@ -391,7 +389,7 @@ export function CVPreview({
                 <Label htmlFor="summary">Resumo Profissional</Label>
                 <Textarea
                   id="summary"
-                  value={editedCV.summary || ""}
+                  value={editedCV.summary ||""}
                   onChange={(e) => handleInputChange("summary", e.target.value)}
                   rows={3}
                 />
@@ -420,7 +418,7 @@ export function CVPreview({
                               <p className="font-medium text-sm">{exp.title}</p>
                               <p className="text-xs text-lia-text-secondary">{exp.company}</p>
                               <p className="text-xs text-lia-text-primary">
-                                {exp.start_date || "?"} - {exp.is_current ? "Atual" : exp.end_date || "?"}
+                                {exp.start_date ||"?"} - {exp.is_current ?"Atual" : exp.end_date ||"?"}
                                 {exp.location && ` • ${exp.location}`}
                               </p>
                             </div>
@@ -457,11 +455,11 @@ export function CVPreview({
                           <div className="flex items-start justify-between">
                             <div>
                               <p className="font-medium text-sm">
-                                {edu.degree || "Formação"}{edu.field_of_study && ` em ${edu.field_of_study}`}
+                                {edu.degree ||"Formação"}{edu.field_of_study && ` em ${edu.field_of_study}`}
                               </p>
                               <p className="text-xs text-lia-text-secondary">{edu.institution}</p>
                               <p className="text-xs text-lia-text-primary">
-                                {edu.start_date || "?"} - {edu.is_completed ? edu.end_date || "Concluído" : "Em andamento"}
+                                {edu.start_date ||"?"} - {edu.is_completed ? edu.end_date ||"Concluído" :"Em andamento"}
                               </p>
                             </div>
                           </div>
@@ -493,10 +491,10 @@ export function CVPreview({
                   <Input
                     placeholder="Adicionar habilidade..."
                     onKeyDown={(e) => {
-                      if (e.key === "Enter") {
+                      if (e.key ==="Enter") {
                         e.preventDefault()
                         handleAddSkill(e.currentTarget.value)
-                        e.currentTarget.value = ""
+                        e.currentTarget.value =""
                       }
                     }}
                   />
@@ -553,7 +551,7 @@ export function CVPreview({
                     value={newTag}
                     onChange={(e) => setNewTag(e.target.value)}
                     onKeyDown={(e) => {
-                      if (e.key === "Enter") {
+                      if (e.key ==="Enter") {
                         e.preventDefault()
                         handleAddTag()
                       }

@@ -1,11 +1,11 @@
 "use client"
 
-import React from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Progress } from "@/components/ui/progress"
-import { cn } from "@/lib/utils"
+import React from"react"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from"@/components/ui/card"
+import { Badge } from"@/components/ui/badge"
+import { Button } from"@/components/ui/button"
+import { Progress } from"@/components/ui/progress"
+import { cn } from"@/lib/utils"
 import { 
   DollarSign, 
   TrendingUp, 
@@ -25,8 +25,8 @@ import {
   Loader2,
   ChevronRight,
   PieChart
-} from "lucide-react"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+} from"lucide-react"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from"@/components/ui/tooltip"
 
 export type DataSource = 'company_policy' | 'market_benchmark' | 'internal_history' | 'inference' | 'user_input'
 
@@ -105,22 +105,22 @@ const DATA_SOURCE_CONFIG: Record<DataSource, {
   company_policy: {
     icon: '🏢',
     label: 'Política da Empresa',
-    className: 'bg-wedo-cyan/15 text-wedo-cyan-dark border-wedo-cyan/30 dark:bg-wedo-cyan/10 dark:border-wedo-cyan/30'
+    className: ' border-wedo-cyan/30 dark:bg-wedo-cyan/10 dark:border-wedo-cyan/30'
   },
   market_benchmark: {
     icon: '📊',
     label: 'Benchmark de Mercado',
-    className: 'bg-wedo-purple/15 text-wedo-purple border-wedo-purple/30 dark:bg-wedo-purple/10 dark:text-wedo-purple dark:border-wedo-purple/30'
+    className: ' border-wedo-purple/30 dark:bg-wedo-purple/10 dark:text-wedo-purple dark:border-wedo-purple/30'
   },
   internal_history: {
     icon: '📈',
     label: 'Histórico Interno',
-    className: 'bg-status-success/15 text-status-success border-status-success/30 dark:bg-status-success dark:border-status-success/30'
+    className: ' border-status-success/30 dark:bg-status-success dark:border-status-success/30'
   },
   inference: {
     icon: '🤖',
     label: 'Inferência IA',
-    className: 'bg-status-warning/15 text-status-warning border-status-warning/30 dark:bg-status-warning dark:border-status-warning/30'
+    className: ' border-status-warning/30 dark:bg-status-warning dark:border-status-warning/30'
   },
   user_input: {
     icon: '✏️',
@@ -582,9 +582,9 @@ export function CompensationAnalysisPanel({
             </Button>
           )}
           <Button 
-            variant={hasSuggestions ? "ghost" : "primary"}
+            variant={hasSuggestions ?"ghost" :"primary"}
             size="sm" 
- className={cn("flex-1", !hasSuggestions && "hover:text-white dark:hover:bg-lia-interactive-active", hasSuggestions && "dark:text-lia-text-secondary hover:bg-lia-interactive-hover")}
+ className={cn("flex-1", !hasSuggestions &&"hover:text-white dark:hover:bg-lia-interactive-active", hasSuggestions &&"dark:text-lia-text-secondary hover:bg-lia-interactive-hover")}
             onClick={onDismiss}
           >
             Prosseguir

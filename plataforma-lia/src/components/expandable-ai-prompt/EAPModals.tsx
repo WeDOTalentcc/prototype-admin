@@ -1,8 +1,8 @@
 "use client"
 
-import React from "react"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
+import React from"react"
+import { Button } from"@/components/ui/button"
+import { Badge } from"@/components/ui/badge"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -12,14 +12,14 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
+} from"@/components/ui/alert-dialog"
 import {
   X, Trash2, Check, Loader2, Zap, Globe,
-} from "lucide-react"
-import { AdvancedFiltersModal, type SearchFilters } from "@/components/search/advanced-filters-modal"
-import { TemplateSuggestionToast } from "@/components/template-suggestion-toast"
-import { SaveArchetypeModal } from "@/components/search/save-archetype-modal"
-import type { SearchSpec } from "@/lib/api/candidate-search"
+} from"lucide-react"
+import { AdvancedFiltersModal, type SearchFilters } from"@/components/search/advanced-filters-modal"
+import { TemplateSuggestionToast } from"@/components/template-suggestion-toast"
+import { SaveArchetypeModal } from"@/components/search/save-archetype-modal"
+import type { SearchSpec } from"@/lib/api/candidate-search"
 
 interface ArchetypeData {
   id: string
@@ -289,8 +289,8 @@ export function EAPModals({
                 disabled={isSavingArchetype || !editArchetypeName}
                 className="flex-1"
                 style={{
-                  backgroundColor: editArchetypeName ? "var(--lia-btn-primary-bg)" : "var(--lia-border-subtle)",
-                  color: editArchetypeName ? "white" : "var(--lia-text-tertiary)",
+                  backgroundColor: editArchetypeName ?"var(--lia-btn-primary-bg)" :"var(--lia-border-subtle)",
+                  color: editArchetypeName ?"white" :"var(--lia-text-tertiary)",
                 }}
               >
                 {isSavingArchetype ? (

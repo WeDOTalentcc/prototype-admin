@@ -10,7 +10,7 @@
 'use client'
 
 
-import { CURRENCY_SYMBOL } from "@/lib/pricing"
+import { CURRENCY_SYMBOL } from"@/lib/pricing"
 import { useState } from 'react'
 import { cn } from '@/lib/utils'
 import { 
@@ -109,11 +109,10 @@ export function FastTrackSuggestions({
           return (
             <div 
               key={job.job_id}
-              className={cn(
- "border rounded-md transition-colors duration-200",
+              className={cn("border rounded-md transition-colors duration-200",
                 isSelected 
-                  ? "border-lia-btn-primary-bg bg-lia-bg-tertiary dark:bg-lia-bg-secondary" 
-                  : "border-lia-border-default bg-lia-btn-primary-hover/50 hover:border-lia-border-default"
+                  ?"border-lia-btn-primary-bg bg-lia-bg-tertiary dark:bg-lia-bg-secondary" 
+                  :"border-lia-border-default bg-lia-btn-primary-hover/50 hover:border-lia-border-default"
               )}
             >
               <button

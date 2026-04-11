@@ -1,10 +1,10 @@
 "use client"
 
-import React from "react"
-import { Database, Plus, ChevronDown, ChevronRight, Bot } from "lucide-react"
-import { Badge } from "@/components/ui/badge"
-import { textStyles, badgeStyles } from "@/lib/design-tokens"
-import { useTalentPools, TalentPoolSummary } from "./useTalentPools"
+import React from"react"
+import { Database, Plus, ChevronDown, ChevronRight, Bot } from"lucide-react"
+import { Badge } from"@/components/ui/badge"
+import { textStyles, badgeStyles } from"@/lib/design-tokens"
+import { useTalentPools, TalentPoolSummary } from"./useTalentPools"
 
 /**
  * TalentPoolsSidebar — sidebar section for Talent Pools.
@@ -112,7 +112,7 @@ function PoolItem({
     <button
       onClick={onClick}
       className={`w-full flex items-center justify-between px-3 py-1.5 rounded-md transition-colors ${
-        isActive ? "bg-lia-bg-tertiary text-lia-text-primary" : "text-lia-text-secondary hover:bg-lia-bg-secondary"
+        isActive ?"bg-lia-bg-tertiary text-lia-text-primary" :"text-lia-text-secondary hover:bg-lia-bg-secondary"
       }`}
     >
       <div className="flex items-center gap-2 min-w-0">

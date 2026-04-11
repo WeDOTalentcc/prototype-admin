@@ -1,13 +1,13 @@
 "use client"
 
-import { useState, useCallback } from "react"
-import { X, Brain, Loader2, Search, Zap } from "lucide-react"
-import { cn } from "@/lib/utils"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { useSemanticSearch } from "@/hooks/useSemanticSearch"
-import { useTagInputState } from "@/hooks/useTagInputState"
+import { useState, useCallback } from"react"
+import { X, Brain, Loader2, Search, Zap } from"lucide-react"
+import { cn } from"@/lib/utils"
+import { Badge } from"@/components/ui/badge"
+import { Button } from"@/components/ui/button"
+import { Input } from"@/components/ui/input"
+import { useSemanticSearch } from"@/hooks/useSemanticSearch"
+import { useTagInputState } from"@/hooks/useTagInputState"
 
 interface ExpertiseAreasInputProps {
   value: string[]
@@ -15,31 +15,13 @@ interface ExpertiseAreasInputProps {
   placeholder?: string
 }
 
-const POPULAR_EXPERTISE = [
-  "Machine Learning", "Data Science", "DevOps", "Cloud Architecture", "AI/ML",
-  "Full Stack Development", "Backend Development", "Frontend Development",
-  "Mobile Development", "iOS Development", "Android Development",
-  "Data Engineering", "Data Analytics", "Business Intelligence",
-  "Cybersecurity", "Network Security", "Information Security",
-  "Product Management", "Project Management", "Agile/Scrum",
-  "Digital Marketing", "Growth Hacking", "SEO/SEM",
-  "UX Design", "UI Design", "Product Design", "Graphic Design",
-  "Sales", "Business Development", "Account Management",
-  "Human Resources", "Talent Acquisition", "People Operations",
-  "Finance", "Accounting", "Financial Planning",
-  "Operations", "Supply Chain", "Logistics",
-  "Customer Success", "Customer Support", "Technical Support",
-  "Quality Assurance", "Test Automation", "Software Testing",
-  "Blockchain", "Web3", "Smart Contracts",
-  "Natural Language Processing", "Computer Vision", "Deep Learning",
-  "Big Data", "Hadoop", "Spark", "ETL",
-  "Site Reliability Engineering", "Infrastructure", "Platform Engineering"
+const POPULAR_EXPERTISE = ["Machine Learning","Data Science","DevOps","Cloud Architecture","AI/ML","Full Stack Development","Backend Development","Frontend Development","Mobile Development","iOS Development","Android Development","Data Engineering","Data Analytics","Business Intelligence","Cybersecurity","Network Security","Information Security","Product Management","Project Management","Agile/Scrum","Digital Marketing","Growth Hacking","SEO/SEM","UX Design","UI Design","Product Design","Graphic Design","Sales","Business Development","Account Management","Human Resources","Talent Acquisition","People Operations","Finance","Accounting","Financial Planning","Operations","Supply Chain","Logistics","Customer Success","Customer Support","Technical Support","Quality Assurance","Test Automation","Software Testing","Blockchain","Web3","Smart Contracts","Natural Language Processing","Computer Vision","Deep Learning","Big Data","Hadoop","Spark","ETL","Site Reliability Engineering","Infrastructure","Platform Engineering"
 ]
 
 export function ExpertiseAreasInput({
   value,
   onChange,
-  placeholder = "Digite expertise e pressione Enter (ex: Machine Learning, DevOps, Data Science)"
+  placeholder ="Digite expertise e pressione Enter (ex: Machine Learning, DevOps, Data Science)"
 }: ExpertiseAreasInputProps) {
   const {
     inputValue, setInputValue,
@@ -56,7 +38,7 @@ export function ExpertiseAreasInput({
     isLoading: isSemanticLoading, 
     search: searchSemantic,
     clearSuggestions
-  } = useSemanticSearch({ domain: "expertise", debounceMs: 400 })
+  } = useSemanticSearch({ domain:"expertise", debounceMs: 400 })
 
   const existingExpertise = value.map(e => e.toLowerCase())
 
@@ -74,7 +56,7 @@ export function ExpertiseAreasInput({
   const showAskAI = inputValue.trim().length >= 2
   const dropdownItems = [
     ...semanticItems,
-    ...(showAskAI && semanticItems.length === 0 ? [{ type: 'ai' as const, label: `Buscar com IA "${inputValue}"`, confidence: 0 }] : []),
+    ...(showAskAI && semanticItems.length === 0 ? [{ type: 'ai' as const, label: `Buscar com IA"${inputValue}"`, confidence: 0 }] : []),
     ...filteredSuggestions.map(s => ({ type: 'expertise' as const, label: s, confidence: 0 }))
   ]
 
@@ -242,10 +224,9 @@ export function ExpertiseAreasInput({
                     addExpertise(item.label)
                   }
                 }}
-                className={cn(
-                  "w-full text-left px-3 py-2 text-sm transition-colors",
-                  focusedIndex === index ? "bg-lia-bg-tertiary" : "hover:bg-lia-bg-secondary",
-                  item.type === 'ai' && ""
+                className={cn("w-full text-left px-3 py-2 text-sm transition-colors",
+                  focusedIndex === index ?"bg-lia-bg-tertiary" :"hover:bg-lia-bg-secondary",
+                  item.type === 'ai' &&""
                 )}
               >
                 {item.type === 'ai' ? (

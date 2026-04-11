@@ -1,8 +1,8 @@
 "use client"
 
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Brain, RefreshCw, Target, Wand2, X } from "lucide-react"
+import { Button } from"@/components/ui/button"
+import { Badge } from"@/components/ui/badge"
+import { Brain, RefreshCw, Target, Wand2, X } from"lucide-react"
 
 interface LIASuggestionsPanelProps {
   open: boolean
@@ -68,7 +68,7 @@ export function LIASuggestionsPanel({ open, onClose, selectedTriagemQuestion }: 
               </h3>
             </div>
             <p className="text-xs text-lia-text-secondary">
-              Clique em "Substituir" para trocar a pergunta selecionada
+              Clique em"Substituir" para trocar a pergunta selecionada
             </p>
           </div>
 

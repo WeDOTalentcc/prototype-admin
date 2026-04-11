@@ -1,14 +1,14 @@
 "use client"
 
-import React from "react"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Plus, MoreVertical } from "lucide-react"
-import { EmptyState } from "@/components/ui/empty-state"
-import { textStyles, buttonStyles, cardStyles, badgeStyles } from "@/lib/design-tokens"
-import type { KanbanStage, KanbanCandidate } from "./types"
-import { KanbanCard } from "./KanbanCard"
+import React from"react"
+import { Badge } from"@/components/ui/badge"
+import { Button } from"@/components/ui/button"
+import { ScrollArea } from"@/components/ui/scroll-area"
+import { Plus, MoreVertical } from"lucide-react"
+import { EmptyState } from"@/components/ui/empty-state"
+import { textStyles, buttonStyles, cardStyles, badgeStyles } from"@/lib/design-tokens"
+import type { KanbanStage, KanbanCandidate } from"./types"
+import { KanbanCard } from"./KanbanCard"
 
 interface KanbanColumnProps {
   stage: KanbanStage

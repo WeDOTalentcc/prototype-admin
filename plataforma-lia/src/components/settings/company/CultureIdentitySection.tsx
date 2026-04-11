@@ -104,13 +104,13 @@ export function CultureIdentitySection({
               disabled={!isEditing}
               className={inputClass(!isEditing)}
               onKeyDown={(e) => {
-                if (e.key === "Enter" && e.currentTarget.value.trim()) {
+                if (e.key ==="Enter" && e.currentTarget.value.trim()) {
                   e.preventDefault()
                   setCompanyData((prev) => ({
                     ...prev,
                     values: [...(prev.values || []), e.currentTarget.value.trim()],
                   }))
-                  e.currentTarget.value = ""
+                  e.currentTarget.value =""
                 }
               }}
             />
@@ -152,13 +152,13 @@ export function CultureIdentitySection({
               disabled={!isEditing}
               className={inputClass(!isEditing)}
               onKeyDown={(e) => {
-                if (e.key === "Enter" && e.currentTarget.value.trim()) {
+                if (e.key ==="Enter" && e.currentTarget.value.trim()) {
                   e.preventDefault()
                   setCompanyData((prev) => ({
                     ...prev,
                     coreCompetencies: [...(prev.coreCompetencies || []), e.currentTarget.value.trim()],
                   }))
-                  e.currentTarget.value = ""
+                  e.currentTarget.value =""
                 }
               }}
             />

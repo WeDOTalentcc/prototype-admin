@@ -1,18 +1,18 @@
 "use client"
 
 
-import { formatBRL } from "@/lib/pricing"
-import { useState } from "react"
-import { useModalA11y } from "@/hooks/use-modal-a11y"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { formatBRL } from"@/lib/pricing"
+import { useState } from"react"
+import { useModalA11y } from"@/hooks/use-modal-a11y"
+import { Button } from"@/components/ui/button"
+import { Badge } from"@/components/ui/badge"
+import { Avatar, AvatarFallback } from"@/components/ui/avatar"
 import {
   X, MapPin, Linkedin, Github, Mail, Phone, Star,
   Briefcase, GraduationCap, Calendar, DollarSign,
   Eye, MessageCircle, UserPlus, Download, Share2,
   TrendingUp, Award, Target, Clock
-} from "lucide-react"
+} from"lucide-react"
 
 interface Candidate {
   id: string
@@ -70,18 +70,18 @@ export function QuickViewModal({
   if (!isOpen || !candidate) return null
 
   const getScoreColor = (score: number) => {
-    if (score >= 90) return "text-status-success bg-status-success/15"
-    if (score >= 80) return "text-lia-text-primary bg-lia-bg-tertiary"
-    if (score >= 70) return "text-status-warning bg-status-warning/15"
-    return "text-status-error bg-status-error/15"
+    if (score >= 90) return"text-status-success bg-status-success/15"
+    if (score >= 80) return"text-lia-text-primary bg-lia-bg-tertiary"
+    if (score >= 70) return"text-status-warning bg-status-warning/15"
+    return"text-status-error bg-status-error/15"
   }
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'active': return 'bg-status-success/15 text-status-success border-status-success/30'
+      case 'active': return ' border-status-success/30'
       case 'prospect': return 'bg-lia-bg-tertiary text-lia-text-primary border-lia-border-subtle'
-      case 'interview': return 'bg-wedo-purple/15 text-wedo-purple border-wedo-purple/30'
-      case 'hired': return 'bg-status-success/15 text-status-success border-status-success/30'
+      case 'interview': return ' border-wedo-purple/30'
+      case 'hired': return ' border-status-success/30'
       default: return 'bg-lia-bg-tertiary text-lia-text-primary border-lia-border-subtle'
     }
   }

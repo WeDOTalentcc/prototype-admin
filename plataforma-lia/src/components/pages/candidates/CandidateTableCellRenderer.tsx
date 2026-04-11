@@ -1,19 +1,19 @@
 "use client"
 
-import React from "react"
-import { cn } from "@/lib/utils"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import React from"react"
+import { cn } from"@/lib/utils"
+import { Badge } from"@/components/ui/badge"
+import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
 import {
   Eye, ChevronsLeftRight, MapPin,
-} from "lucide-react"
-import { SearchFeedbackButtons } from "@/components/search/SearchFeedbackButtons"
-import { textStyles } from "@/lib/design-tokens"
-import type { Candidate } from "@/components/pages/candidates/types"
-import { renderSourceCell } from "./cells/SourceCell"
-import { renderMatchScoreCell, renderLiaScoreCell } from "./cells/ScoreCells"
-import { renderEmailCell, renderPhoneCell, renderLinkedinCell, renderGithubCell, renderPortfolioCell } from "./cells/ContactCells"
-import { renderPearchInsightCell } from "./cells/PearchCells"
+} from"lucide-react"
+import { SearchFeedbackButtons } from"@/components/search/SearchFeedbackButtons"
+import { textStyles } from"@/lib/design-tokens"
+import type { Candidate } from"@/components/pages/candidates/types"
+import { renderSourceCell } from"./cells/SourceCell"
+import { renderMatchScoreCell, renderLiaScoreCell } from"./cells/ScoreCells"
+import { renderEmailCell, renderPhoneCell, renderLinkedinCell, renderGithubCell, renderPortfolioCell } from"./cells/ContactCells"
+import { renderPearchInsightCell } from"./cells/PearchCells"
 
 // ---------------------------------------------------------------------------
 // Deps interface — todas as dependências que vêm do componente pai
@@ -21,7 +21,7 @@ import { renderPearchInsightCell } from "./cells/PearchCells"
 
 export interface CellRendererDeps {
   /** Feedbacks de busca indexados por candidateId */
-  searchFeedbacks: Record<string, "like" | "dislike">
+  searchFeedbacks: Record<string,"like" |"dislike">
   /** Contatos revelados (Pearch) indexados por candidateId */
   revealedContacts: Record<string, { email?: string; phone?: string }>
   /** Query da busca atual — usado para decidir se exibe match_score */
@@ -34,10 +34,10 @@ export interface CellRendererDeps {
   onSearchFeedbackChange: (
     candidateId: string,
     candidateName: string,
-    feedback: "like" | "dislike" | null
+    feedback:"like" |"dislike" | null
   ) => void
   /** Abre modal de revelação de contato (email | phone) */
-  onRevealContact: (candidate: Candidate, type: "email" | "phone") => void
+  onRevealContact: (candidate: Candidate, type:"email" |"phone") => void
   /** Alterna expansão de linha para candidatos com título longo */
   onToggleExpandedRow: (candidateId: string) => void
 }
@@ -63,36 +63,36 @@ export function createCellRenderer(deps: CellRendererDeps) {
   // -------------------------------------------------------------------------
 
   const formatDate = (date: string | undefined) => {
-    if (!date) return "N/A"
+    if (!date) return"N/A"
     return new Date(date).toLocaleDateString("pt-BR")
   }
 
   const formatCurrency = (value: number | undefined, currency?: string) => {
-    if (!value) return "N/A"
+    if (!value) return"N/A"
     return new Intl.NumberFormat("pt-BR", {
-      style: "currency",
-      currency: currency || "BRL",
+      style:"currency",
+      currency: currency ||"BRL",
     }).format(value)
   }
 
   const formatBoolean = (value: boolean | undefined) => {
-    if (value === undefined) return "N/A"
-    return value ? "Sim" : "Não"
+    if (value === undefined) return"N/A"
+    return value ?"Sim" :"Não"
   }
 
   const formatArray = (arr: string[] | undefined) => {
-    if (!arr || arr.length === 0) return "N/A"
-    return arr.slice(0, 3).join(", ") + (arr.length > 3 ? ` (+${arr.length - 3})` : "")
+    if (!arr || arr.length === 0) return"N/A"
+    return arr.slice(0, 3).join(",") + (arr.length > 3 ? ` (+${arr.length - 3})` :"")
   }
 
   const formatLanguages = (langs: Record<string, string> | undefined) => {
-    if (!langs) return "N/A"
+    if (!langs) return"N/A"
     const entries = Object.entries(langs)
-    if (entries.length === 0) return "N/A"
+    if (entries.length === 0) return"N/A"
     return entries
       .slice(0, 2)
       .map(([lang, level]) => `${lang}: ${level}`)
-      .join(", ")
+      .join(",")
   }
 
   // -------------------------------------------------------------------------
@@ -104,18 +104,17 @@ export function createCellRenderer(deps: CellRendererDeps) {
     columnId: string
   ): React.ReactNode {
     switch (columnId) {
-      case "checkbox":
-      case "acoes":
-      case "actions":
+      case"checkbox":
+      case"acoes":
+      case"actions":
         return null
 
-      case "feedback": {
+      case"feedback": {
         const hasFeedback = !!searchFeedbacks[candidate.id]
         return (
           <div
-            className={cn(
-              "flex items-center justify-center transition-opacity duration-200",
-              hasFeedback ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+            className={cn("flex items-center justify-center transition-opacity duration-200",
+              hasFeedback ?"opacity-100" :"opacity-0 group-hover:opacity-100"
             )}
           >
             <SearchFeedbackButtons
@@ -134,15 +133,15 @@ export function createCellRenderer(deps: CellRendererDeps) {
       }
 
       // Delegated to SourceCell
-      case "source":
+      case"source":
         return renderSourceCell(candidate)
 
       // Delegated to ScoreCells
-      case "match_score":
+      case"match_score":
         return renderMatchScoreCell(candidate, searchQuery)
 
       // Básico
-      case "name": {
+      case"name": {
         const isCandidateViewed = viewedCandidateIds.has(candidate.id)
         return (
           <div className="flex items-center gap-2.5">
@@ -161,7 +160,7 @@ export function createCellRenderer(deps: CellRendererDeps) {
                 />
                 <AvatarFallback className="text-sm font-medium bg-lia-bg-tertiary dark:bg-lia-bg-elevated text-lia-text-secondary">
                   {candidate.name
-                    .split(" ")
+                    .split("")
                     .map((n) => n[0])
                     .join("")
                     .slice(0, 2)
@@ -188,7 +187,7 @@ export function createCellRenderer(deps: CellRendererDeps) {
         )
       }
 
-      case "id":
+      case"id":
         return (
           <span className="font-mono text-xs text-lia-text-primary">
             {candidate.candidateId || candidate.id}
@@ -196,77 +195,77 @@ export function createCellRenderer(deps: CellRendererDeps) {
         )
 
       // IA — delegated to ScoreCells
-      case "lia_score":
+      case"lia_score":
         return renderLiaScoreCell(candidate)
 
-      case "lia_insights": {
+      case"lia_insights": {
         const insights = candidate.lia_insights
         return (
           <span className="text-xs text-lia-text-primary truncate">
-            {insights?.overall_summary?.slice(0, 50) || ""}
-            {insights?.overall_summary && insights.overall_summary.length > 50 ? "..." : ""}
+            {insights?.overall_summary?.slice(0, 50) ||""}
+            {insights?.overall_summary && insights.overall_summary.length > 50 ?"..." :""}
           </span>
         )
       }
 
-      case "skills_match_percentage":
+      case"skills_match_percentage":
         return (
           <span className="text-xs">
-            {candidate.skills_match_percentage ? `${candidate.skills_match_percentage}%` : ""}
+            {candidate.skills_match_percentage ? `${candidate.skills_match_percentage}%` :""}
           </span>
         )
 
       // Contato — delegated to ContactCells
-      case "email":
+      case"email":
         return renderEmailCell(candidate, revealedContacts, onRevealContact)
 
-      case "secondary_email":
+      case"secondary_email":
         return (
           <span className="text-xs text-lia-text-primary truncate">
-            {candidate.secondary_email || ""}
+            {candidate.secondary_email ||""}
           </span>
         )
 
-      case "phone":
-        return renderPhoneCell(candidate, revealedContacts, onRevealContact, "phone")
+      case"phone":
+        return renderPhoneCell(candidate, revealedContacts, onRevealContact,"phone")
 
-      case "mobile_phone":
-        return renderPhoneCell(candidate, revealedContacts, onRevealContact, "mobile_phone")
+      case"mobile_phone":
+        return renderPhoneCell(candidate, revealedContacts, onRevealContact,"mobile_phone")
 
-      case "secondary_phone":
-        return <span className="text-xs text-lia-text-primary">{candidate.secondary_phone || ""}</span>
+      case"secondary_phone":
+        return <span className="text-xs text-lia-text-primary">{candidate.secondary_phone ||""}</span>
 
-      case "linkedin_url":
+      case"linkedin_url":
         return renderLinkedinCell(candidate)
 
-      case "github_url":
+      case"github_url":
         return renderGithubCell(candidate)
 
-      case "portfolio_url":
+      case"portfolio_url":
         return renderPortfolioCell(candidate)
 
       // Pessoal
-      case "date_of_birth":
+      case"date_of_birth":
         return <span className="text-xs text-lia-text-primary">{formatDate(candidate.date_of_birth)}</span>
-      case "gender":
-        return <span className="text-xs text-lia-text-primary">{candidate.gender || ""}</span>
-      case "nationality":
-        return <span className="text-xs text-lia-text-primary">{candidate.nationality || ""}</span>
-      case "marital_status":
-        return <span className="text-xs text-lia-text-primary">{candidate.marital_status || ""}</span>
-      case "cpf":
-        return <span className="text-xs text-lia-text-primary font-mono">{candidate.cpf || ""}</span>
+      case"gender":
+        return <span className="text-xs text-lia-text-primary">{candidate.gender ||""}</span>
+      case"nationality":
+        return <span className="text-xs text-lia-text-primary">{candidate.nationality ||""}</span>
+      case"marital_status":
+        return <span className="text-xs text-lia-text-primary">{candidate.marital_status ||""}</span>
+      case"cpf":
+        return <span className="text-xs text-lia-text-primary font-mono">{candidate.cpf ||""}</span>
 
       // Profissional
-      case "current_title": {
-        const titleText = candidate.current_title || candidate.position || ""
+      case"current_title": {
+        const titleText = candidate.current_title || candidate.position ||""
         const isRowExpanded = expandedRows.has(candidate.id)
         const titleNeedsTruncation = titleText.length > 40
 
         return (
           <div className="flex items-start gap-1 max-w-[250px]">
             <span
-              className={`text-xs text-lia-text-primary font-medium ${isRowExpanded ? "whitespace-normal break-words" : "truncate"}`}
+              className={`text-xs text-lia-text-primary font-medium ${isRowExpanded ?"whitespace-normal break-words" :"truncate"}`}
               title={titleText}
             >
               {titleText}
@@ -278,10 +277,10 @@ export function createCellRenderer(deps: CellRendererDeps) {
                   onToggleExpandedRow(candidate.id)
                 }}
                 className="flex-shrink-0 p-0.5 rounded-xl hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none"
-                title={isRowExpanded ? "Recolher texto" : "Expandir texto"}
+                title={isRowExpanded ?"Recolher texto" :"Expandir texto"}
               >
                 <ChevronsLeftRight
-                  className={`w-3 h-3 text-lia-text-primary hover:text-lia-text-primary transition-transform motion-reduce:transition-none ${isRowExpanded ? "rotate-90" : ""}`}
+                  className={`w-3 h-3 text-lia-text-primary hover:text-lia-text-primary transition-transform motion-reduce:transition-none ${isRowExpanded ?"rotate-90" :""}`}
                 />
               </button>
             )}
@@ -289,73 +288,73 @@ export function createCellRenderer(deps: CellRendererDeps) {
         )
       }
 
-      case "current_company":
+      case"current_company":
         return (
           <span className="text-xs text-lia-text-primary truncate">
-            {candidate.current_company || candidate.workHistory?.[0]?.company || ""}
+            {candidate.current_company || candidate.workHistory?.[0]?.company ||""}
           </span>
         )
-      case "seniority_level":
+      case"seniority_level":
         return (
           <Badge variant="outline" className="text-xs">
-            {candidate.seniority_level || ""}
+            {candidate.seniority_level ||""}
           </Badge>
         )
-      case "years_of_experience":
+      case"years_of_experience":
         return (
           <span className="text-xs text-lia-text-primary">
             {candidate.years_of_experience !== undefined
               ? `${candidate.years_of_experience} anos`
-              : ""}
+              :""}
           </span>
         )
-      case "self_introduction":
+      case"self_introduction":
         return (
           <span className="text-xs text-lia-text-primary truncate">
-            {candidate.self_introduction?.slice(0, 50) || ""}
-            {candidate.self_introduction && candidate.self_introduction.length > 50 ? "..." : ""}
+            {candidate.self_introduction?.slice(0, 50) ||""}
+            {candidate.self_introduction && candidate.self_introduction.length > 50 ?"..." :""}
           </span>
         )
 
       // Competências
-      case "technical_skills":
+      case"technical_skills":
         return (
           <span className="text-xs text-lia-text-primary truncate">
             {formatArray(candidate.technical_skills || candidate.skills)}
           </span>
         )
-      case "soft_skills":
+      case"soft_skills":
         return (
           <span className="text-xs text-lia-text-primary truncate">
             {formatArray(candidate.soft_skills)}
           </span>
         )
-      case "languages":
+      case"languages":
         return (
           <span className="text-xs text-lia-text-primary truncate">
             {formatLanguages(candidate.languages)}
           </span>
         )
-      case "certifications":
+      case"certifications":
         return (
           <span className="text-xs text-lia-text-primary truncate">
             {formatArray(candidate.certifications)}
           </span>
         )
-      case "interests":
+      case"interests":
         return (
           <span className="text-xs text-lia-text-primary truncate">
             {formatArray(candidate.interests)}
           </span>
         )
-      case "education": {
+      case"education": {
         const educationData = candidate.education || (candidate as unknown as Record<string, unknown>).educations as any[]
         if (Array.isArray(educationData) && educationData.length > 0) {
           const firstEdu = educationData[0]
           return (
             <span className="text-xs text-lia-text-primary truncate">
-              {firstEdu.degree || firstEdu.course || ""}
-              {firstEdu.institution ? ` - ${firstEdu.institution}` : ""}
+              {firstEdu.degree || firstEdu.course ||""}
+              {firstEdu.institution ? ` - ${firstEdu.institution}` :""}
             </span>
           )
         }
@@ -363,90 +362,90 @@ export function createCellRenderer(deps: CellRendererDeps) {
       }
 
       // Localização
-      case "location_city":
+      case"location_city":
         return (
           <div className="flex items-center gap-1">
             <MapPin className="w-3 h-3 text-lia-text-primary" />
             <span className="text-xs text-lia-text-primary truncate">
-              {candidate.location_city || candidate.location?.split(",")[0] || ""}
+              {candidate.location_city || candidate.location?.split(",")[0] ||""}
             </span>
           </div>
         )
-      case "location_state":
-        return <span className="text-xs text-lia-text-primary">{candidate.location_state || ""}</span>
-      case "location_country":
-        return <span className="text-xs text-lia-text-primary">{candidate.location_country || ""}</span>
+      case"location_state":
+        return <span className="text-xs text-lia-text-primary">{candidate.location_state ||""}</span>
+      case"location_country":
+        return <span className="text-xs text-lia-text-primary">{candidate.location_country ||""}</span>
 
       // Endereço
-      case "address_street":
+      case"address_street":
         return (
           <span className="text-xs text-lia-text-primary truncate">
-            {candidate.address_street || ""}
+            {candidate.address_street ||""}
           </span>
         )
-      case "address_number":
-        return <span className="text-xs text-lia-text-primary">{candidate.address_number || ""}</span>
-      case "address_district":
+      case"address_number":
+        return <span className="text-xs text-lia-text-primary">{candidate.address_number ||""}</span>
+      case"address_district":
         return (
           <span className="text-xs text-lia-text-primary truncate">
-            {candidate.address_district || ""}
+            {candidate.address_district ||""}
           </span>
         )
-      case "address_zip":
+      case"address_zip":
         return (
-          <span className="text-xs text-lia-text-primary font-mono">{candidate.address_zip || ""}</span>
+          <span className="text-xs text-lia-text-primary font-mono">{candidate.address_zip ||""}</span>
         )
-      case "address_complement":
+      case"address_complement":
         return (
           <span className="text-xs text-lia-text-primary truncate">
-            {candidate.address_complement || ""}
+            {candidate.address_complement ||""}
           </span>
         )
 
       // Preferências
-      case "is_remote":
+      case"is_remote":
         return (
           <Badge
             variant="outline"
-            className={`text-xs ${candidate.is_remote ? "bg-status-success/10 text-status-success border-status-success/30" : ""}`}
+            className={`text-xs ${candidate.is_remote ?" border-status-success/30" :""}`}
           >
             {formatBoolean(candidate.is_remote)}
           </Badge>
         )
-      case "willing_to_relocate":
+      case"willing_to_relocate":
         return (
           <span className="text-xs text-lia-text-primary">
             {formatBoolean(candidate.willing_to_relocate)}
           </span>
         )
-      case "mobility":
+      case"mobility":
         return <span className="text-xs text-lia-text-primary">{formatBoolean(candidate.mobility)}</span>
-      case "work_model_preference": {
+      case"work_model_preference": {
         const workModel = candidate.work_model_preference || candidate.workModel
         return (
           <Badge
             className="text-xs"
            
           >
-            {workModel === "remoto"
-              ? "🏠 Remoto"
-              : workModel === "híbrido"
-                ? "🔄 Híbrido"
-                : workModel === "presencial"
-                  ? "🏢 Presencial"
-                  : workModel || ""}
+            {workModel ==="remoto"
+              ?"🏠 Remoto"
+              : workModel ==="híbrido"
+                ?"🔄 Híbrido"
+                : workModel ==="presencial"
+                  ?"🏢 Presencial"
+                  : workModel ||""}
           </Badge>
         )
       }
-      case "contract_type_preference":
+      case"contract_type_preference":
         return (
           <span className="text-xs text-lia-text-primary">
-            {candidate.contract_type_preference || ""}
+            {candidate.contract_type_preference ||""}
           </span>
         )
 
       // Salário
-      case "current_salary":
+      case"current_salary":
         return (
           <span className="text-xs text-lia-text-primary font-medium">
             {formatCurrency(
@@ -455,35 +454,35 @@ export function createCellRenderer(deps: CellRendererDeps) {
             )}
           </span>
         )
-      case "salary_currency":
+      case"salary_currency":
         return (
-          <span className="text-xs text-lia-text-primary">{candidate.salary_currency || "BRL"}</span>
+          <span className="text-xs text-lia-text-primary">{candidate.salary_currency ||"BRL"}</span>
         )
-      case "desired_salary_min":
+      case"desired_salary_min":
         return (
           <span className="text-xs text-lia-text-primary">
             {formatCurrency(candidate.desired_salary_min, candidate.salary_currency)}
           </span>
         )
-      case "desired_salary_max":
+      case"desired_salary_max":
         return (
           <span className="text-xs text-lia-text-primary">
             {formatCurrency(candidate.desired_salary_max, candidate.salary_currency)}
           </span>
         )
-      case "salary_expectation_clt":
+      case"salary_expectation_clt":
         return (
           <span className="text-xs text-lia-text-primary">
             {formatCurrency(candidate.salary_expectation_clt)}
           </span>
         )
-      case "salary_expectation_pj":
+      case"salary_expectation_pj":
         return (
           <span className="text-xs text-lia-text-primary">
             {formatCurrency(candidate.salary_expectation_pj)}
           </span>
         )
-      case "salary_expectation_freelance":
+      case"salary_expectation_freelance":
         return (
           <span className="text-xs text-lia-text-primary">
             {formatCurrency(candidate.salary_expectation_freelance)}
@@ -491,7 +490,7 @@ export function createCellRenderer(deps: CellRendererDeps) {
         )
 
       // Documentos
-      case "resume_url":
+      case"resume_url":
         return candidate.resume_url ? (
           <a
             href={candidate.resume_url}
@@ -504,140 +503,136 @@ export function createCellRenderer(deps: CellRendererDeps) {
         ) : (
           <span className="text-xs text-lia-text-primary">N/A</span>
         )
-      case "resume_text":
+      case"resume_text":
         return (
           <span className="text-xs text-lia-text-primary truncate">
-            {candidate.resume_text?.slice(0, 40) || ""}
-            {candidate.resume_text && candidate.resume_text.length > 40 ? "..." : ""}
+            {candidate.resume_text?.slice(0, 40) ||""}
+            {candidate.resume_text && candidate.resume_text.length > 40 ?"..." :""}
           </span>
         )
-      case "cover_letter":
+      case"cover_letter":
         return (
           <span className="text-xs text-lia-text-primary truncate">
-            {candidate.cover_letter?.slice(0, 40) || ""}
-            {candidate.cover_letter && candidate.cover_letter.length > 40 ? "..." : ""}
+            {candidate.cover_letter?.slice(0, 40) ||""}
+            {candidate.cover_letter && candidate.cover_letter.length > 40 ?"..." :""}
           </span>
         )
 
       // Origem
-      case "ats_source_name":
-        return <span className="text-xs text-lia-text-primary">{candidate.ats_source_name || ""}</span>
-      case "ats_candidate_id":
+      case"ats_source_name":
+        return <span className="text-xs text-lia-text-primary">{candidate.ats_source_name ||""}</span>
+      case"ats_candidate_id":
         return (
           <span className="text-xs text-lia-text-primary font-mono">
-            {candidate.ats_candidate_id || ""}
+            {candidate.ats_candidate_id ||""}
           </span>
         )
-      case "pearch_profile_id":
+      case"pearch_profile_id":
         return (
           <span className="text-xs text-lia-text-primary font-mono">
-            {candidate.pearch_profile_id || ""}
+            {candidate.pearch_profile_id ||""}
           </span>
         )
 
       // Status
-      case "status": {
+      case"status": {
         const statusColors: Record<string, string> = {
-          novo: "bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary",
-          triagem:
-            "bg-status-warning/15 dark:bg-status-warning/30 text-status-warning dark:text-status-warning",
-          entrevista:
-            "bg-wedo-purple/15 dark:bg-wedo-purple/30 text-wedo-purple dark:text-wedo-purple",
-          aprovado:
-            "bg-status-success/15 dark:bg-status-success/30 text-status-success dark:text-status-success",
-          reprovado:
-            "bg-status-error/15 dark:bg-status-error/30 text-status-error dark:text-status-error",
+          novo:"bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary",
+          triagem:"bg-status-warning/15 dark:bg-status-warning/30 text-status-warning dark:text-status-warning",
+          entrevista:"bg-wedo-purple/15 dark:bg-wedo-purple/30 text-wedo-purple dark:text-wedo-purple",
+          aprovado:"bg-status-success/15 dark:bg-status-success/30 text-status-success dark:text-status-success",
+          reprovado:"bg-status-error/15 dark:bg-status-error/30 text-status-error dark:text-status-error",
         }
         return (
           <Badge
-            className={`text-xs ${statusColors[candidate.status || ""] || "bg-lia-bg-tertiary text-lia-text-primary"}`}
+            className={`text-xs ${statusColors[candidate.status ||""] ||"bg-lia-bg-tertiary text-lia-text-primary"}`}
           >
-            {candidate.status || ""}
+            {candidate.status ||""}
           </Badge>
         )
       }
-      case "is_active":
+      case"is_active":
         return (
           <Badge
             variant="outline"
-            className={`text-xs ${candidate.is_active ? "bg-status-success/10 text-status-success" : "bg-status-error/10 text-status-error"}`}
+            className={`text-xs ${candidate.is_active ?"" :""}`}
           >
             {formatBoolean(candidate.is_active)}
           </Badge>
         )
-      case "is_blacklisted":
+      case"is_blacklisted":
         return candidate.is_blacklisted ? (
-          <Badge className="text-xs bg-status-error/15 text-status-error">Sim</Badge>
+          <Badge className="text-xs">Sim</Badge>
         ) : (
           <span className="text-xs text-lia-text-primary">Não</span>
         )
-      case "blacklist_reason":
+      case"blacklist_reason":
         return (
           <span className="text-xs text-lia-text-primary truncate">
-            {candidate.blacklist_reason || ""}
+            {candidate.blacklist_reason ||""}
           </span>
         )
 
       // Comunicação
-      case "preferred_contact_method":
+      case"preferred_contact_method":
         return (
           <span className="text-xs text-lia-text-primary">
-            {candidate.preferred_contact_method || ""}
+            {candidate.preferred_contact_method ||""}
           </span>
         )
-      case "best_time_to_contact":
+      case"best_time_to_contact":
         return (
-          <span className="text-xs text-lia-text-primary">{candidate.best_time_to_contact || ""}</span>
+          <span className="text-xs text-lia-text-primary">{candidate.best_time_to_contact ||""}</span>
         )
-      case "communication_consent":
+      case"communication_consent":
         return (
           <Badge
             variant="outline"
-            className={`text-xs ${candidate.communication_consent ? "bg-status-success/10 text-status-success" : ""}`}
+            className={`text-xs ${candidate.communication_consent ?"" :""}`}
           >
             {formatBoolean(candidate.communication_consent)}
           </Badge>
         )
 
       // Cadastro
-      case "completed_register":
+      case"completed_register":
         return (
           <span className="text-xs text-lia-text-primary">
             {formatBoolean(candidate.completed_register)}
           </span>
         )
-      case "accept_terms":
+      case"accept_terms":
         return (
           <span className="text-xs text-lia-text-primary">{formatBoolean(candidate.accept_terms)}</span>
         )
 
       // Adicional
-      case "tags":
+      case"tags":
         return (
           <span className="text-xs text-lia-text-primary truncate">{formatArray(candidate.tags)}</span>
         )
-      case "notes":
+      case"notes":
         return (
           <span className="text-xs text-lia-text-primary truncate">
-            {candidate.notes?.slice(0, 40) || ""}
-            {candidate.notes && candidate.notes.length > 40 ? "..." : ""}
+            {candidate.notes?.slice(0, 40) ||""}
+            {candidate.notes && candidate.notes.length > 40 ?"..." :""}
           </span>
         )
-      case "additional_data":
+      case"additional_data":
         return <span className="text-xs text-lia-text-primary">JSON</span>
 
       // Datas
-      case "created_at":
+      case"created_at":
         return <span className="text-xs text-lia-text-primary">{formatDate(candidate.created_at)}</span>
-      case "updated_at":
+      case"updated_at":
         return <span className="text-xs text-lia-text-primary">{formatDate(candidate.updated_at)}</span>
-      case "last_contacted_at":
+      case"last_contacted_at":
         return (
           <span className="text-xs text-lia-text-primary">
             {formatDate(candidate.last_contacted_at)}
           </span>
         )
-      case "last_activity_at":
+      case"last_activity_at":
         return (
           <span className="text-xs text-lia-text-primary">
             {formatDate(candidate.last_activity_at)}

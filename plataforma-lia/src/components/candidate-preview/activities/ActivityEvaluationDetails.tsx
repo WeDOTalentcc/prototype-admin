@@ -1,13 +1,13 @@
 "use client"
-import React from "react"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
+import React from"react"
+import { Badge } from"@/components/ui/badge"
+import { Button } from"@/components/ui/button"
 import { textStyles, cardStyles, badgeStyles, formatScorePercent } from '@/lib/design-tokens'
 import {
   Brain, Mic, Play, ClipboardCheck, Eye, Video
-} from "lucide-react"
-import { ScreeningQuestion, TranscriptionSegment } from "@/components/modals/screening-media-modal"
-import { Activity as ActivityData } from "@/data/demo-activities"
+} from"lucide-react"
+import { ScreeningQuestion, TranscriptionSegment } from"@/components/modals/screening-media-modal"
+import { Activity as ActivityData } from"@/data/demo-activities"
 
 interface ActivityEvaluationDetailsProps {
   activity: ActivityData & { details: NonNullable<ActivityData['details']> }
@@ -72,7 +72,7 @@ export function ActivityEvaluationDetails({
                 <p className="text-xs font-semibold text-lia-text-primary mb-1">Pontos Fortes</p>
                 <div className="flex flex-wrap gap-1">
                   {activity.details.strengths.map((s: string, i: number) => (
-                    <Badge key={`str-${i}`} className="text-micro px-1.5 py-0 bg-status-success/10 text-status-success border-status-success/30">
+                    <Badge key={`str-${i}`} className="text-micro px-1.5 py-0  border-status-success/30">
                       ✓ {s}
                     </Badge>
                   ))}
@@ -93,7 +93,7 @@ export function ActivityEvaluationDetails({
             <h5 className="text-xs font-semibold text-lia-text-primary mb-2 flex items-center gap-1">
               <Mic className="w-3 h-3 text-status-error" />
               Triagem por Voz
-              <Badge className="ml-2 text-micro px-1.5 py-0 bg-status-success/10 text-status-success">
+              <Badge className="ml-2 text-micro px-1.5 py-0">
                 {activity.details.questionsAnswered}/{activity.details.totalQuestions} perguntas
               </Badge>
             </h5>

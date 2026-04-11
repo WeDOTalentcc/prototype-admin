@@ -9,7 +9,7 @@
  */
 'use client'
 
-import { formatBRL, formatBRLCompact } from "@/lib/pricing"
+import { formatBRL, formatBRLCompact } from"@/lib/pricing"
 import { useState } from 'react'
 import { cn } from '@/lib/utils'
 import { 
@@ -322,11 +322,10 @@ export function FastTrackReviewPanel({
               <Badge 
                 key={skill.id} 
                 variant="outline" 
-                className={cn(
- "text-xs",
+                className={cn("text-xs",
                   skill.required 
-                    ? "bg-lia-bg-tertiary dark:bg-lia-bg-secondary border-lia-border-default dark:border-lia-border-default text-lia-text-secondary" 
-                    : "bg-lia-btn-primary-hover border-lia-border-default text-lia-text-disabled"
+                    ?"bg-lia-bg-tertiary dark:bg-lia-bg-secondary border-lia-border-default dark:border-lia-border-default text-lia-text-secondary" 
+                    :"bg-lia-btn-primary-hover border-lia-border-default text-lia-text-disabled"
                 )}
               >
                 {skill.name}
@@ -353,9 +352,8 @@ export function FastTrackReviewPanel({
                   {Array.from({ length: 5 }).map((_, i) => (
                     <div
                       key={i}
-                      className={cn(
- "w-2 h-2 rounded-full",
-                        i < comp.weight ? "bg-lia-border-medium" : "bg-lia-bg-inverse"
+                      className={cn("w-2 h-2 rounded-full",
+                        i < comp.weight ?"bg-lia-border-medium" :"bg-lia-bg-inverse"
                       )}
                     />
                   ))}
@@ -425,11 +423,10 @@ export function FastTrackReviewPanel({
       <Button
         onClick={onPublish}
         disabled={!canPublish || isPublishing}
-        className={cn(
- "w-full",
+        className={cn("w-full",
           canPublish 
-            ? "bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active" 
-            : "bg-lia-bg-inverse text-lia-text-secondary cursor-not-allowed"
+            ?"bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active" 
+            :"bg-lia-bg-inverse text-lia-text-secondary cursor-not-allowed"
         )}
       >
         {isPublishing ? (

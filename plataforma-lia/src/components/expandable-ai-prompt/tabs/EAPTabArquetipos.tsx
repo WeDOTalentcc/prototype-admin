@@ -1,11 +1,11 @@
 "use client"
 
 import React from 'react'
-import { Badge } from "@/components/ui/badge"
+import { Badge } from"@/components/ui/badge"
 import {
   Brain, Building2, Loader2, MapPin, Pencil, Plus, Search, Target, Trash2, Wand2, X
-} from "lucide-react"
-import { useExpandableAIPromptCore } from "../useExpandableAIPromptCore"
+} from"lucide-react"
+import { useExpandableAIPromptCore } from"../useExpandableAIPromptCore"
 
 type EAPTabArquetipossProps = Pick<
   ReturnType<typeof useExpandableAIPromptCore>,
@@ -55,7 +55,7 @@ export const EAPTabArquetipos = React.memo(function EAPTabArquetipos(props: EAPT
             {Object.keys(parsedEntities).length > 0 && (
               <div className="flex flex-wrap gap-1.5 mt-2">
                 {parsedEntities.job_title && (
-                  <Badge variant="secondary" className="text-micro bg-wedo-cyan/10 text-wedo-cyan-dark border-lia-border-default dark:border-lia-border-default">
+                  <Badge variant="secondary" className="text-micro -dark border-lia-border-default dark:border-lia-border-default">
                     {parsedEntities.job_title}
                   </Badge>
                 )}
@@ -201,7 +201,7 @@ export const EAPTabArquetipos = React.memo(function EAPTabArquetipos(props: EAPT
                 className="group relative p-3 rounded-xl border border-lia-border-subtle bg-lia-bg-primary hover:border-lia-border-medium transition-colors motion-reduce:transition-none cursor-pointer"
                 onClick={() => {
                   setSelectedArquetipo(arch.id)
-                  const query = arch.query || arch.criteria?.query || arch.description || ""
+                  const query = arch.query || arch.criteria?.query || arch.description ||""
                   if (query) {
                     onCommand(query, 'archetype_search')
                   }
@@ -232,7 +232,7 @@ export const EAPTabArquetipos = React.memo(function EAPTabArquetipos(props: EAPT
 
                 <div className="flex items-start gap-2.5 pr-16">
                   <span className="text-lg flex-shrink-0">
-                    {arch.emoji || "🎯"}
+                    {arch.emoji ||"🎯"}
                   </span>
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-medium text-lia-text-primary truncate">

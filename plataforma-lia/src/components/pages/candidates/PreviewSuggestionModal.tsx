@@ -1,7 +1,7 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { Brain, X, Plus, Loader2, Edit, Bookmark, Search } from "lucide-react"
+import { useState, useEffect } from"react"
+import { Brain, X, Plus, Loader2, Edit, Bookmark, Search } from"lucide-react"
 import {
   Dialog,
   DialogContent,
@@ -9,13 +9,13 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-} from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
-import { toast } from "sonner"
-import type { ModalAISuggestion, ModalArchetype } from "./CandidatesPageModals.types"
-import type { Archetype } from "./hooks/useCandidatesArchetypes"
+} from"@/components/ui/dialog"
+import { Button } from"@/components/ui/button"
+import { Badge } from"@/components/ui/badge"
+import { Input } from"@/components/ui/input"
+import { toast } from"sonner"
+import type { ModalAISuggestion, ModalArchetype } from"./CandidatesPageModals.types"
+import type { Archetype } from"./hooks/useCandidatesArchetypes"
 
 interface ArchetypeUpdate {
   name: string
@@ -147,7 +147,7 @@ const [previewTags, setPreviewTags] = useState<string[]>([])
             onClick={async () => {
               if (!previewSuggestion) return
               if (previewTags.length === 0) {
-                toast.error("Nenhum critério", { description: "Adicione pelo menos um critério de busca para salvar o arquétipo." })
+                toast.error("Nenhum critério", { description:"Adicione pelo menos um critério de busca para salvar o arquétipo." })
                 return
               }
               setIsSavingPreviewArchetype(true)
@@ -222,7 +222,7 @@ const [previewTags, setPreviewTags] = useState<string[]>([])
                 }
                 onClose()
               } catch {
-                toast.error("Erro ao salvar", { description: "Não foi possível salvar o arquétipo. Tente novamente." })
+                toast.error("Erro ao salvar", { description:"Não foi possível salvar o arquétipo. Tente novamente." })
               } finally {
                 setIsSavingPreviewArchetype(false)
               }
@@ -251,7 +251,7 @@ const [previewTags, setPreviewTags] = useState<string[]>([])
             onClick={async () => {
               if (!previewSuggestion) return
               if (previewTags.length === 0) {
-                toast.error("Nenhum critério", { description: "Adicione pelo menos um critério de busca para executar." })
+                toast.error("Nenhum critério", { description:"Adicione pelo menos um critério de busca para executar." })
                 return
               }
               const editedFilters = buildFiltersFromTags(previewTags)

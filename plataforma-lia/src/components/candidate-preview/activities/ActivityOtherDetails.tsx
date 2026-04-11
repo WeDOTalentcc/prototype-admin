@@ -1,15 +1,15 @@
 "use client"
 
-import React from "react"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
+import React from"react"
+import { Badge } from"@/components/ui/badge"
+import { Button } from"@/components/ui/button"
 import {
   Brain, Calendar, ExternalLink, CheckCircle, Download, Linkedin,
   ClipboardCheck, FileText, Code, Gift, UserCheck, Shield, Users,
   Building, Clock, Eye, Target, AlertCircle
-} from "lucide-react"
+} from"lucide-react"
 import { textStyles, cardStyles, badgeStyles, formatScorePercent } from '@/lib/design-tokens'
-import type { Activity as ActivityData } from "@/data/demo-activities"
+import type { Activity as ActivityData } from"@/data/demo-activities"
 
 interface ActivityOtherDetailsProps {
   activity: ActivityData & { details: NonNullable<ActivityData['details']> }
@@ -28,7 +28,7 @@ export function ActivityInterviewScheduledDetails({ activity }: { activity: Acti
           <Calendar className="w-3 h-3 text-wedo-purple" />
           {activity.details.interviewType}
           {activity.details.stage && (
-            <Badge className="ml-2 text-micro px-1.5 py-0 bg-wedo-purple/10 text-wedo-purple">{activity.details.stage}</Badge>
+            <Badge className="ml-2 text-micro px-1.5 py-0">{activity.details.stage}</Badge>
           )}
         </h5>
         <div className="grid grid-cols-2 gap-2 mb-3">
@@ -101,7 +101,7 @@ export function ActivityLiaEvaluationDetails({ activity }: { activity: ActivityD
             <p className="text-xs font-semibold text-lia-text-primary mb-1">Pontos Fortes</p>
             <div className="flex flex-wrap gap-1">
               {activity.details.strengths.map((s: string, i: number) => (
-                <Badge key={`str-${i}`} className="text-micro px-1.5 py-0 bg-status-success/10 text-status-success border-status-success/30">✓ {s}</Badge>
+                <Badge key={`str-${i}`} className="text-micro px-1.5 py-0  border-status-success/30">✓ {s}</Badge>
               ))}
             </div>
           </div>
@@ -121,7 +121,7 @@ export function ActivityJobApplicationDetails({ activity }: { activity: Activity
       <div className="bg-lia-bg-primary p-3 rounded-xl border border-lia-border-subtle">
         <h5 className="text-xs font-semibold text-lia-text-primary mb-2 flex items-center gap-1">
           <FileText className="w-3 h-3 text-status-success" />Candidatura Recebida
-          <Badge className="ml-2 text-micro px-1.5 py-0 bg-status-success/10 text-status-success">{activity.details.source}</Badge>
+          <Badge className="ml-2 text-micro px-1.5 py-0">{activity.details.source}</Badge>
         </h5>
         <div className="grid grid-cols-2 gap-2 mb-3">
           <div className="bg-lia-bg-secondary p-2 rounded-xl">

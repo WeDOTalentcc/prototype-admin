@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useState } from"react"
 import {
   Dialog,
   DialogContent,
@@ -8,16 +8,16 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-} from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Textarea } from "@/components/ui/textarea"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Label } from "@/components/ui/label"
-import { Brain, ArrowRight, Check } from "lucide-react"
-import { LIAIcon } from "@/components/ui/lia-icon"
-import { textStyles, buttonStyles, cardStyles, badgeStyles } from "@/lib/design-tokens"
-import type { MoveAction, LIASuggestion, KanbanStage } from "./types"
+} from"@/components/ui/dialog"
+import { Button } from"@/components/ui/button"
+import { Badge } from"@/components/ui/badge"
+import { Textarea } from"@/components/ui/textarea"
+import { RadioGroup, RadioGroupItem } from"@/components/ui/radio-group"
+import { Label } from"@/components/ui/label"
+import { Brain, ArrowRight, Check } from"lucide-react"
+import { LIAIcon } from"@/components/ui/lia-icon"
+import { textStyles, buttonStyles, cardStyles, badgeStyles } from"@/lib/design-tokens"
+import type { MoveAction, LIASuggestion, KanbanStage } from"./types"
 
 interface MoveConfirmationModalProps {
   isOpen: boolean
@@ -42,7 +42,7 @@ export function MoveConfirmationModal({
   const fromStage = stages.find((s) => s.id === pendingMove?.fromStageId)
   const toStage = stages.find((s) => s.id === pendingMove?.toStageId)
 
-  const substatusSuggestions = liaSuggestions.filter((s) => s.type === "substatus")
+  const substatusSuggestions = liaSuggestions.filter((s) => s.type ==="substatus")
 
   const handleConfirm = () => {
     onConfirm(selectedSubstatus || undefined, reason || undefined)
@@ -61,7 +61,7 @@ export function MoveConfirmationModal({
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="bg-lia-bg-primary dark:bg-lia-bg-primary border-lia-border-subtle dark:border-lia-border-subtle max-w-md rounded-xl">
-        <DialogHeader className=" dark:border-lia-border-subtle pb-4">
+        <DialogHeader className="dark:border-lia-border-subtle pb-4">
           <DialogTitle className="text-lia-text-primary flex items-center gap-2">
             Confirmar Movimentação
           </DialogTitle>

@@ -1,9 +1,9 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+import { useState, useEffect } from"react"
+import { Button } from"@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
+import { Badge } from"@/components/ui/badge"
 import {
   X,
   Save,
@@ -19,7 +19,7 @@ import {
   Tag,
   MessageCircle,
   CheckCircle
-} from "lucide-react"
+} from"lucide-react"
 
 interface SaveCommandModalProps {
   isOpen: boolean
@@ -48,19 +48,19 @@ export interface SavedCommandData {
 }
 
 const categories = [
-  { id: "candidates", name: "Candidatos", icon: Users, color: "text-lia-text-secondary" },
-  { id: "jobs", name: "Vagas", icon: Briefcase, color: "text-status-success" },
-  { id: "analytics", name: "Indicadores", icon: BarChart3, color: "text-wedo-purple" },
-  { id: "automation", name: "Automações", icon: Zap, color: "text-wedo-orange" },
-  { id: "reports", name: "Relatórios", icon: FileText, color: "text-wedo-cyan" },
-  { id: "communication", name: "Comunicação", icon: Mail, color: "text-wedo-magenta" },
-  { id: "custom", name: "Personalizado", icon: Brain, color: "text-wedo-purple" }
+  { id:"candidates", name:"Candidatos", icon: Users, color:"text-lia-text-secondary" },
+  { id:"jobs", name:"Vagas", icon: Briefcase, color:"text-status-success" },
+  { id:"analytics", name:"Indicadores", icon: BarChart3, color:"text-wedo-purple" },
+  { id:"automation", name:"Automações", icon: Zap, color:"text-wedo-orange" },
+  { id:"reports", name:"Relatórios", icon: FileText, color:"text-wedo-cyan" },
+  { id:"communication", name:"Comunicação", icon: Mail, color:"text-wedo-magenta" },
+  { id:"custom", name:"Personalizado", icon: Brain, color:"text-wedo-purple" }
 ]
 
 export function SaveCommandModal({ isOpen, onClose, originalCommand, commandResult, onSave, existingData }: SaveCommandModalProps) {
-  const [title, setTitle] = useState(existingData?.title || "")
-  const [description, setDescription] = useState(existingData?.description || "")
-  const [selectedCategory, setSelectedCategory] = useState(existingData?.category || "custom")
+  const [title, setTitle] = useState(existingData?.title ||"")
+  const [description, setDescription] = useState(existingData?.description ||"")
+  const [selectedCategory, setSelectedCategory] = useState(existingData?.category ||"custom")
   const [examples, setExamples] = useState(existingData?.examples || [originalCommand])
   const [newExample, setNewExample] = useState("")
   const [tags, setTags] = useState<string[]>(existingData?.tags || [])
@@ -144,23 +144,23 @@ export function SaveCommandModal({ isOpen, onClose, originalCommand, commandResu
   // Sugerir título baseado no comando
   const suggestTitle = () => {
     if (originalCommand.toLowerCase().includes("candidato")) {
-      return "Análise de Candidatos"
+      return"Análise de Candidatos"
     } else if (originalCommand.toLowerCase().includes("vaga")) {
-      return "Gestão de Vagas"
+      return"Gestão de Vagas"
     } else if (originalCommand.toLowerCase().includes("relatório")) {
-      return "Relatório Personalizado"
+      return"Relatório Personalizado"
     } else if (originalCommand.toLowerCase().includes("email")) {
-      return "Comunicação por Email"
+      return"Comunicação por Email"
     }
-    return "Comando Personalizado"
+    return"Comando Personalizado"
   }
 
   const suggestCategory = () => {
-    if (originalCommand.toLowerCase().includes("candidato")) return "candidates"
-    if (originalCommand.toLowerCase().includes("vaga")) return "jobs"
-    if (originalCommand.toLowerCase().includes("relatório") || originalCommand.toLowerCase().includes("métrica")) return "analytics"
-    if (originalCommand.toLowerCase().includes("email") || originalCommand.toLowerCase().includes("comunicar")) return "communication"
-    return "custom"
+    if (originalCommand.toLowerCase().includes("candidato")) return"candidates"
+    if (originalCommand.toLowerCase().includes("vaga")) return"jobs"
+    if (originalCommand.toLowerCase().includes("relatório") || originalCommand.toLowerCase().includes("métrica")) return"analytics"
+    if (originalCommand.toLowerCase().includes("email") || originalCommand.toLowerCase().includes("comunicar")) return"communication"
+    return"custom"
   }
 
   return (
@@ -197,8 +197,7 @@ export function SaveCommandModal({ isOpen, onClose, originalCommand, commandResu
               <MessageCircle className="w-4 h-4 text-lia-text-secondary" />
  <span className="text-sm font-medium text-lia-text-secondary">Comando Original:</span>
             </div>
- <div className="text-sm text-lia-text-secondary font-mono bg-lia-bg-primary rounded-xl p-2">
-              "{originalCommand}"
+ <div className="text-sm text-lia-text-secondary font-mono bg-lia-bg-primary rounded-xl p-2">"{originalCommand}"
             </div>
           </div>
 
@@ -285,8 +284,7 @@ export function SaveCommandModal({ isOpen, onClose, originalCommand, commandResu
             <div className="space-y-2">
               {examples.map((example, index) => (
                 <div key={`example-${index}`} className="flex items-center gap-2">
-                  <div className="flex-1 text-sm text-lia-text-primary bg-lia-bg-secondary dark:bg-lia-bg-elevated rounded-xl px-3 py-2">
-                    "{example}"
+                  <div className="flex-1 text-sm text-lia-text-primary bg-lia-bg-secondary dark:bg-lia-bg-elevated rounded-xl px-3 py-2">"{example}"
                   </div>
                   {examples.length > 1 && (
                     <Button

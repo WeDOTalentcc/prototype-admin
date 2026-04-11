@@ -1,7 +1,7 @@
 "use client"
 
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
+import { Button } from"@/components/ui/button"
+import { Badge } from"@/components/ui/badge"
 import {
   AlertCircle,
   BookOpen,
@@ -14,7 +14,7 @@ import {
   Scale,
   Settings2,
   X,
-} from "lucide-react"
+} from"lucide-react"
 
 interface WSITutorialModalProps {
   open: boolean
@@ -87,7 +87,7 @@ export function WSITutorialModal({ open, onClose }: WSITutorialModalProps) {
               </div>
               <div className="p-3 bg-lia-bg-primary rounded-xl border border-lia-border-subtle">
                 <div className="flex items-center gap-2 mb-1">
-                  <Badge className="text-micro px-1.5 py-0 h-4 bg-status-success/15 text-status-success">Bloom</Badge>
+                  <Badge className="text-micro px-1.5 py-0 h-4">Bloom</Badge>
                   <span className="text-micro text-lia-text-secondary">Anderson et al., 2001</span>
                 </div>
                 <p className="text-micro text-lia-text-primary">
@@ -96,7 +96,7 @@ export function WSITutorialModal({ open, onClose }: WSITutorialModalProps) {
               </div>
               <div className="p-3 bg-lia-bg-primary rounded-xl border border-lia-border-subtle">
                 <div className="flex items-center gap-2 mb-1">
-                  <Badge className="text-micro px-1.5 py-0 h-4 bg-wedo-orange/15 text-wedo-orange">Dreyfus</Badge>
+                  <Badge className="text-micro px-1.5 py-0 h-4">Dreyfus</Badge>
                   <span className="text-micro text-lia-text-secondary">1980</span>
                 </div>
                 <p className="text-micro text-lia-text-primary">
@@ -105,7 +105,7 @@ export function WSITutorialModal({ open, onClose }: WSITutorialModalProps) {
               </div>
               <div className="p-3 bg-lia-bg-primary rounded-xl border border-lia-border-subtle">
                 <div className="flex items-center gap-2 mb-1">
-                  <Badge className="text-micro px-1.5 py-0 h-4 bg-wedo-purple/15 text-wedo-purple">Big Five</Badge>
+                  <Badge className="text-micro px-1.5 py-0 h-4">Big Five</Badge>
                   <span className="text-micro text-lia-text-secondary">1992</span>
                 </div>
                 <p className="text-micro text-lia-text-primary">
@@ -142,7 +142,7 @@ export function WSITutorialModal({ open, onClose }: WSITutorialModalProps) {
                   </tr>
                   <tr>
                     <td className="p-2">
-                      <Badge className="text-micro px-1.5 py-0 h-4 bg-wedo-purple/15 text-wedo-purple">WSI Compact+</Badge>
+                      <Badge className="text-micro px-1.5 py-0 h-4">WSI Compact+</Badge>
                     </td>
                     <td className="p-2 text-center text-lia-text-primary">8-10</td>
                     <td className="p-2 text-center text-lia-text-primary">7-9 min</td>
@@ -163,10 +163,10 @@ export function WSITutorialModal({ open, onClose }: WSITutorialModalProps) {
               {[
                 { id: '0', name: 'Abordagem Inicial WhatsApp', time: '<1min', type: 'automático', color: 'bg-lia-bg-tertiary text-lia-text-primary' },
                 { id: '1', name: 'Apresentação da Oportunidade', time: '3min', type: 'automático', color: 'bg-lia-bg-tertiary text-lia-text-primary' },
-                { id: '2', name: 'Perguntas Padrão da Empresa', time: '2min', type: 'empresa', color: 'bg-wedo-cyan/15 text-wedo-cyan-dark' },
-                { id: '3', name: 'Elegibilidade WSI', time: '2min', type: 'editável', color: 'bg-status-success/15 text-status-success' },
-                { id: '4', name: 'Avaliação Técnica', time: '5min', type: 'editável', color: 'bg-status-success/15 text-status-success' },
-                { id: '5', name: 'Análise Situacional e Fit', time: '4min', type: 'editável', color: 'bg-status-success/15 text-status-success' },
+                { id: '2', name: 'Perguntas Padrão da Empresa', time: '2min', type: 'empresa', color: '' },
+                { id: '3', name: 'Elegibilidade WSI', time: '2min', type: 'editável', color: '' },
+                { id: '4', name: 'Avaliação Técnica', time: '5min', type: 'editável', color: '' },
+                { id: '5', name: 'Análise Situacional e Fit', time: '4min', type: 'editável', color: '' },
                 { id: '6', name: 'Resultado e Encerramento', time: '3min', type: 'automático', color: 'bg-lia-bg-tertiary text-lia-text-primary' },
               ].map((block) => (
                 <div key={block.id} className="flex items-center gap-3 p-2 bg-lia-bg-primary rounded-xl border border-lia-border-subtle">

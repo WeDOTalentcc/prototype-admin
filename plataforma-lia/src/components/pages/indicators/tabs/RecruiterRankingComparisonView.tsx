@@ -1,9 +1,9 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Trophy, BarChart3, LineChart } from "lucide-react"
-import type { RecruiterData } from "../indicators.types"
-import { getRankingIcon, getInitials } from "./recruiters-tab.utils"
+import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
+import { Badge } from"@/components/ui/badge"
+import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
+import { Trophy, BarChart3, LineChart } from"lucide-react"
+import type { RecruiterData } from"../indicators.types"
+import { getRankingIcon, getInitials } from"./recruiters-tab.utils"
 
 interface RecruiterRankingViewProps {
   filteredRecruiters: RecruiterData[]
@@ -25,12 +25,12 @@ export function RecruiterRankingView({ filteredRecruiters }: RecruiterRankingVie
               key={recruiter.name}
               className={`flex items-center gap-4 p-4 rounded-md border ${
                 index === 0
-                  ? "bg-status-warning/10 border-status-warning/30"
+                  ?"bg-status-warning/10 border-status-warning/30"
                   : index === 1
-                  ? "bg-lia-bg-secondary border-lia-border-subtle"
+                  ?"bg-lia-bg-secondary border-lia-border-subtle"
                   : index === 2
-                  ? "bg-status-warning/10 border-status-warning/30"
-                  : "bg-lia-bg-primary border-lia-border-subtle"
+                  ?"bg-status-warning/10 border-status-warning/30"
+                  :"bg-lia-bg-primary border-lia-border-subtle"
               }`}
             >
               <div className="flex items-center gap-3">
@@ -95,10 +95,10 @@ export function RecruiterRankingView({ filteredRecruiters }: RecruiterRankingVie
                   <Badge
                     className={
                       index === 0
-                        ? "bg-status-warning/15 text-status-warning"
+                        ?""
                         : index === 1
-                        ? "bg-lia-bg-tertiary text-lia-text-primary"
-                        : "bg-status-warning/15 text-status-warning"
+                        ?"bg-lia-bg-tertiary text-lia-text-primary"
+                        :""
                     }
                   >
                     #{recruiter.ranking}

@@ -1,20 +1,20 @@
 "use client"
 
-import React from "react"
-import { CURRENCY_PLACEHOLDER } from "@/lib/pricing"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+import React from"react"
+import { CURRENCY_PLACEHOLDER } from"@/lib/pricing"
+import { Button } from"@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
+import { Badge } from"@/components/ui/badge"
 import {
   Calendar, Plus, Edit, Trash2, Save,
   ChevronDown, ChevronUp, Download, RefreshCw, Loader2
-} from "lucide-react"
-import { SmartImportZone } from "./SmartImportZone"
-import { LiaFieldToggle, defaultLiaFieldExamples } from "./LiaFieldToggle"
+} from"lucide-react"
+import { SmartImportZone } from"./SmartImportZone"
+import { LiaFieldToggle, defaultLiaFieldExamples } from"./LiaFieldToggle"
 import { textStyles, cardStyles, badgeStyles, buttonStyles, actionButtonStyles } from '@/lib/design-tokens'
-import { monthKeys, monthLabels, getPositionTotal } from "./useGoalsPlanningHub"
-import type { UseGoalsPlanningHubReturn } from "./useGoalsPlanningHub"
-import type { MonthlyPlanning } from "./goalsPlanningConstants"
+import { monthKeys, monthLabels, getPositionTotal } from"./useGoalsPlanningHub"
+import type { UseGoalsPlanningHubReturn } from"./useGoalsPlanningHub"
+import type { MonthlyPlanning } from"./goalsPlanningConstants"
 
 interface WorkforceSectionProps {
   hub: UseGoalsPlanningHubReturn
@@ -42,7 +42,7 @@ export function WorkforceSection({ hub }: WorkforceSectionProps) {
         description="Importe o plano anual de contratações por departamento e mês. A LIA analisa e sugere ajustes baseados em dados históricos."
         importEndpoint="/api/backend-proxy/workforce/entries/import"
         templateDownloadEndpoint="/api/backend-proxy/workforce/entries/import/template"
-        expectedFields={["department", "month", "year", "planned", "actual"]}
+        expectedFields={["department","month","year","planned","actual"]}
         onImportSuccess={fetchWorkforceData}
         disabled={!isEditingWorkforce}
       />
@@ -115,7 +115,7 @@ export function WorkforceSection({ hub }: WorkforceSectionProps) {
                     disabled={saving}
                     className={actionButtonStyles.smPrimary}
                   >
-                    {saving ? <Loader2 className={actionButtonStyles.icon + " animate-spin motion-reduce:animate-none"} /> : <Save className={actionButtonStyles.icon} />}
+                    {saving ? <Loader2 className={actionButtonStyles.icon +" animate-spin motion-reduce:animate-none"} /> : <Save className={actionButtonStyles.icon} />}
                     Salvar Alterações
                   </button>
                 </>
@@ -182,7 +182,7 @@ export function WorkforceSection({ hub }: WorkforceSectionProps) {
                         </thead>
                         <tbody>
                           {dept.positions.map((pos) => (
-                            <tr key={pos.id} className=" dark:border-lia-border-subtle hover:bg-lia-bg-primary dark:hover:bg-lia-bg-inverse/50">
+                            <tr key={pos.id} className="dark:border-lia-border-subtle hover:bg-lia-bg-primary dark:hover:bg-lia-bg-inverse/50">
                               <td className="p-2 sticky left-0 bg-lia-bg-secondary dark:bg-lia-bg-secondary">
                                 <input
                                   type="text"

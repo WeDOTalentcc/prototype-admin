@@ -1,13 +1,13 @@
 "use client"
 
-import React from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
-import { Search, SlidersHorizontal, ArrowUpDown, X } from "lucide-react"
-import { JobListItem } from "./JobListItem"
-import type { JobWithAlert } from "../use-tasks-core"
+import React from"react"
+import { Button } from"@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
+import { Badge } from"@/components/ui/badge"
+import { Input } from"@/components/ui/input"
+import { Search, SlidersHorizontal, ArrowUpDown, X } from"lucide-react"
+import { JobListItem } from"./JobListItem"
+import type { JobWithAlert } from"../use-tasks-core"
 
 interface ActiveJobsCardProps {
   filteredAndSortedJobs: JobWithAlert[]
@@ -84,7 +84,7 @@ export function ActiveJobsCard({
             </div>
 
             <Button
-              variant={showJobFilters || activeJobFiltersCount > 0 ? "primary" : "outline"}
+              variant={showJobFilters || activeJobFiltersCount > 0 ?"primary" :"outline"}
               size="sm"
               onClick={() => setShowJobFilters(!showJobFilters)}
               className="gap-1.5 h-8 px-3 text-xs"
@@ -248,7 +248,7 @@ function JobFiltersPanel({
         {activeJobFiltersCount > 0 && (
           <button
             onClick={clearJobFilters}
-            className="text-xs text-lia-text-primary hover:text-lia-text-primary dark:hover:text-lia-text-inverse flex items-center gap-1 "
+            className="text-xs text-lia-text-primary hover:text-lia-text-primary dark:hover:text-lia-text-inverse flex items-center gap-1"
           >
             <X className="w-3 h-3" />
             Limpar filtros

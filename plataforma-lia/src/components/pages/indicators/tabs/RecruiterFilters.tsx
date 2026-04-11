@@ -1,9 +1,9 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
+import { Badge } from"@/components/ui/badge"
+import { Button } from"@/components/ui/button"
 import {
   Filter, ChevronDown, ChevronUp, Eye, AlertTriangle,
-} from "lucide-react"
+} from"lucide-react"
 
 interface RecruiterFiltersProps {
   departments: string[]
@@ -17,8 +17,8 @@ interface RecruiterFiltersProps {
   setShowAdvancedFilters: (v: boolean) => void
   sortBy: string
   setSortBy: (v: string) => void
-  sortOrder: "asc" | "desc"
-  setSortOrder: (v: "asc" | "desc") => void
+  sortOrder:"asc" |"desc"
+  setSortOrder: (v:"asc" |"desc") => void
 }
 
 export function RecruiterFilters({
@@ -55,7 +55,7 @@ export function RecruiterFilters({
             ) : (
               <ChevronDown className="w-4 h-4" />
             )}
-            {showAdvancedFilters ? "Ocultar" : "Expandir"}
+            {showAdvancedFilters ?"Ocultar" :"Expandir"}
           </Button>
         </div>
       </CardHeader>
@@ -120,7 +120,7 @@ export function RecruiterFilters({
               </select>
               <select
                 value={sortOrder}
-                onChange={(e) => setSortOrder(e.target.value as "asc" | "desc")}
+                onChange={(e) => setSortOrder(e.target.value as"asc" |"desc")}
                 className="w-full p-2 rounded-xl text-sm bg-lia-bg-secondary focus:ring-2 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20 text-lia-text-primary"
               >
                 <option value="desc">Maior para Menor</option>

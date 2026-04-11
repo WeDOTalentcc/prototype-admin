@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from "react"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { MapPin, Building, Mail, Linkedin, ExternalLink, Award, Calendar, ChevronDown, ChevronUp, MessageSquare, Check, AlertCircle, Clock, Send } from "lucide-react"
-import { textStyles, buttonStyles, cardStyles, badgeStyles } from "@/lib/design-tokens"
+import React, { useState, useEffect } from"react"
+import { Card, CardContent } from"@/components/ui/card"
+import { Badge } from"@/components/ui/badge"
+import { Button } from"@/components/ui/button"
+import { MapPin, Building, Mail, Linkedin, ExternalLink, Award, Calendar, ChevronDown, ChevronUp, MessageSquare, Check, AlertCircle, Clock, Send } from"lucide-react"
+import { textStyles, buttonStyles, cardStyles, badgeStyles } from"@/lib/design-tokens"
 
 interface CommunicationHistoryItem {
   id: string
@@ -92,7 +92,7 @@ export function CandidateCard({
   company,
   location,
   skills,
-  source_badge = "🏢 Banco Proprietário",
+  source_badge ="🏢 Banco Proprietário",
   match_score,
   email,
   linkedin,

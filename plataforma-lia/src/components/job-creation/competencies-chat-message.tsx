@@ -1,9 +1,9 @@
 "use client"
 
-import React from "react"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { cn } from "@/lib/utils"
+import React from"react"
+import { Badge } from"@/components/ui/badge"
+import { Button } from"@/components/ui/button"
+import { cn } from"@/lib/utils"
 import { 
   Check,
   Loader2,
@@ -14,8 +14,8 @@ import {
   Building2,
   BarChart3,
   Settings
-} from "lucide-react"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+} from"lucide-react"
+import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
 
 export interface TechnicalSkillSuggestion {
   name: string
@@ -93,11 +93,10 @@ function WeightStars({ weight }: { weight: number }) {
       {[1, 2, 3, 4, 5].map((i) => (
         <Star
           key={i}
-          className={cn(
- "h-3 w-3",
+          className={cn("h-3 w-3",
             i <= weight 
-              ? "fill-amber-400 text-status-warning" 
-              : "text-lia-text-disabled"
+              ?"fill-amber-400 text-status-warning" 
+              :"text-lia-text-disabled"
           )}
         />
       ))}
@@ -116,7 +115,7 @@ function TechnicalSkillCard({ skill }: { skill: TechnicalSkillSuggestion }) {
           <Code className="h-3.5 w-3.5 text-lia-text-secondary flex-shrink-0" />
           <span className="text-xs font-medium truncate">{skill.name}</span>
           {skill.required && (
-            <Badge variant="outline" className="text-micro h-4 px-1.5 border-status-error/30 bg-status-error/10 text-status-error dark:border-status-error/30 dark:bg-status-error/30 dark:text-status-error">
+            <Badge variant="outline" className="text-micro h-4 px-1.5 border-status-error/30  dark:border-status-error/30 dark:bg-status-error/30 dark:text-status-error">
               Obrigatório
             </Badge>
           )}

@@ -1,15 +1,15 @@
 "use client"
 
-import { CURRENCY_SYMBOL } from "@/lib/pricing"
-import React from "react"
+import { CURRENCY_SYMBOL } from"@/lib/pricing"
+import React from"react"
 import {
   TrendingUp, Calendar, UserCheck, Workflow, Target, Award,
   CheckCircle, Edit, Download, Send, Eye
-} from "lucide-react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { ContextPanelData } from "@/types/chat"
+} from"lucide-react"
+import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
+import { Button } from"@/components/ui/button"
+import { Badge } from"@/components/ui/badge"
+import { ContextPanelData } from"@/types/chat"
 
 interface Props {
   contextData: ContextPanelData
@@ -25,7 +25,7 @@ export function ChatContextPanelPart2({ contextData }: Props) {
   const data = contextData.data as any  
   return (
     <>
-      {contextData.type === "sourcing-progress" && (
+      {contextData.type ==="sourcing-progress" && (
         <div className="space-y-6 font-open-sans">
           <Card className="border-0 bg-lia-bg-primary bg-lia-bg-primary">
             <CardHeader className="bg-lia-bg-tertiary">
@@ -69,7 +69,7 @@ export function ChatContextPanelPart2({ contextData }: Props) {
         </div>
       )}
 
-      {contextData.type === "interview-management" && (
+      {contextData.type ==="interview-management" && (
         <div className="space-y-6 font-open-sans">
           <Card className="border-0 bg-lia-bg-primary bg-lia-bg-primary">
             <CardHeader className="bg-lia-bg-tertiary">
@@ -116,7 +116,7 @@ export function ChatContextPanelPart2({ contextData }: Props) {
         </div>
       )}
 
-      {contextData.type === "final-selection" && (
+      {contextData.type ==="final-selection" && (
         <div className="space-y-6 font-open-sans">
           <Card className="border-0 bg-lia-bg-primary bg-lia-bg-primary">
             <CardHeader className="bg-lia-bg-tertiary">
@@ -156,7 +156,7 @@ export function ChatContextPanelPart2({ contextData }: Props) {
         </div>
       )}
 
-      {contextData.type === "onboarding-plan" && (
+      {contextData.type ==="onboarding-plan" && (
         <div className="space-y-6 font-open-sans">
           <Card className="border-0 bg-lia-bg-primary bg-lia-bg-primary">
             <CardHeader className="bg-lia-bg-tertiary">
@@ -198,7 +198,7 @@ export function ChatContextPanelPart2({ contextData }: Props) {
         </div>
       )}
 
-      {contextData.type === "performance-management" && (
+      {contextData.type ==="performance-management" && (
         <div className="space-y-6 font-open-sans">
           <Card className="border-0 bg-lia-bg-primary bg-lia-bg-primary">
             <CardHeader className="bg-lia-bg-tertiary">
@@ -246,7 +246,7 @@ export function ChatContextPanelPart2({ contextData }: Props) {
         </div>
       )}
 
-      {contextData.type === "journey-summary" && (
+      {contextData.type ==="journey-summary" && (
         <div className="space-y-6 font-open-sans">
           <Card className="border-0 bg-lia-bg-primary bg-lia-bg-primary">
             <CardHeader className="bg-lia-bg-tertiary">

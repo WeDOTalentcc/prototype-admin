@@ -1,12 +1,12 @@
 "use client"
 
-import React, { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Textarea } from "@/components/ui/textarea"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Loader2, Check, X, HelpCircle, MapPin, Briefcase, Star } from "lucide-react"
-import { CalibrationCandidate, CalibrationFeedbackData } from "../types"
+import React, { useState } from"react"
+import { Button } from"@/components/ui/button"
+import { Badge } from"@/components/ui/badge"
+import { Textarea } from"@/components/ui/textarea"
+import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
+import { Loader2, Check, X, HelpCircle, MapPin, Briefcase, Star } from"lucide-react"
+import { CalibrationCandidate, CalibrationFeedbackData } from"../types"
 
 interface PanelProps {
   initialData?: Record<string, unknown>
@@ -14,52 +14,52 @@ interface PanelProps {
   isLoading?: boolean
 }
 
-type FeedbackStatus = "approved" | "rejected" | "maybe" | null
+type FeedbackStatus ="approved" |"rejected" |"maybe" | null
 
 const MOCK_CANDIDATES: CalibrationCandidate[] = [
   {
-    id: "cal_1",
-    name: "Ricardo Mendes",
-    title: "Senior Software Engineer",
-    location: "São Paulo, SP",
+    id:"cal_1",
+    name:"Ricardo Mendes",
+    title:"Senior Software Engineer",
+    location:"São Paulo, SP",
     experience_years: 8,
-    skills: ["React", "Node.js", "AWS", "Python"],
+    skills: ["React","Node.js","AWS","Python"],
     match_score: 92
   },
   {
-    id: "cal_2",
-    name: "Juliana Costa",
-    title: "Full Stack Developer",
-    location: "Rio de Janeiro, RJ",
+    id:"cal_2",
+    name:"Juliana Costa",
+    title:"Full Stack Developer",
+    location:"Rio de Janeiro, RJ",
     experience_years: 5,
-    skills: ["Vue.js", "Django", "PostgreSQL"],
+    skills: ["Vue.js","Django","PostgreSQL"],
     match_score: 78
   },
   {
-    id: "cal_3",
-    name: "Fernando Alves",
-    title: "Backend Developer",
-    location: "Curitiba, PR",
+    id:"cal_3",
+    name:"Fernando Alves",
+    title:"Backend Developer",
+    location:"Curitiba, PR",
     experience_years: 6,
-    skills: ["Java", "Spring Boot", "Kubernetes"],
+    skills: ["Java","Spring Boot","Kubernetes"],
     match_score: 85
   },
   {
-    id: "cal_4",
-    name: "Camila Rodrigues",
-    title: "Tech Lead",
-    location: "Belo Horizonte, MG",
+    id:"cal_4",
+    name:"Camila Rodrigues",
+    title:"Tech Lead",
+    location:"Belo Horizonte, MG",
     experience_years: 10,
-    skills: ["Python", "Machine Learning", "Leadership"],
+    skills: ["Python","Machine Learning","Leadership"],
     match_score: 88
   },
   {
-    id: "cal_5",
-    name: "Lucas Ferreira",
-    title: "Frontend Developer",
-    location: "Porto Alegre, RS",
+    id:"cal_5",
+    name:"Lucas Ferreira",
+    title:"Frontend Developer",
+    location:"Porto Alegre, RS",
     experience_years: 3,
-    skills: ["React", "TypeScript", "Tailwind"],
+    skills: ["React","TypeScript","Tailwind"],
     match_score: 65
   }
 ]
@@ -78,16 +78,16 @@ export function CalibrationFeedbackPanel({
     const initialFeedback = initialData.feedback as CalibrationFeedbackData["feedback"] | undefined
     if (initialFeedback) {
       const map: Record<string, FeedbackStatus> = {}
-      initialFeedback.approved?.forEach((id) => (map[id] = "approved"))
-      initialFeedback.rejected?.forEach((id) => (map[id] = "rejected"))
-      initialFeedback.maybe?.forEach((id) => (map[id] = "maybe"))
+      initialFeedback.approved?.forEach((id) => (map[id] ="approved"))
+      initialFeedback.rejected?.forEach((id) => (map[id] ="rejected"))
+      initialFeedback.maybe?.forEach((id) => (map[id] ="maybe"))
       return map
     }
     return {}
   })
 
   const [generalFeedback, setGeneralFeedback] = useState<string>(
-    (initialData.general_feedback as string) || ""
+    (initialData.general_feedback as string) ||""
   )
 
   const handleSetFeedback = (candidateId: string, status: FeedbackStatus) => {
@@ -103,9 +103,9 @@ export function CalibrationFeedbackPanel({
     const maybe: string[] = []
 
     Object.entries(feedbackMap).forEach(([id, status]) => {
-      if (status === "approved") approved.push(id)
-      else if (status === "rejected") rejected.push(id)
-      else if (status === "maybe") maybe.push(id)
+      if (status ==="approved") approved.push(id)
+      else if (status ==="rejected") rejected.push(id)
+      else if (status ==="maybe") maybe.push(id)
     })
 
     const data: CalibrationFeedbackData = {
@@ -127,9 +127,9 @@ export function CalibrationFeedbackPanel({
   }
 
   const getStats = () => {
-    const approved = Object.values(feedbackMap).filter((s) => s === "approved").length
-    const rejected = Object.values(feedbackMap).filter((s) => s === "rejected").length
-    const maybe = Object.values(feedbackMap).filter((s) => s === "maybe").length
+    const approved = Object.values(feedbackMap).filter((s) => s ==="approved").length
+    const rejected = Object.values(feedbackMap).filter((s) => s ==="rejected").length
+    const maybe = Object.values(feedbackMap).filter((s) => s ==="maybe").length
     const pending = candidates.length - approved - rejected - maybe
     return { approved, rejected, maybe, pending }
   }
@@ -210,8 +210,7 @@ export function CalibrationFeedbackPanel({
             <Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none mr-2" />
             Salvando...
           </>
-        ) : (
-          "Concluir Calibração"
+        ) : ("Concluir Calibração"
         )}
       </Button>
     </div>
@@ -231,17 +230,17 @@ function CandidateCard({
 }) {
   const getBorderStyle = () => {
     switch (status) {
-      case "approved":
+      case"approved":
         return {
           borderColor: 'var(--lia-btn-primary-bg)',
           backgroundColor: 'var(--lia-bg-secondary)'
         }
-      case "rejected":
+      case"rejected":
         return {
           borderColor: 'var(--lia-text-tertiary)',
           backgroundColor: 'var(--lia-bg-tertiary)'
         }
-      case "maybe":
+      case"maybe":
         return {
           borderColor: 'var(--lia-border-default)',
           backgroundColor: 'var(--lia-bg-secondary)'
@@ -323,12 +322,12 @@ function CandidateCard({
 
             <div className="flex gap-2 mt-4">
               <Button
-                variant={status === "approved" ? "primary" : "outline"}
+                variant={status ==="approved" ?"primary" :"outline"}
                 size="sm"
-                className={status === "approved"
- ? "flex-1 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
-                  : "flex-1 dark:border-lia-border-default dark:hover:bg-lia-bg-inverse"}
-                style={status === "approved" ? {} : {
+                className={status ==="approved"
+ ?"flex-1 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
+                  :"flex-1 dark:border-lia-border-default dark:hover:bg-lia-bg-inverse"}
+                style={status ==="approved" ? {} : {
                   backgroundColor: 'transparent',
                   color: 'var(--lia-text-secondary)',
                   borderColor: 'var(--lia-border-subtle)'
@@ -339,12 +338,12 @@ function CandidateCard({
                 Aprovar
               </Button>
               <Button
-                variant={status === "maybe" ? "primary" : "outline"}
+                variant={status ==="maybe" ?"primary" :"outline"}
                 size="sm"
-                className={status === "maybe"
- ? "flex-1 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
-                  : "flex-1 dark:border-lia-border-default dark:hover:bg-lia-bg-inverse"}
-                style={status === "maybe" ? {} : {
+                className={status ==="maybe"
+ ?"flex-1 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
+                  :"flex-1 dark:border-lia-border-default dark:hover:bg-lia-bg-inverse"}
+                style={status ==="maybe" ? {} : {
                   backgroundColor: 'transparent',
                   color: 'var(--lia-text-secondary)',
                   borderColor: 'var(--lia-border-subtle)'
@@ -355,12 +354,12 @@ function CandidateCard({
                 Talvez
               </Button>
               <Button
-                variant={status === "rejected" ? "primary" : "outline"}
+                variant={status ==="rejected" ?"primary" :"outline"}
                 size="sm"
-                className={status === "rejected"
- ? "flex-1 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
-                  : "flex-1 dark:border-lia-border-default dark:hover:bg-lia-bg-inverse"}
-                style={status === "rejected" ? {} : {
+                className={status ==="rejected"
+ ?"flex-1 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
+                  :"flex-1 dark:border-lia-border-default dark:hover:bg-lia-bg-inverse"}
+                style={status ==="rejected" ? {} : {
                   backgroundColor: 'transparent',
                   color: 'var(--lia-text-secondary)',
                   borderColor: 'var(--lia-border-subtle)'

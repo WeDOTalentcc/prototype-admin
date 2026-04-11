@@ -1,25 +1,25 @@
 "use client"
 
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
+import { Badge } from"@/components/ui/badge"
+import { Button } from"@/components/ui/button"
 import {
   Link2, MoreHorizontal, ThumbsUp, ThumbsDown,
   HelpCircle, Clock, Eye, Copy, Send, XCircle, Loader2
-} from "lucide-react"
+} from"lucide-react"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { SharedSearchesSectionProps } from "./lists-tab-types"
+} from"@/components/ui/dropdown-menu"
+import { SharedSearchesSectionProps } from"./lists-tab-types"
 
 function getStatusBadge(status: 'active' | 'expired' | 'revoked') {
   switch (status) {
     case 'active':
-      return <Badge className="bg-status-success/15 text-status-success border-status-success/30 text-micro">Ativo</Badge>
+      return <Badge className="border-status-success/30 text-micro">Ativo</Badge>
     case 'expired':
-      return <Badge className="bg-status-error/15 text-status-error border-status-error/30 text-micro">Expirado</Badge>
+      return <Badge className="border-status-error/30 text-micro">Expirado</Badge>
     case 'revoked':
       return <Badge className="bg-lia-bg-tertiary text-lia-text-secondary border-lia-border-subtle text-micro">Revogado</Badge>
   }

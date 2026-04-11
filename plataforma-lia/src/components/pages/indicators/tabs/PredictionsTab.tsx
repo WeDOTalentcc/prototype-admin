@@ -1,14 +1,14 @@
 "use client"
-import { useEffect } from "react"
-import { formatBRL, CURRENCY_SYMBOL } from "@/lib/pricing"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { useMLPredictions } from "@/hooks/use-ml-predictions"
-import { useAuthStore } from "@/stores/auth-store"
-import type { RecruiterData } from "../indicators.types"
+import { useEffect } from"react"
+import { formatBRL, CURRENCY_SYMBOL } from"@/lib/pricing"
+import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
+import { Badge } from"@/components/ui/badge"
+import { useMLPredictions } from"@/hooks/use-ml-predictions"
+import { useAuthStore } from"@/stores/auth-store"
+import type { RecruiterData } from"../indicators.types"
 import {
   TrendingUp, Clock, AlertTriangle, DollarSign, Brain, Target,
-} from "lucide-react"
+} from"lucide-react"
 
 interface PredictionsTabProps {
   recruiters: RecruiterData[]
@@ -17,7 +17,7 @@ interface PredictionsTabProps {
 export function PredictionsTab({ recruiters }: PredictionsTabProps) {
   const user = useAuthStore((s) => s.user)
   const { insights, timeToFill, salary, loading, fetchInsights, fetchTimeToFill, fetchSalary } = useMLPredictions()
-  const companyId = (user && "company_id" in user ? user.company_id : undefined) || "default"
+  const companyId = (user &&"company_id" in user ? user.company_id : undefined) ||"default"
 
   useEffect(() => {
     fetchInsights(companyId)
@@ -41,13 +41,13 @@ export function PredictionsTab({ recruiters }: PredictionsTabProps) {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-status-success font-medium">Contratações</p>
-                <p className="text-2xl font-semibold text-status-success">{loading ? "..." : totalHires}</p>
+                <p className="text-2xl font-semibold text-status-success">{loading ?"..." : totalHires}</p>
                 <p className="text-xs text-lia-text-primary">Históricas</p>
               </div>
               <TrendingUp className="w-8 h-8 text-status-success" />
             </div>
             <div className="mt-2 text-xs text-status-success">
-              {insights ? `Taxa de sucesso: ${successRate}%` : "Carregando..."}
+              {insights ? `Taxa de sucesso: ${successRate}%` :"Carregando..."}
             </div>
           </CardContent>
         </Card>
@@ -60,16 +60,16 @@ export function PredictionsTab({ recruiters }: PredictionsTabProps) {
                   Time to Fill
                 </p>
                 <p className="text-2xl font-semibold text-lia-text-primary">
-                  {loading ? "..." : `${ttfDays} dias`}
+                  {loading ?"..." : `${ttfDays} dias`}
                 </p>
                 <p className="text-xs text-lia-text-primary">
-                  {timeToFill ? `${timeToFill.range_min}-${timeToFill.range_max} dias` : "Previsão média"}
+                  {timeToFill ? `${timeToFill.range_min}-${timeToFill.range_max} dias` :"Previsão média"}
                 </p>
               </div>
               <Clock className="w-8 h-8 text-lia-text-secondary" />
             </div>
             <div className="mt-2 text-xs text-lia-text-secondary">
-              {timeToFill ? `${timeToFill.comparison_to_market} (IA: ${ttfConfidence}%)` : "Carregando..."}
+              {timeToFill ? `${timeToFill.comparison_to_market} (IA: ${ttfConfidence}%)` :"Carregando..."}
             </div>
           </CardContent>
         </Card>
@@ -80,7 +80,7 @@ export function PredictionsTab({ recruiters }: PredictionsTabProps) {
               <div>
                 <p className="text-sm text-wedo-purple font-medium">Faixa Salarial</p>
                 <p className="text-2xl font-semibold text-wedo-purple">
-                  {loading ? "..." : salary ? `P${salary.market_percentile}` : "--"}
+                  {loading ?"..." : salary ? `P${salary.market_percentile}` :"--"}
                 </p>
                 <p className="text-xs text-lia-text-primary">
                   Percentil de mercado
@@ -89,7 +89,7 @@ export function PredictionsTab({ recruiters }: PredictionsTabProps) {
               <AlertTriangle className="w-8 h-8 text-wedo-purple" />
             </div>
             <div className="mt-2 text-xs text-wedo-purple">
-              {salary ? salary.competitive_analysis : "Carregando..."}
+              {salary ? salary.competitive_analysis :"Carregando..."}
             </div>
           </CardContent>
         </Card>
@@ -100,16 +100,16 @@ export function PredictionsTab({ recruiters }: PredictionsTabProps) {
               <div>
                 <p className="text-sm text-wedo-orange font-medium">Salário Sugerido</p>
                 <p className="text-2xl font-semibold text-wedo-orange">
-                  {loading ? "..." : salary ? formatBRL(salaryMin) : `${CURRENCY_SYMBOL} --`}
+                  {loading ?"..." : salary ? formatBRL(salaryMin) : `${CURRENCY_SYMBOL} --`}
                 </p>
                 <p className="text-xs text-lia-text-primary">
-                  {salary ? `até ${formatBRL(salaryMax)}` : "Faixa ótima"}
+                  {salary ? `até ${formatBRL(salaryMax)}` :"Faixa ótima"}
                 </p>
               </div>
               <DollarSign className="w-8 h-8 text-wedo-orange" />
             </div>
             <div className="mt-2 text-xs text-wedo-orange">
-              {salary ? `${Math.round(salary.confidence * 100)}% confiança` : "Calculando..."}
+              {salary ? `${Math.round(salary.confidence * 100)}% confiança` :"Calculando..."}
             </div>
           </CardContent>
         </Card>
@@ -136,25 +136,24 @@ export function PredictionsTab({ recruiters }: PredictionsTabProps) {
                       <div className="flex items-center gap-2 text-sm">
                         <span className="text-lia-text-secondary">{factor.value}</span>
                         <Badge className={
-                          factor.impact === "high" ? "bg-status-error/15 text-status-error text-xs" :
-                          factor.impact === "medium" ? "bg-status-warning/15 text-status-warning text-xs" :
-                          "bg-status-success/15 text-status-success text-xs"
+                          factor.impact ==="high" ?" text-xs" :
+                          factor.impact ==="medium" ?" text-xs" :" text-xs"
                         }>
-                          {factor.impact === "high" ? "Alto" : factor.impact === "medium" ? "Médio" : "Baixo"}
+                          {factor.impact ==="high" ?"Alto" : factor.impact ==="medium" ?"Médio" :"Baixo"}
                         </Badge>
                       </div>
                     </div>
                     <div className="flex-1 bg-lia-interactive-active rounded-full h-2">
                       <div
-                        className={`h-2 rounded-full ${factor.impact === "high" ? "bg-status-error" : factor.impact === "medium" ? "bg-status-warning" : "bg-status-success"}`}
-                        style={{ width: `${factor.impact === "high" ? 90 : factor.impact === "medium" ? 60 : 30}%` }}
+                        className={`h-2 rounded-full ${factor.impact ==="high" ?"bg-status-error" : factor.impact ==="medium" ?"bg-status-warning" :"bg-status-success"}`}
+                        style={{ width: `${factor.impact ==="high" ? 90 : factor.impact ==="medium" ? 60 : 30}%` }}
                       />
                     </div>
                   </div>
                 ))
               ) : (
                 <p className="text-sm text-lia-text-secondary">
-                  {loading ? "Carregando fatores..." : "Nenhum fator disponível. Execute uma previsão para ver os fatores de impacto."}
+                  {loading ?"Carregando fatores..." :"Nenhum fator disponível. Execute uma previsão para ver os fatores de impacto."}
                 </p>
               )}
             </div>
@@ -183,9 +182,8 @@ export function PredictionsTab({ recruiters }: PredictionsTabProps) {
                       <div className="text-sm text-status-success">{Math.round(item.success_rate * 100)}% taxa de sucesso</div>
                     </div>
                     <Badge className={
-                      item.success_rate >= 0.8 ? "bg-status-success/15 text-status-success" :
-                      item.success_rate >= 0.5 ? "bg-status-warning/15 text-status-warning" :
-                      "bg-status-error/15 text-status-error"
+                      item.success_rate >= 0.8 ?"" :
+                      item.success_rate >= 0.5 ?"" :""
                     }>
                       {item.count} contratações
                     </Badge>
@@ -193,7 +191,7 @@ export function PredictionsTab({ recruiters }: PredictionsTabProps) {
                 ))
               ) : (
                 <p className="text-sm text-lia-text-secondary">
-                  {loading ? "Carregando skills..." : "Sem dados históricos de skills disponíveis."}
+                  {loading ?"Carregando skills..." :"Sem dados históricos de skills disponíveis."}
                 </p>
               )}
             </div>
@@ -216,36 +214,35 @@ export function PredictionsTab({ recruiters }: PredictionsTabProps) {
                 <div
                   key={`rec-${index}`}
                   className={`p-4 rounded-md border-l-4 ${
-                    rec.priority === "high"
-                      ? "bg-status-error/10 border-l-red-500"
-                      : rec.priority === "medium"
-                      ? "bg-status-warning/10 border-l-yellow-500"
-                      : "bg-status-success/10 border-l-green-500"
+                    rec.priority ==="high"
+                      ?"bg-status-error/10 border-l-red-500"
+                      : rec.priority ==="medium"
+                      ?"bg-status-warning/10 border-l-yellow-500"
+                      :"bg-status-success/10 border-l-green-500"
                   }`}
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <h4 className={`font-medium mb-1 ${
-                        rec.priority === "high" ? "text-status-error" :
-                        rec.priority === "medium" ? "text-status-warning" : "text-status-success"
+                        rec.priority ==="high" ?"text-status-error" :
+                        rec.priority ==="medium" ?"text-status-warning" :"text-status-success"
                       }`}>
                         {rec.action}
                       </h4>
                       <p className="text-sm text-lia-text-secondary">{rec.impact}</p>
                     </div>
                     <Badge className={
-                      rec.priority === "high" ? "ml-4 bg-status-error/15 text-status-error" :
-                      rec.priority === "medium" ? "ml-4 bg-status-warning/15 text-status-warning" :
-                      "ml-4 bg-status-success/15 text-status-success"
+                      rec.priority ==="high" ?"ml-4" :
+                      rec.priority ==="medium" ?"ml-4" :"ml-4"
                     }>
-                      {rec.priority === "high" ? "Alta" : rec.priority === "medium" ? "Média" : "Baixa"}
+                      {rec.priority ==="high" ?"Alta" : rec.priority ==="medium" ?"Média" :"Baixa"}
                     </Badge>
                   </div>
                 </div>
               ))
             ) : (
               <p className="text-sm text-lia-text-secondary">
-                {loading ? "Carregando recomendações..." : "Sem recomendações disponíveis. Execute análises para gerar insights."}
+                {loading ?"Carregando recomendações..." :"Sem recomendações disponíveis. Execute análises para gerar insights."}
               </p>
             )}
           </div>

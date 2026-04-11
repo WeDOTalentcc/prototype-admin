@@ -1,14 +1,14 @@
 "use client"
 
-import React from "react"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
+import React from"react"
+import { Badge } from"@/components/ui/badge"
+import { Button } from"@/components/ui/button"
 import {
   Target, Check, AlertTriangle, X, FileText, 
   ExternalLink, Calendar, ChevronDown, ChevronUp,
   TrendingUp, AlertCircle
-} from "lucide-react"
-import { textStyles, badgeStyles, colors } from "@/lib/design-tokens"
+} from"lucide-react"
+import { textStyles, badgeStyles, colors } from"@/lib/design-tokens"
 
 interface RubricRequirement {
   requirement: string
@@ -48,7 +48,7 @@ const ACCENT_COLOR = 'var(--lia-text-secondary)'
 export function RubricEvaluationCard({
   data,
   summary,
-  className = "",
+  className ="",
   showFullDetails = false,
   onViewAnalysis,
   onScheduleInterview
@@ -62,10 +62,10 @@ export function RubricEvaluationCard({
   const jobCode = data.job_code || data.job_id
 
   const getScoreBadge = (scoreValue: number) => {
-    if (scoreValue >= 80) return { label: 'Forte', className: 'bg-status-success/15 text-status-success border-status-success/30' }
+    if (scoreValue >= 80) return { label: 'Forte', className: ' border-status-success/30' }
     if (scoreValue >= 60) return { label: 'Bom', className: 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-wedo-cyan-dark border-lia-border-default dark:border-lia-border-default' }
-    if (scoreValue >= 40) return { label: 'Moderado', className: 'bg-status-warning/15 text-status-warning border-status-warning/30' }
-    return { label: 'Fraco', className: 'bg-status-error/15 text-status-error border-status-error/30' }
+    if (scoreValue >= 40) return { label: 'Moderado', className: ' border-status-warning/30' }
+    return { label: 'Fraco', className: ' border-status-error/30' }
   }
 
   const getScoreColor = (scoreValue: number) => {
@@ -285,8 +285,7 @@ export function RubricEvaluationCard({
             <span className={`${textStyles.caption} text-lia-text-secondary font-medium block mb-0.5`}>
               Resumo LIA:
             </span>
-            <p className={`${textStyles.bodySmall} text-lia-text-primary ${isExpanded ? '' : 'line-clamp-2'} italic`}>
-              "{displaySummary}"
+            <p className={`${textStyles.bodySmall} text-lia-text-primary ${isExpanded ? '' : 'line-clamp-2'} italic`}>"{displaySummary}"
             </p>
           </div>
         </div>
@@ -301,7 +300,7 @@ export function RubricEvaluationCard({
             </span>
             <div className="flex flex-wrap gap-1">
               {data.strengths.map((strength, idx) => (
-                <Badge key={idx} variant="secondary" className="bg-status-success/10 text-status-success text-micro">
+                <Badge key={idx} variant="secondary" className="text-micro">
                   {strength}
                 </Badge>
               ))}
@@ -319,7 +318,7 @@ export function RubricEvaluationCard({
             </span>
             <div className="flex flex-wrap gap-1">
               {data.concerns.map((concern, idx) => (
-                <Badge key={idx} variant="secondary" className="bg-status-warning/10 text-status-warning text-micro">
+                <Badge key={idx} variant="secondary" className="text-micro">
                   {concern}
                 </Badge>
               ))}

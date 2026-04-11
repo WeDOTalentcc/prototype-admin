@@ -1,21 +1,21 @@
 "use client"
 
-import React, { useState } from "react"
-import Link from "next/link"
-import { Shield, Eye, Edit, Trash2, ArrowRightLeft, XCircle, FileSearch, Send, Loader2, CheckCircle2, AlertCircle, Clock, Search, User, Mail, Phone, FileText, ChevronRight } from "lucide-react"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
+import React, { useState } from"react"
+import Link from"next/link"
+import { Shield, Eye, Edit, Trash2, ArrowRightLeft, XCircle, FileSearch, Send, Loader2, CheckCircle2, AlertCircle, Clock, Search, User, Mail, Phone, FileText, ChevronRight } from"lucide-react"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from"@/components/ui/card"
+import { Button } from"@/components/ui/button"
+import { Badge } from"@/components/ui/badge"
+import { Input } from"@/components/ui/input"
+import { Label } from"@/components/ui/label"
+import { Textarea } from"@/components/ui/textarea"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
+} from"@/components/ui/select"
 
 const REQUEST_TYPES = [
   { value: 'access', label: 'Acesso aos meus dados', description: 'Obter cópia dos dados pessoais tratados', icon: Eye },
@@ -160,7 +160,7 @@ export default function PrivacidadePage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-lia-bg-secondary to-white">
-      <header className=" bg-lia-bg-primary">
+      <header className="bg-lia-bg-primary">
         <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-md flex items-center justify-center bg-lia-interactive-active/30">
@@ -190,7 +190,7 @@ export default function PrivacidadePage() {
 
         <div className="flex gap-2 mb-6 justify-center">
           <Button
-            variant={activeTab === "request" ? "primary" : "outline"}
+            variant={activeTab ==="request" ?"primary" :"outline"}
             onClick={() => setActiveTab('request')}
             className={activeTab === 'request' ? 'bg-lia-btn-primary-bg text-lia-btn-primary-text dark:bg-lia-bg-secondary dark:text-lia-text-primary hover:bg-lia-btn-primary-hover dark:hover:bg-lia-interactive-active' : ''}
           >
@@ -198,7 +198,7 @@ export default function PrivacidadePage() {
             Nova Solicitação
           </Button>
           <Button
-            variant={activeTab === "track" ? "primary" : "outline"}
+            variant={activeTab ==="track" ?"primary" :"outline"}
             onClick={() => setActiveTab('track')}
             className={activeTab === 'track' ? 'bg-lia-btn-primary-bg text-lia-btn-primary-text dark:bg-lia-bg-secondary dark:text-lia-text-primary hover:bg-lia-btn-primary-hover dark:hover:bg-lia-interactive-active' : ''}
           >
@@ -458,10 +458,10 @@ export default function PrivacidadePage() {
                       const status = getStatusDisplay(trackingResult.status ?? '')
                       const Icon = status.icon
                       const colorClasses: Record<string, string> = {
-                        'amber': 'bg-status-warning/15 text-status-warning',
+                        'amber': '',
                         'cyan': 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-primary dark:text-lia-text-primary',
-                        'emerald': 'bg-status-success/15 text-status-success',
-                        'red': 'bg-status-error/15 text-status-error',
+                        'emerald': '',
+                        'red': '',
                         'gray': 'bg-lia-bg-tertiary text-lia-text-primary dark:text-lia-text-primary',
                       }
                       return (

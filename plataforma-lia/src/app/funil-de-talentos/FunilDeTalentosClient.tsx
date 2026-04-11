@@ -1,39 +1,39 @@
 "use client"
 
-import { useState, useMemo, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import TalentPoolsTab from "@/components/pages-candidates/TalentPoolsTab"
-import { useRouter } from "next/navigation"
-import { BulkActionsBar } from "@/components/ui/bulk-actions-bar"
-import { CandidatesTable } from "@/components/pages/candidates/CandidatesTable"
-import { ShareSearchModal } from "@/components/modals/share-search-modal"
-import { FavoritesTab } from "@/components/talent-funnel-tabs/favorites-tab"
-import { ListsTab } from "@/components/talent-funnel-tabs/lists-tab"
-import { SavedSearchesTab } from "@/components/talent-funnel-tabs/saved-searches-tab"
-import { useCandidatesList } from "@/hooks/use-candidates-list"
-import { useBulkSelection } from "@/hooks/use-bulk-selection"
-import { useTalentFunnel } from "@/hooks/use-talent-funnel"
-import { textStyles } from "@/lib/design-tokens"
-import { Search, Heart, Share2, Users, ChevronLeft, ChevronRight, AlertCircle } from "lucide-react"
-import type { Candidate, SortConfig } from "@/components/pages/candidates/types"
-import type { TableCandidate } from "@/components/tables"
-import type { CandidateLocal } from "@/services/lia-api"
-import { cn } from "@/lib/utils"
+import { useState, useMemo, useEffect } from"react"
+import { Button } from"@/components/ui/button"
+import { Input } from"@/components/ui/input"
+import { Badge } from"@/components/ui/badge"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from"@/components/ui/tabs"
+import TalentPoolsTab from"@/components/pages-candidates/TalentPoolsTab"
+import { useRouter } from"next/navigation"
+import { BulkActionsBar } from"@/components/ui/bulk-actions-bar"
+import { CandidatesTable } from"@/components/pages/candidates/CandidatesTable"
+import { ShareSearchModal } from"@/components/modals/share-search-modal"
+import { FavoritesTab } from"@/components/talent-funnel-tabs/favorites-tab"
+import { ListsTab } from"@/components/talent-funnel-tabs/lists-tab"
+import { SavedSearchesTab } from"@/components/talent-funnel-tabs/saved-searches-tab"
+import { useCandidatesList } from"@/hooks/use-candidates-list"
+import { useBulkSelection } from"@/hooks/use-bulk-selection"
+import { useTalentFunnel } from"@/hooks/use-talent-funnel"
+import { textStyles } from"@/lib/design-tokens"
+import { Search, Heart, Share2, Users, ChevronLeft, ChevronRight, AlertCircle } from"lucide-react"
+import type { Candidate, SortConfig } from"@/components/pages/candidates/types"
+import type { TableCandidate } from"@/components/tables"
+import type { CandidateLocal } from"@/services/lia-api"
+import { cn } from"@/lib/utils"
 
 // ── Mapper: CandidateLocal → Candidate (para reutilizar CandidatesTable) ──────
 function toCandidateTableRow(c: CandidateLocal): Candidate {
-  const city = c.location_city ?? ""
-  const state = c.location_state ?? ""
-  const locationStr = [city, state].filter(Boolean).join(", ") || "—"
+  const city = c.location_city ??""
+  const state = c.location_state ??""
+  const locationStr = [city, state].filter(Boolean).join(",") ||"—"
   return {
     id: c.id,
     candidateId: c.id,
-    name: c.name ?? "—",
-    email: c.email ?? "",
-    phone: c.phone ?? "",
+    name: c.name ??"—",
+    email: c.email ??"",
+    phone: c.phone ??"",
     current_title: c.current_title,
     current_company: c.current_company,
     location_city: c.location_city,
@@ -45,13 +45,13 @@ function toCandidateTableRow(c: CandidateLocal): Candidate {
     created_at: c.created_at,
     updated_at: c.updated_at,
     linkedin_url: c.linkedin_url,
-    position: c.current_title ?? "—",
+    position: c.current_title ??"—",
     monthlySalary: c.current_salary ?? 0,
     location: locationStr,
-    workModel: ((c.work_model_preference || "remoto") as "presencial" | "remoto" | "híbrido"),
+    workModel: ((c.work_model_preference ||"remoto") as"presencial" |"remoto" |"híbrido"),
     score: c.lia_score ?? 0,
-    contractType: ((c.contract_type_preference || "CLT") as "CLT" | "PJ" | "Freelancer"),
-    linkedin: c.linkedin_url ?? "",
+    contractType: ((c.contract_type_preference ||"CLT") as"CLT" |"PJ" |"Freelancer"),
+    linkedin: c.linkedin_url ??"",
     skills: [] as string[],
     experience: 0,
     education: [] as Array<{ school?: string; degree?: string }>,
@@ -94,7 +94,7 @@ export default function FunilDeTalentosPage() {
     favoriteCandidatesData,
   } = useTalentFunnel()
 
-  const [sortConfig, setSortConfig] = useState<SortConfig>({ column: "created_at", direction: "desc" })
+  const [sortConfig, setSortConfig] = useState<SortConfig>({ column:"created_at", direction:"desc" })
   const [activeTab, setActiveTab] = useState("todos")
   const [shareModalOpen, setShareModalOpen] = useState(false)
   const [shareBulkOpen, setShareBulkOpen] = useState(false)
@@ -120,8 +120,8 @@ export default function FunilDeTalentosPage() {
   const handleSort = (column: string) => {
     setSortConfig(prev =>
       prev.column === column
-        ? { column, direction: prev.direction === "asc" ? "desc" : "asc" }
-        : { column, direction: "asc" }
+        ? { column, direction: prev.direction ==="asc" ?"desc" :"asc" }
+        : { column, direction:"asc" }
     )
   }
 
@@ -130,36 +130,32 @@ export default function FunilDeTalentosPage() {
   }
 
   const handleBulkAction = (actionId: string) => {
-    if (actionId === "share_search") {
+    if (actionId ==="share_search") {
       setShareBulkOpen(true)
     }
   }
 
   const handleCandidateClick = (candidate: Candidate) => {
-    window.open(`/funil-de-talentos/candidato/${candidate.id}`, "_blank")
+    window.open(`/funil-de-talentos/candidato/${candidate.id}`,"_blank")
   }
 
   // Filtros rápidos
   
-const STATUS_COLORS: Record<string, { active: string; inactive: string }> = {
-  "Novo": { active: "bg-cyan-50 dark:bg-cyan-950/30 text-cyan-700 dark:text-cyan-400 border-cyan-200 dark:border-cyan-800", inactive: "bg-lia-bg-primary dark:bg-lia-bg-primary text-lia-text-secondary dark:text-lia-text-tertiary border-lia-border-subtle dark:border-lia-border-subtle hover:border-cyan-300" },
-  "Em triagem": { active: "bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800", inactive: "bg-lia-bg-primary dark:bg-lia-bg-primary text-lia-text-secondary dark:text-lia-text-tertiary border-lia-border-subtle dark:border-lia-border-subtle hover:border-amber-300" },
-  "Aprovado": { active: "bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800", inactive: "bg-lia-bg-primary dark:bg-lia-bg-primary text-lia-text-secondary dark:text-lia-text-tertiary border-lia-border-subtle dark:border-lia-border-subtle hover:border-emerald-300" },
-  "Reprovado": { active: "bg-rose-50 dark:bg-rose-950/30 text-rose-700 dark:text-rose-400 border-rose-200 dark:border-rose-800", inactive: "bg-lia-bg-primary dark:bg-lia-bg-primary text-lia-text-secondary dark:text-lia-text-tertiary border-lia-border-subtle dark:border-lia-border-subtle hover:border-rose-300" },
+const STATUS_COLORS: Record<string, { active: string; inactive: string }> = {"Novo": { active:"bg-cyan-50 dark:bg-cyan-950/30 text-cyan-700 dark:text-cyan-400 border-cyan-200 dark:border-cyan-800", inactive:"bg-lia-bg-primary dark:bg-lia-bg-primary text-lia-text-secondary dark:text-lia-text-tertiary border-lia-border-subtle dark:border-lia-border-subtle hover:border-cyan-300" },"Em triagem": { active:"bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800", inactive:"bg-lia-bg-primary dark:bg-lia-bg-primary text-lia-text-secondary dark:text-lia-text-tertiary border-lia-border-subtle dark:border-lia-border-subtle hover:border-amber-300" },"Aprovado": { active:"bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800", inactive:"bg-lia-bg-primary dark:bg-lia-bg-primary text-lia-text-secondary dark:text-lia-text-tertiary border-lia-border-subtle dark:border-lia-border-subtle hover:border-emerald-300" },"Reprovado": { active:"bg-rose-50 dark:bg-rose-950/30 text-rose-700 dark:text-rose-400 border-rose-200 dark:border-rose-800", inactive:"bg-lia-bg-primary dark:bg-lia-bg-primary text-lia-text-secondary dark:text-lia-text-tertiary border-lia-border-subtle dark:border-lia-border-subtle hover:border-rose-300" },
 }
 
-const STATUS_OPTIONS = ["Novo", "Em triagem", "Aprovado", "Reprovado"]
-  const SENIORITY_OPTIONS = ["Júnior", "Pleno", "Sênior", "Especialista"]
+const STATUS_OPTIONS = ["Novo","Em triagem","Aprovado","Reprovado"]
+  const SENIORITY_OPTIONS = ["Júnior","Pleno","Sênior","Especialista"]
 
   if (!mounted) {
     return (
       <div className="min-h-screen bg-lia-bg-primary dark:bg-lia-bg-primary">
         <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 py-6 space-y-4">
           <div>
-            <h1 className={cn(textStyles.title, "text-lg font-semibold")}>
+            <h1 className={cn(textStyles.title,"text-lg font-semibold")}>
               Funil de Talentos
             </h1>
-            <p className={cn(textStyles.description, "text-xs mt-0.5")}>
+            <p className={cn(textStyles.description,"text-xs mt-0.5")}>
               Busque candidatos na base
             </p>
           </div>
@@ -185,9 +181,9 @@ const STATUS_OPTIONS = ["Novo", "Em triagem", "Aprovado", "Reprovado"]
           onSelectAll={handleSelectAll}
           onDeselectAll={clearSelection}
           actions={[
-            { id: "move_stage", label: "Mover Etapa", icon: <Users className="w-3.5 h-3.5" />, onClick: () => handleBulkAction("move_stage") },
-            { id: "send_message", label: "Mensagem", icon: <Share2 className="w-3.5 h-3.5" />, onClick: () => handleBulkAction("send_message") },
-            { id: "share_search", label: "Compartilhar Seleção", icon: <Share2 className="w-3.5 h-3.5" />, onClick: () => handleBulkAction("share_search") },
+            { id:"move_stage", label:"Mover Etapa", icon: <Users className="w-3.5 h-3.5" />, onClick: () => handleBulkAction("move_stage") },
+            { id:"send_message", label:"Mensagem", icon: <Share2 className="w-3.5 h-3.5" />, onClick: () => handleBulkAction("send_message") },
+            { id:"share_search", label:"Compartilhar Seleção", icon: <Share2 className="w-3.5 h-3.5" />, onClick: () => handleBulkAction("share_search") },
           ]}
         />
       )}
@@ -196,14 +192,11 @@ const STATUS_OPTIONS = ["Novo", "Em triagem", "Aprovado", "Reprovado"]
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
-            <h1 className={cn(textStyles.title, "text-xl font-semibold")}>
+            <h1 className={cn(textStyles.title,"text-xl font-semibold")}>
               Funil de Talentos
             </h1>
 
-            <p className={cn(textStyles.description, "text-xs mt-0.5")} aria-live="polite">
-
-
-              "Gerencie sua base de candidatos"
+            <p className={cn(textStyles.description,"text-xs mt-0.5")} aria-live="polite">"Gerencie sua base de candidatos"
             </p>
           </div>
           <Button
@@ -240,8 +233,8 @@ const STATUS_OPTIONS = ["Novo", "Em triagem", "Aprovado", "Reprovado"]
           <TabsList className="bg-lia-bg-secondary dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-lg">
             <TabsTrigger value="todos" className="rounded-md text-xs">
               Todos
-              {activeTab === "todos" && total > 0 && (
-                <Badge className="ml-1.5 h-4 px-1.5 text-micro bg-wedo-cyan/15 text-wedo-cyan dark:bg-wedo-cyan/20 dark:text-wedo-cyan">
+              {activeTab ==="todos" && total > 0 && (
+                <Badge className="ml-1.5 h-4 px-1.5 text-micro  dark:bg-wedo-cyan/20 dark:text-wedo-cyan">
                   {total}
                 </Badge>
               )}
@@ -262,7 +255,7 @@ const STATUS_OPTIONS = ["Novo", "Em triagem", "Aprovado", "Reprovado"]
                   id="funil-search"
                   aria-label="Buscar candidatos"
                   placeholder="Buscar por nome, cargo, empresa ou habilidade..."
-                  value={filters.search ?? ""}
+                  value={filters.search ??""}
                   onChange={e => updateFilter("search", e.target.value)}
                   className="pl-9 text-xs rounded-xl border-lia-border-subtle dark:border-lia-border-subtle bg-transparent focus:border-wedo-cyan/40 transition-colors"
                 />
@@ -272,11 +265,10 @@ const STATUS_OPTIONS = ["Novo", "Em triagem", "Aprovado", "Reprovado"]
                   <button
                     key={s}
                     onClick={() => updateFilter("status", filters.status === s ? undefined : s)}
-                    className={cn(
-                      "px-2.5 py-1 text-xs rounded-md border transition-colors",
+                    className={cn("px-2.5 py-1 text-xs rounded-md border transition-colors",
                       filters.status === s
-                        ? (STATUS_COLORS[s]?.active || "bg-lia-btn-primary-bg dark:bg-lia-bg-secondary text-white dark:text-lia-text-primary border-lia-btn-primary-bg dark:border-lia-border-subtle")
-                        : (STATUS_COLORS[s]?.inactive || "bg-lia-bg-primary dark:bg-lia-bg-primary text-lia-text-secondary dark:text-lia-text-tertiary border-lia-border-subtle dark:border-lia-border-subtle hover:border-lia-border-medium")
+                        ? (STATUS_COLORS[s]?.active ||"bg-lia-btn-primary-bg dark:bg-lia-bg-secondary text-white dark:text-lia-text-primary border-lia-btn-primary-bg dark:border-lia-border-subtle")
+                        : (STATUS_COLORS[s]?.inactive ||"bg-lia-bg-primary dark:bg-lia-bg-primary text-lia-text-secondary dark:text-lia-text-tertiary border-lia-border-subtle dark:border-lia-border-subtle hover:border-lia-border-medium")
                     )}
                   >
                     {s}
@@ -287,11 +279,10 @@ const STATUS_OPTIONS = ["Novo", "Em triagem", "Aprovado", "Reprovado"]
                   <button
                     key={s}
                     onClick={() => updateFilter("seniority", filters.seniority === s ? undefined : s)}
-                    className={cn(
-                      "px-2.5 py-1 text-xs rounded-md border transition-colors",
+                    className={cn("px-2.5 py-1 text-xs rounded-md border transition-colors",
                       filters.seniority === s
-                        ? "bg-lia-btn-primary-bg dark:bg-lia-bg-secondary text-white dark:text-lia-text-primary border-lia-btn-primary-bg dark:border-lia-border-subtle"
-                        : "bg-lia-bg-primary dark:bg-lia-bg-primary text-lia-text-secondary dark:text-lia-text-tertiary border-lia-border-subtle dark:border-lia-border-subtle hover:border-lia-border-medium"
+                        ?"bg-lia-btn-primary-bg dark:bg-lia-bg-secondary text-white dark:text-lia-text-primary border-lia-btn-primary-bg dark:border-lia-border-subtle"
+                        :"bg-lia-bg-primary dark:bg-lia-bg-primary text-lia-text-secondary dark:text-lia-text-tertiary border-lia-border-subtle dark:border-lia-border-subtle hover:border-lia-border-medium"
                     )}
                   >
                     {s}
@@ -315,8 +306,8 @@ const STATUS_OPTIONS = ["Novo", "Em triagem", "Aprovado", "Reprovado"]
                   <Users className="h-10 w-10 text-lia-text-disabled dark:text-lia-text-secondary mb-3" />
                   <p className="text-sm font-medium text-lia-text-secondary dark:text-lia-text-tertiary" aria-live="polite" aria-atomic="true">
                     {filters.search || filters.status || filters.seniority
-                      ? "Nenhum candidato encontrado. Tente outros filtros."
-                      : "Busque candidatos por nome, habilidade ou cargo"}
+                      ?"Nenhum candidato encontrado. Tente outros filtros."
+                      :"Busque candidatos por nome, habilidade ou cargo"}
                   </p>
                 </div>
               ) : (
@@ -357,14 +348,13 @@ const STATUS_OPTIONS = ["Novo", "Em triagem", "Aprovado", "Reprovado"]
                     return (
                       <Button
                         key={page}
-                        variant={page === currentPage ? "primary" : "outline"}
+                        variant={page === currentPage ?"primary" :"outline"}
                         size="sm"
                         onClick={() => goToPage(page)}
-                        className={cn(
-                          "h-7 w-7 p-0 rounded-md text-xs",
+                        className={cn("h-7 w-7 p-0 rounded-md text-xs",
                           page === currentPage
-                            ? "bg-lia-btn-primary-bg dark:bg-lia-bg-secondary text-white dark:text-lia-text-primary"
-                            : "border-lia-border-subtle dark:border-lia-border-subtle"
+                            ?"bg-lia-btn-primary-bg dark:bg-lia-bg-secondary text-white dark:text-lia-text-primary"
+                            :"border-lia-border-subtle dark:border-lia-border-subtle"
                         )}
                       >
                         {page}
@@ -440,7 +430,7 @@ const STATUS_OPTIONS = ["Novo", "Em triagem", "Aprovado", "Reprovado"]
         open={shareModalOpen}
         onClose={() => setShareModalOpen(false)}
         shareType="search"
-        title={`Busca — ${filters.search || "Todos os candidatos"}`}
+        title={`Busca — ${filters.search ||"Todos os candidatos"}`}
         candidateIds={candidates.map(c => c.id)}
         candidateCount={candidates.length}
         sourceQuery={JSON.stringify(filters)}

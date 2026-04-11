@@ -1,10 +1,10 @@
 "use client"
 
-import React from "react"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Progress } from "@/components/ui/progress"
+import React from"react"
+import { Card, CardContent } from"@/components/ui/card"
+import { Badge } from"@/components/ui/badge"
+import { Button } from"@/components/ui/button"
+import { Progress } from"@/components/ui/progress"
 import {
   Brain,
   Star,
@@ -15,7 +15,7 @@ import {
   AlertCircle,
   FileText,
   ExternalLink
-} from "lucide-react"
+} from"lucide-react"
 
 interface WSIDimension {
   name: string
@@ -29,7 +29,7 @@ interface WSIScoreData {
   candidate_name: string
   overall_score: number
   max_score: number
-  recommendation: "Aprovado" | "Reprovado" | "Aguardando"
+  recommendation:"Aprovado" |"Reprovado" |"Aguardando"
   dimensions: WSIDimension[]
   strengths?: string[]
   development_areas?: string[]
@@ -53,26 +53,26 @@ export function WSIScoreCard({
   const percentage = Math.round((data.overall_score / data.max_score) * 100)
 
   const getClassification = (pct: number) => {
-    if (pct >= 90) return { label: "Excepcional", color: "text-status-success", bg: "bg-status-success/15" }
-    if (pct >= 80) return { label: "Excelente", color: "text-status-success", bg: "bg-status-success/15" }
-    if (pct >= 70) return { label: "Alto", color: "text-wedo-cyan-dark", bg: "bg-wedo-cyan/15" }
-    if (pct >= 60) return { label: "Médio", color: "text-status-warning", bg: "bg-status-warning/15" }
-    if (pct >= 45) return { label: "Abaixo da média", color: "text-wedo-orange", bg: "bg-wedo-orange/15" }
-    return { label: "Regular / Baixo", color: "text-status-error", bg: "bg-status-error/15" }
+    if (pct >= 90) return { label:"Excepcional", color:"text-status-success", bg:"bg-status-success/15" }
+    if (pct >= 80) return { label:"Excelente", color:"text-status-success", bg:"bg-status-success/15" }
+    if (pct >= 70) return { label:"Alto", color:"text-wedo-cyan-dark", bg:"bg-wedo-cyan/15" }
+    if (pct >= 60) return { label:"Médio", color:"text-status-warning", bg:"bg-status-warning/15" }
+    if (pct >= 45) return { label:"Abaixo da média", color:"text-wedo-orange", bg:"bg-wedo-orange/15" }
+    return { label:"Regular / Baixo", color:"text-status-error", bg:"bg-status-error/15" }
   }
 
   const getScoreDisplay = (score: number) => {
-    if (score >= 90) return { text: "text-status-success", icon: TrendingUp }
-    if (score >= 80) return { text: "text-status-success", icon: TrendingUp }
-    if (score >= 70) return { text: "text-wedo-cyan-dark", icon: TrendingUp }
-    if (score >= 60) return { text: "text-status-warning", icon: Minus }
-    if (score >= 45) return { text: "text-wedo-orange", icon: TrendingDown }
-    return { text: "text-status-error", icon: TrendingDown }
+    if (score >= 90) return { text:"text-status-success", icon: TrendingUp }
+    if (score >= 80) return { text:"text-status-success", icon: TrendingUp }
+    if (score >= 70) return { text:"text-wedo-cyan-dark", icon: TrendingUp }
+    if (score >= 60) return { text:"text-status-warning", icon: Minus }
+    if (score >= 45) return { text:"text-wedo-orange", icon: TrendingDown }
+    return { text:"text-status-error", icon: TrendingDown }
   }
 
   const getRecommendationBadge = (recommendation: string) => {
     switch (recommendation) {
-      case "Aprovado":
+      case"Aprovado":
         return (
           <Badge
             className="border border-lia-border-default bg-lia-bg-primary text-lia-text-primary"
@@ -81,7 +81,7 @@ export function WSIScoreCard({
             Aprovado
           </Badge>
         )
-      case "Reprovado":
+      case"Reprovado":
         return (
           <Badge
             className="border border-lia-border-default bg-lia-bg-primary text-lia-text-primary"

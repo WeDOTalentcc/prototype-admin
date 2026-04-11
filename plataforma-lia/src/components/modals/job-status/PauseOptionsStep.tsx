@@ -1,20 +1,20 @@
 "use client"
 
-import React from "react"
-import { Button } from "@/components/ui/button"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Textarea } from "@/components/ui/textarea"
-import { Label } from "@/components/ui/label"
-import { Badge } from "@/components/ui/badge"
-import { ScrollArea } from "@/components/ui/scroll-area"
+import React from"react"
+import { Button } from"@/components/ui/button"
+import { Checkbox } from"@/components/ui/checkbox"
+import { Textarea } from"@/components/ui/textarea"
+import { Label } from"@/components/ui/label"
+import { Badge } from"@/components/ui/badge"
+import { ScrollArea } from"@/components/ui/scroll-area"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import { cn } from "@/lib/utils"
+} from"@/components/ui/select"
+import { cn } from"@/lib/utils"
 import {
   Briefcase,
   Users,
@@ -28,7 +28,7 @@ import {
   MessageSquare,
   Activity,
   Bell,
-} from "lucide-react"
+} from"lucide-react"
 
 const PAUSE_REASONS = [
   { value: 'budget_review', label: 'Revisão orçamentária' },
@@ -230,7 +230,7 @@ export function PauseOptionsStep({
                     {(['email', 'teams', 'bell'] as RecruiterChannel[]).map((channel) => (
                       <Button key={channel} type="button" variant={recruiterChannel === channel ? 'primary' : 'outline'} size="sm"
                         onClick={() => onRecruiterChannelChange(channel)}
-                        className={cn("h-6 px-2 text-micro gap-1", recruiterChannel === channel ? "bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text" : "border border-lia-border-default text-lia-text-secondary")}>
+                        className={cn("h-6 px-2 text-micro gap-1", recruiterChannel === channel ?"bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text" :"border border-lia-border-default text-lia-text-secondary")}>
                         {channel === 'email' && <Mail className="w-3 h-3" />}
                         {channel === 'teams' && <MessageSquare className="w-3 h-3" />}
                         {channel === 'bell' && <Bell className="w-3 h-3" />}

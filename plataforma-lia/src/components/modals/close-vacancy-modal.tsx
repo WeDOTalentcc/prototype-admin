@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useEffect, useCallback, useMemo } from "react"
+import React, { useState, useEffect, useCallback, useMemo } from"react"
 import {
   Dialog,
   DialogContent,
@@ -8,19 +8,19 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-} from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Checkbox } from "@/components/ui/checkbox"
+} from"@/components/ui/dialog"
+import { Button } from"@/components/ui/button"
+import { Badge } from"@/components/ui/badge"
+import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
+import { ScrollArea } from"@/components/ui/scroll-area"
+import { Checkbox } from"@/components/ui/checkbox"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
+} from"@/components/ui/select"
 import {
   Mail,
   MessageSquare,
@@ -33,14 +33,14 @@ import {
   Users,
   ChevronRight,
   Eye,
-} from "lucide-react"
-import { toast } from "sonner"
-import { textStyles, cardStyles, badgeStyles } from "@/lib/design-tokens"
-import { cn } from "@/lib/utils"
-import { useCommunicationTemplates, type CommunicationTemplate, type TemplateSituation } from "@/hooks/use-communication-templates"
-import { liaApi } from "@/services/lia-api"
-import { useAuth } from "@/contexts/auth-context"
-import { useCompanyId } from "@/hooks/useCompanyId"
+} from"lucide-react"
+import { toast } from"sonner"
+import { textStyles, cardStyles, badgeStyles } from"@/lib/design-tokens"
+import { cn } from"@/lib/utils"
+import { useCommunicationTemplates, type CommunicationTemplate, type TemplateSituation } from"@/hooks/use-communication-templates"
+import { liaApi } from"@/services/lia-api"
+import { useAuth } from"@/contexts/auth-context"
+import { useCompanyId } from"@/hooks/useCompanyId"
 
 export interface CloseVacancyPayload {
   hired_candidate_ids: string[]
@@ -393,7 +393,7 @@ export function CloseVacancyModal({
           <div className="flex items-center gap-4">
             <div className="relative">
               <Avatar className="h-14 w-14 border-2 border-status-success/30">
-                <AvatarFallback className="bg-status-success/15 text-status-success text-lg font-medium">
+                <AvatarFallback className="text-lg font-medium">
                   {getInitials(hc.name)}
                 </AvatarFallback>
               </Avatar>
@@ -594,7 +594,7 @@ export function CloseVacancyModal({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-lg rounded-md">
-        <DialogHeader className=" pb-4">
+        <DialogHeader className="pb-4">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-full bg-lia-bg-tertiary flex items-center justify-center">
               <PartyPopper className="w-4 h-4 text-lia-text-secondary" />

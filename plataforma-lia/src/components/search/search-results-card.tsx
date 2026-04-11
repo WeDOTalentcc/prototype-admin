@@ -1,13 +1,13 @@
 "use client"
 
-import React, { useState } from "react"
-import { getPercentageScoreColorClass } from "@/lib/score-utils"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip"
+import React, { useState } from"react"
+import { getPercentageScoreColorClass } from"@/lib/score-utils"
+import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
+import { Button } from"@/components/ui/button"
+import { Badge } from"@/components/ui/badge"
+import { Checkbox } from"@/components/ui/checkbox"
+import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from"@/components/ui/tooltip"
 import { 
   MapPin, 
   Briefcase, 
@@ -28,7 +28,7 @@ import {
   Brain,
   Save,
   Eye
-} from "lucide-react"
+} from"lucide-react"
 
 export interface CandidateResult {
   id: string
@@ -57,7 +57,7 @@ export interface CandidateResult {
   phone?: string
   mobile_phone?: string
   secondary_email?: string
-  source: "local" | "pearch"
+  source:"local" |"pearch"
   is_open_to_work?: boolean
   is_opentowork?: boolean
   is_decision_maker?: boolean
@@ -140,14 +140,14 @@ export function SearchResultsCard({
   )
 
   const getInitials = (name: string) => {
-    const parts = name.split(" ")
+    const parts = name.split("")
     return parts.length > 1 
       ? `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase()
       : name.slice(0, 2).toUpperCase()
   }
 
   const getScoreColor = (score?: number) => {
-    if (!score) return "text-lia-text-secondary"
+    if (!score) return"text-lia-text-secondary"
     return getPercentageScoreColorClass(score)
   }
 
@@ -177,8 +177,7 @@ export function SearchResultsCard({
           </div>
         </div>
         <div className="flex items-center justify-between mt-1">
-          <p className="text-sm text-lia-text-primary">
-            "{query}" - {totalCount} candidatos encontrados
+          <p className="text-sm text-lia-text-primary">"{query}" - {totalCount} candidatos encontrados
             {searchTimeSeconds && ` em ${searchTimeSeconds.toFixed(2)}s`}
           </p>
           {onSaveAsArchetype && totalCount > 0 && (
@@ -245,8 +244,8 @@ export function SearchResultsCard({
               <div 
                 className={`flex items-center gap-3 p-3 rounded-md border transition-colors motion-reduce:transition-none cursor-pointer
                   ${selectedIds.has(candidate.id) 
-                    ? "bg-lia-bg-secondary border-lia-border-default" 
-                    : "bg-lia-bg-primary border-lia-border-subtle hover:bg-lia-bg-secondary"
+                    ?"bg-lia-bg-secondary border-lia-border-default" 
+                    :"bg-lia-bg-primary border-lia-border-subtle hover:bg-lia-bg-secondary"
                   }`}
                 onClick={() => onSelectCandidate?.(candidate)}
               >
@@ -284,12 +283,12 @@ export function SearchResultsCard({
                         <Badge 
                           variant="outline" 
                           className={`text-xs ${
-                            candidate.source === "local" 
-                              ? "border-lia-border-default bg-lia-bg-secondary text-lia-text-secondary" 
-                              : "border-lia-border-default dark:border-lia-border-default bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-primary"
+                            candidate.source ==="local" 
+                              ?"border-lia-border-default bg-lia-bg-secondary text-lia-text-secondary" 
+                              :"border-lia-border-default dark:border-lia-border-default bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-primary"
                           }`}
                         >
-                          {candidate.source === "local" ? (
+                          {candidate.source ==="local" ? (
                             <>
                               <Database className="h-3 w-3 mr-1" />
                               Local
@@ -303,9 +302,9 @@ export function SearchResultsCard({
                         </Badge>
                       </TooltipTrigger>
                       <TooltipContent>
-                        {candidate.source === "local" 
-                          ? "Candidato da sua base de dados local" 
-                          : "Candidato encontrado na busca global (Pearch)"}
+                        {candidate.source ==="local" 
+                          ?"Candidato da sua base de dados local" 
+                          :"Candidato encontrado na busca global (Pearch)"}
                       </TooltipContent>
                     </Tooltip>
                     {candidate.is_discovered && (
@@ -313,7 +312,7 @@ export function SearchResultsCard({
                         <TooltipTrigger>
                           <Badge 
                             variant="outline" 
-                            className="text-xs border-status-warning/30 bg-status-warning/10 text-status-warning"
+                            className="text-xs border-status-warning/30"
                           >
                             <Eye className="h-3 w-3 mr-1" />
                             Descoberto
@@ -484,7 +483,7 @@ export function SearchResultsCard({
         {selectedIds.size > 0 && (
           <div className="mt-3 p-2 bg-lia-bg-secondary rounded-xl text-center">
             <p className="text-sm text-lia-text-secondary">
-              Dica: Diga "adicione os selecionados à vaga X" ou "compare os candidatos selecionados"
+              Dica: Diga"adicione os selecionados à vaga X" ou"compare os candidatos selecionados"
             </p>
           </div>
         )}

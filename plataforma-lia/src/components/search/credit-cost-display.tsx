@@ -1,22 +1,22 @@
 "use client"
 
-import { useMemo } from "react"
-import { AlertCircle, Coins, TrendingUp, Zap } from "lucide-react"
-import { Badge } from "@/components/ui/badge"
+import { useMemo } from"react"
+import { AlertCircle, Coins, TrendingUp, Zap } from"lucide-react"
+import { Badge } from"@/components/ui/badge"
 import { 
   CreditEstimate,
   calculateCreditsLocally 
-} from "@/lib/api/candidate-search"
+} from"@/lib/api/candidate-search"
 import {
   formatCreditCost,
   getCostLevel,
   getCostColor,
   getCostBgColor,
   describeCostBreakdown
-} from "@/hooks/useCreditEstimator"
+} from"@/hooks/useCreditEstimator"
 
 interface PearchOptions {
-  searchType?: "fast" | "pro"
+  searchType?:"fast" |"pro"
   highFreshness?: boolean
   requireEmails?: boolean
   showEmails?: boolean
@@ -38,11 +38,11 @@ export function CreditCostDisplay({
   limit = 15,
   showBreakdown = true,
   compact = false,
-  className = ""
+  className =""
 }: CreditCostDisplayProps) {
   const estimate = useMemo(() => {
     return calculateCreditsLocally({
-      searchType: options.searchType || "fast",
+      searchType: options.searchType ||"fast",
       limit,
       highFreshness: options.highFreshness || false,
       requireEmails: options.requireEmails || false,
@@ -94,7 +94,7 @@ export function CreditCostDisplay({
               Tipo de Busca
             </span>
             <span className="font-medium">
-              {estimate.pearch_type === "fast" ? "Rapida" : "Profissional"} ({estimate.base_cost}/cand.)
+              {estimate.pearch_type ==="fast" ?"Rapida" :"Profissional"} ({estimate.base_cost}/cand.)
             </span>
           </div>
 
@@ -167,7 +167,7 @@ interface CreditCostBadgeProps {
   className?: string
 }
 
-export function CreditCostBadge({ cost, suffix = "", className = "" }: CreditCostBadgeProps) {
+export function CreditCostBadge({ cost, suffix ="", className ="" }: CreditCostBadgeProps) {
   const level = getCostLevel(cost)
   const color = getCostColor(level)
   
@@ -176,7 +176,7 @@ export function CreditCostBadge({ cost, suffix = "", className = "" }: CreditCos
       variant="secondary" 
       className={`text-xs ${color} ${className}`}
     >
-      {cost > 0 ? `+${cost}` : cost} {suffix || "creditos"}
+      {cost > 0 ? `+${cost}` : cost} {suffix ||"creditos"}
     </Badge>
   )
 }
@@ -189,7 +189,7 @@ interface InlineCreditCostProps {
 
 export function InlineCreditCost({ cost, label, highlight = false }: InlineCreditCostProps) {
   const level = getCostLevel(cost)
-  const color = highlight ? "text-status-warning" : getCostColor(level)
+  const color = highlight ?"text-status-warning" : getCostColor(level)
   
   return (
     <span className={`text-xs ${color}`}>

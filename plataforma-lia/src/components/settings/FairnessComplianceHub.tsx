@@ -1,13 +1,13 @@
 "use client"
 
-import React, { useEffect, useState } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Shield, AlertTriangle, TrendingDown, Download } from "lucide-react"
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts"
-import { textStyles, cardStyles } from "@/lib/design-tokens"
+import React, { useEffect, useState } from"react"
+import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
+import { Badge } from"@/components/ui/badge"
+import { Button } from"@/components/ui/button"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from"@/components/ui/select"
+import { Shield, AlertTriangle, TrendingDown, Download } from"lucide-react"
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from"recharts"
+import { textStyles, cardStyles } from"@/lib/design-tokens"
 
 interface FairnessSummary {
   total_blocks: number
@@ -33,15 +33,15 @@ interface AuditLogEntry {
 }
 
 const categoryLabels: Record<string, string> = {
-  gender: "Genero",
-  age: "Idade",
-  race: "Raca",
-  disability: "Deficiencia",
-  religion: "Religiao",
-  sexual_orientation: "Orient. Sexual",
-  nationality: "Nacionalidade",
-  marital_status: "Estado Civil",
-  appearance: "Aparencia",
+  gender:"Genero",
+  age:"Idade",
+  race:"Raca",
+  disability:"Deficiencia",
+  religion:"Religiao",
+  sexual_orientation:"Orient. Sexual",
+  nationality:"Nacionalidade",
+  marital_status:"Estado Civil",
+  appearance:"Aparencia",
 }
 
 function translateCategory(cat: string): string {
@@ -65,8 +65,8 @@ export function FairnessComplianceHub({ activeSubsection }: FairnessComplianceHu
       setError(null)
       try {
         const [summaryRes, logsRes] = await Promise.all([
-          fetch(`/api/backend-proxy/fairness-report/summary?days=${period}`, { credentials: "include" }),
-          fetch(`/api/backend-proxy/fairness-report/summary?days=${period}`, { credentials: "include" }),
+          fetch(`/api/backend-proxy/fairness-report/summary?days=${period}`, { credentials:"include" }),
+          fetch(`/api/backend-proxy/fairness-report/summary?days=${period}`, { credentials:"include" }),
         ])
         if (!summaryRes.ok || !logsRes.ok) throw new Error("Erro ao carregar dados")
         const summaryData = await summaryRes.json()
@@ -74,7 +74,7 @@ export function FairnessComplianceHub({ activeSubsection }: FairnessComplianceHu
         setSummary(summaryData)
         setLogs(logsData.items || [])
       } catch (err: any) {
-        setError(err.message || "Erro ao carregar dados de fairness")
+        setError(err.message ||"Erro ao carregar dados de fairness")
       } finally {
         setLoading(false)
       }
@@ -82,8 +82,8 @@ export function FairnessComplianceHub({ activeSubsection }: FairnessComplianceHu
     fetchData()
   }, [period])
 
-  const handleExport = (format: "csv" | "json") => {
-    window.open(`/api/backend-proxy/fairness-report/export?format=${format}&days=${period}`, "_blank")
+  const handleExport = (format:"csv" |"json") => {
+    window.open(`/api/backend-proxy/fairness-report/export?format=${format}&days=${period}`,"_blank")
   }
 
   const totalWarnings = summary ? summary.total_events - summary.total_blocks : 0
@@ -225,7 +225,7 @@ export function FairnessComplianceHub({ activeSubsection }: FairnessComplianceHu
                 </thead>
                 <tbody>
                   {logs.map((log) => (
-                    <tr key={log.id} className=" border-lia-border/50 hover:bg-lia-bg-tertiary/50">
+                    <tr key={log.id} className="border-lia-border/50 hover:bg-lia-bg-tertiary/50">
                       <td className="py-2.5 px-3">
                         <Badge variant="outline" className="text-xs">
                           {translateCategory(log.category)}
@@ -240,16 +240,16 @@ export function FairnessComplianceHub({ activeSubsection }: FairnessComplianceHu
                       </td>
                       <td className="py-2.5 px-3 text-lia-text-secondary max-w-[200px] truncate">
                         {log.is_blocked
-                          ? (log.blocked_terms || []).join(", ")
-                          : (log.soft_warnings || []).join(", ")}
+                          ? (log.blocked_terms || []).join(",")
+                          : (log.soft_warnings || []).join(",")}
                       </td>
                       <td className="py-2.5 px-3 text-lia-text-secondary whitespace-nowrap">
                         {new Date(log.created_at).toLocaleDateString("pt-BR", {
-                          day: "2-digit",
-                          month: "short",
-                          year: "numeric",
-                          hour: "2-digit",
-                          minute: "2-digit",
+                          day:"2-digit",
+                          month:"short",
+                          year:"numeric",
+                          hour:"2-digit",
+                          minute:"2-digit",
                         })}
                       </td>
                     </tr>

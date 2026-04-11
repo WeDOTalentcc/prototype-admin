@@ -1,14 +1,14 @@
 "use client"
 
-import React from "react"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
-import { Card, CardContent } from "@/components/ui/card"
-import { GripVertical, Star, MessageSquare, Clock, TrendingUp, AlertTriangle } from "lucide-react"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { textStyles, buttonStyles, cardStyles, badgeStyles } from "@/lib/design-tokens"
-import type { KanbanCandidate } from "./types"
-import { getPercentageScoreColorClass } from "@/lib/score-utils"
+import React from"react"
+import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
+import { Badge } from"@/components/ui/badge"
+import { Card, CardContent } from"@/components/ui/card"
+import { GripVertical, Star, MessageSquare, Clock, TrendingUp, AlertTriangle } from"lucide-react"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from"@/components/ui/tooltip"
+import { textStyles, buttonStyles, cardStyles, badgeStyles } from"@/lib/design-tokens"
+import type { KanbanCandidate } from"./types"
+import { getPercentageScoreColorClass } from"@/lib/score-utils"
 
 interface KanbanCardProps {
   candidate: KanbanCandidate
@@ -24,13 +24,13 @@ export const KanbanCard = React.memo(function KanbanCard({
   isDragDisabled = false,
 }: KanbanCardProps) {
   const getScoreColor = (score?: number) => {
-    if (!score) return "text-lia-text-disabled"
+    if (!score) return"text-lia-text-disabled"
     return getPercentageScoreColorClass(score)
   }
 
   const getInitials = (name: string) => {
     return name
-      .split(" ")
+      .split("")
       .map((n) => n[0])
       .join("")
       .slice(0, 2)
@@ -168,8 +168,8 @@ export const KanbanCard = React.memo(function KanbanCard({
           
           <span className="text-micro text-lia-text-tertiary">
             {new Date(candidate.addedAt).toLocaleDateString("pt-BR", {
-              day: "2-digit",
-              month: "short"
+              day:"2-digit",
+              month:"short"
             })}
           </span>
         </div>

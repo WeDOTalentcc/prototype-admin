@@ -1,20 +1,20 @@
 "use client"
 
-import React from "react"
+import React from"react"
 
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Switch } from "@/components/ui/switch"
+import { Button } from"@/components/ui/button"
+import { Input } from"@/components/ui/input"
+import { Badge } from"@/components/ui/badge"
+import { Label } from"@/components/ui/label"
+import { Textarea } from"@/components/ui/textarea"
+import { Switch } from"@/components/ui/switch"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
+} from"@/components/ui/select"
 import {
   X,
   Briefcase,
@@ -38,10 +38,10 @@ import {
   Download,
   Check,
   Loader2,
-} from "lucide-react"
-import { toast } from "sonner"
-import { cn } from "@/lib/utils"
-import { liaApi, type JobVacancy } from "@/services/lia-api"
+} from"lucide-react"
+import { toast } from"sonner"
+import { cn } from"@/lib/utils"
+import { liaApi, type JobVacancy } from"@/services/lia-api"
 import type { CompanyBenefit } from '@/types/benefits'
 import {
   STATUS_OPTIONS,
@@ -302,11 +302,10 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                               ].map((option) => (
                                 <div
                                   key={option.value}
-                                  className={cn(
-                                    "p-2.5 rounded-md border cursor-pointer transition-colors",
+                                  className={cn("p-2.5 rounded-md border cursor-pointer transition-colors",
                                     formData.affirmativeType === option.value
-                                      ? "border-wedo-purple/30 bg-wedo-purple/15"
-                                      : "border-wedo-purple/30 bg-lia-bg-primary hover:border-wedo-purple/30"
+                                      ?"border-wedo-purple/30 bg-wedo-purple/15"
+                                      :"border-wedo-purple/30 bg-lia-bg-primary hover:border-wedo-purple/30"
                                   )}
                                   onClick={() => updateField('affirmativeType', formData.affirmativeType === option.value ? undefined : option.value as Job['affirmativeType'])}
                                 >
@@ -340,7 +339,7 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                               value={newAccessEmail}
                               onChange={(e) => setNewAccessEmail(e.target.value)}
                               onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addAccessEmail())}
-                              className={inputStyle + " flex-1"}
+                              className={inputStyle +" flex-1"}
                               placeholder="email@empresa.com"
                             />
                             <Button
@@ -515,7 +514,7 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                       value={newLanguage}
                       onChange={(e) => setNewLanguage(e.target.value)}
                       onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addLanguage())}
-                      className={inputStyle + " flex-1"}
+                      className={inputStyle +" flex-1"}
                       placeholder="Ex: Inglês"
                     />
                     <Select value={newLanguageLevel} onValueChange={setNewLanguageLevel}>
@@ -542,7 +541,7 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                   </div>
                   <div className="flex flex-wrap gap-1.5">
                     {(formData.languages || []).map((lang, idx) => (
-                      <Badge key={idx} variant="secondary" className="text-xs py-1 px-2 bg-wedo-purple/10 text-wedo-purple border border-wedo-purple/30">
+                      <Badge key={idx} variant="secondary" className="text-xs py-1 px-2  border border-wedo-purple/30">
                         {lang.language} ({lang.level})
                         <button
                           onClick={() => removeLanguage(idx)}
@@ -648,14 +647,14 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                           <Badge variant="outline" className="text-micro bg-lia-bg-secondary text-lia-text-secondary border-lia-border-subtle">
                             {getCategoryLabel(q.category)}
                           </Badge>
-                          <Badge variant="outline" className="text-micro bg-wedo-cyan/10 text-wedo-cyan-dark border-wedo-cyan/30">
+                          <Badge variant="outline" className="text-micro -dark border-wedo-cyan/30">
                             {q.question_type === 'yes_no' ? 'Sim/Não' : 
                              q.question_type === 'single_choice' ? 'Escolha única' : 
                              q.question_type === 'multiple_choice' ? 'Múltipla escolha' : 
                              q.question_type === 'scale' ? 'Escala' : 'Texto'}
                           </Badge>
                           {q.is_required && (
-                            <Badge variant="outline" className="text-micro bg-status-error/10 text-status-error border-status-error/30">
+                            <Badge variant="outline" className="text-micro  border-status-error/30">
                               Obrigatória
                             </Badge>
                           )}

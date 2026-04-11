@@ -1,19 +1,19 @@
 "use client"
 
-import { useState, useRef } from "react"
-import { X, Check, RotateCcw, Save, Zap, Brain, Loader2, List } from "lucide-react"
-import { cn } from "@/lib/utils"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Badge } from "@/components/ui/badge"
+import { useState, useRef } from"react"
+import { X, Check, RotateCcw, Save, Zap, Brain, Loader2, List } from"lucide-react"
+import { cn } from"@/lib/utils"
+import { Input } from"@/components/ui/input"
+import { Label } from"@/components/ui/label"
+import { Badge } from"@/components/ui/badge"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import { useSemanticSearch } from "@/hooks/useSemanticSearch"
+} from"@/components/ui/select"
+import { useSemanticSearch } from"@/hooks/useSemanticSearch"
 import type { SearchFilters } from '../hooks/useAdvancedFiltersCore'
 import { titleScopeOptions } from '../advancedFiltersTypes'
 import { globalJobPresets } from '../advancedFiltersTypes'
@@ -24,8 +24,8 @@ export interface JobTitlesSectionProps {
   addToArray: <T extends keyof SearchFilters>(category: T, key: keyof NonNullable<SearchFilters[T]>, value: string) => void
   removeFromArray: <T extends keyof SearchFilters>(category: T, key: keyof NonNullable<SearchFilters[T]>, value: string) => void
   // Presets modal triggers
-  onOpenPresetsModal: (target: "titles" | "pastTitles") => void
-  onOpenSavePresetModal: (target: "titles" | "pastTitles") => void
+  onOpenPresetsModal: (target:"titles" |"pastTitles") => void
+  onOpenSavePresetModal: (target:"titles" |"pastTitles") => void
 }
 
 export const JobTitlesSection = ({
@@ -48,11 +48,11 @@ export const JobTitlesSection = ({
     isLoading: isLoadingTitles,
     search: searchTitles,
     clearSuggestions: clearTitleSuggestions
-  } = useSemanticSearch({ domain: "job-titles", debounceMs: 400 })
+  } = useSemanticSearch({ domain:"job-titles", debounceMs: 400 })
 
   const handleAddTitle = (title: string) => {
     if (title.trim()) {
-      addToArray("job", "titles", title.trim())
+      addToArray("job","titles", title.trim())
       setTitleInput("")
       clearTitleSuggestions()
       setShowTitleSuggestions(false)
@@ -72,10 +72,10 @@ export const JobTitlesSection = ({
 
   const generateLocalSimilarTitles = (titles: string[]): string[] => {
     const suggestions: string[] = []
-    const seniorityPrefixes = ["Junior", "Senior", "Staff", "Principal", "Lead", "Head of"]
+    const seniorityPrefixes = ["Junior","Senior","Staff","Principal","Lead","Head of"]
 
     titles.forEach(title => {
-      const cleanTitle = title.replace(/^(Junior|Senior|Staff|Principal|Lead|Head of)\s*/i, "")
+      const cleanTitle = title.replace(/^(Junior|Senior|Staff|Principal|Lead|Head of)\s*/i,"")
       seniorityPrefixes.forEach(prefix => {
         const newTitle = `${prefix} ${cleanTitle}`
         if (!titles.includes(newTitle) && !suggestions.includes(newTitle)) {
@@ -124,14 +124,14 @@ export const JobTitlesSection = ({
 
   const handleAddSelectedAiTitles = () => {
     selectedAiTitles.forEach(title => {
-      addToArray("job", "titles", title)
+      addToArray("job","titles", title)
     })
     setAiSuggestedTitles(prev => prev.filter(t => !selectedAiTitles.includes(t)))
     setSelectedAiTitles([])
   }
 
   const handleClearAll = () => {
-    updateFilter("job", "titles", [] as string[])
+    updateFilter("job","titles", [] as string[])
     setAiSuggestedTitles([])
     setSelectedAiTitles([])
   }
@@ -142,8 +142,8 @@ export const JobTitlesSection = ({
         <div className="flex items-center gap-2">
           <Label className="text-xs font-medium">Cargos Atuais</Label>
           <Select
-            value={filters.job?.titleScope || "current_only"}
-            onValueChange={(value) => updateFilter("job", "titleScope", value as "current_only" | "current_recent" | "current_past")}
+            value={filters.job?.titleScope ||"current_only"}
+            onValueChange={(value) => updateFilter("job","titleScope", value as"current_only" |"current_recent" |"current_past")}
           >
             <SelectTrigger className="h-7 w-[150px] text-xs border-lia-border-subtle">
               <SelectValue />
@@ -194,10 +194,10 @@ export const JobTitlesSection = ({
             value={titleInput}
             onChange={(e) => handleTitleInputChange(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key === "Enter" && titleInput.trim()) {
+              if (e.key ==="Enter" && titleInput.trim()) {
                 e.preventDefault()
                 handleAddTitle(titleInput)
-              } else if (e.key === "Escape") {
+              } else if (e.key ==="Escape") {
                 setShowTitleSuggestions(false)
               }
             }}
@@ -250,17 +250,16 @@ export const JobTitlesSection = ({
               <Badge
                 key={title}
                 variant="secondary"
-                className={cn(
-                  "pl-2 pr-1 py-1 flex items-center gap-1",
+                className={cn("pl-2 pr-1 py-1 flex items-center gap-1",
                   isAiSuggested
-                    ? "bg-wedo-purple/10 border border-wedo-purple/30 text-wedo-purple"
-                    : "bg-lia-bg-tertiary text-lia-text-primary"
+                    ?"bg-wedo-purple/10 border border-wedo-purple/30 text-wedo-purple"
+                    :"bg-lia-bg-tertiary text-lia-text-primary"
                 )}
               >
                 {isAiSuggested && <Brain className="w-3 h-3 text-wedo-purple" />}
                 <span className="text-xs">{title}</span>
                 <button
-                  onClick={() => removeFromArray("job", "titles", title)}
+                  onClick={() => removeFromArray("job","titles", title)}
                   className="ml-1 hover:bg-lia-border-default rounded-md p-0.5"
                 >
                   <X className="w-3 h-3" />
@@ -273,10 +272,7 @@ export const JobTitlesSection = ({
           <button
             onClick={handleFindSimilar}
             disabled={isLoadingSimilar || (filters.job?.titles?.length || 0) === 0}
-            className={cn(
-              "px-3 py-1 rounded-full text-xs border flex items-center gap-1.5 transition-[width,height]",
-              "border-wedo-purple/30 bg-wedo-purple/10 text-wedo-purple hover:bg-wedo-purple/15",
-              "disabled:opacity-50 disabled:cursor-not-allowed"
+            className={cn("px-3 py-1 rounded-full text-xs border flex items-center gap-1.5 transition-[width,height]","border-wedo-purple/30  hover:bg-wedo-purple/15","disabled:opacity-50 disabled:cursor-not-allowed"
             )}
           >
             {isLoadingSimilar ? (
@@ -317,11 +313,10 @@ export const JobTitlesSection = ({
                 <button
                   key={title}
                   onClick={() => toggleAiTitleSelection(title)}
-                  className={cn(
-                    "px-2 py-1 rounded-md text-xs border transition-colors flex items-center gap-1",
+                  className={cn("px-2 py-1 rounded-md text-xs border transition-colors flex items-center gap-1",
                     isSelected
-                      ? "border-wedo-purple/30 bg-wedo-purple/15 text-wedo-purple font-medium"
-                      : "border-wedo-purple/30 bg-lia-bg-primary text-wedo-purple hover:bg-wedo-purple/10"
+                      ?"border-wedo-purple/30  font-medium"
+                      :"border-wedo-purple/30 bg-lia-bg-primary text-wedo-purple hover:bg-wedo-purple/10"
                   )}
                 >
                   {isSelected && <Check className="w-3 h-3" />}

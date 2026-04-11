@@ -1,9 +1,9 @@
 "use client"
 
-import React, { useState, useEffect } from "react"
-import { cn } from "@/lib/utils"
-import { CheckCircle, AlertTriangle, XCircle, Sparkles, Shield } from "lucide-react"
-import type { JdEnrichmentData } from "../wizard-types"
+import React, { useState, useEffect } from"react"
+import { cn } from"@/lib/utils"
+import { CheckCircle, AlertTriangle, XCircle, Sparkles, Shield } from"lucide-react"
+import type { JdEnrichmentData } from"../wizard-types"
 
 interface Props {
   data: Record<string, unknown>
@@ -13,10 +13,10 @@ interface Props {
 }
 
 function getQualityBadge(score: number) {
-  if (score >= 70) return { label: "Bom", icon: CheckCircle, color: "text-status-success bg-status-success/10" }
-  if (score >= 50) return { label: "Adequado", icon: CheckCircle, color: "text-wedo-cyan bg-wedo-cyan/10" }
-  if (score >= 30) return { label: "Insuficiente", icon: AlertTriangle, color: "text-status-warning bg-status-warning/10" }
-  return { label: "Critico", icon: XCircle, color: "text-status-error bg-status-error/10" }
+  if (score >= 70) return { label:"Bom", icon: CheckCircle, color:"text-status-success bg-status-success/10" }
+  if (score >= 50) return { label:"Adequado", icon: CheckCircle, color:"text-wedo-cyan bg-wedo-cyan/10" }
+  if (score >= 30) return { label:"Insuficiente", icon: AlertTriangle, color:"text-status-warning bg-status-warning/10" }
+  return { label:"Critico", icon: XCircle, color:"text-status-error bg-status-error/10" }
 }
 
 /**
@@ -39,7 +39,7 @@ export function JdEnrichmentPanel({ data, requiresApproval, onApprove, onReject 
         <div className="flex items-center gap-2">
           <div className={cn("flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium", badge.color)}>
             <BadgeIcon className="w-3.5 h-3.5" />
-            <span className="">{badge.label}</span>
+            <span >{badge.label}</span>
           </div>
           <span className="text-xs text-lia-text-secondary">
             Score: {score}/100
@@ -108,7 +108,7 @@ export function JdEnrichmentPanel({ data, requiresApproval, onApprove, onReject 
                 {enriched.competencias_comportamentais.map((c, i) => (
                   <div key={i} className="flex items-center gap-2 text-xs">
                     <span className="text-lia-text-primary">{c.competencia}</span>
-                    <span className="px-1.5 py-0.5 rounded bg-wedo-cyan/10 text-wedo-cyan text-[10px] font-medium">
+                    <span className="px-1.5 py-0.5 rounded  text-[10px] font-medium">
                       {c.trait_big_five}
                     </span>
                   </div>

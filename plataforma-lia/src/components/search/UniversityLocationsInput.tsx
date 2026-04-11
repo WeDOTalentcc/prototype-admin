@@ -1,11 +1,11 @@
 "use client"
 
-import { useState, useRef, useEffect, useCallback } from "react"
-import { X, Search } from "lucide-react"
-import { cn } from "@/lib/utils"
-import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
-import { UNIVERSITY_CITIES as CITIES, UNIVERSITY_COUNTRIES as COUNTRIES } from "@/data/location-data"
+import { useState, useRef, useEffect, useCallback } from"react"
+import { X, Search } from"lucide-react"
+import { cn } from"@/lib/utils"
+import { Badge } from"@/components/ui/badge"
+import { Input } from"@/components/ui/input"
+import { UNIVERSITY_CITIES as CITIES, UNIVERSITY_COUNTRIES as COUNTRIES } from"@/data/location-data"
 
 interface UniversityLocationsInputProps {
   value: string[]
@@ -17,7 +17,7 @@ interface UniversityLocationsInputProps {
 export function UniversityLocationsInput({
   value,
   onChange,
-  placeholder = "Examples: San Francisco / United States / NYC / ..."
+  placeholder ="Examples: San Francisco / United States / NYC / ..."
 }: UniversityLocationsInputProps) {
   const [inputValue, setInputValue] = useState("")
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
@@ -178,9 +178,8 @@ export function UniversityLocationsInput({
                 <button
                   key={`item-${item.value}`}
                   onClick={() => addLocation(item.value!)}
-                  className={cn(
-                    "w-full text-left px-3 py-2 text-sm transition-colors",
-                    focusedIndex === currentSelectableIndex ? "bg-lia-bg-tertiary" : "hover:bg-lia-bg-secondary"
+                  className={cn("w-full text-left px-3 py-2 text-sm transition-colors",
+                    focusedIndex === currentSelectableIndex ?"bg-lia-bg-tertiary" :"hover:bg-lia-bg-secondary"
                   )}
                 >
                   <span className="text-lia-text-primary">{item.label}</span>

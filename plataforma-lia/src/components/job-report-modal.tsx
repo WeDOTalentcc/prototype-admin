@@ -1,15 +1,15 @@
 "use client"
 
-import { formatBRL, CURRENCY_SYMBOL } from "@/lib/pricing"
+import { formatBRL, CURRENCY_SYMBOL } from"@/lib/pricing"
 
-import React, { useState, useRef, useEffect, useCallback } from "react"
-import { useJobReport } from "@/hooks/use-job-report"
-import { useMLPredictions } from "@/hooks/use-ml-predictions"
-import { useAuthStore } from "@/stores/auth-store"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
+import React, { useState, useRef, useEffect, useCallback } from"react"
+import { useJobReport } from"@/hooks/use-job-report"
+import { useMLPredictions } from"@/hooks/use-ml-predictions"
+import { useAuthStore } from"@/stores/auth-store"
+import { Button } from"@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
+import { Badge } from"@/components/ui/badge"
+import { Progress } from"@/components/ui/progress"
 import {
   X, Download, Share2, Printer, Mail, FileText, Users,
   TrendingUp, Clock, Calendar, DollarSign, Target, CheckCircle,
@@ -18,7 +18,7 @@ import {
   ArrowUp, ArrowDown, Building, User, Phone, Shield, Globe,
   Zap, Filter, Hash, Layers3, Settings, Copy, Maximize2,
   Trophy, Lightbulb
-} from "lucide-react"
+} from"lucide-react"
 
 interface JobReportJob {
   jobId?: string
@@ -56,8 +56,8 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
 
   useEffect(() => {
     if (isOpen && job?.jobId) {
-      fetchReport(job.jobId ?? "")
-      const companyId = (user && "company_id" in user ? user.company_id : undefined) || "default"
+      fetchReport(job.jobId ??"")
+      const companyId = (user &&"company_id" in user ? user.company_id : undefined) ||"default"
       const jobData = {
         title: job.title,
         department: job.department,
@@ -119,7 +119,7 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
     channelPerformance,
     timeline: (() => {
       const openDate = job.openDate ? new Date(job.openDate) : new Date()
-      const fmt = (d: Date) => d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" })
+      const fmt = (d: Date) => d.toLocaleDateString("pt-BR", { day:"2-digit", month:"2-digit" })
       const addDays = (d: Date, n: number) => new Date(d.getTime() + n * 86400000)
       const now = new Date()
       const daysOpen = Math.floor((now.getTime() - openDate.getTime()) / 86400000)
@@ -127,12 +127,12 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
       const predictedEnd = addDays(openDate, predictedDays)
 
       const events = [
-        { date: fmt(openDate), event: "Vaga publicada", status: "completed" as const },
-        { date: fmt(addDays(openDate, Math.min(3, daysOpen))), event: "Primeira triagem LIA", status: daysOpen >= 3 ? "completed" as const : "pending" as const },
-        { date: fmt(addDays(openDate, Math.min(7, daysOpen))), event: "Início das entrevistas", status: daysOpen >= 7 ? "completed" as const : daysOpen >= 3 ? "in-progress" as const : "pending" as const },
-        { date: fmt(addDays(openDate, Math.round(predictedDays * 0.6))), event: "Testes técnicos", status: daysOpen >= predictedDays * 0.6 ? "completed" as const : daysOpen >= 7 ? "in-progress" as const : "pending" as const },
-        { date: fmt(addDays(openDate, Math.round(predictedDays * 0.85))), event: "Decisão final", status: daysOpen >= predictedDays * 0.85 ? "completed" as const : "pending" as const },
-        { date: fmt(predictedEnd), event: `Contratação prevista (${predictedDays}d)`, status: "pending" as const },
+        { date: fmt(openDate), event:"Vaga publicada", status:"completed" as const },
+        { date: fmt(addDays(openDate, Math.min(3, daysOpen))), event:"Primeira triagem LIA", status: daysOpen >= 3 ?"completed" as const :"pending" as const },
+        { date: fmt(addDays(openDate, Math.min(7, daysOpen))), event:"Início das entrevistas", status: daysOpen >= 7 ?"completed" as const : daysOpen >= 3 ?"in-progress" as const :"pending" as const },
+        { date: fmt(addDays(openDate, Math.round(predictedDays * 0.6))), event:"Testes técnicos", status: daysOpen >= predictedDays * 0.6 ?"completed" as const : daysOpen >= 7 ?"in-progress" as const :"pending" as const },
+        { date: fmt(addDays(openDate, Math.round(predictedDays * 0.85))), event:"Decisão final", status: daysOpen >= predictedDays * 0.85 ?"completed" as const :"pending" as const },
+        { date: fmt(predictedEnd), event: `Contratação prevista (${predictedDays}d)`, status:"pending" as const },
       ]
       return events
     })(),
@@ -142,11 +142,11 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
       spent: 18500,
       remaining: 31500,
       breakdown: [
-        { category: "Divulgação", amount: 5200 },
-        { category: "Plataformas", amount: 3800 },
-        { category: "Testes", amount: 2400 },
-        { category: "Equipe", amount: 4600 },
-        { category: "LIA/Automação", amount: 2500 }
+        { category:"Divulgação", amount: 5200 },
+        { category:"Plataformas", amount: 3800 },
+        { category:"Testes", amount: 2400 },
+        { category:"Equipe", amount: 4600 },
+        { category:"LIA/Automação", amount: 2500 }
       ]
     },
     predictions: {
@@ -173,9 +173,9 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
       nps: 87,
       candidateSatisfaction: 4.6,
       hiringManagerSatisfaction: 4.8,
-      timeToFillBenchmark: timeToFill?.comparison_to_market || "Calculando...",
-      marketPercentile: salary ? `P${salary.market_percentile}` : "--",
-      qualityOfHireBenchmark: salary?.competitive_analysis || "Calculando..."
+      timeToFillBenchmark: timeToFill?.comparison_to_market ||"Calculando...",
+      marketPercentile: salary ? `P${salary.market_percentile}` :"--",
+      qualityOfHireBenchmark: salary?.competitive_analysis ||"Calculando..."
     }
   }
 
@@ -244,7 +244,7 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
               <div>
 
                 <h2 className="text-xs font-semibold print:text-xs">Relatório Executivo da Vaga</h2>
-                <p className="text-micro text-white/80">{reportLoading ? "Carregando..." : String(job.title || "")} • {String(job.jobId || "")}</p>
+                <p className="text-micro text-white/80">{reportLoading ?"Carregando..." : String(job.title ||"")} • {String(job.jobId ||"")}</p>
               </div>
             </div>
             <div className="flex items-center gap-2 print:hidden">
@@ -381,11 +381,11 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
                   </h3>
                   <div className="space-y-1.5 p-2 bg-lia-bg-secondary rounded-xl border border-lia-border-subtle">
                     {[
-                      { stage: "Candidatos", value: reportData.funnelMetrics.totalCandidates, percentage: 100, color: "bg-lia-bg-inverse" },
-                      { stage: "Triagem", value: reportData.funnelMetrics.screening, percentage: 57, color: "bg-status-warning" },
-                      { stage: "Entrevista", value: reportData.funnelMetrics.interview, percentage: 22, color: "bg-wedo-orange" },
-                      { stage: "Final", value: reportData.funnelMetrics.final, percentage: 8, color: "bg-wedo-purple" },
-                      { stage: "Contratados", value: reportData.funnelMetrics.hired, percentage: 2, color: "bg-status-success" }
+                      { stage:"Candidatos", value: reportData.funnelMetrics.totalCandidates, percentage: 100, color:"bg-lia-bg-inverse" },
+                      { stage:"Triagem", value: reportData.funnelMetrics.screening, percentage: 57, color:"bg-status-warning" },
+                      { stage:"Entrevista", value: reportData.funnelMetrics.interview, percentage: 22, color:"bg-wedo-orange" },
+                      { stage:"Final", value: reportData.funnelMetrics.final, percentage: 8, color:"bg-wedo-purple" },
+                      { stage:"Contratados", value: reportData.funnelMetrics.hired, percentage: 2, color:"bg-status-success" }
                     ].map((item, index) => (
                       <div key={item.stage} className="flex items-center gap-2">
                         <span className="w-16 text-micro text-lia-text-primary">{item.stage}</span>
@@ -438,10 +438,10 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
                           <tr key={channel.channel} className="border-t border-lia-border-subtle">
                             <td className="py-1 px-1.5">
                               <div className="flex items-center gap-1">
-                                {channel.channel === "LinkedIn" && <Briefcase className="w-2.5 h-2.5 text-lia-text-secondary" />}
-                                {channel.channel === "Website" && <Globe className="w-2.5 h-2.5 text-status-success" />}
-                                {channel.channel === "LIA Database" && <Brain className="w-2.5 h-2.5 text-wedo-cyan" />}
-                                {channel.channel === "Referral" && <Users className="w-2.5 h-2.5 text-wedo-orange" />}
+                                {channel.channel ==="LinkedIn" && <Briefcase className="w-2.5 h-2.5 text-lia-text-secondary" />}
+                                {channel.channel ==="Website" && <Globe className="w-2.5 h-2.5 text-status-success" />}
+                                {channel.channel ==="LIA Database" && <Brain className="w-2.5 h-2.5 text-wedo-cyan" />}
+                                {channel.channel ==="Referral" && <Users className="w-2.5 h-2.5 text-wedo-orange" />}
                                 <span>{channel.channel}</span>
                               </div>
                             </td>
@@ -452,7 +452,7 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
                               </span>
                             </td>
                             <td className="text-center py-1 px-1">
-                              <span className={`inline-flex items-center justify-center w-4 h-4 rounded-full text-micro font-medium ${channel.hired > 0 ? 'bg-status-success/15 text-status-success' : 'bg-lia-bg-tertiary text-lia-text-secondary'}`}>
+                              <span className={`inline-flex items-center justify-center w-4 h-4 rounded-full text-micro font-medium ${channel.hired > 0 ? '' : 'bg-lia-bg-tertiary text-lia-text-secondary'}`}>
                                 {channel.hired}
                               </span>
                             </td>
@@ -491,9 +491,8 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
                           </div>
                         </div>
                         <span className={`text-micro px-1.5 py-0.5 rounded-full font-medium
- ${candidate.status === "Final" ? "bg-wedo-purple/15 text-wedo-purple" :
-                          candidate.status === "Entrevista" ? "bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-wedo-cyan-dark" :
-                          "bg-status-warning/15 text-status-warning"}`}>
+ ${candidate.status ==="Final" ?"" :
+                          candidate.status ==="Entrevista" ?"bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-wedo-cyan-dark" :""}`}>
                           {candidate.status}
                         </span>
                       </div>
@@ -561,8 +560,8 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
                           <p className="text-micro font-medium text-lia-text-primary">Fatores de risco:</p>
                           {reportData.predictions.timeToFill.factors.slice(0, 3).map((f, i) => (
                             <div key={i} className="flex items-center gap-1 text-micro">
-                              <span className={f.impact === "high" ? "text-status-error" : f.impact === "medium" ? "text-status-warning" : "text-status-success"}>
-                                {f.impact === "high" ? "▲" : f.impact === "medium" ? "●" : "▼"}
+                              <span className={f.impact ==="high" ?"text-status-error" : f.impact ==="medium" ?"text-status-warning" :"text-status-success"}>
+                                {f.impact ==="high" ?"▲" : f.impact ==="medium" ?"●" :"▼"}
                               </span>
                               <span className="text-lia-text-secondary">{f.name}: {f.value}</span>
                             </div>
@@ -588,7 +587,7 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
                           <p className="text-micro font-medium text-lia-text-primary">Fatores de impacto:</p>
                           {reportData.predictions.salary.factors.slice(0, 3).map((f, i) => (
                             <div key={i} className="flex items-center gap-1 text-micro">
-                              <span className={f.impact === "high" ? "text-status-error" : f.impact === "medium" ? "text-status-warning" : "text-status-success"}>●</span>
+                              <span className={f.impact ==="high" ?"text-status-error" : f.impact ==="medium" ?"text-status-warning" :"text-status-success"}>●</span>
                               <span className="text-lia-text-secondary">{f.name}: {f.value}</span>
                             </div>
                           ))}
@@ -675,10 +674,10 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
                 </h3>
                 <div className="space-y-1.5 p-2 bg-lia-bg-primary rounded-b border border-lia-border-subtle border-t-0">
                   {[
-                    { icon: CheckCircle, color: "text-status-success", bgColor: "bg-status-success/10", title: "Acelerar Processo de Entrevista", desc: "Com 34 candidatos em fase de entrevista, recomenda-se agendar entrevistas em bloco para reduzir o tempo de processo em 30%." },
-                    { icon: Brain, color: "text-lia-text-secondary", bgColor: "bg-lia-bg-tertiary dark:bg-lia-bg-secondary", title: "Otimizar Triagem com LIA", desc: `Aumentar o uso da LIA para triagem inicial pode reduzir custos em ${CURRENCY_SYMBOL} 3.000 e melhorar a qualidade dos candidatos em 15%.` },
-                    { icon: Target, color: "text-wedo-purple", bgColor: "bg-wedo-purple/10", title: "Focar em Canais de Alta Performance", desc: "LinkedIn e LIA Database apresentam melhor qualidade de candidatos. Considere realocar 40% do orçamento para estes canais." },
-                    { icon: Clock, color: "text-wedo-orange", bgColor: "bg-wedo-orange/10", title: "Definir Prazo para Decisão Final", desc: "Estabelecer deadline de 10 dias para decisões finais pode evitar perda de candidatos qualificados para concorrentes." }
+                    { icon: CheckCircle, color:"text-status-success", bgColor:"bg-status-success/10", title:"Acelerar Processo de Entrevista", desc:"Com 34 candidatos em fase de entrevista, recomenda-se agendar entrevistas em bloco para reduzir o tempo de processo em 30%." },
+                    { icon: Brain, color:"text-lia-text-secondary", bgColor:"bg-lia-bg-tertiary dark:bg-lia-bg-secondary", title:"Otimizar Triagem com LIA", desc: `Aumentar o uso da LIA para triagem inicial pode reduzir custos em ${CURRENCY_SYMBOL} 3.000 e melhorar a qualidade dos candidatos em 15%.` },
+                    { icon: Target, color:"text-wedo-purple", bgColor:"bg-wedo-purple/10", title:"Focar em Canais de Alta Performance", desc:"LinkedIn e LIA Database apresentam melhor qualidade de candidatos. Considere realocar 40% do orçamento para estes canais." },
+                    { icon: Clock, color:"text-wedo-orange", bgColor:"bg-wedo-orange/10", title:"Definir Prazo para Decisão Final", desc:"Estabelecer deadline de 10 dias para decisões finais pode evitar perda de candidatos qualificados para concorrentes." }
                   ].map((rec, idx) => (
                     <div key={idx} className="flex items-start gap-2">
                       <div className={`w-5 h-5 rounded-full ${rec.bgColor} flex items-center justify-center flex-shrink-0`}>
@@ -712,7 +711,7 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
               <div className="text-right">
 
                 <p>Versão do relatório: 2.0</p>
-                <p>ID do documento: RPT-{String(job.jobId || "")}-{new Date().getTime()}</p>
+                <p>ID do documento: RPT-{String(job.jobId ||"")}-{new Date().getTime()}</p>
               </div>
             </div>
           </div>

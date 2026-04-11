@@ -1,20 +1,20 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { X, Save, Target, Plus, Loader2, Brain } from "lucide-react"
-import type { SearchSpec } from "@/lib/api/candidate-search"
+import { useState, useEffect } from"react"
+import { Button } from"@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
+import { Badge } from"@/components/ui/badge"
+import { X, Save, Target, Plus, Loader2, Brain } from"lucide-react"
+import type { SearchSpec } from"@/lib/api/candidate-search"
 import {
   extractTagsFromSearchSpec,
   suggestArchetypeName,
   extractIndustryFromSpec,
   extractSeniorityFromSpec,
   type ExtractedTag,
-} from "@/lib/utils/extract-tags-from-search"
-import { textStyles, cardStyles, inputStyles, badgeStyles } from "@/lib/design-tokens"
-import { toast } from "sonner"
+} from"@/lib/utils/extract-tags-from-search"
+import { textStyles, cardStyles, inputStyles, badgeStyles } from"@/lib/design-tokens"
+import { toast } from"sonner"
 
 interface SaveArchetypeModalProps {
   open: boolean
@@ -24,31 +24,31 @@ interface SaveArchetypeModalProps {
   onSuccess?: (archetype: Record<string, unknown>) => void
 }
 
-const EMOJI_OPTIONS = ["🎯", "🚀", "💎", "⚡", "🧠", "📊", "🎨", "🔧", "🔍", "📱"]
+const EMOJI_OPTIONS = ["🎯","🚀","💎","⚡","🧠","📊","🎨","🔧","🔍","📱"]
 
 const INDUSTRY_OPTIONS = [
-  { value: "", label: "Selecione um setor" },
-  { value: "technology", label: "Tecnologia" },
-  { value: "finance", label: "Financeiro" },
-  { value: "healthcare", label: "Saúde" },
-  { value: "education", label: "Educação" },
-  { value: "retail", label: "Varejo" },
-  { value: "manufacturing", label: "Indústria" },
-  { value: "consulting", label: "Consultoria" },
-  { value: "marketing", label: "Marketing" },
-  { value: "logistics", label: "Logística" },
-  { value: "real_estate", label: "Imobiliário" },
-  { value: "other", label: "Outro" },
+  { value:"", label:"Selecione um setor" },
+  { value:"technology", label:"Tecnologia" },
+  { value:"finance", label:"Financeiro" },
+  { value:"healthcare", label:"Saúde" },
+  { value:"education", label:"Educação" },
+  { value:"retail", label:"Varejo" },
+  { value:"manufacturing", label:"Indústria" },
+  { value:"consulting", label:"Consultoria" },
+  { value:"marketing", label:"Marketing" },
+  { value:"logistics", label:"Logística" },
+  { value:"real_estate", label:"Imobiliário" },
+  { value:"other", label:"Outro" },
 ]
 
 const SENIORITY_OPTIONS = [
-  { value: "", label: "Selecione a senioridade" },
-  { value: "junior", label: "Júnior" },
-  { value: "pleno", label: "Pleno" },
-  { value: "senior", label: "Sênior" },
-  { value: "lead", label: "Lead / Tech Lead" },
-  { value: "manager", label: "Gerente" },
-  { value: "director", label: "Diretor" },
+  { value:"", label:"Selecione a senioridade" },
+  { value:"junior", label:"Júnior" },
+  { value:"pleno", label:"Pleno" },
+  { value:"senior", label:"Sênior" },
+  { value:"lead", label:"Lead / Tech Lead" },
+  { value:"manager", label:"Gerente" },
+  { value:"director", label:"Diretor" },
 ]
 
 export function SaveArchetypeModal({
@@ -70,7 +70,7 @@ const [isSaving, setIsSaving] = useState(false)
   useEffect(() => {
     if (open && searchSpec) {
       setName(suggestArchetypeName(searchSpec))
-      setDescription(query || "")
+      setDescription(query ||"")
       setSelectedEmoji("🎯")
       
       const extractedTags = extractTagsFromSearchSpec(searchSpec)
@@ -96,7 +96,7 @@ const [isSaving, setIsSaving] = useState(false)
   }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
+    if (e.key ==="Enter") {
       e.preventDefault()
       handleAddTag()
     }
@@ -104,7 +104,7 @@ const [isSaving, setIsSaving] = useState(false)
 
   const handleSave = async () => {
     if (!name.trim()) {
-      toast.error("Nome obrigatório", { description: "Por favor, insira um nome para o arquétipo." })
+      toast.error("Nome obrigatório", { description:"Por favor, insira um nome para o arquétipo." })
       return
     }
 
@@ -123,24 +123,24 @@ const [isSaving, setIsSaving] = useState(false)
       }
 
       const response = await fetch("/api/backend-proxy/search/archetypes/from-search", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+        method:"POST",
+        headers: {"Content-Type":"application/json" },
         body: JSON.stringify(payload),
       })
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
-        throw new Error(errorData.error || "Erro ao salvar arquétipo")
+        throw new Error(errorData.error ||"Erro ao salvar arquétipo")
       }
 
       const data = await response.json()
 
-      toast.success("Arquétipo salvo!", { description: `O arquétipo "${name}" foi criado com sucesso.` })
+      toast.success("Arquétipo salvo!", { description: `O arquétipo"${name}" foi criado com sucesso.` })
 
       onSuccess?.(data)
       onClose()
     } catch (error) {
-      toast.error("Erro ao salvar", { description: error instanceof Error ? error.message : "Não foi possível salvar o arquétipo." })
+      toast.error("Erro ao salvar", { description: error instanceof Error ? error.message :"Não foi possível salvar o arquétipo." })
     } finally {
       setIsSaving(false)
     }
@@ -199,8 +199,8 @@ const [isSaving, setIsSaving] = useState(false)
                   onClick={() => setSelectedEmoji(emoji)}
                   className={`w-10 h-10 rounded-md border-2 text-xl flex items-center justify-center transition-colors motion-reduce:transition-none ${
                     selectedEmoji === emoji
-                      ? "border-lia-btn-primary-bg dark:border-lia-border-subtle bg-lia-bg-tertiary dark:bg-lia-bg-secondary"
-                      : "border-lia-border-subtle hover:border-lia-border-default"
+                      ?"border-lia-btn-primary-bg dark:border-lia-border-subtle bg-lia-bg-tertiary dark:bg-lia-bg-secondary"
+                      :"border-lia-border-subtle hover:border-lia-border-default"
                   }`}
                 >
                   {emoji}

@@ -1,11 +1,11 @@
 "use client"
-import React from "react"
-import { Zap, Mail, Phone, AlertCircle, TrendingUp } from "lucide-react"
-import { Badge } from "@/components/ui/badge"
-import { Label } from "@/components/ui/label"
-import { Switch } from "@/components/ui/switch"
-import { type SearchFilters, type SearchSource } from "../advancedFiltersTypes"
-import { type CreditEstimate } from "@/lib/api/candidate-search"
+import React from"react"
+import { Zap, Mail, Phone, AlertCircle, TrendingUp } from"lucide-react"
+import { Badge } from"@/components/ui/badge"
+import { Label } from"@/components/ui/label"
+import { Switch } from"@/components/ui/switch"
+import { type SearchFilters, type SearchSource } from"../advancedFiltersTypes"
+import { type CreditEstimate } from"@/lib/api/candidate-search"
 
 interface FilterSectionOpcoesProps {
   filters: SearchFilters
@@ -22,7 +22,7 @@ export const FilterSectionOpcoes = React.memo(function FilterSectionOpcoes({
 }: FilterSectionOpcoesProps) {
   return (
     <div className="space-y-6">
-      {(searchSource === "global" || searchSource === "hybrid") && (
+      {(searchSource ==="global" || searchSource ==="hybrid") && (
         <div className="p-4 rounded-xl border bg-lia-bg-secondary border-lia-border-subtle">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
@@ -50,7 +50,7 @@ export const FilterSectionOpcoes = React.memo(function FilterSectionOpcoes({
           <div className="mt-3 pt-3 border-t border-wedo-cyan/20 space-y-1.5">
             <div className="flex justify-between text-xs">
               <span className="text-lia-text-secondary">
-                Base ({creditEstimate.pearch_type === "fast" ? "Rápida" : "Profissional"})
+                Base ({creditEstimate.pearch_type ==="fast" ?"Rápida" :"Profissional"})
               </span>
               <span className="font-medium">{creditEstimate.base_cost}</span>
             </div>
@@ -114,7 +114,7 @@ export const FilterSectionOpcoes = React.memo(function FilterSectionOpcoes({
           </div>
           <Switch
             checked={filters.ppiOptions?.requireEmails || false}
-            onCheckedChange={(checked: boolean) => updateFilter("ppiOptions", "requireEmails", checked)}
+            onCheckedChange={(checked: boolean) => updateFilter("ppiOptions","requireEmails", checked)}
           />
         </div>
 
@@ -128,7 +128,7 @@ export const FilterSectionOpcoes = React.memo(function FilterSectionOpcoes({
           </div>
           <Switch
             checked={filters.ppiOptions?.showEmails || false}
-            onCheckedChange={(checked: boolean) => updateFilter("ppiOptions", "showEmails", checked)}
+            onCheckedChange={(checked: boolean) => updateFilter("ppiOptions","showEmails", checked)}
           />
         </div>
 
@@ -142,7 +142,7 @@ export const FilterSectionOpcoes = React.memo(function FilterSectionOpcoes({
           </div>
           <Switch
             checked={filters.ppiOptions?.requirePhoneNumbers || false}
-            onCheckedChange={(checked: boolean) => updateFilter("ppiOptions", "requirePhoneNumbers", checked)}
+            onCheckedChange={(checked: boolean) => updateFilter("ppiOptions","requirePhoneNumbers", checked)}
           />
         </div>
 
@@ -156,7 +156,7 @@ export const FilterSectionOpcoes = React.memo(function FilterSectionOpcoes({
           </div>
           <Switch
             checked={filters.ppiOptions?.showPhoneNumbers || false}
-            onCheckedChange={(checked: boolean) => updateFilter("ppiOptions", "showPhoneNumbers", checked)}
+            onCheckedChange={(checked: boolean) => updateFilter("ppiOptions","showPhoneNumbers", checked)}
           />
         </div>
 
@@ -171,11 +171,11 @@ export const FilterSectionOpcoes = React.memo(function FilterSectionOpcoes({
           </div>
           <Switch
             checked={filters.ppiOptions?.requirePhonesOrEmails || false}
-            onCheckedChange={(checked: boolean) => updateFilter("ppiOptions", "requirePhonesOrEmails", checked)}
+            onCheckedChange={(checked: boolean) => updateFilter("ppiOptions","requirePhonesOrEmails", checked)}
           />
         </div>
       </div>
     </div>
   )
 })
-FilterSectionOpcoes.displayName = "FilterSectionOpcoes"
+FilterSectionOpcoes.displayName ="FilterSectionOpcoes"

@@ -1,9 +1,9 @@
 "use client"
 
-import React, { useState, useMemo, useCallback, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+import React, { useState, useMemo, useCallback, useEffect } from"react"
+import { Button } from"@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
+import { Badge } from"@/components/ui/badge"
 import {
   Settings, Building, Zap, Users, Database, GitBranch,
   ChevronRight, Plus, Edit, Trash2, Save, X, Check, AlertTriangle,
@@ -17,7 +17,7 @@ import {
   ChevronLeft, FastForward, SkipForward, RefreshCw, Zap as Lightning,
   MousePointer, Compass, HelpCircle, Rocket,
   ChevronDown, ChevronUp, Lock, Unlock, Circle, Plug, Shield
-} from "lucide-react"
+} from"lucide-react"
 
 const SECTION_ICON_COLORS: Record<string, string> = {
   'company-team': 'text-wedo-cyan',
@@ -30,8 +30,8 @@ const SECTION_ICON_COLORS: Record<string, string> = {
 }
 
 
-import dynamic from "next/dynamic"
-import { LoadingFallback } from "@/components/ui/loading"
+import dynamic from"next/dynamic"
+import { LoadingFallback } from"@/components/ui/loading"
 const CompanyTeamHub = dynamic(() => import("@/components/settings/CompanyTeamHub").then(m => ({ default: m.CompanyTeamHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando empresa..." /> })
 const RecruitmentHub = dynamic(() => import("@/components/settings/RecruitmentHub").then(m => ({ default: m.RecruitmentHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando recrutamento..." /> })
 const CommunicationHub = dynamic(() => import("@/components/settings/CommunicationHub").then(m => ({ default: m.CommunicationHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando comunicação..." /> })
@@ -41,8 +41,8 @@ const IntegrationsHub = dynamic(() => import("@/components/settings/Integrations
 const FairnessComplianceHub = dynamic(() => import("@/components/settings/FairnessComplianceHub").then(m => ({ default: m.FairnessComplianceHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando compliance..." /> })
 
 import { textStyles, cardStyles, badgeStyles } from '@/lib/design-tokens'
-import { ErrorBoundarySection } from "@/components/ui/error-boundary-section"
-import { useCompanyId } from "@/hooks/useCompanyId"
+import { ErrorBoundarySection } from"@/components/ui/error-boundary-section"
+import { useCompanyId } from"@/hooks/useCompanyId"
 
 interface SettingsSubsection {
   id: string
@@ -202,9 +202,9 @@ const getDefaultSections = (): SettingsSection[] => [
 const settingsSections: SettingsSection[] = getDefaultSections()
 
 const getCompletionBadgeColor = (percentage: number): string => {
-  if (percentage >= 80) return 'bg-status-success/15 text-status-success dark:bg-status-success/30 dark:text-status-success'
-  if (percentage >= 50) return 'bg-status-warning/15 text-status-warning dark:bg-status-warning/30 dark:text-status-warning'
-  return 'bg-status-error/15 text-status-error dark:bg-status-error/30 dark:text-status-error'
+  if (percentage >= 80) return ' dark:bg-status-success/30 dark:text-status-success'
+  if (percentage >= 50) return ' dark:bg-status-warning/30 dark:text-status-warning'
+  return ' dark:bg-status-error/30 dark:text-status-error'
 }
 
 export default function SettingsPageEnhanced() {
@@ -525,7 +525,7 @@ export default function SettingsPageEnhanced() {
                   size="sm"
                   onClick={() => setIsLocked(!isLocked)}
                   className="h-6 w-6 p-0 flex-shrink-0"
-                  title={isLocked ? "Desbloquear menu" : "Bloquear menu expandido"}
+                  title={isLocked ?"Desbloquear menu" :"Bloquear menu expandido"}
                 >
                   {isLocked ? <Lock className="w-3 h-3" /> : <Unlock className="w-3 h-3" />}
                 </Button>

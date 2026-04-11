@@ -1,18 +1,18 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useState, useEffect } from"react"
+import { Button } from"@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
+import { Badge } from"@/components/ui/badge"
+import { Input } from"@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from"@/components/ui/select"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from"@/components/ui/dropdown-menu"
 import {
   Dialog,
   DialogContent,
@@ -20,21 +20,21 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-} from "@/components/ui/dialog"
+} from"@/components/ui/dialog"
 import {
   Mail, Plus, Search, MoreVertical, Edit, Copy, Trash2, Eye,
   Calendar, RefreshCw, Filter, FileText
-} from "lucide-react"
-import { liaApi, type EmailTemplate } from "@/services/lia-api"
-import { EmailTemplateFormModal } from "./email-template-form-modal"
-import { sanitizeEmailHtml } from "@/lib/sanitize"
+} from"lucide-react"
+import { liaApi, type EmailTemplate } from"@/services/lia-api"
+import { EmailTemplateFormModal } from"./email-template-form-modal"
+import { sanitizeEmailHtml } from"@/lib/sanitize"
 
 const CATEGORY_LABELS: Record<string, { label: string; color: string }> = {
-  interview: { label: "Entrevista", color: "bg-wedo-cyan/10 text-wedo-cyan-dark dark:bg-wedo-cyan/15 dark:text-wedo-cyan" },
-  rejection: { label: "Rejeição", color: "bg-lia-bg-tertiary text-lia-text-primary" },
-  offer: { label: "Proposta", color: "bg-status-success/10 text-status-success" },
-  followup: { label: "Follow-up", color: "bg-lia-bg-tertiary text-lia-text-primary" },
-  screening: { label: "Triagem", color: "bg-status-warning/10 text-status-warning" },
+  interview: { label:"Entrevista", color:"-dark dark:bg-wedo-cyan/15 dark:text-wedo-cyan" },
+  rejection: { label:"Rejeição", color:"bg-lia-bg-tertiary text-lia-text-primary" },
+  offer: { label:"Proposta", color:"" },
+  followup: { label:"Follow-up", color:"bg-lia-bg-tertiary text-lia-text-primary" },
+  screening: { label:"Triagem", color:"" },
 }
 
 const DEFAULT_TEMPLATES: EmailTemplate[] = [
@@ -176,7 +176,7 @@ export function EmailTemplatesManager() {
   const loadTemplates = async () => {
     try {
       setLoading(true)
-      const category = categoryFilter === "all" ? undefined : categoryFilter
+      const category = categoryFilter ==="all" ? undefined : categoryFilter
       const response = await liaApi.listEmailTemplates(category)
       const apiTemplates = response.items || []
       
@@ -189,7 +189,7 @@ export function EmailTemplatesManager() {
         setTemplates(apiTemplates)
       }
     } catch (error) {
-      const category = categoryFilter === "all" ? undefined : categoryFilter
+      const category = categoryFilter ==="all" ? undefined : categoryFilter
       const filteredDefaults = category 
         ? DEFAULT_TEMPLATES.filter(t => t.category === category)
         : DEFAULT_TEMPLATES
@@ -266,9 +266,9 @@ export function EmailTemplatesManager() {
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("pt-BR", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
+      day:"2-digit",
+      month:"short",
+      year:"numeric",
     })
   }
 
@@ -312,7 +312,7 @@ export function EmailTemplatesManager() {
           </SelectContent>
         </Select>
         <Button variant="outline" size="icon" onClick={loadTemplates} disabled={loading}>
-          <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin motion-reduce:animate-none" : ""}`} />
+          <RefreshCw className={`w-4 h-4 ${loading ?"animate-spin motion-reduce:animate-none" :""}`} />
         </Button>
       </div>
 
@@ -334,16 +334,16 @@ export function EmailTemplatesManager() {
             <div className="text-center">
               <FileText className="w-12 h-12 text-lia-text-secondary mx-auto mb-4" />
               <h3 className="text-lg font-medium text-lia-text-primary mb-2">
-                {searchQuery || categoryFilter !== "all"
-                  ? "Nenhum template encontrado"
-                  : "Nenhum template cadastrado"}
+                {searchQuery || categoryFilter !=="all"
+                  ?"Nenhum template encontrado"
+                  :"Nenhum template cadastrado"}
               </h3>
               <p className="text-lia-text-secondary mb-4">
-                {searchQuery || categoryFilter !== "all"
-                  ? "Tente ajustar os filtros de busca"
-                  : "Crie seu primeiro template de email para começar"}
+                {searchQuery || categoryFilter !=="all"
+                  ?"Tente ajustar os filtros de busca"
+                  :"Crie seu primeiro template de email para começar"}
               </p>
-              {!searchQuery && categoryFilter === "all" && (
+              {!searchQuery && categoryFilter ==="all" && (
                 <Button onClick={handleCreateTemplate}>
                   <Plus className="w-4 h-4 mr-2" />
                   Criar Template
@@ -371,7 +371,7 @@ export function EmailTemplatesManager() {
                     {template.category && (
                       <Badge
                         className={`text-xs ${
- CATEGORY_LABELS[template.category]?.color || "bg-lia-bg-tertiary text-lia-text-primary"
+ CATEGORY_LABELS[template.category]?.color ||"bg-lia-bg-tertiary text-lia-text-primary"
                         }`}
                       >
                         {CATEGORY_LABELS[template.category]?.label || template.category}
@@ -441,10 +441,10 @@ export function EmailTemplatesManager() {
                     {formatDate(template.updated_at)}
                   </div>
                   <Badge
-                    variant={template.is_active ? "default" : "secondary"}
+                    variant={template.is_active ?"default" :"secondary"}
                     className="text-xs"
                   >
-                    {template.is_active ? "Ativo" : "Inativo"}
+                    {template.is_active ?"Ativo" :"Inativo"}
                   </Badge>
                 </div>
               </CardContent>
@@ -484,7 +484,7 @@ export function EmailTemplatesManager() {
                 <div
                   className="p-4 bg-lia-bg-primary prose prose-sm max-w-none"
                   dangerouslySetInnerHTML={{
-                    __html: sanitizeEmailHtml(selectedTemplate?.body_html || ""),
+                    __html: sanitizeEmailHtml(selectedTemplate?.body_html ||""),
                   }}
                 />
               </div>
@@ -524,7 +524,7 @@ export function EmailTemplatesManager() {
           <DialogHeader>
             <DialogTitle className="text-status-error">Excluir Template</DialogTitle>
             <DialogDescription>
-              Tem certeza que deseja excluir o template "{templateToDelete?.name}"? Esta ação não pode ser desfeita.
+              Tem certeza que deseja excluir o template"{templateToDelete?.name}"? Esta ação não pode ser desfeita.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

@@ -173,8 +173,7 @@ export function ProactiveInsightCard({
             {alerts.map((alert, index) => (
               <div 
                 key={`alert-${index}`}
-                className={cn(
- "flex items-start gap-2 p-2 rounded-md border text-xs",
+                className={cn("flex items-start gap-2 p-2 rounded-md border text-xs",
                   getAlertBgColor(alert.type)
                 )}
               >
@@ -285,11 +284,10 @@ export function ProactiveInsightCard({
                     <Badge 
                       key={model} 
                       variant="outline"
-                      className={cn(
- "text-xs py-0.5 px-1.5",
-                        model.toLowerCase().includes('remoto') && "bg-status-success/10 border-status-success/30 text-status-success",
-                        model.toLowerCase().includes('híbrido') && "bg-lia-bg-secondary dark:bg-lia-bg-primary border-lia-border-default dark:border-lia-border-default text-wedo-cyan-dark",
-                        model.toLowerCase().includes('presencial') && "bg-wedo-purple/10 border-wedo-purple/30 text-wedo-purple"
+                      className={cn("text-xs py-0.5 px-1.5",
+                        model.toLowerCase().includes('remoto') &&"bg-status-success/10 border-status-success/30 text-status-success",
+                        model.toLowerCase().includes('híbrido') &&"bg-lia-bg-secondary dark:bg-lia-bg-primary border-lia-border-default dark:border-lia-border-default text-wedo-cyan-dark",
+                        model.toLowerCase().includes('presencial') &&"bg-wedo-purple/10 border-wedo-purple/30 text-wedo-purple"
                       )}
                     >
                       {model}: {count}

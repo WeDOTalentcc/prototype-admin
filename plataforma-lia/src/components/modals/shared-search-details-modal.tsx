@@ -1,17 +1,17 @@
 "use client"
 
-import { useState, useEffect, useMemo, useCallback } from "react"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Progress } from "@/components/ui/progress"
+import { useState, useEffect, useMemo, useCallback } from"react"
+import { Button } from"@/components/ui/button"
+import { Badge } from"@/components/ui/badge"
+import { Checkbox } from"@/components/ui/checkbox"
+import { Progress } from"@/components/ui/progress"
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+} from"@/components/ui/dialog"
+import { Tabs, TabsList, TabsTrigger } from"@/components/ui/tabs"
 import { 
   X, 
   Loader2, 
@@ -28,10 +28,10 @@ import {
   Plus,
   Briefcase,
   ListPlus
-} from "lucide-react"
-import { cn } from "@/lib/utils"
-import { liaApi, SharedSearchDetail, CandidateSnapshot, CandidateFeedback } from "@/services/lia-api"
-import { toast } from "sonner"
+} from"lucide-react"
+import { cn } from"@/lib/utils"
+import { liaApi, SharedSearchDetail, CandidateSnapshot, CandidateFeedback } from"@/services/lia-api"
+import { toast } from"sonner"
 
 interface SharedSearchDetailsModalProps {
   open: boolean
@@ -78,7 +78,7 @@ const [sharedSearch, setSharedSearch] = useState<SharedSearchDetail | null>(null
       const data = await liaApi.getSharedSearchDetail(sharedSearchId)
       setSharedSearch(data)
     } catch (error) {
-      toast.error("Erro ao carregar detalhes", { description: "Não foi possível carregar os detalhes do compartilhamento." })
+      toast.error("Erro ao carregar detalhes", { description:"Não foi possível carregar os detalhes do compartilhamento." })
     } finally {
       setLoading(false)
     }
@@ -164,7 +164,7 @@ const [sharedSearch, setSharedSearch] = useState<SharedSearchDetail | null>(null
 
   const handleCreateList = () => {
     if (selectedIds.size === 0) {
-      toast.error("Selecione candidatos", { description: "Selecione pelo menos um candidato para criar a lista." })
+      toast.error("Selecione candidatos", { description:"Selecione pelo menos um candidato para criar a lista." })
       return
     }
     onCreateList?.(Array.from(selectedIds))
@@ -172,7 +172,7 @@ const [sharedSearch, setSharedSearch] = useState<SharedSearchDetail | null>(null
 
   const handleAddToJob = () => {
     if (selectedIds.size === 0) {
-      toast.error("Selecione candidatos", { description: "Selecione pelo menos um candidato para adicionar à vaga." })
+      toast.error("Selecione candidatos", { description:"Selecione pelo menos um candidato para adicionar à vaga." })
       return
     }
     onAddToJob?.(Array.from(selectedIds))
@@ -180,7 +180,7 @@ const [sharedSearch, setSharedSearch] = useState<SharedSearchDetail | null>(null
 
   const handleCreateJob = () => {
     if (selectedIds.size === 0) {
-      toast.error("Selecione candidatos", { description: "Selecione pelo menos um candidato para criar a vaga." })
+      toast.error("Selecione candidatos", { description:"Selecione pelo menos um candidato para criar a vaga." })
       return
     }
     onCreateJob?.(Array.from(selectedIds))
@@ -431,9 +431,7 @@ const [sharedSearch, setSharedSearch] = useState<SharedSearchDetail | null>(null
                       {filteredCandidates.map(candidate => (
                         <div 
                           key={candidate.id}
-                          className={cn(
-                            "bg-lia-bg-tertiary dark:bg-lia-btn-primary-bg rounded-md p-3 border border-lia-border-default flex items-start gap-3",
-                            "hover:border-lia-border-default transition-colors motion-reduce:transition-none"
+                          className={cn("bg-lia-bg-tertiary dark:bg-lia-btn-primary-bg rounded-md p-3 border border-lia-border-default flex items-start gap-3","hover:border-lia-border-default transition-colors motion-reduce:transition-none"
                           )}
                         >
                           <Checkbox
@@ -465,19 +463,17 @@ const [sharedSearch, setSharedSearch] = useState<SharedSearchDetail | null>(null
                                     {[...Array(5)].map((_, i) => (
                                       <Star
                                         key={i}
-                                        className={cn(
-                                          "w-3 h-3",
+                                        className={cn("w-3 h-3",
                                           i < candidate.feedback!.rating!
-                                            ? "text-status-warning fill-amber-400"
-                                            : "text-lia-text-secondary"
+                                            ?"text-status-warning fill-amber-400"
+                                            :"text-lia-text-secondary"
                                         )}
                                       />
                                     ))}
                                   </div>
                                 )}
                                 {candidate.feedback.comment && (
-                                  <p className="text-lia-text-tertiary text-xs italic">
-                                    "{candidate.feedback.comment}"
+                                  <p className="text-lia-text-tertiary text-xs italic">"{candidate.feedback.comment}"
                                   </p>
                                 )}
                               </div>

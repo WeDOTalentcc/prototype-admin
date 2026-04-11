@@ -1,14 +1,14 @@
 "use client"
 
-import { cn } from "@/lib/utils"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { cn } from"@/lib/utils"
+import { Badge } from"@/components/ui/badge"
+import { Button } from"@/components/ui/button"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from"@/components/ui/tooltip"
 import {
   Briefcase, ChevronRight, FileText, Globe, Home, Lightbulb,
   Loader2, Mail, Phone, Search, Upload, X, Zap
-} from "lucide-react"
-import type { useSmartSearchCore } from "./hooks/useSmartSearchCore"
+} from"lucide-react"
+import type { useSmartSearchCore } from"./hooks/useSmartSearchCore"
 
 type SSIJDModeProps = ReturnType<typeof useSmartSearchCore>
 
@@ -77,12 +77,12 @@ export function SSIJDMode(props: SSIJDModeProps) {
             placeholder="Digite o nome ou ID da vaga..."
             className="w-full pl-9 pr-4 py-2.5 text-base-ui rounded-xl border focus:outline-none transition-colors motion-reduce:transition-none bg-lia-bg-secondary text-lia-text-primary"
             onFocus={(e) => {
-              e.currentTarget.style.borderColor = "var(--lia-border-default)"
-              e.currentTarget.style.boxShadow = "0 0 0 2px var(--wedo-cyan-bg-12)"
+              e.currentTarget.style.borderColor ="var(--lia-border-default)"
+              e.currentTarget.style.boxShadow ="0 0 0 2px var(--wedo-cyan-bg-12)"
             }}
             onBlur={(e) => {
-              e.currentTarget.style.borderColor = "var(--lia-border-subtle)"
-              e.currentTarget.style.boxShadow = "none"
+              e.currentTarget.style.borderColor ="var(--lia-border-subtle)"
+              e.currentTarget.style.boxShadow ="none"
             }}
           />
 
@@ -184,12 +184,12 @@ export function SSIJDMode(props: SSIJDModeProps) {
         className="w-full resize-none rounded-xl px-4 py-3 pr-28 text-base-ui focus:outline-none min-h-[100px] transition-colors motion-reduce:transition-none border bg-lia-bg-primary"
        
         onFocus={(e) => {
-          e.currentTarget.style.borderColor = "var(--lia-border-default)"
-          e.currentTarget.style.boxShadow = "0 0 0 2px var(--wedo-cyan-bg-12)"
+          e.currentTarget.style.borderColor ="var(--lia-border-default)"
+          e.currentTarget.style.boxShadow ="0 0 0 2px var(--wedo-cyan-bg-12)"
         }}
         onBlur={(e) => {
-          e.currentTarget.style.borderColor = "var(--lia-border-subtle)"
-          e.currentTarget.style.boxShadow = "none"
+          e.currentTarget.style.borderColor ="var(--lia-border-subtle)"
+          e.currentTarget.style.boxShadow ="none"
         }}
         disabled={isLoading}
       />
@@ -202,12 +202,11 @@ export function SSIJDMode(props: SSIJDModeProps) {
                   <button
                     type="button"
                     onClick={(e) => { e.preventDefault(); e.stopPropagation(); onSearchSourceChange('local'); }}
-                    className={cn(
-                      "flex items-center justify-center p-1.5 rounded-md text-xs transition-colors",
+                    className={cn("flex items-center justify-center p-1.5 rounded-md text-xs transition-colors",
                       searchSource === 'local' 
-                        ? "bg-wedo-green/15 ring-1 ring-wedo-green" 
-                        : "hover:bg-lia-bg-tertiary"
-                    , searchSource === 'local' ? "text-wedo-green" : "text-lia-text-tertiary"
+                        ?"bg-wedo-green/15 ring-1 ring-wedo-green" 
+                        :"hover:bg-lia-bg-tertiary"
+                    , searchSource === 'local' ?"text-wedo-green" :"text-lia-text-tertiary"
                     )}
                   >
                     <Home className="w-4 h-4" />
@@ -227,12 +226,11 @@ export function SSIJDMode(props: SSIJDModeProps) {
                     <button
                       type="button"
                       onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleSourceChange('hybrid'); }}
-                      className={cn(
-                        "flex items-center justify-center p-1.5 rounded-md text-xs transition-colors",
+                      className={cn("flex items-center justify-center p-1.5 rounded-md text-xs transition-colors",
                         searchSource === 'hybrid' 
-                          ? "bg-wedo-orange/15 ring-1 ring-wedo-orange" 
-                          : "hover:bg-lia-bg-tertiary"
-                      , searchSource === 'hybrid' ? "text-wedo-orange" : "text-lia-text-tertiary"
+                          ?"bg-wedo-orange/15 ring-1 ring-wedo-orange" 
+                          :"hover:bg-lia-bg-tertiary"
+                      , searchSource === 'hybrid' ?"text-wedo-orange" :"text-lia-text-tertiary"
                       )}
                     >
                       <Zap className="w-4 h-4" />
@@ -253,12 +251,11 @@ export function SSIJDMode(props: SSIJDModeProps) {
                     <button
                       type="button"
                       onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleSourceChange('global'); }}
-                      className={cn(
-                        "flex items-center justify-center p-1.5 rounded-md text-xs transition-colors",
+                      className={cn("flex items-center justify-center p-1.5 rounded-md text-xs transition-colors",
                         searchSource === 'global' 
-                          ? "bg-wedo-cyan/15 ring-1 ring-lia-btn-primary-bg/20" 
-                          : "hover:bg-lia-bg-tertiary"
-                      , searchSource === 'global' ? "text-lia-text-primary" : "text-lia-text-tertiary"
+                          ?"bg-wedo-cyan/15 ring-1 ring-lia-btn-primary-bg/20" 
+                          :"hover:bg-lia-bg-tertiary"
+                      , searchSource === 'global' ?"text-lia-text-primary" :"text-lia-text-tertiary"
                       )}
                     >
                       <Globe className="w-4 h-4" />
@@ -280,12 +277,11 @@ export function SSIJDMode(props: SSIJDModeProps) {
                       <button
                         type="button"
                         onClick={(e) => { e.preventDefault(); e.stopPropagation(); onRequireEmailsChange(!requireEmails); }}
-                        className={cn(
-                          "flex items-center justify-center p-1.5 rounded-md text-xs transition-colors",
+                        className={cn("flex items-center justify-center p-1.5 rounded-md text-xs transition-colors",
                           requireEmails 
-                            ? "bg-wedo-green/15 ring-1 ring-wedo-green" 
-                            : "hover:bg-lia-bg-tertiary"
-                        , requireEmails ? "text-wedo-green" : "text-lia-text-tertiary"
+                            ?"bg-wedo-green/15 ring-1 ring-wedo-green" 
+                            :"hover:bg-lia-bg-tertiary"
+                        , requireEmails ?"text-wedo-green" :"text-lia-text-tertiary"
                         )}
                       >
                         <Mail className="w-3.5 h-3.5" />
@@ -304,12 +300,11 @@ export function SSIJDMode(props: SSIJDModeProps) {
                       <button
                         type="button"
                         onClick={(e) => { e.preventDefault(); e.stopPropagation(); onRequirePhoneNumbersChange(!requirePhoneNumbers); }}
-                        className={cn(
-                          "flex items-center justify-center p-1.5 rounded-md text-xs transition-colors",
+                        className={cn("flex items-center justify-center p-1.5 rounded-md text-xs transition-colors",
                           requirePhoneNumbers 
-                            ? "bg-wedo-green/15 ring-1 ring-wedo-green" 
-                            : "hover:bg-lia-bg-tertiary"
-                        , requirePhoneNumbers ? "text-wedo-green" : "text-lia-text-tertiary"
+                            ?"bg-wedo-green/15 ring-1 ring-wedo-green" 
+                            :"hover:bg-lia-bg-tertiary"
+                        , requirePhoneNumbers ?"text-wedo-green" :"text-lia-text-tertiary"
                         )}
                       >
                         <Phone className="w-3.5 h-3.5" />
@@ -331,10 +326,9 @@ export function SSIJDMode(props: SSIJDModeProps) {
                     type="button"
                     onClick={handleSubmit}
                     disabled={!canSubmit() || isLoading}
-                    className={cn(
-                      "flex items-center justify-center p-1.5 rounded-md transition-colors",
-                      canSubmit() ? "hover:bg-lia-bg-tertiary" : "opacity-50 cursor-not-allowed"
-                    , canSubmit() ? "text-lia-text-tertiary" : "text-lia-text-disabled"
+                    className={cn("flex items-center justify-center p-1.5 rounded-md transition-colors",
+                      canSubmit() ?"hover:bg-lia-bg-tertiary" :"opacity-50 cursor-not-allowed"
+                    , canSubmit() ?"text-lia-text-tertiary" :"text-lia-text-disabled"
                     )}
                   >
                     {isLoading ? (

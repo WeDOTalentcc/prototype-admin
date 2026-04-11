@@ -1,14 +1,14 @@
 "use client"
 
-import React from "react"
-import { Badge } from "@/components/ui/badge"
-import { Switch } from "@/components/ui/switch"
-import { Label } from "@/components/ui/label"
+import React from"react"
+import { Badge } from"@/components/ui/badge"
+import { Switch } from"@/components/ui/switch"
+import { Label } from"@/components/ui/label"
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from "@/components/ui/select"
-import { Shield, Bell, Clock, AlertCircle } from "lucide-react"
-import type { DataRequestConfig } from "@/hooks/use-data-request-config"
+} from"@/components/ui/select"
+import { Shield, Bell, Clock, AlertCircle } from"lucide-react"
+import type { DataRequestConfig } from"@/hooks/use-data-request-config"
 
 function MessageField({ label, value, isEditing, onChange, rows }: {
   label: string
@@ -56,7 +56,7 @@ export function GeneralSettingsContent({ config, isEditing, updateGeneralConfig 
         {isEditing ? (
           <Switch checked={config.otpRequired} onCheckedChange={(checked: boolean) => updateGeneralConfig({ otpRequired: checked })} />
         ) : (
-          <Badge variant={config.otpRequired ? "default" : "secondary"} className="text-micro">{config.otpRequired ? 'Ativo' : 'Inativo'}</Badge>
+          <Badge variant={config.otpRequired ?"default" :"secondary"} className="text-micro">{config.otpRequired ? 'Ativo' : 'Inativo'}</Badge>
         )}
       </div>
 
@@ -71,7 +71,7 @@ export function GeneralSettingsContent({ config, isEditing, updateGeneralConfig 
         {isEditing ? (
           <Switch checked={config.autoReminders} onCheckedChange={(checked: boolean) => updateGeneralConfig({ autoReminders: checked })} />
         ) : (
-          <Badge variant={config.autoReminders ? "default" : "secondary"} className="text-micro">{config.autoReminders ? 'Ativo' : 'Inativo'}</Badge>
+          <Badge variant={config.autoReminders ?"default" :"secondary"} className="text-micro">{config.autoReminders ? 'Ativo' : 'Inativo'}</Badge>
         )}
       </div>
 
@@ -145,7 +145,7 @@ export function LgpdSectionContent({ config, isEditing, updateLgpdConfig }: Lgpd
             {isEditing ? (
               <Switch checked={config.lgpd.requireConsent} onCheckedChange={(checked: boolean) => updateLgpdConfig({ requireConsent: checked })} />
             ) : (
-              <Badge variant={config.lgpd.requireConsent ? "default" : "secondary"} className="text-micro">{config.lgpd.requireConsent ? 'Obrigatório' : 'Desabilitado'}</Badge>
+              <Badge variant={config.lgpd.requireConsent ?"default" :"secondary"} className="text-micro">{config.lgpd.requireConsent ? 'Obrigatório' : 'Desabilitado'}</Badge>
             )}
           </div>
           <p className="text-micro text-lia-text-secondary" aria-live="polite" aria-atomic="true">Candidato deve autorizar antes de enviar dados</p>
@@ -157,7 +157,7 @@ export function LgpdSectionContent({ config, isEditing, updateLgpdConfig }: Lgpd
             {isEditing ? (
               <Switch checked={config.lgpd.allowDataDeletion} onCheckedChange={(checked: boolean) => updateLgpdConfig({ allowDataDeletion: checked })} />
             ) : (
-              <Badge variant={config.lgpd.allowDataDeletion ? "default" : "secondary"} className="text-micro">{config.lgpd.allowDataDeletion ? 'Habilitado' : 'Desabilitado'}</Badge>
+              <Badge variant={config.lgpd.allowDataDeletion ?"default" :"secondary"} className="text-micro">{config.lgpd.allowDataDeletion ? 'Habilitado' : 'Desabilitado'}</Badge>
             )}
           </div>
           <p className="text-micro text-lia-text-secondary" aria-live="polite" aria-atomic="true">Candidato pode solicitar exclusão dos dados</p>

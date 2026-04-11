@@ -1,14 +1,14 @@
 "use client"
 
 
-import { CURRENCY_SYMBOL } from "@/lib/pricing"
-import React, { useState } from "react"
+import { CURRENCY_SYMBOL } from"@/lib/pricing"
+import React, { useState } from"react"
 import { 
   ClipboardList, BarChart3, Brain, Lightbulb, Layers3, Settings, 
   MessageSquare, Globe, Phone, CheckCircle, CalendarCheck,
   ChevronUp, ChevronDown
-} from "lucide-react"
-import { Badge } from "@/components/ui/badge"
+} from"lucide-react"
+import { Badge } from"@/components/ui/badge"
 
 interface ScreeningQuestion {
   id: string | number
@@ -116,7 +116,7 @@ const WSI_BLOCKS = [
 
 const WSI_AUTOMATIC_MESSAGES: Record<number, { title: string; message: string; note: string }> = {
   0: {
-    title: "Abordagem Inicial via WhatsApp",
+    title:"Abordagem Inicial via WhatsApp",
     message: `Olá {candidato.nome}! 👋
 
 Aqui é a LIA, assistente de recrutamento da {empresa.nome}.
@@ -124,10 +124,10 @@ Aqui é a LIA, assistente de recrutamento da {empresa.nome}.
 Vi que você se candidatou para a vaga de {vaga.titulo} e gostaria de conversar sobre a oportunidade.
 
 Podemos iniciar agora? Leva menos de 10 minutos! 🚀`,
-    note: "Template pré-aprovado • Enviado automaticamente ao candidato"
+    note:"Template pré-aprovado • Enviado automaticamente ao candidato"
   },
   1: {
-    title: "Apresentação da Oportunidade",
+    title:"Apresentação da Oportunidade",
     message: `Que ótimo ter você aqui! Deixa eu te contar um pouco sobre a vaga:
 
 📋 **Posição:** {vaga.titulo}
@@ -138,10 +138,10 @@ Podemos iniciar agora? Leva menos de 10 minutos! 🚀`,
 {vaga.descricao_resumida}
 
 Agora vou fazer algumas perguntas rápidas para entender melhor seu perfil. Responda naturalmente, como se estivéssemos conversando! 💬`,
-    note: "Pitch conversacional • Gerado a partir dos dados da vaga"
+    note:"Pitch conversacional • Gerado a partir dos dados da vaga"
   },
   6: {
-    title: "Resultado e Encerramento",
+    title:"Resultado e Encerramento",
     message: `Muito obrigada pelas suas respostas, {candidato.nome}! 🙏
 
 Analisei todas as informações e já encaminhei seu perfil para nossa equipe de recrutamento.
@@ -151,7 +151,7 @@ Analisei todas as informações e já encaminhei seu perfil para nossa equipe de
 • Se aprovado(a), entraremos em contato para agendar a entrevista
 
 Qualquer dúvida, estou por aqui! Boa sorte! 🍀`,
-    note: "Índice WSI calculado automaticamente • Feedback enviado conforme configuração"
+    note:"Índice WSI calculado automaticamente • Feedback enviado conforme configuração"
   }
 }
 
@@ -394,7 +394,7 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
                     {block.editable && blockQuestions.length > 0 && (
                       <>
                         {eliminatoryCount > 0 && (
-                          <Badge className="text-micro px-1.5 py-0 bg-status-error/10 text-status-error border border-status-error/30">
+                          <Badge className="text-micro px-1.5 py-0  border border-status-error/30">
                             {eliminatoryCount} Elim.
                           </Badge>
                         )}
@@ -466,10 +466,10 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
                                   <div className="flex items-center gap-1.5 mb-1 flex-wrap">
                                     <Badge className={`text-micro px-1.5 py-0 h-4 ${
  item.category === 'behavioral' || item.category === 'Comportamental'
-                                        ? 'bg-wedo-purple/15 text-wedo-purple border border-wedo-purple/30'
+                                        ? ' border border-wedo-purple/30'
                                         : item.category === 'technical' || item.category === 'Técnica'
                                         ? 'bg-lia-bg-tertiary text-wedo-cyan-dark border border-lia-border-default'
-                                        : 'bg-status-success/15 text-status-success border border-status-success/30'
+                                        : ' border border-status-success/30'
                                     }`}>
                                       {item.category === 'behavioral' ? 'Comport.' 
                                         : item.category === 'technical' ? 'Técnica' 
@@ -477,7 +477,7 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
                                         : item.category || 'Geral'}
                                     </Badge>
                                     {(item.type === 'eliminatory' || item.required) && (
-                                      <Badge className="text-micro px-1.5 py-0 h-4 bg-status-error/10 text-status-error border border-status-error/30">
+                                      <Badge className="text-micro px-1.5 py-0 h-4  border border-status-error/30">
                                         Eliminatória
                                       </Badge>
                                     )}
@@ -511,17 +511,17 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
         <div className="flex items-center gap-3 mb-3 pb-3">
           <span className="text-micro text-lia-text-secondary">Canais:</span>
           <div className="flex items-center gap-2">
-            <div className={`flex items-center gap-1 px-2 py-1 rounded-md ${(previewJob.screeningConfig?.channels?.whatsapp?.enabled ?? true) ? 'bg-status-success/10 text-status-success' : 'bg-lia-bg-tertiary text-lia-text-secondary'}`}>
+            <div className={`flex items-center gap-1 px-2 py-1 rounded-md ${(previewJob.screeningConfig?.channels?.whatsapp?.enabled ?? true) ? '' : 'bg-lia-bg-tertiary text-lia-text-secondary'}`}>
               <MessageSquare className="w-3 h-3" />
               <span className="text-micro font-medium">WhatsApp</span>
               {(previewJob.screeningConfig?.channels?.whatsapp?.enabled ?? true) && <CheckCircle className="w-3 h-3" />}
             </div>
-            <div className={`flex items-center gap-1 px-2 py-1 rounded-md ${(previewJob.screeningConfig?.channels?.chat_web?.enabled ?? true) ? 'bg-status-success/10 text-status-success' : 'bg-lia-bg-tertiary text-lia-text-secondary'}`}>
+            <div className={`flex items-center gap-1 px-2 py-1 rounded-md ${(previewJob.screeningConfig?.channels?.chat_web?.enabled ?? true) ? '' : 'bg-lia-bg-tertiary text-lia-text-secondary'}`}>
               <Globe className="w-3 h-3" />
               <span className="text-micro font-medium">Chat Web</span>
               {(previewJob.screeningConfig?.channels?.chat_web?.enabled ?? true) && <CheckCircle className="w-3 h-3" />}
             </div>
-            <div className={`flex items-center gap-1 px-2 py-1 rounded-md ${(previewJob.screeningConfig?.channels?.phone?.enabled ?? false) ? 'bg-status-success/10 text-status-success' : 'bg-lia-bg-tertiary text-lia-text-secondary'}`}>
+            <div className={`flex items-center gap-1 px-2 py-1 rounded-md ${(previewJob.screeningConfig?.channels?.phone?.enabled ?? false) ? '' : 'bg-lia-bg-tertiary text-lia-text-secondary'}`}>
               <Phone className="w-3 h-3" />
               <span className="text-micro font-medium">Telefone</span>
               {(previewJob.screeningConfig?.channels?.phone?.enabled ?? false) && <CheckCircle className="w-3 h-3" />}
@@ -545,7 +545,7 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
           </div>
           <div className="flex items-center justify-between">
             <span className="text-micro text-lia-text-secondary">Fallback</span>
-            <Badge className="text-micro px-1.5 py-0 h-4 bg-wedo-orange/15 text-wedo-orange">Revisão Manual</Badge>
+            <Badge className="text-micro px-1.5 py-0 h-4">Revisão Manual</Badge>
           </div>
         </div>
 

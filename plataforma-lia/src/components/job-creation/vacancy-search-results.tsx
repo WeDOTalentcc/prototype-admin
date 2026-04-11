@@ -1,8 +1,8 @@
 "use client"
 
-import React from "react"
-import { Badge } from "@/components/ui/badge"
-import { cn } from "@/lib/utils"
+import React from"react"
+import { Badge } from"@/components/ui/badge"
+import { cn } from"@/lib/utils"
 import { 
   Loader2,
   CheckCircle2,
@@ -13,8 +13,8 @@ import {
   MapPin,
   Briefcase,
   Building2
-} from "lucide-react"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+} from"lucide-react"
+import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
 
 export interface VacancySummary {
   id: string
@@ -60,12 +60,12 @@ const STATUS_CONFIG: Record<'hired' | 'cancelled', {
 }
 
 const WORK_MODEL_CONFIG: Record<string, { label: string; className: string }> = {
-  'remote': { label: 'Remoto', className: 'bg-wedo-cyan/10 text-wedo-cyan-dark border-wedo-cyan/30 dark:border-wedo-cyan/30' },
-  'hybrid': { label: 'Híbrido', className: 'bg-wedo-purple/10 text-wedo-purple border-wedo-purple/30 dark:text-wedo-purple dark:border-wedo-purple/30' },
+  'remote': { label: 'Remoto', className: '-dark border-wedo-cyan/30 dark:border-wedo-cyan/30' },
+  'hybrid': { label: 'Híbrido', className: ' border-wedo-purple/30 dark:text-wedo-purple dark:border-wedo-purple/30' },
   'onsite': { label: 'Presencial', className: 'bg-lia-bg-secondary text-lia-text-secondary border-lia-border-subtle' },
   'presencial': { label: 'Presencial', className: 'bg-lia-bg-secondary text-lia-text-secondary border-lia-border-subtle' },
-  'remoto': { label: 'Remoto', className: 'bg-wedo-cyan/10 text-wedo-cyan-dark border-wedo-cyan/30 dark:border-wedo-cyan/30' },
-  'híbrido': { label: 'Híbrido', className: 'bg-wedo-purple/10 text-wedo-purple border-wedo-purple/30 dark:text-wedo-purple dark:border-wedo-purple/30' },
+  'remoto': { label: 'Remoto', className: '-dark border-wedo-cyan/30 dark:border-wedo-cyan/30' },
+  'híbrido': { label: 'Híbrido', className: ' border-wedo-purple/30 dark:text-wedo-purple dark:border-wedo-purple/30' },
 }
 
 function formatCurrency(value: number): string {
@@ -228,8 +228,8 @@ export function VacancySearchResults({
 
           <div className="pt-3 border-t border-lia-border-subtle">
             <p className="text-xs text-lia-text-tertiary italic" aria-live="polite" aria-atomic="true">
-              Digite o número (ex: "1" ou "2") ou parte do título para selecionar uma vaga. 
-              Se preferir criar do zero, digite "criar nova".
+              Digite o número (ex:"1" ou"2") ou parte do título para selecionar uma vaga. 
+              Se preferir criar do zero, digite"criar nova".
             </p>
           </div>
         </div>

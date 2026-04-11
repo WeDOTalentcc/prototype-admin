@@ -1,12 +1,12 @@
 "use client"
 
-import React from "react"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Mic, Play, ClipboardCheck, Video } from "lucide-react"
+import React from"react"
+import { Badge } from"@/components/ui/badge"
+import { Button } from"@/components/ui/button"
+import { Mic, Play, ClipboardCheck, Video } from"lucide-react"
 import { textStyles, cardStyles } from '@/lib/design-tokens'
-import type { ScreeningQuestion, TranscriptionSegment } from "@/components/modals/screening-media-modal"
-import type { Activity as ActivityData } from "@/data/demo-activities"
+import type { ScreeningQuestion, TranscriptionSegment } from"@/components/modals/screening-media-modal"
+import type { Activity as ActivityData } from"@/data/demo-activities"
 
 interface ActivityScreeningDetailsProps {
   activity: ActivityData & { details: NonNullable<ActivityData['details']> }
@@ -26,7 +26,7 @@ export function ActivityVoiceScreeningDetails({ activity, candidate, onOpenTriag
         <h5 className="text-xs font-semibold text-lia-text-primary mb-2 flex items-center gap-1">
           <Mic className="w-3 h-3 text-status-error" />
           Triagem por Voz
-          <Badge className="ml-2 text-micro px-1.5 py-0 bg-status-success/10 text-status-success">
+          <Badge className="ml-2 text-micro px-1.5 py-0">
             {activity.details.questionsAnswered}/{activity.details.totalQuestions} perguntas
           </Badge>
         </h5>
@@ -97,7 +97,7 @@ export function ActivityVideoInterviewDetails({ activity, onSetScreeningModalDat
         <h5 className={`${textStyles.label} mb-2 flex items-center gap-1`}>
           <Video className="w-3 h-3 text-wedo-purple" />
           Entrevista em Vídeo
-          <Badge className={`ml-2 bg-status-success/10 text-status-success border-status-success/30`}>
+          <Badge className={`ml-2  border-status-success/30`}>
             {activity.details.questionsAnswered}/{activity.details.totalQuestions} perguntas
           </Badge>
         </h5>

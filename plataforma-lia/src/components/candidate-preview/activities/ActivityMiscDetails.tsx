@@ -1,14 +1,14 @@
 "use client"
-import React from "react"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
+import React from"react"
+import { Badge } from"@/components/ui/badge"
+import { Button } from"@/components/ui/button"
 import { textStyles, cardStyles, badgeStyles } from '@/lib/design-tokens'
 import {
   CheckCircle, Download, Linkedin,
   ClipboardCheck, FileText, Code, Gift, UserCheck,
   Shield, Users, Building, Clock, AlertCircle
-} from "lucide-react"
-import { Activity as ActivityData } from "@/data/demo-activities"
+} from"lucide-react"
+import { Activity as ActivityData } from"@/data/demo-activities"
 
 interface ActivityMiscDetailsProps {
   activity: ActivityData & { details: NonNullable<ActivityData['details']> }
@@ -23,7 +23,7 @@ export function ActivityMiscDetails({ activity }: ActivityMiscDetailsProps) {
             <h5 className="text-xs font-semibold text-lia-text-primary mb-2 flex items-center gap-1">
               <FileText className="w-3 h-3 text-status-success" />
               Candidatura Recebida
-              <Badge className="ml-2 text-micro px-1.5 py-0 bg-status-success/10 text-status-success">{activity.details.source}</Badge>
+              <Badge className="ml-2 text-micro px-1.5 py-0">{activity.details.source}</Badge>
             </h5>
             <div className="grid grid-cols-2 gap-2 mb-3">
               <div className="bg-lia-bg-secondary p-2 rounded-xl">

@@ -1,14 +1,14 @@
 "use client"
 
-import React, { useState } from "react"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Calendar, Mail, MessageSquare, Star, Briefcase, User, Phone, Linkedin, X } from "lucide-react"
-import { LIAIcon } from "@/components/ui/lia-icon"
-import { LIAFeedbackWidget } from "@/components/calibration"
-import { textStyles, badgeStyles, formatScore, formatScorePercent } from "@/lib/design-tokens"
-import type { Candidate } from "@/components/pages/candidates/types"
+import React, { useState } from"react"
+import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
+import { Badge } from"@/components/ui/badge"
+import { Button } from"@/components/ui/button"
+import { Calendar, Mail, MessageSquare, Star, Briefcase, User, Phone, Linkedin, X } from"lucide-react"
+import { LIAIcon } from"@/components/ui/lia-icon"
+import { LIAFeedbackWidget } from"@/components/calibration"
+import { textStyles, badgeStyles, formatScore, formatScorePercent } from"@/lib/design-tokens"
+import type { Candidate } from"@/components/pages/candidates/types"
 
 export function CandidatePreviewPanel({ candidate, onClose }: { candidate: Candidate; onClose: () => void }) {
 
@@ -136,7 +136,7 @@ export function CandidatePreviewPanel({ candidate, onClose }: { candidate: Candi
                     <h5 className="text-xs font-medium text-lia-text-primary mb-2">Backend</h5>
                     <div className="flex flex-wrap gap-2">
                       {['Node.js', 'Python', 'PostgreSQL', 'MongoDB'].map((skill, index) => (
-                        <Badge key={skill} className="text-xs bg-status-success/15 text-status-success border-0">
+                        <Badge key={skill} className="text-xs  border-0">
                           {skill}
                         </Badge>
                       ))}
@@ -146,7 +146,7 @@ export function CandidatePreviewPanel({ candidate, onClose }: { candidate: Candi
                     <h5 className="text-xs font-medium text-lia-text-primary mb-2">Soft Skills</h5>
                     <div className="flex flex-wrap gap-2">
                       {['Liderança', 'Comunicação', 'Trabalho em equipe', 'Resolução de problemas'].map((skill, index) => (
-                        <Badge key={skill} className="text-xs bg-wedo-purple/15 text-wedo-purple border-0">
+                        <Badge key={skill} className="text-xs  border-0">
                           {skill}
                         </Badge>
                       ))}
@@ -262,7 +262,7 @@ export function CandidatePreviewPanel({ candidate, onClose }: { candidate: Candi
           </div>
         </div>
 
-        <div className=" dark:border-lia-border-subtle">
+        <div className="dark:border-lia-border-subtle">
           <nav className="flex space-x-0" aria-label="Tabs">
             {tabs.map((tab) => (
               <button

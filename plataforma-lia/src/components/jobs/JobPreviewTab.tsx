@@ -1,8 +1,8 @@
 "use client"
 
-import { formatBRL } from "@/lib/pricing"
+import { formatBRL } from"@/lib/pricing"
 
-import React, { useState } from "react"
+import React, { useState } from"react"
 import {
   FileText,
   Zap,
@@ -14,10 +14,10 @@ import {
   CalendarCheck,
   MessageSquare,
   ChevronRight,
-} from "lucide-react"
-import { Badge } from "@/components/ui/badge"
-import { BenefitBadgeList } from "@/components/benefits/BenefitBadgeList"
-import { toCompanyBenefit, type CompanyBenefit } from "@/types/benefits"
+} from"lucide-react"
+import { Badge } from"@/components/ui/badge"
+import { BenefitBadgeList } from"@/components/benefits/BenefitBadgeList"
+import { toCompanyBenefit, type CompanyBenefit } from"@/types/benefits"
 
 interface JobPreviewTabProps {
   job: {
@@ -62,23 +62,23 @@ interface JobPreviewTabProps {
 }
 
 function formatCurrency(value: number | string | undefined): string {
-  if (value === undefined || value === null || value === "") return ""
-  const num = typeof value === "string" ? parseFloat(value) : value
-  if (isNaN(num)) return ""
+  if (value === undefined || value === null || value ==="") return""
+  const num = typeof value ==="string" ? parseFloat(value) : value
+  if (isNaN(num)) return""
   return `${formatBRL(num)}`
 }
 
 function getCompetencyName(item: {competency?: string; name?: string; weight?: number} | string): string {
-  if (typeof item === "string") return item
-  return item.competency || item.name || ""
+  if (typeof item ==="string") return item
+  return item.competency || item.name ||""
 }
 
 export function JobPreviewTab({ job, pipelineStages }: JobPreviewTabProps) {
   const [showFullDescription, setShowFullDescription] = useState(false)
 
-  const description = job.description || ""
+  const description = job.description ||""
   const truncatedDescription = description.length > 300 && !showFullDescription
-    ? description.slice(0, 300) + "..."
+    ? description.slice(0, 300) +"..."
     : description
 
   const technicalItems = job.requirements && job.requirements.length > 0
@@ -136,7 +136,7 @@ export function JobPreviewTab({ job, pipelineStages }: JobPreviewTabProps) {
                 onClick={() => setShowFullDescription(!showFullDescription)}
                 className="text-micro text-lia-text-primary font-medium mt-1 hover:underline"
               >
-                {showFullDescription ? "Ver menos" : "Ver mais"}
+                {showFullDescription ?"Ver menos" :"Ver mais"}
               </button>
             )}
           </div>
@@ -175,7 +175,7 @@ export function JobPreviewTab({ job, pipelineStages }: JobPreviewTabProps) {
         {behavioralItems.length > 0 ? (
           <div className="flex flex-wrap gap-1.5">
             {behavioralItems.map((item: {competency?: string; name?: string; weight?: number} | string, idx: number) => (
-              <Badge key={`behav-${idx}`} className="bg-wedo-purple/10 text-wedo-purple border border-wedo-purple/30 text-micro px-2 py-0.5 h-5 font-medium">
+              <Badge key={`behav-${idx}`} className="border border-wedo-purple/30 text-micro px-2 py-0.5 h-5 font-medium">
                 {getCompetencyName(item)}
               </Badge>
             ))}
@@ -205,7 +205,7 @@ export function JobPreviewTab({ job, pipelineStages }: JobPreviewTabProps) {
                   </Badge>
                 )}
                 {lang.required && (
-                  <Badge className="text-micro px-1.5 py-0 h-4 bg-status-error/10 text-status-error border border-status-error/30">
+                  <Badge className="text-micro px-1.5 py-0 h-4  border border-status-error/30">
                     Obrigatorio
                   </Badge>
                 )}
@@ -229,7 +229,7 @@ export function JobPreviewTab({ job, pipelineStages }: JobPreviewTabProps) {
             <div className="flex items-center gap-1.5">
               <span className="text-micro text-lia-text-secondary">Salario:</span>
               <span className="text-micro font-medium text-lia-text-primary">
-                {formatCurrency(salaryMin)}{salaryMax ? ` - ${formatCurrency(salaryMax)}` : ""}
+                {formatCurrency(salaryMin)}{salaryMax ? ` - ${formatCurrency(salaryMax)}` :""}
               </span>
             </div>
           ) : (
@@ -241,7 +241,7 @@ export function JobPreviewTab({ job, pipelineStages }: JobPreviewTabProps) {
             <div className="flex items-center gap-1.5">
               <span className="text-micro text-lia-text-secondary">Bonus:</span>
               <span className="text-micro font-medium text-lia-text-primary">
-                {formatCurrency(bonusMin)}{bonusMax ? ` - ${formatCurrency(bonusMax)}` : ""}
+                {formatCurrency(bonusMin)}{bonusMax ? ` - ${formatCurrency(bonusMax)}` :""}
               </span>
             </div>
           )}
@@ -318,7 +318,7 @@ export function JobPreviewTab({ job, pipelineStages }: JobPreviewTabProps) {
             {job.affirmativeType && (
               <div className="flex items-center gap-1.5 mb-1">
                 <span className="text-micro text-lia-text-secondary">Tipo:</span>
-                <Badge className="text-micro px-1.5 py-0 h-4 bg-wedo-purple/15 text-wedo-purple border border-wedo-purple/30">
+                <Badge className="text-micro px-1.5 py-0 h-4  border border-wedo-purple/30">
                   {job.affirmativeType}
                 </Badge>
               </div>
@@ -347,9 +347,9 @@ export function JobPreviewTab({ job, pipelineStages }: JobPreviewTabProps) {
           <ClipboardList className="w-3.5 h-3.5 text-lia-text-secondary" />
           Fluxo de Triagem WSI
           <Badge
-            className={`text-micro px-1.5 py-0 h-4 text-lia-text-primary ${screeningEnabled ? "bg-wedo-green-pastel" : "bg-lia-interactive-active"}`}
+            className={`text-micro px-1.5 py-0 h-4 text-lia-text-primary ${screeningEnabled ?"bg-wedo-green-pastel" :"bg-lia-interactive-active"}`}
           >
-            {screeningEnabled ? "Ativo" : "Pausado"}
+            {screeningEnabled ?"Ativo" :"Pausado"}
           </Badge>
         </h5>
         <div className="grid grid-cols-2 gap-2">
@@ -372,9 +372,9 @@ export function JobPreviewTab({ job, pipelineStages }: JobPreviewTabProps) {
           <CalendarCheck className="w-3.5 h-3.5 text-lia-text-secondary" />
           Agendamento
           <Badge
-            className={`text-micro px-1.5 py-0 h-4 text-lia-text-primary ${schedulingEnabled ? "bg-wedo-green-pastel" : "bg-lia-interactive-active"}`}
+            className={`text-micro px-1.5 py-0 h-4 text-lia-text-primary ${schedulingEnabled ?"bg-wedo-green-pastel" :"bg-lia-interactive-active"}`}
           >
-            {schedulingEnabled ? "Ativo" : "Inativo"}
+            {schedulingEnabled ?"Ativo" :"Inativo"}
           </Badge>
         </h5>
         <div className="grid grid-cols-2 gap-2">

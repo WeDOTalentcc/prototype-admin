@@ -1,48 +1,42 @@
 "use client"
 
-import { Brain, BookOpen, Users, Code, FileText, Clock, ChevronLeft, HelpCircle, Lightbulb, Target, CheckCircle, Fingerprint, AlertTriangle, MessageSquare, TrendingUp, Shield } from "lucide-react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import Link from "next/link"
+import { Brain, BookOpen, Users, Code, FileText, Clock, ChevronLeft, HelpCircle, Lightbulb, Target, CheckCircle, Fingerprint, AlertTriangle, MessageSquare, TrendingUp, Shield } from"lucide-react"
+import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
+import { Badge } from"@/components/ui/badge"
+import { Button } from"@/components/ui/button"
+import Link from"next/link"
 
 export default function AjudaPage() {
-  const softSkillsList = [
-    "Comunicação", "Liderança", "Trabalho em equipe",
-    "Negociação", "Gestão de tempo", "Resolução de problemas",
-    "Pensamento crítico", "Criatividade", "Adaptabilidade",
-    "Proatividade", "Inteligência emocional", "Empatia",
-    "Colaboração", "Organização", "Tomada de decisão",
-    "Mentoria", "Autonomia", "Resiliência"
+  const softSkillsList = ["Comunicação","Liderança","Trabalho em equipe","Negociação","Gestão de tempo","Resolução de problemas","Pensamento crítico","Criatividade","Adaptabilidade","Proatividade","Inteligência emocional","Empatia","Colaboração","Organização","Tomada de decisão","Mentoria","Autonomia","Resiliência"
   ]
 
   const seniorityLevels = [
-    { level: "Júnior", description: "0-2 anos de experiência OU títulos com \"Junior/Jr\"", color: "#4CAF50" },
-    { level: "Pleno", description: "2-5 anos de experiência OU sem prefixo de senioridade", color: "#2196F3" },
-    { level: "Sênior", description: "5-8 anos de experiência OU títulos com \"Senior/Sr\"", color: "#9C27B0" },
-    { level: "Tech Lead", description: "Liderança técnica de equipes", color: "#FF9800" },
-    { level: "Manager", description: "Gestão de pessoas e processos", color: "#E91E63" },
-    { level: "Diretor", description: "Direção de área ou departamento", color: "#673AB7" },
-    { level: "C-Level", description: "Posições executivas (CEO, CTO, CFO, etc.)", color: "#F44336" }
+    { level:"Júnior", description:"0-2 anos de experiência OU títulos com \"Junior/Jr\"", color:"#4CAF50" },
+    { level:"Pleno", description:"2-5 anos de experiência OU sem prefixo de senioridade", color:"#2196F3" },
+    { level:"Sênior", description:"5-8 anos de experiência OU títulos com \"Senior/Sr\"", color:"#9C27B0" },
+    { level:"Tech Lead", description:"Liderança técnica de equipes", color:"#FF9800" },
+    { level:"Manager", description:"Gestão de pessoas e processos", color:"#E91E63" },
+    { level:"Diretor", description:"Direção de área ou departamento", color:"#673AB7" },
+    { level:"C-Level", description:"Posições executivas (CEO, CTO, CFO, etc.)", color:"#F44336" }
   ]
 
   const bigFiveDimensions = [
-    { trait: "O", name: "Abertura", description: "Curiosidade intelectual, criatividade, receptividade a novas ideias", indicators: "Projetos inovadores, diversidade de experiências, formação contínua" },
-    { trait: "C", name: "Conscienciosidade", description: "Organização, disciplina, orientação a resultados", indicators: "Entregas consistentes, progressão de carreira, certificações" },
-    { trait: "E", name: "Extroversão", description: "Sociabilidade, assertividade, energia social", indicators: "Liderança de equipes, apresentações, networking" },
-    { trait: "A", name: "Amabilidade", description: "Cooperação, empatia, orientação ao coletivo", indicators: "Trabalho em equipe, mentoria, resolução de conflitos" },
-    { trait: "N", name: "Neuroticismo", description: "Estabilidade emocional (inverso: baixo N = estável)", indicators: "Resiliência, gestão de pressão, adaptabilidade" }
+    { trait:"O", name:"Abertura", description:"Curiosidade intelectual, criatividade, receptividade a novas ideias", indicators:"Projetos inovadores, diversidade de experiências, formação contínua" },
+    { trait:"C", name:"Conscienciosidade", description:"Organização, disciplina, orientação a resultados", indicators:"Entregas consistentes, progressão de carreira, certificações" },
+    { trait:"E", name:"Extroversão", description:"Sociabilidade, assertividade, energia social", indicators:"Liderança de equipes, apresentações, networking" },
+    { trait:"A", name:"Amabilidade", description:"Cooperação, empatia, orientação ao coletivo", indicators:"Trabalho em equipe, mentoria, resolução de conflitos" },
+    { trait:"N", name:"Neuroticismo", description:"Estabilidade emocional (inverso: baixo N = estável)", indicators:"Resiliência, gestão de pressão, adaptabilidade" }
   ]
 
   const archetypes = [
-    { name: "Catalisador Visionário", profile: "Alto O/E", description: "Inovador, inspirador, busca mudanças", roles: "Fundador, Product Manager, Diretor de Inovação", color: "#FF6B6B" },
-    { name: "Executor Confiável", profile: "Alto C/A", description: "Metódico, colaborativo, entrega consistente", roles: "Gerente de Projetos, Analista Sênior, Ops Manager", color: "#2E9E94" },
-    { name: "Guardião de Clientes", profile: "Alto A/E", description: "Empático, comunicativo, orientado ao cliente", roles: "Customer Success, Account Manager, Suporte Sênior", color: "#2E97B3" },
-    { name: "Estrategista Analítico", profile: "Alto O/C", description: "Pensador profundo, orientado a dados", roles: "Data Scientist, Arquiteto, Pesquisador", color: "#5A9E7E" },
-    { name: "Mediador Adaptável", profile: "Alto A/O", description: "Flexível, harmonizador, diplomático", roles: "HRBP, Scrum Master, Consultor", color: "#D4A017" },
-    { name: "Rainmaker Audacioso", profile: "Alto E/O", description: "Persuasivo, ambicioso, orientado a resultados", roles: "Vendedor, BD, Founder", color: "#B07AB0" },
-    { name: "Operador Resiliente", profile: "Alto C", description: "Estável sob pressão, focado, persistente", roles: "SRE, Suporte Crítico, Operações 24/7", color: "#5BA3C9" },
-    { name: "Arquiteto Metódico", profile: "Alto C/O", description: "Detalhista, sistemático, qualidade", roles: "Engenheiro Sênior, QA Lead, Arquiteto de Software", color: "#5DAA96" }
+    { name:"Catalisador Visionário", profile:"Alto O/E", description:"Inovador, inspirador, busca mudanças", roles:"Fundador, Product Manager, Diretor de Inovação", color:"#FF6B6B" },
+    { name:"Executor Confiável", profile:"Alto C/A", description:"Metódico, colaborativo, entrega consistente", roles:"Gerente de Projetos, Analista Sênior, Ops Manager", color:"#2E9E94" },
+    { name:"Guardião de Clientes", profile:"Alto A/E", description:"Empático, comunicativo, orientado ao cliente", roles:"Customer Success, Account Manager, Suporte Sênior", color:"#2E97B3" },
+    { name:"Estrategista Analítico", profile:"Alto O/C", description:"Pensador profundo, orientado a dados", roles:"Data Scientist, Arquiteto, Pesquisador", color:"#5A9E7E" },
+    { name:"Mediador Adaptável", profile:"Alto A/O", description:"Flexível, harmonizador, diplomático", roles:"HRBP, Scrum Master, Consultor", color:"#D4A017" },
+    { name:"Rainmaker Audacioso", profile:"Alto E/O", description:"Persuasivo, ambicioso, orientado a resultados", roles:"Vendedor, BD, Founder", color:"#B07AB0" },
+    { name:"Operador Resiliente", profile:"Alto C", description:"Estável sob pressão, focado, persistente", roles:"SRE, Suporte Crítico, Operações 24/7", color:"#5BA3C9" },
+    { name:"Arquiteto Metódico", profile:"Alto C/O", description:"Detalhista, sistemático, qualidade", roles:"Engenheiro Sênior, QA Lead, Arquiteto de Software", color:"#5DAA96" }
   ]
 
   return (
@@ -129,7 +123,7 @@ export default function AjudaPage() {
                   Incluem linguagens de programação, frameworks, ferramentas, bancos de dados e metodologias técnicas. Exemplos:
                 </p>
                 <div className="flex flex-wrap gap-2">
-                  {["Python", "JavaScript", "React", "Node.js", "PostgreSQL", "Docker", "AWS", "Git"].map((skill) => (
+                  {["Python","JavaScript","React","Node.js","PostgreSQL","Docker","AWS","Git"].map((skill) => (
                     <Badge key={skill} variant="outline" className="text-xs border-lia-btn-primary-bg dark:border-lia-border-subtle bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-tertiary">
                       {skill}
                     </Badge>
@@ -177,8 +171,8 @@ export default function AjudaPage() {
                   Informações encontradas explicitamente no documento:
                 </p>
                 <div className="flex flex-wrap gap-2">
-                  {["Nome", "Email", "Telefone", "Experiências profissionais", "Educação", "Certificações", "Idiomas"].map((field) => (
-                    <Badge key={field} variant="outline" className="text-xs border-status-success/30 bg-status-success/10 text-status-success">
+                  {["Nome","Email","Telefone","Experiências profissionais","Educação","Certificações","Idiomas"].map((field) => (
+                    <Badge key={field} variant="outline" className="text-xs border-status-success/30">
                       {field}
                     </Badge>
                   ))}
@@ -194,7 +188,7 @@ export default function AjudaPage() {
                   Informações calculadas ou deduzidas pela análise inteligente:
                 </p>
                 <div className="flex flex-wrap gap-2">
-                  {["Senioridade (baseada em título + anos)", "Classificação de skills", "Interesses profissionais", "Fit cultural", "Potencial de crescimento"].map((field) => (
+                  {["Senioridade (baseada em título + anos)","Classificação de skills","Interesses profissionais","Fit cultural","Potencial de crescimento"].map((field) => (
                     <Badge 
                       key={field} 
                       variant="outline" 

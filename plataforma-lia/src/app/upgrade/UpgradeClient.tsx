@@ -1,10 +1,10 @@
 "use client"
 
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { CheckCircle2, ArrowRight, Brain } from "lucide-react"
-import Link from "next/link"
-import { PLANS } from "@/lib/pricing"
+import { Button } from"@/components/ui/button"
+import { Badge } from"@/components/ui/badge"
+import { CheckCircle2, ArrowRight, Brain } from"lucide-react"
+import Link from"next/link"
+import { PLANS } from"@/lib/pricing"
 
 export default function UpgradePage() {
   return (
@@ -32,7 +32,7 @@ export default function UpgradePage() {
           <div
             key={plan.name}
             className={`rounded-md border bg-lia-bg-primary dark:bg-lia-bg-secondary p-6 flex flex-col gap-5 ${
-              plan.highlighted ? "border-lia-btn-primary-bg dark:border-lia-border-medium ring-1 ring-lia-btn-primary-bg dark:ring-lia-border-medium" : "border-lia-border-subtle"
+              plan.highlighted ?"border-lia-btn-primary-bg dark:border-lia-border-medium ring-1 ring-lia-btn-primary-bg dark:ring-lia-border-medium" :"border-lia-border-subtle"
             }`}
           >
             <div>
@@ -57,8 +57,8 @@ export default function UpgradePage() {
             <Button
               className={`w-full rounded-md text-sm font-medium ${
                 plan.highlighted
-                  ? "bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover"
-                  : "bg-lia-bg-primary dark:bg-lia-bg-elevated text-lia-text-primary dark:text-lia-text-primary border border-lia-border-default hover:bg-lia-bg-secondary dark:hover:bg-lia-border-medium"
+                  ?"bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover"
+                  :"bg-lia-bg-primary dark:bg-lia-bg-elevated text-lia-text-primary dark:text-lia-text-primary border border-lia-border-default hover:bg-lia-bg-secondary dark:hover:bg-lia-border-medium"
               }`}
             >
               {plan.cta}
@@ -69,7 +69,7 @@ export default function UpgradePage() {
       </div>
 
       <p className="mt-8 text-xs text-lia-text-tertiary dark:text-lia-text-secondary">
-        Dúvidas?{" "}
+        Dúvidas?{""}
         <Link href="mailto:contato@wedotalent.com.br" className="underline hover:text-lia-text-secondary dark:hover:text-lia-text-disabled">
           Fale com nosso time
         </Link>

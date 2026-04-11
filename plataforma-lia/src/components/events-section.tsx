@@ -1,11 +1,11 @@
 "use client"
 
 
-import { CURRENCY_SYMBOL } from "@/lib/pricing"
-import { useState } from "react"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { CURRENCY_SYMBOL } from"@/lib/pricing"
+import { useState } from"react"
+import { Badge } from"@/components/ui/badge"
+import { Button } from"@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
 import {
   Clock,
   Calendar,
@@ -23,72 +23,72 @@ import {
   Mail,
   Phone,
   BrainCircuit,
-} from "lucide-react"
+} from"lucide-react"
 
 // Dados das atividades organizados por período
 const morningEvents = [
   {
     id: 1,
-    title: "Entrevista Técnica - João Silva",
-    subtitle: "Frontend Developer • React + TypeScript",
-    time: "09:00",
-    type: "interview",
-    priority: "high",
-    details: "Entrevista técnica • 60min • Google Meet",
+    title:"Entrevista Técnica - João Silva",
+    subtitle:"Frontend Developer • React + TypeScript",
+    time:"09:00",
+    type:"interview",
+    priority:"high",
+    details:"Entrevista técnica • 60min • Google Meet",
     hasReminder: true,
     isSuggested: false,
     candidateInfo: {
-      name: "João Silva",
-      experience: "5 anos em React, 3 anos em TypeScript"
+      name:"João Silva",
+      experience:"5 anos em React, 3 anos em TypeScript"
     },
     actions: [
-      { icon: Video, label: "Iniciar" },
-      { icon: FileText, label: "Ver CV" }
+      { icon: Video, label:"Iniciar" },
+      { icon: FileText, label:"Ver CV" }
     ]
   },
   {
     id: 2,
-    title: "Enviar Lembrete",
-    subtitle: "Entrevista João Silva - 09:00",
-    time: "08:45",
-    type: "reminder",
-    priority: "medium",
-    details: "Sugerido pela LIA • Lembrete automático",
+    title:"Enviar Lembrete",
+    subtitle:"Entrevista João Silva - 09:00",
+    time:"08:45",
+    type:"reminder",
+    priority:"medium",
+    details:"Sugerido pela LIA • Lembrete automático",
     hasReminder: false,
     isSuggested: true,
     actions: [
-      { icon: Send, label: "Enviar" },
-      { icon: Edit, label: "Editar" }
+      { icon: Send, label:"Enviar" },
+      { icon: Edit, label:"Editar" }
     ]
   },
   {
     id: 3,
-    title: "Revisar CVs - Backend Dev",
-    subtitle: "15 candidatos pendentes",
-    time: "10:30",
-    type: "review",
-    priority: "medium",
-    details: "Análise de perfis • Triagem inicial",
+    title:"Revisar CVs - Backend Dev",
+    subtitle:"15 candidatos pendentes",
+    time:"10:30",
+    type:"review",
+    priority:"medium",
+    details:"Análise de perfis • Triagem inicial",
     hasReminder: false,
     isSuggested: false,
     actions: [
-      { icon: FileText, label: "Revisar" },
-      { icon: CheckCircle, label: "Aprovar" }
+      { icon: FileText, label:"Revisar" },
+      { icon: CheckCircle, label:"Aprovar" }
     ]
   },
   {
     id: 4,
-    title: "Revisar Perfis",
-    subtitle: "15 candidatos pendentes • Sugestão LIA",
-    time: "11:00",
-    type: "review",
-    priority: "medium",
-    details: "Sugerido pela LIA • Triagem rápida",
+    title:"Revisar Perfis",
+    subtitle:"15 candidatos pendentes • Sugestão LIA",
+    time:"11:00",
+    type:"review",
+    priority:"medium",
+    details:"Sugerido pela LIA • Triagem rápida",
     hasReminder: false,
     isSuggested: true,
     actions: [
-      { icon: FileText, label: "Revisar" },
-      { icon: CheckCircle, label: "Aprovar" }
+      { icon: FileText, label:"Revisar" },
+      { icon: CheckCircle, label:"Aprovar" }
     ]
   }
 ]
@@ -96,70 +96,70 @@ const morningEvents = [
 const afternoonEvents = [
   {
     id: 5,
-    title: "Autorizar Feedback - Ana Costa",
-    subtitle: "UX Designer • Processo finalizado",
-    time: "14:00",
-    type: "feedback",
-    priority: "high",
-    details: "Feedback da equipe • Aprovação necessária",
+    title:"Autorizar Feedback - Ana Costa",
+    subtitle:"UX Designer • Processo finalizado",
+    time:"14:00",
+    type:"feedback",
+    priority:"high",
+    details:"Feedback da equipe • Aprovação necessária",
     hasReminder: true,
     isSuggested: false,
     candidateInfo: {
-      name: "Ana Costa",
-      experience: "7 anos em UX Design, especialista em mobile"
+      name:"Ana Costa",
+      experience:"7 anos em UX Design, especialista em mobile"
     },
     actions: [
-      { icon: CheckCircle, label: "Aprovar" },
-      { icon: Send, label: "Enviar" }
+      { icon: CheckCircle, label:"Aprovar" },
+      { icon: Send, label:"Enviar" }
     ]
   },
   {
     id: 6,
-    title: "Publicar Vaga - UX Designer",
-    subtitle: "Área de Produto • Revisão final",
-    time: "15:30",
-    type: "publication",
-    priority: "medium",
-    details: "Vaga aprovada • Publicação em 3 canais",
+    title:"Publicar Vaga - UX Designer",
+    subtitle:"Área de Produto • Revisão final",
+    time:"15:30",
+    type:"publication",
+    priority:"medium",
+    details:"Vaga aprovada • Publicação em 3 canais",
     hasReminder: true,
     isSuggested: false,
     actions: [
-      { icon: Send, label: "Publicar" },
-      { icon: Edit, label: "Editar" }
+      { icon: Send, label:"Publicar" },
+      { icon: Edit, label:"Editar" }
     ]
   },
   {
     id: 7,
-    title: "Aprovar Oferta",
-    subtitle: "Lucas Mendes - Backend • Sugestão LIA",
-    time: "16:00",
-    type: "offer",
-    priority: "high",
+    title:"Aprovar Oferta",
+    subtitle:"Lucas Mendes - Backend • Sugestão LIA",
+    time:"16:00",
+    type:"offer",
+    priority:"high",
     details: `Sugerido pela LIA • Oferta ${CURRENCY_SYMBOL} 12.000`,
     hasReminder: false,
     isSuggested: true,
     actions: [
-      { icon: CheckCircle, label: "Aprovar" },
-      { icon: Edit, label: "Ajustar" }
+      { icon: CheckCircle, label:"Aprovar" },
+      { icon: Edit, label:"Ajustar" }
     ]
   },
   {
     id: 8,
-    title: "Enviar Oferta - Lucas Mendes",
-    subtitle: "Backend Developer • Aprovado",
-    time: "16:30",
-    type: "offer",
-    priority: "high",
+    title:"Enviar Oferta - Lucas Mendes",
+    subtitle:"Backend Developer • Aprovado",
+    time:"16:30",
+    type:"offer",
+    priority:"high",
     details: `Oferta salarial • ${CURRENCY_SYMBOL} 12.000 • CLT`,
     hasReminder: true,
     isSuggested: false,
     candidateInfo: {
-      name: "Lucas Mendes",
-      experience: "8 anos em Node.js e Python"
+      name:"Lucas Mendes",
+      experience:"8 anos em Node.js e Python"
     },
     actions: [
-      { icon: Send, label: "Enviar" },
-      { icon: Edit, label: "Ajustar" }
+      { icon: Send, label:"Enviar" },
+      { icon: Edit, label:"Ajustar" }
     ]
   }
 ]

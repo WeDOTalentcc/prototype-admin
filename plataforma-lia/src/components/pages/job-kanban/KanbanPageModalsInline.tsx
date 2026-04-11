@@ -1,22 +1,22 @@
 "use client"
 
-import React from "react"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import React from"react"
+import { Button } from"@/components/ui/button"
+import { Badge } from"@/components/ui/badge"
+import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
+} from"@/components/ui/select"
 import {
   ArrowRight, X, Brain, CheckCircle, BrainCircuit, FileText, Languages
-} from "lucide-react"
-import { formatScorePercent } from "@/lib/design-tokens"
-import { calculateNotaLiaGeral } from "@/components/pages/job-kanban/utils/kanbanHelpers"
-import type { KanbanPageCoreState } from "./hooks/useKanbanPageCore"
+} from"lucide-react"
+import { formatScorePercent } from"@/lib/design-tokens"
+import { calculateNotaLiaGeral } from"@/components/pages/job-kanban/utils/kanbanHelpers"
+import type { KanbanPageCoreState } from"./hooks/useKanbanPageCore"
 
 export function KanbanPageModalsInline(state: KanbanPageCoreState) {
   const {

@@ -1,13 +1,13 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
+import { useState, useEffect, useCallback } from"react"
+import { Button } from"@/components/ui/button"
+import { Badge } from"@/components/ui/badge"
 import {
   Bell, X, TrendingUp, AlertTriangle, UserMinus, UserPlus,
   Building, Target, Zap, Eye, Settings, Loader2, RefreshCw
-} from "lucide-react"
-import { liaApi, BackendNotification } from "@/services/lia-api"
+} from"lucide-react"
+import { liaApi, BackendNotification } from"@/services/lia-api"
 
 interface IntelligenceNotification {
   id: string
@@ -134,11 +134,11 @@ export function IntelligenceNotifications({
     switch (priority) {
       case 'high':
       case 'urgent':
-        return 'bg-status-error/15 text-status-error border-status-error/30'
+        return ' border-status-error/30'
       case 'medium':
-        return 'bg-status-warning/15 text-status-warning border-status-warning/30'
+        return ' border-status-warning/30'
       case 'low':
-        return 'bg-wedo-cyan/15 text-wedo-cyan-dark border-lia-border-default dark:border-lia-border-default'
+        return ' border-lia-border-default dark:border-lia-border-default'
       default:
         return 'bg-lia-bg-tertiary text-lia-text-primary border-lia-border-subtle'
     }

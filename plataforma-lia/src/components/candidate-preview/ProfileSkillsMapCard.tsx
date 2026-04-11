@@ -1,10 +1,10 @@
 "use client"
 
 import { textStyles } from '@/lib/design-tokens'
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Brain, Code, Linkedin, Heart, Tag } from "lucide-react"
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
+import { Badge } from"@/components/ui/badge"
+import { Brain, Code, Linkedin, Heart, Tag } from"lucide-react"
+import { Tooltip, TooltipContent, TooltipTrigger } from"@/components/ui/tooltip"
 
 interface ProfileSkillsMapCardProps {
   candidate: Record<string, unknown>

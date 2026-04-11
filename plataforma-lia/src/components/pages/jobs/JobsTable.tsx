@@ -1,15 +1,15 @@
 "use client"
 
-import React from "react"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import React from"react"
+import { Badge } from"@/components/ui/badge"
+import { Button } from"@/components/ui/button"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from"@/components/ui/tooltip"
 import { 
   Users, Eye, Edit, Copy, Pause, XCircle,
   ArrowUpDown, ArrowUp, ArrowDown, MapPin, Building,
   Clock, Calendar, TrendingUp
-} from "lucide-react"
-import type { JobVacancy, JobSortConfig } from "./types"
+} from"lucide-react"
+import type { JobVacancy, JobSortConfig } from"./types"
 
 interface JobsTableProps {
   jobs: JobVacancy[]
@@ -32,18 +32,18 @@ export function JobsTable({
     if (sortConfig.column !== column) {
       return <ArrowUpDown className="h-4 w-4 text-lia-text-disabled" />
     }
-    return sortConfig.direction === "asc"
+    return sortConfig.direction ==="asc"
       ? <ArrowUp className="h-4 w-4 text-lia-text-primary" />
       : <ArrowDown className="h-4 w-4 text-lia-text-primary" />
   }
 
   const getStatusBadge = (status: JobVacancy['status']) => {
     const config = {
-      draft: { label: "Rascunho", className: "border-status-warning/30/30 text-status-warning" },
-      active: { label: "Ativa", className: "bg-status-success/20 text-status-success border-status-success/30/30" },
-      paused: { label: "Pausada", className: "border-wedo-orange/30/30 text-wedo-orange" },
-      closed: { label: "Encerrada", className: "border-lia-border-default dark:border-lia-border-default text-lia-text-tertiary" },
-      cancelled: { label: "Cancelada", className: "border-status-error/30/30 text-status-error" },
+      draft: { label:"Rascunho", className:"border-status-warning/30/30 text-status-warning" },
+      active: { label:"Ativa", className:"bg-status-success/20 text-status-success border-status-success/30/30" },
+      paused: { label:"Pausada", className:"border-wedo-orange/30/30 text-wedo-orange" },
+      closed: { label:"Encerrada", className:"border-lia-border-default dark:border-lia-border-default text-lia-text-tertiary" },
+      cancelled: { label:"Cancelada", className:"border-status-error/30/30 text-status-error" },
     }
     const { label, className } = config[status] || config.draft
     return <Badge variant="outline" className={className}>{label}</Badge>
@@ -51,10 +51,10 @@ export function JobsTable({
 
   const getPriorityBadge = (priority: JobVacancy['priority']) => {
     const config = {
-      low: { label: "Baixa", className: "border-lia-border-default dark:border-lia-border-default text-lia-text-tertiary" },
-      medium: { label: "Média", className: "border-wedo-cyan/30/30 text-wedo-cyan-dark" },
-      high: { label: "Alta", className: "border-wedo-orange/30/30 text-wedo-orange" },
-      urgent: { label: "Urgente", className: "bg-status-error/20 text-status-error border-status-error/30/30" },
+      low: { label:"Baixa", className:"border-lia-border-default dark:border-lia-border-default text-lia-text-tertiary" },
+      medium: { label:"Média", className:"border-wedo-cyan/30/30 text-wedo-cyan-dark" },
+      high: { label:"Alta", className:"border-wedo-orange/30/30 text-wedo-orange" },
+      urgent: { label:"Urgente", className:"bg-status-error/20 text-status-error border-status-error/30/30" },
     }
     const { label, className } = config[priority] || config.medium
     return <Badge variant="outline" className={`text-xs ${className}`}>{label}</Badge>
@@ -136,7 +136,7 @@ export function JobsTable({
           {jobs.map((job) => (
             <tr
               key={job.id}
-              className=" dark:border-lia-border-subtle hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover/50 cursor-pointer transition-colors motion-reduce:transition-none"
+              className="dark:border-lia-border-subtle hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover/50 cursor-pointer transition-colors motion-reduce:transition-none"
               onClick={() => onJobClick(job)}
             >
               <td className="p-4">
@@ -226,7 +226,7 @@ export function JobsTable({
                       <TooltipContent>Duplicar</TooltipContent>
                     </Tooltip>
 
-                    {job.status === "active" && (
+                    {job.status ==="active" && (
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <Button
@@ -242,7 +242,7 @@ export function JobsTable({
                       </Tooltip>
                     )}
 
-                    {job.status !== "closed" && (
+                    {job.status !=="closed" && (
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <Button

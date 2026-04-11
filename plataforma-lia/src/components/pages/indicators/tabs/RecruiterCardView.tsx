@@ -1,10 +1,10 @@
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Eye, Settings } from "lucide-react"
-import type { RecruiterData } from "../indicators.types"
-import { getRankingIcon, getGoalLabel, getGoalStatusLabel, getInitials } from "./recruiters-tab.utils"
+import { Card, CardContent, CardHeader } from"@/components/ui/card"
+import { Badge } from"@/components/ui/badge"
+import { Button } from"@/components/ui/button"
+import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
+import { Eye, Settings } from"lucide-react"
+import type { RecruiterData } from"../indicators.types"
+import { getRankingIcon, getGoalLabel, getGoalStatusLabel, getInitials } from"./recruiters-tab.utils"
 
 interface RecruiterCardViewProps {
   filteredRecruiters: RecruiterData[]

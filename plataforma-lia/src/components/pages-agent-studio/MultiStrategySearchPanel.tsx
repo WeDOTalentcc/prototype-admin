@@ -1,18 +1,18 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useState } from"react"
 import {
   Search, Zap, CheckCircle, Loader2, AlertCircle,
   Users, ArrowRight, Plus, Database, Briefcase, Heart
-} from "lucide-react"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+} from"lucide-react"
+import { Card, CardContent } from"@/components/ui/card"
+import { Badge } from"@/components/ui/badge"
+import { Button } from"@/components/ui/button"
+import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
 import {
   textStyles, cardStyles, badgeStyles, buttonStyles
-} from "@/lib/design-tokens"
-import CandidateOriginBadge from "./CandidateOriginBadge"
+} from"@/lib/design-tokens"
+import CandidateOriginBadge from"./CandidateOriginBadge"
 
 // ---------- Types ----------
 
@@ -50,10 +50,10 @@ interface MultiStrategySearchResult {
 // ---------- Constants ----------
 
 const STRATEGY_CONFIG: Record<string, { icon: string; color: string }> = {
-  direct: { icon: "🎯", color: "bg-blue-50 text-blue-700" },
-  adjacent: { icon: "🔄", color: "bg-purple-50 text-purple-700" },
-  silver: { icon: "🥈", color: "bg-yellow-50 text-yellow-700" },
-  reengagement: { icon: "♻️", color: "bg-green-50 text-green-700" },
+  direct: { icon:"🎯", color:"bg-blue-50 text-blue-700" },
+  adjacent: { icon:"🔄", color:"bg-purple-50 text-purple-700" },
+  silver: { icon:"🥈", color:"bg-yellow-50 text-yellow-700" },
+  reengagement: { icon:"♻️", color:"bg-green-50 text-green-700" },
 }
 
 // ---------- Main Component ----------
@@ -81,17 +81,17 @@ export default function MultiStrategySearchPanel({
     setIsSearching(true)
     setResult(null)
     setSelectedIds(new Set())
-    setStrategiesInProgress(new Set(["direct", "adjacent", "silver", "reengagement"]))
+    setStrategiesInProgress(new Set(["direct","adjacent","silver","reengagement"]))
 
     try {
       const res = await fetch("/api/backend-proxy/sourcing/multi-strategy", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+        method:"POST",
+        headers: {"Content-Type":"application/json" },
         body: JSON.stringify({
           job_title: jobTitle.trim(),
           required_skills: skills.split(",").map(s => s.trim()).filter(Boolean),
           location: location.trim(),
-          strategies: ["direct", "adjacent", "silver", "reengagement"],
+          strategies: ["direct","adjacent","silver","reengagement"],
           limit: 50,
         }),
       })
@@ -137,7 +137,7 @@ export default function MultiStrategySearchPanel({
               onChange={e => setJobTitle(e.target.value)}
               placeholder="Título da vaga (ex: Senior Backend Engineer)"
               className="flex-1 border border-lia-border-default rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
-              onKeyDown={e => e.key === "Enter" && handleSearch()}
+              onKeyDown={e => e.key ==="Enter" && handleSearch()}
             />
             <input
               type="text"
@@ -155,7 +155,7 @@ export default function MultiStrategySearchPanel({
             />
             <Button className={buttonStyles.primary} onClick={handleSearch} disabled={isSearching || !jobTitle.trim()}>
               <Search className="w-4 h-4 mr-1" />
-              {isSearching ? "Buscando..." : "Buscar"}
+              {isSearching ?"Buscando..." :"Buscar"}
             </Button>
           </div>
         </CardContent>
@@ -164,7 +164,7 @@ export default function MultiStrategySearchPanel({
       {/* Strategy progress */}
       {(isSearching || result) && (
         <div className="flex gap-3">
-          {["direct", "adjacent", "silver", "reengagement"].map(sid => {
+          {["direct","adjacent","silver","reengagement"].map(sid => {
             const cfg = STRATEGY_CONFIG[sid]
             const sr = result?.strategy_results?.find(r => r.strategy_id === sid)
             const inProgress = strategiesInProgress.has(sid)
@@ -213,10 +213,10 @@ export default function MultiStrategySearchPanel({
           {selectedIds.size > 0 && (
             <div className="flex items-center gap-2">
               <span className={textStyles.caption}>{selectedIds.size} selecionados</span>
-              <Button className={buttonStyles.outline} onClick={() => { if (onAddToJob) onAddToJob(Array.from(selectedIds), "") }}>
+              <Button className={buttonStyles.outline} onClick={() => { if (onAddToJob) onAddToJob(Array.from(selectedIds),"") }}>
                 <Briefcase className="w-3.5 h-3.5 mr-1" /> + Vaga
               </Button>
-              <Button className={buttonStyles.outline} onClick={() => { if (onAddToPool) onAddToPool(Array.from(selectedIds), "") }}>
+              <Button className={buttonStyles.outline} onClick={() => { if (onAddToPool) onAddToPool(Array.from(selectedIds),"") }}>
                 <Database className="w-3.5 h-3.5 mr-1" /> + Pool
               </Button>
               <Button className={buttonStyles.outline} onClick={() => { if (onAddToList) onAddToList(Array.from(selectedIds)) }}>
@@ -254,7 +254,7 @@ export default function MultiStrategySearchPanel({
               {result.candidates.map(c => {
                 const strategies = c.found_via_strategies || [c.found_via]
                 return (
-                  <tr key={c.id} className=" hover:bg-lia-bg-secondary">
+                  <tr key={c.id} className="hover:bg-lia-bg-secondary">
                     <td className="py-2 px-3">
                       <input
                         type="checkbox"
@@ -272,7 +272,7 @@ export default function MultiStrategySearchPanel({
                         <div>
                           <p className={`${textStyles.body} font-medium`}>{c.name}</p>
                           <p className={textStyles.caption}>
-                            {[c.current_title, c.current_company].filter(Boolean).join(" · ")}
+                            {[c.current_title, c.current_company].filter(Boolean).join(" ·")}
                           </p>
                         </div>
                       </div>

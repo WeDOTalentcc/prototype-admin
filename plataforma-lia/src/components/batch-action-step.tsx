@@ -1,20 +1,20 @@
 "use client"
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
+import { Badge } from"@/components/ui/badge"
+import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
 import {
   CheckCircle, XCircle, ArrowRight, MessageSquare,
   Bell, Mail, Calendar, Star,
-} from "lucide-react"
-import { formatScorePercent } from "@/lib/design-tokens"
+} from"lucide-react"
+import { formatScorePercent } from"@/lib/design-tokens"
 import {
   availableStages,
   actionTemplates,
   getScoreColor,
   type BatchApprovalAction,
   type BatchApprovalCandidate,
-} from "./useBatchApproval"
+} from"./useBatchApproval"
 
 const ICON_MAP = {
   CheckCircle,
@@ -261,19 +261,19 @@ export function BatchReviewStep({
                     </Badge>
                   )}
                   {batchAction.sendEmail && (
-                    <Badge className="bg-status-success/15 text-status-success flex items-center gap-1">
+                    <Badge className="flex items-center gap-1">
                       <Mail className="w-3 h-3" />
                       Enviar emails
                     </Badge>
                   )}
                   {batchAction.scheduleInterview && (
-                    <Badge className="bg-wedo-purple/15 text-wedo-purple flex items-center gap-1">
+                    <Badge className="flex items-center gap-1">
                       <Calendar className="w-3 h-3" />
                       Agendar entrevistas
                     </Badge>
                   )}
                   {batchAction.addToTalentPool && (
-                    <Badge className="bg-wedo-orange/15 text-wedo-orange flex items-center gap-1">
+                    <Badge className="flex items-center gap-1">
                       <Star className="w-3 h-3" />
                       Banco de talentos
                     </Badge>

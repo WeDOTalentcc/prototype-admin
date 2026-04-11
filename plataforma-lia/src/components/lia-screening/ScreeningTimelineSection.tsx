@@ -1,9 +1,9 @@
 "use client"
 
-import React from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { CheckCircle, Clock, ChevronRight } from "lucide-react"
+import React from"react"
+import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
+import { Badge } from"@/components/ui/badge"
+import { CheckCircle, Clock, ChevronRight } from"lucide-react"
 
 export function ScreeningTimelineSection() {
   return (
@@ -111,13 +111,7 @@ export function ScreeningTimelineSection() {
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
-            {[
-              "Preencher avaliação na plataforma",
-              "Atualizar status do candidato",
-              "Enviar feedback personalizado",
-              "Agendar próxima etapa (se aprovado)",
-              "Documentar insights para equipe",
-              "Atualizar pipeline de candidatos"
+            {["Preencher avaliação na plataforma","Atualizar status do candidato","Enviar feedback personalizado","Agendar próxima etapa (se aprovado)","Documentar insights para equipe","Atualizar pipeline de candidatos"
             ].map((item, index) => (
               <div key={`ci-${index}`} className="flex items-center gap-3">
                 <input type="checkbox" className="rounded-xl border-lia-border-default" />

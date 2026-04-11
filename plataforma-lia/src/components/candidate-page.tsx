@@ -1,15 +1,15 @@
 "use client"
 
 import { textStyles as designTextStyles, buttonStyles, cardStyles, badgeStyles } from '@/lib/design-tokens'
-import { integrationsService } from "@/services/integrations-service"
-import { LiaAnalysisModal } from "@/components/modals/lia-analysis-modal"
-import { useCandidatePageCore } from "@/components/candidate-page/useCandidatePageCore"
-import { CandidatePageHeader } from "@/components/candidate-page/CandidatePageHeader"
-import { CandidatePageFilesTab } from "@/components/candidate-page/CandidatePageFilesTab"
-import { CandidatePageOpinionsTab } from "@/components/candidate-page/CandidatePageOpinionsTab"
-import { CandidatePageProfileTab } from "@/components/candidate-page/CandidatePageProfileTab"
-import { CandidatePageActivitiesTab } from "@/components/candidate-page/CandidatePageActivitiesTab"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { integrationsService } from"@/services/integrations-service"
+import { LiaAnalysisModal } from"@/components/modals/lia-analysis-modal"
+import { useCandidatePageCore } from"@/components/candidate-page/useCandidatePageCore"
+import { CandidatePageHeader } from"@/components/candidate-page/CandidatePageHeader"
+import { CandidatePageFilesTab } from"@/components/candidate-page/CandidatePageFilesTab"
+import { CandidatePageOpinionsTab } from"@/components/candidate-page/CandidatePageOpinionsTab"
+import { CandidatePageProfileTab } from"@/components/candidate-page/CandidatePageProfileTab"
+import { CandidatePageActivitiesTab } from"@/components/candidate-page/CandidatePageActivitiesTab"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from"@/components/ui/tooltip"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,12 +19,12 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
+} from"@/components/ui/alert-dialog"
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
+import { Badge } from"@/components/ui/badge"
+import { Button } from"@/components/ui/button"
+import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
 import {
   X, ArrowLeft, Star, MapPin, Calendar, Phone, Mail,
   Linkedin, ExternalLink, MessageSquare, UserPlus, FileText,
@@ -40,7 +40,7 @@ import {
   PlusCircle, GitBranch, MessageSquareText, Upload, Image, File,
   ZoomIn, ZoomOut, RotateCw, ChevronLeft, Code, Layers, Trash2, Check,
   Github, BarChart3
-} from "lucide-react"
+} from"lucide-react"
 
 interface CandidatePageProps {
   candidate: Record<string, unknown>

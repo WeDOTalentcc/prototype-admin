@@ -1,24 +1,24 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
-import { Textarea } from "@/components/ui/textarea"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { useState, useEffect, useRef } from"react"
+import { Button } from"@/components/ui/button"
+import { Card, CardContent } from"@/components/ui/card"
+import { Badge } from"@/components/ui/badge"
+import { Progress } from"@/components/ui/progress"
+import { Textarea } from"@/components/ui/textarea"
+import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogDescription,
-} from "@/components/ui/dialog"
+} from"@/components/ui/dialog"
 import {
   Brain, Send, Loader2, CheckCircle, AlertCircle,
   ChevronRight, MessageSquare, Target, X, 
   BarChart3, FileText, User, TrendingUp, Award
-} from "lucide-react"
+} from"lucide-react"
 
 interface WSITextScreeningModalProps {
   isOpen: boolean
@@ -91,10 +91,10 @@ type ScreeningStep = 'loading' | 'questions' | 'processing' | 'completed' | 'err
 const BLOOM_COLORS: Record<number, string> = {
   1: 'bg-lia-bg-tertiary text-lia-text-primary',
   2: 'bg-lia-interactive-active text-lia-text-primary',
-  3: 'bg-status-success/15 text-status-success',
-  4: 'bg-status-warning/15 text-status-warning',
-  5: 'bg-wedo-orange/15 text-wedo-orange',
-  6: 'bg-wedo-purple/15 text-wedo-purple'
+  3: '',
+  4: '',
+  5: '',
+  6: ''
 }
 
 const BLOOM_NAMES: Record<number, string> = {
@@ -531,10 +531,10 @@ export function WSITextScreeningModal({
                     </div>
                     <Badge className={`mt-2 ${
  result.classification === 'excelente' || result.classification === 'alto' 
-                        ? 'bg-status-success/15 text-status-success border-status-success/30' :
+                        ? ' border-status-success/30' :
                       result.classification === 'medio' 
-                        ? 'bg-status-warning/15 text-status-warning border-status-warning/30' :
-                      'bg-status-error/15 text-status-error border-status-error/30'
+                        ? ' border-status-warning/30' :
+                      ' border-status-error/30'
                     }`}>
                       {result.classification.charAt(0).toUpperCase() + result.classification.slice(1)}
                     </Badge>

@@ -1,17 +1,17 @@
 "use client"
 
-import React from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
-import { Label } from "@/components/ui/label"
+import React from"react"
+import { Button } from"@/components/ui/button"
+import { Input } from"@/components/ui/input"
+import { Badge } from"@/components/ui/badge"
+import { Label } from"@/components/ui/label"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
+} from"@/components/ui/select"
 import {
   DollarSign,
   Layers,
@@ -21,7 +21,7 @@ import {
   Trash2,
   Loader2,
   ClipboardList,
-} from "lucide-react"
+} from"lucide-react"
 import {
   inputStyle,
 } from '../edit-job-modal.constants'

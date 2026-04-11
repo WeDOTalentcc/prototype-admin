@@ -1,19 +1,19 @@
 "use client"
 
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Button } from "@/components/ui/button"
+import { Card, CardContent } from"@/components/ui/card"
+import { Badge } from"@/components/ui/badge"
+import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
+import { Button } from"@/components/ui/button"
 import {
   Search, Check, MapPin, Calendar, Users,
-} from "lucide-react"
-import { formatScorePercent } from "@/lib/design-tokens"
+} from"lucide-react"
+import { formatScorePercent } from"@/lib/design-tokens"
 import {
   availableStages,
   getScoreColor,
   getPriorityColor,
   type BatchApprovalCandidate,
-} from "./useBatchApproval"
+} from"./useBatchApproval"
 
 interface BatchSelectionStepProps {
   filteredCandidates: BatchApprovalCandidate[]

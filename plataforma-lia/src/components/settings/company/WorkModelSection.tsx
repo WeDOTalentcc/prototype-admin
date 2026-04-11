@@ -128,7 +128,7 @@ export function WorkModelSection({
               ))}
             </div>
             <div className="flex flex-wrap gap-1">
-              {["Estágio", "Júnior", "Pleno", "Sênior", "Especialista", "Coordenador", "Gerente", "Diretor", "C-Level"]
+              {["Estágio","Júnior","Pleno","Sênior","Especialista","Coordenador","Gerente","Diretor","C-Level"]
                 .filter((level) => !(companyData.seniority_levels || []).includes(level))
                 .map((level) => (
                   <button

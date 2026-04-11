@@ -1,13 +1,13 @@
 "use client"
 
-import React from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Users, Save, Loader2, Pencil } from "lucide-react"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Label } from "@/components/ui/label"
+import React from"react"
+import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
+import { Badge } from"@/components/ui/badge"
+import { Users, Save, Loader2, Pencil } from"lucide-react"
+import { RadioGroup, RadioGroupItem } from"@/components/ui/radio-group"
+import { Label } from"@/components/ui/label"
 import { actionButtonStyles } from '@/lib/design-tokens'
-import { limitOptions, type GlobalSearchSettings } from "./useGlobalSearchSettings"
+import { limitOptions, type GlobalSearchSettings } from"./useGlobalSearchSettings"
 
 interface GlobalSearchLimitsTabProps {
   settings: GlobalSearchSettings
@@ -109,7 +109,7 @@ export function GlobalSearchLimitsTab({
                       {option.label}
                     </Label>
                     {option.recommended && (
-                      <Badge className="bg-status-success/10 text-status-success dark:bg-status-success/30 dark:text-status-success text-micro px-1.5 py-0.5">
+                      <Badge className="dark:bg-status-success/30 dark:text-status-success text-micro px-1.5 py-0.5">
                         Recomendado
                       </Badge>
                     )}

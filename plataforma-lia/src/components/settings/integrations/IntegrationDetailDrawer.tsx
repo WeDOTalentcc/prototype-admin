@@ -1,17 +1,17 @@
 "use client"
 
-import { useCallback } from "react"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
+import { useCallback } from"react"
+import { Badge } from"@/components/ui/badge"
+import { Button } from"@/components/ui/button"
 import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
   SheetDescription,
-} from "@/components/ui/sheet"
-import { cn } from "@/lib/utils"
-import { textStyles, cardStyles } from "@/lib/design-tokens"
+} from"@/components/ui/sheet"
+import { cn } from"@/lib/utils"
+import { textStyles, cardStyles } from"@/lib/design-tokens"
 import {
   CheckCircle2,
   Clock,
@@ -23,11 +23,11 @@ import {
   Chrome,
   ShieldCheck,
   Key,
-} from "lucide-react"
-import type { Integration } from "./integration-data"
-import { ApiKeyConfigForm } from "./ApiKeyConfigForm"
+} from"lucide-react"
+import type { Integration } from"./integration-data"
+import { ApiKeyConfigForm } from"./ApiKeyConfigForm"
 
-const AI_PROVIDER_IDS = ["gemini", "claude", "openai"]
+const AI_PROVIDER_IDS = ["gemini","claude","openai"]
 
 interface ProviderConfigData {
   api_key?: string
@@ -48,9 +48,9 @@ interface IntegrationDetailDrawerProps {
   integration: Integration | null
   open: boolean
   onClose: () => void
-  googleStatus?: "idle" | "loading" | "connected" | "error"
-  microsoftStatus?: "loading" | "connected" | "not_configured"
-  teamsStatus?: "loading" | "configured" | "not_configured"
+  googleStatus?:"idle" |"loading" |"connected" |"error"
+  microsoftStatus?:"loading" |"connected" |"not_configured"
+  teamsStatus?:"loading" |"configured" |"not_configured"
   onConnectGoogle?: () => void
   errorMsg?: string | null
   llmConfig?: LLMConfigData | null
@@ -61,9 +61,9 @@ export function IntegrationDetailDrawer({
   integration,
   open,
   onClose,
-  googleStatus = "idle",
-  microsoftStatus = "not_configured",
-  teamsStatus = "not_configured",
+  googleStatus ="idle",
+  microsoftStatus ="not_configured",
+  teamsStatus ="not_configured",
   onConnectGoogle,
   errorMsg,
   llmConfig,
@@ -71,31 +71,31 @@ export function IntegrationDetailDrawer({
 }: IntegrationDetailDrawerProps) {
   if (!integration) return null
 
-  const isComingSoon = integration.status === "coming_soon"
+  const isComingSoon = integration.status ==="coming_soon"
   const isAiProvider = AI_PROVIDER_IDS.includes(integration.id)
 
   const existingProviderConfig = isAiProvider && llmConfig?.providers?.[integration.id]
   const hasExistingKey = !!(existingProviderConfig && (existingProviderConfig as ProviderConfigData).api_key)
   const maskedExistingKey = hasExistingKey
-    ? (existingProviderConfig as ProviderConfigData).api_key || ""
-    : ""
+    ? (existingProviderConfig as ProviderConfigData).api_key ||""
+    :""
   const isUsingOwnKey = hasExistingKey && maskedExistingKey.length > 3
   const isPrimaryProvider = llmConfig?.primary_provider === integration.id
 
   const resolvedStatus = (() => {
     if (isAiProvider && llmConfig) {
       const providerData = llmConfig.providers?.[integration.id]
-      if (providerData?.api_key) return "connected"
-      return "not_configured"
+      if (providerData?.api_key) return"connected"
+      return"not_configured"
     }
-    if (integration.id === "google-calendar") {
-      return googleStatus === "connected" ? "connected" : "not_configured"
+    if (integration.id ==="google-calendar") {
+      return googleStatus ==="connected" ?"connected" :"not_configured"
     }
-    if (integration.id === "microsoft-calendar") {
-      return microsoftStatus === "connected" ? "connected" : "not_configured"
+    if (integration.id ==="microsoft-calendar") {
+      return microsoftStatus ==="connected" ?"connected" :"not_configured"
     }
-    if (integration.id === "teams") {
-      return teamsStatus === "configured" ? "connected" : "not_configured"
+    if (integration.id ==="teams") {
+      return teamsStatus ==="configured" ?"connected" :"not_configured"
     }
     return integration.status
   })()
@@ -111,26 +111,26 @@ export function IntegrationDetailDrawer({
       const currentConfig = await fetch("/api/backend-proxy/llm-config").then(r => r.json())
 
       const res = await fetch("/api/backend-proxy/llm-config", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        method:"PUT",
+        headers: {"Content-Type":"application/json" },
         body: JSON.stringify({
-          primary_provider: currentConfig.primary_provider || "gemini",
-          fallback_order: currentConfig.fallback_order || ["gemini", "claude", "openai"],
+          primary_provider: currentConfig.primary_provider ||"gemini",
+          fallback_order: currentConfig.fallback_order || ["gemini","claude","openai"],
           providers: {
             [integration!.id]: { provider: integration!.id, api_key: apiKey, is_active: true },
           },
-          routing: currentConfig.routing || { chat: "gemini", embedding: "gemini", screening: "gemini", voice: "gemini" },
+          routing: currentConfig.routing || { chat:"gemini", embedding:"gemini", screening:"gemini", voice:"gemini" },
         }),
       })
 
       if (!res.ok) {
-        return { success: false, message: "Erro ao salvar configuração" }
+        return { success: false, message:"Erro ao salvar configuração" }
       }
 
       onConfigSaved?.()
       return { success: true, message: `${integration!.name} configurado com sucesso` }
     } catch {
-      return { success: false, message: "Erro de conexão" }
+      return { success: false, message:"Erro de conexão" }
     }
   }, [integration, onConfigSaved])
 
@@ -138,11 +138,11 @@ export function IntegrationDetailDrawer({
     const currentConfig = await fetch("/api/backend-proxy/llm-config").then(r => r.json())
 
     await fetch("/api/backend-proxy/llm-config", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
+      method:"PUT",
+      headers: {"Content-Type":"application/json" },
       body: JSON.stringify({
-        primary_provider: currentConfig.primary_provider || "gemini",
-        fallback_order: currentConfig.fallback_order || ["gemini", "claude", "openai"],
+        primary_provider: currentConfig.primary_provider ||"gemini",
+        fallback_order: currentConfig.fallback_order || ["gemini","claude","openai"],
         providers: {
           [integration!.id]: { _remove: true },
         },
@@ -162,8 +162,7 @@ export function IntegrationDetailDrawer({
         <SheetHeader className="pb-4 dark:border-lia-border-subtle">
           <div className="flex items-start gap-3">
             <div
-              className={cn(
-                "w-12 h-12 rounded-md flex items-center justify-center flex-shrink-0",
+              className={cn("w-12 h-12 rounded-md flex items-center justify-center flex-shrink-0",
                 textStyles.metricSmall,
                 integration.iconBg,
                 integration.iconColor
@@ -175,11 +174,11 @@ export function IntegrationDetailDrawer({
               <SheetTitle className={textStyles.titleLarge}>
                 {integration.name}
               </SheetTitle>
-              <SheetDescription className={cn(textStyles.description, "mt-1")}>
+              <SheetDescription className={cn(textStyles.description,"mt-1")}>
                 {integration.shortDescription}
               </SheetDescription>
               <div className="mt-2 flex flex-wrap gap-1.5">
-                {resolvedStatus === "connected" ? (
+                {resolvedStatus ==="connected" ? (
                   <Badge variant="success" className="text-[10px] gap-1 px-2 py-0.5">
                     <CheckCircle2 className="w-3 h-3" />
                     Conectado
@@ -220,16 +219,16 @@ export function IntegrationDetailDrawer({
 
         <div className="mt-6 space-y-6">
           <div>
-            <h4 className={cn(textStyles.label, "mb-2")}>
+            <h4 className={cn(textStyles.label,"mb-2")}>
               Sobre
             </h4>
-            <p className={cn(textStyles.description, "leading-relaxed")}>
+            <p className={cn(textStyles.description,"leading-relaxed")}>
               {integration.fullDescription}
             </p>
           </div>
 
           <div>
-            <h4 className={cn(textStyles.label, "mb-3")}>
+            <h4 className={cn(textStyles.label,"mb-3")}>
               Recursos & Capacidades
             </h4>
             <div className="flex flex-wrap gap-2">
@@ -250,7 +249,7 @@ export function IntegrationDetailDrawer({
             <ApiKeyConfigForm
               providerId={integration.id}
               providerName={integration.name}
-              configFieldName={integration.configFields?.[0] || "API_KEY"}
+              configFieldName={integration.configFields?.[0] ||"API_KEY"}
               savedKeyMasked={savedKeyMasked}
               onSave={handleSaveApiKey}
               onRemove={handleRemoveApiKey}
@@ -259,7 +258,7 @@ export function IntegrationDetailDrawer({
 
           {!isAiProvider && integration.configFields && integration.configFields.length > 0 && !isComingSoon && (
             <div>
-              <h4 className={cn(textStyles.label, "mb-2")}>
+              <h4 className={cn(textStyles.label,"mb-2")}>
                 Configuração Necessária
               </h4>
               <div className="space-y-1.5">
@@ -267,14 +266,13 @@ export function IntegrationDetailDrawer({
                   <div
                     key={field}
                     className={cn(
-                      cardStyles.flat,
-                      "flex items-center gap-2 px-3 py-2"
+                      cardStyles.flat,"flex items-center gap-2 px-3 py-2"
                     )}
                   >
                     <code className="text-[10px] font-mono text-lia-text-secondary dark:text-lia-text-secondary">
                       {field}
                     </code>
-                    {resolvedStatus === "connected" ? (
+                    {resolvedStatus ==="connected" ? (
                       <CheckCircle2 className="w-3 h-3 text-status-success ml-auto flex-shrink-0" />
                     ) : (
                       <AlertCircle className="w-3 h-3 text-lia-text-tertiary ml-auto flex-shrink-0" />
@@ -285,25 +283,25 @@ export function IntegrationDetailDrawer({
             </div>
           )}
 
-          {integration.id === "google-calendar" && (
+          {integration.id ==="google-calendar" && (
             <div className="space-y-3">
               {errorMsg && (
                 <div className="flex items-center gap-2 p-2 rounded-xl bg-status-error/10 border border-status-error/30 dark:border-status-error/30">
                   <AlertCircle className="w-3.5 h-3.5 text-status-error flex-shrink-0" />
-                  <p className={cn(textStyles.body, "text-status-error dark:text-status-error")}>
+                  <p className={cn(textStyles.body,"text-status-error dark:text-status-error")}>
                     {errorMsg}
                   </p>
                 </div>
               )}
-              {googleStatus !== "connected" && (
+              {googleStatus !=="connected" && (
                 <Button
                   size="sm"
                   variant="outline"
                   onClick={onConnectGoogle}
-                  disabled={googleStatus === "loading"}
+                  disabled={googleStatus ==="loading"}
                   className="rounded-md text-xs gap-2 w-full"
                 >
-                  {googleStatus === "loading" ? (
+                  {googleStatus ==="loading" ? (
                     <>
                       <Loader2 className="w-3 h-3 animate-spin motion-reduce:animate-none" />
                       Conectando...
@@ -319,12 +317,12 @@ export function IntegrationDetailDrawer({
             </div>
           )}
 
-          {integration.id === "microsoft-calendar" && microsoftStatus !== "connected" && (
+          {integration.id ==="microsoft-calendar" && microsoftStatus !=="connected" && (
             <div>
               <p className={textStyles.description}>
                 Configure as variáveis de ambiente Azure (
-                <code className="bg-lia-bg-tertiary dark:bg-lia-bg-primary px-1 rounded text-[10px]">AZURE_CLIENT_ID</code>,{" "}
-                <code className="bg-lia-bg-tertiary dark:bg-lia-bg-primary px-1 rounded text-[10px]">AZURE_CLIENT_SECRET</code>,{" "}
+                <code className="bg-lia-bg-tertiary dark:bg-lia-bg-primary px-1 rounded text-[10px]">AZURE_CLIENT_ID</code>,{""}
+                <code className="bg-lia-bg-tertiary dark:bg-lia-bg-primary px-1 rounded text-[10px]">AZURE_CLIENT_SECRET</code>,{""}
                 <code className="bg-lia-bg-tertiary dark:bg-lia-bg-primary px-1 rounded text-[10px]">AZURE_TENANT_ID</code>
                 ) para habilitar esta integração.
               </p>
@@ -332,7 +330,7 @@ export function IntegrationDetailDrawer({
           )}
 
           {isComingSoon && (
-            <div className={cn(cardStyles.flat, "flex items-center gap-3 px-4 py-3")}>
+            <div className={cn(cardStyles.flat,"flex items-center gap-3 px-4 py-3")}>
               <Clock className="w-4 h-4 text-lia-text-tertiary flex-shrink-0" />
               <p className={textStyles.description}>
                 Esta integração está no roadmap e será disponibilizada em breve. 
@@ -341,14 +339,14 @@ export function IntegrationDetailDrawer({
             </div>
           )}
 
-          {!isComingSoon && !isAiProvider && integration.id !== "google-calendar" && resolvedStatus !== "connected" && (
-            integration.category === "ats" ? (
+          {!isComingSoon && !isAiProvider && integration.id !=="google-calendar" && resolvedStatus !=="connected" && (
+            integration.category ==="ats" ? (
               <Button
                 size="sm"
                 className="w-full rounded-md text-xs gap-2"
                 onClick={() => {
                   onClose()
-                  window.location.href = "/integracoes-ats"
+                  window.location.href ="/integracoes-ats"
                 }}
               >
                 <ExternalLink className="w-3 h-3" />

@@ -1,20 +1,20 @@
 "use client";
 
-import React from "react";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
+import React from"react";
+import { Avatar, AvatarFallback } from"@/components/ui/avatar";
+import { Badge } from"@/components/ui/badge";
 import {
   Users,
   Network,
   Loader2,
   Linkedin,
-} from "lucide-react";
+} from"lucide-react";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
+} from"@/components/ui/dialog";
 import {
   type Department,
   type DepartmentMember,
@@ -22,7 +22,7 @@ import {
   getLevelLabel,
   getLevelColor,
 } from './companyTeamHub.types';
-import { textStyles } from "@/lib/design-tokens";
+import { textStyles } from"@/lib/design-tokens";
 
 export interface OrgChartDialogProps {
   orgChartDepartment: Department | null;
@@ -46,7 +46,7 @@ export function OrgChartDialog({
         <DialogHeader>
           <div className="flex items-center gap-3">
             <div
-              className={`w-10 h-10 rounded-md ${orgChartDepartment?.color || "bg-lia-btn-primary-bg text-lia-btn-primary-text"} flex items-center justify-center`}
+              className={`w-10 h-10 rounded-md ${orgChartDepartment?.color ||"bg-lia-btn-primary-bg text-lia-btn-primary-text"} flex items-center justify-center`}
             >
               <Network className="w-5 h-5" />
             </div>
@@ -85,7 +85,7 @@ export function OrgChartDialog({
                   )
                   .reduce(
                     (acc, member) => {
-                      const level = member.level || "outros";
+                      const level = member.level ||"outros";
                       if (!acc[level]) acc[level] = [];
                       acc[level].push(member);
                       return acc;
@@ -104,8 +104,8 @@ export function OrgChartDialog({
                       </Badge>
                       <div className="flex-1 h-px bg-lia-interactive-active"></div>
                       <span className="text-micro text-lia-text-tertiary">
-                        {members.length}{" "}
-                        {members.length === 1 ? "pessoa" : "pessoas"}
+                        {members.length}{""}
+                        {members.length === 1 ?"pessoa" :"pessoas"}
                       </span>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
@@ -124,7 +124,7 @@ export function OrgChartDialog({
                             ) : (
                               <AvatarFallback className="text-xs bg-lia-bg-tertiary dark:bg-lia-bg-elevated text-lia-text-primary">
                                 {member.name
-                                  .split(" ")
+                                  .split("")
                                   .map((n) => n[0])
                                   .slice(0, 2)
                                   .join("")
@@ -149,7 +149,7 @@ export function OrgChartDialog({
                               )}
                             </div>
                             <p className="text-micro text-lia-text-secondary truncate">
-                              {member.title || "Sem cargo"}
+                              {member.title ||"Sem cargo"}
                             </p>
                             {member.email && (
                               <p className="text-micro text-lia-text-tertiary truncate">

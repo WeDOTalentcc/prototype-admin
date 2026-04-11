@@ -1,16 +1,16 @@
-import { CURRENCY_SYMBOL } from "@/lib/pricing"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+import { CURRENCY_SYMBOL } from"@/lib/pricing"
+import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
+import { Badge } from"@/components/ui/badge"
 import {
   ConversionFunnelChart,
-} from "@/components/charts/interactive-charts"
+} from"@/components/charts/interactive-charts"
 import {
   DepartmentBudgetChart,
   SkillsGapChart,
-} from "@/components/charts/advanced-interactive-charts"
+} from"@/components/charts/advanced-interactive-charts"
 import {
   TrendingUp, Target, Users, DollarSign, Clock, Heart,
-} from "lucide-react"
+} from"lucide-react"
 
 export function StrategicTab() {
   return (
@@ -97,10 +97,10 @@ export function StrategicTab() {
           <CardContent>
             <div className="space-y-4">
               {[
-                { level: "Júnior", days: 18, color: "bg-status-success", target: 20 },
-                { level: "Pleno", days: 28, color: "bg-lia-bg-inverse dark:bg-lia-text-tertiary", target: 30 },
-                { level: "Sênior", days: 42, color: "bg-status-warning", target: 45 },
-                { level: "Liderança", days: 67, color: "bg-status-error", target: 60 },
+                { level:"Júnior", days: 18, color:"bg-status-success", target: 20 },
+                { level:"Pleno", days: 28, color:"bg-lia-bg-inverse dark:bg-lia-text-tertiary", target: 30 },
+                { level:"Sênior", days: 42, color:"bg-status-warning", target: 45 },
+                { level:"Liderança", days: 67, color:"bg-status-error", target: 60 },
               ].map((item, index) => (
                 <div key={item.level} className="space-y-2">
                   <div className="flex items-center justify-between text-sm">
@@ -110,11 +110,11 @@ export function StrategicTab() {
                       <Badge
                         className={
                           item.days <= item.target
-                            ? "bg-status-success/15 text-status-success"
-                            : "bg-status-error/15 text-status-error"
+                            ?""
+                            :""
                         }
                       >
-                        {item.days <= item.target ? "✓" : "!"}
+                        {item.days <= item.target ?"✓" :"!"}
                       </Badge>
                     </div>
                   </div>

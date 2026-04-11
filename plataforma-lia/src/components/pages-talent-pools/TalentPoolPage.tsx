@@ -1,23 +1,23 @@
 "use client"
 
-import React, { useState, useEffect, useCallback } from "react"
+import React, { useState, useEffect, useCallback } from"react"
 import {
   Users, Search, Bot, Settings, Plus, ArrowRight, Heart,
   Eye, Mail, MoreHorizontal, ChevronDown, Filter,
   Briefcase, Pause, Play, Archive
-} from "lucide-react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Progress } from "@/components/ui/progress"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+} from"lucide-react"
+import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
+import { Badge } from"@/components/ui/badge"
+import { Button } from"@/components/ui/button"
+import { Progress } from"@/components/ui/progress"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from"@/components/ui/dialog"
+import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
 import {
   textStyles, cardStyles, badgeStyles, buttonStyles,
   tabStyles, actionButtonStyles
-} from "@/lib/design-tokens"
-import CandidateOriginBadge from "@/components/pages-agent-studio/CandidateOriginBadge"
-import VoiceScreeningButton from "@/components/pages-agent-studio/VoiceScreeningButton"
+} from"@/lib/design-tokens"
+import CandidateOriginBadge from"@/components/pages-agent-studio/CandidateOriginBadge"
+import VoiceScreeningButton from"@/components/pages-agent-studio/VoiceScreeningButton"
 
 // ---------- Types ----------
 
@@ -25,7 +25,7 @@ interface TalentPool {
   id: string
   name: string
   description: string
-  status: "active" | "paused" | "archived"
+  status:"active" |"paused" |"archived"
   ideal_profile_id: string | null
   ideal_profile_name: string | null
   agent_sourcing_enabled: boolean
@@ -39,8 +39,8 @@ interface TalentPool {
 
 interface PoolCandidate {
   id: string
-  stage: "discovered" | "contacted" | "screening" | "screened" | "ready"
-  origin: "agent" | "manual" | "import" | "search"
+  stage:"discovered" |"contacted" |"screening" |"screened" |"ready"
+  origin:"agent" |"manual" |"import" |"search"
   fit_score: number | null
   notes: string | null
   moved_to_job_id: number | null
@@ -64,24 +64,24 @@ interface PoolCandidate {
 // ---------- Constants ----------
 
 const STAGES = [
-  { id: "discovered", label: "Descoberto", icon: "🔍", color: "bg-lia-bg-tertiary text-lia-text-secondary" },
-  { id: "contacted", label: "Contatado", icon: "📧", color: "bg-blue-100 text-blue-700" },
-  { id: "screening", label: "Em triagem", icon: "🔄", color: "bg-yellow-100 text-yellow-700" },
-  { id: "screened", label: "Triado", icon: "✅", color: "bg-green-100 text-green-700" },
-  { id: "ready", label: "Pronto", icon: "🎯", color: "bg-purple-100 text-purple-700" },
+  { id:"discovered", label:"Descoberto", icon:"🔍", color:"bg-lia-bg-tertiary text-lia-text-secondary" },
+  { id:"contacted", label:"Contatado", icon:"📧", color:"bg-blue-100 text-blue-700" },
+  { id:"screening", label:"Em triagem", icon:"🔄", color:"bg-yellow-100 text-yellow-700" },
+  { id:"screened", label:"Triado", icon:"✅", color:"bg-green-100 text-green-700" },
+  { id:"ready", label:"Pronto", icon:"🎯", color:"bg-purple-100 text-purple-700" },
 ] as const
 
 const ORIGIN_ICONS: Record<string, { icon: string; label: string }> = {
-  agent: { icon: "🤖", label: "Sourciado pelo Agente" },
-  manual: { icon: "👤", label: "Adicionado manualmente" },
-  import: { icon: "📥", label: "Importado" },
-  search: { icon: "🔍", label: "Via busca" },
+  agent: { icon:"🤖", label:"Sourciado pelo Agente" },
+  manual: { icon:"👤", label:"Adicionado manualmente" },
+  import: { icon:"📥", label:"Importado" },
+  search: { icon:"🔍", label:"Via busca" },
 }
 
 const TABS = [
-  { id: "candidates", label: "Candidatos", icon: Users },
-  { id: "agents", label: "Agentes", icon: Bot },
-  { id: "config", label: "Configurações", icon: Settings },
+  { id:"candidates", label:"Candidatos", icon: Users },
+  { id:"agents", label:"Agentes", icon: Bot },
+  { id:"config", label:"Configurações", icon: Settings },
 ] as const
 
 // ---------- Stage Progress Component ----------
@@ -96,7 +96,7 @@ function StageProgress({ stage }: { stage: string }) {
         <div
           key={s.id}
           className={`w-2 h-2 rounded-full ${
-            i <= stageIdx ? "bg-lia-bg-inverse" : "bg-lia-interactive-active"
+            i <= stageIdx ?"bg-lia-bg-inverse" :"bg-lia-interactive-active"
           }`}
           title={s.label}
         />
@@ -141,7 +141,7 @@ export default function TalentPoolPage({
   const loadCandidates = useCallback(async () => {
     try {
       setIsLoading(true)
-      const stageParam = stageFilter ? `?stage=${stageFilter}` : ""
+      const stageParam = stageFilter ? `?stage=${stageFilter}` :""
       const res = await fetch(`/api/backend-proxy/talent-pools/${poolId}/candidates${stageParam}`)
       const data = await res.json()
       setCandidates(data?.data?.map((d: { attributes: PoolCandidate }) => d.attributes) || [])
@@ -176,8 +176,8 @@ export default function TalentPoolPage({
     setIsCreatingJob(true)
     try {
       const res = await fetch(`/api/backend-proxy/talent-pools/${poolId}/create-job`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+        method:"POST",
+        headers: {"Content-Type":"application/json" },
       })
       const data = await res.json()
       if (data?.job_id && onNavigateToJob) onNavigateToJob(data.job_id)
@@ -190,11 +190,11 @@ export default function TalentPoolPage({
 
   const togglePoolStatus = async () => {
     if (!pool) return
-    const newStatus = pool.status === "active" ? "paused" : "active"
+    const newStatus = pool.status ==="active" ?"paused" :"active"
     try {
       await fetch(`/api/backend-proxy/talent-pools/${poolId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        method:"PATCH",
+        headers: {"Content-Type":"application/json" },
         body: JSON.stringify({ talent_pool: { status: newStatus } }),
       })
       loadPool()
@@ -217,8 +217,8 @@ export default function TalentPoolPage({
             )}
           </div>
           <div className="flex items-center gap-3">
-            <Badge className={pool.status === "active" ? badgeStyles.success : badgeStyles.warning}>
-              {pool.status === "active" ? "Ativo" : pool.status === "paused" ? "Pausado" : "Arquivado"}
+            <Badge className={pool.status ==="active" ? badgeStyles.success : badgeStyles.warning}>
+              {pool.status ==="active" ?"Ativo" : pool.status ==="paused" ?"Pausado" :"Arquivado"}
             </Badge>
             {pool.ideal_profile_name && (
               <span className={textStyles.caption}>Arquétipo: {pool.ideal_profile_name}</span>
@@ -226,9 +226,9 @@ export default function TalentPoolPage({
             <Button
               className={buttonStyles.outline}
               onClick={togglePoolStatus}
-              title={pool.status === "active" ? "Pausar banco" : "Reativar banco"}
+              title={pool.status ==="active" ?"Pausar banco" :"Reativar banco"}
             >
-              {pool.status === "active" ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+              {pool.status ==="active" ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
             </Button>
             {pool.ideal_profile_id && (
               <Button
@@ -237,7 +237,7 @@ export default function TalentPoolPage({
                 disabled={isCreatingJob}
               >
                 <Briefcase className="w-4 h-4 mr-1" />
-                {isCreatingJob ? "Criando..." : "Criar Vaga"}
+                {isCreatingJob ?"Criando..." :"Criar Vaga"}
               </Button>
             )}
           </div>
@@ -284,7 +284,7 @@ export default function TalentPoolPage({
 
       {/* Content */}
       <div className="flex-1 overflow-hidden px-6 py-4">
-        {activeTab === "candidates" && (
+        {activeTab ==="candidates" && (
           <CandidatesTab
             candidates={candidates}
             stageFilter={stageFilter}
@@ -298,11 +298,11 @@ export default function TalentPoolPage({
           />
         )}
 
-        {activeTab === "agents" && (
+        {activeTab ==="agents" && (
           <AgentsTabWrapper pool={pool} />
         )}
 
-        {activeTab === "config" && (
+        {activeTab ==="config" && (
           <ConfigTab pool={pool} onUpdate={loadPool} />
         )}
       </div>
@@ -353,7 +353,7 @@ function CandidatesTab({
           <Filter className="w-4 h-4 text-lia-text-tertiary" />
           <button
             onClick={() => setStageFilter(null)}
-            className={`text-sm px-2 py-1 rounded ${!stageFilter ? "bg-lia-bg-inverse text-white" : "text-lia-text-secondary hover:bg-lia-bg-tertiary"}`}
+            className={`text-sm px-2 py-1 rounded ${!stageFilter ?"bg-lia-bg-inverse text-white" :"text-lia-text-secondary hover:bg-lia-bg-tertiary"}`}
           >
             Todos
           </button>
@@ -361,7 +361,7 @@ function CandidatesTab({
             <button
               key={s.id}
               onClick={() => setStageFilter(s.id)}
-              className={`text-sm px-2 py-1 rounded ${stageFilter === s.id ? "bg-lia-bg-inverse text-white" : "text-lia-text-secondary hover:bg-lia-bg-tertiary"}`}
+              className={`text-sm px-2 py-1 rounded ${stageFilter === s.id ?"bg-lia-bg-inverse text-white" :"text-lia-text-secondary hover:bg-lia-bg-tertiary"}`}
             >
               {s.icon} {s.label}
             </button>
@@ -414,7 +414,7 @@ function CandidatesTab({
                 return (
                   <tr
                     key={tpc.id}
-                    className=" hover:bg-lia-bg-secondary transition-colors"
+                    className="hover:bg-lia-bg-secondary transition-colors"
                   >
                     <td className="py-3 px-3">
                       <input
@@ -428,7 +428,7 @@ function CandidatesTab({
                       <div className="flex items-center gap-3">
                         <Avatar className="w-8 h-8">
                           <AvatarImage src={c.avatar_url || undefined} />
-                          <AvatarFallback>{c.name?.charAt(0) || "?"}</AvatarFallback>
+                          <AvatarFallback>{c.name?.charAt(0) ||"?"}</AvatarFallback>
                         </Avatar>
                         <div>
                           <button
@@ -438,7 +438,7 @@ function CandidatesTab({
                             {c.name}
                           </button>
                           <p className={textStyles.caption}>
-                            {[c.role_name, c.current_company].filter(Boolean).join(" · ")}
+                            {[c.role_name, c.current_company].filter(Boolean).join(" ·")}
                           </p>
                         </div>
                       </div>
@@ -462,15 +462,15 @@ function CandidatesTab({
                     </td>
                     <td className="py-3 px-3">
                       <CandidateOriginBadge
-                        origin={tpc.origin as "agent" | "manual" | "import" | "search"}
-                        detail={tpc.origin === "agent" ? "Agente Sourcing" : undefined}
+                        origin={tpc.origin as"agent" |"manual" |"import" |"search"}
+                        detail={tpc.origin ==="agent" ?"Agente Sourcing" : undefined}
                         date={tpc.created_at}
                         size="sm"
                       />
                     </td>
                     <td className="py-3 px-3">
                       <div className="flex items-center gap-1">
-                        {tpc.stage === "ready" && (
+                        {tpc.stage ==="ready" && (
                           <button
                             className={actionButtonStyles.smPrimary}
                             title="Mover para Vaga"
@@ -508,8 +508,8 @@ function CandidatesTab({
 // ---------- Agents Tab — delegates to real AgentsTab from 6.2 ----------
 
 // Import the real AgentsTab component created in Phase 6.2
-import RealAgentsTab from "../pages-agent-studio/AgentsTab"
-import CalibrationCardModal from "../pages-agent-studio/CalibrationCardModal"
+import RealAgentsTab from"../pages-agent-studio/AgentsTab"
+import CalibrationCardModal from"../pages-agent-studio/CalibrationCardModal"
 
 function AgentsTabWrapper({ pool }: { pool: TalentPool }) {
   const [calibratingAgentId, setCalibratingAgentId] = useState<string | null>(null)
@@ -544,7 +544,7 @@ function ConfigTab({ pool, onUpdate }: { pool: TalentPool; onUpdate: () => void 
         </CardHeader>
         <CardContent>
           <p className={textStyles.body}>
-            {pool.ideal_profile_name || "Nenhum arquétipo vinculado"}
+            {pool.ideal_profile_name ||"Nenhum arquétipo vinculado"}
           </p>
         </CardContent>
       </Card>
@@ -554,7 +554,7 @@ function ConfigTab({ pool, onUpdate }: { pool: TalentPool; onUpdate: () => void 
         </CardHeader>
         <CardContent>
           <p className={textStyles.body}>
-            {pool.screening_approved ? "Aprovadas" : "Pendente de aprovação"}
+            {pool.screening_approved ?"Aprovadas" :"Pendente de aprovação"}
           </p>
         </CardContent>
       </Card>
@@ -594,7 +594,7 @@ export function CreatePoolModal({ onClose, onCreated }: CreatePoolModalProps) {
         const mapped = (data?.archetypes || data?.data || []).map(
           (a: { id: string; name?: string; attributes?: { name: string; seniority_level?: string } }) => ({
             id: a.id,
-            name: a.attributes?.name || a.name || "Sem nome",
+            name: a.attributes?.name || a.name ||"Sem nome",
             seniority_level: a.attributes?.seniority_level || null,
           })
         )
@@ -609,8 +609,8 @@ export function CreatePoolModal({ onClose, onCreated }: CreatePoolModalProps) {
     setIsCreating(true)
     try {
       const res = await fetch("/api/backend-proxy/talent-pools", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+        method:"POST",
+        headers: {"Content-Type":"application/json" },
         body: JSON.stringify({
           talent_pool: {
             name: name.trim(),
@@ -713,7 +713,7 @@ export function CreatePoolModal({ onClose, onCreated }: CreatePoolModalProps) {
             disabled={!name.trim() || isCreating}
           >
             <Plus className="w-4 h-4 mr-1" />
-            {isCreating ? "Criando..." : "Criar Banco"}
+            {isCreating ?"Criando..." :"Criar Banco"}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -733,9 +733,9 @@ function MoveToJobModal({ poolId, selectedIds, candidates, onClose, onMoved }: M
   const hasScreeningData = candidates.some(c => c.screening_data && Object.keys(c.screening_data).length > 0)
 
   const availableStages = [
-    { id: "screening", label: "Triagem", disabled: hasScreeningData },
-    { id: "interview", label: "Entrevista", disabled: false },
-    { id: "final", label: "Avaliação Final", disabled: false },
+    { id:"screening", label:"Triagem", disabled: hasScreeningData },
+    { id:"interview", label:"Entrevista", disabled: false },
+    { id:"final", label:"Avaliação Final", disabled: false },
   ]
 
   useEffect(() => {
@@ -751,8 +751,8 @@ function MoveToJobModal({ poolId, selectedIds, candidates, onClose, onMoved }: M
     try {
       const candidateIds = candidates.map(c => c.candidate.id)
       await fetch(`/api/backend-proxy/talent-pools/${poolId}/move-to-job`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+        method:"POST",
+        headers: {"Content-Type":"application/json" },
         body: JSON.stringify({
           job_id: selectedJobId,
           target_stage: targetStage,
@@ -772,7 +772,7 @@ function MoveToJobModal({ poolId, selectedIds, candidates, onClose, onMoved }: M
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className={textStyles.h3}>
-            Mover {candidates.length} candidato{candidates.length > 1 ? "s" : ""} para vaga
+            Mover {candidates.length} candidato{candidates.length > 1 ?"s" :""} para vaga
           </DialogTitle>
         </DialogHeader>
 
@@ -781,7 +781,7 @@ function MoveToJobModal({ poolId, selectedIds, candidates, onClose, onMoved }: M
           <div>
             <label className={textStyles.label}>Vaga destino</label>
             <select
-              value={selectedJobId || ""}
+              value={selectedJobId ||""}
               onChange={e => setSelectedJobId(Number(e.target.value))}
               className="mt-1 w-full border border-lia-border-default rounded-xl px-3 py-2 text-sm"
             >
@@ -799,7 +799,7 @@ function MoveToJobModal({ poolId, selectedIds, candidates, onClose, onMoved }: M
               {availableStages.map(s => (
                 <label
                   key={s.id}
-                  className={`flex items-center gap-2 ${s.disabled ? "opacity-40 cursor-not-allowed" : "cursor-pointer"}`}
+                  className={`flex items-center gap-2 ${s.disabled ?"opacity-40 cursor-not-allowed" :"cursor-pointer"}`}
                 >
                   <input
                     type="radio"
@@ -829,7 +829,7 @@ function MoveToJobModal({ poolId, selectedIds, candidates, onClose, onMoved }: M
             onClick={handleMove}
             disabled={!selectedJobId || isMoving}
           >
-            {isMoving ? "Movendo..." : "Mover candidatos"}
+            {isMoving ?"Movendo..." :"Mover candidatos"}
           </Button>
         </DialogFooter>
       </DialogContent>

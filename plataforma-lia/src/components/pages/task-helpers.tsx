@@ -3,26 +3,26 @@
 // Camada 2 (componentes puros): Helpers de formatação e badges para TasksPage
 // Sem estado próprio — apenas funções e componentes de apresentação
 
-import React from "react"
-import { Badge } from "@/components/ui/badge"
-import { MessageSquare, Calendar, Search, AlertTriangle, AlertCircle, CheckCircle, Info } from "lucide-react"
+import React from"react"
+import { Badge } from"@/components/ui/badge"
+import { MessageSquare, Calendar, Search, AlertTriangle, AlertCircle, CheckCircle, Info } from"lucide-react"
 
 // --- Helpers de estilo ---
 
 export const getTaskPriorityStyle = (priority: 'high' | 'medium' | 'low') => {
   switch (priority) {
-    case 'high': return 'bg-status-error/15 text-status-error'
-    case 'medium': return 'bg-wedo-orange/15 text-wedo-orange'
-    case 'low': return 'bg-wedo-green/15 text-wedo-green'
+    case 'high': return ''
+    case 'medium': return ''
+    case 'low': return ''
   }
 }
 
 export const getAlertSeverityStyle = (severity: 'critical' | 'high' | 'medium' | 'low') => {
   switch (severity) {
-    case 'critical': return 'bg-status-error/15 text-status-error'
-    case 'high': return 'bg-status-error/15 text-status-error'
-    case 'medium': return 'bg-wedo-orange/15 text-wedo-orange'
-    case 'low': return 'bg-wedo-cyan/15 text-wedo-cyan-dark'
+    case 'critical': return ''
+    case 'high': return ''
+    case 'medium': return ''
+    case 'low': return ''
   }
 }
 

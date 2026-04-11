@@ -1,19 +1,19 @@
 "use client"
 
-import React from "react"
-import { Label } from "@/components/ui/label"
-import { Badge } from "@/components/ui/badge"
+import React from"react"
+import { Label } from"@/components/ui/label"
+import { Badge } from"@/components/ui/badge"
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/components/ui/tooltip"
+} from"@/components/ui/tooltip"
 import {
   FileText, MessageSquare, Send, CheckCircle, Info
-} from "lucide-react"
-import { cn } from "@/lib/utils"
-import type { CollectionMode } from "@/hooks/use-data-request-config"
+} from"lucide-react"
+import { cn } from"@/lib/utils"
+import type { CollectionMode } from"@/hooks/use-data-request-config"
 
 interface DataRequestCollectionSectionProps {
   isEditing: boolean
@@ -54,21 +54,18 @@ export function DataRequestCollectionSection({
               <button
                 key={option.value}
                 onClick={() => updateGeneralConfig({ collectionMode: option.value })}
-                className={cn(
-                  "p-3 rounded-md border-2 text-left transition-colors",
+                className={cn("p-3 rounded-md border-2 text-left transition-colors",
                   config.collectionMode === option.value
-                    ? "border-lia-btn-primary-bg bg-lia-bg-secondary dark:border-lia-border-subtle dark:bg-lia-bg-secondary"
-                    : "border-lia-border-subtle dark:border-lia-border-subtle hover:border-lia-border-default"
+                    ?"border-lia-btn-primary-bg bg-lia-bg-secondary dark:border-lia-border-subtle dark:bg-lia-bg-secondary"
+                    :"border-lia-border-subtle dark:border-lia-border-subtle hover:border-lia-border-default"
                 )}
               >
                 <div className="flex items-center gap-2 mb-1">
-                  <option.icon className={cn(
-                    "w-4 h-4",
-                    config.collectionMode === option.value ? "text-lia-text-primary" : "text-lia-text-tertiary"
+                  <option.icon className={cn("w-4 h-4",
+                    config.collectionMode === option.value ?"text-lia-text-primary" :"text-lia-text-tertiary"
                   )} />
-                  <span className={cn(
-                    "text-xs font-medium",
-                    config.collectionMode === option.value ? "text-lia-text-primary" : "text-lia-text-primary"
+                  <span className={cn("text-xs font-medium",
+                    config.collectionMode === option.value ?"text-lia-text-primary" :"text-lia-text-primary"
                   )}>
                     {option.label}
                   </span>

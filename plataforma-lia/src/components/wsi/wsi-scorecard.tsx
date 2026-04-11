@@ -1,16 +1,16 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Progress } from "@/components/ui/progress"
+import { useState, useEffect } from"react"
+import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
+import { Badge } from"@/components/ui/badge"
+import { Button } from"@/components/ui/button"
+import { Progress } from"@/components/ui/progress"
 import {
   Brain, Target, MessageSquare, TrendingUp, AlertTriangle,
   CheckCircle, ChevronDown, ChevronUp, Award, BarChart3,
   Star, AlertCircle, FileText, Loader2
-} from "lucide-react"
-import { liaApi, WSIResultsResponse } from "@/services/lia-api"
+} from"lucide-react"
+import { liaApi, WSIResultsResponse } from"@/services/lia-api"
 
 interface WSIScorecardProps {
   candidateId: string

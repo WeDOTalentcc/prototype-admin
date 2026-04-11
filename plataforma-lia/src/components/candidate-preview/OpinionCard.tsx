@@ -1,13 +1,13 @@
 "use client"
 
-import { Badge } from "@/components/ui/badge"
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import { Badge } from"@/components/ui/badge"
+import { Tooltip, TooltipContent, TooltipTrigger } from"@/components/ui/tooltip"
 import { textStyles, cardStyles, badgeStyles } from '@/lib/design-tokens'
 import {
   X, CheckCircle, AlertCircle, Clock, Brain, Target,
   TrendingUp, Edit, BarChart3, Briefcase, Copy, Check,
   ChevronUp, ChevronDown
-} from "lucide-react"
+} from"lucide-react"
 
 interface OpinionCardProps {
   opinion: Record<string, unknown>

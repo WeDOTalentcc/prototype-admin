@@ -1,10 +1,10 @@
 "use client"
 
 import { textStyles, badgeStyles } from '@/lib/design-tokens'
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Brain, Clock } from "lucide-react"
+import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
+import { Badge } from"@/components/ui/badge"
+import { Button } from"@/components/ui/button"
+import { Brain, Clock } from"lucide-react"
 import type { OpinionsData } from './ProfileTabTypes'
 
 interface ProfileLiaOpinionCardProps {

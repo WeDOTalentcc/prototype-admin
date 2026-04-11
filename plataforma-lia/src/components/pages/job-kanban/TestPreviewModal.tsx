@@ -1,7 +1,7 @@
 "use client"
 
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
+import { Button } from"@/components/ui/button"
+import { Badge } from"@/components/ui/badge"
 import {
   AlertCircle,
   CheckCircle,
@@ -10,7 +10,7 @@ import {
   Send,
   Target,
   X,
-} from "lucide-react"
+} from"lucide-react"
 
 interface TestPreviewModalProps {
   open: boolean
@@ -139,7 +139,7 @@ export function TestPreviewModal({ open, onClose }: TestPreviewModalProps) {
                   </div>
                   <div className="flex-1">
                     <p className="text-lia-text-primary font-medium">
-                      No processo de Design Thinking, qual etapa vem imediatamente após a fase de "Definir"?
+                      No processo de Design Thinking, qual etapa vem imediatamente após a fase de"Definir"?
                     </p>
                     <div className="flex items-center gap-2 mt-2">
                       <div className="flex items-center gap-1 text-xs text-lia-text-primary">

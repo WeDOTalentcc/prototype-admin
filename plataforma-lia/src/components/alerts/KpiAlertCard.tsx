@@ -1,16 +1,16 @@
 "use client"
 
-import React from "react"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
+import React from"react"
+import { Button } from"@/components/ui/button"
+import { Badge } from"@/components/ui/badge"
 import {
   AlertTriangle, CheckCircle, Clock, TrendingDown, TrendingUp,
   Bell, Eye, Users, Target,
   Send, AlertCircle, Info,
   Archive
-} from "lucide-react"
-import { Calendar } from "lucide-react"
-import type { KPIAlert } from "./useKpiAlerts"
+} from"lucide-react"
+import { Calendar } from"lucide-react"
+import type { KPIAlert } from"./useKpiAlerts"
 
 function getAlertIcon(type: KPIAlert['type']) {
   switch (type) {
@@ -23,10 +23,10 @@ function getAlertIcon(type: KPIAlert['type']) {
 
 function getAlertBadgeColor(type: KPIAlert['type']) {
   switch (type) {
-    case 'critical': return 'bg-status-error/10 text-status-error border-status-error/30'
-    case 'warning': return 'bg-status-warning/10 text-status-warning border-status-warning/30'
+    case 'critical': return ' border-status-error/30'
+    case 'warning': return ' border-status-warning/30'
     case 'info': return 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary border-lia-border-default dark:border-lia-border-default'
-    case 'success': return 'bg-status-success/10 text-status-success border-status-success/30'
+    case 'success': return ' border-status-success/30'
   }
 }
 

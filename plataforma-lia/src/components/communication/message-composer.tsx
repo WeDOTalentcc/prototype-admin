@@ -1,16 +1,16 @@
 "use client"
 
-import React, { useState, useRef, useCallback, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Card, CardContent } from "@/components/ui/card"
-import { VariableSelector } from "@/components/ui/variable-selector"
+import React, { useState, useRef, useCallback, useEffect } from"react"
+import { Button } from"@/components/ui/button"
+import { Badge } from"@/components/ui/badge"
+import { Card, CardContent } from"@/components/ui/card"
+import { VariableSelector } from"@/components/ui/variable-selector"
 import {
   Brain, Wand2, Loader2, Check, X, AlertCircle,
   Mail, MessageSquare, ChevronDown, RefreshCw
-} from "lucide-react"
-import { useCommunicationTemplates, CommunicationTemplate, TemplateSituation } from "@/hooks/use-communication-templates"
-import { ThinkingDots } from "@/components/ui/thinking-dots"
+} from"lucide-react"
+import { useCommunicationTemplates, CommunicationTemplate, TemplateSituation } from"@/hooks/use-communication-templates"
+import { ThinkingDots } from"@/components/ui/thinking-dots"
 
 export type MessageChannel = 'email' | 'whatsapp'
 export type ToneStyle = 'profissional' | 'caloroso' | 'urgente' | 'follow_up'
@@ -411,7 +411,7 @@ export function MessageComposer({
       {aiResultModal?.show && (
         <div className="fixed inset-0 bg-lia-overlay flex items-center justify-center z-50 p-4">
           <Card className="w-full max-w-2xl max-h-[90vh] overflow-hidden rounded-xl bg-lia-bg-primary">
-            <div className=" p-4">
+            <div className="p-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-md flex items-center justify-center bg-lia-interactive-active/30">

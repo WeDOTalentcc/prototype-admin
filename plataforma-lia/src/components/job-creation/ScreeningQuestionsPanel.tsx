@@ -1,22 +1,22 @@
 "use client"
 
-import React from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import React from"react"
+import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
+import { Button } from"@/components/ui/button"
+import { Badge } from"@/components/ui/badge"
+import { ScrollArea } from"@/components/ui/scroll-area"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from"@/components/ui/select"
 import {
   Brain, RefreshCw, Target, Loader2, AlertCircle,
   Zap, MessageCircle, Clock, Repeat, FileText, Mic, Bell,
   ArrowRight, AlertTriangle
-} from "lucide-react"
-import { cn } from "@/lib/utils"
-import { AIDisclaimer } from "@/components/ui/ai-disclaimer"
-import type { ScreeningQuestionsPanelProps } from "./ScreeningPanelConstants"
-import { WSI_BLOCKS } from "./ScreeningPanelConstants"
-import { useScreeningQuestionsPanel } from "./useScreeningQuestionsPanel"
-import { ScreeningBlockSection, SuggestionCard } from "./ScreeningBlockSection"
+} from"lucide-react"
+import { cn } from"@/lib/utils"
+import { AIDisclaimer } from"@/components/ui/ai-disclaimer"
+import type { ScreeningQuestionsPanelProps } from"./ScreeningPanelConstants"
+import { WSI_BLOCKS } from"./ScreeningPanelConstants"
+import { useScreeningQuestionsPanel } from"./useScreeningQuestionsPanel"
+import { ScreeningBlockSection, SuggestionCard } from"./ScreeningBlockSection"
 
 export function ScreeningQuestionsPanel({
   jobTitle,
@@ -111,7 +111,7 @@ export function ScreeningQuestionsPanel({
           <div className="flex items-center gap-2">
             <Brain className="h-4 w-4 text-wedo-cyan" />
             <CardTitle className="text-sm font-medium">Roteiro WSI de Triagem</CardTitle>
-            <Badge variant="outline" className="text-micro px-1.5 py-0 rounded-full bg-status-success/10 text-status-success border-status-success/30">
+            <Badge variant="outline" className="text-micro px-1.5 py-0 rounded-full  border-status-success/30">
               Ativo
             </Badge>
             <AIDisclaimer />
@@ -123,12 +123,12 @@ export function ScreeningQuestionsPanel({
         <div className="grid grid-cols-2 gap-3 mb-4">
           <div
             className={cn("p-3 rounded-md border cursor-pointer transition-colors duration-200",
-              screeningModel === 'compact' ? "border-lia-btn-primary-bg bg-lia-bg-secondary ring-1 ring-lia-btn-primary-bg/10" : "border-lia-border-subtle hover:border-lia-border-default"
+              screeningModel === 'compact' ?"border-lia-btn-primary-bg bg-lia-bg-secondary ring-1 ring-lia-btn-primary-bg/10" :"border-lia-border-subtle hover:border-lia-border-default"
             )}
             onClick={() => handleModelChange('compact')}
           >
             <div className="flex items-center gap-2 mb-1">
-              <Zap className={cn("h-4 w-4", screeningModel === 'compact' ? "text-lia-text-primary" : "lia-text-secondary")} />
+              <Zap className={cn("h-4 w-4", screeningModel === 'compact' ?"text-lia-text-primary" :"lia-text-secondary")} />
               <span className="text-xs font-medium text-lia-text-primary">Compacto</span>
             </div>
             <p className="text-xs text-lia-text-secondary">8 perguntas WSI • ~15 min</p>
@@ -136,12 +136,12 @@ export function ScreeningQuestionsPanel({
           </div>
           <div
             className={cn("p-3 rounded-md border cursor-pointer transition-colors duration-200",
-              screeningModel === 'full' ? "border-lia-btn-primary-bg bg-lia-bg-secondary ring-1 ring-lia-btn-primary-bg/10" : "border-lia-border-subtle hover:border-lia-border-default"
+              screeningModel === 'full' ?"border-lia-btn-primary-bg bg-lia-bg-secondary ring-1 ring-lia-btn-primary-bg/10" :"border-lia-border-subtle hover:border-lia-border-default"
             )}
             onClick={() => handleModelChange('full')}
           >
             <div className="flex items-center gap-2 mb-1">
-              <Target className={cn("h-4 w-4", screeningModel === 'full' ? "text-lia-text-primary" : "lia-text-secondary")} />
+              <Target className={cn("h-4 w-4", screeningModel === 'full' ?"text-lia-text-primary" :"lia-text-secondary")} />
               <span className="text-xs font-medium text-lia-text-primary">Completo</span>
             </div>
             <p className="text-xs text-lia-text-secondary">12 perguntas WSI • ~30 min</p>

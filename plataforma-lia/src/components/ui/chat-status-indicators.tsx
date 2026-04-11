@@ -1,12 +1,12 @@
 "use client"
 
-import React, { useState, useEffect } from "react"
+import React, { useState, useEffect } from"react"
 import {
   Brain, Loader2, CheckCircle, Star, ChevronRight,
   FileText, Search, Target, ArrowRight, Calendar
-} from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
+} from"lucide-react"
+import { Button } from"@/components/ui/button"
+import { Badge } from"@/components/ui/badge"
 
 // Thinking Indicator Component
 export const ThinkingIndicator = ({ message }: { message?: string }) => {
@@ -14,7 +14,7 @@ export const ThinkingIndicator = ({ message }: { message?: string }) => {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setDots(prev => prev.length >= 3 ? "" : prev + ".")
+      setDots(prev => prev.length >= 3 ?"" : prev +".")
     }, 500)
     return () => clearInterval(interval)
   }, [])
@@ -46,7 +46,7 @@ export const ThinkingIndicator = ({ message }: { message?: string }) => {
 interface ProgressStep {
   id: string
   label: string
-  status: "pending" | "processing" | "completed" | "error"
+  status:"pending" |"processing" |"completed" |"error"
   details?: string
   icon?: React.ComponentType<{ className?: string }>
 }
@@ -63,9 +63,9 @@ export const ProgressSteps = ({ steps, currentStep }: {
         {steps.map((step, index) => {
           const Icon = step.icon || FileText
           const isActive = step.id === currentStep
-          const isCompleted = step.status === "completed"
-          const isProcessing = step.status === "processing"
-          const isError = step.status === "error"
+          const isCompleted = step.status ==="completed"
+          const isProcessing = step.status ==="processing"
+          const isError = step.status ==="error"
 
           return (
             <div
@@ -127,7 +127,7 @@ export const CommandExecution = ({
   output
 }: {
   command: string
-  status: "executing" | "completed" | "error"
+  status:"executing" |"completed" |"error"
   output?: string
 }) => {
   return (
@@ -136,8 +136,8 @@ export const CommandExecution = ({
     >
       <div className="flex items-center gap-2 mb-2">
         <div className={`w-2 h-2 rounded-full ${
- status === "executing" ? 'bg-lia-border-medium animate-pulse motion-reduce:animate-none' :
-          status === "completed" ? 'bg-lia-text-secondary' :
+ status ==="executing" ? 'bg-lia-border-medium animate-pulse motion-reduce:animate-none' :
+          status ==="completed" ? 'bg-lia-text-secondary' :
           'bg-lia-text-secondary'
         }`} />
         <span className="text-lia-text-primary text-xs">Executando comando:</span>
@@ -153,7 +153,7 @@ export const CommandExecution = ({
         </div>
       )}
 
-      {status === "executing" && (
+      {status ==="executing" && (
         <div className="flex items-center gap-2 mt-2" role="status" aria-live="polite" aria-label="Carregando...">
           <Loader2 className="w-3 h-3 animate-spin motion-reduce:animate-none text-lia-text-secondary" />
           <span className="text-xs text-lia-text-primary">Processando...</span>
@@ -171,14 +171,14 @@ export const FileCreationIndicator = ({
 }: {
   fileName: string
   fileType: string
-  status: "creating" | "created"
+  status:"creating" |"created"
 }) => {
   return (
     <div
       className="flex items-center gap-3 p-3 bg-lia-bg-tertiary rounded-xl border border-lia-border-subtle mb-3 animate-fade-in-up"
     >
       <div className="flex items-center justify-center w-8 h-8 bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-full" role="status" aria-live="polite" aria-label="Carregando...">
-        {status === "creating" ? (
+        {status ==="creating" ? (
           <Loader2 className="w-4 h-4 text-lia-text-secondary animate-spin motion-reduce:animate-none" />
         ) : (
           <CheckCircle className="w-4 h-4 text-lia-text-primary" />
@@ -188,7 +188,7 @@ export const FileCreationIndicator = ({
         <div className="flex items-center gap-2">
           <FileText className="w-4 h-4 text-lia-text-secondary" />
           <span className="text-sm font-medium text-lia-text-primary">
-            {status === "creating" ? "Criando" : "Criado"}: {fileName}
+            {status ==="creating" ?"Criando" :"Criado"}: {fileName}
           </span>
         </div>
         <p className="text-xs text-lia-text-secondary">
@@ -219,10 +219,10 @@ export const CompletionMessage = ({
   }
 
   const followUpActions = [
-    { id: "analyze_more", label: "Analisar mais candidatos", icon: Search },
-    { id: "create_shortlist", label: "Criar shortlist", icon: Target },
-    { id: "schedule_interviews", label: "Agendar entrevistas", icon: Calendar },
-    { id: "export_report", label: "Exportar relatório", icon: FileText }
+    { id:"analyze_more", label:"Analisar mais candidatos", icon: Search },
+    { id:"create_shortlist", label:"Criar shortlist", icon: Target },
+    { id:"schedule_interviews", label:"Agendar entrevistas", icon: Calendar },
+    { id:"export_report", label:"Exportar relatório", icon: FileText }
   ]
 
   return (

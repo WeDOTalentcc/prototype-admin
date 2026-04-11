@@ -2,8 +2,8 @@
 
 import React, { useState, useMemo } from 'react'
 import { useUIPreferencesStore } from '@/stores/ui-preferences-store'
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
+import { Button } from"@/components/ui/button"
+import { Badge } from"@/components/ui/badge"
 import {
   BookOpen, Search, Users, Star, Copy, MessageCircle,
   Target, Zap, BarChart3, MessageSquare, Brain,
@@ -209,7 +209,7 @@ export default function LiaLibraryPage({ onNavigate }: LiaLibraryPageProps) {
             </p>
           </div>
           <Button
-            variant={showFavoritesOnly ? "primary" : "outline"}
+            variant={showFavoritesOnly ?"primary" :"outline"}
             onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
             className="gap-2 h-8 px-3"
           >

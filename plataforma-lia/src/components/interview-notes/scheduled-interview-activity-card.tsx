@@ -1,9 +1,9 @@
 "use client"
 
-import React from "react"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
+import React from"react"
+import { Badge } from"@/components/ui/badge"
+import { Button } from"@/components/ui/button"
+import { Card } from"@/components/ui/card"
 import {
   Calendar,
   Clock,
@@ -12,9 +12,9 @@ import {
   MessageSquare,
   ChevronRight,
   MapPin,
-} from "lucide-react"
-import { textStyles, badgeStyles } from "@/lib/design-tokens"
-import { cn } from "@/lib/utils"
+} from"lucide-react"
+import { textStyles, badgeStyles } from"@/lib/design-tokens"
+import { cn } from"@/lib/utils"
 
 interface ScheduledInterviewActivityCardProps {
   interview: {
@@ -25,7 +25,7 @@ interface ScheduledInterviewActivityCardProps {
     jobTitle: string
     scheduledAt: string
     duration: number
-    platform: "teams" | "meet" | "zoom" | "presencial"
+    platform:"teams" |"meet" |"zoom" |"presencial"
     interviewerName: string
   }
   onPrepareNotes: (interviewId: string) => void
@@ -34,7 +34,7 @@ interface ScheduledInterviewActivityCardProps {
 
 interface TimeUntilInterview {
   label: string
-  urgency: "critical" | "warning" | "normal"
+  urgency:"critical" |"warning" |"normal"
 }
 
 export function ScheduledInterviewActivityCard({
@@ -51,64 +51,64 @@ export function ScheduledInterviewActivityCard({
     const diffInDays = Math.floor(diffInMs / 86400000)
 
     if (diffInMinutes < 0) {
-      return { label: "Entrevista finalizada", urgency: "normal" }
+      return { label:"Entrevista finalizada", urgency:"normal" }
     }
 
     if (diffInMinutes < 60) {
-      return { label: `Em ${diffInMinutes} min`, urgency: "critical" }
+      return { label: `Em ${diffInMinutes} min`, urgency:"critical" }
     }
 
     if (diffInHours < 24) {
       const scheduledDate = new Date(interview.scheduledAt)
       const timeStr = scheduledDate.toLocaleTimeString("pt-BR", {
-        hour: "2-digit",
-        minute: "2-digit",
+        hour:"2-digit",
+        minute:"2-digit",
       })
-      return { label: `Hoje às ${timeStr}`, urgency: "warning" }
+      return { label: `Hoje às ${timeStr}`, urgency:"warning" }
     }
 
     if (diffInDays === 1) {
       const scheduledDate = new Date(interview.scheduledAt)
       const timeStr = scheduledDate.toLocaleTimeString("pt-BR", {
-        hour: "2-digit",
-        minute: "2-digit",
+        hour:"2-digit",
+        minute:"2-digit",
       })
-      return { label: `Amanhã às ${timeStr}`, urgency: "normal" }
+      return { label: `Amanhã às ${timeStr}`, urgency:"normal" }
     }
 
     const scheduledDate = new Date(interview.scheduledAt)
     const dateStr = scheduledDate.toLocaleDateString("pt-BR", {
-      weekday: "short",
-      day: "numeric",
-      month: "short",
+      weekday:"short",
+      day:"numeric",
+      month:"short",
     })
     const timeStr = scheduledDate.toLocaleTimeString("pt-BR", {
-      hour: "2-digit",
-      minute: "2-digit",
+      hour:"2-digit",
+      minute:"2-digit",
     })
-    return { label: `${dateStr} às ${timeStr}`, urgency: "normal" }
+    return { label: `${dateStr} às ${timeStr}`, urgency:"normal" }
   }
 
-  const getUrgencyBadgeStyle = (urgency: "critical" | "warning" | "normal") => {
+  const getUrgencyBadgeStyle = (urgency:"critical" |"warning" |"normal") => {
     switch (urgency) {
-      case "critical":
+      case"critical":
         return badgeStyles.error
-      case "warning":
+      case"warning":
         return badgeStyles.warning
-      case "normal":
+      case"normal":
         return badgeStyles.success
     }
   }
 
   const getPlatformIcon = (platform: string) => {
     switch (platform) {
-      case "teams":
+      case"teams":
         return <Video className="w-3.5 h-3.5" />
-      case "meet":
+      case"meet":
         return <Video className="w-3.5 h-3.5" />
-      case "zoom":
+      case"zoom":
         return <Video className="w-3.5 h-3.5" />
-      case "presencial":
+      case"presencial":
         return <MapPin className="w-3.5 h-3.5" />
       default:
         return <Video className="w-3.5 h-3.5" />
@@ -117,14 +117,14 @@ export function ScheduledInterviewActivityCard({
 
   const getPlatformLabel = (platform: string) => {
     switch (platform) {
-      case "teams":
-        return "Teams"
-      case "meet":
-        return "Google Meet"
-      case "zoom":
-        return "Zoom"
-      case "presencial":
-        return "Presencial"
+      case"teams":
+        return"Teams"
+      case"meet":
+        return"Google Meet"
+      case"zoom":
+        return"Zoom"
+      case"presencial":
+        return"Presencial"
       default:
         return platform
     }
@@ -133,13 +133,13 @@ export function ScheduledInterviewActivityCard({
   const timeInfo = getTimeUntilInterview()
   const scheduledDate = new Date(interview.scheduledAt)
   const dateStr = scheduledDate.toLocaleDateString("pt-BR", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
+    weekday:"long",
+    day:"numeric",
+    month:"long",
   })
   const timeStr = scheduledDate.toLocaleTimeString("pt-BR", {
-    hour: "2-digit",
-    minute: "2-digit",
+    hour:"2-digit",
+    minute:"2-digit",
   })
 
   return (
@@ -147,7 +147,7 @@ export function ScheduledInterviewActivityCard({
       <div className="p-3 space-y-2.5">
         {/* Urgency Badge */}
         <div className="flex items-center justify-between">
-          <Badge className={cn(getUrgencyBadgeStyle(timeInfo.urgency), "border-0")}>
+          <Badge className={cn(getUrgencyBadgeStyle(timeInfo.urgency),"border-0")}>
             {timeInfo.label}
           </Badge>
           <span className={`${textStyles.caption} text-lia-text-tertiary`}>

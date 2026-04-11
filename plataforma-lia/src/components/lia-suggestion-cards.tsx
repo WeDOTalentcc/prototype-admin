@@ -1,11 +1,11 @@
 "use client"
 
-import React from "react"
-import { Card } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Loader2, AlertTriangle, Clock, TrendingUp, Users, FileText, Search, Plus, Briefcase, RefreshCw } from "lucide-react"
-import type { SuggestionCard } from "@/hooks/use-lia-suggestions"
+import React from"react"
+import { Card } from"@/components/ui/card"
+import { Button } from"@/components/ui/button"
+import { Badge } from"@/components/ui/badge"
+import { Loader2, AlertTriangle, Clock, TrendingUp, Users, FileText, Search, Plus, Briefcase, RefreshCw } from"lucide-react"
+import type { SuggestionCard } from"@/hooks/use-lia-suggestions"
 
 interface LiaSuggestionCardsProps {
   suggestions: SuggestionCard[]
@@ -28,29 +28,29 @@ const ICON_MAP: Record<string, React.ReactNode> = {
 
 const PRIORITY_STYLES: Record<string, { bg: string; border: string; iconBg: string }> = {
   high: {
-    bg: "bg-status-error/10",
-    border: "border-status-error/30 hover:border-status-error/30",
-    iconBg: "bg-status-error/15 text-status-error",
+    bg:"bg-status-error/10",
+    border:"border-status-error/30 hover:border-status-error/30",
+    iconBg:"",
   },
   medium: {
-    bg: "bg-status-warning/10",
-    border: "border-status-warning/30 hover:border-status-warning/30",
-    iconBg: "bg-status-warning/15 text-status-warning",
+    bg:"bg-status-warning/10",
+    border:"border-status-warning/30 hover:border-status-warning/30",
+    iconBg:"",
   },
   low: {
-    bg: "bg-lia-bg-secondary",
-    border: "border-lia-border-subtle hover:border-lia-border-default",
-    iconBg: "bg-lia-bg-tertiary text-lia-text-secondary",
+    bg:"bg-lia-bg-secondary",
+    border:"border-lia-border-subtle hover:border-lia-border-default",
+    iconBg:"bg-lia-bg-tertiary text-lia-text-secondary",
   },
 }
 
 const TYPE_BADGES: Record<string, { variant: string; label: string }> = {
-  alert: { variant: "destructive", label: "Alerta" },
-  warning: { variant: "warning", label: "Atenção" },
-  insight: { variant: "secondary", label: "Insight" },
-  info: { variant: "default", label: "Info" },
-  action: { variant: "outline", label: "Ação" },
-  suggestion: { variant: "outline", label: "Sugestão" },
+  alert: { variant:"destructive", label:"Alerta" },
+  warning: { variant:"warning", label:"Atenção" },
+  insight: { variant:"secondary", label:"Insight" },
+  info: { variant:"default", label:"Info" },
+  action: { variant:"outline", label:"Ação" },
+  suggestion: { variant:"outline", label:"Sugestão" },
 }
 
 export function LiaSuggestionCards({
@@ -58,7 +58,7 @@ export function LiaSuggestionCards({
   loading,
   onAction,
   onRefresh,
-  className = "",
+  className ="",
 }: LiaSuggestionCardsProps) {
   if (loading) {
     return (

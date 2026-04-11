@@ -1,26 +1,26 @@
 "use client"
 
-import React, { memo } from "react"
+import React, { memo } from"react"
 import {
   Loader2, Clock, Globe, CheckCircle, XCircle
-} from "lucide-react"
-import { useAuthStore } from "@/stores/auth-store"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
+} from"lucide-react"
+import { useAuthStore } from"@/stores/auth-store"
+import { Badge } from"@/components/ui/badge"
+import { Button } from"@/components/ui/button"
+import { Card, CardContent } from"@/components/ui/card"
 import {
   ProgressSteps,
   CommandExecution,
   FileCreationIndicator,
   CompletionMessage,
-} from "@/components/ui/chat-status-indicators"
-import { ActionResultCard } from "@/components/chat/action-result-card"
-import { ChatBubbleBase } from "@/components/chat/chat-bubble-base"
-import { PlanProgressCard, type ExecutionPlanData } from "@/components/chat/plan-progress-card"
-import { TypingIndicator } from "@/components/chat/typing-indicator"
-import { Message } from "@/types/chat"
-import FlowStepMessage from "@/components/workflow-rail/FlowStepMessage"
-import { renderMarkdown } from "@/lib/render-markdown"
+} from"@/components/ui/chat-status-indicators"
+import { ActionResultCard } from"@/components/chat/action-result-card"
+import { ChatBubbleBase } from"@/components/chat/chat-bubble-base"
+import { PlanProgressCard, type ExecutionPlanData } from"@/components/chat/plan-progress-card"
+import { TypingIndicator } from"@/components/chat/typing-indicator"
+import { Message } from"@/types/chat"
+import FlowStepMessage from"@/components/workflow-rail/FlowStepMessage"
+import { renderMarkdown } from"@/lib/render-markdown"
 
 interface Props {
   messages: Message[]
@@ -50,7 +50,7 @@ const ChatMessageListComponent = memo(function ChatMessageList({
   onSendMessage,
 }: Props) {
   const authUser = useAuthStore((s) => s.user)
-  const userDisplayName = authUser?.name || authUser?.email || "Usuário"
+  const userDisplayName = authUser?.name || authUser?.email ||"Usuário"
 
   return (
     <div className={`${messagesContainerClass} space-y-2.5`}>
@@ -59,22 +59,22 @@ const ChatMessageListComponent = memo(function ChatMessageList({
           searchTerm &&
           message.content.toLowerCase().includes(searchTerm.toLowerCase())
         const isCurrentMessage = index === currentMessageIndex
-        const isLia = message.sender === "lia"
+        const isLia = message.sender ==="lia"
 
         return (
           <div
             key={message.id}
             data-message-id={message.id}
             className={`${
-              isCurrentMessage ? "ring-2 ring-lia-btn-primary-bg/20 rounded-md" : ""
+              isCurrentMessage ?"ring-2 ring-lia-btn-primary-bg/20 rounded-md" :""
             } ${
               isHighlighted
-                ? "bg-status-warning/10 dark:bg-status-warning/20 rounded-md p-2"
-                : ""
+                ?"bg-status-warning/10 dark:bg-status-warning/20 rounded-md p-2"
+                :""
             }`}
           >
             <ChatBubbleBase
-              sender={isLia ? "lia" : "user"}
+              sender={isLia ?"lia" :"user"}
               timestamp={getRelativeTime(message.timestamp)}
               userName={userDisplayName}
               labelExtra={
@@ -86,10 +86,10 @@ const ChatMessageListComponent = memo(function ChatMessageList({
               }
             >
 
-                {message.type !== "thinking" &&
-                  message.type !== "progress" &&
-                  message.type !== "command" &&
-                  message.type !== "file-creation" && (
+                {message.type !=="thinking" &&
+                  message.type !=="progress" &&
+                  message.type !=="command" &&
+                  message.type !=="file-creation" && (
                     <div
                       className="text-xs leading-relaxed text-lia-text-primary lia-markdown-content"
                       dangerouslySetInnerHTML={{
@@ -113,8 +113,7 @@ const ChatMessageListComponent = memo(function ChatMessageList({
                             ?.action_result as Record<string, any>)
                             ?.action_type as string ||
                           (message.data as Record<string, any>)
-                            ?.action_type as string ||
-                          "unknown"
+                            ?.action_type as string ||"unknown"
                         }
                         result={
                           (message.data as Record<string, any>)
@@ -190,7 +189,7 @@ const ChatMessageListComponent = memo(function ChatMessageList({
                                         unknown
                                       >
                                     )?.local_count
-                                  } candidato(s) localmente.`}{" "}
+                                  } candidato(s) localmente.`}{""}
                               Posso buscar em nosso banco global com acesso a
                               800M+ perfis profissionais para encontrar mais
                               candidatos qualificados.
@@ -219,7 +218,7 @@ const ChatMessageListComponent = memo(function ChatMessageList({
                                         unknown
                                       >
                                     )?.search_results as Record<string, any>
-                                  )?.global_credits_estimate as number) || 5}{" "}
+                                  )?.global_credits_estimate as number) || 5}{""}
                                   créditos
                                 </span>
                               </div>
@@ -248,7 +247,7 @@ const ChatMessageListComponent = memo(function ChatMessageList({
                                         >
                                       )?.global_credits_estimate as number ||
                                         5)
-                                  )}{" "}
+                                  )}{""}
                                   créditos
                                 </span>
                               </div>
@@ -275,7 +274,7 @@ const ChatMessageListComponent = memo(function ChatMessageList({
                                         string,
                                         unknown
                                       >
-                                    )?.query as string || "",
+                                    )?.query as string ||"",
                                     (
                                       (
                                         (
@@ -313,8 +312,7 @@ const ChatMessageListComponent = memo(function ChatMessageList({
                                 variant="outline"
                                 className="border-lia-border-default text-lia-text-primary"
                                 onClick={() =>
-                                  onSendMessage(
-                                    "Não obrigado, vou trabalhar com os resultados locais"
+                                  onSendMessage("Não obrigado, vou trabalhar com os resultados locais"
                                   )
                                 }
                               >
@@ -341,16 +339,16 @@ const ChatMessageListComponent = memo(function ChatMessageList({
                     </Card>
                   )}
 
-                {message.type === "thinking" && <TypingIndicator />}
+                {message.type ==="thinking" && <TypingIndicator />}
 
-                {message.type === "progress" && message.progressSteps && (
+                {message.type ==="progress" && message.progressSteps && (
                   <ProgressSteps
                     steps={message.progressSteps}
                     currentStep={message.currentStep}
                   />
                 )}
 
-                {message.type === "command" && message.command && (
+                {message.type ==="command" && message.command && (
                   <CommandExecution
                     command={message.command.text}
                     status={message.command.status}
@@ -358,7 +356,7 @@ const ChatMessageListComponent = memo(function ChatMessageList({
                   />
                 )}
 
-                {message.type === "file-creation" && message.fileCreation && (
+                {message.type ==="file-creation" && message.fileCreation && (
                   <FileCreationIndicator
                     fileName={message.fileCreation.fileName}
                     fileType={message.fileCreation.fileType}
@@ -370,7 +368,7 @@ const ChatMessageListComponent = memo(function ChatMessageList({
                   <div className="mt-4">{onRenderChatCard(message)}</div>
                 )}
 
-                {message.type === "completion" && message.completion && (
+                {message.type ==="completion" && message.completion && (
                   <>
                     <div
                       className="text-xs text-lia-text-primary mb-4"
@@ -392,7 +390,7 @@ const ChatMessageListComponent = memo(function ChatMessageList({
                 )}
 
 
-                {message.type === "flow" && message.flowSteps && (
+                {message.type ==="flow" && message.flowSteps && (
                   <FlowStepMessage
                     steps={message.flowSteps}
                     question={message.flowQuestion}
@@ -417,8 +415,8 @@ const ChatMessageListComponent = memo(function ChatMessageList({
                         variant="secondary"
                         className="text-xs border-0 bg-lia-bg-primary bg-lia-bg-primary text-lia-text-secondary"
                       >
-                        {message.approvalStatus === "pending"
-                          ? "Aguardando"
+                        {message.approvalStatus ==="pending"
+                          ?"Aguardando"
                           : message.approvalStatus}
                       </Badge>
                     </div>
@@ -467,33 +465,33 @@ const ChatMessageListComponent = memo(function ChatMessageList({
                         action.label.toLowerCase().includes("não")
 
                       let buttonStyle = {
-                        backgroundColor: "var(--lia-bg-secondary)",
-                        color: "var(--lia-text-primary)",
-                        borderColor: "var(--lia-border-default)",
+                        backgroundColor:"var(--lia-bg-secondary)",
+                        color:"var(--lia-text-primary)",
+                        borderColor:"var(--lia-border-default)",
                       }
-                      let iconColor = "var(--lia-text-tertiary)"
+                      let iconColor ="var(--lia-text-tertiary)"
 
                       if (isApproveAction) {
                         buttonStyle = {
-                          backgroundColor: "var(--lia-bg-secondary)",
-                          color: "var(--wedo-green)",
-                          borderColor: "var(--wedo-green)",
+                          backgroundColor:"var(--lia-bg-secondary)",
+                          color:"var(--wedo-green)",
+                          borderColor:"var(--wedo-green)",
                         }
-                        iconColor = "var(--wedo-green)"
+                        iconColor ="var(--wedo-green)"
                       } else if (isScheduleAction) {
                         buttonStyle = {
-                          backgroundColor: "var(--lia-bg-secondary)",
-                          color: "var(--wedo-orange)",
-                          borderColor: "var(--wedo-orange)",
+                          backgroundColor:"var(--lia-bg-secondary)",
+                          color:"var(--wedo-orange)",
+                          borderColor:"var(--wedo-orange)",
                         }
-                        iconColor = "var(--wedo-orange)"
+                        iconColor ="var(--wedo-orange)"
                       } else if (isRejectAction) {
                         buttonStyle = {
-                          backgroundColor: "var(--lia-bg-secondary)",
-                          color: "var(--status-error)",
-                          borderColor: "var(--status-error)",
+                          backgroundColor:"var(--lia-bg-secondary)",
+                          color:"var(--status-error)",
+                          borderColor:"var(--status-error)",
                         }
-                        iconColor = "var(--status-error)"
+                        iconColor ="var(--status-error)"
                       }
 
                       const IconComponent = action.icon
@@ -540,6 +538,6 @@ const ChatMessageListComponent = memo(function ChatMessageList({
   )
 })
 
-ChatMessageListComponent.displayName = "ChatMessageList"
+ChatMessageListComponent.displayName ="ChatMessageList"
 
 export const ChatMessageList = ChatMessageListComponent

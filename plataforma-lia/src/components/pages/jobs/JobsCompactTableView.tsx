@@ -1,20 +1,20 @@
 "use client"
 
-import React from "react"
-import { SCREENING_STATUS_LABELS, type ScreeningStatus } from "@/types/screening"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Button } from "@/components/ui/button"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import React from"react"
+import { SCREENING_STATUS_LABELS, type ScreeningStatus } from"@/types/screening"
+import { Badge } from"@/components/ui/badge"
+import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
+import { Button } from"@/components/ui/button"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from"@/components/ui/tooltip"
 import {
   Users, Share2, ChevronRight, Pin, Star, AlertTriangle,
   Brain, GripVertical, ArrowUp, ArrowDown, ArrowUpDown,
   Shield, Building, Lock, MoreVertical
-} from "lucide-react"
-import { getStatusColor } from "@/components/jobs/jobsPageConstants"
-import { liaApi } from "@/services/lia-api"
-import { toast } from "sonner"
-import type { Job } from "@/components/jobs"
+} from"lucide-react"
+import { getStatusColor } from"@/components/jobs/jobsPageConstants"
+import { liaApi } from"@/services/lia-api"
+import { toast } from"sonner"
+import type { Job } from"@/components/jobs"
 
 interface JobsCompactTableViewProps {
   isLoading: boolean
@@ -106,7 +106,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
       <div className="overflow-x-auto">
         <table className="w-full table-fixed">
           <thead>
-            <tr className="">
+            <tr >
               <th className="py-3 px-3 text-center w-12">
                 <div className="w-4 h-4 bg-lia-interactive-active rounded-xl animate-pulse motion-reduce:animate-none mx-auto" />
               </th>
@@ -144,7 +144,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
           </thead>
           <tbody>
             {[1, 2, 3, 4, 5, 6, 7, 8].map((row) => (
-              <tr key={row} className="">
+              <tr key={row} >
                 <td className="py-3 px-3 text-center">
                   <div className="w-4 h-4 bg-lia-bg-tertiary rounded-xl animate-pulse motion-reduce:animate-none mx-auto" />
                 </td>
@@ -208,7 +208,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
     <div className="overflow-auto max-h-full border border-lia-border-subtle rounded-xl">
       <table className="w-full table-fixed">
         <thead className="sticky top-0 z-10 bg-lia-bg-primary">
-          <tr className="">
+          <tr >
             {jobsColumnOrder.filter((columnId) => {
               if (columnId === 'checkbox' || columnId === 'acoes') return true
               const hookId = Object.entries(hookToTableColumnMap).find(([_, tableId]) => tableId === columnId)?.[0]
@@ -313,7 +313,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                   <React.Fragment key={job.id}>
                     <tr
                       data-testid={`job-row-${job.id}`}
-                      className=" hover:bg-lia-interactive-hover text-xs cursor-pointer transition-colors motion-reduce:transition-none"
+                      className="hover:bg-lia-interactive-hover text-xs cursor-pointer transition-colors motion-reduce:transition-none"
                       onClick={() => onJobPreview(job)}
                     >
                       {jobsColumnOrder.filter((columnId) => {
@@ -690,7 +690,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                                     e.stopPropagation()
                                     onToggleUrgent(job.id)
                                   }}
-                                  title={isUrgent ? "Remover urgência" : "Marcar como urgente"}
+                                  title={isUrgent ?"Remover urgência" :"Marcar como urgente"}
                                 >
                                   <AlertTriangle className={`w-3.5 h-3.5 transition-colors motion-reduce:transition-none ${
                                     isUrgent 
@@ -711,7 +711,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                                     e.stopPropagation()
                                     onTogglePin(job.id)
                                   }}
-                                  title={isPinned ? "Desafixar vaga" : "Fixar vaga"}
+                                  title={isPinned ?"Desafixar vaga" :"Fixar vaga"}
                                 >
                                   <Pin className={`w-3 h-3 transition-colors motion-reduce:transition-none ${
                                     isPinned 
@@ -732,7 +732,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                                     e.stopPropagation()
                                     onToggleFavorite(job.id)
                                   }}
-                                  title={isFavorite ? "Remover dos favoritos" : "Adicionar aos favoritos"}
+                                  title={isFavorite ?"Remover dos favoritos" :"Adicionar aos favoritos"}
                                 >
                                   <Star className={`w-3 h-3 transition-colors motion-reduce:transition-none ${
                                     isFavorite 
@@ -754,12 +754,12 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                                         const fullUrl = `${window.location.origin}${result.public_url}`
                                         await navigator.clipboard.writeText(fullUrl)
                                         toast.success("Link copiado!", {
-                                          description: "O link público da vaga foi copiado para a área de transferência."
+                                          description:"O link público da vaga foi copiado para a área de transferência."
                                         })
                                       }
                                     } catch (error) {
                                       toast.error("Erro ao gerar link", {
-                                        description: "Não foi possível gerar o link público. Tente novamente."
+                                        description:"Não foi possível gerar o link público. Tente novamente."
                                       })
                                     }
                                   }}

@@ -1,13 +1,13 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
-import { cn } from "@/lib/utils"
-import { Badge } from "@/components/ui/badge"
+import { useState, useEffect, useCallback } from"react"
+import { cn } from"@/lib/utils"
+import { Badge } from"@/components/ui/badge"
 import {
   Collapsible,
   CollapsibleTrigger,
   CollapsibleContent,
-} from "@/components/ui/collapsible"
+} from"@/components/ui/collapsible"
 import {
   ChevronDown,
   Clock,
@@ -18,7 +18,7 @@ import {
   Zap,
   Target,
   BarChart3,
-} from "lucide-react"
+} from"lucide-react"
 
 interface TimelineStep {
   iteration: number
@@ -53,27 +53,27 @@ const PHASE_CONFIG: Record<
   { label: string; color: string; bgColor: string; icon: React.ElementType }
 > = {
   reasoning: {
-    label: "Raciocínio",
-    color: "text-wedo-cyan-dark",
-    bgColor: "bg-wedo-cyan/10/15",
+    label:"Raciocínio",
+    color:"text-wedo-cyan-dark",
+    bgColor:"bg-wedo-cyan/10/15",
     icon: Brain,
   },
   action: {
-    label: "Ação",
-    color: "text-status-warning",
-    bgColor: "bg-status-warning/15",
+    label:"Ação",
+    color:"text-status-warning",
+    bgColor:"bg-status-warning/15",
     icon: Zap,
   },
   observation: {
-    label: "Observação",
-    color: "text-status-success",
-    bgColor: "bg-status-success/15",
+    label:"Observação",
+    color:"text-status-success",
+    bgColor:"bg-status-success/15",
     icon: Eye,
   },
   decision: {
-    label: "Decisão",
-    color: "text-wedo-purple",
-    bgColor: "bg-wedo-purple/10/15",
+    label:"Decisão",
+    color:"text-wedo-purple",
+    bgColor:"bg-wedo-purple/10/15",
     icon: Target,
   },
 }
@@ -168,9 +168,8 @@ export function AgentExplainabilityPanel({
           )}
         </div>
         <ChevronDown
-          className={cn(
- "h-4 w-4 text-lia-text-tertiary transition-transform duration-200",
-            isOpen && "rotate-180"
+          className={cn("h-4 w-4 text-lia-text-tertiary transition-transform duration-200",
+            isOpen &&"rotate-180"
           )}
         />
       </CollapsibleTrigger>
@@ -212,11 +211,10 @@ export function AgentExplainabilityPanel({
                   <div key={step.iteration} className="flex gap-3">
                     <div className="flex flex-col items-center">
                       <div
-                        className={cn(
- "flex h-6 w-6 items-center justify-center rounded-full text-micro font-bold",
+                        className={cn("flex h-6 w-6 items-center justify-center rounded-full text-micro font-bold",
                           isLast
-                            ? "bg-wedo-cyan text-lia-text-primary"
-                            : "bg-lia-bg-tertiary text-lia-text-disabled"
+                            ?"bg-wedo-cyan text-lia-text-primary"
+                            :"bg-lia-bg-tertiary text-lia-text-disabled"
                         )}
                       >
                         {step.iteration}
@@ -227,15 +225,13 @@ export function AgentExplainabilityPanel({
                     </div>
 
                     <div
-                      className={cn(
- "mb-3 flex-1 rounded-md bg-lia-btn-primary-bg p-3",
-                        isLast && "mb-0"
+                      className={cn("mb-3 flex-1 rounded-md bg-lia-btn-primary-bg p-3",
+                        isLast &&"mb-0"
                       )}
                     >
                       <div className="flex items-center gap-2 mb-1.5">
                         <div
-                          className={cn(
- "flex items-center gap-1 rounded-md px-1.5 py-0.5",
+                          className={cn("flex items-center gap-1 rounded-md px-1.5 py-0.5",
                             phase.bgColor
                           )}
                         >
@@ -243,8 +239,7 @@ export function AgentExplainabilityPanel({
                             className={cn("h-3 w-3", phase.color)}
                           />
                           <span
-                            className={cn(
- "text-micro font-semibold",
+                            className={cn("text-micro font-semibold",
                               phase.color
                             )}
                           >
@@ -272,7 +267,7 @@ export function AgentExplainabilityPanel({
                       </div>
 
                       <p className="text-xs text-lia-text-disabled leading-relaxed">
-                        {step.reasoning_summary || step.decision || step.tool_result_summary || ""}
+                        {step.reasoning_summary || step.decision || step.tool_result_summary ||""}
                       </p>
                     </div>
                   </div>

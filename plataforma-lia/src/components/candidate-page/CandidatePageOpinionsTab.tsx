@@ -1,17 +1,17 @@
 "use client"
 
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { Card, CardContent } from"@/components/ui/card"
+import { Badge } from"@/components/ui/badge"
+import { Button } from"@/components/ui/button"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from"@/components/ui/tooltip"
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
+} from"@/components/ui/alert-dialog"
 import {
   Brain, Target, FileText, Clock, X, Copy, Check, ChevronUp, ChevronDown,
   CheckCircle, AlertCircle, TrendingUp, BarChart3, Briefcase, Trash2,
-} from "lucide-react"
+} from"lucide-react"
 
 interface SavedAnalysesData {
   total_analyses: number
@@ -19,8 +19,8 @@ interface SavedAnalysesData {
 }
 
 interface CandidatePageOpinionsTabProps {
-  opinionsSubTab: "pareceres" | "analises"
-  setOpinionsSubTab: (v: "pareceres" | "analises") => void
+  opinionsSubTab:"pareceres" |"analises"
+  setOpinionsSubTab: (v:"pareceres" |"analises") => void
   opinionsHistory: Record<string, unknown>[]
   isLoadingHistory: boolean
   expandedOpinionId: string | null
@@ -63,19 +63,19 @@ export function CandidatePageOpinionsTab({
 }: CandidatePageOpinionsTabProps) {
   const getOpinionScoreColor = (score: number, isWsi: boolean) => {
     if (isWsi) {
-      if (score >= 4) return "text-status-success"
-      if (score >= 3) return "text-status-warning"
-      return "text-status-error"
+      if (score >= 4) return"text-status-success"
+      if (score >= 3) return"text-status-warning"
+      return"text-status-error"
     } else {
-      if (score >= 80) return "text-status-success"
-      if (score >= 60) return "text-status-warning"
-      return "text-status-error"
+      if (score >= 80) return"text-status-success"
+      if (score >= 60) return"text-status-warning"
+      return"text-status-error"
     }
   }
 
   const getRecommendationBadge = (rec: string | null) => {
     if (!rec) return null
-    if (rec === "approved") {
+    if (rec ==="approved") {
       return (
         <Badge className={`${badgeStyles.success} flex items-center gap-0.5`}>
           <CheckCircle className="w-2.5 h-2.5" />
@@ -83,7 +83,7 @@ export function CandidatePageOpinionsTab({
         </Badge>
       )
     }
-    if (rec === "pending_review") {
+    if (rec ==="pending_review") {
       return (
         <Badge className={`${badgeStyles.warning} flex items-center gap-0.5`}>
           <Clock className="w-2.5 h-2.5" />
@@ -91,7 +91,7 @@ export function CandidatePageOpinionsTab({
         </Badge>
       )
     }
-    if (rec === "not_approved") {
+    if (rec ==="not_approved") {
       return (
         <Badge className={`${badgeStyles.error} flex items-center gap-0.5`}>
           <X className="w-2.5 h-2.5" />
@@ -110,9 +110,9 @@ export function CandidatePageOpinionsTab({
           <button
             onClick={() => setOpinionsSubTab("pareceres")}
             className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-t transition-colors motion-reduce:transition-none ${
-              opinionsSubTab === "pareceres"
-                ? "bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-primary rounded-lg bg-lia-bg-tertiary dark:border-lia-border-subtle"
-                : "text-lia-text-tertiary hover:text-lia-text-secondary hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover"
+              opinionsSubTab ==="pareceres"
+                ?"bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-primary rounded-lg bg-lia-bg-tertiary dark:border-lia-border-subtle"
+                :"text-lia-text-tertiary hover:text-lia-text-secondary hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover"
             }`}
           >
             <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
@@ -126,15 +126,15 @@ export function CandidatePageOpinionsTab({
           <button
             onClick={() => setOpinionsSubTab("analises")}
             className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-t transition-colors motion-reduce:transition-none ${
-              opinionsSubTab === "analises"
-                ? "bg-wedo-purple/10 dark:bg-wedo-purple/20 text-wedo-purple dark:text-wedo-purple rounded-lg bg-wedo-purple/10"
-                : "text-lia-text-tertiary hover:text-lia-text-secondary hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover"
+              opinionsSubTab ==="analises"
+                ?"bg-wedo-purple/10 dark:bg-wedo-purple/20 text-wedo-purple dark:text-wedo-purple rounded-lg bg-wedo-purple/10"
+                :"text-lia-text-tertiary hover:text-lia-text-secondary hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover"
             }`}
           >
             <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
             Análises
             {savedAnalyses && savedAnalyses.total_analyses > 0 && (
-              <Badge className="text-micro px-1.5 py-0 h-4 ml-1 bg-wedo-purple/15 text-wedo-purple">
+              <Badge className="text-micro px-1.5 py-0 h-4 ml-1">
                 {savedAnalyses.total_analyses}
               </Badge>
             )}
@@ -142,7 +142,7 @@ export function CandidatePageOpinionsTab({
         </div>
 
         {/* Subtab: Pareceres da LIA */}
-        {opinionsSubTab === "pareceres" && (
+        {opinionsSubTab ==="pareceres" && (
           <div className="space-y-3">
             {isLoadingHistory && (
               <div className="space-y-3">
@@ -184,7 +184,7 @@ export function CandidatePageOpinionsTab({
               <div className="space-y-3">
                 {opinionsHistory.map((opinion: Record<string, unknown>) => {
                   const isExpanded = expandedOpinionId === opinion.id
-                  const isWsiOpinion = opinion.opinion_type === "wsi"
+                  const isWsiOpinion = opinion.opinion_type ==="wsi"
                   const displayScore = isWsiOpinion
                     ? (opinion.wsi_score as number | null | undefined)
                     : (opinion.score as number | null | undefined)
@@ -197,7 +197,7 @@ export function CandidatePageOpinionsTab({
                       >
                         <div className="flex items-center gap-2">
                           <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                            isWsiOpinion ? "bg-wedo-purple/15" : "bg-lia-bg-tertiary dark:bg-lia-bg-secondary"
+                            isWsiOpinion ?"bg-wedo-purple/15" :"bg-lia-bg-tertiary dark:bg-lia-bg-secondary"
                           }`}>
                             {isWsiOpinion ? (
                               <Target className="w-4 h-4 text-wedo-purple" />
@@ -208,7 +208,7 @@ export function CandidatePageOpinionsTab({
                           <div className="text-left">
                             <div className="flex items-center gap-2 flex-wrap">
                               <span className={textStyles.label}>
-                                {isWsiOpinion ? "Parecer WSI" : (opinion.job_vacancy_id ? "Parecer de Vaga" : "Parecer Geral")}
+                                {isWsiOpinion ?"Parecer WSI" : (opinion.job_vacancy_id ?"Parecer de Vaga" :"Parecer Geral")}
                               </span>
                               {opinion.job_vacancy_id && opinion.job_vacancy_title ? (
                                 <Badge className="text-micro px-1.5 py-0 h-4 bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary border-lia-border-default dark:border-lia-border-default flex items-center gap-1">
@@ -240,7 +240,7 @@ export function CandidatePageOpinionsTab({
                         <div className="flex items-center gap-2">
                           {!!(opinion.created_at) && (
                             <span className="text-micro text-lia-text-secondary">
-                              {new Date(opinion.created_at as string).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" })}
+                              {new Date(opinion.created_at as string).toLocaleDateString("pt-BR", { day:"2-digit", month:"short", year:"numeric" })}
                             </span>
                           )}
                           <Tooltip>
@@ -248,7 +248,7 @@ export function CandidatePageOpinionsTab({
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation()
-                                  handleCopyOpinion(opinion, (opinion.opinion_type as string | undefined) || "general")
+                                  handleCopyOpinion(opinion, (opinion.opinion_type as string | undefined) ||"general")
                                 }}
                                 className="p-1 hover:bg-lia-bg-tertiary rounded-xl transition-colors motion-reduce:transition-none"
                               >
@@ -289,7 +289,7 @@ export function CandidatePageOpinionsTab({
                                   value !== null && value !== undefined && (
                                     <div key={key} className="flex items-center justify-between text-micro bg-lia-bg-secondary dark:bg-lia-bg-elevated rounded-full px-2 py-1">
                                       <span className="text-lia-text-secondary capitalize">{key.replace(/_/g, ' ')}</span>
-                                      <span className="font-medium text-lia-text-primary">{(typeof value === "number" ? `${Math.round(value)}%` : value as React.ReactNode)}</span>
+                                      <span className="font-medium text-lia-text-primary">{(typeof value ==="number" ? `${Math.round(value)}%` : value as React.ReactNode)}</span>
                                     </div>
                                   )
                                 ))}
@@ -348,7 +348,7 @@ export function CandidatePageOpinionsTab({
         )}
 
         {/* Subtab: Análises */}
-        {opinionsSubTab === "analises" && (
+        {opinionsSubTab ==="analises" && (
           <div className="space-y-3">
             {isLoadingAnalyses && (
               <div className="space-y-3">
@@ -390,9 +390,9 @@ export function CandidatePageOpinionsTab({
               <div className="space-y-3">
                 {savedAnalyses.analyses.map((analysis: Record<string, unknown>) => {
                   const analysisLabels: Record<string, string> = {
-                    bullet_points: "Pontos-chave",
-                    short_paragraph: "Resumo",
-                    detailed_bullets: "Análise Detalhada",
+                    bullet_points:"Pontos-chave",
+                    short_paragraph:"Resumo",
+                    detailed_bullets:"Análise Detalhada",
                   }
                   const isExpanded = expandedAnalysisId === analysis.id
 
@@ -409,14 +409,14 @@ export function CandidatePageOpinionsTab({
                           <div className="min-w-0">
                             <div className="flex items-center gap-2">
                               <span className={`${textStyles.bodySmall} font-medium`}>Análise LIA</span>
-                              <Badge className="text-micro px-1.5 py-0 h-4 bg-wedo-purple/15 text-wedo-purple">
+                              <Badge className="text-micro px-1.5 py-0 h-4">
                                 {analysisLabels[analysis.analysis_type as string] || analysis.analysis_type as string}
                               </Badge>
                             </div>
                             <span className={`${textStyles.caption} text-lia-text-secondary`}>
                               {analysis.created_at ? new Date(analysis.created_at as string).toLocaleDateString("pt-BR", {
-                                day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit",
-                              }) : "Data não disponível"}
+                                day:"2-digit", month:"2-digit", year:"numeric", hour:"2-digit", minute:"2-digit",
+                              }) :"Data não disponível"}
                             </span>
                           </div>
                         </div>
@@ -439,7 +439,7 @@ export function CandidatePageOpinionsTab({
                             </TooltipTrigger>
                             <TooltipContent side="top" className="text-micro">Copiar análise</TooltipContent>
                           </Tooltip>
-                          <ChevronDown className={`w-4 h-4 text-lia-text-secondary transition-transform motion-reduce:transition-none ${isExpanded ? "rotate-180" : ""}`} />
+                          <ChevronDown className={`w-4 h-4 text-lia-text-secondary transition-transform motion-reduce:transition-none ${isExpanded ?"rotate-180" :""}`} />
                         </div>
                       </div>
 

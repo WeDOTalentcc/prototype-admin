@@ -1,15 +1,15 @@
 "use client"
 
 import { textStyles, badgeStyles } from '@/lib/design-tokens'
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { CandidateAvatar } from "@/components/candidate-profile/CandidateAvatar"
+import { Badge } from"@/components/ui/badge"
+import { Button } from"@/components/ui/button"
+import { CandidateAvatar } from"@/components/candidate-profile/CandidateAvatar"
 import {
   X, Calendar, MessageSquare, Clock, Brain, CheckCircle, AlertCircle, Expand
-} from "lucide-react"
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
-import dynamic from "next/dynamic"
-import type { CandidateData } from "./ProfileTabTypes"
+} from"lucide-react"
+import { Tooltip, TooltipContent, TooltipTrigger } from"@/components/ui/tooltip"
+import dynamic from"next/dynamic"
+import type { CandidateData } from"./ProfileTabTypes"
 
 const LiaAnalysisModal = dynamic(() => import("@/components/modals/lia-analysis-modal").then(m => ({ default: m.LiaAnalysisModal })), { ssr: false })
 
@@ -80,7 +80,7 @@ export function CandidatePreviewHeader({
               </Badge>
             ) : null}
             {(c.communication_consent !== undefined || c.communicationConsent !== undefined) && (
-              <Badge className={`text-micro px-1.5 py-0 h-4 flex items-center gap-0.5 ${(c.communication_consent ?? c.communicationConsent) ? 'bg-status-success/10 text-status-success' : 'bg-status-error/10 text-status-error'}`}>
+              <Badge className={`text-micro px-1.5 py-0 h-4 flex items-center gap-0.5 ${(c.communication_consent ?? c.communicationConsent) ? '' : ''}`}>
                 {(c.communication_consent ?? c.communicationConsent) ? <CheckCircle className="w-2.5 h-2.5" /> : <AlertCircle className="w-2.5 h-2.5" />}
                 LGPD
               </Badge>

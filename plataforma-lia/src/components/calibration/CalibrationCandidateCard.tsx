@@ -13,7 +13,7 @@
  * Design system: Open Sans, rounded-md, 90% mono + 10% WeDo accent (#60BED1).
  */
 
-import React from "react"
+import React from"react"
 import {
   ThumbsUp,
   ThumbsDown,
@@ -22,26 +22,26 @@ import {
   Edit3,
   CheckCircle2,
   X,
-} from "lucide-react"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
-import { cn } from "@/lib/utils"
-import type { NormalizedCandidate, MatchLevel } from "./types"
+} from"lucide-react"
+import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
+import { Badge } from"@/components/ui/badge"
+import { cn } from"@/lib/utils"
+import type { NormalizedCandidate, MatchLevel } from"./types"
 
 // ---------- Match badge config ----------
 
 const MATCH_BADGE: Record<MatchLevel, { label: string; className: string }> = {
   good: {
-    label: "Good Match",
-    className: "bg-green-100 text-green-800 border-green-200",
+    label:"Good Match",
+    className:"bg-green-100 text-green-800 border-green-200",
   },
   partial: {
-    label: "Partial Match",
-    className: "bg-amber-100 text-amber-800 border-amber-200",
+    label:"Partial Match",
+    className:"bg-amber-100 text-amber-800 border-amber-200",
   },
   no: {
-    label: "No Match",
-    className: "bg-red-100 text-red-800 border-red-200",
+    label:"No Match",
+    className:"bg-red-100 text-red-800 border-red-200",
   },
 }
 
@@ -79,7 +79,7 @@ export function CalibrationCandidateCard({
             <AvatarImage src={candidate.avatarUrl} />
             <AvatarFallback className="bg-lia-bg-inverse text-white text-sm font-semibold">
               {candidate.name
-                .split(" ")
+                .split("")
                 .map((n) => n[0])
                 .join("")
                 .slice(0, 2)}
@@ -152,7 +152,7 @@ export function CalibrationCandidateCard({
                     </div>
                     <p className="text-xs text-lia-text-tertiary">
                       {exp.company} · {exp.period}
-                      {exp.durationLabel ? ` · ${exp.durationLabel}` : ""}
+                      {exp.durationLabel ? ` · ${exp.durationLabel}` :""}
                     </p>
                     {exp.description && (
                       <p className="text-xs text-lia-text-tertiary mt-1">
@@ -161,7 +161,7 @@ export function CalibrationCandidateCard({
                     )}
                     {exp.skills && exp.skills.length > 0 && (
                       <p className="text-xs text-lia-text-tertiary mt-1">
-                        Skills: {exp.skills.slice(0, 6).join(" · ")}
+                        Skills: {exp.skills.slice(0, 6).join(" ·")}
                       </p>
                     )}
                   </div>
@@ -189,7 +189,7 @@ export function CalibrationCandidateCard({
                     </p>
                     <p className="text-xs text-lia-text-tertiary">
                       {edu.institution}
-                      {edu.period ? ` · ${edu.period}` : ""}
+                      {edu.period ? ` · ${edu.period}` :""}
                     </p>
                   </div>
                 </div>

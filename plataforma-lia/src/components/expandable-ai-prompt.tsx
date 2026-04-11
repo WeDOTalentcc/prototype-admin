@@ -1,11 +1,11 @@
 "use client"
 
-import React from "react"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { LIAIcon } from "@/components/ui/lia-icon"
-import { Badge } from "@/components/ui/badge"
-import { Users } from "lucide-react"
-import type { QuickAction } from "@/components/ui/quick-action-chips"
+import React from"react"
+import { Avatar, AvatarFallback } from"@/components/ui/avatar"
+import { LIAIcon } from"@/components/ui/lia-icon"
+import { Badge } from"@/components/ui/badge"
+import { Users } from"lucide-react"
+import type { QuickAction } from"@/components/ui/quick-action-chips"
 
 interface ContextPillData {
   icon: React.ReactNode

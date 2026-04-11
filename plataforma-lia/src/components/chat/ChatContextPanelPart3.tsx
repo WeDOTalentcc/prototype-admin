@@ -1,15 +1,15 @@
 "use client"
 
-import React from "react"
+import React from"react"
 import {
   Brain, FileText, Calendar, Target, CalendarDays, Workflow,
   Network, Briefcase, ArrowUpDown, CheckCircle, Edit, Send, Clock
-} from "lucide-react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { PipelineReport } from "@/components/ui/pipeline-report"
-import { ContextPanelData } from "@/types/chat"
+} from"lucide-react"
+import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
+import { Button } from"@/components/ui/button"
+import { Badge } from"@/components/ui/badge"
+import { PipelineReport } from"@/components/ui/pipeline-report"
+import { ContextPanelData } from"@/types/chat"
 
 interface Props {
   contextData: ContextPanelData
@@ -28,7 +28,7 @@ export function ChatContextPanelPart3({ contextData, onPipelineAction, onClose }
   const data = contextData.data as any  
   return (
     <>
-      {contextData.type === "predictive-insights" && (
+      {contextData.type ==="predictive-insights" && (
         <div className="space-y-6 font-open-sans">
           <Card className="border-0 bg-lia-bg-primary bg-lia-bg-primary">
             <CardHeader className="bg-lia-bg-tertiary">
@@ -88,7 +88,7 @@ export function ChatContextPanelPart3({ contextData, onPipelineAction, onClose }
         </div>
       )}
 
-      {contextData.type === "offer-letter" && (
+      {contextData.type ==="offer-letter" && (
         <div className="space-y-6 font-open-sans">
           <Card className="border-0 bg-lia-bg-primary bg-lia-bg-primary">
             <CardHeader className="bg-lia-bg-tertiary">
@@ -125,7 +125,7 @@ export function ChatContextPanelPart3({ contextData, onPipelineAction, onClose }
         </div>
       )}
 
-      {contextData.type === "interview-scheduling" && (
+      {contextData.type ==="interview-scheduling" && (
         <div className="space-y-6 font-open-sans">
           <Card className="border-0 bg-lia-bg-primary bg-lia-bg-primary">
             <CardHeader className="bg-lia-bg-tertiary">
@@ -188,7 +188,7 @@ export function ChatContextPanelPart3({ contextData, onPipelineAction, onClose }
         </div>
       )}
 
-      {contextData.type === "technical-matrix" && contextData.data && (
+      {contextData.type ==="technical-matrix" && contextData.data && (
         <div className="space-y-6 font-open-sans">
           <Card className="border-0 bg-lia-bg-primary bg-lia-bg-primary">
             <CardHeader className="bg-lia-bg-tertiary">
@@ -200,7 +200,7 @@ export function ChatContextPanelPart3({ contextData, onPipelineAction, onClose }
             <CardContent className="p-6">
               <div className="space-y-4">
                 <div className="prose prose-sm max-w-none">
-                  <pre className="whitespace-pre-wrap font-mono text-sm p-4 rounded-xl bg-lia-bg-tertiary text-lia-text-primary">{typeof data === "string" ? data : JSON.stringify(data, null, 2)}</pre>
+                  <pre className="whitespace-pre-wrap font-mono text-sm p-4 rounded-xl bg-lia-bg-tertiary text-lia-text-primary">{typeof data ==="string" ? data : JSON.stringify(data, null, 2)}</pre>
                 </div>
               </div>
             </CardContent>
@@ -208,7 +208,7 @@ export function ChatContextPanelPart3({ contextData, onPipelineAction, onClose }
         </div>
       )}
 
-      {contextData.type === "timeline" && contextData.data && (
+      {contextData.type ==="timeline" && contextData.data && (
         <div className="space-y-6 font-open-sans">
           <Card className="border-0 bg-lia-bg-primary bg-lia-bg-primary">
             <CardHeader className="bg-lia-bg-tertiary">
@@ -220,14 +220,14 @@ export function ChatContextPanelPart3({ contextData, onPipelineAction, onClose }
             <CardContent className="p-6">
               <div className="space-y-4">
                 <div className="prose prose-sm max-w-none">
-                  <pre className="whitespace-pre-wrap font-mono text-sm p-4 rounded-xl bg-lia-bg-tertiary text-lia-text-primary">{typeof data === "string" ? data : JSON.stringify(data, null, 2)}</pre>
+                  <pre className="whitespace-pre-wrap font-mono text-sm p-4 rounded-xl bg-lia-bg-tertiary text-lia-text-primary">{typeof data ==="string" ? data : JSON.stringify(data, null, 2)}</pre>
                 </div>
               </div>
             </CardContent>
           </Card>
         </div>
       )}
-      {contextData.type === "interview-flow" && contextData.data && (
+      {contextData.type ==="interview-flow" && contextData.data && (
         <div className="space-y-6 font-open-sans">
           <Card className="border-0 bg-lia-bg-primary bg-lia-bg-primary">
             <CardHeader className="bg-lia-bg-tertiary">
@@ -239,7 +239,7 @@ export function ChatContextPanelPart3({ contextData, onPipelineAction, onClose }
             <CardContent className="p-6">
               <div className="space-y-4">
                 <div className="prose prose-sm max-w-none">
-                  <pre className="whitespace-pre-wrap font-mono text-sm p-4 rounded-xl bg-lia-bg-tertiary text-lia-text-primary">{typeof data === "string" ? data : JSON.stringify(data, null, 2)}</pre>
+                  <pre className="whitespace-pre-wrap font-mono text-sm p-4 rounded-xl bg-lia-bg-tertiary text-lia-text-primary">{typeof data ==="string" ? data : JSON.stringify(data, null, 2)}</pre>
                 </div>
               </div>
             </CardContent>
@@ -247,7 +247,7 @@ export function ChatContextPanelPart3({ contextData, onPipelineAction, onClose }
         </div>
       )}
 
-      {contextData.type === "org-chart" && contextData.data && (
+      {contextData.type ==="org-chart" && contextData.data && (
         <div className="space-y-6 font-open-sans">
           <Card className="border-0 bg-lia-bg-primary bg-lia-bg-primary">
             <CardHeader className="bg-lia-bg-tertiary">
@@ -259,14 +259,14 @@ export function ChatContextPanelPart3({ contextData, onPipelineAction, onClose }
             <CardContent className="p-6">
               <div className="space-y-4">
                 <div className="prose prose-sm max-w-none">
-                  <pre className="whitespace-pre-wrap font-mono text-sm p-4 rounded-xl bg-lia-bg-tertiary text-lia-text-primary">{typeof data === "string" ? data : JSON.stringify(data, null, 2)}</pre>
+                  <pre className="whitespace-pre-wrap font-mono text-sm p-4 rounded-xl bg-lia-bg-tertiary text-lia-text-primary">{typeof data ==="string" ? data : JSON.stringify(data, null, 2)}</pre>
                 </div>
               </div>
             </CardContent>
           </Card>
         </div>
       )}
-      {contextData.type === "job-creation-progress" && contextData.data && (
+      {contextData.type ==="job-creation-progress" && contextData.data && (
         <div className="space-y-6 font-open-sans">
           <Card className="border-0 bg-lia-bg-primary bg-lia-bg-primary">
             <CardHeader className="bg-lia-bg-tertiary">
@@ -320,7 +320,7 @@ export function ChatContextPanelPart3({ contextData, onPipelineAction, onClose }
         </div>
       )}
 
-      {contextData.type === "pipeline-report" && contextData.data && (
+      {contextData.type ==="pipeline-report" && contextData.data && (
         <PipelineReport data={contextData.data as any} /* TODO: fix type */ onAction={onPipelineAction} onClose={() => onClose()} />
       )}
     </>

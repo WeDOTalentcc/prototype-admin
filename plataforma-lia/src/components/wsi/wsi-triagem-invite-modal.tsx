@@ -1,23 +1,23 @@
 "use client"
 
-import React, { useState, useEffect, useCallback, useRef } from "react"
-import { createPortal } from "react-dom"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Textarea } from "@/components/ui/textarea"
+import React, { useState, useEffect, useCallback, useRef } from"react"
+import { createPortal } from"react-dom"
+import { Button } from"@/components/ui/button"
+import { Badge } from"@/components/ui/badge"
+import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
+import { Textarea } from"@/components/ui/textarea"
 import {
   Mail, Phone, MessageSquare, Send, 
   X, Eye, ChevronDown, ChevronUp,
   Info, Loader2,
   ClipboardList, ListChecks, Briefcase
-} from "lucide-react"
-import { Switch } from "@/components/ui/switch"
-import { textStyles, cardStyles, badgeStyles } from "@/lib/design-tokens"
-import { MessageComposer } from "@/components/communication"
-import { sanitizeHtml } from "@/lib/sanitize"
-import { toast } from "sonner"
-import type { ScreeningChannelConfig, ScreeningChannelKey } from "@/hooks/useScreeningConfig"
+} from"lucide-react"
+import { Switch } from"@/components/ui/switch"
+import { textStyles, cardStyles, badgeStyles } from"@/lib/design-tokens"
+import { MessageComposer } from"@/components/communication"
+import { sanitizeHtml } from"@/lib/sanitize"
+import { toast } from"sonner"
+import type { ScreeningChannelConfig, ScreeningChannelKey } from"@/hooks/useScreeningConfig"
 
 type ContactChannel = 'email' | 'whatsapp' | 'telefone' | 'both'
 
@@ -151,9 +151,7 @@ useEffect(() => {
     if (!candidate) return ''
     return `📞 SCRIPT DE LIGAÇÃO - LIA
 
-[Início da chamada]
-
-"Olá, bom dia/tarde! Eu sou a LIA, assistente virtual da equipe de recrutamento da [Empresa].
+[Início da chamada]"Olá, bom dia/tarde! Eu sou a LIA, assistente virtual da equipe de recrutamento da [Empresa].
 
 Estou ligando para ${candidate.name} referente ao processo seletivo para a posição de ${jobTitle}.
 
@@ -198,17 +196,17 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
     if (!candidate) return
     
     if (linkToVacancy && !selectedVacancyId) {
-      toast.error("Selecione uma vaga", { description: "Para vincular o candidato, você precisa selecionar uma vaga." })
+      toast.error("Selecione uma vaga", { description:"Para vincular o candidato, você precisa selecionar uma vaga." })
       return
     }
     
     if ((channel === 'email' || channel === 'both') && !candidate.email) {
-      toast.error("Email não informado", { description: "O candidato não possui email cadastrado." })
+      toast.error("Email não informado", { description:"O candidato não possui email cadastrado." })
       return
     }
     
     if ((channel === 'whatsapp' || channel === 'both') && !candidate.phone) {
-      toast.error("Telefone não informado", { description: "O candidato não possui telefone cadastrado." })
+      toast.error("Telefone não informado", { description:"O candidato não possui telefone cadastrado." })
       return
     }
     
@@ -229,7 +227,7 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
           if (!response.ok) {
           } else {
             const selectedVacancy = vacancies.find(v => v.id === selectedVacancyId)
-            toast.success("Candidato vinculado à vaga", { description: `${candidate.name} foi adicionado à vaga "${selectedVacancy?.title || 'selecionada'}"` })
+            toast.success("Candidato vinculado à vaga", { description: `${candidate.name} foi adicionado à vaga"${selectedVacancy?.title || 'selecionada'}"` })
           }
         } catch (error) {
         }
@@ -260,7 +258,7 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
       const inviteData = await inviteResponse.json()
       
       if (!inviteResponse.ok || !inviteData.success) {
-        toast.error("Erro ao enviar convite", { description: inviteData.error || "Não foi possível enviar o convite. Tente novamente." })
+        toast.error("Erro ao enviar convite", { description: inviteData.error ||"Não foi possível enviar o convite. Tente novamente." })
         return
       }
       
@@ -271,19 +269,19 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
       
       const successMessages: Record<string, { title: string; description: string }> = {
         email: {
-          title: "✅ Convite enviado com sucesso!",
+          title:"✅ Convite enviado com sucesso!",
           description: `Email de triagem enviado para ${candidate.name}${inviteData.mock ? ' (modo desenvolvimento)' : ''}`
         },
         whatsapp: {
-          title: "✅ Convite registrado!",
+          title:"✅ Convite registrado!",
           description: `WhatsApp aberto para ${candidate.name}. Convite registrado no sistema.`
         },
         telefone: {
-          title: "✅ Script de ligação preparado!",
+          title:"✅ Script de ligação preparado!",
           description: `Script para ${candidate.name} está pronto. Inicie a ligação quando desejar.`
         },
         both: {
-          title: "✅ Convite enviado por email e WhatsApp!",
+          title:"✅ Convite enviado por email e WhatsApp!",
           description: `Email enviado e WhatsApp aberto para ${candidate.name}${inviteData.mock ? ' (modo desenvolvimento)' : ''}`
         }
       }
@@ -305,7 +303,7 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
       
       onClose()
     } catch (error) {
-      toast.error("Erro ao enviar", { description: "Erro de conexão. Verifique sua internet e tente novamente." })
+      toast.error("Erro ao enviar", { description:"Erro de conexão. Verifique sua internet e tente novamente." })
     } finally {
       setIsSending(false)
     }
@@ -713,7 +711,7 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
                   <div>
                     <div className={textStyles.label}>Fluxo WhatsApp:</div>
                     <ul className={`${textStyles.caption} mt-1 space-y-0.5`}>
-                      <li>• Candidato responde "SIM" para iniciar</li>
+                      <li>• Candidato responde"SIM" para iniciar</li>
                       <li>• LIA apresenta termos LGPD</li>
                       <li>• Triagem WSI inicia automaticamente</li>
                       <li>• Você recebe notificação ao concluir</li>

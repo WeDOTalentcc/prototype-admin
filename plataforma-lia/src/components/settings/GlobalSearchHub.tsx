@@ -1,16 +1,16 @@
 "use client"
 
-import React, { forwardRef, useImperativeHandle, useState } from "react"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Globe, Info, Loader2, CheckCircle, AlertCircle } from "lucide-react"
-import { Switch } from "@/components/ui/switch"
-import { Users, Settings, DollarSign } from "lucide-react"
+import React, { forwardRef, useImperativeHandle, useState } from"react"
+import { Card, CardContent } from"@/components/ui/card"
+import { Badge } from"@/components/ui/badge"
+import { Globe, Info, Loader2, CheckCircle, AlertCircle } from"lucide-react"
+import { Switch } from"@/components/ui/switch"
+import { Users, Settings, DollarSign } from"lucide-react"
 import { tabStyles } from '@/lib/design-tokens'
-import { useGlobalSearchSettings } from "./useGlobalSearchSettings"
-import { GlobalSearchLimitsTab } from "./GlobalSearchLimitsTab"
-import { GlobalSearchOptionsTab } from "./GlobalSearchOptionsTab"
-import { GlobalSearchCostsTab } from "./GlobalSearchCostsTab"
+import { useGlobalSearchSettings } from"./useGlobalSearchSettings"
+import { GlobalSearchLimitsTab } from"./GlobalSearchLimitsTab"
+import { GlobalSearchOptionsTab } from"./GlobalSearchOptionsTab"
+import { GlobalSearchCostsTab } from"./GlobalSearchCostsTab"
 
 export interface GlobalSearchHubRef {
   save: () => Promise<void>
@@ -84,7 +84,7 @@ export const GlobalSearchHub = forwardRef<GlobalSearchHubRef, GlobalSearchHubPro
                   Habilitar Busca Global
                 </span>
                 {settings.globalSearchEnabled ? (
-                  <Badge className="bg-status-success/15 text-status-success text-xs">Ativo</Badge>
+                  <Badge className="text-xs">Ativo</Badge>
                 ) : (
                   <Badge className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary text-xs">Desativado</Badge>
                 )}
@@ -101,7 +101,7 @@ export const GlobalSearchHub = forwardRef<GlobalSearchHubRef, GlobalSearchHubPro
                       <>
                         <p className="font-medium">Quando habilitado, você tem acesso a:</p>
                         <ul className="list-disc list-inside space-y-1 ml-1">
-                          <li><strong>Funil de Talentos:</strong> Opções de busca "Híbrida" e "Global" no prompt de busca</li>
+                          <li><strong>Funil de Talentos:</strong> Opções de busca"Híbrida" e"Global" no prompt de busca</li>
                           <li><strong>Resultados de Busca:</strong> Ícones de expansão global e híbrida no prompt expandido</li>
                           <li><strong>Criação de Vaga:</strong> LIA pode buscar candidatos externos para calibração e sourcing</li>
                           <li><strong>Sourcing Automático:</strong> Expansão para base global quando banco local é insuficiente</li>
@@ -112,7 +112,7 @@ export const GlobalSearchHub = forwardRef<GlobalSearchHubRef, GlobalSearchHubPro
                       <>
                         <p className="font-medium">Quando desabilitado:</p>
                         <ul className="list-disc list-inside space-y-1 ml-1">
-                          <li><strong>Funil de Talentos:</strong> Apenas busca "Local" disponível (base própria)</li>
+                          <li><strong>Funil de Talentos:</strong> Apenas busca"Local" disponível (base própria)</li>
                           <li><strong>Resultados de Busca:</strong> Ícones de busca global/híbrida serão ocultados</li>
                           <li><strong>Criação de Vaga:</strong> LIA usará apenas candidatos da sua base para calibração</li>
                           <li><strong>Sourcing Automático:</strong> Desabilitado - sem expansão para base externa</li>

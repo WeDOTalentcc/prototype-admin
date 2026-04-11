@@ -1,22 +1,22 @@
 "use client"
 
-import React from "react"
+import React from"react"
 import {
   Briefcase, CheckCircle, CheckCircle2, Target, ChevronsLeftRight,
   Brain, Copy, Share2, UserCheck, X, ChevronLeft, ChevronRight, Loader2
-} from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { EmptyState } from "@/components/ui/empty-state"
-import { BulkActionsBar } from "@/components/ui/bulk-actions-bar"
-import { TableFiltersPanel } from "@/components/pages/jobs/TableFiltersPanel"
-import { JobPreviewPanel } from "@/components/pages/jobs/JobPreviewPanel"
-import { JobsCompactTableView } from "@/components/pages/jobs/JobsCompactTableView"
-import { ColumnConfigPanel } from "@/components/pages/jobs/ColumnConfigPanel"
-import { toast } from "sonner"
-import type { Job } from "@/components/jobs"
-import type { ScreeningConfig } from "@/hooks/useScreeningConfig"
-import type { JobVacancyMetrics } from "@/services/lia-api"
+} from"lucide-react"
+import { Button } from"@/components/ui/button"
+import { Badge } from"@/components/ui/badge"
+import { EmptyState } from"@/components/ui/empty-state"
+import { BulkActionsBar } from"@/components/ui/bulk-actions-bar"
+import { TableFiltersPanel } from"@/components/pages/jobs/TableFiltersPanel"
+import { JobPreviewPanel } from"@/components/pages/jobs/JobPreviewPanel"
+import { JobsCompactTableView } from"@/components/pages/jobs/JobsCompactTableView"
+import { ColumnConfigPanel } from"@/components/pages/jobs/ColumnConfigPanel"
+import { toast } from"sonner"
+import type { Job } from"@/components/jobs"
+import type { ScreeningConfig } from"@/hooks/useScreeningConfig"
+import type { JobVacancyMetrics } from"@/services/lia-api"
 
 interface JobFiltersLocal {
   status?: { statuses?: string[]; stages?: string[]; priorities?: string[] }
@@ -36,7 +36,7 @@ interface SavedSearchLocal {
 
 interface LiaInlineMessage {
   id: string
-  role: "user" | "assistant"
+  role:"user" |"assistant"
   content: string
   timestamp: Date
   isTyping?: boolean
@@ -56,7 +56,7 @@ interface ColumnViewLocal {
 
 type RecentItem = {
   id: string
-  type: "vaga" | "chat" | "candidato"
+  type:"vaga" |"chat" |"candidato"
   title: string
   subtitle?: string
   meta?: Record<string, string | undefined>
@@ -64,7 +64,7 @@ type RecentItem = {
 
 interface JobsListContentProps {
   showExpandedLIA: boolean; setShowExpandedLIA: (v: boolean) => void
-  showInlineChat: boolean; chatMode: "general" | "job-creation" | null; isChatFullscreen: boolean
+  showInlineChat: boolean; chatMode:"general" |"job-creation" | null; isChatFullscreen: boolean
   selectedJobsForBatch: Set<number>; filteredJobs: Job[]
   isLoadingJobs: boolean; isTableCollapsed: boolean
   searchTerm: string; selectedDaysFilter: string
@@ -75,7 +75,7 @@ interface JobsListContentProps {
   handleJobPublish: () => void; handleJobInsights: () => void
   handleJobDuplicate: () => void; handleJobToggleStatus: () => void
   handleJobAssignRecruiter: () => void; getSelectedJobsHaveActiveStatus: () => boolean
-  toggleTableExpansion: () => void; setChatMode: (mode: "general" | "job-creation" | null) => void
+  toggleTableExpansion: () => void; setChatMode: (mode:"general" |"job-creation" | null) => void
   setSearchTerm: (v: string) => void; jobFilters: JobFiltersLocal; toggleJobFilter: (category: string, key: string, value: unknown) => void
   clearAllJobFilters: () => void; hasActiveFilters: () => boolean
   savedSearches: SavedSearchLocal[]; saveSearchAsTemplate: (name: string) => void
@@ -92,7 +92,7 @@ interface JobsListContentProps {
   liaInlineMessagesEndRef: React.RefObject<HTMLDivElement | null>
   onAddRecentItem?: (item: RecentItem) => void
   showJobPreview: boolean; previewJob: Job | null
-  activePreviewTab: "screening" | "pipeline"; setActivePreviewTab: (tab: "screening" | "pipeline") => void
+  activePreviewTab:"screening" |"pipeline"; setActivePreviewTab: (tab:"screening" |"pipeline") => void
   previewWidth: number; setPreviewWidth: (v: number) => void
   setIsResizingPreview: (v: boolean) => void
   setShowJobPreview: (v: boolean) => void; setPreviewJob: (v: Job | null) => void
@@ -107,7 +107,7 @@ interface JobsListContentProps {
   jobsColumnWidths: Record<string, number>
   pinnedJobs: Set<number>; urgentJobs: Set<number>; favoriteJobs: Set<number>
   draggedJobColumnId: string | null; dragOverJobColumnId: string | null
-  jobsSortColumn: string | null; jobsSortDirection: "asc" | "desc"
+  jobsSortColumn: string | null; jobsSortDirection:"asc" |"desc"
   toggleJobSelection: (id: number) => void; handleJobPreview: (job: Job) => void
   handleJobsSort: (column: string) => void; handleJobsColumnDragStart: (id: string, e: React.DragEvent) => void; handleJobsColumnDragOver: (id: string, e: React.DragEvent) => void
   handleJobsColumnDragLeave: () => void; handleJobsColumnDrop: (id: string, e: React.DragEvent) => void
@@ -174,7 +174,7 @@ export function JobsListContent(props: JobsListContentProps) {
               </Button>
             )}
             <Button
-              variant={showTableFiltersPanel ? "primary" : "outline"} size="sm"
+              variant={showTableFiltersPanel ?"primary" :"outline"} size="sm"
               className={`gap-2 text-xs h-8 px-3 ${showTableFiltersPanel ? 'bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover dark:bg-lia-btn-primary-bg dark:hover:bg-lia-btn-primary-hover text-white' : ''}`}
               onClick={() => setShowTableFiltersPanel(!showTableFiltersPanel)} title="Filtrar resultados da tabela"
             >
@@ -184,7 +184,7 @@ export function JobsListContent(props: JobsListContentProps) {
               )}
             </Button>
             <Button
-              variant={showColumnConfig ? "primary" : "outline"} size="sm"
+              variant={showColumnConfig ?"primary" :"outline"} size="sm"
               className={`gap-2 text-xs h-8 px-3 ${showColumnConfig ? 'bg-lia-btn-primary-bg hover:bg-black dark:bg-lia-btn-primary-bg dark:hover:bg-lia-btn-primary-hover text-white' : ''}`}
               onClick={handleToggleColumnConfig} title="Configurar colunas da tabela"
             >
@@ -266,7 +266,7 @@ export function JobsListContent(props: JobsListContentProps) {
                 ) : filteredJobs.length === 0 ? (
                   <EmptyState icon={<Briefcase />} title="Nenhuma vaga cadastrada"
                     description="Crie sua primeira vaga para começar a atrair candidatos."
-                    action={{ label: "Criar primeira vaga", onClick: () => setChatMode('job-creation') }} className="h-64" />
+                    action={{ label:"Criar primeira vaga", onClick: () => setChatMode('job-creation') }} className="h-64" />
                 ) : (
                   <JobsCompactTableView
                     isLoading={isLoadingJobs} filteredJobs={filteredJobs}

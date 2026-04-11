@@ -1,9 +1,9 @@
 "use client"
 
-import React from "react"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
+import React from"react"
+import { Card, CardContent } from"@/components/ui/card"
+import { Badge } from"@/components/ui/badge"
+import { Button } from"@/components/ui/button"
 import {
   Building2,
   MapPin,
@@ -16,14 +16,14 @@ import {
   ExternalLink,
   Laptop,
   Calendar
-} from "lucide-react"
+} from"lucide-react"
 
 interface JobSummaryData {
   id: string
   title: string
   department?: string
   location?: string
-  work_model?: "presencial" | "hibrido" | "remoto"
+  work_model?:"presencial" |"hibrido" |"remoto"
   seniority?: string
   salary_range?: {
     min: number
@@ -32,7 +32,7 @@ interface JobSummaryData {
   }
   headcount?: number
   deadline?: string
-  status?: "rascunho" | "ativa" | "pausada" | "fechada"
+  status?:"rascunho" |"ativa" |"pausada" |"fechada"
   required_skills?: string[]
   nice_to_have_skills?: string[]
   benefits_count?: number
@@ -55,9 +55,9 @@ export function JobSummaryCard({
   onPublish,
   compact = false
 }: JobSummaryCardProps) {
-  const formatCurrency = (value: number, currency = "BRL") => {
+  const formatCurrency = (value: number, currency ="BRL") => {
     return new Intl.NumberFormat("pt-BR", {
-      style: "currency",
+      style:"currency",
       currency,
       maximumFractionDigits: 0
     }).format(value)
@@ -65,7 +65,7 @@ export function JobSummaryCard({
 
   const getStatusBadge = (status?: string) => {
     switch (status) {
-      case "ativa":
+      case"ativa":
         return (
           <Badge
             className="border border-lia-border-default bg-lia-bg-primary text-lia-text-primary"
@@ -74,7 +74,7 @@ export function JobSummaryCard({
             Ativa
           </Badge>
         )
-      case "rascunho":
+      case"rascunho":
         return (
           <Badge
             className="border border-lia-border-default bg-lia-bg-primary text-lia-text-secondary"
@@ -82,7 +82,7 @@ export function JobSummaryCard({
             Rascunho
           </Badge>
         )
-      case "pausada":
+      case"pausada":
         return (
           <Badge
             className="border border-lia-border-default bg-lia-bg-primary text-lia-text-secondary"
@@ -91,7 +91,7 @@ export function JobSummaryCard({
             Pausada
           </Badge>
         )
-      case "fechada":
+      case"fechada":
         return (
           <Badge
             className="border border-lia-border-default bg-lia-bg-primary text-lia-text-tertiary"
@@ -106,9 +106,9 @@ export function JobSummaryCard({
 
   const getWorkModelIcon = (model?: string) => {
     switch (model) {
-      case "remoto":
+      case"remoto":
         return <Laptop className="h-3.5 w-3.5" />
-      case "hibrido":
+      case"hibrido":
         return <Building2 className="h-3.5 w-3.5" />
       default:
         return <MapPin className="h-3.5 w-3.5" />
@@ -117,12 +117,12 @@ export function JobSummaryCard({
 
   const getWorkModelLabel = (model?: string) => {
     switch (model) {
-      case "remoto":
-        return "100% Remoto"
-      case "hibrido":
-        return "Híbrido"
+      case"remoto":
+        return"100% Remoto"
+      case"hibrido":
+        return"Híbrido"
       default:
-        return "Presencial"
+        return"Presencial"
     }
   }
 
@@ -179,7 +179,7 @@ export function JobSummaryCard({
             {data.headcount && (
               <div className="flex items-center gap-2">
                 <Users className="h-3.5 w-3.5 text-lia-text-tertiary" />
-                <span>{data.headcount} vaga{data.headcount > 1 ? "s" : ""}</span>
+                <span>{data.headcount} vaga{data.headcount > 1 ?"s" :""}</span>
               </div>
             )}
             {data.salary_range && (
@@ -260,7 +260,7 @@ export function JobSummaryCard({
                 Editar
               </Button>
             )}
-            {onPublish && data.status === "rascunho" && (
+            {onPublish && data.status ==="rascunho" && (
               <Button
                 size="sm"
                 className="bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-interactive-hover transition-colors cursor-pointer"

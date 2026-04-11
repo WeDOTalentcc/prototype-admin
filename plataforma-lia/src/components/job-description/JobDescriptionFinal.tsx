@@ -1,11 +1,11 @@
 "use client";
 
-import { formatBRL } from "@/lib/pricing";
-import { cn } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import { Button } from "@/components/ui/button";
+import { formatBRL } from"@/lib/pricing";
+import { cn } from"@/lib/utils";
+import { Badge } from"@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card";
+import { Separator } from"@/components/ui/separator";
+import { Button } from"@/components/ui/button";
 import { 
   Building2, 
   MapPin, 
@@ -16,13 +16,13 @@ import {
   ExternalLink,
   Copy,
   Download
-} from "lucide-react";
+} from"lucide-react";
 import {
   JobDescriptionFinalData,
   SECTION_TITLES,
   WORK_MODEL_LABELS,
   CONTRACT_TYPE_LABELS,
-} from "./types";
+} from"./types";
 
 interface JobDescriptionFinalProps {
   data: JobDescriptionFinalData;
@@ -35,7 +35,7 @@ interface JobDescriptionFinalProps {
 
 function MetadataRow({ data }: { data: JobDescriptionFinalData }) {
   const workModelLabel = WORK_MODEL_LABELS[data.work_model];
-  const workModelDisplay = data.work_model === "hibrido" && data.office_days_per_week
+  const workModelDisplay = data.work_model ==="hibrido" && data.office_days_per_week
     ? `${workModelLabel} (${data.office_days_per_week}x/semana)`
     : workModelLabel;
 
@@ -120,8 +120,8 @@ export function JobDescriptionFinal({
         </div>
         
         {data.is_affirmative && (
-          <Badge className="w-fit mt-2 bg-wedo-purple/10 text-wedo-purple border-wedo-purple/30/30">
-            🏳️‍🌈 {data.affirmative_type || "Vaga Afirmativa"}
+          <Badge className="w-fit mt-2  border-wedo-purple/30/30">
+            🏳️‍🌈 {data.affirmative_type ||"Vaga Afirmativa"}
           </Badge>
         )}
       </CardHeader>
@@ -130,7 +130,7 @@ export function JobDescriptionFinal({
         {data.company && (
           <section>
             <h3 className="text-lg font-semibold mb-2">{SECTION_TITLES.about}</h3>
-            <p className="text-lia-text-tertiary">{data.company.about || "[Descrição da empresa]"}</p>
+            <p className="text-lia-text-tertiary">{data.company.about ||"[Descrição da empresa]"}</p>
           </section>
         )}
 
@@ -232,7 +232,7 @@ export function JobDescriptionFinal({
             <div className="space-y-2 text-sm">
               {data.compensation.salary_min && data.compensation.salary_max && data.compensation.show_salary && (
                 <p>
-                  <strong>Salário:</strong>{" "}
+                  <strong>Salário:</strong>{""}
                   {formatBRL(data.compensation.salary_min)} - {formatBRL(data.compensation.salary_max)}
                 </p>
               )}
@@ -247,8 +247,8 @@ export function JobDescriptionFinal({
               )}
               {data.compensation.benefits.length > 0 && (
                 <p>
-                  <strong>Benefícios:</strong>{" "}
-                  {data.compensation.benefits.map(b => b.name).join(", ")}
+                  <strong>Benefícios:</strong>{""}
+                  {data.compensation.benefits.map(b => b.name).join(",")}
                 </p>
               )}
             </div>

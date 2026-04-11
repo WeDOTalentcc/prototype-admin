@@ -1,13 +1,13 @@
 "use client"
 
 import { textStyles } from '@/lib/design-tokens'
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
+import { Badge } from"@/components/ui/badge"
 import {
   Code, Linkedin, Building, Users, Globe,
   Briefcase, UserPlus
-} from "lucide-react"
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+} from"lucide-react"
+import { Tooltip, TooltipContent, TooltipTrigger } from"@/components/ui/tooltip"
 
 interface ProfileExperienceCardsProps {
   candidate: Record<string, unknown>
@@ -27,13 +27,13 @@ function ProfileIndicatorBadges({ candidate }: { candidate: Record<string, unkno
   return (
     <div className="flex flex-wrap gap-1.5 mb-2">
       {isOpenToWork === true && (
-        <Badge variant="outline" className="text-micro px-2 py-0.5 h-5 bg-status-success/10 text-status-success border-status-success/30 dark:bg-status-success/20 dark:border-status-success/30 flex items-center gap-1">
+        <Badge variant="outline" className="text-micro px-2 py-0.5 h-5  border-status-success/30 dark:bg-status-success/20 dark:border-status-success/30 flex items-center gap-1">
           <Globe className="w-3 h-3 text-status-success" />
           Open to Work
         </Badge>
       )}
       {isTopUniversity === true && (
-        <Badge variant="outline" className="text-micro px-2 py-0.5 h-5 bg-wedo-purple/10 text-wedo-purple border-wedo-purple/30 flex items-center gap-1">
+        <Badge variant="outline" className="text-micro px-2 py-0.5 h-5  border-wedo-purple/30 flex items-center gap-1">
           🎓 Top University
         </Badge>
       )}
@@ -45,7 +45,7 @@ function ProfileIndicatorBadges({ candidate }: { candidate: Record<string, unkno
       {isBlacklisted === true && (
         <Tooltip>
           <TooltipTrigger asChild>
-            <Badge variant="outline" className="text-micro px-2 py-0.5 h-5 bg-status-error/10 text-status-error border-status-error/30 flex items-center gap-1 cursor-help">
+            <Badge variant="outline" className="text-micro px-2 py-0.5 h-5  border-status-error/30 flex items-center gap-1 cursor-help">
               ⚠️ LCNU
             </Badge>
           </TooltipTrigger>
@@ -193,7 +193,7 @@ function ProfileWorkExperienceCard({ candidate }: { candidate: Record<string, un
                       </span>
                     ))}
                     {!!isStartup && (
-                      <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-micro font-medium bg-status-success/10 text-status-success border border-status-success/30">
+                      <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-micro font-medium  border border-status-success/30">
                         🚀 Startup
                       </span>
                     )}

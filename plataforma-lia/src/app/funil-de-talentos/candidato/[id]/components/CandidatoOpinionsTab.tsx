@@ -1,18 +1,18 @@
 "use client"
 
-import React from "react"
-import { getPercentageScoreColorClass } from "@/lib/score-utils"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import React from"react"
+import { getPercentageScoreColorClass } from"@/lib/score-utils"
+import { Card, CardContent } from"@/components/ui/card"
+import { Badge } from"@/components/ui/badge"
+import { Button } from"@/components/ui/button"
+import { Tooltip, TooltipContent, TooltipTrigger } from"@/components/ui/tooltip"
 import {
   Brain, FileText, Target, Briefcase, CheckCircle, Clock, X,
   BarChart3, TrendingUp, AlertCircle, ChevronDown, ChevronUp, Copy
-} from "lucide-react"
-import { TabsContent } from "@/components/ui/tabs"
-import { ANALYSIS_TYPE_LABELS } from "../candidato-page.constants"
-import type { OpinionsSubTab } from "../candidato-page.types"
+} from"lucide-react"
+import { TabsContent } from"@/components/ui/tabs"
+import { ANALYSIS_TYPE_LABELS } from"../candidato-page.constants"
+import type { OpinionsSubTab } from"../candidato-page.types"
 
 interface CandidatoOpinionsTabProps {
   opinionsSubTab: OpinionsSubTab
@@ -31,15 +31,15 @@ interface CandidatoOpinionsTabProps {
 }
 
 function getScoreColor(score: number | null | undefined): string {
-  if (score === null || score === undefined) return "text-lia-text-secondary"
+  if (score === null || score === undefined) return"text-lia-text-secondary"
   return getPercentageScoreColorClass(score)
 }
 
 function RecommendationBadge({ rec }: { rec: unknown }) {
   if (!rec) return null
-  if (rec === "approved") return <Badge className="bg-status-success/15 text-status-success text-xs flex items-center gap-0.5"><CheckCircle className="w-2.5 h-2.5" />APROVADO</Badge>
-  if (rec === "pending_review") return <Badge className="bg-status-warning/15 text-status-warning text-xs flex items-center gap-0.5"><Clock className="w-2.5 h-2.5" />PENDENTE</Badge>
-  if (rec === "not_approved") return <Badge className="bg-status-error/15 text-status-error text-xs flex items-center gap-0.5"><X className="w-2.5 h-2.5" />NÃO APROVADO</Badge>
+  if (rec ==="approved") return <Badge className="text-xs flex items-center gap-0.5"><CheckCircle className="w-2.5 h-2.5" />APROVADO</Badge>
+  if (rec ==="pending_review") return <Badge className="text-xs flex items-center gap-0.5"><Clock className="w-2.5 h-2.5" />PENDENTE</Badge>
+  if (rec ==="not_approved") return <Badge className="text-xs flex items-center gap-0.5"><X className="w-2.5 h-2.5" />NÃO APROVADO</Badge>
   return null
 }
 
@@ -91,9 +91,9 @@ export function CandidatoOpinionsTab({
             <button
               onClick={() => setOpinionsSubTab("pareceres")}
               className={`flex items-center gap-2 pb-2 text-sm font-medium transition-colors motion-reduce:transition-none ${
-                opinionsSubTab === "pareceres"
-                  ? "text-lia-text-secondary rounded-lg bg-lia-bg-tertiary dark:border-lia-border-subtle"
-                  : "text-lia-text-secondary hover:text-lia-text-primary"
+                opinionsSubTab ==="pareceres"
+                  ?"text-lia-text-secondary rounded-lg bg-lia-bg-tertiary dark:border-lia-border-subtle"
+                  :"text-lia-text-secondary hover:text-lia-text-primary"
               }`}
             >
               <Brain className="w-4 h-4 text-wedo-cyan" />
@@ -105,9 +105,9 @@ export function CandidatoOpinionsTab({
             <button
               onClick={() => setOpinionsSubTab("analises")}
               className={`flex items-center gap-2 pb-2 text-sm font-medium transition-colors motion-reduce:transition-none ${
-                opinionsSubTab === "analises"
-                  ? "text-wedo-purple rounded-lg bg-wedo-purple/10"
-                  : "text-lia-text-secondary hover:text-lia-text-primary"
+                opinionsSubTab ==="analises"
+                  ?"text-wedo-purple rounded-lg bg-wedo-purple/10"
+                  :"text-lia-text-secondary hover:text-lia-text-primary"
               }`}
             >
               <Brain className="w-4 h-4 text-wedo-cyan" />
@@ -119,7 +119,7 @@ export function CandidatoOpinionsTab({
           </div>
 
           {/* PARECERES */}
-          {opinionsSubTab === "pareceres" && (
+          {opinionsSubTab ==="pareceres" && (
             <>
               {isLoadingOpinions && <OpinionSkeleton />}
 
@@ -139,7 +139,7 @@ export function CandidatoOpinionsTab({
                 <div className="space-y-3">
                   {opinionsHistory.map((opinion) => {
                     const isExpanded = expandedOpinionId === opinion.id
-                    const isWsi = opinion.opinion_type === "wsi"
+                    const isWsi = opinion.opinion_type ==="wsi"
                     const displayScore = isWsi ? opinion.wsi_score : opinion.score
                     const strengthsList = opinion.strengths as string[] | undefined
                     const gapsList = opinion.gaps as string[] | undefined
@@ -158,12 +158,12 @@ export function CandidatoOpinionsTab({
                             className="w-full p-4 flex items-center justify-between hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none"
                           >
                             <div className="flex items-center gap-3">
-                              <div className={`w-9 h-9 rounded-full flex items-center justify-center ${isWsi ? "bg-wedo-purple/15" : "bg-lia-bg-tertiary dark:bg-lia-bg-secondary"}`}>
+                              <div className={`w-9 h-9 rounded-full flex items-center justify-center ${isWsi ?"bg-wedo-purple/15" :"bg-lia-bg-tertiary dark:bg-lia-bg-secondary"}`}>
                                 {isWsi ? <Target className="w-4 h-4 text-wedo-purple" /> : <Brain className="w-4 h-4 text-wedo-cyan" />}
                               </div>
                               <div className="text-left">
                                 <div className="flex items-center gap-2 flex-wrap">
-                                  <span className="text-sm font-semibold text-lia-text-primary">{isWsi ? "Parecer WSI" : "Parecer Geral"}</span>
+                                  <span className="text-sm font-semibold text-lia-text-primary">{isWsi ?"Parecer WSI" :"Parecer Geral"}</span>
                                   {opinion.job_vacancy_id && opinion.job_vacancy_title ? (
                                     <Badge className="text-xs px-1.5 py-0 h-4 bg-lia-bg-secondary dark:bg-lia-bg-primary text-lia-text-primary border-lia-border-default flex items-center gap-1">
                                       <Briefcase className="w-2.5 h-2.5" />
@@ -196,12 +196,12 @@ export function CandidatoOpinionsTab({
                                     onClick={(e) => {
                                       e.stopPropagation()
                                       const text = [
-                                        String(opinion.summary || ""),
-                                        strengthsList?.length ? `Pontos Fortes:\n${strengthsList.join("\n")}` : "",
-                                        gapsList?.length ? `Gaps:\n${gapsList.join("\n")}` : "",
-                                        opinion.next_steps ? `Próximos Passos: ${String(opinion.next_steps)}` : "",
+                                        String(opinion.summary ||""),
+                                        strengthsList?.length ? `Pontos Fortes:\n${strengthsList.join("\n")}` :"",
+                                        gapsList?.length ? `Gaps:\n${gapsList.join("\n")}` :"",
+                                        opinion.next_steps ? `Próximos Passos: ${String(opinion.next_steps)}` :"",
                                       ].filter(Boolean).join("\n\n")
-                                      void copyToClipboard(text, "Parecer")
+                                      void copyToClipboard(text,"Parecer")
                                     }}
                                     className="p-1.5 rounded-xl hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none"
                                   >
@@ -232,8 +232,8 @@ export function CandidatoOpinionsTab({
                                     {Object.entries(scoreBreakdown).map(([key, value]) =>
                                       value !== null && value !== undefined ? (
                                         <div key={key} className="flex items-center justify-between text-xs bg-lia-bg-secondary dark:bg-lia-bg-elevated rounded-xl px-3 py-2">
-                                          <span className="text-lia-text-secondary capitalize">{key.replace(/_/g, " ")}</span>
-                                          <span className="font-semibold text-lia-text-primary">{typeof value === "number" ? `${Math.round(value)}%` : String(value)}</span>
+                                          <span className="text-lia-text-secondary capitalize">{key.replace(/_/g,"")}</span>
+                                          <span className="font-semibold text-lia-text-primary">{typeof value ==="number" ? `${Math.round(value)}%` : String(value)}</span>
                                         </div>
                                       ) : null
                                     )}
@@ -288,7 +288,7 @@ export function CandidatoOpinionsTab({
           )}
 
           {/* ANALYSES */}
-          {opinionsSubTab === "analises" && (
+          {opinionsSubTab ==="analises" && (
             <>
               {isLoadingAnalyses && <OpinionSkeleton />}
 
@@ -321,14 +321,14 @@ export function CandidatoOpinionsTab({
                                 <span className="text-sm font-semibold text-lia-text-primary">
                                   {ANALYSIS_TYPE_LABELS[analysis.analysis_type as string] || String(analysis.analysis_type)}
                                 </span>
-                                <Badge className="text-xs px-1.5 py-0 h-4 bg-wedo-purple/10 text-wedo-purple border-wedo-purple/30">
+                                <Badge className="text-xs px-1.5 py-0 h-4  border-wedo-purple/30">
                                   Análise LIA
                                 </Badge>
                               </div>
                               <span className="text-xs text-lia-text-secondary mt-0.5">
                                 {analysis.created_at
-                                  ? new Date(analysis.created_at as string).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" })
-                                  : "Data não disponível"}
+                                  ? new Date(analysis.created_at as string).toLocaleDateString("pt-BR", { day:"2-digit", month:"short", year:"numeric" })
+                                  :"Data não disponível"}
                               </span>
                             </div>
                           </div>
@@ -336,7 +336,7 @@ export function CandidatoOpinionsTab({
                             <Tooltip>
                               <TooltipTrigger asChild>
                                 <button
-                                  onClick={(e) => { e.stopPropagation(); void copyToClipboard(String(analysis.content ?? ""), "Análise") }}
+                                  onClick={(e) => { e.stopPropagation(); void copyToClipboard(String(analysis.content ??""),"Análise") }}
                                   className="p-1.5 rounded-xl hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none"
                                 >
                                   <Copy className="w-4 h-4 text-lia-text-secondary" />
@@ -351,7 +351,7 @@ export function CandidatoOpinionsTab({
                         {isExpanded && (
                           <div className="px-4 pb-4 border-t border-lia-border-subtle pt-4">
                             <div className="text-sm text-lia-text-primary leading-relaxed whitespace-pre-wrap">
-                              {cleanMarkdown(String(analysis.content || ""))}
+                              {cleanMarkdown(String(analysis.content ||""))}
                             </div>
                           </div>
                         )}

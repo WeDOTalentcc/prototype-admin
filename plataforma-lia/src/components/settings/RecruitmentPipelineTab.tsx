@@ -1,16 +1,16 @@
 "use client"
 
-import React from "react"
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+import React from"react"
+import { Card, CardContent, CardHeader } from"@/components/ui/card"
+import { Badge } from"@/components/ui/badge"
 import {
   Save, CheckCircle, AlertCircle,
   Loader2, Pencil
-} from "lucide-react"
+} from"lucide-react"
 import {
   RecruitmentJourneyConfig,
   RecruitmentStage,
-} from "@/components/settings/RecruitmentJourneyConfig"
+} from"@/components/settings/RecruitmentJourneyConfig"
 import { textStyles, actionButtonStyles } from '@/lib/design-tokens'
 
 interface RecruitmentPipelineTabProps {

@@ -1,11 +1,11 @@
 "use client"
 
-import { formatBRL } from "@/lib/pricing"
+import { formatBRL } from"@/lib/pricing"
 
-import React from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
+import React from"react"
+import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
+import { Badge } from"@/components/ui/badge"
+import { Button } from"@/components/ui/button"
 import {
   Gift,
   ChevronRight,
@@ -19,18 +19,18 @@ import {
   Stethoscope,
   Shield,
   type LucideIcon,
-} from "lucide-react"
-import type { CompanyBenefit } from "@/types/benefits"
+} from"lucide-react"
+import type { CompanyBenefit } from"@/types/benefits"
 
 const CATEGORY_MAP: Record<string, { name: string; icon: LucideIcon; color: string }> = {
-  health: { name: "Saúde", icon: Stethoscope, color: "text-status-error" },
-  food: { name: "Alimentação", icon: Utensils, color: "text-wedo-orange" },
-  transport: { name: "Transporte", icon: Car, color: "text-lia-text-secondary" },
-  education: { name: "Educação", icon: GraduationCap, color: "text-wedo-purple" },
-  financial: { name: "Financeiro", icon: Wallet, color: "text-status-success" },
-  quality_life: { name: "Qualidade", icon: Home, color: "text-lia-text-secondary" },
-  family: { name: "Família", icon: Baby, color: "text-wedo-magenta" },
-  security: { name: "Segurança", icon: Shield, color: "text-lia-text-primary" },
+  health: { name:"Saúde", icon: Stethoscope, color:"text-status-error" },
+  food: { name:"Alimentação", icon: Utensils, color:"text-wedo-orange" },
+  transport: { name:"Transporte", icon: Car, color:"text-lia-text-secondary" },
+  education: { name:"Educação", icon: GraduationCap, color:"text-wedo-purple" },
+  financial: { name:"Financeiro", icon: Wallet, color:"text-status-success" },
+  quality_life: { name:"Qualidade", icon: Home, color:"text-lia-text-secondary" },
+  family: { name:"Família", icon: Baby, color:"text-wedo-magenta" },
+  security: { name:"Segurança", icon: Shield, color:"text-lia-text-primary" },
 }
 
 export interface CompanyBenefitsData {
@@ -57,20 +57,20 @@ export function CompanyBenefitsSummaryCard({
   const remainingCount = (total_count || benefits.length) - displayBenefits.length
 
   const formatValue = (benefit: CompanyBenefit) => {
-    if (benefit.value_type === "monetary" && benefit.value) {
+    if (benefit.value_type ==="monetary" && benefit.value) {
       return `${formatBRL(benefit.value)}`
     }
-    if (benefit.value_type === "percentage" && benefit.percentage_value) {
+    if (benefit.value_type ==="percentage" && benefit.percentage_value) {
       return `${benefit.percentage_value}%`
     }
-    if (benefit.value_type === "informative" && benefit.value_details) {
+    if (benefit.value_type ==="informative" && benefit.value_details) {
       return benefit.value_details
     }
     return null
   }
 
   const getCategoryInfo = (categoryId: string) => {
-    return CATEGORY_MAP[categoryId] || { name: categoryId, icon: Gift, color: "text-lia-text-primary" }
+    return CATEGORY_MAP[categoryId] || { name: categoryId, icon: Gift, color:"text-lia-text-primary" }
   }
 
   return (

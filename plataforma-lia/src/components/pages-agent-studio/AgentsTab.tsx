@@ -1,23 +1,23 @@
 "use client"
 
-import React, { useState, useEffect } from "react"
+import React, { useState, useEffect } from"react"
 import {
   Bot, Play, Pause, Settings, RefreshCw, Search as SearchIcon,
   ThumbsUp, ThumbsDown, AlertCircle
-} from "lucide-react"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
+} from"lucide-react"
+import { Card, CardContent } from"@/components/ui/card"
+import { Badge } from"@/components/ui/badge"
+import { Button } from"@/components/ui/button"
 import {
   textStyles, cardStyles, badgeStyles, buttonStyles
-} from "@/lib/design-tokens"
+} from"@/lib/design-tokens"
 
 // ---------- Types ----------
 
 interface SourcingAgent {
   id: string
   agent_name: string
-  status: "active" | "paused" | "completed"
+  status:"active" |"paused" |"completed"
   calibration_v: number
   search_strategy: {
     required_skills?: string[]
@@ -36,7 +36,7 @@ interface SourcingAgent {
 interface TimelineEvent {
   id: string
   icon: string
-  type: "positive" | "negative"
+  type:"positive" |"negative"
   reason: string
   criteria: string[]
   candidate_id: string | null
@@ -46,9 +46,9 @@ interface TimelineEvent {
 // ---------- Constants ----------
 
 const STATUS_CONFIG = {
-  active: { label: "Ativo", style: badgeStyles.success },
-  paused: { label: "Pausado", style: badgeStyles.warning },
-  completed: { label: "Concluído", style: badgeStyles.error },
+  active: { label:"Ativo", style: badgeStyles.success },
+  paused: { label:"Pausado", style: badgeStyles.warning },
+  completed: { label:"Concluído", style: badgeStyles.error },
 }
 
 // ---------- Main Component ----------
@@ -100,8 +100,8 @@ export default function AgentsTab({
   }
 
   const handleToggle = async (agentId: string, currentStatus: string) => {
-    const action = currentStatus === "active" ? "pause" : "resume"
-    await fetch(`/api/backend-proxy/sourcing-agents/${agentId}/${action}`, { method: "PATCH" })
+    const action = currentStatus ==="active" ?"pause" :"resume"
+    await fetch(`/api/backend-proxy/sourcing-agents/${agentId}/${action}`, { method:"PATCH" })
     loadAgents()
   }
 
@@ -162,8 +162,8 @@ function AgentPanel({
             <span className={textStyles.caption}>v{agent.calibration_v}</span>
           </div>
           <div className="flex items-center gap-2">
-            <Button className={buttonStyles.outline} onClick={onToggle} title={agent.status === "active" ? "Pausar" : "Retomar"}>
-              {agent.status === "active" ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
+            <Button className={buttonStyles.outline} onClick={onToggle} title={agent.status ==="active" ?"Pausar" :"Retomar"}>
+              {agent.status ==="active" ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
             </Button>
             <Button className={buttonStyles.outline} onClick={onRecalibrate}>
               <RefreshCw className="w-3.5 h-3.5 mr-1" /> Recalibrar
@@ -202,12 +202,12 @@ function AgentPanel({
                     <p className={textStyles.bodySmall}>{event.reason}</p>
                     {event.criteria.length > 0 && (
                       <p className={textStyles.caption}>
-                        Critérios: {event.criteria.join(", ")}
+                        Critérios: {event.criteria.join(",")}
                       </p>
                     )}
                     {event.created_at && (
                       <p className={textStyles.caption}>
-                        {new Date(event.created_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}
+                        {new Date(event.created_at).toLocaleDateString("pt-BR", { day:"2-digit", month:"2-digit", hour:"2-digit", minute:"2-digit" })}
                       </p>
                     )}
                   </div>

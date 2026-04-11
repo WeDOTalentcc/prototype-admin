@@ -1,12 +1,12 @@
 "use client"
 
-import React from "react"
-import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
-import { X, MapPin, Brain, Code, CheckCircle, Bookmark, Calendar } from "lucide-react"
-import { badgeStyles, textStyles } from "@/lib/design-tokens"
-import { TriStateButtons } from "./filters/TriStateButtons"
-import type { TableFilters } from "./types"
+import React from"react"
+import { Badge } from"@/components/ui/badge"
+import { Input } from"@/components/ui/input"
+import { X, MapPin, Brain, Code, CheckCircle, Bookmark, Calendar } from"lucide-react"
+import { badgeStyles, textStyles } from"@/lib/design-tokens"
+import { TriStateButtons } from"./filters/TriStateButtons"
+import type { TableFilters } from"./types"
 
 export interface FilterSectionsAdvancedProps {
   tableFilters: TableFilters
@@ -42,7 +42,7 @@ export function FilterSectionsAdvanced({
               placeholder="Ex: comunicação, liderança..."
               className="h-8 text-xs"
               onKeyDown={(e) => {
-                if (e.key === "Enter" && newSoftSkillFilter.trim()) {
+                if (e.key ==="Enter" && newSoftSkillFilter.trim()) {
                   if (!tableFilters.softSkills.includes(newSoftSkillFilter.trim())) {
                     setTableFilters((prev) => ({
                       ...prev,
@@ -89,7 +89,7 @@ export function FilterSectionsAdvanced({
               placeholder="Ex: AWS, PMP, Scrum..."
               className="h-8 text-xs"
               onKeyDown={(e) => {
-                if (e.key === "Enter" && newCertificationFilter.trim()) {
+                if (e.key ==="Enter" && newCertificationFilter.trim()) {
                   if (!tableFilters.certifications.includes(newCertificationFilter.trim())) {
                     setTableFilters((prev) => ({
                       ...prev,
@@ -147,10 +147,10 @@ export function FilterSectionsAdvanced({
             <label className={`${textStyles.label} mb-1.5 block`}>Disponibilidade</label>
             <div className="grid grid-cols-2 gap-1.5">
               {[
-                { value: "immediate", label: "Imediato" },
-                { value: "15_days", label: "15 dias" },
-                { value: "30_days", label: "30 dias" },
-                { value: "60_days", label: "60 dias" },
+                { value:"immediate", label:"Imediato" },
+                { value:"15_days", label:"15 dias" },
+                { value:"30_days", label:"30 dias" },
+                { value:"60_days", label:"60 dias" },
               ].map((opt) => (
                 <button
                   key={opt.value}
@@ -165,12 +165,12 @@ export function FilterSectionsAdvanced({
                   }
                   className="px-2 py-1.5 text-micro rounded-md transition-colors motion-reduce:transition-none"
                   style={{backgroundColor:
-                      tableFilters.availabilityWindow === opt.value ? "var(--lia-btn-primary-bg)" : "var(--lia-bg-secondary)",
-                    color: tableFilters.availabilityWindow === opt.value ? "white" : "var(--lia-text-secondary)",
+                      tableFilters.availabilityWindow === opt.value ?"var(--lia-btn-primary-bg)" :"var(--lia-bg-secondary)",
+                    color: tableFilters.availabilityWindow === opt.value ?"white" :"var(--lia-text-secondary)",
                     border:
                       tableFilters.availabilityWindow === opt.value
-                        ? "none"
-                        : "1px solid var(--lia-border-subtle)"}}
+                        ?"none"
+                        :"1px solid var(--lia-border-subtle)"}}
                 >
                   {opt.label}
                 </button>
@@ -191,7 +191,7 @@ export function FilterSectionsAdvanced({
             <div className="grid grid-cols-2 gap-2">
               <Input
                 type="date"
-                value={tableFilters.shortlistedDateFrom ?? ""}
+                value={tableFilters.shortlistedDateFrom ??""}
                 onChange={(e) =>
                   setTableFilters((prev) => ({
                     ...prev,
@@ -202,7 +202,7 @@ export function FilterSectionsAdvanced({
               />
               <Input
                 type="date"
-                value={tableFilters.shortlistedDateTo ?? ""}
+                value={tableFilters.shortlistedDateTo ??""}
                 onChange={(e) =>
                   setTableFilters((prev) => ({
                     ...prev,
@@ -217,7 +217,7 @@ export function FilterSectionsAdvanced({
             <label className={`${textStyles.label} mb-1.5 block`}>Vaga Origem</label>
             <Input
               type="text"
-              value={tableFilters.shortlistedVacancyOrigin ?? ""}
+              value={tableFilters.shortlistedVacancyOrigin ??""}
               onChange={(e) =>
                 setTableFilters((prev) => ({
                   ...prev,
@@ -242,7 +242,7 @@ export function FilterSectionsAdvanced({
             <div className="grid grid-cols-2 gap-2">
               <Input
                 type="date"
-                value={tableFilters.placementDateFrom ?? ""}
+                value={tableFilters.placementDateFrom ??""}
                 onChange={(e) =>
                   setTableFilters((prev) => ({
                     ...prev,
@@ -253,7 +253,7 @@ export function FilterSectionsAdvanced({
               />
               <Input
                 type="date"
-                value={tableFilters.placementDateTo ?? ""}
+                value={tableFilters.placementDateTo ??""}
                 onChange={(e) =>
                   setTableFilters((prev) => ({
                     ...prev,
@@ -268,7 +268,7 @@ export function FilterSectionsAdvanced({
             <label className={`${textStyles.label} mb-1.5 block`}>Vaga Destino</label>
             <Input
               type="text"
-              value={tableFilters.placementVacancyDestination ?? ""}
+              value={tableFilters.placementVacancyDestination ??""}
               onChange={(e) =>
                 setTableFilters((prev) => ({
                   ...prev,
@@ -283,7 +283,7 @@ export function FilterSectionsAdvanced({
             <label className={`${textStyles.label} mb-1.5 block`}>Empresa Cliente</label>
             <Input
               type="text"
-              value={tableFilters.placementClientCompany ?? ""}
+              value={tableFilters.placementClientCompany ??""}
               onChange={(e) =>
                 setTableFilters((prev) => ({
                   ...prev,
@@ -304,7 +304,7 @@ export function FilterSectionsAdvanced({
         </h4>
         <Input
           type="text"
-          value={tableFilters.specificVacancyId ?? ""}
+          value={tableFilters.specificVacancyId ??""}
           onChange={(e) =>
             setTableFilters((prev) => ({
               ...prev,
@@ -324,7 +324,7 @@ export function FilterSectionsAdvanced({
         <div className="grid grid-cols-2 gap-2">
           <Input
             type="date"
-            value={tableFilters.registrationDateFrom ?? ""}
+            value={tableFilters.registrationDateFrom ??""}
             onChange={(e) =>
               setTableFilters((prev) => ({
                 ...prev,
@@ -336,7 +336,7 @@ export function FilterSectionsAdvanced({
           />
           <Input
             type="date"
-            value={tableFilters.registrationDateTo ?? ""}
+            value={tableFilters.registrationDateTo ??""}
             onChange={(e) =>
               setTableFilters((prev) => ({
                 ...prev,

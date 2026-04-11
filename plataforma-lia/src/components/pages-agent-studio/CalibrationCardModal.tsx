@@ -1,23 +1,23 @@
 "use client"
 
-import React, { useState, useEffect } from "react"
+import React, { useState, useEffect } from"react"
 import {
   ChevronLeft, ChevronRight, ThumbsUp, ThumbsDown, MessageSquare,
   X, CheckCircle, Edit3
-} from "lucide-react"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
+} from"lucide-react"
+import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
+import { Badge } from"@/components/ui/badge"
+import { Button } from"@/components/ui/button"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from"@/components/ui/dialog"
 import {
   textStyles, cardStyles, badgeStyles, buttonStyles
-} from "@/lib/design-tokens"
+} from"@/lib/design-tokens"
 
 // ---------- Types ----------
 
 interface MatchCriterion {
   criterion: string
-  match: "good" | "partial" | "no"
+  match:"good" |"partial" |"no"
   explanation: string
 }
 
@@ -50,17 +50,12 @@ interface CalibrationCandidate {
 // ---------- Constants ----------
 
 const MATCH_BADGE: Record<string, { label: string; style: string }> = {
-  good: { label: "Good Match", style: badgeStyles.success },
-  partial: { label: "Partial Match", style: badgeStyles.warning },
-  no: { label: "No Match", style: badgeStyles.error },
+  good: { label:"Good Match", style: badgeStyles.success },
+  partial: { label:"Partial Match", style: badgeStyles.warning },
+  no: { label:"No Match", style: badgeStyles.error },
 }
 
-const REJECTION_REASONS = [
-  "Stack técnica diferente do necessário",
-  "Senioridade insuficiente",
-  "Apenas experiência com CRUD/e-commerce",
-  "Localização incompatível",
-  "Experiência não relevante para a posição",
+const REJECTION_REASONS = ["Stack técnica diferente do necessário","Senioridade insuficiente","Apenas experiência com CRUD/e-commerce","Localização incompatível","Experiência não relevante para a posição",
 ]
 
 // ---------- Main Component ----------
@@ -107,7 +102,7 @@ export default function CalibrationCardModal({
 
   const handleApprove = async () => {
     if (!candidate) return
-    await submitFeedback("positive", "Perfil aprovado para o pipeline")
+    await submitFeedback("positive","Perfil aprovado para o pipeline")
     setApprovedCount(prev => prev + 1)
     advanceOrComplete()
   }
@@ -123,8 +118,8 @@ export default function CalibrationCardModal({
   const submitFeedback = async (signalType: string, reason: string) => {
     try {
       await fetch(`/api/backend-proxy/sourcing-agents/${agentId}/feedback`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+        method:"POST",
+        headers: {"Content-Type":"application/json" },
         body: JSON.stringify({
           candidate_id: candidate.id,
           signal_type: signalType,
@@ -197,7 +192,7 @@ export default function CalibrationCardModal({
             )}
             <button
               onClick={() => currentIdx < candidates.length - 1 && setCurrentIdx(prev => prev + 1)}
-              className={currentIdx < candidates.length - 1 ? "text-lia-text-tertiary hover:text-lia-text-secondary" : "text-lia-text-disabled"}
+              className={currentIdx < candidates.length - 1 ?"text-lia-text-tertiary hover:text-lia-text-secondary" :"text-lia-text-disabled"}
             >
               <ChevronRight className="w-5 h-5" />
             </button>
@@ -256,7 +251,7 @@ export default function CalibrationCardModal({
                     <div key={i} className="border-l-2 border-lia-border-subtle pl-3">
                       <p className={textStyles.subtitle}>{exp.title}</p>
                       <p className={textStyles.caption}>
-                        {exp.company} · {exp.start_date} – {exp.end_date || "Atual"}
+                        {exp.company} · {exp.start_date} – {exp.end_date ||"Atual"}
                         {exp.duration_years > 0 && ` · ${exp.duration_years}a`}
                       </p>
                       {exp.description && (
@@ -421,7 +416,7 @@ function RejectReasonModal({
               onChange={e => setCustomReason(e.target.value)}
               placeholder="Outro motivo..."
               className="w-full border border-lia-border-default rounded-xl px-3 py-2 text-sm"
-              onKeyDown={e => e.key === "Enter" && customReason.trim() && onSelect(customReason.trim())}
+              onKeyDown={e => e.key ==="Enter" && customReason.trim() && onSelect(customReason.trim())}
             />
           </div>
         </div>

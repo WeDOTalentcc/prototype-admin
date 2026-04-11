@@ -1,17 +1,17 @@
 "use client"
 
-import React from "react"
-import { Card, CardContent } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
+import React from"react"
+import { Card, CardContent } from"@/components/ui/card"
+import { Button } from"@/components/ui/button"
+import { Badge } from"@/components/ui/badge"
 import {
   Activity, FileText, GitBranch, List, PlusCircle, Plus, Loader2
-} from "lucide-react"
-import { TabsContent } from "@/components/ui/tabs"
-import { NOTE_CATEGORY_OPTIONS, NOTE_CATEGORY_LABELS, ACTIVITY_FILTER_LABELS, PERIOD_FILTER_OPTIONS } from "../candidato-page.constants"
-import type { ActivityFilter, PeriodFilter, ActivityView, NoteCategory, ActivityItem } from "../candidato-page.types"
-import type { CandidateLocal } from "@/services/lia-api"
-import { toast } from "sonner"
+} from"lucide-react"
+import { TabsContent } from"@/components/ui/tabs"
+import { NOTE_CATEGORY_OPTIONS, NOTE_CATEGORY_LABELS, ACTIVITY_FILTER_LABELS, PERIOD_FILTER_OPTIONS } from"../candidato-page.constants"
+import type { ActivityFilter, PeriodFilter, ActivityView, NoteCategory, ActivityItem } from"../candidato-page.types"
+import type { CandidateLocal } from"@/services/lia-api"
+import { toast } from"sonner"
 
 interface CandidatoActivitiesTabProps {
   activities: Record<string, unknown>[]
@@ -32,16 +32,16 @@ interface CandidatoActivitiesTabProps {
 }
 
 function getCategoryLabelLocal(cat: unknown): string {
-  return NOTE_CATEGORY_LABELS[String(cat)] || "Geral"
+  return NOTE_CATEGORY_LABELS[String(cat)] ||"Geral"
 }
 
 function parseNotes(candidate: CandidateLocal): Record<string, unknown>[] {
   if (!candidate?.notes) return []
-  if (typeof candidate.notes === "string") {
+  if (typeof candidate.notes ==="string") {
     return [{
-      id: "note-legacy",
-      type: "note",
-      category: "general",
+      id:"note-legacy",
+      type:"note",
+      category:"general",
       content: candidate.notes,
       created_at: candidate.updated_at || new Date().toISOString(),
     }]
@@ -49,9 +49,9 @@ function parseNotes(candidate: CandidateLocal): Record<string, unknown>[] {
   if (Array.isArray(candidate.notes)) {
     return (candidate.notes as Record<string, unknown>[]).map((note, idx) => ({
       id: (note.id as string) || `note-${idx}`,
-      type: "note",
-      category: String(note.category || "general"),
-      content: String(note.content || (note.text as string) || ""),
+      type:"note",
+      category: String(note.category ||"general"),
+      content: String(note.content || (note.text as string) ||""),
       created_at: (note.created_at || note.date || candidate.updated_at) as string,
     }))
   }
@@ -78,8 +78,8 @@ export function CandidatoActivitiesTab({
   const candidateNotes = parseNotes(candidate)
 
   const allItems: Array<Record<string, unknown>> = [
-    ...activities.map((act) => ({ ...act, itemType: (act.activity_type as string) || (act.type as string) || "activity" })),
-    ...candidateNotes.map(n => ({ ...n, itemType: "note" })),
+    ...activities.map((act) => ({ ...act, itemType: (act.activity_type as string) || (act.type as string) ||"activity" })),
+    ...candidateNotes.map(n => ({ ...n, itemType:"note" })),
   ]
   allItems.sort((a: Record<string, unknown>, b: Record<string, unknown>) => {
     const dateA = new Date((String(a.created_at || a.timestamp || 0))).getTime()
@@ -87,14 +87,14 @@ export function CandidatoActivitiesTab({
     return dateB - dateA
   })
   const filteredItems: Array<Record<string, unknown>> = allItems.filter(item => {
-    if (activityFilter === "all") return true
-    if (activityFilter === "notes") return item.itemType === "note"
-    if (activityFilter === "emails") return item.itemType === "email" || item.type === "email"
-    if (activityFilter === "interviews") return item.itemType === "interview" || item.type === "interview"
-    if (activityFilter === "lia") return item.itemType === "lia" || item.type === "lia" || item.source === "lia"
-    if (activityFilter === "tests") return item.itemType === "test" || item.type === "test"
-    if (activityFilter === "offers") return item.itemType === "offer" || item.type === "offer"
-    if (activityFilter === "applications") return item.itemType === "application" || item.type === "application"
+    if (activityFilter ==="all") return true
+    if (activityFilter ==="notes") return item.itemType ==="note"
+    if (activityFilter ==="emails") return item.itemType ==="email" || item.type ==="email"
+    if (activityFilter ==="interviews") return item.itemType ==="interview" || item.type ==="interview"
+    if (activityFilter ==="lia") return item.itemType ==="lia" || item.type ==="lia" || item.source ==="lia"
+    if (activityFilter ==="tests") return item.itemType ==="test" || item.type ==="test"
+    if (activityFilter ==="offers") return item.itemType ==="offer" || item.type ==="offer"
+    if (activityFilter ==="applications") return item.itemType ==="application" || item.type ==="application"
     return true
   })
 
@@ -102,14 +102,14 @@ export function CandidatoActivitiesTab({
     if (!newNoteContent.trim()) return
     const newNote: ActivityItem = {
       id: `note-${Date.now()}`,
-      type: "note",
+      type:"note",
       category: newNoteCategory,
       content: newNoteContent.trim(),
       created_at: new Date().toISOString(),
-      author: "Recrutador",
+      author:"Recrutador",
     }
     setActivities(prev => [newNote, ...prev])
-    toast.success("Nota adicionada", { description: "A nota foi registrada no histórico do candidato" })
+    toast.success("Nota adicionada", { description:"A nota foi registrada no histórico do candidato" })
     setNewNoteContent("")
     setNewNoteCategory("general")
   }
@@ -140,14 +140,14 @@ export function CandidatoActivitiesTab({
                   <div className="flex items-center bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-xl p-0.5 border border-lia-border-subtle dark:border-lia-border-default">
                     <button
                       onClick={() => setActivityView("timeline")}
-                      className={`p-1.5 rounded-md transition-colors motion-reduce:transition-none ${activityView === "timeline" ? "bg-lia-interactive-active text-lia-text-primary" : "text-lia-text-secondary hover:text-lia-text-primary"}`}
+                      className={`p-1.5 rounded-md transition-colors motion-reduce:transition-none ${activityView ==="timeline" ?"bg-lia-interactive-active text-lia-text-primary" :"text-lia-text-secondary hover:text-lia-text-primary"}`}
                       title="Visualização Timeline"
                     >
                       <GitBranch className="w-4 h-4" />
                     </button>
                     <button
                       onClick={() => setActivityView("list")}
-                      className={`p-1.5 rounded-md transition-colors motion-reduce:transition-none ${activityView === "list" ? "bg-lia-interactive-active text-lia-text-primary" : "text-lia-text-secondary hover:text-lia-text-primary"}`}
+                      className={`p-1.5 rounded-md transition-colors motion-reduce:transition-none ${activityView ==="list" ?"bg-lia-interactive-active text-lia-text-primary" :"text-lia-text-secondary hover:text-lia-text-primary"}`}
                       title="Visualização Lista"
                     >
                       <List className="w-4 h-4" />
@@ -164,12 +164,12 @@ export function CandidatoActivitiesTab({
               <div className="flex gap-1.5 flex-wrap">
                 {(["all","emails","interviews","tests","lia","offers","applications","notes"] as ActivityFilter[]).map(filter => {
                   const isActive = activityFilter === filter
-                  const isLia = filter === "lia"
-                  const isNote = filter === "notes"
-                  let cls = ""
-                  if (isLia) cls = isActive ? "bg-status-error text-white" : "bg-status-error/15 text-status-error hover:bg-status-error/20"
-                  else if (isNote) cls = isActive ? "bg-status-warning text-white" : "bg-status-warning/15 text-status-warning hover:bg-status-warning/20"
-                  else cls = isActive ? "bg-lia-bg-inverse text-white font-semibold" : "bg-lia-bg-tertiary text-lia-text-primary hover:bg-lia-interactive-active"
+                  const isLia = filter ==="lia"
+                  const isNote = filter ==="notes"
+                  let cls =""
+                  if (isLia) cls = isActive ?"bg-status-error text-white" :" hover:bg-status-error/20"
+                  else if (isNote) cls = isActive ?"bg-status-warning text-white" :" hover:bg-status-warning/20"
+                  else cls = isActive ?"bg-lia-bg-inverse text-white font-semibold" :"bg-lia-bg-tertiary text-lia-text-primary hover:bg-lia-interactive-active"
                   return (
                     <button
                       key={filter}
@@ -184,7 +184,7 @@ export function CandidatoActivitiesTab({
             </div>
 
             {/* Add Note section */}
-            {(activityFilter === "notes" || activityFilter === "all") && (
+            {(activityFilter ==="notes" || activityFilter ==="all") && (
               <div className="p-4 bg-status-warning/5">
                 <div className="flex items-start gap-3">
                   <div className="w-8 h-8 rounded-full bg-status-warning/15 flex items-center justify-center flex-shrink-0 mt-1">
@@ -233,25 +233,25 @@ export function CandidatoActivitiesTab({
               ) : filteredItems.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12 px-4">
                   <div className="w-16 h-16 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-full flex items-center justify-center mb-4">
-                    {activityFilter === "notes" ? (
+                    {activityFilter ==="notes" ? (
                       <FileText className="w-8 h-8 text-status-warning" />
                     ) : (
                       <Activity className="w-8 h-8 text-lia-text-secondary" />
                     )}
                   </div>
                   <h3 className="text-sm font-semibold text-lia-text-primary mb-2">
-                    {activityFilter === "notes" ? "Nenhuma nota registrada ainda" : "Nenhuma atividade registrada ainda"}
+                    {activityFilter ==="notes" ?"Nenhuma nota registrada ainda" :"Nenhuma atividade registrada ainda"}
                   </h3>
                   <p className="text-xs text-lia-text-secondary text-center max-w-xs">
-                    {activityFilter === "notes"
-                      ? "Use o formulário acima para adicionar notas sobre este candidato"
-                      : "As atividades aparecerão aqui conforme o processo avança"}
+                    {activityFilter ==="notes"
+                      ?"Use o formulário acima para adicionar notas sobre este candidato"
+                      :"As atividades aparecerão aqui conforme o processo avança"}
                   </p>
                 </div>
               ) : (
                 <div className="space-y-3">
                   {filteredItems.map((item, index) => {
-                    if (item.itemType === "note") {
+                    if (item.itemType ==="note") {
                       return (
                         <div
                           key={(item.id as string) || index}
@@ -263,12 +263,12 @@ export function CandidatoActivitiesTab({
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-1 flex-wrap">
                               <span className="text-xs font-medium text-lia-text-primary">Nota Interna</span>
-                              <Badge className="text-xs px-1.5 py-0 bg-status-warning/15 text-status-warning border-status-warning/30">
+                              <Badge className="text-xs px-1.5 py-0  border-status-warning/30">
                                 {getCategoryLabelLocal(item.category)}
                               </Badge>
-                              <span className="text-xs text-lia-text-secondary">{formatRelativeTime(String(item.created_at || ""))}</span>
+                              <span className="text-xs text-lia-text-secondary">{formatRelativeTime(String(item.created_at ||""))}</span>
                             </div>
-                            <p className="text-sm text-lia-text-secondary">{String(item.content || "")}</p>
+                            <p className="text-sm text-lia-text-secondary">{String(item.content ||"")}</p>
                             {!!item.user_name && (
                               <p className="text-xs text-lia-text-secondary mt-1">Por: {String(item.user_name)}</p>
                             )}
@@ -287,15 +287,15 @@ export function CandidatoActivitiesTab({
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between mb-1">
                             <span className="text-sm font-semibold text-lia-text-primary">
-                              {String(item.activity_type || item.type || item.title || "Atividade")}
+                              {String(item.activity_type || item.type || item.title ||"Atividade")}
                             </span>
                             <span className="text-xs text-lia-text-secondary">
-                              {formatRelativeTime(String(item.created_at || item.timestamp || ""))}
+                              {formatRelativeTime(String(item.created_at || item.timestamp ||""))}
                             </span>
                           </div>
                           {!!(item.description || item.content || item.details) && (
                             <p className="text-sm text-lia-text-secondary">
-                              {String(item.description || item.content || item.details || "")}
+                              {String(item.description || item.content || item.details ||"")}
                             </p>
                           )}
                           {!!item.user_name && (

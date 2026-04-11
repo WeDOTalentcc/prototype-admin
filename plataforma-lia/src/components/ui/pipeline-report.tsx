@@ -1,14 +1,14 @@
 "use client"
 
-import { useState } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
+import { useState } from"react"
+import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
+import { Button } from"@/components/ui/button"
+import { Badge } from"@/components/ui/badge"
 import {
   Users, Calendar, MessageSquare, ArrowRight, X, Eye, Mail, Phone,
   AlertTriangle, Clock, CheckCircle, ChevronDown, ChevronUp, Briefcase,
   Filter, FileText
-} from "lucide-react"
+} from"lucide-react"
 
 interface PipelineAction {
   id: string
@@ -28,7 +28,7 @@ interface StaleCandidateData {
   status_label: string
   days_stale: number
   stale_message: string
-  urgency: "critical" | "high" | "normal"
+  urgency:"critical" |"high" |"normal"
   lia_score: number | null
   actions: PipelineAction[]
   last_activity: string | null
@@ -49,7 +49,7 @@ interface PipelineReportData {
   groups: PipelineGroup[]
   summary: {
     message: string
-    urgency: "high" | "medium" | "low"
+    urgency:"high" |"medium" |"low"
   }
 }
 
@@ -60,43 +60,33 @@ interface PipelineReportProps {
 }
 
 const getActionIcon = (iconName: string) => {
-  const icons: Record<string, React.ComponentType<{ className?: string }>> = {
-    "filter": Filter,
-    "calendar": Calendar,
-    "message-square": MessageSquare,
-    "arrow-right": ArrowRight,
-    "file-text": FileText,
-    "phone": Phone,
-    "check": CheckCircle,
-    "x": X,
-    "mail": Mail,
-    "eye": Eye
+  const icons: Record<string, React.ComponentType<{ className?: string }>> = {"filter": Filter,"calendar": Calendar,"message-square": MessageSquare,"arrow-right": ArrowRight,"file-text": FileText,"phone": Phone,"check": CheckCircle,"x": X,"mail": Mail,"eye": Eye
   }
   return icons[iconName] || ArrowRight
 }
 
 const getUrgencyStyles = (urgency: string) => {
   switch (urgency) {
-    case "critical":
+    case"critical":
       return {
-        bg: "bg-status-error/10 dark:bg-status-error/20",
-        border: "border-status-error/30 dark:border-status-error/30",
-        badge: "bg-status-error/15 text-status-error dark:bg-status-error dark:text-status-error",
-        icon: "text-status-error"
+        bg:"bg-status-error/10 dark:bg-status-error/20",
+        border:"border-status-error/30 dark:border-status-error/30",
+        badge:" dark:bg-status-error dark:text-status-error",
+        icon:"text-status-error"
       }
-    case "high":
+    case"high":
       return {
-        bg: "bg-status-warning/10 dark:bg-status-warning/20",
-        border: "border-status-warning/30 dark:border-status-warning/30",
-        badge: "bg-status-warning/15 text-status-warning dark:bg-status-warning dark:text-status-warning",
-        icon: "text-status-warning"
+        bg:"bg-status-warning/10 dark:bg-status-warning/20",
+        border:"border-status-warning/30 dark:border-status-warning/30",
+        badge:" dark:bg-status-warning dark:text-status-warning",
+        icon:"text-status-warning"
       }
     default:
       return {
-        bg: "bg-lia-bg-secondary",
-        border: "border-lia-border-subtle",
-        badge: "bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-bg-secondary",
-        icon: "text-lia-text-primary"
+        bg:"bg-lia-bg-secondary",
+        border:"border-lia-border-subtle",
+        badge:"bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-bg-secondary",
+        icon:"text-lia-text-primary"
       }
   }
 }
@@ -125,7 +115,7 @@ const CandidateCard = ({
             )}
           </div>
           <p className="text-sm text-lia-text-secondary truncate">
-            {candidate.current_title || "Cargo não informado"}
+            {candidate.current_title ||"Cargo não informado"}
             {candidate.current_company && ` • ${candidate.current_company}`}
           </p>
         </div>
@@ -139,7 +129,7 @@ const CandidateCard = ({
         <span className="text-sm text-lia-text-secondary">
           {candidate.stale_message}
         </span>
-        {candidate.urgency === "critical" && (
+        {candidate.urgency ==="critical" && (
           <AlertTriangle className="w-4 h-4 text-status-error" />
         )}
       </div>
@@ -147,17 +137,17 @@ const CandidateCard = ({
       <div className="flex flex-wrap gap-2">
         {candidate.actions.slice(0, 3).map((action) => {
           const IconComponent = getActionIcon(action.icon)
-          const isDestructive = action.variant === "destructive"
+          const isDestructive = action.variant ==="destructive"
           
           return (
             <Button
               key={action.id}
               size="sm"
-              variant={isDestructive ? "outline" : "primary"}
+              variant={isDestructive ?"outline" :"primary"}
               className={`h-8 text-xs ${
  isDestructive 
-                  ? "border-status-error/30 text-status-error hover:bg-status-error/10 dark:border-status-error/30 dark:text-status-error dark:hover:bg-status-error/30" 
-                  : "bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary hover:bg-lia-interactive-active border-0"
+                  ?"border-status-error/30 text-status-error hover:bg-status-error/10 dark:border-status-error/30 dark:text-status-error dark:hover:bg-status-error/30" 
+                  :"bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary hover:bg-lia-interactive-active border-0"
               }`}
               onClick={() => onAction(candidate.id, action.id, candidate.name)}
             >
@@ -201,7 +191,7 @@ const JobGroup = ({
         </div>
         <div className="flex items-center gap-2">
           <Badge variant="outline" className="text-xs">
-            {group.candidates.filter(c => c.urgency === "critical").length} críticos
+            {group.candidates.filter(c => c.urgency ==="critical").length} críticos
           </Badge>
           {isExpanded ? (
             <ChevronUp className="w-5 h-5 text-lia-text-secondary" />
@@ -229,12 +219,12 @@ const JobGroup = ({
 export function PipelineReport({ data, onAction, onClose }: PipelineReportProps) {
   const getSummaryStyles = () => {
     switch (data.summary.urgency) {
-      case "high":
-        return "bg-status-error/10 dark:bg-status-error/20 border-status-error/30 dark:border-status-error/30"
-      case "medium":
-        return "bg-status-warning/10 dark:bg-status-warning/20 border-status-warning/30 dark:border-status-warning/30"
+      case"high":
+        return"bg-status-error/10 dark:bg-status-error/20 border-status-error/30 dark:border-status-error/30"
+      case"medium":
+        return"bg-status-warning/10 dark:bg-status-warning/20 border-status-warning/30 dark:border-status-warning/30"
       default:
-        return "bg-status-success/10 dark:bg-status-success/20 border-status-success/30 dark:border-status-success/30"
+        return"bg-status-success/10 dark:bg-status-success/20 border-status-success/30 dark:border-status-success/30"
     }
   }
 

@@ -1,12 +1,12 @@
 "use client"
 
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Button } from"@/components/ui/button"
+import { Card, CardContent } from"@/components/ui/card"
+import { Badge } from"@/components/ui/badge"
+import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
 import {
   Edit, Trash2, Mail, MapPin, Users, Shield, Loader2, Send
-} from "lucide-react"
+} from"lucide-react"
 import { textStyles, badgeStyles } from '@/lib/design-tokens'
 import type { UserData } from './user-management-types'
 
@@ -38,7 +38,7 @@ export function UserList({
           <div className="text-lia-text-secondary">
             <Users className="w-10 h-10 mx-auto mb-3 opacity-50" />
             <h3 className={textStyles.subtitle}>Nenhum usuário encontrado</h3>
-            <p className={textStyles.description + " mt-1"}>Ajuste os filtros ou crie um novo usuário</p>
+            <p className={textStyles.description +" mt-1"}>Ajuste os filtros ou crie um novo usuário</p>
           </div>
         </CardContent>
       </Card>

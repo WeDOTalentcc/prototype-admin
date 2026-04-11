@@ -1,17 +1,17 @@
 "use client"
 
-import React from "react"
-import { textStyles } from "@/lib/design-tokens"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
+import React from"react"
+import { textStyles } from"@/lib/design-tokens"
+import { Button } from"@/components/ui/button"
+import { Input } from"@/components/ui/input"
+import { Badge } from"@/components/ui/badge"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
+} from"@/components/ui/select"
 import {
   Dialog,
   DialogFooter,
@@ -19,7 +19,7 @@ import {
   DialogTitle,
   DialogDescription,
   DraggableDialogContent,
-} from "@/components/ui/dialog"
+} from"@/components/ui/dialog"
 import {
   Gift,
   Plus,
@@ -36,17 +36,17 @@ import {
   Baby,
   Shield,
   Library,
-} from "lucide-react"
+} from"lucide-react"
 
 const BENEFIT_CATEGORIES = [
-  { id: "health", name: "Saúde & Bem-estar", icon: Stethoscope, color: "text-status-error", bgColor: "bg-status-error/10 dark:bg-status-error/20" },
-  { id: "food", name: "Alimentação", icon: Utensils, color: "text-wedo-orange", bgColor: "bg-wedo-orange/10 dark:bg-wedo-orange/20" },
-  { id: "transport", name: "Transporte", icon: Car, color: "text-lia-text-primary", bgColor: "bg-lia-bg-tertiary dark:bg-lia-bg-secondary" },
-  { id: "education", name: "Educação & Desenvolvimento", icon: GraduationCap, color: "text-wedo-purple", bgColor: "bg-wedo-purple/10 dark:bg-wedo-purple/20" },
-  { id: "financial", name: "Financeiro", icon: Wallet, color: "text-status-success", bgColor: "bg-status-success/10 dark:bg-status-success/20" },
-  { id: "quality_life", name: "Qualidade de Vida", icon: Home, color: "text-lia-text-secondary", bgColor: "bg-lia-bg-tertiary dark:bg-lia-bg-secondary" },
-  { id: "family", name: "Família", icon: Baby, color: "text-wedo-magenta", bgColor: "bg-wedo-magenta/10 dark:bg-wedo-magenta/20" },
-  { id: "security", name: "Segurança", icon: Shield, color: "text-lia-text-primary", bgColor: "bg-lia-bg-secondary dark:bg-lia-bg-secondary/50" },
+  { id:"health", name:"Saúde & Bem-estar", icon: Stethoscope, color:"text-status-error", bgColor:"bg-status-error/10 dark:bg-status-error/20" },
+  { id:"food", name:"Alimentação", icon: Utensils, color:"text-wedo-orange", bgColor:"bg-wedo-orange/10 dark:bg-wedo-orange/20" },
+  { id:"transport", name:"Transporte", icon: Car, color:"text-lia-text-primary", bgColor:"bg-lia-bg-tertiary dark:bg-lia-bg-secondary" },
+  { id:"education", name:"Educação & Desenvolvimento", icon: GraduationCap, color:"text-wedo-purple", bgColor:"bg-wedo-purple/10 dark:bg-wedo-purple/20" },
+  { id:"financial", name:"Financeiro", icon: Wallet, color:"text-status-success", bgColor:"bg-status-success/10 dark:bg-status-success/20" },
+  { id:"quality_life", name:"Qualidade de Vida", icon: Home, color:"text-lia-text-secondary", bgColor:"bg-lia-bg-tertiary dark:bg-lia-bg-secondary" },
+  { id:"family", name:"Família", icon: Baby, color:"text-wedo-magenta", bgColor:"bg-wedo-magenta/10 dark:bg-wedo-magenta/20" },
+  { id:"security", name:"Segurança", icon: Shield, color:"text-lia-text-primary", bgColor:"bg-lia-bg-secondary dark:bg-lia-bg-secondary/50" },
 ]
 
 interface BenefitTemplate {
@@ -238,7 +238,7 @@ export function BenefitTemplateModal({
         <DialogFooter className="flex-shrink-0 border-t pt-3 mt-3">
           <div className="flex items-center justify-between w-full">
             <p className={`${textStyles.description}`}>
-              Não encontrou?{" "}
+              Não encontrou?{""}
               <Button
                 variant="link"
                 className={`h-auto p-0 ${textStyles.link}`}

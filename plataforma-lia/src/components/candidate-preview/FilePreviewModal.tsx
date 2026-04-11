@@ -1,9 +1,9 @@
 "use client"
 
 
-import { CURRENCY_SYMBOL } from "@/lib/pricing"
-import { useState } from "react"
-import { useModalA11y } from "@/hooks/use-modal-a11y"
+import { CURRENCY_SYMBOL } from"@/lib/pricing"
+import { useState } from"react"
+import { useModalA11y } from"@/hooks/use-modal-a11y"
 import {
   FileText,
   FileVideo,
@@ -19,11 +19,11 @@ import {
   X,
   Brain,
   MessageSquareText,
-} from "lucide-react"
-import { Image } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { textStyles } from "@/lib/design-tokens"
+} from"lucide-react"
+import { Image } from"lucide-react"
+import { Button } from"@/components/ui/button"
+import { Badge } from"@/components/ui/badge"
+import { textStyles } from"@/lib/design-tokens"
 
 export interface FileItem {
   name: string
@@ -171,7 +171,7 @@ export function FilePreviewModal({ showPreview, selectedFile, previewType, onClo
                 src={selectedFile.url || candidate.avatar_url || candidate.avatar}
                 alt={selectedFile.name}
                 style={{width: `${imageZoom}%`, maxWidth: '100%'}}
-                className="rounded-md transition-colors motion-reduce:transition-none duration-300 "
+                className="rounded-md transition-colors motion-reduce:transition-none duration-300"
               />
             </div>
           )}
@@ -309,8 +309,7 @@ export function FilePreviewModal({ showPreview, selectedFile, previewType, onClo
                             <p className={`${textStyles.bodySmall} mb-1`}>
                               {segment.timestamp || segment.time || ''} • {segment.speaker || segment.role || 'Participante'}
                             </p>
-                            <p className="text-lia-text-primary">
-                              "{segment.text || segment.content || ''}"
+                            <p className="text-lia-text-primary">"{segment.text || segment.content || ''}"
                             </p>
                           </div>
                         ))}
@@ -495,8 +494,7 @@ export function FilePreviewModal({ showPreview, selectedFile, previewType, onClo
                       <p className={`${textStyles.bodySmall} mb-1`}>
                         0:00 • Candidato
                       </p>
-                      <p className="text-lia-text-primary">
-                        "Olá, meu nome é Bruno Carvalho Dias e estou muito interessado nessa oportunidade de Tech Lead Mobile. Tenho mais de 8 anos de experiência em desenvolvimento mobile, sendo os últimos 4 anos focado em liderança técnica..."
+                      <p className="text-lia-text-primary">"Olá, meu nome é Bruno Carvalho Dias e estou muito interessado nessa oportunidade de Tech Lead Mobile. Tenho mais de 8 anos de experiência em desenvolvimento mobile, sendo os últimos 4 anos focado em liderança técnica..."
                       </p>
                     </div>
 
@@ -504,8 +502,7 @@ export function FilePreviewModal({ showPreview, selectedFile, previewType, onClo
                       <p className={`${textStyles.bodySmall} mb-1`}>
                         1:15 • Candidato
                       </p>
-                      <p className="text-lia-text-primary">
-                        "Trabalhei na Unicorn Startup onde liderei um time de 6 desenvolvedores. Implementamos React Native para unificar as plataformas iOS e Android, reduzindo o tempo de desenvolvimento em 40%..."
+                      <p className="text-lia-text-primary">"Trabalhei na Unicorn Startup onde liderei um time de 6 desenvolvedores. Implementamos React Native para unificar as plataformas iOS e Android, reduzindo o tempo de desenvolvimento em 40%..."
                       </p>
                     </div>
 
@@ -513,8 +510,7 @@ export function FilePreviewModal({ showPreview, selectedFile, previewType, onClo
                       <p className={`${textStyles.bodySmall} mb-1`}>
                         2:30 • Candidato
                       </p>
-                      <p className="text-lia-text-primary">
-                        "Sobre minhas principais conquistas, destaco a migração completa de duas aplicações nativas para React Native, mantendo 99.5% de uptime durante todo o processo..."
+                      <p className="text-lia-text-primary">"Sobre minhas principais conquistas, destaco a migração completa de duas aplicações nativas para React Native, mantendo 99.5% de uptime durante todo o processo..."
                       </p>
                     </div>
 

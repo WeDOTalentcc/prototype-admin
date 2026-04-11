@@ -1,16 +1,16 @@
 "use client"
 
-import { Badge } from "@/components/ui/badge"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { TabsContent } from "@/components/ui/tabs"
+import { Badge } from"@/components/ui/badge"
+import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
+import { TabsContent } from"@/components/ui/tabs"
 import {
   Award, Brain, Briefcase, Building2, Cake, Code, DollarSign, Download,
   ExternalLink, FileText, GraduationCap, Home, Languages, Lightbulb,
   Linkedin, Mail, User, Users
-} from "lucide-react"
-import type { CandidateLocal } from "@/services/lia-api"
-import { ProfileExperienceSection } from "@/components/candidate-profile/ProfileExperienceSection"
-import { ProfileEducationSection } from "@/components/candidate-profile/ProfileEducationSection"
+} from"lucide-react"
+import type { CandidateLocal } from"@/services/lia-api"
+import { ProfileExperienceSection } from"@/components/candidate-profile/ProfileExperienceSection"
+import { ProfileEducationSection } from"@/components/candidate-profile/ProfileEducationSection"
 
 type CandidateWithExtras = CandidateLocal & {
   estimated_age?: number | null
@@ -109,7 +109,7 @@ export function CandidateProfileTab({
           <CardContent className="px-4 pb-4">
             <div className="flex flex-wrap gap-1.5">
               {candidate.technical_skills.map((skill) => (
-                <Badge key={skill} variant="secondary" className="text-xs px-2 py-0.5 bg-wedo-cyan/10 text-wedo-cyan border-wedo-cyan/20">
+                <Badge key={skill} variant="secondary" className="text-xs px-2 py-0.5  border-wedo-cyan/20">
                   {skill}
                 </Badge>
               ))}
@@ -152,7 +152,7 @@ export function CandidateProfileTab({
                 </h5>
                 <div className="flex flex-wrap gap-1.5">
                   {candidate.soft_skills.map((skill) => (
-                    <Badge key={skill} variant="outline" className="text-xs px-2 py-0.5 bg-status-warning/10 text-status-warning border-status-warning/30">
+                    <Badge key={skill} variant="outline" className="text-xs px-2 py-0.5  border-status-warning/30">
                       {skill}
                     </Badge>
                   ))}
@@ -312,7 +312,7 @@ export function CandidateProfileTab({
                 <Badge variant="outline" className="text-xs bg-lia-bg-secondary dark:bg-lia-bg-primary text-lia-text-primary dark:text-lia-text-primary border-lia-border-default dark:border-lia-border-default">Remoto</Badge>
               )}
               {candidate.willing_to_relocate && (
-                <Badge variant="outline" className="text-xs bg-status-success/10 text-status-success border-status-success/30">Aceita Relocação</Badge>
+                <Badge variant="outline" className="text-xs  border-status-success/30">Aceita Relocação</Badge>
               )}
               {candidate.work_model_preference && (
                 <Badge variant="outline" className="text-xs">{candidate.work_model_preference}</Badge>
@@ -338,7 +338,7 @@ export function CandidateProfileTab({
           <div>
             <h5 className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary mb-1.5">Status</h5>
             <div className="flex flex-wrap gap-1.5">
-              <Badge variant="outline" className={`text-xs ${candidate.is_active ? 'bg-status-success/10 text-status-success' : 'bg-lia-bg-tertiary text-lia-text-secondary'}`}>
+              <Badge variant="outline" className={`text-xs ${candidate.is_active ? '' : 'bg-lia-bg-tertiary text-lia-text-secondary'}`}>
                 {candidate.is_active ? 'Ativo' : 'Inativo'}
               </Badge>
               {candidate.source && (
@@ -433,17 +433,17 @@ export function CandidateProfileTab({
             {/* Badges de Status */}
             <div className="flex flex-wrap gap-1.5">
               {candidate.is_open_to_work && (
-                <Badge className="text-xs bg-status-success/10 text-status-success border-status-success/30">
+                <Badge className="text-xs  border-status-success/30">
                   ✓ Open to Work
                 </Badge>
               )}
               {candidate.is_decision_maker && (
-                <Badge className="text-xs bg-wedo-purple/10 text-wedo-purple border-wedo-purple/30">
+                <Badge className="text-xs  border-wedo-purple/30">
                   👔 Decision Maker
                 </Badge>
               )}
               {candidate.is_top_universities && (
-                <Badge className="text-xs bg-status-warning/10 text-status-warning border-status-warning/30">
+                <Badge className="text-xs  border-status-warning/30">
                   🎓 Top Universities
                 </Badge>
               )}
@@ -547,7 +547,7 @@ export function CandidateProfileTab({
           <CardContent className="px-4 pb-4">
             <div className="flex flex-wrap gap-1.5">
               {candidate.interests!.map((interest: string) => (
-                <Badge key={interest} variant="outline" className="text-xs px-2 py-0.5 bg-wedo-purple/10 text-wedo-purple border-wedo-purple/30">
+                <Badge key={interest} variant="outline" className="text-xs px-2 py-0.5  border-wedo-purple/30">
                   {interest}
                 </Badge>
               ))}

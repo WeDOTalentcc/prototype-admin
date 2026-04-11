@@ -1,9 +1,9 @@
 "use client"
 
-import React from "react"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
+import React from"react"
+import { Card, CardContent } from"@/components/ui/card"
+import { Badge } from"@/components/ui/badge"
+import { Progress } from"@/components/ui/progress"
 import {
   Target,
   Users,
@@ -11,7 +11,7 @@ import {
   Clock,
   TrendingUp,
   AlertTriangle
-} from "lucide-react"
+} from"lucide-react"
 
 interface PipelineStage {
   name: string
@@ -119,7 +119,7 @@ export function ProgressTrackerCard({
                   key={stage.name}
                   className={`${stage.color} relative`}
                   style={{width: `${(stage.count / data.total_candidates) * 100}%`,
-                    minWidth: stage.count > 0 ? "16px" : "0"}}
+                    minWidth: stage.count > 0 ?"16px" :"0"}}
                   title={`${stage.name}: ${stage.count}`}
                 />
               ))}

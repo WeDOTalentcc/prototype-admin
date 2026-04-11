@@ -1,11 +1,11 @@
 "use client"
 
 import React, { useState } from 'react'
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { AlertTriangle, Brain, Clock, BellOff, Loader2, CheckCircle, Info } from "lucide-react"
-import type { EmptyFieldNotification, FieldValueSuggestion } from "@/hooks/use-empty-field-notifications"
+import { Button } from"@/components/ui/button"
+import { Card, CardContent } from"@/components/ui/card"
+import { Badge } from"@/components/ui/badge"
+import { AlertTriangle, Brain, Clock, BellOff, Loader2, CheckCircle, Info } from"lucide-react"
+import type { EmptyFieldNotification, FieldValueSuggestion } from"@/hooks/use-empty-field-notifications"
 
 interface EmptyFieldNotificationMessageProps {
   notification: EmptyFieldNotification

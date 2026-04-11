@@ -28,7 +28,7 @@ interface SaturationStatus {
   saturation_threshold: number
   is_saturated: boolean
   slots_remaining: number
-  recommendation: "continue_screening" | "pause_screening"
+  recommendation:"continue_screening" |"pause_screening"
   saturation_percentage: number
   queued_count: number
   last_screened_at: string | null
@@ -46,44 +46,44 @@ interface SaturationBadgeProps {
   jobId: string
 }
 
-type SaturationState = "saturated" | "almost" | "normal"
+type SaturationState ="saturated" |"almost" |"normal"
 
 function getSaturationState(data: SaturationStatus): SaturationState {
   if (data.saturation_disabled_until) {
     const disabledUntil = new Date(data.saturation_disabled_until)
     if (disabledUntil > new Date()) {
-      return "normal"
+      return"normal"
     }
   }
 
   if (data.organic.is_saturated || data.sourcing.is_saturated) {
-    return "saturated"
+    return"saturated"
   }
 
   if (data.organic.percentage >= 90 || data.sourcing.percentage >= 90) {
-    return "almost"
+    return"almost"
   }
 
-  return "normal"
+  return"normal"
 }
 
 function formatLastScreened(dateStr: string | null): string {
-  if (!dateStr) return "Sem triagens recentes"
+  if (!dateStr) return"Sem triagens recentes"
   const date = new Date(dateStr)
   const now = new Date()
   const diffMs = now.getTime() - date.getTime()
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
 
-  if (diffDays === 0) return "Último triado hoje"
-  if (diffDays === 1) return "Último triado há 1 dia"
+  if (diffDays === 0) return"Último triado hoje"
+  if (diffDays === 1) return"Último triado há 1 dia"
   return `Último triado há ${diffDays} dias`
 }
 
 function getRecommendationText(recommendation: string): string {
-  if (recommendation === "pause_screening") {
-    return "Recomendamos agendar entrevistas antes de desbloquear"
+  if (recommendation ==="pause_screening") {
+    return"Recomendamos agendar entrevistas antes de desbloquear"
   }
-  return "Pipeline com capacidade — triagem pode continuar"
+  return"Pipeline com capacidade — triagem pode continuar"
 }
 
 export function SaturationBadge({ jobId }: SaturationBadgeProps) {
@@ -109,11 +109,11 @@ export function SaturationBadge({ jobId }: SaturationBadgeProps) {
     fetchStatus()
   }, [jobId, fetchStatus])
 
-  const handleUnlock = async (action: "increase_threshold" | "disable_temporarily") => {
+  const handleUnlock = async (action:"increase_threshold" |"disable_temporarily") => {
     if (!data) return
     setActionLoading(true)
     try {
-      const body = action === "increase_threshold"
+      const body = action ==="increase_threshold"
         ? { action, new_threshold: data.saturation_threshold + data.unlock_increment }
         : { action, disable_hours: data.unlock_hours }
 
@@ -128,7 +128,7 @@ export function SaturationBadge({ jobId }: SaturationBadgeProps) {
         return
       }
 
-      const message = action === "increase_threshold"
+      const message = action ==="increase_threshold"
         ? `Limite aumentado em +${data.unlock_increment}`
         : `Pipeline desbloqueado por ${data.unlock_hours}h`
       toast.success(message)
@@ -145,9 +145,9 @@ export function SaturationBadge({ jobId }: SaturationBadgeProps) {
 
   const state = getSaturationState(data)
 
-  if (state === "normal") return null
+  if (state ==="normal") return null
 
-  const isSaturated = state === "saturated"
+  const isSaturated = state ==="saturated"
 
   const organicPercent = Math.min(data.organic.percentage, 100)
   const sourcingPercent = Math.min(data.sourcing.percentage, 100)
@@ -180,7 +180,7 @@ export function SaturationBadge({ jobId }: SaturationBadgeProps) {
       >
         <div className="p-3 space-y-3 text-xs">
           <div className="font-medium text-lia-text-primary">
-            {isSaturated ? "Pipeline Saturado" : "Quase Saturado"}
+            {isSaturated ?"Pipeline Saturado" :"Quase Saturado"}
           </div>
 
           <div className="space-y-2">

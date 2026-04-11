@@ -1,13 +1,13 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Card, CardContent } from "@/components/ui/card"
+import { useState, useEffect } from"react"
+import { Button } from"@/components/ui/button"
+import { Badge } from"@/components/ui/badge"
+import { Card, CardContent } from"@/components/ui/card"
 import {
   X, Lightbulb, Clock, Zap, Archive, Settings,
   Brain, FileText, ChevronRight
-} from "lucide-react"
+} from"lucide-react"
 
 interface TemplateSuggestion {
   id: string
@@ -108,9 +108,9 @@ export function TemplateSuggestionToast({
   // Cor do badge baseado no motivo
   const getBadgeColor = () => {
     if (suggestion.repetitions >= 3) {
-      return 'bg-wedo-orange/15 text-wedo-orange border-wedo-orange/30'
+      return ' border-wedo-orange/30'
     } else if (suggestion.complexity >= 8) {
-      return 'bg-wedo-purple/15 text-wedo-purple border-wedo-purple/30'
+      return ' border-wedo-purple/30'
     } else {
       return 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary border-lia-border-default dark:border-lia-border-default'
     }
@@ -150,8 +150,7 @@ export function TemplateSuggestionToast({
           </div>
 
           {/* Comando */}
-          <div className="mb-3 p-2 bg-lia-bg-secondary dark:bg-lia-bg-elevated rounded-xl text-xs font-mono text-lia-text-primary line-clamp-2">
-            "{suggestion.command}"
+          <div className="mb-3 p-2 bg-lia-bg-secondary dark:bg-lia-bg-elevated rounded-xl text-xs font-mono text-lia-text-primary line-clamp-2">"{suggestion.command}"
           </div>
 
           {/* Benefícios */}

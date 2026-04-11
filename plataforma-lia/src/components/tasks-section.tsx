@@ -1,76 +1,76 @@
 "use client"
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { CheckCircle2, ArrowRight, Plus, MoreHorizontal, Zap, Users, FileText, MessageSquare } from "lucide-react"
-import { TaskModal } from "@/components/task-modal"
+import { useState } from"react"
+import { Button } from"@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
+import { Badge } from"@/components/ui/badge"
+import { CheckCircle2, ArrowRight, Plus, MoreHorizontal, Zap, Users, FileText, MessageSquare } from"lucide-react"
+import { TaskModal } from"@/components/task-modal"
 
 const tasks = [
   {
     id: 1,
-    title: "Crie uma nova vaga",
-    description: "Configure nova posição no sistema com requisitos e descrição detalhada",
+    title:"Crie uma nova vaga",
+    description:"Configure nova posição no sistema com requisitos e descrição detalhada",
     icon: Plus,
-    priority: "high",
-    category: "setup"
+    priority:"high",
+    category:"setup"
   },
   {
     id: 2,
-    title: "Solicite aprovação de nova vaga",
-    description: "Encaminhe documentação para aprovação gerencial com justificativa",
+    title:"Solicite aprovação de nova vaga",
+    description:"Encaminhe documentação para aprovação gerencial com justificativa",
     icon: FileText,
-    priority: "high",
-    category: "approval"
+    priority:"high",
+    category:"approval"
   },
   {
     id: 3,
-    title: "Compartilhe candidatos com gestor",
-    description: "Envie relatório com perfis aprovados e recomendações",
+    title:"Compartilhe candidatos com gestor",
+    description:"Envie relatório com perfis aprovados e recomendações",
     icon: Users,
-    priority: "high",
-    category: "review"
+    priority:"high",
+    category:"review"
   },
   {
     id: 4,
-    title: "Solicite feedback de entrevista",
-    description: "Colete avaliação detalhada pós-entrevista do gestor",
+    title:"Solicite feedback de entrevista",
+    description:"Colete avaliação detalhada pós-entrevista do gestor",
     icon: MessageSquare,
-    priority: "high",
-    category: "feedback"
+    priority:"high",
+    category:"feedback"
   },
   {
     id: 5,
-    title: "Consulte sobre candidato",
-    description: "Obtenha informações específicas e histórico completo",
+    title:"Consulte sobre candidato",
+    description:"Obtenha informações específicas e histórico completo",
     icon: MessageSquare,
-    priority: "high",
-    category: "inquiry"
+    priority:"high",
+    category:"inquiry"
   },
   {
     id: 6,
-    title: "Adicione novo candidato",
-    description: "Cadastre perfil completo no banco de talentos",
+    title:"Adicione novo candidato",
+    description:"Cadastre perfil completo no banco de talentos",
     icon: Users,
-    priority: "high",
-    category: "registration"
+    priority:"high",
+    category:"registration"
   },
   {
     id: 7,
-    title: "Reagende uma entrevista",
-    description: "Altere horário e notifique automaticamente participantes",
+    title:"Reagende uma entrevista",
+    description:"Altere horário e notifique automaticamente participantes",
     icon: FileText,
-    priority: "high",
-    category: "scheduling"
+    priority:"high",
+    category:"scheduling"
   },
   {
     id: 8,
-    title: "Atualize status do candidato",
-    description: "Modifique situação no processo e envie notificações",
+    title:"Atualize status do candidato",
+    description:"Modifique situação no processo e envie notificações",
     icon: FileText,
-    priority: "high",
-    category: "update"
+    priority:"high",
+    category:"update"
   }
 ]
 
@@ -89,10 +89,10 @@ export function TasksSection() {
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case "high": return "border-status-error/30 bg-status-error/10 text-status-error"
-      case "medium": return "border-status-warning/30 bg-status-warning/10 text-status-warning"
-      case "low": return "border-status-success/30 bg-status-success/10 text-status-success"
-      default: return "border-lia-border-subtle bg-lia-bg-secondary text-lia-text-primary"
+      case"high": return"border-status-error/30"
+      case"medium": return"border-status-warning/30"
+      case"low": return"border-status-success/30"
+      default: return"border-lia-border-subtle bg-lia-bg-secondary text-lia-text-primary"
     }
   }
 
@@ -145,7 +145,7 @@ export function TasksSection() {
                           variant="outline"
                           className={`text-xs h-3.5 px-1 ${getPriorityColor(task.priority)}`}
                         >
-                          {task.priority === "high" ? "Alta" : task.priority === "medium" ? "Média" : "Baixa"}
+                          {task.priority ==="high" ?"Alta" : task.priority ==="medium" ?"Média" :"Baixa"}
                         </Badge>
                         <ArrowRight className="w-2.5 h-2.5 text-lia-text-secondary group-hover:text-lia-text-secondary transition-colors motion-reduce:transition-none" />
                       </div>

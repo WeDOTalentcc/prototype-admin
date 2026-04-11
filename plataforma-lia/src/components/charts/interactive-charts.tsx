@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { useState, useRef } from"react"
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -18,14 +18,14 @@ import {
   InteractionItem
 } from 'chart.js'
 import { Line, Bar, Pie, Chart } from 'react-chartjs-2'
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
+import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
+import { Button } from"@/components/ui/button"
+import { Badge } from"@/components/ui/badge"
 import {
   Calendar, TrendingUp, TrendingDown, BarChart3, PieChart as PieIcon,
   Activity, Users, DollarSign, Clock, Target, AlertCircle, CheckCircle,
   ChevronDown, Filter, Download, RefreshCw
-} from "lucide-react"
+} from"lucide-react"
 import { getElementAtEvent } from 'react-chartjs-2'
 
 ChartJS.register(
@@ -356,7 +356,7 @@ export function InteractiveChart({
                 {(['monthly', 'quarterly', 'yearly'] as const).map((p) => (
                   <Button
                     key={p}
-                    variant={period === p ? "primary" : "ghost"}
+                    variant={period === p ?"primary" :"ghost"}
                     size="sm"
                     onClick={() => onPeriodChange?.(p)}
                     className="text-xs hover:bg-lia-interactive-hover transition-colors cursor-pointer"
@@ -478,7 +478,7 @@ export function RecruiterPerformanceChart() {
         {metrics.map(metric => (
           <Button
             key={metric.key}
-            variant={selectedMetric === metric.key ? "primary" : "outline"}
+            variant={selectedMetric === metric.key ?"primary" :"outline"}
             size="sm"
             onClick={() => setSelectedMetric(metric.key)}
             className="gap-2 hover:bg-lia-interactive-hover transition-colors cursor-pointer"
@@ -528,7 +528,7 @@ export function WorkModelDistributionChart() {
       {/* View Toggle */}
       <div className="flex gap-2">
         <Button
-          variant={viewType === 'distribution' ? "primary" : "outline"}
+          variant={viewType === 'distribution' ?"primary" :"outline"}
           size="sm"
           onClick={() => setViewType('distribution')}
           className="gap-2 hover:bg-lia-interactive-hover transition-colors cursor-pointer"
@@ -537,7 +537,7 @@ export function WorkModelDistributionChart() {
           Distribuição
         </Button>
         <Button
-          variant={viewType === 'trends' ? "primary" : "outline"}
+          variant={viewType === 'trends' ?"primary" :"outline"}
           size="sm"
           onClick={() => setViewType('trends')}
           className="gap-2 hover:bg-lia-interactive-hover transition-colors cursor-pointer"
@@ -598,7 +598,7 @@ export function PredictiveAnalyticsChart() {
           {[80, 85, 90, 95].map(level => (
             <Button
               key={level}
-              variant={confidenceLevel === level ? "primary" : "outline"}
+              variant={confidenceLevel === level ?"primary" :"outline"}
               size="sm"
               onClick={() => setConfidenceLevel(level)}
             >

@@ -1,16 +1,16 @@
 "use client"
 
 import { textStyles, cardStyles } from '@/lib/design-tokens'
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+import { Button } from"@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
+import { Badge } from"@/components/ui/badge"
 import {
   Link2, Settings, Activity, CheckCircle, AlertTriangle, XCircle,
   Plus, Play, Eye, Edit, Trash2, Download,
   FileText, BarChart3, Database, Server, Zap,
   Minus, Filter, RefreshCw, ArrowRight,
   CheckCircle2, Info, MoreHorizontal
-} from "lucide-react"
+} from"lucide-react"
 import { useAtsIntegrations } from './ats-integrations/useAtsIntegrations'
 import { SystemConfigurationModal } from './ats-integrations/SystemConfigurationModal'
 import type { ATSSystem, ViewTab } from './ats-integrations/ats-integrations.types'
@@ -307,9 +307,9 @@ function IntegrationsView({ integrations }: Pick<HookState, 'integrations'>) {
 
 function LogsView({ syncLogs }: Pick<HookState, 'syncLogs'>) {
   const statusCls = (s: string) =>
-    s === 'success' ? 'bg-status-success/15 text-status-success' :
-    s === 'warning' ? 'bg-status-warning/15 text-status-warning' :
-    s === 'error'   ? 'bg-status-error/15 text-status-error' :
+    s === 'success' ? '' :
+    s === 'warning' ? '' :
+    s === 'error'   ? '' :
     'bg-lia-bg-secondary text-lia-text-secondary'
   const statusLabel = (s: string) =>
     s === 'success' ? 'Sucesso' : s === 'warning' ? 'Aviso' : s === 'error' ? 'Erro' : 'Info'

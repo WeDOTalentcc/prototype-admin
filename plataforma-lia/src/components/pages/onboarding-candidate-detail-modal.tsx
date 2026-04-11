@@ -1,14 +1,14 @@
 "use client"
 
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Button } from"@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
+import { Badge } from"@/components/ui/badge"
+import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
 import {
   CheckCircle, Calendar, Mail, Phone, User
-} from "lucide-react"
-import type { OnboardingCandidate } from "./onboarding-page.types"
-import { onboardingTemplates, getStatusColor, getStatusLabel } from "./onboarding-page.types"
+} from"lucide-react"
+import type { OnboardingCandidate } from"./onboarding-page.types"
+import { onboardingTemplates, getStatusColor, getStatusLabel } from"./onboarding-page.types"
 
 interface CandidateDetailModalProps {
   candidate: OnboardingCandidate

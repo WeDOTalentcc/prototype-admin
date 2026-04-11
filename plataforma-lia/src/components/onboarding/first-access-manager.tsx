@@ -1,16 +1,16 @@
 "use client"
 
 import './onboarding-styles.css'
-import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { useOnboardingStore } from "@/stores/onboarding-store"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+import { useState, useEffect } from"react"
+import { Button } from"@/components/ui/button"
+import { useOnboardingStore } from"@/stores/onboarding-store"
+import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
+import { Badge } from"@/components/ui/badge"
 import {
   Shield, Mail, CheckCircle, AlertCircle, Loader2,
   Building, User, Eye, EyeOff, Key, ArrowRight,
   Globe, Phone, MapPin, Calendar, RefreshCw
-} from "lucide-react"
+} from"lucide-react"
 
 interface FirstAccessData {
   token: string
@@ -302,7 +302,7 @@ export function FirstAccessManager({ token, onAccessGranted, onAccessDenied }: F
           <div
             className="animate-in fade-in slide-in-from-left-6 duration-700"
           >
-            <Card className="">
+            <Card >
               <div className="mb-8">
                 <div className="flex items-center gap-4 mb-6">
                   <div className="w-16 h-16 lia-bg-blue rounded-xl flex items-center justify-center">
@@ -371,7 +371,7 @@ export function FirstAccessManager({ token, onAccessGranted, onAccessDenied }: F
           <div
             className="animate-in fade-in slide-in-from-right-6 duration-700"
           >
-            <Card className="">
+            <Card >
               <div className="mb-8">
                 <div className="flex items-center gap-4 mb-6">
                   <div className="w-16 h-16 lia-bg-coral rounded-xl flex items-center justify-center">
@@ -452,7 +452,7 @@ export function FirstAccessManager({ token, onAccessGranted, onAccessDenied }: F
                   </label>
                   <div className="relative">
                     <input
-                      type={showPassword ? "text" : "password"}
+                      type={showPassword ?"text" :"password"}
                       value={userData.password}
                       onChange={(e) => setUserData(prev => ({...prev, password: e.target.value}))}
                       className="w-full px-6 py-4 pr-14 border-2 border-lia-border-subtle rounded-lg focus:ring-2 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20 focus:border-transparent lia-bg-lia-bg-primary lia-font-sans lia-text-medium transition-colors motion-reduce:transition-none duration-200"

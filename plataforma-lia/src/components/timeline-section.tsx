@@ -1,65 +1,65 @@
 "use client"
 
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
-import { MessageCircle, UserCheck, Clock, CheckCircle, Users, FileText, Star } from "lucide-react"
+import { Button } from"@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
+import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
+import { Badge } from"@/components/ui/badge"
+import { MessageCircle, UserCheck, Clock, CheckCircle, Users, FileText, Star } from"lucide-react"
 
 const liaActivities = [
   {
     id: 1,
     icon: MessageCircle,
-    activity: "Feedback dado para candidato João Silva",
-    details: "Avaliação positiva com recomendações de melhoria técnica",
-    time: "09:00hrs",
-    date: "26/03/2025",
-    type: "feedback"
+    activity:"Feedback dado para candidato João Silva",
+    details:"Avaliação positiva com recomendações de melhoria técnica",
+    time:"09:00hrs",
+    date:"26/03/2025",
+    type:"feedback"
   },
   {
     id: 2,
     icon: Users,
-    activity: "05 candidatos foram avaliados nos últimos 15 minutos",
-    details: "Vaga: Desenvolvedor Frontend Sênior",
-    time: "08:45hrs",
-    date: "26/03/2025",
-    type: "evaluation"
+    activity:"05 candidatos foram avaliados nos últimos 15 minutos",
+    details:"Vaga: Desenvolvedor Frontend Sênior",
+    time:"08:45hrs",
+    date:"26/03/2025",
+    type:"evaluation"
   },
   {
     id: 3,
     icon: UserCheck,
-    activity: "Triagem automática realizada",
-    details: "Candidata Maria Santos aprovada para próxima fase",
-    time: "08:30hrs",
-    date: "26/03/2025",
-    type: "screening"
+    activity:"Triagem automática realizada",
+    details:"Candidata Maria Santos aprovada para próxima fase",
+    time:"08:30hrs",
+    date:"26/03/2025",
+    type:"screening"
   },
   {
     id: 4,
     icon: FileText,
-    activity: "Relatório de análise de CV gerado",
-    details: "15 currículos analisados para vaga de UX Designer",
-    time: "08:15hrs",
-    date: "26/03/2025",
-    type: "analysis"
+    activity:"Relatório de análise de CV gerado",
+    details:"15 currículos analisados para vaga de UX Designer",
+    time:"08:15hrs",
+    date:"26/03/2025",
+    type:"analysis"
   },
   {
     id: 5,
     icon: CheckCircle,
-    activity: "Status atualizado automaticamente",
-    details: "Carlos Oliveira movido para 'Aguardando entrevista'",
-    time: "08:00hrs",
-    date: "26/03/2025",
-    type: "status_update"
+    activity:"Status atualizado automaticamente",
+    details:"Carlos Oliveira movido para 'Aguardando entrevista'",
+    time:"08:00hrs",
+    date:"26/03/2025",
+    type:"status_update"
   },
   {
     id: 6,
     icon: Star,
-    activity: "Score de adequação calculado",
-    details: "3 novos candidatos receberam pontuação inicial",
-    time: "07:45hrs",
-    date: "26/03/2025",
-    type: "scoring"
+    activity:"Score de adequação calculado",
+    details:"3 novos candidatos receberam pontuação inicial",
+    time:"07:45hrs",
+    date:"26/03/2025",
+    type:"scoring"
   }
 ]
 

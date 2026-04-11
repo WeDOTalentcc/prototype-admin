@@ -1,13 +1,13 @@
 "use client"
 
-import { useState } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
+import { useState } from"react"
+import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
+import { Button } from"@/components/ui/button"
+import { Badge } from"@/components/ui/badge"
 import {
   Mail, Bell, MessageSquare, Phone, Zap, Plus, Edit,
   MoreVertical, CheckCircle,
-} from "lucide-react"
+} from"lucide-react"
 
 export function CommunicationTab({ onSettingsChange }: { onSettingsChange: (changed: boolean) => void }) {
   const [activeSubTab, setActiveSubTab] = useState<'templates' | 'notifications' | 'whatsapp' | 'sms' | 'automation'>('templates')
@@ -165,12 +165,12 @@ export function CommunicationTab({ onSettingsChange }: { onSettingsChange: (chan
         </CardHeader>
         <CardContent className="space-y-4">
           {[
-            { key: "newCandidate", label: "Novo candidato se inscreveu", desc: "Notificar recrutadores sobre novas inscrições" },
-            { key: "interviewScheduled", label: "Entrevista agendada", desc: "Lembrete para recrutador e candidato" },
-            { key: "interviewReminder", label: "Lembrete de entrevista", desc: "Enviar 24h antes da entrevista" },
-            { key: "feedbackDue", label: "Prazo de feedback", desc: "Lembrar de dar feedback após entrevistas" },
-            { key: "candidateReply", label: "Resposta do candidato", desc: "Quando candidato responde emails" },
-            { key: "processDeadline", label: "Prazo do processo", desc: "Alertar sobre prazos de processos seletivos" }
+            { key:"newCandidate", label:"Novo candidato se inscreveu", desc:"Notificar recrutadores sobre novas inscrições" },
+            { key:"interviewScheduled", label:"Entrevista agendada", desc:"Lembrete para recrutador e candidato" },
+            { key:"interviewReminder", label:"Lembrete de entrevista", desc:"Enviar 24h antes da entrevista" },
+            { key:"feedbackDue", label:"Prazo de feedback", desc:"Lembrar de dar feedback após entrevistas" },
+            { key:"candidateReply", label:"Resposta do candidato", desc:"Quando candidato responde emails" },
+            { key:"processDeadline", label:"Prazo do processo", desc:"Alertar sobre prazos de processos seletivos" }
           ].map((notification) => (
             <div key={notification.key} className="flex items-center justify-between p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl">
               <div>
@@ -255,9 +255,9 @@ export function CommunicationTab({ onSettingsChange }: { onSettingsChange: (chan
             <h4 className="font-medium text-lia-text-primary mb-3">Templates de Mensagem</h4>
             <div className="space-y-2">
               {[
-                { name: "Convite para entrevista", message: "Parabéns! Você foi selecionado(a) para a próxima etapa do processo seletivo para a vaga de {vaga}. 🎉" },
-                { name: "Lembrete de entrevista", message: "Olá! Lembrando que sua entrevista está agendada para amanhã às {horario}. 📅" },
-                { name: "Solicitação de documentos", message: "Para prosseguir com seu processo, precisamos que envie os seguintes documentos: {documentos}" }
+                { name:"Convite para entrevista", message:"Parabéns! Você foi selecionado(a) para a próxima etapa do processo seletivo para a vaga de {vaga}. 🎉" },
+                { name:"Lembrete de entrevista", message:"Olá! Lembrando que sua entrevista está agendada para amanhã às {horario}. 📅" },
+                { name:"Solicitação de documentos", message:"Para prosseguir com seu processo, precisamos que envie os seguintes documentos: {documentos}" }
               ].map((template) => (
                 <div key={template.name} className="p-3 border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl">
                   <div className="flex items-center justify-between mb-2">
@@ -312,28 +312,28 @@ export function CommunicationTab({ onSettingsChange }: { onSettingsChange: (chan
           <div className="space-y-4">
             {[
               {
-                name: "Resposta Automática",
-                description: "Enviar email de confirmação ao receber nova inscrição",
-                status: "ativo",
-                trigger: "Novo candidato"
+                name:"Resposta Automática",
+                description:"Enviar email de confirmação ao receber nova inscrição",
+                status:"ativo",
+                trigger:"Novo candidato"
               },
               {
-                name: "Follow-up de Entrevista",
-                description: "Solicitar feedback do candidato 2 dias após entrevista",
-                status: "ativo",
-                trigger: "2 dias após entrevista"
+                name:"Follow-up de Entrevista",
+                description:"Solicitar feedback do candidato 2 dias após entrevista",
+                status:"ativo",
+                trigger:"2 dias após entrevista"
               },
               {
-                name: "Lembrete de Prazo",
-                description: "Alertar recrutadores sobre feedbacks pendentes",
-                status: "pausado",
-                trigger: "24h após prazo"
+                name:"Lembrete de Prazo",
+                description:"Alertar recrutadores sobre feedbacks pendentes",
+                status:"pausado",
+                trigger:"24h após prazo"
               },
               {
-                name: "Reengajamento",
-                description: "Contatar candidatos inativos há mais de 30 dias",
-                status: "ativo",
-                trigger: "30 dias de inatividade"
+                name:"Reengajamento",
+                description:"Contatar candidatos inativos há mais de 30 dias",
+                status:"ativo",
+                trigger:"30 dias de inatividade"
               }
             ].map((automation, index) => (
               <div key={`auto-${index}`} className="flex items-center justify-between p-4 border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl">

@@ -1,15 +1,15 @@
 "use client"
 
-import React from "react"
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+import React from"react"
+import { Button } from"@/components/ui/button"
+import { Card } from"@/components/ui/card"
+import { Badge } from"@/components/ui/badge"
 import { 
   Search, Plus, MapPin, Users, Edit2, Share2, 
   BarChart3, Target, CheckCircle, Linkedin, Globe, 
   Building, UserCheck, AlertCircle, AlertTriangle, 
   X, Bookmark, Trash2, Layers3, Briefcase, Filter, User
-} from "lucide-react"
+} from"lucide-react"
 import { textStyles } from '@/lib/design-tokens'
 import type { JobFilters as JobFiltersType } from './jobsPageTypes'
 import type { SavedSearch } from '@/hooks/useJobFiltersPersistence'
@@ -435,7 +435,7 @@ export function JobFiltersPanel({
                       </div>
                       <p className="text-micro text-lia-text-secondary mt-0.5 truncate">
                         {new Date(search.createdAt).toLocaleDateString('pt-BR')}
-                        {search.query && ` - "${search.query}"`}
+                        {search.query && ` -"${search.query}"`}
                       </p>
                     </div>
                     <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none">
@@ -475,7 +475,7 @@ export function JobFiltersPanel({
                   Nenhuma busca salva
                 </p>
                 <p className="text-micro text-lia-text-secondary mt-0.5">
-                  Aplique filtros e clique em "Salvar Busca"
+                  Aplique filtros e clique em"Salvar Busca"
                 </p>
               </div>
             )}

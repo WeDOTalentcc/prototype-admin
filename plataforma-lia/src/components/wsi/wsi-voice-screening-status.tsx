@@ -1,22 +1,22 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
+import { useState, useEffect, useCallback } from"react"
+import { Button } from"@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
+import { Badge } from"@/components/ui/badge"
+import { Progress } from"@/components/ui/progress"
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogDescription,
-} from "@/components/ui/dialog"
+} from"@/components/ui/dialog"
 import {
   Phone, PhoneCall, PhoneOff, Loader2, CheckCircle, AlertCircle,
   Clock, Brain, Mic, Volume2, X, RefreshCw
-} from "lucide-react"
-import { liaApi, VoiceScreeningStatusResponse, WSICompetency, StartVoiceScreeningRequest } from "@/services/lia-api"
+} from"lucide-react"
+import { liaApi, VoiceScreeningStatusResponse, WSICompetency, StartVoiceScreeningRequest } from"@/services/lia-api"
 
 interface WSIVoiceScreeningStatusProps {
   isOpen: boolean
@@ -356,10 +356,10 @@ export function WSIVoiceScreeningStatus({
                       </div>
                       <Badge className={`mt-1 ${
  result.classification === 'excelente' || result.classification === 'alto' 
-                          ? 'bg-status-success/15 text-status-success' :
+                          ? '' :
                         result.classification === 'medio' 
-                          ? 'bg-status-warning/15 text-status-warning' :
-                        'bg-status-error/15 text-status-error'
+                          ? '' :
+                        ''
                       }`}>
                         {result.classification.charAt(0).toUpperCase() + result.classification.slice(1)}
                       </Badge>

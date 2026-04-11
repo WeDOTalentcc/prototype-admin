@@ -97,11 +97,10 @@ export function CalibrationCard({
   }
 
   return (
-    <Card className={cn(
- "w-full border transition-colors duration-200",
-      feedbackGiven === 'like' && "border-status-success/30 bg-status-success/10/50 dark:bg-status-success/10",
-      feedbackGiven === 'dislike' && "border-lia-border-default bg-lia-bg-secondary/50 dark:bg-lia-bg-primary/10 opacity-60",
-      !feedbackGiven && "border-lia-border-subtle dark:border-lia-border-subtle hover:bg-lia-bg-secondary hover:border-lia-border-subtle hover:",
+    <Card className={cn("w-full border transition-colors duration-200",
+      feedbackGiven === 'like' &&"border-status-success/30 bg-status-success/10/50 dark:bg-status-success/10",
+      feedbackGiven === 'dislike' &&"border-lia-border-default bg-lia-bg-secondary/50 dark:bg-lia-bg-primary/10 opacity-60",
+      !feedbackGiven &&"border-lia-border-subtle dark:border-lia-border-subtle hover:bg-lia-bg-secondary hover:border-lia-border-subtle hover:",
       className
     )}>
       {progress && (
@@ -303,9 +302,8 @@ export function CalibrationCard({
             )}
 
             {feedbackGiven && (
-              <div className={cn(
- "flex items-center gap-2 pt-1 text-xs",
-                feedbackGiven === 'like' ? "text-status-success" : "text-lia-text-primary"
+              <div className={cn("flex items-center gap-2 pt-1 text-xs",
+                feedbackGiven === 'like' ?"text-status-success" :"text-lia-text-primary"
               )}>
                 {feedbackGiven === 'like' ? (
                   <>

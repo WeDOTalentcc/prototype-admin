@@ -1,7 +1,7 @@
-import React from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Edit, Save, Clock, Shield, Loader2, AlertCircle, CheckCircle } from "lucide-react"
+import React from"react"
+import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
+import { Badge } from"@/components/ui/badge"
+import { Edit, Save, Clock, Shield, Loader2, AlertCircle, CheckCircle } from"lucide-react"
 import { textStyles, actionButtonStyles } from '@/lib/design-tokens'
 
 interface ScheduleTabProps {

@@ -1,29 +1,29 @@
 "use client"
 
-import NextImage from "next/image"
-import React from "react"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Switch } from "@/components/ui/switch"
-import { Label } from "@/components/ui/label"
+import NextImage from"next/image"
+import React from"react"
+import { Badge } from"@/components/ui/badge"
+import { Button } from"@/components/ui/button"
+import { Switch } from"@/components/ui/switch"
+import { Label } from"@/components/ui/label"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
+} from"@/components/ui/select"
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/components/ui/tooltip"
+} from"@/components/ui/tooltip"
 import {
   Plus, Trash2, Upload, Bot, Info, Database, User, File, Brain
-} from "lucide-react"
-import { cn } from "@/lib/utils"
-import type { DataField } from "@/hooks/use-data-request-config"
+} from"lucide-react"
+import { cn } from"@/lib/utils"
+import type { DataField } from"@/hooks/use-data-request-config"
 
 const FieldBadges = ({ field }: { field: DataField }) => (
   <div className="flex items-center gap-1 flex-wrap">
@@ -37,13 +37,13 @@ const FieldBadges = ({ field }: { field: DataField }) => (
       </Badge>
     )}
     {field.savesToProfile && (
-      <Badge className="bg-status-success/10 text-status-success dark:bg-status-success/30 dark:text-status-success text-micro px-1 py-0 h-4">
+      <Badge className="dark:bg-status-success/30 dark:text-status-success text-micro px-1 py-0 h-4">
         <User className="w-2.5 h-2.5 mr-0.5" />
         Cadastro
       </Badge>
     )}
     {field.type === 'file' && (
-      <Badge className="bg-status-warning/10 text-status-warning dark:bg-status-warning/30 dark:text-status-warning text-micro px-1 py-0 h-4">
+      <Badge className="dark:bg-status-warning/30 dark:text-status-warning text-micro px-1 py-0 h-4">
         <File className="w-2.5 h-2.5 mr-0.5" />
         Documento
       </Badge>
@@ -107,7 +107,7 @@ export function DataRequestFieldsSection({
                 </div>
                 <div>
                   <Label className="text-micro text-lia-text-primary">Tipo</Label>
-                  <Select value={newFieldType} onValueChange={(v) => setNewFieldType(v as "textarea" | "text" | "email" | "phone" | "file" | "date")}>
+                  <Select value={newFieldType} onValueChange={(v) => setNewFieldType(v as"textarea" |"text" |"email" |"phone" |"file" |"date")}>
                     <SelectTrigger className="mt-1 h-7 text-xs">
                       <SelectValue />
                     </SelectTrigger>
@@ -147,11 +147,10 @@ export function DataRequestFieldsSection({
             {defaultFields.map((field) => (
               <TooltipProvider key={field.id}>
                 <div
-                  className={cn(
-                    "flex items-center justify-between p-2 rounded-md border transition-colors",
+                  className={cn("flex items-center justify-between p-2 rounded-md border transition-colors",
                     field.enabled
-                      ? "bg-lia-bg-primary dark:bg-lia-bg-primary border-lia-border-default dark:border-lia-border-default"
-                      : "bg-lia-bg-secondary dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-subtle opacity-60"
+                      ?"bg-lia-bg-primary dark:bg-lia-bg-primary border-lia-border-default dark:border-lia-border-default"
+                      :"bg-lia-bg-secondary dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-subtle opacity-60"
                   )}
                 >
                   <div className="flex-1 min-w-0 mr-2">
@@ -177,7 +176,7 @@ export function DataRequestFieldsSection({
                       className="scale-75"
                     />
                   ) : (
-                    <Badge variant={field.enabled ? "default" : "secondary"} className="text-micro h-4">
+                    <Badge variant={field.enabled ?"default" :"secondary"} className="text-micro h-4">
                       {field.enabled ? 'Ativo' : 'Inativo'}
                     </Badge>
                   )}
@@ -195,11 +194,10 @@ export function DataRequestFieldsSection({
             {customFields.map((field) => (
               <div
                 key={field.id}
-                className={cn(
-                  "flex items-center justify-between p-2 rounded-md border transition-colors",
+                className={cn("flex items-center justify-between p-2 rounded-md border transition-colors",
                   field.enabled
-                    ? "bg-lia-bg-primary dark:bg-lia-bg-primary border-wedo-purple/30/50 dark:border-wedo-purple/30/50"
-                    : "bg-lia-bg-secondary dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-subtle opacity-60"
+                    ?"bg-lia-bg-primary dark:bg-lia-bg-primary border-wedo-purple/30/50 dark:border-wedo-purple/30/50"
+                    :"bg-lia-bg-secondary dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-subtle opacity-60"
                 )}
               >
                 <div className="flex-1 min-w-0 mr-2">
@@ -222,7 +220,7 @@ export function DataRequestFieldsSection({
                       className="scale-75"
                     />
                   ) : (
-                    <Badge variant={field.enabled ? "default" : "secondary"} className="text-micro h-4">
+                    <Badge variant={field.enabled ?"default" :"secondary"} className="text-micro h-4">
                       {field.enabled ? 'Ativo' : 'Inativo'}
                     </Badge>
                   )}

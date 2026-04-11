@@ -1,10 +1,10 @@
 "use client"
 
-import { useState, useRef, useEffect, useCallback } from "react"
-import { X, Brain, Loader2, Search } from "lucide-react"
-import { cn } from "@/lib/utils"
-import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
+import { useState, useRef, useEffect, useCallback } from"react"
+import { X, Brain, Loader2, Search } from"lucide-react"
+import { cn } from"@/lib/utils"
+import { Badge } from"@/components/ui/badge"
+import { Input } from"@/components/ui/input"
 
 interface ExcludedUniversitiesInputProps {
   value: string[]
@@ -12,37 +12,13 @@ interface ExcludedUniversitiesInputProps {
   placeholder?: string
 }
 
-const POPULAR_UNIVERSITIES = [
-  "Harvard University",
-  "Stanford University",
-  "MIT (Massachusetts Institute of Technology)",
-  "Yale University",
-  "Princeton University",
-  "Columbia University",
-  "University of Pennsylvania",
-  "Brown University",
-  "Cornell University",
-  "Dartmouth College",
-  "UC Berkeley",
-  "UCLA",
-  "University of Michigan",
-  "University of Chicago",
-  "Oxford University",
-  "Cambridge University",
-  "Imperial College London",
-  "USP (Universidade de São Paulo)",
-  "Unicamp",
-  "UFRJ",
-  "PUC-Rio",
-  "FGV",
-  "Insper",
-  "ITA",
+const POPULAR_UNIVERSITIES = ["Harvard University","Stanford University","MIT (Massachusetts Institute of Technology)","Yale University","Princeton University","Columbia University","University of Pennsylvania","Brown University","Cornell University","Dartmouth College","UC Berkeley","UCLA","University of Michigan","University of Chicago","Oxford University","Cambridge University","Imperial College London","USP (Universidade de São Paulo)","Unicamp","UFRJ","PUC-Rio","FGV","Insper","ITA",
 ]
 
 export function ExcludedUniversitiesInput({
   value,
   onChange,
-  placeholder = "HBCUs, Vanderbilt, All Ivy Leagues, Stanford, etc."
+  placeholder ="HBCUs, Vanderbilt, All Ivy Leagues, Stanford, etc."
 }: ExcludedUniversitiesInputProps) {
   const [inputValue, setInputValue] = useState("")
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
@@ -64,7 +40,7 @@ export function ExcludedUniversitiesInput({
 
   const showAskAI = inputValue.trim().length >= 2
   const dropdownItems = showAskAI 
-    ? [{ type: 'ai' as const, label: `Ask AI for "${inputValue}"`, university: null }, 
+    ? [{ type: 'ai' as const, label: `Ask AI for"${inputValue}"`, university: null }, 
        ...filteredSuggestions.map(u => ({ type: 'university' as const, label: u, university: u }))]
     : filteredSuggestions.map(u => ({ type: 'university' as const, label: u, university: u }))
 
@@ -233,10 +209,9 @@ export function ExcludedUniversitiesInput({
                     addUniversity(item.university)
                   }
                 }}
-                className={cn(
-                  "w-full text-left px-3 py-2 text-sm transition-colors",
-                  focusedIndex === index ? "bg-lia-bg-tertiary" : "hover:bg-lia-bg-secondary",
-                  item.type === 'ai' && ""
+                className={cn("w-full text-left px-3 py-2 text-sm transition-colors",
+                  focusedIndex === index ?"bg-lia-bg-tertiary" :"hover:bg-lia-bg-secondary",
+                  item.type === 'ai' &&""
                 )}
               >
                 {item.type === 'ai' ? (
@@ -258,7 +233,7 @@ export function ExcludedUniversitiesInput({
           {value.map(university => (
             <Badge
               key={university}
-              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-status-warning/10 text-status-warning border border-status-warning/30"
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium  border border-status-warning/30"
             >
               <span>{university}</span>
               <button

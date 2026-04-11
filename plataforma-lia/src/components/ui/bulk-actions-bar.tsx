@@ -1,11 +1,11 @@
 "use client"
 
-import React from "react"
-import { X, Loader2, Users } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Badge } from "@/components/ui/badge"
-import { cn } from "@/lib/utils"
+import React from"react"
+import { X, Loader2, Users } from"lucide-react"
+import { Button } from"@/components/ui/button"
+import { Checkbox } from"@/components/ui/checkbox"
+import { Badge } from"@/components/ui/badge"
+import { cn } from"@/lib/utils"
 
 interface BulkActionItem {
   id: string
@@ -33,10 +33,10 @@ interface BulkActionsBarProps {
   className?: string
 }
 
-const INLINE_BUTTON = "h-8 px-3 text-xs gap-2 bg-lia-bg-primary hover:bg-lia-interactive-hover border-lia-border-subtle text-lia-text-primary dark:bg-lia-bg-elevated"
-const INLINE_DESTRUCTIVE = "h-8 px-3 text-xs gap-2 border-status-error/30 text-status-error hover:bg-status-error/10 dark:text-status-error dark:bg-lia-bg-elevated dark:hover:bg-status-error/20"
-const FIXED_BUTTON = "h-8 px-3 text-xs gap-2 border-lia-border-strong text-lia-text-disabled hover:bg-lia-btn-primary-hover hover:text-white"
-const FIXED_DESTRUCTIVE = "h-8 px-3 text-xs gap-2 bg-status-error text-white hover:bg-status-error/90"
+const INLINE_BUTTON ="h-8 px-3 text-xs gap-2 bg-lia-bg-primary hover:bg-lia-interactive-hover border-lia-border-subtle text-lia-text-primary dark:bg-lia-bg-elevated"
+const INLINE_DESTRUCTIVE ="h-8 px-3 text-xs gap-2 border-status-error/30 text-status-error hover:bg-status-error/10 dark:text-status-error dark:bg-lia-bg-elevated dark:hover:bg-status-error/20"
+const FIXED_BUTTON ="h-8 px-3 text-xs gap-2 border-lia-border-strong text-lia-text-disabled hover:bg-lia-btn-primary-hover hover:text-white"
+const FIXED_DESTRUCTIVE ="h-8 px-3 text-xs gap-2 bg-status-error text-white hover:bg-status-error/90"
 
 export const BulkActionsBar = React.memo(function BulkActionsBar({
   selectedCount,
@@ -65,14 +65,13 @@ export const BulkActionsBar = React.memo(function BulkActionsBar({
   const visibleActions = actions.filter(a => !a.hidden)
 
   const containerClass = isFixed
-    ? "fixed top-0 left-0 right-0 z-50 bg-lia-btn-primary-bg animate-in slide-in-from-top duration-200"
-    : "p-3 rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-subtle"
+    ?"fixed top-0 left-0 right-0 z-50 bg-lia-btn-primary-bg animate-in slide-in-from-top duration-200"
+    :"p-3 rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-subtle"
 
   return (
     <div className={cn(containerClass, className)}>
-      <div className={cn(
-        "flex items-center justify-between flex-wrap",
-        isFixed ? "max-w-screen-2xl mx-auto px-4 py-3 gap-4" : "gap-3"
+      <div className={cn("flex items-center justify-between flex-wrap",
+        isFixed ?"max-w-screen-2xl mx-auto px-4 py-3 gap-4" :"gap-3"
       )}>
         <div className="flex items-center gap-3">
           {showSelectAll && onSelectAll && (
@@ -82,13 +81,12 @@ export const BulkActionsBar = React.memo(function BulkActionsBar({
                 onCheckedChange={onSelectAll}
                 className={cn(
                   isFixed
-                    ? "border-lia-border-medium data-[state=checked]:bg-lia-btn-primary-bg data-[state=checked]:border-lia-btn-primary-bg"
-                    : "data-[state=checked]:bg-lia-btn-primary-bg data-[state=checked]:border-lia-btn-primary-bg dark:data-[state=checked]:bg-lia-bg-tertiary dark:data-[state=checked]:border-lia-border-subtle"
+                    ?"border-lia-border-medium data-[state=checked]:bg-lia-btn-primary-bg data-[state=checked]:border-lia-btn-primary-bg"
+                    :"data-[state=checked]:bg-lia-btn-primary-bg data-[state=checked]:border-lia-btn-primary-bg dark:data-[state=checked]:bg-lia-bg-tertiary dark:data-[state=checked]:border-lia-border-subtle"
                 )}
               />
-              <span className={cn(
-                "text-xs",
-                isFixed ? "text-lia-text-tertiary" : "text-lia-text-secondary"
+              <span className={cn("text-xs",
+                isFixed ?"text-lia-text-tertiary" :"text-lia-text-secondary"
               )}>
                 Selecionar todos
               </span>
@@ -108,14 +106,13 @@ export const BulkActionsBar = React.memo(function BulkActionsBar({
                 {entityIcon || <Users className="w-3.5 h-3.5 text-lia-text-secondary" />}
               </div>
             )}
-            <span className={cn(
-              "text-sm",
-              isFixed ? "text-lia-text-disabled" : "font-semibold text-lia-text-primary"
+            <span className={cn("text-sm",
+              isFixed ?"text-lia-text-disabled" :"font-semibold text-lia-text-primary"
             )} aria-live="polite" aria-atomic="true">
               {displayLabel}
             </span>
             {totalCount !== undefined && totalCount > 0 && (
-              <span className={cn("text-xs", isFixed ? "text-lia-text-secondary" : "text-lia-text-tertiary")}>
+              <span className={cn("text-xs", isFixed ?"text-lia-text-secondary" :"text-lia-text-tertiary")}>
                 de {totalCount}
               </span>
             )}
@@ -157,11 +154,10 @@ export const BulkActionsBar = React.memo(function BulkActionsBar({
             variant="ghost"
             size="sm"
             onClick={onDeselectAll}
-            className={cn(
-              "h-8 px-2 text-xs",
+            className={cn("h-8 px-2 text-xs",
               isFixed
-                ? "text-lia-text-tertiary hover:text-lia-text-disabled hover:bg-lia-btn-primary-hover"
-                : "text-lia-text-primary hover:text-lia-text-primary dark:hover:text-lia-text-inverse"
+                ?"text-lia-text-tertiary hover:text-lia-text-disabled hover:bg-lia-btn-primary-hover"
+                :"text-lia-text-primary hover:text-lia-text-primary dark:hover:text-lia-text-inverse"
             )}
             title="Limpar seleção"
           >

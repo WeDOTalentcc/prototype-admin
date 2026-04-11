@@ -1,13 +1,13 @@
 "use client"
 
-import React from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+import React from"react"
+import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
+import { Badge } from"@/components/ui/badge"
 import {
   Globe, Zap, CheckCircle, AlertCircle, Info,
   DollarSign, Search, TrendingUp, Shield, Clock
-} from "lucide-react"
-import { limitOptions, type GlobalSearchSettings } from "./useGlobalSearchSettings"
+} from"lucide-react"
+import { limitOptions, type GlobalSearchSettings } from"./useGlobalSearchSettings"
 
 interface GlobalSearchCostsTabProps {
   settings: GlobalSearchSettings
@@ -145,7 +145,7 @@ export function GlobalSearchCostsTab({
                 <tr className="bg-lia-bg-secondary/50 dark:bg-lia-bg-secondary/50">
                   <td className="px-3 py-2"><div className="flex items-center gap-2"><Shield className="w-3.5 h-3.5 text-status-success" /><span className="font-medium text-lia-text-primary">Mostrar Emails (revelar)</span></div></td>
                   <td className="px-3 py-2 text-lia-text-secondary">Informações de Contato</td>
-                  <td className="px-3 py-2 text-center"><Badge className="bg-status-success/15 text-status-success text-micro">+2 créditos</Badge></td>
+                  <td className="px-3 py-2 text-center"><Badge className="text-micro">+2 créditos</Badge></td>
                 </tr>
                 <tr className="bg-lia-bg-primary dark:bg-lia-bg-primary">
                   <td className="px-3 py-2"><div className="flex items-center gap-2"><Search className="w-3.5 h-3.5 text-lia-text-secondary" /><span className="font-medium text-lia-text-primary">Apenas com Telefone (filtro)</span></div></td>
@@ -155,7 +155,7 @@ export function GlobalSearchCostsTab({
                 <tr className="bg-status-warning/10/50 dark:bg-status-warning/20">
                   <td className="px-3 py-2"><div className="flex items-center gap-2"><AlertCircle className="w-3.5 h-3.5 text-status-warning" /><span className="font-medium text-lia-text-primary">Mostrar Telefones (revelar)</span></div></td>
                   <td className="px-3 py-2 text-lia-text-secondary">Informações de Contato</td>
-                  <td className="px-3 py-2 text-center"><Badge className="bg-status-warning/15 text-status-warning text-micro">+14 créditos</Badge></td>
+                  <td className="px-3 py-2 text-center"><Badge className="text-micro">+14 créditos</Badge></td>
                 </tr>
                 <tr className="bg-lia-bg-primary dark:bg-lia-bg-primary">
                   <td className="px-3 py-2"><div className="flex items-center gap-2"><Search className="w-3.5 h-3.5 text-lia-text-secondary" /><span className="font-medium text-lia-text-primary">Email OU Telefone (filtro)</span></div></td>

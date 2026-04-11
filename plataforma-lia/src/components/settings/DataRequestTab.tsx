@@ -1,20 +1,20 @@
 "use client"
 
-import React from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
+import React from"react"
+import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
+import { Button } from"@/components/ui/button"
+import { Badge } from"@/components/ui/badge"
 import {
   ClipboardList, Settings, FileText, Palette,
   Lightbulb, Shield, MessageSquare,
   ChevronDown, Pencil, X, Save
-} from "lucide-react"
-import { cn } from "@/lib/utils"
-import { Loader2, AlertCircle } from "lucide-react"
+} from"lucide-react"
+import { cn } from"@/lib/utils"
+import { Loader2, AlertCircle } from"lucide-react"
 import { textStyles } from '@/lib/design-tokens'
-import { useDataRequestTabState } from "./useDataRequestTabState"
-import { GeneralSettingsContent, CollectionModelContent, LgpdSectionContent } from "./DataRequestConfigSections"
-import { DataRequestFieldsSection, DataRequestBrandingSection } from "./DataRequestFieldsBrandingSection"
+import { useDataRequestTabState } from"./useDataRequestTabState"
+import { GeneralSettingsContent, CollectionModelContent, LgpdSectionContent } from"./DataRequestConfigSections"
+import { DataRequestFieldsSection, DataRequestBrandingSection } from"./DataRequestFieldsBrandingSection"
 
 interface DataRequestTabProps {
   companyId?: string
@@ -49,9 +49,8 @@ const CollapsibleSection = ({
           <Badge variant="outline" className="ml-1 text-micro">{count} itens</Badge>
         )}
       </div>
-      <ChevronDown className={cn(
-        "w-4 h-4 text-lia-text-secondary transition-transform duration-200",
-        isExpanded && "rotate-180"
+      <ChevronDown className={cn("w-4 h-4 text-lia-text-secondary transition-transform duration-200",
+        isExpanded &&"rotate-180"
       )} />
     </button>
     {isExpanded && (

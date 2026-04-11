@@ -1,17 +1,17 @@
 "use client"
 
-import React from "react"
-import Link from "next/link"
-import { Badge } from "@/components/ui/badge"
-import { LIAIcon } from "@/components/ui/lia-icon"
-import { ContextPill } from "@/components/ui/context-pill"
-import { QuickActionChips, type QuickAction } from "@/components/ui/quick-action-chips"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { getCostLevel, getCostColor } from "@/hooks/useCreditEstimator"
+import React from"react"
+import Link from"next/link"
+import { Badge } from"@/components/ui/badge"
+import { LIAIcon } from"@/components/ui/lia-icon"
+import { ContextPill } from"@/components/ui/context-pill"
+import { QuickActionChips, type QuickAction } from"@/components/ui/quick-action-chips"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from"@/components/ui/tooltip"
+import { getCostLevel, getCostColor } from"@/hooks/useCreditEstimator"
 import {
   Brain, Users, Filter, Zap,
   FileText, Code, Lightbulb, Globe, Home, Coins, AlertCircle, Table2,
-} from "lucide-react"
+} from"lucide-react"
 import { EAPTabContent } from './EAPTabContent'
 
 interface EAPExpandedSectionProps {
@@ -125,14 +125,14 @@ searchSource === 'global'
             <div className="relative group">
               <div className={`flex items-center gap-1.5 px-2 py-1 rounded-md text-xs ${
 creditEstimate.isLocal 
-                  ? 'bg-status-success/10 text-status-success' 
+                  ? '' 
                   : !creditEstimate.canAfford
-                    ? 'bg-status-error/10 text-status-error'
+                    ? ''
                     : getCostLevel(creditEstimate.total) === 'low' 
-                      ? 'bg-status-success/10 text-status-success'
+                      ? ''
                       : getCostLevel(creditEstimate.total) === 'medium'
-                        ? 'bg-status-warning/10 text-status-warning'
-                        : 'bg-status-error/10 text-status-error'
+                        ? ''
+                        : ''
               }`}>
                 <Coins className="w-3 h-3" />
                 <span className="font-medium">
@@ -370,7 +370,7 @@ isProcessing
         {isProcessing && (
           <div className="flex items-center gap-2 text-xs text-lia-text-secondary bg-lia-bg-secondary p-2 rounded-xl mb-3 border border-lia-border-subtle">
             <div className="w-2 h-2 bg-lia-btn-primary-bg rounded-full animate-pulse motion-reduce:animate-none"></div>
-            <span>🧠 LIA processando: "{lastCommand}"</span>
+            <span>🧠 LIA processando:"{lastCommand}"</span>
           </div>
         )}
 

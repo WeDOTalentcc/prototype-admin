@@ -1,10 +1,10 @@
 "use client"
 
-import React from "react"
-import { Badge } from "@/components/ui/badge"
+import React from"react"
+import { Badge } from"@/components/ui/badge"
 import {
   CheckCircle, Clock, Gauge, GraduationCap, Scale, ShieldAlert, Target
-} from "lucide-react"
+} from"lucide-react"
 import type { ScreeningQuestionItem } from './SCMScreeningTypes'
 
 interface QuestionBadgeHelpers {
@@ -30,22 +30,22 @@ export function SCMQuestionDetailView({ item, isDetailsExpanded, onToggleDetails
   return (
     <div className="flex-1 min-w-0">
       <div className="flex items-center gap-1.5 mb-2 flex-wrap">
-        <Badge className={`text-micro px-2 py-0.5 h-5 rounded-full ${item.category === 'behavioral' || item.category === 'Comportamental' || item.category === 'comportamental' ? 'bg-wedo-purple/15 text-wedo-purple border border-wedo-purple/30 dark:bg-wedo-purple/20 dark:text-wedo-purple dark:border-wedo-purple/30' : item.category === 'technical' || item.category === 'Técnica' || item.category === 'técnica' ? 'bg-wedo-cyan/10 text-wedo-cyan-dark border border-wedo-cyan/30 dark:border-wedo-cyan/30' : item.category === 'cultural' || item.category === 'fit_cultural' ? 'bg-wedo-cyan/10 text-wedo-cyan border border-wedo-cyan/30 dark:bg-wedo-cyan/20 dark:border-wedo-cyan/30' : 'bg-status-success/15 text-status-success border border-status-success/30 dark:bg-status-success/20 dark:border-status-success/30'}`}>
+        <Badge className={`text-micro px-2 py-0.5 h-5 rounded-full ${item.category === 'behavioral' || item.category === 'Comportamental' || item.category === 'comportamental' ? ' border border-wedo-purple/30 dark:bg-wedo-purple/20 dark:text-wedo-purple dark:border-wedo-purple/30' : item.category === 'technical' || item.category === 'Técnica' || item.category === 'técnica' ? '-dark border border-wedo-cyan/30 dark:border-wedo-cyan/30' : item.category === 'cultural' || item.category === 'fit_cultural' ? ' border border-wedo-cyan/30 dark:bg-wedo-cyan/20 dark:border-wedo-cyan/30' : ' border border-status-success/30 dark:bg-status-success/20 dark:border-status-success/30'}`}>
           {item.category === 'behavioral' || item.category === 'comportamental' ? 'Comportamental' : item.category === 'technical' || item.category === 'técnica' ? 'Técnica' : item.category === 'cultural' || item.category === 'fit_cultural' ? 'Fit Cultural' : item.category || 'Geral'}
         </Badge>
         {(item.type === 'eliminatory' || item.required || item.is_eliminatory) && (
-          <Badge className="text-micro px-2 py-0.5 h-5 rounded-full bg-status-error/10 text-status-error border border-status-error/30 dark:bg-status-error/20 dark:text-status-error dark:border-status-error/30">Eliminatória</Badge>
+          <Badge className="text-micro px-2 py-0.5 h-5 rounded-full  border border-status-error/30 dark:bg-status-error/20 dark:text-status-error dark:border-status-error/30">Eliminatória</Badge>
         )}
         <Badge className={`text-micro px-2 py-0.5 h-5 rounded-full border ${complexity.color}`}>
           <Gauge className="w-3 h-3 mr-0.5" />{complexity.label}
         </Badge>
         {item.bloom_level && (
-          <Badge className="text-micro px-2 py-0.5 h-5 rounded-full border bg-wedo-cyan/10 text-wedo-cyan border-wedo-cyan/30 dark:bg-wedo-cyan/20 dark:border-wedo-cyan/30">
+          <Badge className="text-micro px-2 py-0.5 h-5 rounded-full border  border-wedo-cyan/30 dark:bg-wedo-cyan/20 dark:border-wedo-cyan/30">
             <GraduationCap className="w-3 h-3 mr-0.5" />{getBloomLabelPTBR(item.bloom_level) || item.bloom_label}
           </Badge>
         )}
         {item.dreyfus_level && item.block_id !== 2 && (
-          <Badge className="text-micro px-2 py-0.5 h-5 rounded-full border bg-wedo-purple/10 text-wedo-purple border-wedo-purple/30 dark:bg-wedo-purple/20 dark:text-wedo-purple dark:border-wedo-purple/30">
+          <Badge className="text-micro px-2 py-0.5 h-5 rounded-full border  border-wedo-purple/30 dark:bg-wedo-purple/20 dark:text-wedo-purple dark:border-wedo-purple/30">
             {getDreyfusLabelPTBR(item.dreyfus_level) || item.dreyfus_label}
           </Badge>
         )}
@@ -55,7 +55,7 @@ export function SCMQuestionDetailView({ item, isDetailsExpanded, onToggleDetails
           </Badge>
         )}
         {(item.weight || 0) >= 1.5 && (
-          <Badge className="text-micro px-2 py-0.5 h-5 rounded-full border bg-status-error/10 text-status-error border-status-error/30 dark:bg-status-error/20 dark:text-status-error dark:border-status-error/30">
+          <Badge className="text-micro px-2 py-0.5 h-5 rounded-full border  border-status-error/30 dark:bg-status-error/20 dark:text-status-error dark:border-status-error/30">
             <ShieldAlert className="w-3 h-3 mr-0.5" />Crítica
           </Badge>
         )}

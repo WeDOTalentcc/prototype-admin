@@ -1,14 +1,14 @@
 "use client"
 
-import React from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
+import React from"react"
+import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
+import { Badge } from"@/components/ui/badge"
+import { Button } from"@/components/ui/button"
 import {
   Target, MessageSquare, Star, Heart, Clock, CheckCircle,
   Download, Copy
-} from "lucide-react"
-import type { ScreeningData, ScreeningStep } from "./useLiaScreeningDialogue"
+} from"lucide-react"
+import type { ScreeningData, ScreeningStep } from"./useLiaScreeningDialogue"
 
 interface JobData {
   title?: string
@@ -26,7 +26,7 @@ export function LiaScreeningRightPanel({ currentStep, screeningData, jobData }: 
     case 'overview':
       return (
         <div className="space-y-4">
-          <Card className="">
+          <Card >
             <CardHeader>
               <CardTitle className="text-sm flex items-center gap-2 font-sans">
                 <Target className="w-4 h-4 text-lia-text-secondary" />
@@ -65,7 +65,7 @@ export function LiaScreeningRightPanel({ currentStep, screeningData, jobData }: 
     case 'approach':
       return (
         <div className="space-y-4">
-          <Card className="">
+          <Card >
             <CardHeader>
               <CardTitle className="text-sm flex items-center gap-2 font-sans">
                 <MessageSquare className="w-4 h-4 text-status-success" />
@@ -100,7 +100,7 @@ export function LiaScreeningRightPanel({ currentStep, screeningData, jobData }: 
     case 'questions':
       return (
         <div className="space-y-4">
-          <Card className="">
+          <Card >
             <CardHeader>
               <CardTitle className="text-sm flex items-center gap-2 font-sans">
                 <Target className="w-4 h-4 text-wedo-purple" />
@@ -111,31 +111,25 @@ export function LiaScreeningRightPanel({ currentStep, screeningData, jobData }: 
               <div className="space-y-4">
                 {[
                   {
-                    category: "Apresentação Pessoal",
-                    questions: [
-                      "Conte-me sobre sua trajetória profissional",
-                      "O que te motivou a se candidatar?"
+                    category:"Apresentação Pessoal",
+                    questions: ["Conte-me sobre sua trajetória profissional","O que te motivou a se candidatar?"
                     ]
                   },
                   {
-                    category: "Experiência Técnica",
+                    category:"Experiência Técnica",
                     questions: [
-                      `Experiência com ${(jobData as Record<string, unknown>)?.requirements?.[0] || 'tecnologias'}`,
-                      "Projeto desafiador recente"
+                      `Experiência com ${(jobData as Record<string, unknown>)?.requirements?.[0] || 'tecnologias'}`,"Projeto desafiador recente"
                     ]
                   },
                   {
-                    category: "Fit Cultural",
-                    questions: [
-                      "Adaptação a ambientes dinâmicos",
-                      "Como lida com feedback"
+                    category:"Fit Cultural",
+                    questions: ["Adaptação a ambientes dinâmicos","Como lida com feedback"
                     ]
                   },
                   {
-                    category: "Expectativas",
+                    category:"Expectativas",
                     questions: [
-                      `Vaga ${(jobData as Record<string, unknown>)?.workModel || 'híbrida'} em ${(jobData as Record<string, unknown>)?.location}`,
-                      "Expectativa salarial"
+                      `Vaga ${(jobData as Record<string, unknown>)?.workModel || 'híbrida'} em ${(jobData as Record<string, unknown>)?.location}`,"Expectativa salarial"
                     ]
                   }
                 ].map((section) => (
@@ -226,11 +220,7 @@ export function LiaScreeningRightPanel({ currentStep, screeningData, jobData }: 
                 <div>
                   <label className="text-xs font-medium text-lia-text-secondary">Diretrizes:</label>
                   <div className="space-y-1 mt-1">
-                    {[
-                      "Sempre construtivo e respeitoso",
-                      "Destacar pontos fortes",
-                      "Sugerir desenvolvimento",
-                      "Manter relacionamento positivo"
+                    {["Sempre construtivo e respeitoso","Destacar pontos fortes","Sugerir desenvolvimento","Manter relacionamento positivo"
                     ].map((guideline, index) => (
                       <div key={`gl-${index}`} className="text-xs text-lia-text-secondary flex items-center gap-1">
                         <Star className="w-3 h-3 text-wedo-magenta" />
@@ -258,10 +248,10 @@ export function LiaScreeningRightPanel({ currentStep, screeningData, jobData }: 
             <CardContent>
               <div className="space-y-3">
                 {[
-                  { step: "Preparação", time: "5 min antes", desc: "Revisar currículo e preparar ambiente" },
-                  { step: "Triagem", time: "25-30 min", desc: "Conversa estruturada com candidato" },
-                  { step: "Avaliação", time: "10 min após", desc: "Análise e decisão" },
-                  { step: "Feedback", time: "24-48h após", desc: "Retorno personalizado" }
+                  { step:"Preparação", time:"5 min antes", desc:"Revisar currículo e preparar ambiente" },
+                  { step:"Triagem", time:"25-30 min", desc:"Conversa estruturada com candidato" },
+                  { step:"Avaliação", time:"10 min após", desc:"Análise e decisão" },
+                  { step:"Feedback", time:"24-48h após", desc:"Retorno personalizado" }
 
                 ].map((item, index) => (
                   <div key={item.step} className="flex items-start gap-3 p-2 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-xl">
@@ -300,13 +290,7 @@ export function LiaScreeningRightPanel({ currentStep, screeningData, jobData }: 
                   <div className="text-xs text-status-success">Para {jobData?.title}</div>
                 </div>
                 <div className="space-y-2">
-                  {[
-                    "✅ Objetivo e critérios definidos",
-                    "✅ Abordagem personalizada",
-                    "✅ Perguntas organizadas",
-                    "✅ Apresentação da vaga",
-                    "✅ Estratégia de feedback",
-                    "✅ Timeline estruturada"
+                  {["✅ Objetivo e critérios definidos","✅ Abordagem personalizada","✅ Perguntas organizadas","✅ Apresentação da vaga","✅ Estratégia de feedback","✅ Timeline estruturada"
                   ].map((item, index) => (
                     <div key={`ci-${index}`} className="text-xs text-lia-text-secondary">{item}</div>
                   ))}

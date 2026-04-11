@@ -1,14 +1,14 @@
 "use client"
 
-import { formatBRL, CURRENCY_SYMBOL } from "@/lib/pricing"
+import { formatBRL, CURRENCY_SYMBOL } from"@/lib/pricing"
 
-import React, { useState, useCallback, useEffect } from "react"
-import { useCompanyId } from "@/hooks/useCompanyId"
+import React, { useState, useCallback, useEffect } from"react"
+import { useCompanyId } from"@/hooks/useCompanyId"
 import { textStyles, cardStyles, badgeStyles, actionButtonStyles } from '@/lib/design-tokens'
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Switch } from "@/components/ui/switch"
+import { Button } from"@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
+import { Badge } from"@/components/ui/badge"
+import { Switch } from"@/components/ui/switch"
 import {
   Gift,
   Plus,
@@ -35,49 +35,49 @@ import {
   DollarSign,
   Percent,
   Info,
-} from "lucide-react"
+} from"lucide-react"
 
-import { LiaFieldToggle, defaultLiaFieldExamples } from "./LiaFieldToggle"
-import { useCompanyLiaInstructions } from "@/hooks/use-company-lia-instructions"
-import { BenefitItemCard } from "./benefits/BenefitItemCard"
-import { BenefitFormModal } from "./benefits/BenefitFormModal"
-import { BenefitTemplateModal } from "./benefits/BenefitTemplateModal"
+import { LiaFieldToggle, defaultLiaFieldExamples } from"./LiaFieldToggle"
+import { useCompanyLiaInstructions } from"@/hooks/use-company-lia-instructions"
+import { BenefitItemCard } from"./benefits/BenefitItemCard"
+import { BenefitFormModal } from"./benefits/BenefitFormModal"
+import { BenefitTemplateModal } from"./benefits/BenefitTemplateModal"
 
 const BENEFIT_CATEGORIES = [
-  { id: "health", name: "Saúde & Bem-estar", icon: Stethoscope, color: "text-status-error", bgColor: "bg-status-error/10 dark:bg-status-error/20" },
-  { id: "food", name: "Alimentação", icon: Utensils, color: "text-wedo-orange", bgColor: "bg-wedo-orange/10 dark:bg-wedo-orange/20" },
-  { id: "transport", name: "Transporte", icon: Car, color: "text-lia-text-primary", bgColor: "bg-lia-bg-tertiary dark:bg-lia-bg-secondary" },
-  { id: "education", name: "Educação & Desenvolvimento", icon: GraduationCap, color: "text-wedo-purple", bgColor: "bg-wedo-purple/10 dark:bg-wedo-purple/20" },
-  { id: "financial", name: "Financeiro", icon: Wallet, color: "text-status-success", bgColor: "bg-status-success/10 dark:bg-status-success/20" },
-  { id: "quality_life", name: "Qualidade de Vida", icon: Home, color: "text-lia-text-secondary", bgColor: "bg-lia-bg-tertiary dark:bg-lia-bg-secondary" },
-  { id: "family", name: "Família", icon: Baby, color: "text-wedo-magenta", bgColor: "bg-wedo-magenta/10 dark:bg-wedo-magenta/20" },
-  { id: "security", name: "Segurança", icon: Shield, color: "text-lia-text-primary", bgColor: "bg-lia-bg-secondary dark:bg-lia-bg-secondary/50" },
+  { id:"health", name:"Saúde & Bem-estar", icon: Stethoscope, color:"text-status-error", bgColor:"bg-status-error/10 dark:bg-status-error/20" },
+  { id:"food", name:"Alimentação", icon: Utensils, color:"text-wedo-orange", bgColor:"bg-wedo-orange/10 dark:bg-wedo-orange/20" },
+  { id:"transport", name:"Transporte", icon: Car, color:"text-lia-text-primary", bgColor:"bg-lia-bg-tertiary dark:bg-lia-bg-secondary" },
+  { id:"education", name:"Educação & Desenvolvimento", icon: GraduationCap, color:"text-wedo-purple", bgColor:"bg-wedo-purple/10 dark:bg-wedo-purple/20" },
+  { id:"financial", name:"Financeiro", icon: Wallet, color:"text-status-success", bgColor:"bg-status-success/10 dark:bg-status-success/20" },
+  { id:"quality_life", name:"Qualidade de Vida", icon: Home, color:"text-lia-text-secondary", bgColor:"bg-lia-bg-tertiary dark:bg-lia-bg-secondary" },
+  { id:"family", name:"Família", icon: Baby, color:"text-wedo-magenta", bgColor:"bg-wedo-magenta/10 dark:bg-wedo-magenta/20" },
+  { id:"security", name:"Segurança", icon: Shield, color:"text-lia-text-primary", bgColor:"bg-lia-bg-secondary dark:bg-lia-bg-secondary/50" },
 ]
 
 const SENIORITY_LEVELS = [
-  { id: "all", name: "Todos os Níveis" },
-  { id: "junior", name: "Júnior" },
-  { id: "pleno", name: "Pleno" },
-  { id: "senior", name: "Sênior" },
-  { id: "coordinator", name: "Coordenação+" },
-  { id: "manager", name: "Gerência+" },
-  { id: "director", name: "Diretoria" },
-  { id: "c-level", name: "C-Level" },
+  { id:"all", name:"Todos os Níveis" },
+  { id:"junior", name:"Júnior" },
+  { id:"pleno", name:"Pleno" },
+  { id:"senior", name:"Sênior" },
+  { id:"coordinator", name:"Coordenação+" },
+  { id:"manager", name:"Gerência+" },
+  { id:"director", name:"Diretoria" },
+  { id:"c-level", name:"C-Level" },
 ]
 
 const VALUE_TYPES = [
-  { id: "monetary", name: "Valor Monetário", icon: DollarSign, description: `Valor fixo em ${CURRENCY_SYMBOL}` },
-  { id: "percentage", name: "Percentual", icon: Percent, description: "Porcentagem (ex: 5% contribuição)" },
-  { id: "informative", name: "Informativo", icon: Info, description: "Apenas descrição, sem valor" },
+  { id:"monetary", name:"Valor Monetário", icon: DollarSign, description: `Valor fixo em ${CURRENCY_SYMBOL}` },
+  { id:"percentage", name:"Percentual", icon: Percent, description:"Porcentagem (ex: 5% contribuição)" },
+  { id:"informative", name:"Informativo", icon: Info, description:"Apenas descrição, sem valor" },
 ]
 
 const WAITING_PERIODS = [
-  { id: 0, name: "Imediato" },
-  { id: 30, name: "30 dias" },
-  { id: 60, name: "60 dias" },
-  { id: 90, name: "90 dias" },
-  { id: 180, name: "6 meses" },
-  { id: 365, name: "1 ano" },
+  { id: 0, name:"Imediato" },
+  { id: 30, name:"30 dias" },
+  { id: 60, name:"60 dias" },
+  { id: 90, name:"90 dias" },
+  { id: 180, name:"6 meses" },
+  { id: 365, name:"1 ano" },
 ]
 
 interface Benefit {
@@ -109,20 +109,20 @@ interface BenefitTemplate {
 }
 
 const defaultBenefit: Benefit = {
-  name: "",
-  description: "",
-  category: "health",
-  value_type: "monetary",
+  name:"",
+  description:"",
+  category:"health",
+  value_type:"monetary",
   value: undefined,
   percentage_value: undefined,
-  value_details: "",
+  value_details:"",
   seniority_levels: ["all"],
   waiting_period_days: 0,
   is_mandatory: false,
   is_active: true,
   is_highlighted: false,
   is_discount: false,
-  provider: "",
+  provider:"",
 }
 
 export function BenefitsTab() {
@@ -204,10 +204,10 @@ export function BenefitsTab() {
 
   const normalizeBenefit = (benefit: Record<string, unknown>): Benefit => ({
     ...benefit,
-    name: String(benefit.name || ""),
-    category: String(benefit.category || "other"),
-    description: String(benefit.description || ""),
-    value_type: String(benefit.value_type || "informative"),
+    name: String(benefit.name ||""),
+    category: String(benefit.category ||"other"),
+    description: String(benefit.description ||""),
+    value_type: String(benefit.value_type ||"informative"),
     seniority_levels: Array.isArray(benefit.seniority_levels) 
       ? benefit.seniority_levels 
       : benefit.seniority_levels 
@@ -218,7 +218,7 @@ export function BenefitsTab() {
     is_active: Boolean(benefit.is_active ?? true),
     is_highlighted: Boolean(benefit.is_highlighted ?? false),
     is_discount: Boolean(benefit.is_discount ?? false),
-    provider: String(benefit.provider || ""),
+    provider: String(benefit.provider ||""),
   })
 
   const loadBenefits = useCallback(async () => {
@@ -279,19 +279,19 @@ export function BenefitsTab() {
   const handleAddTemplateDirectly = async (template: BenefitTemplate) => {
     const newBenefit: Benefit = {
       name: template.name,
-      description: template.description || "",
+      description: template.description ||"",
       category: template.category,
-      value_type: "informative",
+      value_type:"informative",
       value: undefined,
       percentage_value: undefined,
-      value_details: "",
+      value_details:"",
       seniority_levels: ["all"],
       waiting_period_days: 0,
       is_mandatory: false,
       is_active: true,
       is_highlighted: template.is_popular,
       is_discount: false,
-      provider: "",
+      provider:"",
     }
     
     try {
@@ -303,7 +303,7 @@ export function BenefitsTab() {
 
       if (response.ok) {
         await loadBenefits()
-        setSuccessMessage(`Benefício "${template.name}" adicionado com sucesso!`)
+        setSuccessMessage(`Benefício"${template.name}" adicionado com sucesso!`)
         setTimeout(() => setSuccessMessage(null), 3000)
       } else {
         throw new Error('Falha ao adicionar benefício')
@@ -323,10 +323,10 @@ export function BenefitsTab() {
   }
 
   const filteredTemplates = templates.filter(template => {
-    const matchesSearch = templateSearch === "" || 
+    const matchesSearch = templateSearch ==="" || 
       template.name.toLowerCase().includes(templateSearch.toLowerCase()) ||
       (template.description && template.description.toLowerCase().includes(templateSearch.toLowerCase()))
-    const matchesCategory = templateCategoryFilter === "all" || template.category === templateCategoryFilter
+    const matchesCategory = templateCategoryFilter ==="all" || template.category === templateCategoryFilter
     return matchesSearch && matchesCategory
   })
 
@@ -461,22 +461,22 @@ export function BenefitsTab() {
   }
 
   const formatBenefitValue = (benefit: Benefit) => {
-    if (benefit.value_type === "monetary" && benefit.value) {
-      const prefix = benefit.is_discount ? "Desconto: " : ""
+    if (benefit.value_type ==="monetary" && benefit.value) {
+      const prefix = benefit.is_discount ?"Desconto:" :""
       return `${prefix}${formatBRL(benefit.value)}`
     }
-    if (benefit.value_type === "percentage" && benefit.percentage_value) {
+    if (benefit.value_type ==="percentage" && benefit.percentage_value) {
       return `${benefit.percentage_value}%`
     }
-    if (benefit.value_type === "informative") {
-      return benefit.value_details || "Informativo"
+    if (benefit.value_type ==="informative") {
+      return benefit.value_details ||"Informativo"
     }
-    return "-"
+    return"-"
   }
 
   const getSeniorityLabel = (levels: string[]) => {
     if (!levels || levels.length === 0 || levels.includes('all')) {
-      return "Todos"
+      return"Todos"
     }
     if (levels.length === 1) {
       return SENIORITY_LEVELS.find(l => l.id === levels[0])?.name || levels[0]

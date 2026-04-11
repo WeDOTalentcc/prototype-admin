@@ -1,13 +1,13 @@
 "use client"
 
-import React from "react"
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { AudioRecordButton } from "@/components/ui/audio-record-button"
-import { CandidateQueriesGuide } from "@/components/ui/candidate-queries-guide"
-import { LIASuggestionsPanel } from "@/components/pages/job-kanban/LIASuggestionsPanel"
-import { ActionResultCard } from "@/components/chat/action-result-card"
+import React from"react"
+import { Button } from"@/components/ui/button"
+import { Card } from"@/components/ui/card"
+import { Badge } from"@/components/ui/badge"
+import { AudioRecordButton } from"@/components/ui/audio-record-button"
+import { CandidateQueriesGuide } from"@/components/ui/candidate-queries-guide"
+import { LIASuggestionsPanel } from"@/components/pages/job-kanban/LIASuggestionsPanel"
+import { ActionResultCard } from"@/components/chat/action-result-card"
 import {
   Brain,
   RotateCcw,
@@ -23,7 +23,7 @@ import {
   Loader2,
   Send,
   Star,
-} from "lucide-react"
+} from"lucide-react"
 
 interface LIAMessageMetadata {
   action_executed?: boolean
@@ -37,7 +37,7 @@ interface LIAMessageMetadata {
 
 interface LIAMessage {
   id: string
-  type: "user" | "assistant"
+  type:"user" |"assistant"
   content: string
   metadata?: LIAMessageMetadata
 }

@@ -1,23 +1,23 @@
 "use client"
 
-import { useState, useEffect, useCallback, useMemo, useRef } from "react"
-import { X, Search, ChevronDown, Brain, Loader2, AlertCircle, Zap } from "lucide-react"
-import { cn } from "@/lib/utils"
-import { useTagInputState } from "@/hooks/useTagInputState"
-import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
+import { useState, useEffect, useCallback, useMemo, useRef } from"react"
+import { X, Search, ChevronDown, Brain, Loader2, AlertCircle, Zap } from"lucide-react"
+import { cn } from"@/lib/utils"
+import { useTagInputState } from"@/hooks/useTagInputState"
+import { Badge } from"@/components/ui/badge"
+import { Input } from"@/components/ui/input"
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover"
+} from"@/components/ui/popover"
 import {
   INDUSTRIES,
   searchIndustries,
   getCanonicalKey,
   type Industry
-} from "@/lib/industry-constants"
-import { useSemanticSearch } from "@/hooks/useSemanticSearch"
+} from"@/lib/industry-constants"
+import { useSemanticSearch } from"@/hooks/useSemanticSearch"
 
 export type IndustryTimeFilter = 'current_past' | 'current_only'
 
@@ -53,7 +53,7 @@ export function IndustryFilterInput({
   onChange,
   timeFilter = 'current_past',
   onTimeFilterChange,
-  placeholder = "Type industry name and press Enter"
+  placeholder ="Type industry name and press Enter"
 }: IndustryFilterInputProps) {
   const {
     inputValue, setInputValue,
@@ -74,7 +74,7 @@ export function IndustryFilterInput({
     isLoading: isSemanticLoading, 
     search: searchSemantic,
     clearSuggestions
-  } = useSemanticSearch({ domain: "industries", debounceMs: 400 })
+  } = useSemanticSearch({ domain:"industries", debounceMs: 400 })
 
   const existingIndustries = value.map(i => i.toLowerCase())
 
@@ -101,7 +101,7 @@ export function IndustryFilterInput({
   const dropdownItems = [
     ...semanticItems,
     ...filteredAISuggestions.map(i => ({ type: 'ai-suggestion' as const, label: i, labelPt: i, industry: i, confidence: 0 })),
-    ...(showAskAI && semanticItems.length === 0 && filteredAISuggestions.length === 0 ? [{ type: 'ai' as const, label: `Buscar com IA "${inputValue}"`, labelPt: null, industry: null, confidence: 0 }] : []),
+    ...(showAskAI && semanticItems.length === 0 && filteredAISuggestions.length === 0 ? [{ type: 'ai' as const, label: `Buscar com IA"${inputValue}"`, labelPt: null, industry: null, confidence: 0 }] : []),
     ...filteredSuggestions.map(i => ({ 
       type: 'industry' as const, 
       label: i.key,
@@ -327,9 +327,8 @@ export function IndustryFilterInput({
                     onTimeFilterChange?.(option.value)
                     setIsTimeFilterOpen(false)
                   }}
-                  className={cn(
-                    "w-full text-left px-3 py-2 hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none",
-                    timeFilter === option.value && "bg-lia-bg-secondary"
+                  className={cn("w-full text-left px-3 py-2 hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none",
+                    timeFilter === option.value &&"bg-lia-bg-secondary"
                   )}
                 >
                   <div className="flex items-center justify-between">
@@ -404,10 +403,9 @@ export function IndustryFilterInput({
                     addIndustry(item.industry)
                   }
                 }}
-                className={cn(
-                  "w-full text-left px-3 py-2 text-sm transition-colors",
-                  focusedIndex === index ? "bg-lia-bg-tertiary" : "hover:bg-lia-bg-secondary",
-                  item.type === 'ai' && ""
+                className={cn("w-full text-left px-3 py-2 text-sm transition-colors",
+                  focusedIndex === index ?"bg-lia-bg-tertiary" :"hover:bg-lia-bg-secondary",
+                  item.type === 'ai' &&""
                 )}
               >
                 {item.type === 'ai' ? (
@@ -419,7 +417,7 @@ export function IndustryFilterInput({
                   <div className="flex items-center gap-2 text-lia-text-primary">
                     <Brain className="w-3 h-3 text-wedo-purple" />
                     <span>{item.label}</span>
-                    <span className="text-micro px-1.5 py-0.5 bg-wedo-purple/15 text-wedo-purple rounded-full ml-auto">AI</span>
+                    <span className="text-micro px-1.5 py-0.5  rounded-full ml-auto">AI</span>
                   </div>
                 ) : (
                   <div className="flex items-center justify-between text-lia-text-primary">

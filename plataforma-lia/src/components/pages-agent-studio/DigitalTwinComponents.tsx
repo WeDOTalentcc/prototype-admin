@@ -1,19 +1,19 @@
 "use client"
 
-import React, { useState, useEffect } from "react"
+import React, { useState, useEffect } from"react"
 import {
   Brain, Upload, Plus, Star, Users, Activity,
   ThumbsUp, ThumbsDown, HelpCircle, ChevronRight, X
-} from "lucide-react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Progress } from "@/components/ui/progress"
+} from"lucide-react"
+import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
+import { Badge } from"@/components/ui/badge"
+import { Button } from"@/components/ui/button"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from"@/components/ui/dialog"
+import { Avatar, AvatarFallback } from"@/components/ui/avatar"
+import { Progress } from"@/components/ui/progress"
 import {
   textStyles, cardStyles, badgeStyles, buttonStyles
-} from "@/lib/design-tokens"
+} from"@/lib/design-tokens"
 
 // ---------- Types ----------
 
@@ -32,7 +32,7 @@ interface TwinEvaluation {
   twin_id: string
   twin_name: string
   score: number
-  decision: "approved" | "rejected" | "maybe"
+  decision:"approved" |"rejected" |"maybe"
   reasoning: string
   confidence: number
   supporting_examples: Array<{
@@ -51,7 +51,7 @@ interface TwinCardProps {
 }
 
 export function TwinCard({ twin, onEvaluate, onManageTwin }: TwinCardProps) {
-  const initials = twin.twin_name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase()
+  const initials = twin.twin_name.split("").map(w => w[0]).join("").slice(0, 2).toUpperCase()
 
   return (
     <Card className={cardStyles.default}>
@@ -66,7 +66,7 @@ export function TwinCard({ twin, onEvaluate, onManageTwin }: TwinCardProps) {
             <div className="flex items-center gap-2">
               <p className={textStyles.subtitle}>{twin.twin_name}</p>
               <Badge className={twin.is_active ? badgeStyles.success : badgeStyles.warning}>
-                {twin.is_active ? "Ativo" : "Inativo"}
+                {twin.is_active ?"Ativo" :"Inativo"}
               </Badge>
             </div>
             {twin.specialties.length > 0 && (
@@ -135,8 +135,8 @@ export function EvaluateWithTwinModal({
     setIsLoading(true)
     try {
       const res = await fetch(`/api/backend-proxy/digital-twins/${twinId}/evaluate`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+        method:"POST",
+        headers: {"Content-Type":"application/json" },
         body: JSON.stringify({
           candidate_profile: candidateProfile,
           job_context: jobContext,
@@ -155,9 +155,9 @@ export function EvaluateWithTwinModal({
   if (!isOpen) return null
 
   const decisionConfig = {
-    approved: { icon: ThumbsUp, color: "text-green-600", bg: "bg-green-50", label: "Aprovado" },
-    rejected: { icon: ThumbsDown, color: "text-red-600", bg: "bg-red-50", label: "Rejeitado" },
-    maybe: { icon: HelpCircle, color: "text-yellow-600", bg: "bg-yellow-50", label: "Talvez" },
+    approved: { icon: ThumbsUp, color:"text-green-600", bg:"bg-green-50", label:"Aprovado" },
+    rejected: { icon: ThumbsDown, color:"text-red-600", bg:"bg-red-50", label:"Rejeitado" },
+    maybe: { icon: HelpCircle, color:"text-yellow-600", bg:"bg-yellow-50", label:"Talvez" },
   }
 
   return (
@@ -183,7 +183,7 @@ export function EvaluateWithTwinModal({
             <div className="flex items-center gap-2">
               <Avatar className="w-8 h-8 bg-purple-100">
                 <AvatarFallback className="bg-purple-100 text-purple-700 text-xs">
-                  {evaluation.twin_name.split(" ").map(w => w[0]).join("").slice(0, 2)}
+                  {evaluation.twin_name.split("").map(w => w[0]).join("").slice(0, 2)}
                 </AvatarFallback>
               </Avatar>
               <div>
@@ -225,8 +225,7 @@ export function EvaluateWithTwinModal({
             {/* Reasoning (in first person, SME style) */}
             <div>
               <p className={textStyles.label}>Raciocínio</p>
-              <blockquote className="mt-1 border-l-2 border-purple-300 pl-3 italic text-lia-text-secondary">
-                "{evaluation.reasoning}"
+              <blockquote className="mt-1 border-l-2 border-purple-300 pl-3 italic text-lia-text-secondary">"{evaluation.reasoning}"
               </blockquote>
             </div>
 
@@ -237,8 +236,8 @@ export function EvaluateWithTwinModal({
                 <div className="space-y-2 max-h-32 overflow-y-auto">
                   {evaluation.supporting_examples.map((ex, i) => (
                     <div key={i} className="flex items-start gap-2 text-sm">
-                      <Badge className={ex.decision === "approved" ? badgeStyles.success : badgeStyles.error}>
-                        {ex.decision === "approved" ? "✅" : "❌"}
+                      <Badge className={ex.decision ==="approved" ? badgeStyles.success : badgeStyles.error}>
+                        {ex.decision ==="approved" ?"✅" :"❌"}
                       </Badge>
                       <div className="min-w-0">
                         <p className={textStyles.bodySmall}>{ex.reasoning}</p>

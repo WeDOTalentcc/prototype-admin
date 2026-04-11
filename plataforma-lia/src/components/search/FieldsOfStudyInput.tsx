@@ -1,13 +1,13 @@
 "use client"
 
-import { useState, useRef, useEffect, useCallback } from "react"
-import { X, Brain, Loader2, Search, ChevronDown, Info, Zap } from "lucide-react"
-import { cn } from "@/lib/utils"
-import { useTagInputState } from "@/hooks/useTagInputState"
-import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { useSemanticSearch } from "@/hooks/useSemanticSearch"
+import { useState, useRef, useEffect, useCallback } from"react"
+import { X, Brain, Loader2, Search, ChevronDown, Info, Zap } from"lucide-react"
+import { cn } from"@/lib/utils"
+import { useTagInputState } from"@/hooks/useTagInputState"
+import { Badge } from"@/components/ui/badge"
+import { Input } from"@/components/ui/input"
+import { Popover, PopoverContent, PopoverTrigger } from"@/components/ui/popover"
+import { useSemanticSearch } from"@/hooks/useSemanticSearch"
 
 interface FieldsOfStudyInputProps {
   mode: 'regular' | 'nested'
@@ -17,225 +17,7 @@ interface FieldsOfStudyInputProps {
   placeholder?: string
 }
 
-const FIELDS_OF_STUDY = [
-  "3D Modelling",
-  "3D Modelling and Animation",
-  "Accountancy",
-  "Accounting",
-  "Acting",
-  "Actuarial Science",
-  "Addiction Counseling",
-  "Administration",
-  "Administration of Justice",
-  "Advertising",
-  "Aerospace Engineering",
-  "African Studies",
-  "Agricultural Engineering",
-  "Agriculture",
-  "Agronomy",
-  "American Studies",
-  "Anatomy",
-  "Animation",
-  "Anthropology",
-  "Applied Mathematics",
-  "Applied Physics",
-  "Arabic",
-  "Archaeology",
-  "Architecture",
-  "Art History",
-  "Artificial Intelligence",
-  "Asian Studies",
-  "Astronomy",
-  "Astrophysics",
-  "Athletic Training",
-  "Biochemistry",
-  "Bioengineering",
-  "Bioinformatics",
-  "Biology",
-  "Biomedical Engineering",
-  "Biomedical Sciences",
-  "Biophysics",
-  "Biotechnology",
-  "Business",
-  "Business Administration",
-  "Business Analytics",
-  "Business Management",
-  "Chemical Engineering",
-  "Chemistry",
-  "Chinese",
-  "Civil Engineering",
-  "Classics",
-  "Clinical Psychology",
-  "Cognitive Science",
-  "Communication",
-  "Communications",
-  "Computer Engineering",
-  "Computer Graphics",
-  "Computer Science",
-  "Construction Management",
-  "Creative Writing",
-  "Criminal Justice",
-  "Criminology",
-  "Culinary Arts",
-  "Cybersecurity",
-  "Dance",
-  "Data Analytics",
-  "Data Science",
-  "Dentistry",
-  "Design",
-  "Digital Marketing",
-  "Digital Media",
-  "Drama",
-  "Earth Sciences",
-  "Ecology",
-  "Economics",
-  "Education",
-  "Electrical Engineering",
-  "Electronics",
-  "Elementary Education",
-  "Engineering",
-  "English",
-  "English Literature",
-  "Entrepreneurship",
-  "Environmental Engineering",
-  "Environmental Science",
-  "Environmental Studies",
-  "Epidemiology",
-  "European Studies",
-  "Fashion Design",
-  "Film",
-  "Film Production",
-  "Film Studies",
-  "Finance",
-  "Financial Engineering",
-  "Fine Arts",
-  "Food Science",
-  "Foreign Languages",
-  "Forensic Science",
-  "Forestry",
-  "French",
-  "Game Design",
-  "Gender Studies",
-  "Genetics",
-  "Geography",
-  "Geology",
-  "German",
-  "Graphic Design",
-  "Health Administration",
-  "Health Sciences",
-  "Healthcare Management",
-  "History",
-  "Hospitality Management",
-  "Hotel Management",
-  "Human Resources",
-  "Humanities",
-  "Illustration",
-  "Industrial Design",
-  "Industrial Engineering",
-  "Information Systems",
-  "Information Technology",
-  "Interior Design",
-  "International Business",
-  "International Relations",
-  "Italian",
-  "Japanese",
-  "Journalism",
-  "Korean",
-  "Landscape Architecture",
-  "Latin American Studies",
-  "Law",
-  "Leadership",
-  "Liberal Arts",
-  "Library Science",
-  "Linguistics",
-  "Literature",
-  "Logistics",
-  "Machine Learning",
-  "Management",
-  "Management Information Systems",
-  "Manufacturing Engineering",
-  "Marine Biology",
-  "Marketing",
-  "Materials Science",
-  "Mathematics",
-  "Mechanical Engineering",
-  "Media Studies",
-  "Medicine",
-  "Microbiology",
-  "Middle Eastern Studies",
-  "Military Science",
-  "Mining Engineering",
-  "Molecular Biology",
-  "Music",
-  "Music Production",
-  "Nanotechnology",
-  "Natural Sciences",
-  "Neuroscience",
-  "Nuclear Engineering",
-  "Nursing",
-  "Nutrition",
-  "Occupational Therapy",
-  "Operations Management",
-  "Optometry",
-  "Organizational Psychology",
-  "Paralegal Studies",
-  "Petroleum Engineering",
-  "Pharmacology",
-  "Pharmacy",
-  "Philosophy",
-  "Photography",
-  "Physical Education",
-  "Physical Therapy",
-  "Physics",
-  "Physiology",
-  "Political Science",
-  "Portuguese",
-  "Pre-Law",
-  "Pre-Med",
-  "Product Design",
-  "Project Management",
-  "Psychology",
-  "Public Administration",
-  "Public Health",
-  "Public Policy",
-  "Public Relations",
-  "Quantitative Finance",
-  "Real Estate",
-  "Religious Studies",
-  "Robotics",
-  "Russian",
-  "Sales",
-  "Social Sciences",
-  "Social Work",
-  "Sociology",
-  "Software Engineering",
-  "Spanish",
-  "Speech Pathology",
-  "Sports Management",
-  "Sports Medicine",
-  "Statistics",
-  "Strategic Management",
-  "Studio Art",
-  "Supply Chain Management",
-  "Sustainable Development",
-  "Systems Engineering",
-  "Teaching",
-  "Technical Writing",
-  "Technology Management",
-  "Telecommunications",
-  "Theater",
-  "Theology",
-  "Tourism",
-  "Translation",
-  "Transportation",
-  "Urban Planning",
-  "User Experience Design",
-  "Veterinary Medicine",
-  "Video Game Development",
-  "Visual Arts",
-  "Web Development",
-  "Women's Studies",
-  "Zoology"
+const FIELDS_OF_STUDY = ["3D Modelling","3D Modelling and Animation","Accountancy","Accounting","Acting","Actuarial Science","Addiction Counseling","Administration","Administration of Justice","Advertising","Aerospace Engineering","African Studies","Agricultural Engineering","Agriculture","Agronomy","American Studies","Anatomy","Animation","Anthropology","Applied Mathematics","Applied Physics","Arabic","Archaeology","Architecture","Art History","Artificial Intelligence","Asian Studies","Astronomy","Astrophysics","Athletic Training","Biochemistry","Bioengineering","Bioinformatics","Biology","Biomedical Engineering","Biomedical Sciences","Biophysics","Biotechnology","Business","Business Administration","Business Analytics","Business Management","Chemical Engineering","Chemistry","Chinese","Civil Engineering","Classics","Clinical Psychology","Cognitive Science","Communication","Communications","Computer Engineering","Computer Graphics","Computer Science","Construction Management","Creative Writing","Criminal Justice","Criminology","Culinary Arts","Cybersecurity","Dance","Data Analytics","Data Science","Dentistry","Design","Digital Marketing","Digital Media","Drama","Earth Sciences","Ecology","Economics","Education","Electrical Engineering","Electronics","Elementary Education","Engineering","English","English Literature","Entrepreneurship","Environmental Engineering","Environmental Science","Environmental Studies","Epidemiology","European Studies","Fashion Design","Film","Film Production","Film Studies","Finance","Financial Engineering","Fine Arts","Food Science","Foreign Languages","Forensic Science","Forestry","French","Game Design","Gender Studies","Genetics","Geography","Geology","German","Graphic Design","Health Administration","Health Sciences","Healthcare Management","History","Hospitality Management","Hotel Management","Human Resources","Humanities","Illustration","Industrial Design","Industrial Engineering","Information Systems","Information Technology","Interior Design","International Business","International Relations","Italian","Japanese","Journalism","Korean","Landscape Architecture","Latin American Studies","Law","Leadership","Liberal Arts","Library Science","Linguistics","Literature","Logistics","Machine Learning","Management","Management Information Systems","Manufacturing Engineering","Marine Biology","Marketing","Materials Science","Mathematics","Mechanical Engineering","Media Studies","Medicine","Microbiology","Middle Eastern Studies","Military Science","Mining Engineering","Molecular Biology","Music","Music Production","Nanotechnology","Natural Sciences","Neuroscience","Nuclear Engineering","Nursing","Nutrition","Occupational Therapy","Operations Management","Optometry","Organizational Psychology","Paralegal Studies","Petroleum Engineering","Pharmacology","Pharmacy","Philosophy","Photography","Physical Education","Physical Therapy","Physics","Physiology","Political Science","Portuguese","Pre-Law","Pre-Med","Product Design","Project Management","Psychology","Public Administration","Public Health","Public Policy","Public Relations","Quantitative Finance","Real Estate","Religious Studies","Robotics","Russian","Sales","Social Sciences","Social Work","Sociology","Software Engineering","Spanish","Speech Pathology","Sports Management","Sports Medicine","Statistics","Strategic Management","Studio Art","Supply Chain Management","Sustainable Development","Systems Engineering","Teaching","Technical Writing","Technology Management","Telecommunications","Theater","Theology","Tourism","Translation","Transportation","Urban Planning","User Experience Design","Veterinary Medicine","Video Game Development","Visual Arts","Web Development","Women's Studies","Zoology"
 ]
 
 export function FieldsOfStudyInput({
@@ -243,7 +25,7 @@ export function FieldsOfStudyInput({
   onModeChange,
   value,
   onChange,
-  placeholder = "All Engineering Majors, Natural Sciences, CS, etc."
+  placeholder ="All Engineering Majors, Natural Sciences, CS, etc."
 }: FieldsOfStudyInputProps) {
   const {
     inputValue, setInputValue,
@@ -263,7 +45,7 @@ export function FieldsOfStudyInput({
     isLoading: isSemanticLoading, 
     search: searchSemantic,
     clearSuggestions
-  } = useSemanticSearch({ domain: "fields-of-study", debounceMs: 400 })
+  } = useSemanticSearch({ domain:"fields-of-study", debounceMs: 400 })
 
   const existingFields = value.map(f => f.toLowerCase())
 
@@ -281,7 +63,7 @@ export function FieldsOfStudyInput({
   const showAskAI = inputValue.trim().length >= 2
   const dropdownItems = [
     ...semanticItems,
-    ...(showAskAI && semanticItems.length === 0 ? [{ type: 'ai' as const, label: `Buscar com IA "${inputValue}"`, field: null, confidence: 0 }] : []),
+    ...(showAskAI && semanticItems.length === 0 ? [{ type: 'ai' as const, label: `Buscar com IA"${inputValue}"`, field: null, confidence: 0 }] : []),
     ...filteredSuggestions.map(f => ({ type: 'field' as const, label: f, field: f, confidence: 0 }))
   ]
 
@@ -409,11 +191,10 @@ export function FieldsOfStudyInput({
         <div className="relative inline-block" ref={modeDropdownRef}>
           <button
             onClick={() => setIsModeDropdownOpen(!isModeDropdownOpen)}
-            className={cn(
-              "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-[width,height]",
+            className={cn("flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-[width,height]",
               mode === 'regular'
-                ? "border-lia-border-default bg-lia-bg-primary text-lia-text-primary"
-                : "border-lia-btn-primary-bg dark:border-lia-border-subtle bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-primary"
+                ?"border-lia-border-default bg-lia-bg-primary text-lia-text-primary"
+                :"border-lia-btn-primary-bg dark:border-lia-border-subtle bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-primary"
             )}
           >
             {mode === 'regular' ? 'Regular' : 'Nested'}
@@ -427,17 +208,15 @@ export function FieldsOfStudyInput({
                   onModeChange('regular')
                   setIsModeDropdownOpen(false)
                 }}
-                className={cn(
-                  "w-full text-left px-4 py-3 transition-colors motion-reduce:transition-none hover:bg-lia-bg-secondary rounded-t-lg",
-                  mode === 'regular' && "bg-lia-bg-secondary"
+                className={cn("w-full text-left px-4 py-3 transition-colors motion-reduce:transition-none hover:bg-lia-bg-secondary rounded-t-lg",
+                  mode === 'regular' &&"bg-lia-bg-secondary"
                 )}
               >
                 <div className="flex items-center gap-2">
-                  <div className={cn(
-                    "w-3 h-3 rounded-full border-2",
+                  <div className={cn("w-3 h-3 rounded-full border-2",
                     mode === 'regular' 
-                      ? "border-lia-border-strong bg-lia-bg-inverse" 
-                      : "border-lia-border-default"
+                      ?"border-lia-border-strong bg-lia-bg-inverse" 
+                      :"border-lia-border-default"
                   )}>
                     {mode === 'regular' && (
                       <div className="w-full h-full rounded-full bg-lia-bg-primary scale-50" />
@@ -455,17 +234,15 @@ export function FieldsOfStudyInput({
                   onModeChange('nested')
                   setIsModeDropdownOpen(false)
                 }}
-                className={cn(
-                  "w-full text-left px-4 py-3 transition-colors motion-reduce:transition-none hover:bg-lia-bg-secondary rounded-b-lg border-t border-lia-border-subtle",
-                  mode === 'nested' && "bg-lia-bg-secondary dark:bg-lia-bg-secondary/50"
+                className={cn("w-full text-left px-4 py-3 transition-colors motion-reduce:transition-none hover:bg-lia-bg-secondary rounded-b-lg border-t border-lia-border-subtle",
+                  mode === 'nested' &&"bg-lia-bg-secondary dark:bg-lia-bg-secondary/50"
                 )}
               >
                 <div className="flex items-center gap-2">
-                  <div className={cn(
-                    "w-3 h-3 rounded-full border-2",
+                  <div className={cn("w-3 h-3 rounded-full border-2",
                     mode === 'nested' 
-                      ? "border-lia-btn-primary-bg bg-lia-btn-primary-bg dark:border-lia-border-subtle" 
-                      : "border-lia-border-default"
+                      ?"border-lia-btn-primary-bg bg-lia-btn-primary-bg dark:border-lia-border-subtle" 
+                      :"border-lia-border-default"
                   )}>
                     {mode === 'nested' && (
                       <div className="w-full h-full rounded-full bg-lia-bg-primary scale-50" />
@@ -542,10 +319,9 @@ export function FieldsOfStudyInput({
                     addField(item.field)
                   }
                 }}
-                className={cn(
-                  "w-full text-left px-3 py-2 text-sm transition-colors",
-                  focusedIndex === index ? "bg-lia-bg-tertiary" : "hover:bg-lia-bg-secondary",
-                  item.type === 'ai' && ""
+                className={cn("w-full text-left px-3 py-2 text-sm transition-colors",
+                  focusedIndex === index ?"bg-lia-bg-tertiary" :"hover:bg-lia-bg-secondary",
+                  item.type === 'ai' &&""
                 )}
               >
                 {item.type === 'ai' ? (

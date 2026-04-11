@@ -1,18 +1,18 @@
 "use client"
 
-import { useState } from "react"
-import { Badge } from "@/components/ui/badge"
-import { Card, CardContent } from "@/components/ui/card"
+import { useState } from"react"
+import { Badge } from"@/components/ui/badge"
+import { Card, CardContent } from"@/components/ui/card"
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/components/ui/tooltip"
+} from"@/components/ui/tooltip"
 import {
   BarChart3, Info, Brain, Heart, Users, Target, Zap,
   Eye, BookOpen, Shield, Lightbulb, CheckCircle, AlertTriangle
-} from "lucide-react"
+} from"lucide-react"
 
 interface BigFiveScore {
   openness: number

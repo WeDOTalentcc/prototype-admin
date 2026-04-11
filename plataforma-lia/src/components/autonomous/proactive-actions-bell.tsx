@@ -1,15 +1,15 @@
 "use client"
 
-import React, { useState, useEffect, useMemo } from "react"
-import { Bell, Loader2, Brain, Check, X, ArrowRight, Clock, User } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { cn } from "@/lib/utils"
-import { getProactiveActions, acceptProactiveAction, rejectProactiveAction } from "@/services/lia-api"
+import React, { useState, useEffect, useMemo } from"react"
+import { Bell, Loader2, Brain, Check, X, ArrowRight, Clock, User } from"lucide-react"
+import { Button } from"@/components/ui/button"
+import { Badge } from"@/components/ui/badge"
+import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
+import { Popover, PopoverContent, PopoverTrigger } from"@/components/ui/popover"
+import { cn } from"@/lib/utils"
+import { getProactiveActions, acceptProactiveAction, rejectProactiveAction } from"@/services/lia-api"
 
-import { ProactiveAction as ApiProactiveAction } from "@/services/lia-api"
+import { ProactiveAction as ApiProactiveAction } from"@/services/lia-api"
 
 interface ProactiveAction extends ApiProactiveAction {
   action_type?: string
@@ -32,9 +32,9 @@ interface ProactiveActionsBellProps {
 }
 
 function getScoreColor(score: number): string {
-  if (score >= 80) return "text-status-success bg-status-success/10 dark:text-status-success"
-  if (score >= 60) return "text-status-warning bg-status-warning/10 dark:bg-status-warning/30 dark:text-status-warning"
-  return "text-status-error bg-status-error/10 dark:bg-status-error/30 dark:text-status-error"
+  if (score >= 80) return"text-status-success bg-status-success/10 dark:text-status-success"
+  if (score >= 60) return"text-status-warning bg-status-warning/10 dark:bg-status-warning/30 dark:text-status-warning"
+  return"text-status-error bg-status-error/10 dark:bg-status-error/30 dark:text-status-error"
 }
 
 interface GroupedActions {
@@ -175,12 +175,11 @@ export function ProactiveActionsBell({
               </AvatarFallback>
             </Avatar>
           ) : (
-            <div className={cn(
- "w-2 h-2 rounded-full mt-1.5 shrink-0",
-              (action as unknown as Record<string, unknown>).priority === 'urgent' && "bg-status-error",
-              action.priority === 'high' && "bg-wedo-orange",
-              action.priority === 'normal' && "bg-wedo-cyan",
-              action.priority === 'low' && "bg-lia-border-medium"
+            <div className={cn("w-2 h-2 rounded-full mt-1.5 shrink-0",
+              (action as unknown as Record<string, unknown>).priority === 'urgent' &&"bg-status-error",
+              action.priority === 'high' &&"bg-wedo-orange",
+              action.priority === 'normal' &&"bg-wedo-cyan",
+              action.priority === 'low' &&"bg-lia-border-medium"
             )} />
           )}
           <div className="flex-1 min-w-0">
@@ -190,8 +189,7 @@ export function ProactiveActionsBell({
                   {candidate?.name || action.title}
                 </p>
                 {candidate?.score && (
-                  <span className={cn(
- "text-micro font-bold px-1.5 py-0.5 rounded-full flex-shrink-0",
+                  <span className={cn("text-micro font-bold px-1.5 py-0.5 rounded-full flex-shrink-0",
                     getScoreColor(candidate.score)
                   )}>
                     {Math.round(candidate.score)}
@@ -271,20 +269,17 @@ export function ProactiveActionsBell({
           data-testid="proactive-actions-bell-btn"
           variant="ghost"
           size="sm"
-          className={cn(
- "relative h-9 w-9 p-0 rounded-full",
-            hasUrgent && "animate-pulse motion-reduce:animate-none",
+          className={cn("relative h-9 w-9 p-0 rounded-full",
+            hasUrgent &&"animate-pulse motion-reduce:animate-none",
             className
           )}
         >
-          <Bell className={cn(
- "h-5 w-5",
-            hasUrgent ? "text-lia-text-secondary" : "text-lia-text-tertiary"
+          <Bell className={cn("h-5 w-5",
+            hasUrgent ?"text-lia-text-secondary" :"text-lia-text-tertiary"
           )} />
           {pendingCount > 0 && (
-            <span data-testid="proactive-actions-count" className={cn(
- "absolute -top-0.5 -right-0.5 h-4 min-w-4 rounded-full flex items-center justify-center text-micro font-bold text-white px-1",
-              hasUrgent ? "bg-status-error" : "bg-lia-btn-primary-bg"
+            <span data-testid="proactive-actions-count" className={cn("absolute -top-0.5 -right-0.5 h-4 min-w-4 rounded-full flex items-center justify-center text-micro font-bold text-white px-1",
+              hasUrgent ?"bg-status-error" :"bg-lia-btn-primary-bg"
             )}>
               {pendingCount > 9 ? '9+' : pendingCount}
             </span>

@@ -1,19 +1,19 @@
 "use client"
 
-import { useState, useCallback } from "react"
-import { X, Brain, Loader2, Search, ChevronDown, Info, Save, List, RotateCcw, Zap } from "lucide-react"
-import { cn } from "@/lib/utils"
-import { useTagInputState } from "@/hooks/useTagInputState"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { useState, useCallback } from"react"
+import { X, Brain, Loader2, Search, ChevronDown, Info, Save, List, RotateCcw, Zap } from"lucide-react"
+import { cn } from"@/lib/utils"
+import { useTagInputState } from"@/hooks/useTagInputState"
+import { Badge } from"@/components/ui/badge"
+import { Button } from"@/components/ui/button"
+import { Input } from"@/components/ui/input"
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover"
-import { CompanyPresetsModal, CompanyPreset } from "./CompanyPresetsModal"
-import { useSemanticSearch } from "@/hooks/useSemanticSearch"
+} from"@/components/ui/popover"
+import { CompanyPresetsModal, CompanyPreset } from"./CompanyPresetsModal"
+import { useSemanticSearch } from"@/hooks/useSemanticSearch"
 
 export interface CompanyItem {
   name: string
@@ -43,59 +43,59 @@ interface CompanyFilterInputProps {
 }
 
 const POPULAR_COMPANIES = [
-  { name: "Nubank", domain: "nubank.com.br" },
-  { name: "iFood", domain: "ifood.com.br" },
-  { name: "Stone", domain: "stone.com.br" },
-  { name: "PicPay", domain: "picpay.com" },
-  { name: "Magalu", domain: "magazineluiza.com.br" },
-  { name: "B3", domain: "b3.com.br" },
-  { name: "Itaú", domain: "itau.com.br" },
-  { name: "Bradesco", domain: "bradesco.com.br" },
-  { name: "Santander", domain: "santander.com.br" },
-  { name: "Ambev", domain: "ambev.com.br" },
-  { name: "Vale", domain: "vale.com" },
-  { name: "Petrobras", domain: "petrobras.com.br" },
-  { name: "Globo", domain: "globo.com" },
-  { name: "Natura", domain: "natura.com.br" },
-  { name: "Localiza", domain: "localiza.com" },
-  { name: "XP", domain: "xpinc.com" },
-  { name: "BTG Pactual", domain: "btgpactual.com" },
-  { name: "Mercado Livre", domain: "mercadolivre.com.br" },
-  { name: "TOTVS", domain: "totvs.com" },
-  { name: "VTEX", domain: "vtex.com" },
-  { name: "Creditas", domain: "creditas.com" },
-  { name: "QuintoAndar", domain: "quintoandar.com.br" },
-  { name: "Loft", domain: "loft.com.br" },
-  { name: "Kavak", domain: "kavak.com" },
-  { name: "Rappi", domain: "rappi.com" },
-  { name: "99", domain: "99app.com" },
-  { name: "Movile", domain: "movile.com.br" },
-  { name: "Wildlife Studios", domain: "wildlifestudios.com" },
-  { name: "Loggi", domain: "loggi.com" },
-  { name: "Olist", domain: "olist.com" },
-  { name: "Ebanx", domain: "ebanx.com" },
-  { name: "Gympass", domain: "gympass.com" },
-  { name: "Google", domain: "google.com" },
-  { name: "Meta", domain: "meta.com" },
-  { name: "Amazon", domain: "amazon.com" },
-  { name: "Microsoft", domain: "microsoft.com" },
-  { name: "Apple", domain: "apple.com" },
-  { name: "Netflix", domain: "netflix.com" },
-  { name: "Salesforce", domain: "salesforce.com" },
-  { name: "Oracle", domain: "oracle.com" },
-  { name: "IBM", domain: "ibm.com" },
-  { name: "SAP", domain: "sap.com" },
-  { name: "Adobe", domain: "adobe.com" },
-  { name: "Nvidia", domain: "nvidia.com" },
-  { name: "Tesla", domain: "tesla.com" },
-  { name: "SpaceX", domain: "spacex.com" },
-  { name: "Uber", domain: "uber.com" },
-  { name: "Airbnb", domain: "airbnb.com" },
-  { name: "Stripe", domain: "stripe.com" },
-  { name: "Databricks", domain: "databricks.com" },
-  { name: "Snowflake", domain: "snowflake.com" },
-  { name: "OpenAI", domain: "openai.com" },
-  { name: "Anthropic", domain: "anthropic.com" },
+  { name:"Nubank", domain:"nubank.com.br" },
+  { name:"iFood", domain:"ifood.com.br" },
+  { name:"Stone", domain:"stone.com.br" },
+  { name:"PicPay", domain:"picpay.com" },
+  { name:"Magalu", domain:"magazineluiza.com.br" },
+  { name:"B3", domain:"b3.com.br" },
+  { name:"Itaú", domain:"itau.com.br" },
+  { name:"Bradesco", domain:"bradesco.com.br" },
+  { name:"Santander", domain:"santander.com.br" },
+  { name:"Ambev", domain:"ambev.com.br" },
+  { name:"Vale", domain:"vale.com" },
+  { name:"Petrobras", domain:"petrobras.com.br" },
+  { name:"Globo", domain:"globo.com" },
+  { name:"Natura", domain:"natura.com.br" },
+  { name:"Localiza", domain:"localiza.com" },
+  { name:"XP", domain:"xpinc.com" },
+  { name:"BTG Pactual", domain:"btgpactual.com" },
+  { name:"Mercado Livre", domain:"mercadolivre.com.br" },
+  { name:"TOTVS", domain:"totvs.com" },
+  { name:"VTEX", domain:"vtex.com" },
+  { name:"Creditas", domain:"creditas.com" },
+  { name:"QuintoAndar", domain:"quintoandar.com.br" },
+  { name:"Loft", domain:"loft.com.br" },
+  { name:"Kavak", domain:"kavak.com" },
+  { name:"Rappi", domain:"rappi.com" },
+  { name:"99", domain:"99app.com" },
+  { name:"Movile", domain:"movile.com.br" },
+  { name:"Wildlife Studios", domain:"wildlifestudios.com" },
+  { name:"Loggi", domain:"loggi.com" },
+  { name:"Olist", domain:"olist.com" },
+  { name:"Ebanx", domain:"ebanx.com" },
+  { name:"Gympass", domain:"gympass.com" },
+  { name:"Google", domain:"google.com" },
+  { name:"Meta", domain:"meta.com" },
+  { name:"Amazon", domain:"amazon.com" },
+  { name:"Microsoft", domain:"microsoft.com" },
+  { name:"Apple", domain:"apple.com" },
+  { name:"Netflix", domain:"netflix.com" },
+  { name:"Salesforce", domain:"salesforce.com" },
+  { name:"Oracle", domain:"oracle.com" },
+  { name:"IBM", domain:"ibm.com" },
+  { name:"SAP", domain:"sap.com" },
+  { name:"Adobe", domain:"adobe.com" },
+  { name:"Nvidia", domain:"nvidia.com" },
+  { name:"Tesla", domain:"tesla.com" },
+  { name:"SpaceX", domain:"spacex.com" },
+  { name:"Uber", domain:"uber.com" },
+  { name:"Airbnb", domain:"airbnb.com" },
+  { name:"Stripe", domain:"stripe.com" },
+  { name:"Databricks", domain:"databricks.com" },
+  { name:"Snowflake", domain:"snowflake.com" },
+  { name:"OpenAI", domain:"openai.com" },
+  { name:"Anthropic", domain:"anthropic.com" },
 ]
 
 const TIME_FILTER_OPTIONS: { 
@@ -144,7 +144,7 @@ export function CompanyFilterInput({
   onSpecificYearsChange,
   fundingStages,
   onFundingStagesChange,
-  placeholder = "Type company name and press Enter",
+  placeholder ="Type company name and press Enter",
   showTimeFilter = true,
   showPresets = true
 }: CompanyFilterInputProps) {
@@ -165,7 +165,7 @@ export function CompanyFilterInput({
     isLoading: isSemanticLoading, 
     search: searchSemantic,
     clearSuggestions
-  } = useSemanticSearch({ domain: "companies", debounceMs: 400 })
+  } = useSemanticSearch({ domain:"companies", debounceMs: 400 })
 
   const existingCompanyNames = value.map(c => c.name.toLowerCase())
 
@@ -183,7 +183,7 @@ export function CompanyFilterInput({
   const showAskAI = inputValue.trim().length >= 2
   const dropdownItems = [
     ...semanticItems,
-    ...(showAskAI && semanticItems.length === 0 ? [{ type: 'ai' as const, label: `Buscar concorrentes de "${inputValue}"`, company: null, confidence: 0 }] : []),
+    ...(showAskAI && semanticItems.length === 0 ? [{ type: 'ai' as const, label: `Buscar concorrentes de"${inputValue}"`, company: null, confidence: 0 }] : []),
     ...filteredSuggestions.map(c => ({ type: 'company' as const, label: c.name, company: c, confidence: 0 }))
   ]
 
@@ -327,9 +327,8 @@ export function CompanyFilterInput({
                       onTimeFilterChange?.(option.value)
                       setIsTimeFilterOpen(false)
                     }}
-                    className={cn(
-                      "w-full text-left px-3 py-2 hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none",
-                      timeFilter === option.value && "bg-lia-bg-secondary"
+                    className={cn("w-full text-left px-3 py-2 hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none",
+                      timeFilter === option.value &&"bg-lia-bg-secondary"
                     )}
                   >
                     <div className="flex items-center justify-between">
@@ -396,11 +395,10 @@ export function CompanyFilterInput({
                           onFundingStagesChange?.([...current, stage])
                         }
                       }}
-                      className={cn(
-                        "w-full text-left px-2 py-1.5 rounded-md text-sm transition-colors",
+                      className={cn("w-full text-left px-2 py-1.5 rounded-md text-sm transition-colors",
                         fundingStages?.includes(stage)
-                          ? "bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-primary"
-                          : "hover:bg-lia-bg-secondary text-lia-text-primary"
+                          ?"bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-primary"
+                          :"hover:bg-lia-bg-secondary text-lia-text-primary"
                       )}
                     >
                       {stage}
@@ -479,10 +477,9 @@ export function CompanyFilterInput({
                     addCompany(item.company)
                   }
                 }}
-                className={cn(
-                  "w-full text-left px-3 py-2 text-sm transition-colors",
-                  focusedIndex === index ? "bg-lia-bg-tertiary" : "hover:bg-lia-bg-secondary",
-                  item.type === 'ai' && ""
+                className={cn("w-full text-left px-3 py-2 text-sm transition-colors",
+                  focusedIndex === index ?"bg-lia-bg-tertiary" :"hover:bg-lia-bg-secondary",
+                  item.type === 'ai' &&""
                 )}
               >
                 {item.type === 'ai' ? (

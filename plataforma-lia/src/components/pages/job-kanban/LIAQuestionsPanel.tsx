@@ -1,8 +1,8 @@
 "use client"
 
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { BarChart3, Brain, RefreshCw, Target, Wand2, X } from "lucide-react"
+import { Button } from"@/components/ui/button"
+import { Badge } from"@/components/ui/badge"
+import { BarChart3, Brain, RefreshCw, Target, Wand2, X } from"lucide-react"
 
 interface LIAQuestionsPanelProps {
   open: boolean
@@ -53,7 +53,7 @@ export function LIAQuestionsPanel({ open, onClose }: LIAQuestionsPanelProps) {
               </h3>
             </div>
             <p className="text-xs text-lia-text-secondary">
-              Clique em "Substituir" para trocar a pergunta selecionada
+              Clique em"Substituir" para trocar a pergunta selecionada
             </p>
           </div>
 

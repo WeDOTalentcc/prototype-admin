@@ -1,52 +1,52 @@
 "use client"
-import NextImage from "next/image"
+import NextImage from"next/image"
 
-import React, { useState, lazy, Suspense } from "react"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
+import React, { useState, lazy, Suspense } from"react"
+import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
+import { Badge } from"@/components/ui/badge"
+import { Button } from"@/components/ui/button"
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover"
+} from"@/components/ui/popover"
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
+} from"@/components/ui/dialog"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
+} from"@/components/ui/select"
 import {
   MapPin, Linkedin, Building2, Star, Pin, Github, Globe,
   Mail, Phone, Briefcase, CheckCircle, StickyNote, Zap, ChevronDown, ArrowRight, Brain, Loader2, Info
-} from "lucide-react"
+} from"lucide-react"
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/components/ui/tooltip"
-import { toast } from "sonner"
-import type { TableCandidate } from "./types"
+} from"@/components/ui/tooltip"
+import { toast } from"sonner"
+import type { TableCandidate } from"./types"
 import {
   getSubStatusDisplayName,
   SUB_STATUSES,
   RECRUITMENT_STAGES,
   type SubStatus,
   type RecruitmentStage
-} from "@/lib/recruitment-stages"
+} from"@/lib/recruitment-stages"
 import { 
   DataRequestIndicator, 
   type DataRequestStatus, 
   type RequestedField 
-} from "@/components/ui/data-request-indicator"
+} from"@/components/ui/data-request-indicator"
 
 const getRandomAvatarUrl = (_candidateId: string, _name: string): string | undefined => {
   return undefined
@@ -436,7 +436,7 @@ export function InteractiveSubStatusCell({
       await onStatusChange(candidateId, newSubStatus, stage, jobVacancyId)
       
       const newStatusName = availableSubStatuses.find(s => s.name === newSubStatus)?.displayName || newSubStatus
-      toast.success(`Status atualizado para "${newStatusName}"`, {
+      toast.success(`Status atualizado para"${newStatusName}"`, {
         description: `${candidateName || 'Candidato'} movido com sucesso`,
       })
       setOpen(false)
@@ -715,7 +715,7 @@ export function ActionButtons({
 }) {
   return (
     <div className="flex items-center justify-end gap-1 relative" onClick={(e) => e.stopPropagation()}>
-      {/* Indicador "Ação Necessária" - visível fora do hover, escondido no hover */}
+      {/* Indicador"Ação Necessária" - visível fora do hover, escondido no hover */}
       {needsAction && (
         <div className="absolute inset-0 flex items-center justify-end pr-1 group-hover:opacity-0 group-hover:pointer-events-none transition-opacity motion-reduce:transition-none duration-200">
           <div 
@@ -739,7 +739,7 @@ export function ActionButtons({
  isFavorite ? 'text-wedo-orange' : 'text-lia-text-secondary'
             }`}
             onClick={onToggleFavorite}
-            title={isFavorite ? "Remover dos favoritos" : "Adicionar aos favoritos"}
+            title={isFavorite ?"Remover dos favoritos" :"Adicionar aos favoritos"}
           >
             <Star className={`w-3.5 h-3.5 ${isFavorite ? 'fill-current' : ''}`} />
           </Button>
@@ -753,7 +753,7 @@ export function ActionButtons({
  isPinned ? 'text-lia-text-secondary' : 'text-lia-text-secondary'
             }`}
             onClick={onTogglePin}
-            title={isPinned ? "Desafixar" : "Fixar"}
+            title={isPinned ?"Desafixar" :"Fixar"}
           >
             <Pin className={`w-3.5 h-3.5 ${isPinned ? 'fill-current' : ''}`} />
           </Button>

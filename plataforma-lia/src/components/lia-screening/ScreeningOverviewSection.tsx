@@ -1,9 +1,9 @@
 "use client"
 
-import React from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { CheckCircle, Clock, Target, Users } from "lucide-react"
+import React from"react"
+import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
+import { Badge } from"@/components/ui/badge"
+import { CheckCircle, Clock, Target, Users } from"lucide-react"
 
 interface ScreeningOverviewSectionProps {
   requirements: string[]
@@ -15,7 +15,7 @@ export function ScreeningOverviewSection({ requirements }: ScreeningOverviewSect
       <div>
         <h4 className="text-lg font-semibold font-sans text-lia-text-primary mb-4">Visão Geral do Processo</h4>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Card className="">
+          <Card >
             <CardHeader className="pb-3">
               <CardTitle className="text-sm flex items-center gap-2 font-sans">
                 <Target className="w-4 h-4 text-lia-text-secondary" />
@@ -30,7 +30,7 @@ export function ScreeningOverviewSection({ requirements }: ScreeningOverviewSect
             </CardContent>
           </Card>
 
-          <Card className="">
+          <Card >
             <CardHeader className="pb-3">
               <CardTitle className="text-sm flex items-center gap-2 font-sans">
                 <Clock className="w-4 h-4 text-status-success" />
@@ -45,7 +45,7 @@ export function ScreeningOverviewSection({ requirements }: ScreeningOverviewSect
             </CardContent>
           </Card>
 
-          <Card className="">
+          <Card >
             <CardHeader className="pb-3">
               <CardTitle className="text-sm flex items-center gap-2 font-sans">
                 <Users className="w-4 h-4 text-wedo-purple" />
@@ -74,7 +74,7 @@ export function ScreeningOverviewSection({ requirements }: ScreeningOverviewSect
             </CardContent>
           </Card>
 
-          <Card className="">
+          <Card >
             <CardHeader className="pb-3">
               <CardTitle className="text-sm flex items-center gap-2 font-sans">
                 <CheckCircle className="w-4 h-4 text-wedo-orange" />

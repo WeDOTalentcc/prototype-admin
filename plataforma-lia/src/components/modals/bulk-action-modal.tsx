@@ -172,7 +172,7 @@ export function BulkActionModal({
 }: BulkActionModalProps) {
   const { stages: companyPipelineStages } = useRecruitmentStages()
 
-  // Sub-statuses do estágio "rejected" vindos do DB; fallback para REJECTION_REASONS estático
+  // Sub-statuses do estágio"rejected" vindos do DB; fallback para REJECTION_REASONS estático
   const rejectionReasonOptions = useMemo(() => {
     const rejectedStage = companyPipelineStages.find(s => s.name === 'rejected')
     if (rejectedStage?.sub_statuses?.length) {
@@ -279,7 +279,7 @@ export function BulkActionModal({
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
       <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto rounded-md" data-testid="bulk-action-modal">
-        <DialogHeader className=" pb-3">
+        <DialogHeader className="pb-3">
           <DialogTitle className="flex items-center gap-2 text-sm font-semibold text-lia-text-primary">
             {config.icon}
             {config.title}
@@ -311,11 +311,10 @@ export function BulkActionModal({
                   return (
                     <div
                       key={candidate.id}
-                      className={cn(
-                        "flex items-center gap-2 p-2 rounded-md",
-                        result?.success && "bg-status-success/10 dark:bg-status-success/10",
-                        result?.success === false && "bg-status-error/10 dark:bg-status-error/10",
-                        !result && "bg-lia-bg-secondary/50"
+                      className={cn("flex items-center gap-2 p-2 rounded-md",
+                        result?.success &&"bg-status-success/10 dark:bg-status-success/10",
+                        result?.success === false &&"bg-status-error/10 dark:bg-status-error/10",
+                        !result &&"bg-lia-bg-secondary/50"
                       )}
                     >
                       <Avatar className="w-7 h-7">
@@ -449,11 +448,10 @@ export function BulkActionModal({
               <Button
                 onClick={handleExecute}
                 disabled={!canExecute}
-                className={cn(
-                  "h-9 px-4 text-xs font-medium",
+                className={cn("h-9 px-4 text-xs font-medium",
                   actionType === 'reject' 
-                    ? "bg-status-error hover:bg-status-error text-white" 
-                    : "bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
+                    ?"bg-status-error hover:bg-status-error text-white" 
+                    :"bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
                 )}
               >
                 {isExecuting ? (

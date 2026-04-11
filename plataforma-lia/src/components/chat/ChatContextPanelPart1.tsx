@@ -1,14 +1,14 @@
 "use client"
 
-import React from "react"
+import React from"react"
 import {
   DollarSign, Network, Target, Clock, Globe, CheckCircle, Edit,
   Download, Send
-} from "lucide-react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { ContextPanelData } from "@/types/chat"
+} from"lucide-react"
+import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
+import { Button } from"@/components/ui/button"
+import { Badge } from"@/components/ui/badge"
+import { ContextPanelData } from"@/types/chat"
 
 interface Props {
   contextData: ContextPanelData
@@ -24,7 +24,7 @@ export function ChatContextPanelPart1({ contextData }: Props) {
   const data = contextData.data as any
   return (
     <>
-      {contextData.type === "compensation-package" && (
+      {contextData.type ==="compensation-package" && (
         <div className="space-y-6 font-open-sans">
           <Card className="border-0 bg-lia-bg-primary">
             <CardHeader className="bg-lia-bg-tertiary">
@@ -100,7 +100,7 @@ export function ChatContextPanelPart1({ contextData }: Props) {
         </div>
       )}
 
-      {contextData.type === "org-structure-analysis" && (
+      {contextData.type ==="org-structure-analysis" && (
         <div className="space-y-6 font-open-sans">
           <Card className="border-0 bg-lia-bg-primary">
             <CardHeader className="bg-lia-bg-tertiary">
@@ -145,7 +145,7 @@ export function ChatContextPanelPart1({ contextData }: Props) {
         </div>
       )}
 
-      {contextData.type === "role-scope-definition" && (
+      {contextData.type ==="role-scope-definition" && (
         <div className="space-y-6 font-open-sans">
           <Card className="border-0 bg-lia-bg-primary">
             <CardHeader className="bg-lia-bg-tertiary">
@@ -181,7 +181,7 @@ export function ChatContextPanelPart1({ contextData }: Props) {
         </div>
       )}
 
-      {contextData.type === "work-arrangement" && (
+      {contextData.type ==="work-arrangement" && (
         <div className="space-y-6 font-open-sans">
           <Card className="border-0 bg-lia-bg-primary">
             <CardHeader className="bg-lia-bg-tertiary">
@@ -213,7 +213,7 @@ export function ChatContextPanelPart1({ contextData }: Props) {
         </div>
       )}
 
-      {contextData.type === "final-job-description" && (
+      {contextData.type ==="final-job-description" && (
         <div className="space-y-6 font-open-sans">
           <Card className="border-0 bg-lia-bg-primary">
             <CardHeader className="bg-lia-bg-tertiary">
@@ -267,7 +267,7 @@ export function ChatContextPanelPart1({ contextData }: Props) {
         </div>
       )}
 
-      {contextData.type === "job-publishing" && (
+      {contextData.type ==="job-publishing" && (
         <div className="space-y-6 font-open-sans">
           <Card className="border-0 bg-lia-bg-primary">
             <CardHeader className="bg-lia-bg-tertiary">

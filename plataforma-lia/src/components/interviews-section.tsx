@@ -1,60 +1,60 @@
 "use client"
 
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Play, Calendar, Clock, User, Mail, Phone, FileText, Star, CheckCircle, AlertCircle, XCircle, MessageSquare } from "lucide-react"
+import { Button } from"@/components/ui/button"
+import { Card, CardContent } from"@/components/ui/card"
+import { Badge } from"@/components/ui/badge"
+import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
+import { Play, Calendar, Clock, User, Mail, Phone, FileText, Star, CheckCircle, AlertCircle, XCircle, MessageSquare } from"lucide-react"
 
 const candidates = [
   {
     id: 1,
-    name: "João Silva",
-    position: "Frontend Developer",
-    job: "Desenvolvedor React Sênior",
-    date: "12 Mar 2025",
-    time: "14:30",
-    status: "Aprovado",
+    name:"João Silva",
+    position:"Frontend Developer",
+    job:"Desenvolvedor React Sênior",
+    date:"12 Mar 2025",
+    time:"14:30",
+    status:"Aprovado",
     score: 8.5,
-    phone: "+55 11 99999-1234",
-    email: "joao.silva@email.com",
-    avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face"
+    phone:"+55 11 99999-1234",
+    email:"joao.silva@email.com",
+    avatar:"https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face"
   },
   {
     id: 2,
-    name: "Maria Santos",
-    position: "UX Designer",
-    job: "Designer de Produto",
-    date: "10 Mar 2025",
-    time: "16:00",
-    status: "Em análise",
+    name:"Maria Santos",
+    position:"UX Designer",
+    job:"Designer de Produto",
+    date:"10 Mar 2025",
+    time:"16:00",
+    status:"Em análise",
     score: 7.8,
-    phone: "+55 11 98888-5678",
-    email: "maria.santos@email.com",
-    avatar: "https://images.unsplash.com/photo-1494790108755-2616b612b95c?w=150&h=150&fit=crop&crop=face"
+    phone:"+55 11 98888-5678",
+    email:"maria.santos@email.com",
+    avatar:"https://images.unsplash.com/photo-1494790108755-2616b612b95c?w=150&h=150&fit=crop&crop=face"
   },
   {
     id: 3,
-    name: "Carlos Oliveira",
-    position: "Backend Developer",
-    job: "Desenvolvedor Node.js",
-    date: "8 Mar 2025",
-    time: "10:15",
-    status: "Rejeitado",
+    name:"Carlos Oliveira",
+    position:"Backend Developer",
+    job:"Desenvolvedor Node.js",
+    date:"8 Mar 2025",
+    time:"10:15",
+    status:"Rejeitado",
     score: 6.2,
-    phone: "+55 11 97777-9012",
-    email: "carlos.oliveira@email.com",
-    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face"
+    phone:"+55 11 97777-9012",
+    email:"carlos.oliveira@email.com",
+    avatar:"https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face"
   }
 ]
 
 const getStatusIcon = (status: string) => {
   switch (status) {
-    case "Aprovado":
+    case"Aprovado":
       return <CheckCircle className="w-4 h-4 text-status-success" />
-    case "Em análise":
+    case"Em análise":
       return <AlertCircle className="w-4 h-4 text-wedo-orange" />
-    case "Rejeitado":
+    case"Rejeitado":
       return <XCircle className="w-4 h-4 text-status-error" />
     default:
       return <Clock className="w-4 h-4 text-lia-text-secondary" />
@@ -63,14 +63,14 @@ const getStatusIcon = (status: string) => {
 
 const getStatusBadge = (status: string) => {
   switch (status) {
-    case "Aprovado":
-      return "bg-status-success/10 text-status-success border-status-success/30"
-    case "Em análise":
-      return "bg-wedo-orange/10 text-wedo-orange border-wedo-orange/30"
-    case "Rejeitado":
-      return "bg-status-error/10 text-status-error border-status-error/30"
+    case"Aprovado":
+      return" border-status-success/30"
+    case"Em análise":
+      return" border-wedo-orange/30"
+    case"Rejeitado":
+      return" border-status-error/30"
     default:
-      return "bg-lia-bg-secondary text-lia-text-primary border-lia-border-subtle"
+      return"bg-lia-bg-secondary text-lia-text-primary border-lia-border-subtle"
   }
 }
 

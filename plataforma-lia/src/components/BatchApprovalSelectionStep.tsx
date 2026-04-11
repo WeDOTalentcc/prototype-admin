@@ -1,13 +1,13 @@
 "use client"
 
-import { formatScorePercent } from "@/lib/design-tokens"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { formatScorePercent } from"@/lib/design-tokens"
+import { Button } from"@/components/ui/button"
+import { Card, CardContent } from"@/components/ui/card"
+import { Badge } from"@/components/ui/badge"
+import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
 import {
   Users, Check, Search, Calendar, MapPin
-} from "lucide-react"
+} from"lucide-react"
 
 interface BatchApprovalCandidate {
   id: string

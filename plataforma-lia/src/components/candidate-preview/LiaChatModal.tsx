@@ -1,22 +1,21 @@
 /**
  * @deprecated Use UnifiedChat (sidebar mode) via InlineChatBridge instead.
  * This component is replaced by the unified chat architecture (Phase 6).
- * Migration: import { InlineChatBridge } from "@/components/unified-chat"
- */
-"use client"
+ * Migration: import { InlineChatBridge } from"@/components/unified-chat"
+ */"use client"
 
-import React from "react"
-import { X, MessageSquare, UserPlus, ChevronRight, Mic, Send } from "lucide-react"
-import { Calendar as CalendarIcon } from "lucide-react"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { textStyles, formatScorePercent } from "@/lib/design-tokens"
-import { ThinkingDots } from "@/components/ui/thinking-dots"
-import { useModalA11y } from "@/hooks/use-modal-a11y"
-import { useLiaFloat } from "@/contexts/lia-float-context"
-import { cleanAgentResponse } from "@/lib/chat-format"
-import { ContextBadge } from "@/components/lia-float/ContextBadge"
+import React from"react"
+import { X, MessageSquare, UserPlus, ChevronRight, Mic, Send } from"lucide-react"
+import { Calendar as CalendarIcon } from"lucide-react"
+import { Avatar, AvatarFallback } from"@/components/ui/avatar"
+import { Badge } from"@/components/ui/badge"
+import { Button } from"@/components/ui/button"
+import { textStyles, formatScorePercent } from"@/lib/design-tokens"
+import { ThinkingDots } from"@/components/ui/thinking-dots"
+import { useModalA11y } from"@/hooks/use-modal-a11y"
+import { useLiaFloat } from"@/contexts/lia-float-context"
+import { cleanAgentResponse } from"@/lib/chat-format"
+import { ContextBadge } from"@/components/lia-float/ContextBadge"
 
 interface LiaAction {
   id: string
@@ -84,7 +83,7 @@ export function LiaChatModal({
   React.useEffect(() => {
     if (isOpen && candidate) {
       openWithEntity({
-        type: "candidate",
+        type:"candidate",
         id: candidate.id,
         name: candidate.name || candidate.nome,
         meta: {
@@ -154,7 +153,7 @@ export function LiaChatModal({
             </div>
 
             {/* Context Badge */}
-            {contextPage && contextPage !== "Chat LIA" && (
+            {contextPage && contextPage !=="Chat LIA" && (
               <div className="px-1 mb-2">
                 <ContextBadge contextPage={contextPage} />
               </div>

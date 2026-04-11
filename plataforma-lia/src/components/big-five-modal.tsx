@@ -1,9 +1,9 @@
 "use client"
 
-import React from "react"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import React from"react"
+import { Button } from"@/components/ui/button"
+import { Badge } from"@/components/ui/badge"
+import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
 import {
   Dialog,
   DialogContent,
@@ -11,8 +11,8 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-} from "@/components/ui/dialog"
-import { TrendingUp, TrendingDown, Minus, BrainCircuit } from "lucide-react"
+} from"@/components/ui/dialog"
+import { TrendingUp, TrendingDown, Minus, BrainCircuit } from"lucide-react"
 
 interface BigFiveModalProps {
   isOpen: boolean
@@ -20,110 +20,105 @@ interface BigFiveModalProps {
   candidate: Record<string, unknown>
 }
 
-const traitDescriptions = {
-  "Abertura": {
-    icon: "🎨",
-    color: "bg-wedo-purple",
-    bgColor: "bg-wedo-purple/10 dark:bg-wedo-purple/20",
-    textColor: "text-wedo-purple dark:text-wedo-purple",
+const traitDescriptions = {"Abertura": {
+    icon:"🎨",
+    color:"bg-wedo-purple",
+    bgColor:"bg-wedo-purple/10 dark:bg-wedo-purple/20",
+    textColor:"text-wedo-purple dark:text-wedo-purple",
     high: {
-      label: "Alto",
-      description: "Pessoas criativas, curiosas e abertas a novas experiências. Tendem a ser imaginativas, aventureiras e dispostas a explorar novas ideias.",
-      traits: ["Criatividade", "Curiosidade intelectual", "Pensamento abstrato", "Apreciação por arte", "Aventureiro"]
+      label:"Alto",
+      description:"Pessoas criativas, curiosas e abertas a novas experiências. Tendem a ser imaginativas, aventureiras e dispostas a explorar novas ideias.",
+      traits: ["Criatividade","Curiosidade intelectual","Pensamento abstrato","Apreciação por arte","Aventureiro"]
     },
     medium: {
-      label: "Moderado",
-      description: "Equilíbrio entre abertura a experiências novas e preferência pelo familiar. Adaptável quando necessário.",
-      traits: ["Flexível", "Pragmático", "Equilibrado", "Seletivo"]
+      label:"Moderado",
+      description:"Equilíbrio entre abertura a experiências novas e preferência pelo familiar. Adaptável quando necessário.",
+      traits: ["Flexível","Pragmático","Equilibrado","Seletivo"]
     },
     low: {
-      label: "Baixo",
-      description: "Preferência por rotinas estabelecidas e métodos tradicionais. Valoriza praticidade e consistência.",
-      traits: ["Prático", "Convencional", "Focado no concreto", "Preferência por rotina"]
+      label:"Baixo",
+      description:"Preferência por rotinas estabelecidas e métodos tradicionais. Valoriza praticidade e consistência.",
+      traits: ["Prático","Convencional","Focado no concreto","Preferência por rotina"]
     }
-  },
-  "Conscienciosidade": {
-    icon: "✅",
-    color: "bg-lia-btn-primary-bg",
-    bgColor: "bg-wedo-cyan/10",
-    textColor: "text-wedo-cyan-dark dark:text-wedo-cyan-dark",
+  },"Conscienciosidade": {
+    icon:"✅",
+    color:"bg-lia-btn-primary-bg",
+    bgColor:"bg-wedo-cyan/10",
+    textColor:"text-wedo-cyan-dark dark:text-wedo-cyan-dark",
     high: {
-      label: "Alto",
-      description: "Pessoas organizadas, disciplinadas e orientadas a objetivos. Altamente confiáveis e responsáveis.",
-      traits: ["Organização", "Autodisciplina", "Pontualidade", "Orientado a metas", "Planejamento detalhado"]
+      label:"Alto",
+      description:"Pessoas organizadas, disciplinadas e orientadas a objetivos. Altamente confiáveis e responsáveis.",
+      traits: ["Organização","Autodisciplina","Pontualidade","Orientado a metas","Planejamento detalhado"]
     },
     medium: {
-      label: "Moderado",
-      description: "Consegue ser organizado quando necessário, mas também flexível. Equilíbrio entre estrutura e espontaneidade.",
-      traits: ["Responsável", "Adaptável", "Equilibrado", "Pragmático"]
+      label:"Moderado",
+      description:"Consegue ser organizado quando necessário, mas também flexível. Equilíbrio entre estrutura e espontaneidade.",
+      traits: ["Responsável","Adaptável","Equilibrado","Pragmático"]
     },
     low: {
-      label: "Baixo",
-      description: "Mais espontâneo e flexível. Pode ser menos focado em detalhes e prazos rígidos.",
-      traits: ["Espontâneo", "Flexível", "Adaptável", "Despreocupado"]
+      label:"Baixo",
+      description:"Mais espontâneo e flexível. Pode ser menos focado em detalhes e prazos rígidos.",
+      traits: ["Espontâneo","Flexível","Adaptável","Despreocupado"]
     }
-  },
-  "Extroversão": {
-    icon: "🎉",
-    color: "bg-status-warning",
-    bgColor: "bg-status-warning/10 dark:bg-status-warning/20",
-    textColor: "text-status-warning dark:text-status-warning",
+  },"Extroversão": {
+    icon:"🎉",
+    color:"bg-status-warning",
+    bgColor:"bg-status-warning/10 dark:bg-status-warning/20",
+    textColor:"text-status-warning dark:text-status-warning",
     high: {
-      label: "Alto",
-      description: "Energético, sociável e comunicativo. Gosta de interagir com pessoas e é estimulado por ambientes sociais.",
-      traits: ["Sociabilidade", "Assertividade", "Energia alta", "Entusiasmo", "Comunicativo"]
+      label:"Alto",
+      description:"Energético, sociável e comunicativo. Gosta de interagir com pessoas e é estimulado por ambientes sociais.",
+      traits: ["Sociabilidade","Assertividade","Energia alta","Entusiasmo","Comunicativo"]
     },
     medium: {
-      label: "Moderado",
-      description: "Ambivertido - confortável tanto sozinho quanto com outros. Adapta-se bem a diferentes situações sociais.",
-      traits: ["Versátil", "Equilibrado", "Adaptável socialmente", "Seletivo"]
+      label:"Moderado",
+      description:"Ambivertido - confortável tanto sozinho quanto com outros. Adapta-se bem a diferentes situações sociais.",
+      traits: ["Versátil","Equilibrado","Adaptável socialmente","Seletivo"]
     },
     low: {
-      label: "Baixo",
-      description: "Mais reservado e introspectivo. Prefere interações mais profundas com menos pessoas.",
-      traits: ["Reservado", "Reflexivo", "Independente", "Observador", "Pensativo"]
+      label:"Baixo",
+      description:"Mais reservado e introspectivo. Prefere interações mais profundas com menos pessoas.",
+      traits: ["Reservado","Reflexivo","Independente","Observador","Pensativo"]
     }
-  },
-  "Amabilidade": {
-    icon: "🤝",
-    color: "bg-status-success",
-    bgColor: "bg-status-success/10 dark:bg-status-success/20",
-    textColor: "text-status-success dark:text-status-success",
+  },"Amabilidade": {
+    icon:"🤝",
+    color:"bg-status-success",
+    bgColor:"bg-status-success/10 dark:bg-status-success/20",
+    textColor:"text-status-success dark:text-status-success",
     high: {
-      label: "Alto",
-      description: "Empático, cooperativo e preocupado com o bem-estar dos outros. Valoriza harmonia nos relacionamentos.",
-      traits: ["Empatia", "Cooperação", "Confiança", "Altruísmo", "Gentileza"]
+      label:"Alto",
+      description:"Empático, cooperativo e preocupado com o bem-estar dos outros. Valoriza harmonia nos relacionamentos.",
+      traits: ["Empatia","Cooperação","Confiança","Altruísmo","Gentileza"]
     },
     medium: {
-      label: "Moderado",
-      description: "Equilibrado entre ser solícito e assertivo. Consegue ser compassivo mantendo limites saudáveis.",
-      traits: ["Diplomático", "Justo", "Equilibrado", "Respeitoso"]
+      label:"Moderado",
+      description:"Equilibrado entre ser solícito e assertivo. Consegue ser compassivo mantendo limites saudáveis.",
+      traits: ["Diplomático","Justo","Equilibrado","Respeitoso"]
     },
     low: {
-      label: "Baixo",
-      description: "Mais direto e objetivo nas interações. Prioriza honestidade e eficiência sobre diplomacia.",
-      traits: ["Direto", "Objetivo", "Competitivo", "Cético", "Independente"]
+      label:"Baixo",
+      description:"Mais direto e objetivo nas interações. Prioriza honestidade e eficiência sobre diplomacia.",
+      traits: ["Direto","Objetivo","Competitivo","Cético","Independente"]
     }
-  },
-  "Neuroticismo": {
-    icon: "⚡",
-    color: "bg-wedo-magenta",
-    bgColor: "bg-wedo-magenta/10 dark:bg-wedo-magenta/20",
-    textColor: "text-wedo-magenta dark:text-wedo-magenta",
+  },"Neuroticismo": {
+    icon:"⚡",
+    color:"bg-wedo-magenta",
+    bgColor:"bg-wedo-magenta/10 dark:bg-wedo-magenta/20",
+    textColor:"text-wedo-magenta dark:text-wedo-magenta",
     high: {
-      label: "Alto",
-      description: "Mais sensível emocionalmente e propenso a estresse. Pode ser mais cauteloso e vigilante.",
-      traits: ["Sensível", "Cauteloso", "Preocupado", "Emotivo", "Vigilante"]
+      label:"Alto",
+      description:"Mais sensível emocionalmente e propenso a estresse. Pode ser mais cauteloso e vigilante.",
+      traits: ["Sensível","Cauteloso","Preocupado","Emotivo","Vigilante"]
     },
     medium: {
-      label: "Moderado",
-      description: "Equilíbrio emocional razoável. Experimenta emoções normais sem ser excessivamente reativo.",
-      traits: ["Equilibrado", "Resiliente", "Consciente", "Adaptável"]
+      label:"Moderado",
+      description:"Equilíbrio emocional razoável. Experimenta emoções normais sem ser excessivamente reativo.",
+      traits: ["Equilibrado","Resiliente","Consciente","Adaptável"]
     },
     low: {
-      label: "Baixo",
-      description: "Emocionalmente estável e resiliente. Lida bem com estresse e mantém a calma em situações desafiadoras.",
-      traits: ["Estabilidade emocional", "Resiliência", "Calma", "Segurança", "Otimismo"]
+      label:"Baixo",
+      description:"Emocionalmente estável e resiliente. Lida bem com estresse e mantém a calma em situações desafiadoras.",
+      traits: ["Estabilidade emocional","Resiliência","Calma","Segurança","Otimismo"]
     }
   }
 }
@@ -147,15 +142,15 @@ const getArchetype = (scores: Record<string, number>): { name: string; descripti
   const a = scores.agreeableness || scores.Amabilidade || 50
   const n = scores.neuroticism || scores.Neuroticismo || 50
   
-  if (o >= 70 && c >= 70) return { name: "Inovador Estratégico", description: "Combina criatividade com organização", icon: "🎯" }
-  if (e >= 70 && a >= 70) return { name: "Líder Empático", description: "Liderança natural com foco em pessoas", icon: "🌟" }
-  if (c >= 70 && n <= 30) return { name: "Executor Confiável", description: "Alta confiabilidade e estabilidade", icon: "🛡️" }
-  if (o >= 70 && e <= 40) return { name: "Pensador Criativo", description: "Pensador independente e inovador", icon: "💡" }
-  if (c >= 70 && a >= 70) return { name: "Colaborador Organizado", description: "Trabalho em equipe com excelência", icon: "🤝" }
-  if (e >= 70 && c >= 60) return { name: "Líder Dinâmico", description: "Energia e foco em resultados", icon: "⚡" }
-  if (a >= 70 && n <= 40) return { name: "Mediador Estável", description: "Harmonia e equilíbrio emocional", icon: "☯️" }
-  if (o >= 60 && e >= 60) return { name: "Comunicador Criativo", description: "Expressivo e inovador", icon: "🎨" }
-  return { name: "Perfil Equilibrado", description: "Versatilidade em diferentes contextos", icon: "⚖️" }
+  if (o >= 70 && c >= 70) return { name:"Inovador Estratégico", description:"Combina criatividade com organização", icon:"🎯" }
+  if (e >= 70 && a >= 70) return { name:"Líder Empático", description:"Liderança natural com foco em pessoas", icon:"🌟" }
+  if (c >= 70 && n <= 30) return { name:"Executor Confiável", description:"Alta confiabilidade e estabilidade", icon:"🛡️" }
+  if (o >= 70 && e <= 40) return { name:"Pensador Criativo", description:"Pensador independente e inovador", icon:"💡" }
+  if (c >= 70 && a >= 70) return { name:"Colaborador Organizado", description:"Trabalho em equipe com excelência", icon:"🤝" }
+  if (e >= 70 && c >= 60) return { name:"Líder Dinâmico", description:"Energia e foco em resultados", icon:"⚡" }
+  if (a >= 70 && n <= 40) return { name:"Mediador Estável", description:"Harmonia e equilíbrio emocional", icon:"☯️" }
+  if (o >= 60 && e >= 60) return { name:"Comunicador Criativo", description:"Expressivo e inovador", icon:"🎨" }
+  return { name:"Perfil Equilibrado", description:"Versatilidade em diferentes contextos", icon:"⚖️" }
 }
 
 const calculateFitScore = (candidateScores: Record<string, number>, jobProfile?: Record<string, number>): number => {
@@ -187,7 +182,7 @@ export function BigFiveModal({ isOpen, onClose, candidate }: BigFiveModalProps) 
     Object.values(scores).reduce((a: number, b: number) => a + b, 0) / traits.length
   ) : 0
   
-  const archetype = hasData ? getArchetype(scores) : { name: "Não avaliado", description: "Assessment pendente", icon: "❓" }
+  const archetype = hasData ? getArchetype(scores) : { name:"Não avaliado", description:"Assessment pendente", icon:"❓" }
   const fitScore = hasData ? calculateFitScore(scores) : 0
 
   if (!hasData) {

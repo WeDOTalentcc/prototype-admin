@@ -1,9 +1,9 @@
 "use client";
 
-import React from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import React from"react";
+import { Button } from"@/components/ui/button";
+import { Card, CardContent } from"@/components/ui/card";
+import { Badge } from"@/components/ui/badge";
 import {
   Users,
   Network,
@@ -11,7 +11,7 @@ import {
   Trash2,
   Building2,
   Maximize2,
-} from "lucide-react";
+} from"lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,7 +21,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+} from"@/components/ui/alert-dialog";
 import { type Department } from './companyTeamHub.types';
 
 export interface DepartmentGridProps {
@@ -55,7 +55,7 @@ export function DepartmentGrid({
               Nenhum departamento cadastrado
             </p>
             <p className="text-xs mt-1 text-lia-text-secondary">
-              Clique em "Novo Departamento" ou importe uma planilha para começar
+              Clique em"Novo Departamento" ou importe uma planilha para começar
             </p>
           </div>
         ) : (
@@ -141,7 +141,7 @@ export function DepartmentGrid({
               Excluir Departamento
             </AlertDialogTitle>
             <AlertDialogDescription>
-              Tem certeza que deseja excluir o departamento "
+              Tem certeza que deseja excluir o departamento"
               {departmentToDelete?.name}"? Esta ação não pode ser desfeita.
             </AlertDialogDescription>
           </AlertDialogHeader>

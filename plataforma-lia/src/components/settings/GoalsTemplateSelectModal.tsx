@@ -1,14 +1,14 @@
 "use client"
 
-import React from "react"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
+import React from"react"
+import { Button } from"@/components/ui/button"
+import { Badge } from"@/components/ui/badge"
 import {
   Plus, Edit, X, CheckCircle, Search, Loader2, BarChart3
-} from "lucide-react"
-import { textStyles } from "@/lib/design-tokens"
-import { getCategoryIcon, getCategoryColor } from "./goals"
-import type { GoalTemplate, UserGoal } from "./use-goals-management"
+} from"lucide-react"
+import { textStyles } from"@/lib/design-tokens"
+import { getCategoryIcon, getCategoryColor } from"./goals"
+import type { GoalTemplate, UserGoal } from"./use-goals-management"
 
 interface GoalsMgmtUser {
   id: string
@@ -219,13 +219,13 @@ export function GoalsTemplateSelectModal({
                     {template.category}
                   </Badge>
                   {isAppliedToAll && (
-                    <Badge className="text-micro px-1.5 py-0.5 bg-status-success/15 text-status-success border-status-success/30">
+                    <Badge className="text-micro px-1.5 py-0.5  border-status-success/30">
                       <CheckCircle className="w-2.5 h-2.5 mr-0.5" />
                       Aplicado a Todos
                     </Badge>
                   )}
                   {isPartiallyApplied && (
-                    <Badge className="text-micro px-1.5 py-0.5 bg-status-warning/15 text-status-warning border-status-warning/30">
+                    <Badge className="text-micro px-1.5 py-0.5  border-status-warning/30">
                       {appliedCount}/{users.length} usuários
                     </Badge>
                   )}

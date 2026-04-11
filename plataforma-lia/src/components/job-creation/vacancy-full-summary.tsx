@@ -1,8 +1,8 @@
 "use client"
 
-import React from "react"
-import { Badge } from "@/components/ui/badge"
-import { cn } from "@/lib/utils"
+import React from"react"
+import { Badge } from"@/components/ui/badge"
+import { cn } from"@/lib/utils"
 import { 
   Loader2,
   Tag,
@@ -19,10 +19,10 @@ import {
   Briefcase,
   User,
   Gift
-} from "lucide-react"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { BenefitBadgeList } from "@/components/benefits/BenefitBadgeList"
-import { toCompanyBenefit, type CompanyBenefit } from "@/types/benefits"
+} from"lucide-react"
+import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
+import { BenefitBadgeList } from"@/components/benefits/BenefitBadgeList"
+import { toCompanyBenefit, type CompanyBenefit } from"@/types/benefits"
 
 export interface VacancyFullDetails {
   id: string
@@ -61,7 +61,7 @@ function SectionHeader({
   icon: Icon, 
   title, 
   isLocked = false,
-  iconColor = "text-lia-text-secondary"
+  iconColor ="text-lia-text-secondary"
 }: { 
   icon: React.ElementType
   title: string
@@ -76,11 +76,10 @@ function SectionHeader({
       </div>
       <Badge 
         variant="outline" 
-        className={cn(
- "text-micro h-4 px-1.5 border",
+        className={cn("text-micro h-4 px-1.5 border",
           isLocked 
-            ? "bg-lia-bg-tertiary text-lia-text-secondary border-lia-border-default"
-            : "bg-wedo-cyan/10 text-wedo-cyan-dark border-wedo-cyan/30 dark:border-wedo-cyan/30"
+            ?"bg-lia-bg-tertiary text-lia-text-secondary border-lia-border-default"
+            :"-dark border-wedo-cyan/30 dark:border-wedo-cyan/30"
         )}
       >
         {isLocked ? (
@@ -99,11 +98,10 @@ function WeightStars({ weight }: { weight: number }) {
       {[1, 2, 3, 4, 5].map((i) => (
         <Star
           key={i}
-          className={cn(
- "h-2.5 w-2.5",
+          className={cn("h-2.5 w-2.5",
             i <= weight 
-              ? "fill-amber-400 text-status-warning" 
-              : "text-lia-text-disabled"
+              ?"fill-amber-400 text-status-warning" 
+              :"text-lia-text-disabled"
           )}
         />
       ))}
@@ -112,12 +110,12 @@ function WeightStars({ weight }: { weight: number }) {
 }
 
 const LEVEL_CONFIG: Record<string, { label: string; className: string }> = {
-  'Básico': { label: 'Básico', className: 'bg-status-success/10 text-status-success border-status-success/30 dark:bg-status-success/30 dark:border-status-success/30' },
-  'Intermediário': { label: 'Intermediário', className: 'bg-status-warning/10 text-status-warning border-status-warning/30 dark:bg-status-warning/30 dark:border-status-warning/30' },
-  'Avançado': { label: 'Avançado', className: 'bg-status-error/10 text-status-error border-status-error/30 dark:bg-status-error/30 dark:text-status-error dark:border-status-error/30' },
-  'básico': { label: 'Básico', className: 'bg-status-success/10 text-status-success border-status-success/30 dark:bg-status-success/30 dark:border-status-success/30' },
-  'intermediário': { label: 'Intermediário', className: 'bg-status-warning/10 text-status-warning border-status-warning/30 dark:bg-status-warning/30 dark:border-status-warning/30' },
-  'avançado': { label: 'Avançado', className: 'bg-status-error/10 text-status-error border-status-error/30 dark:bg-status-error/30 dark:text-status-error dark:border-status-error/30' },
+  'Básico': { label: 'Básico', className: ' border-status-success/30 dark:bg-status-success/30 dark:border-status-success/30' },
+  'Intermediário': { label: 'Intermediário', className: ' border-status-warning/30 dark:bg-status-warning/30 dark:border-status-warning/30' },
+  'Avançado': { label: 'Avançado', className: ' border-status-error/30 dark:bg-status-error/30 dark:text-status-error dark:border-status-error/30' },
+  'básico': { label: 'Básico', className: ' border-status-success/30 dark:bg-status-success/30 dark:border-status-success/30' },
+  'intermediário': { label: 'Intermediário', className: ' border-status-warning/30 dark:bg-status-warning/30 dark:border-status-warning/30' },
+  'avançado': { label: 'Avançado', className: ' border-status-error/30 dark:bg-status-error/30 dark:text-status-error dark:border-status-error/30' },
 }
 
 const WORK_MODEL_LABELS: Record<string, string> = {
@@ -268,7 +266,7 @@ export function VacancyFullSummary({
                         <Wrench className="h-3 w-3 text-lia-text-secondary flex-shrink-0" />
                         <span className="text-xs font-medium truncate">{skill.name}</span>
                         {skill.required && (
-                          <Badge variant="outline" className="text-micro h-3.5 px-1 border-status-error/30 bg-status-error/10 text-status-error dark:border-status-error/30 dark:bg-status-error/30 dark:text-status-error">
+                          <Badge variant="outline" className="text-micro h-3.5 px-1 border-status-error/30  dark:border-status-error/30 dark:bg-status-error/30 dark:text-status-error">
                             Req
                           </Badge>
                         )}
@@ -336,7 +334,7 @@ export function VacancyFullSummary({
                 <li>• Se quiser <span className="font-medium text-lia-text-secondary">fazer ajustes</span>, me diga o que quer mudar</li>
               </ul>
               <p className="text-micro text-lia-text-tertiary mt-2 italic">
-                Exemplos: "salário para 18 a 23k", "modelo híbrido", "adicionar benefício vale alimentação"
+                Exemplos:"salário para 18 a 23k","modelo híbrido","adicionar benefício vale alimentação"
               </p>
             </div>
           </div>

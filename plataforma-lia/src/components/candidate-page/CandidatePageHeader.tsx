@@ -1,16 +1,16 @@
 "use client"
 
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { LiaAnalysisModal } from "@/components/modals/lia-analysis-modal"
+import { Badge } from"@/components/ui/badge"
+import { Button } from"@/components/ui/button"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from"@/components/ui/tooltip"
+import { LiaAnalysisModal } from"@/components/modals/lia-analysis-modal"
 import {
   X, MapPin, Phone, Mail, Linkedin, Calendar as CalendarIcon,
   ClipboardCheck, Briefcase, Users, MessageSquare, Brain, Globe,
-} from "lucide-react"
-import { Github } from "lucide-react"
-import { CandidateAvatar } from "@/components/candidate-profile/CandidateAvatar"
-import { CandidateScoreBadge } from "@/components/candidate-profile/CandidateScoreBadge"
+} from"lucide-react"
+import { Github } from"lucide-react"
+import { CandidateAvatar } from"@/components/candidate-profile/CandidateAvatar"
+import { CandidateScoreBadge } from"@/components/candidate-profile/CandidateScoreBadge"
 
 type CandidateRecord = {
   name: string

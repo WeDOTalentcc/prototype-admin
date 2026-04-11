@@ -1,13 +1,13 @@
 "use client"
 
-import { CURRENCY_SYMBOL } from "@/lib/pricing"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
+import { CURRENCY_SYMBOL } from"@/lib/pricing"
+import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
+import { Button } from"@/components/ui/button"
+import { Badge } from"@/components/ui/badge"
 import {
   MessageSquare, Target, Network,
   Plus, Edit
-} from "lucide-react"
+} from"lucide-react"
 
 interface SectionProps {
   onSettingsChange: (changed: boolean) => void
@@ -288,33 +288,33 @@ export function BranchesSection() {
             {[
               {
                 id: 1,
-                name: "Sede São Paulo",
-                cnpj: "12.345.678/0001-90",
-                address: "Rua Dr. Geraldo Campos Moreira, 375 - Cidade Monções, São Paulo - SP",
-                type: "Matriz",
-                manager: "Ana Silva",
+                name:"Sede São Paulo",
+                cnpj:"12.345.678/0001-90",
+                address:"Rua Dr. Geraldo Campos Moreira, 375 - Cidade Monções, São Paulo - SP",
+                type:"Matriz",
+                manager:"Ana Silva",
                 employees: 450,
-                status: "Ativa"
+                status:"Ativa"
               },
               {
                 id: 2,
-                name: "Filial Rio de Janeiro",
-                cnpj: "12.345.678/0002-71",
-                address: "Av. Presidente Vargas, 1012 - Centro, Rio de Janeiro - RJ",
-                type: "Filial",
-                manager: "Carlos Santos",
+                name:"Filial Rio de Janeiro",
+                cnpj:"12.345.678/0002-71",
+                address:"Av. Presidente Vargas, 1012 - Centro, Rio de Janeiro - RJ",
+                type:"Filial",
+                manager:"Carlos Santos",
                 employees: 280,
-                status: "Ativa"
+                status:"Ativa"
               },
               {
                 id: 3,
-                name: "Unidade Belo Horizonte",
-                cnpj: "12.345.678/0003-52",
-                address: "Rua da Bahia, 1148 - Centro, Belo Horizonte - MG",
-                type: "Filial",
-                manager: "Maria Costa",
+                name:"Unidade Belo Horizonte",
+                cnpj:"12.345.678/0003-52",
+                address:"Rua da Bahia, 1148 - Centro, Belo Horizonte - MG",
+                type:"Filial",
+                manager:"Maria Costa",
                 employees: 150,
-                status: "Ativa"
+                status:"Ativa"
               }
             ].map((branch) => (
               <div key={branch.id} className="p-4 border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl">

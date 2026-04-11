@@ -1,18 +1,18 @@
 "use client"
 
-import { useCandidatePreviewCore } from "@/components/candidate-preview/useCandidatePreviewCore"
-import { Badge } from "@/components/ui/badge"
-import { Activity, FileText, Brain, UserCheck } from "lucide-react"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { CandidatePreviewHeader } from "@/components/candidate-preview/CandidatePreviewHeader"
-import { CandidatePreviewActionBar } from "@/components/candidate-preview/CandidatePreviewActionBar"
-import { PipelineDecisionBar } from "@/components/candidate-preview/PipelineDecisionBar"
-import { CandidatePreviewModals } from "@/components/candidate-preview/CandidatePreviewModals"
-import { CandidateFilesTab } from "@/components/candidate-preview/CandidateFilesTab"
-import { CandidateActivitiesTab } from "@/components/candidate-preview/CandidateActivitiesTab"
-import { CandidatePreviewProfileTab } from "@/components/candidate-preview/CandidatePreviewProfileTab"
-import { CandidateOpinionsTab } from "@/components/candidate-preview/CandidateOpinionsTab"
-import type { CandidateData } from "@/components/candidate-preview/ProfileTabTypes"
+import { useCandidatePreviewCore } from"@/components/candidate-preview/useCandidatePreviewCore"
+import { Badge } from"@/components/ui/badge"
+import { Activity, FileText, Brain, UserCheck } from"lucide-react"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from"@/components/ui/tooltip"
+import { CandidatePreviewHeader } from"@/components/candidate-preview/CandidatePreviewHeader"
+import { CandidatePreviewActionBar } from"@/components/candidate-preview/CandidatePreviewActionBar"
+import { PipelineDecisionBar } from"@/components/candidate-preview/PipelineDecisionBar"
+import { CandidatePreviewModals } from"@/components/candidate-preview/CandidatePreviewModals"
+import { CandidateFilesTab } from"@/components/candidate-preview/CandidateFilesTab"
+import { CandidateActivitiesTab } from"@/components/candidate-preview/CandidateActivitiesTab"
+import { CandidatePreviewProfileTab } from"@/components/candidate-preview/CandidatePreviewProfileTab"
+import { CandidateOpinionsTab } from"@/components/candidate-preview/CandidateOpinionsTab"
+import type { CandidateData } from"@/components/candidate-preview/ProfileTabTypes"
 
 interface CandidatePreviewProps {
   candidate: Record<string, unknown>
@@ -193,7 +193,7 @@ export function CandidatePreview({
         />
       )}
 
-      <div className=" dark:border-lia-border-subtle flex items-center">
+      <div className="dark:border-lia-border-subtle flex items-center">
         <div className="flex overflow-x-auto">
           {tabs.map(tab => (
             <button

@@ -1,7 +1,7 @@
 "use client"
 
-import * as React from "react"
-import { useState } from "react"
+import * as React from"react"
+import { useState } from"react"
 import {
   Video,
   Loader2,
@@ -11,12 +11,12 @@ import {
   Clock,
   Bot,
   RefreshCw,
-} from "lucide-react"
-import { Card, CardHeader, CardContent } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { InterviewAnalysisStatus, InterviewAnalysisResult } from "@/types/interview-notes"
-import { cn } from "@/lib/utils"
+} from"lucide-react"
+import { Card, CardHeader, CardContent } from"@/components/ui/card"
+import { Button } from"@/components/ui/button"
+import { Badge } from"@/components/ui/badge"
+import { InterviewAnalysisStatus, InterviewAnalysisResult } from"@/types/interview-notes"
+import { cn } from"@/lib/utils"
 
 interface TeamsAnalysisPanelProps {
   interviewId: string
@@ -31,28 +31,28 @@ const statusConfig: Record<
   { label: string; color: string; icon: React.ElementType }
 > = {
   awaiting_transcript: {
-    label: "Aguardando Transcrição",
-    color: "bg-lia-bg-tertiary text-lia-text-secondary",
+    label:"Aguardando Transcrição",
+    color:"bg-lia-bg-tertiary text-lia-text-secondary",
     icon: Clock,
   },
   transcript_ready: {
-    label: "Transcrição Pronta",
-    color: "bg-wedo-cyan/15 text-wedo-cyan-dark",
+    label:"Transcrição Pronta",
+    color:"",
     icon: Video,
   },
   scheduled: {
-    label: "Análise Agendada",
-    color: "bg-status-warning/15 text-status-warning",
+    label:"Análise Agendada",
+    color:"",
     icon: Clock,
   },
   analyzed: {
-    label: "Analisado",
-    color: "bg-status-success/15 text-status-success",
+    label:"Analisado",
+    color:"",
     icon: CheckCircle,
   },
   completed: {
-    label: "Concluído",
-    color: "bg-status-success/15 text-status-success",
+    label:"Concluído",
+    color:"",
     icon: CheckCircle,
   },
 }
@@ -62,18 +62,18 @@ const recommendationConfig: Record<
   { label: string; color: string; icon: React.ElementType }
 > = {
   approve: {
-    label: "Aprovar",
-    color: "bg-status-success/15 text-status-success border-status-success/30",
+    label:"Aprovar",
+    color:" border-status-success/30",
     icon: CheckCircle,
   },
   reject: {
-    label: "Reprovar",
-    color: "bg-status-error/15 text-status-error border-status-error/30",
+    label:"Reprovar",
+    color:" border-status-error/30",
     icon: XCircle,
   },
   pending_review: {
-    label: "Revisão Necessária",
-    color: "bg-status-warning/15 text-status-warning border-status-warning/30",
+    label:"Revisão Necessária",
+    color:" border-status-warning/30",
     icon: AlertCircle,
   },
 }
@@ -93,8 +93,7 @@ function AnalysisResultDisplay({ result }: { result: InterviewAnalysisResult }) 
             <div className="text-xs text-lia-text-tertiary">Score WSI</div>
           </div>
           <div
-            className={cn(
- "flex items-center gap-1.5 px-3 py-1.5 rounded-full border",
+            className={cn("flex items-center gap-1.5 px-3 py-1.5 rounded-full border",
               recConfig.color
             )}
           >
@@ -203,7 +202,7 @@ export function TeamsAnalysisPanel({
               disabled={isLoading || isAnalyzing}
               className="h-8 w-8 p-0"
             >
-              <RefreshCw className={cn("h-4 w-4", isLoading && "animate-spin motion-reduce:animate-none")} />
+              <RefreshCw className={cn("h-4 w-4", isLoading &&"animate-spin motion-reduce:animate-none")} />
             </Button>
           </div>
         </div>
@@ -226,7 +225,7 @@ export function TeamsAnalysisPanel({
           </div>
         )}
 
-        {status?.status === "awaiting_transcript" && (
+        {status?.status ==="awaiting_transcript" && (
           <div className="text-center py-6 bg-lia-bg-secondary rounded-xl">
             <Clock className="h-8 w-8 text-lia-text-secondary mx-auto mb-2" />
             <p className="text-sm text-lia-text-secondary mb-1">
@@ -238,7 +237,7 @@ export function TeamsAnalysisPanel({
           </div>
         )}
 
-        {status?.status === "transcript_ready" && (
+        {status?.status ==="transcript_ready" && (
           <div className="text-center py-6 bg-wedo-cyan/10 rounded-xl space-y-3">
             <Video className="h-8 w-8 text-wedo-cyan-dark mx-auto" />
             <p className="text-sm text-lia-text-secondary">
@@ -264,7 +263,7 @@ export function TeamsAnalysisPanel({
           </div>
         )}
 
-        {(status?.status === "analyzed" || status?.status === "completed") &&
+        {(status?.status ==="analyzed" || status?.status ==="completed") &&
           status.analysis_result && (
             <>
               <AnalysisResultDisplay result={status.analysis_result} />
@@ -292,7 +291,7 @@ export function TeamsAnalysisPanel({
             </>
           )}
 
-        {status?.status === "scheduled" && (
+        {status?.status ==="scheduled" && (
           <div className="text-center py-6 bg-status-warning/10 rounded-md">
             <Clock className="h-8 w-8 text-status-warning mx-auto mb-2" />
             <p className="text-sm text-lia-text-secondary">

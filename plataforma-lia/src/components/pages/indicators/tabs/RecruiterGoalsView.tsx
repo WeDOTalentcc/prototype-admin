@@ -1,13 +1,13 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
+import { Badge } from"@/components/ui/badge"
+import { Button } from"@/components/ui/button"
+import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
 import {
   Edit, Plus, BarChart3, Target,
   Calendar as CalendarIcon,
-} from "lucide-react"
-import type { RecruiterData } from "../indicators.types"
-import { getGoalLabel, getGoalStatusLabel, getGoalStatusBarColor, getInitials } from "./recruiters-tab.utils"
+} from"lucide-react"
+import type { RecruiterData } from"../indicators.types"
+import { getGoalLabel, getGoalStatusLabel, getGoalStatusBarColor, getInitials } from"./recruiters-tab.utils"
 
 interface RecruiterGoalsViewProps {
   filteredRecruiters: RecruiterData[]
@@ -47,7 +47,7 @@ export function RecruiterGoalsView({ filteredRecruiters, getStatusColor }: Recru
                     <div key={key} className="space-y-2">
                       <div className="flex items-center justify-between text-sm">
                         <span className="font-medium capitalize">
-                          {getGoalLabel(key, "long")}
+                          {getGoalLabel(key,"long")}
                         </span>
                         <div className="flex items-center gap-2">
                           <span className="text-lia-text-primary">
@@ -81,7 +81,7 @@ export function RecruiterGoalsView({ filteredRecruiters, getStatusColor }: Recru
                     <div key={key} className="space-y-2">
                       <div className="flex items-center justify-between text-sm">
                         <span className="font-medium capitalize">
-                          {getGoalLabel(key, "long")}
+                          {getGoalLabel(key,"long")}
                         </span>
                         <div className="flex items-center gap-2">
                           <span className="text-lia-text-primary">

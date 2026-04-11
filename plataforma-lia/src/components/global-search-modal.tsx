@@ -1,18 +1,18 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+import { useState, useEffect, useRef } from"react"
+import { Button } from"@/components/ui/button"
+import { Card, CardContent } from"@/components/ui/card"
+import { Badge } from"@/components/ui/badge"
 import {
   Search, X, Filter, User, Briefcase, MessageSquare, BarChart3,
   FileText, Clock, Star, ChevronRight, Zap, Calendar, MapPin,
   Mail, Phone, BookOpen, Settings, ArrowRight, Brain
-} from "lucide-react"
+} from"lucide-react"
 
 interface SearchResult {
   id: string
-  type: "candidate" | "job" | "conversation" | "document" | "automation" | "setting"
+  type:"candidate" |"job" |"conversation" |"document" |"automation" |"setting"
   title: string
   subtitle: string
   description: string
@@ -21,7 +21,7 @@ interface SearchResult {
     date?: string
     location?: string
     score?: number
-    priority?: "high" | "medium" | "low"
+    priority?:"high" |"medium" |"low"
   }
   actions?: Array<{ label: string; action: () => void }>
 }
@@ -34,131 +34,85 @@ interface GlobalSearchModalProps {
 
 const mockResults: SearchResult[] = [
   {
-    id: "1",
-    type: "candidate",
-    title: "João Silva",
-    subtitle: "Frontend Developer",
-    description: "React, TypeScript, 5+ anos de experiência",
+    id:"1",
+    type:"candidate",
+    title:"João Silva",
+    subtitle:"Frontend Developer",
+    description:"React, TypeScript, 5+ anos de experiência",
     metadata: {
-      status: "Entrevista agendada",
-      location: "São Paulo, SP",
+      status:"Entrevista agendada",
+      location:"São Paulo, SP",
       score: 95
     }
   },
   {
-    id: "2",
-    type: "candidate",
-    title: "Maria Santos",
-    subtitle: "UX Designer",
-    description: "Figma, Design Systems, Portfolio completo",
+    id:"2",
+    type:"candidate",
+    title:"Maria Santos",
+    subtitle:"UX Designer",
+    description:"Figma, Design Systems, Portfolio completo",
     metadata: {
-      status: "Triagem aprovada",
-      location: "Rio de Janeiro, RJ",
+      status:"Triagem aprovada",
+      location:"Rio de Janeiro, RJ",
       score: 88
     }
   },
   {
-    id: "3",
-    type: "job",
-    title: "Desenvolvedor Full Stack Sênior",
-    subtitle: "Vaga #FS-2024-001",
-    description: "React, Node.js, TypeScript - Regime CLT",
+    id:"3",
+    type:"job",
+    title:"Desenvolvedor Full Stack Sênior",
+    subtitle:"Vaga #FS-2024-001",
+    description:"React, Node.js, TypeScript - Regime CLT",
     metadata: {
-      status: "Ativa",
-      date: "Publicada há 2 dias"
+      status:"Ativa",
+      date:"Publicada há 2 dias"
     }
   },
   {
-    id: "4",
-    type: "conversation",
-    title: "Análise de CVs React",
-    subtitle: "Chat com LIA - Hoje",
-    description: "Discussão sobre candidatos para vaga de Frontend",
+    id:"4",
+    type:"conversation",
+    title:"Análise de CVs React",
+    subtitle:"Chat com LIA - Hoje",
+    description:"Discussão sobre candidatos para vaga de Frontend",
     metadata: {
-      date: "14:30"
+      date:"14:30"
     }
   },
   {
-    id: "5",
-    type: "document",
-    title: "Relatório de Diversidade Q3",
-    subtitle: "Indicadores",
-    description: "Métricas de contratação e análise demográfica",
+    id:"5",
+    type:"document",
+    title:"Relatório de Diversidade Q3",
+    subtitle:"Indicadores",
+    description:"Métricas de contratação e análise demográfica",
     metadata: {
-      date: "Semana passada"
+      date:"Semana passada"
     }
   },
   {
-    id: "6",
-    type: "automation",
-    title: "Triagem Automática React",
-    subtitle: "Automação ativa",
-    description: "Filtra candidatos com experiência em React/TypeScript",
+    id:"6",
+    type:"automation",
+    title:"Triagem Automática React",
+    subtitle:"Automação ativa",
+    description:"Filtra candidatos com experiência em React/TypeScript",
     metadata: {
-      status: "Ativa",
-      priority: "high"
+      status:"Ativa",
+      priority:"high"
     }
   }
 ]
 
 const aiSuggestionsByCategory: Record<string, string[]> = {
-  all: [
-    "Candidatos React com 5+ anos",
-    "Vagas abertas em São Paulo",
-    "Últimas conversas sobre UX Designer",
-    "Relatórios de performance mensal",
-    "Automações de follow-up ativas",
-    "Configurações de notificação"
+  all: ["Candidatos React com 5+ anos","Vagas abertas em São Paulo","Últimas conversas sobre UX Designer","Relatórios de performance mensal","Automações de follow-up ativas","Configurações de notificação"
   ],
-  candidate: [
-    "Candidatos React sênior",
-    "Designers com experiência em Figma",
-    "Ativos localizados em São Paulo",
-    "Score LIA acima de 80",
-    "Contratados nos últimos 30 dias",
-    "Com entrevista agendada",
-    "Backend Python ou Node.js",
-    "Disponíveis para início imediato"
+  candidate: ["Candidatos React sênior","Designers com experiência em Figma","Ativos localizados em São Paulo","Score LIA acima de 80","Contratados nos últimos 30 dias","Com entrevista agendada","Backend Python ou Node.js","Disponíveis para início imediato"
   ],
-  job: [
-    "Vagas abertas com urgência",
-    "Posições de Tech em São Paulo",
-    "Publicadas esta semana",
-    "Com mais de 10 candidatos",
-    "Próximas do deadline",
-    "Sem candidatos ativos",
-    "Vagas remotas disponíveis",
-    "Posições de liderança"
+  job: ["Vagas abertas com urgência","Posições de Tech em São Paulo","Publicadas esta semana","Com mais de 10 candidatos","Próximas do deadline","Sem candidatos ativos","Vagas remotas disponíveis","Posições de liderança"
   ],
-  conversation: [
-    "Conversas sobre triagem de candidatos",
-    "Análises de perfil recentes",
-    "Discussões sobre vagas específicas",
-    "Relatórios solicitados à LIA",
-    "Conversas de hoje",
-    "Feedback de entrevistas",
-    "Comparações de candidatos",
-    "Sugestões de sourcing"
+  conversation: ["Conversas sobre triagem de candidatos","Análises de perfil recentes","Discussões sobre vagas específicas","Relatórios solicitados à LIA","Conversas de hoje","Feedback de entrevistas","Comparações de candidatos","Sugestões de sourcing"
   ],
-  document: [
-    "Relatórios de diversidade",
-    "Performance mensal de recrutamento",
-    "Análises de funil por vaga",
-    "Templates de email ativos",
-    "Métricas de time-to-hire",
-    "Relatórios de conversão",
-    "Análises de custo por contratação",
-    "Benchmarks de mercado"
+  document: ["Relatórios de diversidade","Performance mensal de recrutamento","Análises de funil por vaga","Templates de email ativos","Métricas de time-to-hire","Relatórios de conversão","Análises de custo por contratação","Benchmarks de mercado"
   ],
-  automation: [
-    "Triagens automáticas ativas",
-    "Follow-ups configurados",
-    "Alertas de candidatos ideais",
-    "Notificações de deadline",
-    "Sync automático com ATS",
-    "Relatórios programados",
-    "Lembretes de entrevista",
-    "Workflows de onboarding"
+  automation: ["Triagens automáticas ativas","Follow-ups configurados","Alertas de candidatos ideais","Notificações de deadline","Sync automático com ATS","Relatórios programados","Lembretes de entrevista","Workflows de onboarding"
   ]
 }
 
@@ -171,12 +125,12 @@ export function GlobalSearchModal({ isOpen, onClose, onNavigate }: GlobalSearchM
   const inputRef = useRef<HTMLInputElement>(null)
 
   const searchTypes = [
-    { id: "all", label: "Todos", icon: Search, count: results.length },
-    { id: "candidate", label: "Candidatos", icon: User, count: results.filter(r => r.type === "candidate").length },
-    { id: "job", label: "Vagas", icon: Briefcase, count: results.filter(r => r.type === "job").length },
-    { id: "conversation", label: "Conversas", icon: MessageSquare, count: results.filter(r => r.type === "conversation").length },
-    { id: "document", label: "Documentos", icon: FileText, count: results.filter(r => r.type === "document").length },
-    { id: "automation", label: "Automações", icon: Zap, count: results.filter(r => r.type === "automation").length }
+    { id:"all", label:"Todos", icon: Search, count: results.length },
+    { id:"candidate", label:"Candidatos", icon: User, count: results.filter(r => r.type ==="candidate").length },
+    { id:"job", label:"Vagas", icon: Briefcase, count: results.filter(r => r.type ==="job").length },
+    { id:"conversation", label:"Conversas", icon: MessageSquare, count: results.filter(r => r.type ==="conversation").length },
+    { id:"document", label:"Documentos", icon: FileText, count: results.filter(r => r.type ==="document").length },
+    { id:"automation", label:"Automações", icon: Zap, count: results.filter(r => r.type ==="automation").length }
   ]
 
   // Simulate search with debounce
@@ -198,7 +152,7 @@ export function GlobalSearchModal({ isOpen, onClose, onNavigate }: GlobalSearchM
           result.subtitle.toLowerCase().includes(query.toLowerCase()) ||
           result.description.toLowerCase().includes(query.toLowerCase())
 
-        const matchesType = selectedType === "all" || result.type === selectedType
+        const matchesType = selectedType ==="all" || result.type === selectedType
 
         return matchesQuery && matchesType
       })
@@ -220,19 +174,19 @@ export function GlobalSearchModal({ isOpen, onClose, onNavigate }: GlobalSearchM
   const handleResultClick = (result: SearchResult) => {
     if (onNavigate) {
       switch (result.type) {
-        case "candidate":
+        case"candidate":
           onNavigate("Candidatos", result.id)
           break
-        case "job":
+        case"job":
           onNavigate("Vagas", result.id)
           break
-        case "conversation":
+        case"conversation":
           onNavigate("Chat com LIA", result.id)
           break
-        case "document":
+        case"document":
           onNavigate("Indicadores", result.id)
           break
-        case "automation":
+        case"automation":
           onNavigate("Configurações", result.id)
           break
         default:
@@ -248,33 +202,33 @@ export function GlobalSearchModal({ isOpen, onClose, onNavigate }: GlobalSearchM
 
   const getTypeIcon = (type: string) => {
     switch (type) {
-      case "candidate": return User
-      case "job": return Briefcase
-      case "conversation": return MessageSquare
-      case "document": return FileText
-      case "automation": return Zap
-      case "setting": return Settings
+      case"candidate": return User
+      case"job": return Briefcase
+      case"conversation": return MessageSquare
+      case"document": return FileText
+      case"automation": return Zap
+      case"setting": return Settings
       default: return Search
     }
   }
 
   const getStatusColor = (status?: string, type?: string) => {
-    if (!status) return "bg-lia-bg-tertiary text-lia-text-primary"
+    if (!status) return"bg-lia-bg-tertiary text-lia-text-primary"
 
-    if (type === "candidate") {
+    if (type ==="candidate") {
       switch (status) {
-        case "Entrevista agendada": return "bg-wedo-cyan/15 text-wedo-cyan-dark"
-        case "Triagem aprovada": return "bg-status-success/15 text-status-success"
-        case "Processo finalizado": return "bg-lia-bg-tertiary text-lia-text-primary"
-        default: return "bg-status-warning/15 text-status-warning"
+        case"Entrevista agendada": return""
+        case"Triagem aprovada": return""
+        case"Processo finalizado": return"bg-lia-bg-tertiary text-lia-text-primary"
+        default: return""
       }
     }
 
-    if (type === "job") {
-      return status === "Ativa" ? "bg-status-success/15 text-status-success" : "bg-lia-bg-tertiary text-lia-text-primary"
+    if (type ==="job") {
+      return status ==="Ativa" ?"" :"bg-lia-bg-tertiary text-lia-text-primary"
     }
 
-    return "bg-lia-bg-tertiary text-lia-text-primary"
+    return"bg-lia-bg-tertiary text-lia-text-primary"
   }
 
   if (!isOpen) return null
@@ -342,7 +296,7 @@ export function GlobalSearchModal({ isOpen, onClose, onNavigate }: GlobalSearchM
               <div className="flex items-center gap-2 mb-2">
                 <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
                 <span className="text-xs font-medium text-lia-text-primary">
-                  Sugestões da LIA {selectedType !== "all" && `para ${searchTypes.find(t => t.id === selectedType)?.label}`}
+                  Sugestões da LIA {selectedType !=="all" && `para ${searchTypes.find(t => t.id === selectedType)?.label}`}
                 </span>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-1">

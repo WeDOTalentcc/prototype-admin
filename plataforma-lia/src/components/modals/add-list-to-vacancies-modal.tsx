@@ -1,10 +1,10 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { liaApi, JobVacancy } from "@/services/lia-api"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Checkbox } from "@/components/ui/checkbox"
+import { useState, useEffect } from"react"
+import { liaApi, JobVacancy } from"@/services/lia-api"
+import { Button } from"@/components/ui/button"
+import { Input } from"@/components/ui/input"
+import { Checkbox } from"@/components/ui/checkbox"
 import {
   Dialog,
   DialogContent,
@@ -12,12 +12,12 @@ import {
   DialogTitle,
   DialogFooter,
   DialogDescription
-} from "@/components/ui/dialog"
-import { Briefcase, Search, Loader2, Users, Check, Building2, MapPin } from "lucide-react"
-import { Badge } from "@/components/ui/badge"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { cn } from "@/lib/utils"
-import { toast } from "sonner"
+} from"@/components/ui/dialog"
+import { Briefcase, Search, Loader2, Users, Check, Building2, MapPin } from"lucide-react"
+import { Badge } from"@/components/ui/badge"
+import { ScrollArea } from"@/components/ui/scroll-area"
+import { cn } from"@/lib/utils"
+import { toast } from"sonner"
 
 interface AddListToVacanciesModalProps {
   isOpen: boolean
@@ -233,9 +233,8 @@ const [vacancies, setVacancies] = useState<JobVacancy[]>([])
                   {filteredVacancies.map((vacancy) => (
                     <div
                       key={vacancy.id}
-                      className={cn(
-                        "flex items-start gap-3 p-3 rounded-md border border-lia-border-subtle cursor-pointer transition-colors motion-reduce:transition-none hover:border-lia-border-medium dark:hover:border-lia-border-medium",
-                        selectedVacancyIds.has(vacancy.id) && "border-lia-btn-primary-bg bg-lia-bg-secondary"
+                      className={cn("flex items-start gap-3 p-3 rounded-md border border-lia-border-subtle cursor-pointer transition-colors motion-reduce:transition-none hover:border-lia-border-medium dark:hover:border-lia-border-medium",
+                        selectedVacancyIds.has(vacancy.id) &&"border-lia-btn-primary-bg bg-lia-bg-secondary"
                       )}
                       onClick={() => toggleVacancy(vacancy.id)}
                     >

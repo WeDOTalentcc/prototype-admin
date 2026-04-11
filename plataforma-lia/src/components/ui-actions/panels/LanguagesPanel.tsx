@@ -1,21 +1,21 @@
 "use client"
 
-import React, { useState, useRef, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Label } from "@/components/ui/label"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Badge } from "@/components/ui/badge"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
+import React, { useState, useRef, useEffect } from"react"
+import { Button } from"@/components/ui/button"
+import { Label } from"@/components/ui/label"
+import { Checkbox } from"@/components/ui/checkbox"
+import { Badge } from"@/components/ui/badge"
+import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
+import { Input } from"@/components/ui/input"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue
-} from "@/components/ui/select"
-import { Loader2, Plus, X, Search } from "lucide-react"
-import { LANGUAGES_CATALOG, Language, LanguagesData } from "../types"
+} from"@/components/ui/select"
+import { Loader2, Plus, X, Search } from"lucide-react"
+import { LANGUAGES_CATALOG, Language, LanguagesData } from"../types"
 
 interface PanelProps {
   initialData?: Record<string, unknown>
@@ -23,22 +23,17 @@ interface PanelProps {
   isLoading?: boolean
 }
 
-type LanguageLevel = "Básico" | "Intermediário" | "Avançado" | "Fluente" | "Nativo"
+type LanguageLevel ="Básico" |"Intermediário" |"Avançado" |"Fluente" |"Nativo"
 
-const LEVEL_OPTIONS: LanguageLevel[] = ["Básico", "Intermediário", "Avançado", "Fluente", "Nativo"]
+const LEVEL_OPTIONS: LanguageLevel[] = ["Básico","Intermediário","Avançado","Fluente","Nativo"]
 
-const LEVEL_STYLES: Record<LanguageLevel, { bg: string; text: string; opacity: string }> = {
-  "Básico": { bg: 'var(--lia-bg-tertiary)', text: 'var(--lia-text-tertiary)', opacity: '0.7' },
-  "Intermediário": { bg: 'var(--lia-bg-tertiary)', text: 'var(--lia-text-secondary)', opacity: '0.85' },
-  "Avançado": { bg: 'var(--lia-bg-secondary)', text: 'var(--lia-text-primary)', opacity: '1' },
-  "Fluente": { bg: 'var(--lia-btn-primary-bg)', text: 'var(--lia-btn-primary-text)', opacity: '1' },
-  "Nativo": { bg: 'var(--lia-btn-primary-bg)', text: 'var(--lia-btn-primary-text)', opacity: '1' }
+const LEVEL_STYLES: Record<LanguageLevel, { bg: string; text: string; opacity: string }> = {"Básico": { bg: 'var(--lia-bg-tertiary)', text: 'var(--lia-text-tertiary)', opacity: '0.7' },"Intermediário": { bg: 'var(--lia-bg-tertiary)', text: 'var(--lia-text-secondary)', opacity: '0.85' },"Avançado": { bg: 'var(--lia-bg-secondary)', text: 'var(--lia-text-primary)', opacity: '1' },"Fluente": { bg: 'var(--lia-btn-primary-bg)', text: 'var(--lia-btn-primary-text)', opacity: '1' },"Nativo": { bg: 'var(--lia-btn-primary-bg)', text: 'var(--lia-btn-primary-text)', opacity: '1' }
 }
 
 const DEFAULT_LANGUAGES: Language[] = [
-  { id: "en_default", name: "Inglês", code: "en", level: "Intermediário", required: false },
-  { id: "es_default", name: "Espanhol", code: "es", level: "Básico", required: false },
-  { id: "pt_default", name: "Português", code: "pt", level: "Nativo", required: true }
+  { id:"en_default", name:"Inglês", code:"en", level:"Intermediário", required: false },
+  { id:"es_default", name:"Espanhol", code:"es", level:"Básico", required: false },
+  { id:"pt_default", name:"Português", code:"pt", level:"Nativo", required: true }
 ]
 
 export function LanguagesPanel({
@@ -59,7 +54,7 @@ export function LanguagesPanel({
       id: `${langCatalog.code}_${Date.now()}`,
       name: langCatalog.name,
       code: langCatalog.code,
-      level: "Intermediário",
+      level:"Intermediário",
       required: false
     }
     setLanguages((prev) => [...prev, newLanguage])
@@ -90,7 +85,7 @@ export function LanguagesPanel({
 
   const getFlag = (code: string) => {
     const lang = LANGUAGES_CATALOG.find((l) => l.code === code)
-    return lang?.flag || "🌐"
+    return lang?.flag ||"🌐"
   }
 
   const existingCodes = languages.map((l) => l.code)
@@ -231,7 +226,7 @@ export function LanguagesPanel({
             )}
           </div>
           <div className="mt-3 text-xs text-lia-text-tertiary">
-            {languages.filter((l) => l.required).length} obrigatórios,{" "}
+            {languages.filter((l) => l.required).length} obrigatórios,{""}
             {languages.filter((l) => !l.required).length} desejáveis
           </div>
         </CardContent>
@@ -248,8 +243,7 @@ export function LanguagesPanel({
             <Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none mr-2" />
             Salvando...
           </>
-        ) : (
-          "Concluído"
+        ) : ("Concluído"
         )}
       </Button>
     </div>
@@ -292,20 +286,20 @@ function LanguageAutocomplete({
   }, [])
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "ArrowDown") {
+    if (e.key ==="ArrowDown") {
       e.preventDefault()
       setSelectedIndex((prev) =>
         prev < availableLanguages.length - 1 ? prev + 1 : prev
       )
-    } else if (e.key === "ArrowUp") {
+    } else if (e.key ==="ArrowUp") {
       e.preventDefault()
       setSelectedIndex((prev) => (prev > 0 ? prev - 1 : 0))
-    } else if (e.key === "Enter") {
+    } else if (e.key ==="Enter") {
       e.preventDefault()
       if (availableLanguages[selectedIndex]) {
         handleAdd(availableLanguages[selectedIndex])
       }
-    } else if (e.key === "Escape") {
+    } else if (e.key ==="Escape") {
       setShowSuggestions(false)
     }
   }

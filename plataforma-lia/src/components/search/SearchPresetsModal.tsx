@@ -1,13 +1,13 @@
 "use client"
 
-import { useState, useEffect, type ReactNode } from "react"
-import { X, Search, Plus, Trash2 } from "lucide-react"
-import { cn } from "@/lib/utils"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Label } from "@/components/ui/label"
-import { useUIPreferencesStore } from "@/stores/ui-preferences-store"
+import { useState, useEffect, type ReactNode } from"react"
+import { X, Search, Plus, Trash2 } from"lucide-react"
+import { cn } from"@/lib/utils"
+import { Input } from"@/components/ui/input"
+import { Button } from"@/components/ui/button"
+import { Badge } from"@/components/ui/badge"
+import { Label } from"@/components/ui/label"
+import { useUIPreferencesStore } from"@/stores/ui-preferences-store"
 
 export interface SearchPreset<T> {
   id: string
@@ -25,7 +25,7 @@ export interface SearchPresetsModalConfig<T> {
   parseStoredPresets?: (raw: unknown[]) => SearchPreset<T>[]
   getPreviewText?: (items: T[]) => string
   renderItemBadges?: (items: T[]) => ReactNode
-  saveFormPosition?: "inline" | "footer"
+  saveFormPosition?:"inline" |"footer"
   generalTabSubtitle?: string
 }
 
@@ -54,13 +54,13 @@ export function SearchPresetsModal<T>({
     parseStoredPresets,
     getPreviewText,
     renderItemBadges,
-    saveFormPosition = "inline",
+    saveFormPosition ="inline",
     generalTabSubtitle,
   } = config
 
   const hasCustomTab = !!localStorageKey
 
-  type TabType = "organization" | "general" | "custom"
+  type TabType ="organization" |"general" |"custom"
   const [searchQuery, setSearchQuery] = useState("")
   const [activeTab, setActiveTab] = useState<TabType>("general")
   const [showSaveForm, setShowSaveForm] = useState(false)
@@ -125,15 +125,13 @@ export function SearchPresetsModal<T>({
   }
 
   const tabClasses = (isActive: boolean) =>
-    cn(
-      "flex-1 px-4 py-2.5 text-sm font-medium transition-colors",
+    cn("flex-1 px-4 py-2.5 text-sm font-medium transition-colors",
       isActive
-        ? "text-lia-text-primary rounded-lg bg-lia-bg-tertiary dark:border-lia-border-subtle"
-        : "text-lia-text-secondary hover:text-lia-text-primary"
+        ?"text-lia-text-primary rounded-lg bg-lia-bg-tertiary dark:border-lia-border-subtle"
+        :"text-lia-text-secondary hover:text-lia-text-primary"
     )
 
-  const cardClasses =
-    "w-full text-left p-3 rounded-md border border-lia-border-subtle hover:border-lia-border-medium hover:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:border-lia-border-medium dark:hover:bg-lia-bg-inverse transition-colors motion-reduce:transition-none"
+  const cardClasses ="w-full text-left p-3 rounded-md border border-lia-border-subtle hover:border-lia-border-medium hover:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:border-lia-border-medium dark:hover:bg-lia-bg-inverse transition-colors motion-reduce:transition-none"
 
   const renderStandardCard = (preset: SearchPreset<T>) => (
     <>
@@ -177,7 +175,7 @@ export function SearchPresetsModal<T>({
     return renderStandardCard(preset)
   }
 
-  const savePlaceholder = `My ${title.replace(" Presets", "")} Preset`
+  const savePlaceholder = `My ${title.replace(" Presets","")} Preset`
 
   const renderInlineSaveForm = () => (
     <div className="mt-4 p-4 border border-lia-border-subtle rounded-xl bg-lia-bg-secondary dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
@@ -290,27 +288,27 @@ export function SearchPresetsModal<T>({
           {hasCustomTab && customPresets.length > 0 && (
             <button
               onClick={() => setActiveTab("custom")}
-              className={tabClasses(activeTab === "custom")}
+              className={tabClasses(activeTab ==="custom")}
             >
               Meus Presets ({customPresets.length})
             </button>
           )}
           <button
             onClick={() => setActiveTab("organization")}
-            className={tabClasses(activeTab === "organization")}
+            className={tabClasses(activeTab ==="organization")}
           >
             Organization Presets
           </button>
           <button
             onClick={() => setActiveTab("general")}
-            className={tabClasses(activeTab === "general")}
+            className={tabClasses(activeTab ==="general")}
           >
             General Presets ({generalPresets.length})
           </button>
         </div>
 
         <div className="flex-1 overflow-y-auto p-4">
-          {activeTab === "custom" ? (
+          {activeTab ==="custom" ? (
             <div className="space-y-4">
               <p className="text-xs text-lia-text-secondary">Presets que você salvou</p>
 
@@ -325,7 +323,7 @@ export function SearchPresetsModal<T>({
                   {filteredCustomPresets.map(preset => (
                     <div
                       key={preset.id}
-                      className={cn(cardClasses, "group cursor-default")}
+                      className={cn(cardClasses,"group cursor-default")}
                     >
                       <div className="flex items-start justify-between">
                         <button
@@ -360,7 +358,7 @@ export function SearchPresetsModal<T>({
                 </div>
               )}
             </div>
-          ) : activeTab === "organization" ? (
+          ) : activeTab ==="organization" ? (
             <div className="space-y-4">
               <p className="text-xs text-lia-text-secondary">
                 Presets created by you and your team members
@@ -370,8 +368,8 @@ export function SearchPresetsModal<T>({
                 <div className="text-center py-8">
                   <p className="text-sm text-lia-text-secondary">
                     {searchQuery
-                      ? "No organization presets match your search"
-                      : "No presets found, please create a new preset"}
+                      ?"No organization presets match your search"
+                      :"No presets found, please create a new preset"}
                   </p>
                   {onSavePreset && !searchQuery && (
                     <Button
@@ -397,7 +395,7 @@ export function SearchPresetsModal<T>({
                 </div>
               )}
 
-              {showSaveForm && saveFormPosition === "inline" && renderInlineSaveForm()}
+              {showSaveForm && saveFormPosition ==="inline" && renderInlineSaveForm()}
             </div>
           ) : (
             <div className="space-y-4">
@@ -426,7 +424,7 @@ export function SearchPresetsModal<T>({
           )}
         </div>
 
-        {showSaveForm && onSavePreset && saveFormPosition === "footer" && renderFooterSaveForm()}
+        {showSaveForm && onSavePreset && saveFormPosition ==="footer" && renderFooterSaveForm()}
       </div>
     </div>
   )

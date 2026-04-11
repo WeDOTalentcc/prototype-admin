@@ -1,9 +1,9 @@
 "use client"
 
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { X, CheckCircle, Clock, Users, FileText } from "lucide-react"
+import { Button } from"@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
+import { Badge } from"@/components/ui/badge"
+import { X, CheckCircle, Clock, Users, FileText } from"lucide-react"
 
 export interface TaskModalProps {
   task: {
@@ -27,10 +27,10 @@ export function TaskModal({ task, isOpen, onClose, onComplete }: TaskModalProps)
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case "high": return "border-status-error/30 bg-status-error/10 text-status-error"
-      case "medium": return "border-status-warning/30 bg-status-warning/10 text-status-warning"
-      case "low": return "border-status-success/30 bg-status-success/10 text-status-success"
-      default: return "border-lia-border-subtle bg-lia-bg-secondary text-lia-text-primary"
+      case"high": return"border-status-error/30"
+      case"medium": return"border-status-warning/30"
+      case"low": return"border-status-success/30"
+      default: return"border-lia-border-subtle bg-lia-bg-secondary text-lia-text-primary"
     }
   }
 
@@ -56,7 +56,7 @@ export function TaskModal({ task, isOpen, onClose, onComplete }: TaskModalProps)
               variant="outline"
               className={`text-xs ${getPriorityColor(task.priority)}`}
             >
-              {task.priority === "high" ? "Alta" : task.priority === "medium" ? "Média" : "Baixa"}
+              {task.priority ==="high" ?"Alta" : task.priority ==="medium" ?"Média" :"Baixa"}
             </Badge>
             <Badge variant="outline" className="text-xs">
               {task.category}

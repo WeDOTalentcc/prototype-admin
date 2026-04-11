@@ -1,11 +1,11 @@
 "use client"
 
-import React from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Bell, AlertTriangle, AlertCircle, Info, Briefcase, Clock, Brain } from "lucide-react"
-import { getAlertSeverityStyle, getSeverityLabel } from "../task-helpers"
+import React from"react"
+import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
+import { Badge } from"@/components/ui/badge"
+import { Button } from"@/components/ui/button"
+import { Bell, AlertTriangle, AlertCircle, Info, Briefcase, Clock, Brain } from"lucide-react"
+import { getAlertSeverityStyle, getSeverityLabel } from"../task-helpers"
 
 interface Alert {
   id: string

@@ -1,13 +1,13 @@
 "use client"
 
-import React from "react"
-import { Badge } from "@/components/ui/badge"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Button } from "@/components/ui/button"
-import { ChevronDown, ChevronUp, Lock, Plus, Trash2 } from "lucide-react"
-import type { UnifiedScreeningQuestion } from "@/hooks/use-screening-questions"
-import { cn } from "@/lib/utils"
-import { WSI_AUTOMATIC_MESSAGES, WSI_BLOCKS, formatMessageWithVariables } from "./ScreeningPanelConstants"
+import React from"react"
+import { Badge } from"@/components/ui/badge"
+import { Checkbox } from"@/components/ui/checkbox"
+import { Button } from"@/components/ui/button"
+import { ChevronDown, ChevronUp, Lock, Plus, Trash2 } from"lucide-react"
+import type { UnifiedScreeningQuestion } from"@/hooks/use-screening-questions"
+import { cn } from"@/lib/utils"
+import { WSI_AUTOMATIC_MESSAGES, WSI_BLOCKS, formatMessageWithVariables } from"./ScreeningPanelConstants"
 
 interface ScreeningBlockSectionProps {
   block: typeof WSI_BLOCKS[0]
@@ -21,14 +21,14 @@ interface ScreeningBlockSectionProps {
 
 function getCategoryBadge(question: UnifiedScreeningQuestion) {
   const isAffirmativeQuestion = question.id?.includes('affirmative') || false
-  if (isAffirmativeQuestion) return { label: 'Inclusão', color: 'bg-wedo-purple/10 text-wedo-purple border-wedo-purple/30' }
+  if (isAffirmativeQuestion) return { label: 'Inclusão', color: ' border-wedo-purple/30' }
   const cat = (question.category || '').toLowerCase()
-  if (cat.includes('tech')) return { label: 'Técnica', color: 'bg-wedo-cyan/10 text-wedo-cyan-dark border-wedo-cyan/30 dark:border-wedo-cyan/30' }
-  if (cat.includes('behav') || cat.includes('situa')) return { label: 'Experiência', color: 'bg-wedo-purple/10 text-wedo-purple border-wedo-purple/30' }
+  if (cat.includes('tech')) return { label: 'Técnica', color: '-dark border-wedo-cyan/30 dark:border-wedo-cyan/30' }
+  if (cat.includes('behav') || cat.includes('situa')) return { label: 'Experiência', color: ' border-wedo-purple/30' }
   if (cat.includes('elig') && question.is_eliminatory === false) return { label: 'Informativa', color: 'bg-lia-bg-secondary text-lia-text-secondary border-lia-border-subtle' }
-  if (cat.includes('elig')) return { label: 'Eliminatória', color: 'bg-status-error/10 text-status-error border-status-error/30' }
-  if (cat.includes('cult')) return { label: 'Cultural', color: 'bg-status-success/10 text-status-success border-status-success/30' }
-  if (cat.includes('company')) return { label: 'Empresa', color: 'bg-wedo-orange/10 text-wedo-orange border-wedo-orange/30' }
+  if (cat.includes('elig')) return { label: 'Eliminatória', color: ' border-status-error/30' }
+  if (cat.includes('cult')) return { label: 'Cultural', color: ' border-status-success/30' }
+  if (cat.includes('company')) return { label: 'Empresa', color: ' border-wedo-orange/30' }
   return { label: 'Informativa', color: 'bg-lia-bg-secondary text-lia-text-secondary border-lia-border-subtle' }
 }
 
@@ -39,11 +39,10 @@ function QuestionCard({ question, showDelete, onToggle }: { question: UnifiedScr
   return (
     <div
       key={question.id}
-      className={cn(
-        "p-3 rounded-md border transition-colors duration-200 group",
+      className={cn("p-3 rounded-md border transition-colors duration-200 group",
         question.is_selected
-          ? "bg-lia-bg-primary border-lia-border-subtle"
-          : "bg-lia-bg-secondary/50 border-lia-border-subtle opacity-70"
+          ?"bg-lia-bg-primary border-lia-border-subtle"
+          :"bg-lia-bg-secondary/50 border-lia-border-subtle opacity-70"
       )}
     >
       <div className="flex items-start gap-3">
@@ -59,7 +58,7 @@ function QuestionCard({ question, showDelete, onToggle }: { question: UnifiedScr
                 {badge.label}
               </Badge>
               {isAffirmativeQuestion && (
-                <Badge variant="outline" className="text-micro px-1.5 py-0 h-4 border bg-status-success/10 text-status-success border-status-success/30">
+                <Badge variant="outline" className="text-micro px-1.5 py-0 h-4 border  border-status-success/30">
                   Não eliminatória
                 </Badge>
               )}
@@ -113,27 +112,25 @@ export function ScreeningBlockSection({
   return (
     <div key={block.id} className="space-y-2">
       <div
-        className={cn(
-          "flex items-center justify-between p-2.5 rounded-md cursor-pointer transition-colors border",
+        className={cn("flex items-center justify-between p-2.5 rounded-md cursor-pointer transition-colors border",
           block.editable
-            ? "bg-lia-bg-primary border-lia-border-subtle hover:bg-lia-interactive-hover"
-            : "bg-lia-bg-tertiary/80 border-lia-border-subtle"
+            ?"bg-lia-bg-primary border-lia-border-subtle hover:bg-lia-interactive-hover"
+            :"bg-lia-bg-tertiary/80 border-lia-border-subtle"
         )}
         onClick={() => onToggleBlock(block.id)}
       >
         <div className="flex items-center gap-2.5">
-          <div className={cn(
-            "w-6 h-6 rounded-full flex items-center justify-center text-micro font-medium",
-            block.editable ? "bg-lia-interactive-active text-lia-text-secondary" : "bg-lia-bg-tertiary text-lia-text-secondary"
+          <div className={cn("w-6 h-6 rounded-full flex items-center justify-center text-micro font-medium",
+            block.editable ?"bg-lia-interactive-active text-lia-text-secondary" :"bg-lia-bg-tertiary text-lia-text-secondary"
           )}>
             {block.id}
           </div>
-          <Icon className={cn("h-4 w-4", block.editable ? "text-lia-text-secondary" : "lia-text-secondary")} />
+          <Icon className={cn("h-4 w-4", block.editable ?"text-lia-text-secondary" :"lia-text-secondary")} />
           <div className="flex flex-col">
             <div className="flex items-center gap-1.5">
               <span className="text-xs font-medium text-lia-text-primary">{block.name}</span>
               {block.id === 2 && isAffirmative && (
-                <Badge variant="outline" className="text-micro px-1.5 py-0 h-4 border bg-wedo-purple/10 text-wedo-purple border-wedo-purple/30">
+                <Badge variant="outline" className="text-micro px-1.5 py-0 h-4 border  border-wedo-purple/30">
                   Vaga Afirmativa
                 </Badge>
               )}
@@ -230,16 +227,16 @@ export function SuggestionCard({ question, onAdd }: { question: UnifiedScreening
     const isAffirmativeSuggestion = question.id?.includes('affirmative') || false
     const cat = (question.category || '').toLowerCase()
     if (isAffirmativeSuggestion) {
-      badges.push({ label: 'Inclusão', color: 'bg-wedo-purple/10 text-wedo-purple border-wedo-purple/30' })
+      badges.push({ label: 'Inclusão', color: ' border-wedo-purple/30' })
     } else if (cat.includes('elig') && question.is_eliminatory !== false) {
-      badges.push({ label: 'Eliminatória', color: 'bg-status-error/10 text-status-error border-status-error/30' })
+      badges.push({ label: 'Eliminatória', color: ' border-status-error/30' })
     } else if (cat.includes('elig')) {
       badges.push({ label: 'Informativa', color: 'bg-lia-bg-secondary text-lia-text-secondary border-lia-border-subtle' })
     }
-    if (cat.includes('tech')) badges.push({ label: 'Skills', color: 'bg-wedo-cyan/10 text-wedo-cyan-dark border-wedo-cyan/30 dark:border-wedo-cyan/30' })
-    if (cat.includes('behav') || cat.includes('situa')) badges.push({ label: 'Experiência', color: 'bg-wedo-purple/10 text-wedo-purple border-wedo-purple/30' })
-    if (cat.includes('cult')) badges.push({ label: 'Cultural', color: 'bg-status-success/10 text-status-success border-status-success/30' })
-    if (badges.length === 0) badges.push({ label: 'Geral', color: 'bg-wedo-orange/10 text-wedo-orange border-wedo-orange/30' })
+    if (cat.includes('tech')) badges.push({ label: 'Skills', color: '-dark border-wedo-cyan/30 dark:border-wedo-cyan/30' })
+    if (cat.includes('behav') || cat.includes('situa')) badges.push({ label: 'Experiência', color: ' border-wedo-purple/30' })
+    if (cat.includes('cult')) badges.push({ label: 'Cultural', color: ' border-status-success/30' })
+    if (badges.length === 0) badges.push({ label: 'Geral', color: ' border-wedo-orange/30' })
     return badges
   }
 

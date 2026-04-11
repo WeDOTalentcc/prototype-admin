@@ -1,11 +1,11 @@
 "use client"
 
-import React from "react"
-import { textStyles } from "@/lib/design-tokens"
-import { Badge } from "@/components/ui/badge"
-import { Brain, FileText, ChevronDown, Check, Copy, Trash2 } from "lucide-react"
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
-import { OpinionCard } from "@/components/candidate-preview/OpinionCard"
+import React from"react"
+import { textStyles } from"@/lib/design-tokens"
+import { Badge } from"@/components/ui/badge"
+import { Brain, FileText, ChevronDown, Check, Copy, Trash2 } from"lucide-react"
+import { Tooltip, TooltipContent, TooltipTrigger } from"@/components/ui/tooltip"
+import { OpinionCard } from"@/components/candidate-preview/OpinionCard"
 
 interface CandidateOpinionsTabProps {
   opinionsSubTab: string
@@ -68,7 +68,7 @@ opinionsSubTab === 'pareceres'
           onClick={() => setOpinionsSubTab('analises')}
           className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-t transition-colors motion-reduce:transition-none ${
 opinionsSubTab === 'analises'
-              ? 'bg-wedo-purple/10 text-wedo-purple rounded-lg bg-wedo-purple/10'
+              ? ' rounded-lg bg-wedo-purple/10'
 : 'text-lia-text-tertiary hover:text-lia-text-secondary hover:bg-lia-interactive-hover'
           }`}
         >

@@ -1,18 +1,18 @@
 "use client"
 
-import React from "react"
-import { Button } from "@/components/ui/button"
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
+import React from"react"
+import { Button } from"@/components/ui/button"
+import { Avatar, AvatarImage, AvatarFallback } from"@/components/ui/avatar"
+import { Badge } from"@/components/ui/badge"
 import {
   ExternalLink, CalendarClock, XCircle as XCircleIcon,
   Briefcase, Building2, User, Check, Share2
-} from "lucide-react"
-import type { ScheduledInterview } from "./tasks-page-utils"
+} from"lucide-react"
+import type { ScheduledInterview } from"./tasks-page-utils"
 import {
   getPlatformIcon, getPlatformLabel, getAvatarUrl, getInitials,
   getStatusLabel, getStatusClasses, getStatusIcon
-} from "./tasks-page-utils"
+} from"./tasks-page-utils"
 
 interface InterviewCardProps {
   interview: ScheduledInterview

@@ -1,25 +1,25 @@
 "use client"
 
-import { useState, useCallback } from "react"
-import { X, Brain, Loader2, Search, ChevronDown, Info, RotateCcw, Save, List } from "lucide-react"
-import { cn } from "@/lib/utils"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { useState, useCallback } from"react"
+import { X, Brain, Loader2, Search, ChevronDown, Info, RotateCcw, Save, List } from"lucide-react"
+import { cn } from"@/lib/utils"
+import { Badge } from"@/components/ui/badge"
+import { Button } from"@/components/ui/button"
+import { Input } from"@/components/ui/input"
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover"
+} from"@/components/ui/popover"
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/components/ui/tooltip"
-import { CompanyPresetsModal } from "./CompanyPresetsModal"
-import { useTagInputState } from "@/hooks/useTagInputState"
-import { useUIPreferencesStore } from "@/stores/ui-preferences-store"
+} from"@/components/ui/tooltip"
+import { CompanyPresetsModal } from"./CompanyPresetsModal"
+import { useTagInputState } from"@/hooks/useTagInputState"
+import { useUIPreferencesStore } from"@/stores/ui-preferences-store"
 
 export interface ExcludedCompanyItem {
   name: string
@@ -38,16 +38,16 @@ interface ExcludedCompaniesInputProps {
 }
 
 const POPULAR_COMPANIES = [
-  { name: "Nubank", domain: "nubank.com.br" },
-  { name: "iFood", domain: "ifood.com.br" },
-  { name: "Stone", domain: "stone.com.br" },
-  { name: "Google", domain: "google.com" },
-  { name: "Meta", domain: "meta.com" },
-  { name: "Amazon", domain: "amazon.com" },
-  { name: "Microsoft", domain: "microsoft.com" },
-  { name: "Apple", domain: "apple.com" },
-  { name: "Salesforce", domain: "salesforce.com" },
-  { name: "Oracle", domain: "oracle.com" },
+  { name:"Nubank", domain:"nubank.com.br" },
+  { name:"iFood", domain:"ifood.com.br" },
+  { name:"Stone", domain:"stone.com.br" },
+  { name:"Google", domain:"google.com" },
+  { name:"Meta", domain:"meta.com" },
+  { name:"Amazon", domain:"amazon.com" },
+  { name:"Microsoft", domain:"microsoft.com" },
+  { name:"Apple", domain:"apple.com" },
+  { name:"Salesforce", domain:"salesforce.com" },
+  { name:"Oracle", domain:"oracle.com" },
 ]
 
 const TIME_FILTER_OPTIONS: { 
@@ -72,7 +72,7 @@ export function ExcludedCompaniesInput({
   onChange,
   timeFilter = 'current_only',
   onTimeFilterChange,
-  placeholder = "Type company to exclude...",
+  placeholder ="Type company to exclude...",
   showPresets = true
 }: ExcludedCompaniesInputProps) {
   const {
@@ -173,9 +173,8 @@ export function ExcludedCompaniesInput({
                     onTimeFilterChange?.(option.value)
                     setIsTimeFilterOpen(false)
                   }}
-                  className={cn(
-                    "w-full text-left px-3 py-2 hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none",
-                    timeFilter === option.value && "bg-lia-bg-secondary"
+                  className={cn("w-full text-left px-3 py-2 hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none",
+                    timeFilter === option.value &&"bg-lia-bg-secondary"
                   )}
                 >
                   <div className="flex items-center justify-between">
@@ -267,9 +266,8 @@ export function ExcludedCompaniesInput({
               <button
                 key={company.name}
                 onClick={() => addCompany(company)}
-                className={cn(
-                  "w-full text-left px-3 py-2 text-sm transition-colors",
-                  focusedIndex === index ? "bg-lia-bg-tertiary" : "hover:bg-lia-bg-secondary"
+                className={cn("w-full text-left px-3 py-2 text-sm transition-colors",
+                  focusedIndex === index ?"bg-lia-bg-tertiary" :"hover:bg-lia-bg-secondary"
                 )}
               >
                 <div className="flex items-center justify-between">
@@ -289,7 +287,7 @@ export function ExcludedCompaniesInput({
           {value.map(company => (
             <Badge
               key={company.name}
-              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-status-warning/10 text-status-warning border border-status-warning/30"
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium  border border-status-warning/30"
             >
               <span>{company.name}</span>
               {company.domain && (

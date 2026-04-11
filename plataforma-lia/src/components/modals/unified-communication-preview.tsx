@@ -1,14 +1,14 @@
 "use client"
 
-import React from "react"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import React from"react"
+import { Badge } from"@/components/ui/badge"
+import { Avatar, AvatarFallback } from"@/components/ui/avatar"
 import {
   Eye, Info, CalendarDays, CheckCircle
-} from "lucide-react"
+} from"lucide-react"
 import { textStyles, badgeStyles } from '@/lib/design-tokens'
-import { sanitizeHtml } from "@/lib/sanitize"
-import type { CommunicationChannel, CommunicationType, Candidate } from "./unified-communication-types"
+import { sanitizeHtml } from"@/lib/sanitize"
+import type { CommunicationChannel, CommunicationType, Candidate } from"./unified-communication-types"
 
 interface MessagePreviewPanelProps {
   channel: CommunicationChannel

@@ -1,8 +1,8 @@
 "use client"
-import React from "react"
-import { X } from "lucide-react"
-import { Badge } from "@/components/ui/badge"
-import { type SearchFilters } from "../advancedFiltersTypes"
+import React from"react"
+import { X } from"lucide-react"
+import { Badge } from"@/components/ui/badge"
+import { type SearchFilters } from"../advancedFiltersTypes"
 
 interface FilterChipsBarProps {
   filters: SearchFilters
@@ -32,19 +32,19 @@ export const FilterChipsBar = React.memo(function FilterChipsBar({
         {filters.general?.minExperience && (
           <Badge variant="outline" className="text-micro py-0 h-5 gap-1">
             Exp. mín: {filters.general.minExperience}a
-            <button onClick={() => updateFilter("general", "minExperience", null)} className="ml-0.5 hover:text-status-error"><X className="h-2.5 w-2.5" /></button>
+            <button onClick={() => updateFilter("general","minExperience", null)} className="ml-0.5 hover:text-status-error"><X className="h-2.5 w-2.5" /></button>
           </Badge>
         )}
         {filters.general?.maxExperience && (
           <Badge variant="outline" className="text-micro py-0 h-5 gap-1">
             Exp. máx: {filters.general.maxExperience}a
-            <button onClick={() => updateFilter("general", "maxExperience", null)} className="ml-0.5 hover:text-status-error"><X className="h-2.5 w-2.5" /></button>
+            <button onClick={() => updateFilter("general","maxExperience", null)} className="ml-0.5 hover:text-status-error"><X className="h-2.5 w-2.5" /></button>
           </Badge>
         )}
         {filters.job?.titles?.map(t => (
           <Badge key={t} variant="outline" className="text-micro py-0 h-5 gap-1">
             {t}
-            <button onClick={() => removeFromArray("job", "titles", t)} className="ml-0.5 hover:text-status-error"><X className="h-2.5 w-2.5" /></button>
+            <button onClick={() => removeFromArray("job","titles", t)} className="ml-0.5 hover:text-status-error"><X className="h-2.5 w-2.5" /></button>
           </Badge>
         ))}
         {filters.skills?.skillItems?.map(s => (
@@ -68,7 +68,7 @@ export const FilterChipsBar = React.memo(function FilterChipsBar({
         {filters.languages?.languages?.map(l => (
           <Badge key={l} variant="outline" className="text-micro py-0 h-5 gap-1">
             {l}
-            <button onClick={() => removeFromArray("languages", "languages", l)} className="ml-0.5 hover:text-status-error"><X className="h-2.5 w-2.5" /></button>
+            <button onClick={() => removeFromArray("languages","languages", l)} className="ml-0.5 hover:text-status-error"><X className="h-2.5 w-2.5" /></button>
           </Badge>
         ))}
       </div>
@@ -76,4 +76,4 @@ export const FilterChipsBar = React.memo(function FilterChipsBar({
   )
 })
 
-FilterChipsBar.displayName = "FilterChipsBar"
+FilterChipsBar.displayName ="FilterChipsBar"

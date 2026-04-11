@@ -1,14 +1,14 @@
 "use client"
 
-import React from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+import React from"react"
+import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
+import { Badge } from"@/components/ui/badge"
 import {
   TrendingUp, Clock, Target, CheckCircle, Award, AlertCircle, Activity, Timer
-} from "lucide-react"
-import { LiaMetricsChart } from "./lia-metrics-chart"
-import { generateTimeSeriesData } from "./useLiaMetricsData"
-import type { LiaMetricsData } from "./useLiaMetricsData"
+} from"lucide-react"
+import { LiaMetricsChart } from"./lia-metrics-chart"
+import { generateTimeSeriesData } from"./useLiaMetricsData"
+import type { LiaMetricsData } from"./useLiaMetricsData"
 
 interface LiaMetricsPerformanceSectionProps {
   data: LiaMetricsData

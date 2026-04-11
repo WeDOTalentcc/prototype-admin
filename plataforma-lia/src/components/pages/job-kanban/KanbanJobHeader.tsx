@@ -1,18 +1,18 @@
 "use client"
 
-import React from "react"
+import React from"react"
 import {
   Popover, PopoverContent, PopoverTrigger,
-} from "@/components/ui/popover"
-import { SCREENING_STATUS_LABELS } from "@/types/screening"
-import { liaApi } from "@/services/lia-api"
+} from"@/components/ui/popover"
+import { SCREENING_STATUS_LABELS } from"@/types/screening"
+import { liaApi } from"@/services/lia-api"
 import {
   ArrowLeft, Settings, Share2, FileText, Layers3, ListChecks, Lightbulb,
   PauseCircle, PlayCircle, Archive, Calendar, Link2, RotateCcw,
-} from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { toast } from "sonner"
+} from"lucide-react"
+import { Button } from"@/components/ui/button"
+import { Badge } from"@/components/ui/badge"
+import { toast } from"sonner"
 
 interface KanbanJobHeaderProps {
   onBack?: () => void
@@ -119,10 +119,10 @@ export const KanbanJobHeader = React.memo(function KanbanJobHeader(props: Kanban
                     ) as Record<string, string>
                     const scrStyles: Record<string, string> = {
                       not_configured: 'bg-lia-bg-tertiary text-lia-text-secondary border border-lia-border-default',
-                      not_started: 'bg-status-warning/10 text-status-warning border border-status-warning/30',
-                      active: 'bg-status-success/10 text-status-success border border-status-success/30',
-                      paused: 'bg-wedo-orange/10 text-wedo-orange border border-wedo-orange/30',
-                      completed: 'bg-wedo-cyan/10 text-wedo-cyan border border-wedo-cyan/30',
+                      not_started: ' border border-status-warning/30',
+                      active: ' border border-status-success/30',
+                      paused: ' border border-wedo-orange/30',
+                      completed: ' border border-wedo-cyan/30',
                     }
                     const handleScreeningStatusChange = async (newStatus: string) => {
                       const jobId = (currentJob.backendId || currentJob.jobId || currentJob.id) as string
@@ -293,7 +293,7 @@ export const KanbanJobHeader = React.memo(function KanbanJobHeader(props: Kanban
             {/* Right: Action Buttons */}
             <div className="flex items-center gap-2 pt-1 flex-shrink-0">
               <Button variant="outline" size="sm" className="gap-2 h-8" onClick={() => {
-                toast.success("Em breve", { description: "Em breve: Configuração de etapas do pipeline" })
+                toast.success("Em breve", { description:"Em breve: Configuração de etapas do pipeline" })
               }}>
                 <Settings className="w-3.5 h-3.5" />
                 Configurar Etapas
@@ -307,7 +307,7 @@ export const KanbanJobHeader = React.memo(function KanbanJobHeader(props: Kanban
                   setShowShareGestorModal(true)
                 } else {
                   setSelectedCandidates(new Set((allTableCandidates as Array<Record<string, unknown>>).map(c => String(c.id))))
-                  toast.success("Modo Compartilhamento", { description: "Todos os candidatos foram selecionados. Ajuste a seleção e clique em Compartilhar na barra de ações." })
+                  toast.success("Modo Compartilhamento", { description:"Todos os candidatos foram selecionados. Ajuste a seleção e clique em Compartilhar na barra de ações." })
                 }
               }}>
                 <Share2 className="w-3.5 h-3.5" />

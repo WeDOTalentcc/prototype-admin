@@ -1,21 +1,21 @@
 "use client"
 
-import React, { useState, useEffect } from "react"
+import React, { useState, useEffect } from"react"
 import { 
   Play, RefreshCw, Clock, CheckCircle2, 
   XCircle, Loader2, Calendar, Search, Plus,
   Users, FileSearch, BarChart3, Mail, TrendingUp, Brain,
   Eye, AlertCircle
-} from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
-import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { cn } from "@/lib/utils"
-import { listBackgroundJobs, executeJob } from "@/services/lia-api"
-import { CreateJobModal } from "./create-job-modal"
+} from"lucide-react"
+import { Button } from"@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from"@/components/ui/card"
+import { Badge } from"@/components/ui/badge"
+import { Progress } from"@/components/ui/progress"
+import { Input } from"@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from"@/components/ui/select"
+import { cn } from"@/lib/utils"
+import { listBackgroundJobs, executeJob } from"@/services/lia-api"
+import { CreateJobModal } from"./create-job-modal"
 
 const JOB_TYPE_ICONS: Record<string, React.ElementType> = {
   screening: Users,
@@ -101,10 +101,10 @@ export function JobsDashboard({ className, onJobSelect }: JobsDashboardProps) {
 
   const getStatusBadge = (status: string) => {
     const styles: Record<string, string> = {
-      pending: 'bg-status-warning/10 text-status-warning dark:text-status-warning',
-      running: 'bg-wedo-cyan/10 text-wedo-cyan-dark dark:text-wedo-cyan-dark',
-      completed: 'bg-status-success/10 text-status-success dark:text-status-success',
-      failed: 'bg-status-error/10 text-status-error dark:text-status-error',
+      pending: ' dark:text-status-warning',
+      running: '-dark dark:text-wedo-cyan-dark',
+      completed: ' dark:text-status-success',
+      failed: ' dark:text-status-error',
       cancelled: 'bg-lia-bg-secondary0/10 text-lia-text-secondary'
     }
     return styles[status] || styles.pending
@@ -160,7 +160,7 @@ export function JobsDashboard({ className, onJobSelect }: JobsDashboardProps) {
             onClick={loadJobs}
             disabled={loading}
           >
-            <RefreshCw className={cn("h-4 w-4 mr-1", loading && "animate-spin motion-reduce:animate-none")} />
+            <RefreshCw className={cn("h-4 w-4 mr-1", loading &&"animate-spin motion-reduce:animate-none")} />
             Atualizar
           </Button>
           <Button
@@ -256,9 +256,8 @@ export function JobsDashboard({ className, onJobSelect }: JobsDashboardProps) {
                       </div>
                     </div>
                     <Badge className={cn("shrink-0", getStatusBadge(job.status))}>
-                      <StatusIcon className={cn(
- "h-3 w-3 mr-1",
-                        job.status === 'running' && "animate-spin motion-reduce:animate-none"
+                      <StatusIcon className={cn("h-3 w-3 mr-1",
+                        job.status === 'running' &&"animate-spin motion-reduce:animate-none"
                       )} />
                       {STATUS_LABELS[job.status] || job.status}
                     </Badge>

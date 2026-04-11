@@ -1,18 +1,18 @@
 "use client"
 
-import { useState, useMemo } from "react"
-import { useChatStateStore } from "@/stores/chat-state-store"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
+import { useState, useMemo } from"react"
+import { useChatStateStore } from"@/stores/chat-state-store"
+import { Button } from"@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
+import { Badge } from"@/components/ui/badge"
+import { Input } from"@/components/ui/input"
+import { Textarea } from"@/components/ui/textarea"
 import {
   Search, Plus, Star, Play, Edit, Trash2, Copy, Share2,
   Filter, TrendingUp, Clock, Users, BookOpen, Zap,
   Archive, MoreVertical, Eye, Settings, Brain,
   FileText, Target, Calendar, Mail, BarChart3
-} from "lucide-react"
+} from"lucide-react"
 
 // Interface para Templates
 interface CommandTemplate {
@@ -57,12 +57,12 @@ export function TemplatesPage() {
   // Filtrar e ordenar templates
   const filteredTemplates = useMemo(() => {
     const filtered = templates.filter(template => {
-      const matchesSearch = searchTerm === "" ||
+      const matchesSearch = searchTerm ==="" ||
         template.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         template.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
         template.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
 
-      const matchesCategory = selectedCategory === "all" || template.category === selectedCategory
+      const matchesCategory = selectedCategory ==="all" || template.category === selectedCategory
 
       return matchesSearch && matchesCategory
     })
@@ -154,9 +154,9 @@ export function TemplatesPage() {
   const getCategoryColor = (category: string) => {
     switch (category) {
       case 'search': return 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-primary border-lia-border-default dark:border-lia-border-default'
-      case 'communication': return 'bg-status-success/15 text-status-success border-status-success/30'
-      case 'workflow': return 'bg-wedo-purple/15 text-wedo-purple border-wedo-purple/30'
-      case 'analysis': return 'bg-wedo-orange/15 text-wedo-orange border-wedo-orange/30'
+      case 'communication': return ' border-status-success/30'
+      case 'workflow': return ' border-wedo-purple/30'
+      case 'analysis': return ' border-wedo-orange/30'
       default: return 'bg-lia-bg-tertiary text-lia-text-primary border-lia-border-subtle'
     }
   }
@@ -390,9 +390,9 @@ export function TemplatesPage() {
               Nenhum template encontrado
             </h3>
             <p className="text-lia-text-secondary mb-4">
-              {searchTerm || selectedCategory !== "all"
-                ? "Tente ajustar os filtros de busca"
-                : "Crie seu primeiro template para acelerar seu workflow"
+              {searchTerm || selectedCategory !=="all"
+                ?"Tente ajustar os filtros de busca"
+                :"Crie seu primeiro template para acelerar seu workflow"
               }
             </p>
             <Button onClick={() => setShowCreateModal(true)}>

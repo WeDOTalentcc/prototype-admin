@@ -1,18 +1,18 @@
 "use client"
 
-import { CURRENCY_PLACEHOLDER } from "@/lib/pricing"
-import React from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+import { CURRENCY_PLACEHOLDER } from"@/lib/pricing"
+import React from"react"
+import { Button } from"@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
+import { Badge } from"@/components/ui/badge"
 import {
   Calendar, Plus, Edit, Trash2, Save, X,
   ChevronDown, ChevronUp, Download, RefreshCw, Loader2
-} from "lucide-react"
-import { SmartImportZone } from "./SmartImportZone"
-import { LiaFieldToggle, defaultLiaFieldExamples } from "./LiaFieldToggle"
+} from"lucide-react"
+import { SmartImportZone } from"./SmartImportZone"
+import { LiaFieldToggle, defaultLiaFieldExamples } from"./LiaFieldToggle"
 import { textStyles, cardStyles, badgeStyles, buttonStyles, actionButtonStyles } from '@/lib/design-tokens'
-import type { MonthlyPlanning, Position, DepartmentData } from "./goalsPlanningConstants"
+import type { MonthlyPlanning, Position, DepartmentData } from"./goalsPlanningConstants"
 
 interface GoalsWorkforceSectionProps {
   departments: DepartmentData[]
@@ -77,7 +77,7 @@ export function GoalsWorkforceSection({
         description="Importe o plano anual de contratações por departamento e mês. A LIA analisa e sugere ajustes baseados em dados históricos."
         importEndpoint="/api/backend-proxy/workforce/entries/import"
         templateDownloadEndpoint="/api/backend-proxy/workforce/entries/import/template"
-        expectedFields={["department", "month", "year", "planned", "actual"]}
+        expectedFields={["department","month","year","planned","actual"]}
         onImportSuccess={fetchWorkforceData}
         disabled={!isEditingWorkforce}
       />
@@ -150,7 +150,7 @@ export function GoalsWorkforceSection({
                     disabled={saving}
                     className={actionButtonStyles.smPrimary}
                   >
-                    {saving ? <Loader2 className={actionButtonStyles.icon + " animate-spin motion-reduce:animate-none"} /> : <Save className={actionButtonStyles.icon} />}
+                    {saving ? <Loader2 className={actionButtonStyles.icon +" animate-spin motion-reduce:animate-none"} /> : <Save className={actionButtonStyles.icon} />}
                     Salvar Alterações
                   </button>
                 </>
@@ -217,7 +217,7 @@ export function GoalsWorkforceSection({
                         </thead>
                         <tbody>
                           {dept.positions.map((pos) => (
-                            <tr key={pos.id} className=" dark:border-lia-border-subtle hover:bg-lia-bg-primary dark:hover:bg-lia-bg-inverse/50">
+                            <tr key={pos.id} className="dark:border-lia-border-subtle hover:bg-lia-bg-primary dark:hover:bg-lia-bg-inverse/50">
                               <td className="p-2 sticky left-0 bg-lia-bg-secondary dark:bg-lia-bg-secondary">
                                 <input
                                   type="text"

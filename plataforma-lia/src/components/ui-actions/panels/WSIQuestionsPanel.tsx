@@ -1,20 +1,20 @@
 "use client"
 
-import React, { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Badge } from "@/components/ui/badge"
-import { Textarea } from "@/components/ui/textarea"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import React, { useState } from"react"
+import { Button } from"@/components/ui/button"
+import { Input } from"@/components/ui/input"
+import { Label } from"@/components/ui/label"
+import { Badge } from"@/components/ui/badge"
+import { Textarea } from"@/components/ui/textarea"
+import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from"@/components/ui/tabs"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue
-} from "@/components/ui/select"
+} from"@/components/ui/select"
 import { 
   Loader2, 
   Plus, 
@@ -25,8 +25,8 @@ import {
   Brain,
   Lightbulb,
   Wand2
-} from "lucide-react"
-import { WSI_TEMPLATES, WSIQuestion, WSIQuestionsData } from "../types"
+} from"lucide-react"
+import { WSI_TEMPLATES, WSIQuestion, WSIQuestionsData } from"../types"
 
 interface PanelProps {
   initialData?: Record<string, unknown>
@@ -41,8 +41,8 @@ interface PanelProps {
   }
 }
 
-type BloomLevel = "Lembrar" | "Entender" | "Aplicar" | "Analisar" | "Avaliar" | "Criar"
-type DreyfusLevel = "Novato" | "Iniciante Avançado" | "Competente" | "Proficiente" | "Expert"
+type BloomLevel ="Lembrar" |"Entender" |"Aplicar" |"Analisar" |"Avaliar" |"Criar"
+type DreyfusLevel ="Novato" |"Iniciante Avançado" |"Competente" |"Proficiente" |"Expert"
 type WSIArea = keyof typeof WSI_TEMPLATES
 
 interface WSITemplateItem {
@@ -53,17 +53,17 @@ interface WSITemplateItem {
   time_estimate: number
 }
 
-const BLOOM_OPTIONS: BloomLevel[] = ["Lembrar", "Entender", "Aplicar", "Analisar", "Avaliar", "Criar"]
-const DREYFUS_OPTIONS: DreyfusLevel[] = ["Novato", "Iniciante Avançado", "Competente", "Proficiente", "Expert"]
+const BLOOM_OPTIONS: BloomLevel[] = ["Lembrar","Entender","Aplicar","Analisar","Avaliar","Criar"]
+const DREYFUS_OPTIONS: DreyfusLevel[] = ["Novato","Iniciante Avançado","Competente","Proficiente","Expert"]
 
 const AREA_LABELS: Record<WSIArea, { label: string; icon: string }> = {
-  tech: { label: "Tecnologia", icon: "💻" },
-  sales: { label: "Vendas", icon: "💼" },
-  leadership: { label: "Liderança", icon: "👔" },
-  hr: { label: "RH", icon: "👥" },
-  marketing: { label: "Marketing", icon: "📢" },
-  finance: { label: "Finanças", icon: "💰" },
-  operations: { label: "Operações", icon: "⚙️" }
+  tech: { label:"Tecnologia", icon:"💻" },
+  sales: { label:"Vendas", icon:"💼" },
+  leadership: { label:"Liderança", icon:"👔" },
+  hr: { label:"RH", icon:"👥" },
+  marketing: { label:"Marketing", icon:"📢" },
+  finance: { label:"Finanças", icon:"💰" },
+  operations: { label:"Operações", icon:"⚙️" }
 }
 
 export function WSIQuestionsPanel({
@@ -76,7 +76,7 @@ export function WSIQuestionsPanel({
     const initial = initialData.questions as WSIQuestion[] | undefined
     return initial || []
   })
-  const [activeTab, setActiveTab] = useState<"ai" | "templates" | "custom">("ai")
+  const [activeTab, setActiveTab] = useState<"ai" |"templates" |"custom">("ai")
   const [showTemplates, setShowTemplates] = useState(false)
   const [selectedArea, setSelectedArea] = useState<WSIArea>("tech")
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())
@@ -84,14 +84,14 @@ export function WSIQuestionsPanel({
   const [aiConfig, setAiConfig] = useState({
     count: 5,
     focusAreas: [] as string[],
-    difficulty: "Competente" as DreyfusLevel
+    difficulty:"Competente" as DreyfusLevel
   })
 
   const [newQuestion, setNewQuestion] = useState({
-    question: "",
-    bloom_level: "Aplicar" as BloomLevel,
-    dreyfus_level: "Competente" as DreyfusLevel,
-    competency: "",
+    question:"",
+    bloom_level:"Aplicar" as BloomLevel,
+    dreyfus_level:"Competente" as DreyfusLevel,
+    competency:"",
     time_estimate: 10
   })
 
@@ -101,25 +101,25 @@ export function WSIQuestionsPanel({
       {
         id: `wsi_ai_${Date.now()}_1`,
         question: `Considerando sua experiência com ${jobContext?.requirements?.[0] || 'a área técnica'}, descreva um projeto onde você precisou resolver um problema complexo. Qual foi sua abordagem e como você validou a solução?`,
-        bloom_level: "Analisar",
+        bloom_level:"Analisar",
         dreyfus_level: aiConfig.difficulty,
-        competency: "Resolução de Problemas",
+        competency:"Resolução de Problemas",
         time_estimate: 12
       },
       {
         id: `wsi_ai_${Date.now()}_2`,
         question: `Imagine que você precisa implementar uma solução para ${jobContext?.title || 'este cargo'}. Como você estruturaria o trabalho nas primeiras duas semanas?`,
-        bloom_level: "Criar",
+        bloom_level:"Criar",
         dreyfus_level: aiConfig.difficulty,
-        competency: "Planejamento",
+        competency:"Planejamento",
         time_estimate: 10
       },
       {
         id: `wsi_ai_${Date.now()}_3`,
         question: `Conte sobre uma situação onde você precisou colaborar com pessoas de diferentes áreas para atingir um objetivo. Como você gerenciou as diferentes perspectivas?`,
-        bloom_level: "Aplicar",
+        bloom_level:"Aplicar",
         dreyfus_level: aiConfig.difficulty,
-        competency: "Colaboração",
+        competency:"Colaboração",
         time_estimate: 8
       }
     ]
@@ -154,10 +154,10 @@ export function WSIQuestionsPanel({
     }
     setQuestions((prev) => [...prev, newQ])
     setNewQuestion({
-      question: "",
-      bloom_level: "Aplicar",
-      dreyfus_level: "Competente",
-      competency: "",
+      question:"",
+      bloom_level:"Aplicar",
+      dreyfus_level:"Competente",
+      competency:"",
       time_estimate: 10
     })
   }
@@ -445,7 +445,7 @@ export function WSIQuestionsPanel({
                               ? 'var(--lia-text-disabled)' 
                               : 'var(--lia-text-secondary)'}} /* dynamic */
                         >
-                          {isTemplateAdded(template) ? "Adicionada" : "Adicionar"}
+                          {isTemplateAdded(template) ?"Adicionada" :"Adicionar"}
                         </Button>
                       </div>
                     </div>

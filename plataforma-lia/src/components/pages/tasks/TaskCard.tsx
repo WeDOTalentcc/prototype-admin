@@ -1,14 +1,14 @@
 "use client"
 
-import React from "react"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
+import React from"react"
+import { Button } from"@/components/ui/button"
+import { Badge } from"@/components/ui/badge"
 import {
   CheckCircle, XCircle,
   MessageSquare, Calendar, Search, FileText, Users,
   Play, User, Briefcase
-} from "lucide-react"
-import { getTaskPriorityStyle, getPriorityLabel, getTaskTypeIcon } from "../task-helpers"
+} from"lucide-react"
+import { getTaskPriorityStyle, getPriorityLabel, getTaskTypeIcon } from"../task-helpers"
 
 interface Task {
   id: string
@@ -44,7 +44,7 @@ export const TaskCard = React.memo(function TaskCard({ task, onConfirm, onReject
                 {task.title}
               </h4>
               <Badge
-                className={`border-0 text-xs py-0 px-1.5 font-medium ${getTaskPriorityStyle(task.priority as 'high' | 'medium' | 'low') ?? ""}`}
+                className={`border-0 text-xs py-0 px-1.5 font-medium ${getTaskPriorityStyle(task.priority as 'high' | 'medium' | 'low') ??""}`}
               >
                 {getPriorityLabel(task.priority as 'high' | 'medium' | 'low')}
               </Badge>

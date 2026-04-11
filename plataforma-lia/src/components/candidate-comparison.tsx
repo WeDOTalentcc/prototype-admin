@@ -1,11 +1,11 @@
 "use client"
 
-import React, { useState, useEffect, useCallback } from "react"
+import React, { useState, useEffect, useCallback } from"react"
 import { textStyles, buttonStyles, cardStyles, badgeStyles } from '@/lib/design-tokens'
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Button } from"@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
+import { Badge } from"@/components/ui/badge"
+import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
 import {
   X, Brain, RefreshCw, TrendingUp, TrendingDown, Target,
   CheckCircle, AlertCircle, Star, Zap, Users, Clock,
@@ -13,7 +13,7 @@ import {
   Mail, Phone, Calendar, MapPin, Briefcase, GraduationCap,
   Code, Palette, MessageSquare, Heart, Rocket, Building,
   ArrowRight, Crown, Trophy, Flame, ThumbsUp, ThumbsDown
-} from "lucide-react"
+} from"lucide-react"
 
 interface Candidate {
   id: string
@@ -341,7 +341,7 @@ export function CandidateComparison({
                         Candidato Recomendado: {candidates.find(c => c.id === liaAnalysis.winner)?.name}
                       </span>
                     </div>
-                    <Badge className="bg-status-success/15 text-status-success">
+                    <Badge >
                       {liaAnalysis.confidence}% de confiança
                     </Badge>
                   </div>
@@ -361,7 +361,7 @@ export function CandidateComparison({
                         onClick={() => setSelectedScenario(key as 'shortTerm' | 'longTerm' | 'leadership' | 'innovation' | 'stability')}
                         className={`px-3 py-2 rounded-md text-sm font-medium transition-colors motion-reduce:transition-none ${
  selectedScenario === key
-                            ? 'bg-status-success/15 text-status-success border border-status-success/30'
+                            ? ' border border-status-success/30'
                             : 'bg-lia-bg-tertiary dark:bg-lia-bg-elevated text-lia-text-primary hover:bg-lia-interactive-active dark:hover:bg-lia-border-medium'
                         }`}
                       >
@@ -418,7 +418,7 @@ export function CandidateComparison({
                 {/* Winner Badge */}
                 {liaAnalysis && candidate.id === liaAnalysis.winner && (
                   <div className="absolute top-3 right-3 z-10">
-                    <Badge className="bg-status-warning/15 text-status-warning border-status-warning/30 gap-1">
+                    <Badge className="border-status-warning/30 gap-1">
                       <Crown className="w-3 h-3" />
                       LIA Recomenda
                     </Badge>

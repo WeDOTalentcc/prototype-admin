@@ -1,7 +1,7 @@
 "use client"
 
-import * as React from "react"
-import { useState, useEffect } from "react"
+import * as React from"react"
+import { useState, useEffect } from"react"
 import { 
   getInterviewAnalysisStatus, 
   triggerInterviewAnalysis 
@@ -19,17 +19,17 @@ import {
   Save,
   LayoutGrid,
   List,
-} from "lucide-react"
-import { Card, CardHeader, CardContent } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Textarea } from "@/components/ui/textarea"
-import { Checkbox } from "@/components/ui/checkbox"
-import { StarRating, LikertRating } from "@/components/ui/interview-rating"
-import { ScoreCardWSI } from "./score-card-wsi"
-import { TeamsAnalysisPanel } from "./teams-analysis-panel"
-import { InterviewNote, InterviewNoteQuestion, QuestionBlock, WSIScore, InterviewAnalysisStatus } from "@/types/interview-notes"
-import { cn } from "@/lib/utils"
+} from"lucide-react"
+import { Card, CardHeader, CardContent } from"@/components/ui/card"
+import { Button } from"@/components/ui/button"
+import { Badge } from"@/components/ui/badge"
+import { Textarea } from"@/components/ui/textarea"
+import { Checkbox } from"@/components/ui/checkbox"
+import { StarRating, LikertRating } from"@/components/ui/interview-rating"
+import { ScoreCardWSI } from"./score-card-wsi"
+import { TeamsAnalysisPanel } from"./teams-analysis-panel"
+import { InterviewNote, InterviewNoteQuestion, QuestionBlock, WSIScore, InterviewAnalysisStatus } from"@/types/interview-notes"
+import { cn } from"@/lib/utils"
 
 interface InterviewNoteCardProps {
   interviewNote: InterviewNote
@@ -45,17 +45,17 @@ interface InterviewNoteCardProps {
 }
 
 const categoryColors: Record<InterviewNoteQuestion["category"], string> = {
-  vaga: "bg-lia-bg-tertiary text-lia-text-primary",
-  gap_analysis: "bg-lia-bg-tertiary text-lia-text-primary",
-  fit_cultural: "bg-lia-bg-tertiary text-lia-text-primary",
-  custom: "bg-lia-bg-tertiary text-lia-text-primary",
+  vaga:"bg-lia-bg-tertiary text-lia-text-primary",
+  gap_analysis:"bg-lia-bg-tertiary text-lia-text-primary",
+  fit_cultural:"bg-lia-bg-tertiary text-lia-text-primary",
+  custom:"bg-lia-bg-tertiary text-lia-text-primary",
 }
 
 const categoryLabels: Record<InterviewNoteQuestion["category"], string> = {
-  vaga: "Vaga",
-  gap_analysis: "Gap Analysis",
-  fit_cultural: "Fit Cultural",
-  custom: "Personalizada",
+  vaga:"Vaga",
+  gap_analysis:"Gap Analysis",
+  fit_cultural:"Fit Cultural",
+  custom:"Personalizada",
 }
 
 function QuestionItem({
@@ -87,17 +87,15 @@ function QuestionItem({
 
   return (
     <div
-      className={cn(
- "border rounded-md p-4 space-y-3",
-        question.skipped ? "bg-lia-bg-secondary opacity-60" : "bg-lia-bg-primary"
+      className={cn("border rounded-md p-4 space-y-3",
+        question.skipped ?"bg-lia-bg-secondary opacity-60" :"bg-lia-bg-primary"
       )}
     >
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1 space-y-2">
           <div className="flex items-center gap-2 flex-wrap">
             <span
-              className={cn(
- "px-2 py-0.5 rounded-full text-micro font-medium",
+              className={cn("px-2 py-0.5 rounded-full text-micro font-medium",
                 categoryColors[question.category]
               )}
             >
@@ -253,11 +251,11 @@ export function InterviewNoteCard({
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("pt-BR", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
+      day:"2-digit",
+      month:"2-digit",
+      year:"numeric",
+      hour:"2-digit",
+      minute:"2-digit",
     })
   }
 
@@ -292,11 +290,10 @@ export function InterviewNoteCard({
                 <button
                   type="button"
                   onClick={() => setShowScoreCard(false)}
-                  className={cn(
- "flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors",
+                  className={cn("flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors",
                     !showScoreCard
-                      ? "bg-lia-btn-primary-bg text-lia-btn-primary-text"
-                      : "bg-lia-bg-primary text-lia-text-secondary hover:bg-lia-bg-secondary"
+                      ?"bg-lia-btn-primary-bg text-lia-btn-primary-text"
+                      :"bg-lia-bg-primary text-lia-text-secondary hover:bg-lia-bg-secondary"
                   )}
                 >
                   <List className="h-3.5 w-3.5" />
@@ -305,11 +302,10 @@ export function InterviewNoteCard({
                 <button
                   type="button"
                   onClick={() => setShowScoreCard(true)}
-                  className={cn(
- "flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors",
+                  className={cn("flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors",
                     showScoreCard
-                      ? "bg-lia-btn-primary-bg text-lia-btn-primary-text"
-                      : "bg-lia-bg-primary text-lia-text-secondary hover:bg-lia-bg-secondary"
+                      ?"bg-lia-btn-primary-bg text-lia-btn-primary-text"
+                      :"bg-lia-bg-primary text-lia-text-secondary hover:bg-lia-bg-secondary"
                   )}
                 >
                   <LayoutGrid className="h-3.5 w-3.5" />
@@ -318,9 +314,9 @@ export function InterviewNoteCard({
               </div>
             )}
             <Badge
-              variant={note.status === "completed" ? "success" : "warning"}
+              variant={note.status ==="completed" ?"success" :"warning"}
             >
-              {note.status === "completed" ? "Concluída" : "Rascunho"}
+              {note.status ==="completed" ?"Concluída" :"Rascunho"}
             </Badge>
           </div>
         </div>
@@ -329,14 +325,14 @@ export function InterviewNoteCard({
       <CardContent className="space-y-6">
         {showScoreCard && blocks && blocks.length > 0 ? (
           <ScoreCardWSI
-            candidateName={interviewNote.candidateName || ""}
-            jobTitle={interviewNote.jobTitle || ""}
-            interviewerName={interviewNote.recruiterName || ""}
+            candidateName={interviewNote.candidateName ||""}
+            jobTitle={interviewNote.jobTitle ||""}
+            interviewerName={interviewNote.recruiterName ||""}
             interviewDate={interviewNote.interviewDate?.toString() || new Date().toLocaleDateString()}
             blocks={blocks}
             wsiScore={wsiScore}
             onCalculateWSI={onCalculateWSI}
-            onApprove={() => onApprove(interviewNote.nextStage || "next")}
+            onApprove={() => onApprove(interviewNote.nextStage ||"next")}
             onReject={onReject}
             onEscalate={onEscalate}
             liaParecer={note.liaParecer || undefined}
@@ -452,11 +448,11 @@ export function InterviewNoteCard({
             className="gap-2"
           >
             <Bot className="h-4 w-4" />
-            {isGeneratingParecer ? "Gerando..." : "Gerar Parecer com LIA"}
+            {isGeneratingParecer ?"Gerando..." :"Gerar Parecer com LIA"}
           </Button>
 
           <Button
-            onClick={() => onApprove(note.nextStage || "")}
+            onClick={() => onApprove(note.nextStage ||"")}
             disabled={isLoading}
             className="gap-2 bg-status-success hover:bg-status-success/10"
           >

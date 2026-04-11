@@ -1,12 +1,12 @@
 "use client"
 
-import React, { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Label } from "@/components/ui/label"
-import { Badge } from "@/components/ui/badge"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Loader2, ChevronDown, ChevronRight, MessageCircle, Target } from "lucide-react"
-import { COMPETENCIES_CATALOG, Competency, BehavioralCompetenciesData } from "../types"
+import React, { useState } from"react"
+import { Button } from"@/components/ui/button"
+import { Label } from"@/components/ui/label"
+import { Badge } from"@/components/ui/badge"
+import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
+import { Loader2, ChevronDown, ChevronRight, MessageCircle, Target } from"lucide-react"
+import { COMPETENCIES_CATALOG, Competency, BehavioralCompetenciesData } from"../types"
 
 interface PanelProps {
   initialData?: Record<string, unknown>
@@ -15,11 +15,11 @@ interface PanelProps {
 }
 
 const LEVEL_STYLES: Record<number, { label: string; style: React.CSSProperties }> = {
-  1: { label: "Iniciante", style: { backgroundColor: 'var(--lia-bg-tertiary)', color: 'var(--lia-text-secondary)' } },
-  2: { label: "Básico", style: { backgroundColor: 'var(--lia-bg-tertiary)', color: 'var(--lia-text-secondary)' } },
-  3: { label: "Intermediário", style: { backgroundColor: 'var(--lia-bg-secondary)', color: 'var(--lia-text-primary)' } },
-  4: { label: "Avançado", style: { backgroundColor: 'var(--lia-btn-primary-bg)', color: 'var(--lia-btn-primary-text)' } },
-  5: { label: "Expert", style: { backgroundColor: 'var(--lia-btn-primary-bg)', color: 'var(--lia-btn-primary-text)' } }
+  1: { label:"Iniciante", style: { backgroundColor: 'var(--lia-bg-tertiary)', color: 'var(--lia-text-secondary)' } },
+  2: { label:"Básico", style: { backgroundColor: 'var(--lia-bg-tertiary)', color: 'var(--lia-text-secondary)' } },
+  3: { label:"Intermediário", style: { backgroundColor: 'var(--lia-bg-secondary)', color: 'var(--lia-text-primary)' } },
+  4: { label:"Avançado", style: { backgroundColor: 'var(--lia-btn-primary-bg)', color: 'var(--lia-btn-primary-text)' } },
+  5: { label:"Expert", style: { backgroundColor: 'var(--lia-btn-primary-bg)', color: 'var(--lia-btn-primary-text)' } }
 }
 
 export function BehavioralCompetenciesPanel({
@@ -140,8 +140,7 @@ export function BehavioralCompetenciesPanel({
             <Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none mr-2" />
             Salvando...
           </>
-        ) : (
-          "Concluído"
+        ) : ("Concluído"
         )}
       </Button>
     </div>
@@ -247,8 +246,7 @@ function CompetencyCard({
                   <li
                     key={`question-${index}`}
                     className="text-xs p-2 rounded-xl border italic dark:border-lia-border-subtle dark:bg-lia-bg-secondary bg-lia-bg-primary border-lia-border-subtle"
-                  >
-                    "{question}"
+                  >"{question}"
                   </li>
                 ))}
               </ul>

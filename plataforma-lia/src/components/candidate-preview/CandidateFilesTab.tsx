@@ -1,14 +1,14 @@
 "use client"
 
-import { textStyles } from "@/lib/design-tokens"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
+import { textStyles } from"@/lib/design-tokens"
+import { Badge } from"@/components/ui/badge"
+import { Button } from"@/components/ui/button"
 import {
   FileText, Plus, Upload, Download, Eye, Play, Tag, X,
   File, FileVideo, Image, Video, Mic, Award, ChevronDown
-} from "lucide-react"
-import { FilePreviewModal } from "@/components/candidate-preview/FilePreviewModal"
-import { useCandidateFiles, formatFileSize, formatRelativeTime, getCategoryColor, getFileIcon } from "./useCandidateFiles"
+} from"lucide-react"
+import { FilePreviewModal } from"@/components/candidate-preview/FilePreviewModal"
+import { useCandidateFiles, formatFileSize, formatRelativeTime, getCategoryColor, getFileIcon } from"./useCandidateFiles"
 
 interface CandidateFilesTabProps {
   candidate: Record<string, any>
@@ -670,7 +670,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
                   </div>
 
                   <div className="flex items-center gap-1.5">
-                    <Badge className="text-xs px-1.5 py-0 h-4 bg-status-success/15 text-status-success">
+                    <Badge className="text-xs px-1.5 py-0 h-4">
                       Transcrito
                     </Badge>
                     <Button
@@ -726,7 +726,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
                   </div>
 
                   <div className="flex items-center gap-1.5">
-                    <Badge className="text-xs px-1.5 py-0 h-4 bg-status-warning/15 text-status-warning">
+                    <Badge className="text-xs px-1.5 py-0 h-4">
                       Pendente
                     </Badge>
                     <Button

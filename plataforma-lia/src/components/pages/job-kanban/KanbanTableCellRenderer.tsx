@@ -1,32 +1,32 @@
 "use client"
 
-import React from "react"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import React from"react"
+import { Button } from"@/components/ui/button"
+import { Badge } from"@/components/ui/badge"
+import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover"
-import { InteractiveSubStatusCell } from "@/components/tables"
+} from"@/components/ui/popover"
+import { InteractiveSubStatusCell } from"@/components/tables"
 import {
   DataRequestIndicator,
-} from "@/components/ui/data-request-indicator"
+} from"@/components/ui/data-request-indicator"
 import {
   Brain, Target, Fingerprint,
   ThumbsUp, XCircle, Flag, Eye, ChevronDown, CheckCircle,
   MoreVertical, Video, BrainCircuit,
-} from "lucide-react"
-import { renderScoreCell } from "./KanbanScoreCells"
-import { renderPearchCell } from "./KanbanPearchCells"
+} from"lucide-react"
+import { renderScoreCell } from"./KanbanScoreCells"
+import { renderPearchCell } from"./KanbanPearchCells"
 import type {
   KanbanCandidate,
   KanbanTableCellRendererProps,
-} from "./KanbanTableCellRenderer.types"
+} from"./KanbanTableCellRenderer.types"
 
 export type { KanbanCandidate, KanbanTableCellRendererProps }
-export type { DynamicStageItem, QueryInsight } from "./KanbanTableCellRenderer.types"
+export type { DynamicStageItem, QueryInsight } from"./KanbanTableCellRenderer.types"
 
 export function createKanbanCellRenderer(props: KanbanTableCellRendererProps) {
   const {
@@ -281,7 +281,7 @@ export function createKanbanCellRenderer(props: KanbanTableCellRendererProps) {
               variant="ghost"
               size="sm"
               className={`h-7 w-7 p-0 ${hasAnalysisData ? 'text-lia-text-secondary hover:text-lia-text-primary hover:bg-lia-bg-tertiary' : 'text-lia-text-disabled cursor-not-allowed'}`}
-              title={hasAnalysisData ? "Ver Análise CV vs Vaga" : "Análise pendente"}
+              title={hasAnalysisData ?"Ver Análise CV vs Vaga" :"Análise pendente"}
               onClick={(e) => {
                 e.stopPropagation()
                 if (hasAnalysisData) onOpenAnalysis(candidate)
@@ -294,7 +294,7 @@ export function createKanbanCellRenderer(props: KanbanTableCellRendererProps) {
               variant="ghost"
               size="sm"
               className={`h-7 w-7 p-0 ${hasTriagemData ? 'text-lia-text-secondary hover:text-lia-text-primary hover:bg-lia-bg-tertiary' : 'text-lia-text-disabled cursor-not-allowed'}`}
-              title={hasTriagemData ? "Ver Detalhes da Triagem" : "Triagem pendente"}
+              title={hasTriagemData ?"Ver Detalhes da Triagem" :"Triagem pendente"}
               onClick={(e) => {
                 e.stopPropagation()
                 if (hasTriagemData) onOpenTriagem(candidate)

@@ -1,17 +1,17 @@
 "use client"
 
-import { formatBRL } from "@/lib/pricing"
+import { formatBRL } from"@/lib/pricing"
 
-import React from "react"
+import React from"react"
 import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
   SheetDescription,
-} from "@/components/ui/sheet"
-import { Badge } from "@/components/ui/badge"
-import { ScrollArea } from "@/components/ui/scroll-area"
+} from"@/components/ui/sheet"
+import { Badge } from"@/components/ui/badge"
+import { ScrollArea } from"@/components/ui/scroll-area"
 import {
   Utensils,
   Car,
@@ -28,8 +28,8 @@ import {
   Users,
   Gift,
   type LucideIcon,
-} from "lucide-react"
-import type { Benefit } from "@/hooks/useCompanyBenefits"
+} from"lucide-react"
+import type { Benefit } from"@/hooks/useCompanyBenefits"
 
 const BENEFIT_CATEGORIES: {
   id: string
@@ -38,25 +38,25 @@ const BENEFIT_CATEGORIES: {
   color: string
   bgColor: string
 }[] = [
-  { id: "health", name: "Saúde & Bem-estar", icon: Stethoscope, color: "text-status-error", bgColor: "bg-status-error/10 dark:bg-status-error/20" },
-  { id: "food", name: "Alimentação", icon: Utensils, color: "text-wedo-orange", bgColor: "bg-wedo-orange/10 dark:bg-wedo-orange/10/20" },
-  { id: "transport", name: "Transporte", icon: Car, color: "text-lia-text-secondary", bgColor: "bg-lia-bg-tertiary dark:bg-lia-bg-secondary" },
-  { id: "education", name: "Educação & Desenvolvimento", icon: GraduationCap, color: "text-wedo-purple", bgColor: "bg-wedo-purple/10 dark:bg-wedo-purple/20" },
-  { id: "financial", name: "Financeiro", icon: Wallet, color: "text-status-success", bgColor: "bg-status-success/10 dark:bg-status-success/20" },
- { id: "quality_life", name: "Qualidade de Vida", icon: Home, color: "text-lia-text-secondary", bgColor: "bg-lia-bg-secondary dark:bg-lia-bg-secondary" },
-  { id: "family", name: "Família", icon: Baby, color: "text-wedo-magenta", bgColor: "bg-wedo-magenta/10 dark:bg-wedo-magenta/20" },
-  { id: "security", name: "Segurança", icon: Shield, color: "text-lia-text-primary", bgColor: "bg-lia-bg-secondary dark:bg-lia-bg-secondary/50" },
+  { id:"health", name:"Saúde & Bem-estar", icon: Stethoscope, color:"text-status-error", bgColor:"bg-status-error/10 dark:bg-status-error/20" },
+  { id:"food", name:"Alimentação", icon: Utensils, color:"text-wedo-orange", bgColor:"bg-wedo-orange/10 dark:bg-wedo-orange/10/20" },
+  { id:"transport", name:"Transporte", icon: Car, color:"text-lia-text-secondary", bgColor:"bg-lia-bg-tertiary dark:bg-lia-bg-secondary" },
+  { id:"education", name:"Educação & Desenvolvimento", icon: GraduationCap, color:"text-wedo-purple", bgColor:"bg-wedo-purple/10 dark:bg-wedo-purple/20" },
+  { id:"financial", name:"Financeiro", icon: Wallet, color:"text-status-success", bgColor:"bg-status-success/10 dark:bg-status-success/20" },
+ { id:"quality_life", name:"Qualidade de Vida", icon: Home, color:"text-lia-text-secondary", bgColor:"bg-lia-bg-secondary dark:bg-lia-bg-secondary" },
+  { id:"family", name:"Família", icon: Baby, color:"text-wedo-magenta", bgColor:"bg-wedo-magenta/10 dark:bg-wedo-magenta/20" },
+  { id:"security", name:"Segurança", icon: Shield, color:"text-lia-text-primary", bgColor:"bg-lia-bg-secondary dark:bg-lia-bg-secondary/50" },
 ]
 
 const SENIORITY_LEVELS: { id: string; name: string }[] = [
-  { id: "all", name: "Todos os Níveis" },
-  { id: "junior", name: "Júnior" },
-  { id: "pleno", name: "Pleno" },
-  { id: "senior", name: "Sênior" },
-  { id: "coordinator", name: "Coordenação+" },
-  { id: "manager", name: "Gerência+" },
-  { id: "director", name: "Diretoria" },
-  { id: "c-level", name: "C-Level" },
+  { id:"all", name:"Todos os Níveis" },
+  { id:"junior", name:"Júnior" },
+  { id:"pleno", name:"Pleno" },
+  { id:"senior", name:"Sênior" },
+  { id:"coordinator", name:"Coordenação+" },
+  { id:"manager", name:"Gerência+" },
+  { id:"director", name:"Diretoria" },
+  { id:"c-level", name:"C-Level" },
 ]
 
 interface BenefitDetailsSheetProps {
@@ -71,32 +71,32 @@ function getCategoryInfo(categoryId: string) {
 }
 
 function formatBenefitValue(benefit: Benefit): string {
-  if (benefit.value_type === "monetary" && benefit.value) {
-    const prefix = benefit.is_discount ? "Desconto: " : ""
+  if (benefit.value_type ==="monetary" && benefit.value) {
+    const prefix = benefit.is_discount ?"Desconto:" :""
     return `${prefix}${formatBRL(benefit.value)}`
   }
-  if (benefit.value_type === "percentage" && benefit.percentage_value) {
+  if (benefit.value_type ==="percentage" && benefit.percentage_value) {
     return `${benefit.percentage_value}%`
   }
-  if (benefit.value_type === "informative") {
-    return benefit.value_details || ""
+  if (benefit.value_type ==="informative") {
+    return benefit.value_details ||""
   }
-  return ""
+  return""
 }
 
 function getWaitingPeriodLabel(days: number): string {
-  if (days === 0) return "Imediato"
-  if (days === 30) return "30 dias"
-  if (days === 60) return "60 dias"
-  if (days === 90) return "90 dias"
-  if (days === 180) return "6 meses"
-  if (days === 365) return "1 ano"
+  if (days === 0) return"Imediato"
+  if (days === 30) return"30 dias"
+  if (days === 60) return"60 dias"
+  if (days === 90) return"90 dias"
+  if (days === 180) return"6 meses"
+  if (days === 365) return"1 ano"
   return `${days} dias`
 }
 
 function getSeniorityLabel(levels: string[]): string {
   if (!levels || levels.length === 0 || levels.includes('all')) {
-    return "Todos os níveis"
+    return"Todos os níveis"
   }
   if (levels.length === 1) {
     return SENIORITY_LEVELS.find(l => l.id === levels[0])?.name || levels[0]
@@ -121,7 +121,7 @@ export function BenefitDetailsSheet({
   open,
   onOpenChange,
   benefits,
-  title = "Benefícios da Empresa",
+  title ="Benefícios da Empresa",
 }: BenefitDetailsSheetProps) {
   const groupedBenefits = groupBenefitsByCategory(benefits)
   const highlightedBenefits = benefits.filter(b => b.is_highlighted && b.is_active)
@@ -265,8 +265,8 @@ function BenefitCard({ benefit, isHighlighted = false }: BenefitCardProps) {
           <div className="flex flex-wrap items-center gap-2 text-xs text-lia-text-primary">
             {valueDisplay && (
               <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-lia-bg-secondary dark:bg-lia-bg-secondary">
-                {benefit.value_type === "monetary" && <DollarSign className="w-3 h-3" />}
-                {benefit.value_type === "percentage" && <Percent className="w-3 h-3" />}
+                {benefit.value_type ==="monetary" && <DollarSign className="w-3 h-3" />}
+                {benefit.value_type ==="percentage" && <Percent className="w-3 h-3" />}
                 {valueDisplay}
               </span>
             )}

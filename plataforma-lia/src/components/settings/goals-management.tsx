@@ -1,29 +1,29 @@
 "use client"
 
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Button } from"@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
+import { Badge } from"@/components/ui/badge"
+import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
 import {
   Plus, Target, Users, Settings,
   CheckCircle, AlertCircle, Loader2,
   ChevronDown, ChevronUp
-} from "lucide-react"
+} from"lucide-react"
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from "@/components/ui/select"
-import { textStyles } from "@/lib/design-tokens"
-import { EditableCell, GoalsStatsCards, getCategoryIcon, getCategoryColor } from "./goals"
-import { ApplyAllModal, DeleteConfirmModal } from "./goals"
-import { GoalsTemplatesModal } from "./goals-templates-modal"
-import { GoalsCustomGoalModal } from "./goals-custom-goal-modal"
-import { GoalsEditGoalModal, GoalsEditTemplateModal } from "./goals-edit-modals"
+} from"@/components/ui/select"
+import { textStyles } from"@/lib/design-tokens"
+import { EditableCell, GoalsStatsCards, getCategoryIcon, getCategoryColor } from"./goals"
+import { ApplyAllModal, DeleteConfirmModal } from"./goals"
+import { GoalsTemplatesModal } from"./goals-templates-modal"
+import { GoalsCustomGoalModal } from"./goals-custom-goal-modal"
+import { GoalsEditGoalModal, GoalsEditTemplateModal } from"./goals-edit-modals"
 
 import {
   useGoalsManagement,
   MONTHS,
   type UserGoal,
-} from "./use-goals-management"
+} from"./use-goals-management"
 
 interface GoalsMgmtUser {
   id: string
@@ -150,14 +150,14 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
             <div className="text-center py-8 text-lia-text-primary">
               <Users className="w-12 h-12 mx-auto mb-4 opacity-50" />
               <h3 className={`${textStyles.titleLarge} mb-2`}>Nenhum usuário cadastrado</h3>
-              <p className={textStyles.body}>Primeiro cadastre usuários na aba "Usuários" para poder configurar metas</p>
+              <p className={textStyles.body}>Primeiro cadastre usuários na aba"Usuários" para poder configurar metas</p>
             </div>
           ) : activeTemplatesWithUsers.length === 0 ? (
             <div className="text-center py-8 text-lia-text-secondary">
               <Target className="w-12 h-12 mx-auto mb-4 opacity-50" />
               <h3 className={`${textStyles.titleLarge} mb-2 !text-lia-text-primary`}>Nenhuma meta configurada</h3>
               <p className={`${textStyles.body} mb-4`}>
-                Clique em "Aplicar Template" para adicionar metas aos usuários
+                Clique em"Aplicar Template" para adicionar metas aos usuários
               </p>
               <Button 
                 onClick={() => setShowTemplates(true)}
@@ -241,7 +241,7 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
                           </thead>
                           <tbody>
                             {assignedUserObjects.map((user) => (
-                              <tr key={user!.id} className=" dark:border-lia-border-strong hover:bg-lia-bg-primary dark:hover:bg-lia-btn-primary-hover">
+                              <tr key={user!.id} className="dark:border-lia-border-strong hover:bg-lia-bg-primary dark:hover:bg-lia-btn-primary-hover">
                                 <td className="p-2 sticky left-0 bg-lia-bg-secondary dark:bg-lia-bg-secondary border-r border-lia-border-subtle dark:border-lia-border-subtle">
                                   <div className="flex items-center gap-2">
                                     <Avatar className="w-5 h-5">

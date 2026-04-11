@@ -1,11 +1,11 @@
 "use client"
 
-import React from "react"
-import { Card, CardContent } from "@/components/ui/card"
+import React from"react"
+import { Card, CardContent } from"@/components/ui/card"
 import {
   Brain, ChevronUp, ChevronDown, Clock, Lock, Loader2, Plus, Settings, Target, Trash2,
-} from "lucide-react"
-import { inputClass, groupHeaderClass, getCategoryBadge } from "./job-edit-tab.constants"
+} from"lucide-react"
+import { inputClass, groupHeaderClass, getCategoryBadge } from"./job-edit-tab.constants"
 
 interface Stage {
   name?: string
@@ -30,7 +30,7 @@ interface JobProcessSectionProps {
   addStage: () => void
   removeStage: (index: number) => void
   updateStage: (index: number, field: string, value: unknown) => void
-  moveStage: (index: number, direction: "up" | "down") => void
+  moveStage: (index: number, direction:"up" |"down") => void
 }
 
 export function JobProcessSection({
@@ -79,25 +79,25 @@ export function JobProcessSection({
             {stages.map((stage, index) => {
               const badge = getCategoryBadge(stage.stageCategory)
               const BadgeIcon = badge.icon
-              const isSystem = stage.stageCategory === "system"
+              const isSystem = stage.stageCategory ==="system"
               const canEditName = stage.isEditable !== false && !isSystem
-              const canRemove = stage.isRemovable !== false && stage.stageCategory === "custom"
+              const canRemove = stage.isRemovable !== false && stage.stageCategory ==="custom"
               const canReorder = stage.isReorderable !== false && !isSystem
               const stageIsActive = stage.isActive !== false
               const isLiaAssisted =
                 stage.liaAssisted ||
-                LIA_ASSISTED_STAGES.includes(stage.name || "") ||
-                LIA_ASSISTED_STAGE_NAMES.includes(stage.stageName || "")
+                LIA_ASSISTED_STAGES.includes(stage.name ||"") ||
+                LIA_ASSISTED_STAGE_NAMES.includes(stage.stageName ||"")
               const currentSla = stage.slaDays ?? stage.defaultSlaDays ?? 3
               const defaultSla = stage.defaultSlaDays ?? 3
               const slaModified = currentSla !== defaultSla
               return (
                 <Card
                   key={stage.name || index}
-                  className={`border transition-colors ${!stageIsActive ? "opacity-40" : ""} ${
+                  className={`border transition-colors ${!stageIsActive ?"opacity-40" :""} ${
                     isSystem
-                      ? "border-lia-border-subtle bg-lia-bg-secondary/50/30"
-                      : "border-lia-border-subtle hover:border-lia-border-default"
+                      ?"border-lia-border-subtle bg-lia-bg-secondary/50/30"
+                      :"border-lia-border-subtle hover:border-lia-border-default"
                   }`}
                 >
                   <CardContent className="p-3">
@@ -112,16 +112,16 @@ export function JobProcessSection({
                               type="text"
                               className={`${inputClass(!isEditing)} flex-1`}
                               value={stage.stageName}
-                              onChange={(e) => updateStage(index, "stageName", e.target.value)}
+                              onChange={(e) => updateStage(index,"stageName", e.target.value)}
                               placeholder="Nome da etapa"
                             />
                           ) : (
                             <span
                               className={`text-base-ui font-semibold ${
-                                isSystem ? "text-lia-text-secondary" : "text-lia-text-primary"
+                                isSystem ?"text-lia-text-secondary" :"text-lia-text-primary"
                               }`}
                             >
-                              {stage.stageName || "Sem nome"}
+                              {stage.stageName ||"Sem nome"}
                             </span>
                           )}
                         </div>
@@ -147,7 +147,7 @@ export function JobProcessSection({
                                   max={90}
                                   className="w-12 text-xs text-center px-1 py-0.5 border border-lia-border-subtle rounded-full bg-lia-bg-primary text-lia-text-primary"
                                   value={currentSla}
-                                  onChange={(e) => updateStage(index, "slaDays", parseInt(e.target.value) || 1)}
+                                  onChange={(e) => updateStage(index,"slaDays", parseInt(e.target.value) || 1)}
                                 />
                                 <span className="text-micro text-lia-text-tertiary">dias</span>
                                 {slaModified && (
@@ -160,11 +160,11 @@ export function JobProcessSection({
                               <span
                                 className={`text-micro ${
                                   slaModified
-                                    ? "text-status-warning font-medium"
-                                    : "text-lia-text-tertiary"
+                                    ?"text-status-warning font-medium"
+                                    :"text-lia-text-tertiary"
                                 }`}
                               >
-                                {currentSla} {currentSla === 1 ? "dia" : "dias"}
+                                {currentSla} {currentSla === 1 ?"dia" :"dias"}
                                 {slaModified && ` (padrão: ${defaultSla}d)`}
                               </span>
                             )}
@@ -176,7 +176,7 @@ export function JobProcessSection({
                           <>
                             <button
                               type="button"
-                              onClick={() => moveStage(index, "up")}
+                              onClick={() => moveStage(index,"up")}
                               disabled={index === 0}
                               className="p-1 rounded-md hover:bg-lia-interactive-hover text-lia-text-tertiary hover:text-lia-text-secondary disabled:opacity-30"
                             >
@@ -184,7 +184,7 @@ export function JobProcessSection({
                             </button>
                             <button
                               type="button"
-                              onClick={() => moveStage(index, "down")}
+                              onClick={() => moveStage(index,"down")}
                               disabled={index === stages.length - 1}
                               className="p-1 rounded-md hover:bg-lia-interactive-hover text-lia-text-tertiary hover:text-lia-text-secondary disabled:opacity-30"
                             >

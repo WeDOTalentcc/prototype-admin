@@ -1,14 +1,14 @@
 "use client"
 
-import React from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+import React from"react"
+import { Button } from"@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
+import { Badge } from"@/components/ui/badge"
 import {
   Bell, Edit, Trash2, AlertCircle, CheckCircle,
   Hash, Webhook, RefreshCw, PlayCircle, PauseCircle, Clock
-} from "lucide-react"
-import type { Integration } from "./integrations-page.types"
+} from"lucide-react"
+import type { Integration } from"./integrations-page.types"
 
 interface IntegrationsListProps {
   integrations: Integration[]
@@ -30,10 +30,10 @@ function getStatusIcon(status: string) {
 
 function getStatusColor(status: string) {
   switch (status) {
-    case 'active': return 'bg-status-success/15 text-status-success border-status-success/30'
+    case 'active': return ' border-status-success/30'
     case 'inactive': return 'bg-lia-bg-tertiary text-lia-text-primary border-lia-border-subtle'
-    case 'error': return 'bg-status-error/15 text-status-error border-status-error/30'
-    default: return 'bg-status-warning/15 text-status-warning border-status-warning/30'
+    case 'error': return ' border-status-error/30'
+    default: return ' border-status-warning/30'
   }
 }
 

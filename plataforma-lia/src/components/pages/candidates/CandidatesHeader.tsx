@@ -1,11 +1,11 @@
 "use client"
 
-import React, { memo } from "react"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Users, Plus, Filter, ArrowUpDown } from "lucide-react"
-import { LIAIcon } from "@/components/ui/lia-icon"
-import { textStyles, buttonStyles, cardStyles, badgeStyles } from "@/lib/design-tokens"
+import React, { memo } from"react"
+import { Button } from"@/components/ui/button"
+import { Badge } from"@/components/ui/badge"
+import { Users, Plus, Filter, ArrowUpDown } from"lucide-react"
+import { LIAIcon } from"@/components/ui/lia-icon"
+import { textStyles, buttonStyles, cardStyles, badgeStyles } from"@/lib/design-tokens"
 
 interface CandidatesHeaderProps {
   totalCount: number
@@ -47,7 +47,7 @@ const CandidatesHeader = memo(function CandidatesHeader({
           variant="ghost"
           size="sm"
           onClick={onToggleFilters}
- className={showFilters ? "text-lia-text-primary" : "text-lia-text-secondary hover:text-lia-text-primary dark:hover:text-lia-text-inverse"}
+ className={showFilters ?"text-lia-text-primary" :"text-lia-text-secondary hover:text-lia-text-primary dark:hover:text-lia-text-inverse"}
         >
           <Filter className="h-4 w-4 mr-2" />
           Filtros

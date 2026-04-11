@@ -1,9 +1,9 @@
 "use client"
 
-import React from "react"
-import { Badge } from "@/components/ui/badge"
-import { cn } from "@/lib/utils"
-import { Brain, Building2, PenLine, Lightbulb } from "lucide-react"
+import React from"react"
+import { Badge } from"@/components/ui/badge"
+import { cn } from"@/lib/utils"
+import { Brain, Building2, PenLine, Lightbulb } from"lucide-react"
 
 export type FieldOrigin = 'detected' | 'default' | 'manual' | 'suggested' | 'benchmark'
 // Keep FieldSource for backward compatibility
@@ -28,13 +28,13 @@ const ORIGIN_CONFIG: Record<FieldOrigin, {
   detected: {
     label: 'Detectado',
     icon: Brain,
-    className: 'bg-wedo-cyan/15 text-wedo-cyan-dark border-wedo-cyan/30 hover:bg-wedo-cyan/20 dark:bg-wedo-cyan/20 dark:border-wedo-cyan/40',
+    className: ' border-wedo-cyan/30 hover:bg-wedo-cyan/20 dark:bg-wedo-cyan/20 dark:border-wedo-cyan/40',
     description: 'Extraído automaticamente do texto'
   },
   default: {
     label: 'Default',
     icon: Building2,
-    className: 'bg-wedo-green/15 text-wedo-green border-wedo-green/30 hover:bg-wedo-green/20 dark:bg-wedo-green/20 dark:text-wedo-green dark:border-wedo-green/40',
+    className: ' border-wedo-green/30 hover:bg-wedo-green/20 dark:bg-wedo-green/20 dark:text-wedo-green dark:border-wedo-green/40',
     description: 'Configuração padrão da empresa'
   },
   manual: {
@@ -46,13 +46,13 @@ const ORIGIN_CONFIG: Record<FieldOrigin, {
   suggested: {
     label: 'Sugerido',
     icon: Lightbulb,
-    className: 'bg-wedo-orange/15 text-wedo-orange border-wedo-orange/30 hover:bg-wedo-orange/20 dark:bg-wedo-orange/20 dark:text-wedo-orange dark:border-wedo-orange/40',
+    className: ' border-wedo-orange/30 hover:bg-wedo-orange/20 dark:bg-wedo-orange/20 dark:text-wedo-orange dark:border-wedo-orange/40',
     description: 'Sugestão baseada em vagas similares'
   },
   benchmark: {
     label: 'Benchmark',
     icon: Lightbulb,
-    className: 'bg-wedo-purple/15 text-wedo-purple border-wedo-purple/30 hover:bg-wedo-purple/20 dark:bg-wedo-purple/20 dark:text-wedo-purple dark:border-wedo-purple/40',
+    className: ' border-wedo-purple/30 hover:bg-wedo-purple/20 dark:bg-wedo-purple/20 dark:text-wedo-purple dark:border-wedo-purple/40',
     description: 'Baseado em dados de mercado'
   }
 }

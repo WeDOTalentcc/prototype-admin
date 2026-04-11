@@ -1,8 +1,8 @@
 "use client"
 
-import React from "react"
-import Link from "next/link"
-import { Award, BadgeCheck, Building2, Download, FileText, Shield, ArrowRight, CheckCircle2, ExternalLink, Mail, Clock, Globe, Server, Brain, MessageSquare, Users, Database, Lock } from "lucide-react"
+import React from"react"
+import Link from"next/link"
+import { Award, BadgeCheck, Building2, Download, FileText, Shield, ArrowRight, CheckCircle2, ExternalLink, Mail, Clock, Globe, Server, Brain, MessageSquare, Users, Database, Lock } from"lucide-react"
 
 const certifications = [
   { 
@@ -84,7 +84,7 @@ function getStatusBadge(status: string) {
     case 'active':
     case 'compliant':
       return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-status-success/15 text-status-success">
+        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium">
           <CheckCircle2 className="w-3 h-3" />
           Ativo
         </span>
@@ -159,7 +159,7 @@ export default function PublicTrustCenterPage() {
 
       <main className="max-w-6xl mx-auto px-6 py-12">
         <div className="text-center mb-12">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-status-success/15 text-status-success text-sm font-medium mb-4">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full  text-sm font-medium mb-4">
             <Shield className="w-4 h-4" />
             Segurança & Compliance
           </div>
@@ -470,7 +470,7 @@ export default function PublicTrustCenterPage() {
               <p className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary">
                 <strong>Conformidade Regulatória:</strong> Nossa plataforma está em conformidade com LGPD (Brasil), 
                 em preparação para NYC LL144 (Nova York) e monitorando requisitos do EU AI Act (União Europeia). 
-                A IA de recrutamento é classificada como "alto risco" pelo EU AI Act, e implementamos controles proporcionais.
+                A IA de recrutamento é classificada como"alto risco" pelo EU AI Act, e implementamos controles proporcionais.
               </p>
             </div>
           </div>

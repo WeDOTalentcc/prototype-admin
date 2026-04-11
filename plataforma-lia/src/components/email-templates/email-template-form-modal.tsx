@@ -1,24 +1,24 @@
 "use client"
 
-import { useState, useEffect, useMemo, useRef } from "react"
-import { DEMO_VALUES } from "@/lib/pricing"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Card, CardContent } from "@/components/ui/card"
-import { Mail, Save, X, Eye, Edit3, FileText, RefreshCw, Info, Copy } from "lucide-react"
-import { liaApi, type EmailTemplate, type EmailTemplateCreateRequest, type EmailTemplateUpdateRequest } from "@/services/lia-api"
-import { sanitizeEmailHtml } from "@/lib/sanitize"
-import { LiaEditor, type Editor } from "@/components/ui/lia-editor"
+import { useState, useEffect, useMemo, useRef } from"react"
+import { DEMO_VALUES } from"@/lib/pricing"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from"@/components/ui/dialog"
+import { Button } from"@/components/ui/button"
+import { Input } from"@/components/ui/input"
+import { Label } from"@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from"@/components/ui/select"
+import { Badge } from"@/components/ui/badge"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from"@/components/ui/tabs"
+import { Card, CardContent } from"@/components/ui/card"
+import { Mail, Save, X, Eye, Edit3, FileText, RefreshCw, Info, Copy } from"lucide-react"
+import { liaApi, type EmailTemplate, type EmailTemplateCreateRequest, type EmailTemplateUpdateRequest } from"@/services/lia-api"
+import { sanitizeEmailHtml } from"@/lib/sanitize"
+import { LiaEditor, type Editor } from"@/components/ui/lia-editor"
 import {
   TemplateVariable,
   htmlToTiptapContent,
   tiptapContentToHtml,
-} from "@/components/ui/lia-editor-variable-extension"
+} from"@/components/ui/lia-editor-variable-extension"
 
 interface EmailTemplateFormModalProps {
   isOpen: boolean
@@ -28,46 +28,46 @@ interface EmailTemplateFormModalProps {
 }
 
 const AVAILABLE_VARIABLES = [
-  { name: "candidate_name", description: "Nome completo do candidato" },
-  { name: "candidate_email", description: "Email do candidato" },
-  { name: "candidate_phone", description: "Telefone do candidato" },
-  { name: "job_title", description: "Título da vaga" },
-  { name: "job_department", description: "Departamento da vaga" },
-  { name: "job_location", description: "Localização da vaga" },
-  { name: "company_name", description: "Nome da empresa" },
-  { name: "interview_date", description: "Data da entrevista" },
-  { name: "interview_time", description: "Horário da entrevista" },
-  { name: "interview_location", description: "Local/link da entrevista" },
-  { name: "recruiter_name", description: "Nome do recrutador" },
-  { name: "recruiter_email", description: "Email do recrutador" },
-  { name: "offer_salary", description: "Salário oferecido" },
-  { name: "offer_benefits", description: "Benefícios oferecidos" },
-  { name: "start_date", description: "Data de início" },
+  { name:"candidate_name", description:"Nome completo do candidato" },
+  { name:"candidate_email", description:"Email do candidato" },
+  { name:"candidate_phone", description:"Telefone do candidato" },
+  { name:"job_title", description:"Título da vaga" },
+  { name:"job_department", description:"Departamento da vaga" },
+  { name:"job_location", description:"Localização da vaga" },
+  { name:"company_name", description:"Nome da empresa" },
+  { name:"interview_date", description:"Data da entrevista" },
+  { name:"interview_time", description:"Horário da entrevista" },
+  { name:"interview_location", description:"Local/link da entrevista" },
+  { name:"recruiter_name", description:"Nome do recrutador" },
+  { name:"recruiter_email", description:"Email do recrutador" },
+  { name:"offer_salary", description:"Salário oferecido" },
+  { name:"offer_benefits", description:"Benefícios oferecidos" },
+  { name:"start_date", description:"Data de início" },
 ]
 
 const MOCK_DATA: Record<string, string> = {
-  candidate_name: "João Silva",
-  candidate_email: "joao.silva@email.com",
-  candidate_phone: "(11) 99999-9999",
-  job_title: "Desenvolvedor Full Stack",
-  job_department: "Tecnologia",
-  job_location: "São Paulo, SP",
-  company_name: "TechCorp Brasil",
-  interview_date: "15 de Janeiro de 2025",
-  interview_time: "14:00",
-  interview_location: "Sala de Reuniões Virtual - Link: meet.google.com/abc-xyz",
-  recruiter_name: "Ana Costa",
-  recruiter_email: "ana.costa@techcorp.com.br",
+  candidate_name:"João Silva",
+  candidate_email:"joao.silva@email.com",
+  candidate_phone:"(11) 99999-9999",
+  job_title:"Desenvolvedor Full Stack",
+  job_department:"Tecnologia",
+  job_location:"São Paulo, SP",
+  company_name:"TechCorp Brasil",
+  interview_date:"15 de Janeiro de 2025",
+  interview_time:"14:00",
+  interview_location:"Sala de Reuniões Virtual - Link: meet.google.com/abc-xyz",
+  recruiter_name:"Ana Costa",
+  recruiter_email:"ana.costa@techcorp.com.br",
   offer_salary: DEMO_VALUES.OFFER_SALARY_EXAMPLE,
-  offer_benefits: "VR, VT, Plano de Saúde, Gympass",
-  start_date: "1º de Fevereiro de 2025",
+  offer_benefits:"VR, VT, Plano de Saúde, Gympass",
+  start_date:"1º de Fevereiro de 2025",
 }
 
 const CATEGORY_OPTIONS = [
-  { value: "interview", label: "Entrevista" },
-  { value: "rejection", label: "Rejeição" },
-  { value: "offer", label: "Proposta" },
-  { value: "followup", label: "Follow-up" },
+  { value:"interview", label:"Entrevista" },
+  { value:"rejection", label:"Rejeição" },
+  { value:"offer", label:"Proposta" },
+  { value:"followup", label:"Follow-up" },
 ]
 
 const DEFAULT_TEMPLATE = `<h2>Olá, {{candidate_name}}!</h2><p>Escreva aqui o conteúdo do seu email...</p><p>Atenciosamente,<br><strong>{{recruiter_name}}</strong><br>{{company_name}}</p>`
@@ -83,11 +83,11 @@ export function EmailTemplateFormModal({
   const [activeTab, setActiveTab] = useState("editor")
   const [saving, setSaving] = useState(false)
   const [formData, setFormData] = useState({
-    name: "",
-    subject: "",
-    body_html: "",
-    body_text: "",
-    category: "" as string,
+    name:"",
+    subject:"",
+    body_html:"",
+    body_text:"",
+    category:"" as string,
   })
 
   const isEditing = !!template
@@ -101,16 +101,16 @@ export function EmailTemplateFormModal({
           name: template.name,
           subject: template.subject,
           body_html: template.body_html,
-          body_text: template.body_text || "",
-          category: template.category || "",
+          body_text: template.body_text ||"",
+          category: template.category ||"",
         })
       } else {
         setFormData({
-          name: "",
-          subject: "",
+          name:"",
+          subject:"",
           body_html: DEFAULT_TEMPLATE,
-          body_text: "",
-          category: "",
+          body_text:"",
+          category:"",
         })
       }
       setActiveTab("editor")
@@ -137,7 +137,7 @@ export function EmailTemplateFormModal({
   const renderPreview = (content: string): string => {
     let rendered = tiptapContentToHtml(content)
     for (const [key, value] of Object.entries(MOCK_DATA)) {
-      rendered = rendered.replace(new RegExp(`\\{\\{${key}\\}\\}`, "g"), value)
+      rendered = rendered.replace(new RegExp(`\\{\\{${key}\\}\\}`,"g"), value)
     }
     return rendered
   }
@@ -206,12 +206,12 @@ export function EmailTemplateFormModal({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Mail className="w-5 h-5 text-lia-text-primary" />
-            {isEditing ? "Editar Template" : "Novo Template de Email"}
+            {isEditing ?"Editar Template" :"Novo Template de Email"}
           </DialogTitle>
           <DialogDescription className="dark:text-lia-text-tertiary">
             {isEditing
-              ? "Atualize as informações do template de email"
-              : "Crie um novo template de email para comunicação com candidatos"}
+              ?"Atualize as informações do template de email"
+              :"Crie um novo template de email para comunicação com candidatos"}
           </DialogDescription>
         </DialogHeader>
 
@@ -273,13 +273,13 @@ export function EmailTemplateFormModal({
             </TabsList>
 
             <div className="flex-1 overflow-y-auto mt-4">
-              <TabsContent value="editor" className="h-full m-0" forceMount style={{ display: activeTab === "editor" ? undefined : "none" }}>
+              <TabsContent value="editor" className="h-full m-0" forceMount style={{ display: activeTab ==="editor" ? undefined :"none" }}>
                 <div className="space-y-2 h-full">
                   <div className="flex items-center justify-between">
                     <Label>Corpo do Email *</Label>
                     <div className="flex items-center gap-2 text-xs text-lia-text-secondary">
                       <Info className="w-3 h-3 text-lia-text-secondary" />
-                      Clique em "Variáveis" para inserir campos dinâmicos
+                      Clique em"Variáveis" para inserir campos dinâmicos
                     </div>
                   </div>
                   <LiaEditor
@@ -330,7 +330,7 @@ export function EmailTemplateFormModal({
                         </h4>
                         <div className="flex flex-wrap gap-2">
                           {detectedVariables.map((v) => (
-                            <Badge key={v} className="bg-wedo-green/15 text-wedo-green">
+                            <Badge key={v} >
                               {`{{${v}}}`}
                             </Badge>
                           ))}
@@ -401,7 +401,7 @@ export function EmailTemplateFormModal({
             ) : (
               <>
                 <Save className="w-4 h-4 mr-2" />
-                {isEditing ? "Atualizar" : "Criar"} Template
+                {isEditing ?"Atualizar" :"Criar"} Template
               </>
             )}
           </Button>

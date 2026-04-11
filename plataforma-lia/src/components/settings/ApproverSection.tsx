@@ -1,10 +1,10 @@
 "use client";
 
-import React from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import React from"react";
+import { Button } from"@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card";
+import { Badge } from"@/components/ui/badge";
+import { Avatar, AvatarFallback } from"@/components/ui/avatar";
 import {
   Plus,
   Edit,
@@ -13,11 +13,11 @@ import {
   CheckCircle,
   AlertCircle,
   Crown,
-} from "lucide-react";
+} from"lucide-react";
 import {
   type Approver,
   type NewApproverForm,
-} from "./companyTeamHub.types";
+} from"./companyTeamHub.types";
 
 export interface ApproverSectionProps {
   approvers: Approver[];
@@ -79,9 +79,9 @@ export const ApproverSection = React.memo(function ApproverSection({
               className="gap-1.5 py-1.5 px-2 text-xs rounded-full border-lia-border-subtle dark:border-lia-border-subtle text-lia-text-primary hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse"
               onClick={() => {
                 setNewApprover({
-                  userName: "",
-                  email: "",
-                  role: "",
+                  userName:"",
+                  email:"",
+                  role:"",
                   level: approvers.length + 1,
                 });
                 setShowApproverForm(true);
@@ -97,7 +97,7 @@ export const ApproverSection = React.memo(function ApproverSection({
             <Card className="border border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 rounded-xl mb-3">
               <CardContent className="p-3 space-y-2">
                 <h4 className="text-xs font-semibold">
-                  {editingApprover ? "Editar Aprovador" : "Novo Aprovador"}
+                  {editingApprover ?"Editar Aprovador" :"Novo Aprovador"}
                 </h4>
                 <div className="grid grid-cols-2 gap-2">
                   <div>
@@ -197,7 +197,7 @@ export const ApproverSection = React.memo(function ApproverSection({
                 Nenhum aprovador configurado
               </p>
               <p className="text-micro mt-1">
-                Clique em "Adicionar Nível" para criar um fluxo de aprovação
+                Clique em"Adicionar Nível" para criar um fluxo de aprovação
               </p>
             </div>
           ) : (
@@ -211,7 +211,7 @@ export const ApproverSection = React.memo(function ApproverSection({
                     className="relative flex items-center gap-3 pb-4 last:pb-0"
                   >
                     <div
-                      className=""
+                      
                     >
                       {approver.level}
                     </div>
@@ -221,7 +221,7 @@ export const ApproverSection = React.memo(function ApproverSection({
                           <Avatar className="h-8 w-8">
                             <AvatarFallback className="bg-lia-bg-tertiary dark:bg-lia-bg-elevated text-lia-text-primary text-micro">
                               {approver.userName
-                                .split(" ")
+                                .split("")
                                 .map((n) => n[0])
                                 .join("")}
                             </AvatarFallback>
@@ -237,10 +237,10 @@ export const ApproverSection = React.memo(function ApproverSection({
                         </div>
                         <div className="flex items-center gap-1">
                           <Badge
-                            variant={approver.isActive ? "default" : "outline"}
-                            className=""
+                            variant={approver.isActive ?"default" :"outline"}
+                            
                           >
-                            {approver.isActive ? "Ativo" : "Inativo"}
+                            {approver.isActive ?"Ativo" :"Inativo"}
                           </Badge>
                           <Button
                             variant="ghost"

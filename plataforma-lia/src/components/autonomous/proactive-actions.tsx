@@ -1,21 +1,21 @@
 "use client"
 
-import React, { useState, useEffect } from "react"
+import React, { useState, useEffect } from"react"
 import { 
   Lightbulb, Check, X, Bell, Clock, 
   ArrowRight, Brain, AlertCircle, Info, Loader2
-} from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { cn } from "@/lib/utils"
-import { getProactiveActions, acceptProactiveAction, rejectProactiveAction } from "@/services/lia-api"
+} from"lucide-react"
+import { Button } from"@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
+import { Badge } from"@/components/ui/badge"
+import { cn } from"@/lib/utils"
+import { getProactiveActions, acceptProactiveAction, rejectProactiveAction } from"@/services/lia-api"
 
 const PRIORITY_STYLES: Record<string, { badge: string; icon: React.ElementType }> = {
   low: { badge: 'bg-lia-bg-secondary0/10 text-lia-text-secondary', icon: Info },
-  normal: { badge: 'bg-wedo-cyan/10 text-wedo-cyan-dark dark:text-wedo-cyan-dark', icon: Lightbulb },
-  high: { badge: 'bg-wedo-orange/10 text-wedo-orange dark:text-wedo-orange', icon: AlertCircle },
-  urgent: { badge: 'bg-status-error/10 text-status-error dark:text-status-error', icon: Bell }
+  normal: { badge: '-dark dark:text-wedo-cyan-dark', icon: Lightbulb },
+  high: { badge: ' dark:text-wedo-orange', icon: AlertCircle },
+  urgent: { badge: ' dark:text-status-error', icon: Bell }
 }
 
 const PRIORITY_LABELS: Record<string, string> = {
@@ -34,7 +34,7 @@ const ACTION_TYPE_LABELS: Record<string, string> = {
   quality_improvement: 'Melhoria de Qualidade'
 }
 
-import { ProactiveAction as ApiProactiveAction } from "@/services/lia-api"
+import { ProactiveAction as ApiProactiveAction } from"@/services/lia-api"
 
 interface ProactiveAction extends ApiProactiveAction {
   action_type?: string
@@ -150,8 +150,7 @@ export function ProactiveActions({
               key={action.id}
  className="flex items-start gap-3 p-3 rounded-xl border border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-primary hover:border-lia-border-default dark:border-lia-border-default transition-colors motion-reduce:transition-none"
             >
-              <div className={cn(
- "w-8 h-8 rounded-full flex items-center justify-center shrink-0",
+              <div className={cn("w-8 h-8 rounded-full flex items-center justify-center shrink-0",
                 priorityStyle.badge
               )}>
                 <PriorityIcon className="h-4 w-4" />
@@ -223,8 +222,7 @@ export function ProactiveActions({
             >
               <CardContent className="p-4">
                 <div className="flex items-start gap-3">
-                  <div className={cn(
- "w-10 h-10 rounded-full flex items-center justify-center shrink-0",
+                  <div className={cn("w-10 h-10 rounded-full flex items-center justify-center shrink-0",
                     priorityStyle.badge
                   )}>
                     <PriorityIcon className="h-5 w-5" />

@@ -1,17 +1,17 @@
 "use client"
 
-import React, { useState, useEffect } from "react"
-import { formatRelativeTime } from "@/lib/format-utils"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
+import React, { useState, useEffect } from"react"
+import { formatRelativeTime } from"@/lib/format-utils"
+import { Badge } from"@/components/ui/badge"
+import { Button } from"@/components/ui/button"
+import { Card } from"@/components/ui/card"
 import {
   Phone, Mail, Video, FileText, Users, TrendingUp, Brain, Send,
   CheckCircle, AlertCircle, Clock, ExternalLink, Loader2, Target,
   Check, AlertTriangle, X, Calendar
-} from "lucide-react"
-import { textStyles, cardStyles, badgeStyles } from "@/lib/design-tokens"
-import { RubricEvaluationCard } from "@/components/rubric-evaluation-card"
+} from"lucide-react"
+import { textStyles, cardStyles, badgeStyles } from"@/lib/design-tokens"
+import { RubricEvaluationCard } from"@/components/rubric-evaluation-card"
 
 interface ActivityExtraData {
   screening_id?: string
@@ -60,7 +60,7 @@ interface ActivityFeedProps {
   actorFilter?: 'lia' | 'recrutador'
 }
 
-export function ActivityFeed({ candidateId, limit = 20, className = "", actorFilter }: ActivityFeedProps) {
+export function ActivityFeed({ candidateId, limit = 20, className ="", actorFilter }: ActivityFeedProps) {
   const [activities, setActivities] = useState<Activity[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -136,7 +136,7 @@ export function ActivityFeed({ candidateId, limit = 20, className = "", actorFil
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case 'urgent':
-        return 'bg-status-error/10 text-status-error border-status-error/30 dark:bg-status-error/20 dark:text-status-error dark:border-status-error/30'
+        return ' border-status-error/30 dark:bg-status-error/20 dark:text-status-error dark:border-status-error/30'
       case 'normal':
         return 'bg-lia-bg-tertiary text-lia-text-secondary border-lia-border-default dark:bg-lia-bg-secondary dark:border-lia-border-default'
       case 'low':
@@ -210,10 +210,10 @@ export function ActivityFeed({ candidateId, limit = 20, className = "", actorFil
   }
 
   const getScoreBadge = (score: number) => {
-    if (score >= 80) return { label: 'Forte', className: 'bg-status-success/15 text-status-success border-status-success/30' }
+    if (score >= 80) return { label: 'Forte', className: ' border-status-success/30' }
     if (score >= 60) return { label: 'Bom', className: 'bg-lia-bg-tertiary text-lia-text-secondary border-lia-border-default' }
-    if (score >= 40) return { label: 'Moderado', className: 'bg-status-warning/15 text-status-warning border-status-warning/30' }
-    return { label: 'Fraco', className: 'bg-status-error/15 text-status-error border-status-error/30' }
+    if (score >= 40) return { label: 'Moderado', className: ' border-status-warning/30' }
+    return { label: 'Fraco', className: ' border-status-error/30' }
   }
 
   const getRubricIcon = (evaluation: string) => {
@@ -441,7 +441,7 @@ export function ActivityFeed({ candidateId, limit = 20, className = "", actorFil
                     <div className="flex items-center gap-1 flex-wrap">
                       <span className={`${textStyles.label} text-status-warning`}>Atenção:</span>
                       {activity.extra_data.red_flags.slice(0, 2).map((flag: string, idx: number) => (
-                        <Badge key={idx} variant="secondary" className="bg-status-warning/10 text-status-warning border-status-warning/30 text-micro">
+                        <Badge key={idx} variant="secondary" className="border-status-warning/30 text-micro">
                           {flag}
                         </Badge>
                       ))}
@@ -458,7 +458,7 @@ export function ActivityFeed({ candidateId, limit = 20, className = "", actorFil
                     <div className="flex items-center gap-1 flex-wrap">
                       <span className={`${textStyles.label} text-status-success`}>Pontos fortes:</span>
                       {activity.extra_data.green_flags.slice(0, 2).map((flag: string, idx: number) => (
-                        <Badge key={idx} variant="secondary" className="bg-status-success/10 text-status-success border-status-success/30 text-micro">
+                        <Badge key={idx} variant="secondary" className="border-status-success/30 text-micro">
                           {flag}
                         </Badge>
                       ))}

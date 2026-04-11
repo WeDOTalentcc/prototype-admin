@@ -1,21 +1,21 @@
 "use client"
 
-import React from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+import React from"react"
+import { Button } from"@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
+import { Badge } from"@/components/ui/badge"
 import {
   MessageSquare, Plus, Trash2, Save, X,
   CheckCircle, AlertCircle,
   Lock, Eye, Loader2, Pencil,
   ChevronDown, ChevronUp, Library, Brain,
-} from "lucide-react"
+} from"lucide-react"
 import {
   ELIGIBILITY_QUESTIONS_BANK,
   QUESTION_CATEGORIES,
   QuestionCategory,
   EligibilityQuestionTemplate,
-} from "@/components/settings/eligibility-questions-bank"
+} from"@/components/settings/eligibility-questions-bank"
 import { textStyles, actionButtonStyles } from '@/lib/design-tokens'
 import { ScreeningQuestion, NewQuestionForm } from './useRecruitmentHub'
 
@@ -178,7 +178,7 @@ export function RecruitmentScreeningTab({
                       <Badge className={`text-micro py-0 px-1.5 bg-lia-btn-primary-bg text-lia-btn-primary-text ${!isEditingQuestions ? 'opacity-60' : ''}`}>Obrigatória</Badge>
                     )}
                     {q.is_eliminatory && (
-                      <Badge className={`text-micro py-0 px-1.5 bg-status-error/15 text-status-error border border-status-error/30 ${!isEditingQuestions ? 'opacity-60' : ''}`}>
+                      <Badge className={`text-micro py-0 px-1.5  border border-status-error/30 ${!isEditingQuestions ? 'opacity-60' : ''}`}>
                         Eliminatória {q.expected_answer && `(${q.expected_answer})`}
                       </Badge>
                     )}
@@ -284,7 +284,7 @@ function QuestionBankSection({
                             </Badge>
                             <span className={textStyles.caption}>{q.contextHint}</span>
                             {isAdded && (
-                              <Badge className="text-micro py-0 px-1 bg-status-success/15 text-status-success">Já adicionada</Badge>
+                              <Badge className="text-micro py-0 px-1">Já adicionada</Badge>
                             )}
                           </div>
                         </div>

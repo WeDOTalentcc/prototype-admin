@@ -1,9 +1,9 @@
 "use client"
 
-import React from "react"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
+import React from"react"
+import { Card, CardContent } from"@/components/ui/card"
+import { Badge } from"@/components/ui/badge"
+import { Button } from"@/components/ui/button"
 import {
   DollarSign,
   Gift,
@@ -12,7 +12,7 @@ import {
   Edit,
   Wallet,
   Percent
-} from "lucide-react"
+} from"lucide-react"
 
 interface CompensationSummaryData {
   salary_min: number
@@ -36,9 +36,9 @@ export function CompensationSummaryCard({
   onEdit,
   compact = false
 }: CompensationSummaryCardProps) {
-  const formatCurrency = (value: number, currency = "BRL") => {
+  const formatCurrency = (value: number, currency ="BRL") => {
     return new Intl.NumberFormat("pt-BR", {
-      style: "currency",
+      style:"currency",
       currency,
       maximumFractionDigits: 0
     }).format(value)

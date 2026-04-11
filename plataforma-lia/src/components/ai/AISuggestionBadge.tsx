@@ -1,16 +1,16 @@
 "use client"
 
-import React, { useState } from "react"
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Brain, Check, X } from "lucide-react"
+import React, { useState } from"react"
+import { cn } from"@/lib/utils"
+import { Button } from"@/components/ui/button"
+import { Badge } from"@/components/ui/badge"
+import { Brain, Check, X } from"lucide-react"
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover"
-import type { AISuggestion } from "@/hooks/useCandidateSuggestions"
+} from"@/components/ui/popover"
+import type { AISuggestion } from"@/hooks/useCandidateSuggestions"
 
 interface AISuggestionBadgeProps {
   suggestion: AISuggestion
@@ -21,14 +21,14 @@ interface AISuggestionBadgeProps {
 }
 
 const actionLabels: Record<string, string> = {
-  move_to_interview: "Agendar Entrevista",
-  generate_parecer: "Gerar Parecer",
-  send_followup: "Enviar Follow-up",
-  reschedule_or_reject: "Reagendar/Reprovar",
-  monitor_response: "Aguardar Resposta",
-  sync_ats_onboarding: "Sincronizar ATS",
-  send_feedback_talent_pool: "Banco de Talentos",
-  notify_recruiter: "Notificar Recrutador",
+  move_to_interview:"Agendar Entrevista",
+  generate_parecer:"Gerar Parecer",
+  send_followup:"Enviar Follow-up",
+  reschedule_or_reject:"Reagendar/Reprovar",
+  monitor_response:"Aguardar Resposta",
+  sync_ats_onboarding:"Sincronizar ATS",
+  send_feedback_talent_pool:"Banco de Talentos",
+  notify_recruiter:"Notificar Recrutador",
 }
 
 export function AISuggestionBadge({
@@ -45,9 +45,8 @@ export function AISuggestionBadge({
   const confidencePercent = Math.round(suggestion.confidence_score * 100)
   
   const confidenceColor = 
-    confidencePercent >= 90 ? "text-status-success" :
-    confidencePercent >= 75 ? "text-lia-text-primary" :
-    "text-status-warning"
+    confidencePercent >= 90 ?"text-status-success" :
+    confidencePercent >= 75 ?"text-lia-text-primary" :"text-status-warning"
 
   const handleApprove = async () => {
     if (!onApprove) return
@@ -77,8 +76,7 @@ export function AISuggestionBadge({
         <PopoverTrigger asChild>
           <Badge 
             variant="outline" 
-            className={cn(
- "cursor-pointer gap-1 border-lia-border-default dark:border-lia-border-default text-lia-text-primary hover:bg-lia-bg-tertiary dark:bg-lia-bg-secondary",
+            className={cn("cursor-pointer gap-1 border-lia-border-default dark:border-lia-border-default text-lia-text-primary hover:bg-lia-bg-tertiary dark:bg-lia-bg-secondary",
  className
             )}
           >
@@ -127,8 +125,7 @@ export function AISuggestionBadge({
   }
 
   return (
-    <div className={cn(
- "flex items-center gap-2 p-2 rounded-md bg-lia-bg-secondary dark:bg-lia-bg-primary border border-lia-border-default dark:border-lia-border-default",
+    <div className={cn("flex items-center gap-2 p-2 rounded-md bg-lia-bg-secondary dark:bg-lia-bg-primary border border-lia-border-default dark:border-lia-border-default",
       className
     )}>
       <Brain className="h-4 w-4 text-wedo-cyan flex-shrink-0" />

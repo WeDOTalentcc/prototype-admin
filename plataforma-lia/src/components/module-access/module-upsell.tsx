@@ -1,17 +1,17 @@
 "use client"
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+import { useState } from"react"
+import { Button } from"@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
+import { Badge } from"@/components/ui/badge"
 import {
   Lock, Star, Zap, Crown, Check, X, ArrowRight,
   Mail, Phone, CreditCard, Calendar, Users,
   MessageSquare, FileText, Settings, Building,
   Clock, Brain, BarChart3, Workflow
-} from "lucide-react"
-import { LicenseModule, getModuleInfo } from "@/utils/license-manager"
-import { MODULE_TIERS } from "@/lib/pricing"
+} from"lucide-react"
+import { LicenseModule, getModuleInfo } from"@/utils/license-manager"
+import { MODULE_TIERS } from"@/lib/pricing"
 
 interface ModuleUpsellProps {
   moduleId: string
@@ -50,7 +50,7 @@ export function ModuleUpsell({ moduleId, title, description, onUpgrade }: Module
     <div className="min-h-screen bg-lia-bg-primary dark:bg-lia-bg-primary flex items-center justify-center p-6">
       <div className="max-w-4xl w-full">
         {/* Main Upsell Card */}
-        <Card className="">
+        <Card >
           <CardContent className="p-0">
             {/* Header with solid color */}
             <div className={`${getCategoryColor(moduleInfo.category)} p-8 text-white rounded-t-lg`}>
@@ -195,7 +195,7 @@ export function ModuleUpsell({ moduleId, title, description, onUpgrade }: Module
           {showDetails && (
             <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
               {MODULE_TIERS.map((tier) => (
-              <Card key={tier.id} className={tier.recommended ? "ring-2 ring-lia-btn-primary-bg/20 dark:ring-lia-border-subtle/20" : ""}>
+              <Card key={tier.id} className={tier.recommended ?"ring-2 ring-lia-btn-primary-bg/20 dark:ring-lia-border-subtle/20" :""}>
                 <CardHeader>
                   <CardTitle className={`text-lg ${tier.recommended ? 'text-lia-text-secondary' : ''}`}>{tier.name}</CardTitle>
                   <p className="text-lia-text-primary">{tier.label}</p>

@@ -1,19 +1,19 @@
 "use client"
 
-import { useState } from "react"
-import { formatRelativeTime } from "@/lib/format-utils"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { LIAIcon } from "@/components/ui/lia-icon"
+import { useState } from"react"
+import { formatRelativeTime } from"@/lib/format-utils"
+import { Button } from"@/components/ui/button"
+import { Card, CardContent } from"@/components/ui/card"
+import { Badge } from"@/components/ui/badge"
+import { Input } from"@/components/ui/input"
+import { Textarea } from"@/components/ui/textarea"
+import { LIAIcon } from"@/components/ui/lia-icon"
 import {
   Bookmark, Play, Edit, Trash2, Plus, Star, X, Check,
   Users, TrendingUp, Clock, Search, Brain, Database,
   Cloud, FileText, Binary, Target, Calendar, AlertCircle,
   MoreHorizontal
-} from "lucide-react"
+} from"lucide-react"
 import {
   Dialog,
   DialogContent,
@@ -21,14 +21,14 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
+} from"@/components/ui/dialog"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from"@/components/ui/dropdown-menu"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -38,8 +38,8 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
-import type { SavedSearch, SearchMode, SearchSource } from "@/hooks/use-talent-funnel"
+} from"@/components/ui/alert-dialog"
+import type { SavedSearch, SearchMode, SearchSource } from"@/hooks/use-talent-funnel"
 import { textStyles, buttonStyles, cardStyles, badgeStyles } from '@/lib/design-tokens'
 
 interface SavedSearchesTabProps {
@@ -398,7 +398,7 @@ export function SavedSearchesTab({
             Nenhuma busca salva
           </h3>
           <p className="text-xs text-lia-text-tertiary max-w-sm mb-3 leading-relaxed">
-            Faça uma busca e clique em "Salvar" para guardar suas pesquisas.
+            Faça uma busca e clique em"Salvar" para guardar suas pesquisas.
           </p>
           <Button 
             size="sm"
@@ -415,7 +415,7 @@ export function SavedSearchesTab({
         <div className="flex flex-col items-center justify-center py-10 text-center">
           <AlertCircle className="w-8 h-8 text-lia-text-disabled mb-2" />
           <p className="text-xs text-lia-text-tertiary">
-            Nenhuma busca encontrada para "{searchFilter}"
+            Nenhuma busca encontrada para"{searchFilter}"
           </p>
         </div>
       )}
@@ -595,7 +595,7 @@ export function SavedSearchesTab({
           <AlertDialogHeader>
             <AlertDialogTitle>Excluir busca salva?</AlertDialogTitle>
             <AlertDialogDescription>
-              Tem certeza que deseja excluir "{selectedSearch?.name}"? Esta ação não pode ser desfeita.
+              Tem certeza que deseja excluir"{selectedSearch?.name}"? Esta ação não pode ser desfeita.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

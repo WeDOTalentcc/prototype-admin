@@ -1,27 +1,27 @@
 "use client"
 
-import { useState, useEffect, useMemo } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Badge } from "@/components/ui/badge"
-import { ScrollArea } from "@/components/ui/scroll-area"
+import { useState, useEffect, useMemo } from"react"
+import { Button } from"@/components/ui/button"
+import { Input } from"@/components/ui/input"
+import { Textarea } from"@/components/ui/textarea"
+import { Checkbox } from"@/components/ui/checkbox"
+import { Badge } from"@/components/ui/badge"
+import { ScrollArea } from"@/components/ui/scroll-area"
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogDescription
-} from "@/components/ui/dialog"
+} from"@/components/ui/dialog"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import { Label } from "@/components/ui/label"
+} from"@/components/ui/select"
+import { Label } from"@/components/ui/label"
 import { 
   Share2, 
   Plus, 
@@ -39,11 +39,11 @@ import {
   Send,
   ExternalLink,
   Shield
-} from "lucide-react"
-import { cn } from "@/lib/utils"
+} from"lucide-react"
+import { cn } from"@/lib/utils"
 import { textStyles, cardStyles } from '@/lib/design-tokens'
 import { useCommunicationTemplates, type CommunicationTemplate } from '@/hooks/use-communication-templates'
-import { toast } from "sonner"
+import { toast } from"sonner"
 
 interface Recipient {
   id: string
@@ -153,12 +153,12 @@ const [currentShareType, setCurrentShareType] = useState<'search' | 'list'>(shar
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (!emailRegex.test(email)) {
-      toast.error("Email inválido", { description: "Por favor, insira um email válido." })
+      toast.error("Email inválido", { description:"Por favor, insira um email válido." })
       return
     }
 
     if (recipients.some(r => r.email.toLowerCase() === email.toLowerCase())) {
-      toast.error("Email já adicionado", { description: "Este email já está na lista de destinatários." })
+      toast.error("Email já adicionado", { description:"Este email já está na lista de destinatários." })
       return
     }
 
@@ -226,7 +226,7 @@ const [currentShareType, setCurrentShareType] = useState<'search' | 'list'>(shar
 
   const handleSubmit = async () => {
     if (recipients.length === 0) {
-      toast.error("Adicione destinatários", { description: "Adicione pelo menos um email para compartilhar." })
+      toast.error("Adicione destinatários", { description:"Adicione pelo menos um email para compartilhar." })
       return
     }
 
@@ -276,7 +276,7 @@ const [currentShareType, setCurrentShareType] = useState<'search' | 'list'>(shar
       onSuccess?.(sharedSearch)
       onClose()
     } catch (error) {
-      toast.error("Erro ao compartilhar", { description: error instanceof Error ? error.message : "Não foi possível compartilhar. Tente novamente." })
+      toast.error("Erro ao compartilhar", { description: error instanceof Error ? error.message :"Não foi possível compartilhar. Tente novamente." })
     } finally {
       setIsSubmitting(false)
     }
@@ -326,8 +326,7 @@ const [currentShareType, setCurrentShareType] = useState<'search' | 'list'>(shar
                           {candidateCount} candidato{candidateCount !== 1 ? 's' : ''}
                         </Badge>
                         {sourceQuery && (
-                          <span className="text-micro text-lia-text-tertiary truncate max-w-[160px]">
-                            "{sourceQuery}"
+                          <span className="text-micro text-lia-text-tertiary truncate max-w-[160px]">"{sourceQuery}"
                           </span>
                         )}
                       </div>
@@ -341,11 +340,10 @@ const [currentShareType, setCurrentShareType] = useState<'search' | 'list'>(shar
                     <button
                       type="button"
                       onClick={() => { setChannel('email'); setSelectedTemplateId('') }}
-                      className={cn(
-                        "flex items-center gap-2 p-2.5 rounded-md border transition-colors text-left",
+                      className={cn("flex items-center gap-2 p-2.5 rounded-md border transition-colors text-left",
                         channel === 'email'
-                          ? "border-lia-btn-primary-bg bg-lia-bg-secondary text-lia-text-primary"
-                          : "border-lia-border-subtle hover:border-lia-border-default text-lia-text-secondary"
+                          ?"border-lia-btn-primary-bg bg-lia-bg-secondary text-lia-text-primary"
+                          :"border-lia-border-subtle hover:border-lia-border-default text-lia-text-secondary"
                       )}
                     >
                       <Mail className="w-4 h-4 flex-shrink-0" />
@@ -357,11 +355,10 @@ const [currentShareType, setCurrentShareType] = useState<'search' | 'list'>(shar
                     <button
                       type="button"
                       onClick={() => { setChannel('whatsapp'); setSelectedTemplateId('') }}
-                      className={cn(
-                        "flex items-center gap-2 p-2.5 rounded-md border transition-colors text-left",
+                      className={cn("flex items-center gap-2 p-2.5 rounded-md border transition-colors text-left",
                         channel === 'whatsapp'
-                          ? "border-status-success/30 bg-status-success/10 dark:bg-status-success/20 text-status-success"
-                          : "border-lia-border-subtle hover:border-lia-border-default text-lia-text-secondary"
+                          ?"border-status-success/30 bg-status-success/10 dark:bg-status-success/20 text-status-success"
+                          :"border-lia-border-subtle hover:border-lia-border-default text-lia-text-secondary"
                       )}
                     >
                       <MessageSquare className="w-4 h-4 flex-shrink-0" />
@@ -373,11 +370,10 @@ const [currentShareType, setCurrentShareType] = useState<'search' | 'list'>(shar
                     <button
                       type="button"
                       onClick={() => { setChannel('both'); setSelectedTemplateId('') }}
-                      className={cn(
-                        "flex items-center gap-2 p-2.5 rounded-md border transition-colors text-left",
+                      className={cn("flex items-center gap-2 p-2.5 rounded-md border transition-colors text-left",
                         channel === 'both'
-                          ? "border-lia-btn-primary-bg bg-lia-bg-secondary text-lia-text-primary"
-                          : "border-lia-border-subtle hover:border-lia-border-default text-lia-text-secondary"
+                          ?"border-lia-btn-primary-bg bg-lia-bg-secondary text-lia-text-primary"
+                          :"border-lia-border-subtle hover:border-lia-border-default text-lia-text-secondary"
                       )}
                     >
                       <Send className="w-4 h-4 flex-shrink-0" />
@@ -471,11 +467,10 @@ const [currentShareType, setCurrentShareType] = useState<'search' | 'list'>(shar
                           key={tpl.id}
                           type="button"
                           onClick={() => handleSelectTemplate(tpl)}
-                          className={cn(
-                            "flex-shrink-0 px-3 py-1.5 rounded-md border text-xs transition-colors whitespace-nowrap",
+                          className={cn("flex-shrink-0 px-3 py-1.5 rounded-md border text-xs transition-colors whitespace-nowrap",
                             selectedTemplateId === tpl.id
-                              ? "border-lia-btn-primary-bg bg-lia-btn-primary-bg dark:bg-lia-btn-primary-bg text-lia-btn-primary-text"
-                              : "border-lia-border-subtle hover:border-lia-border-medium text-lia-text-secondary"
+                              ?"border-lia-btn-primary-bg bg-lia-btn-primary-bg dark:bg-lia-btn-primary-bg text-lia-btn-primary-text"
+                              :"border-lia-border-subtle hover:border-lia-border-medium text-lia-text-secondary"
                           )}
                         >
                           {tpl.name}
@@ -519,9 +514,8 @@ const [currentShareType, setCurrentShareType] = useState<'search' | 'list'>(shar
                     </Label>
                     <div className="flex gap-2">
                       <Select value={expiryOption} onValueChange={setExpiryOption}>
-                        <SelectTrigger className={cn(
-                          "h-8 text-xs",
-                          expiryOption === 'custom' ? "w-1/2" : "w-full"
+                        <SelectTrigger className={cn("h-8 text-xs",
+                          expiryOption === 'custom' ?"w-1/2" :"w-full"
                         )}>
                           <SelectValue />
                         </SelectTrigger>
@@ -607,7 +601,7 @@ const [currentShareType, setCurrentShareType] = useState<'search' | 'list'>(shar
                   </div>
 
                   <div className="px-5 py-4 space-y-3">
-                    <div className=" pb-2">
+                    <div className="pb-2">
                       <p className="text-micro text-lia-text-tertiary">Assunto</p>
                       <p className="text-xs font-medium text-lia-text-primary" aria-live="polite" aria-atomic="true">
                         {renderPreview(subject) || 'Candidatos para sua avaliação'}

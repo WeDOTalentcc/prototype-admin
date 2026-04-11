@@ -1,18 +1,18 @@
 "use client"
 
 
-import { CURRENCY_SYMBOL } from "@/lib/pricing"
-import React, { useState, useEffect } from "react"
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
-import { ConfidenceIndicator } from "./confidence-indicator"
-import type { CompanyBenefit } from "@/types/benefits"
+import { CURRENCY_SYMBOL } from"@/lib/pricing"
+import React, { useState, useEffect } from"react"
+import { cn } from"@/lib/utils"
+import { Button } from"@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
+import { Input } from"@/components/ui/input"
+import { Badge } from"@/components/ui/badge"
+import { Progress } from"@/components/ui/progress"
+import { ScrollArea } from"@/components/ui/scroll-area"
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from"@/components/ui/collapsible"
+import { ConfidenceIndicator } from"./confidence-indicator"
+import type { CompanyBenefit } from"@/types/benefits"
 import {
   CheckCircle2,
   AlertTriangle,
@@ -25,11 +25,11 @@ import {
   TrendingUp,
   Loader2,
   Send,
-} from "lucide-react"
+} from"lucide-react"
 
 export interface FieldSuggestion {
   value: unknown
-  source: "company_history" | "company_defaults" | "market_benchmark"
+  source:"company_history" |"company_defaults" |"market_benchmark"
   confidence: number
   explanation: string
 }
@@ -37,7 +37,7 @@ export interface FieldSuggestion {
 export interface FieldDetail {
   category: string
   label: string
-  status: "filled" | "missing" | "toggled_off"
+  status:"filled" |"missing" |"toggled_off"
   value: unknown
 }
 
@@ -81,38 +81,38 @@ interface FinalReviewPanelProps {
 }
 
 const FIELD_LABELS: Record<string, string> = {
-  job_title: "Título da Vaga",
-  seniority: "Senioridade",
-  department: "Departamento",
-  salary_range: "Faixa Salarial",
-  benefits: "Benefícios",
-  tech_stack: "Tech Stack",
-  behavioral_competencies: "Competências Comportamentais",
-  work_model: "Modelo de Trabalho",
-  location: "Localização",
-  employment_type: "Tipo de Contratação",
-  description: "Descrição da Vaga",
-  requirements: "Requisitos",
-  languages: "Idiomas",
-  manager: "Gestor",
-  deadline: "Prazo",
+  job_title:"Título da Vaga",
+  seniority:"Senioridade",
+  department:"Departamento",
+  salary_range:"Faixa Salarial",
+  benefits:"Benefícios",
+  tech_stack:"Tech Stack",
+  behavioral_competencies:"Competências Comportamentais",
+  work_model:"Modelo de Trabalho",
+  location:"Localização",
+  employment_type:"Tipo de Contratação",
+  description:"Descrição da Vaga",
+  requirements:"Requisitos",
+  languages:"Idiomas",
+  manager:"Gestor",
+  deadline:"Prazo",
 }
 
 const SOURCE_LABELS: Record<string, { label: string; icon: typeof Building; color: string }> = {
   company_history: {
-    label: "Histórico da empresa",
+    label:"Histórico da empresa",
     icon: TrendingUp,
-    color: "text-wedo-cyan-dark",
+    color:"text-wedo-cyan-dark",
   },
   company_defaults: {
-    label: "Configuração padrão",
+    label:"Configuração padrão",
     icon: Building,
-    color: "text-wedo-purple",
+    color:"text-wedo-purple",
   },
   market_benchmark: {
-    label: "Benchmark de mercado",
+    label:"Benchmark de mercado",
     icon: Brain,
-    color: "text-status-warning",
+    color:"text-status-warning",
   },
 }
 
@@ -124,27 +124,27 @@ function getFieldLabel(fieldKey: string, fieldDetails?: Record<string, FieldDeta
 }
 
 function formatFieldValue(fieldKey: string, value: unknown): string {
-  if (value === null || value === undefined) return "-"
+  if (value === null || value === undefined) return"-"
   
-  if (fieldKey === "salary_range" && typeof value === "object") {
+  if (fieldKey ==="salary_range" && typeof value ==="object") {
     const { min, max, currency } = value as { min?: number; max?: number; currency?: string }
     return `${currency || CURRENCY_SYMBOL} ${min?.toLocaleString()} - ${max?.toLocaleString()}`
   }
   
-  if (fieldKey === "benefits" && Array.isArray(value)) {
-    if (value.length === 0) return "-"
-    return value.map((b: unknown) => typeof b === 'string' ? b : (b as Record<string, unknown>).name).join(", ")
+  if (fieldKey ==="benefits" && Array.isArray(value)) {
+    if (value.length === 0) return"-"
+    return value.map((b: unknown) => typeof b === 'string' ? b : (b as Record<string, unknown>).name).join(",")
   }
   
   if (Array.isArray(value)) {
-    if (value.length === 0) return "-"
-    if (typeof value[0] === "object" && value[0]?.competency) {
-      return value.map((v) => v.competency).join(", ")
+    if (value.length === 0) return"-"
+    if (typeof value[0] ==="object" && value[0]?.competency) {
+      return value.map((v) => v.competency).join(",")
     }
-    return value.slice(0, 5).join(", ") + (value.length > 5 ? ` +${value.length - 5}` : "")
+    return value.slice(0, 5).join(",") + (value.length > 5 ? ` +${value.length - 5}` :"")
   }
   
-  if (typeof value === "object") {
+  if (typeof value ==="object") {
     return JSON.stringify(value)
   }
   
@@ -300,9 +300,9 @@ export function FinalReviewPanel({
   }
 
   const getScoreColor = () => {
-    if (completeness_score >= 80) return "bg-status-success"
-    if (completeness_score >= 60) return "bg-status-warning"
-    return "bg-status-error"
+    if (completeness_score >= 80) return"bg-status-success"
+    if (completeness_score >= 60) return"bg-status-warning"
+    return"bg-status-error"
   }
 
   return (
@@ -312,12 +312,11 @@ export function FinalReviewPanel({
           <CardTitle className="text-lg font-semibold font-sans">Revisão Final</CardTitle>
           <Badge
             variant="outline"
-            className={cn(
- "text-sm font-semibold",
-              can_publish ? "border-status-success/30 text-status-success" : "border-status-error/30 text-status-error"
+            className={cn("text-sm font-semibold",
+              can_publish ?"border-status-success/30 text-status-success" :"border-status-error/30 text-status-error"
             )}
           >
-            {can_publish ? "Pronto para publicar" : "Campos obrigatórios pendentes"}
+            {can_publish ?"Pronto para publicar" :"Campos obrigatórios pendentes"}
           </Badge>
         </div>
         

@@ -1,15 +1,15 @@
 "use client"
 
-import React from "react"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
+import React from"react"
+import { Button } from"@/components/ui/button"
+import { Badge } from"@/components/ui/badge"
 import {
   Clock, Eye, Edit, Share2, FileText, Users, Briefcase,
   MoreVertical, MapPin, Brain, Copy, Trash2, User, Linkedin, Globe
-} from "lucide-react"
-import { getUrgencyBadge, getConversionRate, getAlertIcon, getAlertStyle, getAlertColor } from "../task-helpers"
-import type { JobWithAlert } from "../use-tasks-core"
-import { useUIPreferencesStore } from "@/stores/ui-preferences-store"
+} from"lucide-react"
+import { getUrgencyBadge, getConversionRate, getAlertIcon, getAlertStyle, getAlertColor } from"../task-helpers"
+import type { JobWithAlert } from"../use-tasks-core"
+import { useUIPreferencesStore } from"@/stores/ui-preferences-store"
 
 interface JobListItemProps {
   job: JobWithAlert
@@ -27,19 +27,19 @@ export function JobListItem({ job, onLIAAction, onNavigate }: JobListItemProps) 
             <Badge variant="outline" className="text-xs">{job.jobId}</Badge>
             {getUrgencyBadge(job.urgencyLevel, job.daysOpen)}
             {job.publishedLinkedIn && (
-              <Badge className="bg-wedo-cyan/15 text-wedo-cyan-dark border-transparent dark:bg-wedo-cyan/20 dark:text-wedo-cyan text-xs flex items-center gap-1 font-medium">
+              <Badge className="border-transparent dark:bg-wedo-cyan/20 dark:text-wedo-cyan text-xs flex items-center gap-1 font-medium">
                 <Linkedin className="w-2.5 h-2.5" />
                 LI
               </Badge>
             )}
             {job.publishedWebsite && (
-              <Badge className="bg-wedo-green/15 text-wedo-green border-transparent dark:bg-wedo-green/20 dark:text-wedo-green text-xs flex items-center gap-1 font-medium">
+              <Badge className="border-transparent dark:bg-wedo-green/20 dark:text-wedo-green text-xs flex items-center gap-1 font-medium">
                 <Globe className="w-2.5 h-2.5" />
                 Site
               </Badge>
             )}
             {job.publishedIndeed && (
-              <Badge className="bg-wedo-orange/15 text-wedo-orange border-transparent dark:bg-wedo-orange/20 dark:text-wedo-orange text-xs flex items-center gap-1 font-medium">
+              <Badge className="border-transparent dark:bg-wedo-orange/20 dark:text-wedo-orange text-xs flex items-center gap-1 font-medium">
                 <Briefcase className="w-2.5 h-2.5" />
                 Indeed
               </Badge>

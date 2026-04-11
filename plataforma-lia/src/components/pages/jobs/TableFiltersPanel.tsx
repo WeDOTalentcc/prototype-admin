@@ -6,15 +6,15 @@ import {
   Target, X, Search, Zap, CheckCircle, Globe, Users,
   Building, MapPin, Briefcase, Share2, BarChart3, Bookmark,
   Plus, Trash2, AlertCircle, UserCheck
-} from "lucide-react"
-import { Linkedin } from "lucide-react"
-import { Edit2 } from "lucide-react"
-import { AlertTriangle } from "lucide-react"
-import { Layers3 } from "lucide-react"
-import { Card } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { textStyles } from "@/lib/design-tokens"
+} from"lucide-react"
+import { Linkedin } from"lucide-react"
+import { Edit2 } from"lucide-react"
+import { AlertTriangle } from"lucide-react"
+import { Layers3 } from"lucide-react"
+import { Card } from"@/components/ui/card"
+import { Badge } from"@/components/ui/badge"
+import { Button } from"@/components/ui/button"
+import { textStyles } from"@/lib/design-tokens"
 
 interface SavedSearch {
   id: string
@@ -449,7 +449,7 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
                       </div>
                       <p className="text-micro text-lia-text-secondary mt-0.5 truncate">
                         {new Date(search.createdAt).toLocaleDateString('pt-BR')}
-                        {search.query && ` - "${search.query}"`}
+                        {search.query && ` -"${search.query}"`}
                       </p>
                     </div>
                     <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none">
@@ -486,7 +486,7 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
               <div className="text-center py-3 bg-lia-bg-secondary rounded-xl">
                 <Bookmark className="w-5 h-5 text-lia-text-secondary mx-auto mb-1" />
                 <p className="text-xs text-lia-text-tertiary">Nenhuma busca salva</p>
-                <p className="text-micro text-lia-text-secondary mt-0.5">Aplique filtros e clique em "Salvar Busca"</p>
+                <p className="text-micro text-lia-text-secondary mt-0.5">Aplique filtros e clique em"Salvar Busca"</p>
               </div>
             )}
           </div>

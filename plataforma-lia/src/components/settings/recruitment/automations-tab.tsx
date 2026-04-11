@@ -1,15 +1,15 @@
 "use client"
 
-import { useState } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { hasModuleAccess } from "@/utils/license-manager"
-import { ModuleUpsell } from "@/components/module-access/module-upsell"
+import { useState } from"react"
+import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
+import { Button } from"@/components/ui/button"
+import { Badge } from"@/components/ui/badge"
+import { hasModuleAccess } from"@/utils/license-manager"
+import { ModuleUpsell } from"@/components/module-access/module-upsell"
 import {
   Edit, Plus, Workflow, FileText, Zap, Target,
   Download, BarChart3, Activity, MoreHorizontal,
-} from "lucide-react"
+} from"lucide-react"
 
 export function AutomationsTab({ onSettingsChange }: { onSettingsChange: (changed: boolean) => void }) {
   const [selectedView, setSelectedView] = useState<'overview' | 'builder' | 'templates' | 'logs'>('overview')

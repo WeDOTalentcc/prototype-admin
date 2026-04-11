@@ -1,13 +1,13 @@
 "use client"
 
-import React, { memo } from "react"
-import { Badge } from "@/components/ui/badge"
-import { cn } from "@/lib/utils"
+import React, { memo } from"react"
+import { Badge } from"@/components/ui/badge"
+import { cn } from"@/lib/utils"
 
 interface CandidateSkillsListProps {
   skills: string[]
   maxVisible?: number
-  size?: "sm" | "md"
+  size?:"sm" |"md"
   className?: string
   onOverflowClick?: () => void
 }
@@ -15,7 +15,7 @@ interface CandidateSkillsListProps {
 const CandidateSkillsList = memo(function CandidateSkillsList({
   skills,
   maxVisible = 5,
-  size = "sm",
+  size ="sm",
   className,
   onOverflowClick,
 }: CandidateSkillsListProps) {
@@ -30,9 +30,8 @@ const CandidateSkillsList = memo(function CandidateSkillsList({
         <Badge
           key={skill}
           variant="secondary"
-          className={cn(
-            "border-0 bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-bg-secondary",
-            size === "sm" ? "text-micro px-1.5 py-0" : "text-xs px-2 py-0.5"
+          className={cn("border-0 bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-bg-secondary",
+            size ==="sm" ?"text-micro px-1.5 py-0" :"text-xs px-2 py-0.5"
           )}
         >
           {skill}
@@ -42,9 +41,8 @@ const CandidateSkillsList = memo(function CandidateSkillsList({
         <button
           type="button"
           onClick={onOverflowClick}
-          className={cn(
-            "text-lia-text-secondary hover:text-lia-text-primary transition-colors",
-            size === "sm" ? "text-micro" : "text-xs"
+          className={cn("text-lia-text-secondary hover:text-lia-text-primary transition-colors",
+            size ==="sm" ?"text-micro" :"text-xs"
           )}
         >
           +{overflowCount}
@@ -54,7 +52,7 @@ const CandidateSkillsList = memo(function CandidateSkillsList({
   )
 })
 
-CandidateSkillsList.displayName = "CandidateSkillsList"
+CandidateSkillsList.displayName ="CandidateSkillsList"
 
 export { CandidateSkillsList }
 export type { CandidateSkillsListProps }

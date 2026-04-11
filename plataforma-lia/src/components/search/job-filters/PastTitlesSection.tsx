@@ -1,17 +1,17 @@
 "use client"
 
-import { useState, useRef } from "react"
-import { X, Check, RotateCcw, Save, Zap, Brain, Loader2, List, Info } from "lucide-react"
-import { cn } from "@/lib/utils"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Badge } from "@/components/ui/badge"
+import { useState, useRef } from"react"
+import { X, Check, RotateCcw, Save, Zap, Brain, Loader2, List, Info } from"lucide-react"
+import { cn } from"@/lib/utils"
+import { Input } from"@/components/ui/input"
+import { Label } from"@/components/ui/label"
+import { Badge } from"@/components/ui/badge"
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover"
-import { useSemanticSearch } from "@/hooks/useSemanticSearch"
+} from"@/components/ui/popover"
+import { useSemanticSearch } from"@/hooks/useSemanticSearch"
 import type { SearchFilters } from '../hooks/useAdvancedFiltersCore'
 
 export interface PastTitlesSectionProps {
@@ -19,8 +19,8 @@ export interface PastTitlesSectionProps {
   updateFilter: <T extends keyof SearchFilters>(category: T, key: keyof NonNullable<SearchFilters[T]>, value: string | string[] | number | boolean | null) => void
   addToArray: <T extends keyof SearchFilters>(category: T, key: keyof NonNullable<SearchFilters[T]>, value: string) => void
   removeFromArray: <T extends keyof SearchFilters>(category: T, key: keyof NonNullable<SearchFilters[T]>, value: string) => void
-  onOpenPresetsModal: (target: "titles" | "pastTitles") => void
-  onOpenSavePresetModal: (target: "titles" | "pastTitles") => void
+  onOpenPresetsModal: (target:"titles" |"pastTitles") => void
+  onOpenSavePresetModal: (target:"titles" |"pastTitles") => void
 }
 
 export const PastTitlesSection = ({
@@ -43,11 +43,11 @@ export const PastTitlesSection = ({
     isLoading: isLoadingTitles,
     search: searchTitles,
     clearSuggestions: clearTitleSuggestions
-  } = useSemanticSearch({ domain: "job-titles", debounceMs: 400 })
+  } = useSemanticSearch({ domain:"job-titles", debounceMs: 400 })
 
   const handleAddPastTitle = (title: string) => {
     if (title.trim()) {
-      addToArray("job", "pastTitles", title.trim())
+      addToArray("job","pastTitles", title.trim())
       setPastTitleInput("")
       clearTitleSuggestions()
       setShowPastTitleSuggestions(false)
@@ -67,10 +67,10 @@ export const PastTitlesSection = ({
 
   const generateLocalSimilarTitles = (titles: string[]): string[] => {
     const suggestions: string[] = []
-    const seniorityPrefixes = ["Junior", "Senior", "Staff", "Principal", "Lead", "Head of"]
+    const seniorityPrefixes = ["Junior","Senior","Staff","Principal","Lead","Head of"]
 
     titles.forEach(title => {
-      const cleanTitle = title.replace(/^(Junior|Senior|Staff|Principal|Lead|Head of)\s*/i, "")
+      const cleanTitle = title.replace(/^(Junior|Senior|Staff|Principal|Lead|Head of)\s*/i,"")
       seniorityPrefixes.forEach(prefix => {
         const newTitle = `${prefix} ${cleanTitle}`
         if (!titles.includes(newTitle) && !suggestions.includes(newTitle)) {
@@ -119,7 +119,7 @@ export const PastTitlesSection = ({
 
   const handleAddSelectedAiPastTitles = () => {
     selectedAiPastTitles.forEach(title => {
-      addToArray("job", "pastTitles", title)
+      addToArray("job","pastTitles", title)
     })
     setAiSuggestedPastTitles(prev => prev.filter(t => !selectedAiPastTitles.includes(t)))
     setSelectedAiPastTitles([])
@@ -143,7 +143,7 @@ export const PastTitlesSection = ({
         </div>
         <div className="flex items-center gap-3">
           <button
-            onClick={() => updateFilter("job", "pastTitles", [] as string[])}
+            onClick={() => updateFilter("job","pastTitles", [] as string[])}
             disabled={(filters.job?.pastTitles?.length || 0) === 0}
             className="text-xs text-lia-text-secondary hover:text-status-error flex items-center gap-1 transition-colors motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed"
           >
@@ -175,10 +175,10 @@ export const PastTitlesSection = ({
             value={pastTitleInput}
             onChange={(e) => handlePastTitleInputChange(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key === "Enter" && pastTitleInput.trim()) {
+              if (e.key ==="Enter" && pastTitleInput.trim()) {
                 e.preventDefault()
                 handleAddPastTitle(pastTitleInput)
-              } else if (e.key === "Escape") {
+              } else if (e.key ==="Escape") {
                 setShowPastTitleSuggestions(false)
               }
             }}
@@ -230,17 +230,16 @@ export const PastTitlesSection = ({
               <Badge
                 key={title}
                 variant="secondary"
-                className={cn(
-                  "pl-2 pr-1 py-1 flex items-center gap-1",
+                className={cn("pl-2 pr-1 py-1 flex items-center gap-1",
                   isAiSuggested
-                    ? "bg-wedo-purple/10 border border-wedo-purple/30 text-wedo-purple"
-                    : "bg-lia-bg-tertiary text-lia-text-primary"
+                    ?"bg-wedo-purple/10 border border-wedo-purple/30 text-wedo-purple"
+                    :"bg-lia-bg-tertiary text-lia-text-primary"
                 )}
               >
                 {isAiSuggested && <Brain className="w-3 h-3 text-wedo-purple" />}
                 <span className="text-xs">{title}</span>
                 <button
-                  onClick={() => removeFromArray("job", "pastTitles", title)}
+                  onClick={() => removeFromArray("job","pastTitles", title)}
                   className="ml-1 hover:bg-lia-border-default rounded-md p-0.5"
                 >
                   <X className="w-3 h-3" />
@@ -252,10 +251,7 @@ export const PastTitlesSection = ({
           <button
             onClick={handleFindSimilarPastTitles}
             disabled={isLoadingSimilarPastTitles || (filters.job?.pastTitles?.length || 0) === 0}
-            className={cn(
-              "px-3 py-1 rounded-full text-xs border flex items-center gap-1.5 transition-[width,height]",
-              "border-wedo-purple/30 bg-wedo-purple/10 text-wedo-purple hover:bg-wedo-purple/15",
-              "disabled:opacity-50 disabled:cursor-not-allowed"
+            className={cn("px-3 py-1 rounded-full text-xs border flex items-center gap-1.5 transition-[width,height]","border-wedo-purple/30  hover:bg-wedo-purple/15","disabled:opacity-50 disabled:cursor-not-allowed"
             )}
           >
             {isLoadingSimilarPastTitles ? (
@@ -295,11 +291,10 @@ export const PastTitlesSection = ({
                 <button
                   key={title}
                   onClick={() => toggleAiPastTitleSelection(title)}
-                  className={cn(
-                    "px-2 py-1 rounded-md text-xs border transition-colors flex items-center gap-1",
+                  className={cn("px-2 py-1 rounded-md text-xs border transition-colors flex items-center gap-1",
                     isSelected
-                      ? "border-wedo-purple/30 bg-wedo-purple/15 text-wedo-purple font-medium"
-                      : "border-wedo-purple/30 bg-lia-bg-primary text-wedo-purple hover:bg-wedo-purple/10"
+                      ?"border-wedo-purple/30  font-medium"
+                      :"border-wedo-purple/30 bg-lia-bg-primary text-wedo-purple hover:bg-wedo-purple/10"
                   )}
                 >
                   {isSelected && <Check className="w-3 h-3" />}

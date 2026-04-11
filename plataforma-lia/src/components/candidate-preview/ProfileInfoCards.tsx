@@ -1,12 +1,12 @@
 "use client"
 
 import { textStyles, badgeStyles } from '@/lib/design-tokens'
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
+import { Badge } from"@/components/ui/badge"
 import {
   GraduationCap, Award, Languages, DollarSign,
   User, Home, MapPin
-} from "lucide-react"
+} from"lucide-react"
 import type { LanguageEntry } from './ProfileTabTypes'
 
 interface ProfileInfoCardsProps {
@@ -221,7 +221,7 @@ function ProfilePreferencesCard({ candidate }: { candidate: Record<string, unkno
         {candidate.is_remote !== undefined && (
           <div className="flex items-center justify-between">
             <span className={textStyles.bodySmall}>Aceita Remoto</span>
-            <Badge className={`text-xs px-1.5 py-0 h-4 ${candidate.is_remote ? 'bg-status-success/15 text-status-success' : 'bg-lia-bg-tertiary text-lia-text-primary'}`}>
+            <Badge className={`text-xs px-1.5 py-0 h-4 ${candidate.is_remote ? '' : 'bg-lia-bg-tertiary text-lia-text-primary'}`}>
               {candidate.is_remote ? 'Sim' : 'Não'}
             </Badge>
           </div>
@@ -229,7 +229,7 @@ function ProfilePreferencesCard({ candidate }: { candidate: Record<string, unkno
         {(candidate.willing_to_relocate !== undefined || candidate.willingToRelocate !== undefined) && (
           <div className="flex items-center justify-between">
             <span className={textStyles.bodySmall}>Aceita Mudança</span>
-            <Badge className={`text-xs px-1.5 py-0 h-4 ${(candidate.willing_to_relocate ?? candidate.willingToRelocate) ? 'bg-status-success/15 text-status-success' : 'bg-lia-bg-tertiary text-lia-text-primary'}`}>
+            <Badge className={`text-xs px-1.5 py-0 h-4 ${(candidate.willing_to_relocate ?? candidate.willingToRelocate) ? '' : 'bg-lia-bg-tertiary text-lia-text-primary'}`}>
               {(candidate.willing_to_relocate ?? candidate.willingToRelocate) === true ? 'Sim' : 
                (candidate.willing_to_relocate ?? candidate.willingToRelocate) === false ? 'Não' : 
                String(candidate.willing_to_relocate ?? candidate.willingToRelocate)}
@@ -239,7 +239,7 @@ function ProfilePreferencesCard({ candidate }: { candidate: Record<string, unkno
         {candidate.mobility !== undefined && (
           <div className="flex items-center justify-between">
             <span className={textStyles.bodySmall}>Disponibilidade Viagens</span>
-            <Badge className={`text-xs px-1.5 py-0 h-4 ${candidate.mobility ? 'bg-status-success/15 text-status-success' : 'bg-lia-bg-tertiary text-lia-text-primary'}`}>
+            <Badge className={`text-xs px-1.5 py-0 h-4 ${candidate.mobility ? '' : 'bg-lia-bg-tertiary text-lia-text-primary'}`}>
               {candidate.mobility === true ? 'Sim' : candidate.mobility === false ? 'Não' : String(candidate.mobility)}
             </Badge>
           </div>
@@ -247,7 +247,7 @@ function ProfilePreferencesCard({ candidate }: { candidate: Record<string, unkno
         {candidate.communication_consent !== undefined && (
           <div className="flex items-center justify-between">
             <span className={textStyles.bodySmall}>Consentimento LGPD</span>
-            <Badge className={`text-xs px-1.5 py-0 h-4 ${candidate.communication_consent ? 'bg-status-success/15 text-status-success' : 'bg-status-error/15 text-status-error'}`}>
+            <Badge className={`text-xs px-1.5 py-0 h-4 ${candidate.communication_consent ? '' : ''}`}>
               {candidate.communication_consent ? '✓ Consentido' : '✗ Não consentido'}
             </Badge>
           </div>

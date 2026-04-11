@@ -1,23 +1,23 @@
 "use client"
 
-import React, { useEffect, useRef, useState, useCallback } from "react"
-import { Card, CardContent } from "@/components/ui/card"
-import { Progress } from "@/components/ui/progress"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Loader2, CheckCircle2, XCircle, RefreshCw } from "lucide-react"
+import React, { useEffect, useRef, useState, useCallback } from"react"
+import { Card, CardContent } from"@/components/ui/card"
+import { Progress } from"@/components/ui/progress"
+import { Badge } from"@/components/ui/badge"
+import { Button } from"@/components/ui/button"
+import { Loader2, CheckCircle2, XCircle, RefreshCw } from"lucide-react"
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 export interface AsyncJobResult {
   job_id: string
-  status: "queued" | "processing" | "completed" | "failed"
+  status:"queued" |"processing" |"completed" |"failed"
   result?: Record<string, unknown>
   error?: string
 }
 
 interface WsMessage {
-  type: "status" | "progress" | "completed" | "failed"
+  type:"status" |"progress" |"completed" |"failed"
   job_id: string
   status: string
   progress?: number
@@ -45,12 +45,12 @@ export function AsyncJobProgress({
   pollIntervalMs = 3000,
   onComplete,
   onError,
-  label = "Processando...",
+  label ="Processando...",
   showCard = true,
 }: AsyncJobProgressProps) {
   const [progress, setProgress] = useState(0)
   const [message, setMessage] = useState("Aguardando início...")
-  const [status, setStatus] = useState<"queued" | "processing" | "completed" | "failed">("queued")
+  const [status, setStatus] = useState<"queued" |"processing" |"completed" |"failed">("queued")
   const [usePolling, setUsePolling] = useState(false)
 
   const wsRef = useRef<WebSocket | null>(null)
@@ -64,7 +64,7 @@ export function AsyncJobProgress({
 
     const base = wsBaseUrl
       || process.env.NEXT_PUBLIC_WS_URL
-      || `${window.location.protocol === "https:" ? "wss:" : "ws:"}//${window.location.host}`
+      || `${window.location.protocol ==="https:" ?"wss:" :"ws:"}//${window.location.host}`
     const url = `${base}/ws/jobs/${jobId}`
 
     try {
@@ -111,7 +111,7 @@ export function AsyncJobProgress({
 
       const data = await res.json()
       handleUpdate({
-        type: data.status === "completed" ? "completed" : data.status === "failed" ? "failed" : "progress",
+        type: data.status ==="completed" ?"completed" : data.status ==="failed" ?"failed" :"progress",
         job_id: jobId,
         status: data.status,
         progress: data.progress_percent ?? 0,
@@ -136,18 +136,18 @@ export function AsyncJobProgress({
     if (data.progress !== undefined) setProgress(data.progress)
     if (data.message) setMessage(data.message)
 
-    if (data.type === "completed") {
+    if (data.type ==="completed") {
       completedRef.current = true
       setProgress(100)
       setStatus("completed")
       setMessage("Concluído!")
-      onComplete({ job_id: jobId, status: "completed", result: data.result })
-    } else if (data.type === "failed") {
+      onComplete({ job_id: jobId, status:"completed", result: data.result })
+    } else if (data.type ==="failed") {
       completedRef.current = true
       setStatus("failed")
-      setMessage(data.error || "Erro desconhecido")
-      onError(data.error || "Tarefa falhou")
-    } else if (data.type === "progress" || data.type === "status") {
+      setMessage(data.error ||"Erro desconhecido")
+      onError(data.error ||"Tarefa falhou")
+    } else if (data.type ==="progress" || data.type ==="status") {
       setStatus("processing")
     }
   }, [jobId, onComplete, onError])
@@ -175,9 +175,9 @@ export function AsyncJobProgress({
       {/* Header */}
       <div className="flex items-center justify-between gap-2" role="status" aria-live="polite" aria-label="Carregando...">
         <div className="flex items-center gap-2" role="status" aria-live="polite" aria-label="Carregando...">
-          {status === "processing" || status === "queued" ? (
+          {status ==="processing" || status ==="queued" ? (
             <Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none text-lia-text-secondary" />
-          ) : status === "completed" ? (
+          ) : status ==="completed" ? (
             <CheckCircle2 className="h-4 w-4 text-status-success" />
           ) : (
             <XCircle className="h-4 w-4 text-status-error" />
@@ -186,7 +186,7 @@ export function AsyncJobProgress({
         </div>
 
         <div className="flex items-center gap-2">
-          {usePolling && status !== "completed" && status !== "failed" && (
+          {usePolling && status !=="completed" && status !=="failed" && (
             <Badge variant="outline" className="text-xs px-1.5 py-0 text-lia-text-secondary">
               <RefreshCw className="h-2.5 w-2.5 mr-1" />
               polling
@@ -195,16 +195,16 @@ export function AsyncJobProgress({
           <Badge
             variant="outline"
             className={`text-xs px-1.5 py-0 ${
- status === "completed"
-                ? "text-status-success border-status-success/30"
-                : status === "failed"
-                ? "text-status-error border-status-error/30"
-                : "lia-text-secondary"
+ status ==="completed"
+                ?"text-status-success border-status-success/30"
+                : status ==="failed"
+                ?"text-status-error border-status-error/30"
+                :"lia-text-secondary"
             }`}
           >
-            {status === "queued" ? "Na fila" :
-             status === "processing" ? "Processando" :
-             status === "completed" ? "Concluído" : "Falhou"}
+            {status ==="queued" ?"Na fila" :
+             status ==="processing" ?"Processando" :
+             status ==="completed" ?"Concluído" :"Falhou"}
           </Badge>
         </div>
       </div>
@@ -216,7 +216,7 @@ export function AsyncJobProgress({
       <p className="text-xs text-lia-text-secondary leading-relaxed">{message}</p>
 
       {/* Retry on failure */}
-      {status === "failed" && (
+      {status ==="failed" && (
         <Button
           variant="outline"
           size="sm"

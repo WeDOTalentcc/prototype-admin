@@ -1,11 +1,11 @@
 "use client"
-import React from "react"
-import { Badge } from "@/components/ui/badge"
+import React from"react"
+import { Badge } from"@/components/ui/badge"
 import { textStyles } from '@/lib/design-tokens'
 import {
   Calendar, ExternalLink, CheckCircle, Mail
-} from "lucide-react"
-import { Activity as ActivityData } from "@/data/demo-activities"
+} from"lucide-react"
+import { Activity as ActivityData } from"@/data/demo-activities"
 
 interface ActivityCommunicationDetailsProps {
   activity: ActivityData & { details: NonNullable<ActivityData['details']> }
@@ -82,7 +82,7 @@ export function ActivityCommunicationDetails({ activity }: ActivityCommunication
               <Calendar className="w-3 h-3 text-wedo-purple" />
               {activity.details.interviewType}
               {activity.details.stage && (
-                <Badge className="ml-2 text-micro px-1.5 py-0 bg-wedo-purple/10 text-wedo-purple">{activity.details.stage}</Badge>
+                <Badge className="ml-2 text-micro px-1.5 py-0">{activity.details.stage}</Badge>
               )}
             </h5>
             <div className="grid grid-cols-2 gap-2 mb-3">

@@ -1,42 +1,41 @@
-// Phase 2: ChatPage now uses UnifiedChat fullscreen
-"use client"
+// Phase 2: ChatPage now uses UnifiedChat fullscreen"use client"
 
-import React from "react"
-import { useAuth } from "@/contexts/auth-context"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { LIAIcon } from "@/components/ui/lia-icon"
+import React from"react"
+import { useAuth } from"@/contexts/auth-context"
+import { Button } from"@/components/ui/button"
+import { Badge } from"@/components/ui/badge"
+import { LIAIcon } from"@/components/ui/lia-icon"
 import {
   Send, FileText, Search, MapPin, X,
   ChevronDown, Play, Mic, AlertTriangle, Cpu, Brain,
   Plus, Eraser
-} from "lucide-react"
-import { InterviewSchedulingModal } from "@/components/ui/interview-scheduling-modal"
-import { PromptSuggestionsDock } from "@/components/ui/prompt-suggestions-dock"
-import { ContextPill } from "@/components/ui/context-pill"
-import { QuickActionChips } from "@/components/ui/quick-action-chips"
-import { CommandPalette } from "@/components/ui/command-palette"
-import { FileUploadButton } from "@/components/ui/file-upload-button"
-import { AudioRecordButton } from "@/components/ui/audio-record-button"
-import { AgentControlCenter } from "@/components/agent-control-center"
-import { CandidateDetailSidebar } from "@/components/search/candidate-detail-sidebar"
-import { CreditConfirmationDialog } from "@/components/search/credit-confirmation-dialog"
-import { SmartSearchInput } from "@/components/search/smart-search-input"
-import { AdvancedFiltersModal } from "@/components/search/advanced-filters-modal"
-import { SidePanelContainer } from "@/components/ui-actions"
-import { useLiaFloat, useLiaChatContext } from "@/contexts/lia-float-context"
-import { DynamicContextPanel } from "@/components/lia-float/panels"
-import { ContextBadge } from "@/components/lia-float/ContextBadge"
-import { HITLConfirmCard } from "@/components/lia-float/HITLConfirmCard"
-import { ChatBubbleBase } from "@/components/chat/chat-bubble-base"
-import { EmptyFieldNotificationMessage } from "@/components/chat/empty-field-notification-message"
-import { AgentMemoryIndicator } from "@/components/chat/agent-memory-indicator"
-import { ChatContextPanel } from "@/components/chat/ChatContextPanel"
-import { ChatMessageList } from "@/components/chat/ChatMessageList"
-import type { Message } from "./chat-page/types"
-import { useChatPageCore } from "./chat-page/useChatPageCore"
-import { ErrorBoundarySection } from "@/components/ui/error-boundary-section"
-import { ChatPageFullscreen } from "@/components/unified-chat/ChatPageFullscreen"
+} from"lucide-react"
+import { InterviewSchedulingModal } from"@/components/ui/interview-scheduling-modal"
+import { PromptSuggestionsDock } from"@/components/ui/prompt-suggestions-dock"
+import { ContextPill } from"@/components/ui/context-pill"
+import { QuickActionChips } from"@/components/ui/quick-action-chips"
+import { CommandPalette } from"@/components/ui/command-palette"
+import { FileUploadButton } from"@/components/ui/file-upload-button"
+import { AudioRecordButton } from"@/components/ui/audio-record-button"
+import { AgentControlCenter } from"@/components/agent-control-center"
+import { CandidateDetailSidebar } from"@/components/search/candidate-detail-sidebar"
+import { CreditConfirmationDialog } from"@/components/search/credit-confirmation-dialog"
+import { SmartSearchInput } from"@/components/search/smart-search-input"
+import { AdvancedFiltersModal } from"@/components/search/advanced-filters-modal"
+import { SidePanelContainer } from"@/components/ui-actions"
+import { useLiaFloat, useLiaChatContext } from"@/contexts/lia-float-context"
+import { DynamicContextPanel } from"@/components/lia-float/panels"
+import { ContextBadge } from"@/components/lia-float/ContextBadge"
+import { HITLConfirmCard } from"@/components/lia-float/HITLConfirmCard"
+import { ChatBubbleBase } from"@/components/chat/chat-bubble-base"
+import { EmptyFieldNotificationMessage } from"@/components/chat/empty-field-notification-message"
+import { AgentMemoryIndicator } from"@/components/chat/agent-memory-indicator"
+import { ChatContextPanel } from"@/components/chat/ChatContextPanel"
+import { ChatMessageList } from"@/components/chat/ChatMessageList"
+import type { Message } from"./chat-page/types"
+import { useChatPageCore } from"./chat-page/useChatPageCore"
+import { ErrorBoundarySection } from"@/components/ui/error-boundary-section"
+import { ChatPageFullscreen } from"@/components/unified-chat/ChatPageFullscreen"
 
 export function ChatPage({ initialConversationId }: { initialConversationId?: string | null }) {
   return <ChatPageFullscreen initialConversationId={initialConversationId} />
@@ -164,7 +163,7 @@ export function LegacyChatPage({ initialConversationId }: { initialConversationI
               >
                 <Search className="w-4 h-4" />
               </button>
-              {contextPage && contextPage !== "Chat LIA" && (
+              {contextPage && contextPage !=="Chat LIA" && (
                 <ContextBadge contextPage={contextPage} />
               )}
             </div>
@@ -173,8 +172,8 @@ export function LegacyChatPage({ initialConversationId }: { initialConversationI
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => setActiveTab(activeTab === "controle" ? "conversa" : "controle")}
-                className={`transition-colors motion-reduce:transition-none duration-200 text-xs gap-1.5 ${activeTab === "controle" ? "text-wedo-cyan" : "text-lia-text-secondary hover:text-lia-text-primary"}`}
+                onClick={() => setActiveTab(activeTab ==="controle" ?"conversa" :"controle")}
+                className={`transition-colors motion-reduce:transition-none duration-200 text-xs gap-1.5 ${activeTab ==="controle" ?"text-wedo-cyan" :"text-lia-text-secondary hover:text-lia-text-primary"}`}
                 title="Centro de Controle"
               >
                 <Cpu className="w-4 h-4" />
@@ -215,7 +214,7 @@ export function LegacyChatPage({ initialConversationId }: { initialConversationI
         </div>
 
         {/* Chat Content */}
-        {activeTab === "conversa" && (
+        {activeTab ==="conversa" && (
         <>
         {/* Messages com altura flexível e scroll */}
         <div
@@ -365,9 +364,9 @@ export function LegacyChatPage({ initialConversationId }: { initialConversationI
               <div className="space-y-4">
                 
                 {/* Sugestões Rápidas */}
-                {(getQuickSuggestions().length > 0 || (hasSearchResults && contextData && getQuickActions().length > 0)) && !isLoading && (searchFlow.flowState as string) !== "collecting_profile" && (
+                {(getQuickSuggestions().length > 0 || (hasSearchResults && contextData && getQuickActions().length > 0)) && !isLoading && (searchFlow.flowState as string) !=="collecting_profile" && (
                   <div className="space-y-3">
-                    {getQuickSuggestions().length > 0 && (searchFlow.flowState as string) !== "collecting_profile" && (
+                    {getQuickSuggestions().length > 0 && (searchFlow.flowState as string) !=="collecting_profile" && (
                       <div className="flex flex-wrap gap-2">
                         {getQuickSuggestions().map((suggestion, index) => (
                           <Button
@@ -536,7 +535,7 @@ export function LegacyChatPage({ initialConversationId }: { initialConversationI
                   >
                     <span className="w-2 h-2 rounded-full bg-wedo-cyan animate-pulse motion-reduce:animate-none shrink-0" />
                     <span>
-                      Ação em andamento: <strong className="text-lia-text-primary">{activePendingAction.intent.replace(/_/g, " ")}</strong>
+                      Ação em andamento: <strong className="text-lia-text-primary">{activePendingAction.intent.replace(/_/g,"")}</strong>
                     </span>
                     <button
                       className="ml-auto text-xs hover:opacity-80 transition-opacity motion-reduce:transition-none text-lia-text-disabled"
@@ -595,7 +594,7 @@ export function LegacyChatPage({ initialConversationId }: { initialConversationI
                           disabled={!input.trim() || isLoading || emptyFieldNotifications.hasPendingNotifications}
                           size="sm"
                           className="p-2.5 bg-wedo-cyan text-white hover:bg-wedo-cyan/90 rounded-xl transition-colors disabled:opacity-50"
-                          title={emptyFieldNotifications.hasPendingNotifications ? "Resolva as pendências acima para continuar" : undefined}
+                          title={emptyFieldNotifications.hasPendingNotifications ?"Resolva as pendências acima para continuar" : undefined}
                         >
                           <Send className="w-[18px] h-[18px]" />
                         </Button>
@@ -615,7 +614,7 @@ export function LegacyChatPage({ initialConversationId }: { initialConversationI
         )}
 
         {/* Tab Content: Centro de Controle */}
-        {activeTab === "controle" && (
+        {activeTab ==="controle" && (
           <AgentControlCenter />
         )}
       </div>
@@ -653,8 +652,8 @@ export function LegacyChatPage({ initialConversationId }: { initialConversationI
           candidateId={selectedCandidateForScheduling.id}
           jobTitle={selectedCandidateForScheduling.job_title}
           jobVacancyId={selectedCandidateForScheduling.job_vacancy_id}
-          userName={authUser?.name || "Recrutador"}
-          userEmail={authUser?.email || ""}
+          userName={authUser?.name ||"Recrutador"}
+          userEmail={authUser?.email ||""}
         />
       )}
 
@@ -713,7 +712,7 @@ export function LegacyChatPage({ initialConversationId }: { initialConversationI
                   salary_min: 15000,
                   salary_max: 25000,
                   benefits: []
-                }, "Remuneração e Benefícios")}
+                },"Remuneração e Benefícios")}
                 className="px-3 py-1.5 text-xs bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:bg-lia-bg-secondary dark:hover:bg-lia-interactive-active rounded-xl transition-colors motion-reduce:transition-none"
               >
                 Debug Panel

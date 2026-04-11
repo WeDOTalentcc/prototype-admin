@@ -1,6 +1,6 @@
 'use client'
 
-import NextImage from "next/image"
+import NextImage from"next/image"
 import React, { useState } from 'react'
 import { ExternalLink, Linkedin, MapPin, Briefcase, GraduationCap, Building2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -68,7 +68,7 @@ export const CandidateProfileColumn: React.FC<CandidateProfileColumnProps> = ({ 
         )}
       </div>
 
-      <div className="">
+      <div >
         <div className="flex px-6">
           {['Experience', 'Education', 'Skill Map'].map((tab) => (
             <button
@@ -150,7 +150,7 @@ export const CandidateProfileColumn: React.FC<CandidateProfileColumnProps> = ({ 
                       <div className="flex items-center gap-2 mt-1">
                         <p className="text-sm text-lia-text-primary">{exp.title}</p>
                         {exp.isPromotion && (
-                          <Badge className="text-xs px-1.5 py-0.5 bg-status-success/10 text-status-success border-status-success/30">
+                          <Badge className="text-xs px-1.5 py-0.5  border-status-success/30">
                             Promotion
                           </Badge>
                         )}

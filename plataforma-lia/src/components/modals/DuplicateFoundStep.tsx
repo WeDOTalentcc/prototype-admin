@@ -1,12 +1,12 @@
 "use client"
 
-import React from "react"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Card, CardContent } from "@/components/ui/card"
+import React from"react"
+import { Button } from"@/components/ui/button"
+import { Badge } from"@/components/ui/badge"
+import { Card, CardContent } from"@/components/ui/card"
 import {
   AlertCircle, ExternalLink, Building, MapPin, Loader2
-} from "lucide-react"
+} from"lucide-react"
 import type { DuplicateCheckResult } from '@/services/duplicate-detection-service'
 
 interface DuplicateFoundStepProps {
@@ -105,8 +105,7 @@ export function DuplicateFoundStep({
               <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin motion-reduce:animate-none" />
               Cadastrando...
             </>
-          ) : (
-            "Cadastrar Mesmo Assim"
+          ) : ("Cadastrar Mesmo Assim"
           )}
         </Button>
         <Button

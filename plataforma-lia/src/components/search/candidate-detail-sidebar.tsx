@@ -1,13 +1,13 @@
 "use client"
 
-import React from "react"
-import { getScoreBadgeClasses } from "@/lib/score-utils"
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Separator } from "@/components/ui/separator"
+import React from"react"
+import { getScoreBadgeClasses } from"@/lib/score-utils"
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from"@/components/ui/sheet"
+import { Button } from"@/components/ui/button"
+import { Badge } from"@/components/ui/badge"
+import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
+import { ScrollArea } from"@/components/ui/scroll-area"
+import { Separator } from"@/components/ui/separator"
 import { 
   MapPin, 
   Briefcase, 
@@ -30,9 +30,9 @@ import {
   Globe,
   Eye,
   Save
-} from "lucide-react"
-import { CandidateResult } from "./search-results-card"
-import { textStyles, buttonStyles, cardStyles, badgeStyles } from "@/lib/design-tokens"
+} from"lucide-react"
+import { CandidateResult } from"./search-results-card"
+import { textStyles, buttonStyles, cardStyles, badgeStyles } from"@/lib/design-tokens"
 
 interface CandidateExperience {
   title: string
@@ -71,7 +71,7 @@ interface CandidateDetailSidebarProps {
   onClose: () => void
   candidate: ExtendedCandidateProfile | null
   onAddToJob?: (candidateId: string) => void
-  onContact?: (candidateId: string, method: "email" | "phone" | "linkedin") => void
+  onContact?: (candidateId: string, method:"email" |"phone" |"linkedin") => void
   onSendMessage?: (candidateId: string) => void
   onSaveToBase?: (candidateId: string) => void
 }
@@ -88,14 +88,14 @@ export function CandidateDetailSidebar({
   if (!candidate) return null
 
   const getInitials = (name: string) => {
-    const parts = name.split(" ")
+    const parts = name.split("")
     return parts.length > 1 
       ? `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase()
       : name.slice(0, 2).toUpperCase()
   }
 
   const getScoreColor = (score?: number) => {
-    if (!score) return "bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary"
+    if (!score) return"bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary"
     return getScoreBadgeClasses(score)
   }
 
@@ -145,12 +145,12 @@ export function CandidateDetailSidebar({
                   <Badge 
                     variant="outline" 
                     className={`${
-                      candidate.source === "local" 
-                        ? "border-lia-border-default dark:border-lia-border-default bg-lia-bg-secondary dark:bg-lia-bg-secondary text-lia-text-secondary" 
-                        : "border-lia-border-default dark:border-lia-border-default bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary"
+                      candidate.source ==="local" 
+                        ?"border-lia-border-default dark:border-lia-border-default bg-lia-bg-secondary dark:bg-lia-bg-secondary text-lia-text-secondary" 
+                        :"border-lia-border-default dark:border-lia-border-default bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary"
                     }`}
                   >
-                    {candidate.source === "local" ? (
+                    {candidate.source ==="local" ? (
                       <>
                         <Database className="h-3 w-3 mr-1" />
                         Base local
@@ -183,7 +183,7 @@ export function CandidateDetailSidebar({
                     Candidato descoberto - ainda não salvo na sua base local
                   </p>
                 )}
-                {!candidate.is_discovered && candidate.source === "pearch" && (
+                {!candidate.is_discovered && candidate.source ==="pearch" && (
                   <p className="text-xs text-lia-text-secondary">
                     Candidato encontrado na busca global (Pearch)
                   </p>
@@ -246,7 +246,7 @@ export function CandidateDetailSidebar({
                       {(exp.start_date || exp.end_date) && (
                         <p className="text-xs text-lia-text-primary flex items-center gap-1 mt-1">
                           <Calendar className="h-3 w-3" />
-                          {exp.start_date} - {exp.is_current ? "Atual" : exp.end_date}
+                          {exp.start_date} - {exp.is_current ?"Atual" : exp.end_date}
                         </p>
                       )}
                       {exp.description && (
@@ -275,7 +275,7 @@ export function CandidateDetailSidebar({
                       )}
                       {(edu.start_date || edu.end_date) && (
                         <p className="text-xs text-lia-text-primary">
-                          {edu.start_date} - {edu.end_date || "Atual"}
+                          {edu.start_date} - {edu.end_date ||"Atual"}
                         </p>
                       )}
                     </div>
@@ -329,7 +329,7 @@ export function CandidateDetailSidebar({
                     variant="ghost"
                     size="icon"
                     className="absolute top-2 right-2 h-6 w-6"
-                    onClick={() => copyToClipboard(candidate.insights?.outreach_message || "")}
+                    onClick={() => copyToClipboard(candidate.insights?.outreach_message ||"")}
                   >
                     <Copy className="h-3 w-3" />
                   </Button>
@@ -352,7 +352,7 @@ export function CandidateDetailSidebar({
                         variant="ghost"
                         size="icon"
                         className="h-7 w-7"
-                        onClick={() => copyToClipboard(candidate.email || "")}
+                        onClick={() => copyToClipboard(candidate.email ||"")}
                       >
                         <Copy className="h-3 w-3" />
                       </Button>
@@ -360,7 +360,7 @@ export function CandidateDetailSidebar({
                         variant="ghost"
                         size="icon"
                         className="h-7 w-7"
-                        onClick={() => onContact?.(candidate.id, "email")}
+                        onClick={() => onContact?.(candidate.id,"email")}
                       >
                         <Send className="h-3 w-3" />
                       </Button>
@@ -377,7 +377,7 @@ export function CandidateDetailSidebar({
                       variant="ghost"
                       size="icon"
                       className="h-7 w-7"
-                      onClick={() => copyToClipboard(candidate.phone || "")}
+                      onClick={() => copyToClipboard(candidate.phone ||"")}
                     >
                       <Copy className="h-3 w-3" />
                     </Button>

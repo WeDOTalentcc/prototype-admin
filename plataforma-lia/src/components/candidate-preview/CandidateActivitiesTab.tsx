@@ -1,20 +1,20 @@
 "use client"
-import React, { useState } from "react"
+import React, { useState } from"react"
 import { textStyles, cardStyles, badgeStyles, formatScorePercent } from '@/lib/design-tokens'
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
+import { Badge } from"@/components/ui/badge"
+import { Button } from"@/components/ui/button"
 import {
   Brain, ChevronDown,
   Calendar, ExternalLink, CheckCircle, Mail, Download, Linkedin,
   Mic, Play, ClipboardCheck, FileText, Code, Gift, UserCheck,
   Shield, Users, Building, Clock, AlertCircle,
   Eye, Video, Target, Briefcase, ThumbsUp, ThumbsDown
-} from "lucide-react"
-import { ScreeningQuestion, TranscriptionSegment } from "@/components/modals/screening-media-modal"
-import { getDemoActivities, Activity as ActivityData } from "@/data/demo-activities"
-import { ActivityFilters, type ActivityFilterType, type ActivityViewType, type PeriodFilterType } from "./activities/ActivityFilters"
-import { ActivityTimeline } from "./activities/ActivityTimeline"
-import { ActivityExpandedDetails } from "./activities/ActivityExpandedDetails"
+} from"lucide-react"
+import { ScreeningQuestion, TranscriptionSegment } from"@/components/modals/screening-media-modal"
+import { getDemoActivities, Activity as ActivityData } from"@/data/demo-activities"
+import { ActivityFilters, type ActivityFilterType, type ActivityViewType, type PeriodFilterType } from"./activities/ActivityFilters"
+import { ActivityTimeline } from"./activities/ActivityTimeline"
+import { ActivityExpandedDetails } from"./activities/ActivityExpandedDetails"
 
 interface CandidateActivitiesTabProps {
   candidate: Record<string, unknown>
@@ -143,12 +143,12 @@ export function CandidateActivitiesTab({
                     </div>
                     <div className="flex items-center gap-1.5">
                       {activity.score && (
-                        <Badge className={`text-xs px-1.5 py-0 h-4 ${activity.score >= 80 ? 'bg-lia-bg-tertiary text-lia-text-primary border-lia-border-default font-semibold' : activity.score >= 60 ? 'bg-lia-bg-tertiary text-lia-text-primary border-lia-border-subtle font-medium' : 'bg-status-error/10 text-status-error border-status-error/30 font-medium'}`}>
+                        <Badge className={`text-xs px-1.5 py-0 h-4 ${activity.score >= 80 ? 'bg-lia-bg-tertiary text-lia-text-primary border-lia-border-default font-semibold' : activity.score >= 60 ? 'bg-lia-bg-tertiary text-lia-text-primary border-lia-border-subtle font-medium' : ' border-status-error/30 font-medium'}`}>
                           {formatScorePercent(activity.score)}
                         </Badge>
                       )}
                       {activity.statusLabel && (
-                        <Badge className={`text-xs px-1.5 py-0 h-4 ${activity.status === 'approved' || activity.status === 'completed' ? 'bg-lia-bg-tertiary text-lia-text-primary border-lia-border-default font-semibold' : activity.status === 'in-progress' ? 'bg-lia-bg-tertiary text-lia-text-primary border-lia-border-subtle font-medium' : activity.status === 'rejected' ? 'bg-status-error/10 text-status-error border-status-error/30 font-medium' : 'bg-lia-bg-primary text-lia-text-secondary border-lia-border-subtle'}`}>
+                        <Badge className={`text-xs px-1.5 py-0 h-4 ${activity.status === 'approved' || activity.status === 'completed' ? 'bg-lia-bg-tertiary text-lia-text-primary border-lia-border-default font-semibold' : activity.status === 'in-progress' ? 'bg-lia-bg-tertiary text-lia-text-primary border-lia-border-subtle font-medium' : activity.status === 'rejected' ? ' border-status-error/30 font-medium' : 'bg-lia-bg-primary text-lia-text-secondary border-lia-border-subtle'}`}>
                           {activity.statusLabel}
                         </Badge>
                       )}
@@ -214,12 +214,12 @@ export function CandidateActivitiesTab({
                 </div>
                 <div className="flex items-center gap-1.5">
                   {activity.score && (
-                    <Badge className={`text-xs px-1.5 py-0 h-4 ${activity.score >= 80 ? 'bg-lia-bg-tertiary text-lia-text-primary border-lia-border-default font-semibold' : activity.score >= 60 ? 'bg-lia-bg-tertiary text-lia-text-primary border-lia-border-subtle font-medium' : 'bg-status-error/10 text-status-error border-status-error/30 font-medium'}`}>
+                    <Badge className={`text-xs px-1.5 py-0 h-4 ${activity.score >= 80 ? 'bg-lia-bg-tertiary text-lia-text-primary border-lia-border-default font-semibold' : activity.score >= 60 ? 'bg-lia-bg-tertiary text-lia-text-primary border-lia-border-subtle font-medium' : ' border-status-error/30 font-medium'}`}>
                       {formatScorePercent(activity.score)}
                     </Badge>
                   )}
                   {activity.statusLabel && (
-                    <Badge className={`text-xs px-1.5 py-0 h-4 ${activity.status === 'approved' || activity.status === 'completed' ? 'bg-lia-bg-tertiary text-lia-text-primary border-lia-border-default font-semibold' : activity.status === 'in-progress' ? 'bg-lia-bg-tertiary text-lia-text-primary border-lia-border-subtle font-medium' : activity.status === 'rejected' ? 'bg-status-error/10 text-status-error border-status-error/30 font-medium' : 'bg-lia-bg-primary text-lia-text-secondary border-lia-border-subtle'}`}>
+                    <Badge className={`text-xs px-1.5 py-0 h-4 ${activity.status === 'approved' || activity.status === 'completed' ? 'bg-lia-bg-tertiary text-lia-text-primary border-lia-border-default font-semibold' : activity.status === 'in-progress' ? 'bg-lia-bg-tertiary text-lia-text-primary border-lia-border-subtle font-medium' : activity.status === 'rejected' ? ' border-status-error/30 font-medium' : 'bg-lia-bg-primary text-lia-text-secondary border-lia-border-subtle'}`}>
                       {activity.statusLabel}
                     </Badge>
                   )}

@@ -1,11 +1,11 @@
 "use client"
 
-import React from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Plus, Edit, Eye, MessageCircle } from "lucide-react"
-import type { NotificationTemplate } from "./integrations-page.types"
+import React from"react"
+import { Button } from"@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
+import { Badge } from"@/components/ui/badge"
+import { Plus, Edit, Eye, MessageCircle } from"lucide-react"
+import type { NotificationTemplate } from"./integrations-page.types"
 
 interface IntegrationsTemplatesProps {
   templates: NotificationTemplate[]
@@ -43,7 +43,7 @@ export function IntegrationsTemplates({ templates, onNewTemplate, onEditTemplate
                     <h4 className="font-semibold text-lia-text-primary">
                       {template.name}
                     </h4>
-                    <Badge variant={template.active ? "default" : "secondary"} className="text-xs">
+                    <Badge variant={template.active ?"default" :"secondary"} className="text-xs">
                       {template.active ? 'Ativo' : 'Inativo'}
                     </Badge>
                     <Badge variant="outline" className="text-xs">

@@ -1,17 +1,17 @@
 "use client"
 
-import { useState, useRef } from "react"
-import { X, Zap, Loader2, Info } from "lucide-react"
-import { cn } from "@/lib/utils"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Badge } from "@/components/ui/badge"
+import { useState, useRef } from"react"
+import { X, Zap, Loader2, Info } from"lucide-react"
+import { cn } from"@/lib/utils"
+import { Input } from"@/components/ui/input"
+import { Label } from"@/components/ui/label"
+import { Badge } from"@/components/ui/badge"
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover"
-import { useSemanticSearch } from "@/hooks/useSemanticSearch"
+} from"@/components/ui/popover"
+import { useSemanticSearch } from"@/hooks/useSemanticSearch"
 import type { SearchFilters } from '../hooks/useAdvancedFiltersCore'
 import { experienceLevels, jobRoles } from '../advancedFiltersTypes'
 
@@ -35,11 +35,11 @@ export const JobLevelsAndRolesSection = ({
     isLoading: isLoadingRoles,
     search: searchRoles,
     clearSuggestions: clearRoleSuggestions
-  } = useSemanticSearch({ domain: "roles", debounceMs: 400 })
+  } = useSemanticSearch({ domain:"roles", debounceMs: 400 })
 
   const handleAddRole = (role: string) => {
     if (role.trim()) {
-      addToArray("job", "roles", role.trim())
+      addToArray("job","roles", role.trim())
       setRoleInput("")
       clearRoleSuggestions()
       setShowRoleSuggestions(false)
@@ -82,16 +82,15 @@ export const JobLevelsAndRolesSection = ({
                 key={level.value}
                 onClick={() => {
                   if (isSelected) {
-                    removeFromArray("job", "levels", level.value)
+                    removeFromArray("job","levels", level.value)
                   } else {
-                    addToArray("job", "levels", level.value)
+                    addToArray("job","levels", level.value)
                   }
                 }}
-                className={cn(
-                  "px-2.5 py-1 rounded-md text-xs border transition-colors",
+                className={cn("px-2.5 py-1 rounded-md text-xs border transition-colors",
                   isSelected
-                    ? "border-lia-border-medium bg-lia-bg-tertiary text-lia-text-primary font-medium"
-                    : "border-lia-border-subtle hover:border-lia-border-default text-lia-text-secondary"
+                    ?"border-lia-border-medium bg-lia-bg-tertiary text-lia-text-primary font-medium"
+                    :"border-lia-border-subtle hover:border-lia-border-default text-lia-text-secondary"
                 )}
               >
                 {level.label}
@@ -125,10 +124,10 @@ export const JobLevelsAndRolesSection = ({
               value={roleInput}
               onChange={(e) => handleRoleInputChange(e.target.value)}
               onKeyDown={(e) => {
-                if (e.key === "Enter" && roleInput.trim()) {
+                if (e.key ==="Enter" && roleInput.trim()) {
                   e.preventDefault()
                   handleAddRole(roleInput)
-                } else if (e.key === "Escape") {
+                } else if (e.key ==="Escape") {
                   setShowRoleSuggestions(false)
                 }
               }}
@@ -183,7 +182,7 @@ export const JobLevelsAndRolesSection = ({
               >
                 <span className="text-xs">{role}</span>
                 <button
-                  onClick={() => removeFromArray("job", "roles", role)}
+                  onClick={() => removeFromArray("job","roles", role)}
                   className="ml-1 hover:bg-wedo-purple/20 rounded-md p-0.5"
                 >
                   <X className="w-3 h-3" />
@@ -202,16 +201,15 @@ export const JobLevelsAndRolesSection = ({
                 key={role.value}
                 onClick={() => {
                   if (isSelected) {
-                    removeFromArray("job", "roles", role.value)
+                    removeFromArray("job","roles", role.value)
                   } else {
-                    addToArray("job", "roles", role.value)
+                    addToArray("job","roles", role.value)
                   }
                 }}
-                className={cn(
-                  "px-2.5 py-1 rounded-md text-xs border transition-colors",
+                className={cn("px-2.5 py-1 rounded-md text-xs border transition-colors",
                   isSelected
-                    ? "border-lia-border-medium bg-lia-bg-tertiary text-lia-text-primary font-medium"
-                    : "border-lia-border-subtle hover:border-lia-border-default text-lia-text-secondary"
+                    ?"border-lia-border-medium bg-lia-bg-tertiary text-lia-text-primary font-medium"
+                    :"border-lia-border-subtle hover:border-lia-border-default text-lia-text-secondary"
                 )}
               >
                 {role.label}

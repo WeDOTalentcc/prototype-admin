@@ -1,11 +1,11 @@
 "use client"
 
-import React, { useState, useRef, useCallback } from "react"
+import React, { useState, useRef, useCallback } from"react"
 import { textStyles, cardStyles, badgeStyles } from '@/lib/design-tokens'
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { ThinkingDots } from "@/components/ui/thinking-dots"
+import { Button } from"@/components/ui/button"
+import { Card, CardContent } from"@/components/ui/card"
+import { Badge } from"@/components/ui/badge"
+import { ThinkingDots } from"@/components/ui/thinking-dots"
 import {
   FileSpreadsheet,
   Upload,
@@ -17,7 +17,7 @@ import {
   X,
   Eye,
   FileText,
-} from "lucide-react"
+} from"lucide-react"
 
 type ImportState = 'idle' | 'uploading' | 'analyzing' | 'preview' | 'importing' | 'success' | 'error'
 
@@ -403,7 +403,7 @@ export function SmartImportZone({
                     Campos identificados:
                   </span>
                   {previewData.matchedFields.map((field) => (
-                    <Badge key={field} className="text-micro bg-status-success/15 text-status-success dark:bg-status-success/30 dark:text-status-success rounded-full">
+                    <Badge key={field} className="text-micro  dark:bg-status-success/30 dark:text-status-success rounded-full">
                       {field}
                     </Badge>
                   ))}
@@ -416,7 +416,7 @@ export function SmartImportZone({
                     Não encontrados:
                   </span>
                   {previewData.unmatchedFields.map((field) => (
-                    <Badge key={field} className="text-micro bg-status-warning/15 text-status-warning dark:bg-status-warning/30 dark:text-status-warning rounded-full">
+                    <Badge key={field} className="text-micro  dark:bg-status-warning/30 dark:text-status-warning rounded-full">
                       {field}
                     </Badge>
                   ))}

@@ -1,8 +1,8 @@
 "use client"
 
-import React from "react"
-import { CheckCircle, Clock, XCircle, Calendar, Phone, MessageCircle, Target, TrendingUp } from "lucide-react"
-import { Badge } from "@/components/ui/badge"
+import React from"react"
+import { CheckCircle, Clock, XCircle, Calendar, Phone, MessageCircle, Target, TrendingUp } from"lucide-react"
+import { Badge } from"@/components/ui/badge"
 
 interface LiaPerformanceIndicatorsProps {
   candidate: Record<string, any>
@@ -24,8 +24,8 @@ export function LiaPerformanceIndicators({ candidate }: LiaPerformanceIndicators
         label: isApproved ? 'Triagem OK' : 'Triagem c/ Ressalvas',
         icon: isApproved ? <CheckCircle className="w-3.5 h-3.5" /> : <Target className="w-3.5 h-3.5" />,
         color: isApproved
-          ? 'bg-status-success/15 text-status-success border-status-success/30 dark:bg-status-success/30 dark:text-status-success'
-          : 'bg-status-warning/15 text-status-warning border-status-warning/30 dark:text-status-warning'
+          ? ' border-status-success/30 dark:bg-status-success/30 dark:text-status-success'
+          : ' border-status-warning/30 dark:text-status-warning'
       }
     }
 
@@ -34,7 +34,7 @@ export function LiaPerformanceIndicators({ candidate }: LiaPerformanceIndicators
         status: 'approved',
         label: 'Triagem OK',
         icon: <CheckCircle className="w-3.5 h-3.5" />,
-        color: 'bg-status-success/15 text-status-success border-status-success/30 dark:bg-status-success/30 dark:text-status-success'
+        color: ' border-status-success/30 dark:bg-status-success/30 dark:text-status-success'
       }
     }
 
@@ -52,7 +52,7 @@ export function LiaPerformanceIndicators({ candidate }: LiaPerformanceIndicators
         status: 'pending',
         label: 'Aguardando Aprovação',
         icon: <Clock className="w-3.5 h-3.5" />,
-        color: 'bg-wedo-orange/15 text-wedo-orange border-wedo-orange/30 dark:bg-wedo-orange/10/30 dark:text-wedo-orange'
+        color: ' border-wedo-orange/30 dark:bg-wedo-orange/10/30 dark:text-wedo-orange'
       }
     }
 
@@ -150,7 +150,7 @@ export function LiaPerformanceIndicators({ candidate }: LiaPerformanceIndicators
         <div className="flex gap-1 flex-wrap">
           {(candidate.triageData as Record<string, unknown>).mobility === 'OK' && (
             <div
-              className="text-xs px-1.5 py-0.5 rounded-full bg-status-success/10 text-status-success dark:bg-status-success/20 dark:text-status-success"
+              className="text-xs px-1.5 py-0.5 rounded-full  dark:bg-status-success/20 dark:text-status-success"
               title="Mobilidade OK"
             >
               Mob ✓
@@ -158,7 +158,7 @@ export function LiaPerformanceIndicators({ candidate }: LiaPerformanceIndicators
           )}
           {(candidate.triageData as Record<string, unknown>).salary === 'Compatível' && (
             <div
-              className="text-xs px-1.5 py-0.5 rounded-full bg-status-success/10 text-status-success dark:bg-status-success/20 dark:text-status-success"
+              className="text-xs px-1.5 py-0.5 rounded-full  dark:bg-status-success/20 dark:text-status-success"
               title="Salário compatível"
             >
               Sal ✓
@@ -166,7 +166,7 @@ export function LiaPerformanceIndicators({ candidate }: LiaPerformanceIndicators
           )}
           {(candidate.triageData as Record<string, unknown>).interest === 'Alto' && (
             <div
-              className="text-xs px-1.5 py-0.5 rounded-full bg-status-success/10 text-status-success dark:bg-status-success/20 dark:text-status-success"
+              className="text-xs px-1.5 py-0.5 rounded-full  dark:bg-status-success/20 dark:text-status-success"
               title="Interesse alto"
             >
               Int ✓

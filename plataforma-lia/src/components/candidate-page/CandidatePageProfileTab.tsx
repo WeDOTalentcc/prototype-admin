@@ -1,15 +1,15 @@
 "use client"
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { ProfileExperienceSection } from "@/components/candidate-profile/ProfileExperienceSection"
-import { ProfileEducationSection } from "@/components/candidate-profile/ProfileEducationSection"
+import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
+import { Badge } from"@/components/ui/badge"
+import { ProfileExperienceSection } from"@/components/candidate-profile/ProfileExperienceSection"
+import { ProfileEducationSection } from"@/components/candidate-profile/ProfileEducationSection"
 import {
   MapPin, Building, GraduationCap, Briefcase, Award,
   Brain, CheckCircle, AlertCircle, Clock, Users,
   DollarSign, User, Languages, Home, Cake,
   Code, Linkedin
-} from "lucide-react"
+} from"lucide-react"
 
 interface OpinionRecord {
   id?: string
@@ -134,13 +134,13 @@ export function CandidatePageProfileTab({
               </div>
               <div className="flex items-center gap-1">
                 {opinionsHistory[0]?.recommendation === 'approved' && (
-                  <Badge className="text-micro px-1.5 py-0 h-4 bg-status-success/10 text-status-success flex items-center gap-0.5">
+                  <Badge className="text-micro px-1.5 py-0 h-4  flex items-center gap-0.5">
                     <CheckCircle className="w-2.5 h-2.5" />
                     APROVADO
                   </Badge>
                 )}
                 {opinionsHistory[0]?.recommendation === 'pending_review' && (
-                  <Badge className="text-micro px-1.5 py-0 h-4 bg-status-warning/10 text-status-warning flex items-center gap-0.5">
+                  <Badge className="text-micro px-1.5 py-0 h-4  flex items-center gap-0.5">
                     <Clock className="w-2.5 h-2.5" />
                     PENDENTE
                   </Badge>
@@ -198,7 +198,7 @@ export function CandidatePageProfileTab({
             <CardContent className="p-4">
               <div className="flex flex-wrap gap-1.5">
                 {candidate.certifications.map((cert: string) => (
-                  <Badge key={cert} variant="outline" className="text-xs px-2 py-0.5 bg-status-success/10 text-status-success border-status-success/30">
+                  <Badge key={cert} variant="outline" className="text-xs px-2 py-0.5  border-status-success/30">
                     {cert}
                   </Badge>
                 ))}
@@ -272,7 +272,7 @@ export function CandidatePageProfileTab({
                   <Badge variant="outline" className="text-xs bg-lia-bg-tertiary text-lia-text-secondary dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-default">Remoto</Badge>
                 )}
                 {candidate.willing_to_relocate && (
-                  <Badge variant="outline" className="text-xs bg-status-success/10 text-status-success border-status-success/30">Aceita Relocação</Badge>
+                  <Badge variant="outline" className="text-xs  border-status-success/30">Aceita Relocação</Badge>
                 )}
                 {candidate.work_model_preference && (
                   <Badge variant="outline" className="text-xs">{candidate.work_model_preference}</Badge>
@@ -296,7 +296,7 @@ export function CandidatePageProfileTab({
             <div>
               <h5 className="text-xs font-medium text-lia-text-primary mb-1.5">Status</h5>
               <div className="flex flex-wrap gap-1.5">
-                <Badge variant="outline" className={`text-xs ${candidate.is_active ? 'bg-status-success/10 text-status-success dark:text-status-success' : 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary'}`}>
+                <Badge variant="outline" className={`text-xs ${candidate.is_active ? ' dark:text-status-success' : 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary'}`}>
                   {candidate.is_active ? 'Ativo' : 'Inativo'}
                 </Badge>
                 {candidate.source && (
@@ -391,17 +391,17 @@ export function CandidatePageProfileTab({
               
               <div className="flex flex-wrap gap-1.5">
                 {(candidate.is_open_to_work as boolean | undefined) && (
-                  <Badge className="text-xs bg-status-success/10 text-status-success border-status-success/30">
+                  <Badge className="text-xs  border-status-success/30">
                     ✓ Open to Work
                   </Badge>
                 )}
                 {candidate.is_decision_maker && (
-                  <Badge className="text-xs bg-wedo-purple/10 text-wedo-purple border-wedo-purple/30">
+                  <Badge className="text-xs  border-wedo-purple/30">
                     👔 Decision Maker
                   </Badge>
                 )}
                 {candidate.is_top_universities && (
-                  <Badge className="text-xs bg-status-warning/10 text-status-warning border-status-warning/30">
+                  <Badge className="text-xs  border-status-warning/30">
                     🎓 Top Universities
                   </Badge>
                 )}

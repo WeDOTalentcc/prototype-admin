@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback, useRef } from "react"
+import { useState, useEffect, useCallback, useRef } from"react"
 import { 
   Check, MapPin, Briefcase, Clock, Building2, Code, X, Search, 
   FileText, Binary, Users, Upload, Filter, AlertCircle,
@@ -9,17 +9,17 @@ import {
   AlertTriangle, CheckCircle2, HelpCircle, Wand2, TrendingUp, Plus, Brain,
   Pencil, Trash2, MoreHorizontal, Home, Zap, Mail, Phone, Table2,
   ChevronUp, ChevronDown, Tag
-} from "lucide-react"
-import { cn } from "@/lib/utils"
+} from"lucide-react"
+import { cn } from"@/lib/utils"
 import { textStyles, cardStyles, badgeStyles } from '@/lib/design-tokens'
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
+import { Button } from"@/components/ui/button"
+import { Badge } from"@/components/ui/badge"
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/components/ui/tooltip"
+} from"@/components/ui/tooltip"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -29,13 +29,13 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
-import { useGlobalSearchSettings } from "@/hooks/useGlobalSearchSettings"
-import { INDUSTRIES, INDUSTRY_CATEGORIES, type Industry } from "@/lib/industry-constants"
-import { useSemanticSearch } from "@/hooks/useSemanticSearch"
-import { AudioRecordButton } from "@/components/ui/audio-record-button"
-import { EditArchetypeModal } from "./EditArchetypeModal"
-import { SearchModeArchetypes } from "./SearchModeArchetypes"
+} from"@/components/ui/alert-dialog"
+import { useGlobalSearchSettings } from"@/hooks/useGlobalSearchSettings"
+import { INDUSTRIES, INDUSTRY_CATEGORIES, type Industry } from"@/lib/industry-constants"
+import { useSemanticSearch } from"@/hooks/useSemanticSearch"
+import { AudioRecordButton } from"@/components/ui/audio-record-button"
+import { EditArchetypeModal } from"./EditArchetypeModal"
+import { SearchModeArchetypes } from"./SearchModeArchetypes"
 
 export interface ParsedEntities {
   location?: string
@@ -47,7 +47,7 @@ export interface ParsedEntities {
   company?: string
 }
 
-export type SearchSource = "local" | "global" | "hybrid"
+export type SearchSource ="local" |"global" |"hybrid"
 
 export interface SmartSearchInputProps {
   value: string
@@ -68,7 +68,7 @@ export interface SmartSearchInputProps {
   onRequirePhoneNumbersChange?: (value: boolean) => void
 }
 
-export type SearchMode = "natural" | "similar" | "jd" | "boolean" | "archetypes"
+export type SearchMode ="natural" |"similar" |"jd" |"boolean" |"archetypes"
 
 export interface ArchetypeCandidate {
   id: string
@@ -131,7 +131,7 @@ interface SearchTag {
 
 interface SearchAlert {
   type: string
-  severity: "info" | "warning" | "error"
+  severity:"info" |"warning" |"error"
   message: string
   suggestion?: string
   action_label?: string
@@ -160,7 +160,7 @@ interface AutocompleteResponse {
   context_hint?: string
 }
 
-const API_BASE = ""
+const API_BASE =""
 
 // Sugestões cobrindo os 5 critérios: Location, Job Title, Experience, Industry, Skills
 export const SEARCH_SUGGESTIONS = [
@@ -218,11 +218,10 @@ export function SmartSearchInput(props: SmartSearchInputProps) {
             <button
               key={m.key}
               onClick={() => setMode(m.key)}
-              className={cn(
-                "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors border",
+              className={cn("flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors border",
                 mode === m.key 
-                  ? "border-lia-text-primary bg-lia-text-primary text-white dark:border-lia-text-primary dark:bg-lia-text-primary" 
-                  : "border-lia-border-subtle text-lia-text-secondary hover:bg-lia-bg-tertiary hover:text-lia-text-primary dark:hover:bg-lia-btn-primary-hover"
+                  ?"border-lia-text-primary bg-lia-text-primary text-white dark:border-lia-text-primary dark:bg-lia-text-primary" 
+                  :"border-lia-border-subtle text-lia-text-secondary hover:bg-lia-bg-tertiary hover:text-lia-text-primary dark:hover:bg-lia-btn-primary-hover"
               )}
             >
               <m.icon className="w-3.5 h-3.5" />
@@ -234,10 +233,9 @@ export function SmartSearchInput(props: SmartSearchInputProps) {
           {onOpenFilters && (
             <button
               onClick={onOpenFilters}
-              className={cn(
-                "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors border border-lia-border-subtle hover:bg-lia-bg-tertiary hover:text-lia-text-primary dark:hover:bg-lia-btn-primary-hover",
-                (activeFiltersCount > 0 || filledCount > 0) && "ring-1 ring-lia-btn-primary-bg/20",
-                (activeFiltersCount > 0 || filledCount > 0) ? "text-lia-text-primary bg-lia-interactive-active" : "text-lia-text-secondary bg-transparent"
+              className={cn("flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors border border-lia-border-subtle hover:bg-lia-bg-tertiary hover:text-lia-text-primary dark:hover:bg-lia-btn-primary-hover",
+                (activeFiltersCount > 0 || filledCount > 0) &&"ring-1 ring-lia-btn-primary-bg/20",
+                (activeFiltersCount > 0 || filledCount > 0) ?"text-lia-text-primary bg-lia-interactive-active" :"text-lia-text-secondary bg-transparent"
               )}
             >
               <Filter className="w-3.5 h-3.5" />
@@ -282,7 +280,7 @@ export function SmartSearchInput(props: SmartSearchInputProps) {
       </div>
 
 
-      {mode === "natural" && filledCount === 0 && value.length > 0 && (
+      {mode ==="natural" && filledCount === 0 && value.length > 0 && (
         <p 
           className="text-xs px-1 text-lia-text-secondary"
          aria-live="polite" aria-atomic="true">

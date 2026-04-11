@@ -1,23 +1,23 @@
 "use client"
 
-import React from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Badge } from "@/components/ui/badge"
-import { ScrollArea } from "@/components/ui/scroll-area"
+import React from"react"
+import { Button } from"@/components/ui/button"
+import { Input } from"@/components/ui/input"
+import { Checkbox } from"@/components/ui/checkbox"
+import { Label } from"@/components/ui/label"
+import { Textarea } from"@/components/ui/textarea"
+import { Badge } from"@/components/ui/badge"
+import { ScrollArea } from"@/components/ui/scroll-area"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import { cn } from "@/lib/utils"
-import { Loader2, Mail, MessageSquare, Users } from "lucide-react"
-import type { UseJobUnpublishReturn } from "./useJobUnpublish"
+} from"@/components/ui/select"
+import { cn } from"@/lib/utils"
+import { Loader2, Mail, MessageSquare, Users } from"lucide-react"
+import type { UseJobUnpublishReturn } from"./useJobUnpublish"
 
 type NotificationChannel = 'email' | 'whatsapp' | 'both'
 
@@ -73,11 +73,10 @@ export function CommunicationStep({ hook }: StepProps) {
             size="sm"
             variant={notificationChannel === 'email' || notificationChannel === 'both' ? 'primary' : 'outline'}
             onClick={() => setNotificationChannel(notificationChannel === 'whatsapp' ? 'email' : notificationChannel === 'email' ? 'both' : 'email')}
-            className={cn(
-              "h-7 px-2.5 text-micro",
+            className={cn("h-7 px-2.5 text-micro",
               (notificationChannel === 'email' || notificationChannel === 'both')
-                ? "bg-lia-btn-primary-bg text-lia-btn-primary-text"
-                : "border-lia-border-subtle text-lia-text-secondary"
+                ?"bg-lia-btn-primary-bg text-lia-btn-primary-text"
+                :"border-lia-border-subtle text-lia-text-secondary"
             )}
           >
             <Mail className="w-3 h-3 mr-1" />
@@ -88,11 +87,10 @@ export function CommunicationStep({ hook }: StepProps) {
             size="sm"
             variant={notificationChannel === 'whatsapp' || notificationChannel === 'both' ? 'primary' : 'outline'}
             onClick={() => setNotificationChannel(notificationChannel === 'email' ? 'whatsapp' : notificationChannel === 'whatsapp' ? 'both' : 'whatsapp')}
-            className={cn(
-              "h-7 px-2.5 text-micro",
+            className={cn("h-7 px-2.5 text-micro",
               (notificationChannel === 'whatsapp' || notificationChannel === 'both')
-                ? "bg-status-success text-white hover:bg-status-success"
-                : "border-lia-border-subtle text-lia-text-secondary"
+                ?"bg-status-success text-white hover:bg-status-success"
+                :"border-lia-border-subtle text-lia-text-secondary"
             )}
           >
             <MessageSquare className="w-3 h-3 mr-1" />
@@ -180,11 +178,10 @@ export function CommunicationStep({ hook }: StepProps) {
               {jobCandidates.filter(c => !candidatesInProposal.find(p => p.id === c.id)).map((candidate) => (
                 <div
                   key={candidate.id}
-                  className={cn(
-                    "flex items-center gap-2 p-1.5 rounded-md cursor-pointer transition-colors",
+                  className={cn("flex items-center gap-2 p-1.5 rounded-md cursor-pointer transition-colors",
                     selectedCandidateIds.has(candidate.id)
-                      ? "bg-lia-bg-tertiary border border-lia-btn-primary-bg"
-                      : "bg-lia-bg-primary border border-lia-border-subtle hover:border-lia-border-default"
+                      ?"bg-lia-bg-tertiary border border-lia-btn-primary-bg"
+                      :"bg-lia-bg-primary border border-lia-border-subtle hover:border-lia-border-default"
                   )}
                   onClick={() => toggleCandidateSelection(candidate.id)}
                 >
@@ -236,11 +233,10 @@ export function UnpublishCommunicationStep({
             size="sm"
             variant={notificationChannel === 'email' || notificationChannel === 'both' ? 'primary' : 'outline'}
             onClick={() => setNotificationChannel(notificationChannel === 'whatsapp' ? 'email' : notificationChannel === 'email' ? 'both' : 'email')}
-            className={cn(
-              "h-7 px-2.5 text-micro",
+            className={cn("h-7 px-2.5 text-micro",
               (notificationChannel === 'email' || notificationChannel === 'both')
-                ? "bg-lia-btn-primary-bg text-lia-btn-primary-text"
-                : "border-lia-border-subtle text-lia-text-secondary"
+                ?"bg-lia-btn-primary-bg text-lia-btn-primary-text"
+                :"border-lia-border-subtle text-lia-text-secondary"
             )}
           >
             <Mail className="w-3 h-3 mr-1" />
@@ -251,11 +247,10 @@ export function UnpublishCommunicationStep({
             size="sm"
             variant={notificationChannel === 'whatsapp' || notificationChannel === 'both' ? 'primary' : 'outline'}
             onClick={() => setNotificationChannel(notificationChannel === 'email' ? 'whatsapp' : notificationChannel === 'whatsapp' ? 'both' : 'whatsapp')}
-            className={cn(
-              "h-7 px-2.5 text-micro",
+            className={cn("h-7 px-2.5 text-micro",
               (notificationChannel === 'whatsapp' || notificationChannel === 'both')
-                ? "bg-status-success text-white hover:bg-status-success"
-                : "border-lia-border-subtle text-lia-text-secondary"
+                ?"bg-status-success text-white hover:bg-status-success"
+                :"border-lia-border-subtle text-lia-text-secondary"
             )}
           >
             <MessageSquare className="w-3 h-3 mr-1" />
@@ -343,11 +338,10 @@ export function UnpublishCommunicationStep({
               {jobCandidates.filter(c => !candidatesInProposal.find(p => p.id === c.id)).map((candidate) => (
                 <div
                   key={candidate.id}
-                  className={cn(
-                    "flex items-center gap-2 p-1.5 rounded-md cursor-pointer transition-colors",
+                  className={cn("flex items-center gap-2 p-1.5 rounded-md cursor-pointer transition-colors",
                     selectedCandidateIds.has(candidate.id)
-                      ? "bg-lia-bg-tertiary border border-lia-btn-primary-bg"
-                      : "bg-lia-bg-primary border border-lia-border-subtle hover:border-lia-border-default"
+                      ?"bg-lia-bg-tertiary border border-lia-btn-primary-bg"
+                      :"bg-lia-bg-primary border border-lia-border-subtle hover:border-lia-border-default"
                   )}
                   onClick={() => toggleCandidateSelection(candidate.id)}
                 >

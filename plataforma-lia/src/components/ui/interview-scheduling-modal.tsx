@@ -1,19 +1,19 @@
 "use client"
 
-import React, { useState, useEffect } from "react"
+import React, { useState, useEffect } from"react"
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogDescription,
-} from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Calendar, Loader2, Send, Brain, AlertTriangle } from "lucide-react"
-import { Badge } from "@/components/ui/badge"
-import { sanitizeHtml } from "@/lib/sanitize"
+} from"@/components/ui/dialog"
+import { Button } from"@/components/ui/button"
+import { Input } from"@/components/ui/input"
+import { Label } from"@/components/ui/label"
+import { Calendar, Loader2, Send, Brain, AlertTriangle } from"lucide-react"
+import { Badge } from"@/components/ui/badge"
+import { sanitizeHtml } from"@/lib/sanitize"
 
 
 interface ScheduledInterviewData {
@@ -66,13 +66,13 @@ export function InterviewSchedulingModal({
     setIsGeneratingEmail(true)
     try {
       const response = await fetch("/api/v1/interviews/generate-email-template", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+        method:"POST",
+        headers: {"Content-Type":"application/json" },
         body: JSON.stringify({
           candidate_name: candidateName,
           candidate_email: candidateEmail,
           job_title: jobTitle,
-          interview_type: "técnica",
+          interview_type:"técnica",
           user_name: userName,
         }),
       })
@@ -98,15 +98,15 @@ export function InterviewSchedulingModal({
     
     try {
       const response = await fetch("/api/v1/interviews/schedule-from-prompt", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+        method:"POST",
+        headers: {"Content-Type":"application/json" },
         body: JSON.stringify({
           candidate_name: candidateName,
           candidate_email: candidateEmail,
           candidate_id: candidateId,
           job_title: jobTitle,
           job_vacancy_id: jobVacancyId,
-          interview_type: "técnica",
+          interview_type:"técnica",
           natural_language_prompt: schedulingPrompt,
           user_name: userName,
           user_email: userEmail,
@@ -114,8 +114,8 @@ export function InterviewSchedulingModal({
       })
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ detail: "Erro ao agendar entrevista" }))
-        throw new Error(errorData.detail || "Erro ao agendar entrevista")
+        const errorData = await response.json().catch(() => ({ detail:"Erro ao agendar entrevista" }))
+        throw new Error(errorData.detail ||"Erro ao agendar entrevista")
       }
 
       const data = await response.json()
@@ -129,7 +129,7 @@ export function InterviewSchedulingModal({
         setError(null)
       }, 4000)
     } catch (error: unknown) {
-      setError(error instanceof Error ? error.message : "Erro ao agendar entrevista. Por favor, tente novamente.")
+      setError(error instanceof Error ? error.message :"Erro ao agendar entrevista. Por favor, tente novamente.")
     } finally {
       setIsScheduling(false)
     }
@@ -218,7 +218,7 @@ export function InterviewSchedulingModal({
                   value={schedulingPrompt}
                   onChange={(e) => setSchedulingPrompt(e.target.value)}
                   onKeyDown={(e) => {
-                    if (e.key === "Enter" && !e.shiftKey) {
+                    if (e.key ==="Enter" && !e.shiftKey) {
                       e.preventDefault()
                       handleSchedule()
                     }
@@ -227,7 +227,7 @@ export function InterviewSchedulingModal({
                   className="h-9 text-xs border-lia-border-subtle focus:ring-lia-border-medium focus:border-lia-border-medium bg-lia-bg-secondary text-lia-text-primary"
                 />
                 <p className="text-xs text-lia-text-secondary">
-                  Use linguagem natural: "amanhã às 14h comigo" ou "próxima segunda 10h"
+                  Use linguagem natural:"amanhã às 14h comigo" ou"próxima segunda 10h"
                 </p>
               </div>
 

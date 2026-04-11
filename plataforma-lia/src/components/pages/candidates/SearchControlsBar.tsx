@@ -1,9 +1,9 @@
 "use client"
 
-import React from "react"
-import { Badge } from "@/components/ui/badge"
-import { ArrowUpDown, CheckCircle, Target, ChevronsLeftRight } from "lucide-react"
-import type { TableColumn } from "./CandidateSearchResultsView.types"
+import React from"react"
+import { Badge } from"@/components/ui/badge"
+import { ArrowUpDown, CheckCircle, Target, ChevronsLeftRight } from"lucide-react"
+import type { TableColumn } from"./CandidateSearchResultsView.types"
 
 export interface SearchControlsBarProps {
   selectedCandidatesForBatch: Set<string>

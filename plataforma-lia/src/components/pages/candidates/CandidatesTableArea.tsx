@@ -1,14 +1,14 @@
 "use client"
 
-import React from "react"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Users, ChevronRight } from "lucide-react"
-import { UnifiedCandidateTable } from "@/components/tables"
-import type { TableCandidate } from "@/components/tables"
-import { CandidatesLoadMoreFooter } from "./CandidatesLoadMoreFooter"
-import type { Candidate } from "./types"
-import type { TableColumn } from "./CandidateSearchResultsView.types"
+import React from"react"
+import { Button } from"@/components/ui/button"
+import { Badge } from"@/components/ui/badge"
+import { Users, ChevronRight } from"lucide-react"
+import { UnifiedCandidateTable } from"@/components/tables"
+import type { TableCandidate } from"@/components/tables"
+import { CandidatesLoadMoreFooter } from"./CandidatesLoadMoreFooter"
+import type { Candidate } from"./types"
+import type { TableColumn } from"./CandidateSearchResultsView.types"
 
 export interface CandidatesTableAreaProps {
   isLiaSuperChat: boolean

@@ -1,18 +1,18 @@
 "use client"
 
-import { useState } from "react"
-import { cn } from "@/lib/utils"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
+import { useState } from"react"
+import { cn } from"@/lib/utils"
+import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
+import { Button } from"@/components/ui/button"
+import { Badge } from"@/components/ui/badge"
 import {
   RECRUITMENT_STAGES
-} from "@/lib/recruitment-stages"
+} from"@/lib/recruitment-stages"
 import {
   Edit, Plus, CheckCircle, Workflow, FileText, ClipboardList,
   Brain, Lock, Target, Settings, Check, X, ArrowUp, ArrowDown,
   Trash2,
-} from "lucide-react"
+} from"lucide-react"
 
 export function RecruitmentJourneyTab({ onSettingsChange }: { onSettingsChange: (changed: boolean) => void }) {
   const [activeSubTab, setActiveSubTab] = useState("pipeline")
@@ -26,10 +26,10 @@ export function RecruitmentJourneyTab({ onSettingsChange }: { onSettingsChange: 
   const [isEditing, setIsEditing] = useState(false)
 
   const subTabs = [
-    { id: "pipeline", label: "Pipeline", icon: Workflow },
-    { id: "eligibility", label: "Perguntas de Elegibilidade", icon: FileText },
-    { id: "data-request", label: "Solicitação de Dados", icon: ClipboardList },
-    { id: "lia-instructions", label: "Instruções LIA", icon: Brain },
+    { id:"pipeline", label:"Pipeline", icon: Workflow },
+    { id:"eligibility", label:"Perguntas de Elegibilidade", icon: FileText },
+    { id:"data-request", label:"Solicitação de Dados", icon: ClipboardList },
+    { id:"lia-instructions", label:"Instruções LIA", icon: Brain },
   ]
 
   const getCategoryIcon = (category: string) => {
@@ -122,11 +122,10 @@ export function RecruitmentJourneyTab({ onSettingsChange }: { onSettingsChange: 
               <button
                 key={tab.id}
                 onClick={() => setActiveSubTab(tab.id)}
-                className={cn(
-                  "flex items-center gap-2 px-4 py-2.5 text-sm font-medium transition-colors rounded-lg -mb-px",
+                className={cn("flex items-center gap-2 px-4 py-2.5 text-sm font-medium transition-colors rounded-lg -mb-px",
                   activeSubTab === tab.id
-                    ? "border-lia-btn-primary-bg dark:border-lia-border-subtle text-lia-text-primary"
-                    : "border-transparent text-lia-text-secondary hover:text-lia-text-primary"
+                    ?"border-lia-btn-primary-bg dark:border-lia-border-subtle text-lia-text-primary"
+                    :"border-transparent text-lia-text-secondary hover:text-lia-text-primary"
                 )}
               >
                 <tab.icon className="w-4 h-4" />
@@ -137,7 +136,7 @@ export function RecruitmentJourneyTab({ onSettingsChange }: { onSettingsChange: 
         </CardHeader>
 
         <CardContent>
-          {activeSubTab === "pipeline" && (
+          {activeSubTab ==="pipeline" && (
             <div className="space-y-6">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -180,11 +179,10 @@ export function RecruitmentJourneyTab({ onSettingsChange }: { onSettingsChange: 
                   {stages.map((stage, index) => (
                     <div
                       key={stage.name}
-                      className={cn(
-                        "flex items-center gap-4 p-4 border rounded-md transition-colors",
+                      className={cn("flex items-center gap-4 p-4 border rounded-md transition-colors",
                         stage.isActive
-                          ? "border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-primary"
-                          : "border-lia-border-subtle dark:border-lia-border-strong bg-lia-bg-secondary dark:bg-lia-bg-primary/50 opacity-60"
+                          ?"border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-primary"
+                          :"border-lia-border-subtle dark:border-lia-border-strong bg-lia-bg-secondary dark:bg-lia-bg-primary/50 opacity-60"
                       )}
                     >
                       <div className="flex items-center gap-3 min-w-10">
@@ -229,11 +227,10 @@ export function RecruitmentJourneyTab({ onSettingsChange }: { onSettingsChange: 
                         ) : (
                           <button
                             onClick={() => toggleStageActive(stage.name)}
-                            className={cn(
-                              "flex items-center gap-1 text-xs px-2 py-1 rounded-md transition-colors",
+                            className={cn("flex items-center gap-1 text-xs px-2 py-1 rounded-md transition-colors",
                               stage.isActive
-                                ? "text-lia-text-tertiary hover:text-status-error hover:bg-status-error/10 dark:hover:bg-status-error"
-                                : "text-status-success hover:bg-status-success/10 dark:hover:bg-status-success"
+                                ?"text-lia-text-tertiary hover:text-status-error hover:bg-status-error/10 dark:hover:bg-status-error"
+                                :"text-status-success hover:bg-status-success/10 dark:hover:bg-status-success"
                             )}
                           >
                             {stage.isActive ? (
@@ -279,21 +276,21 @@ export function RecruitmentJourneyTab({ onSettingsChange }: { onSettingsChange: 
             </div>
           )}
 
-          {activeSubTab === "eligibility" && (
+          {activeSubTab ==="eligibility" && (
             <div className="text-center py-12 text-lia-text-secondary">
               <FileText className="w-12 h-12 mx-auto mb-3 opacity-30" />
               <p className="text-sm">Configurações de Perguntas de Elegibilidade</p>
             </div>
           )}
 
-          {activeSubTab === "data-request" && (
+          {activeSubTab ==="data-request" && (
             <div className="text-center py-12 text-lia-text-secondary">
               <ClipboardList className="w-12 h-12 mx-auto mb-3 opacity-30" />
               <p className="text-sm">Configurações de Solicitação de Dados</p>
             </div>
           )}
 
-          {activeSubTab === "lia-instructions" && (
+          {activeSubTab ==="lia-instructions" && (
             <div className="text-center py-12 text-lia-text-secondary">
               <Brain className="w-12 h-12 mx-auto mb-3 opacity-30 text-wedo-cyan" />
               <p className="text-sm">Instruções para a LIA</p>

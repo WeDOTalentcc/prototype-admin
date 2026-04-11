@@ -1,19 +1,19 @@
-import React from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
-import { VariableSelector } from "@/components/ui/variable-selector"
+import React from"react"
+import { Button } from"@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
+import { Badge } from"@/components/ui/badge"
+import { Input } from"@/components/ui/input"
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from"@/components/ui/accordion"
+import { VariableSelector } from"@/components/ui/variable-selector"
 import {
   Mail, Edit, Save, X, Brain, Check, AlertCircle, MessageSquare,
   Wand2, Loader2, CheckCircle, Search, Filter, Bell
-} from "lucide-react"
+} from"lucide-react"
 import { textStyles } from '@/lib/design-tokens'
 import type { EmailTemplate, AiResultModal } from './CommunicationHub.types'
 import { TEMPLATE_GROUPS, TRIGGER_TYPE_LABELS, PRIORITY_COLORS, CATEGORY_LABELS } from './CommunicationHub.constants'
 import { stripHtmlTags } from './CommunicationHub.utils'
-import { ThinkingDots } from "@/components/ui/thinking-dots"
+import { ThinkingDots } from"@/components/ui/thinking-dots"
 
 interface TemplatesTabProps {
   successMessage: string | null
@@ -228,7 +228,7 @@ export function TemplatesTab({
                                       </div>
                                     </div>
                                   </div>
-                                  <Badge variant={template.isActive ? "default" : "outline"} className="text-micro flex-shrink-0 bg-lia-btn-primary-bg text-lia-btn-primary-text">
+                                  <Badge variant={template.isActive ?"default" :"outline"} className="text-micro flex-shrink-0 bg-lia-btn-primary-bg text-lia-btn-primary-text">
                                     {template.isActive ? 'Ativo' : 'Inativo'}
                                   </Badge>
                                 </div>
@@ -388,7 +388,7 @@ export function TemplatesTab({
                 {aiResultModal?.show && (
                   <div className="fixed inset-0 bg-lia-overlay flex items-center justify-center z-50 p-4">
                     <Card className="w-full max-w-2xl max-h-[90vh] overflow-hidden rounded-xl bg-lia-bg-primary">
-                      <CardHeader className=" dark:border-lia-border-subtle pb-4">
+                      <CardHeader className="dark:border-lia-border-subtle pb-4">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-3">
                             <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-lia-bg-tertiary dark:bg-lia-bg-secondary">
@@ -411,7 +411,7 @@ export function TemplatesTab({
                           </label>
                           <div className="flex flex-wrap gap-1.5">
                             {aiResultModal.changesMade.map((change, idx) => (
-                              <Badge key={idx} className="text-xs px-2 py-0.5 rounded-full bg-status-success/15 text-status-success dark:bg-status-success dark:text-status-success">
+                              <Badge key={idx} className="text-xs px-2 py-0.5 rounded-full  dark:bg-status-success dark:text-status-success">
                                 <Check className="w-3 h-3 mr-1" />
                                 {change}
                               </Badge>

@@ -1,13 +1,13 @@
 "use client"
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
+import { Badge } from"@/components/ui/badge"
+import { Button } from"@/components/ui/button"
 import {
   Brain, Activity, ChevronDown, List,
   PlusCircle, GitBranch
-} from "lucide-react"
-import { type LucideIcon } from "lucide-react"
+} from"lucide-react"
+import { type LucideIcon } from"lucide-react"
 
 interface ActivityDetail {
   technicalScore?: number

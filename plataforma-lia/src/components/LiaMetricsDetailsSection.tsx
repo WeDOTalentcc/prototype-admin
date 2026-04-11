@@ -1,15 +1,15 @@
 "use client"
 
-import React from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
+import React from"react"
+import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
+import { Badge } from"@/components/ui/badge"
+import { Button } from"@/components/ui/button"
 import {
   TrendingUp, Clock, Users, Target, CheckCircle,
   Phone, Calendar, Award, Zap, AlertCircle
-} from "lucide-react"
-import { textStyles } from "@/lib/design-tokens"
-import type { LiaMetricsData } from "./useLiaMetricsData"
+} from"lucide-react"
+import { textStyles } from"@/lib/design-tokens"
+import type { LiaMetricsData } from"./useLiaMetricsData"
 
 const statusIcons: Record<string, React.ReactNode> = {
   'Contato Inicial': <Phone className="w-4 h-4" />,

@@ -1,22 +1,22 @@
 "use client"
 
-import React, { useState } from "react"
-import { Phone, PhoneCall, Loader2, CheckCircle, MessageSquare } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
+import React, { useState } from"react"
+import { Phone, PhoneCall, Loader2, CheckCircle, MessageSquare } from"lucide-react"
+import { Button } from"@/components/ui/button"
+import { Badge } from"@/components/ui/badge"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from"@/components/ui/dialog"
 import {
   textStyles, badgeStyles, buttonStyles
-} from "@/lib/design-tokens"
+} from"@/lib/design-tokens"
 
 /**
  * VoiceScreeningButton — initiates voice screening for a candidate in a talent pool.
  *
- * Shows in the candidate table actions column when candidate is in "contacted" stage.
+ * Shows in the candidate table actions column when candidate is in"contacted" stage.
  * Opens a channel selection dialog, creates a session, and tracks progress.
  *
  * Usage in TalentPoolPage candidate table:
- *   {tpc.stage === "contacted" && (
+ *   {tpc.stage ==="contacted" && (
  *     <VoiceScreeningButton
  *       talentPoolId={poolId}
  *       candidateId={tpc.candidate.id}
@@ -31,14 +31,14 @@ interface VoiceScreeningButtonProps {
   candidateId: string | number
   candidateName: string
   onScreeningComplete?: () => void
-  size?: "sm" | "md"
+  size?:"sm" |"md"
 }
 
 export default function VoiceScreeningButton({
-  talentPoolId, candidateId, candidateName, onScreeningComplete, size = "sm",
+  talentPoolId, candidateId, candidateName, onScreeningComplete, size ="sm",
 }: VoiceScreeningButtonProps) {
   const [showDialog, setShowDialog] = useState(false)
-  const [channel, setChannel] = useState<"web" | "whatsapp" | "phone">("web")
+  const [channel, setChannel] = useState<"web" |"whatsapp" |"phone">("web")
   const [isStarting, setIsStarting] = useState(false)
   const [sessionId, setSessionId] = useState<string | null>(null)
   const [sessionState, setSessionState] = useState<string | null>(null)
@@ -51,8 +51,8 @@ export default function VoiceScreeningButton({
     setIsStarting(true)
     try {
       const res = await fetch("/api/backend-proxy/voice-screening/sessions", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+        method:"POST",
+        headers: {"Content-Type":"application/json" },
         body: JSON.stringify({
           talent_pool_id: talentPoolId,
           candidate_id: String(candidateId),
@@ -76,8 +76,8 @@ export default function VoiceScreeningButton({
     if (!sessionId || !text.trim()) return
     try {
       const res = await fetch(`/api/backend-proxy/voice-screening/sessions/${sessionId}/text`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+        method:"POST",
+        headers: {"Content-Type":"application/json" },
         body: JSON.stringify({ text }),
       })
       const data = await res.json()
@@ -95,20 +95,20 @@ export default function VoiceScreeningButton({
     }
   }
 
-  const buttonIcon = size === "sm" ? <Phone className="w-3.5 h-3.5" /> : <Phone className="w-4 h-4 mr-1" />
+  const buttonIcon = size ==="sm" ? <Phone className="w-3.5 h-3.5" /> : <Phone className="w-4 h-4 mr-1" />
 
   return (
     <>
       <button
         onClick={() => setShowDialog(true)}
-        className={size === "sm"
-          ? "p-1.5 rounded hover:bg-lia-bg-tertiary text-lia-text-tertiary hover:text-lia-text-secondary transition-colors"
+        className={size ==="sm"
+          ?"p-1.5 rounded hover:bg-lia-bg-tertiary text-lia-text-tertiary hover:text-lia-text-secondary transition-colors"
           : `${buttonStyles.outline} text-sm`
         }
         title="Iniciar triagem por voz"
       >
         {buttonIcon}
-        {size === "md" && "Triagem Voz"}
+        {size ==="md" &&"Triagem Voz"}
       </button>
 
       {showDialog && (
@@ -128,14 +128,14 @@ export default function VoiceScreeningButton({
                 </p>
                 <div className="space-y-2">
                   {[
-                    { id: "web" as const, label: "Chat Web", icon: MessageSquare, desc: "Candidato responde pelo navegador" },
-                    { id: "whatsapp" as const, label: "WhatsApp", icon: Phone, desc: "LIA envia perguntas por WhatsApp" },
-                    { id: "phone" as const, label: "Ligação", icon: PhoneCall, desc: "LIA liga para o candidato" },
+                    { id:"web" as const, label:"Chat Web", icon: MessageSquare, desc:"Candidato responde pelo navegador" },
+                    { id:"whatsapp" as const, label:"WhatsApp", icon: Phone, desc:"LIA envia perguntas por WhatsApp" },
+                    { id:"phone" as const, label:"Ligação", icon: PhoneCall, desc:"LIA liga para o candidato" },
                   ].map(opt => (
                     <label
                       key={opt.id}
                       className={`flex items-center gap-3 p-3 rounded-md border cursor-pointer transition-colors ${
-                        channel === opt.id ? "border-lia-text-primary bg-lia-bg-secondary" : "border-lia-border-subtle hover:bg-lia-bg-secondary"
+                        channel === opt.id ?"border-lia-text-primary bg-lia-bg-secondary" :"border-lia-border-subtle hover:bg-lia-bg-secondary"
                       }`}
                     >
                       <input
@@ -160,7 +160,7 @@ export default function VoiceScreeningButton({
                   </Button>
                   <Button className={buttonStyles.primary} onClick={startSession} disabled={isStarting}>
                     {isStarting ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Phone className="w-4 h-4 mr-1" />}
-                    {isStarting ? "Iniciando..." : "Iniciar Triagem"}
+                    {isStarting ?"Iniciando..." :"Iniciar Triagem"}
                   </Button>
                 </DialogFooter>
               </div>
@@ -173,7 +173,7 @@ export default function VoiceScreeningButton({
                   Score: <strong>{score}/100</strong>
                 </p>
                 <p className={textStyles.caption}>
-                  Candidato movido para "Triado" no pool.
+                  Candidato movido para"Triado" no pool.
                 </p>
                 <Button className={`${buttonStyles.primary} mt-4`} onClick={() => setShowDialog(false)}>
                   Fechar
@@ -203,14 +203,14 @@ export default function VoiceScreeningButton({
                 </div>
 
                 {/* Text input (web channel fallback) */}
-                {channel === "web" && (
+                {channel ==="web" && (
                   <TextResponseInput onSubmit={submitTextResponse} />
                 )}
 
                 {/* For whatsapp/phone: just show status */}
-                {channel !== "web" && (
+                {channel !=="web" && (
                   <p className={textStyles.caption}>
-                    Aguardando resposta do candidato via {channel === "whatsapp" ? "WhatsApp" : "telefone"}...
+                    Aguardando resposta do candidato via {channel ==="whatsapp" ?"WhatsApp" :"telefone"}...
                   </p>
                 )}
               </div>
@@ -242,10 +242,10 @@ function TextResponseInput({ onSubmit }: { onSubmit: (text: string) => void }) {
         onChange={e => setText(e.target.value)}
         placeholder="Resposta do candidato..."
         className="flex-1 border border-lia-border-default rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
-        onKeyDown={e => e.key === "Enter" && handleSubmit()}
+        onKeyDown={e => e.key ==="Enter" && handleSubmit()}
       />
       <Button className={buttonStyles.primary} onClick={handleSubmit} disabled={isSending || !text.trim()}>
-        {isSending ? <Loader2 className="w-4 h-4 animate-spin" /> : "Enviar"}
+        {isSending ? <Loader2 className="w-4 h-4 animate-spin" /> :"Enviar"}
       </Button>
     </div>
   )

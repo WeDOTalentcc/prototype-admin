@@ -1,15 +1,15 @@
 "use client"
 
-import { useState, useRef, useEffect, useCallback } from "react"
-import { X, Brain, Loader2, Search, ChevronDown, AlertCircle } from "lucide-react"
-import { cn } from "@/lib/utils"
-import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
+import { useState, useRef, useEffect, useCallback } from"react"
+import { X, Brain, Loader2, Search, ChevronDown, AlertCircle } from"lucide-react"
+import { cn } from"@/lib/utils"
+import { Badge } from"@/components/ui/badge"
+import { Input } from"@/components/ui/input"
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover"
+} from"@/components/ui/popover"
 
 export interface CompanyTagItem {
   name: string
@@ -26,12 +26,7 @@ interface CompanyTagsInputProps {
   placeholder?: string
 }
 
-const POPULAR_TAGS = [
-  "Machine Learning", "Artificial Intelligence", "Blockchain", "Fintech", "SaaS", "Cloud Computing",
-  "Data Science", "Cybersecurity", "Internet of Things", "Robotics", "Semiconductors", "Biotech",
-  "E-commerce", "Mobile Apps", "Gaming", "AR/VR", "5G", "Edge Computing", "Quantum Computing",
-  "Clean Energy", "Electric Vehicles", "Space Tech", "AgTech", "HealthTech", "EdTech", "PropTech",
-  "InsurTech", "LegalTech", "MarTech", "HRTech", "RegTech", "Sustainability", "ESG"
+const POPULAR_TAGS = ["Machine Learning","Artificial Intelligence","Blockchain","Fintech","SaaS","Cloud Computing","Data Science","Cybersecurity","Internet of Things","Robotics","Semiconductors","Biotech","E-commerce","Mobile Apps","Gaming","AR/VR","5G","Edge Computing","Quantum Computing","Clean Energy","Electric Vehicles","Space Tech","AgTech","HealthTech","EdTech","PropTech","InsurTech","LegalTech","MarTech","HRTech","RegTech","Sustainability","ESG"
 ]
 
 const TIME_FILTER_OPTIONS: { 
@@ -61,7 +56,7 @@ export function CompanyTagsInput({
   onChange,
   timeFilter = 'current_past',
   onTimeFilterChange,
-  placeholder = "Type tag name and press Enter"
+  placeholder ="Type tag name and press Enter"
 }: CompanyTagsInputProps) {
   const [inputValue, setInputValue] = useState("")
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
@@ -92,7 +87,7 @@ export function CompanyTagsInput({
   const showAskAI = inputValue.trim().length >= 2
   const dropdownItems = [
     ...filteredAISuggestions.map(t => ({ type: 'ai-suggestion' as const, label: t.name, tag: t.name, highConfidence: t.highConfidence })),
-    ...(showAskAI ? [{ type: 'ai' as const, label: `Ask AI for "${inputValue}"`, tag: null, highConfidence: false }] : []),
+    ...(showAskAI ? [{ type: 'ai' as const, label: `Ask AI for"${inputValue}"`, tag: null, highConfidence: false }] : []),
     ...filteredSuggestions.map(t => ({ type: 'tag' as const, label: t, tag: t, highConfidence: false }))
   ]
 
@@ -318,9 +313,8 @@ export function CompanyTagsInput({
                     onTimeFilterChange?.(option.value)
                     setIsTimeFilterOpen(false)
                   }}
-                  className={cn(
-                    "w-full text-left px-3 py-2 hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none",
-                    timeFilter === option.value && "bg-lia-bg-secondary"
+                  className={cn("w-full text-left px-3 py-2 hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none",
+                    timeFilter === option.value &&"bg-lia-bg-secondary"
                   )}
                 >
                   <div className="flex items-center justify-between">
@@ -395,10 +389,9 @@ export function CompanyTagsInput({
                     addTag({ name: item.tag, highConfidence: item.highConfidence })
                   }
                 }}
-                className={cn(
-                  "w-full text-left px-3 py-2 text-sm transition-colors",
-                  focusedIndex === index ? "bg-lia-bg-tertiary" : "hover:bg-lia-bg-secondary",
-                  item.type === 'ai' && ""
+                className={cn("w-full text-left px-3 py-2 text-sm transition-colors",
+                  focusedIndex === index ?"bg-lia-bg-tertiary" :"hover:bg-lia-bg-secondary",
+                  item.type === 'ai' &&""
                 )}
               >
                 {item.type === 'ai' ? (
@@ -410,7 +403,7 @@ export function CompanyTagsInput({
                   <div className="flex items-center gap-2 text-lia-text-primary">
                     <Brain className="w-3 h-3 text-wedo-purple" />
                     <span>{item.label}</span>
-                    <span className="text-micro px-1.5 py-0.5 bg-wedo-purple/15 text-wedo-purple rounded-full ml-auto">AI</span>
+                    <span className="text-micro px-1.5 py-0.5  rounded-full ml-auto">AI</span>
                   </div>
                 ) : (
                   <span className="text-lia-text-primary">{item.label}</span>

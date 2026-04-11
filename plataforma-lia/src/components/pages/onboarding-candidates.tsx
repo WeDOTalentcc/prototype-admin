@@ -1,14 +1,14 @@
 "use client"
 
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Button } from"@/components/ui/button"
+import { Card, CardContent } from"@/components/ui/card"
+import { Badge } from"@/components/ui/badge"
+import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
 import {
   Plus, Search, Eye, MoreHorizontal, MessageSquare
-} from "lucide-react"
-import type { OnboardingCandidate } from "./onboarding-page.types"
-import { getStatusColor, getStatusLabel } from "./onboarding-page.types"
+} from"lucide-react"
+import type { OnboardingCandidate } from"./onboarding-page.types"
+import { getStatusColor, getStatusLabel } from"./onboarding-page.types"
 
 interface OnboardingCandidatesProps {
   filteredCandidates: OnboardingCandidate[]

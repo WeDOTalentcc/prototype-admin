@@ -1,17 +1,17 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useState } from"react"
 import {
   ChevronUp, ChevronDown, X, Briefcase, Database,
   Search, ArrowRight, Plus, Zap
-} from "lucide-react"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Progress } from "@/components/ui/progress"
+} from"lucide-react"
+import { Badge } from"@/components/ui/badge"
+import { Button } from"@/components/ui/button"
+import { Progress } from"@/components/ui/progress"
 import {
   textStyles, badgeStyles, buttonStyles
-} from "@/lib/design-tokens"
-import { useWorkflowRail, WorkflowEntry, WorkflowStage } from "./useWorkflowRail"
+} from"@/lib/design-tokens"
+import { useWorkflowRail, WorkflowEntry, WorkflowStage } from"./useWorkflowRail"
 
 /**
  * WorkflowRail — persistent collapsible bottom bar showing all active workflows.
@@ -58,7 +58,7 @@ export default function WorkflowRail({ userId, onNavigate }: WorkflowRailProps) 
         </div>
         <div className="flex items-center gap-2 flex-shrink-0 ml-3">
           {pendingCount > 0 && (
-            <Badge className="bg-yellow-500 text-yellow-900 text-xs">{pendingCount} pendente{pendingCount > 1 ? "s" : ""}</Badge>
+            <Badge className="bg-yellow-500 text-yellow-900 text-xs">{pendingCount} pendente{pendingCount > 1 ?"s" :""}</Badge>
           )}
           {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
         </div>
@@ -98,8 +98,8 @@ export default function WorkflowRail({ userId, onNavigate }: WorkflowRailProps) 
 // ---------- Collapsed Entry ----------
 
 function CollapsedEntry({ entry }: { entry: WorkflowEntry }) {
-  const icon = entry.type === "campaign" ? "📋" : entry.type === "pool" ? "🏊" : "🔍"
-  const currentStage = entry.stages?.find(s => s.status === "in_progress")
+  const icon = entry.type ==="campaign" ?"📋" : entry.type ==="pool" ?"🏊" :"🔍"
+  const currentStage = entry.stages?.find(s => s.status ==="in_progress")
 
   return (
     <div className="flex items-center gap-1.5 text-xs whitespace-nowrap">
@@ -125,9 +125,9 @@ function ExpandedEntry({
   onDismiss: () => void
 }) {
   const typeConfig = {
-    campaign: { icon: Briefcase, label: "Campanha" },
-    pool: { icon: Database, label: "Pool" },
-    search: { icon: Search, label: "Busca" },
+    campaign: { icon: Briefcase, label:"Campanha" },
+    pool: { icon: Database, label:"Pool" },
+    search: { icon: Search, label:"Busca" },
   }
   const config = typeConfig[entry.type] || typeConfig.campaign
   const Icon = config.icon
@@ -141,7 +141,7 @@ function ExpandedEntry({
           <span className={textStyles.subtitle}>{entry.name}</span>
           <span className={`${textStyles.caption} text-lia-text-tertiary`}>— {config.label}</span>
         </div>
-        {entry.type === "search" && (
+        {entry.type ==="search" && (
           <button onClick={onDismiss} className="text-lia-text-disabled hover:text-lia-text-tertiary">
             <X className="w-3.5 h-3.5" />
           </button>
@@ -155,7 +155,7 @@ function ExpandedEntry({
             <React.Fragment key={stage.stage}>
               <StageIndicator stage={stage} />
               {i < entry.stages!.length - 1 && (
-                <div className={`h-px w-3 ${stage.status === "completed" ? "bg-lia-bg-inverse" : "bg-lia-interactive-active"}`} />
+                <div className={`h-px w-3 ${stage.status ==="completed" ?"bg-lia-bg-inverse" :"bg-lia-interactive-active"}`} />
               )}
             </React.Fragment>
           ))}
@@ -183,7 +183,7 @@ function ExpandedEntry({
       )}
 
       {/* Quick actions for search entries */}
-      {entry.type === "search" && entry.searchResults && (
+      {entry.type ==="search" && entry.searchResults && (
         <div className="flex items-center gap-2 mt-2">
           <span className={textStyles.caption}>{entry.searchResults.count} encontrados</span>
           <button className="flex items-center gap-1 text-xs text-lia-text-secondary hover:text-lia-text-primary border border-lia-border-subtle rounded px-2 py-1">
@@ -205,15 +205,15 @@ function ExpandedEntry({
 
 function StageIndicator({ stage }: { stage: WorkflowStage }) {
   const statusStyles = {
-    completed: "bg-lia-bg-inverse text-white",
-    in_progress: "bg-yellow-100 text-yellow-800 ring-1 ring-yellow-300",
-    pending: "bg-lia-bg-tertiary text-lia-text-tertiary",
+    completed:"bg-lia-bg-inverse text-white",
+    in_progress:"bg-yellow-100 text-yellow-800 ring-1 ring-yellow-300",
+    pending:"bg-lia-bg-tertiary text-lia-text-tertiary",
   }
 
   return (
     <div className="flex flex-col items-center" title={stage.label}>
       <div className={`w-5 h-5 rounded-full flex items-center justify-center text-xs ${statusStyles[stage.status]}`}>
-        {stage.status === "completed" ? "✓" : stage.status === "in_progress" ? "●" : "○"}
+        {stage.status ==="completed" ?"✓" : stage.status ==="in_progress" ?"●" :"○"}
       </div>
       <span className="text-[10px] text-lia-text-tertiary mt-0.5 whitespace-nowrap">{stage.label}</span>
       {stage.candidatesCount > 0 && (

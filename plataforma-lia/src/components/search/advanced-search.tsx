@@ -26,11 +26,11 @@ interface AdvancedSearchProps {
 
 const filterCategories = [
   { id: 'recrutamento', label: 'Recrutamento', color: 'bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-bg-secondary' },
-  { id: 'triagem', label: 'Triagem', color: 'bg-status-success/15 text-status-success dark:bg-status-success/20 dark:text-status-success' },
-  { id: 'entrevistas', label: 'Entrevistas', color: 'bg-wedo-purple/15 text-wedo-purple dark:bg-wedo-purple/20 dark:text-wedo-purple' },
-  { id: 'onboarding', label: 'Onboarding', color: 'bg-wedo-orange/15 text-wedo-orange dark:bg-wedo-orange/20 dark:text-wedo-orange' },
+  { id: 'triagem', label: 'Triagem', color: ' dark:bg-status-success/20 dark:text-status-success' },
+  { id: 'entrevistas', label: 'Entrevistas', color: ' dark:bg-wedo-purple/20 dark:text-wedo-purple' },
+  { id: 'onboarding', label: 'Onboarding', color: ' dark:bg-wedo-orange/20 dark:text-wedo-orange' },
   { id: 'analytics', label: 'Analytics', color: 'bg-wedo-magenta/15 text-wedo-magenta dark:bg-wedo-magenta/20 dark:text-wedo-magenta' },
-  { id: 'integracao', label: 'Integração', color: 'bg-wedo-purple/15 text-wedo-purple dark:bg-wedo-purple/20 dark:text-wedo-purple' }
+  { id: 'integracao', label: 'Integração', color: ' dark:bg-wedo-purple/20 dark:text-wedo-purple' }
 ]
 
 const filterTypes = [
@@ -116,9 +116,8 @@ export function AdvancedSearch({ filters, onFiltersChange, suggestions = [], cla
                 variant="ghost"
                 size="sm"
                 onClick={() => setShowAdvanced(!showAdvanced)}
-                className={cn(
-                  "h-8 w-8 p-0",
- showAdvanced && "bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary"
+                className={cn("h-8 w-8 p-0",
+ showAdvanced &&"bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary"
                 )}
               >
                 <SlidersHorizontal className="w-4 h-4" />
@@ -158,17 +157,17 @@ export function AdvancedSearch({ filters, onFiltersChange, suggestions = [], cla
       {/* Quick Filters */}
       <div className="flex flex-wrap items-center gap-2">
         <Button
-          variant={filters.favorites ? "primary" : "outline"}
+          variant={filters.favorites ?"primary" :"outline"}
           size="sm"
           onClick={() => updateFilter('favorites', !filters.favorites)}
           className="h-8"
         >
-          <Star className={cn("w-3 h-3 mr-1", filters.favorites && "fill-current")} />
+          <Star className={cn("w-3 h-3 mr-1", filters.favorites &&"fill-current")} />
           Favoritos
         </Button>
 
         <Button
-          variant={filters.priority === 'high' ? "primary" : "outline"}
+          variant={filters.priority === 'high' ?"primary" :"outline"}
           size="sm"
           onClick={() => updateFilter('priority', filters.priority === 'high' ? 'all' : 'high')}
           className="h-8"
@@ -177,7 +176,7 @@ export function AdvancedSearch({ filters, onFiltersChange, suggestions = [], cla
         </Button>
 
         <Button
-          variant={filters.dateRange === 'today' ? "primary" : "outline"}
+          variant={filters.dateRange === 'today' ?"primary" :"outline"}
           size="sm"
           onClick={() => updateFilter('dateRange', filters.dateRange === 'today' ? 'all' : 'today')}
           className="h-8"
@@ -217,12 +216,10 @@ export function AdvancedSearch({ filters, onFiltersChange, suggestions = [], cla
                   <button
                     key={category.id}
                     onClick={() => toggleArrayFilter('categories', category.id)}
-                    className={cn(
-                      "px-3 py-1 rounded-full text-xs font-medium transition-[width,height]",
-                      "hover:scale-[1.05] active:scale-[0.95]",
+                    className={cn("px-3 py-1 rounded-full text-xs font-medium transition-[width,height]","hover:scale-[1.05] active:scale-[0.95]",
                       filters.categories.includes(category.id)
                         ? category.color
- : "text-lia-text-primary hover:dark:bg-lia-bg-elevated dark:hover:bg-lia-border-medium"
+ :"text-lia-text-primary hover:dark:bg-lia-bg-elevated dark:hover:bg-lia-border-medium"
                     )}
                   >
                     {category.label}
@@ -242,12 +239,10 @@ export function AdvancedSearch({ filters, onFiltersChange, suggestions = [], cla
                   <button
                     key={type.id}
                     onClick={() => toggleArrayFilter('types', type.id)}
-                    className={cn(
-                      "flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors border",
-                      "hover:scale-[1.02] active:scale-[0.98]",
+                    className={cn("flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors border","hover:scale-[1.02] active:scale-[0.98]",
                       filters.types.includes(type.id)
-                        ? "bg-lia-bg-tertiary text-lia-text-primary border-lia-border-default dark:bg-lia-bg-secondary dark:border-lia-border-default"
- : "bg-lia-bg-primary text-lia-text-primary border-lia-border-subtle hover:dark:bg-lia-bg-secondary dark:border-lia-border-subtle dark:hover:bg-lia-bg-inverse"
+                        ?"bg-lia-bg-tertiary text-lia-text-primary border-lia-border-default dark:bg-lia-bg-secondary dark:border-lia-border-default"
+ :"bg-lia-bg-primary text-lia-text-primary border-lia-border-subtle hover:dark:bg-lia-bg-secondary dark:border-lia-border-subtle dark:hover:bg-lia-bg-inverse"
                     )}
                   >
                     <span>{type.icon}</span>
@@ -267,12 +262,10 @@ export function AdvancedSearch({ filters, onFiltersChange, suggestions = [], cla
                   <button
                     key={tag}
                     onClick={() => toggleArrayFilter('tags', tag)}
-                    className={cn(
-                      "px-2 py-1 rounded-md text-xs font-medium transition-colors",
-                      "hover:scale-[1.05] active:scale-[0.95]",
+                    className={cn("px-2 py-1 rounded-md text-xs font-medium transition-colors","hover:scale-[1.05] active:scale-[0.95]",
                       filters.tags.includes(tag)
-                        ? "bg-status-success/15 text-status-success dark:bg-status-success/20 dark:text-status-success"
-                        : "bg-lia-bg-tertiary text-lia-text-secondary hover:bg-lia-interactive-active dark:bg-lia-bg-elevated dark:hover:bg-lia-border-medium"
+                        ?" dark:bg-status-success/20 dark:text-status-success"
+                        :"bg-lia-bg-tertiary text-lia-text-secondary hover:bg-lia-interactive-active dark:bg-lia-bg-elevated dark:hover:bg-lia-border-medium"
                     )}
                   >
                     #{tag}

@@ -1,16 +1,16 @@
 "use client"
 
-import { useState } from "react"
-import { formatRelativeTime } from "@/lib/format-utils"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
-import { LIAIcon } from "@/components/ui/lia-icon"
+import { useState } from"react"
+import { formatRelativeTime } from"@/lib/format-utils"
+import { Button } from"@/components/ui/button"
+import { Badge } from"@/components/ui/badge"
+import { Input } from"@/components/ui/input"
+import { LIAIcon } from"@/components/ui/lia-icon"
 import {
   Search, Clock, Repeat, Bookmark, Trash2, ChevronRight,
   Calendar, Users, Brain, Database, Cloud, FileText,
   Binary, Target, AlertCircle, Check, X
-} from "lucide-react"
+} from"lucide-react"
 import {
   Dialog,
   DialogContent,
@@ -18,7 +18,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
+} from"@/components/ui/dialog"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -28,8 +28,8 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
-import type { SearchHistoryItem, SearchMode, SearchSource } from "@/hooks/use-talent-funnel"
+} from"@/components/ui/alert-dialog"
+import type { SearchHistoryItem, SearchMode, SearchSource } from"@/hooks/use-talent-funnel"
 import { textStyles, buttonStyles, cardStyles, badgeStyles } from '@/lib/design-tokens'
 
 interface HistoryTabProps {
@@ -222,8 +222,7 @@ export function HistoryTab({
 
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <p className="text-sm font-medium text-lia-text-primary truncate">
-                          "{item.query}"
+                        <p className="text-sm font-medium text-lia-text-primary truncate">"{item.query}"
                         </p>
                       </div>
                       <div className="flex items-center gap-3 text-xs text-lia-text-primary">

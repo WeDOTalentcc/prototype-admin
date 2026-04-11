@@ -1,15 +1,15 @@
 "use client"
 
-import React from "react"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import React from"react"
+import { Badge } from"@/components/ui/badge"
+import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
+} from"@/components/ui/select"
 import {
   Mail,
   MessageSquare,
@@ -17,10 +17,10 @@ import {
   AlertCircle,
   Brain,
   Check,
-} from "lucide-react"
-import { textStyles, badgeStyles } from "@/lib/design-tokens"
-import { cn } from "@/lib/utils"
-import type { CommunicationTemplate } from "@/hooks/use-communication-templates"
+} from"lucide-react"
+import { textStyles, badgeStyles } from"@/lib/design-tokens"
+import { cn } from"@/lib/utils"
+import type { CommunicationTemplate } from"@/hooks/use-communication-templates"
 import {
   COLOR_CLASSES,
   getStageDisplayName,
@@ -30,7 +30,7 @@ import {
   type WsiData,
   type TransitionAction,
   type TransitionActionType,
-} from "./stage-transition-utils"
+} from"./stage-transition-utils"
 
 interface StageTransitionLeftPanelProps {
   candidate: Candidate
@@ -91,8 +91,7 @@ export function StageTransitionLeftPanel({
               {getStageDisplayName(currentStage)}
             </Badge>
             <ChevronRight className="h-4 w-4 text-lia-text-disabled" />
-            <Badge className={cn(
-              "text-white",
+            <Badge className={cn("text-white",
               headerColor === 'red' ? 'bg-status-error' : 'bg-lia-btn-primary-bg'
             )}>
               {getStageDisplayName(newStage)}
@@ -102,8 +101,7 @@ export function StageTransitionLeftPanel({
 
         {wsiData && (
           <div className="flex items-center gap-2 mt-2">
-            <Badge className={cn(
-              "text-xs px-2 py-0.5 font-medium",
+            <Badge className={cn("text-xs px-2 py-0.5 font-medium",
               getWsiClassificationColor(wsiData.classification).bg,
               getWsiClassificationColor(wsiData.classification).text
             )}>
@@ -123,7 +121,7 @@ export function StageTransitionLeftPanel({
         )}
 
         <div className="space-y-3">
-          <p className={cn(textStyles.label, "mb-2")}>Selecione uma ação:</p>
+          <p className={cn(textStyles.label,"mb-2")}>Selecione uma ação:</p>
           <div className="grid gap-2">
             {suggestedActions.map((action) => {
               const colors = COLOR_CLASSES[action.color]
@@ -133,15 +131,13 @@ export function StageTransitionLeftPanel({
                 <button
                   key={action.id}
                   onClick={() => setSelectedAction(action.id)}
-                  className={cn(
-                    "flex items-center gap-3 p-3 rounded-md border transition-colors text-left",
+                  className={cn("flex items-center gap-3 p-3 rounded-md border transition-colors text-left",
                     isSelected
-                      ? cn(colors.selectedBg, colors.selectedBorder, "ring-1", action.color === 'cyan' ? "ring-lia-btn-primary-bg/20" : action.color === 'red' ? "ring-red-300" : action.color === 'green' ? "ring-emerald-300" : "ring-lia-border-default")
-                      : cn(colors.bg, colors.border, "hover:border-lia-border-default")
+                      ? cn(colors.selectedBg, colors.selectedBorder,"ring-1", action.color === 'cyan' ?"ring-lia-btn-primary-bg/20" : action.color === 'red' ?"ring-red-300" : action.color === 'green' ?"ring-emerald-300" :"ring-lia-border-default")
+                      : cn(colors.bg, colors.border,"hover:border-lia-border-default")
                   )}
                 >
-                  <div className={cn(
-                    "flex items-center justify-center w-8 h-8 rounded-full",
+                  <div className={cn("flex items-center justify-center w-8 h-8 rounded-full",
                     isSelected ? colors.selectedBg : colors.bg
                   )}>
                     <span className={colors.icon}>{action.icon}</span>
@@ -175,8 +171,7 @@ export function StageTransitionLeftPanel({
             <div className="grid grid-cols-3 gap-2">
               <button
                 onClick={() => setChannel('email')}
-                className={cn(
-                  "flex items-center gap-2 p-3 rounded-md border transition-colors",
+                className={cn("flex items-center gap-2 p-3 rounded-md border transition-colors",
                   channel === 'email'
                     ? 'border-lia-btn-primary-bg bg-lia-bg-secondary text-lia-text-primary'
                     : 'border-lia-border-subtle hover:border-lia-border-default text-lia-text-primary'
@@ -190,10 +185,9 @@ export function StageTransitionLeftPanel({
               </button>
               <button
                 onClick={() => setChannel('whatsapp')}
-                className={cn(
-                  "flex items-center gap-2 p-3 rounded-md border transition-colors",
+                className={cn("flex items-center gap-2 p-3 rounded-md border transition-colors",
                   channel === 'whatsapp'
-                    ? 'border-status-success/30 bg-status-success/10 text-status-success'
+                    ? 'border-status-success/30 '
                     : 'border-lia-border-subtle hover:border-lia-border-default text-lia-text-primary'
                 )}
               >
@@ -205,8 +199,7 @@ export function StageTransitionLeftPanel({
               </button>
               <button
                 onClick={() => setChannel('both')}
-                className={cn(
-                  "flex items-center gap-2 p-3 rounded-md border transition-colors",
+                className={cn("flex items-center gap-2 p-3 rounded-md border transition-colors",
                   channel === 'both'
                     ? 'border-lia-btn-primary-bg bg-lia-bg-secondary text-lia-text-primary'
                     : 'border-lia-border-subtle hover:border-lia-border-default text-lia-text-primary'

@@ -1,21 +1,21 @@
 "use client";
 
-import React from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import React from"react";
+import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card";
+import { Badge } from"@/components/ui/badge";
 import {
   Code,
   ChevronDown,
   ChevronUp,
   Brain,
-} from "lucide-react";
+} from"lucide-react";
 import { LiaFieldToggle, defaultLiaFieldExamples } from './LiaFieldToggle';
 import {
   type CompanyData,
   type TechStackByCategory,
   TECH_STACK_CATEGORIES,
 } from './companyTeamHub.types';
-import { cardStyles } from "@/lib/design-tokens";
+import { cardStyles } from"@/lib/design-tokens";
 
 export interface TechStackTabProps {
   companyData: CompanyData;
@@ -151,10 +151,10 @@ export function TechStackTab({
                     disabled={!isEditingCompanyData}
                     className={`w-full px-3 py-2 text-xs border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-lia-bg-secondary dark:bg-lia-bg-primary focus:ring-2 focus:ring-lia-border-subtle focus:border-lia-border-medium dark:focus:ring-lia-border-strong dark:focus:border-lia-border-medium transition-colors motion-reduce:transition-none ${!isEditingCompanyData ? 'opacity-60 cursor-not-allowed' : ''}`}
                     onKeyDown={(e) => {
-                      if (e.key === "Enter" && e.currentTarget.value.trim()) {
+                      if (e.key ==="Enter" && e.currentTarget.value.trim()) {
                         e.preventDefault();
                         addTechToCategory(category.key, e.currentTarget.value.trim());
-                        e.currentTarget.value = "";
+                        e.currentTarget.value ="";
                       }
                     }}
                   />
@@ -217,10 +217,10 @@ export function TechStackTab({
                   disabled={!isEditingCompanyData}
                   className={`w-full px-3 py-2 text-xs border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-lia-bg-secondary dark:bg-lia-bg-primary focus:ring-2 focus:ring-lia-border-subtle focus:border-lia-border-medium dark:focus:ring-lia-border-strong dark:focus:border-lia-border-medium transition-colors motion-reduce:transition-none ${!isEditingCompanyData ? 'opacity-60 cursor-not-allowed' : ''}`}
                   onKeyDown={(e) => {
-                    if (e.key === "Enter" && e.currentTarget.value.trim()) {
+                    if (e.key ==="Enter" && e.currentTarget.value.trim()) {
                       e.preventDefault();
                       addTechToCategory("outros", e.currentTarget.value.trim());
-                      e.currentTarget.value = "";
+                      e.currentTarget.value ="";
                     }
                   }}
                 />
@@ -246,7 +246,7 @@ export function TechStackTab({
             />
           </label>
           <textarea
-            value={companyData.engineering_culture || ""}
+            value={companyData.engineering_culture ||""}
             disabled={!isEditingCompanyData}
             onChange={(e) =>
               setCompanyData((prev) => ({

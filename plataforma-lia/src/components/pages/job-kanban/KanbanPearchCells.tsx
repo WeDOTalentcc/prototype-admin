@@ -1,10 +1,10 @@
 "use client"
 
-import React from "react"
-import { Badge } from "@/components/ui/badge"
-import { Copy } from "lucide-react"
-import { textStyles, badgeStyles } from "@/lib/design-tokens"
-import type { KanbanCandidate, QueryInsight } from "./KanbanTableCellRenderer.types"
+import React from"react"
+import { Badge } from"@/components/ui/badge"
+import { Copy } from"lucide-react"
+import { textStyles, badgeStyles } from"@/lib/design-tokens"
+import type { KanbanCandidate, QueryInsight } from"./KanbanTableCellRenderer.types"
 
 export function renderPearchCell(
   candidate: KanbanCandidate,
@@ -14,13 +14,13 @@ export function renderPearchCell(
     case 'is_open_to_work': {
       const isOpenToWork = candidate.is_opentowork || candidate.is_open_to_work
       return isOpenToWork ? (
-        <Badge className="text-xs bg-status-success/15 text-status-success">Open to Work</Badge>
+        <Badge className="text-xs">Open to Work</Badge>
       ) : <span className="text-xs text-lia-text-disabled">—</span>
     }
 
     case 'is_decision_maker':
       return candidate.is_decision_maker ? (
-        <Badge className="text-xs bg-wedo-purple/15 text-wedo-purple">Decision Maker</Badge>
+        <Badge className="text-xs">Decision Maker</Badge>
       ) : <span className="text-xs text-lia-text-disabled">—</span>
 
     case 'is_top_universities':
@@ -30,7 +30,7 @@ export function renderPearchCell(
 
     case 'is_hiring':
       return candidate.is_hiring ? (
-        <Badge className="text-xs bg-wedo-orange/15 text-wedo-orange">Contratando</Badge>
+        <Badge className="text-xs">Contratando</Badge>
       ) : <span className="text-xs text-lia-text-disabled">—</span>
 
     case 'headline':
