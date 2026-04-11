@@ -25,6 +25,7 @@ from app.api.v1 import (
     admin_prompts,
     admin_settings,
     admin_templates,
+    admin_platform,
     admin_token_budget,
     affirmative,
     agent_explainability,
@@ -545,6 +546,7 @@ def register_all_routes(app: FastAPI) -> None:
     # ── Admin ─────────────────────────────────────────────────────────────────
     app.include_router(admin.router, prefix="/api/v1", tags=["admin"])
     app.include_router(admin_templates.router, prefix="/api/v1", tags=["admin-templates"])
+    app.include_router(admin_platform.router, prefix="/api/v1", tags=["admin-platform"])
     app.include_router(admin_token_budget.router, prefix="/api/v1", tags=["admin-token-budget"])
     app.include_router(admin_prompts.router, prefix="/api/v1", tags=["admin-prompts"])
     app.include_router(admin_cb_router, prefix="/api/v1")
