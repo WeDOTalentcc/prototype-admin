@@ -79,6 +79,14 @@ export const ChatBubbleBase = React.memo(function ChatBubbleBase({
           )}
         >
           {children}
+          {isLia && (
+            <div className="mt-1.5 pt-1 border-t border-lia-border-subtle flex items-center gap-1 opacity-50">
+              <svg width="10" height="10" viewBox="0 0 16 16" fill="none" className="text-lia-text-tertiary flex-shrink-0">
+                <path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1Zm0 2.5a1 1 0 1 1 0 2 1 1 0 0 1 0-2ZM6.5 7h3v4.5h-3V7Z" fill="currentColor"/>
+              </svg>
+              <span className="text-micro text-lia-text-tertiary">Gerado por IA — EU AI Act Art. 52</span>
+            </div>
+          )}
         </div>
 
         {!isLia && !hideTimestamp && timestamp && (

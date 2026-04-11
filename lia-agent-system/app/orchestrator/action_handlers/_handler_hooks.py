@@ -95,9 +95,23 @@ async def log_action_audit(
     try:
         from app.shared.compliance.audit_service import audit_service
 
-        reasoning_parts = [f"Action {action_type} executed via chat"]
+        reasoning_parts = [
+            f"Action {action_type} executed via chat",
+            f"actor_id={effective_actor}",
+            f"entity_type={effective_entity_type}",
+            f"entity_id={effective_entity_id}",
+        ]
         if changes_summary:
-            reasoning_parts.append(changes_summary)
+            reasoning_parts.append(f"changes: {changes_summary}")
+
+        criteria_used = [
+            f"actor:{effective_actor}",
+            f"entity_type:{effective_entity_type}",
+        ]
+        if effective_entity_id:
+            criteria_used.append(f"entity_id:{effective_entity_id}")
+        if changes_summary:
+            criteria_used.append(f"summary:{changes_summary[:200]}")
 
         await audit_service.log_decision(
             company_id=company_id or "system",
@@ -106,7 +120,7 @@ async def log_action_audit(
             action=action_type,
             decision="executed",
             reasoning=reasoning_parts,
-            criteria_used=[],
+            criteria_used=criteria_used,
             candidate_id=candidate_id,
             job_vacancy_id=job_vacancy_id,
         )
