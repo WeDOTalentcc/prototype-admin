@@ -148,10 +148,25 @@ export function useChatSocket({
         }
         hitlRef.current = pending
         setHitlPending(pending)
+        window.dispatchEvent(new CustomEvent("hitl:approval_required", {
+          detail: {
+            pending_id: event.pending_id,
+            thread_id: event.thread_id,
+            action: event.action,
+            description: event.description,
+            data: event.data,
+            domain: (event as Record<string, unknown>).domain ?? "",
+            ws_session_id: sessionId,
+            requested_at: new Date().toISOString(),
+          },
+        }))
         break
       }
 
       case "approval_confirmed":
+        window.dispatchEvent(new CustomEvent("hitl:approval_resolved", {
+          detail: { pending_id: event.pending_id },
+        }))
         break
 
       case "panel_update": {

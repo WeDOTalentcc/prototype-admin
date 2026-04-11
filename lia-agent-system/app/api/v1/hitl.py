@@ -89,6 +89,29 @@ async def approve_hitl_action(
     )
 
 
+@router.get("/pending", response_model=None)
+async def get_all_pending_approvals(
+    current_user: User = Depends(get_current_user),
+):
+    """Retorna todas as aprovações pendentes para a empresa do usuário autenticado."""
+    company_id = getattr(current_user, "company_id", "") or ""
+    if not company_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Usuário sem empresa associada.",
+        )
+    try:
+        pending_list = await hitl_service.get_all_pending_by_company(company_id)
+    except Exception as exc:
+        logger.warning("[HITL] get_all_pending falhou company=%s: %s", company_id, exc)
+        pending_list = []
+
+    return {
+        "pending": pending_list,
+        "count": len(pending_list),
+    }
+
+
 @router.get("/{thread_id}/pending", response_model=None)
 async def get_pending_approval(
     thread_id: str,

@@ -33,6 +33,7 @@ import {
   Loader2,
 } from "lucide-react"
 import { NotificationSystem } from "@/components/notification-system"
+import { HitlPendingBadge } from "@/components/hitl-pending-badge"
 import { WeeklyDigestOverlay } from "@/components/notifications/weekly-digest-overlay"
 import { useWeeklyDigest } from "@/hooks/use-weekly-digest"
 import { ProfileModal } from "@/components/modals/profile-modal"
@@ -173,6 +174,7 @@ export function TopBar({ onNavigate, currentPage }: TopBarProps = {}) {
         <div className="flex-1" />
 
         <div className="flex items-center space-x-1.5">
+          <HitlPendingBadge />
           <NotificationSystem userId={authUser?.email || "default_user"} onNotificationClick={handleNotificationClick} />
 
           <DropdownMenu>

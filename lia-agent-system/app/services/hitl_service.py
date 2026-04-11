@@ -357,6 +357,80 @@ class HITLService:
         )
         return existing
 
+    async def get_all_pending_by_company(self, company_id: str) -> list[dict]:
+        """
+        Retorna todas as aprovações pendentes para uma empresa.
+        DB = source of truth. Redis/in-memory usado apenas quando DB falha.
+        Exige company_id válido para garantir isolamento multi-tenant.
+        """
+        if not company_id:
+            logger.warning("[HITL] get_all_pending_by_company chamado sem company_id — retornando vazio")
+            return []
+
+        results: list[dict] = []
+        db_available = True
+        try:
+            from sqlalchemy import select
+            from app.core.database import AsyncSessionLocal
+            from lia_models.hitl import HITLPendingAction
+            now = datetime.now(UTC)
+            async with AsyncSessionLocal() as db:
+                query = (
+                    select(HITLPendingAction)
+                    .where(
+                        HITLPendingAction.company_id == company_id,
+                        HITLPendingAction.status == "pending",
+                        HITLPendingAction.expires_at > now,
+                    )
+                    .order_by(HITLPendingAction.created_at.desc())
+                )
+                result = await db.execute(query)
+                records = result.scalars().all()
+                for record in records:
+                    d = record.to_dict()
+                    d["requested_at"] = d.get("created_at", d.get("requested_at"))
+                    results.append(d)
+        except Exception as exc:
+            db_available = False
+            logger.warning("[HITL] get_all_pending_by_company DB falhou: %s", exc)
+
+        if db_available:
+            return results
+
+        now = datetime.now(UTC)
+        try:
+            redis_client = _get_redis()
+            if redis_client is not None:
+                pattern = "hitl:*"
+                keys = redis_client.keys(pattern)
+                for k in keys:
+                    key_str = k.decode() if isinstance(k, bytes) else k
+                    if key_str.startswith("hitl:resume:"):
+                        continue
+                    raw = redis_client.get(k)
+                    if raw:
+                        item = json.loads(raw)
+                        if (
+                            item.get("approved") is None
+                            and item.get("company_id") == company_id
+                        ):
+                            expires = item.get("expires_at") or item.get("requested_at")
+                            if not expires or datetime.fromisoformat(expires) > now:
+                                results.append(item)
+            else:
+                for k, v in self._memory.items():
+                    if k.startswith("hitl:resume:"):
+                        continue
+                    if (
+                        v.get("approved") is None
+                        and v.get("company_id") == company_id
+                    ):
+                        results.append(v)
+        except Exception as exc:
+            logger.warning("[HITL] get_all_pending_by_company Redis/memory falhou: %s", exc)
+
+        return sorted(results, key=lambda x: x.get("requested_at", ""), reverse=True)
+
     async def get_pending(self, thread_id: str) -> dict | None:
         """
         Busca aprovação pendente. Redis first → fallback DB.
