@@ -15,7 +15,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 from uuid import uuid4
 
-from lia_audit.audit_models import ExecutionAuditRecord
+from lia_audit.audit_models import ExecutionAuditRecord, RequestCostRecord
 
 logger = logging.getLogger(__name__)
 
@@ -52,10 +52,12 @@ class AuditCallback(BaseCallbackHandler):
         session_id: str,
         domain: str = "unknown",
         agent_type: str = "react",
+        request_id: Optional[str] = None,
     ):
         if _HAS_LANGCHAIN:
             super().__init__()
         self.execution_id = str(uuid4())
+        self.request_id = request_id or str(uuid4())
         self.user_id = user_id
         self.company_id = company_id
         self.session_id = session_id
@@ -221,6 +223,24 @@ class AuditCallback(BaseCallbackHandler):
         start = self._start_time or now
         duration_ms = (now - start).total_seconds() * 1000
         tools_used = list({e["tool"] for e in self.entries if e.get("type") == "tool_call" and e.get("success")})
+
+        llm_entries = [e for e in self.entries if e.get("type") == "llm_call"]
+        tool_entries = [e for e in self.entries if e.get("type") == "tool_call"]
+        tokens_input = sum(e.get("tokens_input") or 0 for e in llm_entries)
+        tokens_output = sum(e.get("tokens_output") or 0 for e in llm_entries)
+        tokens_total = sum(e.get("tokens_total") or 0 for e in llm_entries)
+        model = llm_entries[-1].get("model") if llm_entries else None
+
+        request_cost = RequestCostRecord(
+            request_id=self.request_id,
+            tokens_input=tokens_input,
+            tokens_output=tokens_output,
+            tokens_total=tokens_total,
+            model=model,
+            llm_calls=len(llm_entries),
+            tool_calls=len(tool_entries),
+        )
+
         return ExecutionAuditRecord(
             execution_id=self.execution_id,
             session_id=self.session_id,
@@ -236,6 +256,8 @@ class AuditCallback(BaseCallbackHandler):
             tools_used=tools_used,
             nodes_visited=list(dict.fromkeys(self._nodes_visited)),
             error=error,
+            request_id=self.request_id,
+            request_cost=request_cost,
             entries=self.entries,
         )
 

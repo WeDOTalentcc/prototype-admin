@@ -8,6 +8,7 @@ Domínios obrigatórios: sourcing, screening, job_management, pipeline.
 Tests:
   - Structural validation: golden query format, domain coverage, field presence
   - Metric enforcement: heuristic scoring against per-metric threshold
+  - Chunking quality: retrieval coverage comparison across strategies
 """
 import os
 
@@ -182,3 +183,86 @@ class TestRAGASMetricEnforcement:
                         f"Flow '{flow_name}' query '{q['query'][:50]}...' "
                         f"metric '{metric_name}'={value:.3f} below hard floor {hard_floor}"
                     )
+
+
+class TestChunkingRetrievalQuality:
+    """Evaluate chunking strategy impact on retrieval coverage.
+
+    Measures keyword recall: what fraction of expected keywords appear in
+    at least one chunk. Higher recall = better retrieval quality.
+    """
+
+    SAMPLE_CV = (
+        "Resumo Profissional\n"
+        "Engenheiro de Software Sênior com 8 anos de experiência em Python, "
+        "microsserviços e liderança técnica.\n\n"
+        "Experiência Profissional\n"
+        "Tech Corp — Engenheiro Sênior (2020-presente)\n"
+        "- Pipeline CI/CD reduzindo deploy em 70%\n"
+        "- Microsserviços atendendo 2M requisições/dia\n\n"
+        "StartupXYZ — Desenvolvedor Python (2017-2020)\n"
+        "- APIs REST com Flask e FastAPI\n"
+        "- Integrou Stripe e PagSeguro\n\n"
+        "Formação Acadêmica\n"
+        "Ciência da Computação — USP (2013-2017)\n\n"
+        "Habilidades\n"
+        "Python, FastAPI, Flask, PostgreSQL, Redis, Docker, Kubernetes, AWS\n\n"
+        "Idiomas\n"
+        "Português — Nativo\n"
+        "Inglês — Fluente (C1)\n"
+    )
+
+    KEYWORDS = ["python", "fastapi", "docker", "kubernetes", "aws",
+                 "ci/cd", "microsserviços", "flask", "postgresql", "redis"]
+
+    def _keyword_recall(self, chunks: list, keywords: list[str]) -> float:
+        all_text = " ".join(c.text.lower() for c in chunks)
+        found = sum(1 for kw in keywords if kw.lower() in all_text)
+        return found / max(len(keywords), 1)
+
+    def _chunk_with_strategy(self, strategy_name: str):
+        from app.shared.intelligence.chunking.factory import ChunkingStrategyFactory
+        strategy = ChunkingStrategyFactory.get_strategy("cv", override=strategy_name, chunk_size=300, chunk_overlap=30)
+        return strategy.chunk(self.SAMPLE_CV)
+
+    def test_recursive_covers_all_keywords(self):
+        """Recursive chunker must achieve >= 90% keyword recall on CV."""
+        chunks = self._chunk_with_strategy("recursive")
+        recall = self._keyword_recall(chunks, self.KEYWORDS)
+        assert recall >= 0.90, (
+            f"recursive keyword recall={recall:.2f} < 0.90"
+        )
+
+    def test_sliding_window_covers_keywords(self):
+        """Sliding window must achieve >= 80% keyword recall."""
+        chunks = self._chunk_with_strategy("sliding_window")
+        recall = self._keyword_recall(chunks, self.KEYWORDS)
+        assert recall >= 0.80, (
+            f"sliding_window keyword recall={recall:.2f} < 0.80"
+        )
+
+    def test_section_aware_covers_keywords(self):
+        """Section-aware must achieve >= 90% keyword recall on CV."""
+        chunks = self._chunk_with_strategy("section_aware")
+        recall = self._keyword_recall(chunks, self.KEYWORDS)
+        assert recall >= 0.90, (
+            f"section_aware keyword recall={recall:.2f} < 0.90"
+        )
+
+    @pytest.mark.parametrize("strategy", ["sliding_window", "section_aware", "recursive"])
+    def test_no_empty_chunks(self, strategy: str):
+        """No strategy should produce empty chunks."""
+        chunks = self._chunk_with_strategy(strategy)
+        assert all(c.text.strip() for c in chunks), (
+            f"{strategy} produced empty chunks"
+        )
+
+    @pytest.mark.parametrize("strategy", ["sliding_window", "section_aware", "recursive"])
+    def test_chunks_within_size_limit(self, strategy: str):
+        """All chunks should respect the configured size limit (with tolerance)."""
+        chunks = self._chunk_with_strategy(strategy)
+        max_allowed = 300 * 1.5
+        for c in chunks:
+            assert len(c.text) <= max_allowed, (
+                f"{strategy} produced chunk of {len(c.text)} chars (max={max_allowed})"
+            )

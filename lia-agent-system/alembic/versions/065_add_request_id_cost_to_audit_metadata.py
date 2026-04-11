@@ -11,7 +11,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects.postgresql import JSONB
 
 revision = "065"
-down_revision = "064"
+down_revision = "064_create_agent_quotas_recruitment_campaigns"
 branch_labels = None
 depends_on = None
 
