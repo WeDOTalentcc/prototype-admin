@@ -5,7 +5,6 @@ import React from "react"
 import { useRouter } from "next/navigation"
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts"
 
-import { TopBar } from "@/components/top-bar"
 import { Sidebar } from "@/components/sidebar"
 import { CandidatesPage } from "@/components/pages/candidates-page"
 import { ChatPage } from "@/components/pages/chat-page"
@@ -235,11 +234,6 @@ export function DashboardApp({ initialPage = "Chat LIA" }: DashboardAppProps) {
       />
 
       <div className="flex-1 flex flex-col overflow-hidden">
-        <TopBar 
-          onNavigate={handleNavigate} 
-          currentPage={currentPage}
-        />
-
         <div className="flex-1 min-h-0 overflow-hidden flex">
           <div className="flex-1 min-w-0 overflow-hidden">
             {renderCurrentPage()}

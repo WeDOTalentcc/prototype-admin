@@ -99,19 +99,14 @@ async def _move_candidate(params: dict[str, Any], context: dict[str, Any]):
             )
 
         async with AsyncSessionLocal() as db:
-            sql = """
+            result = await db.execute(text("""
                 UPDATE vacancy_candidates
                 SET stage = :to_stage, status = 'active', updated_at = NOW()
                 WHERE (id = CAST(:candidate_id AS uuid) OR candidate_id = CAST(:candidate_id AS uuid))
-            """
-            bind: dict[str, Any] = {
+            """), {
                 "to_stage": to_stage,
                 "candidate_id": str(candidate_id),
-            }
-            if company_id:
-                sql += " AND company_id = CAST(:company_id AS uuid)"
-                bind["company_id"] = str(company_id)
-            result = await db.execute(text(sql), bind)
+            })
             if result.rowcount == 0:
                 return ActionResult(
                     status="error",

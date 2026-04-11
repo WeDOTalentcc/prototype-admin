@@ -12,6 +12,18 @@ logger = logging.getLogger(__name__)
 
 RAILS_ENABLED = bool(os.environ.get("RAILS_API_URL"))
 
+_TRIGGER_MAP = {
+    "candidate_created": "candidate_created",
+    "candidate_updated": "candidate_updated",
+    "candidate_moved": "status_change",
+    "candidate_tagged": "candidate_updated",
+    "candidate_favorited": "candidate_updated",
+    "interview_scheduled": "interview_scheduled",
+    "interview_rescheduled": "interview_scheduled",
+    "interview_cancelled": "interview_scheduled",
+    "scheduling_link_created": "interview_scheduled",
+}
+
 
 async def resolve_candidate_by_name(
     candidate_name: str,
@@ -83,13 +95,27 @@ async def sync_to_rails(
     if not RAILS_ENABLED:
         return
     try:
-        from app.domains.integrations_hub.services.rails_adapter import RailsAdapter
+        from app.domains.ats_integration.services.ats_sync_service import (
+            ATSSyncService,
+            ATSSyncTrigger,
+        )
 
-        adapter = RailsAdapter()
-        await adapter.publish_event(
-            event_type=event_type,
-            entity_type=entity_type,
-            entity_id=entity_id,
+        trigger_value = _TRIGGER_MAP.get(event_type, "candidate_updated")
+        try:
+            trigger = ATSSyncTrigger(trigger_value)
+        except ValueError:
+            trigger = ATSSyncTrigger.CANDIDATE_UPDATED
+
+        candidate_id = (data or {}).get("candidate_id") or (entity_id if entity_type == "candidate" else None)
+        job_id = (data or {}).get("job_id") or (entity_id if entity_type == "job" else None)
+
+        sync_svc = ATSSyncService()
+        await sync_svc.trigger_sync(
+            trigger=trigger,
+            source_agent="lia_chat_action",
+            ats_type="rails",
+            candidate_id=candidate_id,
+            job_id=job_id,
             data=data,
         )
     except Exception as e:

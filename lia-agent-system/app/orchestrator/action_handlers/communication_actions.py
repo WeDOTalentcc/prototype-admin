@@ -142,44 +142,23 @@ async def _schedule_interview(params: dict[str, Any], context: dict[str, Any]):
                 candidate_name = resolved["name"]
 
         if not candidate_id:
-            import uuid as _uuid
             return ActionResult(
-                status="executed",
-                message=f"Entrevista com **{candidate_name or 'candidato'}** registrada para **{dt}**.\n\n_(Candidato não localizado no banco — registro simulado. Confirme o nome completo para vincular ao cadastro.)_",
-                data={
-                    "interview_id": str(_uuid.uuid4()),
-                    "candidate_name": candidate_name,
-                    "datetime": dt,
-                    "interviewer": interviewer,
-                    "simulated": True,
-                    "reason": "candidate_not_resolved",
-                },
+                status="error",
+                message=f"Candidato **{candidate_name or 'não identificado'}** não encontrado. Informe o nome completo ou ID.",
+                error_detail="Could not resolve candidate_id",
                 action_type="schedule_interview",
             )
 
         async with AsyncSessionLocal() as db:
-            if company_id:
-                candidate_check = await db.execute(text(
-                    "SELECT c.id, c.name FROM candidates c JOIN vacancy_candidates vc ON vc.candidate_id = c.id WHERE c.id = CAST(:cid AS uuid) AND vc.company_id = CAST(:co AS uuid) LIMIT 1"
-                ), {"cid": str(candidate_id), "co": str(company_id)})
-            else:
-                candidate_check = await db.execute(text(
-                    "SELECT id, name FROM candidates WHERE id = CAST(:cid AS uuid)"
-                ), {"cid": str(candidate_id)})
+            candidate_check = await db.execute(text(
+                "SELECT id, name FROM candidates WHERE id = CAST(:cid AS uuid)"
+            ), {"cid": str(candidate_id)})
             candidate_row = candidate_check.fetchone()
             if not candidate_row:
                 return ActionResult(
-                    status="executed",
-                    message=f"Entrevista com **{candidate_name}** registrada para **{dt}**.\n\n_(Candidato ID {candidate_id} não encontrado no banco — registro simulado. Verifique o cadastro.)_",
-                    data={
-                        "interview_id": str(uuid_mod.uuid4()),
-                        "candidate_id": str(candidate_id),
-                        "candidate_name": candidate_name,
-                        "datetime": dt,
-                        "interviewer": interviewer,
-                        "simulated": True,
-                        "reason": "candidate_not_in_db",
-                    },
+                    status="error",
+                    message=f"Candidato **{candidate_name}** não encontrado no sistema.",
+                    error_detail=f"Candidate {candidate_id} does not exist",
                     action_type="schedule_interview",
                 )
             if not candidate_name or candidate_name == "o candidato":
