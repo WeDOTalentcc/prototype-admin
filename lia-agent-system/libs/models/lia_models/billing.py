@@ -388,6 +388,122 @@ class CreditTransaction(Base):
         }
 
 
+class ModuleStatus(str, enum.Enum):
+    BETA = "beta"
+    TRIAL = "trial"
+    ACTIVE = "active"
+    EXPIRED = "expired"
+    DISABLED = "disabled"
+    COMING_SOON = "coming_soon"
+
+
+class ModuleTier(str, enum.Enum):
+    FREE = "free"
+    BASIC = "basic"
+    PRO = "pro"
+    ENTERPRISE = "enterprise"
+
+
+AVAILABLE_MODULES = {
+    "talent_intelligence_pro": {
+        "label": "Talent Intelligence Pro",
+        "description": "Skills Ontology + Gap Analysis + Market Intelligence",
+        "initial_status": "beta",
+    },
+    "internal_mobility": {
+        "label": "Internal Mobility Suite",
+        "description": "Matching interno + Readiness scoring",
+        "initial_status": "beta",
+    },
+    "interview_intelligence": {
+        "label": "Interview Intelligence Pro",
+        "description": "Análise WSI de entrevista + viés + parecer",
+        "initial_status": "beta",
+    },
+    "workforce_planning": {
+        "label": "Workforce Planning",
+        "description": "Previsão + cenários + dashboard",
+        "initial_status": "beta",
+    },
+    "candidate_nurture": {
+        "label": "Candidate Nurture / CRM",
+        "description": "Sequências + engajamento + CRM",
+        "initial_status": "beta",
+    },
+    "onboarding_suite": {
+        "label": "Onboarding Intelligence",
+        "description": "Workflow pós-contratação completo",
+        "initial_status": "coming_soon",
+    },
+    "predictive_analytics": {
+        "label": "Predictive Attrition",
+        "description": "Previsão de risco de turnover com ML",
+        "initial_status": "coming_soon",
+    },
+}
+
+
+class CompanyModule(Base):
+    __tablename__ = "company_modules"
+    __table_args__ = (
+        Index("ix_company_modules_company", "company_id"),
+        Index("ix_company_modules_company_module", "company_id", "module_name", unique=True),
+    )
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    company_id = Column(String(100), nullable=False)
+    module_name = Column(String(100), nullable=False)
+    status = Column(String(20), nullable=False, default=ModuleStatus.BETA.value)
+    tier = Column(String(20), nullable=False, default=ModuleTier.FREE.value)
+    activated_at = Column(DateTime, default=datetime.utcnow)
+    expires_at = Column(DateTime, nullable=True)
+    metadata_json = Column("metadata", Text, nullable=True, default="{}")
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    def to_dict(self) -> Dict[str, Any]:
+        import json
+        meta = {}
+        if self.metadata_json:
+            try:
+                meta = json.loads(self.metadata_json) if isinstance(self.metadata_json, str) else self.metadata_json
+            except (json.JSONDecodeError, TypeError):
+                meta = {}
+        module_info = AVAILABLE_MODULES.get(self.module_name, {})
+        return {
+            "id": str(self.id),
+            "company_id": self.company_id,
+            "module_name": self.module_name,
+            "label": module_info.get("label", self.module_name),
+            "description": module_info.get("description", ""),
+            "status": self.status,
+            "tier": self.tier,
+            "activated_at": self.activated_at.isoformat() if self.activated_at else None,
+            "expires_at": self.expires_at.isoformat() if self.expires_at else None,
+            "metadata": meta,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
+        }
+
+    @property
+    def is_accessible(self) -> bool:
+        if self.status in (ModuleStatus.BETA.value, ModuleStatus.ACTIVE.value, ModuleStatus.TRIAL.value):
+            if self.expires_at and self.expires_at < datetime.utcnow():
+                return False
+            return True
+        return False
+
+
+MODULE_STATUS_OPTIONS = [
+    {"value": ModuleStatus.BETA.value, "label": "BETA", "description": "Acesso gratuito durante período beta"},
+    {"value": ModuleStatus.TRIAL.value, "label": "Trial", "description": "Período de avaliação"},
+    {"value": ModuleStatus.ACTIVE.value, "label": "Ativo", "description": "Módulo ativo e pago"},
+    {"value": ModuleStatus.EXPIRED.value, "label": "Expirado", "description": "Período expirado"},
+    {"value": ModuleStatus.DISABLED.value, "label": "Desabilitado", "description": "Módulo desativado"},
+    {"value": ModuleStatus.COMING_SOON.value, "label": "Em Breve", "description": "Módulo em desenvolvimento"},
+]
+
+
 SUBSCRIPTION_STATUS_OPTIONS = [
     {"value": SubscriptionStatus.ACTIVE.value, "label": "Ativa", "description": "Assinatura em dia"},
     {"value": SubscriptionStatus.TRIALING.value, "label": "Em Trial", "description": "Período de teste"},

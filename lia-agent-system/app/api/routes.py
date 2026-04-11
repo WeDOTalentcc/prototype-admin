@@ -136,6 +136,7 @@ from app.api.v1 import (
     merge_webhooks,
     microsoft_graph,
     ml_predictions,
+    modules,
     multi_channel,
     notifications,
     observability,
@@ -533,8 +534,9 @@ def register_all_routes(app: FastAPI) -> None:
     app.include_router(settings_progress.router, prefix="/api/v1", tags=["settings-progress"])
     app.include_router(briefing.router, prefix="/api/v1", tags=["briefing"])
 
-    # ── Billing & SaaS ────────────────────────────────────────────────────────
+    # ── Billing, Modules & SaaS ──────────────────────────────────────────────
     app.include_router(billing.router, prefix="/api/v1", tags=["billing"])
+    app.include_router(modules.router, prefix="/api/v1", tags=["modules"])
     app.include_router(ai_consumption.router, prefix="/api/v1", tags=["ai-consumption"])
     app.include_router(ai_consumption.ai_usage_router, prefix="/api/v1", tags=["ai-usage"])
     app.include_router(saas_metrics.router, prefix="/api/v1", tags=["saas-metrics"])
