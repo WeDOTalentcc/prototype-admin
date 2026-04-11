@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from"react"
 import {
   ChevronLeft, ChevronRight, ThumbsUp, ThumbsDown, MessageSquare,
-  X, CheckCircle, Edit3
+  X, CheckCircle, Edit3, Loader2, Users
 } from"lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
 import { Badge } from"@/components/ui/badge"
@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import {
   textStyles, cardStyles, badgeStyles, buttonStyles
 } from"@/lib/design-tokens"
+import { toast } from"@/lib/toast"
 
 // ---------- Types ----------
 
@@ -75,6 +76,7 @@ export default function CalibrationCardModal({
   const [approvedCount, setApprovedCount] = useState(0)
   const [rejectedCount, setRejectedCount] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
+  const [loadError, setLoadError] = useState<string | null>(null)
   const [showRejectModal, setShowRejectModal] = useState(false)
   const [showCommentInput, setShowCommentInput] = useState(false)
   const [comment, setComment] = useState("")
@@ -89,35 +91,49 @@ export default function CalibrationCardModal({
 
   const loadCandidates = async () => {
     setIsLoading(true)
+    setLoadError(null)
     try {
       const res = await fetch(`/api/backend-proxy/sourcing-agents/${agentId}/calibration-candidates?limit=15`)
+      if (!res.ok) {
+        throw new Error(`Erro ${res.status}: ${res.statusText}`)
+      }
       const data = await res.json()
       setCandidates(data?.candidates || [])
     } catch (err) {
       console.error("Failed to load calibration candidates:", err)
+      setLoadError(err instanceof Error ? err.message : "Erro ao carregar candidatos")
     } finally {
       setIsLoading(false)
     }
   }
 
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
   const handleApprove = async () => {
-    if (!candidate) return
-    await submitFeedback("positive","Perfil aprovado para o pipeline")
-    setApprovedCount(prev => prev + 1)
-    advanceOrComplete()
+    if (!candidate || isSubmitting) return
+    const ok = await submitFeedback("positive","Perfil aprovado para o pipeline")
+    if (ok) {
+      setApprovedCount(prev => prev + 1)
+      advanceOrComplete()
+    }
   }
 
   const handleReject = async (reason: string) => {
-    if (!candidate) return
-    await submitFeedback("negative", reason)
-    setRejectedCount(prev => prev + 1)
-    setShowRejectModal(false)
-    advanceOrComplete()
+    if (!candidate || isSubmitting) return
+    const ok = await submitFeedback("negative", reason)
+    if (ok) {
+      setRejectedCount(prev => prev + 1)
+      setShowRejectModal(false)
+      advanceOrComplete()
+    } else {
+      setShowRejectModal(false)
+    }
   }
 
-  const submitFeedback = async (signalType: string, reason: string) => {
+  const submitFeedback = async (signalType: string, reason: string): Promise<boolean> => {
+    setIsSubmitting(true)
     try {
-      await fetch(`/api/backend-proxy/sourcing-agents/${agentId}/feedback`, {
+      const res = await fetch(`/api/backend-proxy/sourcing-agents/${agentId}/feedback`, {
         method:"POST",
         headers: {"Content-Type":"application/json" },
         body: JSON.stringify({
@@ -126,8 +142,16 @@ export default function CalibrationCardModal({
           reason,
         }),
       })
+      if (!res.ok) {
+        throw new Error(`Erro ${res.status}`)
+      }
+      return true
     } catch (err) {
       console.error("Feedback failed:", err)
+      toast.error("Erro ao enviar feedback", "O feedback não foi salvo. Tente novamente.")
+      return false
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -199,9 +223,44 @@ export default function CalibrationCardModal({
           </div>
         </div>
 
-        {isLoading || !candidate ? (
-          <div className="flex items-center justify-center h-96">
+        {isLoading ? (
+          <div className="flex flex-col items-center justify-center h-96 gap-3">
+            <Loader2 className="w-8 h-8 animate-spin text-lia-text-disabled" />
             <p className={textStyles.caption}>Carregando perfis para calibração...</p>
+          </div>
+        ) : loadError ? (
+          <div className="flex flex-col items-center justify-center h-96 gap-3 px-8">
+            <div className="w-12 h-12 rounded-full bg-red-50 dark:bg-red-950/30 flex items-center justify-center">
+              <X className="w-6 h-6 text-red-500" />
+            </div>
+            <p className="text-sm font-medium text-lia-text-primary">Erro ao carregar candidatos</p>
+            <p className="text-xs text-lia-text-secondary text-center">{loadError}</p>
+            <button
+              onClick={loadCandidates}
+              className="mt-2 px-4 py-2 rounded-lg text-xs font-medium bg-lia-bg-tertiary text-lia-text-primary hover:bg-lia-bg-secondary border border-lia-border-subtle"
+            >
+              Tentar novamente
+            </button>
+          </div>
+        ) : candidates.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-96 gap-3 px-8">
+            <div className="w-12 h-12 rounded-full bg-amber-50 dark:bg-amber-950/30 flex items-center justify-center">
+              <Users className="w-6 h-6 text-amber-500" />
+            </div>
+            <p className="text-sm font-medium text-lia-text-primary">Nenhum candidato encontrado</p>
+            <p className="text-xs text-lia-text-secondary text-center">
+              Não encontramos candidatos compatíveis com a estratégia deste agente no momento. Tente ajustar os critérios de busca ou aguarde novos perfis serem adicionados ao banco.
+            </p>
+            <button
+              onClick={onClose}
+              className="mt-2 px-4 py-2 rounded-lg text-xs font-medium bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover"
+            >
+              Fechar
+            </button>
+          </div>
+        ) : !candidate ? (
+          <div className="flex items-center justify-center h-96">
+            <p className={textStyles.caption}>Carregando perfil...</p>
           </div>
         ) : (
           <div className="flex h-[70vh]">
@@ -309,12 +368,15 @@ export default function CalibrationCardModal({
                 <Button
                   className={`w-full ${buttonStyles.primary} bg-green-600 hover:bg-green-700`}
                   onClick={handleApprove}
+                  disabled={isSubmitting}
                 >
-                  <ThumbsUp className="w-4 h-4 mr-2" /> Aprovar
+                  {isSubmitting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <ThumbsUp className="w-4 h-4 mr-2" />}
+                  Aprovar
                 </Button>
                 <Button
                   className={`w-full ${buttonStyles.outline} border-red-300 text-red-600 hover:bg-red-50`}
                   onClick={() => setShowRejectModal(true)}
+                  disabled={isSubmitting}
                 >
                   <ThumbsDown className="w-4 h-4 mr-2" /> Rejeitar
                 </Button>

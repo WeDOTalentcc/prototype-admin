@@ -14,6 +14,7 @@ import {
   GraduationCap, BarChart3, Clock
 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { toast } from "@/lib/toast"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
 import { PageTabNavigation } from "@/components/ui/page-tab-navigation"
@@ -119,10 +120,15 @@ export default function AgentStudioPage({
   const handleToggleStatus = async (agentId: string, currentStatus: string) => {
     const action = currentStatus === "active" ? "pause" : "resume"
     try {
-      await fetch(`/api/backend-proxy/sourcing-agents/${agentId}/${action}`, { method: "PATCH" })
+      const res = await fetch(`/api/backend-proxy/sourcing-agents/${agentId}/${action}`, { method: "PATCH" })
+      if (!res.ok) {
+        throw new Error(`Erro ${res.status}`)
+      }
+      toast.success(action === "pause" ? "Agente pausado" : "Agente retomado")
       loadData()
     } catch (err) {
       console.error("Failed to toggle agent:", err)
+      toast.error("Erro ao alterar status do agente", "Tente novamente em alguns instantes.")
     }
   }
 
@@ -347,8 +353,16 @@ export default function AgentStudioPage({
                       onToggleStatus={() => handleToggleStatus(agent.id, agent.status)}
                       onCalibrate={() => onStartCalibration?.(agent.id)}
                       onNavigate={() => {
-                        if (agent.talent_pool_id) onNavigateToPool?.(agent.talent_pool_id)
-                        else if (agent.job_id) onNavigateToJob?.(agent.job_id)
+                        if (agent.talent_pool_id) {
+                          onNavigateToPool?.(agent.talent_pool_id)
+                        } else if (agent.job_id) {
+                          onNavigateToJob?.(agent.job_id)
+                        } else {
+                          toast.warning(
+                            "Agente sem vínculo",
+                            "Este agente não está vinculado a uma vaga ou banco de talentos. Vincule-o para poder navegar."
+                          )
+                        }
                       }}
                     />
                   ))}
@@ -533,7 +547,7 @@ function AgentCard({
         </div>
 
         {/* Link indicator */}
-        {(agent.talent_pool_id || agent.job_id) && (
+        {(agent.talent_pool_id || agent.job_id) ? (
           <div className="flex items-center gap-1.5 mb-3 px-2.5 py-1.5 rounded-lg bg-lia-bg-primary border border-lia-border-subtle">
             {agent.talent_pool_id ? (
               <>
@@ -546,6 +560,11 @@ function AgentCard({
                 <span className="text-[10px] text-lia-text-secondary">Vinculado a Vaga</span>
               </>
             )}
+          </div>
+        ) : (
+          <div className="flex items-center gap-1.5 mb-3 px-2.5 py-1.5 rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800">
+            <Brain className="w-3 h-3 text-amber-500" />
+            <span className="text-[10px] text-amber-700 dark:text-amber-400">Sem vínculo — vincule a uma vaga ou banco</span>
           </div>
         )}
 
@@ -700,6 +719,13 @@ function CreateAgentModal({ initialTemplate, onClose, onCreated }: {
                 </button>
               ))}
             </div>
+            {linkType === "none" && (
+              <div className="mt-2 px-3 py-2 rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800">
+                <p className="text-xs text-amber-700 dark:text-amber-400">
+                  Sem vínculo, o agente funcionará com capacidades limitadas. Vincule a uma vaga ou banco de talentos para melhores resultados.
+                </p>
+              </div>
+            )}
             {linkType !== "none" && (
               <input
                 type="text"

@@ -134,6 +134,7 @@ class SourcingAgentOrchestrator:
         agent.search_strategy = strategy
         agent.calibration_v += 1
 
+        agent.profiles_viewed = (agent.profiles_viewed or 0) + 1
         if signal_type == "positive":
             agent.profiles_approved = (agent.profiles_approved or 0) + 1
         else:
@@ -195,8 +196,8 @@ class SourcingAgentOrchestrator:
         result = await db.execute(select(SourcingAgent).where(SourcingAgent.id == agent_id))
         agent = result.scalar_one()
 
-        # Use existing SourcingSearchAgent to find candidates
         query = self._strategy_to_query(agent.search_strategy)
+        candidates = []
 
         try:
             from app.domains.sourcing.agents.sourcing_search_agent import SourcingSearchAgent
@@ -209,10 +210,11 @@ class SourcingAgentOrchestrator:
             ))
             candidates = output.data.get("candidates", [])[:limit]
         except Exception as e:
-            logger.warning("[SourcingAgent] Search failed, returning empty: %s", e)
-            candidates = []
+            logger.warning("[SourcingAgent] SourcingSearchAgent failed, trying DB fallback: %s", e)
 
-        # Generate match_criteria for each candidate (Why we matched)
+        if not candidates:
+            candidates = await self._fallback_db_candidates(agent, limit, db)
+
         enriched = []
         for c in candidates:
             match_criteria = await self._generate_match_criteria(c, agent.search_strategy)
@@ -301,6 +303,88 @@ class SourcingAgentOrchestrator:
             return json.loads(resp.content)
         except Exception:
             return [{"criterion": "Análise geral", "match": "partial", "explanation": "Avaliação automática indisponível"}]
+
+    async def _fallback_db_candidates(self, agent, limit: int, db) -> list[dict]:
+        """Fallback: search candidates directly from DB using agent's search_strategy."""
+        try:
+            from libs.models.lia_models.candidate import Candidate, CandidateExperience, CandidateEducation
+            from sqlalchemy import select, or_, func
+
+            strategy = agent.search_strategy or {}
+            required_skills = strategy.get("required_skills", [])
+            exclusions = strategy.get("exclusions", [])
+
+            query = select(Candidate).where(Candidate.is_active == True)
+
+            if required_skills:
+                skill_filters = []
+                for skill in required_skills:
+                    skill_filters.append(Candidate.technical_skills.any(skill))
+                if skill_filters:
+                    query = query.where(or_(*skill_filters))
+
+            if exclusions:
+                for excl in exclusions:
+                    query = query.where(~Candidate.technical_skills.any(excl))
+
+            query = query.order_by(func.random()).limit(limit)
+            result = await db.execute(query)
+            candidates_db = result.scalars().all()
+
+            candidates = []
+            for c in candidates_db:
+                exp_result = await db.execute(
+                    select(CandidateExperience)
+                    .where(CandidateExperience.candidate_id == c.id)
+                    .order_by(CandidateExperience.start_date.desc())
+                    .limit(4)
+                )
+                experiences = exp_result.scalars().all()
+
+                edu_result = await db.execute(
+                    select(CandidateEducation)
+                    .where(CandidateEducation.candidate_id == c.id)
+                    .limit(3)
+                )
+                educations = edu_result.scalars().all()
+
+                location_parts = [p for p in [c.location_city, c.location_state, c.location_country] if p]
+                candidates.append({
+                    "id": str(c.id),
+                    "name": c.name or "Candidato",
+                    "current_title": c.current_title or "",
+                    "current_company": c.current_company or "",
+                    "location": ", ".join(location_parts) if location_parts else "",
+                    "avatar_url": c.avatar_url,
+                    "total_experience_years": c.years_of_experience or 0,
+                    "skills": list(c.technical_skills or [])[:10],
+                    "experiences": [
+                        {
+                            "title": e.title or "",
+                            "company": e.company_name or "",
+                            "start_date": e.start_date or "",
+                            "end_date": e.end_date or None,
+                            "duration_years": e.duration_years or 0,
+                            "description": e.description or "",
+                            "is_current": e.is_current or False,
+                        }
+                        for e in experiences
+                    ],
+                    "education": [
+                        {
+                            "institution": ed.institution or "",
+                            "degree": ed.degree or "",
+                            "field": ed.field_of_study or "",
+                        }
+                        for ed in educations
+                    ],
+                })
+
+            logger.info("[SourcingAgent] DB fallback returned %d candidates for agent=%s", len(candidates), agent.id)
+            return candidates
+        except Exception as e:
+            logger.warning("[SourcingAgent] DB fallback also failed: %s", e)
+            return []
 
     @staticmethod
     def _strategy_to_query(strategy: dict) -> str:

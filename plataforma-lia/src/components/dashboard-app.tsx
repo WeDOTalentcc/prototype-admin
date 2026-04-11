@@ -39,6 +39,7 @@ export function DashboardApp({ initialPage = "Chat LIA" }: DashboardAppProps) {
   const [pendingJobOpen, setPendingJobOpen] = useState<{ jobId: string; jobTitle: string } | null>(null)
   const [pendingCandidateOpen, setPendingCandidateOpen] = useState<{ candidateId: string; candidateName: string } | null>(null)
   const [calibratingAgentId, setCalibratingAgentId] = useState<string | null>(null)
+  const [agentStudioRefreshKey, setAgentStudioRefreshKey] = useState(0)
   const { isAuthenticated, user, logout } = useAuth()
   const router = useRouter()
   const { recentItems, addRecentItem, removeRecentItem, clearAll: clearRecentItems } = useRecentItems()
@@ -199,10 +200,14 @@ export function DashboardApp({ initialPage = "Chat LIA" }: DashboardAppProps) {
         return (
           <>
             <AgentStudioPage
+              key={agentStudioRefreshKey}
               onStartCalibration={(agentId) => setCalibratingAgentId(agentId)}
               onNavigateToJob={(jobId) => {
                 setPendingJobOpen({ jobId, jobTitle: "" })
                 setCurrentPage("Vagas")
+              }}
+              onNavigateToPool={() => {
+                setCurrentPage("Funil de Talentos")
               }}
             />
             {calibratingAgentId && (
@@ -210,7 +215,10 @@ export function DashboardApp({ initialPage = "Chat LIA" }: DashboardAppProps) {
                 agentId={calibratingAgentId}
                 isOpen={!!calibratingAgentId}
                 onClose={() => setCalibratingAgentId(null)}
-                onCalibrationComplete={() => setCalibratingAgentId(null)}
+                onCalibrationComplete={() => {
+                  setCalibratingAgentId(null)
+                  setAgentStudioRefreshKey(k => k + 1)
+                }}
               />
             )}
           </>

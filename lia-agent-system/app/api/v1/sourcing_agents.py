@@ -145,6 +145,7 @@ async def submit_feedback(
         "new_positive_signals": result.new_positive_signals,
         "approved_count": result.approved_count,
         "rejected_count": result.rejected_count,
+        "viewed_count": result.approved_count + result.rejected_count,
     }
 
 
