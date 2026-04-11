@@ -282,7 +282,7 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 py-4 border-b-2 transition-colors motion-reduce:transition-none ${
+                className={`flex items-center gap-2 py-4 rounded-lg transition-colors motion-reduce:transition-none ${
  activeTab === tab.id
                     ? 'border-lia-btn-primary-bg text-lia-text-primary'
                     : 'border-transparent text-lia-text-primary hover:text-lia-text-primary dark:hover:text-lia-text-inverse'

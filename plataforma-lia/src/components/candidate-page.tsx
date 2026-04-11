@@ -185,7 +185,7 @@ export function CandidatePage({
               onClick={() => setActiveTab(tab.id as 'activities' | 'profile' | 'files' | 'opinions')}
               className={`flex items-center gap-2 px-3 py-2.5 text-xs font-medium whitespace-nowrap transition-colors motion-reduce:transition-none ${
  activeTab === tab.id
-                  ? 'border-b-2 text-lia-text-secondary border-lia-border-medium'
+                  ? 'rounded-lg bg-lia-bg-tertiary text-lia-text-secondary'
                   : 'text-lia-text-primary hover:text-lia-text-primary dark:hover:text-lia-text-inverse'
               }`}
             >

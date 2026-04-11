@@ -162,7 +162,7 @@ export function KanbanCardStatusBadges({
       ) : (
         <StatusBadge
           stageId={stageId}
-          variant="outlined"
+          variant="outline"
           icon={MessageCircle}
           label={
             candidate.liatriagem === "respondendo"
@@ -248,7 +248,7 @@ export function KanbanCardStatusBadges({
       {candidate.negotiating && (
         <StatusBadge
           stageId={stageId}
-          variant="outlined"
+          variant="outline"
           icon={MessageCircle}
           label="Em negociação"
         />
