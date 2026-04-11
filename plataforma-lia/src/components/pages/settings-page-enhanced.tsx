@@ -18,6 +18,18 @@ import {
   MousePointer, Compass, HelpCircle, Rocket,
   ChevronDown, ChevronUp, Lock, Unlock, Circle, Plug, Shield
 } from "lucide-react"
+
+const SECTION_ICON_COLORS: Record<string, string> = {
+  'company-team': 'text-wedo-cyan',
+  'recruitment': 'text-emerald-500',
+  'communication': 'text-violet-500',
+  'goals-planning': 'text-amber-500',
+  'global-search': 'text-wedo-cyan',
+  'integrations': 'text-emerald-500',
+  'fairness-compliance': 'text-rose-500',
+}
+
+
 import dynamic from "next/dynamic"
 import { LoadingFallback } from "@/components/ui/loading"
 const CompanyTeamHub = dynamic(() => import("@/components/settings/CompanyTeamHub").then(m => ({ default: m.CompanyTeamHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando empresa..." /> })

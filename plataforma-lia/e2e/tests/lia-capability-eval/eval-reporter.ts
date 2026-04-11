@@ -9,6 +9,8 @@ interface EvalEntry {
   status: string;
   durationMs: number;
   classification: string;
+  responsePreview: string;
+  extraAnnotations: Record<string, string>;
 }
 
 class EvalSummaryReporter implements Reporter {
@@ -30,10 +32,16 @@ class EvalSummaryReporter implements Reporter {
       classification = 'SEM RESPOSTA';
     }
 
+    let responsePreview = '';
+    const extraAnnotations: Record<string, string> = {};
     const annotations = result.annotations || [];
     for (const ann of annotations) {
       if (ann.type === 'eval_classification' && ann.description) {
         classification = ann.description;
+      } else if (ann.type === 'eval_response' && ann.description) {
+        responsePreview = ann.description;
+      } else if (ann.type && ann.type.startsWith('eval_') && ann.description) {
+        extraAnnotations[ann.type] = ann.description;
       }
     }
 
@@ -44,6 +52,8 @@ class EvalSummaryReporter implements Reporter {
       status: result.status,
       durationMs: result.duration,
       classification,
+      responsePreview,
+      extraAnnotations,
     });
   }
 

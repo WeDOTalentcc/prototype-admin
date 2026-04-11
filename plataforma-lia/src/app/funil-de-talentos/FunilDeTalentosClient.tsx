@@ -195,7 +195,7 @@ export default function FunilDeTalentosPage() {
             <p className={cn(textStyles.description, "text-xs mt-0.5")} aria-live="polite">
 
 
-              {total > 0 ? `${total.toLocaleString("pt-BR")} candidatos` : "Busque candidatos na base"}
+              "Gerencie sua base de candidatos"
             </p>
           </div>
           <Button
