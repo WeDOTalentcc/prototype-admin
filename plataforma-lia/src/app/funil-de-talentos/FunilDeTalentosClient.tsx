@@ -17,7 +17,7 @@ import { useCandidatesList } from"@/hooks/use-candidates-list"
 import { useBulkSelection } from"@/hooks/use-bulk-selection"
 import { useTalentFunnel } from"@/hooks/use-talent-funnel"
 import { textStyles } from"@/lib/design-tokens"
-import { Search, Heart, Share2, Users, ChevronLeft, ChevronRight, AlertCircle } from"lucide-react"
+import { Search, Heart, Share2, Users, ChevronLeft, ChevronRight, AlertCircle, List, Bookmark, Database } from"lucide-react"
 import type { Candidate, SortConfig } from"@/components/pages/candidates/types"
 import type { TableCandidate } from"@/components/tables"
 import type { CandidateLocal } from"@/services/lia-api"
@@ -208,17 +208,18 @@ const STATUS_OPTIONS = ["Novo","Em triagem","Aprovado","Reprovado"]
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-lg">
             <TabsTrigger value="todos" className="rounded-lg text-xs">
-              Todos
+              <Search className="w-3.5 h-3.5 mr-1" />
+              Busca
               {activeTab ==="todos" && total > 0 && (
                 <Badge className="ml-1.5 h-4 px-1.5 text-micro  dark:bg-wedo-cyan/20 dark:text-wedo-cyan">
                   {total}
                 </Badge>
               )}
             </TabsTrigger>
-            <TabsTrigger value="favoritos" className="rounded-lg text-xs">Favoritos</TabsTrigger>
-            <TabsTrigger value="listas" className="rounded-lg text-xs">Listas</TabsTrigger>
-            <TabsTrigger value="buscas" className="rounded-lg text-xs">Buscas Salvas</TabsTrigger>
-            <TabsTrigger value="bancos-vivos" className="rounded-lg text-xs">Bancos Vivos</TabsTrigger>
+            <TabsTrigger value="favoritos" className="rounded-lg text-xs"><Heart className="w-3.5 h-3.5 mr-1" />Favoritos</TabsTrigger>
+            <TabsTrigger value="listas" className="rounded-lg text-xs"><List className="w-3.5 h-3.5 mr-1" />Listas</TabsTrigger>
+            <TabsTrigger value="buscas" className="rounded-lg text-xs"><Bookmark className="w-3.5 h-3.5 mr-1" />Buscas Salvas</TabsTrigger>
+            <TabsTrigger value="bancos-vivos" className="rounded-lg text-xs"><Database className="w-3.5 h-3.5 mr-1" />Bancos de Talentos</TabsTrigger>
           </TabsList>
 
           <div className="flex items-center gap-6 mt-2 mb-1">
