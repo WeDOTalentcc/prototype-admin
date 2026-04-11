@@ -3,7 +3,7 @@
 import React, { useMemo } from "react"
 import dynamic from "next/dynamic"
 import { Button } from "@/components/ui/button"
-import { Plus } from "lucide-react"
+import { Plus, Users, Clock, AlertTriangle } from "lucide-react"
 import { JobKanbanPage } from "./job-kanban-page"
 import { LoadingModal as JobsLoadingModal } from "@/components/ui/loading"
 import { toast } from "sonner"
@@ -128,7 +128,7 @@ export function JobsPage(props: JobsPageProps) {
         </div>
       )}
 
-      <div className={`flex-shrink-0 px-4 pt-3 pb-0 bg-lia-bg-primary dark:bg-lia-bg-primary ${chatMode === 'job-creation' && isChatFullscreen ? 'hidden' : ''}`}>
+      <div className={`flex-shrink-0 px-4 pt-3 pb-2 bg-lia-bg-primary dark:bg-lia-bg-primary ${chatMode === 'job-creation' && isChatFullscreen ? 'hidden' : ''}`}>
         <div className="flex items-center justify-between mb-0.5">
           <div className="flex items-center gap-3">
             <div>
@@ -147,6 +147,30 @@ export function JobsPage(props: JobsPageProps) {
             </Button>
           </div>
         </div>
+
+        {/* Stats Bar */}
+        {!isLoadingJobs && (
+          <div className="flex items-center gap-6 mt-1 mb-2">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="text-xs text-lia-text-secondary">
+                <span className="font-semibold text-lia-text-primary">{navigationFilters.find(f => f.id === 'ativas')?.count || 0}</span> ativas
+              </span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <Users className="w-3.5 h-3.5 text-wedo-cyan" />
+              <span className="text-xs text-lia-text-secondary">
+                <span className="font-semibold text-lia-text-primary">{allJobs.length}</span> vagas
+              </span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <Clock className="w-3.5 h-3.5 text-amber-500" />
+              <span className="text-xs text-lia-text-secondary">
+                <span className="font-semibold text-lia-text-primary">{navigationFilters.find(f => f.id === 'paralisadas')?.count || 0}</span> paralisadas
+              </span>
+            </div>
+          </div>
+        )}
         <div className="mb-0">
           <nav className="flex items-center gap-1 nav-tabs" aria-label="Tabs" role="tablist">
             {navigationFilters.map((filter) => (
@@ -165,7 +189,7 @@ export function JobsPage(props: JobsPageProps) {
                 {!filter.isDashboard && (
                   <span className={`text-[10px] font-semibold ${
                     activeFilter === filter.id
-                      ? 'text-lia-text-secondary'
+                      ? 'text-wedo-cyan'
                       : 'text-lia-text-tertiary'
                   }`}>
                     {isLoadingJobs ? (

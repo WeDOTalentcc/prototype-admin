@@ -58,7 +58,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
     <>
     <ErrorBoundarySection>
     <div className="h-full flex flex-col bg-lia-bg-primary dark:bg-lia-bg-primary overflow-hidden">
-      <div className="p-2 max-w-full overflow-x-auto">
+      <div className="p-3 max-w-full overflow-x-auto">
 
         <div className="flex items-center justify-between mb-1.5">
           <div>
@@ -134,7 +134,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
               </div>
             ) : (
               <>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
                   <MyTasksCard
                     pendingTasks={pendingTasks}
                     filteredPendingTasks={filteredPendingTasks}
@@ -188,7 +188,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                   <CardHeader className="pb-2">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <Activity className="w-3.5 h-3.5 text-lia-text-primary" />
+                        <Activity className="w-3.5 h-3.5 text-wedo-cyan" />
                         <CardTitle className={`${textStyles.label} font-semibold text-lia-text-primary`}>
                           Atividades Recentes
                         </CardTitle>

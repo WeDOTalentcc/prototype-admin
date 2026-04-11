@@ -17,7 +17,7 @@ import { useCandidatesList } from "@/hooks/use-candidates-list"
 import { useBulkSelection } from "@/hooks/use-bulk-selection"
 import { useTalentFunnel } from "@/hooks/use-talent-funnel"
 import { textStyles } from "@/lib/design-tokens"
-import { Search, Share2, Users, ChevronLeft, ChevronRight, AlertCircle } from "lucide-react"
+import { Search, Heart, Share2, Users, ChevronLeft, ChevronRight, AlertCircle } from "lucide-react"
 import type { Candidate, SortConfig } from "@/components/pages/candidates/types"
 import type { TableCandidate } from "@/components/tables"
 import type { CandidateLocal } from "@/services/lia-api"
@@ -210,13 +210,30 @@ export default function FunilDeTalentosPage() {
           </Button>
         </div>
 
+
+        {/* Stats Bar */}
+        <div className="flex items-center gap-6">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-wedo-cyan animate-pulse" />
+            <span className="text-xs text-lia-text-secondary">
+              <span className="font-semibold text-lia-text-primary">{total.toLocaleString("pt-BR")}</span> candidatos
+            </span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <Heart className="w-3.5 h-3.5 text-rose-500" />
+            <span className="text-xs text-lia-text-secondary">
+              <span className="font-semibold text-lia-text-primary">{favoriteIds.size}</span> favoritos
+            </span>
+          </div>
+        </div>
+
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="bg-lia-bg-secondary dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-lg">
             <TabsTrigger value="todos" className="rounded-md text-xs">
               Todos
               {activeTab === "todos" && total > 0 && (
-                <Badge className="ml-1.5 h-4 px-1.5 text-micro bg-lia-btn-primary-bg dark:bg-lia-bg-tertiary text-white dark:text-lia-text-primary">
+                <Badge className="ml-1.5 h-4 px-1.5 text-micro bg-wedo-cyan/15 text-wedo-cyan dark:bg-wedo-cyan/20 dark:text-wedo-cyan">
                   {total}
                 </Badge>
               )}
@@ -239,7 +256,7 @@ export default function FunilDeTalentosPage() {
                   placeholder="Buscar por nome, cargo, empresa ou habilidade..."
                   value={filters.search ?? ""}
                   onChange={e => updateFilter("search", e.target.value)}
-                  className="pl-9 text-xs rounded-xl border-lia-border-subtle dark:border-lia-border-subtle bg-transparent"
+                  className="pl-9 text-xs rounded-xl border-lia-border-subtle dark:border-lia-border-subtle bg-transparent focus:border-wedo-cyan/40 transition-colors"
                 />
               </div>
               <div className="flex flex-wrap gap-2">

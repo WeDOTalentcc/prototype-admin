@@ -568,7 +568,7 @@ export default function SettingsPageEnhanced() {
                       } ${isCollapsed && !isLocked ? 'justify-center' : ''}`}
                       title={isCollapsed && !isLocked ? section.title : ''}
                     >
-                      <IconComponent className="w-4 h-4 flex-shrink-0" />
+                      <IconComponent className={`w-4 h-4 flex-shrink-0 ${SECTION_ICON_COLORS[section.id] || ''}`} />
                       {shouldShowContent && (
                         <>
                           <div className="flex-1 min-w-0">

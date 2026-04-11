@@ -45,18 +45,18 @@ export const getSeverityLabel = (severity: 'critical' | 'high' | 'medium' | 'low
 
 export const getTaskTypeIcon = (type: 'feedback' | 'entrevista' | 'sourcing') => {
   switch (type) {
-    case 'feedback': return <MessageSquare className="w-3.5 h-3.5" />
-    case 'entrevista': return <Calendar className="w-3.5 h-3.5" />
-    case 'sourcing': return <Search className="w-3.5 h-3.5" />
+    case 'feedback': return <MessageSquare className="w-3.5 h-3.5 text-violet-500" />
+    case 'entrevista': return <Calendar className="w-3.5 h-3.5 text-emerald-500" />
+    case 'sourcing': return <Search className="w-3.5 h-3.5 text-wedo-cyan" />
   }
 }
 
 export const getAlertIcon = (type: string) => {
   switch (type) {
-    case 'urgent': return <AlertTriangle className="w-4 h-4 text-lia-text-disabled" />
-    case 'warning': return <AlertCircle className="w-4 h-4 text-lia-text-disabled" />
-    case 'success': return <CheckCircle className="w-4 h-4 text-lia-text-primary" />
-    default: return <Info className="w-4 h-4 text-lia-text-disabled" />
+    case 'urgent': return <AlertTriangle className="w-4 h-4 text-rose-500" />
+    case 'warning': return <AlertCircle className="w-4 h-4 text-amber-500" />
+    case 'success': return <CheckCircle className="w-4 h-4 text-emerald-500" />
+    default: return <Info className="w-4 h-4 text-wedo-cyan" />
   }
 }
 
@@ -91,7 +91,9 @@ export const getConversionRate = (from: number, to: number) => {
 }
 
 export const getConversionStyle = (rate: number) => {
-  return 'text-lia-text-primary'
+  if (rate >= 75) return 'text-emerald-600 font-semibold'
+  if (rate >= 40) return 'text-amber-600'
+  return 'text-rose-600'
 }
 
 export const getRequestStatusBadge = (status: string) => {
