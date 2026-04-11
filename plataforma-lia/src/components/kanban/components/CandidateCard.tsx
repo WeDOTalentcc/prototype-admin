@@ -167,8 +167,8 @@ const CandidateCard = memo(function CandidateCard({
         animation: dropZoneActive ? 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' : undefined}}
       onMouseEnter={(e) => {
         if (!isDragging) {
-          e.currentTarget.style.transform = 'translateY(-1px)'
-          e.currentTarget.style.boxShadow = '0 4px 12px var(--overlay-10)'
+          // transform via Tailwind hover:-translate-y-px
+          // shadow via Tailwind hover:shadow-md
         }
       }}
       onMouseLeave={(e) => {

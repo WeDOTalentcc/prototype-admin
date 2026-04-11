@@ -183,7 +183,7 @@ export function ActionModeSection({
         >
           <div
             className={cn(
-              "flex items-start gap-2 p-2 rounded-md border cursor-pointer transition-colors",
+              "flex items-start gap-2 p-2 rounded-lg border cursor-pointer transition-colors",
               action === 'lia_auto'
                 ? "border-lia-btn-primary-bg bg-lia-bg-primary dark:border-lia-border-medium dark:bg-lia-bg-secondary"
                 : "border-lia-border-subtle hover:border-lia-border-default dark:border-lia-border-subtle dark:hover:border-lia-border-medium"
@@ -207,7 +207,7 @@ export function ActionModeSection({
 
           <div
             className={cn(
-              "flex items-start gap-2 p-2 rounded-md border cursor-pointer transition-colors",
+              "flex items-start gap-2 p-2 rounded-lg border cursor-pointer transition-colors",
               action === 'manual'
                 ? "border-lia-btn-primary-bg bg-lia-bg-primary dark:border-lia-border-medium dark:bg-lia-bg-secondary"
                 : "border-lia-border-subtle hover:border-lia-border-default dark:border-lia-border-subtle dark:hover:border-lia-border-medium"
@@ -223,7 +223,7 @@ export function ActionModeSection({
                 <Button
                   variant="outline"
                   size="sm"
-                  className="mt-1.5 h-6 text-micro gap-1 rounded-md"
+                  className="mt-1.5 h-6 text-micro gap-1 rounded-lg"
                   onClick={(e) => {
                     e.stopPropagation()
                     handleOpenManualModal()
@@ -238,7 +238,7 @@ export function ActionModeSection({
 
           <div
             className={cn(
-              "flex items-center gap-2 p-2 rounded-md border cursor-pointer transition-colors",
+              "flex items-center gap-2 p-2 rounded-lg border cursor-pointer transition-colors",
               action === 'just_move'
                 ? "border-lia-btn-primary-bg bg-lia-bg-primary dark:border-lia-border-medium dark:bg-lia-bg-secondary"
                 : "border-lia-border-subtle hover:border-lia-border-default dark:border-lia-border-subtle dark:hover:border-lia-border-medium"
@@ -267,7 +267,7 @@ export function ActionModeSection({
       >
         <div
           className={cn(
-            "flex items-center gap-2 p-2 rounded-md border cursor-pointer transition-colors",
+            "flex items-center gap-2 p-2 rounded-lg border cursor-pointer transition-colors",
             action === 'lia_auto'
               ? "border-lia-btn-primary-bg bg-lia-bg-primary dark:border-lia-border-medium dark:bg-lia-bg-secondary"
               : "border-lia-border-subtle hover:border-lia-border-default dark:border-lia-border-subtle dark:hover:border-lia-border-medium"
@@ -282,7 +282,7 @@ export function ActionModeSection({
         </div>
         <div
           className={cn(
-            "flex items-center gap-2 p-2 rounded-md border cursor-pointer transition-colors",
+            "flex items-center gap-2 p-2 rounded-lg border cursor-pointer transition-colors",
             action === 'just_move'
               ? "border-lia-btn-primary-bg bg-lia-bg-primary dark:border-lia-border-medium dark:bg-lia-bg-secondary"
               : "border-lia-border-subtle hover:border-lia-border-default dark:border-lia-border-subtle dark:hover:border-lia-border-medium"

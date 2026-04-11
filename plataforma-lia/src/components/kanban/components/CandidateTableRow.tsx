@@ -103,7 +103,7 @@ const CandidateTableRowComponent = memo(function CandidateTableRow({
     <tr
       data-testid={`candidate-row-${candidate.id}`}
       className={` dark:border-lia-border-subtle hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover cursor-pointer transition-colors motion-reduce:transition-none ${
-        isSelected ? 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary/10' : ''
+        isSelected ? 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary' : ''
       }`}
       onMouseEnter={() => setShowActions(true)}
       onMouseLeave={() => setShowActions(false)}

@@ -122,6 +122,13 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.warning(f"⚠️ Embedding cache warm-up failed: {e}")
     
+    try:
+        from app.core.prompt_version_loader import register_all_prompts_at_startup
+        _prompt_count = register_all_prompts_at_startup()
+        logger.info(f"✅ PromptVersionRegistry: {_prompt_count} YAML prompts registered")
+    except Exception as e:
+        logger.warning(f"⚠️ Prompt version registration failed: {e}")
+
     # Initialize Orchestrator
     try:
         llm_service = LLMService()

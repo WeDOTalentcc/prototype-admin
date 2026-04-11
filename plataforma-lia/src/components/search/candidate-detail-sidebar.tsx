@@ -388,7 +388,7 @@ export function CandidateDetailSidebar({
                     href={candidate.linkedin_url} 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="flex items-center justify-between p-2 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse transition-colors motion-reduce:transition-none"
+                    className="flex items-center justify-between p-2 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none"
                   >
                     <div className="flex items-center gap-2">
                       <Linkedin className="h-4 w-4 text-lia-text-secondary" />

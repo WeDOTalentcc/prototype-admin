@@ -89,7 +89,7 @@ export function UniversalTransitionModal(props: UniversalTransitionModalProps) {
       <DialogContent
         data-testid="universal-transition-modal"
         className={cn(
-          "max-h-[85vh] overflow-hidden p-0 rounded-md",
+          "max-h-[85vh] overflow-hidden p-0 rounded-lg",
           showChatPanel
             ? "max-w-4xl bg-lia-bg-primary dark:bg-lia-bg-secondary"
             : "max-w-lg bg-lia-bg-primary dark:bg-lia-bg-secondary"

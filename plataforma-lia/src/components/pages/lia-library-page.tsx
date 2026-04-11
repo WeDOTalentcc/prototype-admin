@@ -297,7 +297,7 @@ export default function LiaLibraryPage({ onNavigate }: LiaLibraryPageProps) {
                 <div
                   key={command.id}
                   className="group bg-lia-bg-primary dark:bg-lia-bg-primary rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle p-4 hover:border-lia-border-default dark:hover:border-lia-border-strong transition-colors motion-reduce:transition-none"
-                  style={{borderLeftWidth: '3px', borderLeftColor: categoryInfo.color}}
+                  style={{borderLeftWidth: '4px', borderLeftColor: categoryInfo.color}}
                 >
                   {/* Header do Card */}
                   <div className="flex items-start justify-between mb-2">

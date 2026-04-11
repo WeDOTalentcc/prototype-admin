@@ -158,17 +158,17 @@ export function ActivityFeed({ candidateId, limit = 20, className ="", actorFilt
 
   const getActivityCardBackground = (activityType: string) => {
     const typeMap: Record<string, string> = {
-      'interview_scheduled': 'var(--lia-bg-tertiary)',
-      'lia_suggestion': 'var(--lia-bg-tertiary)',
-      'candidate_moved': 'var(--lia-bg-tertiary)',
-      'email_sent': 'var(--lia-bg-tertiary)',
-      'offer_sent': 'var(--lia-bg-tertiary)',
-      'approval_pending': 'var(--lia-bg-tertiary)',
-      'voice_screening': 'var(--lia-bg-tertiary)',
-      'rubric_evaluation': 'var(--lia-bg-tertiary)',
-      'screening_analysis': 'var(--lia-bg-tertiary)',
+      'interview_scheduled': 'bg-lia-bg-tertiary',
+      'lia_suggestion': 'bg-lia-bg-tertiary',
+      'candidate_moved': 'bg-lia-bg-tertiary',
+      'email_sent': 'bg-lia-bg-tertiary',
+      'offer_sent': 'bg-lia-bg-tertiary',
+      'approval_pending': 'bg-lia-bg-tertiary',
+      'voice_screening': 'bg-lia-bg-tertiary',
+      'rubric_evaluation': 'bg-lia-bg-tertiary',
+      'screening_analysis': 'bg-lia-bg-tertiary',
     }
-    return typeMap[activityType] || 'var(--lia-bg-tertiary)'
+    return typeMap[activityType] || 'bg-lia-bg-tertiary'
   }
 
   const getActivityIconBackground = (activityType: string) => {

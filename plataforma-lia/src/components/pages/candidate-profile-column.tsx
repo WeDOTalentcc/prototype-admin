@@ -131,7 +131,7 @@ export const CandidateProfileColumn: React.FC<CandidateProfileColumnProps> = ({ 
 
             <div className="space-y-4">
               {candidate.experiences.map((exp) => (
-                <div key={exp.id} className="relative pl-6 pb-4 border-l-2 border-lia-border-subtle last:border-l-transparent">
+                <div key={exp.id} className="relative pl-6 pb-4 border-l-4 border-lia-border-subtle last:border-l-transparent">
                   <div className="absolute left-[-5px] top-0 w-2 h-2 rounded-full bg-lia-border-medium" />
                   
                   <div className="flex items-start gap-3">

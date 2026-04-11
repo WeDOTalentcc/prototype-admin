@@ -31,7 +31,7 @@ export const EmptyState = React.memo(function EmptyState({
       )}
     >
       {icon && (
-        <div className="mb-4 text-lia-text-disabled [&>svg]:w-10 [&>svg]:h-10">
+        <div className="mb-4 text-lia-text-tertiary [&>svg]:w-10 [&>svg]:h-10">
           {icon}
         </div>
       )}
@@ -48,7 +48,7 @@ export const EmptyState = React.memo(function EmptyState({
           variant="outline"
           size="sm"
           onClick={action.onClick}
-          className="mt-2 rounded-md text-xs hover:bg-lia-interactive-hover transition-colors cursor-pointer"
+          className="mt-2 rounded-lg text-xs hover:bg-lia-interactive-hover transition-colors cursor-pointer"
         >
           {action.label}
         </Button>

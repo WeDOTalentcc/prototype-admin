@@ -120,3 +120,49 @@ def validate_all_prompts(prompts_dir: Path | None = None) -> dict[str, list[str]
     except Exception as exc:
         logger.warning("[PromptVersionLoader] validate_all falhou: %s", exc)
     return issues
+
+
+_SHARED_DIR = Path(__file__).parent.parent / "prompts" / "shared"
+_EXPERIMENTS_DIR = Path(__file__).parent.parent / "prompts" / "experiments"
+
+
+def register_all_prompts_at_startup() -> int:
+    """Register all YAML prompts into PromptVersionRegistry at startup.
+
+    Scans domains/, shared/, and experiments/ directories. Returns count of
+    prompts registered.
+    """
+    from app.domains.ai.services.prompt_version_registry import prompt_version_registry
+
+    count = 0
+    dirs = [_PROMPTS_DIR, _SHARED_DIR, _EXPERIMENTS_DIR]
+
+    for directory in dirs:
+        if not directory.exists():
+            continue
+        for yaml_file in sorted(directory.glob("*.yaml")):
+            try:
+                data = load_prompt_yaml(yaml_file)
+                metadata = data.get("metadata", {}) or {}
+                domain = metadata.get("domain") or data.get("domain", yaml_file.stem)
+                version = metadata.get("version") or data.get("version", "1.0")
+                system_prompt = data.get("system_prompt", "")
+                if not system_prompt:
+                    continue
+                prompt_version_registry.register(
+                    name=domain,
+                    version=str(version),
+                    template=system_prompt,
+                )
+                count += 1
+            except Exception as exc:
+                logger.warning(
+                    "[PromptVersionLoader] Failed to register %s: %s",
+                    yaml_file.name, exc,
+                )
+
+    logger.info(
+        "[PromptVersionLoader] Registered %d prompts from YAML files into PromptVersionRegistry",
+        count,
+    )
+    return count

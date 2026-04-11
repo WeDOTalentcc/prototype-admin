@@ -40,10 +40,35 @@ async def rails_health(adapter: RailsAdapter = Depends(get_rails_adapter)) -> di
       - status: ok | degraded | unreachable | disabled
       - latency_ms: round-trip time in milliseconds
       - circuit_breaker: current state of the rails_api circuit
+      - field_mappings: count of mapped fields per entity type
     """
     result = await adapter.health_check()
     result["rails_url"] = _get_rails_url() or "(not configured)"
     result["service_token_configured"] = _is_token_configured()
+
+    try:
+        from app.domains.integrations_hub.services.rails_adapter import (
+            APPLY_FORK_TO_RAILS,
+            CANDIDATE_FORK_TO_RAILS,
+            JOB_FORK_TO_RAILS,
+            MESSAGE_FORK_TO_RAILS,
+            SELECTIVE_PROCESS_FORK_TO_RAILS,
+        )
+        result["field_mappings"] = {
+            "candidate": len(CANDIDATE_FORK_TO_RAILS),
+            "job": len(JOB_FORK_TO_RAILS),
+            "apply": len(APPLY_FORK_TO_RAILS),
+            "selective_process": len(SELECTIVE_PROCESS_FORK_TO_RAILS),
+            "message": len(MESSAGE_FORK_TO_RAILS),
+            "total": (
+                len(CANDIDATE_FORK_TO_RAILS) + len(JOB_FORK_TO_RAILS) +
+                len(APPLY_FORK_TO_RAILS) + len(SELECTIVE_PROCESS_FORK_TO_RAILS) +
+                len(MESSAGE_FORK_TO_RAILS)
+            ),
+        }
+    except Exception:
+        result["field_mappings"] = {}
+
     return result
 
 

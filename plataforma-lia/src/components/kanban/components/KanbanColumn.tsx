@@ -40,14 +40,14 @@ const getColumnStyle = (columnId: string, stageColor?: string): ColumnStyle => {
     sourcing: {
       bg: 'bg-lia-bg-primary dark:bg-lia-bg-primary',
       border: 'border-lia-border-subtle dark:border-lia-border-subtle',
-      dot: 'bg-lia-bg-inverse',
+      dot: 'bg-wedo-cyan',
       header: 'text-lia-text-primary',
       accentColor: 'var(--lia-text-secondary)'
     },
     hired: {
       bg: 'bg-lia-bg-primary dark:bg-lia-bg-primary',
       border: 'border-lia-border-subtle dark:border-lia-border-subtle',
-      dot: 'bg-lia-bg-inverse',
+      dot: 'bg-wedo-cyan',
       header: 'text-lia-text-primary',
       accentColor: 'var(--lia-text-secondary)'
     },
@@ -74,7 +74,7 @@ const getColumnStyle = (columnId: string, stageColor?: string): ColumnStyle => {
   return {
     bg: 'bg-lia-bg-primary dark:bg-lia-bg-primary',
     border: 'border-lia-border-subtle dark:border-lia-border-subtle',
-    dot: 'bg-lia-bg-secondary0',
+    dot: 'bg-lia-bg-secondary',
     header: 'text-lia-text-primary',
     accentColor: stageColor || 'var(--lia-text-tertiary)'
   }

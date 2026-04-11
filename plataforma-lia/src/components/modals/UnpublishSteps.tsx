@@ -88,7 +88,7 @@ export function OptionsStep({ hook }: StepProps) {
           </div>
 
           {freezeJob && (
-            <div className="ml-6 space-y-3 pt-2 pl-3 border-l-2 border-lia-border-default">
+            <div className="ml-6 space-y-3 pt-2 pl-3 border-l-4 border-lia-border-default">
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <Label className="text-micro text-lia-text-secondary mb-1 block">Data início congelamento</Label>

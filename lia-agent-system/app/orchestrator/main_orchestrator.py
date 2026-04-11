@@ -20,6 +20,7 @@ Consolida a lógica que antes estava espalhada em:
 from __future__ import annotations
 
 import logging
+import time
 import uuid
 from collections.abc import Callable
 from typing import Any
@@ -41,11 +42,36 @@ from app.shared.compliance.fairness_guard import FairnessGuard
 from app.shared.robustness.security_patterns import check_input_security, get_block_response
 from app.shared.memory.candidate_list_store import candidate_list_store
 
-# Multi-tenant LLM provider injection
 from app.shared.providers.llm_factory import get_provider_for_tenant
 from app.shared.tenant_llm_context import get_current_llm_tenant, get_tenant_llm_config
 
 logger = logging.getLogger(__name__)
+
+_CACHEABLE_DOMAINS: set[str] = {
+    "analytics", "kanban_search", "kanban_insight", "recruiter_assistant",
+    "pipeline_context",
+}
+_CACHE_TTL_BY_DOMAIN: dict[str, int] = {
+    "analytics": 90,
+    "kanban_search": 60,
+    "kanban_insight": 120,
+    "recruiter_assistant": 300,
+    "pipeline_context": 60,
+}
+
+_perf_metrics: dict[str, list[float]] = {}
+
+
+def get_perf_summary() -> dict[str, Any]:
+    summary: dict[str, Any] = {}
+    for domain, times in _perf_metrics.items():
+        recent = times[-100:]
+        summary[domain] = {
+            "count": len(recent),
+            "avg_ms": round(sum(recent) / len(recent), 1) if recent else 0,
+            "p95_ms": round(sorted(recent)[int(len(recent) * 0.95)] if recent else 0, 1),
+        }
+    return summary
 
 
 # ---------------------------------------------------------------------------
@@ -156,6 +182,7 @@ class MainOrchestrator:
         Phase 2: Orchestrator completo — CascadedRouter → DomainWorkflow → ReAct Agent
         """
         conv_id = ctx.conversation_id or str(uuid.uuid4())
+        _t0 = time.monotonic()
 
         try:
             # ── Pré-check SecurityPatterns — antes de qualquer processamento ──
@@ -238,6 +265,17 @@ class MainOrchestrator:
             _phase2_response = await self._process_via_orchestrator(ctx, conv_id, db, streaming_callback)
             if _soft_warnings and not _phase2_response.fairness_warnings:
                 _phase2_response.fairness_warnings = _soft_warnings
+
+            _elapsed_ms = (time.monotonic() - _t0) * 1000
+            _domain = _phase2_response.agent_used or "unknown"
+            _perf_metrics.setdefault(_domain, []).append(_elapsed_ms)
+            if len(_perf_metrics[_domain]) > 200:
+                _perf_metrics[_domain] = _perf_metrics[_domain][-100:]
+            logger.info(
+                "[MainOrchestrator] response_time=%.1fms domain=%s intent=%s cache_hit=%s user=%s",
+                _elapsed_ms, _domain, _phase2_response.intent_detected,
+                getattr(_phase2_response, '_from_cache', False), ctx.user_id,
+            )
             return _phase2_response
 
         except Exception as exc:
@@ -436,9 +474,45 @@ class MainOrchestrator:
         somente para process_request (roteamento + execução de domínio).
         """
         from app.core.config import settings
+        from app.domains.ai.services.response_cache_service import response_cache_service
         from app.domains.recruiter_assistant.services.conversation_memory import conversation_memory
 
         orchestrator_context = ctx.to_orchestrator_context()
+
+        _cache_key: str | None = None
+        if not streaming_callback:
+            try:
+                from app.orchestrator.fast_router import FastRouter
+                _fast = FastRouter()
+                _fast_match = _fast.match(ctx.message or "")
+                _detected_domain = _fast_match.domain_id if _fast_match else None
+                if _detected_domain and _detected_domain in _CACHEABLE_DOMAINS:
+                    _cache_key = response_cache_service.generate_cache_key(
+                        _detected_domain,
+                        {"company_id": str(ctx.company_id or "")},
+                        ctx.message or "",
+                        company_id=str(ctx.company_id or ""),
+                    )
+                    _cached = await response_cache_service.get_cached_response(_cache_key)
+                    if _cached:
+                        logger.info(
+                            "[MainOrchestrator] Cache HIT domain=%s key=%s",
+                            _detected_domain, _cache_key[:40],
+                        )
+                        resp = ChatResponse(
+                            success=True,
+                            content=_cached.get("content", ""),
+                            agent_used=_cached.get("agent_used", _detected_domain),
+                            intent_detected=_cached.get("intent_detected", _detected_domain),
+                            confidence=_cached.get("confidence", 1.0),
+                            structured_data=_cached.get("structured_data"),
+                            suggested_prompts=_cached.get("suggested_prompts", []),
+                            conversation_id=conv_id,
+                        )
+                        resp._from_cache = True  # type: ignore[attr-defined]
+                        return resp
+            except Exception as _cache_exc:
+                logger.debug("[MainOrchestrator] Cache lookup skipped: %s", _cache_exc)
         if streaming_callback:
             orchestrator_context["streaming_callback"] = streaming_callback
 
@@ -583,6 +657,25 @@ class MainOrchestrator:
             logger.debug("[MainOrchestrator] Memory persist skipped: %s", _persist_exc)
 
         result.update({"conversation_id": conv_id})
+
+        if _cache_key and result.get("success"):
+            try:
+                _domain_for_ttl = result.get("agent_used") or result.get("domain_id") or ""
+                _ttl = _CACHE_TTL_BY_DOMAIN.get(_domain_for_ttl, 300)
+                await response_cache_service.cache_response(
+                    _cache_key,
+                    {
+                        "content": result.get("response", result.get("message", result.get("content", ""))),
+                        "agent_used": result.get("agent_used", ""),
+                        "intent_detected": result.get("intent_detected", result.get("intent", "")),
+                        "confidence": result.get("confidence", 1.0),
+                        "structured_data": result.get("structured_data"),
+                        "suggested_prompts": result.get("suggested_prompts", []),
+                    },
+                    ttl=_ttl,
+                )
+            except Exception as _cw_exc:
+                logger.debug("[MainOrchestrator] Cache write failed: %s", _cw_exc)
 
         # ── Persiste lista de candidatos no Redis (TTL 30min) ──
         _structured = result.get("structured_data") or {}

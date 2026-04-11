@@ -165,6 +165,51 @@ class ExperimentManager:
             "variants": results,
         }
 
+    def create_experiment_from_yaml(
+        self,
+        name: str,
+        variant_versions: dict[str, str],
+        domain: str,
+        traffic_split: dict[str, float] | None = None,
+        description: str = "",
+    ) -> PromptExperiment | None:
+        """Create an experiment using YAML-versioned prompts from PromptVersionRegistry.
+
+        Args:
+            name: Experiment name (e.g. "cv_screening_prompt_v2_vs_v3")
+            variant_versions: Mapping of variant_id → prompt version string
+                e.g. {"control": "2.0", "treatment": "2.1"}
+            domain: The domain name in PromptVersionRegistry (e.g. "cv_screening")
+            traffic_split: Optional weight distribution per variant
+            description: Human-readable experiment description
+        """
+        from app.domains.ai.services.prompt_version_registry import prompt_version_registry
+
+        variants: dict[str, str] = {}
+        for variant_id, version in variant_versions.items():
+            entry = prompt_version_registry.get(domain, version=version)
+            if entry and entry.get("template"):
+                variants[variant_id] = entry["template"]
+            else:
+                logger.warning(
+                    "[A/B] YAML prompt not found: domain=%s version=%s — skipping variant %s",
+                    domain, version, variant_id,
+                )
+
+        if len(variants) < 2:
+            logger.warning(
+                "[A/B] Not enough YAML variants for experiment '%s' (found %d, need ≥2)",
+                name, len(variants),
+            )
+            return None
+
+        return self.create_experiment(
+            name=name,
+            variants=variants,
+            traffic_split=traffic_split,
+            description=description or f"YAML-versioned experiment for {domain}",
+        )
+
     def deactivate_experiment(self, experiment_name: str) -> None:
         experiment = self._experiments.get(experiment_name)
         if experiment:

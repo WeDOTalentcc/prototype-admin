@@ -448,3 +448,27 @@ async def liveness_check():
             "timestamp": datetime.utcnow().isoformat(),
         },
     )
+
+
+@router.get("/performance", response_model=None)
+async def performance_metrics():
+    """
+    Performance metrics: response times by domain, cache stats, prompt versions.
+    """
+    from app.domains.ai.services.prompt_version_registry import prompt_version_registry
+    from app.domains.ai.services.response_cache_service import response_cache_service
+    from app.orchestrator.main_orchestrator import get_perf_summary
+
+    perf = get_perf_summary()
+    cache_stats = response_cache_service.get_stats()
+    prompt_count = len(prompt_version_registry)
+
+    return JSONResponse(
+        status_code=200,
+        content={
+            "response_times_by_domain": perf,
+            "cache": cache_stats,
+            "prompt_versions_registered": prompt_count,
+            "timestamp": datetime.utcnow().isoformat(),
+        },
+    )

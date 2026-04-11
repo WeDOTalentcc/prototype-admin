@@ -153,14 +153,14 @@ export function SaturationBadge({ jobId }: SaturationBadgeProps) {
   const sourcingPercent = Math.min(data.sourcing.percentage, 100)
 
   const badgeElement = isSaturated ? (
-    <Badge variant="danger" className="gap-1 cursor-pointer font-semibold rounded-md" title="Pipeline Saturado">
+    <Badge variant="danger" className="gap-1 cursor-pointer font-semibold rounded-lg" title="Pipeline Saturado">
       <AlertTriangle className="w-3 h-3 shrink-0" />
       <span>{data.organic.count}/{data.organic.threshold} org</span>
       <span>|</span>
       <span>{data.sourcing.count}/{data.sourcing.threshold} src</span>
     </Badge>
   ) : (
-    <Badge variant="warning" className="gap-1 cursor-pointer font-semibold rounded-md" title="Quase Saturado">
+    <Badge variant="warning" className="gap-1 cursor-pointer font-semibold rounded-lg" title="Quase Saturado">
       <TrendingUp className="w-3 h-3 shrink-0" />
       <span>{data.organic.count}/{data.organic.threshold} org</span>
       <span>|</span>

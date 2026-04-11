@@ -212,7 +212,7 @@ export function EditJobModalBasicInfo({
           <h3 className="text-base-ui font-semibold text-lia-text-primary">Timeline do Processo</h3>
         </div>
         
-        <div className="relative pl-4 border-l-2 border-lia-border-default space-y-4">
+        <div className="relative pl-4 border-l-4 border-lia-border-default space-y-4">
           <div className="relative">
             <div className="absolute -left-[21px] w-3 h-3 rounded-full bg-status-success border-2 border-white" />
             <div className="ml-4">

@@ -334,7 +334,7 @@ export function UnifiedCandidateTable({
       style={enableVirtualScroll ? { maxHeight: "600px" } : undefined}
     >
         <table className="w-full" style={{tableLayout: enableColumnResize ? 'fixed' : 'auto'}}>
-          <thead className="sticky top-0 z-10 bg-lia-bg-primary dark:bg-lia-bg-primary">
+          <thead className="sticky top-0 z-10 bg-lia-bg-secondary dark:bg-lia-bg-secondary">
             <tr>
               {showCheckboxes && (
                 <th className="py-3 px-3 w-[50px] text-center">
