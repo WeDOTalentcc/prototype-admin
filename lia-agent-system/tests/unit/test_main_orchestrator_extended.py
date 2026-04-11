@@ -224,7 +224,9 @@ class TestStreamingCallback:
             await orch.process(make_ctx(), MagicMock(), streaming_callback=streaming_cb)
 
         call_kwargs = mock_orch.process_request.call_args.kwargs
-        assert "streaming_callback" in call_kwargs.get("context", {}) or True
+        ctx_passed = call_kwargs.get("context", {})
+        assert "streaming_callback" in ctx_passed, "streaming_callback must be passed in orchestrator context"
+        assert ctx_passed["streaming_callback"] is streaming_cb
 
     async def test_none_streaming_callback_does_not_raise(self):
         mock_orch = AsyncMock()
