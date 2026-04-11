@@ -94,7 +94,7 @@ class LLMCascadeRouter:
             from app.orchestrator.tenant_budget import generate_request_id
             request_id = generate_request_id()
 
-        preflight_tokens = 0
+        cost_accumulator: list[tuple[str, int]] = []
 
         # E5 — Multi-Model: tentar preferred_model antes da cascata padrão
         if preferred_model:
@@ -111,7 +111,7 @@ class LLMCascadeRouter:
                     result_pref["request_id"] = request_id
                     await self._record_tokens(company_id, tokens_pref, model=preferred_model, request_id=request_id)
                     return result_pref
-                preflight_tokens = tokens_pref
+                cost_accumulator.append((preferred_model, tokens_pref))
                 logger.debug(
                     "[LLMCascade] preferred_model=%s confidence=%.2f < %.2f, fallback para cascata padrão",
                     preferred_model,
@@ -125,19 +125,20 @@ class LLMCascadeRouter:
                 )
 
         # Tier 3a — Gemini Flash (mais barato)
-        result, tokens = await self._call_model(
+        result, tokens_flash = await self._call_model(
             message=message,
             model_name=settings.LLM_FAST_MODEL,
             system_prompt_override=system_prompt_override,
         )
-        tokens += preflight_tokens
+        cost_accumulator.append((settings.LLM_FAST_MODEL, tokens_flash))
         if result and result.get("confidence", 0) >= self._fast_threshold:
+            tokens_total = sum(t for _, t in cost_accumulator)
             result["model_used"] = settings.LLM_FAST_MODEL
             result["tier"] = "gemini-flash"
-            result["tokens_est"] = tokens
+            result["tokens_est"] = tokens_total
             result["latency_ms"] = (time.time() - total_start) * 1000
             result["request_id"] = request_id
-            await self._record_tokens(company_id, tokens, model=settings.LLM_FAST_MODEL, request_id=request_id)
+            await self._record_tokens_multi(company_id, cost_accumulator, request_id=request_id)
             return result
 
         # Tier 3b — Claude Sonnet (capacidade média)
@@ -151,14 +152,15 @@ class LLMCascadeRouter:
             model_name=settings.LLM_PRIMARY_MODEL,
             system_prompt_override=system_prompt_override,
         )
-        tokens += tokens_s
+        cost_accumulator.append((settings.LLM_PRIMARY_MODEL, tokens_s))
         if result_sonnet and result_sonnet.get("confidence", 0) >= self._mid_threshold:
+            tokens_total = sum(t for _, t in cost_accumulator)
             result_sonnet["model_used"] = settings.LLM_PRIMARY_MODEL
             result_sonnet["tier"] = "sonnet"
-            result_sonnet["tokens_est"] = tokens
+            result_sonnet["tokens_est"] = tokens_total
             result_sonnet["latency_ms"] = (time.time() - total_start) * 1000
             result_sonnet["request_id"] = request_id
-            await self._record_tokens(company_id, tokens, model=settings.LLM_PRIMARY_MODEL, request_id=request_id)
+            await self._record_tokens_multi(company_id, cost_accumulator, request_id=request_id)
             return result_sonnet
 
         # Tier 3c — Claude Opus (mais caro — somente se absolutamente necessário)
@@ -172,7 +174,8 @@ class LLMCascadeRouter:
             model_name=settings.LLM_POWERFUL_MODEL,
             system_prompt_override=system_prompt_override,
         )
-        tokens += tokens_o
+        cost_accumulator.append((settings.LLM_POWERFUL_MODEL, tokens_o))
+        tokens_total = sum(t for _, t in cost_accumulator)
         best = result_opus or result_sonnet or result or {
             "domain": "recruiter_assistant",
             "confidence": 0.3,
@@ -180,10 +183,10 @@ class LLMCascadeRouter:
         }
         best["model_used"] = settings.LLM_POWERFUL_MODEL
         best["tier"] = "opus"
-        best["tokens_est"] = tokens
+        best["tokens_est"] = tokens_total
         best["latency_ms"] = (time.time() - total_start) * 1000
         best["request_id"] = request_id
-        await self._record_tokens(company_id, tokens, model=settings.LLM_POWERFUL_MODEL, request_id=request_id)
+        await self._record_tokens_multi(company_id, cost_accumulator, request_id=request_id)
         return best
 
     @staticmethod
@@ -271,6 +274,40 @@ class LLMCascadeRouter:
                 logger.warning("[LLMCascade] %s", warning)
         except Exception as exc:
             logger.debug("[LLMCascade] record_tokens falhou: %s", exc)
+
+    async def _record_tokens_multi(
+        self,
+        company_id: str | None,
+        attempts: list[tuple[str, int]],
+        request_id: str | None = None,
+    ) -> None:
+        """Record tokens with per-model cost summed across cascade attempts."""
+        if not company_id or not attempts:
+            return
+        try:
+            from app.orchestrator.tenant_budget import tenant_budget
+            tokens_total = sum(t for _, t in attempts)
+            total_cost = 0.0
+            for model_name, toks in attempts:
+                t_in = toks // 2
+                t_out = toks - t_in
+                total_cost += _estimate_cost(model_name, t_in, t_out)
+            tokens_in = tokens_total // 2
+            tokens_out = tokens_total - tokens_in
+            final_model = attempts[-1][0] if attempts else None
+            allowed, total, warning = await tenant_budget.check_and_record(
+                company_id,
+                tokens_total,
+                request_id=request_id,
+                tokens_input=tokens_in,
+                tokens_output=tokens_out,
+                cost_usd=total_cost,
+                model=final_model,
+            )
+            if warning:
+                logger.warning("[LLMCascade] %s", warning)
+        except Exception as exc:
+            logger.debug("[LLMCascade] record_tokens_multi falhou: %s", exc)
 
 
 # Singleton compartilhado
