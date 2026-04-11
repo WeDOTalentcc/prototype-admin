@@ -1,9 +1,19 @@
 # WeDo Talent Design System v4.2
 
-> **Versão:** 4.2.1  
-> **Atualizado:** Fevereiro 2026  
+> **Versão:** 4.2.2  
+> **Atualizado:** Abril 2026  
 > **Maturidade:** Em evolução (benchmarked 6.8 → 7.5/10)  
-> **Changelog v4.2.1:** Reconciliação DS ↔ código real — tipografia 85/10/5, botões font-medium, border-radius 8px universal, sidebar valores reais, sistema --eleven-* documentado, bug --wedo-cyan/orange corrigido  
+> **Changelog v4.2.2:** Revisão profunda DS ↔ código real (Abril 2026):
+> - Tokens escurecidos: text-secondary #2D2D2D, text-tertiary #5C5C5C, borders #D4D4D4/#BEBEBE/#999999
+> - Cards: rounded-md → rounded-xl (16px)
+> - Tabs: pill style (bg-lia-bg-secondary rounded-lg, active shadow-sm)
+> - Modais: dialog.tsx rounded-xl, sem border separators
+> - Tipografia: font-bold → font-semibold em headings, Crimson/SourceSerif removidos, títulos padronizados text-lg
+> - Badges: 9 variants coloridos (success/warning/info/danger/lilac), overrides limpos
+> - 318 badge overrides → variants, 275 gray→tokens, 2.433 rounded-xl, 303 bordas removidas
+> - Stats bars coloridas em Vagas, Funil. Ícones coloridos por contexto em Tarefas, Settings
+> - Zero: gray classes, hex hardcoded, shadcn defaults, font-crimson, Open_Sans inline
+> **Changelog v4.2.1:** Reconciliação DS ↔ código real — tipografia 85/10/5, botões font-medium, border-radius rounded-xl cards, rounded-md inputs, sidebar valores reais, sistema --eleven-* documentado, bug --wedo-cyan/orange corrigido  
 > **Referências:** ElevenLabs UI, Shopify Polaris, IBM Carbon, Material Design 3  
 > **Filosofia:** Interface monocromática clean (90% grays) + acentos WeDo estratégicos (10%)  
 > **Stacks:** React + Tailwind + shadcn/ui (protótipos) | Vue + Vuetify 3 + Nuxt (produção)
@@ -96,8 +106,87 @@
 - [4.8 Navigation Patterns](#48-navigation-patterns) `[Draft]`
 - [4.9 Chat Conversation Flows](#49-chat-conversation-flows) `[Draft]`
 - [4.10 Onboarding Flow](#410-onboarding-flow) `[Planned]`
+- [4.11 Stats Bar Pattern](#411-stats-bar-pattern) `[Stable]`
+- [4.12 Mapa de Cores por Contexto](#412-mapa-de-cores-por-contexto) `[Stable]`
+- [4.13 Filtros Coloridos por Status](#413-filtros-coloridos-por-status) `[Stable]`
+- [4.14 Ícones Coloridos por Seção](#414-ícones-coloridos-por-seção) `[Stable]`
 
-### PARTE 5: IMPLEMENTAÇÃO
+##
+
+---
+
+## 4.11 Stats Bar Pattern `[Stable]` *(Novo v4.2.2)*
+
+Barra horizontal de métricas com ícones coloridos. Padrão usado em Vagas, Funil, Agent Studio.
+
+```jsx
+<div className="flex items-center gap-6 mt-1 mb-2">
+  <div className="flex items-center gap-2">
+    <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+    <span className="text-xs text-lia-text-secondary">
+      <span className="font-semibold text-lia-text-primary">{count}</span> label
+    </span>
+  </div>
+  <div className="flex items-center gap-1.5">
+    <Icon className="w-3.5 h-3.5 text-wedo-cyan" />
+    <span className="text-xs text-lia-text-secondary">
+      <span className="font-semibold text-lia-text-primary">{count}</span> label
+    </span>
+  </div>
+</div>
+```
+
+**Regras:**
+- Dot pulse (animate-pulse) apenas para métrica "ao vivo" (ex: vagas ativas)
+- Ícones w-3.5 h-3.5 com cor contextual
+- Texto text-xs, número font-semibold text-lia-text-primary
+- Não repetir informação já visível em tabs/badges
+
+## 4.12 Mapa de Cores por Contexto `[Stable]` *(Novo v4.2.2)*
+
+Cores usadas pontualmente para dar vida sem poluir (clean > colorido):
+
+| Cor | Token/Class | Contexto | Onde usar |
+|-----|-------------|----------|-----------|
+| **Cyan** | `text-wedo-cyan` / `bg-wedo-cyan/15` | LIA, AI, busca, links | Ícones Brain/Bot, input focus glow, badges info |
+| **Emerald** | `text-emerald-500` / `bg-emerald-50` | Ativo, sucesso, aprovado | Dots pulse, badges success, ícones check |
+| **Amber** | `text-amber-500` / `bg-amber-50` | Pendente, atenção, warning | Ícones Clock, badges warning, filtros |
+| **Rose** | `text-rose-500` / `bg-rose-50` | Urgente, erro, rejeitado | Ícones AlertTriangle, badges danger |
+| **Violet** | `text-violet-500` / `bg-violet-50` | Insights, premium, análise | Ícones Brain, badges lilac |
+
+**Regra 90/10:** Cores aparecem em no máximo 10% dos elementos visuais de uma tela.
+
+## 4.13 Filtros Coloridos por Status `[Stable]` *(Novo v4.2.2)*
+
+Botões de filtro mudam de cor quando ativos, seguindo o contexto do status:
+
+```typescript
+const STATUS_COLORS = {
+  "Novo": { active: "bg-cyan-50 text-cyan-700 border-cyan-200", inactive: "..." },
+  "Em triagem": { active: "bg-amber-50 text-amber-700 border-amber-200", inactive: "..." },
+  "Aprovado": { active: "bg-emerald-50 text-emerald-700 border-emerald-200", inactive: "..." },
+  "Reprovado": { active: "bg-rose-50 text-rose-700 border-rose-200", inactive: "..." },
+}
+```
+
+## 4.14 Ícones Coloridos por Seção `[Stable]` *(Novo v4.2.2)*
+
+Ícones de navegação/seção com cor fixa por área:
+
+```typescript
+const SECTION_ICON_COLORS = {
+  'company-team': 'text-wedo-cyan',
+  'recruitment': 'text-emerald-500',
+  'communication': 'text-violet-500',
+  'goals-planning': 'text-amber-500',
+  'global-search': 'text-wedo-cyan',
+  'integrations': 'text-emerald-500',
+  'fairness-compliance': 'text-rose-500',
+}
+```
+
+
+# PARTE 5: IMPLEMENTAÇÃO
 - [5.1 Design Tokens CSS](#51-design-tokens-css) `[Stable]`
 - [5.2 Design Tokens TypeScript](#52-design-tokens-typescript) `[Stable]`
 - [5.3 Classes Utilitárias](#53-classes-utilitárias) `[Stable]`
@@ -217,17 +306,17 @@ O design system serve como ponte entre prototipagem rápida (Replit) e produçã
 |-------|-----|----------|---------|-----|
 | `--lia-text-primary` | `#111827` | `text-gray-900` | `text-grey-darken-4` | Títulos, headings |
 | `--lia-text-body` | `#1F2937` | `text-gray-800` | `text-grey-darken-3` | Texto principal, labels |
-| `--lia-text-secondary` | `#4B5563` | `text-gray-600` | `text-grey-darken-1` | Descrições, captions |
-| `--lia-text-muted` | `#6B7280` | `text-gray-500` | `text-grey` | Placeholders, hints |
-| `--lia-text-disabled` | `#9CA3AF` | `text-gray-400` | `text-grey-lighten-1` | Texto desabilitado |
+| `--lia-text-secondary` | `#2D2D2D` | `text-gray-600` | `text-grey-darken-1` | Descrições, captions |
+| `--lia-text-muted` | `#5C5C5C` | `text-gray-500` | `text-grey` | Placeholders, hints |
+| `--lia-text-disabled` | `#999999` | `text-gray-400` | `text-grey-lighten-1` | Texto desabilitado |
 
 #### Bordas
 
 | Token | Hex | Tailwind | Vuetify | Uso |
 |-------|-----|----------|---------|-----|
-| `--lia-border-subtle` | `#E5E7EB` | `border-gray-200` | `border-grey-lighten-3` | Bordas padrão (quase invisíveis) |
-| `--lia-border-default` | `#D1D5DB` | `border-gray-300` | `border-grey-lighten-2` | Bordas com destaque |
-| `--lia-border-medium` | `#9CA3AF` | `border-gray-400` | `border-grey-lighten-1` | Bordas fortes |
+| `--lia-border-subtle` | `#D4D4D4` | `border-gray-200` | `border-grey-lighten-3` | Bordas padrão (quase invisíveis) |
+| `--lia-border-default` | `#BEBEBE` | `border-gray-300` | `border-grey-lighten-2` | Bordas com destaque |
+| `--lia-border-medium` | `#999999` | `border-gray-400` | `border-grey-lighten-1` | Bordas fortes |
 
 #### Botão Primary (Preto) - AÇÃO PRINCIPAL
 
@@ -237,7 +326,7 @@ O design system serve como ponte entre prototipagem rápida (Replit) e produçã
 | **Hover** | `bg-gray-800` (#1F2937) | `text-white` | none |
 | **Active** | `bg-gray-700` (#374151) | `text-white` | none |
 | **Focus** | `bg-gray-900` + ring | `text-white` | `ring-2 ring-gray-900/20` |
-| **Disabled** | `bg-gray-300` (#D1D5DB) | `text-gray-500` | none |
+| **Disabled** | `bg-gray-300` (#BEBEBE) | `text-gray-500` | none |
 
 **IMPORTANTE:** Botão primário é SEMPRE preto. Cores WeDo são APENAS para badges, ícones e indicadores.
 
@@ -311,13 +400,13 @@ O design system serve como ponte entre prototipagem rápida (Replit) e produçã
 | `--lia-bg-tertiary` | `#F3F4F6` | `#26292B` |
 | `--lia-bg-elevated` | `#FFFFFF` | `#1A1D1F` |
 | `--lia-text-primary` | `#111827` | `#F9FAFB` |
-| `--lia-text-body` | `#1F2937` | `#E5E7EB` |
-| `--lia-text-secondary` | `#4B5563` | `#9CA3AF` |
-| `--lia-text-muted` | `#6B7280` | `#6B7280` |
-| `--lia-text-disabled` | `#9CA3AF` | `#4B5563` |
-| `--lia-border-subtle` | `#E5E7EB` | `#374151` |
-| `--lia-border-default` | `#D1D5DB` | `#4B5563` |
-| `--lia-border-medium` | `#9CA3AF` | `#6B7280` |
+| `--lia-text-body` | `#1F2937` | `#D4D4D4` |
+| `--lia-text-secondary` | `#2D2D2D` | `#999999` |
+| `--lia-text-muted` | `#5C5C5C` | `#5C5C5C` |
+| `--lia-text-disabled` | `#999999` | `#4B5563` |
+| `--lia-border-subtle` | `#D4D4D4` | `#374151` |
+| `--lia-border-default` | `#BEBEBE` | `#4B5563` |
+| `--lia-border-medium` | `#999999` | `#5C5C5C` |
 
 #### Cores WeDo em Dark Mode
 
@@ -409,8 +498,8 @@ As cores WeDo **mantêm-se iguais** em dark mode para preservar a identidade da 
   --lia-text-primary: #111827;
   --lia-text-body: #1F2937;
   --lia-text-secondary: #4B5563;
-  --lia-border-subtle: #E5E7EB;
-  --lia-border-default: #D1D5DB;
+  --lia-border-subtle: #D4D4D4;
+  --lia-border-default: #BEBEBE;
   --lia-shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
   --lia-shadow-md: 0 4px 6px rgba(0,0,0,0.1);
   --lia-shadow-lg: 0 10px 15px rgba(0,0,0,0.1);
@@ -423,8 +512,8 @@ As cores WeDo **mantêm-se iguais** em dark mode para preservar a identidade da 
   --lia-bg-secondary: #1A1D1F;
   --lia-bg-tertiary: #26292B;
   --lia-text-primary: #F9FAFB;
-  --lia-text-body: #E5E7EB;
-  --lia-text-secondary: #9CA3AF;
+  --lia-text-body: #D4D4D4;
+  --lia-text-secondary: #999999;
   --lia-border-subtle: #374151;
   --lia-border-default: #4B5563;
   --lia-shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
@@ -448,10 +537,10 @@ As cores WeDo **mantêm-se iguais** em dark mode para preservar a identidade da 
 |--------|-----|-----------------|
 | `gray-50` | `#F9FAFB` | Backgrounds secundários |
 | `gray-100` | `#F3F4F6` | Backgrounds terciários, hover |
-| `gray-200` | `#E5E7EB` | Bordas sutis |
-| `gray-300` | `#D1D5DB` | Bordas padrão |
-| `gray-400` | `#9CA3AF` | Texto disabled, bordas fortes |
-| `gray-500` | `#6B7280` | Texto muted, placeholders |
+| `gray-200` | `#D4D4D4` | Bordas sutis (escurecido v4.2.2) |
+| `gray-300` | `#BEBEBE` | Bordas padrão (escurecido v4.2.2) |
+| `gray-400` | `#999999` | Texto disabled, bordas fortes (escurecido v4.2.2) |
+| `gray-500` | `#5C5C5C` | Texto muted, placeholders (escurecido v4.2.2) |
 | `gray-600` | `#4B5563` | Texto secundário |
 | `gray-700` | `#374151` | Texto com destaque |
 | `gray-800` | `#1F2937` | Texto corpo principal |
@@ -491,9 +580,9 @@ As cores WeDo **mantêm-se iguais** em dark mode para preservar a identidade da 
 |---------|-----------|--------------|
 | Texto principal | `--lia-text-primary` → `#111827` (gray-900) | `--eleven-text-primary` → `#2D2D2D` (cinza puro) |
 | Texto secundário | `--lia-text-secondary` → `#4B5563` (gray-600) | `--eleven-text-secondary` → `#666666` (cinza puro) |
-| Texto terciário | `--lia-text-tertiary` → `#6B7280` (gray-500) | `--eleven-text-tertiary` → `#999999` (cinza puro) |
+| Texto terciário | `--lia-text-tertiary` → `#5C5C5C` (escurecido v4.2.2) | `--eleven-text-tertiary` → `#999999` (cinza puro) |
 | Background base | `--lia-bg-primary` → `#FFFFFF` / `#F9FAFB` | `--eleven-bg-main` → `#F8F8F8` / `#F5F5F5` |
-| Bordas | `--lia-border-subtle` → `#E5E7EB` (gray-200) | `--eleven-border-subtle` → `#E8E8E8` (cinza puro) |
+| Bordas | `--lia-border-subtle` → `#D4D4D4` (escurecido v4.2.2) | `--eleven-border-subtle` → `#E8E8E8` (cinza puro) |
 | Escala de cinzas | Tailwind gray (50–950) | Cinzas puros (#2D2D2D, #666, #999, #E8E8E8, #F5F5F5, #F8F8F8) |
 | Personalidade | Neutro, funcional | Quente, tons sepia/pastel, identidade própria |
 
@@ -579,7 +668,7 @@ As cores WeDo **mantêm-se iguais** em dark mode para preservar a identidade da 
 | Cor Atual | Substituir Por | Classe Tailwind | Motivo |
 |-----------|---------------|-----------------|--------|
 | `#FAFAFA` | `#F9FAFB` | `gray-50` | Inconsistente, usar padrão Tailwind |
-| `#E4EBEF` | `#E5E7EB` | `gray-200` | Azulado inconsistente |
+| `#E4EBEF` | `#D4D4D4` | `gray-200` | Azulado inconsistente |
 
 > **NOTA v4.2.1:** As cores `#E8E8E8`, `#666666`, `#999999`, `#2D2D2D` e `#F5F5F5` **NÃO são deprecadas** — são valores legítimos do sistema `--eleven-*` (seção 1.2.6). Só devem ser substituídas por Tailwind grays quando usadas **fora** de contextos ElevenLabs (chat, Kanban, painéis).
 
@@ -605,7 +694,7 @@ As cores WeDo **mantêm-se iguais** em dark mode para preservar a identidade da 
 }
 ```
 
-> **NOTA v4.2.1:** Sistema expandido de 2 para 3 fontes. Open Sans domina 85% da interface (UI, navegação, chat, formulários). Inter é reservado para dados numéricos/KPIs (10%). JetBrains Mono adicionado para queries booleanas e dados técnicos (5%). Source Serif 4 foi removido na v4.1.
+> **NOTA v4.2.1:** Sistema expandido de 2 para 3 fontes. Open Sans domina 85% da interface (UI, navegação, chat, formulários). Inter é reservado para dados numéricos/KPIs (10%). JetBrains Mono adicionado para queries booleanas e dados técnicos (5%). Source Serif 4 e Crimson Text foram removidos. Apenas Open Sans (85%) + Inter para números (10%) + JetBrains Mono (5%).
 
 ### 1.3.2 Hierarquia Tipográfica Completa
 
@@ -644,7 +733,7 @@ As cores WeDo **mantêm-se iguais** em dark mode para preservar a identidade da 
 > - `font-weight: 400` (regular) = body text, descrições, captions (12%)  
 > - `font-weight: 700` (bold) = KPIs grandes, números de destaque — apenas Inter (1%)  
 > - NUNCA usar `font-weight: 300` (light) ou `font-weight: 800/900` (black)  
-> - Tailwind: `font-medium` (500), `font-semibold` (600), `font-normal` (400), `font-bold` (700)
+> - Tailwind: `font-medium` (500), `font-semibold` (600), `font-normal` (400), `font-semibold` (600) — font-bold NÃO USAR em headings
 >
 > **⚠️ Body Base = 11px (v4.2.1):**  
 > O `text-xs` foi redefinido no `tailwind.config.ts` para `0.6875rem` (11px) com `lineHeight: 1.4`.  
@@ -836,7 +925,7 @@ As cores WeDo **mantêm-se iguais** em dark mode para preservar a identidade da 
   font-size: 0.6875rem;     /* 11px */
   font-weight: 600;
   line-height: 1.3;
-  color: #6B7280;
+  color: #5C5C5C; /* escurecido v4.2.2 */
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
@@ -850,7 +939,7 @@ As cores WeDo **mantêm-se iguais** em dark mode para preservar a identidade da 
   font-size: 0.625rem;      /* 10px */
   font-weight: 600;
   line-height: 1.3;
-  color: #6B7280;
+  color: #5C5C5C; /* escurecido v4.2.2 */
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
@@ -1644,7 +1733,7 @@ Formatação padronizada para dados na plataforma. Locale: PT-BR. Todas as datas
 }
 
 .lia-btn-primary:disabled {
-  background-color: #9CA3AF;
+  background-color: #999999;
   cursor: not-allowed;
 }
 
@@ -1669,7 +1758,7 @@ Formatação padronizada para dados na plataforma. Locale: PT-BR. Todas as datas
   border-radius: 8px;
   background-color: #FFFFFF;
   color: #1F2937;              /* text-gray-800 */
-  border: 1px solid #D1D5DB;  /* border-gray-300 */
+  border: 1px solid #BEBEBE;  /* border-gray-300 */
   cursor: pointer;
   transition: all 150ms ease;
 }
@@ -4224,8 +4313,8 @@ Diretrizes para gráficos e visualizações de dados nos dashboards de KPI da pl
 |-------|-----|-----|-----|
 | Série 1 (primária) | `gray-900` | `#111827` | Dado principal |
 | Série 2 | `gray-600` | `#4B5563` | Comparação secundária |
-| Série 3 | `gray-400` | `#9CA3AF` | Terceiro nível |
-| Série 4 | `gray-200` | `#E5E7EB` | Background/referência |
+| Série 3 | `gray-400` | `#999999` | Terceiro nível |
+| Série 4 | `gray-200` | `#D4D4D4` | Background/referência |
 | Destaque | WeDo Cyan | `#60BED1` | Dado destacado, selecionado |
 | Positivo | `green-600` | `#16A34A` | Tendência positiva, crescimento |
 | Negativo | `red-600` | `#DC2626` | Tendência negativa, queda |
@@ -4508,7 +4597,7 @@ Dock de sugestões do chat com 4 categorias temáticas (vagas, candidatos, entre
 
 | Categoria | Icon Color | Bg | Border | Hover Bg |
 |-----------|-----------|-----|--------|----------|
-| vagas | `#374151` | `#F3F4F6` | `#D1D5DB` | `#D0EFF5` |
+| vagas | `#374151` | `#F3F4F6` | `#BEBEBE` | `#D0EFF5` |
 | candidatos | `#5DA47A` | `#E5F5EB` | `#5DA47A` | `#D5EFE0` |
 | entrevistas | `#E5A853` | `#FDF4E8` | `#E5A853` | `#FAECD8` |
 | relatorios | `#8B5CF6` | `#F3EAFF` | `#8B5CF6` | `#EBE0FF` |
@@ -4955,7 +5044,7 @@ Botão compacto com ícone e score numérico, com tooltip informativo. Usado par
 | Score text | `text-[11px] font-bold font-['Open_Sans'] text-gray-700` |
 | Active color (LIA scores) | `#111827` |
 | Active color (outros) | `#374151` |
-| Inactive color | `#9CA3AF` (opacity 25%) |
+| Inactive color | `#999999` (opacity 25%) |
 | Focus ring | `ring-2 ring-offset-1 ring-gray-400 rounded-full` |
 | Hover | `scale-105` |
 
@@ -6011,6 +6100,81 @@ Etapa 3: PRIMEIRA VAGA
 
 ---
 
+
+
+---
+
+## 4.11 Stats Bar Pattern `[Stable]` *(Novo v4.2.2)*
+
+Barra horizontal de métricas com ícones coloridos. Padrão usado em Vagas, Funil, Agent Studio.
+
+```jsx
+<div className="flex items-center gap-6 mt-1 mb-2">
+  <div className="flex items-center gap-2">
+    <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+    <span className="text-xs text-lia-text-secondary">
+      <span className="font-semibold text-lia-text-primary">{count}</span> label
+    </span>
+  </div>
+  <div className="flex items-center gap-1.5">
+    <Icon className="w-3.5 h-3.5 text-wedo-cyan" />
+    <span className="text-xs text-lia-text-secondary">
+      <span className="font-semibold text-lia-text-primary">{count}</span> label
+    </span>
+  </div>
+</div>
+```
+
+**Regras:**
+- Dot pulse (animate-pulse) apenas para métrica "ao vivo" (ex: vagas ativas)
+- Ícones w-3.5 h-3.5 com cor contextual
+- Texto text-xs, número font-semibold text-lia-text-primary
+- Não repetir informação já visível em tabs/badges
+
+## 4.12 Mapa de Cores por Contexto `[Stable]` *(Novo v4.2.2)*
+
+Cores usadas pontualmente para dar vida sem poluir (clean > colorido):
+
+| Cor | Token/Class | Contexto | Onde usar |
+|-----|-------------|----------|-----------|
+| **Cyan** | `text-wedo-cyan` / `bg-wedo-cyan/15` | LIA, AI, busca, links | Ícones Brain/Bot, input focus glow, badges info |
+| **Emerald** | `text-emerald-500` / `bg-emerald-50` | Ativo, sucesso, aprovado | Dots pulse, badges success, ícones check |
+| **Amber** | `text-amber-500` / `bg-amber-50` | Pendente, atenção, warning | Ícones Clock, badges warning, filtros |
+| **Rose** | `text-rose-500` / `bg-rose-50` | Urgente, erro, rejeitado | Ícones AlertTriangle, badges danger |
+| **Violet** | `text-violet-500` / `bg-violet-50` | Insights, premium, análise | Ícones Brain, badges lilac |
+
+**Regra 90/10:** Cores aparecem em no máximo 10% dos elementos visuais de uma tela.
+
+## 4.13 Filtros Coloridos por Status `[Stable]` *(Novo v4.2.2)*
+
+Botões de filtro mudam de cor quando ativos, seguindo o contexto do status:
+
+```typescript
+const STATUS_COLORS = {
+  "Novo": { active: "bg-cyan-50 text-cyan-700 border-cyan-200", inactive: "..." },
+  "Em triagem": { active: "bg-amber-50 text-amber-700 border-amber-200", inactive: "..." },
+  "Aprovado": { active: "bg-emerald-50 text-emerald-700 border-emerald-200", inactive: "..." },
+  "Reprovado": { active: "bg-rose-50 text-rose-700 border-rose-200", inactive: "..." },
+}
+```
+
+## 4.14 Ícones Coloridos por Seção `[Stable]` *(Novo v4.2.2)*
+
+Ícones de navegação/seção com cor fixa por área:
+
+```typescript
+const SECTION_ICON_COLORS = {
+  'company-team': 'text-wedo-cyan',
+  'recruitment': 'text-emerald-500',
+  'communication': 'text-violet-500',
+  'goals-planning': 'text-amber-500',
+  'global-search': 'text-wedo-cyan',
+  'integrations': 'text-emerald-500',
+  'fairness-compliance': 'text-rose-500',
+}
+```
+
+
 # PARTE 5: IMPLEMENTAÇÃO
 
 ## 5.1 Design Tokens CSS (Arquivo Completo)
@@ -6032,13 +6196,13 @@ Etapa 3: PRIMEIRA VAGA
   --lia-text-primary: #111827;     /* gray-900 */
   --lia-text-body: #1F2937;        /* gray-800 */
   --lia-text-secondary: #4B5563;   /* gray-600 */
-  --lia-text-muted: #6B7280;       /* gray-500 */
-  --lia-text-disabled: #9CA3AF;    /* gray-400 */
+  --lia-text-muted: #5C5C5C;       /* gray-500 */
+  --lia-text-disabled: #999999;    /* gray-400 */
   
   /* ============ CORES - BORDAS ============ */
-  --lia-border-subtle: #E5E7EB;    /* gray-200 */
-  --lia-border-default: #D1D5DB;   /* gray-300 */
-  --lia-border-medium: #9CA3AF;    /* gray-400 */
+  --lia-border-subtle: #D4D4D4;    /* gray-200 */
+  --lia-border-default: #BEBEBE;   /* gray-300 */
+  --lia-border-medium: #999999;    /* gray-400 */
   
   /* ============ CORES WEDO - ACCENT (10%) ============ */
   --wedo-cyan: #60BED1;
@@ -6112,14 +6276,14 @@ Etapa 3: PRIMEIRA VAGA
   --lia-bg-elevated: #1A1D1F;
   
   --lia-text-primary: #F9FAFB;
-  --lia-text-body: #E5E7EB;
-  --lia-text-secondary: #9CA3AF;
-  --lia-text-muted: #6B7280;
+  --lia-text-body: #D4D4D4;
+  --lia-text-secondary: #999999;
+  --lia-text-muted: #5C5C5C;
   --lia-text-disabled: #4B5563;
   
   --lia-border-subtle: #374151;
   --lia-border-default: #4B5563;
-  --lia-border-medium: #6B7280;
+  --lia-border-medium: #5C5C5C;
   
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
   --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
@@ -6132,8 +6296,8 @@ Etapa 3: PRIMEIRA VAGA
     --lia-bg-secondary: #1A1D1F;
     --lia-bg-tertiary: #26292B;
     --lia-text-primary: #F9FAFB;
-    --lia-text-body: #E5E7EB;
-    --lia-text-secondary: #9CA3AF;
+    --lia-text-body: #D4D4D4;
+    --lia-text-secondary: #999999;
     --lia-border-subtle: #374151;
     --lia-border-default: #4B5563;
   }
@@ -6197,13 +6361,13 @@ export const colors = {
     primary: '#111827',
     body: '#1F2937',
     secondary: '#4B5563',
-    muted: '#6B7280',
-    disabled: '#9CA3AF',
+    muted: '#5C5C5C',
+    disabled: '#999999',
   },
   border: {
-    subtle: '#E5E7EB',
-    default: '#D1D5DB',
-    medium: '#9CA3AF',
+    subtle: '#D4D4D4',
+    default: '#BEBEBE',
+    medium: '#999999',
   },
   wedo: {
     cyan: '#60BED1',
@@ -6275,13 +6439,13 @@ export function cn(...classes: (string | undefined | null | false)[]): string {
 .wedo-text-title     { color: #111827; }  /* gray-900 */
 .wedo-text-body      { color: #1F2937; }  /* gray-800 */
 .wedo-text-secondary { color: #4B5563; }  /* gray-600 */
-.wedo-text-muted     { color: #6B7280; }  /* gray-500 */
+.wedo-text-muted     { color: #5C5C5C; /* escurecido v4.2.2 */ }  /* gray-500 */
 
 /* Dark mode automático */
 .dark .wedo-text-title     { color: #F9FAFB; }
-.dark .wedo-text-body      { color: #E5E7EB; }
-.dark .wedo-text-secondary { color: #9CA3AF; }
-.dark .wedo-text-muted     { color: #6B7280; }
+.dark .wedo-text-body      { color: #D4D4D4; }
+.dark .wedo-text-secondary { color: #999999; }
+.dark .wedo-text-muted     { color: #5C5C5C; /* escurecido v4.2.2 */ }
 ```
 
 ### 5.3.2 Classes WeDo (Cores de Acento)
@@ -6557,7 +6721,7 @@ export default createVuetify({
       dark: {
         colors: {
           primary: '#F9FAFB',
-          secondary: '#9CA3AF',
+          secondary: '#999999',
           background: '#0F1113',
           surface: '#1A1D1F',
           'surface-variant': '#26292B',
@@ -6849,7 +7013,7 @@ $dialog-z-index: 2400;
 
 .v-field--variant-outlined .v-field__outline {
   --v-field-border-opacity: 1;
-  color: #D1D5DB !important;
+  color: #BEBEBE !important;
 }
 
 .v-label {
@@ -6860,7 +7024,7 @@ $dialog-z-index: 2400;
 
 // ============ CARDS ============
 .v-card {
-  border: 1px solid #E5E7EB !important;
+  border: 1px solid #D4D4D4 !important;
 }
 
 .v-card-title {
@@ -6879,7 +7043,7 @@ $dialog-z-index: 2400;
 // ============ TABELAS ============
 .v-data-table {
   font-family: 'Open Sans', sans-serif !important;
-  border: 1px solid #E5E7EB !important;
+  border: 1px solid #D4D4D4 !important;
   border-radius: 8px !important;
   overflow: hidden !important;
 }
@@ -6915,7 +7079,7 @@ $dialog-z-index: 2400;
 
 // ============ NAVIGATION DRAWER ============
 .v-navigation-drawer {
-  border-right: 1px solid #E5E7EB !important;
+  border-right: 1px solid #D4D4D4 !important;
 }
 
 .v-list-item-title {
@@ -7012,8 +7176,8 @@ export interface DesignTokens {
 const lightTokens: DesignTokens = {
   colors: {
     bg: { primary: '#FFFFFF', secondary: '#F9FAFB', tertiary: '#F3F4F6', elevated: '#FFFFFF' },
-    text: { primary: '#111827', body: '#1F2937', secondary: '#4B5563', muted: '#6B7280', disabled: '#9CA3AF' },
-    border: { subtle: '#E5E7EB', default: '#D1D5DB', medium: '#9CA3AF' },
+    text: { primary: '#111827', body: '#1F2937', secondary: '#4B5563', muted: '#5C5C5C', disabled: '#999999' },
+    border: { subtle: '#D4D4D4', default: '#BEBEBE', medium: '#999999' },
     wedo: {
       cyan: '#60BED1', cyanDark: '#4DA8BB', cyanLight: 'rgba(96,190,209,0.1)',
       green: '#5DA47A', greenLight: 'rgba(93,164,122,0.1)',
@@ -7047,8 +7211,8 @@ const darkTokens: DesignTokens = {
   colors: {
     ...lightTokens.colors,
     bg: { primary: '#0F1113', secondary: '#1A1D1F', tertiary: '#26292B', elevated: '#1A1D1F' },
-    text: { primary: '#F9FAFB', body: '#E5E7EB', secondary: '#9CA3AF', muted: '#6B7280', disabled: '#4B5563' },
-    border: { subtle: '#374151', default: '#4B5563', medium: '#6B7280' },
+    text: { primary: '#F9FAFB', body: '#D4D4D4', secondary: '#999999', muted: '#5C5C5C', disabled: '#4B5563' },
+    border: { subtle: '#374151', default: '#4B5563', medium: '#5C5C5C' },
     status: {
       success: { bg: 'rgba(22,163,74,0.15)', text: '#4ADE80', border: 'rgba(22,163,74,0.3)' },
       warning: { bg: 'rgba(245,158,11,0.15)', text: '#FBBF24', border: 'rgba(245,158,11,0.3)' },
