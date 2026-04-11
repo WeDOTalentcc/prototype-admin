@@ -156,6 +156,36 @@ class AiConsumptionRepository:
         result = await self.db.execute(q)
         return result.all()
 
+    async def get_usage_by_agent_and_day(
+        self,
+        company_id: str,
+        *,
+        days: int = 30,
+    ) -> list:
+        from uuid import UUID as _UUID
+        from datetime import datetime, timedelta
+        from sqlalchemy import Date, and_, cast as sa_cast
+        company_uuid = _UUID(company_id) if isinstance(company_id, str) else company_id
+        start_date = datetime.now() - timedelta(days=days)
+        conditions = [
+            AiConsumption.company_id == company_uuid,
+            AiConsumption.created_at >= start_date,
+        ]
+        q = (
+            select(
+                sa_cast(AiConsumption.created_at, Date).label("date"),
+                AiConsumption.agent_type,
+                func.sum(AiConsumption.total_tokens).label("total_tokens"),
+                func.count(AiConsumption.id).label("total_ops"),
+                func.sum(AiConsumption.cost_cents).label("total_cost"),
+            )
+            .where(and_(*conditions))
+            .group_by(sa_cast(AiConsumption.created_at, Date), AiConsumption.agent_type)
+            .order_by(sa_cast(AiConsumption.created_at, Date))
+        )
+        result = await self.db.execute(q)
+        return result.all()
+
     async def record(self, data: dict) -> AiConsumption:
         rec = AiConsumption(**data)
         self.db.add(rec)

@@ -33,6 +33,9 @@ export async function GET(request: NextRequest) {
       case 'by-agent':
         backendPath = '/api/v1/ai-consumption/by-agent'
         break
+      case 'agent-trend':
+        backendPath = `/api/v1/ai-consumption/agent-trend?days=${days}`
+        break
       default:
         return NextResponse.json({ error: 'Endpoint inválido' }, { status: 400 })
     }

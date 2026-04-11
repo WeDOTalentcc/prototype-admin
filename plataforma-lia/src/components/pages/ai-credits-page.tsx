@@ -11,8 +11,14 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
+  Cell,
+  LineChart,
+  Line,
+  Legend,
 } from 'recharts'
-import { AlertTriangle, Zap, TrendingUp, DollarSign } from 'lucide-react'
+import type { Payload } from 'recharts/types/component/DefaultTooltipContent'
+import { AlertTriangle, Zap, TrendingUp, DollarSign, Activity } from 'lucide-react'
+import { useMemo } from 'react'
 
 function formatTokens(tokens: number): string {
   if (tokens >= 1_000_000) return `${(tokens / 1_000_000).toFixed(1)}M`
@@ -24,7 +30,50 @@ function formatCost(cents: number): string {
   return `$${(cents / 100).toFixed(2)}`
 }
 
-function UsageAlert({ percentage }: { percentage: number }) {
+const AGENT_COLORS: Record<string, string> = {
+  screening: '#6366f1',
+  scoring: '#8b5cf6',
+  interview: '#a78bfa',
+  cv_parsing: '#06b6d4',
+  search: '#14b8a6',
+  matching: '#10b981',
+  communication: '#f59e0b',
+  analysis: '#ef4444',
+}
+
+function getAgentColor(agentType: string): string {
+  return AGENT_COLORS[agentType.toLowerCase()] ?? '#94a3b8'
+}
+
+function getAgentLabel(agentType: string): string {
+  const labels: Record<string, string> = {
+    screening: 'Screening',
+    scoring: 'Scoring',
+    interview: 'Entrevista',
+    cv_parsing: 'Parse de CV',
+    search: 'Busca',
+    matching: 'Matching',
+    communication: 'Comunicação',
+    analysis: 'Análise',
+  }
+  return labels[agentType.toLowerCase()] ?? agentType.replace(/_/g, ' ')
+}
+
+interface AgentChartEntry {
+  name: string
+  agentType: string
+  tokens: number
+  cost: number
+  operations: number
+  percentage: number
+}
+
+interface AgentTrendDayEntry {
+  date: string
+  [agentKey: string]: string | number
+}
+
+function MonthlyUsageAlert({ percentage }: { percentage: number }) {
   if (percentage >= 100) {
     return (
       <div className="flex items-center gap-2 rounded-lg border border-status-error/30 bg-status-error/10 px-4 py-3 text-sm text-status-error">
@@ -48,13 +97,100 @@ function UsageAlert({ percentage }: { percentage: number }) {
   return null
 }
 
+function DailyUsageAlert({ percentage }: { percentage: number }) {
+  if (percentage >= 95) {
+    return (
+      <div className="flex items-center gap-2 rounded-lg border border-status-error/30 bg-status-error/10 px-4 py-3 text-sm text-status-error">
+        <AlertTriangle className="h-4 w-4 shrink-0" />
+        <span>
+          <strong>Limite diário crítico:</strong> {percentage.toFixed(0)}% do limite diário de tokens atingido. Operações de IA podem ser bloqueadas.
+        </span>
+        <Badge variant="destructive" className="ml-auto shrink-0 text-xs">
+          {percentage.toFixed(0)}%
+        </Badge>
+      </div>
+    )
+  }
+  if (percentage >= 80) {
+    return (
+      <div className="flex items-center gap-2 rounded-lg border border-status-warning/30 bg-status-warning/10 px-4 py-3 text-sm text-status-warning">
+        <AlertTriangle className="h-4 w-4 shrink-0" />
+        <span>
+          <strong>Alerta diário:</strong> {percentage.toFixed(0)}% do limite diário consumido. Considere reduzir o uso para evitar bloqueio.
+        </span>
+        <Badge variant="secondary" className="ml-auto shrink-0 text-xs">
+          {percentage.toFixed(0)}%
+        </Badge>
+      </div>
+    )
+  }
+  return null
+}
+
+function agentBreakdownTooltipFormatter(
+  value: number,
+  _name: string,
+  entry: Payload<number, string>,
+): [string, string] {
+  const payload = entry.payload as AgentChartEntry | undefined
+  const pct = payload?.percentage ?? 0
+  return [`${formatTokens(value)} tokens (${pct}%)`, 'Consumo']
+}
+
 interface Props {
   companyId?: string
 }
 
 export function AiCreditsPage({ companyId }: Props) {
   const { balance, summary, isLoading: balanceLoading, error: balanceError } = useAiCredits()
-  const { byDay, byAgent, isLoading: historyLoading } = useAiConsumptionHistory(30)
+  const { byDay, byAgent, agentTrend, isLoading: historyLoading } = useAiConsumptionHistory(30)
+
+  const usagePct = balance?.usage_percentage ?? 0
+  const dailyPct = summary?.daily_usage_percentage ?? 0
+  const alertVariant =
+    usagePct >= 100 ? 'destructive' : usagePct >= 80 ? 'secondary' : 'outline'
+
+  const chartData = byDay.map((d) => ({
+    date: d.date.slice(5),
+    tokens: Math.round(d.total_tokens / 1000),
+    custo: +(d.total_cost_cents / 100).toFixed(2),
+  }))
+
+  const totalAgentTokens = byAgent.reduce((sum, a) => sum + a.total_tokens, 0)
+  const agentChartData: AgentChartEntry[] = [...byAgent]
+    .sort((a, b) => b.total_tokens - a.total_tokens)
+    .map((agent) => ({
+      name: getAgentLabel(agent.agent_type),
+      agentType: agent.agent_type,
+      tokens: agent.total_tokens,
+      cost: agent.total_cost_cents,
+      operations: agent.total_operations ?? agent.operation_count ?? 0,
+      percentage: totalAgentTokens > 0
+        ? +((agent.total_tokens / totalAgentTokens) * 100).toFixed(1)
+        : 0,
+    }))
+
+  const { trendChartData, trendAgentTypes } = useMemo(() => {
+    if (agentTrend.length === 0) return { trendChartData: [] as AgentTrendDayEntry[], trendAgentTypes: [] as string[] }
+
+    const agentTypes = [...new Set(agentTrend.map((t) => t.agent_type))]
+    const byDate = new Map<string, { isoDate: string; entry: AgentTrendDayEntry }>()
+
+    for (const item of agentTrend) {
+      const displayDate = item.date.slice(5)
+      if (!byDate.has(item.date)) {
+        byDate.set(item.date, { isoDate: item.date, entry: { date: displayDate } })
+      }
+      const row = byDate.get(item.date)!
+      row.entry[item.agent_type] = Math.round(item.total_tokens / 1000)
+    }
+
+    const sorted = [...byDate.values()]
+      .sort((a, b) => a.isoDate.localeCompare(b.isoDate))
+      .map((v) => v.entry)
+
+    return { trendChartData: sorted, trendAgentTypes: agentTypes }
+  }, [agentTrend])
 
   if (balanceLoading) {
     return (
@@ -72,16 +208,6 @@ export function AiCreditsPage({ companyId }: Props) {
     )
   }
 
-  const usagePct = balance?.usage_percentage ?? 0
-  const alertVariant =
-    usagePct >= 100 ? 'destructive' : usagePct >= 80 ? 'secondary' : 'outline'
-
-  const chartData = byDay.map((d) => ({
-    date: d.date.slice(5), // MM-DD
-    tokens: Math.round(d.total_tokens / 1000), // em K
-    custo: +(d.total_cost_cents / 100).toFixed(2),
-  }))
-
   return (
     <div className="space-y-6 p-6">
       <div className="flex items-center justify-between">
@@ -89,16 +215,23 @@ export function AiCreditsPage({ companyId }: Props) {
           <h1 className="text-lg font-semibold text-lia-text-primary">Consumo de IA</h1>
           <p className="text-xs text-lia-text-tertiary">Monitoramento de tokens e custos do período mensal</p>
         </div>
-        {balance && (
-          <Badge variant={alertVariant} className="text-xs">
-            {usagePct.toFixed(0)}% utilizado
-          </Badge>
-        )}
+        <div className="flex items-center gap-2">
+          {dailyPct >= 80 && (
+            <Badge variant={dailyPct >= 95 ? 'destructive' : 'secondary'} className="text-xs">
+              Diário: {dailyPct.toFixed(0)}%
+            </Badge>
+          )}
+          {balance && (
+            <Badge variant={alertVariant} className="text-xs">
+              {usagePct.toFixed(0)}% utilizado
+            </Badge>
+          )}
+        </div>
       </div>
 
-      {balance && <UsageAlert percentage={usagePct} />}
+      {balance && <MonthlyUsageAlert percentage={usagePct} />}
+      {summary && <DailyUsageAlert percentage={dailyPct} />}
 
-      {/* Cards de métricas */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <Card className="border border-lia-border-subtle dark:border-lia-border-subtle shadow-none">
           <CardHeader className="pb-1 pt-4">
@@ -121,15 +254,15 @@ export function AiCreditsPage({ companyId }: Props) {
           <CardHeader className="pb-1 pt-4">
             <CardTitle className="flex items-center gap-2 text-xs font-medium text-lia-text-tertiary">
               <TrendingUp className="h-3.5 w-3.5" />
-              Tokens restantes
+              Projeção mensal
             </CardTitle>
           </CardHeader>
           <CardContent className="pb-4">
             <p className="text-xl font-semibold text-lia-text-primary">
-              {balance ? formatTokens(balance.remaining_tokens) : '—'}
+              {summary ? formatTokens(summary.projected_monthly_tokens) : '—'}
             </p>
             <p className="mt-0.5 text-xs text-lia-text-disabled">
-              até {balance?.period_end ?? '—'}
+              {summary ? formatCost(summary.projected_monthly_cost_cents) : '—'} estimado
             </p>
           </CardContent>
         </Card>
@@ -152,20 +285,21 @@ export function AiCreditsPage({ companyId }: Props) {
         <Card className="border border-lia-border-subtle dark:border-lia-border-subtle shadow-none">
           <CardHeader className="pb-1 pt-4">
             <CardTitle className="flex items-center gap-2 text-xs font-medium text-lia-text-tertiary">
-              <Zap className="h-3.5 w-3.5" />
-              Operações
+              <Activity className="h-3.5 w-3.5" />
+              Uso diário
             </CardTitle>
           </CardHeader>
           <CardContent className="pb-4">
             <p className="text-xl font-semibold text-lia-text-primary">
-              {summary ? summary.total_operations.toLocaleString('pt-BR') : '—'}
+              {summary ? formatTokens(summary.daily_usage_today) : '—'}
             </p>
-            <p className="mt-0.5 text-xs text-lia-text-disabled">chamadas de IA</p>
+            <p className="mt-0.5 text-xs text-lia-text-disabled">
+              de {summary ? formatTokens(summary.daily_limit) : '—'} diários
+            </p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Barra de progresso */}
       {balance && (
         <Card className="border border-lia-border-subtle dark:border-lia-border-subtle shadow-none">
           <CardHeader className="pb-2 pt-4">
@@ -194,7 +328,6 @@ export function AiCreditsPage({ companyId }: Props) {
         </Card>
       )}
 
-      {/* Gráfico de consumo diário */}
       <Card className="border border-lia-border-subtle dark:border-lia-border-subtle shadow-none">
         <CardHeader className="pb-2 pt-4">
           <CardTitle className="text-xs font-medium text-lia-text-tertiary">
@@ -240,33 +373,125 @@ export function AiCreditsPage({ companyId }: Props) {
         </CardContent>
       </Card>
 
-      {/* Breakdown por agente */}
-      {byAgent.length > 0 && (
+      {trendChartData.length > 0 && (
         <Card className="border border-lia-border-subtle dark:border-lia-border-subtle shadow-none">
           <CardHeader className="pb-2 pt-4">
             <CardTitle className="text-xs font-medium text-lia-text-tertiary">
-              Consumo por agente
+              Tendência por agente — últimos 30 dias (tokens em K)
             </CardTitle>
           </CardHeader>
           <CardContent className="pb-4">
-            <div className="space-y-1">
-              {byAgent
-                .sort((a, b) => b.total_tokens - a.total_tokens)
-                .map((agent) => (
-                  <div
-                    key={agent.agent_type}
-                    className="flex items-center justify-between py-2.5 px-3 text-sm rounded-lg hover:bg-lia-bg-secondary transition-colors"
-                  >
-                    <span className="font-medium capitalize text-lia-text-secondary">
-                      {agent.agent_type.replace('_', ' ')}
-                    </span>
-                    <div className="flex items-center gap-4 text-xs text-lia-text-tertiary">
-                      <span>{formatTokens(agent.total_tokens)} tokens</span>
-                      <span>{formatCost(agent.total_cost_cents)}</span>
-                      <span>{agent.operation_count} ops</span>
-                    </div>
-                  </div>
+            <ResponsiveContainer width="100%" height={250}>
+              <LineChart data={trendChartData} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--lia-border-subtle)" />
+                <XAxis
+                  dataKey="date"
+                  tick={{ fontSize: 10, fill: 'var(--lia-text-tertiary)' }}
+                  tickLine={false}
+                  axisLine={false}
+                />
+                <YAxis
+                  tick={{ fontSize: 10, fill: 'var(--lia-text-tertiary)' }}
+                  tickLine={false}
+                  axisLine={false}
+                  unit="K"
+                />
+                <Tooltip
+                  contentStyle={{ fontSize: 11, borderRadius: 6, border: '1px solid var(--lia-border-subtle)' }}
+                  formatter={(value: number, name: string) => [`${value}K tokens`, getAgentLabel(name)]}
+                />
+                <Legend
+                  formatter={(value: string) => getAgentLabel(value)}
+                  wrapperStyle={{ fontSize: 11 }}
+                />
+                {trendAgentTypes.map((agentType) => (
+                  <Line
+                    key={agentType}
+                    type="monotone"
+                    dataKey={agentType}
+                    stroke={getAgentColor(agentType)}
+                    strokeWidth={2}
+                    dot={false}
+                    connectNulls
+                  />
                 ))}
+              </LineChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      )}
+
+      {agentChartData.length > 0 && (
+        <Card className="border border-lia-border-subtle dark:border-lia-border-subtle shadow-none">
+          <CardHeader className="pb-2 pt-4">
+            <CardTitle className="text-xs font-medium text-lia-text-tertiary">
+              Consumo por agente — breakdown
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pb-4">
+            <ResponsiveContainer width="100%" height={Math.max(200, agentChartData.length * 48)}>
+              <BarChart
+                data={agentChartData}
+                layout="vertical"
+                margin={{ top: 4, right: 60, bottom: 0, left: 90 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--lia-border-subtle)" horizontal={false} />
+                <XAxis
+                  type="number"
+                  tick={{ fontSize: 10, fill: 'var(--lia-text-tertiary)' }}
+                  tickLine={false}
+                  axisLine={false}
+                  tickFormatter={(v: number) => formatTokens(v)}
+                />
+                <YAxis
+                  type="category"
+                  dataKey="name"
+                  tick={{ fontSize: 11, fill: 'var(--lia-text-secondary)' }}
+                  tickLine={false}
+                  axisLine={false}
+                  width={85}
+                />
+                <Tooltip
+                  contentStyle={{
+                    fontSize: 11,
+                    borderRadius: 6,
+                    border: '1px solid var(--lia-border-subtle)',
+                  }}
+                  formatter={agentBreakdownTooltipFormatter}
+                />
+                <Bar dataKey="tokens" radius={[0, 4, 4, 0]} barSize={24}>
+                  {agentChartData.map((entry) => (
+                    <Cell key={entry.agentType} fill={getAgentColor(entry.agentType)} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+
+            <div className="mt-4 space-y-1">
+              {agentChartData.map((agent) => (
+                <div
+                  key={agent.agentType}
+                  className="flex items-center justify-between rounded-lg px-3 py-2 text-sm transition-colors hover:bg-lia-bg-secondary"
+                >
+                  <div className="flex items-center gap-2">
+                    <div
+                      className="h-2.5 w-2.5 rounded-full"
+                      style={{ backgroundColor: getAgentColor(agent.agentType) }}
+                    />
+                    <span className="font-medium text-lia-text-secondary">
+                      {agent.name}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-4 text-xs text-lia-text-tertiary">
+                    <span>{formatTokens(agent.tokens)} tokens</span>
+                    <span>{formatCost(agent.cost)}</span>
+                    <span>{agent.operations} ops</span>
+                    <Badge variant="outline" className="text-xs font-normal">
+                      {agent.percentage}%
+                    </Badge>
+                  </div>
+                </div>
+              ))}
             </div>
           </CardContent>
         </Card>

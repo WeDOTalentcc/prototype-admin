@@ -86,6 +86,13 @@ class UsageSummaryResponse(BaseModel):
     usage_percentage: float
     remaining_tokens: int
     overage_allowed: bool
+    projected_monthly_tokens: int = 0
+    projected_monthly_cost_cents: int = 0
+    avg_daily_tokens_7d: int = 0
+    avg_daily_cost_7d: int = 0
+    daily_limit: int = 0
+    daily_usage_today: int = 0
+    daily_usage_percentage: float = 0
 
 
 class UsageByAgentResponse(BaseModel):
@@ -102,6 +109,21 @@ class UsageByAgentListResponse(BaseModel):
     data: list[UsageByAgentResponse]
     total_tokens: int
     total_operations: int
+
+
+class AgentDailyTrendResponse(BaseModel):
+    """Daily trend for a specific agent."""
+    date: str
+    agent_type: str
+    total_tokens: int
+    total_cost_cents: int
+    total_operations: int
+
+
+class AgentDailyTrendListResponse(BaseModel):
+    """List of agent daily trend data."""
+    data: list[AgentDailyTrendResponse]
+    total_days: int
 
 
 class UsageByModelResponse(BaseModel):

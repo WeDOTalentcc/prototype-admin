@@ -18,8 +18,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.domains.ai.repositories.ai_consumption_repository import AiConsumptionRepository
-from app.models.ai_consumption import AiConsumption
+from app.models.ai_consumption import AiConsumption, AiCreditsBalance
 from app.schemas.ai_consumption import (
+    AgentDailyTrendListResponse,
+    AgentDailyTrendResponse,
     AiConsumptionRecord,
     AiConsumptionResponse,
     BalanceResponse,
@@ -36,6 +38,7 @@ from app.services.token_tracking_service import (
     TOKEN_PRICES,
     get_token_tracking_service,
 )
+from app.services.token_budget_service import get_plan_limit
 from app.shared.tenant_guard import get_verified_company_id
 
 logger = logging.getLogger(__name__)
@@ -45,6 +48,117 @@ router = APIRouter(prefix="/ai-consumption", tags=["ai-consumption"])
 
 def get_ai_consumption_repo(db: AsyncSession = Depends(get_db)) -> AiConsumptionRepository:
     return AiConsumptionRepository(db)
+
+
+async def get_or_create_balance(db: AsyncSession, company_uuid: UUID) -> AiCreditsBalance:
+    result = await db.execute(
+        select(AiCreditsBalance).where(AiCreditsBalance.company_id == company_uuid)
+    )
+    balance = result.scalar_one_or_none()
+    if balance is None:
+        from datetime import date as date_type
+        today = date_type.today()
+        period_start = today.replace(day=1)
+        if today.month == 12:
+            period_end = today.replace(year=today.year + 1, month=1, day=1) - timedelta(days=1)
+        else:
+            period_end = today.replace(month=today.month + 1, day=1) - timedelta(days=1)
+        balance = AiCreditsBalance(
+            company_id=company_uuid,
+            monthly_limit=100000,
+            current_usage=0,
+            period_start=period_start,
+            period_end=period_end,
+        )
+        db.add(balance)
+        await db.flush()
+        await db.refresh(balance)
+    return balance
+
+
+async def _get_usage_summary_data(company_id: str, db: AsyncSession) -> UsageSummaryResponse:
+    company_uuid = UUID(company_id)
+    balance = await get_or_create_balance(db, company_uuid)
+
+    conditions = [
+        AiConsumption.company_id == company_uuid,
+        AiConsumption.created_at >= datetime.combine(balance.period_start, datetime.min.time()),
+        AiConsumption.created_at <= datetime.combine(balance.period_end, datetime.max.time()),
+    ]
+
+    stats_query = select(
+        func.sum(AiConsumption.total_tokens).label("total_tokens"),
+        func.sum(AiConsumption.input_tokens).label("input_tokens"),
+        func.sum(AiConsumption.output_tokens).label("output_tokens"),
+        func.sum(AiConsumption.cost_cents).label("total_cost"),
+        func.count(AiConsumption.id).label("total_ops"),
+    ).where(and_(*conditions))
+
+    result = await db.execute(stats_query)
+    stats = result.one()
+    total_tokens = int(stats.total_tokens or 0)
+
+    seven_days_ago = datetime.now() - timedelta(days=7)
+    last7_query = select(
+        func.sum(AiConsumption.total_tokens).label("tokens_7d"),
+        func.sum(AiConsumption.cost_cents).label("cost_7d"),
+    ).where(and_(
+        AiConsumption.company_id == company_uuid,
+        AiConsumption.created_at >= seven_days_ago,
+    ))
+    last7_result = await db.execute(last7_query)
+    last7 = last7_result.one()
+
+    tokens_7d = int(last7.tokens_7d or 0)
+    cost_7d = int(last7.cost_7d or 0)
+
+    avg_daily_tokens = round(tokens_7d / 7)
+    avg_daily_cost = round(cost_7d / 7)
+    projected_monthly_tokens = avg_daily_tokens * 30
+    projected_monthly_cost = avg_daily_cost * 30
+
+    today_start = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+    today_query = select(
+        func.sum(AiConsumption.total_tokens).label("today_tokens"),
+    ).where(and_(
+        AiConsumption.company_id == company_uuid,
+        AiConsumption.created_at >= today_start,
+    ))
+    today_result = await db.execute(today_query)
+    daily_usage_today = int((today_result.scalar() or 0))
+
+    plan_code = None
+    try:
+        from app.services.token_budget_service import get_plan_for_company
+        plan_code = await get_plan_for_company(company_id)
+    except Exception as exc:
+        logger.debug("Could not resolve plan_code for company %s, using default limit: %s", company_id, exc)
+    daily_limit = get_plan_limit(plan_code)
+    if daily_limit == -1:
+        daily_limit = 0
+    daily_usage_pct = round((daily_usage_today / daily_limit) * 100, 2) if daily_limit > 0 else 0
+
+    return UsageSummaryResponse(
+        company_id=company_id,
+        period_start=balance.period_start.isoformat(),
+        period_end=balance.period_end.isoformat(),
+        total_tokens=total_tokens,
+        total_input_tokens=int(stats.input_tokens or 0),
+        total_output_tokens=int(stats.output_tokens or 0),
+        total_cost_cents=int(stats.total_cost or 0),
+        total_operations=int(stats.total_ops or 0),
+        monthly_limit=balance.monthly_limit,
+        usage_percentage=round((total_tokens / balance.monthly_limit) * 100, 2) if balance.monthly_limit > 0 else 0,
+        remaining_tokens=max(0, balance.monthly_limit - total_tokens),
+        overage_allowed=balance.overage_allowed,
+        projected_monthly_tokens=projected_monthly_tokens,
+        projected_monthly_cost_cents=projected_monthly_cost,
+        avg_daily_tokens_7d=avg_daily_tokens,
+        avg_daily_cost_7d=avg_daily_cost,
+        daily_limit=daily_limit,
+        daily_usage_today=daily_usage_today,
+        daily_usage_percentage=daily_usage_pct,
+    )
 
 
 @router.get("/summary", response_model=UsageSummaryResponse, summary="Get usage summary")
@@ -217,6 +331,39 @@ async def get_usage_by_agent(
         )
     except Exception as e:
         logger.error(f"Error getting usage by agent: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/agent-trend", response_model=AgentDailyTrendListResponse, summary="Get daily trend per agent")
+async def get_agent_daily_trend(
+    days: int = Query(30, ge=1, le=365, description="Number of days to include"),
+    company_id: str = Depends(get_verified_company_id),
+    db: AsyncSession = Depends(get_db)
+):
+    """Get AI usage grouped by day and agent type for trend charts."""
+    try:
+        repo = AiConsumptionRepository(db)
+        rows = await repo.get_usage_by_agent_and_day(company_id, days=days)
+
+        data = []
+        dates_seen: set[str] = set()
+        for row in rows:
+            date_str = row.date.isoformat() if row.date else ""
+            dates_seen.add(date_str)
+            data.append(AgentDailyTrendResponse(
+                date=date_str,
+                agent_type=row.agent_type,
+                total_tokens=int(row.total_tokens or 0),
+                total_cost_cents=int(row.total_cost or 0),
+                total_operations=int(row.total_ops or 0),
+            ))
+
+        return AgentDailyTrendListResponse(
+            data=data,
+            total_days=len(dates_seen),
+        )
+    except Exception as e:
+        logger.error(f"Error getting agent daily trend: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
 
