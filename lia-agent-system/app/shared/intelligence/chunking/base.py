@@ -8,6 +8,7 @@ from dataclasses import dataclass, field
 class DocumentType(str, enum.Enum):
     CV = "cv"
     JOB_DESCRIPTION = "job_description"
+    POLICY = "policy"
     GENERIC = "generic"
 
 

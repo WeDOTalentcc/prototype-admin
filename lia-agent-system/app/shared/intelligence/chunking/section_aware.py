@@ -76,9 +76,10 @@ def _build_section_regex(patterns: list[str]) -> re.Pattern:
 class SectionAwareChunker(ChunkingStrategy):
     """Splits documents by detected section headers (CV / JD aware, PT + EN)."""
 
-    def __init__(self, document_type: str = "cv", max_chunk_size: int = _MAX_CHUNK_SIZE):
+    def __init__(self, document_type: str = "cv", max_chunk_size: int = _MAX_CHUNK_SIZE, overlap: int = 100):
         self._document_type = document_type
         self._max_chunk_size = max_chunk_size
+        self._overlap = overlap
 
         if document_type == "job_description":
             patterns = JD_SECTION_PATTERNS_PT + JD_SECTION_PATTERNS_EN
@@ -112,7 +113,7 @@ class SectionAwareChunker(ChunkingStrategy):
 
     def _split_large_section(self, section_text: str, base_idx: int) -> list[Chunk]:
         from app.shared.intelligence.chunking.sliding_window import SlidingWindowChunker
-        fallback = SlidingWindowChunker(chunk_size=self._max_chunk_size, overlap=100)
+        fallback = SlidingWindowChunker(chunk_size=self._max_chunk_size, overlap=self._overlap)
         sub_chunks = fallback.chunk(section_text)
         for c in sub_chunks:
             c.index = base_idx + c.index

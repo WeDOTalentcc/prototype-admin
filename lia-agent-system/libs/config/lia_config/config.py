@@ -248,6 +248,8 @@ class AppSettings(BaseSettings):
     CHUNKING_JD_OVERLAP: int = 100
     CHUNKING_GENERIC_CHUNK_SIZE: int = 1000
     CHUNKING_GENERIC_OVERLAP: int = 100
+    CHUNKING_POLICY_CHUNK_SIZE: int = 1800
+    CHUNKING_POLICY_OVERLAP: int = 200
 
     # Plan Limits
     PLAN_LIMITS_ENFORCE: bool = True

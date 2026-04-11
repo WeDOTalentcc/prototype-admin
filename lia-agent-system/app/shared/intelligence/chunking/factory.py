@@ -19,9 +19,10 @@ _STRATEGY_MAP = {
 }
 
 _DEFAULT_DOC_TYPE_STRATEGY: dict[str, str] = {
-    DocumentType.CV: "section_aware",
-    DocumentType.JOB_DESCRIPTION: "section_aware",
-    DocumentType.GENERIC: "sliding_window",
+    DocumentType.CV: "recursive",
+    DocumentType.JOB_DESCRIPTION: "recursive",
+    DocumentType.POLICY: "recursive",
+    DocumentType.GENERIC: "recursive",
 }
 
 
@@ -33,6 +34,8 @@ def _get_doc_type_config(document_type: DocumentType) -> tuple[int, int]:
             return _s.CHUNKING_CV_CHUNK_SIZE, _s.CHUNKING_CV_OVERLAP
         elif document_type == DocumentType.JOB_DESCRIPTION:
             return _s.CHUNKING_JD_CHUNK_SIZE, _s.CHUNKING_JD_OVERLAP
+        elif document_type == DocumentType.POLICY:
+            return _s.CHUNKING_POLICY_CHUNK_SIZE, _s.CHUNKING_POLICY_OVERLAP
         else:
             return _s.CHUNKING_GENERIC_CHUNK_SIZE, _s.CHUNKING_GENERIC_OVERLAP
     except Exception:
@@ -45,7 +48,7 @@ class ChunkingStrategyFactory:
     Resolution order:
     1. Explicit ``override`` parameter (per-call control)
     2. CHUNKING_STRATEGY env var (feature flag for global rollback)
-    3. Document-type default mapping (CV/JD → section_aware, generic → sliding_window)
+    3. Document-type default mapping (all types → recursive by default)
 
     Chunk size and overlap are configurable per document type via settings
     (CHUNKING_CV_CHUNK_SIZE, CHUNKING_JD_CHUNK_SIZE, etc.) or explicit kwargs.
@@ -93,7 +96,7 @@ class ChunkingStrategyFactory:
 
         if strategy_name == "section_aware":
             doc_label = "job_description" if document_type == DocumentType.JOB_DESCRIPTION else "cv"
-            return SectionAwareChunker(document_type=doc_label, max_chunk_size=size)
+            return SectionAwareChunker(document_type=doc_label, max_chunk_size=size, overlap=overlap)
         elif strategy_name == "semantic":
             return SemanticChunker(max_chunk_size=size)
         elif strategy_name == "recursive":

@@ -178,17 +178,21 @@ class TestSemanticChunker:
 
 
 class TestChunkingStrategyFactory:
-    def test_cv_returns_section_aware(self):
+    def test_cv_returns_recursive(self):
         strategy = ChunkingStrategyFactory.get_strategy(DocumentType.CV)
-        assert strategy.strategy_name == "section_aware"
+        assert strategy.strategy_name == "recursive"
 
-    def test_jd_returns_section_aware(self):
+    def test_jd_returns_recursive(self):
         strategy = ChunkingStrategyFactory.get_strategy(DocumentType.JOB_DESCRIPTION)
-        assert strategy.strategy_name == "section_aware"
+        assert strategy.strategy_name == "recursive"
 
-    def test_generic_returns_sliding_window(self):
+    def test_generic_returns_recursive(self):
         strategy = ChunkingStrategyFactory.get_strategy(DocumentType.GENERIC)
-        assert strategy.strategy_name == "sliding_window"
+        assert strategy.strategy_name == "recursive"
+
+    def test_policy_returns_recursive(self):
+        strategy = ChunkingStrategyFactory.get_strategy(DocumentType.POLICY)
+        assert strategy.strategy_name == "recursive"
 
     def test_override_forces_strategy(self):
         strategy = ChunkingStrategyFactory.get_strategy(
@@ -209,11 +213,11 @@ class TestChunkingStrategyFactory:
 
     def test_string_document_type(self):
         strategy = ChunkingStrategyFactory.get_strategy("cv")
-        assert strategy.strategy_name == "section_aware"
+        assert strategy.strategy_name == "recursive"
 
     def test_unknown_document_type_string(self):
         strategy = ChunkingStrategyFactory.get_strategy("unknown_doc_type")
-        assert strategy.strategy_name == "sliding_window"
+        assert strategy.strategy_name == "recursive"
 
 
 class TestEmbeddingServiceChunkText:
@@ -227,13 +231,15 @@ class TestEmbeddingServiceChunkText:
     def test_cv_document_type(self):
         svc = EmbeddingService()
         result = svc.chunk_text(SAMPLE_CV_PT, document_type="cv")
-        assert len(result) >= 3
+        assert len(result) >= 1
 
     def test_strategy_override(self):
         svc = EmbeddingService()
-        result_sw = svc.chunk_text(SAMPLE_CV_PT, strategy_override="sliding_window")
-        result_sa = svc.chunk_text(SAMPLE_CV_PT, document_type="cv")
-        assert len(result_sa) != len(result_sw) or result_sa != result_sw
+        long_text = (SAMPLE_CV_PT + "\n") * 10
+        result_sw = svc.chunk_text(long_text, strategy_override="sliding_window")
+        result_rc = svc.chunk_text(long_text, strategy_override="recursive")
+        assert len(result_sw) >= 1 and len(result_rc) >= 1
+        assert len(result_rc) != len(result_sw) or result_rc != result_sw
 
     def test_empty_text(self):
         svc = EmbeddingService()
