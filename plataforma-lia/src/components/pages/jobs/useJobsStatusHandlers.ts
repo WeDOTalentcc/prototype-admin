@@ -12,7 +12,6 @@ export function useJobsStatusHandlers(props: JobsModalsSectionProps) {
     allJobs,
     selectedJobsForBatch,
     companyRecruiters,
-    activeFilter,
     reactivateScreeningJobs,
     reactivateEndDate,
     onDeselectAll,
@@ -21,7 +20,6 @@ export function useJobsStatusHandlers(props: JobsModalsSectionProps) {
     onSetSelectedJob,
     onSetPreviewJob,
     onSetEditingJob,
-    onSetActiveFilter,
     onOpenJobCreationChat,
     onSetPendingNavigateJobId,
     onNavigateToCreatedJob,
@@ -335,13 +333,8 @@ export function useJobsStatusHandlers(props: JobsModalsSectionProps) {
 
   const handleCreateWithWizard = useCallback(() => {
     onCloseCreateJobModal()
-    if (activeFilter === 'visao-geral') {
-      onSetActiveFilter('todas')
-      setTimeout(() => onOpenJobCreationChat(), 100)
-    } else {
-      onOpenJobCreationChat()
-    }
-  }, [activeFilter, onCloseCreateJobModal, onSetActiveFilter, onOpenJobCreationChat])
+    onOpenJobCreationChat()
+  }, [onCloseCreateJobModal, onOpenJobCreationChat])
 
   const handleJobCreated = useCallback((jobId: string, jobTitle: string) => {
     onCloseCreateJobModal()

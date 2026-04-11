@@ -90,7 +90,6 @@ const STATUS_FILTERS = [
 
 function buildNavigationFilters(backendJobs: Job[]) {
   return [
-    { id: 'visao-geral', label: 'Visão Geral', description: 'Dashboard estratégico de vagas', isDashboard: true },
     { id: 'todas', label: 'Todas', description: 'Todas as vagas do sistema', count: backendJobs.length },
     { id: 'ativas', label: 'Ativas', description: 'Vagas abertas e em andamento', count: backendJobs.filter(j => j.status === 'Ativa').length },
     { id: 'urgentes', label: 'Urgentes', description: 'Vagas com alta prioridade de preenchimento', count: backendJobs.filter(j => j.urgencyLevel >= 4).length, highlight: true },

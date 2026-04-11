@@ -1,9 +1,10 @@
 "use client"
 
 import React, { useRef, useCallback, useEffect, useState } from "react"
-import { Send, Plus, Loader2, SlidersHorizontal, Paperclip, FileText, XCircle, AtSign, Briefcase, Users } from "lucide-react"
+import { Send, Plus, Loader2, SlidersHorizontal, Paperclip, FileText, XCircle, AtSign, Briefcase, Users, Lightbulb } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { AudioRecordButton } from "@/components/ui/audio-record-button"
+import { ChatSuggestionsPanel } from "./ChatSuggestionsPanel"
 import type { ChatMode } from "./unified-chat-types"
 
 interface Props {
@@ -39,6 +40,7 @@ export function UnifiedChatInput({
 }: Props) {
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const [showPlusMenu, setShowPlusMenu] = useState(false)
+  const [showSuggestions, setShowSuggestions] = useState(false)
   const isBusy = isStreaming || isCreating
 
   // Auto-resize textarea
@@ -92,7 +94,7 @@ export function UnifiedChatInput({
   return (
     <div
       className={cn(
-        "flex-shrink-0 px-4 pb-4 relative",
+        "flex-shrink-0 px-4 pb-4 relative z-20",
         mode === "fullscreen" ? "max-w-[720px] mx-auto w-full" : ""
       )}
       onDrop={handleDrop}
@@ -121,6 +123,16 @@ export function UnifiedChatInput({
           </button>
         </div>
       )}
+
+      <ChatSuggestionsPanel
+        isOpen={showSuggestions}
+        onClose={() => setShowSuggestions(false)}
+        onSelectQuery={(query) => {
+          setInputText(query)
+          textareaRef.current?.focus()
+        }}
+        mode={mode}
+      />
 
       {/* Input container — Notion-style with cyan focus ring */}
       <div className={cn(
@@ -210,6 +222,22 @@ export function UnifiedChatInput({
               className="hidden"
               aria-hidden="true"
             />
+
+            <button
+              type="button"
+              onClick={() => setShowSuggestions(!showSuggestions)}
+              disabled={isBusy}
+              className={cn(
+                "p-1.5 rounded-md transition-colors motion-reduce:transition-none disabled:opacity-40",
+                showSuggestions
+                  ? "text-wedo-cyan bg-wedo-cyan/10"
+                  : "text-lia-text-disabled hover:text-lia-text-secondary hover:bg-lia-interactive-hover"
+              )}
+              title="Sugestões de consulta"
+              aria-label="Abrir sugestões de consulta"
+            >
+              <Lightbulb className="w-4 h-4" />
+            </button>
 
             {/* Settings/filter */}
             <button

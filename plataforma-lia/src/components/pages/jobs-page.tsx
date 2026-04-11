@@ -10,7 +10,6 @@ import { toast } from "sonner"
 import { liaApi } from "@/services/lia-api"
 import { useJobsPageCore } from "./jobs/hooks/useJobsPageCore"
 import { ErrorBoundarySection } from "@/components/ui/error-boundary-section"
-import { JobsOverviewPanel } from "./JobsOverviewPanel"
 import { JobsListContent } from "./JobsListContent"
 import type { Job } from "@/components/jobs"
 
@@ -185,7 +184,6 @@ export function JobsPage(props: JobsPageProps) {
           <div className="flex gap-1 p-1 bg-lia-bg-secondary rounded-lg w-fit" role="tablist" aria-label="Tabs">
             {navigationFilters.map((filter) => {
               const TAB_ICONS: Record<string, React.ComponentType<{className?: string}>> = {
-                'visao-geral': LayoutDashboard,
                 'todas': Briefcase,
                 'ativas': Zap,
                 'urgentes': AlertTriangle,
@@ -229,29 +227,15 @@ export function JobsPage(props: JobsPageProps) {
       </div>
 
       <div className={`flex-1 flex flex-col overflow-hidden px-4 pt-2 pb-2 ${chatMode === 'job-creation' && isChatFullscreen ? 'hidden' : ''}`}>
-        {activeFilter === 'visao-geral' && (
-          <JobsOverviewPanel
-            liaPromptValue={liaPromptValue}
-            setLiaPromptValue={setLiaPromptValue as (value: string | ((prev: string) => string)) => void}
-            setActiveFilter={setActiveFilter}
-            openJobCreationChat={openJobCreationChat}
-            openGeneralChat={openGeneralChat}
-            orchestratorSuggestions={orchestratorSuggestions}
-            getContextualSuggestions={getContextualSuggestions}
-          />
-        )}
-
-        {activeFilter !== 'visao-geral' && (
-          <JobsListContent
-            {...state}
-            setLiaPromptValue={state.setLiaPromptValue as (value: string | ((prev: string) => string)) => void}
-            toggleJobFilter={state.toggleJobFilter as (category: string, key: string, value: unknown) => void}
-            activePreviewTab={state.activePreviewTab as "screening" | "pipeline"}
-            statusOrder={statusOrder}
-            groupedJobs={groupedJobs}
-            onAddRecentItem={onAddRecentItem}
-          />
-        )}
+        <JobsListContent
+          {...state}
+          setLiaPromptValue={state.setLiaPromptValue as (value: string | ((prev: string) => string)) => void}
+          toggleJobFilter={state.toggleJobFilter as (category: string, key: string, value: unknown) => void}
+          activePreviewTab={state.activePreviewTab as "screening" | "pipeline"}
+          statusOrder={statusOrder}
+          groupedJobs={groupedJobs}
+          onAddRecentItem={onAddRecentItem}
+        />
 
         <JobsModalsSection
           allJobs={allJobs}
