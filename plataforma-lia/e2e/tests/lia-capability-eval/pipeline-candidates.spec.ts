@@ -1,6 +1,6 @@
-import { test, expect } from '@playwright/test';
 import {
-  navigateToChat,
+  test,
+  expect,
   sendPromptAndWait,
   assertNoError,
   assertContainsAny,
@@ -10,11 +10,7 @@ import {
 } from './eval-helpers';
 
 test.describe('Domain 3: Pipeline & Candidate Management', () => {
-  test.beforeEach(async ({ page }) => {
-    await navigateToChat(page);
-  });
-
-  test('PC-001: Move candidate to next stage', async ({ page }) => {
+  test('PC-001: Move candidate to next stage', async ({ evalPage: page }) => {
     const { response } = await sendPromptAndWait(
       page,
       'Mova o candidato João para a etapa de Entrevista Técnica',
@@ -24,7 +20,7 @@ test.describe('Domain 3: Pipeline & Candidate Management', () => {
     await takeEvalScreenshot(page, 'PC-001');
   });
 
-  test('PC-002: Reject candidate with reason', async ({ page }) => {
+  test('PC-002: Reject candidate with reason', async ({ evalPage: page }) => {
     const { response } = await sendPromptAndWait(
       page,
       'Reprove o candidato Pedro por falta de experiência técnica',
@@ -34,7 +30,7 @@ test.describe('Domain 3: Pipeline & Candidate Management', () => {
     await takeEvalScreenshot(page, 'PC-002');
   });
 
-  test('PC-003: Approve candidate', async ({ page }) => {
+  test('PC-003: Approve candidate', async ({ evalPage: page }) => {
     const { response } = await sendPromptAndWait(
       page,
       'Aprove a candidata Ana para a próxima fase',
@@ -44,7 +40,7 @@ test.describe('Domain 3: Pipeline & Candidate Management', () => {
     await takeEvalScreenshot(page, 'PC-003');
   });
 
-  test('PC-004: Update candidate field', async ({ page }) => {
+  test('PC-004: Update candidate field', async ({ evalPage: page }) => {
     const { response } = await sendPromptAndWait(
       page,
       'Atualize o telefone do candidato Lucas para (11) 99999-1234',
@@ -54,7 +50,7 @@ test.describe('Domain 3: Pipeline & Candidate Management', () => {
     await takeEvalScreenshot(page, 'PC-004');
   });
 
-  test('PC-005: Start screening', async ({ page }) => {
+  test('PC-005: Start screening', async ({ evalPage: page }) => {
     const { response } = await sendPromptAndWait(
       page,
       'Inicie a triagem dos candidatos da vaga de Data Engineer',
@@ -65,7 +61,7 @@ test.describe('Domain 3: Pipeline & Candidate Management', () => {
     await takeEvalScreenshot(page, 'PC-005');
   });
 
-  test('PC-006: Analyze candidate profile', async ({ page }) => {
+  test('PC-006: Analyze candidate profile', async ({ evalPage: page }) => {
     const { response } = await sendPromptAndWait(
       page,
       'Faça uma análise detalhada do perfil da candidata Mariana para a vaga de PM',
@@ -76,7 +72,7 @@ test.describe('Domain 3: Pipeline & Candidate Management', () => {
     await takeEvalScreenshot(page, 'PC-006');
   });
 
-  test('PC-007: Batch move candidates', async ({ page }) => {
+  test('PC-007: Batch move candidates', async ({ evalPage: page }) => {
     const { response } = await sendPromptAndWait(
       page,
       'Mova todos os candidatos da etapa Triagem para Entrevista na vaga de Backend',

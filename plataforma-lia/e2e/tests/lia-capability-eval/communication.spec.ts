@@ -1,6 +1,6 @@
-import { test, expect } from '@playwright/test';
 import {
-  navigateToChat,
+  test,
+  expect,
   sendPromptAndWait,
   assertNoError,
   assertContainsAny,
@@ -10,11 +10,7 @@ import {
 } from './eval-helpers';
 
 test.describe('Domain 4: Communication', () => {
-  test.beforeEach(async ({ page }) => {
-    await navigateToChat(page);
-  });
-
-  test('CM-001: Send email to candidate', async ({ page }) => {
+  test('CM-001: Send email to candidate', async ({ evalPage: page }) => {
     const { response } = await sendPromptAndWait(
       page,
       'Envie um email para o candidato informando que ele foi aprovado na primeira fase',
@@ -24,7 +20,7 @@ test.describe('Domain 4: Communication', () => {
     await takeEvalScreenshot(page, 'CM-001');
   });
 
-  test('CM-002: Send WhatsApp message', async ({ page }) => {
+  test('CM-002: Send WhatsApp message', async ({ evalPage: page }) => {
     const { response } = await sendPromptAndWait(
       page,
       'Envie uma mensagem WhatsApp para a candidata pedindo documentos',
@@ -34,7 +30,7 @@ test.describe('Domain 4: Communication', () => {
     await takeEvalScreenshot(page, 'CM-002');
   });
 
-  test('CM-003: Send feedback to candidate', async ({ page }) => {
+  test('CM-003: Send feedback to candidate', async ({ evalPage: page }) => {
     const { response } = await sendPromptAndWait(
       page,
       'Envie feedback de rejeição gentil para o candidato Marcos',
@@ -44,7 +40,7 @@ test.describe('Domain 4: Communication', () => {
     await takeEvalScreenshot(page, 'CM-003');
   });
 
-  test('CM-004: Send screening invite', async ({ page }) => {
+  test('CM-004: Send screening invite', async ({ evalPage: page }) => {
     const { response } = await sendPromptAndWait(
       page,
       'Envie convite de triagem para os novos candidatos da vaga de QA',
@@ -54,7 +50,7 @@ test.describe('Domain 4: Communication', () => {
     await takeEvalScreenshot(page, 'CM-004');
   });
 
-  test('CM-005: Draft professional email', async ({ page }) => {
+  test('CM-005: Draft professional email', async ({ evalPage: page }) => {
     const { response } = await sendPromptAndWait(
       page,
       'Redija um email profissional convidando o candidato para entrevista presencial na próxima terça',

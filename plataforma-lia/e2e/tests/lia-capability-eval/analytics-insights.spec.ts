@@ -1,6 +1,6 @@
-import { test, expect } from '@playwright/test';
 import {
-  navigateToChat,
+  test,
+  expect,
   sendPromptAndWait,
   assertNoError,
   assertContainsAny,
@@ -9,11 +9,7 @@ import {
 } from './eval-helpers';
 
 test.describe('Domain 7: Analytics & Insights', () => {
-  test.beforeEach(async ({ page }) => {
-    await navigateToChat(page);
-  });
-
-  test('AI-001: Pipeline performance report', async ({ page }) => {
+  test('AI-001: Pipeline performance report', async ({ evalPage: page }) => {
     const { response } = await sendPromptAndWait(
       page,
       'Gere um relatório de performance do pipeline da última semana',
@@ -24,7 +20,7 @@ test.describe('Domain 7: Analytics & Insights', () => {
     await takeEvalScreenshot(page, 'AI-001');
   });
 
-  test('AI-002: Recruitment velocity metrics', async ({ page }) => {
+  test('AI-002: Recruitment velocity metrics', async ({ evalPage: page }) => {
     const { response } = await sendPromptAndWait(
       page,
       'Quais são as métricas de velocidade do meu recrutamento?',
@@ -35,7 +31,7 @@ test.describe('Domain 7: Analytics & Insights', () => {
     await takeEvalScreenshot(page, 'AI-002');
   });
 
-  test('AI-003: Conversion funnel analysis', async ({ page }) => {
+  test('AI-003: Conversion funnel analysis', async ({ evalPage: page }) => {
     const { response } = await sendPromptAndWait(
       page,
       'Analise o funil de conversão das minhas vagas ativas',
@@ -46,7 +42,7 @@ test.describe('Domain 7: Analytics & Insights', () => {
     await takeEvalScreenshot(page, 'AI-003');
   });
 
-  test('AI-004: Source effectiveness', async ({ page }) => {
+  test('AI-004: Source effectiveness', async ({ evalPage: page }) => {
     const { response } = await sendPromptAndWait(
       page,
       'De onde vêm os melhores candidatos? Qual fonte traz mais contratados?',
@@ -57,7 +53,7 @@ test.describe('Domain 7: Analytics & Insights', () => {
     await takeEvalScreenshot(page, 'AI-004');
   });
 
-  test('AI-005: Time-to-hire analysis', async ({ page }) => {
+  test('AI-005: Time-to-hire analysis', async ({ evalPage: page }) => {
     const { response } = await sendPromptAndWait(
       page,
       'Qual o tempo médio de contratação das vagas fechadas nos últimos 3 meses?',
@@ -68,7 +64,7 @@ test.describe('Domain 7: Analytics & Insights', () => {
     await takeEvalScreenshot(page, 'AI-005');
   });
 
-  test('AI-006: Diversity metrics', async ({ page }) => {
+  test('AI-006: Diversity metrics', async ({ evalPage: page }) => {
     const { response } = await sendPromptAndWait(
       page,
       'Me mostre as métricas de diversidade do nosso pipeline de recrutamento',

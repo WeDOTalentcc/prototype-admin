@@ -1,6 +1,6 @@
-import { test, expect } from '@playwright/test';
 import {
-  navigateToChat,
+  test,
+  expect,
   sendPromptAndWait,
   assertNoError,
   assertContainsAny,
@@ -10,11 +10,7 @@ import {
 } from './eval-helpers';
 
 test.describe('Domain 1: Job Management', () => {
-  test.beforeEach(async ({ page }) => {
-    await navigateToChat(page);
-  });
-
-  test('JM-001: Create job via natural language', async ({ page }) => {
+  test('JM-001: Create job via natural language', async ({ evalPage: page }) => {
     const { response } = await sendPromptAndWait(
       page,
       'Quero criar uma vaga de Desenvolvedor Full Stack Sênior, remoto, em São Paulo',
@@ -25,7 +21,7 @@ test.describe('Domain 1: Job Management', () => {
     await takeEvalScreenshot(page, 'JM-001');
   });
 
-  test('JM-002: List open jobs', async ({ page }) => {
+  test('JM-002: List open jobs', async ({ evalPage: page }) => {
     const { response } = await sendPromptAndWait(
       page,
       'Quais vagas estão abertas agora?',
@@ -36,7 +32,7 @@ test.describe('Domain 1: Job Management', () => {
     await takeEvalScreenshot(page, 'JM-002');
   });
 
-  test('JM-003: Pause a job', async ({ page }) => {
+  test('JM-003: Pause a job', async ({ evalPage: page }) => {
     const { response } = await sendPromptAndWait(
       page,
       'Pause a vaga de Engenheiro de Dados',
@@ -46,7 +42,7 @@ test.describe('Domain 1: Job Management', () => {
     await takeEvalScreenshot(page, 'JM-003');
   });
 
-  test('JM-004: Close a job', async ({ page }) => {
+  test('JM-004: Close a job', async ({ evalPage: page }) => {
     const { response } = await sendPromptAndWait(
       page,
       'Feche a vaga de Product Manager que já foi preenchida',
@@ -56,7 +52,7 @@ test.describe('Domain 1: Job Management', () => {
     await takeEvalScreenshot(page, 'JM-004');
   });
 
-  test('JM-005: Duplicate a job', async ({ page }) => {
+  test('JM-005: Duplicate a job', async ({ evalPage: page }) => {
     const { response } = await sendPromptAndWait(
       page,
       'Duplique a vaga de Analista de Dados para outra região',
@@ -67,7 +63,7 @@ test.describe('Domain 1: Job Management', () => {
     await takeEvalScreenshot(page, 'JM-005');
   });
 
-  test('JM-006: Reopen a closed job', async ({ page }) => {
+  test('JM-006: Reopen a closed job', async ({ evalPage: page }) => {
     const { response } = await sendPromptAndWait(
       page,
       'Reabra a vaga de UX Designer que foi fechada no mês passado',
@@ -78,7 +74,7 @@ test.describe('Domain 1: Job Management', () => {
     await takeEvalScreenshot(page, 'JM-006');
   });
 
-  test('JM-007: Set job as urgent', async ({ page }) => {
+  test('JM-007: Set job as urgent', async ({ evalPage: page }) => {
     const { response } = await sendPromptAndWait(
       page,
       'Classifique a vaga de DevOps como urgente, precisamos preencher logo',

@@ -1,6 +1,6 @@
-import { test, expect } from '@playwright/test';
 import {
-  navigateToChat,
+  test,
+  expect,
   sendPromptAndWait,
   assertNoError,
   assertContainsAny,
@@ -9,11 +9,7 @@ import {
 } from './eval-helpers';
 
 test.describe('Domain 6: Automation & Productivity', () => {
-  test.beforeEach(async ({ page }) => {
-    await navigateToChat(page);
-  });
-
-  test('AP-001: Create task', async ({ page }) => {
+  test('AP-001: Create task', async ({ evalPage: page }) => {
     const { response } = await sendPromptAndWait(
       page,
       'Crie uma tarefa para revisar os currículos novos até sexta-feira',
@@ -24,7 +20,7 @@ test.describe('Domain 6: Automation & Productivity', () => {
     await takeEvalScreenshot(page, 'AP-001');
   });
 
-  test('AP-002: Create reminder', async ({ page }) => {
+  test('AP-002: Create reminder', async ({ evalPage: page }) => {
     const { response } = await sendPromptAndWait(
       page,
       'Me lembre de ligar para o candidato amanhã às 10h',
@@ -35,7 +31,7 @@ test.describe('Domain 6: Automation & Productivity', () => {
     await takeEvalScreenshot(page, 'AP-002');
   });
 
-  test('AP-003: Create note', async ({ page }) => {
+  test('AP-003: Create note', async ({ evalPage: page }) => {
     const { response } = await sendPromptAndWait(
       page,
       'Anote que o candidato mencionou interesse em trabalho remoto e pretensão de 15k CLT',
@@ -46,7 +42,7 @@ test.describe('Domain 6: Automation & Productivity', () => {
     await takeEvalScreenshot(page, 'AP-003');
   });
 
-  test('AP-004: Daily briefing', async ({ page }) => {
+  test('AP-004: Daily briefing', async ({ evalPage: page }) => {
     const { response } = await sendPromptAndWait(
       page,
       'Me dê um resumo da minha agenda de hoje',
@@ -57,7 +53,7 @@ test.describe('Domain 6: Automation & Productivity', () => {
     await takeEvalScreenshot(page, 'AP-004');
   });
 
-  test('AP-005: Multi-step task creation', async ({ page }) => {
+  test('AP-005: Multi-step task creation', async ({ evalPage: page }) => {
     const { response } = await sendPromptAndWait(
       page,
       'Crie três tarefas: 1) enviar feedback para reprovados, 2) atualizar JD da vaga de Backend, 3) alinhar com hiring manager',
@@ -68,7 +64,7 @@ test.describe('Domain 6: Automation & Productivity', () => {
     await takeEvalScreenshot(page, 'AP-005');
   });
 
-  test('AP-006: Create note with candidate context', async ({ page }) => {
+  test('AP-006: Create note with candidate context', async ({ evalPage: page }) => {
     const { response } = await sendPromptAndWait(
       page,
       'Crie uma nota sobre o candidato: "Excelente comunicação, boa liderança técnica, fit cultural alto"',

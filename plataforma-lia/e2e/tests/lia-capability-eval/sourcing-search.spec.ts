@@ -1,6 +1,6 @@
-import { test, expect } from '@playwright/test';
 import {
-  navigateToChat,
+  test,
+  expect,
   sendPromptAndWait,
   assertNoError,
   assertContainsAny,
@@ -9,11 +9,7 @@ import {
 } from './eval-helpers';
 
 test.describe('Domain 2: Sourcing & Search', () => {
-  test.beforeEach(async ({ page }) => {
-    await navigateToChat(page);
-  });
-
-  test('SS-001: Search candidates by skill', async ({ page }) => {
+  test('SS-001: Search candidates by skill', async ({ evalPage: page }) => {
     const { response } = await sendPromptAndWait(
       page,
       'Busque candidatos com experiência em Python e Machine Learning',
@@ -24,7 +20,7 @@ test.describe('Domain 2: Sourcing & Search', () => {
     await takeEvalScreenshot(page, 'SS-001');
   });
 
-  test('SS-002: Search candidates by location', async ({ page }) => {
+  test('SS-002: Search candidates by location', async ({ evalPage: page }) => {
     const { response } = await sendPromptAndWait(
       page,
       'Buscar candidatos de São Paulo com experiência em React',
@@ -35,7 +31,7 @@ test.describe('Domain 2: Sourcing & Search', () => {
     await takeEvalScreenshot(page, 'SS-002');
   });
 
-  test('SS-003: Rank candidates for a job', async ({ page }) => {
+  test('SS-003: Rank candidates for a job', async ({ evalPage: page }) => {
     const { response } = await sendPromptAndWait(
       page,
       'Rankear os candidatos da vaga de Engenheiro de Software',
@@ -46,7 +42,7 @@ test.describe('Domain 2: Sourcing & Search', () => {
     await takeEvalScreenshot(page, 'SS-003');
   });
 
-  test('SS-004: Compare two candidates', async ({ page }) => {
+  test('SS-004: Compare two candidates', async ({ evalPage: page }) => {
     const { response } = await sendPromptAndWait(
       page,
       'Compare os candidatos João e Maria para a vaga de Tech Lead',
@@ -57,7 +53,7 @@ test.describe('Domain 2: Sourcing & Search', () => {
     await takeEvalScreenshot(page, 'SS-004');
   });
 
-  test('SS-005: Tag candidates', async ({ page }) => {
+  test('SS-005: Tag candidates', async ({ evalPage: page }) => {
     const { response } = await sendPromptAndWait(
       page,
       'Taguear os candidatos da vaga de Backend como "alto potencial"',
@@ -68,7 +64,7 @@ test.describe('Domain 2: Sourcing & Search', () => {
     await takeEvalScreenshot(page, 'SS-005');
   });
 
-  test('SS-006: Suggest candidates for a job', async ({ page }) => {
+  test('SS-006: Suggest candidates for a job', async ({ evalPage: page }) => {
     const { response } = await sendPromptAndWait(
       page,
       'Sugira candidatos do banco de talentos para a vaga de Product Designer',
@@ -79,7 +75,7 @@ test.describe('Domain 2: Sourcing & Search', () => {
     await takeEvalScreenshot(page, 'SS-006');
   });
 
-  test('SS-007: Add candidate manually', async ({ page }) => {
+  test('SS-007: Add candidate manually', async ({ evalPage: page }) => {
     const { response } = await sendPromptAndWait(
       page,
       'Cadastre o candidato Carlos Silva, email carlos@email.com, para a vaga de Frontend',
