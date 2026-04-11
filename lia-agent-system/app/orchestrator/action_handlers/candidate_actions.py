@@ -439,7 +439,7 @@ async def _start_screening(params: dict[str, Any], context: dict[str, Any]):
                 "action": "start_screening",
                 "candidates_updated": candidates_updated,
                 "sessions_created": [
-                    {"session_id": s["session_id"], "token": s["token"], "candidate_id": s["candidate_id"]}
+                    {"session_id": s["session_id"], "candidate_id": s["candidate_id"]}
                     for s in sessions_created
                 ],
                 "job_vacancy_id": str(job_vacancy_id),
