@@ -389,42 +389,50 @@ const STATUS_OPTIONS = ["Novo","Em triagem","Aprovado","Reprovado"]
           </TabsContent>
 
           {/* Tab: Listas */}
-          <TabsContent value="listas" className="mt-4">
-            <ListsTab
-              onListSelect={() => undefined}
-              onAddToJobs={() => undefined}
-              onGoToSearch={() => setActiveTab("todos")}
-            />
+          <TabsContent value="listas" className="mt-4" forceMount={undefined}>
+            {activeTab === "listas" && (
+              <ListsTab
+                onListSelect={() => undefined}
+                onAddToJobs={() => undefined}
+                onGoToSearch={() => setActiveTab("todos")}
+              />
+            )}
           </TabsContent>
 
           {/* Tab: Buscas Salvas */}
-          <TabsContent value="buscas" className="mt-4">
-            <SavedSearchesTab
-              savedSearches={savedSearches}
-              onExecuteSearch={search => {
-                updateFilter("search", search.query)
-                setActiveTab("todos")
-              }}
-              onAddSearch={addSavedSearch}
-              onUpdateSearch={updateSavedSearch}
-              onDeleteSearch={removeSavedSearch}
-              onToggleFavorite={toggleSavedSearchFavorite}
-              onNavigateToSearch={() => setActiveTab("todos")}
-            />
+          <TabsContent value="buscas" className="mt-4" forceMount={undefined}>
+            {activeTab === "buscas" && (
+              <SavedSearchesTab
+                savedSearches={savedSearches}
+                onExecuteSearch={search => {
+                  updateFilter("search", search.query)
+                  setActiveTab("todos")
+                }}
+                onAddSearch={addSavedSearch}
+                onUpdateSearch={updateSavedSearch}
+                onDeleteSearch={removeSavedSearch}
+                onToggleFavorite={toggleSavedSearchFavorite}
+                onNavigateToSearch={() => setActiveTab("todos")}
+              />
+            )}
           </TabsContent>
 
-          <TabsContent value="bancos-vivos" className="mt-4">
-            <TalentPoolsTab onSelectPool={(id) => { window.location.href = `/bancos-de-talentos/${id}` }} />
+          <TabsContent value="bancos-vivos" className="mt-4" forceMount={undefined}>
+            {activeTab === "bancos-vivos" && (
+              <TalentPoolsTab onSelectPool={(id) => { window.location.href = `/bancos-de-talentos/${id}` }} />
+            )}
           </TabsContent>
 
-          <TabsContent value="historico" className="mt-4">
-            <HistoryTab
-              history={[]}
-              onReExecuteSearch={() => {}}
-              onSaveAsSearch={() => {}}
-              onDeleteItem={() => {}}
-              onClearAll={() => {}}
-            />
+          <TabsContent value="historico" className="mt-4" forceMount={undefined}>
+            {activeTab === "historico" && (
+              <HistoryTab
+                history={[]}
+                onReExecuteSearch={() => {}}
+                onSaveAsSearch={() => {}}
+                onDeleteItem={() => {}}
+                onClearAll={() => {}}
+              />
+            )}
           </TabsContent>
         </Tabs>
       </div>
