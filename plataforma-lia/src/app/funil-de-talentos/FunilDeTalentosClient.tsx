@@ -13,11 +13,12 @@ import { ShareSearchModal } from"@/components/modals/share-search-modal"
 import { FavoritesTab } from"@/components/talent-funnel-tabs/favorites-tab"
 import { ListsTab } from"@/components/talent-funnel-tabs/lists-tab"
 import { SavedSearchesTab } from"@/components/talent-funnel-tabs/saved-searches-tab"
+import { HistoryTab } from"@/components/talent-funnel-tabs/history-tab"
 import { useCandidatesList } from"@/hooks/use-candidates-list"
 import { useBulkSelection } from"@/hooks/use-bulk-selection"
 import { useTalentFunnel } from"@/hooks/use-talent-funnel"
 import { textStyles } from"@/lib/design-tokens"
-import { Search, Heart, Share2, Users, ChevronLeft, ChevronRight, AlertCircle, List, Bookmark, Database } from"lucide-react"
+import { Search, Heart, Share2, Users, ChevronLeft, ChevronRight, AlertCircle, List, Bookmark, Database, Clock } from"lucide-react"
 import type { Candidate, SortConfig } from"@/components/pages/candidates/types"
 import type { TableCandidate } from"@/components/tables"
 import type { CandidateLocal } from"@/services/lia-api"
@@ -220,6 +221,7 @@ const STATUS_OPTIONS = ["Novo","Em triagem","Aprovado","Reprovado"]
             <TabsTrigger value="listas" className="rounded-lg text-xs"><List className="w-3.5 h-3.5 mr-1" />Listas</TabsTrigger>
             <TabsTrigger value="buscas" className="rounded-lg text-xs"><Bookmark className="w-3.5 h-3.5 mr-1" />Buscas Salvas</TabsTrigger>
             <TabsTrigger value="bancos-vivos" className="rounded-lg text-xs"><Database className="w-3.5 h-3.5 mr-1" />Bancos de Talentos</TabsTrigger>
+            <TabsTrigger value="historico" className="rounded-lg text-xs"><Clock className="w-3.5 h-3.5 mr-1" />Histórico</TabsTrigger>
           </TabsList>
 
           <div className="flex items-center gap-6 mt-2 mb-1">
@@ -413,6 +415,16 @@ const STATUS_OPTIONS = ["Novo","Em triagem","Aprovado","Reprovado"]
 
           <TabsContent value="bancos-vivos" className="mt-4">
             <TalentPoolsTab onSelectPool={(id) => { window.location.href = `/bancos-de-talentos/${id}` }} />
+          </TabsContent>
+
+          <TabsContent value="historico" className="mt-4">
+            <HistoryTab
+              history={[]}
+              onReExecuteSearch={() => {}}
+              onSaveAsSearch={() => {}}
+              onDeleteItem={() => {}}
+              onClearAll={() => {}}
+            />
           </TabsContent>
         </Tabs>
       </div>
