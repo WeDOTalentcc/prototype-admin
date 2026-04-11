@@ -45,13 +45,13 @@ import pytest
 # ── Z6-01: ATS clients consolidation ─────────────────────────────────────────
 
 def test_ats_domain_init_exports_from_canonical():
-    from app.domains.ats_integration.services.ats_clients import GupyClient, ATSClient
+    from app.services.ats_clients import GupyClient, ATSClient
     assert GupyClient is not None
     assert ATSClient is not None
 
 
 def test_ats_domain_gupy_is_same_class_as_canonical():
-    from app.domains.ats_integration.services.ats_clients import GupyClient as DomainGupy
+    from app.services.ats_clients import GupyClient as DomainGupy
     from app.services.ats_clients.gupy import GupyClient as ServiceGupy
     assert DomainGupy is ServiceGupy
 

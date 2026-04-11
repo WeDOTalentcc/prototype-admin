@@ -1,33 +1,32 @@
 """
-Cache Invalidation Strategy - Standardized TTLs and invalidation helpers.
+Cache Strategy — Single source of truth for ALL cache configuration.
 
-Single source of truth for cache TTL configuration and invalidation events.
-Provides domain-specific TTL configurations and cache invalidation utilities
-to ensure consistent caching behavior across the platform.
+Defines two enum registries consumed by different cache layers:
 
-ARCHITECTURE — Two complementary modules:
-  - THIS FILE (cache_strategy.py): TTL registry, key generation, invalidation events.
-    Use CacheDomain for endpoint/service-level caching with event-driven invalidation.
-  - app.shared.resilience.cache_manager_service: 3-layer cache engine
-    (Session → Redis → PostgreSQL). Use CacheNamespace for multi-layer persistence
-    with semantic similarity matching.
+  CacheDomain   — endpoint/service-level caching with event-driven invalidation.
+                  Used via ``CacheStrategy.get_ttl / .build_key / .invalidate``.
 
-Shared namespaces (keep TTLs aligned):
-  - COMPANY_CONFIG: here=3600s, cache_manager=VOLATILE(86400s Redis)/STABLE(30d PG)
-  - LLM_RESPONSE: here=900s, cache_manager=VOLATILE(86400s Redis)/STANDARD(7d PG)
+  CacheNamespace — multi-layer persistence (Session → Redis → PostgreSQL)
+                   with semantic similarity matching.  Used by
+                   ``app.shared.resilience.cache_manager_service.CacheManagerService``.
+
+Every cache-related TTL, namespace, invalidation rule, and layer config is
+defined HERE.  No other module should define cache configuration.
 
 Usage:
     from app.shared.cache_strategy import CacheStrategy, CacheDomain
+    from app.shared.cache_strategy import CacheNamespace, CacheTTL, CacheConfig, NAMESPACE_CACHE_CONFIGS
 
     ttl = CacheStrategy.get_ttl(CacheDomain.CANDIDATE_SEARCH)
-    key = CacheStrategy.build_key(CacheDomain.CANDIDATE_SEARCH, query="python", location="sp")
+    key = CacheStrategy.build_key(CacheDomain.CANDIDATE_SEARCH, query="python")
     CacheStrategy.invalidate(CacheDomain.JOB_VACANCY, job_id="123")
 """
 import hashlib
 import json
 import logging
-from enum import Enum, StrEnum
-from typing import Any
+from dataclasses import dataclass
+from enum import StrEnum
+from typing import Any, Generic, TypeVar
 
 logger = logging.getLogger(__name__)
 
@@ -109,6 +108,89 @@ DOMAIN_TTL_CONFIG: dict[CacheDomain, dict[str, Any]] = {
         "invalidate_on": ["routing_config_update"],
     },
 }
+
+
+class CacheNamespace(StrEnum):
+    SALARY_BENCHMARK = "salary_benchmark"
+    MARKET_DATA = "market_data"
+    SKILLS_SUGGESTIONS = "skills_suggestions"
+    JD_SUMMARY = "jd_summary"
+    COMPANY_CONFIG = "company_config"
+    LEARNING_PATTERNS = "learning_patterns"
+    LLM_RESPONSE = "llm_response"
+    EMBEDDINGS = "embeddings"
+
+
+class CacheTTL:
+    SESSION = 3600
+    VOLATILE = 86400
+    STANDARD = 604800
+    STABLE = 2592000
+    PERMANENT = 0
+
+
+@dataclass
+class CacheConfig:
+    namespace: CacheNamespace
+    redis_ttl: int = CacheTTL.STANDARD
+    postgres_ttl: int = CacheTTL.STABLE
+    use_redis: bool = True
+    use_postgres: bool = True
+    use_embeddings: bool = False
+    similarity_threshold: float = 0.85
+
+
+NAMESPACE_CACHE_CONFIGS: dict[CacheNamespace, CacheConfig] = {
+    CacheNamespace.SALARY_BENCHMARK: CacheConfig(
+        namespace=CacheNamespace.SALARY_BENCHMARK,
+        redis_ttl=CacheTTL.STANDARD,
+        postgres_ttl=CacheTTL.STABLE,
+        use_embeddings=True,
+        similarity_threshold=0.90,
+    ),
+    CacheNamespace.MARKET_DATA: CacheConfig(
+        namespace=CacheNamespace.MARKET_DATA,
+        redis_ttl=CacheTTL.STANDARD,
+        postgres_ttl=CacheTTL.STABLE,
+    ),
+    CacheNamespace.SKILLS_SUGGESTIONS: CacheConfig(
+        namespace=CacheNamespace.SKILLS_SUGGESTIONS,
+        redis_ttl=CacheTTL.STABLE,
+        postgres_ttl=CacheTTL.STABLE,
+        use_embeddings=True,
+    ),
+    CacheNamespace.JD_SUMMARY: CacheConfig(
+        namespace=CacheNamespace.JD_SUMMARY,
+        redis_ttl=CacheTTL.VOLATILE,
+        postgres_ttl=CacheTTL.STANDARD,
+    ),
+    CacheNamespace.COMPANY_CONFIG: CacheConfig(
+        namespace=CacheNamespace.COMPANY_CONFIG,
+        redis_ttl=CacheTTL.VOLATILE,
+        postgres_ttl=CacheTTL.STABLE,
+    ),
+    CacheNamespace.LEARNING_PATTERNS: CacheConfig(
+        namespace=CacheNamespace.LEARNING_PATTERNS,
+        redis_ttl=CacheTTL.STABLE,
+        postgres_ttl=CacheTTL.STABLE,
+        use_redis=False,
+    ),
+    CacheNamespace.LLM_RESPONSE: CacheConfig(
+        namespace=CacheNamespace.LLM_RESPONSE,
+        redis_ttl=CacheTTL.VOLATILE,
+        postgres_ttl=CacheTTL.STANDARD,
+        use_embeddings=True,
+        similarity_threshold=0.95,
+    ),
+    CacheNamespace.EMBEDDINGS: CacheConfig(
+        namespace=CacheNamespace.EMBEDDINGS,
+        redis_ttl=CacheTTL.STABLE,
+        postgres_ttl=CacheTTL.STABLE,
+        use_redis=False,
+    ),
+}
+
+DEFAULT_CACHE_CONFIGS = NAMESPACE_CACHE_CONFIGS
 
 
 class CacheStrategy:

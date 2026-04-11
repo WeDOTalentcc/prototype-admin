@@ -18,19 +18,19 @@ class TestDomainATSCircuitBreakers:
     """Domain-level ATS clients must use circuit breakers."""
 
     def test_domain_gupy_imports_circuit_breaker(self):
-        import app.domains.ats_integration.services.ats_clients.gupy as mod
+        import app.services.ats_clients.gupy as mod
         source = inspect.getsource(mod)
         assert "GUPY_CIRCUIT" in source
         assert "circuit_breaker_decorator" in source
 
     def test_domain_pandape_imports_circuit_breaker(self):
-        import app.domains.ats_integration.services.ats_clients.pandape as mod
+        import app.services.ats_clients.pandape as mod
         source = inspect.getsource(mod)
         assert "PANDAPE_CIRCUIT" in source
         assert "circuit_breaker_decorator" in source
 
     def test_domain_merge_imports_circuit_breaker(self):
-        import app.domains.ats_integration.services.ats_clients.merge as mod
+        import app.services.ats_clients.merge as mod
         source = inspect.getsource(mod)
         assert "MERGE_CIRCUIT" in source
         assert "circuit_breaker_decorator" in source

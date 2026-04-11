@@ -23,10 +23,10 @@ from enum import Enum, StrEnum
 from typing import Any
 
 
-from .ats_clients.base import ATSClient, ATSClientConfig
-from .ats_clients.gupy import GupyClient
-from .ats_clients.merge import MergeClient
-from .ats_clients.pandape import PandapeClient
+from app.services.ats_clients.base import ATSClient, ATSClientConfig
+from app.services.ats_clients.gupy import GupyClient
+from app.services.ats_clients.merge import MergeClient
+from app.services.ats_clients.pandape import PandapeClient
 
 logger = logging.getLogger(__name__)
 

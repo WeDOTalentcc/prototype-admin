@@ -380,14 +380,14 @@ async def trigger_ats_sync(
                     company_id=connection.ats_company_id or connection.company_id,
                 )
                 if provider_name == "gupy":
-                    from app.domains.ats_integration.services.ats_clients.gupy import GupyClient
+                    from app.services.ats_clients.gupy import GupyClient
                     sync_service.register_client("gupy", GupyClient(config))
                 elif provider_name == "pandape":
-                    from app.domains.ats_integration.services.ats_clients.pandape import PandapeClient
+                    from app.services.ats_clients.pandape import PandapeClient
                     sync_service.register_client("pandape", PandapeClient(config))
                 elif provider_name == "merge":
                     try:
-                        from app.domains.ats_integration.services.ats_clients.merge import MergeClient
+                        from app.services.ats_clients.merge import MergeClient
                         sync_service.register_client("merge", MergeClient(config))
                     except ImportError:
                         logger.warning("MergeClient not available, using env-initialized client for merge sync")

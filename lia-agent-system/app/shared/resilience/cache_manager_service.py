@@ -12,15 +12,9 @@ Features:
 - Cache hit tracking for optimization
 - Graceful degradation when Redis unavailable
 
-ARCHITECTURE — Two complementary modules:
-  - THIS FILE (cache_manager_service.py): 3-layer cache engine with CacheNamespace.
-    Use for multi-layer persistence with semantic similarity matching.
-  - app.shared.cache_strategy: TTL registry with CacheDomain, key generation,
-    and event-driven invalidation. Use for endpoint/service-level caching.
-
-Shared namespaces (keep TTLs aligned):
-  - COMPANY_CONFIG: here=VOLATILE(86400s Redis)/STABLE(30d PG), strategy=3600s
-  - LLM_RESPONSE: here=VOLATILE(86400s Redis)/STANDARD(7d PG), strategy=900s
+All cache configuration (CacheNamespace, CacheTTL, CacheConfig,
+NAMESPACE_CACHE_CONFIGS) is defined in app.shared.cache_strategy —
+the single source of truth for cache settings.
 """
 import hashlib
 import json
@@ -28,99 +22,21 @@ import logging
 import os
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from enum import Enum, StrEnum
 from typing import Any, Generic, TypeVar
 
 from sqlalchemy import and_, delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.shared.cache_strategy import (
+    CacheConfig,
+    CacheNamespace,
+    CacheTTL,
+    DEFAULT_CACHE_CONFIGS,
+)
+
 logger = logging.getLogger(__name__)
 
 T = TypeVar('T')
-
-
-class CacheNamespace(StrEnum):
-    """Cache namespaces for different data types."""
-    SALARY_BENCHMARK = "salary_benchmark"
-    MARKET_DATA = "market_data"
-    SKILLS_SUGGESTIONS = "skills_suggestions"
-    JD_SUMMARY = "jd_summary"
-    COMPANY_CONFIG = "company_config"
-    LEARNING_PATTERNS = "learning_patterns"
-    LLM_RESPONSE = "llm_response"
-    EMBEDDINGS = "embeddings"
-
-
-class CacheTTL:
-    """Default TTL values in seconds for different cache types."""
-    SESSION = 3600  # 1 hour
-    VOLATILE = 86400  # 1 day
-    STANDARD = 604800  # 7 days
-    STABLE = 2592000  # 30 days
-    PERMANENT = 0  # Never expires (use with caution)
-
-
-@dataclass
-class CacheConfig:
-    """Configuration for cache behavior per namespace."""
-    namespace: CacheNamespace
-    redis_ttl: int = CacheTTL.STANDARD
-    postgres_ttl: int = CacheTTL.STABLE
-    use_redis: bool = True
-    use_postgres: bool = True
-    use_embeddings: bool = False
-    similarity_threshold: float = 0.85
-
-
-DEFAULT_CACHE_CONFIGS: dict[CacheNamespace, CacheConfig] = {
-    CacheNamespace.SALARY_BENCHMARK: CacheConfig(
-        namespace=CacheNamespace.SALARY_BENCHMARK,
-        redis_ttl=CacheTTL.STANDARD,
-        postgres_ttl=CacheTTL.STABLE,
-        use_embeddings=True,
-        similarity_threshold=0.90
-    ),
-    CacheNamespace.MARKET_DATA: CacheConfig(
-        namespace=CacheNamespace.MARKET_DATA,
-        redis_ttl=CacheTTL.STANDARD,
-        postgres_ttl=CacheTTL.STABLE,
-    ),
-    CacheNamespace.SKILLS_SUGGESTIONS: CacheConfig(
-        namespace=CacheNamespace.SKILLS_SUGGESTIONS,
-        redis_ttl=CacheTTL.STABLE,
-        postgres_ttl=CacheTTL.STABLE,
-        use_embeddings=True,
-    ),
-    CacheNamespace.JD_SUMMARY: CacheConfig(
-        namespace=CacheNamespace.JD_SUMMARY,
-        redis_ttl=CacheTTL.VOLATILE,
-        postgres_ttl=CacheTTL.STANDARD,
-    ),
-    CacheNamespace.COMPANY_CONFIG: CacheConfig(
-        namespace=CacheNamespace.COMPANY_CONFIG,
-        redis_ttl=CacheTTL.VOLATILE,
-        postgres_ttl=CacheTTL.STABLE,
-    ),
-    CacheNamespace.LEARNING_PATTERNS: CacheConfig(
-        namespace=CacheNamespace.LEARNING_PATTERNS,
-        redis_ttl=CacheTTL.STABLE,
-        postgres_ttl=CacheTTL.STABLE,
-        use_redis=False,
-    ),
-    CacheNamespace.LLM_RESPONSE: CacheConfig(
-        namespace=CacheNamespace.LLM_RESPONSE,
-        redis_ttl=CacheTTL.VOLATILE,
-        postgres_ttl=CacheTTL.STANDARD,
-        use_embeddings=True,
-        similarity_threshold=0.95
-    ),
-    CacheNamespace.EMBEDDINGS: CacheConfig(
-        namespace=CacheNamespace.EMBEDDINGS,
-        redis_ttl=CacheTTL.STABLE,
-        postgres_ttl=CacheTTL.STABLE,
-        use_redis=False,
-    ),
-}
 
 
 @dataclass
