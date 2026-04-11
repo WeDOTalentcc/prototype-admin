@@ -1,2 +1,0 @@
-"""Backwards-compatibility shim — canonical implementation in app.domains.ats_integration.services.ats_clients.pandape."""
-from app.domains.ats_integration.services.ats_clients.pandape import *  # noqa: F401,F403
