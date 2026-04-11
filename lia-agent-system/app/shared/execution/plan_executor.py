@@ -355,6 +355,53 @@ class PlanExecutor:
                         task.status = TaskStatus.SKIPPED
                         task.skip_reason = f"Skipped due to failed task {failed_task_id}"
 
+    async def execute_crew(
+        self,
+        crew,
+        progress_callback: ProgressCallback | None = None,
+        task_handlers: dict[str, Any] | None = None,
+        use_bus_delegation: bool = True,
+        db=None,
+    ):
+        """Execute a CrewPlan via CrewPlanExecutor.
+
+        Integrates crew-mode execution into the main PlanExecutor so
+        callers can use the same entrypoint for both ExecutionPlan and
+        CrewPlan/AgentCrew workflows.
+
+        When ``task_handlers`` are provided the executor uses them for
+        known actions and falls back to AgentBus for actions without a
+        registered handler (when ``use_bus_delegation=True``).  This
+        makes crew execution reliable regardless of whether remote
+        agent subscribers are active.
+
+        Args:
+            crew: An ``AgentCrew`` instance with a ``CrewPlan`` attached.
+            progress_callback: Optional progress callback (same signature).
+            task_handlers: Optional mapping of action names to async handler
+                functions ``(params, crew_ctx) -> dict``.
+            use_bus_delegation: If True (default), actions without a local
+                handler are delegated over AgentBus.  Set to False to run
+                entirely with local handlers.
+            db: Optional async DB session for per-company feature flag checks.
+                When None, the env-var fallback is used.
+
+        Returns:
+            ``CrewExecutionResult`` from the crew executor.
+        """
+        from app.shared.agents.crew_executor import CrewPlanExecutor
+        from app.shared.agents.crew_examples import get_production_handlers
+
+        merged_handlers = get_production_handlers()
+        if task_handlers:
+            merged_handlers.update(task_handlers)
+
+        executor = CrewPlanExecutor(
+            task_handlers=merged_handlers,
+            use_bus_delegation=use_bus_delegation,
+        )
+        return await executor.execute(crew, progress_callback=progress_callback, db=db)
+
     def build_consolidated_response(self, plan: ExecutionPlan) -> DomainResponse:
         messages = []
         for task in plan.tasks:

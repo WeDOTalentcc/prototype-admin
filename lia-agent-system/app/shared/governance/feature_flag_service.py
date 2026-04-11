@@ -85,6 +85,11 @@ class FeatureFlagService:
             "description": "Enable automatic pipeline stage advancement",
             "category": "automation",
             "default": False
+        },
+        "CREW_DELEGATION_ENABLED": {
+            "description": "Enable CrewAI-style multi-agent delegation on AgentBus",
+            "category": "agents",
+            "default": True
         }
     }
     
