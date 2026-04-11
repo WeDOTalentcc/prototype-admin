@@ -730,13 +730,13 @@ async def _create_template(params: dict[str, Any], context: dict[str, Any]):
             sync_to_rails,
         )
 
-        name = params.get("name", "").strip()
-        subject = params.get("subject", "").strip()
-        body_html = params.get("body_html", "").strip()
-        body_text = params.get("body_text", "").strip()
-        category = params.get("category", "custom")
-        channel = params.get("channel", "email")
-        variables = params.get("variables", [])
+        name = (params.get("name") or "").strip()
+        subject = (params.get("subject") or "").strip()
+        body_html = (params.get("body_html") or "").strip()
+        body_text = (params.get("body_text") or "").strip()
+        category = params.get("category") or "custom"
+        channel = params.get("channel") or "email"
+        variables = params.get("variables") or []
         company_id = context.get("company_id") if context else None
         user_id = context.get("user_id") if context else None
 
