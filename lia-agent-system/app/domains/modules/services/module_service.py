@@ -1,4 +1,3 @@
-import json
 import logging
 from datetime import datetime
 from typing import Any, Optional
@@ -138,7 +137,7 @@ class ModuleService:
             existing.activated_at = datetime.utcnow()
             existing.expires_at = expires_at
             if metadata:
-                existing.metadata_json = json.dumps(metadata)
+                existing.metadata_json = metadata
             mod = existing
         else:
             mod = CompanyModule(
@@ -147,7 +146,7 @@ class ModuleService:
                 status=status,
                 tier=tier,
                 expires_at=expires_at,
-                metadata_json=json.dumps(metadata) if metadata else "{}",
+                metadata_json=metadata or {},
             )
             db.add(mod)
 
