@@ -12,25 +12,6 @@ logger = logging.getLogger(__name__)
 
 RAILS_ENABLED = bool(os.environ.get("RAILS_API_URL"))
 
-_TRIGGER_MAP = {
-    "candidate_created": "candidate_created",
-    "candidate_updated": "candidate_updated",
-    "candidate_moved": "status_change",
-    "candidate_tagged": "candidate_updated",
-    "candidate_favorited": "candidate_updated",
-    "interview_scheduled": "interview_scheduled",
-    "interview_rescheduled": "interview_scheduled",
-    "interview_cancelled": "interview_scheduled",
-    "scheduling_link_created": "interview_scheduled",
-    "job_paused": "status_change",
-    "job_closed": "status_change",
-    "job_created": "status_change",
-    "job_reopened": "status_change",
-    "job_updated": "status_change",
-    "job_duplicated": "status_change",
-    "job_urgent": "status_change",
-}
-
 
 async def resolve_candidate_by_name(
     candidate_name: str,
@@ -102,28 +83,33 @@ async def sync_to_rails(
     if not RAILS_ENABLED:
         return
     try:
-        from app.domains.ats_integration.services.ats_sync_service import (
-            ATSSyncService,
-            ATSSyncTrigger,
-        )
+        from app.domains.integrations_hub.services.rails_adapter import RailsAdapter
 
-        trigger_value = _TRIGGER_MAP.get(event_type, "candidate_updated")
-        try:
-            trigger = ATSSyncTrigger(trigger_value)
-        except ValueError:
-            trigger = ATSSyncTrigger.CANDIDATE_UPDATED
+        adapter = RailsAdapter()
+        payload = data or {}
 
-        candidate_id = (data or {}).get("candidate_id") or (entity_id if entity_type == "candidate" else None)
-        job_id = (data or {}).get("job_id") or (entity_id if entity_type == "job" else None)
+        if entity_type == "candidate":
+            candidate_id = entity_id or payload.get("candidate_id")
+            if candidate_id and event_type in ("candidate_updated", "candidate_moved", "candidate_tagged", "candidate_favorited"):
+                await adapter.update_candidate(candidate_id, payload)
+            elif event_type == "candidate_created" and candidate_id:
+                await adapter.create_candidate(payload)
+        elif entity_type == "job":
+            job_id = entity_id or payload.get("job_id")
+            if job_id and event_type in ("job_paused", "job_closed", "job_reopened", "job_updated", "job_urgent"):
+                await adapter.update_job(job_id, payload)
+            elif event_type == "job_created" and job_id:
+                await adapter.create_job(payload)
+        elif entity_type == "interview":
+            candidate_id = payload.get("candidate_id")
+            job_id = payload.get("job_id")
+            if candidate_id:
+                await adapter.update_candidate(candidate_id, {"last_event": event_type, **payload})
+        else:
+            candidate_id = payload.get("candidate_id")
+            if candidate_id:
+                await adapter.update_candidate(candidate_id, {"last_event": event_type, **payload})
 
-        sync_svc = ATSSyncService()
-        await sync_svc.trigger_sync(
-            trigger=trigger,
-            source_agent="lia_chat_action",
-            ats_type="rails",
-            candidate_id=candidate_id,
-            job_id=job_id,
-            data=data,
-        )
+        logger.debug(f"Rails sync completed for {event_type}/{entity_type}")
     except Exception as e:
         logger.warning(f"Rails sync skipped for {event_type}/{entity_type}: {e}")
