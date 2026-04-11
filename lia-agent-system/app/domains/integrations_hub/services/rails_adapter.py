@@ -410,6 +410,41 @@ class RailsAdapter:
                 logger.warning("[RailsAdapter] get_current_user failed: %s", e)
         return None
 
+    # ---- Event Publishing (UUID-safe) ----
+
+    async def publish_event(
+        self,
+        event_type: str,
+        entity_type: str,
+        entity_id: str | None = None,
+        data: dict | None = None,
+    ) -> bool:
+        """Publish an event to Rails via /v1/events webhook endpoint.
+        
+        Unlike CRUD methods, this accepts UUID entity IDs and lets Rails
+        handle ID mapping on its side. Returns True if accepted, False otherwise.
+        """
+        client = await self._get_rails_client()
+        if not client:
+            return False
+        try:
+            payload = {
+                "event_type": event_type,
+                "entity_type": entity_type,
+                "entity_id": entity_id,
+                "data": data or {},
+                "source": "lia_agent_system",
+            }
+            resp = await client._request("POST", "/v1/events", json_body=payload, retry=1)
+            if resp.success:
+                logger.info("[RailsAdapter] Event published: %s/%s id=%s", event_type, entity_type, entity_id)
+                return True
+            logger.warning("[RailsAdapter] Event publish returned %s for %s/%s", resp.status_code, event_type, entity_type)
+            return False
+        except Exception as e:
+            logger.warning("[RailsAdapter] Event publish failed for %s/%s: %s", event_type, entity_type, e)
+            return False
+
     # ---- Candidates ----
 
     @staticmethod

@@ -86,30 +86,11 @@ async def sync_to_rails(
         from app.domains.integrations_hub.services.rails_adapter import RailsAdapter
 
         adapter = RailsAdapter()
-        payload = data or {}
-
-        if entity_type == "candidate":
-            candidate_id = entity_id or payload.get("candidate_id")
-            if candidate_id and event_type in ("candidate_updated", "candidate_moved", "candidate_tagged", "candidate_favorited"):
-                await adapter.update_candidate(candidate_id, payload)
-            elif event_type == "candidate_created" and candidate_id:
-                await adapter.create_candidate(payload)
-        elif entity_type == "job":
-            job_id = entity_id or payload.get("job_id")
-            if job_id and event_type in ("job_paused", "job_closed", "job_reopened", "job_updated", "job_urgent"):
-                await adapter.update_job(job_id, payload)
-            elif event_type == "job_created" and job_id:
-                await adapter.create_job(payload)
-        elif entity_type == "interview":
-            candidate_id = payload.get("candidate_id")
-            job_id = payload.get("job_id")
-            if candidate_id:
-                await adapter.update_candidate(candidate_id, {"last_event": event_type, **payload})
-        else:
-            candidate_id = payload.get("candidate_id")
-            if candidate_id:
-                await adapter.update_candidate(candidate_id, {"last_event": event_type, **payload})
-
-        logger.debug(f"Rails sync completed for {event_type}/{entity_type}")
+        await adapter.publish_event(
+            event_type=event_type,
+            entity_type=entity_type,
+            entity_id=entity_id,
+            data=data,
+        )
     except Exception as e:
         logger.warning(f"Rails sync skipped for {event_type}/{entity_type}: {e}")
