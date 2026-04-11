@@ -44,12 +44,16 @@ export function useListsTab() {
   const [showShareModal, setShowShareModal] = useState(false)
   const [shareListData, setShareListData] = useState<{ id: string; name: string; candidateCount: number } | null>(null)
 
-  const loadLists = useCallback(async () => {
+  const loadLists = useCallback(async (retries = 2) => {
     try {
       setLoading(true)
       const response = await liaApi.getCandidateLists({ limit: 100 })
       setLists(response.items || [])
     } catch (error) {
+      if (retries > 0) {
+        await new Promise(r => setTimeout(r, 2000))
+        return loadLists(retries - 1)
+      }
       toast.error("Erro ao carregar listas", { description: "Não foi possível carregar as listas de candidatos." })
     } finally {
       setLoading(false)
