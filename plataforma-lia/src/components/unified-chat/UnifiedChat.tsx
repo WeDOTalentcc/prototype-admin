@@ -230,13 +230,13 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
   return (
     <div
       className={cn(
-        "flex bg-lia-bg-primary relative",
+        "flex bg-lia-bg-primary relative overflow-hidden",
         isInline
-          ? "flex-shrink-0 border-l border-lia-border-subtle h-full"
+          ? "flex-shrink-0 border border-lia-border-subtle rounded-xl h-full"
           : mode === "fullscreen"
             ? "fixed inset-0 z-50"
             : mode === "sidebar"
-              ? "fixed top-0 right-0 h-full z-40 border-l border-lia-border-subtle shadow-xl"
+              ? "fixed top-2 right-2 bottom-2 z-40 border border-lia-border-subtle rounded-xl shadow-xl"
               : "fixed bottom-4 right-4 w-[360px] h-[520px] z-30 rounded-xl border border-lia-border-subtle shadow-xl",
         className
       )}

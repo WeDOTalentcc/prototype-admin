@@ -5,18 +5,15 @@ import { useLiaFloat } from "@/contexts/lia-float-context"
 import { UnifiedChat } from "./UnifiedChat"
 import type { ChatMode } from "./unified-chat-types"
 
-const MODE_STORAGE_KEY = "lia-chat-mode"
-
-function getStoredMode(): ChatMode {
-  if (typeof window === "undefined") return "sidebar"
-  const stored = localStorage.getItem(MODE_STORAGE_KEY)
-  if (stored === "sidebar" || stored === "floating" || stored === "fullscreen") return stored
-  return "sidebar"
-}
-
 export function DashboardChatPanel() {
   const { isOpen, hasInlineChat } = useLiaFloat()
-  const [chatMode, setChatMode] = useState<ChatMode>(getStoredMode)
+  const [chatMode, setChatMode] = useState<ChatMode>("sidebar")
+
+  useEffect(() => {
+    if (isOpen) {
+      setChatMode("sidebar")
+    }
+  }, [isOpen])
 
   useEffect(() => {
     const handler = (e: Event) => {

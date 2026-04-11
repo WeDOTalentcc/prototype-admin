@@ -9,19 +9,11 @@ import { UnifiedChat } from "./UnifiedChat"
 import type { ChatMode } from "./unified-chat-types"
 
 const HIDDEN_PATHS = ["/login", "/login/welcome", "/forgot-password", "/reset-password"]
-const MODE_STORAGE_KEY = "lia-chat-mode"
-
-function getStoredMode(): ChatMode {
-  if (typeof window === "undefined") return "sidebar"
-  const stored = localStorage.getItem(MODE_STORAGE_KEY)
-  if (stored === "sidebar" || stored === "floating" || stored === "fullscreen") return stored
-  return "sidebar"
-}
 
 export function UnifiedChatConditional() {
   const pathname = usePathname()
   const { isOpen, open, close, splitView, hasInlineChat } = useLiaFloat()
-  const [chatMode, setChatMode] = useState<ChatMode>(getStoredMode)
+  const [chatMode, setChatMode] = useState<ChatMode>("sidebar")
   const [hasDashboardShell, setHasDashboardShell] = useState(false)
 
   useEffect(() => {
@@ -32,6 +24,12 @@ export function UnifiedChatConditional() {
     window.addEventListener("lia:chat-mode-changed", handler)
     return () => window.removeEventListener("lia:chat-mode-changed", handler)
   }, [])
+
+  useEffect(() => {
+    if (isOpen) {
+      setChatMode("sidebar")
+    }
+  }, [isOpen])
 
   useEffect(() => {
     const check = () => setHasDashboardShell(!!document.querySelector("[data-dashboard-shell]"))
@@ -47,6 +45,7 @@ export function UnifiedChatConditional() {
         if (isOpen) {
           close()
         } else {
+          setChatMode("sidebar")
           open()
         }
       }
@@ -77,7 +76,7 @@ export function UnifiedChatConditional() {
       )}
 
       {!hasInlineChat && !isOpen && (
-        <UnifiedChatBubble onOpen={() => open()} />
+        <UnifiedChatBubble onOpen={() => { setChatMode("sidebar"); open() }} />
       )}
 
       {!splitView.active && !hasInlineChat && <LiaSuperPrompt />}
