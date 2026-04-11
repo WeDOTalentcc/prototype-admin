@@ -182,25 +182,37 @@ export function JobsPage(props: JobsPageProps) {
           </div>
         )}
         <div className="mb-0">
-          <nav className="flex items-center gap-1 nav-tabs" aria-label="Tabs" role="tablist">
-            {navigationFilters.map((filter) => (
+          <div className="flex gap-1 p-1 bg-lia-bg-secondary rounded-lg w-fit" role="tablist" aria-label="Tabs">
+            {navigationFilters.map((filter) => {
+              const TAB_ICONS: Record<string, React.ComponentType<{className?: string}>> = {
+                'visao-geral': LayoutDashboard,
+                'todas': Briefcase,
+                'ativas': Zap,
+                'urgentes': AlertTriangle,
+                'paralisadas': Pause,
+                'concluidas': CheckCircle,
+                'canceladas': XCircle,
+              }
+              const TabIcon = TAB_ICONS[filter.id] || Briefcase
+              return (
               <button
                 key={filter.id}
                 onClick={() => { setActiveFilter(filter.id) }}
                 role="tab"
                 aria-selected={activeFilter === filter.id}
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
+                className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
                   activeFilter === filter.id
-                    ? 'bg-lia-bg-primary text-lia-text-primary shadow-sm dark:bg-lia-bg-primary shadow-sm'
-                    : 'text-lia-text-secondary hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-tertiary'
+                    ? 'bg-lia-bg-primary text-lia-text-primary shadow-sm'
+                    : 'text-lia-text-secondary hover:text-lia-text-primary'
                 }`}
               >
+                <TabIcon className="w-3.5 h-3.5" />
                 <span>{filter.label}</span>
                 {!filter.isDashboard && (
-                  <span className={`text-[10px] font-semibold ${
+                  <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-semibold ${
                     activeFilter === filter.id
-                      ? 'text-wedo-cyan'
-                      : 'text-lia-text-tertiary'
+                      ? 'bg-lia-interactive-active text-lia-text-primary'
+                      : 'bg-lia-bg-tertiary text-lia-text-disabled'
                   }`}>
                     {isLoadingJobs ? (
                       <span className="inline-block w-4 h-3 bg-lia-interactive-active dark:bg-lia-bg-elevated rounded animate-pulse motion-reduce:animate-none" />
@@ -210,8 +222,9 @@ export function JobsPage(props: JobsPageProps) {
                   </span>
                 )}
               </button>
-            ))}
-          </nav>
+              )
+            })}
+          </div>
         </div>
       </div>
 
