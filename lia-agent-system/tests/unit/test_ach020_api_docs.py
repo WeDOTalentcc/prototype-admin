@@ -163,3 +163,68 @@ class TestCascadedRouterDomainMapping:
         import inspect
         sig = inspect.signature(CascadedRouter.__init__)
         assert "intent_router" not in sig.parameters
+
+
+class TestDomainCatalogClassification:
+    """Verifica que stubs e service domains estão marcados corretamente."""
+
+    def test_repository_stubs_have_marker(self):
+        """Todos os repository stubs devem ter __domain_type__ = 'repository_stub'."""
+        import importlib
+        stubs = [
+            "admin", "admin_settings", "agent_memory", "approvals", "auth",
+            "bulk_actions", "candidate_lists", "chat", "clients", "client_users",
+            "company_culture", "compliance", "consent", "data_subject",
+            "email_templates", "goals", "health_check", "job_vacancies_analytics",
+            "journey_mapping", "notifications", "observability", "opinions",
+            "recruitment_journey", "saas_metrics", "shared_searches", "tasks",
+            "technical_tests", "triagem", "trust_center", "workforce",
+        ]
+        for stub in stubs:
+            mod = importlib.import_module(f"app.domains.{stub}")
+            assert getattr(mod, "__domain_type__", None) == "repository_stub", (
+                f"app.domains.{stub} missing __domain_type__ = 'repository_stub'"
+            )
+
+    def test_service_domains_have_marker(self):
+        """Service domains devem ter __domain_type__ = 'service'."""
+        import importlib
+        services = ["ai", "billing", "candidates", "company", "credits",
+                     "integrations_hub", "lgpd", "recruitment", "voice"]
+        for svc in services:
+            mod = importlib.import_module(f"app.domains.{svc}")
+            assert getattr(mod, "__domain_type__", None) == "service", (
+                f"app.domains.{svc} missing __domain_type__ = 'service'"
+            )
+
+    def test_deprecated_domains_have_marker(self):
+        """Deprecated domains devem ter __domain_type__ = 'deprecated'."""
+        import importlib
+        for dep in ["autonomous", "policy"]:
+            mod = importlib.import_module(f"app.domains.{dep}")
+            assert getattr(mod, "__domain_type__", None) == "deprecated", (
+                f"app.domains.{dep} missing __domain_type__ = 'deprecated'"
+            )
+
+    def test_domain_registry_only_has_agentic_domains(self):
+        """DomainRegistry deve conter apenas domínios agentic (com @register_domain)."""
+        from app.domains.registry import DomainRegistry
+        registry = DomainRegistry()
+        registered = set(registry.list_domains())
+        agentic_ids = {
+            "agent_studio", "analytics", "ats_integration", "automation",
+            "communication", "cv_screening", "digital_twin", "hiring_policy",
+            "interview_scheduling", "job_creation", "job_management",
+            "pipeline_transition", "recruiter_assistant", "recruitment_campaign",
+            "sourcing", "talent_pool",
+        }
+        for domain_id in registered:
+            assert domain_id in agentic_ids, (
+                f"Non-agentic domain '{domain_id}' found in DomainRegistry"
+            )
+        required_core = {
+            "analytics", "automation", "communication", "cv_screening",
+            "job_management", "recruiter_assistant", "sourcing", "pipeline_transition",
+        }
+        missing = required_core - registered
+        assert not missing, f"Core agentic domains missing from registry: {missing}"
