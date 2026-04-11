@@ -109,7 +109,7 @@ class TestWSIHITL:
     @pytest.mark.asyncio
     async def test_hitl_has_wsi_domain(self):
         """HITL para WSI deve ter domain='cv_screening'."""
-        from app.services.hitl_service import HITLService
+        from app.domains.cv_screening.services.hitl_service import HITLService
         svc = HITLService()
         svc._memory = {}
 
@@ -132,7 +132,7 @@ class TestWSIHITL:
     @pytest.mark.asyncio
     async def test_hitl_approved_resolves_correctly(self):
         """Após aprovação, is_approved() retorna True."""
-        from app.services.hitl_service import HITLService
+        from app.domains.cv_screening.services.hitl_service import HITLService
         svc = HITLService()
         svc._memory = {}
 
@@ -153,7 +153,7 @@ class TestWSIHITL:
 
     @pytest.mark.asyncio
     async def test_resume_info_includes_cv_screening_domain(self):
-        from app.services.hitl_service import HITLService
+        from app.domains.cv_screening.services.hitl_service import HITLService
         svc = HITLService()
         svc._memory = {}
 

@@ -42,7 +42,7 @@ class TestRAGSearchIntegration:
     @pytest.mark.asyncio
     async def test_rag_search_returns_results(self):
         """GET /candidates/rag-search deve retornar candidatos."""
-        from app.services.rag_pipeline_service import RAGSearchResult
+        from app.domains.ai.services.rag_pipeline_service import RAGSearchResult
         mock_result = RAGSearchResult(
             results=[{"candidate_id": str(uuid4()), "score": 0.85}],
             query="desenvolvedor python sênior",
@@ -75,7 +75,7 @@ class TestRAGSearchIntegration:
     @pytest.mark.asyncio
     async def test_rag_search_alpha_parameter(self):
         """GET /candidates/rag-search?alpha= controla blend BM25 vs pgvector."""
-        from app.services.rag_pipeline_service import RAGSearchResult
+        from app.domains.ai.services.rag_pipeline_service import RAGSearchResult
         mock_result = RAGSearchResult(results=[], query="python", total=0, source="hybrid", fairness_ok=True, search_time_ms=10.0)
         with patch("app.api.v1.rag_search._rag_service") as mock_svc:
             mock_svc.search = AsyncMock(return_value=mock_result)
@@ -92,7 +92,7 @@ class TestRAGSearchIntegration:
     @pytest.mark.asyncio
     async def test_rag_search_limit_parameter(self):
         """GET /candidates/rag-search?limit= respeita limite de resultados."""
-        from app.services.rag_pipeline_service import RAGSearchResult
+        from app.domains.ai.services.rag_pipeline_service import RAGSearchResult
         mock_result = RAGSearchResult(results=[], query="python", total=0, source="bm25", fairness_ok=True, search_time_ms=8.0)
         with patch("app.api.v1.rag_search._rag_service") as mock_svc:
             mock_svc.search = AsyncMock(return_value=mock_result)
@@ -109,7 +109,7 @@ class TestRAGSearchIntegration:
     @pytest.mark.asyncio
     async def test_rag_search_empty_results(self):
         """RAG search sem resultados deve retornar lista vazia (não erro)."""
-        from app.services.rag_pipeline_service import RAGSearchResult
+        from app.domains.ai.services.rag_pipeline_service import RAGSearchResult
         mock_result = RAGSearchResult(results=[], query="perfil inexistente xyz123", total=0, source="hybrid", fairness_ok=True, search_time_ms=5.0)
         with patch("app.api.v1.rag_search._rag_service") as mock_svc:
             mock_svc.search = AsyncMock(return_value=mock_result)
@@ -224,12 +224,12 @@ class TestRAGPipelineService:
 
     def test_rag_pipeline_service_importable(self):
         """RAGPipelineService deve ser importável."""
-        from app.services.rag_pipeline_service import RAGPipelineService
+        from app.domains.ai.services.rag_pipeline_service import RAGPipelineService
         assert RAGPipelineService is not None
 
     def test_rag_pipeline_service_has_search_method(self):
         """RAGPipelineService deve ter método search."""
-        from app.services.rag_pipeline_service import RAGPipelineService
+        from app.domains.ai.services.rag_pipeline_service import RAGPipelineService
         assert hasattr(RAGPipelineService, "search")
 
     def test_toon_service_importable(self):

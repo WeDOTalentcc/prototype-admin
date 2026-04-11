@@ -104,7 +104,7 @@ class TestWizardGraphHITL:
     @pytest.mark.asyncio
     async def test_hitl_request_includes_company_id(self):
         """HITLService deve persistir company_id no payload (G1 multi-tenant)."""
-        from app.services.hitl_service import HITLService
+        from app.domains.cv_screening.services.hitl_service import HITLService
         svc = HITLService()
         svc._memory = {}
 
@@ -126,7 +126,7 @@ class TestWizardGraphHITL:
     @pytest.mark.asyncio
     async def test_hitl_resume_info_stored(self):
         """store_resume_info deve preservar thread_id e domain."""
-        from app.services.hitl_service import HITLService
+        from app.domains.cv_screening.services.hitl_service import HITLService
         svc = HITLService()
         svc._memory = {}
 

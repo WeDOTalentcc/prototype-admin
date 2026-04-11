@@ -55,7 +55,7 @@ async def _pearch_search_fallback(self, request, timeout=120):
     if query and company_id:
         try:
             from app.core.database import AsyncSessionLocal
-            from app.services.rag_pipeline_service import RAGPipelineService
+            from app.domains.ai.services.rag_pipeline_service import RAGPipelineService
 
             rag_svc = RAGPipelineService()
             async with AsyncSessionLocal() as db:

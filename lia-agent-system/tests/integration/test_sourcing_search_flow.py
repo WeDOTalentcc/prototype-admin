@@ -87,7 +87,7 @@ class TestRAGWithFairness:
 
     @pytest.mark.asyncio
     async def test_fairness_check_called_on_rag_top10(self):
-        from app.services.rag_pipeline_service import RAGPipelineService
+        from app.domains.ai.services.rag_pipeline_service import RAGPipelineService
         svc = RAGPipelineService()
         db = _make_db()
 
@@ -101,7 +101,7 @@ class TestRAGWithFairness:
 
     @pytest.mark.asyncio
     async def test_rag_results_bounded_by_limit(self):
-        from app.services.rag_pipeline_service import RAGPipelineService
+        from app.domains.ai.services.rag_pipeline_service import RAGPipelineService
         svc = RAGPipelineService()
         db = _make_db()
 
@@ -117,7 +117,7 @@ class TestRAGWithFairness:
 
     @pytest.mark.asyncio
     async def test_rag_source_label_bm25(self):
-        from app.services.rag_pipeline_service import RAGPipelineService
+        from app.domains.ai.services.rag_pipeline_service import RAGPipelineService
         svc = RAGPipelineService()
         db = _make_db()
 
@@ -137,7 +137,7 @@ class TestSourcingHITL:
     @pytest.mark.asyncio
     async def test_hitl_sourcing_stores_company_id(self):
         """HITLService deve persistir company_id no fluxo de sourcing (G1)."""
-        from app.services.hitl_service import HITLService
+        from app.domains.cv_screening.services.hitl_service import HITLService
         svc = HITLService()
         svc._memory = {}
 
@@ -158,7 +158,7 @@ class TestSourcingHITL:
 
     @pytest.mark.asyncio
     async def test_hitl_resume_info_sourcing_domain(self):
-        from app.services.hitl_service import HITLService
+        from app.domains.cv_screening.services.hitl_service import HITLService
         svc = HITLService()
         svc._memory = {}
 

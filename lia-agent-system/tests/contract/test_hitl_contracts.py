@@ -20,27 +20,27 @@ from unittest.mock import AsyncMock, MagicMock, patch
 class TestHITLServiceContract:
 
     def test_has_request_approval_method(self):
-        from app.services.hitl_service import HITLService
+        from app.domains.cv_screening.services.hitl_service import HITLService
         assert hasattr(HITLService, "request_approval")
         assert callable(HITLService.request_approval)
 
     def test_has_receive_approval_method(self):
-        from app.services.hitl_service import HITLService
+        from app.domains.cv_screening.services.hitl_service import HITLService
         assert hasattr(HITLService, "receive_approval")
         assert callable(HITLService.receive_approval)
 
     def test_has_get_pending_method(self):
-        from app.services.hitl_service import HITLService
+        from app.domains.cv_screening.services.hitl_service import HITLService
         assert hasattr(HITLService, "get_pending")
         assert callable(HITLService.get_pending)
 
     def test_has_is_approved_method(self):
-        from app.services.hitl_service import HITLService
+        from app.domains.cv_screening.services.hitl_service import HITLService
         assert hasattr(HITLService, "is_approved")
         assert callable(HITLService.is_approved)
 
     def test_request_approval_signature(self):
-        from app.services.hitl_service import HITLService
+        from app.domains.cv_screening.services.hitl_service import HITLService
         sig = inspect.signature(HITLService.request_approval)
         params = list(sig.parameters.keys())
         assert "thread_id" in params
@@ -50,7 +50,7 @@ class TestHITLServiceContract:
         assert "ws_session_id" in params
 
     def test_receive_approval_signature(self):
-        from app.services.hitl_service import HITLService
+        from app.domains.cv_screening.services.hitl_service import HITLService
         sig = inspect.signature(HITLService.receive_approval)
         params = list(sig.parameters.keys())
         assert "thread_id" in params
@@ -58,7 +58,7 @@ class TestHITLServiceContract:
         assert "approved" in params
 
     def test_singleton_hitl_service_exists(self):
-        from app.services.hitl_service import hitl_service, HITLService
+        from app.domains.cv_screening.services.hitl_service import hitl_service, HITLService
         assert isinstance(hitl_service, HITLService)
 
 
@@ -166,7 +166,7 @@ class TestWSApprovalResponseContract:
     @pytest.mark.asyncio
     async def test_approval_response_message_triggers_receive_approval(self):
         """Simula recebimento de approval_response via WS."""
-        from app.services.hitl_service import HITLService
+        from app.domains.cv_screening.services.hitl_service import HITLService
 
         svc = HITLService()
         svc._memory = {}

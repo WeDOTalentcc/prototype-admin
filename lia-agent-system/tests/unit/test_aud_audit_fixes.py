@@ -147,20 +147,20 @@ class TestATSCircuitBreakers:
     """ATS clients must import and use their respective circuit breakers."""
 
     def test_gupy_client_imports_circuit_breaker(self):
-        import app.services.ats_clients.gupy as mod
+        import app.domains.ats_integration.services.ats_clients.gupy as mod
         import inspect
         source = inspect.getsource(mod)
         assert "GUPY_CIRCUIT" in source
         assert "circuit_breaker_decorator" in source
 
     def test_pandape_client_imports_circuit_breaker(self):
-        import app.services.ats_clients.pandape as mod
+        import app.domains.ats_integration.services.ats_clients.pandape as mod
         import inspect
         source = inspect.getsource(mod)
         assert "PANDAPE_CIRCUIT" in source
 
     def test_merge_client_imports_circuit_breaker(self):
-        import app.services.ats_clients.merge as mod
+        import app.domains.ats_integration.services.ats_clients.merge as mod
         import inspect
         source = inspect.getsource(mod)
         assert "MERGE_CIRCUIT" in source

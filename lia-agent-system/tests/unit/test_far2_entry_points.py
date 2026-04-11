@@ -14,7 +14,7 @@ class TestRAGPipelineGuard:
     @pytest.mark.asyncio
     async def test_search_blocked_by_fairness_guard(self):
         """Query discriminatória deve retornar RAGSearchResult vazio com fairness_blocked=True."""
-        from app.services.rag_pipeline_service import RAGPipelineService
+        from app.domains.ai.services.rag_pipeline_service import RAGPipelineService
 
         service = RAGPipelineService()
         mock_db = AsyncMock()
@@ -36,7 +36,7 @@ class TestRAGPipelineGuard:
     @pytest.mark.asyncio
     async def test_search_allows_neutral_query(self):
         """Query neutra deve passar pelo guard e tentar busca no DB."""
-        from app.services.rag_pipeline_service import RAGPipelineService
+        from app.domains.ai.services.rag_pipeline_service import RAGPipelineService
 
         service = RAGPipelineService()
         mock_db = AsyncMock()
@@ -57,7 +57,7 @@ class TestRAGPipelineGuard:
     @pytest.mark.asyncio
     async def test_search_blocked_new_category_antecedentes(self):
         """Nova categoria antecedentes_criminais deve bloquear busca RAG."""
-        from app.services.rag_pipeline_service import RAGPipelineService
+        from app.domains.ai.services.rag_pipeline_service import RAGPipelineService
 
         service = RAGPipelineService()
         mock_db = AsyncMock()
@@ -74,7 +74,7 @@ class TestRAGPipelineGuard:
     @pytest.mark.asyncio
     async def test_search_blocked_new_category_saude(self):
         """Nova categoria saude_doenca deve bloquear busca RAG."""
-        from app.services.rag_pipeline_service import RAGPipelineService
+        from app.domains.ai.services.rag_pipeline_service import RAGPipelineService
 
         service = RAGPipelineService()
         mock_db = AsyncMock()
@@ -91,7 +91,7 @@ class TestRAGPipelineGuard:
     @pytest.mark.asyncio
     async def test_search_educational_message_in_metadata(self):
         """Mensagem educativa deve estar no metadata do resultado bloqueado."""
-        from app.services.rag_pipeline_service import RAGPipelineService
+        from app.domains.ai.services.rag_pipeline_service import RAGPipelineService
 
         service = RAGPipelineService()
         mock_db = AsyncMock()

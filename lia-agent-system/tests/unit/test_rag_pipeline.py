@@ -21,7 +21,7 @@ pytestmark = pytest.mark.medium
 from dataclasses import fields
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from app.services.rag_pipeline_service import (
+from app.domains.ai.services.rag_pipeline_service import (
     RAGPipelineService,
     RAGSearchResult,
     _check_fairness,

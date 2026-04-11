@@ -229,7 +229,7 @@ class PipelineTransitionAgent(LangGraphReActBase, EnhancedAgentMixin):
                 except Exception as _audit_exc:
                     logger.debug("[PipelineTransitionAgent][SEG-5] AuditService skipped: %s", _audit_exc)
 
-                from app.services.hitl_service import hitl_service
+                from app.domains.cv_screening.services.hitl_service import hitl_service
                 thread_id = str(input.session_id)
                 candidate_name = input.context.get("candidate_name", "candidato")
                 from_stage = input.context.get("from_stage", "")

@@ -10,7 +10,7 @@ import pytest
 import re
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from app.services.token_budget_service import (
+from app.domains.credits.services.token_budget_service import (
     PLAN_DAILY_LIMITS,
     DEFAULT_DAILY_LIMIT,
     _REDIS_TTL,

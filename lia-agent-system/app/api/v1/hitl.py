@@ -15,7 +15,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.auth.dependencies import get_current_user
 from app.auth.models import User
 from app.core.database import get_db
-from app.services.hitl_service import hitl_service
+from app.domains.cv_screening.services.hitl_service import hitl_service
 
 logger = logging.getLogger(__name__)
 

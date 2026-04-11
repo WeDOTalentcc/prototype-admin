@@ -174,7 +174,7 @@ class TestListUserPreferences:
 class TestHITLAutoConfirm:
 
     def _make_hitl(self):
-        from app.services.hitl_service import HITLService
+        from app.domains.cv_screening.services.hitl_service import HITLService
         svc = HITLService()
         svc._memory = {}
         return svc

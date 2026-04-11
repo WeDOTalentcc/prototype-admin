@@ -40,7 +40,7 @@ from app.shared.chat_event_serializer import (
     serialize_token_done,
 )
 from app.shared.prompt_injection import PromptInjectionGuard
-from app.services.token_budget_service import (
+from app.domains.credits.services.token_budget_service import (
     check_budget,
     get_plan_for_company,
     increment_usage,
@@ -145,7 +145,7 @@ async def sse_chat_action(
 
     if req.type == "approval_response" and req.pending_id:
         try:
-            from app.services.hitl_service import HITLService
+            from app.domains.cv_screening.services.hitl_service import HITLService
             hitl_service = HITLService()
             if req.approved:
                 await hitl_service.approve(req.pending_id, user_id)

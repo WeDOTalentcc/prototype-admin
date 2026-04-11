@@ -16,7 +16,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 # get_plan_limit
 # ---------------------------------------------------------------------------
 
-from app.services.token_budget_service import get_plan_limit, PLAN_DAILY_LIMITS, DEFAULT_DAILY_LIMIT
+from app.domains.credits.services.token_budget_service import get_plan_limit, PLAN_DAILY_LIMITS, DEFAULT_DAILY_LIMIT
 
 
 class TestGetPlanLimit:
@@ -70,7 +70,7 @@ class TestGetPlanLimit:
 # check_budget
 # ---------------------------------------------------------------------------
 
-from app.services.token_budget_service import check_budget
+from app.domains.credits.services.token_budget_service import check_budget
 
 
 @pytest.mark.asyncio
@@ -159,7 +159,7 @@ class TestCheckBudget:
 # increment_usage
 # ---------------------------------------------------------------------------
 
-from app.services.token_budget_service import increment_usage
+from app.domains.credits.services.token_budget_service import increment_usage
 
 
 @pytest.mark.asyncio
@@ -205,7 +205,7 @@ class TestIncrementUsage:
         redis_mock.expire.assert_called_once()
 
     async def test_expire_ttl_is_25h(self):
-        from app.services.token_budget_service import _REDIS_TTL
+        from app.domains.credits.services.token_budget_service import _REDIS_TTL
         assert _REDIS_TTL == 25 * 3600
 
     async def test_incrby_exception_returns_zero(self):
@@ -221,7 +221,7 @@ class TestIncrementUsage:
 # get_budget_status
 # ---------------------------------------------------------------------------
 
-from app.services.token_budget_service import get_budget_status
+from app.domains.credits.services.token_budget_service import get_budget_status
 
 
 @pytest.mark.asyncio
@@ -304,7 +304,7 @@ class TestGetBudgetStatus:
 # Redis key format
 # ---------------------------------------------------------------------------
 
-from app.services.token_budget_service import _redis_key
+from app.domains.credits.services.token_budget_service import _redis_key
 
 
 class TestRedisKey:

@@ -1023,7 +1023,7 @@ class WSIInterviewGraph:
             if isinstance(result, dict) and result.get("__interrupt__"):
                 if not getattr(state, "hitl_approved", False):
                     try:
-                        from app.services.hitl_service import hitl_service
+                        from app.domains.cv_screening.services.hitl_service import hitl_service
                         wsi_dict = result.get("wsi_data", {})
                         await hitl_service.request_approval(
                             thread_id=state.session_id,

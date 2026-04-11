@@ -34,7 +34,7 @@ from pydantic import BaseModel
 
 from app.api.v1.ws_manager import ws_manager, get_ws_manager, WSManager
 from app.core.config import settings
-from app.services.token_budget_service import (
+from app.domains.credits.services.token_budget_service import (
     check_budget,
     get_plan_for_company,
     increment_usage,
@@ -457,7 +457,7 @@ async def agent_chat_ws(
             # HITL — recebe resposta de aprovação humana via WS
             if msg_type == "approval_response":
                 try:
-                    from app.services.hitl_service import hitl_service
+                    from app.domains.cv_screening.services.hitl_service import hitl_service
                     ws_thread_id = msg.get("thread_id", "")
                     ws_pending_id = msg.get("pending_id", "")
                     ws_approved = bool(msg.get("approved", False))

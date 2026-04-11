@@ -58,7 +58,7 @@ class TestRAGSearch:
 
     @pytest.mark.asyncio
     async def test_search_returns_rag_result(self):
-        from app.services.rag_pipeline_service import RAGPipelineService
+        from app.domains.ai.services.rag_pipeline_service import RAGPipelineService
         svc = RAGPipelineService()
         db = _make_db()
         with patch.object(svc, "_bm25_search", new_callable=AsyncMock, return_value=[]), \
@@ -70,7 +70,7 @@ class TestRAGSearch:
 
     @pytest.mark.asyncio
     async def test_alpha_zero_calls_only_bm25(self):
-        from app.services.rag_pipeline_service import RAGPipelineService
+        from app.domains.ai.services.rag_pipeline_service import RAGPipelineService
         svc = RAGPipelineService()
         db = _make_db()
         with patch.object(svc, "_bm25_search", new_callable=AsyncMock, return_value=[]) as bm25, \
@@ -81,7 +81,7 @@ class TestRAGSearch:
 
     @pytest.mark.asyncio
     async def test_alpha_one_calls_only_semantic(self):
-        from app.services.rag_pipeline_service import RAGPipelineService
+        from app.domains.ai.services.rag_pipeline_service import RAGPipelineService
         svc = RAGPipelineService()
         db = _make_db()
         with patch("app.services.rag_pipeline_service.generate_embedding", new_callable=AsyncMock, return_value=[0.1] * 768), \
@@ -93,7 +93,7 @@ class TestRAGSearch:
 
     @pytest.mark.asyncio
     async def test_hybrid_calls_both(self):
-        from app.services.rag_pipeline_service import RAGPipelineService
+        from app.domains.ai.services.rag_pipeline_service import RAGPipelineService
         svc = RAGPipelineService()
         db = _make_db()
         with patch("app.services.rag_pipeline_service.generate_embedding", new_callable=AsyncMock, return_value=[0.1] * 768), \
@@ -105,7 +105,7 @@ class TestRAGSearch:
 
     @pytest.mark.asyncio
     async def test_fairness_check_invoked(self):
-        from app.services.rag_pipeline_service import RAGPipelineService
+        from app.domains.ai.services.rag_pipeline_service import RAGPipelineService
         svc = RAGPipelineService()
         db = _make_db()
         with patch.object(svc, "_bm25_search", new_callable=AsyncMock, return_value=[]), \
@@ -117,7 +117,7 @@ class TestRAGSearch:
 
     @pytest.mark.asyncio
     async def test_result_bounded_by_limit(self):
-        from app.services.rag_pipeline_service import RAGPipelineService
+        from app.domains.ai.services.rag_pipeline_service import RAGPipelineService
         svc = RAGPipelineService()
         db = _make_db()
         many = [{"id": str(uuid.uuid4()), "name": "C", "bm25_score": 0.9, "company_id": COMPANY_ID} for _ in range(20)]
@@ -128,7 +128,7 @@ class TestRAGSearch:
 
     @pytest.mark.asyncio
     async def test_source_is_bm25_when_alpha_zero(self):
-        from app.services.rag_pipeline_service import RAGPipelineService
+        from app.domains.ai.services.rag_pipeline_service import RAGPipelineService
         svc = RAGPipelineService()
         db = _make_db()
         with patch.object(svc, "_bm25_search", new_callable=AsyncMock, return_value=[]), \
@@ -144,7 +144,7 @@ class TestRAGSearch:
 class TestFairnessGuard:
 
     def test_ok_with_balanced_genders(self):
-        from app.services.rag_pipeline_service import _check_fairness
+        from app.domains.ai.services.rag_pipeline_service import _check_fairness
         results = (
             [{"gender": "F"}] * 5 +
             [{"gender": "M"}] * 5
@@ -152,13 +152,13 @@ class TestFairnessGuard:
         assert _check_fairness(results, top_n=10) is True
 
     def test_flagged_when_one_gender_dominates(self):
-        from app.services.rag_pipeline_service import _check_fairness
+        from app.domains.ai.services.rag_pipeline_service import _check_fairness
         # 9 M + 1 F → 90% M → acima do limiar de 70%
         results = [{"gender": "M"}] * 9 + [{"gender": "F"}]
         assert _check_fairness(results, top_n=10) is False
 
     def test_ok_without_gender_data(self):
-        from app.services.rag_pipeline_service import _check_fairness
+        from app.domains.ai.services.rag_pipeline_service import _check_fairness
         results = [{"name": "C"}] * 10
         assert _check_fairness(results, top_n=10) is True
 

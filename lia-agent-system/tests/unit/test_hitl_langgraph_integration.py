@@ -23,7 +23,7 @@ class TestHITLServiceResumeInfo:
 
     @pytest.mark.asyncio
     async def test_store_and_get_resume_info(self):
-        from app.services.hitl_service import HITLService
+        from app.domains.cv_screening.services.hitl_service import HITLService
         svc = HITLService()
         await svc.store_resume_info(
             thread_id="t-001",
@@ -40,14 +40,14 @@ class TestHITLServiceResumeInfo:
 
     @pytest.mark.asyncio
     async def test_get_resume_info_missing_returns_none(self):
-        from app.services.hitl_service import HITLService
+        from app.domains.cv_screening.services.hitl_service import HITLService
         svc = HITLService()
         result = await svc.get_resume_info("nonexistent-thread")
         assert result is None
 
     @pytest.mark.asyncio
     async def test_resume_info_stores_agent_input(self):
-        from app.services.hitl_service import HITLService
+        from app.domains.cv_screening.services.hitl_service import HITLService
         svc = HITLService()
         agent_input = {"message": "mover candidato", "context": {"to_stage": "entrevista"}, "session_id": "s-123"}
         await svc.store_resume_info(
@@ -63,7 +63,7 @@ class TestHITLServiceResumeInfo:
     @pytest.mark.asyncio
     async def test_resume_info_overwrite(self):
         """Segunda chamada sobrescreve a primeira."""
-        from app.services.hitl_service import HITLService
+        from app.domains.cv_screening.services.hitl_service import HITLService
         svc = HITLService()
         await svc.store_resume_info("t-ow", "wizard", "s1", {"message": "v1"})
         await svc.store_resume_info("t-ow", "pipeline", "s2", {"message": "v2"})
@@ -73,20 +73,20 @@ class TestHITLServiceResumeInfo:
 
     @pytest.mark.asyncio
     async def test_store_resume_info_has_stored_at(self):
-        from app.services.hitl_service import HITLService
+        from app.domains.cv_screening.services.hitl_service import HITLService
         svc = HITLService()
         await svc.store_resume_info("t-ts", "wizard", "s", {})
         info = await svc.get_resume_info("t-ts")
         assert "stored_at" in info
 
     def test_hitl_service_has_store_resume_info(self):
-        from app.services.hitl_service import HITLService
+        from app.domains.cv_screening.services.hitl_service import HITLService
         import inspect
         assert hasattr(HITLService, "store_resume_info")
         assert inspect.iscoroutinefunction(HITLService.store_resume_info)
 
     def test_hitl_service_has_get_resume_info(self):
-        from app.services.hitl_service import HITLService
+        from app.domains.cv_screening.services.hitl_service import HITLService
         import inspect
         assert hasattr(HITLService, "get_resume_info")
         assert inspect.iscoroutinefunction(HITLService.get_resume_info)
@@ -355,7 +355,7 @@ class TestWSIInterviewGraphHITL:
 class TestHITLContractFull:
 
     def test_hitl_service_all_methods_present(self):
-        from app.services.hitl_service import HITLService
+        from app.domains.cv_screening.services.hitl_service import HITLService
         import inspect
         for method in ["request_approval", "receive_approval", "get_pending",
                        "is_approved", "store_resume_info", "get_resume_info"]:

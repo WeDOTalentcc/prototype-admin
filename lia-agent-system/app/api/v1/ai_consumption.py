@@ -38,7 +38,7 @@ from app.shared.services.token_tracking_service import (
     TOKEN_PRICES,
     get_token_tracking_service,
 )
-from app.services.token_budget_service import get_plan_limit
+from app.domains.credits.services.token_budget_service import get_plan_limit
 from app.shared.tenant_guard import get_verified_company_id
 
 logger = logging.getLogger(__name__)
@@ -129,7 +129,7 @@ async def _get_usage_summary_data(company_id: str, db: AsyncSession) -> UsageSum
 
     plan_code = None
     try:
-        from app.services.token_budget_service import get_plan_for_company
+        from app.domains.credits.services.token_budget_service import get_plan_for_company
         plan_code = await get_plan_for_company(company_id)
     except Exception as exc:
         logger.debug("Could not resolve plan_code for company %s, using default limit: %s", company_id, exc)

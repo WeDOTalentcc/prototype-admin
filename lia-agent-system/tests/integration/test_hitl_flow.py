@@ -82,7 +82,7 @@ class TestHITLApprovalFlow:
     @pytest.mark.asyncio
     async def test_hitl_service_store_resume_info(self):
         """HITLService.store_resume_info deve persistir dados de resume."""
-        from app.services.hitl_service import HITLService
+        from app.domains.cv_screening.services.hitl_service import HITLService
         service = HITLService()
         with patch("app.services.hitl_service._get_redis", return_value=MagicMock(setex=MagicMock())):
             try:
@@ -96,7 +96,7 @@ class TestHITLApprovalFlow:
     @pytest.mark.asyncio
     async def test_hitl_request_approval_creates_pending(self):
         """HITLService.request_approval deve criar registro de aprovação pendente."""
-        from app.services.hitl_service import HITLService
+        from app.domains.cv_screening.services.hitl_service import HITLService
         service = HITLService()
 
         with patch("app.services.hitl_service._get_redis", return_value=None):
@@ -127,12 +127,12 @@ class TestHITLServiceUnit:
 
     def test_hitl_service_importable(self):
         """HITLService deve ser importável."""
-        from app.services.hitl_service import HITLService
+        from app.domains.cv_screening.services.hitl_service import HITLService
         assert HITLService is not None
 
     def test_hitl_service_has_required_methods(self):
         """HITLService deve ter métodos críticos."""
-        from app.services.hitl_service import HITLService
+        from app.domains.cv_screening.services.hitl_service import HITLService
         service = HITLService()
         assert hasattr(service, "request_approval")
         assert hasattr(service, "receive_approval")
@@ -150,7 +150,7 @@ class TestHITLServiceUnit:
     def test_hitl_multi_tenant_fields(self):
         """HITLService deve usar domain e company_id (multi-tenant G1)."""
         import inspect
-        from app.services.hitl_service import HITLService
+        from app.domains.cv_screening.services.hitl_service import HITLService
         src = inspect.getsource(HITLService.request_approval)
         assert "domain" in src
         assert "company_id" in src

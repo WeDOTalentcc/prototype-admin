@@ -20,7 +20,7 @@ pytestmark = pytest.mark.medium
 from unittest.mock import AsyncMock, MagicMock, patch
 
 
-from app.services.hitl_service import HITLService, _HITL_TTL_SECONDS
+from app.domains.cv_screening.services.hitl_service import HITLService, _HITL_TTL_SECONDS
 
 
 # ---------------------------------------------------------------------------

@@ -45,7 +45,7 @@ class PolicyReActAgent(LangGraphReActBase, EnhancedAgentMixin):
             # Mark hitl_pending before attempting approval request
             hitl_pending = True  # noqa: F841
             try:
-                from app.services.hitl_service import hitl_service
+                from app.domains.cv_screening.services.hitl_service import hitl_service
                 await hitl_service.request_approval(output.state_updates)
             except Exception as exc:  # noqa: BLE001
                 # Fail-safe: HITL service unavailable — prosseguindo sem revisão

@@ -28,7 +28,7 @@ import logging
 from fastapi import Depends, HTTPException, status
 
 from app.auth.dependencies import get_current_user_or_demo
-from app.services.token_budget_service import (
+from app.domains.credits.services.token_budget_service import (
     check_budget,
     check_request_budget,
     check_request_budget_before_llm,

@@ -1,15 +1,2 @@
-"""ATS API Client Abstractions for bidirectional sync with ATS platforms."""
-from .base import ATSCandidate, ATSClient, ATSClientConfig, ATSJob
-from .gupy import GupyClient
-from .merge import MergeClient
-from .pandape import PandapeClient
-
-__all__ = [
-    "ATSClient",
-    "ATSClientConfig",
-    "ATSCandidate",
-    "ATSJob",
-    "GupyClient",
-    "PandapeClient",
-    "MergeClient"
-]
+"""Backwards-compatibility shim — canonical implementation in app.domains.ats_integration.services.ats_clients."""
+from app.domains.ats_integration.services.ats_clients import *  # noqa: F401,F403

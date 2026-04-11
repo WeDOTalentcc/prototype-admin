@@ -406,7 +406,7 @@ async def http_exception_handler(request: FastAPIRequest, exc: StarletteHTTPExce
     )
 
 
-from app.services.token_budget_service import RequestBudgetExceededError
+from app.domains.credits.services.token_budget_service import RequestBudgetExceededError
 
 
 @app.exception_handler(RequestBudgetExceededError)

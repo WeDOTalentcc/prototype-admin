@@ -207,7 +207,7 @@ class TestServiceImports:
 
     def test_wedotalent_rails_client(self):
         try:
-            from app.services.ats_clients import wedotalent_rails
+            from app.domains.ats_integration.services.ats_clients import wedotalent_rails
             assert wedotalent_rails is not None
         except ImportError:
             pytest.skip("Module not importable")

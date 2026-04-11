@@ -284,7 +284,7 @@ class JobWizardGraph:
             if intent == WizardIntent.CONFIRM.value and not state.get("hitl_approved"):
                 # Solicitar aprovação humana antes de criar a vaga
                 try:
-                    from app.services.hitl_service import hitl_service
+                    from app.domains.cv_screening.services.hitl_service import hitl_service
                     ws_session_id = str(session_id)
                     pending_id = await hitl_service.request_approval(
                         thread_id=ws_session_id,

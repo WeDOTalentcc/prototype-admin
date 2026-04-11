@@ -3,7 +3,7 @@ Tests for per-request token budget guardrail (Fase 3 — Task #129).
 """
 import pytest
 
-from app.services.token_budget_service import (
+from app.domains.credits.services.token_budget_service import (
     AGENT_TYPE_REQUEST_OVERRIDES,
     DEFAULT_REQUEST_LIMIT,
     PLAN_REQUEST_LIMITS,

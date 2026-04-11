@@ -20,7 +20,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 # ---------------------------------------------------------------------------
 
 def test_domain_aliases_cover_main_sources():
-    from app.services.rag_pipeline_service import DOMAIN_ALIASES
+    from app.domains.ai.services.rag_pipeline_service import DOMAIN_ALIASES
     required_keys = {"candidates", "job_vacancies", "policy_blocks", "company_docs"}
     assert required_keys.issubset(set(DOMAIN_ALIASES.keys())), (
         f"DOMAIN_ALIASES missing keys: {required_keys - set(DOMAIN_ALIASES.keys())}"
@@ -32,7 +32,7 @@ def test_domain_aliases_cover_main_sources():
 # ---------------------------------------------------------------------------
 
 def test_normalize_domain_known():
-    from app.services.rag_pipeline_service import normalize_domain
+    from app.domains.ai.services.rag_pipeline_service import normalize_domain
     assert normalize_domain("candidates") == "talent"
     assert normalize_domain("job_vacancies") == "jobs"
     assert normalize_domain("policy_blocks") == "policy"
@@ -46,7 +46,7 @@ def test_normalize_domain_known():
 # ---------------------------------------------------------------------------
 
 def test_normalize_domain_unknown_fallback():
-    from app.services.rag_pipeline_service import normalize_domain
+    from app.domains.ai.services.rag_pipeline_service import normalize_domain
     assert normalize_domain("unknown_type") == "general"
     assert normalize_domain("foobar") == "general"
     assert normalize_domain("") == "general"
@@ -136,7 +136,7 @@ def test_rebuild_domain_index_fail_open():
 
 def test_rag_search_accepts_domain_param():
     """search() must accept domain kwarg and route it without raising."""
-    from app.services.rag_pipeline_service import RAGPipelineService
+    from app.domains.ai.services.rag_pipeline_service import RAGPipelineService
 
     svc = RAGPipelineService()
 

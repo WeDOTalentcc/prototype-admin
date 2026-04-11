@@ -102,7 +102,7 @@ class TestBudgetExhaustedBlocking:
     @pytest.mark.asyncio
     async def test_budget_exhausted_sends_error_message(self):
         """Quando check_budget retorna allowed=False, envia error com error_code."""
-        from app.services.token_budget_service import check_budget
+        from app.domains.credits.services.token_budget_service import check_budget
 
         with patch(
             "app.api.v1.agent_chat_ws.check_budget",
@@ -123,7 +123,7 @@ class TestBudgetExhaustedBlocking:
     @pytest.mark.asyncio
     async def test_budget_check_result_structure(self):
         """Resultado de check_budget deve ser (bool, int, int)."""
-        from app.services.token_budget_service import check_budget, PLAN_DAILY_LIMITS
+        from app.domains.credits.services.token_budget_service import check_budget, PLAN_DAILY_LIMITS
 
         with patch("app.services.token_budget_service._get_redis", new_callable=AsyncMock) as mock_redis:
             mock_redis.return_value = None  # Redis indisponível → graceful
@@ -192,7 +192,7 @@ class TestIncrementUsageWiring:
     @pytest.mark.asyncio
     async def test_increment_failure_does_not_break_flow(self):
         """Falha em increment_usage não deve propagar exception."""
-        from app.services.token_budget_service import increment_usage
+        from app.domains.credits.services.token_budget_service import increment_usage
 
         # Redis indisponível → retorna 0 sem lançar
         with patch("app.services.token_budget_service._get_redis", new_callable=AsyncMock, return_value=None):
@@ -210,7 +210,7 @@ class TestGetPlanForCompany:
     @pytest.mark.asyncio
     async def test_returns_none_when_redis_and_db_unavailable(self):
         """Sem Redis e sem DB → retorna None sem lançar."""
-        from app.services.token_budget_service import get_plan_for_company
+        from app.domains.credits.services.token_budget_service import get_plan_for_company
 
         with patch("app.services.token_budget_service._get_redis", new_callable=AsyncMock, return_value=None):
             result = await get_plan_for_company("company-no-infra")
@@ -219,7 +219,7 @@ class TestGetPlanForCompany:
     @pytest.mark.asyncio
     async def test_returns_cached_plan_from_redis(self):
         """Quando Redis tem o plan_code cacheado, retorna sem ir ao DB."""
-        from app.services.token_budget_service import get_plan_for_company
+        from app.domains.credits.services.token_budget_service import get_plan_for_company
 
         redis_mock = AsyncMock()
         redis_mock.get = AsyncMock(return_value="pro")
@@ -233,7 +233,7 @@ class TestGetPlanForCompany:
     @pytest.mark.asyncio
     async def test_db_exception_returns_none(self):
         """Se DB lança exception, retorna None graciosamente."""
-        from app.services.token_budget_service import get_plan_for_company
+        from app.domains.credits.services.token_budget_service import get_plan_for_company
 
         redis_mock = AsyncMock()
         redis_mock.get = AsyncMock(return_value=None)  # cache miss
@@ -248,7 +248,7 @@ class TestGetPlanForCompany:
     @pytest.mark.asyncio
     async def test_cache_key_contains_company_id(self):
         """Chave do cache deve conter o company_id para isolamento."""
-        from app.services.token_budget_service import get_plan_for_company
+        from app.domains.credits.services.token_budget_service import get_plan_for_company
 
         redis_mock = AsyncMock()
         redis_mock.get = AsyncMock(return_value="business")

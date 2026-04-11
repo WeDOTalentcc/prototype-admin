@@ -34,7 +34,7 @@ class TestTenantContextService:
 class TestDynamicAlphaRAG:
     def test_tech_keywords_low_alpha(self):
         try:
-            from app.services.rag_pipeline_service import RAGPipelineService
+            from app.domains.ai.services.rag_pipeline_service import RAGPipelineService
             svc = RAGPipelineService.__new__(RAGPipelineService)
             alpha = svc._detect_query_type("desenvolvedor python sênior")
             assert alpha <= 0.4
@@ -43,7 +43,7 @@ class TestDynamicAlphaRAG:
 
     def test_behavioral_keywords_high_alpha(self):
         try:
-            from app.services.rag_pipeline_service import RAGPipelineService
+            from app.domains.ai.services.rag_pipeline_service import RAGPipelineService
             svc = RAGPipelineService.__new__(RAGPipelineService)
             alpha = svc._detect_query_type("perfil com liderança e comunicação")
             assert alpha >= 0.6
@@ -51,19 +51,19 @@ class TestDynamicAlphaRAG:
             pytest.skip("RAG service não tem _detect_query_type ainda")
 
     def test_default_alpha_balanced(self):
-        from app.services.rag_pipeline_service import RAGPipelineService
+        from app.domains.ai.services.rag_pipeline_service import RAGPipelineService
         svc = RAGPipelineService.__new__(RAGPipelineService)
         alpha = svc._detect_query_type("candidato para a vaga")
         assert alpha == 0.5
 
     def test_cargo_keywords_low_alpha(self):
-        from app.services.rag_pipeline_service import RAGPipelineService
+        from app.domains.ai.services.rag_pipeline_service import RAGPipelineService
         svc = RAGPipelineService.__new__(RAGPipelineService)
         alpha = svc._detect_query_type("gerente de projetos experiente")
         assert alpha <= 0.4
 
     def test_tech_stack_low_alpha(self):
-        from app.services.rag_pipeline_service import RAGPipelineService
+        from app.domains.ai.services.rag_pipeline_service import RAGPipelineService
         svc = RAGPipelineService.__new__(RAGPipelineService)
         alpha = svc._detect_query_type("fullstack react e node")
         assert alpha <= 0.4

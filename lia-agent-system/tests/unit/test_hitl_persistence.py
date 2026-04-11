@@ -26,7 +26,7 @@ class TestHITLServiceRequestApproval:
 
     @pytest.mark.asyncio
     async def test_request_approval_returns_pending_id(self):
-        from app.services.hitl_service import HITLService
+        from app.domains.cv_screening.services.hitl_service import HITLService
         svc = HITLService()
         with patch("app.services.hitl_service._db_save_pending", new_callable=AsyncMock), \
              patch("app.api.v1.ws_manager.ws_manager") as mock_ws:
@@ -44,7 +44,7 @@ class TestHITLServiceRequestApproval:
 
     @pytest.mark.asyncio
     async def test_request_approval_calls_db_save(self):
-        from app.services.hitl_service import HITLService
+        from app.domains.cv_screening.services.hitl_service import HITLService
         svc = HITLService()
         with patch("app.services.hitl_service._db_save_pending", new_callable=AsyncMock) as mock_db, \
              patch("app.api.v1.ws_manager.ws_manager") as mock_ws:
@@ -66,7 +66,7 @@ class TestHITLServiceRequestApproval:
 
     @pytest.mark.asyncio
     async def test_request_approval_stores_in_memory_when_redis_unavailable(self):
-        from app.services.hitl_service import HITLService
+        from app.domains.cv_screening.services.hitl_service import HITLService
         svc = HITLService()
         with patch("app.services.hitl_service._get_redis", return_value=None), \
              patch("app.services.hitl_service._db_save_pending", new_callable=AsyncMock), \
@@ -86,7 +86,7 @@ class TestHITLServiceRequestApproval:
     @pytest.mark.asyncio
     async def test_request_approval_db_failure_does_not_raise(self):
         """DB falha silenciosamente — não bloqueia o fluxo do agente."""
-        from app.services.hitl_service import HITLService
+        from app.domains.cv_screening.services.hitl_service import HITLService
         svc = HITLService()
         with patch("app.services.hitl_service._db_save_pending", side_effect=Exception("DB down")), \
              patch("app.services.hitl_service._get_redis", return_value=None), \
@@ -104,7 +104,7 @@ class TestHITLServiceRequestApproval:
 
     @pytest.mark.asyncio
     async def test_request_approval_ws_failure_does_not_raise(self):
-        from app.services.hitl_service import HITLService
+        from app.domains.cv_screening.services.hitl_service import HITLService
         svc = HITLService()
         with patch("app.services.hitl_service._db_save_pending", new_callable=AsyncMock), \
              patch("app.api.v1.ws_manager.ws_manager") as mock_ws:
@@ -127,7 +127,7 @@ class TestHITLServiceReceiveApproval:
 
     @pytest.mark.asyncio
     async def test_receive_approval_updates_approved_flag(self):
-        from app.services.hitl_service import HITLService
+        from app.domains.cv_screening.services.hitl_service import HITLService
         svc = HITLService()
         with patch("app.services.hitl_service._get_redis", return_value=None), \
              patch("app.services.hitl_service._db_resolve", new_callable=AsyncMock):
@@ -149,7 +149,7 @@ class TestHITLServiceReceiveApproval:
 
     @pytest.mark.asyncio
     async def test_receive_approval_calls_db_resolve(self):
-        from app.services.hitl_service import HITLService
+        from app.domains.cv_screening.services.hitl_service import HITLService
         svc = HITLService()
         with patch("app.services.hitl_service._get_redis", return_value=None), \
              patch("app.services.hitl_service._db_resolve", new_callable=AsyncMock) as mock_resolve:
@@ -169,7 +169,7 @@ class TestHITLServiceReceiveApproval:
 
     @pytest.mark.asyncio
     async def test_receive_approval_creates_record_if_missing(self):
-        from app.services.hitl_service import HITLService
+        from app.domains.cv_screening.services.hitl_service import HITLService
         svc = HITLService()
         with patch("app.services.hitl_service._get_redis", return_value=None), \
              patch("app.services.hitl_service._db_resolve", new_callable=AsyncMock):
@@ -183,7 +183,7 @@ class TestHITLServiceReceiveApproval:
 
     @pytest.mark.asyncio
     async def test_receive_approval_db_failure_does_not_raise(self):
-        from app.services.hitl_service import HITLService
+        from app.domains.cv_screening.services.hitl_service import HITLService
         svc = HITLService()
         with patch("app.services.hitl_service._get_redis", return_value=None), \
              patch("app.services.hitl_service._db_resolve", side_effect=Exception("DB down")):
@@ -203,7 +203,7 @@ class TestHITLServiceGetPending:
 
     @pytest.mark.asyncio
     async def test_get_pending_returns_from_memory(self):
-        from app.services.hitl_service import HITLService
+        from app.domains.cv_screening.services.hitl_service import HITLService
         svc = HITLService()
         svc._memory["hitl:t-gp1:p-A"] = {
             "pending_id": "p-A",
@@ -220,7 +220,7 @@ class TestHITLServiceGetPending:
 
     @pytest.mark.asyncio
     async def test_get_pending_falls_back_to_db(self):
-        from app.services.hitl_service import HITLService
+        from app.domains.cv_screening.services.hitl_service import HITLService
         svc = HITLService()
         # Sem nada em Redis/memory
         db_result = {"pending_id": "p-db", "thread_id": "t-gp2", "approved": None}
@@ -231,7 +231,7 @@ class TestHITLServiceGetPending:
 
     @pytest.mark.asyncio
     async def test_get_pending_returns_none_when_resolved(self):
-        from app.services.hitl_service import HITLService
+        from app.domains.cv_screening.services.hitl_service import HITLService
         svc = HITLService()
         svc._memory["hitl:t-gp3:p-B"] = {
             "pending_id": "p-B",
