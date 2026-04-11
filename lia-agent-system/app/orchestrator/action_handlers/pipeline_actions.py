@@ -133,7 +133,7 @@ async def _create_task(params: dict[str, Any], context: dict[str, Any]):
         from app.orchestrator.action_handlers._handler_hooks import log_action_audit
         await log_action_audit("create_task", context.get("company_id") if context else None, candidate_id=candidate_id, job_vacancy_id=job_id)
         from app.orchestrator.action_handlers._handler_hooks import sync_to_rails
-        await sync_to_rails("candidate_updated", "task", entity_id=task_id, data={"candidate_id": candidate_id, "job_id": job_id})
+        await sync_to_rails("candidate_updated", "task", entity_id=str(task.id), data={"candidate_id": candidate_id, "job_id": job_id})
 
         due_info = f" para **{due_date_str}**" if due_date_str else ""
         action_label = "Lembrete" if task_type_str.lower() in ("reminder", "lembrete") else "Tarefa"

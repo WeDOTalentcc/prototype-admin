@@ -54,8 +54,8 @@ async def _tag_candidates(params: dict[str, Any], context: dict[str, Any]):
                 action_type="tag_candidates",
             )
 
+        tagged_ids: list[str] = []
         async with AsyncSessionLocal() as db:
-            tagged_count = 0
             for cid in candidate_ids:
                 if company_id:
                     authz = await db.execute(text(
@@ -72,21 +72,22 @@ async def _tag_candidates(params: dict[str, Any], context: dict[str, Any]):
                     END, updated_at = NOW()
                     WHERE id = CAST(:cid AS uuid)
                 """), {"tag": tag, "cid": str(cid)})
-                tagged_count += result.rowcount
+                if result.rowcount > 0:
+                    tagged_ids.append(str(cid))
             await db.commit()
 
         from app.orchestrator.action_handlers._handler_hooks import log_action_audit, sync_to_rails
-        for cid in candidate_ids:
-            await log_action_audit("tag_candidates", company_id, candidate_id=str(cid))
-            await sync_to_rails("candidate_tagged", "candidate", str(cid), {"tag": tag})
+        for cid in tagged_ids:
+            await log_action_audit("tag_candidates", company_id, candidate_id=cid)
+            await sync_to_rails("candidate_tagged", "candidate", cid, {"tag": tag})
 
         return ActionResult(
             status="executed",
-            message=f"Tag **\"{tag}\"** aplicada a **{tagged_count}** candidato(s).",
+            message=f"Tag **\"{tag}\"** aplicada a **{len(tagged_ids)}** candidato(s).",
             data={
-                "candidate_ids": candidate_ids,
+                "candidate_ids": tagged_ids,
                 "tag": tag,
-                "tagged_count": tagged_count,
+                "tagged_count": len(tagged_ids),
                 "tagged_at": datetime.utcnow().isoformat(),
                 "simulated": False,
             },
