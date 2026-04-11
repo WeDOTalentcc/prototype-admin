@@ -35,12 +35,24 @@ async def _reschedule_interview(params: dict[str, Any], context: dict[str, Any])
         from sqlalchemy import text
 
         from app.core.database import AsyncSessionLocal
+        from app.orchestrator.action_handlers._handler_hooks import (
+            log_action_audit,
+            resolve_candidate_by_name,
+            sync_to_rails,
+        )
 
         candidate_id = params.get("candidate_id", "")
         candidate_name = params.get("candidate_name", "o candidato")
         new_datetime = params.get("new_datetime", "")
         interview_id = params.get("interview_id")
         reason = params.get("reason", "")
+        company_id = context.get("company_id") if context else None
+
+        if not candidate_id and candidate_name:
+            resolved = await resolve_candidate_by_name(candidate_name, company_id)
+            if resolved:
+                candidate_id = resolved["id"]
+                candidate_name = resolved["name"]
 
         if not candidate_id or not new_datetime:
             return ActionResult(
@@ -80,6 +92,9 @@ async def _reschedule_interview(params: dict[str, Any], context: dict[str, Any])
                 )
             await db.commit()
 
+        await log_action_audit("reschedule_interview", company_id, candidate_id=str(candidate_id))
+        await sync_to_rails("interview_rescheduled", "interview", None, {"candidate_id": str(candidate_id), "new_datetime": new_datetime})
+
         return ActionResult(
             status="executed",
             message=f"Entrevista de **{candidate_name}** reagendada para **{new_datetime}**.",
@@ -107,11 +122,23 @@ async def _cancel_interview(params: dict[str, Any], context: dict[str, Any]):
         from sqlalchemy import text
 
         from app.core.database import AsyncSessionLocal
+        from app.orchestrator.action_handlers._handler_hooks import (
+            log_action_audit,
+            resolve_candidate_by_name,
+            sync_to_rails,
+        )
 
         candidate_id = params.get("candidate_id", "")
         candidate_name = params.get("candidate_name", "o candidato")
         interview_id = params.get("interview_id")
         reason = params.get("reason", "")
+        company_id = context.get("company_id") if context else None
+
+        if not candidate_id and not interview_id and candidate_name:
+            resolved = await resolve_candidate_by_name(candidate_name, company_id)
+            if resolved:
+                candidate_id = resolved["id"]
+                candidate_name = resolved["name"]
 
         if not candidate_id and not interview_id:
             return ActionResult(
@@ -149,6 +176,9 @@ async def _cancel_interview(params: dict[str, Any], context: dict[str, Any]):
                     action_type="cancel_interview",
                 )
             await db.commit()
+
+        await log_action_audit("cancel_interview", company_id, candidate_id=str(candidate_id) if candidate_id else None)
+        await sync_to_rails("interview_cancelled", "interview", None, {"candidate_id": str(candidate_id) if candidate_id else None})
 
         return ActionResult(
             status="executed",
@@ -330,6 +360,11 @@ async def _generate_self_scheduling_link(params: dict[str, Any], context: dict[s
         from sqlalchemy import text
 
         from app.core.database import AsyncSessionLocal
+        from app.orchestrator.action_handlers._handler_hooks import (
+            log_action_audit,
+            resolve_candidate_by_name,
+            sync_to_rails,
+        )
 
         candidate_id = params.get("candidate_id", "")
         candidate_name = params.get("candidate_name", "o candidato")
@@ -337,6 +372,12 @@ async def _generate_self_scheduling_link(params: dict[str, Any], context: dict[s
         duration = int(params.get("duration_minutes", 60))
 
         company_id = context.get("company_id") if context else None
+
+        if not candidate_id and candidate_name:
+            resolved = await resolve_candidate_by_name(candidate_name, company_id)
+            if resolved:
+                candidate_id = resolved["id"]
+                candidate_name = resolved["name"]
 
         if not candidate_id:
             return ActionResult(
@@ -372,6 +413,9 @@ async def _generate_self_scheduling_link(params: dict[str, Any], context: dict[s
                 "token": token, "dur": duration,
             })
             await db.commit()
+
+        await log_action_audit("generate_self_scheduling_link", company_id, candidate_id=str(candidate_id))
+        await sync_to_rails("scheduling_link_created", "scheduling_link", token, {"candidate_id": str(candidate_id)})
 
         return ActionResult(
             status="executed",

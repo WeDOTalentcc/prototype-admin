@@ -101,40 +101,82 @@ async def _schedule_interview(params: dict[str, Any], context: dict[str, Any]):
         from sqlalchemy import text
 
         from app.core.database import AsyncSessionLocal
+        from app.orchestrator.action_handlers._handler_hooks import (
+            log_action_audit,
+            resolve_candidate_by_name,
+            sync_to_rails,
+        )
+
+        candidate_name = params.get("candidate_name", "")
+        dt = params.get("datetime", "")
+        interviewer = params.get("interviewer", "")
+        candidate_id = params.get("candidate_id", "")
+        company_id = context.get("company_id") if context else None
+
+        if not candidate_id and candidate_name:
+            resolved = await resolve_candidate_by_name(candidate_name, company_id)
+            if resolved:
+                candidate_id = resolved["id"]
+                candidate_name = resolved["name"]
+
+        if not candidate_id:
+            return ActionResult(
+                status="error",
+                message=f"Candidato **{candidate_name or 'não identificado'}** não encontrado. Informe o nome completo ou ID.",
+                error_detail="Could not resolve candidate_id",
+                action_type="schedule_interview",
+            )
 
         async with AsyncSessionLocal() as db:
-            interview_id = str(uuid_mod.uuid4())
-            candidate_name = params.get("candidate_name", "")
-            dt = params.get("datetime", "")
-            interviewer = params.get("interviewer", "")
-            candidate_id = params.get("candidate_id", "")
+            if company_id:
+                candidate_check = await db.execute(text(
+                    "SELECT c.id, c.name FROM candidates c JOIN vacancy_candidates vc ON vc.candidate_id = c.id WHERE c.id = CAST(:cid AS uuid) AND vc.company_id = CAST(:co AS uuid) LIMIT 1"
+                ), {"cid": str(candidate_id), "co": str(company_id)})
+            else:
+                candidate_check = await db.execute(text(
+                    "SELECT id, name FROM candidates WHERE id = CAST(:cid AS uuid)"
+                ), {"cid": str(candidate_id)})
+            candidate_row = candidate_check.fetchone()
+            if not candidate_row:
+                return ActionResult(
+                    status="error",
+                    message=f"Candidato **{candidate_name}** não encontrado no sistema.",
+                    error_detail=f"Candidate {candidate_id} does not exist",
+                    action_type="schedule_interview",
+                )
+            if not candidate_name or candidate_name == "o candidato":
+                candidate_name = candidate_row.name
 
+            interview_id = str(uuid_mod.uuid4())
             await db.execute(text("""
                 INSERT INTO interviews (id, candidate_id, interviewer_name, start_time, status, created_at, updated_at)
                 VALUES (:id, CAST(:candidate_id AS uuid), :interviewer, :start_time, 'scheduled', NOW(), NOW())
                 ON CONFLICT DO NOTHING
             """), {
                 "id": interview_id,
-                "candidate_id": candidate_id,
+                "candidate_id": str(candidate_id),
                 "start_time": dt,
                 "interviewer": interviewer,
             })
             await db.commit()
 
-            return ActionResult(
-                status="executed",
-                message=f"Entrevista agendada com **{candidate_name}** para **{dt}**.",
-                data={
-                    "interview_id": interview_id,
-                    "candidate_id": candidate_id,
-                    "candidate_name": candidate_name,
-                    "datetime": dt,
-                    "interviewer": interviewer,
-                    "scheduled_at": datetime.utcnow().isoformat(),
-                    "simulated": False,
-                },
-                action_type="schedule_interview",
-            )
+        await log_action_audit("schedule_interview", company_id, candidate_id=str(candidate_id))
+        await sync_to_rails("interview_scheduled", "interview", interview_id, {"candidate_id": str(candidate_id), "datetime": dt})
+
+        return ActionResult(
+            status="executed",
+            message=f"Entrevista agendada com **{candidate_name}** para **{dt}**.",
+            data={
+                "interview_id": interview_id,
+                "candidate_id": str(candidate_id),
+                "candidate_name": candidate_name,
+                "datetime": dt,
+                "interviewer": interviewer,
+                "scheduled_at": datetime.utcnow().isoformat(),
+                "simulated": False,
+            },
+            action_type="schedule_interview",
+        )
     except Exception as e:
         logger.warning(f"schedule_interview failed: {e}")
         from app.orchestrator.action_executor import ActionResult

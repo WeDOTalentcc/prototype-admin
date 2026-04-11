@@ -1,0 +1,129 @@
+"""
+Shared cross-cutting hooks for action handlers:
+- DB-level candidate name resolution (when UUID is unavailable)
+- Audit trail logging for write operations
+- Conditional Rails sync on data-modifying actions
+"""
+import logging
+import os
+from typing import Any
+
+logger = logging.getLogger(__name__)
+
+RAILS_ENABLED = bool(os.environ.get("RAILS_API_URL"))
+
+_TRIGGER_MAP = {
+    "candidate_created": "candidate_created",
+    "candidate_updated": "candidate_updated",
+    "candidate_moved": "status_change",
+    "candidate_tagged": "candidate_updated",
+    "candidate_favorited": "candidate_updated",
+    "interview_scheduled": "interview_scheduled",
+    "interview_rescheduled": "interview_scheduled",
+    "interview_cancelled": "interview_scheduled",
+    "scheduling_link_created": "interview_scheduled",
+    "job_paused": "status_change",
+    "job_closed": "status_change",
+    "job_created": "status_change",
+    "job_reopened": "status_change",
+    "job_updated": "status_change",
+    "job_duplicated": "status_change",
+    "job_urgent": "status_change",
+}
+
+
+async def resolve_candidate_by_name(
+    candidate_name: str,
+    company_id: str | None = None,
+) -> dict[str, Any] | None:
+    from sqlalchemy import text
+
+    from app.core.database import AsyncSessionLocal
+
+    if not candidate_name or candidate_name in ("o candidato", ""):
+        return None
+
+    async with AsyncSessionLocal() as db:
+        sql = """
+            SELECT c.id, c.name, c.email
+            FROM candidates c
+        """
+        bind: dict[str, Any] = {"q": f"%{candidate_name}%"}
+
+        if company_id:
+            sql += """
+                JOIN vacancy_candidates vc ON vc.candidate_id = c.id
+                WHERE vc.company_id = CAST(:co AS uuid)
+                  AND c.name ILIKE :q
+            """
+            bind["co"] = str(company_id)
+        else:
+            sql += " WHERE c.name ILIKE :q"
+
+        sql += " ORDER BY c.name LIMIT 1"
+        result = await db.execute(text(sql), bind)
+        row = result.fetchone()
+        if row:
+            return {"id": str(row.id), "name": row.name, "email": row.email}
+    return None
+
+
+async def log_action_audit(
+    action_type: str,
+    company_id: str | None,
+    candidate_id: str | None = None,
+    job_vacancy_id: str | None = None,
+    details: dict[str, Any] | None = None,
+) -> None:
+    try:
+        from app.shared.compliance.audit_service import audit_service
+
+        await audit_service.log_decision(
+            company_id=company_id or "system",
+            agent_name="lia_chat_action",
+            decision_type=action_type,
+            action=action_type,
+            decision="executed",
+            reasoning=[f"Action {action_type} executed via chat"],
+            criteria_used=[],
+            candidate_id=candidate_id,
+            job_vacancy_id=job_vacancy_id,
+        )
+    except Exception as e:
+        logger.debug(f"Audit log skipped for {action_type}: {e}")
+
+
+async def sync_to_rails(
+    event_type: str,
+    entity_type: str,
+    entity_id: str | None = None,
+    data: dict[str, Any] | None = None,
+) -> None:
+    if not RAILS_ENABLED:
+        return
+    try:
+        from app.domains.ats_integration.services.ats_sync_service import (
+            ATSSyncService,
+            ATSSyncTrigger,
+        )
+
+        trigger_value = _TRIGGER_MAP.get(event_type, "candidate_updated")
+        try:
+            trigger = ATSSyncTrigger(trigger_value)
+        except ValueError:
+            trigger = ATSSyncTrigger.CANDIDATE_UPDATED
+
+        candidate_id = (data or {}).get("candidate_id") or (entity_id if entity_type == "candidate" else None)
+        job_id = (data or {}).get("job_id") or (entity_id if entity_type == "job" else None)
+
+        sync_svc = ATSSyncService()
+        await sync_svc.trigger_sync(
+            trigger=trigger,
+            source_agent="lia_chat_action",
+            ats_type="rails",
+            candidate_id=candidate_id,
+            job_id=job_id,
+            data=data,
+        )
+    except Exception as e:
+        logger.warning(f"Rails sync skipped for {event_type}/{entity_type}: {e}")

@@ -130,6 +130,11 @@ async def _create_task(params: dict[str, Any], context: dict[str, Any]):
                 requires_confirmation=False,
             )
 
+        from app.orchestrator.action_handlers._handler_hooks import log_action_audit
+        await log_action_audit("create_task", context.get("company_id") if context else None, candidate_id=candidate_id, job_vacancy_id=job_id)
+        from app.orchestrator.action_handlers._handler_hooks import sync_to_rails
+        await sync_to_rails("candidate_updated", "task", entity_id=task_id, data={"candidate_id": candidate_id, "job_id": job_id})
+
         due_info = f" para **{due_date_str}**" if due_date_str else ""
         action_label = "Lembrete" if task_type_str.lower() in ("reminder", "lembrete") else "Tarefa"
         return ActionResult(
@@ -208,6 +213,11 @@ async def _create_note(params: dict[str, Any], context: dict[str, Any]):
                 "created_by": user_id or "system",
             })
             await db.commit()
+
+        from app.orchestrator.action_handlers._handler_hooks import log_action_audit
+        await log_action_audit("create_note", company_id, candidate_id=effective_candidate_id, job_vacancy_id=job_id)
+        from app.orchestrator.action_handlers._handler_hooks import sync_to_rails
+        await sync_to_rails("candidate_updated", "note", entity_id=note_id, data={"candidate_id": candidate_id, "job_id": job_id})
 
         context_info = ""
         if params.get("candidate_name"):
@@ -343,6 +353,11 @@ async def _create_automation(params: dict[str, Any], context: dict[str, Any]):
                 "user_id": user_id,
             })
             await db.commit()
+
+        from app.orchestrator.action_handlers._handler_hooks import log_action_audit
+        await log_action_audit("create_automation", company_id, job_vacancy_id=str(job_id) if job_id else None)
+        from app.orchestrator.action_handlers._handler_hooks import sync_to_rails
+        await sync_to_rails("candidate_updated", "automation", entity_id=automation_id, data={"job_id": str(job_id) if job_id else None})
 
         return ActionResult(
             status="executed",

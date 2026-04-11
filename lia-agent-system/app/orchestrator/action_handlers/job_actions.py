@@ -7,6 +7,8 @@ import logging
 from datetime import datetime
 from typing import Any
 
+from app.orchestrator.action_handlers._handler_hooks import log_action_audit, sync_to_rails
+
 logger = logging.getLogger(__name__)
 
 
@@ -53,17 +55,21 @@ async def _pause_job(params: dict[str, Any], context: dict[str, Any]):
                     action_type="pause_job",
                 )
             await db.commit()
-            return ActionResult(
-                status="executed",
-                message=f"Vaga **{job_title}** pausada com sucesso.",
-                data={
-                    "job_id": job_id,
-                    "job_title": job_title,
-                    "paused_at": datetime.utcnow().isoformat(),
-                    "simulated": False,
-                },
-                action_type="pause_job",
-            )
+
+        await log_action_audit("pause_job", None, job_vacancy_id=str(job_id))
+        await sync_to_rails("job_paused", "job", str(job_id))
+
+        return ActionResult(
+            status="executed",
+            message=f"Vaga **{job_title}** pausada com sucesso.",
+            data={
+                "job_id": job_id,
+                "job_title": job_title,
+                "paused_at": datetime.utcnow().isoformat(),
+                "simulated": False,
+            },
+            action_type="pause_job",
+        )
     except Exception as e:
         logger.warning(f"pause_job failed: {e}")
         from app.orchestrator.action_executor import ActionResult
@@ -99,17 +105,21 @@ async def _close_job(params: dict[str, Any], context: dict[str, Any]):
                     action_type="close_job",
                 )
             await db.commit()
-            return ActionResult(
-                status="executed",
-                message=f"Vaga **{job_title}** fechada com sucesso.",
-                data={
-                    "job_id": job_id,
-                    "job_title": job_title,
-                    "closed_at": datetime.utcnow().isoformat(),
-                    "simulated": False,
-                },
-                action_type="close_job",
-            )
+
+        await log_action_audit("close_job", None, job_vacancy_id=str(job_id))
+        await sync_to_rails("job_closed", "job", str(job_id))
+
+        return ActionResult(
+            status="executed",
+            message=f"Vaga **{job_title}** fechada com sucesso.",
+            data={
+                "job_id": job_id,
+                "job_title": job_title,
+                "closed_at": datetime.utcnow().isoformat(),
+                "simulated": False,
+            },
+            action_type="close_job",
+        )
     except Exception as e:
         logger.warning(f"close_job failed: {e}")
         from app.orchestrator.action_executor import ActionResult
@@ -182,19 +192,23 @@ async def _duplicate_job(params: dict[str, Any], context: dict[str, Any]):
                 "tags": row.tags,
             })
             await db.commit()
-            return ActionResult(
-                status="executed",
-                message=f"Vaga **{job_title}** duplicada com sucesso. Nova vaga: **{final_title}**.",
-                data={
-                    "job_id": job_id,
-                    "new_job_id": new_id,
-                    "job_title": job_title,
-                    "new_title": final_title,
-                    "duplicated_at": datetime.utcnow().isoformat(),
-                    "simulated": False,
-                },
-                action_type="duplicate_job",
-            )
+
+        await log_action_audit("duplicate_job", None, job_vacancy_id=new_id)
+        await sync_to_rails("job_created", "job", new_id)
+
+        return ActionResult(
+            status="executed",
+            message=f"Vaga **{job_title}** duplicada com sucesso. Nova vaga: **{final_title}**.",
+            data={
+                "job_id": job_id,
+                "new_job_id": new_id,
+                "job_title": job_title,
+                "new_title": final_title,
+                "duplicated_at": datetime.utcnow().isoformat(),
+                "simulated": False,
+            },
+            action_type="duplicate_job",
+        )
     except Exception as e:
         logger.warning(f"duplicate_job failed: {e}")
         from app.orchestrator.action_executor import ActionResult
@@ -230,17 +244,21 @@ async def _reopen_job(params: dict[str, Any], context: dict[str, Any]):
                     action_type="reopen_job",
                 )
             await db.commit()
-            return ActionResult(
-                status="executed",
-                message=f"Vaga **{job_title}** reaberta com sucesso.",
-                data={
-                    "job_id": job_id,
-                    "job_title": job_title,
-                    "reopened_at": datetime.utcnow().isoformat(),
-                    "simulated": False,
-                },
-                action_type="reopen_job",
-            )
+
+        await log_action_audit("reopen_job", None, job_vacancy_id=str(job_id))
+        await sync_to_rails("job_reopened", "job", str(job_id))
+
+        return ActionResult(
+            status="executed",
+            message=f"Vaga **{job_title}** reaberta com sucesso.",
+            data={
+                "job_id": job_id,
+                "job_title": job_title,
+                "reopened_at": datetime.utcnow().isoformat(),
+                "simulated": False,
+            },
+            action_type="reopen_job",
+        )
     except Exception as e:
         logger.warning(f"reopen_job failed: {e}")
         from app.orchestrator.action_executor import ActionResult
@@ -291,6 +309,9 @@ async def _set_job_urgent(params: dict[str, Any], context: dict[str, Any]):
                     action_type="set_job_urgent",
                 )
             await db.commit()
+
+        await log_action_audit("set_job_urgent", company_id, job_vacancy_id=str(job_id))
+        await sync_to_rails("job_updated", "job", str(job_id), {"priority": "Urgente"})
 
         return ActionResult(
             status="executed",

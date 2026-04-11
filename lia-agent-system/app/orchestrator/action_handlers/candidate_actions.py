@@ -72,42 +72,71 @@ async def _move_candidate(params: dict[str, Any], context: dict[str, Any]):
         from sqlalchemy import text
 
         from app.core.database import AsyncSessionLocal
+        from app.orchestrator.action_handlers._handler_hooks import (
+            log_action_audit,
+            resolve_candidate_by_name,
+            sync_to_rails,
+        )
 
         candidate_id = params.get("candidate_id", "")
         to_stage = params.get("to_stage", "")
         candidate_name = params.get("candidate_name", "o candidato")
         from_stage = params.get("from_stage", "")
+        company_id = context.get("company_id") if context else None
+
+        if not candidate_id and candidate_name:
+            resolved = await resolve_candidate_by_name(candidate_name, company_id)
+            if resolved:
+                candidate_id = resolved["id"]
+                candidate_name = resolved["name"]
+
+        if not candidate_id:
+            return ActionResult(
+                status="error",
+                message=f"Candidato **{candidate_name}** não encontrado no pipeline.",
+                error_detail="Could not resolve candidate_id",
+                action_type="move_candidate",
+            )
 
         async with AsyncSessionLocal() as db:
-            result = await db.execute(text("""
+            sql = """
                 UPDATE vacancy_candidates
                 SET stage = :to_stage, status = 'active', updated_at = NOW()
                 WHERE (id = CAST(:candidate_id AS uuid) OR candidate_id = CAST(:candidate_id AS uuid))
-            """), {
+            """
+            bind: dict[str, Any] = {
                 "to_stage": to_stage,
-                "candidate_id": candidate_id,
-            })
+                "candidate_id": str(candidate_id),
+            }
+            if company_id:
+                sql += " AND company_id = CAST(:company_id AS uuid)"
+                bind["company_id"] = str(company_id)
+            result = await db.execute(text(sql), bind)
             if result.rowcount == 0:
                 return ActionResult(
                     status="error",
-                    message="Candidato não encontrado",
+                    message=f"Candidato **{candidate_name}** não encontrado no pipeline.",
                     error_detail="Candidato não encontrado no pipeline",
                     action_type="move_candidate",
                 )
             await db.commit()
-            return ActionResult(
-                status="executed",
-                message=f"**{candidate_name}** foi movido(a) para a etapa **{to_stage}**.",
-                data={
-                    "candidate_id": candidate_id,
-                    "candidate_name": candidate_name,
-                    "from_stage": from_stage,
-                    "to_stage": to_stage,
-                    "moved_at": datetime.utcnow().isoformat(),
-                    "simulated": False,
-                },
-                action_type="move_candidate",
-            )
+
+        await log_action_audit("move_stage", company_id, candidate_id=str(candidate_id))
+        await sync_to_rails("candidate_moved", "candidate", str(candidate_id), {"from_stage": from_stage, "to_stage": to_stage})
+
+        return ActionResult(
+            status="executed",
+            message=f"**{candidate_name}** foi movido(a) para a etapa **{to_stage}**.",
+            data={
+                "candidate_id": str(candidate_id),
+                "candidate_name": candidate_name,
+                "from_stage": from_stage,
+                "to_stage": to_stage,
+                "moved_at": datetime.utcnow().isoformat(),
+                "simulated": False,
+            },
+            action_type="move_candidate",
+        )
     except Exception as e:
         logger.warning(f"move_candidate failed: {e}")
         from app.orchestrator.action_executor import ActionResult
@@ -126,11 +155,31 @@ async def _update_candidate_field(params: dict[str, Any], context: dict[str, Any
 
         from app.core.database import AsyncSessionLocal
 
+        from app.orchestrator.action_handlers._handler_hooks import (
+            log_action_audit,
+            resolve_candidate_by_name,
+            sync_to_rails,
+        )
+
         candidate_id = params.get("candidate_id", "")
         field_name = params.get("field_name", "")
         field_value = params.get("field_value", "")
         candidate_name = params.get("candidate_name", "o candidato")
         company_id = context.get("company_id") if context else None
+
+        if not candidate_id and candidate_name:
+            resolved = await resolve_candidate_by_name(candidate_name, company_id)
+            if resolved:
+                candidate_id = resolved["id"]
+                candidate_name = resolved["name"]
+
+        if not candidate_id:
+            return ActionResult(
+                status="error",
+                message=f"Candidato **{candidate_name}** não encontrado.",
+                error_detail="Could not resolve candidate_id",
+                action_type="update_candidate_field",
+            )
 
         resolved_field = FIELD_ALIASES.get(field_name.lower(), field_name)
 
@@ -179,25 +228,29 @@ async def _update_candidate_field(params: dict[str, Any], context: dict[str, Any
             if result.rowcount == 0:
                 return ActionResult(
                     status="error",
-                    message="Candidato não encontrado ou sem permissão para atualizar.",
+                    message=f"Candidato **{candidate_name}** não encontrado ou sem permissão para atualizar.",
                     error_detail="Candidate not found or no rows updated",
                     action_type="update_candidate_field",
                 )
             await db.commit()
-            return ActionResult(
-                status="executed",
-                message=f"Campo **{field_name}** de **{candidate_name}** atualizado para **{field_value}**.",
-                data={
-                    "candidate_id": candidate_id,
-                    "candidate_name": candidate_name,
-                    "field": resolved_field,
-                    "field_label": field_name,
-                    "value": field_value,
-                    "updated_at": datetime.utcnow().isoformat(),
-                    "simulated": False,
-                },
-                action_type="update_candidate_field",
-            )
+
+        await log_action_audit("update_candidate_field", company_id, candidate_id=str(candidate_id))
+        await sync_to_rails("candidate_updated", "candidate", str(candidate_id), {"field": resolved_field, "value": field_value})
+
+        return ActionResult(
+            status="executed",
+            message=f"Campo **{field_name}** de **{candidate_name}** atualizado para **{field_value}**.",
+            data={
+                "candidate_id": str(candidate_id),
+                "candidate_name": candidate_name,
+                "field": resolved_field,
+                "field_label": field_name,
+                "value": field_value,
+                "updated_at": datetime.utcnow().isoformat(),
+                "simulated": False,
+            },
+            action_type="update_candidate_field",
+        )
     except Exception as e:
         logger.warning(f"update_candidate_field failed: {e}")
         from app.orchestrator.action_executor import ActionResult
@@ -383,6 +436,7 @@ async def _batch_move_candidates(params: dict[str, Any], context: dict[str, Any]
         from sqlalchemy import text
 
         from app.core.database import AsyncSessionLocal
+        from app.orchestrator.action_handlers._handler_hooks import log_action_audit, sync_to_rails
 
         candidate_ids = params.get("candidate_ids", [])
         to_stage = params.get("to_stage", "")
@@ -414,6 +468,10 @@ async def _batch_move_candidates(params: dict[str, Any], context: dict[str, Any]
                 result = await db.execute(text(update_sql), bind)
                 moved += result.rowcount
             await db.commit()
+
+        for cid in candidate_ids:
+            await log_action_audit("move_stage", company_id, candidate_id=str(cid))
+            await sync_to_rails("candidate_moved", "candidate", str(cid), {"to_stage": to_stage})
 
         return ActionResult(
             status="executed",
