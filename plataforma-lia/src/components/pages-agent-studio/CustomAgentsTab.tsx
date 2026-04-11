@@ -32,7 +32,7 @@ interface CustomAgent {
 }
 
 const STATUS_CONFIG: Record<string, { label: string; dot: string; bg: string; text: string }> = {
-  draft: { label: "Rascunho", dot: "bg-gray-400", bg: "bg-lia-bg-secondary dark:bg-lia-bg-inverse/30", text: "text-lia-text-secondary dark:text-lia-text-tertiary" },
+  draft: { label: "Rascunho", dot: "bg-lia-text-disabled", bg: "bg-lia-bg-secondary dark:bg-lia-bg-inverse/30", text: "text-lia-text-secondary dark:text-lia-text-tertiary" },
   active: { label: "Ativo", dot: "bg-emerald-500", bg: "bg-emerald-50 dark:bg-emerald-950/30", text: "text-emerald-700 dark:text-emerald-400" },
   paused: { label: "Pausado", dot: "bg-amber-500", bg: "bg-amber-50 dark:bg-amber-950/30", text: "text-amber-700 dark:text-amber-400" },
   archived: { label: "Arquivado", dot: "bg-red-400", bg: "bg-red-50 dark:bg-red-950/30", text: "text-red-600 dark:text-red-400" },
