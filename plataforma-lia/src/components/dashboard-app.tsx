@@ -48,8 +48,12 @@ export function DashboardApp({ initialPage = "Chat LIA" }: DashboardAppProps) {
     setContextPage(currentPage)
     if (currentPage !== "Chat LIA") {
       setPendingChatConversationId(null)
+      const stored = localStorage.getItem("lia-chat-mode")
+      const currentMode = stored === "floating" ? "floating" : "sidebar"
+      window.dispatchEvent(new CustomEvent("lia:chat-mode-changed", { detail: { mode: currentMode } }))
+      openFloat()
     }
-  }, [currentPage, setContextPage])
+  }, [currentPage, setContextPage, openFloat])
 
   useEffect(() => {
     if (splitView.active && splitView.page) {
@@ -78,7 +82,6 @@ export function DashboardApp({ initialPage = "Chat LIA" }: DashboardAppProps) {
     }
   }, [])
 
-  // Handle leaving fullscreen chat → navigate to previous page and open sidebar
   useEffect(() => {
     const handler = () => {
       if (currentPage === "Chat LIA") {

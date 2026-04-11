@@ -1,4 +1,4 @@
-export type ChatMode = "fullscreen" | "sidebar" | "floating"
+export type ChatMode = "fullscreen" | "sidebar" | "floating" | "minimized"
 
 export type ChatScope = "page" | "universal"
 

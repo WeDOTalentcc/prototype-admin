@@ -182,6 +182,11 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
 
   const handleModeChange = useCallback((newMode: ChatMode) => {
     const prevMode = currentModeRef.current
+    if (newMode === "minimized") {
+      close()
+      window.dispatchEvent(new CustomEvent("lia:chat-mode-changed", { detail: { mode: "minimized", prevMode } }))
+      return
+    }
     setMode(newMode)
     localStorage.setItem(MODE_STORAGE_KEY, newMode)
     window.dispatchEvent(new CustomEvent("lia:chat-mode-changed", { detail: { mode: newMode, prevMode } }))
@@ -189,19 +194,14 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
       close()
       window.dispatchEvent(new CustomEvent("lia:navigate-chat-page", { detail: {} }))
     } else if (newMode === "floating") {
-      if (renderMode === "inline") {
-        close()
-        requestAnimationFrame(() => open())
-      }
+      open()
     } else if (newMode === "sidebar") {
-      if (prevMode === "floating" || prevMode === "fullscreen") {
-        open()
-      }
+      open()
       if (prevMode === "fullscreen") {
         window.dispatchEvent(new CustomEvent("lia:leave-fullscreen-chat", { detail: { targetMode: newMode } }))
       }
     }
-  }, [close, open, renderMode])
+  }, [close, open])
 
   const handleFileButtonClick = useCallback(() => {
     fileInputRef.current?.click()

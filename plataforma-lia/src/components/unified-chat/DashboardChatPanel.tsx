@@ -7,13 +7,13 @@ import type { ChatMode } from "./unified-chat-types"
 
 export function DashboardChatPanel() {
   const { isOpen, hasInlineChat } = useLiaFloat()
-  const [chatMode, setChatMode] = useState<ChatMode>("sidebar")
+  const [chatMode, setChatMode] = useState<ChatMode>(() => {
+    if (typeof window === "undefined") return "sidebar"
+    const stored = localStorage.getItem("lia-chat-mode")
+    if (stored === "floating") return "floating"
+    return "sidebar"
+  })
 
-  useEffect(() => {
-    if (isOpen) {
-      setChatMode("sidebar")
-    }
-  }, [isOpen])
 
   useEffect(() => {
     const handler = (e: Event) => {

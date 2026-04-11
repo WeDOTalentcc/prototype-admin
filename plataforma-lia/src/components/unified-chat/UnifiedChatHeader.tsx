@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from "react"
 import {
-  Brain, X, Maximize2, PanelRight, MessageSquare,
+  Brain, X, Maximize2, PanelRight, MessageSquare, Minimize2,
   Plus, MoreHorizontal, ChevronDown, Pencil, Trash2, ArrowRightLeft
 } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -28,6 +28,7 @@ const MODE_OPTIONS: { mode: ChatMode; icon: React.ElementType; label: string }[]
   { mode: "sidebar", icon: PanelRight, label: "Lateral" },
   { mode: "floating", icon: MessageSquare, label: "Flutuante" },
   { mode: "fullscreen", icon: Maximize2, label: "Tela cheia" },
+  { mode: "minimized", icon: Minimize2, label: "Minimizar" },
 ]
 
 export function UnifiedChatHeader({
