@@ -3,7 +3,7 @@
 import React, { useMemo } from "react"
 import dynamic from "next/dynamic"
 import { Button } from "@/components/ui/button"
-import { Plus, Users, Clock, AlertTriangle } from "lucide-react"
+import { Plus, Users, Clock, AlertTriangle, CheckCircle2, Briefcase, Zap, Pause, CheckCircle, XCircle } from "lucide-react"
 import { JobKanbanPage } from "./job-kanban-page"
 import { LoadingModal as JobsLoadingModal } from "@/components/ui/loading"
 import { toast } from "sonner"
