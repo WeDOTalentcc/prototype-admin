@@ -306,7 +306,7 @@ export function UniversalTransitionModal(props: UniversalTransitionModalProps) {
                 variant="outline"
                 onClick={onClose}
                 disabled={isSubmitting}
-                className="h-9 px-4 text-xs font-semibold rounded-xl transition-colors motion-reduce:transition-none duration-150 font-['Open_Sans'] bg-lia-bg-primary text-lia-text-primary border border-lia-border-default hover:bg-lia-bg-secondary hover:border-lia-border-medium focus:ring-2 focus:ring-lia-btn-primary-bg/20 focus:outline-none dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-lia-bg-inverse"
+                className="h-9 px-4 text-xs font-semibold rounded-xl transition-colors motion-reduce:transition-none duration-150 bg-lia-bg-primary text-lia-text-primary border border-lia-border-default hover:bg-lia-bg-secondary hover:border-lia-border-medium focus:ring-2 focus:ring-lia-btn-primary-bg/20 focus:outline-none dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-lia-bg-inverse"
               >
                 Cancelar
               </Button>
@@ -314,7 +314,7 @@ export function UniversalTransitionModal(props: UniversalTransitionModalProps) {
               <Button
                 onClick={handleConfirm}
                 disabled={isSubmitting || (isRejectedStage && !subStatus)}
-                className="h-9 px-4 text-xs font-semibold rounded-xl transition-colors motion-reduce:transition-none duration-150 font-['Open_Sans'] bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover active:bg-lia-bg-inverse focus:ring-2 focus:ring-lia-btn-primary-bg/20 focus:outline-none dark:hover:bg-lia-interactive-active"
+                className="h-9 px-4 text-xs font-semibold rounded-xl transition-colors motion-reduce:transition-none duration-150 bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover active:bg-lia-bg-inverse focus:ring-2 focus:ring-lia-btn-primary-bg/20 focus:outline-none dark:hover:bg-lia-interactive-active"
               >
                 {isSubmitting ? (
                   <>

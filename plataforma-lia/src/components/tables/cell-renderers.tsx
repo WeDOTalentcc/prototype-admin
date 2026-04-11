@@ -628,7 +628,7 @@ export function InteractiveStageCell({
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs font-semibold text-lia-text-primary font-['Open_Sans']">
+              <label className="text-xs font-semibold text-lia-text-primary">
                 Nova Etapa
               </label>
               <Select value={selectedStage} onValueChange={setSelectedStage}>
@@ -658,7 +658,7 @@ export function InteractiveStageCell({
             <div className="flex gap-2 pt-3 border-t border-lia-border-subtle dark:border-lia-border-subtle">
               <Button 
                 variant="outline" 
-                className="flex-1 text-xs font-semibold rounded-xl transition-colors motion-reduce:transition-none duration-150 font-['Open_Sans'] bg-lia-bg-primary text-lia-text-primary border border-lia-border-default hover:bg-lia-bg-secondary hover:border-lia-border-medium dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-lia-bg-inverse"
+                className="flex-1 text-xs font-semibold rounded-xl transition-colors motion-reduce:transition-none duration-150 bg-lia-bg-primary text-lia-text-primary border border-lia-border-default hover:bg-lia-bg-secondary hover:border-lia-border-medium dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-lia-bg-inverse"
                 onClick={() => {
                   setOpen(false)
                   setSelectedStage('')
@@ -667,7 +667,7 @@ export function InteractiveStageCell({
                 Cancelar
               </Button>
               <Button 
-                className="flex-1 text-xs font-semibold rounded-xl transition-colors motion-reduce:transition-none duration-150 font-['Open_Sans'] bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover active:bg-lia-bg-inverse dark:hover:bg-lia-interactive-active"
+                className="flex-1 text-xs font-semibold rounded-xl transition-colors motion-reduce:transition-none duration-150 bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover active:bg-lia-bg-inverse dark:hover:bg-lia-interactive-active"
                 disabled={!selectedStage}
                 onClick={handleConfirm}
               >

@@ -202,15 +202,15 @@ export function MyTasksCard({
           <TabsContent value="entrevistas" className="mt-0">
             <div className="flex items-center gap-2 mb-2 px-1">
               {getGreetingIcon()}
-              <span className="text-sm font-[Open_Sans,sans-serif] font-semibold text-lia-text-primary">
+              <span className="text-sm font-semibold text-lia-text-primary">
                 {getGreeting()}, {userName || 'Recrutador'}
               </span>
-              <span className="text-xs font-[Open_Sans,sans-serif] text-lia-text-tertiary">
+              <span className="text-xs text-lia-text-tertiary">
                 — {getFormattedDate()}
               </span>
             </div>
             {!interviewsLoading && todayInterviews.length > 0 && (
-              <p className="text-xs font-[Open_Sans,sans-serif] text-lia-text-tertiary px-1 mb-3">
+              <p className="text-xs text-lia-text-tertiary px-1 mb-3">
                 <span className="font-[Inter,sans-serif] font-semibold text-lia-text-primary">{scheduledCount}</span> entrevista{scheduledCount !== 1 ? 's' : ''} hoje
                 {futureInterviews.length > 0 ? ` · ${futureInterviews.length} próxima${futureInterviews.length !== 1 ? 's' : ''}` : ''}
                 {timeUntilNext && (
@@ -225,7 +225,7 @@ export function MyTasksCard({
             {interviewsLoading ? (
               <div className="py-12 text-center" role="status" aria-live="polite" aria-label="Carregando...">
                 <Loader2 className="w-6 h-6 text-lia-text-disabled mx-auto mb-2 animate-spin motion-reduce:animate-none" />
-                <p className="text-xs font-[Open_Sans,sans-serif] text-lia-text-tertiary">Carregando entrevistas...</p>
+                <p className="text-xs text-lia-text-tertiary">Carregando entrevistas...</p>
               </div>
             ) : interviewsError ? (
               <div className="py-12 text-center">
@@ -285,7 +285,7 @@ export function MyTasksCard({
             {interviewsLoading ? (
               <div className="py-12 text-center" role="status" aria-live="polite" aria-label="Carregando...">
                 <Loader2 className="w-6 h-6 text-lia-text-disabled mx-auto mb-2 animate-spin motion-reduce:animate-none" />
-                <p className="text-xs font-[Open_Sans,sans-serif] text-lia-text-tertiary">Carregando histórico...</p>
+                <p className="text-xs text-lia-text-tertiary">Carregando histórico...</p>
               </div>
             ) : interviewsError ? (
               <div className="py-12 text-center">

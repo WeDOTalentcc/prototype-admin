@@ -330,7 +330,7 @@ export function KanbanTableView({
                     {defaultLabel}
                     {isSat && saturationData && (
                       <span
-                        className={`inline-flex items-center gap-0.5 px-1 py-0.5 rounded-md text-micro font-medium font-['Open_Sans'] ${
+                        className={`inline-flex items-center gap-0.5 px-1 py-0.5 rounded-md text-micro font-medium ${
                           saturationData.is_saturated
                             ? 'text-status-error bg-status-error/10 border border-status-error/30'
                             : 'text-status-warning bg-status-warning/10 border border-status-warning/30'

@@ -233,21 +233,21 @@ export function AlertSettingsModal({
         {/* Header */}
         <div className="flex items-center justify-between p-6 dark:border-lia-border-subtle">
           <div>
-            <h2 className="text-lg font-semibold font-['Open_Sans'] text-lia-text-primary">
+            <h2 className="text-lg font-semibold text-lia-text-primary">
               Configurações de Alertas KPI
             </h2>
-            <p className="text-xs text-lia-text-secondary font-['Open_Sans']">
+            <p className="text-xs text-lia-text-secondary">
               Gerencie regras de monitoramento e notificações automáticas
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" onClick={onClose} className="text-xs font-['Open_Sans']">
+            <Button variant="outline" onClick={onClose} className="text-xs">
               Cancelar
             </Button>
             <Button 
               onClick={handleSaveRules} 
               disabled={isSaving}
-              className="gap-2 text-xs font-['Open_Sans'] bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
+              className="gap-2 text-xs bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
             >
               {isSaving ? (
                 <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none" />

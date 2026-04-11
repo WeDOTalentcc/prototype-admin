@@ -176,7 +176,7 @@ export function DateRangePicker({ value, onChange, className, placeholder = "Sel
       <Button
         variant="outline"
         onClick={() => setIsOpen(!isOpen)}
-        className="gap-2 text-xs font-['Open_Sans'] min-w-sidebar-content justify-start"
+        className="gap-2 text-xs min-w-sidebar-content justify-start"
       >
         <Calendar className="w-4 h-4 text-lia-text-secondary" />
         <span className={value?.start_date ? 'text-lia-text-primary' : 'lia-text-secondary'}>
@@ -204,7 +204,7 @@ export function DateRangePicker({ value, onChange, className, placeholder = "Sel
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </button>
-                <span className="text-xs font-medium text-lia-text-primary font-['Open_Sans']">
+                <span className="text-xs font-medium text-lia-text-primary">
                   {MONTHS_PT[currentMonth.getMonth()]} {currentMonth.getFullYear()}
                 </span>
                 <button 
@@ -217,7 +217,7 @@ export function DateRangePicker({ value, onChange, className, placeholder = "Sel
 
               <div className="grid grid-cols-7 gap-1 mb-2">
                 {DAYS_PT.map(day => (
-                  <div key={day} className="text-center text-xs text-lia-text-secondary font-['Open_Sans'] py-1">
+                  <div key={day} className="text-center text-xs text-lia-text-secondary py-1">
                     {day}
                   </div>
                 ))}
@@ -238,7 +238,7 @@ export function DateRangePicker({ value, onChange, className, placeholder = "Sel
                       key={formatDateISO(date)}
                       onClick={() => handleDateClick(date)}
                       className={`
- h-8 text-xs font-['Open_Sans'] rounded-md transition-colors
+ h-8 text-xs rounded-md transition-colors
                         ${isSelected 
                           ? 'bg-lia-btn-primary-bg text-lia-btn-primary-text font-medium' 
                           : isInRange 
@@ -275,13 +275,13 @@ export function DateRangePicker({ value, onChange, className, placeholder = "Sel
             </div>
 
             <div className="border-l pl-4 w-40">
-              <p className="text-xs font-medium text-lia-text-secondary mb-2 font-['Open_Sans']">Atalhos</p>
+              <p className="text-xs font-medium text-lia-text-secondary mb-2">Atalhos</p>
               <div className="space-y-1">
                 {PRESET_RANGES.map((preset) => (
                   <button
                     key={preset.label}
                     onClick={() => handlePreset(preset)}
-                    className="w-full text-left text-xs py-1.5 px-2 rounded-md hover:bg-lia-interactive-hover text-lia-text-primary font-['Open_Sans'] transition-colors motion-reduce:transition-none"
+                    className="w-full text-left text-xs py-1.5 px-2 rounded-md hover:bg-lia-interactive-hover text-lia-text-primary transition-colors motion-reduce:transition-none"
                   >
                     {preset.label}
                   </button>

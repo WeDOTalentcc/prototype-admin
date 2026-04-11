@@ -401,7 +401,7 @@ export function FavoritesTab({
                   <div className="w-8 h-8 rounded-full bg-wedo-orange/15 flex items-center justify-center">
                     <Star className="w-4 h-4 text-wedo-orange" />
                   </div>
-                  <h3 className="text-base-ui font-semibold text-lia-text-primary font-['Open_Sans']">
+                  <h3 className="text-base-ui font-semibold text-lia-text-primary">
                     Adicionar aos Favoritos
                   </h3>
                 </div>
@@ -482,7 +482,7 @@ export function FavoritesTab({
                   <div className="w-8 h-8 rounded-full bg-status-warning/15 flex items-center justify-center">
                     <StickyNote className="w-4 h-4 text-status-warning" />
                   </div>
-                  <h3 className="text-base-ui font-semibold text-lia-text-primary font-['Open_Sans']">
+                  <h3 className="text-base-ui font-semibold text-lia-text-primary">
                     Nota do Candidato
                   </h3>
                 </div>

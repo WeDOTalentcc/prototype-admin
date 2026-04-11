@@ -131,7 +131,7 @@ export function UnifiedMessageList({
               /* LIA message — Notion style: plain text, no bubble bg, left-aligned */
               <div className="max-w-[90%]">
                 <div
-                  className="text-sm leading-relaxed text-lia-text-primary font-[Open_Sans,sans-serif] lia-markdown-content"
+                  className="text-sm leading-relaxed text-lia-text-primary lia-markdown-content"
                   dangerouslySetInnerHTML={{
                     __html: renderMarkdown(message.content),
                   }}
@@ -171,7 +171,7 @@ export function UnifiedMessageList({
               /* User message — Notion style: dark pill, right-aligned */
               <div className="max-w-[80%]">
                 <div className="inline-block px-4 py-2.5 rounded-xl bg-lia-bg-inverse dark:bg-lia-bg-tertiary text-white dark:text-lia-text-primary">
-                  <p className="text-sm font-[Open_Sans,sans-serif]">
+                  <p className="text-sm">
                     {message.content}
                   </p>
                 </div>
@@ -186,7 +186,7 @@ export function UnifiedMessageList({
         <div className="group">
           <div className="max-w-[90%]">
             <div
-              className="text-sm leading-relaxed text-lia-text-primary font-[Open_Sans,sans-serif] lia-markdown-content"
+              className="text-sm leading-relaxed text-lia-text-primary lia-markdown-content"
               dangerouslySetInnerHTML={{
                 __html: renderMarkdown(streamingContent),
               }}

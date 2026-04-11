@@ -69,7 +69,7 @@ export function SharedContent({ hook }: SharedContentProps) {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-lia-bg-primary flex items-center justify-center font-['Open_Sans']" role="status" aria-live="polite" aria-label="Carregando...">
+      <div className="min-h-screen bg-lia-bg-primary flex items-center justify-center" role="status" aria-live="polite" aria-label="Carregando...">
         <div className="flex flex-col items-center gap-4" role="status" aria-live="polite" aria-label="Carregando...">
           <Loader2 className="w-8 h-8 text-lia-text-secondary dark:text-lia-text-tertiary animate-spin motion-reduce:animate-none" />
           <p className="text-lia-text-tertiary">Carregando...</p>
@@ -80,7 +80,7 @@ export function SharedContent({ hook }: SharedContentProps) {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-lia-bg-primary flex items-center justify-center font-['Open_Sans']">
+      <div className="min-h-screen bg-lia-bg-primary flex items-center justify-center">
         <div className="bg-lia-btn-primary-bg rounded-xl p-8 max-w-md text-center border border-lia-border-strong">
           <div className="text-status-error text-lg mb-4">{error}</div>
           <Button
@@ -96,7 +96,7 @@ export function SharedContent({ hook }: SharedContentProps) {
 
   if (isExpired) {
     return (
-      <div className="min-h-screen bg-lia-bg-primary flex items-center justify-center font-['Open_Sans']">
+      <div className="min-h-screen bg-lia-bg-primary flex items-center justify-center">
         <div className="bg-lia-btn-primary-bg rounded-xl p-8 max-w-md text-center border border-lia-border-strong">
           <Clock className="w-12 h-12 text-lia-text-secondary mx-auto mb-4" />
           <h2 className="text-xl text-lia-text-on-inverse mb-2">Link Expirado</h2>
@@ -114,7 +114,7 @@ export function SharedContent({ hook }: SharedContentProps) {
   const totalCount = sharedData?.candidates?.length || 0
 
   return (
-    <div className="min-h-screen bg-lia-bg-primary font-['Open_Sans']">
+    <div className="min-h-screen bg-lia-bg-primary">
       <header className="sticky top-0 z-50 bg-lia-bg-primary/95 backdrop-blur-sm border-b border-lia-border-strong">
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
           <Image

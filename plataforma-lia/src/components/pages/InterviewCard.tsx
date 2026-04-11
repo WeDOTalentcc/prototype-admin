@@ -40,7 +40,7 @@ export function InterviewCard({
     return (
       <button
         onClick={() => onOpenJob(interview)}
-        className="text-xs font-[Open_Sans,sans-serif] font-medium text-wedo-cyan-dark dark:text-wedo-cyan-dark hover:text-wedo-cyan-dark dark:hover:text-wedo-cyan-dark hover:underline truncate cursor-pointer"
+        className="text-xs font-medium text-wedo-cyan-dark dark:text-wedo-cyan-dark hover:text-wedo-cyan-dark dark:hover:text-wedo-cyan-dark hover:underline truncate cursor-pointer"
         title="Abrir vaga no kanban"
       >
         {interview.jobCode && <span className="font-[Inter,sans-serif] mr-0.5">{interview.jobCode}</span>}
@@ -52,7 +52,7 @@ export function InterviewCard({
   const renderCandidateInfo = () => (
     <div className="grid grid-cols-2 gap-4 text-xs">
       <div className="space-y-0.5 min-w-0">
-        <span className="text-base-ui font-[Open_Sans,sans-serif] font-medium text-lia-text-primary truncate block">
+        <span className="text-base-ui font-medium text-lia-text-primary truncate block">
           {interview.candidateName}
         </span>
         {interview.candidateRole && (
@@ -99,11 +99,11 @@ export function InterviewCard({
                 {interview.time}
               </span>
               <span className="text-lia-text-disabled">·</span>
-              <span className="text-sm-ui font-[Open_Sans,sans-serif] font-semibold text-lia-text-primary truncate">
+              <span className="text-sm-ui font-semibold text-lia-text-primary truncate">
                 {interview.type}
               </span>
               <span className="text-lia-text-disabled">·</span>
-              <span className="text-xs font-[Open_Sans,sans-serif] text-lia-text-tertiary flex items-center gap-1">
+              <span className="text-xs text-lia-text-tertiary flex items-center gap-1">
                 {getPlatformIcon(interview.platform)}
                 {getPlatformLabel(interview.platform)}
                 <button
@@ -130,7 +130,7 @@ export function InterviewCard({
               <Button
                 size="sm"
                 onClick={() => onOpenMeeting(interview)}
-                className="h-7 px-3 text-xs font-[Open_Sans,sans-serif] font-medium gap-1.5 bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover dark:bg-lia-btn-primary-bg dark:hover:bg-lia-btn-primary-hover rounded-md"
+                className="h-7 px-3 text-xs font-medium gap-1.5 bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover dark:bg-lia-btn-primary-bg dark:hover:bg-lia-btn-primary-hover rounded-md"
               >
                 <ExternalLink className="w-3 h-3" />
                 Abrir Reunião
@@ -140,7 +140,7 @@ export function InterviewCard({
                   size="sm"
                   variant="outline"
                   onClick={() => onReschedule(interview)}
-                  className="h-7 px-2.5 text-xs font-[Open_Sans,sans-serif] font-medium gap-1 text-lia-text-secondary border-lia-border-default hover:bg-lia-bg-secondary hover:border-lia-border-medium dark:border-lia-border-default dark:hover:bg-lia-btn-primary-hover rounded-xl"
+                  className="h-7 px-2.5 text-xs font-medium gap-1 text-lia-text-secondary border-lia-border-default hover:bg-lia-bg-secondary hover:border-lia-border-medium dark:border-lia-border-default dark:hover:bg-lia-btn-primary-hover rounded-xl"
                 >
                   <CalendarClock className="w-3 h-3" />
                   Alterar Horário
@@ -151,7 +151,7 @@ export function InterviewCard({
                   size="sm"
                   variant="outline"
                   onClick={() => onReject(interview)}
-                  className="h-7 px-2.5 text-xs font-[Open_Sans,sans-serif] font-medium gap-1 text-status-error border-status-error/30 hover:bg-status-error/10 hover:border-status-error/30 dark:text-status-error dark:border-status-error/30 dark:hover:bg-status-error/20 rounded-md"
+                  className="h-7 px-2.5 text-xs font-medium gap-1 text-status-error border-status-error/30 hover:bg-status-error/10 hover:border-status-error/30 dark:text-status-error dark:border-status-error/30 dark:hover:bg-status-error/20 rounded-md"
                 >
                   <XCircleIcon className="w-3 h-3" />
                   Cancelar

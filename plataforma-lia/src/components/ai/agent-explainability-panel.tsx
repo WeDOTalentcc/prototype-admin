@@ -271,7 +271,7 @@ export function AgentExplainabilityPanel({
                         </div>
                       </div>
 
-                      <p className="text-xs text-lia-text-disabled font-['Open_Sans'] leading-relaxed">
+                      <p className="text-xs text-lia-text-disabled leading-relaxed">
                         {step.reasoning_summary || step.decision || step.tool_result_summary || ""}
                       </p>
                     </div>
