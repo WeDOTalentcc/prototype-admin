@@ -1,7 +1,8 @@
 {
   "agent": "pipeline_transition",
-  "version": "1.0",
-  "description": "Golden dataset for the Pipeline Transition agent",
+  "domain": "pipeline",
+  "version": "1.1",
+  "description": "Golden dataset for the Pipeline Transition agent — domain: pipeline",
   "cases": [
     {
       "id": "PLN-001",

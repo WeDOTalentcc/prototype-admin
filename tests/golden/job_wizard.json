@@ -1,7 +1,8 @@
 {
   "agent": "job_wizard",
-  "version": "1.0",
-  "description": "Golden dataset for the Job Wizard (job creation wizard) agent",
+  "domain": "job_management",
+  "version": "1.1",
+  "description": "Golden dataset for the Job Wizard (job creation wizard) agent — domain: job_management",
   "cases": [
     {
       "id": "JWZ-001",

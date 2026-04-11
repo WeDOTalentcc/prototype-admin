@@ -1,7 +1,8 @@
 {
   "agent": "wsi_interview",
-  "version": "1.0",
-  "description": "Golden dataset for WSI Interview agent",
+  "domain": "screening",
+  "version": "1.1",
+  "description": "Golden dataset for WSI Interview agent — domain: screening",
   "cases": [
     {
       "id": "INT-001",

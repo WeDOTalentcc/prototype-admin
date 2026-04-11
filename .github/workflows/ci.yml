@@ -182,25 +182,147 @@ jobs:
       - name: Audit backend dependencies
         run: cd lia-agent-system && pip-audit -r requirements.txt --ignore-vuln PYSEC-2023-57 || true
 
-  # ── RAGAS — Qualidade de Respostas RAG (não-bloqueante) ────────────────────
+  # ── RAGAS — Qualidade de Respostas RAG (blocking quality gate) ─────────────
   ragas-quality-check:
     name: RAGAS Quality Check
     runs-on: ubuntu-latest
     needs: [backend]
-    continue-on-error: true
-    if: github.ref == 'refs/heads/main'
+    continue-on-error: false
+    if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main'
+    env:
+      RAGAS_MIN_THRESHOLD: ${{ vars.RAGAS_MIN_THRESHOLD || '0.70' }}
     steps:
       - uses: actions/checkout@v4
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+
       - name: Install dependencies
-        run: pip install pytest pytest-asyncio
-        working-directory: lia-agent-system
-      - name: Validate RAGAS golden queries structure
-        run: python -m pytest tests/ragas/ -v --no-cov
-        working-directory: lia-agent-system
+        run: |
+          pip install pytest pytest-asyncio pyyaml anthropic
+          pip install -r lia-agent-system/requirements.txt
+
+      - name: Check hotfix bypass
+        id: bypass-check
+        run: |
+          if [ "${{ vars.RAGAS_BYPASS_FOR_HOTFIX }}" = "true" ] || [ "${{ env.RAGAS_BYPASS_FOR_HOTFIX }}" = "true" ]; then
+            echo "bypass=true" >> $GITHUB_OUTPUT
+            echo "::warning::RAGAS bypass activated — quality gate running in WARNING mode. Audit: actor=${{ github.actor }}, ref=${{ github.ref }}, sha=${{ github.sha }}, time=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          else
+            echo "bypass=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Run RAGAS per-metric enforcement (>= 0.70 per metric per domain)
+        id: ragas-eval
+        run: |
+          echo "=== RAGAS Quality Gate (threshold: $RAGAS_MIN_THRESHOLD per metric) ==="
+          echo "Metrics enforced: faithfulness, answer_relevancy, context_precision, context_recall"
+          EVAL_EXIT=0
+          python -m pytest lia-agent-system/tests/ragas/ -v --no-cov --tb=short || EVAL_EXIT=$?
+          if [ -n "$ANTHROPIC_API_KEY" ]; then
+            echo "ANTHROPIC_API_KEY present — running full LLM evaluation"
+            python tests/eval_runner.py --threshold $RAGAS_MIN_THRESHOLD --output ragas_domain_report.json --report-domains || EVAL_EXIT=$?
+          elif [ "${{ steps.bypass-check.outputs.bypass }}" = "true" ]; then
+            echo "::warning::ANTHROPIC_API_KEY missing — bypass active, running structural validation only"
+            python tests/eval_runner.py --allow-heuristic --threshold $RAGAS_MIN_THRESHOLD --output ragas_domain_report.json --report-domains || true
+          else
+            echo "::error::ANTHROPIC_API_KEY is required for RAGAS quality gate. Set the secret or enable RAGAS_BYPASS_FOR_HOTFIX=true for hotfix bypass."
+            python tests/eval_runner.py --dry-run --output ragas_domain_report.json --report-domains || true
+            EVAL_EXIT=1
+          fi
+          echo "eval_exit=$EVAL_EXIT" >> $GITHUB_OUTPUT
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+
+      - name: Post PR comment with RAGAS scores by domain
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            let reportContent = '';
+            try {
+              const report = JSON.parse(fs.readFileSync('ragas_domain_report.json', 'utf8'));
+              const bypass = '${{ steps.bypass-check.outputs.bypass }}' === 'true';
+              const evalExit = '${{ steps.ragas-eval.outputs.eval_exit }}';
+              const mode = bypass ? '⚠️ WARNING MODE (bypass active)' : (evalExit === '0' ? '✅ BLOCKING — PASSED' : '❌ BLOCKING — FAILED');
+              const threshold = report.ragas_thresholds?.min_per_metric || report.threshold || 0.70;
+              reportContent = `## RAGAS Quality Gate — ${mode}\n\n`;
+              reportContent += `**Min threshold per metric:** ${threshold} (faithfulness, relevancy, context_precision, context_recall)\n\n`;
+              const evalResult = evalExit === '0' ? 'All per-metric thresholds met' : 'Per-metric threshold violations detected';
+              reportContent += `**Metric enforcement:** ${evalResult}\n\n`;
+              if (report.domain_summary) {
+                reportContent += `### Scores by Domain\n\n`;
+                reportContent += `| Domain | Agents | Cases | Avg Score | Passed | Failed | Status |\n`;
+                reportContent += `|--------|--------|-------|-----------|--------|--------|--------|\n`;
+                for (const [domainName, ds] of Object.entries(report.domain_summary).sort()) {
+                  const status = ds.overall_pass ? '✅ PASS' : '❌ FAIL';
+                  const avgScore = ds.avg_score != null ? ds.avg_score.toFixed(3) : 'N/A';
+                  reportContent += `| ${domainName} | ${ds.agents.join(', ')} | ${ds.total_cases} | ${avgScore} | ${ds.passed_cases} | ${ds.failed_cases} | ${status} |\n`;
+                }
+              }
+              reportContent += `\n### Agent Details\n\n`;
+              reportContent += `| Agent | Domain | Cases | Faithfulness | Relevancy | Ctx Precision | Ctx Recall | Status |\n`;
+              reportContent += `|-------|--------|-------|-------------|-----------|---------------|------------|--------|\n`;
+              for (const agent of (report.agents || [])) {
+                const domain = agent.domain || 'unknown';
+                const status = agent.overall_pass ? '✅ PASS' : '❌ FAIL';
+                const m = agent.avg_metrics || {};
+                const faith = m.faithfulness != null ? m.faithfulness.toFixed(3) : 'N/A';
+                const rel = m.answer_relevancy != null ? m.answer_relevancy.toFixed(3) : 'N/A';
+                const prec = m.context_precision != null ? m.context_precision.toFixed(3) : 'N/A';
+                const rec = m.context_recall != null ? m.context_recall.toFixed(3) : 'N/A';
+                reportContent += `| ${agent.agent} | ${domain} | ${agent.total} | ${faith} | ${rel} | ${prec} | ${rec} | ${status} |\n`;
+              }
+              reportContent += `\n**Generated:** ${report.generated_at} | **Dry run:** ${report.dry_run}\n`;
+              if (bypass) {
+                reportContent += `\n> ⚠️ **Bypass active** (RAGAS_BYPASS_FOR_HOTFIX=true) — failures will not block merge.\n> Audit: actor=${{ github.actor }}, sha=${{ github.sha }}\n`;
+              }
+            } catch (e) {
+              reportContent = `## RAGAS Quality Gate\n\n⚠️ Could not parse evaluation report: ${e.message}\n`;
+            }
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            const botComment = comments.find(c => c.body.includes('RAGAS Quality Gate'));
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: reportContent,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: reportContent,
+              });
+            }
+
+      - name: Enforce quality gate (blocking)
+        if: steps.bypass-check.outputs.bypass != 'true'
+        run: |
+          if [ "${{ steps.ragas-eval.outputs.eval_exit }}" != "0" ]; then
+            echo "::error::RAGAS quality gate FAILED — eval exit code: ${{ steps.ragas-eval.outputs.eval_exit }}"
+            echo "Fix failing RAGAS evaluations before merging. Minimum threshold: $RAGAS_MIN_THRESHOLD per metric."
+            exit 1
+          fi
+          echo "RAGAS quality gate PASSED — all metrics >= $RAGAS_MIN_THRESHOLD"
+
+      - name: Quality gate (bypass — warning only)
+        if: steps.bypass-check.outputs.bypass == 'true'
+        run: |
+          echo "::warning::RAGAS quality gate running in WARNING mode (RAGAS_BYPASS_FOR_HOTFIX=true)"
+          echo "::warning::Audit trail: actor=${{ github.actor }}, ref=${{ github.ref }}, sha=${{ github.sha }}, time=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          if [ "${{ steps.ragas-eval.outputs.eval_exit }}" != "0" ]; then
+            echo "::warning::RAGAS evaluations FAILED but bypass is active — not blocking merge"
+          fi
 
   # ── Prompt Evals — LLM-as-judge (runs on PRs that change prompts) ──────────
   prompt-evals:

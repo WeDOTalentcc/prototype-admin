@@ -1,7 +1,8 @@
 {
   "agent": "cv_screening",
-  "version": "1.0",
-  "description": "Golden dataset for the CV Screening agent",
+  "domain": "screening",
+  "version": "1.1",
+  "description": "Golden dataset for the CV Screening agent — domain: screening",
   "cases": [
     {
       "id": "CVS-001",

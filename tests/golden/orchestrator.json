@@ -1,7 +1,8 @@
 {
   "agent": "orchestrator",
-  "version": "1.0",
-  "description": "Golden dataset for orchestrator/intent-router agent",
+  "domain": "orchestration",
+  "version": "1.1",
+  "description": "Golden dataset for orchestrator/intent-router agent — domain: orchestration",
   "cases": [
     {
       "id": "ORC-001",
@@ -40,7 +41,7 @@
       "input": "Cria a vaga e já busca candidatos para ela",
       "expected_intent": "job_management",
       "expected_agent": "JOB_PLANNER",
-      "expected_keywords": ["vaga"],
+      "expected_keywords": ["vaga", "criar", "candidatos", "buscar"],
       "should_not_contain": []
     },
     {

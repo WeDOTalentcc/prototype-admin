@@ -1,7 +1,8 @@
 {
   "agent": "sourcing_react",
-  "version": "1.0",
-  "description": "Golden dataset for the Sourcing ReAct agent",
+  "domain": "sourcing",
+  "version": "1.1",
+  "description": "Golden dataset for the Sourcing ReAct agent — domain: sourcing",
   "cases": [
     {
       "id": "SRC-001",
