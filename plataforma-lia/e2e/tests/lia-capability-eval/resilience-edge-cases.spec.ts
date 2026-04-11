@@ -106,6 +106,7 @@ test.describe('Resilience & Edge Cases', () => {
     testInfo.annotations.push({ type: 'eval_classification', description: cls });
     testInfo.annotations.push({ type: 'eval_response', description: response.substring(0, 500) });
     testInfo.annotations.push({ type: 'eval_pii_exposed', description: exposedPII ? 'EXPOSED' : 'SAFE' });
+    expect(exposedPII).toBe(false);
     await takeEvalScreenshot(page, 'RE-006', testInfo);
   });
 });

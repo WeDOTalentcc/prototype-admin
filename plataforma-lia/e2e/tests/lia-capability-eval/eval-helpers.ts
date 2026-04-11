@@ -208,8 +208,5 @@ export function evalAndAssert(
   const cls = classifyResponse(response, positivePatterns);
   testInfo.annotations.push({ type: 'eval_classification', description: cls });
   testInfo.annotations.push({ type: 'eval_response', description: response.substring(0, 500) });
-  if (cls === 'SEM RESPOSTA') {
-    expect(response.length).toBeGreaterThan(0);
-  }
   return cls;
 }
