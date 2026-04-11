@@ -87,9 +87,26 @@ IMPLICIT_BIAS_TERMS_EN: dict = {
     # Origin / culture
     "native speaker":           "May be national origin proxy. Only require if operationally justified.",
     "traditional values":       "May indicate religious or cultural discrimination.",
+    # Religion
+    "religious requirements":   "Religious requirements may constitute discrimination (Title VII / EU Directive 2000/78).",
+    "church-going":             "Church attendance as criterion may indicate religious discrimination.",
+    "faith-based values":       "Requiring faith-based values may exclude candidates of other or no faiths.",
+    "sunday availability":      "Sunday availability may be a proxy for religious discrimination.",
+    "christian values":         "Requiring Christian values may constitute religious discrimination.",
+    "religious affiliation":    "Filtering by religious affiliation violates anti-discrimination law.",
+    "worship attendance":       "Worship attendance as criterion may indicate religious bias.",
+    "god-fearing":              "Religious criterion that may exclude candidates of other or no faiths.",
     # Disability
     "without restrictions":     "May discriminate against candidates with disabilities (ADA/CRPD).",
     "fully able":               "Potential disability discrimination. Specify functional requirements.",
+    "no disabilities":          "Excluding candidates with disabilities violates ADA/CRPD.",
+    "physically fit":           "May discriminate against candidates with disabilities unless functionally justified.",
+    "able-bodied":              "May discriminate against candidates with disabilities. Specify functional requirements.",
+    # Socioeconomic
+    "from a good family":       "Socioeconomic discrimination proxy. Evaluate professional qualifications.",
+    "private school":           "Academic elitism / socioeconomic proxy. Evaluate competencies.",
+    "affluent area":            "Socioeconomic / geographic discrimination proxy.",
+    "low-income":               "Socioeconomic discrimination. Evaluate professional qualifications.",
     # Family status
     "no family obligations":    "May discriminate by marital or parental status.",
     "available at all times":   "May discriminate against candidates with caregiving responsibilities.",
@@ -402,16 +419,56 @@ DISCRIMINATORY_CATEGORIES_EN = {
             "(ADEA in the US, EU Directive 2000/78, and Lei 9.029/95 in Brazil)."
         ),
     },
+    "religion_en": {
+        "terms": [
+            r"\b(only|just)\s+(christians?|muslims?|jews?|hindus?|buddhists?|atheists?)\b",
+            r"\b(christian|muslim|jewish|hindu|buddhist|atheist)\s+only\b",
+            r"\breligion\s*[:\-]\s*(christian|muslim|jewish|hindu|buddhist)\b",
+            r"\b(prefer|require)\s+(christians?|muslims?|jews?|atheists?)\b",
+            r"\bmust\s+be\s+(christian|muslim|jewish|hindu|buddhist|religious)\b",
+            r"\breligious\s+(test|requirement|affiliation)\s+(required|mandatory)\b",
+            r"\bchurch\s+attendance\s+(required|mandatory|expected)\b",
+        ],
+        "message": (
+            "LIA cannot filter candidates by religion. "
+            "This violates Title VII, EU Directive 2000/78, and CRFB/88 Art. 5 VI."
+        ),
+    },
+    "disability_en": {
+        "terms": [
+            r"\b(only|just)\s+(able-bodied|non-disabled)\b",
+            r"\bno\s+(disabilities|handicaps?|impairments?)\b",
+            r"\bmust\s+be\s+(able-bodied|physically\s+fit|fully\s+abled?)\b",
+            r"\b(exclude|reject)\s+.*\b(disabled|disability|handicap)\b",
+            r"\bphysically\s+(perfect|flawless|sound)\b",
+        ],
+        "message": (
+            "LIA cannot exclude candidates with disabilities. "
+            "This violates the ADA, CRPD, and Lei 13.146/15 (Estatuto da Pessoa com Deficiência)."
+        ),
+    },
+    "socioeconomic_en": {
+        "terms": [
+            r"\b(only|just)\s+from\s+(affluent|wealthy|rich|upper\s*class)\b",
+            r"\b(low[- ]income|poor|underprivileged)\s+(area|background|neighborhood)\b",
+            r"\bmust\s+live\s+in\s+(upscale|affluent|wealthy)\b",
+            r"\b(exclude|reject)\s+.*\b(low[- ]income|poor|disadvantaged)\b",
+        ],
+        "message": (
+            "LIA cannot filter candidates by socioeconomic status. "
+            "This may violate anti-discrimination laws and perpetuate social inequality."
+        ),
+    },
 }  # end DISCRIMINATORY_CATEGORIES_EN
 
-# Merge EN categories into main dict (so len(DISCRIMINATORY_CATEGORIES)==16)
+# Merge EN categories into main dict (so len(DISCRIMINATORY_CATEGORIES)==19)
 DISCRIMINATORY_CATEGORIES.update(DISCRIMINATORY_CATEGORIES_EN)
 
 _COMPILED_PATTERNS: dict[str, list[re.Pattern]] = {}
 # Versão dos patterns — incrementar quando patterns forem adicionados para forçar recompilação
 # v3: FAR-1 — 5 novas categorias (antecedentes_criminais, saude_doenca, filiacao_sindical,
 #              aparencia_fisica), expansão IMPLICIT_BIAS_TERMS, fix regex idade
-_PATTERNS_VERSION = 4
+_PATTERNS_VERSION = 5
 
 HIGH_IMPACT_ACTIONS = {
     "rejection", "shortlist", "wsi_score", "policy_save", "bulk_rejection",

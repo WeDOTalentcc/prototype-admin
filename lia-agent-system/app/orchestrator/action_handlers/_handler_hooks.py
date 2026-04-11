@@ -67,9 +67,37 @@ async def log_action_audit(
     candidate_id: str | None = None,
     job_vacancy_id: str | None = None,
     details: dict[str, Any] | None = None,
+    *,
+    actor_id: str | None = None,
+    entity_type: str | None = None,
+    entity_id: str | None = None,
+    changes_summary: str | None = None,
 ) -> None:
+    import json
+    from datetime import datetime, timezone
+
+    effective_actor = actor_id or "system"
+    effective_entity_type = entity_type or _infer_entity_type(action_type)
+    effective_entity_id = entity_id or candidate_id or job_vacancy_id
+
+    structured_log = {
+        "audit_event": "action_handler_write",
+        "actor_id": effective_actor,
+        "action_type": action_type,
+        "entity_type": effective_entity_type,
+        "entity_id": effective_entity_id,
+        "company_id": company_id or "system",
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "changes_summary": changes_summary or (details.get("summary") if details else None),
+    }
+    logger.info("AUDIT_TRAIL %s", json.dumps(structured_log, default=str))
+
     try:
         from app.shared.compliance.audit_service import audit_service
+
+        reasoning_parts = [f"Action {action_type} executed via chat"]
+        if changes_summary:
+            reasoning_parts.append(changes_summary)
 
         await audit_service.log_decision(
             company_id=company_id or "system",
@@ -77,13 +105,27 @@ async def log_action_audit(
             decision_type=action_type,
             action=action_type,
             decision="executed",
-            reasoning=[f"Action {action_type} executed via chat"],
+            reasoning=reasoning_parts,
             criteria_used=[],
             candidate_id=candidate_id,
             job_vacancy_id=job_vacancy_id,
         )
     except Exception as e:
         logger.warning(f"Audit log skipped for {action_type}: {e}")
+
+
+def _infer_entity_type(action_type: str) -> str:
+    if "candidate" in action_type:
+        return "candidate"
+    if "job" in action_type or "vacancy" in action_type:
+        return "job_vacancy"
+    if "interview" in action_type or "schedule" in action_type:
+        return "interview"
+    if "email" in action_type or "template" in action_type:
+        return "email_template"
+    if "whatsapp" in action_type or "message" in action_type:
+        return "message"
+    return "action"
 
 
 async def sync_to_rails(

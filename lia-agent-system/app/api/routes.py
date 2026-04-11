@@ -72,6 +72,7 @@ from app.api.v1 import (
     company_culture_config,
     company_departments,
     compliance_controls,
+    compliance_status,
     consent_management,
     conversations,
     credits,
@@ -475,6 +476,7 @@ def register_all_routes(app: FastAPI) -> None:
     # ── Compliance / LGPD ─────────────────────────────────────────────────────
     app.include_router(lgpd_compliance.router, prefix="/api/v1", tags=["lgpd-compliance"])
     app.include_router(compliance_controls.router, prefix="/api/v1", tags=["compliance-controls"])
+    app.include_router(compliance_status.router, prefix="/api/v1", tags=["compliance-status"])
     app.include_router(trust_center.router, prefix="/api/v1", tags=["trust-center"])
     app.include_router(audit_logs.router, prefix="/api/v1", tags=["audit-logs"])
     app.include_router(audit_timeline_router)
