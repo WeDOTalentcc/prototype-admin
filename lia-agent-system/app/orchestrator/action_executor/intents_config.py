@@ -227,7 +227,7 @@ ACTIONABLE_INTENTS: dict[str, dict[str, Any]] = {
         },
     },
     "atualizar_campo_candidato": {
-        "domain_id": "pipeline_action",
+        "domain_id": "pipeline_transition",
         "action_id": "update_candidate_field",
         "required_params": ["candidate_id", "field_name", "field_value"],
         "optional_params": [],
