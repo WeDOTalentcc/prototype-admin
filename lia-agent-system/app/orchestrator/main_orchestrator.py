@@ -275,7 +275,7 @@ class MainOrchestrator:
             logger.info(
                 "[MainOrchestrator] response_time=%.1fms domain=%s intent=%s cache_hit=%s user=%s",
                 _elapsed_ms, _domain, _phase2_response.intent_detected,
-                getattr(_phase2_response, '_from_cache', False), ctx.user_id,
+                getattr(_phase2_response, 'from_cache', False), ctx.user_id,
             )
             return _phase2_response
 
