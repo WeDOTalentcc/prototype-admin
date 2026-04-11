@@ -105,7 +105,7 @@ export function JobsDashboard({ className, onJobSelect }: JobsDashboardProps) {
       running: '-dark dark:text-wedo-cyan-dark',
       completed: ' dark:text-status-success',
       failed: ' dark:text-status-error',
-      cancelled: 'bg-lia-bg-secondary0/10 text-lia-text-secondary'
+      cancelled: 'bg-lia-bg-secondary/10 text-lia-text-secondary'
     }
     return styles[status] || styles.pending
   }

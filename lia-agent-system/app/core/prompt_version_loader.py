@@ -146,15 +146,48 @@ def register_all_prompts_at_startup() -> int:
                 metadata = data.get("metadata", {}) or {}
                 domain = metadata.get("domain") or data.get("domain", yaml_file.stem)
                 version = metadata.get("version") or data.get("version", "1.0")
+
                 system_prompt = data.get("system_prompt", "")
-                if not system_prompt:
+                if system_prompt:
+                    prompt_version_registry.register(
+                        name=domain,
+                        version=str(version),
+                        template=system_prompt,
+                    )
+                    count += 1
                     continue
-                prompt_version_registry.register(
-                    name=domain,
-                    version=str(version),
-                    template=system_prompt,
-                )
-                count += 1
+
+                prompts_block = data.get("prompts")
+                if isinstance(prompts_block, dict):
+                    for prompt_name, prompt_text in prompts_block.items():
+                        if isinstance(prompt_text, str) and prompt_text.strip():
+                            prompt_version_registry.register(
+                                name=f"{domain}/{prompt_name}",
+                                version=str(version),
+                                template=prompt_text,
+                            )
+                            count += 1
+                    continue
+
+                variants_block = data.get("variants")
+                if isinstance(variants_block, (dict, list)):
+                    exp_id = data.get("experiment_id", yaml_file.stem)
+                    items = (
+                        variants_block.items() if isinstance(variants_block, dict)
+                        else ((v.get("variant_id", f"v{i}"), v) for i, v in enumerate(variants_block) if isinstance(v, dict))
+                    )
+                    for variant_name, variant_data in items:
+                        tmpl = variant_data if isinstance(variant_data, str) else ""
+                        if not tmpl and isinstance(variant_data, dict):
+                            tmpl = variant_data.get("system_prompt", "") or variant_data.get("prompt_text", "")
+                        if tmpl:
+                            prompt_version_registry.register(
+                                name=f"experiment/{exp_id}/{variant_name}",
+                                version=str(version),
+                                template=tmpl,
+                            )
+                            count += 1
+
             except Exception as exc:
                 logger.warning(
                     "[PromptVersionLoader] Failed to register %s: %s",
@@ -166,3 +199,56 @@ def register_all_prompts_at_startup() -> int:
         count,
     )
     return count
+
+
+def bootstrap_experiments_from_yaml() -> int:
+    """Bootstrap A/B experiments from YAML files in the experiments directory.
+
+    Reads experiment YAML files that define variants with system_prompt fields
+    and creates experiments via ExperimentManager.create_experiment_from_yaml().
+    Returns the number of experiments created.
+    """
+    from app.shared.ab_testing import get_experiment_manager
+
+    manager = get_experiment_manager()
+    created = 0
+
+    if not _EXPERIMENTS_DIR.exists():
+        return 0
+
+    for yaml_file in sorted(_EXPERIMENTS_DIR.glob("*.yaml")):
+        try:
+            data = load_prompt_yaml(yaml_file)
+            variants_block = data.get("variants")
+            if not isinstance(variants_block, (dict, list)) or len(variants_block) < 2:
+                continue
+
+            exp_id = data.get("experiment_id", yaml_file.stem)
+            description = data.get("description", "")
+
+            variant_prompts: dict[str, str] = {}
+            items = (
+                variants_block.items() if isinstance(variants_block, dict)
+                else ((v.get("variant_id", f"v{i}"), v) for i, v in enumerate(variants_block) if isinstance(v, dict))
+            )
+            for variant_name, variant_data in items:
+                tmpl = variant_data if isinstance(variant_data, str) else ""
+                if not tmpl and isinstance(variant_data, dict):
+                    tmpl = variant_data.get("system_prompt", "") or variant_data.get("prompt_text", "")
+                if tmpl:
+                    variant_prompts[variant_name] = tmpl
+
+            if len(variant_prompts) >= 2:
+                manager.create_experiment(
+                    name=exp_id,
+                    variants=variant_prompts,
+                    description=description,
+                )
+                created += 1
+                logger.info("[PromptVersionLoader] Bootstrapped experiment '%s' with %d variants",
+                            exp_id, len(variant_prompts))
+        except Exception as exc:
+            logger.warning("[PromptVersionLoader] Failed to bootstrap experiment from %s: %s",
+                          yaml_file.name, exc)
+
+    return created

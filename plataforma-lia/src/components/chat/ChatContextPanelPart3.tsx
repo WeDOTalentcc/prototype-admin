@@ -63,7 +63,7 @@ export function ChatContextPanelPart3({ contextData, onPipelineAction, onClose }
                           <span className="text-xs text-lia-text-secondary">Ações Recomendadas:</span>
                           <ul className="mt-1 space-y-1">
                             {prediction.actions.slice(0, 2).map((action: string, i: number) => (
-                              <li key={`act-${i}`} className="flex items-start space-x-2 text-xs"><div className="w-1 h-1 rounded-full mt-1.5 flex-shrink-0 bg-lia-bg-secondary0"></div><span>{action}</span></li>
+                              <li key={`act-${i}`} className="flex items-start space-x-2 text-xs"><div className="w-1 h-1 rounded-full mt-1.5 flex-shrink-0 bg-lia-bg-secondary"></div><span>{action}</span></li>
                             ))}
                           </ul>
                         </div>

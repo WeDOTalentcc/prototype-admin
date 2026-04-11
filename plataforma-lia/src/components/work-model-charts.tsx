@@ -52,7 +52,7 @@ export function WorkModelCharts({ className }: WorkModelChartsProps) {
       label: 'Presencial',
       value: 169,
       percentage: 16.9,
-      color: 'bg-lia-bg-secondary0',
+      color: 'bg-lia-bg-secondary',
       icon: <Building className="w-4 h-4" />
     }
   ]
@@ -211,7 +211,7 @@ export function WorkModelCharts({ className }: WorkModelChartsProps) {
               </div>
               <div className="flex-1 bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-full h-2">
                 <div
-                  className="bg-lia-bg-secondary0 h-2 rounded-full transition-[width,height] duration-300"
+                  className="bg-lia-bg-secondary h-2 rounded-full transition-[width,height] duration-300"
                   style={{width: `${(item.presencial / maxValue) * 100}%`}}
                 ></div>
               </div>
@@ -248,7 +248,7 @@ export function WorkModelCharts({ className }: WorkModelChartsProps) {
                   minHeight: '4px'}} title={`Híbrido: ${item.hibrido}`}></div>
 
                 {/* Presencial */}
-                <div className="w-3 bg-lia-bg-secondary0 rounded-t" style={{height: `${(item.presencial / maxTrendValue) * 100}%`,
+                <div className="w-3 bg-lia-bg-secondary rounded-t" style={{height: `${(item.presencial / maxTrendValue) * 100}%`,
                   minHeight: '4px'}} title={`Presencial: ${item.presencial}`}></div>
               </div>
 
@@ -270,7 +270,7 @@ export function WorkModelCharts({ className }: WorkModelChartsProps) {
             <span className="text-xs text-lia-text-secondary">Híbrido</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 bg-lia-bg-secondary0 rounded-xl"></div>
+            <div className="w-3 h-3 bg-lia-bg-secondary rounded-xl"></div>
             <span className="text-xs text-lia-text-secondary">Presencial</span>
           </div>
         </div>

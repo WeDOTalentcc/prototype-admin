@@ -65,6 +65,8 @@ PUBLIC_PATHS = {
     "/api/v1/openmic/webhook",
     "/favicon.ico",
     "/api/v1/health",
+    "/api/v1/rails/health",
+    "/api/v1/performance",
     "/api/v1/health/",
     "/api/v1/health/langgraph",
     "/api/v1/navigation-intent",

@@ -487,9 +487,16 @@ class MainOrchestrator:
                 _fast_match = _fast.match(ctx.message or "")
                 _detected_domain = _fast_match.domain_id if _fast_match else None
                 if _detected_domain and _detected_domain in _CACHEABLE_DOMAINS:
+                    _cache_context = {
+                        "company_id": str(ctx.company_id or ""),
+                        "user_id": str(ctx.user_id or ""),
+                        "job_id": str(ctx.entity_id or "") if ctx.context_type == "job" else "",
+                        "candidate_id": str(ctx.entity_id or "") if ctx.context_type == "candidate" else "",
+                        "conversation_id": str(conv_id or ""),
+                    }
                     _cache_key = response_cache_service.generate_cache_key(
                         _detected_domain,
-                        {"company_id": str(ctx.company_id or "")},
+                        _cache_context,
                         ctx.message or "",
                         company_id=str(ctx.company_id or ""),
                     )

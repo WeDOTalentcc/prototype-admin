@@ -314,7 +314,7 @@ export default function CandidateProfilePage() {
                     size="sm"
                     variant="outline"
                     onClick={handleHideCandidate}
-                    className={`gap-1.5 ${isHidden ?"bg-lia-bg-secondary0 hover:bg-lia-border-medium text-white" :""}`}
+                    className={`gap-1.5 ${isHidden ?"bg-lia-bg-secondary hover:bg-lia-border-medium text-white" :""}`}
                   >
                     <EyeOff className={`w-4 h-4 ${isHidden ?"text-white" :"text-lia-text-secondary"}`} />
                     {isHidden ?"Oculto" :"Ocultar"}

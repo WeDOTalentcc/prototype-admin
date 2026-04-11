@@ -482,7 +482,7 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
                       <div key={candidate.name} className="flex items-center justify-between p-1.5 bg-lia-bg-secondary rounded-xl border border-lia-border-subtle">
                         <div className="flex items-center gap-1.5">
                           <div className={`w-5 h-5 rounded-full flex items-center justify-center text-micro font-bold text-white
- ${index === 0 ? 'bg-status-warning' : index === 1 ? 'bg-lia-border-medium' : index === 2 ? 'bg-wedo-orange/10' : 'bg-lia-bg-secondary0'}`}>
+ ${index === 0 ? 'bg-status-warning' : index === 1 ? 'bg-lia-border-medium' : index === 2 ? 'bg-wedo-orange/10' : 'bg-lia-bg-secondary'}`}>
                             {index + 1}
                           </div>
                           <div>

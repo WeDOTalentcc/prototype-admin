@@ -98,7 +98,7 @@ export function JobPipelineSection({
                               <span className="text-xs text-lia-text-primary w-20">Total</span>
                               <div className="flex-1 mx-2">
                                 <div className="bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-full h-3">
-                                  <div className="bg-lia-bg-secondary0 dark:bg-lia-bg-elevated h-3 rounded-full flex items-center justify-end pr-1 w-full">
+                                  <div className="bg-lia-bg-secondary dark:bg-lia-bg-elevated h-3 rounded-full flex items-center justify-end pr-1 w-full">
                                     <span className="text-xs text-white font-medium">{previewJob.funnel.total}</span>
                                   </div>
                                 </div>
@@ -162,7 +162,7 @@ export function JobPipelineSection({
                               <span className="text-xs text-lia-text-primary w-20">Contratados</span>
                               <div className="flex-1 mx-2">
                                 <div className="bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-full h-3">
-                                  <div className="bg-lia-bg-secondary0 dark:bg-lia-bg-elevated h-3 rounded-full flex items-center justify-end pr-1"
+                                  <div className="bg-lia-bg-secondary dark:bg-lia-bg-elevated h-3 rounded-full flex items-center justify-end pr-1"
                                        style={{width: previewJob.funnel.hired > 0 ? `${(previewJob.funnel.hired / previewJob.funnel.total) * 100}%` : '5%'}}>
                                     <span className="text-xs text-white font-medium">{previewJob.funnel.hired}</span>
                                   </div>
@@ -340,7 +340,7 @@ export function JobPipelineSection({
                                 <div
                                   key={i}
                                   className={`w-1.5 h-2.5 rounded-full ${
-                                    i < (previewJob.urgencyLevel > 3 ? 4 : 2) ? 'bg-lia-bg-secondary0 dark:bg-lia-bg-elevated' : 'bg-lia-border-default'
+                                    i < (previewJob.urgencyLevel > 3 ? 4 : 2) ? 'bg-lia-bg-secondary dark:bg-lia-bg-elevated' : 'bg-lia-border-default'
                                   }`}
                                 />
                               ))}

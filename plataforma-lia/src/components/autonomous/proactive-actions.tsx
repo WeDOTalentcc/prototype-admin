@@ -12,7 +12,7 @@ import { cn } from"@/lib/utils"
 import { getProactiveActions, acceptProactiveAction, rejectProactiveAction } from"@/services/lia-api"
 
 const PRIORITY_STYLES: Record<string, { badge: string; icon: React.ElementType }> = {
-  low: { badge: 'bg-lia-bg-secondary0/10 text-lia-text-secondary', icon: Info },
+  low: { badge: 'bg-lia-bg-secondary/10 text-lia-text-secondary', icon: Info },
   normal: { badge: '-dark dark:text-wedo-cyan-dark', icon: Lightbulb },
   high: { badge: ' dark:text-wedo-orange', icon: AlertCircle },
   urgent: { badge: ' dark:text-status-error', icon: Bell }

@@ -165,7 +165,7 @@ export function ChatContextPanelPart1({ contextData }: Props) {
                   <div className="space-y-2">
                     {data.key_responsibilities.map((responsibility: string) => (
                       <div key={responsibility} className="flex items-start space-x-3 p-3 rounded-md bg-status-success/10 dark:bg-status-success/20">
-                        <div className="w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0 bg-lia-bg-secondary0"></div>
+                        <div className="w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0 bg-lia-bg-secondary"></div>
                         <span className="text-sm text-lia-text-primary">{responsibility}</span>
                       </div>
                     ))}

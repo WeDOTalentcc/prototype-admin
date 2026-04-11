@@ -175,7 +175,7 @@ export function ChatContextPanelPart2({ contextData }: Props) {
                   <h4 className="text-sm font-medium text-lia-text-secondary mb-3">Primeiros 30 Dias</h4>
                   <div className="space-y-2">
                     {['Imersão na cultura e processos da empresa', 'Reuniões 1:1 com stakeholders principais', 'Análise do estado atual da infraestrutura TI'].map((item, i) => (
-                      <div key={i} className="flex items-start space-x-3 p-3 rounded-xl bg-lia-bg-tertiary"><div className="w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0 bg-lia-bg-secondary0"></div><span className="text-sm">{item}</span></div>
+                      <div key={i} className="flex items-start space-x-3 p-3 rounded-xl bg-lia-bg-tertiary"><div className="w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0 bg-lia-bg-secondary"></div><span className="text-sm">{item}</span></div>
                     ))}
                   </div>
                 </div>
@@ -183,7 +183,7 @@ export function ChatContextPanelPart2({ contextData }: Props) {
                   <h4 className="text-sm font-medium text-lia-text-secondary mb-3">60-90 Dias</h4>
                   <div className="space-y-2">
                     {['Apresentação do plano estratégico de transformação digital', 'Início das primeiras iniciativas de melhoria'].map((item, i) => (
-                      <div key={i} className="flex items-start space-x-3 p-3 rounded-xl bg-lia-bg-tertiary"><div className="w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0 bg-lia-bg-secondary0"></div><span className="text-sm">{item}</span></div>
+                      <div key={i} className="flex items-start space-x-3 p-3 rounded-xl bg-lia-bg-tertiary"><div className="w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0 bg-lia-bg-secondary"></div><span className="text-sm">{item}</span></div>
                     ))}
                   </div>
                 </div>

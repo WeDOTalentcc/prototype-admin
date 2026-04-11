@@ -129,6 +129,14 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.warning(f"⚠️ Prompt version registration failed: {e}")
 
+    try:
+        from app.core.prompt_version_loader import bootstrap_experiments_from_yaml
+        _exp_count = bootstrap_experiments_from_yaml()
+        if _exp_count:
+            logger.info(f"✅ A/B experiments: {_exp_count} loaded from YAML")
+    except Exception as e:
+        logger.warning(f"⚠️ A/B experiment bootstrap failed: {e}")
+
     # Initialize Orchestrator
     try:
         llm_service = LLMService()

@@ -29,7 +29,7 @@ const DIMENSION_LABELS: Record<string, string> = {
 const DIMENSION_COLORS: Record<string, string> = {
   technical: "bg-lia-btn-primary-hover",
   behavioral: "bg-lia-border-medium",
-  cultural_fit: "bg-lia-bg-secondary0",
+  cultural_fit: "bg-lia-bg-secondary",
   experience: "bg-lia-bg-inverse",
 }
 
@@ -117,7 +117,7 @@ export function LIAScoreCard({
           {Object.entries(breakdown!).map(([key, value]) => {
             if (value === undefined || value === null) return null
             const label = DIMENSION_LABELS[key] ?? key
-            const color = DIMENSION_COLORS[key] ?? "bg-lia-bg-secondary0"
+            const color = DIMENSION_COLORS[key] ?? "bg-lia-bg-secondary"
             return (
               <div key={key} role="listitem">
                 <div className="flex items-center justify-between mb-0.5">
