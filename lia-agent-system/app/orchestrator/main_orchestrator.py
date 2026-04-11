@@ -97,7 +97,8 @@ class ChatResponse(BaseModel):
     needs_confirmation: bool = False
     needs_params: bool = False
     pending_action_id: str | None = None
-    fairness_warnings: list[str] = Field(default_factory=list)  # Soft advisory warnings do FairnessGuard
+    fairness_warnings: list[str] = Field(default_factory=list)
+    from_cache: bool = False
 
     @classmethod
     def from_orchestrator_result(cls, result: dict[str, Any], conv_id: str) -> ChatResponse:
@@ -516,7 +517,7 @@ class MainOrchestrator:
                             suggested_prompts=_cached.get("suggested_prompts", []),
                             conversation_id=conv_id,
                         )
-                        resp._from_cache = True  # type: ignore[attr-defined]
+                        resp.from_cache = True
                         return resp
             except Exception as _cache_exc:
                 logger.debug("[MainOrchestrator] Cache lookup skipped: %s", _cache_exc)
