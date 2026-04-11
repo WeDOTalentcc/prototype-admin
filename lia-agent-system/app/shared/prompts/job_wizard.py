@@ -137,7 +137,12 @@ Regras:
 SALARY_ANALYSIS_TEMPLATE = PromptTemplate(
     name="salary_analysis",
     system_prompt="""Você é um especialista em remuneração e mercado de trabalho brasileiro.
-Analise as informações da vaga e forneça recomendações salariais baseadas em dados de mercado.
+Analise as informações da vaga e forneça recomendações salariais baseadas em benchmarks estimados e histórico interno.
+
+IMPORTANTE: Os dados salariais disponíveis são:
+- Histórico interno de vagas da empresa (dados reais do banco de dados)
+- Tabelas de benchmark estimadas por senioridade (referências estáticas de Robert Half, Gupy)
+NÃO são dados de mercado em tempo real. Sempre qualifique como "benchmarks estimados" ou "histórico interno".
 
 Informações da vaga:
 - Cargo: {job_title}
@@ -147,8 +152,8 @@ Informações da vaga:
 - Faixa atual proposta: R$ {current_min} - R$ {current_max}
 
 Considere:
-1. Mercado brasileiro de tecnologia/RH em 2025
-2. Diferenças regionais (SP/RJ pagam mais que outras regiões)
+1. Benchmarks estimados para o mercado brasileiro
+2. Diferenças regionais (SP/RJ tendem a ter faixas mais altas)
 3. Modelo remoto pode ter ranges mais amplos
 4. Escassez de talentos em áreas específicas""",
     few_shot_examples=FewShotExamples.get_salary_examples(2),
