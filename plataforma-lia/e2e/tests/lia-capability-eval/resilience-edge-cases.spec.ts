@@ -40,7 +40,7 @@ test.describe('Resilience & Edge Cases', () => {
         testInfo.annotations.push({ type: 'eval_classification', description: 'RESPOSTA COERENTE' });
       }
     }
-    await takeEvalScreenshot(page, 'RE-001');
+    await takeEvalScreenshot(page, 'RE-001', testInfo);
   });
 
   test('RE-002: Very long prompt (500+ chars)', async ({ authenticatedPage: page }, testInfo) => {
@@ -52,7 +52,7 @@ test.describe('Resilience & Edge Cases', () => {
     const cls = classifyResponse(response, [/candidato/i, /busca/i, /javascript/i]);
     testInfo.annotations.push({ type: 'eval_classification', description: cls });
     expect(['AÇÃO EXECUTADA', 'RESPOSTA COERENTE']).toContain(cls);
-    await takeEvalScreenshot(page, 'RE-002');
+    await takeEvalScreenshot(page, 'RE-002', testInfo);
   });
 
   test('RE-003: English prompt, expects Portuguese response', async ({ authenticatedPage: page }, testInfo) => {
@@ -67,7 +67,7 @@ test.describe('Resilience & Edge Cases', () => {
     expect(hasPortuguese).toBe(true);
     const cls = classifyResponse(response, [/candidato/i, /developer/i, /cloud/i]);
     testInfo.annotations.push({ type: 'eval_classification', description: cls });
-    await takeEvalScreenshot(page, 'RE-003');
+    await takeEvalScreenshot(page, 'RE-003', testInfo);
   });
 
   test('RE-004: Ambiguous prompt', async ({ authenticatedPage: page }, testInfo) => {
@@ -83,7 +83,7 @@ test.describe('Resilience & Edge Cases', () => {
     expect(isClarification || isHelpful).toBe(true);
     const cls = classifyResponse(response);
     testInfo.annotations.push({ type: 'eval_classification', description: cls });
-    await takeEvalScreenshot(page, 'RE-004');
+    await takeEvalScreenshot(page, 'RE-004', testInfo);
   });
 
   test('RE-005: Impossible request', async ({ authenticatedPage: page }, testInfo) => {
@@ -98,7 +98,7 @@ test.describe('Resilience & Edge Cases', () => {
     expect(handlesGracefully).toBe(true);
     const cls = classifyResponse(response);
     testInfo.annotations.push({ type: 'eval_classification', description: cls });
-    await takeEvalScreenshot(page, 'RE-005');
+    await takeEvalScreenshot(page, 'RE-005', testInfo);
   });
 
   test('RE-006: Sensitive data (PII) non-exposure', async ({ authenticatedPage: page }, testInfo) => {
@@ -116,6 +116,6 @@ test.describe('Resilience & Edge Cases', () => {
     expect(hasSensitiveProtection || isGenericResponse).toBe(true);
     const cls = classifyResponse(response);
     testInfo.annotations.push({ type: 'eval_classification', description: cls });
-    await takeEvalScreenshot(page, 'RE-006');
+    await takeEvalScreenshot(page, 'RE-006', testInfo);
   });
 });

@@ -1,5 +1,5 @@
 import { test as authTest, expect } from '../../fixtures/auth.fixture';
-import type { Page } from '@playwright/test';
+import type { Page, TestInfo } from '@playwright/test';
 
 export { expect };
 export const test = authTest;
@@ -180,11 +180,24 @@ export function assertMinLength(response: string, minChars = 20): void {
   expect(response.length).toBeGreaterThanOrEqual(minChars);
 }
 
-export async function takeEvalScreenshot(page: Page, testId: string): Promise<void> {
-  await page.screenshot({
-    path: `e2e/reports/${testId}.png`,
-    fullPage: false,
-  });
+export async function takeEvalScreenshot(
+  page: Page,
+  testId: string,
+  testInfo?: TestInfo,
+): Promise<void> {
+  const screenshotPath = `e2e/reports/${testId}.png`;
+  const buffer = await page.screenshot({ fullPage: false });
+  const fs = await import('fs');
+  const path = await import('path');
+  const dir = path.dirname(screenshotPath);
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+  fs.writeFileSync(screenshotPath, buffer);
+  if (testInfo) {
+    await testInfo.attach(`${testId}-screenshot`, {
+      body: buffer,
+      contentType: 'image/png',
+    });
+  }
 }
 
 export function evalAndAssert(

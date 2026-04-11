@@ -15,7 +15,7 @@ test.describe('Domain 5: Interviews & Scheduling', () => {
       'Agende uma entrevista com o candidato para amanhã às 14h',
     );
     evalAndAssert(testInfo, response, [/agendar/i, /entrevista/i, /agendada/i, /qual candidato/i, /confirmação/i]);
-    await takeEvalScreenshot(page, 'IS-001');
+    await takeEvalScreenshot(page, 'IS-001', testInfo);
   });
 
   test('IS-002: Reschedule interview', async ({ authenticatedPage: page }, testInfo) => {
@@ -25,7 +25,7 @@ test.describe('Domain 5: Interviews & Scheduling', () => {
       'Reagende a entrevista do candidato para sexta-feira',
     );
     evalAndAssert(testInfo, response, [/reagendar/i, /reagendada/i, /sexta/i, /qual candidato/i]);
-    await takeEvalScreenshot(page, 'IS-002');
+    await takeEvalScreenshot(page, 'IS-002', testInfo);
   });
 
   test('IS-003: Cancel interview', async ({ authenticatedPage: page }, testInfo) => {
@@ -35,7 +35,7 @@ test.describe('Domain 5: Interviews & Scheduling', () => {
       'Cancele a entrevista do candidato',
     );
     evalAndAssert(testInfo, response, [/cancelar/i, /cancelada/i, /entrevista/i, /qual candidato/i]);
-    await takeEvalScreenshot(page, 'IS-003');
+    await takeEvalScreenshot(page, 'IS-003', testInfo);
   });
 
   test('IS-004: List today interviews', async ({ authenticatedPage: page }, testInfo) => {
@@ -45,7 +45,7 @@ test.describe('Domain 5: Interviews & Scheduling', () => {
       'Quais entrevistas temos hoje?',
     );
     evalAndAssert(testInfo, response, [/entrevista/i, /hoje/i, /agenda/i, /nenhuma/i]);
-    await takeEvalScreenshot(page, 'IS-004');
+    await takeEvalScreenshot(page, 'IS-004', testInfo);
   });
 
   test('IS-005: Generate self-scheduling link', async ({ authenticatedPage: page }, testInfo) => {
@@ -55,6 +55,6 @@ test.describe('Domain 5: Interviews & Scheduling', () => {
       'Gere um link de autoagendamento para o candidato',
     );
     evalAndAssert(testInfo, response, [/link/i, /agendamento/i, /gerar/i, /qual candidato/i]);
-    await takeEvalScreenshot(page, 'IS-005');
+    await takeEvalScreenshot(page, 'IS-005', testInfo);
   });
 });

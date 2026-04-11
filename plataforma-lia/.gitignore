@@ -48,3 +48,6 @@ bun.lock
 playwright-report/
 test-results/
 e2e/screenshots/
+e2e/reports/*.png
+e2e/reports/eval-summary.json
+e2e/reports/html/

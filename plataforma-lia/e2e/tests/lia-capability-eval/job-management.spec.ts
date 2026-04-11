@@ -15,7 +15,7 @@ test.describe('Domain 1: Job Management', () => {
       'Crie uma vaga de Desenvolvedor Backend Sênior em São Paulo, regime híbrido',
     );
     evalAndAssert(testInfo, response, [/vaga/i, /criar/i, /backend/i, /wizard/i, /formulário/i]);
-    await takeEvalScreenshot(page, 'JM-001');
+    await takeEvalScreenshot(page, 'JM-001', testInfo);
   });
 
   test('JM-002: List active jobs', async ({ authenticatedPage: page }, testInfo) => {
@@ -25,7 +25,7 @@ test.describe('Domain 1: Job Management', () => {
       'Liste as vagas ativas',
     );
     evalAndAssert(testInfo, response, [/vaga/i, /ativa/i, /aberta/i, /nenhuma/i]);
-    await takeEvalScreenshot(page, 'JM-002');
+    await takeEvalScreenshot(page, 'JM-002', testInfo);
   });
 
   test('JM-003: Pause a job', async ({ authenticatedPage: page }, testInfo) => {
@@ -35,7 +35,7 @@ test.describe('Domain 1: Job Management', () => {
       'Pause a vaga de Desenvolvedor Backend',
     );
     evalAndAssert(testInfo, response, [/pausar/i, /pausada/i, /confirmar/i, /qual vaga/i]);
-    await takeEvalScreenshot(page, 'JM-003');
+    await takeEvalScreenshot(page, 'JM-003', testInfo);
   });
 
   test('JM-004: Reopen paused job', async ({ authenticatedPage: page }, testInfo) => {
@@ -45,7 +45,7 @@ test.describe('Domain 1: Job Management', () => {
       'Reabra a vaga que acabamos de pausar',
     );
     evalAndAssert(testInfo, response, [/reabrir/i, /reaberta/i, /qual vaga/i, /confirmar/i]);
-    await takeEvalScreenshot(page, 'JM-004');
+    await takeEvalScreenshot(page, 'JM-004', testInfo);
   });
 
   test('JM-005: Duplicate a job with new title', async ({ authenticatedPage: page }, testInfo) => {
@@ -55,6 +55,6 @@ test.describe('Domain 1: Job Management', () => {
       'Duplique a vaga de Desenvolvedor Backend com o título Desenvolvedor Fullstack',
     );
     evalAndAssert(testInfo, response, [/duplicar/i, /duplicada/i, /fullstack/i, /qual vaga/i]);
-    await takeEvalScreenshot(page, 'JM-005');
+    await takeEvalScreenshot(page, 'JM-005', testInfo);
   });
 });
