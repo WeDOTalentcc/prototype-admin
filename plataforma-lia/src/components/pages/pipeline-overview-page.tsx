@@ -8,7 +8,6 @@ import {
   Loader2,
   AlertCircle,
   RefreshCw,
-  ArrowRight,
   ChevronDown,
   Eye,
   ExternalLink,
@@ -19,6 +18,19 @@ import {
   Code,
   Globe,
   Fingerprint,
+  Search,
+  FileText,
+  ClipboardList,
+  CheckCircle,
+  UserCheck,
+  MonitorPlay,
+  Languages,
+  Handshake,
+  UserCog,
+  Phone,
+  FileCheck,
+  Award,
+  type LucideIcon,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
@@ -87,20 +99,20 @@ interface PipelineStageWithCount {
   candidates: CandidateItem[]
 }
 
-const STAGE_EMOJI_MAP: Record<string, string> = {
-  sourcing: "🔍",
-  screening: "📋",
-  long_list: "📝",
-  short_list: "✅",
-  interview_hr: "🤝",
-  technical_test: "💻",
-  english_test: "🌐",
-  interview_technical: "⚙️",
-  interview_manager: "👔",
-  reference_check: "📞",
-  offer: "📄",
-  hired: "🎉",
-  contratado: "🎉",
+const STAGE_ICON_MAP: Record<string, LucideIcon> = {
+  sourcing: Search,
+  screening: ClipboardList,
+  long_list: FileText,
+  short_list: CheckCircle,
+  interview_hr: UserCheck,
+  technical_test: MonitorPlay,
+  english_test: Languages,
+  interview_technical: Code,
+  interview_manager: Handshake,
+  reference_check: Phone,
+  offer: FileCheck,
+  hired: Award,
+  contratado: Award,
 }
 
 const PAGE_SIZE = 20
@@ -310,52 +322,46 @@ export function PipelineOverviewPage() {
                 </span>
               </div>
             ) : (
-              <div className="flex items-start gap-1 min-w-max">
+              <div className="flex items-end gap-0 min-w-max px-1 pb-2">
                 {stages.map((stage, index) => {
                   const isSelected = selectedStage === stage.name
-                  const emoji = STAGE_EMOJI_MAP[stage.name] || stage.icon || "🔷"
                   const isLast = index === stages.length - 1
                   const stageColor = stage.color || "#2D2D2D"
+                  const StageIcon = STAGE_ICON_MAP[stage.name] || GitBranch
 
                   return (
                     <div key={stage.name} className="flex items-center">
                       <button
                         onClick={() => handleStageClick(stage.name)}
-                        className={cn(
-                          "group flex flex-col items-center gap-2 p-3 rounded-xl border-2 transition-all duration-200 cursor-pointer w-[120px] flex-shrink-0",
-                          isSelected
-                            ? "shadow-sm"
-                            : "hover:shadow-sm"
-                        )}
-                        style={{
-                          borderColor: isSelected ? stageColor : "transparent",
-                          backgroundColor: isSelected
-                            ? hexToRgba(stageColor, 0.08)
-                            : "var(--lia-bg-secondary)",
-                        }}
-                        onMouseEnter={(e) => {
-                          if (!isSelected) {
-                            e.currentTarget.style.borderColor = hexToRgba(stageColor, 0.4)
-                            e.currentTarget.style.backgroundColor = hexToRgba(stageColor, 0.04)
-                          }
-                        }}
-                        onMouseLeave={(e) => {
-                          if (!isSelected) {
-                            e.currentTarget.style.borderColor = "transparent"
-                            e.currentTarget.style.backgroundColor = "var(--lia-bg-secondary)"
-                          }
-                        }}
+                        className="group flex flex-col items-center gap-1.5 px-3 cursor-pointer"
                       >
                         <div
-                          className="w-2.5 h-2.5 rounded-full flex-shrink-0"
-                          style={{ backgroundColor: stageColor }}
-                        />
-
-                        <span className="text-xl leading-none">{emoji}</span>
+                          className="w-11 h-11 rounded-full flex items-center justify-center transition-all duration-200 border-2"
+                          style={{
+                            backgroundColor: isSelected
+                              ? stageColor
+                              : hexToRgba(stageColor, 0.08),
+                            borderColor: isSelected
+                              ? stageColor
+                              : hexToRgba(stageColor, 0.5),
+                            boxShadow: isSelected
+                              ? `0 0 0 3px ${hexToRgba(stageColor, 0.15)}`
+                              : undefined,
+                          }}
+                        >
+                          <StageIcon
+                            className="w-[18px] h-[18px] transition-colors"
+                            style={{
+                              color: isSelected
+                                ? "#fff"
+                                : stageColor,
+                            }}
+                          />
+                        </div>
 
                         <span
                           className={cn(
-                            "text-xs font-medium text-center leading-tight line-clamp-2",
+                            "text-xs font-medium text-center leading-tight whitespace-nowrap transition-colors",
                             isSelected
                               ? "text-lia-text-primary"
                               : "text-lia-text-secondary group-hover:text-lia-text-primary"
@@ -364,23 +370,26 @@ export function PipelineOverviewPage() {
                           {stage.display_name}
                         </span>
 
-                        <div
+                        <span
                           className={cn(
-                            "px-2.5 py-0.5 rounded-full text-xs font-semibold min-w-[32px] text-center",
+                            "text-xs font-bold transition-colors",
                             isSelected
-                              ? "text-white"
+                              ? ""
                               : stage.count > 0
-                              ? "bg-lia-interactive-active text-lia-text-primary"
-                              : "bg-lia-bg-tertiary text-lia-text-disabled"
+                              ? "text-lia-text-primary"
+                              : "text-lia-text-disabled"
                           )}
-                          style={isSelected ? { backgroundColor: stageColor } : undefined}
+                          style={isSelected ? { color: stageColor } : undefined}
                         >
                           {stage.count}
-                        </div>
+                        </span>
                       </button>
 
                       {!isLast && (
-                        <ArrowRight className="w-4 h-4 text-lia-text-disabled flex-shrink-0 mx-0.5" />
+                        <div
+                          className="h-px w-6 flex-shrink-0 self-center -mt-5"
+                          style={{ backgroundColor: "var(--lia-border-default)" }}
+                        />
                       )}
                     </div>
                   )

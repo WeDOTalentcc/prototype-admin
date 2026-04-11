@@ -469,7 +469,6 @@ export function ChatWorkflowReels({
 
   const activeStage = allNodes.find((s) => s.id === activeStageId) ?? null
 
-  const { handleMouseMove, handleMouseLeave, getScale } = useDockMagnifier(scrollRef)
   const { onMouseDown, grabbing, wasDragging } = useDragToScroll(scrollRef)
 
   const handleNodeClick = (nodeId: string, hasSuggestions: boolean) => {
@@ -549,13 +548,10 @@ export function ChatWorkflowReels({
             scrollbarWidth: "none",
             msOverflowStyle: "none",
             cursor: grabbing ? "grabbing" : "grab",
-            clipPath: "inset(-30px 0 0 0)",
           }}
-          onMouseMove={handleMouseMove}
-          onMouseLeave={handleMouseLeave}
           onMouseDown={onMouseDown}
         >
-          <div className="flex items-end gap-0 min-w-max px-1 pt-8 pb-2">
+          <div className="flex items-end gap-0 min-w-max px-1 pb-2">
             {stages.map((stage, idx) => {
               const currentIndex = nodeIndex++
               return (
@@ -566,7 +562,6 @@ export function ChatWorkflowReels({
                     isActive={activeStageId === stage.id}
                     pulseCount={stage.pulseStageId ? pulse[stage.pulseStageId] : undefined}
                     onClick={() => handleNodeClick(stage.id, stage.suggestions.length > 0)}
-                    scale={getScale(currentIndex, nodeRefs)}
                   />
                   {idx < stages.length - 1 && (
                     <div
@@ -594,7 +589,6 @@ export function ChatWorkflowReels({
                         stage={node}
                         isActive={activeStageId === node.id}
                         onClick={() => handleNodeClick(node.id, node.suggestions.length > 0)}
-                        scale={getScale(currentIndex, nodeRefs)}
                       />
                       {idx < utilityNodes.length - 1 && (
                         <div className="w-3 flex-shrink-0" />
@@ -664,7 +658,7 @@ const StageNode = React.forwardRef<
     onClick: () => void
     scale?: number
   }
->(function StageNode({ stage, isActive, pulseCount, onClick, scale = 1 }, ref) {
+>(function StageNode({ stage, isActive, pulseCount, onClick }, ref) {
   const Icon = stage.icon
   const hasSuggestions = stage.suggestions.length > 0
   const showPulse = pulseCount !== undefined && pulseCount > 0
@@ -679,13 +673,8 @@ const StageNode = React.forwardRef<
       ref={ref}
       onClick={onClick}
       disabled={!hasSuggestions}
-      className="flex flex-col items-center gap-1.5 group px-2 disabled:cursor-default origin-bottom motion-reduce:!transition-none"
+      className="flex flex-col items-center gap-1.5 group px-2 disabled:cursor-default"
       title={hasSuggestions ? `${stage.label} — ${stage.suggestions.length} sugestão` : stage.label}
-      style={{
-        transform: scale !== 1 ? `scale(${scale})` : undefined,
-        transition: "transform 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
-        willChange: scale !== 1 ? "transform" : "auto",
-      }}
     >
       <div
         className="w-10 h-10 rounded-full flex items-center justify-center transition-all duration-150 border-2"
