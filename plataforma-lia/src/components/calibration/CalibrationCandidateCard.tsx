@@ -86,7 +86,7 @@ export function CalibrationCandidateCard({
             </AvatarFallback>
           </Avatar>
           <div>
-            <h3 className="text-base font-semibold text-lia-text-primary font-[Open_Sans]">
+            <h3 className="text-base font-semibold text-lia-text-primary">
               {candidate.name}
             </h3>
             <p className="text-xs text-lia-text-tertiary">{candidate.location}</p>
@@ -205,7 +205,7 @@ export function CalibrationCandidateCard({
           {/* Optional header (edit criteria, etc.) */}
           {criteriaHeader ?? (
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-semibold text-lia-text-primary font-[Open_Sans]">
+              <h3 className="text-sm font-semibold text-lia-text-primary">
                 Por que combinamos este perfil
               </h3>
             </div>
