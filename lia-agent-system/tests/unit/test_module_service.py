@@ -334,3 +334,68 @@ class TestModuleServiceUnit:
         result = await svc.update_module(mock_db, "comp-1", "nonexistent_module", status="active")
         assert result["success"] is False
         assert "Unknown module" in result["error"]
+
+    @pytest.mark.asyncio
+    async def test_get_module_by_id(self, svc, mock_db):
+        mod = _make_module()
+        mock_db.execute.return_value = self._mock_scalar_result(mod)
+        result = await svc.get_module_by_id(mock_db, str(mod.id))
+        assert result is mod
+
+    @pytest.mark.asyncio
+    async def test_get_module_by_id_invalid_uuid(self, svc, mock_db):
+        result = await svc.get_module_by_id(mock_db, "not-a-uuid")
+        assert result is None
+
+    @pytest.mark.asyncio
+    async def test_get_module_by_id_not_found(self, svc, mock_db):
+        mock_db.execute.return_value = self._mock_scalar_result(None)
+        import uuid
+        result = await svc.get_module_by_id(mock_db, str(uuid.uuid4()))
+        assert result is None
+
+    @pytest.mark.asyncio
+    async def test_update_module_by_id(self, svc, mock_db):
+        mod = _make_module(status="beta", tier="free")
+        mock_db.execute.return_value = self._mock_scalar_result(mod)
+        result = await svc.update_module_by_id(mock_db, str(mod.id), status="active")
+        assert result["success"] is True
+        assert mod.status == "active"
+        assert mod.tier == "free"
+
+    @pytest.mark.asyncio
+    async def test_update_module_by_id_not_found(self, svc, mock_db):
+        mock_db.execute.return_value = self._mock_scalar_result(None)
+        import uuid
+        result = await svc.update_module_by_id(mock_db, str(uuid.uuid4()), status="active")
+        assert result["success"] is False
+        assert "not found" in result["error"]
+
+    @pytest.mark.asyncio
+    async def test_get_billing_context(self, svc, mock_db):
+        mod = _make_module(status="active", tier="pro")
+        acct = MagicMock()
+        acct.to_dict.return_value = {"company_id": "comp-1", "balance": 100}
+
+        call_count = 0
+        def side_effect(*args, **kwargs):
+            nonlocal call_count
+            call_count += 1
+            result = MagicMock()
+            if call_count == 1:
+                result.scalar_one_or_none.return_value = mod
+            else:
+                result.scalar_one_or_none.return_value = acct
+            return result
+
+        mock_db.execute.side_effect = side_effect
+        ctx = await svc.get_billing_context(mock_db, "comp-1", "talent_intelligence_pro")
+        assert ctx is not None
+        assert ctx["is_billable"] is True
+        assert ctx["credit_account"]["balance"] == 100
+
+    @pytest.mark.asyncio
+    async def test_get_billing_context_not_found(self, svc, mock_db):
+        mock_db.execute.return_value = self._mock_scalar_result(None)
+        ctx = await svc.get_billing_context(mock_db, "comp-1", "talent_intelligence_pro")
+        assert ctx is None

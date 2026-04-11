@@ -229,6 +229,71 @@ class ModuleService:
         mod = result.scalar_one_or_none()
         return mod.tier if mod else None
 
+    async def get_module_by_id(
+        self,
+        db: AsyncSession,
+        module_id: str,
+    ) -> Optional[CompanyModule]:
+        import uuid as _uuid
+        try:
+            uid = _uuid.UUID(module_id)
+        except (ValueError, AttributeError):
+            return None
+        stmt = select(CompanyModule).where(CompanyModule.id == uid)
+        result = await db.execute(stmt)
+        return result.scalar_one_or_none()
+
+    async def update_module_by_id(
+        self,
+        db: AsyncSession,
+        module_id: str,
+        status: Optional[str] = None,
+        tier: Optional[str] = None,
+        expires_at: Optional[datetime] = None,
+    ) -> dict[str, Any]:
+        mod = await self.get_module_by_id(db, module_id)
+        if not mod:
+            return {"success": False, "error": f"Module with id {module_id} not found"}
+
+        if status is not None:
+            mod.status = status
+        if tier is not None:
+            mod.tier = tier
+        if expires_at is not None:
+            mod.expires_at = expires_at
+
+        await db.flush()
+        self.logger.info(f"Module {mod.module_name} (id={module_id}) updated")
+        return {"success": True, "module": mod.to_dict()}
+
+    async def get_billing_context(
+        self,
+        db: AsyncSession,
+        company_id: str,
+        module_name: str,
+    ) -> Optional[dict[str, Any]]:
+        from lia_models.billing import CreditAccount
+        stmt = select(CompanyModule).where(
+            and_(
+                CompanyModule.company_id == company_id,
+                CompanyModule.module_name == module_name,
+            )
+        )
+        result = await db.execute(stmt)
+        mod = result.scalar_one_or_none()
+        if not mod:
+            return None
+
+        acct_stmt = select(CreditAccount).where(CreditAccount.company_id == company_id)
+        acct_result = await db.execute(acct_stmt)
+        acct = acct_result.scalar_one_or_none()
+
+        return {
+            "module": mod.to_dict(),
+            "credit_account": acct.to_dict() if acct else None,
+            "is_billable": mod.tier != ModuleTier.FREE.value and mod.status == ModuleStatus.ACTIVE.value,
+        }
+
     async def seed_beta_modules(
         self,
         db: AsyncSession,

@@ -58,6 +58,7 @@ class ModuleActivateRequest(BaseModel):
     expires_at: Optional[str] = None
 
 
+@router.get("")
 @router.get("/catalog")
 async def get_module_catalog():
     items = []
@@ -71,6 +72,7 @@ async def get_module_catalog():
     return {"modules": items, "status_options": MODULE_STATUS_OPTIONS}
 
 
+@router.get("/{company_id}")
 @router.get("/company/{company_id}")
 async def get_company_modules(
     company_id: str,
@@ -202,3 +204,55 @@ async def seed_company_modules(
         "seeded": created,
         "count": len(created),
     }
+
+
+@router.patch("/{module_id}")
+async def update_module_by_id(
+    module_id: str,
+    body: ModuleUpdateRequest,
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+    svc: ModuleService = Depends(get_module_service),
+):
+    mod = await svc.get_module_by_id(db, module_id)
+    if not mod:
+        raise HTTPException(status_code=404, detail=f"Module {module_id} not found")
+    _enforce_tenant(request, mod.company_id)
+
+    expires = None
+    if body.expires_at:
+        try:
+            expires = datetime.fromisoformat(body.expires_at)
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Invalid expires_at format")
+
+    if body.status:
+        _validate_status(body.status)
+    if body.tier:
+        _validate_tier(body.tier)
+
+    result = await svc.update_module_by_id(
+        db,
+        module_id,
+        status=body.status,
+        tier=body.tier,
+        expires_at=expires,
+    )
+    if not result["success"]:
+        raise HTTPException(status_code=400, detail=result.get("error"))
+    return result
+
+
+@router.get("/company/{company_id}/billing/{module_name}")
+async def get_module_billing_context(
+    company_id: str,
+    module_name: str,
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+    svc: ModuleService = Depends(get_module_service),
+):
+    _enforce_tenant(request, company_id)
+    ctx = await svc.get_billing_context(db, company_id, module_name)
+    if not ctx:
+        raise HTTPException(status_code=404, detail="Module not found")
+    return ctx
