@@ -63,23 +63,14 @@ class AuditWriter:
             await self._insert_metadata(record, db)
 
     async def _insert_metadata(self, record: ExecutionAuditRecord, db: AsyncSession) -> None:
-        """INSERT OR IGNORE na tabela de metadados."""
+        """INSERT OR IGNORE na tabela de metadados.
+
+        Tries the extended schema first (with request_id/request_cost columns).
+        Falls back to the base schema if the new columns are not yet migrated.
+        """
         import json
-        stmt = text("""
-            INSERT INTO audit_execution_metadata (
-                execution_id, session_id, company_id, user_id,
-                domain, agent_type, timestamp, duration_ms,
-                nodes_visited, tools_used, success, confidence,
-                storage_path, error
-            ) VALUES (
-                :execution_id, :session_id, :company_id, :user_id,
-                :domain, :agent_type, :timestamp, :duration_ms,
-                :nodes_visited, :tools_used, :success, :confidence,
-                :storage_path, :error
-            )
-            ON CONFLICT (execution_id) DO NOTHING
-        """)
-        await db.execute(stmt, {
+
+        base_params = {
             "execution_id": record.execution_id,
             "session_id": record.session_id or "",
             "company_id": record.company_id,
@@ -94,8 +85,53 @@ class AuditWriter:
             "confidence": record.confidence,
             "storage_path": record.storage_path,
             "error": record.error,
-        })
-        await db.commit()
+        }
+
+        request_cost_json = None
+        if record.request_cost:
+            request_cost_json = json.dumps(record.request_cost.to_dict(), default=str)
+
+        extended_params = {
+            **base_params,
+            "request_id": record.request_id or "",
+            "request_cost": request_cost_json,
+        }
+
+        try:
+            stmt = text("""
+                INSERT INTO audit_execution_metadata (
+                    execution_id, session_id, company_id, user_id,
+                    domain, agent_type, timestamp, duration_ms,
+                    nodes_visited, tools_used, success, confidence,
+                    storage_path, error, request_id, request_cost
+                ) VALUES (
+                    :execution_id, :session_id, :company_id, :user_id,
+                    :domain, :agent_type, :timestamp, :duration_ms,
+                    :nodes_visited, :tools_used, :success, :confidence,
+                    :storage_path, :error, :request_id, :request_cost
+                )
+                ON CONFLICT (execution_id) DO NOTHING
+            """)
+            await db.execute(stmt, extended_params)
+            await db.commit()
+        except Exception:
+            await db.rollback()
+            stmt_base = text("""
+                INSERT INTO audit_execution_metadata (
+                    execution_id, session_id, company_id, user_id,
+                    domain, agent_type, timestamp, duration_ms,
+                    nodes_visited, tools_used, success, confidence,
+                    storage_path, error
+                ) VALUES (
+                    :execution_id, :session_id, :company_id, :user_id,
+                    :domain, :agent_type, :timestamp, :duration_ms,
+                    :nodes_visited, :tools_used, :success, :confidence,
+                    :storage_path, :error
+                )
+                ON CONFLICT (execution_id) DO NOTHING
+            """)
+            await db.execute(stmt_base, base_params)
+            await db.commit()
 
     async def load_full(self, storage_path: str) -> Optional[dict]:
         """Carrega o payload completo de uma execução pelo storage_path."""

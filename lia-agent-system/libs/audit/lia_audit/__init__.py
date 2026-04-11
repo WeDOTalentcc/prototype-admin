@@ -12,6 +12,7 @@ from lia_audit.audit_models import (  # noqa: F401
     LLMCallRecord,
     ToolCallRecord,
     NodeTransitionRecord,
+    RequestCostRecord,
 )
 from lia_audit.audit_storage import (  # noqa: F401
     AuditStorage,
@@ -27,6 +28,7 @@ __all__ = [
     "LLMCallRecord",
     "ToolCallRecord",
     "NodeTransitionRecord",
+    "RequestCostRecord",
     "AuditStorage",
     "LocalFileStorage",
     "S3Storage",

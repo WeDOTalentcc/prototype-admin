@@ -1,6 +1,6 @@
 """Benchmark comparing recall@10 between chunking strategies.
 
-Compares sliding_window, section_aware, and semantic chunking using
+Compares sliding_window, section_aware, and recursive chunking using
 sample CV/JD documents and golden queries from the RAGAS test suite.
 
 Usage:
@@ -13,6 +13,7 @@ from dataclasses import dataclass
 
 from app.shared.intelligence.chunking.sliding_window import SlidingWindowChunker
 from app.shared.intelligence.chunking.section_aware import SectionAwareChunker
+from app.shared.intelligence.chunking.recursive import RecursiveTextSplitter
 from app.shared.intelligence.chunking.factory import ChunkingStrategyFactory
 from app.shared.intelligence.chunking.base import DocumentType
 
@@ -161,7 +162,7 @@ def main():
         ("Generic Text", SAMPLE_GENERIC_TEXT, "generic"),
     ]
 
-    strategies = ["sliding_window", "section_aware"]
+    strategies = ["sliding_window", "section_aware", "recursive"]
 
     print("=" * 90)
     print("CHUNKING STRATEGY BENCHMARK")
@@ -194,6 +195,12 @@ def main():
     chunker_jd = SectionAwareChunker(document_type="job_description")
     chunks_jd = chunker_jd.chunk(SAMPLE_JD_PT)
     print(f"JD (PT) sections found: {[c.metadata.get('section', '?') for c in chunks_jd]}")
+
+    print("\n--- Recursive Chunker Verification ---")
+    rec = RecursiveTextSplitter(chunk_size=500, chunk_overlap=50)
+    chunks_rec = rec.chunk(SAMPLE_CV_PT)
+    print(f"Recursive CV (PT): {len(chunks_rec)} chunks, "
+          f"avg={round(statistics.mean([len(c.text) for c in chunks_rec]), 1)} chars")
 
 
 if __name__ == "__main__":

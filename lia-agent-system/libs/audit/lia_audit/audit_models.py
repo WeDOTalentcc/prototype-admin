@@ -46,6 +46,31 @@ class NodeTransitionRecord:
 
 
 @dataclass
+class RequestCostRecord:
+    """Per-request cost breakdown for billing granularity."""
+    request_id: str = ""
+    tokens_input: int = 0
+    tokens_output: int = 0
+    tokens_total: int = 0
+    estimated_cost_usd: float = 0.0
+    model: Optional[str] = None
+    llm_calls: int = 0
+    tool_calls: int = 0
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "request_id": self.request_id,
+            "tokens_input": self.tokens_input,
+            "tokens_output": self.tokens_output,
+            "tokens_total": self.tokens_total,
+            "estimated_cost_usd": self.estimated_cost_usd,
+            "model": self.model,
+            "llm_calls": self.llm_calls,
+            "tool_calls": self.tool_calls,
+        }
+
+
+@dataclass
 class ExecutionAuditRecord:
     """
     Registro completo de uma execução de agente.
@@ -67,13 +92,14 @@ class ExecutionAuditRecord:
     tools_used: List[str] = field(default_factory=list)
     nodes_visited: List[str] = field(default_factory=list)
     error: Optional[str] = None
-    storage_path: Optional[str] = None  # referência para o payload completo no storage
-    # payload completo — enviado para storage de objeto, não para PG
+    storage_path: Optional[str] = None
+    request_id: Optional[str] = None
+    request_cost: Optional[RequestCostRecord] = None
     entries: List[Dict[str, Any]] = field(default_factory=list)
 
     def to_metadata_dict(self) -> Dict[str, Any]:
         """Campos leves para PostgreSQL — sem entries (payload pesado)."""
-        return {
+        result = {
             "execution_id": self.execution_id,
             "session_id": self.session_id,
             "user_id": self.user_id,
@@ -89,7 +115,11 @@ class ExecutionAuditRecord:
             "nodes_visited": self.nodes_visited,
             "error": self.error,
             "storage_path": self.storage_path,
+            "request_id": self.request_id,
         }
+        if self.request_cost:
+            result["request_cost"] = self.request_cost.to_dict()
+        return result
 
     def to_full_dict(self) -> Dict[str, Any]:
         """Payload completo para storage de objeto."""

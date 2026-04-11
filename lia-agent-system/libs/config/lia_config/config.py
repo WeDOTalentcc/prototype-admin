@@ -239,6 +239,15 @@ class AppSettings(BaseSettings):
     # Tenant Budget (Phase 2)
     TENANT_TOKEN_BUDGET_DEFAULT: int = 500000
     TENANT_TOKEN_BUDGET_ALERT_THRESHOLD: float = 0.80
+    TENANT_PER_REQUEST_TOKEN_THRESHOLD: int = 50000
+
+    # Chunking defaults (per doc type)
+    CHUNKING_CV_CHUNK_SIZE: int = 1500
+    CHUNKING_CV_OVERLAP: int = 150
+    CHUNKING_JD_CHUNK_SIZE: int = 1200
+    CHUNKING_JD_OVERLAP: int = 100
+    CHUNKING_GENERIC_CHUNK_SIZE: int = 1000
+    CHUNKING_GENERIC_OVERLAP: int = 100
 
     # Plan Limits
     PLAN_LIMITS_ENFORCE: bool = True
