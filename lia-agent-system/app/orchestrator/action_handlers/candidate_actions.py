@@ -469,7 +469,7 @@ async def _analyze_profile(params: dict[str, Any], context: dict[str, Any]):
 
         from app.core.database import AsyncSessionLocal
         from app.models.candidate import Candidate
-        from app.services.analysis_service import analysis_service
+        from app.shared.services.analysis_service import analysis_service
 
         candidate_id = params.get("candidate_id", "")
         candidate_name = params.get("candidate_name", "o candidato")

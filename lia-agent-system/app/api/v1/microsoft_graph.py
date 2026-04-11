@@ -12,7 +12,7 @@ from datetime import datetime
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel, EmailStr
 
-from app.services.microsoft_graph_service import AttendeeType, MeetingAttendee, microsoft_graph_service
+from app.shared.services.microsoft_graph_service import AttendeeType, MeetingAttendee, microsoft_graph_service
 
 logger = logging.getLogger(__name__)
 

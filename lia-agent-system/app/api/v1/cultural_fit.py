@@ -9,7 +9,7 @@ from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.services.cultural_fit_integration_service import cultural_fit_service
+from app.shared.services.cultural_fit_integration_service import cultural_fit_service
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/candidates", tags=["cultural-fit"])

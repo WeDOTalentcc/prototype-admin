@@ -13,7 +13,7 @@ class TestGranularPurposeMap:
 
     def test_each_ai_purpose_has_distinct_type(self):
         """Cada finalidade de IA deve ter consent_type próprio (não todos SCREENING)."""
-        from app.services.granular_consent_service import GRANULAR_PURPOSE_MAP
+        from app.shared.services.granular_consent_service import GRANULAR_PURPOSE_MAP
 
         assert GRANULAR_PURPOSE_MAP["ai_screening"] == "SCREENING"
         assert GRANULAR_PURPOSE_MAP["ai_scoring"] == "AI_SCORING"
@@ -25,7 +25,7 @@ class TestGranularPurposeMap:
 
     def test_blocking_purposes_are_ai_related(self):
         """BLOCKING_PURPOSES inclui todas as finalidades de IA críticas."""
-        from app.services.granular_consent_service import BLOCKING_PURPOSES
+        from app.shared.services.granular_consent_service import BLOCKING_PURPOSES
 
         assert "ai_screening" in BLOCKING_PURPOSES
         assert "ai_scoring" in BLOCKING_PURPOSES
@@ -39,13 +39,13 @@ class TestGranularPurposeMap:
 class TestGranularConsentService:
 
     def _make_service(self, db=None):
-        from app.services.granular_consent_service import GranularConsentService
+        from app.shared.services.granular_consent_service import GranularConsentService
         return GranularConsentService(db or MagicMock())
 
     @pytest.mark.asyncio
     async def test_get_summary_empty_db_returns_all_not_given(self):
         """Sem registros no BD, todos os consentimentos retornam given=False."""
-        from app.services.granular_consent_service import GranularConsentService, GRANULAR_PURPOSE_MAP
+        from app.shared.services.granular_consent_service import GranularConsentService, GRANULAR_PURPOSE_MAP
 
         db = MagicMock()
         mock_result = MagicMock()
@@ -68,7 +68,7 @@ class TestGranularConsentService:
     @pytest.mark.asyncio
     async def test_get_summary_with_given_consents(self):
         """Com registros, get_summary reflete o estado correto."""
-        from app.services.granular_consent_service import GranularConsentService, GRANULAR_PURPOSE_MAP
+        from app.shared.services.granular_consent_service import GranularConsentService, GRANULAR_PURPOSE_MAP
 
         now = datetime.utcnow()
 
@@ -82,7 +82,7 @@ class TestGranularConsentService:
             return c
 
         # Simula todos os blocking purposes como concedidos
-        from app.services.granular_consent_service import BLOCKING_PURPOSES
+        from app.shared.services.granular_consent_service import BLOCKING_PURPOSES
         consents = [
             _make_consent(GRANULAR_PURPOSE_MAP[p], True)
             for p in BLOCKING_PURPOSES
@@ -101,7 +101,7 @@ class TestGranularConsentService:
     @pytest.mark.asyncio
     async def test_bulk_update_inserts_new_records(self):
         """bulk_update cria registros para finalidades novas."""
-        from app.services.granular_consent_service import GranularConsentService
+        from app.shared.services.granular_consent_service import GranularConsentService
 
         added = []
 
@@ -130,7 +130,7 @@ class TestGranularConsentService:
     @pytest.mark.asyncio
     async def test_bulk_update_updates_existing_record(self):
         """bulk_update atualiza registro existente sem criar duplicata."""
-        from app.services.granular_consent_service import GranularConsentService
+        from app.shared.services.granular_consent_service import GranularConsentService
 
         existing = MagicMock()
         existing.consent_given = False
@@ -158,7 +158,7 @@ class TestGranularConsentService:
     @pytest.mark.asyncio
     async def test_check_purpose_returns_true_when_given(self):
         """check_purpose retorna True quando consent_given=True e não revogado."""
-        from app.services.granular_consent_service import GranularConsentService
+        from app.shared.services.granular_consent_service import GranularConsentService
 
         record = MagicMock()
         record.consent_given = True
@@ -176,7 +176,7 @@ class TestGranularConsentService:
     @pytest.mark.asyncio
     async def test_check_purpose_returns_false_when_absent(self):
         """check_purpose retorna False quando sem registro."""
-        from app.services.granular_consent_service import GranularConsentService
+        from app.shared.services.granular_consent_service import GranularConsentService
 
         db = MagicMock()
         mock_result = MagicMock()
@@ -190,7 +190,7 @@ class TestGranularConsentService:
     @pytest.mark.asyncio
     async def test_check_purpose_fail_open_on_exception(self):
         """check_purpose retorna True (fail-open) em caso de erro."""
-        from app.services.granular_consent_service import GranularConsentService
+        from app.shared.services.granular_consent_service import GranularConsentService
 
         db = MagicMock()
         db.execute = AsyncMock(side_effect=RuntimeError("db error"))
@@ -207,7 +207,7 @@ class TestGranularConsentEndpoint:
         from fastapi.testclient import TestClient
         from fastapi import FastAPI
         from app.api.v1.granular_consent import router
-        from app.services.granular_consent_service import (
+        from app.shared.services.granular_consent_service import (
             GranularConsentSummary, GranularConsentStatus, GRANULAR_PURPOSE_MAP
         )
 

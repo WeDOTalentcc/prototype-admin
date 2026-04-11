@@ -97,8 +97,8 @@ from app.schemas.company import (
     TechnicalTestTemplateUpdate,
     TenantResolutionResponse,
 )
-from app.services.company_configuration_service import company_config_service
-from app.services.llm import llm_service
+from app.domains.company.services.company_configuration_service import company_config_service
+from app.domains.ai.services.llm import llm_service
 
 FRONTEND_URL = os.getenv("FRONTEND_URL", "https://plataforma-lia.replit.app")
 import json

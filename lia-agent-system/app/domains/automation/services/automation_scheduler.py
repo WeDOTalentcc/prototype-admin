@@ -25,7 +25,7 @@ def get_event_dispatcher():
     """Lazy load EventDispatcher to avoid circular imports."""
     global _event_dispatcher
     if _event_dispatcher is None:
-        from app.services.event_dispatcher import event_dispatcher
+        from app.shared.services.event_dispatcher import event_dispatcher
         _event_dispatcher = event_dispatcher
     return _event_dispatcher
 
@@ -113,7 +113,7 @@ class AutomationScheduler:
         """Lazy load ActivityService."""
         if self._activity_service is None:
             try:
-                from app.services.activity_service import ActivityService
+                from app.domains.analytics.services.activity_service import ActivityService
                 self._activity_service = ActivityService()
             except Exception as e:
                 logger.warning(f"Could not load ActivityService: {e}")
@@ -917,7 +917,7 @@ Equipe de Recrutamento
         Runs daily at 02:00, after expire_trials.
         """
         try:
-            from app.services.lgpd_cleanup_service import run_cleanup
+            from app.shared.services.lgpd_cleanup_service import run_cleanup
             summary = await run_cleanup(dry_run=False)
             logger.info(
                 "L4 lgpd_cleanup: candidates=%d vacancy_candidates=%d errors=%d",

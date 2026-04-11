@@ -295,7 +295,7 @@ def _parse_wsi_llm_response(content: str, transcript: str, ResponseAnalysis) -> 
 async def _analyze_transcript_for_wsi(transcript: str, vacancy_title: str, wsi_service) -> list:
     """Analyze a conversation transcript and extract structured ResponseAnalysis objects via LLM."""
     from app.domains.cv_screening.services.wsi_service import ResponseAnalysis
-    from app.services.llm import llm_service
+    from app.domains.ai.services.llm import llm_service
     try:
         content = await llm_service.safe_invoke(_build_wsi_prompt(transcript, vacancy_title), provider="claude")
         return _parse_wsi_llm_response(content, transcript, ResponseAnalysis)

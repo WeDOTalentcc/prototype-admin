@@ -110,7 +110,7 @@ class VectorSemanticCache:
         3. Gemini text-embedding-004 (768 dims) — fallback
         """
         try:
-            from app.services.embedding_cache_service import embedding_cache
+            from app.shared.services.embedding_cache_service import embedding_cache
 
             cached = await embedding_cache.get_embedding(text, self.embedding_model)
             if cached is not None:

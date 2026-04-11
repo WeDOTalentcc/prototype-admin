@@ -15,7 +15,7 @@ from app.domains.job_management.services.wizard_orchestrator_service import (
 )
 from app.orchestrator import Orchestrator
 from app.domains.ai.services.llm import LLMService, get_llm_service
-from app.services.tool_executor_service import (
+from app.shared.services.tool_executor_service import (
     ToolExecutionRequest,
     tool_executor_service,
 )
@@ -276,7 +276,7 @@ async def detect_wizard_intent(request: WizardIntentRequest):
     """
     try:
         if request.conversation_id:
-            from app.database import get_db
+            from app.core.database import get_db
             async for db in get_db():
                 result = await wizard_orchestrator_service.process_wizard_message_with_memory(
                     db=db,

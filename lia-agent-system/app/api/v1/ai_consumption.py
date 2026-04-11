@@ -33,7 +33,7 @@ from app.schemas.ai_consumption import (
     UsageHistoryResponse,
     UsageSummaryResponse,
 )
-from app.services.token_tracking_service import (
+from app.shared.services.token_tracking_service import (
     DEFAULT_LIMITS,
     TOKEN_PRICES,
     get_token_tracking_service,

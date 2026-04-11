@@ -7,7 +7,7 @@ from pydantic import ConfigDict, Field
 
 from app.auth.models import UserRole
 from app.middleware.trial_enforcement import require_active_subscription_or_demo  # noqa: F401
-from app.services.plan_limits_service import check_active_jobs_limit_or_demo  # noqa: F401
+from app.shared.services.plan_limits_service import check_active_jobs_limit_or_demo  # noqa: F401
 
 """
 CRUD routes: finalize, search, GET one, GET list, POST create, PUT update,

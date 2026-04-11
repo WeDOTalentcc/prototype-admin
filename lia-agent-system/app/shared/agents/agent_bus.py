@@ -134,7 +134,7 @@ class AgentBus:
                 company_id=company_id,
             )
             try:
-                from app.services.audit_service import audit_service
+                from app.shared.services.audit_service import audit_service
                 await audit_service.log_decision(
                     decision_type="agent_communication",
                     decision=f"{from_agent}→{to_agent}:{event_type}",

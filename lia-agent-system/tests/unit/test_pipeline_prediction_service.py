@@ -13,7 +13,7 @@ Testa:
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from app.services.pipeline_prediction_service import (
+from app.shared.services.pipeline_prediction_service import (
     PipelinePredictionService,
     pipeline_prediction_service,
     compute_closure_probability,

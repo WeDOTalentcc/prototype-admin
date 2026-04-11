@@ -172,7 +172,7 @@ async def _wrap_get_pipeline_benchmarks(**kwargs: Any) -> dict[str, Any]:
 @tool_handler("kanban")
 async def _wrap_get_recruiter_backlog(**kwargs: Any) -> dict[str, Any]:
     """Return the recruiter's prioritized action backlog — candidates waiting beyond stage thresholds."""
-    from app.services.recruiter_metrics_service import recruiter_metrics_service
+    from app.shared.services.recruiter_metrics_service import recruiter_metrics_service
 
     recruiter_id = kwargs.get("recruiter_id", "")
     company_id = kwargs["company_id"]
@@ -205,7 +205,7 @@ async def _wrap_get_recruiter_backlog(**kwargs: Any) -> dict[str, Any]:
 @tool_handler("kanban")
 async def _wrap_get_recruiter_benchmark(**kwargs: Any) -> dict[str, Any]:
     """Compare recruiter metrics against anonymised company median (Sprint 2D)."""
-    from app.services.recruiter_metrics_service import recruiter_metrics_service
+    from app.shared.services.recruiter_metrics_service import recruiter_metrics_service
 
     recruiter_id = kwargs.get("recruiter_id", "")
     company_id = kwargs["company_id"]
@@ -251,7 +251,7 @@ async def _wrap_get_recruiter_benchmark(**kwargs: Any) -> dict[str, Any]:
 @tool_handler("kanban")
 async def _wrap_get_journey_metrics(**kwargs: Any) -> dict[str, Any]:
     """Return funnel metrics, health score and risk patterns for a vacancy."""
-    from app.services.journey_intelligence_service import journey_intelligence_service
+    from app.shared.services.journey_intelligence_service import journey_intelligence_service
 
     vacancy_id = kwargs.get("vacancy_id", "")
     company_id = kwargs["company_id"]
@@ -288,7 +288,7 @@ async def _wrap_get_journey_metrics(**kwargs: Any) -> dict[str, Any]:
 @tool_handler("kanban")
 async def _wrap_get_pipeline_prediction(**kwargs: Any) -> dict[str, Any]:
     """Return closure probability prediction for a vacancy or company overview."""
-    from app.services.pipeline_prediction_service import pipeline_prediction_service
+    from app.shared.services.pipeline_prediction_service import pipeline_prediction_service
 
     vacancy_id = kwargs.get("vacancy_id", "")
     company_id = kwargs["company_id"]
@@ -335,7 +335,7 @@ async def _wrap_get_pipeline_prediction(**kwargs: Any) -> dict[str, Any]:
 @tool_handler("kanban")
 async def _wrap_get_at_risk_candidates(**kwargs: Any) -> dict[str, Any]:
     """Return candidates at risk of ghosting ranked by EWS score."""
-    from app.services.early_warning_service import early_warning_service
+    from app.shared.services.early_warning_service import early_warning_service
 
     company_id = kwargs["company_id"]
     min_risk_level = kwargs.get("min_risk_level", "medium")
@@ -365,7 +365,7 @@ async def _wrap_get_at_risk_candidates(**kwargs: Any) -> dict[str, Any]:
 @tool_handler("kanban", require_company=False)
 async def _wrap_find_silver_medalists(**kwargs: Any) -> dict[str, Any]:
     """Find warm candidates from past processes to re-surface for current vacancies."""
-    from app.services.silver_medalist_service import silver_medalist_service
+    from app.shared.services.silver_medalist_service import silver_medalist_service
 
     vacancy_id = kwargs.get("vacancy_id") or None
     company_id = kwargs.get("company_id") or ""
@@ -399,7 +399,7 @@ async def _wrap_find_silver_medalists(**kwargs: Any) -> dict[str, Any]:
 @tool_handler("kanban", require_company=False)
 async def _wrap_get_pipeline_velocity(**kwargs: Any) -> dict[str, Any]:
     """Return per-stage velocity metrics using precise stage_entered_at timestamps."""
-    from app.services.pipeline_velocity_service import pipeline_velocity_service
+    from app.shared.services.pipeline_velocity_service import pipeline_velocity_service
 
     vacancy_id = kwargs.get("vacancy_id") or None
     company_id = kwargs.get("company_id") or None

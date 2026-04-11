@@ -243,7 +243,7 @@ class TestVoiceScreeningOrchestrator:
     @pytest.mark.asyncio
     async def test_verify_consent_no_db_raises(self):
         """Consent check with no DB must hard-block (LGPD Art. 7 — cannot confirm consent)."""
-        from app.services.voice_screening_orchestrator import (
+        from app.domains.voice.services.voice_screening_orchestrator import (
             VoiceScreeningOrchestrator,
             ConsentNotGrantedError,
         )
@@ -259,7 +259,7 @@ class TestVoiceScreeningOrchestrator:
     @pytest.mark.asyncio
     async def test_verify_consent_revoked_raises(self):
         """Verify consent raises ConsentNotGrantedError when consent is revoked."""
-        from app.services.voice_screening_orchestrator import (
+        from app.domains.voice.services.voice_screening_orchestrator import (
             VoiceScreeningOrchestrator,
             ConsentNotGrantedError,
         )
@@ -293,7 +293,7 @@ class TestVoiceScreeningOrchestrator:
     @pytest.mark.asyncio
     async def test_verify_consent_soft_warning_raises(self):
         """Soft warning (absent consent) must also block outbound calls (LGPD Art. 7 strict)."""
-        from app.services.voice_screening_orchestrator import (
+        from app.domains.voice.services.voice_screening_orchestrator import (
             VoiceScreeningOrchestrator,
             ConsentNotGrantedError,
         )
@@ -327,7 +327,7 @@ class TestVoiceScreeningOrchestrator:
         monkeypatch.delenv("TWILIO_ACCOUNT_SID", raising=False)
         monkeypatch.delenv("TWILIO_VOICE_NUMBER", raising=False)
 
-        from app.services.voice_screening_orchestrator import VoiceScreeningOrchestrator
+        from app.domains.voice.services.voice_screening_orchestrator import VoiceScreeningOrchestrator
 
         orch = VoiceScreeningOrchestrator()
 
@@ -351,7 +351,7 @@ class TestVoiceScreeningOrchestrator:
     @pytest.mark.asyncio
     async def test_process_audio_chunk_converts_mulaw_to_wav(self):
         """process_audio_chunk should convert μ-law to WAV before STT."""
-        from app.services.voice_screening_orchestrator import (
+        from app.domains.voice.services.voice_screening_orchestrator import (
             VoiceScreeningOrchestrator,
             VoiceScreeningSession,
         )
@@ -399,7 +399,7 @@ class TestVoiceScreeningOrchestrator:
     @pytest.mark.asyncio
     async def test_synthesize_lia_response_returns_mulaw_for_twilio(self):
         """synthesize_lia_response with for_twilio_stream=True should attempt μ-law conversion."""
-        from app.services.voice_screening_orchestrator import VoiceScreeningOrchestrator
+        from app.domains.voice.services.voice_screening_orchestrator import VoiceScreeningOrchestrator
 
         orch = VoiceScreeningOrchestrator()
         fake_mp3 = b"\xff\xfb" + bytes(100)
@@ -417,7 +417,7 @@ class TestVoiceScreeningOrchestrator:
     @pytest.mark.asyncio
     async def test_synthesize_lia_response_returns_mp3_when_not_for_twilio(self):
         """synthesize_lia_response with for_twilio_stream=False should return MP3."""
-        from app.services.voice_screening_orchestrator import VoiceScreeningOrchestrator
+        from app.domains.voice.services.voice_screening_orchestrator import VoiceScreeningOrchestrator
 
         orch = VoiceScreeningOrchestrator()
         fake_mp3 = b"\xff\xfb" + bytes(100)
@@ -434,7 +434,7 @@ class TestVoiceScreeningOrchestrator:
     @pytest.mark.asyncio
     async def test_finalize_screening_returns_analysis(self):
         """finalize_screening runs analysis and returns WSI result."""
-        from app.services.voice_screening_orchestrator import (
+        from app.domains.voice.services.voice_screening_orchestrator import (
             VoiceScreeningOrchestrator,
             VoiceScreeningSession,
         )
@@ -484,7 +484,7 @@ class TestVoiceScreeningOrchestrator:
         which integrates with the existing WSI pipeline (WSI questions, scoring, persistence).
         Falls back to analyze_voice_screening only when WSI returns None or fails.
         """
-        from app.services.voice_screening_orchestrator import (
+        from app.domains.voice.services.voice_screening_orchestrator import (
             VoiceScreeningOrchestrator,
             VoiceScreeningSession,
         )
@@ -531,7 +531,7 @@ class TestVoiceScreeningOrchestrator:
 
     def test_list_active_sessions_masks_pii(self):
         """list_active_sessions should return masked candidate names."""
-        from app.services.voice_screening_orchestrator import (
+        from app.domains.voice.services.voice_screening_orchestrator import (
             VoiceScreeningOrchestrator,
             VoiceScreeningSession,
         )
@@ -591,7 +591,7 @@ class TestTwilioVoiceCircuit:
     @pytest.mark.asyncio
     async def test_circuit_open_triggers_fallback_in_orchestrator(self):
         """When TWILIO_VOICE_CIRCUIT is open, session.status must be 'fallback'."""
-        from app.services.voice_screening_orchestrator import VoiceScreeningOrchestrator
+        from app.domains.voice.services.voice_screening_orchestrator import VoiceScreeningOrchestrator
         from app.shared.resilience.circuit_breaker import CircuitBreakerError
         import app.shared.resilience.circuit_breaker as cb_module
 
@@ -649,7 +649,7 @@ class TestCommunicationDispatcherVoice:
         monkeypatch.delenv("TWILIO_VOICE_NUMBER", raising=False)
 
         from app.domains.communication.services.communication_dispatcher import CommunicationDispatcher
-        from app.services.voice_screening_orchestrator import voice_screening_orchestrator
+        from app.domains.voice.services.voice_screening_orchestrator import voice_screening_orchestrator
 
         dispatcher = CommunicationDispatcher()
 
@@ -693,7 +693,7 @@ class TestCommunicationDispatcherVoice:
     async def test_make_voice_call_re_raises_consent_error(self):
         """make_voice_call must NOT catch ConsentNotGrantedError — re-raise for LGPD compliance."""
         from app.domains.communication.services.communication_dispatcher import CommunicationDispatcher
-        from app.services.voice_screening_orchestrator import ConsentNotGrantedError
+        from app.domains.voice.services.voice_screening_orchestrator import ConsentNotGrantedError
 
         dispatcher = CommunicationDispatcher()
 
@@ -815,7 +815,7 @@ class TestPIIMaskingInTranscripts:
 
     def test_mask_transcript_segments_masks_pii_in_each_segment(self):
         """_mask_transcript_segments must mask PII in each segment text without mutating original."""
-        from app.services.voice_screening_orchestrator import VoiceScreeningOrchestrator
+        from app.domains.voice.services.voice_screening_orchestrator import VoiceScreeningOrchestrator
 
         segments = [
             {"text": "Meu email é joao@test.com", "role": "candidate"},
@@ -857,7 +857,7 @@ class TestSessionDBPersistence:
 
     def test_session_to_state_round_trip(self):
         """_session_to_state and _state_to_session should be lossless inverses."""
-        from app.services.voice_screening_orchestrator import (
+        from app.domains.voice.services.voice_screening_orchestrator import (
             VoiceScreeningOrchestrator,
             VoiceScreeningSession,
         )
@@ -895,7 +895,7 @@ class TestSessionDBPersistence:
     @pytest.mark.asyncio
     async def test_persist_session_state_calls_db(self):
         """_persist_session_state should execute UPDATE on wsi_sessions using CAST(:state AS jsonb)."""
-        from app.services.voice_screening_orchestrator import (
+        from app.domains.voice.services.voice_screening_orchestrator import (
             VoiceScreeningOrchestrator,
             VoiceScreeningSession,
         )
@@ -935,7 +935,7 @@ class TestSessionDBPersistence:
     @pytest.mark.asyncio
     async def test_persist_session_state_noop_when_no_db(self):
         """_persist_session_state should silently skip when db is None."""
-        from app.services.voice_screening_orchestrator import (
+        from app.domains.voice.services.voice_screening_orchestrator import (
             VoiceScreeningOrchestrator,
             VoiceScreeningSession,
         )
@@ -954,7 +954,7 @@ class TestSessionDBPersistence:
     @pytest.mark.asyncio
     async def test_load_session_from_db_returns_session_when_found(self):
         """_load_session_from_db should return session when voice_session_state is set."""
-        from app.services.voice_screening_orchestrator import (
+        from app.domains.voice.services.voice_screening_orchestrator import (
             VoiceScreeningOrchestrator,
             VoiceScreeningSession,
         )
@@ -1001,7 +1001,7 @@ class TestSessionDBPersistence:
     @pytest.mark.asyncio
     async def test_load_session_from_db_returns_none_when_not_found(self):
         """_load_session_from_db should return None when no row found."""
-        from app.services.voice_screening_orchestrator import VoiceScreeningOrchestrator
+        from app.domains.voice.services.voice_screening_orchestrator import VoiceScreeningOrchestrator
 
         orch = VoiceScreeningOrchestrator()
 
@@ -1017,7 +1017,7 @@ class TestSessionDBPersistence:
     @pytest.mark.asyncio
     async def test_get_or_restore_session_uses_memory_first(self):
         """get_or_restore_session should return in-memory session without DB hit."""
-        from app.services.voice_screening_orchestrator import (
+        from app.domains.voice.services.voice_screening_orchestrator import (
             VoiceScreeningOrchestrator,
             VoiceScreeningSession,
         )
@@ -1042,7 +1042,7 @@ class TestSessionDBPersistence:
     @pytest.mark.asyncio
     async def test_get_or_restore_session_falls_back_to_db(self):
         """get_or_restore_session should try DB when session not in memory."""
-        from app.services.voice_screening_orchestrator import VoiceScreeningOrchestrator
+        from app.domains.voice.services.voice_screening_orchestrator import VoiceScreeningOrchestrator
 
         orch = VoiceScreeningOrchestrator()
 
@@ -1080,7 +1080,7 @@ class TestSessionDBPersistence:
     @pytest.mark.asyncio
     async def test_finalize_screening_persists_completed_state(self):
         """finalize_screening should persist final session state to DB."""
-        from app.services.voice_screening_orchestrator import (
+        from app.domains.voice.services.voice_screening_orchestrator import (
             VoiceScreeningOrchestrator,
             VoiceScreeningSession,
         )
@@ -1132,7 +1132,7 @@ class TestWSIQuestionsFromDB:
     @pytest.mark.asyncio
     async def test_load_wsi_questions_returns_list_from_db(self):
         """_load_wsi_questions_for_session should return question texts from DB."""
-        from app.services.voice_screening_orchestrator import VoiceScreeningOrchestrator
+        from app.domains.voice.services.voice_screening_orchestrator import VoiceScreeningOrchestrator
 
         orch = VoiceScreeningOrchestrator()
 
@@ -1156,7 +1156,7 @@ class TestWSIQuestionsFromDB:
     @pytest.mark.asyncio
     async def test_load_wsi_questions_returns_empty_when_no_rows(self):
         """_load_wsi_questions_for_session returns [] when no WSI questions found."""
-        from app.services.voice_screening_orchestrator import VoiceScreeningOrchestrator
+        from app.domains.voice.services.voice_screening_orchestrator import VoiceScreeningOrchestrator
 
         orch = VoiceScreeningOrchestrator()
 
@@ -1171,7 +1171,7 @@ class TestWSIQuestionsFromDB:
     @pytest.mark.asyncio
     async def test_load_wsi_questions_returns_empty_when_no_db(self):
         """_load_wsi_questions_for_session returns [] when db is None."""
-        from app.services.voice_screening_orchestrator import VoiceScreeningOrchestrator
+        from app.domains.voice.services.voice_screening_orchestrator import VoiceScreeningOrchestrator
 
         orch = VoiceScreeningOrchestrator()
         questions = await orch._load_wsi_questions_for_session("sess-nodb", db=None)
@@ -1180,7 +1180,7 @@ class TestWSIQuestionsFromDB:
     @pytest.mark.asyncio
     async def test_generate_lia_response_uses_wsi_questions_when_available(self):
         """generate_lia_response should use WSI questions, not hardcoded SCREENING_QUESTIONS_PT."""
-        from app.services.voice_screening_orchestrator import (
+        from app.domains.voice.services.voice_screening_orchestrator import (
             VoiceScreeningOrchestrator,
             VoiceScreeningSession,
         )
@@ -1224,7 +1224,7 @@ class TestWSIQuestionsFromDB:
     @pytest.mark.asyncio
     async def test_generate_lia_response_no_wsi_no_gemini_uses_generic_fallback(self):
         """When WSI questions absent AND Gemini unavailable, fall back to SCREENING_QUESTIONS_PT via _get_next_scripted_question(None)."""
-        from app.services.voice_screening_orchestrator import (
+        from app.domains.voice.services.voice_screening_orchestrator import (
             VoiceScreeningOrchestrator,
             VoiceScreeningSession,
         )
@@ -1262,7 +1262,7 @@ class TestWSIQuestionsFromDB:
     @pytest.mark.asyncio
     async def test_wsi_questions_cache_prevents_duplicate_db_calls(self):
         """WSI questions should be cached on the session after first load."""
-        from app.services.voice_screening_orchestrator import (
+        from app.domains.voice.services.voice_screening_orchestrator import (
             VoiceScreeningOrchestrator,
             VoiceScreeningSession,
         )
@@ -1303,7 +1303,7 @@ class TestFairnessGuardInVoiceScreening:
     @pytest.mark.asyncio
     async def test_generate_lia_response_fairness_guard_blocks_biased_response(self):
         """FairnessGuard must block biased LIA responses and substitute safe question."""
-        from app.services.voice_screening_orchestrator import (
+        from app.domains.voice.services.voice_screening_orchestrator import (
             VoiceScreeningOrchestrator,
             VoiceScreeningSession,
         )
@@ -1374,7 +1374,7 @@ class TestFairnessGuardInVoiceScreening:
     @pytest.mark.asyncio
     async def test_generate_lia_response_calls_check_fairness_on_response(self):
         """generate_lia_response must call check_fairness on the Gemini response."""
-        from app.services.voice_screening_orchestrator import (
+        from app.domains.voice.services.voice_screening_orchestrator import (
             VoiceScreeningOrchestrator,
             VoiceScreeningSession,
         )
@@ -1439,7 +1439,7 @@ class TestFairnessGuardInVoiceScreening:
 
     def test_fairness_guard_applied_to_scripted_fallback_responses(self):
         """FairnessGuard must run on ALL outbound responses, including scripted fallback."""
-        from app.services.voice_screening_orchestrator import (
+        from app.domains.voice.services.voice_screening_orchestrator import (
             VoiceScreeningOrchestrator,
             VoiceScreeningSession,
         )
@@ -1463,7 +1463,7 @@ class TestFairnessGuardInVoiceScreening:
 
     def test_check_fairness_on_response_blocks_biased_text(self):
         """_check_fairness_on_response should replace blocked text with neutral prompt."""
-        from app.services.voice_screening_orchestrator import (
+        from app.domains.voice.services.voice_screening_orchestrator import (
             VoiceScreeningOrchestrator,
             VoiceScreeningSession,
         )
@@ -1493,7 +1493,7 @@ class TestFairnessGuardInVoiceScreening:
 
     def test_get_next_scripted_question_uses_wsi_questions_when_provided(self):
         """_get_next_scripted_question should use provided WSI questions, not hardcoded list."""
-        from app.services.voice_screening_orchestrator import (
+        from app.domains.voice.services.voice_screening_orchestrator import (
             VoiceScreeningOrchestrator,
             VoiceScreeningSession,
         )
@@ -1520,7 +1520,7 @@ class TestFairnessGuardInVoiceScreening:
 
     def test_get_next_scripted_question_falls_back_to_generic_when_no_questions(self):
         """_get_next_scripted_question falls back to SCREENING_QUESTIONS_PT when questions=None."""
-        from app.services.voice_screening_orchestrator import (
+        from app.domains.voice.services.voice_screening_orchestrator import (
             VoiceScreeningOrchestrator,
             VoiceScreeningSession,
         )

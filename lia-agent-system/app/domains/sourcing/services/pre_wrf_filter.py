@@ -7,9 +7,9 @@ import logging
 from datetime import datetime
 from typing import Any
 
-from app.services.es_score_drop_analyzer import es_score_drop_analyzer
-from app.services.pgv_gap_analyzer import pgv_gap_analyzer
-from app.services.wrf_dynamic_k_service import wrf_dynamic_k_service
+from app.shared.services.es_score_drop_analyzer import es_score_drop_analyzer
+from app.shared.services.pgv_gap_analyzer import pgv_gap_analyzer
+from app.shared.services.wrf_dynamic_k_service import wrf_dynamic_k_service
 
 logger = logging.getLogger(__name__)
 

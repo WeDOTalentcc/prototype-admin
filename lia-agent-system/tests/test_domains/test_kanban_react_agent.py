@@ -82,26 +82,26 @@ class TestKanbanLearningHub:
     """LearningHubService facade (Sprint 5)."""
 
     def test_learning_hub_facade_importable(self):
-        from app.services.learning_hub_service import learning_hub_service
+        from app.shared.services.learning_hub_service import learning_hub_service
         assert learning_hub_service is not None
 
     def test_learning_confirmation_service_importable(self):
-        from app.services.learning_confirmation_service import (
+        from app.shared.services.learning_confirmation_service import (
             learning_confirmation_service,
         )
         assert callable(learning_confirmation_service.record_skill_confirmation)
 
     def test_learning_outcome_service_importable(self):
-        from app.services.learning_outcome_service import learning_outcome_service
+        from app.shared.services.learning_outcome_service import learning_outcome_service
         assert callable(learning_outcome_service.record_job_outcome)
 
     def test_learning_analytics_service_importable(self):
-        from app.services.learning_analytics_service import learning_analytics_service
+        from app.shared.services.learning_analytics_service import learning_analytics_service
         assert callable(learning_analytics_service.get_learning_dashboard)
 
     def test_learning_hub_delegates_to_confirmation(self):
         """Facade must expose same interface as before the split."""
-        from app.services.learning_hub_service import LearningHubService
+        from app.shared.services.learning_hub_service import LearningHubService
         hub = LearningHubService()
         assert callable(hub.record_skill_confirmation)
         assert callable(hub.record_responsibility_confirmation)

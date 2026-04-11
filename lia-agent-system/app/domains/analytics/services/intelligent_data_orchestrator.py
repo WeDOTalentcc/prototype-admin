@@ -146,21 +146,21 @@ class IntelligentDataOrchestrator:
     def _get_cache_manager(self):
         """Lazy load cache manager."""
         if self._cache_manager is None:
-            from app.services.cache_manager_service import cache_manager_service
+            from app.shared.services.cache_manager_service import cache_manager_service
             self._cache_manager = cache_manager_service
         return self._cache_manager
     
     def _get_learning_loop(self):
         """Lazy load learning loop service."""
         if self._learning_loop is None:
-            from app.services.learning_loop_service import learning_loop_service
+            from app.shared.services.learning_loop_service import learning_loop_service
             self._learning_loop = learning_loop_service
         return self._learning_loop
     
     def _get_company_config(self):
         """Lazy load company configuration service."""
         if self._company_config is None:
-            from app.services.company_configuration_service import company_config_service
+            from app.domains.company.services.company_configuration_service import company_config_service
             self._company_config = company_config_service
         return self._company_config
     
@@ -181,13 +181,13 @@ class IntelligentDataOrchestrator:
     def _get_market_benchmark(self):
         """Lazy load market benchmark service."""
         if self._market_benchmark is None:
-            from app.services.market_benchmark_service import market_benchmark_service
+            from app.shared.services.market_benchmark_service import market_benchmark_service
             self._market_benchmark = market_benchmark_service
         return self._market_benchmark
     
     def _get_skills_catalog_db(self, db: AsyncSession):
         """Get skills catalog DB service instance."""
-        from app.services.skills_catalog_service import get_skills_catalog_db_service
+        from app.shared.services.skills_catalog_service import get_skills_catalog_db_service
         return get_skills_catalog_db_service(db)
     
     async def get_salary_data(
@@ -206,7 +206,7 @@ class IntelligentDataOrchestrator:
         5. Market benchmark (external data)
         """
         cache_manager = self._get_cache_manager()
-        from app.services.cache_manager_service import CacheNamespace
+        from app.shared.services.cache_manager_service import CacheNamespace
         
         cache_result = await cache_manager.get(
             namespace=CacheNamespace.SALARY_BENCHMARK,
@@ -591,7 +591,7 @@ class IntelligentDataOrchestrator:
         5. Skills catalog (default)
         """
         cache_manager = self._get_cache_manager()
-        from app.services.cache_manager_service import CacheNamespace
+        from app.shared.services.cache_manager_service import CacheNamespace
         
         cache_result = await cache_manager.get(
             namespace=CacheNamespace.SKILLS_SUGGESTIONS,
@@ -732,7 +732,7 @@ class IntelligentDataOrchestrator:
     async def _get_catalog_skills(self, context: JobContext) -> DataResult | None:
         """Get skills from curated catalog."""
         try:
-            from app.services.skills_catalog_service import skills_catalog_service
+            from app.shared.services.skills_catalog_service import skills_catalog_service
             
             role = context.role or context.title or ""
             skills = skills_catalog_service.get_skills_for_role(

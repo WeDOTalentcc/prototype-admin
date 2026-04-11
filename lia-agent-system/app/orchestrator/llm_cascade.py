@@ -17,7 +17,7 @@ import time
 from typing import Any
 
 from app.core.config import settings
-from app.services.llm import LLMProvider, llm_service
+from app.domains.ai.services.llm import LLMProvider, llm_service
 
 logger = logging.getLogger(__name__)
 

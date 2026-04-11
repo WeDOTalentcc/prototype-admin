@@ -120,7 +120,7 @@ def _load_cascade_module(fake_settings=None):
     # Nome único por invocação para evitar caching do sys.modules
     mod_name = f"llm_cascade_isolated_{_cascade_load_counter}"
     mod = _load_module("app/orchestrator/llm_cascade.py", mod_name)
-    # O módulo importou llm_service via 'from app.services.llm import llm_service'
+    # O módulo importou llm_service via 'from app.domains.ai.services.llm import llm_service'
     # Substituímos a referência no namespace do módulo diretamente para garantir
     # que _call_model use nosso mock
     mod.llm_service = mock_svc

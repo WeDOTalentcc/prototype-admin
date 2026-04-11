@@ -1,12 +1,24 @@
 """
 Cache Invalidation Strategy - Standardized TTLs and invalidation helpers.
 
+Single source of truth for cache TTL configuration and invalidation events.
 Provides domain-specific TTL configurations and cache invalidation utilities
 to ensure consistent caching behavior across the platform.
 
+ARCHITECTURE — Two complementary modules:
+  - THIS FILE (cache_strategy.py): TTL registry, key generation, invalidation events.
+    Use CacheDomain for endpoint/service-level caching with event-driven invalidation.
+  - app.shared.resilience.cache_manager_service: 3-layer cache engine
+    (Session → Redis → PostgreSQL). Use CacheNamespace for multi-layer persistence
+    with semantic similarity matching.
+
+Shared namespaces (keep TTLs aligned):
+  - COMPANY_CONFIG: here=3600s, cache_manager=VOLATILE(86400s Redis)/STABLE(30d PG)
+  - LLM_RESPONSE: here=900s, cache_manager=VOLATILE(86400s Redis)/STANDARD(7d PG)
+
 Usage:
     from app.shared.cache_strategy import CacheStrategy, CacheDomain
-    
+
     ttl = CacheStrategy.get_ttl(CacheDomain.CANDIDATE_SEARCH)
     key = CacheStrategy.build_key(CacheDomain.CANDIDATE_SEARCH, query="python", location="sp")
     CacheStrategy.invalidate(CacheDomain.JOB_VACANCY, job_id="123")

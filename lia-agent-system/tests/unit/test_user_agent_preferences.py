@@ -55,7 +55,7 @@ class TestCheckAutoConfirm:
 
     @pytest.mark.asyncio
     async def test_returns_false_when_no_preference(self):
-        from app.services.user_agent_preference_service import UserAgentPreferenceService
+        from app.shared.services.user_agent_preference_service import UserAgentPreferenceService
         db = AsyncMock()
         db.execute = AsyncMock(return_value=MagicMock(scalar_one_or_none=MagicMock(return_value=None)))
         result = await UserAgentPreferenceService.check_auto_confirm(
@@ -65,7 +65,7 @@ class TestCheckAutoConfirm:
 
     @pytest.mark.asyncio
     async def test_returns_true_when_auto_confirm_true(self):
-        from app.services.user_agent_preference_service import UserAgentPreferenceService
+        from app.shared.services.user_agent_preference_service import UserAgentPreferenceService
         pref = _make_pref(auto_confirm=True)
         db = AsyncMock()
         db.execute = AsyncMock(return_value=MagicMock(scalar_one_or_none=MagicMock(return_value=pref)))
@@ -76,7 +76,7 @@ class TestCheckAutoConfirm:
 
     @pytest.mark.asyncio
     async def test_returns_false_when_auto_confirm_false(self):
-        from app.services.user_agent_preference_service import UserAgentPreferenceService
+        from app.shared.services.user_agent_preference_service import UserAgentPreferenceService
         pref = _make_pref(auto_confirm=False)
         db = AsyncMock()
         db.execute = AsyncMock(return_value=MagicMock(scalar_one_or_none=MagicMock(return_value=pref)))
@@ -90,7 +90,7 @@ class TestUpsert:
 
     @pytest.mark.asyncio
     async def test_creates_new_preference(self):
-        from app.services.user_agent_preference_service import UserAgentPreferenceService
+        from app.shared.services.user_agent_preference_service import UserAgentPreferenceService
         db = AsyncMock()
         db.execute = AsyncMock(return_value=MagicMock(scalar_one_or_none=MagicMock(return_value=None)))
         db.add = MagicMock()
@@ -106,7 +106,7 @@ class TestUpsert:
 
     @pytest.mark.asyncio
     async def test_updates_existing_preference(self):
-        from app.services.user_agent_preference_service import UserAgentPreferenceService
+        from app.shared.services.user_agent_preference_service import UserAgentPreferenceService
         pref = _make_pref(auto_confirm=False)
         db = AsyncMock()
         db.execute = AsyncMock(return_value=MagicMock(scalar_one_or_none=MagicMock(return_value=pref)))
@@ -122,7 +122,7 @@ class TestUpsert:
 
     @pytest.mark.asyncio
     async def test_does_not_add_when_updating(self):
-        from app.services.user_agent_preference_service import UserAgentPreferenceService
+        from app.shared.services.user_agent_preference_service import UserAgentPreferenceService
         pref = _make_pref(auto_confirm=True)
         db = AsyncMock()
         db.execute = AsyncMock(return_value=MagicMock(scalar_one_or_none=MagicMock(return_value=pref)))
@@ -141,7 +141,7 @@ class TestListUserPreferences:
 
     @pytest.mark.asyncio
     async def test_returns_list(self):
-        from app.services.user_agent_preference_service import UserAgentPreferenceService
+        from app.shared.services.user_agent_preference_service import UserAgentPreferenceService
         prefs = [_make_pref(action_type="move"), _make_pref(action_type="schedule")]
         scalars_mock = MagicMock()
         scalars_mock.all = MagicMock(return_value=prefs)
@@ -155,7 +155,7 @@ class TestListUserPreferences:
 
     @pytest.mark.asyncio
     async def test_returns_empty_list_when_no_prefs(self):
-        from app.services.user_agent_preference_service import UserAgentPreferenceService
+        from app.shared.services.user_agent_preference_service import UserAgentPreferenceService
         scalars_mock = MagicMock()
         scalars_mock.all = MagicMock(return_value=[])
         db = AsyncMock()

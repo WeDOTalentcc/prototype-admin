@@ -60,7 +60,7 @@ async def send_gate_feedback(
     try:
         from langchain_core.prompts import ChatPromptTemplate
 
-        from app.services.llm import llm_service
+        from app.domains.ai.services.llm import llm_service
 
         # Selecionar prompt por gate
         if gate_number == 1:

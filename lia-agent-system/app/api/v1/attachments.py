@@ -21,7 +21,7 @@ from app.schemas.attachment import (
     CategoryCount,
     FileUploadResponse,
 )
-from app.services.attachment_service import attachment_service
+from app.shared.services.attachment_service import attachment_service
 
 logger = logging.getLogger(__name__)
 

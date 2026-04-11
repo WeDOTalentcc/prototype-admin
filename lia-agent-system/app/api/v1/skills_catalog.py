@@ -21,7 +21,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
 from app.core.database import get_db
-from app.services.skills_catalog_service import (
+from app.shared.services.skills_catalog_service import (
     get_skills_catalog_db_service,
     get_skills_catalog_service,
 )

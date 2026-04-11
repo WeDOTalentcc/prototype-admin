@@ -28,7 +28,7 @@ from lia_models.recruiter_profile import (
     RecruiterFieldPreference,
     RecruiterProfile,
 )
-from app.services.confidence_policy_service import ConfidenceThresholds
+from app.shared.services.confidence_policy_service import ConfidenceThresholds
 
 logger = logging.getLogger(__name__)
 

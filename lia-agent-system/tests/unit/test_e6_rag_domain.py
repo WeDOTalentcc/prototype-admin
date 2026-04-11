@@ -57,7 +57,7 @@ def test_normalize_domain_unknown_fallback():
 # ---------------------------------------------------------------------------
 
 def test_detect_domain_candidates():
-    from app.services.domain_embedding_service import DomainEmbeddingService
+    from app.shared.services.domain_embedding_service import DomainEmbeddingService
     svc = DomainEmbeddingService()
     assert svc.detect_domain("candidates") == "talent"
 
@@ -67,7 +67,7 @@ def test_detect_domain_candidates():
 # ---------------------------------------------------------------------------
 
 def test_detect_domain_policy():
-    from app.services.domain_embedding_service import DomainEmbeddingService
+    from app.shared.services.domain_embedding_service import DomainEmbeddingService
     svc = DomainEmbeddingService()
     assert svc.detect_domain("policy_blocks") == "policy"
 
@@ -77,7 +77,7 @@ def test_detect_domain_policy():
 # ---------------------------------------------------------------------------
 
 def test_detect_domain_unknown():
-    from app.services.domain_embedding_service import DomainEmbeddingService
+    from app.shared.services.domain_embedding_service import DomainEmbeddingService
     svc = DomainEmbeddingService()
     assert svc.detect_domain("other") == "general"
     assert svc.detect_domain("xyz_source") == "general"
@@ -88,7 +88,7 @@ def test_detect_domain_unknown():
 # ---------------------------------------------------------------------------
 
 def test_embed_document_fail_open():
-    from app.services.domain_embedding_service import DomainEmbeddingService
+    from app.shared.services.domain_embedding_service import DomainEmbeddingService
     svc = DomainEmbeddingService()
 
     mock_db = MagicMock()
@@ -117,7 +117,7 @@ def test_embed_document_fail_open():
 # ---------------------------------------------------------------------------
 
 def test_rebuild_domain_index_fail_open():
-    from app.services.domain_embedding_service import DomainEmbeddingService
+    from app.shared.services.domain_embedding_service import DomainEmbeddingService
     svc = DomainEmbeddingService()
 
     # DB that raises on execute

@@ -90,7 +90,7 @@ class GeminiLiveAudioService:
         session: GeminiLiveSession,
         wsi_questions: list[str] | None = None,
     ) -> str:
-        from app.services.voice_screening_orchestrator import VoiceScreeningOrchestrator
+        from app.domains.voice.services.voice_screening_orchestrator import VoiceScreeningOrchestrator
 
         job_context_block = ""
         if session.job_context:

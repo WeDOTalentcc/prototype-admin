@@ -12,7 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import AsyncSessionLocal
 from lia_models.memory import DOCUMENT_TYPES, ConversationMemory, KnowledgeBase
-from app.services.embedding_service import embedding_service
+from app.shared.services.embedding_service import embedding_service
 
 logger = logging.getLogger(__name__)
 

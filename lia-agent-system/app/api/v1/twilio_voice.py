@@ -42,7 +42,7 @@ from app.domains.communication.services.twilio_voice_service import (
     TwilioVoiceUnconfiguredError,
     twilio_voice_service,
 )
-from app.services.voice_screening_orchestrator import (
+from app.domains.voice.services.voice_screening_orchestrator import (
     ConsentNotGrantedError,
     voice_screening_orchestrator,
 )

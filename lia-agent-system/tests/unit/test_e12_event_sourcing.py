@@ -43,7 +43,7 @@ def _make_mock_event(seq: int = 1, event_type: str = "CandidateMoved") -> MagicM
 @pytest.mark.asyncio
 async def test_append_returns_true_on_success():
     import app.services.event_store_service as _esvc_mod
-    from app.services.event_store_service import EventStoreService
+    from app.shared.services.event_store_service import EventStoreService
     svc = EventStoreService()
     db = _make_mock_db()
 
@@ -81,7 +81,7 @@ async def test_append_returns_true_on_success():
 
 @pytest.mark.asyncio
 async def test_append_fail_open_on_error():
-    from app.services.event_store_service import EventStoreService
+    from app.shared.services.event_store_service import EventStoreService
     svc = EventStoreService()
     db = _make_mock_db()
     db.execute = AsyncMock(side_effect=RuntimeError("DB connection lost"))
@@ -105,7 +105,7 @@ async def test_append_fail_open_on_error():
 @pytest.mark.asyncio
 async def test_get_history_returns_ordered_events():
     """get_history returns formatted dicts in sequence order."""
-    from app.services.event_store_service import EventStoreService
+    from app.shared.services.event_store_service import EventStoreService
     svc = EventStoreService()
 
     ev1 = _make_mock_event(seq=1)
@@ -142,7 +142,7 @@ async def test_get_history_returns_ordered_events():
 
 @pytest.mark.asyncio
 async def test_get_history_fail_open_empty_list():
-    from app.services.event_store_service import EventStoreService
+    from app.shared.services.event_store_service import EventStoreService
     svc = EventStoreService()
     db = _make_mock_db()
     db.execute = AsyncMock(side_effect=Exception("timeout"))
@@ -159,7 +159,7 @@ async def test_get_history_fail_open_empty_list():
 @pytest.mark.asyncio
 async def test_get_history_from_sequence_filter():
     """get_history respects from_sequence filter (events after seq 2 only)."""
-    from app.services.event_store_service import EventStoreService
+    from app.shared.services.event_store_service import EventStoreService
     svc = EventStoreService()
 
     ev1 = _make_mock_event(seq=1)
@@ -194,7 +194,7 @@ async def test_get_history_from_sequence_filter():
 
 @pytest.mark.asyncio
 async def test_reconstruct_state_applies_folder():
-    from app.services.event_store_service import EventStoreService
+    from app.shared.services.event_store_service import EventStoreService
     svc = EventStoreService()
     db = _make_mock_db()
 
@@ -221,7 +221,7 @@ async def test_reconstruct_state_applies_folder():
 
 @pytest.mark.asyncio
 async def test_reconstruct_state_empty_history():
-    from app.services.event_store_service import EventStoreService
+    from app.shared.services.event_store_service import EventStoreService
     svc = EventStoreService()
     db = _make_mock_db()
 
@@ -240,7 +240,7 @@ async def test_reconstruct_state_empty_history():
 
 @pytest.mark.asyncio
 async def test_reconstruct_state_fail_open():
-    from app.services.event_store_service import EventStoreService
+    from app.shared.services.event_store_service import EventStoreService
     svc = EventStoreService()
     db = _make_mock_db()
 
@@ -259,7 +259,7 @@ async def test_reconstruct_state_fail_open():
 
 @pytest.mark.asyncio
 async def test_reconstruct_state_default_folder():
-    from app.services.event_store_service import EventStoreService
+    from app.shared.services.event_store_service import EventStoreService
     svc = EventStoreService()
     db = _make_mock_db()
 

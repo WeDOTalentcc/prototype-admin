@@ -57,58 +57,58 @@ from app.domains.recruiter_assistant.services.conversation_memory import (
     conversation_memory,
 )
 from app.domains.sourcing.services.apify_service import ApifyService, apify_service
-from app.services.audit_service import AuditService, audit_service
-from app.services.benefits_service import (
+from app.shared.services.audit_service import AuditService, audit_service
+from app.shared.services.benefits_service import (
     BENEFIT_CATEGORIES,
     BenefitsService,
     benefits_service,
 )
-from app.services.compensation_analysis_service import (
+from app.shared.services.compensation_analysis_service import (
     CompensationAnalysisService,
     compensation_analysis_service,
 )
-from app.services.confidence_policy_service import (
+from app.shared.services.confidence_policy_service import (
     ConfidenceAction,
     ConfidencePolicyService,
     ConfidenceResult,
     ConfidenceThresholds,
     confidence_policy_service,
 )
-from app.services.explainability_service import ExplainabilityService, explainability_service
-from app.services.intent_classifier import (
+from app.shared.services.explainability_service import ExplainabilityService, explainability_service
+from app.shared.services.intent_classifier import (
     ClassificationResult,
     IntentClassifierService,
     IntentType,
     intent_classifier_service,
 )
-from app.services.learning_hub_service import (
+from app.shared.services.learning_hub_service import (
     ConfirmationResult,
     LearningContext,
     LearningHubService,
     learning_hub_service,
 )
-from app.services.market_benchmark_service import (
+from app.shared.services.market_benchmark_service import (
     MarketBenchmarkService,
     market_benchmark_service,
 )
-from app.services.otp_service import (
+from app.shared.services.otp_service import (
     OTPService,
     otp_service,
 )
-from app.services.response_cache_service import (
+from app.shared.services.response_cache_service import (
     CacheConfig,
     InMemoryCache,
     ResponseCacheService,
     cached_response,
     response_cache_service,
 )
-from app.services.responsibilities_catalog_service import (
+from app.shared.services.responsibilities_catalog_service import (
     RESPONSIBILITIES_CATALOG,
     ROLE_RESPONSIBILITIES_MAPPING,
     ResponsibilitiesCatalogService,
     responsibilities_catalog_service,
 )
-from app.services.skills_catalog_service import (
+from app.shared.services.skills_catalog_service import (
     BEHAVIORAL_COMPETENCIES_CATALOG,
     ROLE_SKILLS_MAPPING,
     TECH_SKILLS_CATALOG,

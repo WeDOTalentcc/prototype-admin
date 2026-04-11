@@ -9,7 +9,7 @@ from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.services.affirmative_service import AffirmativeService
+from app.shared.services.affirmative_service import AffirmativeService
 
 router = APIRouter(prefix="/affirmative", tags=["affirmative"])
 
@@ -72,7 +72,7 @@ class DocumentVerificationRequest(BaseModel):
 @router.get("/criteria", response_model=CriteriaResponse)
 async def get_affirmative_criteria():
     """Get all available affirmative action criteria."""
-    from app.services.affirmative_service import AFFIRMATIVE_CRITERIA
+    from app.shared.services.affirmative_service import AFFIRMATIVE_CRITERIA
     return {"criteria": AFFIRMATIVE_CRITERIA}
 
 

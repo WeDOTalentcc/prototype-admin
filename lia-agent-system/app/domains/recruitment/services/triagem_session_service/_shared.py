@@ -16,7 +16,7 @@ _event_dispatcher_cache = None
 def _get_event_dispatcher():
     global _event_dispatcher_cache
     if _event_dispatcher_cache is None:
-        from app.services.event_dispatcher import event_dispatcher
+        from app.shared.services.event_dispatcher import event_dispatcher
         _event_dispatcher_cache = event_dispatcher
     return _event_dispatcher_cache
 
@@ -187,7 +187,7 @@ def _get_screening_config(session: Any) -> dict[str, Any]:
 
 async def _call_llm(prompt: str) -> str | None:
     try:
-        from app.services.llm import llm_service
+        from app.domains.ai.services.llm import llm_service
         result = await llm_service.generate(prompt, provider="gemini")
         return result.strip() if result else None
     except Exception as exc:

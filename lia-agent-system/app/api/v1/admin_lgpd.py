@@ -47,7 +47,7 @@ async def get_cleanup_status(
     Útil para monitoramento e auditoria pré-go-live (LGPD Art. 16).
     Não executa nenhuma deleção.
     """
-    from app.services.lgpd_cleanup_service import RETENTION_DAYS, get_pending_deletions_count
+    from app.shared.services.lgpd_cleanup_service import RETENTION_DAYS, get_pending_deletions_count
     counts = await get_pending_deletions_count(db)
     return {
         **counts,
@@ -63,7 +63,7 @@ async def get_retention_policy(
     """
     Retorna a política de retenção de dados configurada (LGPD Art. 16).
     """
-    from app.services.lgpd_cleanup_service import RETENTION_DAYS
+    from app.shared.services.lgpd_cleanup_service import RETENTION_DAYS
     return {
         "retention_days": RETENTION_DAYS,
         "schedule": "Diário 02h Brasília (Celery Beat: lgpd-cleanup-daily)",

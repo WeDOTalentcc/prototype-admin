@@ -29,7 +29,7 @@ def get_microsoft_graph_service():
     """Lazy load Microsoft Graph service to avoid circular imports."""
     global _microsoft_graph_service
     if _microsoft_graph_service is None:
-        from app.services.microsoft_graph_service import microsoft_graph_service
+        from app.shared.services.microsoft_graph_service import microsoft_graph_service
         _microsoft_graph_service = microsoft_graph_service
     return _microsoft_graph_service
 
@@ -43,7 +43,7 @@ def get_event_dispatcher():
     """Lazy load EventDispatcher to avoid circular imports."""
     global _event_dispatcher
     if _event_dispatcher is None:
-        from app.services.event_dispatcher import event_dispatcher
+        from app.shared.services.event_dispatcher import event_dispatcher
         _event_dispatcher = event_dispatcher
     return _event_dispatcher
 
@@ -310,7 +310,7 @@ class SchedulingService:
         Returns:
             Tuple of (Interview object, metadata dict with Teams meeting info)
         """
-        from app.services.microsoft_graph_service import (
+        from app.shared.services.microsoft_graph_service import (
             AttendeeType,
             GraphAPICalendarPermissionError,
             GraphAPIForbiddenError,

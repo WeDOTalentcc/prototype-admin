@@ -12,7 +12,7 @@ Armazenamento: dict em memória (singleton).
 Persiste hash no ConversationLog.prompt_version para auditoria.
 
 Uso:
-    from app.services.prompt_version_registry import prompt_version_registry
+    from app.shared.services.prompt_version_registry import prompt_version_registry
 
     hash_prefix = prompt_version_registry.register(
         name="talent_react_v2",

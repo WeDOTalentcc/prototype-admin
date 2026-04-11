@@ -675,7 +675,7 @@ def run_lgpd_cleanup_task(self, dry_run: bool = False) -> dict:
     span.set_attribute("dry_run", str(dry_run))
 
     async def _run() -> dict:
-        from app.services.lgpd_cleanup_service import run_cleanup
+        from app.shared.services.lgpd_cleanup_service import run_cleanup
         return await run_cleanup(dry_run=dry_run)
 
     try:
@@ -718,7 +718,7 @@ def conversation_ttl_cleanup_task(self, dry_run: bool = False) -> dict:
     span.set_attribute("dry_run", str(dry_run))
 
     async def _run() -> dict:
-        from app.services.lgpd_cleanup_service import run_conversation_ttl_cleanup
+        from app.shared.services.lgpd_cleanup_service import run_conversation_ttl_cleanup
         return await run_conversation_ttl_cleanup(dry_run=dry_run)
 
     try:
@@ -965,7 +965,7 @@ def send_daily_briefing_task(self) -> dict:
     async def _run() -> dict:
         from app.auth.models import User
         from app.core.database import AsyncSessionLocal
-        from app.services.briefing_service import BriefingService
+        from app.shared.services.briefing_service import BriefingService
 
         briefing_service = BriefingService()
         sent = 0
@@ -1505,7 +1505,7 @@ def run_ragas_evaluate_batch(self, domain: str = "all", days_back: int = 1) -> d
         from sqlalchemy import text
 
         from app.core.database import AsyncSessionLocal
-        from app.services.ragas_evaluation_service import RAGASEvaluationInput, ragas_evaluation_service
+        from app.shared.services.ragas_evaluation_service import RAGASEvaluationInput, ragas_evaluation_service
 
         since = datetime.utcnow() - timedelta(days=days_back)
         evaluated = 0
@@ -1588,7 +1588,7 @@ def rebuild_domain_index_task(domain: str, company_id: str):
     """Celery task to rebuild RAG domain embeddings."""
     import asyncio
 
-    from app.services.domain_embedding_service import domain_embedding_service
+    from app.shared.services.domain_embedding_service import domain_embedding_service
 
     span = _celery_span("celery.task_start", "rag.rebuild_domain_index")
     span.set_attribute("domain", domain)
@@ -1629,7 +1629,7 @@ def recompute_routing_adjustments(company_id: str) -> dict:
     async def _run():
         from lia_config.database import AsyncSessionLocal
 
-        from app.services.routing_learning_service import routing_learning_service
+        from app.shared.services.routing_learning_service import routing_learning_service
 
         async with AsyncSessionLocal() as db:
             adj = await routing_learning_service.compute_domain_confidence_adjustments(
@@ -1668,7 +1668,7 @@ def process_ml_feedback_weights_task(self, company_id: str, job_id: str) -> dict
     async def _run() -> dict:
         from lia_config.database import AsyncSessionLocal
 
-        from app.services.ml_feedback_service import MLFeedbackService
+        from app.shared.services.ml_feedback_service import MLFeedbackService
 
         service = MLFeedbackService()
         async with AsyncSessionLocal() as db:

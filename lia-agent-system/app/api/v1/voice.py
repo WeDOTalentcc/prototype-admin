@@ -9,7 +9,7 @@ import mimetypes
 from fastapi import APIRouter, File, Form, HTTPException, UploadFile
 from fastapi.responses import JSONResponse
 
-from app.services.gemini_voice_service import get_voice_service
+from app.shared.services.gemini_voice_service import get_voice_service
 
 logger = logging.getLogger(__name__)
 

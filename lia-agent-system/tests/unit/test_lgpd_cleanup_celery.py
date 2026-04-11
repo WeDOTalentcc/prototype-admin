@@ -21,27 +21,27 @@ from datetime import datetime, timedelta
 
 class TestRetentionPolicy:
     def test_rejected_90_days(self):
-        from app.services.lgpd_cleanup_service import RETENTION_DAYS
+        from app.shared.services.lgpd_cleanup_service import RETENTION_DAYS
         assert RETENTION_DAYS["rejected"] == 90
 
     def test_withdrawn_90_days(self):
-        from app.services.lgpd_cleanup_service import RETENTION_DAYS
+        from app.shared.services.lgpd_cleanup_service import RETENTION_DAYS
         assert RETENTION_DAYS["withdrawn"] == 90
 
     def test_interview_notes_180_days(self):
-        from app.services.lgpd_cleanup_service import RETENTION_DAYS
+        from app.shared.services.lgpd_cleanup_service import RETENTION_DAYS
         assert RETENTION_DAYS["interview_notes"] == 180
 
     def test_screening_logs_365_days(self):
-        from app.services.lgpd_cleanup_service import RETENTION_DAYS
+        from app.shared.services.lgpd_cleanup_service import RETENTION_DAYS
         assert RETENTION_DAYS["screening_logs"] == 365
 
     def test_ai_logs_365_days(self):
-        from app.services.lgpd_cleanup_service import RETENTION_DAYS
+        from app.shared.services.lgpd_cleanup_service import RETENTION_DAYS
         assert RETENTION_DAYS["ai_logs"] == 365
 
     def test_all_required_keys_present(self):
-        from app.services.lgpd_cleanup_service import RETENTION_DAYS
+        from app.shared.services.lgpd_cleanup_service import RETENTION_DAYS
         required = {"rejected", "withdrawn", "interview_notes", "screening_logs", "ai_logs"}
         assert required.issubset(RETENTION_DAYS.keys())
 
@@ -94,7 +94,7 @@ class TestLgpdCleanupTask:
         }
 
         with patch("app.services.lgpd_cleanup_service.run_cleanup", new=AsyncMock(return_value=mock_summary)) as mock_run:
-            from app.services.lgpd_cleanup_service import run_cleanup
+            from app.shared.services.lgpd_cleanup_service import run_cleanup
             result = await run_cleanup(dry_run=True)
             assert result["dry_run"] is True
             assert "candidates_deleted" in result
@@ -103,7 +103,7 @@ class TestLgpdCleanupTask:
     def test_run_cleanup_is_function_not_object(self):
         """Garante que run_cleanup é uma função coroutine, não um objeto."""
         import inspect
-        from app.services.lgpd_cleanup_service import run_cleanup
+        from app.shared.services.lgpd_cleanup_service import run_cleanup
         assert callable(run_cleanup)
         assert inspect.iscoroutinefunction(run_cleanup)
 
@@ -138,7 +138,7 @@ class TestRunCleanupReturnStructure:
             mock_ctx.__aexit__ = AsyncMock(return_value=False)
             mock_session_cls.return_value = mock_ctx
 
-            from app.services.lgpd_cleanup_service import run_cleanup
+            from app.shared.services.lgpd_cleanup_service import run_cleanup
             result = await run_cleanup(dry_run=True)
 
         required_keys = {
@@ -158,7 +158,7 @@ class TestScheduleDeletion:
     @pytest.mark.asyncio
     async def test_rejected_schedules_90_days(self):
         """Candidato rejeitado → deletion_at = now + 90 dias."""
-        from app.services.lgpd_cleanup_service import RETENTION_DAYS
+        from app.shared.services.lgpd_cleanup_service import RETENTION_DAYS
         days = RETENTION_DAYS["rejected"]
         expected_delta = timedelta(days=days)
         now = datetime.utcnow()
@@ -168,12 +168,12 @@ class TestScheduleDeletion:
 
     @pytest.mark.asyncio
     async def test_unknown_reason_defaults_to_90_days(self):
-        from app.services.lgpd_cleanup_service import RETENTION_DAYS
+        from app.shared.services.lgpd_cleanup_service import RETENTION_DAYS
         default = RETENTION_DAYS.get("unknown_reason", 90)
         assert default == 90
 
     def test_ai_logs_retention_longer_than_operational(self):
-        from app.services.lgpd_cleanup_service import RETENTION_DAYS
+        from app.shared.services.lgpd_cleanup_service import RETENTION_DAYS
         assert RETENTION_DAYS["ai_logs"] > RETENTION_DAYS["rejected"]
         assert RETENTION_DAYS["ai_logs"] > RETENTION_DAYS["withdrawn"]
 
@@ -188,7 +188,7 @@ class TestGetPendingDeletionsCount:
         mock_db = AsyncMock()
         mock_db.scalar = AsyncMock(return_value=0)
 
-        from app.services.lgpd_cleanup_service import get_pending_deletions_count
+        from app.shared.services.lgpd_cleanup_service import get_pending_deletions_count
         result = await get_pending_deletions_count(mock_db)
 
         assert "candidates_pending_deletion" in result
@@ -201,7 +201,7 @@ class TestGetPendingDeletionsCount:
         mock_db = AsyncMock()
         mock_db.scalar = AsyncMock(return_value=None)  # None → tratado como 0
 
-        from app.services.lgpd_cleanup_service import get_pending_deletions_count
+        from app.shared.services.lgpd_cleanup_service import get_pending_deletions_count
         result = await get_pending_deletions_count(mock_db)
 
         assert result["candidates_pending_deletion"] == 0

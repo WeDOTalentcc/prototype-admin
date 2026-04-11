@@ -5,7 +5,7 @@ Tests the scoring/threshold logic that does NOT require a DB connection.
 Integration tests (with DB) are tracked separately.
 """
 import pytest
-from app.services.pipeline_velocity_service import (
+from app.shared.services.pipeline_velocity_service import (
     PipelineVelocityService,
     _threshold_for_stage,
 )

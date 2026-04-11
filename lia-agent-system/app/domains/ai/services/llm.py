@@ -635,7 +635,7 @@ class LLMService:
         max_tokens: int = 4096
     ) -> T:
         """Generate structured output using Claude's tool calling."""
-        from app.services.structured_output import (
+        from app.domains.ai.services.structured_output import (
             parse_claude_tool_response,
             parse_json_from_text,
             structured_output_service,
@@ -691,7 +691,7 @@ class LLMService:
         """Generate structured output using Gemini's response_schema."""
         from google.genai import types
 
-        from app.services.structured_output import (
+        from app.domains.ai.services.structured_output import (
             parse_gemini_json_response,
             parse_json_from_text,
             structured_output_service,

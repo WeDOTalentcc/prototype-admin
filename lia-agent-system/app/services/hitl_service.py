@@ -550,7 +550,7 @@ class HITLService:
         """Verifica preferência de auto_confirm via UserAgentPreferenceService."""
         try:
             from app.core.database import AsyncSessionLocal
-            from app.services.user_agent_preference_service import UserAgentPreferenceService
+            from app.shared.services.user_agent_preference_service import UserAgentPreferenceService
             async with AsyncSessionLocal() as db:
                 return await UserAgentPreferenceService.check_auto_confirm(
                     db, user_id=user_id, company_id=company_id,

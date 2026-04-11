@@ -22,7 +22,7 @@ from app.domains.hiring_policy.agents.policy_stage_context import (
 )
 from app.domains.hiring_policy.agents.policy_system_prompt import get_policy_system_prompt
 from app.domains.hiring_policy.agents.policy_tool_registry import get_policy_tools
-from app.services.confidence_policy_service import confidence_policy_service
+from app.shared.services.confidence_policy_service import confidence_policy_service
 from app.shared.compliance.fairness_guard import FairnessGuard
 
 logger = logging.getLogger(__name__)

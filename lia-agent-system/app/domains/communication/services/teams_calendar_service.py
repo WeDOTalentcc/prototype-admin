@@ -27,7 +27,7 @@ class TeamsCalendarService:
     """
 
     def is_configured(self) -> bool:
-        from app.services.microsoft_graph_service import microsoft_graph_service
+        from app.shared.services.microsoft_graph_service import microsoft_graph_service
         return microsoft_graph_service.is_configured()
 
     async def schedule_interview(
@@ -58,7 +58,7 @@ class TeamsCalendarService:
           }
         """
         try:
-            from app.services.microsoft_graph_service import (
+            from app.shared.services.microsoft_graph_service import (
                 CreateTeamsMeetingRequest,
                 microsoft_graph_service,
             )
@@ -133,7 +133,7 @@ class TeamsCalendarService:
     ) -> dict[str, Any]:
         """Cancel an existing interview event."""
         try:
-            from app.services.microsoft_graph_service import microsoft_graph_service
+            from app.shared.services.microsoft_graph_service import microsoft_graph_service
             if not self.is_configured():
                 return {"success": False, "message": "Microsoft Graph não configurado."}
 
@@ -157,7 +157,7 @@ class TeamsCalendarService:
     ) -> dict[str, Any]:
         """Reschedule an existing interview to a new time."""
         try:
-            from app.services.microsoft_graph_service import microsoft_graph_service
+            from app.shared.services.microsoft_graph_service import microsoft_graph_service
             if not self.is_configured():
                 return {"success": False, "message": "Microsoft Graph não configurado."}
 

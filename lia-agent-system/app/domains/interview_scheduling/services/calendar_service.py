@@ -13,7 +13,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
-from app.services.graph_client import graph_client
+from app.shared.services.graph_client import graph_client
 from app.shared.policy_middleware import get_policy_for_company, resolve_policy_value
 from app.utils.datetime_helpers import parse_graph_datetime
 

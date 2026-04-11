@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 from typing import Dict, Any, List, Optional
 from unittest.mock import MagicMock, patch
 
-from app.services.lia_score_service import (
+from app.shared.services.lia_score_service import (
     LIAScoreService,
     LIAScoreBreakdown,
     LIAScoreResult,

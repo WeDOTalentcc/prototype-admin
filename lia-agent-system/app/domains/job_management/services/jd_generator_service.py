@@ -15,8 +15,8 @@ from dataclasses import dataclass
 from enum import Enum, StrEnum
 from typing import Any
 
-from app.services.ai_cache_service import ai_cache_service
-from app.services.llm import LLMProvider, llm_service
+from app.domains.ai.services.ai_cache_service import ai_cache_service
+from app.domains.ai.services.llm import LLMProvider, llm_service
 
 logger = logging.getLogger(__name__)
 

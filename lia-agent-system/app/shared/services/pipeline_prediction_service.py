@@ -28,7 +28,7 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import AsyncSessionLocal
-from app.services.early_warning_service import compute_ews_score, risk_level_for_score
+from app.shared.services.early_warning_service import compute_ews_score, risk_level_for_score
 
 logger = logging.getLogger(__name__)
 
@@ -396,7 +396,7 @@ class PipelinePredictionService:
 
         # Health score: usamos cálculo simplificado inline para evitar chamada extra ao DB
         # (o health score completo requer dados de drop-off que não consultamos aqui)
-        from app.services.journey_intelligence_service import compute_health_score
+        from app.shared.services.journey_intelligence_service import compute_health_score
         inline_health = compute_health_score(
             total_active=total_active,
             conversion_rate_overall=advanced_count / total_active if total_active > 0 else 0.0,

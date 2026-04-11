@@ -8,7 +8,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.services.sourcing_pipeline_service import sourcing_pipeline_service
+from app.domains.sourcing.services.sourcing_pipeline_service import sourcing_pipeline_service
 
 router = APIRouter(prefix="/pipeline", tags=["sourcing-pipeline"])
 

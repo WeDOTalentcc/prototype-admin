@@ -26,7 +26,7 @@ from app.domains.policy.agents.stage_context import (
     get_or_create_session,
 )
 from app.domains.policy.agents.system_prompt import EXTRACTION_PROMPT, REPLY_PROMPT
-from app.services.llm import LLMService
+from app.domains.ai.services.llm import LLMService
 
 logger = logging.getLogger(__name__)
 

@@ -19,7 +19,7 @@ from app.auth.models import User
 from app.core.database import get_db
 from app.domains.job_management.services.vacancy_search_service import vacancy_search_service
 from app.models import JobVacancy
-from app.services.intent_classifier import IntentType, intent_classifier_service
+from app.shared.services.intent_classifier import IntentType, intent_classifier_service
 
 logger = logging.getLogger(__name__)
 

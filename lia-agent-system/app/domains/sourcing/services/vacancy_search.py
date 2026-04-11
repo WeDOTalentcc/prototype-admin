@@ -18,7 +18,7 @@ from sqlalchemy import and_, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from lia_models.job_vacancy import JobVacancy
-from app.services.llm import llm_service
+from app.domains.ai.services.llm import llm_service
 
 logger = logging.getLogger(__name__)
 

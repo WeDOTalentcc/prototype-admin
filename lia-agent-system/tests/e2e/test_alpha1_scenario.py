@@ -109,7 +109,7 @@ class TestEtapa56WSI:
 
     def test_audit_service_importable(self):
         """audit_service deve ser importável."""
-        from app.services.audit_service import audit_service
+        from app.shared.services.audit_service import audit_service
         assert audit_service is not None
 
 

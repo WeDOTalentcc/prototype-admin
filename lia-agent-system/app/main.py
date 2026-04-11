@@ -29,8 +29,8 @@ from app.domains.automation.services.automation_scheduler import automation_sche
 from app.middleware.auth_enforcement import AuthEnforcementMiddleware
 from app.middleware.rate_limiter import RateLimitMiddleware
 from app.middleware.request_id import RequestIdMiddleware
-from app.services.embedding_cache_service import embedding_cache
-from app.services.llm import LLMService
+from app.shared.services.embedding_cache_service import embedding_cache
+from app.domains.ai.services.llm import LLMService
 from app.tools import initialize_tools
 
 # Configure LangSmith tracing BEFORE logging
@@ -189,7 +189,7 @@ async def lifespan(app: FastAPI):
 
     # Seed PolicyEngine default rules (idempotente — skip-if-exists)
     try:
-        from app.services.policy_engine_service import PolicyEngineService
+        from app.shared.services.policy_engine_service import PolicyEngineService
         _pe_stats = await PolicyEngineService().load_default_rules()
         logger.info(
             f"✅ PolicyEngine rules seeded: "

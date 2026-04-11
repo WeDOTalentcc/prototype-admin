@@ -273,7 +273,7 @@ class JdEnrichmentService:
 
         # --- GOV 2: Circuit breaker wraps LLM call ---
         try:
-            from app.services.circuit_breaker import circuit_breaker_call, CircuitBreakerOpenError
+            from app.shared.services.circuit_breaker import circuit_breaker_call, CircuitBreakerOpenError
             try:
                 response = circuit_breaker_call(
                     self.llm.invoke,

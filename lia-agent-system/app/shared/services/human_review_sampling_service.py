@@ -102,7 +102,7 @@ class HumanReviewSamplingService:
         """
         try:
             # Tentar usar o audit_service para registrar a decisão para revisão
-            from app.services.audit_service import audit_service
+            from app.shared.services.audit_service import audit_service
             await audit_service.log_decision(
                 company_id=company_id,
                 agent_name=agent_name,

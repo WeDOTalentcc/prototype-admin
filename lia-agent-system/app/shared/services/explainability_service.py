@@ -15,7 +15,7 @@ from sqlalchemy import and_, select
 
 from app.core.database import AsyncSessionLocal
 from lia_models.audit_log import AuditLog
-from app.services.audit_service import PROTECTED_CRITERIA
+from app.shared.services.audit_service import PROTECTED_CRITERIA
 
 logger = logging.getLogger(__name__)
 

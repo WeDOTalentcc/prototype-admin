@@ -1,8 +1,16 @@
 """
 Policy Helper — Central utility for accessing CompanyHiringPolicy.
 
-All agents and services should use get_company_policy() to get the policy
-for a company. Returns defaults if no policy is configured.
+SOURCE OF TRUTH for policy data access. All agents and services should use
+get_company_policy() to get the policy for a company. Returns defaults if
+no policy is configured.
+
+ARCHITECTURE — Two complementary modules:
+  - THIS FILE (policy_helper.py): Core data access — get_company_policy(),
+    get_policy_rule(), cache invalidation. Import this for service/agent use.
+  - app.shared.policy_middleware: FastAPI dependency wrappers —
+    get_policy_from_request() (resolves company_id from headers/query/path),
+    resolve_policy_value() (override > policy > default). Import for endpoints.
 """
 import logging
 from typing import Any

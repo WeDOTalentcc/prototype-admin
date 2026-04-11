@@ -14,7 +14,7 @@ from app.api.v1.admin_prompts import (
     PromptVersionResponse,
     PromptVersionListResponse,
 )
-from app.services.prompt_version_registry import PromptVersionRegistry
+from app.shared.services.prompt_version_registry import PromptVersionRegistry
 
 
 # ---------------------------------------------------------------------------

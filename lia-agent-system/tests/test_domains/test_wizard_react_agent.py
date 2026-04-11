@@ -101,11 +101,11 @@ class TestWizardJobStageConfig:
     """job_stage_config extracted module tests."""
 
     def test_job_creation_stages_count(self):
-        from app.services.job_stage_config import JOB_CREATION_STAGES
+        from app.domains.job_management.services.job_stage_config import JOB_CREATION_STAGES
         assert len(JOB_CREATION_STAGES) == 8
 
     def test_all_stages_have_required_keys(self):
-        from app.services.job_stage_config import JOB_CREATION_STAGES
+        from app.domains.job_management.services.job_stage_config import JOB_CREATION_STAGES
         for stage in JOB_CREATION_STAGES:
             assert "stage" in stage
             assert "name" in stage
@@ -116,7 +116,7 @@ class TestWizardJobStageConfig:
         import warnings
         with warnings.catch_warnings(record=True) as w:
             warnings.simplefilter("always")
-            from app.services.job_stage_config import get_stage_config
+            from app.domains.job_management.services.job_stage_config import get_stage_config
             get_stage_config(1)
         deprecation_warnings = [x for x in w if issubclass(x.category, DeprecationWarning)]
         assert len(deprecation_warnings) == 0, (

@@ -12,7 +12,7 @@ from pydantic import BaseModel, Field
 
 from app.domains.journey_mapping.dependencies import get_journey_mapping_repo
 from app.domains.journey_mapping.repositories.journey_mapping_repository import JourneyMappingRepository
-from app.services.llm import llm_service
+from app.domains.ai.services.llm import llm_service
 
 logger = logging.getLogger(__name__)
 

@@ -32,7 +32,7 @@ class LearningAutomationService:
 
     def _get_pattern_detector(self):
         if self._pattern_detector is None:
-            from app.services.pattern_detector_service import PatternDetectorService
+            from app.shared.services.pattern_detector_service import PatternDetectorService
             self._pattern_detector = PatternDetectorService()
         return self._pattern_detector
 

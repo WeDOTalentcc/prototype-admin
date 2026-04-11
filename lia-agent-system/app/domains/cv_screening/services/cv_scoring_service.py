@@ -28,7 +28,7 @@ from lia_models.candidate import Candidate, VacancyCandidate
 from lia_models.job_vacancy import JobVacancy
 from lia_models.rubric import JobRequirement
 from app.schemas.rubric import JobRequirementCreate, RequirementPriorityEnum
-from app.services.activity_service import activity_service
+from app.domains.analytics.services.activity_service import activity_service
 
 logger = logging.getLogger(__name__)
 

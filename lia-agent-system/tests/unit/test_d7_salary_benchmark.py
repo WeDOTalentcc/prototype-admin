@@ -8,7 +8,7 @@ class TestSalaryBenchmarkService:
 
     @pytest.mark.asyncio
     async def test_cache_hit_returns_cached_benchmark(self):
-        from app.services.salary_benchmark_service import SalaryBenchmarkService
+        from app.shared.services.salary_benchmark_service import SalaryBenchmarkService
         import json
 
         cached_data = {
@@ -35,7 +35,7 @@ class TestSalaryBenchmarkService:
 
     @pytest.mark.asyncio
     async def test_cache_miss_calls_apify(self):
-        from app.services.salary_benchmark_service import SalaryBenchmarkService
+        from app.shared.services.salary_benchmark_service import SalaryBenchmarkService
 
         mock_redis = AsyncMock()
         mock_redis.get = AsyncMock(return_value=None)
@@ -57,7 +57,7 @@ class TestSalaryBenchmarkService:
 
     @pytest.mark.asyncio
     async def test_fallback_when_apify_fails(self):
-        from app.services.salary_benchmark_service import SalaryBenchmarkService
+        from app.shared.services.salary_benchmark_service import SalaryBenchmarkService
 
         mock_redis = AsyncMock()
         mock_redis.get = AsyncMock(return_value=None)
@@ -72,7 +72,7 @@ class TestSalaryBenchmarkService:
 
     @pytest.mark.asyncio
     async def test_fallback_returns_valid_benchmarks_for_all_levels(self):
-        from app.services.salary_benchmark_service import SalaryBenchmarkService
+        from app.shared.services.salary_benchmark_service import SalaryBenchmarkService
 
         svc = SalaryBenchmarkService()
         for level in ["junior", "pleno", "senior", "especialista", "gerente"]:
@@ -81,7 +81,7 @@ class TestSalaryBenchmarkService:
             assert result.source == "fallback"
 
     def test_salary_benchmark_to_dict(self):
-        from app.services.salary_benchmark_service import SalaryBenchmark
+        from app.shared.services.salary_benchmark_service import SalaryBenchmark
 
         b = SalaryBenchmark(
             job_title="Dev",
@@ -98,7 +98,7 @@ class TestSalaryBenchmarkService:
 
     @pytest.mark.asyncio
     async def test_redis_error_falls_through_to_apify(self):
-        from app.services.salary_benchmark_service import SalaryBenchmarkService
+        from app.shared.services.salary_benchmark_service import SalaryBenchmarkService
 
         with patch("app.core.redis_client.get_redis", side_effect=RuntimeError("Redis down")):
             svc = SalaryBenchmarkService()
@@ -108,7 +108,7 @@ class TestSalaryBenchmarkService:
         assert result.source == "fallback"
 
     def test_cache_key_format(self):
-        from app.services.salary_benchmark_service import SalaryBenchmarkService
+        from app.shared.services.salary_benchmark_service import SalaryBenchmarkService
 
         svc = SalaryBenchmarkService()
         key = svc._cache_key("Eng Python", "Senior", "São Paulo")

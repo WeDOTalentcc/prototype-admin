@@ -12,7 +12,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
 from app.core.auth import get_current_user
-from app.services.prompt_version_registry import prompt_version_registry
+from app.shared.services.prompt_version_registry import prompt_version_registry
 
 router = APIRouter(prefix="/admin/prompts", tags=["admin-prompts"])
 logger = logging.getLogger(__name__)

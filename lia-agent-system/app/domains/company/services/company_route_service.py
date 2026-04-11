@@ -257,7 +257,7 @@ class CompanyRouteService:
             Dict with keys: success, evp_analysis (or error)
         """
         from lia_models.company import CompanyProfile
-        from app.services.llm import llm_service
+        from app.domains.ai.services.llm import llm_service
 
         result = await db.execute(
             select(CompanyProfile).where(CompanyProfile.id == profile_id)
@@ -620,7 +620,7 @@ REGRAS:
         """
         from app.domains.sourcing.services.apify_service import apify_service
         from lia_models.company import CompanyCultureProfile, CompanyProfile
-        from app.services.llm import llm_service
+        from app.domains.ai.services.llm import llm_service
 
         errors: list[str] = []
         fields_updated: list[str] = []

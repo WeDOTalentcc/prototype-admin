@@ -105,7 +105,7 @@ class TestSourcingCandidateGoalService:
 
     @pytest.mark.asyncio
     async def test_check_vacancy_goal_below_target(self):
-        from app.services.candidate_goal_service import candidate_goal_service
+        from app.domains.candidates.services.candidate_goal_service import candidate_goal_service
         result = await candidate_goal_service.check_vacancy_candidate_goal(
             vacancy_id="v1", current_count=10, target_min=50, target_max=70
         )
@@ -114,7 +114,7 @@ class TestSourcingCandidateGoalService:
 
     @pytest.mark.asyncio
     async def test_check_vacancy_goal_on_target(self):
-        from app.services.candidate_goal_service import candidate_goal_service
+        from app.domains.candidates.services.candidate_goal_service import candidate_goal_service
         result = await candidate_goal_service.check_vacancy_candidate_goal(
             vacancy_id="v1", current_count=55, target_min=50, target_max=70
         )
@@ -122,7 +122,7 @@ class TestSourcingCandidateGoalService:
 
     @pytest.mark.asyncio
     async def test_check_vacancy_goal_above_target(self):
-        from app.services.candidate_goal_service import candidate_goal_service
+        from app.domains.candidates.services.candidate_goal_service import candidate_goal_service
         result = await candidate_goal_service.check_vacancy_candidate_goal(
             vacancy_id="v1", current_count=80, target_min=50, target_max=70
         )

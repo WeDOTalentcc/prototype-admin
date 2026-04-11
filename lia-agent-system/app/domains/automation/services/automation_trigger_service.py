@@ -23,7 +23,7 @@ from lia_models.candidate import Candidate
 from lia_models.interview import Interview
 from lia_models.job_vacancy import JobVacancy
 from lia_models.task import Task, TaskPriority, TaskStatus, TaskType
-from app.services.activity_service import ActivityService
+from app.domains.analytics.services.activity_service import ActivityService
 
 logger = logging.getLogger(__name__)
 

@@ -161,7 +161,7 @@ class TestUserAgentPreferences:
 
     def test_user_agent_preference_service_importable(self):
         """UserAgentPreferenceService deve ser importável."""
-        from app.services.user_agent_preference_service import UserAgentPreferenceService
+        from app.shared.services.user_agent_preference_service import UserAgentPreferenceService
         assert UserAgentPreferenceService is not None
 
     def test_user_agent_preference_model_importable(self):

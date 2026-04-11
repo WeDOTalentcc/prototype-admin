@@ -28,8 +28,8 @@ from app.schemas.compensation_analysis import (
     SalaryAnalysis,
     TotalCompAnalysis,
 )
-from app.services.company_configuration_service import CompanyConfigurationService
-from app.services.market_benchmark_service import MarketBenchmarkService
+from app.domains.company.services.company_configuration_service import CompanyConfigurationService
+from app.shared.services.market_benchmark_service import MarketBenchmarkService
 
 logger = logging.getLogger(__name__)
 

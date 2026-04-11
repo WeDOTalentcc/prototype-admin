@@ -10,7 +10,7 @@ class TestEmailTrackingService:
 
     def test_generate_token_returns_string(self):
         """generate_tracking_token deve retornar string."""
-        from app.services.email_tracking_service import EmailTrackingService
+        from app.domains.communication.services.email_tracking_service import EmailTrackingService
         svc = EmailTrackingService()
         token = svc.generate_tracking_token("notif-001", "co-001")
         assert isinstance(token, str)
@@ -18,14 +18,14 @@ class TestEmailTrackingService:
 
     def test_generate_token_unique(self):
         """Tokens devem ser únicos."""
-        from app.services.email_tracking_service import EmailTrackingService
+        from app.domains.communication.services.email_tracking_service import EmailTrackingService
         svc = EmailTrackingService()
         tokens = {svc.generate_tracking_token("notif-001", "co-001") for _ in range(50)}
         assert len(tokens) == 50  # todos únicos
 
     def test_sha256_ip_hash(self):
         """IP deve ser armazenado como SHA256."""
-        from app.services.email_tracking_service import _hash_ip, _sha256
+        from app.domains.communication.services.email_tracking_service import _hash_ip, _sha256
         ip = "192.168.1.100"
         hashed = _hash_ip(ip)
         assert hashed == _sha256(ip)
@@ -34,7 +34,7 @@ class TestEmailTrackingService:
 
     def test_sha256_email_hash(self):
         """Email deve ser armazenado como SHA256."""
-        from app.services.email_tracking_service import _hash_email
+        from app.domains.communication.services.email_tracking_service import _hash_email
         email = "joao@example.com"
         hashed = _hash_email(email)
         assert len(hashed) == 64
@@ -42,18 +42,18 @@ class TestEmailTrackingService:
 
     def test_hash_ip_none_returns_none(self):
         """_hash_ip(None) deve retornar None."""
-        from app.services.email_tracking_service import _hash_ip
+        from app.domains.communication.services.email_tracking_service import _hash_ip
         assert _hash_ip(None) is None
 
     def test_hash_email_none_returns_none(self):
         """_hash_email(None) deve retornar None."""
-        from app.services.email_tracking_service import _hash_email
+        from app.domains.communication.services.email_tracking_service import _hash_email
         assert _hash_email(None) is None
 
     @pytest.mark.asyncio
     async def test_record_open_invalid_token_returns_false(self):
         """Token inválido deve retornar False sem crash."""
-        from app.services.email_tracking_service import EmailTrackingService
+        from app.domains.communication.services.email_tracking_service import EmailTrackingService
         svc = EmailTrackingService()
 
         mock_db = AsyncMock()
@@ -67,7 +67,7 @@ class TestEmailTrackingService:
     @pytest.mark.asyncio
     async def test_record_click_invalid_token_returns_none(self):
         """Token inválido deve retornar None."""
-        from app.services.email_tracking_service import EmailTrackingService
+        from app.domains.communication.services.email_tracking_service import EmailTrackingService
         svc = EmailTrackingService()
 
         mock_db = AsyncMock()
@@ -81,7 +81,7 @@ class TestEmailTrackingService:
     @pytest.mark.asyncio
     async def test_get_stats_returns_dict(self):
         """get_stats deve retornar dict com opens, clicks, unique_opens."""
-        from app.services.email_tracking_service import EmailTrackingService
+        from app.domains.communication.services.email_tracking_service import EmailTrackingService
         svc = EmailTrackingService()
 
         mock_db = AsyncMock()
@@ -141,5 +141,5 @@ class TestEmailTrackingEndpoints:
 
     def test_email_tracking_service_singleton(self):
         """Deve existir singleton email_tracking_service."""
-        from app.services.email_tracking_service import email_tracking_service
+        from app.domains.communication.services.email_tracking_service import email_tracking_service
         assert email_tracking_service is not None

@@ -134,7 +134,7 @@ def jv_app():
     from app.auth.dependencies import get_current_active_user, get_current_user_or_demo
     from app.domains.job_management.dependencies import get_job_vacancy_crud_repo
     from app.middleware.trial_enforcement import require_active_subscription_or_demo
-    from app.services.plan_limits_service import check_active_jobs_limit_or_demo
+    from app.shared.services.plan_limits_service import check_active_jobs_limit_or_demo
 
     app = FastAPI()
     app.include_router(router)

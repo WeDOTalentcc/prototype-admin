@@ -7,7 +7,7 @@ import logging
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
 
-from app.services.salary_benchmark_service import salary_benchmark_service
+from app.shared.services.salary_benchmark_service import salary_benchmark_service
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/salary-benchmark", tags=["salary-benchmark"])

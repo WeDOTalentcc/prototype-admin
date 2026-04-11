@@ -123,7 +123,7 @@ async def publish_job_vacancy_simple(
     )
 
     try:
-        from app.services.event_dispatcher import event_dispatcher
+        from app.shared.services.event_dispatcher import event_dispatcher
         await event_dispatcher.on_job_status_changed(
             job_id=str(job_id),
             company_id=company_id,
@@ -569,7 +569,7 @@ async def close_vacancy(
         await repo.close_vacancy(vacancy)
 
         try:
-            from app.services.event_dispatcher import event_dispatcher
+            from app.shared.services.event_dispatcher import event_dispatcher
             await event_dispatcher.on_job_status_changed(
                 job_id=vacancy_id,
                 company_id=company_id,
@@ -677,7 +677,7 @@ async def bulk_pause_job_vacancies(
             )
 
             try:
-                from app.services.event_dispatcher import event_dispatcher
+                from app.shared.services.event_dispatcher import event_dispatcher
                 await event_dispatcher.on_job_status_changed(
                     job_id=str(job_id),
                     company_id=company_id,

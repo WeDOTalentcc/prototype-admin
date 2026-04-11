@@ -145,7 +145,7 @@ async def detect_talent_command_type_enhanced(message: str) -> tuple[str, float]
         return keyword_type, keyword_confidence
 
     try:
-        from app.services.llm import llm_service
+        from app.domains.ai.services.llm import llm_service
 
         prompt = _TALENT_CLASSIFY_PROMPT.format(
             types=_TALENT_INTENT_TYPES_LIST,

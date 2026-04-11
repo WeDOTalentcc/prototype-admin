@@ -23,8 +23,8 @@ from app.schemas.company_culture import (
     CultureAnalysisRequest,
     CultureAnalysisResult,
 )
-from app.services.company_scraper_service import company_scraper_service
-from app.services.culture_analyzer_service import culture_analyzer_service
+from app.domains.company.services.company_scraper_service import company_scraper_service
+from app.shared.services.culture_analyzer_service import culture_analyzer_service
 
 logger = logging.getLogger(__name__)
 

@@ -20,7 +20,7 @@ except Exception:
     _ws_manager = None  # WS not available in test context
 from app.domains.recruiter_assistant.services.conversation_memory import conversation_memory
 from app.services import COMMAND_TEMPLATES, job_analytics_prompt_service
-from app.services.response_cache_service import response_cache_service
+from app.shared.services.response_cache_service import response_cache_service
 from app.shared.memory.conversation_state import ConversationState
 from app.tools import get_all_tool_schemas, initialize_tools, tool_registry
 from app.enums.orchestrator import CacheableIntent, OrchestratorScope

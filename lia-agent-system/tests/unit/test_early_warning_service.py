@@ -13,7 +13,7 @@ import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 from datetime import datetime, timezone
 
-from app.services.early_warning_service import (
+from app.shared.services.early_warning_service import (
     EarlyWarningService,
     compute_ews_score,
     risk_level_for_score,

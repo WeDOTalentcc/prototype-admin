@@ -29,7 +29,7 @@ from app.domains.recruiter_assistant.services.wizard_analytics_service import (
 )
 from app.orchestrator.action_executor import is_confirmation, is_rejection
 from app.orchestrator.pending_action import PendingActionState, pending_action_store
-from app.services.graph_runner import graph_runner_service
+from app.shared.services.graph_runner import graph_runner_service
 from app.shared.tenant_session import create_session_id
 
 logger = logging.getLogger(__name__)

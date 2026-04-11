@@ -14,7 +14,7 @@ from unittest.mock import AsyncMock, MagicMock, patch, call
 from uuid import uuid4
 
 from app.jobs.drift_job import run_drift_check_all_companies
-from app.services.model_drift_service import DriftStatus, DriftTrigger
+from app.shared.services.model_drift_service import DriftStatus, DriftTrigger
 from datetime import datetime, timedelta
 
 

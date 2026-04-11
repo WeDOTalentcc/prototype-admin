@@ -15,21 +15,21 @@ import logging
 from app.models.job_draft import JobDraft, DraftFieldHistory, JobDraftStatus, ChangeType
 from app.models.candidate import Candidate
 from app.models import JobVacancy
-from app.services.intent_classifier import intent_classifier_service, IntentType
-from app.services.enhanced_intent_classifier import (
+from app.shared.services.intent_classifier import intent_classifier_service, IntentType
+from app.shared.services.enhanced_intent_classifier import (
     enhanced_intent_classifier, EnhancedIntentType,
 )
-from app.services.context_aggregator_service import context_aggregator
-from app.services.knowledge_base_service import knowledge_base
-from app.services.learning_hub_service import learning_hub_service
-from app.services.organization_catalog_service import OrganizationCatalogService
-from app.services.confidence_policy_service import ConfidencePolicyService
-from app.services.config_completeness_service import ConfigCompletenessService
-from app.services.skills_catalog_service import skills_catalog_service
-from app.services.responsibilities_catalog_service import responsibilities_catalog_service
-from app.services.jd_generator_service import jd_generator_service
-from app.services.feedback_learning_service import FeedbackLearningService
-from app.services.llm import llm_service
+from app.shared.services.context_aggregator_service import context_aggregator
+from app.shared.services.knowledge_base_service import knowledge_base
+from app.shared.services.learning_hub_service import learning_hub_service
+from app.shared.services.organization_catalog_service import OrganizationCatalogService
+from app.shared.services.confidence_policy_service import ConfidencePolicyService
+from app.shared.services.config_completeness_service import ConfigCompletenessService
+from app.shared.services.skills_catalog_service import skills_catalog_service
+from app.shared.services.responsibilities_catalog_service import responsibilities_catalog_service
+from app.domains.job_management.services.jd_generator_service import jd_generator_service
+from app.shared.services.feedback_learning_service import FeedbackLearningService
+from app.domains.ai.services.llm import llm_service
 
 USE_ENHANCED_CLASSIFIER = True
 
@@ -1957,7 +1957,7 @@ class WizardStepService:
                 detected_criteria["manager_email"] = job_draft.get("manager_email")
 
             if next_stage and next_stage > current_stage:
-                from app.services.job_stage_config import get_stage_config
+                from app.domains.job_management.services.job_stage_config import get_stage_config
 
                 cargo_data = (detected_criteria or {}).get("cargo")
                 role = job_draft.get("job_title") or (cargo_data.get("value") if isinstance(cargo_data, dict) else cargo_data)

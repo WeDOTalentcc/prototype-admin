@@ -33,7 +33,7 @@ from sqlalchemy import JSON, Column, DateTime, Float, Integer, String, Text, and
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import AsyncSessionLocal, Base
-from app.services.llm import llm_service
+from app.domains.ai.services.llm import llm_service
 from app.shared.compliance.audit_service import audit_service
 from app.shared.compliance.fairness_guard import FairnessGuard
 from app.shared.pii_masking import get_masked_logger

@@ -62,14 +62,14 @@ class TestInterviewSessionStore:
 
     @pytest.mark.asyncio
     async def test_get_returns_none_for_unknown_session(self):
-        from app.services.interview_session_store import InterviewSessionStore
+        from app.shared.services.interview_session_store import InterviewSessionStore
         store = InterviewSessionStore()
         result = await store.get("nonexistent-session")
         assert result is None
 
     @pytest.mark.asyncio
     async def test_set_and_get_round_trip(self):
-        from app.services.interview_session_store import InterviewSessionStore
+        from app.shared.services.interview_session_store import InterviewSessionStore
         store = InterviewSessionStore()
         data = {"candidate_name": "Alice", "job_title": "Engenheira"}
         await store.set("sess-1", data)
@@ -78,7 +78,7 @@ class TestInterviewSessionStore:
 
     @pytest.mark.asyncio
     async def test_delete_removes_entry(self):
-        from app.services.interview_session_store import InterviewSessionStore
+        from app.shared.services.interview_session_store import InterviewSessionStore
         store = InterviewSessionStore()
         await store.set("sess-2", {"field": "value"})
         await store.delete("sess-2")
@@ -87,7 +87,7 @@ class TestInterviewSessionStore:
 
     @pytest.mark.asyncio
     async def test_overwrite_updates_state(self):
-        from app.services.interview_session_store import InterviewSessionStore
+        from app.shared.services.interview_session_store import InterviewSessionStore
         store = InterviewSessionStore()
         await store.set("sess-3", {"step": 1})
         await store.set("sess-3", {"step": 2, "extra": "data"})
@@ -97,7 +97,7 @@ class TestInterviewSessionStore:
 
     @pytest.mark.asyncio
     async def test_multiple_sessions_isolated(self):
-        from app.services.interview_session_store import InterviewSessionStore
+        from app.shared.services.interview_session_store import InterviewSessionStore
         store = InterviewSessionStore()
         await store.set("sess-a", {"user": "Alice"})
         await store.set("sess-b", {"user": "Bob"})
@@ -117,7 +117,7 @@ class TestInterviewSchedulingSessionPersistence:
     async def test_collecting_status_saves_workflow_to_store(self):
         """After a collecting response, workflow_data is saved to the session store."""
         from app.domains.interview_scheduling.domain import InterviewSchedulingDomain
-        from app.services.interview_session_store import InterviewSessionStore
+        from app.shared.services.interview_session_store import InterviewSessionStore
 
         domain = InterviewSchedulingDomain()
         ctx = _make_ctx("sess-persist-1")
@@ -143,7 +143,7 @@ class TestInterviewSchedulingSessionPersistence:
     async def test_second_turn_recovers_workflow_from_store(self):
         """Second call with empty params recovers workflow_data from the session store."""
         from app.domains.interview_scheduling.domain import InterviewSchedulingDomain
-        from app.services.interview_session_store import InterviewSessionStore
+        from app.shared.services.interview_session_store import InterviewSessionStore
 
         domain = InterviewSchedulingDomain()
         ctx = _make_ctx("sess-persist-2")
@@ -190,7 +190,7 @@ class TestInterviewSchedulingSessionPersistence:
     async def test_params_workflow_data_overrides_stored(self):
         """If params include workflow_data, it takes precedence over stored state."""
         from app.domains.interview_scheduling.domain import InterviewSchedulingDomain
-        from app.services.interview_session_store import InterviewSessionStore
+        from app.shared.services.interview_session_store import InterviewSessionStore
 
         domain = InterviewSchedulingDomain()
         ctx = _make_ctx("sess-persist-3")
@@ -224,7 +224,7 @@ class TestInterviewSchedulingSessionPersistence:
     async def test_completed_status_clears_session_store(self):
         """When scheduling completes, session is removed from the store."""
         from app.domains.interview_scheduling.domain import InterviewSchedulingDomain
-        from app.services.interview_session_store import InterviewSessionStore
+        from app.shared.services.interview_session_store import InterviewSessionStore
 
         domain = InterviewSchedulingDomain()
         ctx = _make_ctx("sess-persist-4")
@@ -250,7 +250,7 @@ class TestInterviewSchedulingSessionPersistence:
     async def test_no_session_id_skips_persistence(self):
         """When context has no session_id, store is not called (graceful skip)."""
         from app.domains.interview_scheduling.domain import InterviewSchedulingDomain
-        from app.services.interview_session_store import InterviewSessionStore
+        from app.shared.services.interview_session_store import InterviewSessionStore
 
         domain = InterviewSchedulingDomain()
         ctx = _make_ctx(session_id="")  # empty session_id

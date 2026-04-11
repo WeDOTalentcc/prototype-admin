@@ -9,7 +9,7 @@ import re
 from datetime import timedelta
 from typing import Any
 
-from app.services.llm import LLMProvider, llm_service
+from app.domains.ai.services.llm import LLMProvider, llm_service
 from app.shared.prompts.loader import PromptLoader
 
 logger = logging.getLogger(__name__)

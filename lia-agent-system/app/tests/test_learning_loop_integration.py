@@ -18,8 +18,8 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.company_learning import AgentFeedback, CompanyResponsibility, CompanySkill
-from app.services.learning_hub_service import LearningHubService
-from app.services.skills_catalog_service import skills_catalog_service
+from app.shared.services.learning_hub_service import LearningHubService
+from app.shared.services.skills_catalog_service import skills_catalog_service
 
 
 @pytest.fixture

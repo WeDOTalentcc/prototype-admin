@@ -23,7 +23,7 @@ from app.domains.communication.agents.communication_system_prompt import (
 from app.domains.communication.agents.communication_tool_registry import (
     get_communication_tools,
 )
-from app.services.confidence_policy_service import confidence_policy_service
+from app.shared.services.confidence_policy_service import confidence_policy_service
 
 logger = logging.getLogger(__name__)
 

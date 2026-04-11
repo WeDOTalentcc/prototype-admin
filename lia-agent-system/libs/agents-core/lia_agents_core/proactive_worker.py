@@ -149,7 +149,7 @@ class ProactiveAgentWorker:
 
     async def check_velocity_bottleneck(self, company_id: str) -> List[Dict]:
         """Alert when candidates exceed stage-specific time thresholds (uses stage_entered_at)."""
-        from app.services.pipeline_velocity_service import pipeline_velocity_service
+        from app.shared.services.pipeline_velocity_service import pipeline_velocity_service
 
         alerts: List[Dict] = []
         try:
@@ -202,7 +202,7 @@ class ProactiveAgentWorker:
         - Alerta direcionado por recrutador (target_user_id)
         - Push Bell + Teams para severity=critical; Bell para warning
         """
-        from app.services.recruiter_metrics_service import recruiter_metrics_service
+        from app.shared.services.recruiter_metrics_service import recruiter_metrics_service
         from app.services.notification_service import notification_service, NotificationType, NotificationChannel
 
         alerts: List[Dict] = []
@@ -294,7 +294,7 @@ class ProactiveAgentWorker:
         - Alerta individual por candidato, direcionado ao recrutador (target_user_id)
         - Bell + Teams para severity=critical; Bell para warning/high
         """
-        from app.services.early_warning_service import early_warning_service
+        from app.shared.services.early_warning_service import early_warning_service
         from app.services.notification_service import notification_service, NotificationType, NotificationChannel
 
         alerts: List[Dict] = []
@@ -397,7 +397,7 @@ class ProactiveAgentWorker:
         - Teams para health_label=critical
         - Email semanal: enviado apenas às sextas (digest por recrutador)
         """
-        from app.services.journey_intelligence_service import journey_intelligence_service
+        from app.shared.services.journey_intelligence_service import journey_intelligence_service
         from app.services.notification_service import notification_service, NotificationType, NotificationChannel
         import datetime
         from datetime import timezone
@@ -516,7 +516,7 @@ class ProactiveAgentWorker:
         - Email apenas às sextas
         - Bell positivo (prob >= 80%) dispara 1x por vaga (flag em memória)
         """
-        from app.services.pipeline_prediction_service import pipeline_prediction_service
+        from app.shared.services.pipeline_prediction_service import pipeline_prediction_service
         from app.services.notification_service import notification_service, NotificationType, NotificationChannel
         import datetime
         from datetime import timezone
@@ -945,7 +945,7 @@ class ProactiveAgentWorker:
 
     async def check_silver_medalists(self, company_id: str) -> List[Dict]:
         """Alert when there are warm candidates from past processes available for active vacancies."""
-        from app.services.silver_medalist_service import silver_medalist_service
+        from app.shared.services.silver_medalist_service import silver_medalist_service
 
         alerts: List[Dict] = []
         try:

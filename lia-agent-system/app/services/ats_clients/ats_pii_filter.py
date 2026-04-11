@@ -94,7 +94,7 @@ async def filter_sensitive_outbound(
 
     if candidate_id and company_id and db is not None:
         try:
-            from app.services.granular_consent_service import GranularConsentService
+            from app.shared.services.granular_consent_service import GranularConsentService
             svc = GranularConsentService(db)
             has_consent = await svc.check_purpose(candidate_id, company_id, "ats_sharing")
         except Exception as exc:

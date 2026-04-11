@@ -7,7 +7,7 @@ hash SHA256 correto, versão "latest", registro duplicado, nome inexistente.
 import hashlib
 import pytest
 
-from app.services.prompt_version_registry import (
+from app.shared.services.prompt_version_registry import (
     PromptVersionRegistry,
     prompt_version_registry,
 )
@@ -201,7 +201,7 @@ class TestSingleton:
 
     def test_singleton_persiste_entre_imports(self):
         """O singleton global deve ser o mesmo objeto em importações diferentes."""
-        from app.services.prompt_version_registry import prompt_version_registry as r2
+        from app.shared.services.prompt_version_registry import prompt_version_registry as r2
         assert prompt_version_registry is r2
 
     def test_singleton_registra_e_recupera(self):

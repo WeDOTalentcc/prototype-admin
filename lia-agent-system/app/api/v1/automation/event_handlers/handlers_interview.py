@@ -353,7 +353,7 @@ async def handle_interview_completed(
         if request.transcript or request.interviewer_notes:
             try:
                 get_wsi_service()
-                from app.services.llm import llm_service
+                from app.domains.ai.services.llm import llm_service
 
                 analysis_prompt = f"""Analise os dados desta entrevista e forneça uma avaliação estruturada.
 

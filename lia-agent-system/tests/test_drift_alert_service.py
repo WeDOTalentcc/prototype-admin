@@ -14,8 +14,8 @@ from datetime import datetime, timedelta
 from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import uuid4
 
-from app.services.drift_alert_service import DriftAlertService, ALERT_CHANNELS
-from app.services.model_drift_service import DriftStatus, DriftTrigger
+from app.shared.services.drift_alert_service import DriftAlertService, ALERT_CHANNELS
+from app.shared.services.model_drift_service import DriftStatus, DriftTrigger
 from app.services.notification_service import NotificationType, NotificationChannel
 
 COMPANY_ID = uuid4()

@@ -90,7 +90,7 @@ async def _wrap_decompose_task(**kwargs: Any) -> dict[str, Any]:
     from app.core.database import AsyncSessionLocal
     from app.domains.automation.services.planned_task_service import PlannedTaskService
     from app.models.planned_task import PlannedTaskPriority
-    from app.services.llm import LLMService
+    from app.domains.ai.services.llm import LLMService
 
     task_description = kwargs.get("task_description") or kwargs.get("description", "")
     company_id = kwargs.get("company_id")

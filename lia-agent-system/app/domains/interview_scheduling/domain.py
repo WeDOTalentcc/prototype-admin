@@ -7,7 +7,7 @@ from app.domains.base import DomainAction, DomainContext, DomainResponse, Intent
 from app.domains.compliance_base import ComplianceDomainPrompt
 from app.domains.interview_scheduling.agents.interview_graph import interview_graph
 from app.domains.registry import register_domain
-from app.services.interview_session_store import interview_session_store
+from app.shared.services.interview_session_store import interview_session_store
 
 # Prefixo separado do WSIInterviewGraph para evitar colisão de chaves no Redis
 _SCHEDULING_SESSION_PREFIX = "scheduling:"

@@ -177,7 +177,7 @@ class TestSavePolicyBlock:
 
     @pytest.mark.asyncio
     async def test_financeiro_sets_global_search_false(self):
-        from app.services.policy_engine_service import PolicyEngineService
+        from app.shared.services.policy_engine_service import PolicyEngineService
 
         company_id = str(uuid4())
         mock_db = AsyncMock()
@@ -206,7 +206,7 @@ class TestSavePolicyBlock:
 
     @pytest.mark.asyncio
     async def test_rpo_sets_high_autonomy(self):
-        from app.services.policy_engine_service import PolicyEngineService
+        from app.shared.services.policy_engine_service import PolicyEngineService
 
         company_id = str(uuid4())
         mock_db = AsyncMock()

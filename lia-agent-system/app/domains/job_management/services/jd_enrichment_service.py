@@ -32,10 +32,10 @@ from app.schemas.jd_enrichment import (
     SuggestionSource,
     TechnicalSkillSuggestion,
 )
-from app.services.company_configuration_service import CompanyConfigurationService
-from app.services.market_benchmark_service import MarketBenchmarkService
-from app.services.responsibilities_catalog_service import ResponsibilitiesCatalogService
-from app.services.skills_catalog_service import SkillsCatalogService
+from app.domains.company.services.company_configuration_service import CompanyConfigurationService
+from app.shared.services.market_benchmark_service import MarketBenchmarkService
+from app.shared.services.responsibilities_catalog_service import ResponsibilitiesCatalogService
+from app.shared.services.skills_catalog_service import SkillsCatalogService
 
 logger = logging.getLogger(__name__)
 

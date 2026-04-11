@@ -10,7 +10,7 @@ Testa:
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from app.services.recruiter_metrics_service import (
+from app.shared.services.recruiter_metrics_service import (
     RecruiterMetricsService,
     recruiter_metrics_service,
 )

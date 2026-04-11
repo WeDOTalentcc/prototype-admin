@@ -29,9 +29,9 @@ from app.schemas.rubric import (
     RequirementPriorityEnum,
     RubricEvaluationResult,
 )
-from app.services.llm import LLMService
+from app.domains.ai.services.llm import LLMService
 from app.services.notification_service import NotificationChannel, NotificationService, NotificationType
-from app.services.sector_benchmark_service import sector_benchmark_service
+from app.domains.analytics.services.sector_benchmark_service import sector_benchmark_service
 from app.shared.compliance.fairness_guard import FairnessGuard
 
 logger = logging.getLogger(__name__)
@@ -1165,13 +1165,13 @@ class RubricEvaluationService:
         Returns:
             RubricEvaluationResult if successful, None if evaluation failed
         """
-        from app.services.activity_service import activity_service
+        from app.domains.analytics.services.activity_service import activity_service
 
         # D5-G2 — Verificação de consentimento granular ai_screening (LGPD Art. 7)
         # Fail-open: se serviço indisponível ou db=None, avaliação prossegue normalmente.
         if db is not None:
             try:
-                from app.services.granular_consent_service import GranularConsentService
+                from app.shared.services.granular_consent_service import GranularConsentService
                 _consent_svc = GranularConsentService(db)
                 _has_consent = await _consent_svc.check_purpose(
                     candidate_id, company_id, "ai_screening"

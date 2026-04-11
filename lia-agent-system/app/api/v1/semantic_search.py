@@ -9,7 +9,7 @@ Supports 8 domains with LLM-powered suggestions and Redis caching.
 from fastapi import APIRouter
 from pydantic import BaseModel, Field
 
-from app.services.semantic_search_service import (
+from app.shared.services.semantic_search_service import (
     SemanticDomain,
     SemanticExpansionResult,
     semantic_search_service,

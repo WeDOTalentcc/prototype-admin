@@ -477,7 +477,7 @@ def publish_node(state: JobCreationState) -> JobCreationState:
     error = None
 
     try:
-        from app.services.circuit_breaker import circuit_breaker_call, CircuitBreakerOpenError
+        from app.shared.services.circuit_breaker import circuit_breaker_call, CircuitBreakerOpenError
         cb_wrap = lambda fn, *a, **kw: circuit_breaker_call(fn, *a, circuit_key="job_creation:publish", **kw)
     except ImportError:
         cb_wrap = lambda fn, *a, **kw: fn(*a, **kw)
@@ -811,7 +811,7 @@ def _build_readiness_check(state: JobCreationState) -> Dict[str, Any]:
 
 def _get_checkpointer():
     try:
-        from app.services.checkpointer import get_checkpointer
+        from lia_agents_core.checkpointer import get_checkpointer
         return get_checkpointer()
     except Exception as e:
         logger.warning("[JobCreationGraph] Checkpointer unavailable: %s", e)

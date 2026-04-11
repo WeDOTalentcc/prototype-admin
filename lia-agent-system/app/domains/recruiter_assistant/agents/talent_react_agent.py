@@ -24,7 +24,7 @@ from app.domains.recruiter_assistant.agents.talent_system_prompt import get_tale
 from app.domains.recruiter_assistant.agents.talent_tool_registry import (
     get_talent_tools,
 )
-from app.services.confidence_policy_service import confidence_policy_service
+from app.shared.services.confidence_policy_service import confidence_policy_service
 
 logger = logging.getLogger(__name__)
 

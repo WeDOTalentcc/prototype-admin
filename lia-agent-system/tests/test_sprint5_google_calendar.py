@@ -17,7 +17,7 @@ from datetime import datetime, timedelta
 
 class TestGoogleCalendarClientInit:
     def test_init_without_credentials_stores_none(self):
-        from app.services.google_calendar_client import GoogleCalendarClient
+        from app.shared.services.google_calendar_client import GoogleCalendarClient
         with patch("app.core.config.settings") as mock_settings:
             mock_settings.GOOGLE_CALENDAR_SERVICE_ACCOUNT_JSON = None
             mock_settings.GOOGLE_CALENDAR_DEFAULT_TIMEZONE = "America/Sao_Paulo"
@@ -26,7 +26,7 @@ class TestGoogleCalendarClientInit:
             assert client._creds is None
 
     def test_get_service_raises_without_credentials(self):
-        from app.services.google_calendar_client import GoogleCalendarClient
+        from app.shared.services.google_calendar_client import GoogleCalendarClient
         with patch("app.core.config.settings") as mock_settings:
             mock_settings.GOOGLE_CALENDAR_SERVICE_ACCOUNT_JSON = None
             mock_settings.GOOGLE_CALENDAR_DEFAULT_TIMEZONE = "America/Sao_Paulo"
@@ -35,7 +35,7 @@ class TestGoogleCalendarClientInit:
                 client._get_service()
 
     def test_init_stores_timezone(self):
-        from app.services.google_calendar_client import GoogleCalendarClient
+        from app.shared.services.google_calendar_client import GoogleCalendarClient
         with patch("app.core.config.settings") as mock_settings:
             mock_settings.GOOGLE_CALENDAR_SERVICE_ACCOUNT_JSON = None
             mock_settings.GOOGLE_CALENDAR_DEFAULT_TIMEZONE = "America/Sao_Paulo"
@@ -61,7 +61,7 @@ class TestGoogleCalendarTokenRefresh:
         return creds
 
     def test_refresh_called_when_token_expired(self):
-        from app.services.google_calendar_client import GoogleCalendarClient
+        from app.shared.services.google_calendar_client import GoogleCalendarClient
         with patch("app.core.config.settings") as mock_settings:
             mock_settings.GOOGLE_CALENDAR_SERVICE_ACCOUNT_JSON = None
             mock_settings.GOOGLE_CALENDAR_DEFAULT_TIMEZONE = "America/Sao_Paulo"
@@ -79,7 +79,7 @@ class TestGoogleCalendarTokenRefresh:
         assert result is fake_service
 
     def test_refresh_not_called_when_token_valid(self):
-        from app.services.google_calendar_client import GoogleCalendarClient
+        from app.shared.services.google_calendar_client import GoogleCalendarClient
         with patch("app.core.config.settings") as mock_settings:
             mock_settings.GOOGLE_CALENDAR_SERVICE_ACCOUNT_JSON = None
             mock_settings.GOOGLE_CALENDAR_DEFAULT_TIMEZONE = "America/Sao_Paulo"
@@ -95,7 +95,7 @@ class TestGoogleCalendarTokenRefresh:
         assert result is fake_service
 
     def test_refresh_failure_clears_service(self):
-        from app.services.google_calendar_client import GoogleCalendarClient
+        from app.shared.services.google_calendar_client import GoogleCalendarClient
         with patch("app.core.config.settings") as mock_settings:
             mock_settings.GOOGLE_CALENDAR_SERVICE_ACCOUNT_JSON = None
             mock_settings.GOOGLE_CALENDAR_DEFAULT_TIMEZONE = "America/Sao_Paulo"

@@ -307,7 +307,7 @@ async def enhance_search_prompt(request: EnhancePromptRequest):
     - explanation: Explicação das melhorias
     - suggestions: Sugestões adicionais que o usuário pode aplicar
     """
-    from app.services.llm import llm_service
+    from app.domains.ai.services.llm import llm_service
     
     try:
         prompt = f"""Você é LIA, assistente especializada em otimizar buscas de candidatos para recrutamento.

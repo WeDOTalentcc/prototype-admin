@@ -28,19 +28,19 @@ from app.domains.cv_screening.constants.wsi_constants import (
 from app.models.candidate import Candidate, VacancyCandidate
 from app.models.job_vacancy import JobVacancy
 from app.models.lia_opinion import LiaOpinion
-from app.services.interview_notes_service import (
+from app.shared.services.interview_notes_service import (
     create_interview_note as db_create_interview_note,
 )
-from app.services.interview_notes_service import (
+from app.shared.services.interview_notes_service import (
     get_interview_note as db_get_interview_note,
 )
-from app.services.interview_notes_service import (
+from app.shared.services.interview_notes_service import (
     get_notes_for_candidate,
 )
-from app.services.interview_notes_service import (
+from app.shared.services.interview_notes_service import (
     update_interview_note as db_update_interview_note,
 )
-from app.services.llm import llm_service
+from app.domains.ai.services.llm import llm_service
 from app.shared.compliance.fairness_guard import FairnessGuard
 
 logger = logging.getLogger(__name__)

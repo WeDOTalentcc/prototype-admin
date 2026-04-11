@@ -33,7 +33,7 @@ from app.schemas.company import (
     GlobalSearchSettingsUpdate,
     SmartWizardGreetingResponse,
 )
-from app.services.company_configuration_service import company_config_service
+from app.domains.company.services.company_configuration_service import company_config_service
 
 FRONTEND_URL = os.getenv("FRONTEND_URL", "https://plataforma-lia.replit.app")
 

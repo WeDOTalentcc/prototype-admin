@@ -48,7 +48,7 @@ class LearningAnalyticsService:
     ) -> dict[str, Any]:
         try:
             from lia_models.company_learning import StageFeedback
-            from app.services.learning_confirmation_service import (
+            from app.shared.services.learning_confirmation_service import (
                 learning_confirmation_service,
             )
 
@@ -213,10 +213,10 @@ class LearningAnalyticsService:
                 )
             ).scalar() or 0
 
-            from app.services.learning_confirmation_service import (
+            from app.shared.services.learning_confirmation_service import (
                 learning_confirmation_service,
             )
-            from app.services.learning_outcome_service import learning_outcome_service
+            from app.shared.services.learning_outcome_service import learning_outcome_service
 
             stage_analytics = await self.get_stage_analytics(db, company_id)
             outcome_insights = await learning_outcome_service.get_outcome_insights(
@@ -315,8 +315,8 @@ class LearningAnalyticsService:
         seniority: str | None = None,
     ) -> tuple[bool, str, dict[str, Any]]:
         """Determine if a wizard stage can be auto-skipped using company learning data."""
-        from app.services.job_stage_config import get_stage_config, should_skip_stage
-        from app.services.learning_confirmation_service import (
+        from app.domains.job_management.services.job_stage_config import get_stage_config, should_skip_stage
+        from app.shared.services.learning_confirmation_service import (
             learning_confirmation_service,
         )
 

@@ -37,7 +37,7 @@ from app.orchestrator.action_executor import (
 )
 from app.orchestrator.context_adapter import UniversalContext
 from app.orchestrator.pending_action import pending_action_store
-from app.services.tenant_context_service import TenantContextService
+from app.shared.services.tenant_context_service import TenantContextService
 from app.shared.compliance.fairness_guard import FairnessGuard
 from app.shared.robustness.security_patterns import check_input_security, get_block_response
 from app.shared.memory.candidate_list_store import candidate_list_store

@@ -263,7 +263,7 @@ class LearningLoopService:
                 if capture.outcome in (FeedbackOutcome.REJECTED, FeedbackOutcome.IGNORED):
                     import asyncio
 
-                    from app.services.model_drift_service import ModelDriftService
+                    from app.shared.services.model_drift_service import ModelDriftService
                     asyncio.create_task(
                         ModelDriftService().check_drift_trigger(
                             company_id=capture.company_id,

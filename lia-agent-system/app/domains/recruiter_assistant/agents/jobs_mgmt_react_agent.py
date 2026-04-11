@@ -24,7 +24,7 @@ from app.domains.recruiter_assistant.agents.jobs_mgmt_system_prompt import get_j
 from app.domains.recruiter_assistant.agents.jobs_mgmt_tool_registry import (
     get_jobs_mgmt_tools,
 )
-from app.services.confidence_policy_service import confidence_policy_service
+from app.shared.services.confidence_policy_service import confidence_policy_service
 
 logger = logging.getLogger(__name__)
 

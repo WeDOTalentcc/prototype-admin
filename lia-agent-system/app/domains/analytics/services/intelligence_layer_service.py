@@ -26,15 +26,15 @@ from lia_models.intelligence_layer import (
     PatternCache,
     SuccessProfile,
 )
-from app.services.confidence_policy_service import (
+from app.shared.services.confidence_policy_service import (
     ConfidencePolicyService,
     ConfidenceThresholds,
 )
-from app.services.outcome_correlator_service import (
+from app.shared.services.outcome_correlator_service import (
     OutcomeCorrelatorService,
     outcome_correlator_service,
 )
-from app.services.pattern_detector_service import (
+from app.shared.services.pattern_detector_service import (
     PatternDetectorService,
     pattern_detector_service,
 )

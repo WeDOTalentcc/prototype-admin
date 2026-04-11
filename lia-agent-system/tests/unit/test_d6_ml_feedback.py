@@ -20,7 +20,7 @@ class TestMLFeedbackService:
     @pytest.mark.asyncio
     async def test_record_signal_returns_true_on_success(self):
         """record_signal retorna True quando CalibrationService não lança erro."""
-        from app.services.ml_feedback_service import MLFeedbackService, FeedbackSignal
+        from app.shared.services.ml_feedback_service import MLFeedbackService, FeedbackSignal
 
         signal = FeedbackSignal(
             candidate_id=CANDIDATE_ID,
@@ -44,7 +44,7 @@ class TestMLFeedbackService:
     @pytest.mark.asyncio
     async def test_record_signal_fail_open_on_error(self):
         """record_signal retorna False sem lançar exceção em caso de erro."""
-        from app.services.ml_feedback_service import MLFeedbackService, FeedbackSignal
+        from app.shared.services.ml_feedback_service import MLFeedbackService, FeedbackSignal
 
         signal = FeedbackSignal(
             candidate_id=CANDIDATE_ID,
@@ -69,7 +69,7 @@ class TestMLFeedbackService:
     @pytest.mark.asyncio
     async def test_compute_weights_returns_neutral_when_insufficient_samples(self):
         """Pesos neutros (1.0) quando há menos que MIN_FEEDBACK_SAMPLES amostras."""
-        from app.services.ml_feedback_service import (
+        from app.shared.services.ml_feedback_service import (
             MLFeedbackService, MIN_FEEDBACK_SAMPLES, JobScoringWeights
         )
 
@@ -96,7 +96,7 @@ class TestMLFeedbackService:
     @pytest.mark.asyncio
     async def test_compute_weights_fail_open_on_db_error(self):
         """compute_job_weights retorna pesos neutros em caso de erro."""
-        from app.services.ml_feedback_service import MLFeedbackService
+        from app.shared.services.ml_feedback_service import MLFeedbackService
 
         db = MagicMock()
         db.execute = AsyncMock(side_effect=RuntimeError("DB unavailable"))
@@ -116,7 +116,7 @@ class TestMLFeedbackService:
 
     def test_job_scoring_weights_to_dict(self):
         """to_dict retorna estrutura esperada."""
-        from app.services.ml_feedback_service import JobScoringWeights
+        from app.shared.services.ml_feedback_service import JobScoringWeights
 
         w = JobScoringWeights(
             job_id="job-1",
@@ -177,7 +177,7 @@ class TestMLFeedbackEndpoint:
     def test_get_weights_returns_200(self):
         """GET /weights retorna pesos com job_id."""
         from fastapi.testclient import TestClient
-        from app.services.ml_feedback_service import JobScoringWeights
+        from app.shared.services.ml_feedback_service import JobScoringWeights
 
         app = self._make_app()
         mock_weights = JobScoringWeights(
@@ -248,7 +248,7 @@ class TestMLFeedbackWiring:
     @pytest.mark.asyncio
     async def test_compute_calibration_adjustment_returns_float(self):
         """compute_calibration_adjustment retorna float entre -5 e +5."""
-        from app.services.ml_feedback_service import MLFeedbackService
+        from app.shared.services.ml_feedback_service import MLFeedbackService
 
         service = MLFeedbackService()
         db = MagicMock()
@@ -266,7 +266,7 @@ class TestMLFeedbackWiring:
     @pytest.mark.asyncio
     async def test_record_decision_helper_returns_bool(self):
         """record_decision retorna bool."""
-        from app.services.ml_feedback_service import MLFeedbackService
+        from app.shared.services.ml_feedback_service import MLFeedbackService
 
         service = MLFeedbackService()
         db = MagicMock()
@@ -290,7 +290,7 @@ class TestMLFeedbackWiring:
     @pytest.mark.asyncio
     async def test_compute_calibration_adjustment_no_db_returns_zero(self):
         """compute_calibration_adjustment retorna 0.0 quando db=None."""
-        from app.services.ml_feedback_service import MLFeedbackService
+        from app.shared.services.ml_feedback_service import MLFeedbackService
 
         service = MLFeedbackService()
         # db=None — deve retornar 0.0 sem erro
@@ -300,7 +300,7 @@ class TestMLFeedbackWiring:
     @pytest.mark.asyncio
     async def test_record_decision_propagates_failure_as_false(self):
         """record_decision retorna False quando record_signal falha (fail-open)."""
-        from app.services.ml_feedback_service import MLFeedbackService
+        from app.shared.services.ml_feedback_service import MLFeedbackService
 
         service = MLFeedbackService()
         db = MagicMock()
@@ -324,7 +324,7 @@ class TestMLFeedbackWiring:
     @pytest.mark.asyncio
     async def test_lia_score_service_async_calibration_no_db(self):
         """LIAScoreService._get_calibration_adjustment_async retorna 0.0 sem db."""
-        from app.services.lia_score_service import LIAScoreService
+        from app.shared.services.lia_score_service import LIAScoreService
 
         service = LIAScoreService()
         result = await service._get_calibration_adjustment_async(
@@ -338,7 +338,7 @@ class TestMLFeedbackWiring:
     @pytest.mark.asyncio
     async def test_lia_score_service_async_calibration_with_db(self):
         """LIAScoreService._get_calibration_adjustment_async usa ml_feedback_service."""
-        from app.services.lia_score_service import LIAScoreService
+        from app.shared.services.lia_score_service import LIAScoreService
 
         service = LIAScoreService()
         db = MagicMock()

@@ -23,27 +23,27 @@ class TestSectorBenchmarkServiceImport:
     """Apenas importar o módulo cobre 80%+ das linhas (constantes/dataclasses)."""
 
     def test_import_succeeds(self):
-        from app.services.sector_benchmark_service import sector_benchmark_service, SectorBenchmarkService
+        from app.domains.analytics.services.sector_benchmark_service import sector_benchmark_service, SectorBenchmarkService
         assert sector_benchmark_service is not None
         assert isinstance(sector_benchmark_service, SectorBenchmarkService)
 
     def test_benchmark_profile_dataclass_exists(self):
-        from app.services.sector_benchmark_service import BenchmarkProfile
+        from app.domains.analytics.services.sector_benchmark_service import BenchmarkProfile
         assert BenchmarkProfile is not None
 
     def test_benchmarks_dict_has_entries(self):
-        from app.services.sector_benchmark_service import _BENCHMARKS
+        from app.domains.analytics.services.sector_benchmark_service import _BENCHMARKS
         assert len(_BENCHMARKS) >= 12  # at least 4 areas × 3 levels
 
     def test_area_aliases_populated(self):
-        from app.services.sector_benchmark_service import _AREA_ALIASES
+        from app.domains.analytics.services.sector_benchmark_service import _AREA_ALIASES
         assert "software" in _AREA_ALIASES
         assert _AREA_ALIASES["software"] == "software_engineering"
         assert "dev" in _AREA_ALIASES
         assert "data" in _AREA_ALIASES
 
     def test_seniority_aliases_populated(self):
-        from app.services.sector_benchmark_service import _SENIORITY_ALIASES
+        from app.domains.analytics.services.sector_benchmark_service import _SENIORITY_ALIASES
         assert "jr" in _SENIORITY_ALIASES
         assert _SENIORITY_ALIASES["jr"] == "junior"
         assert "sr" in _SENIORITY_ALIASES
@@ -52,92 +52,92 @@ class TestSectorBenchmarkServiceImport:
 
 class TestNormalizeArea:
     def test_empty_string_returns_none(self):
-        from app.services.sector_benchmark_service import _normalize_area
+        from app.domains.analytics.services.sector_benchmark_service import _normalize_area
         assert _normalize_area("") is None
 
     def test_none_like_returns_none(self):
-        from app.services.sector_benchmark_service import _normalize_area
+        from app.domains.analytics.services.sector_benchmark_service import _normalize_area
         assert _normalize_area("") is None
 
     def test_alias_software_resolves(self):
-        from app.services.sector_benchmark_service import _normalize_area
+        from app.domains.analytics.services.sector_benchmark_service import _normalize_area
         assert _normalize_area("software") == "software_engineering"
 
     def test_alias_dev_resolves(self):
-        from app.services.sector_benchmark_service import _normalize_area
+        from app.domains.analytics.services.sector_benchmark_service import _normalize_area
         assert _normalize_area("dev") == "software_engineering"
 
     def test_alias_data_resolves(self):
-        from app.services.sector_benchmark_service import _normalize_area
+        from app.domains.analytics.services.sector_benchmark_service import _normalize_area
         assert _normalize_area("data") == "data_science"
 
     def test_alias_produto_resolves(self):
-        from app.services.sector_benchmark_service import _normalize_area
+        from app.domains.analytics.services.sector_benchmark_service import _normalize_area
         assert _normalize_area("produto") == "product_management"
 
     def test_canonical_software_engineering(self):
-        from app.services.sector_benchmark_service import _normalize_area
+        from app.domains.analytics.services.sector_benchmark_service import _normalize_area
         assert _normalize_area("software_engineering") == "software_engineering"
 
     def test_unknown_area_returns_none(self):
-        from app.services.sector_benchmark_service import _normalize_area
+        from app.domains.analytics.services.sector_benchmark_service import _normalize_area
         assert _normalize_area("unknown_area_xyz") is None
 
     def test_case_insensitive(self):
-        from app.services.sector_benchmark_service import _normalize_area
+        from app.domains.analytics.services.sector_benchmark_service import _normalize_area
         assert _normalize_area("SOFTWARE") == "software_engineering"
 
     def test_spaces_normalized(self):
-        from app.services.sector_benchmark_service import _normalize_area
+        from app.domains.analytics.services.sector_benchmark_service import _normalize_area
         result = _normalize_area("software engineering")
         assert result == "software_engineering"
 
 
 class TestNormalizeSeniority:
     def test_empty_returns_none(self):
-        from app.services.sector_benchmark_service import _normalize_seniority
+        from app.domains.analytics.services.sector_benchmark_service import _normalize_seniority
         assert _normalize_seniority("") is None
 
     def test_jr_alias(self):
-        from app.services.sector_benchmark_service import _normalize_seniority
+        from app.domains.analytics.services.sector_benchmark_service import _normalize_seniority
         assert _normalize_seniority("jr") == "junior"
 
     def test_sr_alias(self):
-        from app.services.sector_benchmark_service import _normalize_seniority
+        from app.domains.analytics.services.sector_benchmark_service import _normalize_seniority
         assert _normalize_seniority("sr") == "senior"
 
     def test_mid_alias(self):
-        from app.services.sector_benchmark_service import _normalize_seniority
+        from app.domains.analytics.services.sector_benchmark_service import _normalize_seniority
         assert _normalize_seniority("mid") == "pleno"
 
     def test_canonical_junior(self):
-        from app.services.sector_benchmark_service import _normalize_seniority
+        from app.domains.analytics.services.sector_benchmark_service import _normalize_seniority
         assert _normalize_seniority("junior") == "junior"
 
     def test_canonical_pleno(self):
-        from app.services.sector_benchmark_service import _normalize_seniority
+        from app.domains.analytics.services.sector_benchmark_service import _normalize_seniority
         assert _normalize_seniority("pleno") == "pleno"
 
     def test_canonical_senior(self):
-        from app.services.sector_benchmark_service import _normalize_seniority
+        from app.domains.analytics.services.sector_benchmark_service import _normalize_seniority
         assert _normalize_seniority("senior") == "senior"
 
     def test_canonical_staff(self):
-        from app.services.sector_benchmark_service import _normalize_seniority
+        from app.domains.analytics.services.sector_benchmark_service import _normalize_seniority
         assert _normalize_seniority("staff") == "staff"
 
     def test_unknown_returns_none(self):
-        from app.services.sector_benchmark_service import _normalize_seniority
+        from app.domains.analytics.services.sector_benchmark_service import _normalize_seniority
         assert _normalize_seniority("unknown_level") is None
 
     def test_trainee_alias(self):
-        from app.services.sector_benchmark_service import _normalize_seniority
+        from app.domains.analytics.services.sector_benchmark_service import _normalize_seniority
         assert _normalize_seniority("trainee") == "junior"
 
 
 class TestSectorBenchmarkServiceGetContext:
     def setup_method(self):
-        from app.services.sector_benchmark_service import SectorBenchmarkService
+        from app.domains.analytics.services.sector_benchmark_service import SectorBenchmarkService
         self.svc = SectorBenchmarkService()
 
     def test_returns_string(self):
@@ -200,7 +200,7 @@ class TestSectorBenchmarkServiceGetContext:
         assert profile is not None
 
     def test_benchmark_profile_frozen(self):
-        from app.services.sector_benchmark_service import BenchmarkProfile
+        from app.domains.analytics.services.sector_benchmark_service import BenchmarkProfile
         # frozen=True means no assignment
         profile = BenchmarkProfile(
             area="test", seniority="junior",
@@ -218,21 +218,21 @@ class TestSectorBenchmarkServiceGetContext:
 
 class TestAgentQualityEvaluatorImport:
     def test_import_module(self):
-        from app.services.agent_quality_evaluator import agent_quality_evaluator, AgentQualityEvaluator
+        from app.shared.services.agent_quality_evaluator import agent_quality_evaluator, AgentQualityEvaluator
         assert agent_quality_evaluator is not None
 
     def test_sampling_rate_constant(self):
-        from app.services.agent_quality_evaluator import QUALITY_EVAL_SAMPLING_RATE
+        from app.shared.services.agent_quality_evaluator import QUALITY_EVAL_SAMPLING_RATE
         assert 0.0 <= QUALITY_EVAL_SAMPLING_RATE <= 1.0
 
     def test_eval_metrics_have_5_entries(self):
-        from app.services.agent_quality_evaluator import EVAL_METRICS
+        from app.shared.services.agent_quality_evaluator import EVAL_METRICS
         assert len(EVAL_METRICS) == 5
         assert "task_completion" in EVAL_METRICS
         assert "fairness" in EVAL_METRICS
 
     def test_evaluation_result_dataclass(self):
-        from app.services.agent_quality_evaluator import EvaluationResult
+        from app.shared.services.agent_quality_evaluator import EvaluationResult
         from datetime import datetime
         result = EvaluationResult(
             agent_id="wizard",
@@ -248,7 +248,7 @@ class TestAgentQualityEvaluatorImport:
 class TestAgentQualityEvaluatorSampling:
     @pytest.mark.asyncio
     async def test_evaluate_if_sampled_returns_none_when_not_sampled(self):
-        from app.services.agent_quality_evaluator import AgentQualityEvaluator
+        from app.shared.services.agent_quality_evaluator import AgentQualityEvaluator
         evaluator = AgentQualityEvaluator()
         # patch random.random to return 0.99 (above any sampling rate)
         with patch("app.services.agent_quality_evaluator.random.random", return_value=0.99):
@@ -263,7 +263,7 @@ class TestAgentQualityEvaluatorSampling:
 
     @pytest.mark.asyncio
     async def test_evaluate_if_sampled_catches_exception_returns_none(self):
-        from app.services.agent_quality_evaluator import AgentQualityEvaluator
+        from app.shared.services.agent_quality_evaluator import AgentQualityEvaluator
         evaluator = AgentQualityEvaluator()
         # Sample (random returns 0.0) but evaluate_response raises
         with patch("app.services.agent_quality_evaluator.random.random", return_value=0.0):
@@ -279,7 +279,7 @@ class TestAgentQualityEvaluatorSampling:
 
     @pytest.mark.asyncio
     async def test_evaluate_if_sampled_returns_result_when_sampled(self):
-        from app.services.agent_quality_evaluator import AgentQualityEvaluator, EvaluationResult
+        from app.shared.services.agent_quality_evaluator import AgentQualityEvaluator, EvaluationResult
         evaluator = AgentQualityEvaluator()
         mock_result = EvaluationResult(
             agent_id="wizard", company_id="c-1", session_id=None,
@@ -300,7 +300,7 @@ class TestAgentQualityEvaluatorSampling:
 class TestAgentQualityEvaluatorJudge:
     @pytest.mark.asyncio
     async def test_judge_returns_05_on_anthropic_exception(self):
-        from app.services.agent_quality_evaluator import AgentQualityEvaluator
+        from app.shared.services.agent_quality_evaluator import AgentQualityEvaluator
         evaluator = AgentQualityEvaluator()
         # anthropic is imported inside the function; patch it in anthropic namespace
         with patch("anthropic.AsyncAnthropic", side_effect=RuntimeError("no api")):
@@ -309,7 +309,7 @@ class TestAgentQualityEvaluatorJudge:
 
     @pytest.mark.asyncio
     async def test_judge_returns_05_on_runtime_error(self):
-        from app.services.agent_quality_evaluator import AgentQualityEvaluator
+        from app.shared.services.agent_quality_evaluator import AgentQualityEvaluator
         evaluator = AgentQualityEvaluator()
         mock_client = MagicMock()
         mock_client.messages.create = AsyncMock(side_effect=RuntimeError("api error"))
@@ -319,7 +319,7 @@ class TestAgentQualityEvaluatorJudge:
 
     @pytest.mark.asyncio
     async def test_judge_clamps_score_above_1(self):
-        from app.services.agent_quality_evaluator import AgentQualityEvaluator
+        from app.shared.services.agent_quality_evaluator import AgentQualityEvaluator
         evaluator = AgentQualityEvaluator()
         mock_message = MagicMock()
         mock_message.content = [MagicMock(text="1.5")]
@@ -331,7 +331,7 @@ class TestAgentQualityEvaluatorJudge:
 
     @pytest.mark.asyncio
     async def test_judge_clamps_score_below_0(self):
-        from app.services.agent_quality_evaluator import AgentQualityEvaluator
+        from app.shared.services.agent_quality_evaluator import AgentQualityEvaluator
         evaluator = AgentQualityEvaluator()
         mock_message = MagicMock()
         mock_message.content = [MagicMock(text="-0.5")]
@@ -343,7 +343,7 @@ class TestAgentQualityEvaluatorJudge:
 
     @pytest.mark.asyncio
     async def test_send_to_langsmith_silent_without_api_key(self):
-        from app.services.agent_quality_evaluator import AgentQualityEvaluator, EvaluationResult
+        from app.shared.services.agent_quality_evaluator import AgentQualityEvaluator, EvaluationResult
         evaluator = AgentQualityEvaluator()
         result = EvaluationResult(
             agent_id="test", company_id="c-1", session_id=None,
@@ -358,7 +358,7 @@ class TestAgentQualityEvaluatorJudge:
 
     @pytest.mark.asyncio
     async def test_evaluate_response_computes_overall_correctly(self):
-        from app.services.agent_quality_evaluator import AgentQualityEvaluator, EVAL_METRICS
+        from app.shared.services.agent_quality_evaluator import AgentQualityEvaluator, EVAL_METRICS
         evaluator = AgentQualityEvaluator()
         # All judges return 0.8
         with patch.object(evaluator, "_judge", return_value=0.8):
@@ -375,7 +375,7 @@ class TestAgentQualityEvaluatorJudge:
 
     @pytest.mark.asyncio
     async def test_evaluate_response_persists_when_db_provided(self):
-        from app.services.agent_quality_evaluator import AgentQualityEvaluator
+        from app.shared.services.agent_quality_evaluator import AgentQualityEvaluator
         evaluator = AgentQualityEvaluator()
         mock_db = MagicMock()
         with patch.object(evaluator, "_judge", return_value=0.7):
@@ -398,23 +398,23 @@ class TestAgentQualityEvaluatorJudge:
 
 class TestChannelSelectorConstants:
     def test_channel_consent_map_populated(self):
-        from app.services.candidate_channel_selector import CHANNEL_CONSENT_MAP
+        from app.domains.candidates.services.candidate_channel_selector import CHANNEL_CONSENT_MAP
         assert "email" in CHANNEL_CONSENT_MAP
         assert "whatsapp" in CHANNEL_CONSENT_MAP
 
     def test_transactional_channels_contains_email(self):
-        from app.services.candidate_channel_selector import TRANSACTIONAL_CHANNELS
+        from app.domains.candidates.services.candidate_channel_selector import TRANSACTIONAL_CHANNELS
         assert "email" in TRANSACTIONAL_CHANNELS
 
     def test_fallback_channel_is_email(self):
-        from app.services.candidate_channel_selector import FALLBACK_CHANNEL
+        from app.domains.candidates.services.candidate_channel_selector import FALLBACK_CHANNEL
         assert FALLBACK_CHANNEL == ["email"]
 
 
 class TestCandidateChannelSelectorLogic:
     @pytest.mark.asyncio
     async def test_empty_requested_channels_returns_fallback(self):
-        from app.services.candidate_channel_selector import CandidateChannelSelector
+        from app.domains.candidates.services.candidate_channel_selector import CandidateChannelSelector
         mock_db = MagicMock()
         selector = CandidateChannelSelector(db=mock_db)
         result = await selector.select_channels(
@@ -426,7 +426,7 @@ class TestCandidateChannelSelectorLogic:
 
     @pytest.mark.asyncio
     async def test_channel_in_opt_out_excluded(self):
-        from app.services.candidate_channel_selector import CandidateChannelSelector
+        from app.domains.candidates.services.candidate_channel_selector import CandidateChannelSelector
         mock_db = MagicMock()
         selector = CandidateChannelSelector(db=mock_db)
 
@@ -447,7 +447,7 @@ class TestCandidateChannelSelectorLogic:
 
     @pytest.mark.asyncio
     async def test_marketing_requires_consent(self):
-        from app.services.candidate_channel_selector import CandidateChannelSelector
+        from app.domains.candidates.services.candidate_channel_selector import CandidateChannelSelector
         mock_db = MagicMock()
         selector = CandidateChannelSelector(db=mock_db)
 
@@ -468,7 +468,7 @@ class TestCandidateChannelSelectorLogic:
 
     @pytest.mark.asyncio
     async def test_marketing_with_whatsapp_consent_included(self):
-        from app.services.candidate_channel_selector import CandidateChannelSelector
+        from app.domains.candidates.services.candidate_channel_selector import CandidateChannelSelector
         mock_db = MagicMock()
         selector = CandidateChannelSelector(db=mock_db)
 
@@ -488,7 +488,7 @@ class TestCandidateChannelSelectorLogic:
 
     @pytest.mark.asyncio
     async def test_fallback_when_all_channels_filtered(self):
-        from app.services.candidate_channel_selector import CandidateChannelSelector
+        from app.domains.candidates.services.candidate_channel_selector import CandidateChannelSelector
         mock_db = MagicMock()
         selector = CandidateChannelSelector(db=mock_db)
 
@@ -508,7 +508,7 @@ class TestCandidateChannelSelectorLogic:
 
     @pytest.mark.asyncio
     async def test_no_candidate_found_uses_defaults(self):
-        from app.services.candidate_channel_selector import CandidateChannelSelector
+        from app.domains.candidates.services.candidate_channel_selector import CandidateChannelSelector
         mock_db = MagicMock()
         selector = CandidateChannelSelector(db=mock_db)
 
@@ -524,7 +524,7 @@ class TestCandidateChannelSelectorLogic:
 
     @pytest.mark.asyncio
     async def test_channel_not_in_requested_excluded(self):
-        from app.services.candidate_channel_selector import CandidateChannelSelector
+        from app.domains.candidates.services.candidate_channel_selector import CandidateChannelSelector
         mock_db = MagicMock()
         selector = CandidateChannelSelector(db=mock_db)
 
@@ -545,7 +545,7 @@ class TestCandidateChannelSelectorLogic:
 
     @pytest.mark.asyncio
     async def test_get_consented_channels_error_returns_empty_set(self):
-        from app.services.candidate_channel_selector import CandidateChannelSelector
+        from app.domains.candidates.services.candidate_channel_selector import CandidateChannelSelector
         mock_db = MagicMock()
         mock_db.execute = AsyncMock(side_effect=RuntimeError("db error"))
         selector = CandidateChannelSelector(db=mock_db)
@@ -554,7 +554,7 @@ class TestCandidateChannelSelectorLogic:
 
     @pytest.mark.asyncio
     async def test_get_candidate_error_returns_none(self):
-        from app.services.candidate_channel_selector import CandidateChannelSelector
+        from app.domains.candidates.services.candidate_channel_selector import CandidateChannelSelector
         mock_db = MagicMock()
         mock_db.execute = AsyncMock(side_effect=RuntimeError("db error"))
         selector = CandidateChannelSelector(db=mock_db)
@@ -568,11 +568,11 @@ class TestCandidateChannelSelectorLogic:
 
 class TestConsentCheckerServiceImport:
     def test_import_module(self):
-        from app.services.consent_checker_service import ConsentCheckerService, ConsentCheckResult
+        from app.shared.services.consent_checker_service import ConsentCheckerService, ConsentCheckResult
         assert ConsentCheckerService is not None
 
     def test_consent_check_result_defaults(self):
-        from app.services.consent_checker_service import ConsentCheckResult
+        from app.shared.services.consent_checker_service import ConsentCheckResult
         result = ConsentCheckResult(allowed=True)
         assert result.allowed is True
         assert result.soft_warning is False
@@ -580,12 +580,12 @@ class TestConsentCheckerServiceImport:
         assert result.consent_type is None
 
     def test_ai_purposes_list(self):
-        from app.services.consent_checker_service import ConsentCheckerService
+        from app.shared.services.consent_checker_service import ConsentCheckerService
         assert "ai_screening" in ConsentCheckerService.AI_PURPOSES
         assert "ai_scoring" in ConsentCheckerService.AI_PURPOSES
 
     def test_purpose_to_consent_type_mapping(self):
-        from app.services.consent_checker_service import ConsentCheckerService
+        from app.shared.services.consent_checker_service import ConsentCheckerService
         assert ConsentCheckerService.PURPOSE_TO_CONSENT_TYPE["ai_screening"] == "SCREENING"
         assert ConsentCheckerService.PURPOSE_TO_CONSENT_TYPE["ai_scoring"] == "SCREENING"
 
@@ -593,7 +593,7 @@ class TestConsentCheckerServiceImport:
 class TestConsentCheckerServiceRevokedConsent:
     @pytest.mark.asyncio
     async def test_revoked_consent_returns_blocked(self):
-        from app.services.consent_checker_service import ConsentCheckerService
+        from app.shared.services.consent_checker_service import ConsentCheckerService
         from datetime import datetime
 
         mock_db = MagicMock()
@@ -620,7 +620,7 @@ class TestConsentCheckerServiceRevokedConsent:
 class TestConsentCheckerServiceAbsentConsent:
     @pytest.mark.asyncio
     async def test_absent_consent_hard_block_blocks(self):
-        from app.services.consent_checker_service import ConsentCheckerService
+        from app.shared.services.consent_checker_service import ConsentCheckerService
 
         mock_db = MagicMock()
         mock_result = MagicMock()
@@ -666,7 +666,7 @@ class TestConsentCheckerServiceAbsentConsent:
 
     @pytest.mark.asyncio
     async def test_absent_consent_soft_warning_continues(self):
-        from app.services.consent_checker_service import ConsentCheckerService
+        from app.shared.services.consent_checker_service import ConsentCheckerService
 
         mock_db = MagicMock()
         mock_result = MagicMock()
@@ -697,7 +697,7 @@ class TestConsentCheckerServiceAbsentConsent:
     @pytest.mark.asyncio
     async def test_absent_consent_with_config_hard_block_true(self):
         """Quando LGPD_CONSENT_ABSENT_HARD_BLOCK=True, ausência bloqueia."""
-        from app.services.consent_checker_service import ConsentCheckerService
+        from app.shared.services.consent_checker_service import ConsentCheckerService
 
         mock_db = MagicMock()
         mock_result = MagicMock()
@@ -734,7 +734,7 @@ class TestConsentCheckerServiceAbsentConsent:
 class TestConsentCheckerServicePresentConsent:
     @pytest.mark.asyncio
     async def test_present_valid_consent_allows(self):
-        from app.services.consent_checker_service import ConsentCheckerService
+        from app.shared.services.consent_checker_service import ConsentCheckerService
 
         mock_db = MagicMock()
         mock_consent = MagicMock()
@@ -758,7 +758,7 @@ class TestConsentCheckerServicePresentConsent:
 
     @pytest.mark.asyncio
     async def test_db_exception_returns_soft_warning(self):
-        from app.services.consent_checker_service import ConsentCheckerService
+        from app.shared.services.consent_checker_service import ConsentCheckerService
 
         mock_db = MagicMock()
         mock_db.execute = AsyncMock(side_effect=RuntimeError("db error"))
@@ -778,7 +778,7 @@ class TestConsentCheckerServicePresentConsent:
 class TestConsentCheckerServiceRegister:
     @pytest.mark.asyncio
     async def test_register_consent_creates_new(self):
-        from app.services.consent_checker_service import ConsentCheckerService
+        from app.shared.services.consent_checker_service import ConsentCheckerService
 
         mock_db = MagicMock()
         mock_result = MagicMock()
@@ -802,7 +802,7 @@ class TestConsentCheckerServiceRegister:
 
     @pytest.mark.asyncio
     async def test_register_consent_updates_existing(self):
-        from app.services.consent_checker_service import ConsentCheckerService
+        from app.shared.services.consent_checker_service import ConsentCheckerService
 
         mock_db = MagicMock()
         mock_existing = MagicMock()
@@ -824,7 +824,7 @@ class TestConsentCheckerServiceRegister:
 
     @pytest.mark.asyncio
     async def test_register_consent_revoke_sets_revoked_at(self):
-        from app.services.consent_checker_service import ConsentCheckerService
+        from app.shared.services.consent_checker_service import ConsentCheckerService
 
         mock_db = MagicMock()
         mock_existing = MagicMock()
@@ -847,7 +847,7 @@ class TestConsentCheckerServiceRegister:
 
     @pytest.mark.asyncio
     async def test_get_candidate_consents_returns_list(self):
-        from app.services.consent_checker_service import ConsentCheckerService
+        from app.shared.services.consent_checker_service import ConsentCheckerService
 
         mock_consent = MagicMock()
         mock_consent.to_dict = MagicMock(return_value={"consent_type": "SCREENING"})
@@ -873,31 +873,31 @@ class TestConsentCheckerServiceRegister:
 
 class TestBriefingServiceGreeting:
     def test_morning_greeting(self):
-        from app.services.briefing_service import BriefingService
+        from app.shared.services.briefing_service import BriefingService
         from datetime import datetime
         svc = BriefingService()
         assert svc._get_greeting(datetime(2026, 3, 14, 9, 0)) == "Bom dia"
 
     def test_afternoon_greeting(self):
-        from app.services.briefing_service import BriefingService
+        from app.shared.services.briefing_service import BriefingService
         from datetime import datetime
         svc = BriefingService()
         assert svc._get_greeting(datetime(2026, 3, 14, 14, 0)) == "Boa tarde"
 
     def test_evening_greeting(self):
-        from app.services.briefing_service import BriefingService
+        from app.shared.services.briefing_service import BriefingService
         from datetime import datetime
         svc = BriefingService()
         assert svc._get_greeting(datetime(2026, 3, 14, 20, 0)) == "Boa noite"
 
     def test_boundary_noon(self):
-        from app.services.briefing_service import BriefingService
+        from app.shared.services.briefing_service import BriefingService
         from datetime import datetime
         svc = BriefingService()
         assert svc._get_greeting(datetime(2026, 3, 14, 12, 0)) == "Boa tarde"
 
     def test_boundary_6pm(self):
-        from app.services.briefing_service import BriefingService
+        from app.shared.services.briefing_service import BriefingService
         from datetime import datetime
         svc = BriefingService()
         assert svc._get_greeting(datetime(2026, 3, 14, 18, 0)) == "Boa noite"

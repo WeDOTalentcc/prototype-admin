@@ -11,6 +11,16 @@ Features:
 - TTL management per data type
 - Cache hit tracking for optimization
 - Graceful degradation when Redis unavailable
+
+ARCHITECTURE — Two complementary modules:
+  - THIS FILE (cache_manager_service.py): 3-layer cache engine with CacheNamespace.
+    Use for multi-layer persistence with semantic similarity matching.
+  - app.shared.cache_strategy: TTL registry with CacheDomain, key generation,
+    and event-driven invalidation. Use for endpoint/service-level caching.
+
+Shared namespaces (keep TTLs aligned):
+  - COMPANY_CONFIG: here=VOLATILE(86400s Redis)/STABLE(30d PG), strategy=3600s
+  - LLM_RESPONSE: here=VOLATILE(86400s Redis)/STANDARD(7d PG), strategy=900s
 """
 import hashlib
 import json

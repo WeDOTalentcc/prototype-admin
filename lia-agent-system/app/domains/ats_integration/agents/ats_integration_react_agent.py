@@ -23,7 +23,7 @@ from app.domains.ats_integration.agents.ats_integration_system_prompt import (
 from app.domains.ats_integration.agents.ats_integration_tool_registry import (
     get_ats_integration_tools,
 )
-from app.services.confidence_policy_service import confidence_policy_service
+from app.shared.services.confidence_policy_service import confidence_policy_service
 
 logger = logging.getLogger(__name__)
 

@@ -25,15 +25,15 @@ from app.models.structured_responses import (
     SalaryAnalysis,
     WizardOrchestrationResult,  # noqa: F401
 )
-from app.services.enhanced_intent_classifier import (
+from app.shared.services.enhanced_intent_classifier import (
     EnhancedIntentType,  # noqa: F401
     enhanced_intent_classifier,  # noqa: F401
 )
-from app.services.intent_classifier import (
+from app.shared.services.intent_classifier import (
     ClassificationResult,
 )
-from app.services.llm import LLMService, llm_service
-from app.services.skills_catalog_service import skills_catalog_service
+from app.domains.ai.services.llm import LLMService, llm_service
+from app.shared.services.skills_catalog_service import skills_catalog_service
 
 logger = logging.getLogger(__name__)
 

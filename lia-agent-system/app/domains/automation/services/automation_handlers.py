@@ -72,7 +72,7 @@ async def handle_screening_completed(
     }
     
     try:
-        from app.services.activity_service import ActivityService
+        from app.domains.analytics.services.activity_service import ActivityService
         activity_service = ActivityService()
         
         await activity_service.create_activity(
@@ -160,7 +160,7 @@ async def handle_interview_scheduled(
     logger.info(f"[HANDLER] Interview scheduled for candidate {candidate_id}")
     
     try:
-        from app.services.activity_service import ActivityService
+        from app.domains.analytics.services.activity_service import ActivityService
         activity_service = ActivityService()
         
         await activity_service.create_activity(
@@ -210,7 +210,7 @@ async def handle_interview_completed(
     logger.info(f"[HANDLER] Interview completed for candidate {candidate_id}")
     
     try:
-        from app.services.activity_service import ActivityService
+        from app.domains.analytics.services.activity_service import ActivityService
         activity_service = ActivityService()
         
         await activity_service.create_activity(
@@ -259,7 +259,7 @@ async def handle_candidate_inactive(
     logger.info(f"[HANDLER] Candidate {candidate_id} inactive for {days_inactive} days")
     
     try:
-        from app.services.activity_service import ActivityService
+        from app.domains.analytics.services.activity_service import ActivityService
         activity_service = ActivityService()
         
         await activity_service.create_activity(
@@ -306,7 +306,7 @@ async def handle_candidate_no_show(
     logger.info(f"[HANDLER] Candidate {candidate_id} no-show")
     
     try:
-        from app.services.activity_service import ActivityService
+        from app.domains.analytics.services.activity_service import ActivityService
         activity_service = ActivityService()
         
         await activity_service.create_activity(
@@ -351,7 +351,7 @@ async def handle_offer_sent(
     logger.info(f"[HANDLER] Offer sent to candidate {candidate_id}")
     
     try:
-        from app.services.activity_service import ActivityService
+        from app.domains.analytics.services.activity_service import ActivityService
         activity_service = ActivityService()
         
         await activity_service.create_activity(
@@ -396,7 +396,7 @@ async def handle_candidate_hired(
     logger.info(f"[HANDLER] Candidate {candidate_id} hired")
     
     try:
-        from app.services.activity_service import ActivityService
+        from app.domains.analytics.services.activity_service import ActivityService
         activity_service = ActivityService()
         
         await activity_service.create_activity(
@@ -443,7 +443,7 @@ async def handle_candidate_rejected(
     logger.info(f"[HANDLER] Candidate {candidate_id} rejected")
     
     try:
-        from app.services.activity_service import ActivityService
+        from app.domains.analytics.services.activity_service import ActivityService
         activity_service = ActivityService()
         
         await activity_service.create_activity(
@@ -558,7 +558,7 @@ async def handle_stage_changed(
     }
 
     try:
-        from app.services.activity_service import ActivityService
+        from app.domains.analytics.services.activity_service import ActivityService
         activity_service = ActivityService()
         
         await activity_service.create_activity(
@@ -735,7 +735,7 @@ async def handle_job_published(
     }
 
     try:
-        from app.services.activity_service import ActivityService
+        from app.domains.analytics.services.activity_service import ActivityService
         activity_service = ActivityService()
 
         await activity_service.create_activity(
@@ -817,7 +817,7 @@ async def handle_candidates_sourced(
     }
 
     try:
-        from app.services.activity_service import ActivityService
+        from app.domains.analytics.services.activity_service import ActivityService
         activity_service = ActivityService()
 
         await activity_service.create_activity(
@@ -924,7 +924,7 @@ async def handle_slot_opened(
         result["cascade_errors"].append(f"queue_processing: {e}")
 
     try:
-        from app.services.activity_service import ActivityService
+        from app.domains.analytics.services.activity_service import ActivityService
         activity_service = ActivityService()
 
         await activity_service.create_activity(
@@ -1059,7 +1059,7 @@ async def process_screening_queue(
 
             if invite_channel == "email" and candidate.email:
                 try:
-                    from app.services.candidate_feedback_service import candidate_feedback_service
+                    from app.domains.candidates.services.candidate_feedback_service import candidate_feedback_service
 
                     screening_token = (vc.additional_data or {}).get("screening_invite_token")
                     if not screening_token:
@@ -1223,7 +1223,7 @@ async def handle_recruiter_override_approve(
         invite_channel = "email"
         try:
             from lia_models.job_vacancy import JobVacancy
-            from app.services.candidate_feedback_service import candidate_feedback_service
+            from app.domains.candidates.services.candidate_feedback_service import candidate_feedback_service
 
             job_result = await db.execute(
                 select(JobVacancy).where(JobVacancy.id == vacancy_id)
@@ -1259,7 +1259,7 @@ async def handle_recruiter_override_approve(
             logger.error(f"[OVERRIDE] Failed to dispatch invite: {e}")
 
     try:
-        from app.services.activity_service import ActivityService
+        from app.domains.analytics.services.activity_service import ActivityService
         activity_service = ActivityService()
 
         await activity_service.create_activity(

@@ -35,7 +35,7 @@ from app.schemas.lgpd_compliance import (
     LGPDComplianceStats,
     SubjectsNotification,
 )
-from app.services.lgpd_cleanup_service import (
+from app.shared.services.lgpd_cleanup_service import (
     RETENTION_DAYS,
     get_pending_deletions_count,
     run_cleanup,

@@ -14,8 +14,8 @@ from app.domains.clients.repositories.client_account_repository import ClientAcc
 from app.domains.communication.services.email_service import EmailService, get_email_service
 from app.domains.job_management.services.template_seeder import clone_templates_for_client
 from app.models.client_account import CLIENT_STATUS_OPTIONS, COMPANY_SIZE_OPTIONS, ClientAccount, ClientStatus
-from app.services.hubspot_service import hubspot_service, sync_client_to_hubspot
-from app.services.workos_provisioning_service import provision_workos_organization
+from app.shared.services.hubspot_service import hubspot_service, sync_client_to_hubspot
+from app.shared.services.workos_provisioning_service import provision_workos_organization
 
 logger = logging.getLogger(__name__)
 

@@ -172,7 +172,7 @@ class CulturalFitIntegrationService:
     ) -> float:
         """Busca alinhamento cultural via CultureAnalyzerService. Fallback: 50.0."""
         try:
-            from app.services.culture_analyzer_service import CultureAnalyzerService
+            from app.shared.services.culture_analyzer_service import CultureAnalyzerService
             analyzer = CultureAnalyzerService()
             result = await analyzer.analyze_candidate_fit(
                 candidate_id=candidate_id,

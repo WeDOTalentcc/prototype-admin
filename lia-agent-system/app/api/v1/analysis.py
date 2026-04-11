@@ -7,7 +7,7 @@ import logging
 from fastapi import APIRouter, HTTPException
 
 from app.schemas.analysis import AnalysisRequest, AnalysisResponse
-from app.services.analysis_service import analysis_service
+from app.shared.services.analysis_service import analysis_service
 
 logger = logging.getLogger(__name__)
 

@@ -10,7 +10,7 @@ class TestChiSquareTest:
 
     def test_chi_square_with_two_groups_significant(self):
         """Chi-square detecta diferença significativa entre dois grupos."""
-        from app.services.bias_audit_service import _chi_square_test
+        from app.shared.services.bias_audit_service import _chi_square_test
 
         groups = {
             "masculino": {"count": 100, "approved": 80, "rate": 0.80},
@@ -26,7 +26,7 @@ class TestChiSquareTest:
 
     def test_chi_square_with_equal_groups_not_significant(self):
         """Chi-square não detecta diferença quando grupos são iguais."""
-        from app.services.bias_audit_service import _chi_square_test
+        from app.shared.services.bias_audit_service import _chi_square_test
 
         groups = {
             "masculino": {"count": 50, "approved": 25, "rate": 0.50},
@@ -38,7 +38,7 @@ class TestChiSquareTest:
 
     def test_chi_square_single_group_returns_not_significant(self):
         """Apenas 1 grupo: sem teste possível."""
-        from app.services.bias_audit_service import _chi_square_test
+        from app.shared.services.bias_audit_service import _chi_square_test
 
         groups = {"masculino": {"count": 50, "approved": 25, "rate": 0.50}}
         result = _chi_square_test(groups)
@@ -65,7 +65,7 @@ class TestEeocCompliant:
 
     def test_eeoc_compliant_when_ratio_ok_and_not_significant(self):
         """eeoc_compliant=True quando ratio >= 0.80 e não significativo."""
-        from app.services.bias_audit_service import _audit_dimension
+        from app.shared.services.bias_audit_service import _audit_dimension
         from unittest.mock import MagicMock
 
         evals = []
@@ -84,7 +84,7 @@ class TestEeocCompliant:
 
     def test_eeoc_not_compliant_when_ratio_below_threshold(self):
         """eeoc_compliant=False quando ratio < 0.80."""
-        from app.services.bias_audit_service import _audit_dimension
+        from app.shared.services.bias_audit_service import _audit_dimension
         from unittest.mock import MagicMock
 
         evals = []
@@ -106,7 +106,7 @@ class TestSnapshotPersistsDisparateImpact:
 
     def test_save_snapshot_includes_disparate_impact(self):
         """save_snapshot inclui disparate_impact e eeoc_compliant em dimensions_json."""
-        from app.services.bias_audit_service import BiasAuditReport, DemographicAuditResult, BiasAuditService
+        from app.shared.services.bias_audit_service import BiasAuditReport, DemographicAuditResult, BiasAuditService
         import json
 
         dim = DemographicAuditResult(

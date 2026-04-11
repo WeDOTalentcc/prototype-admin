@@ -181,7 +181,7 @@ def test_so_parse_gemini_json_response_no_text_raises(so_module):
 @pytest.fixture
 def email_tracking_svc():
     try:
-        from app.services.email_tracking_service import EmailTrackingService
+        from app.domains.communication.services.email_tracking_service import EmailTrackingService
         return EmailTrackingService()
     except ImportError as exc:
         pytest.skip(f"email_tracking_service not importable: {exc}")

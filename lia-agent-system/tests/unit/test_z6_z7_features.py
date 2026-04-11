@@ -238,7 +238,7 @@ def test_presidio_disabled_layer4_not_called():
 # ── Z7-01: Recruiter Behavior ─────────────────────────────────────────────────
 
 def test_behavior_profile_round_trip():
-    from app.services.recruiter_behavior_service import RecruiterBehaviorProfile
+    from app.shared.services.recruiter_behavior_service import RecruiterBehaviorProfile
     profile = RecruiterBehaviorProfile(
         recruiter_id="user-1",
         company_id="co-1",
@@ -255,7 +255,7 @@ def test_behavior_profile_round_trip():
 
 @pytest.mark.asyncio
 async def test_get_or_compute_uses_cache():
-    from app.services.recruiter_behavior_service import (
+    from app.shared.services.recruiter_behavior_service import (
         RecruiterBehaviorService, RecruiterBehaviorProfile
     )
     svc = RecruiterBehaviorService()
@@ -272,7 +272,7 @@ async def test_get_or_compute_uses_cache():
 
 @pytest.mark.asyncio
 async def test_get_or_compute_computes_when_no_cache():
-    from app.services.recruiter_behavior_service import (
+    from app.shared.services.recruiter_behavior_service import (
         RecruiterBehaviorService, RecruiterBehaviorProfile
     )
     svc = RecruiterBehaviorService()
@@ -287,7 +287,7 @@ async def test_get_or_compute_computes_when_no_cache():
 
 @pytest.mark.asyncio
 async def test_record_action_stores_in_redis():
-    from app.services.recruiter_behavior_service import RecruiterBehaviorService
+    from app.shared.services.recruiter_behavior_service import RecruiterBehaviorService
     svc = RecruiterBehaviorService()
 
     redis_mock = AsyncMock()
@@ -305,7 +305,7 @@ async def test_record_action_stores_in_redis():
 
 @pytest.mark.asyncio
 async def test_invalidate_removes_cache():
-    from app.services.recruiter_behavior_service import RecruiterBehaviorService, _behavior_key
+    from app.shared.services.recruiter_behavior_service import RecruiterBehaviorService, _behavior_key
     svc = RecruiterBehaviorService()
 
     redis_mock = AsyncMock()
@@ -330,7 +330,7 @@ def test_recruiter_behavior_router_registered():
 
 @pytest.mark.asyncio
 async def test_enrich_active_hours():
-    from app.services.recruiter_behavior_service import (
+    from app.shared.services.recruiter_behavior_service import (
         RecruiterBehaviorService, RecruiterBehaviorProfile
     )
     import json
@@ -359,7 +359,7 @@ async def test_enrich_active_hours():
 
 @pytest.mark.asyncio
 async def test_communication_style_high_volume():
-    from app.services.recruiter_behavior_service import (
+    from app.shared.services.recruiter_behavior_service import (
         RecruiterBehaviorService, RecruiterBehaviorProfile
     )
     import json

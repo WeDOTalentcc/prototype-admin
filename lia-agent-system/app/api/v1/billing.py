@@ -32,7 +32,7 @@ from app.schemas.billing import (
     SubscriptionCreate,
     SubscriptionUpdate,
 )
-from app.services.billing_service import BillingService
+from app.domains.billing.services.billing_service import BillingService
 
 logger = logging.getLogger(__name__)
 

@@ -21,7 +21,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 class TestInjectPixelAndLinks:
     def setup_method(self):
-        from app.services.email_tracking_service import EmailTrackingService
+        from app.domains.communication.services.email_tracking_service import EmailTrackingService
         self.svc = EmailTrackingService()
         self.token = "abc123testtoken"
         self.base_url = "https://api.wedotalent.com"
@@ -66,7 +66,7 @@ class TestInjectPixelAndLinks:
 
     def test_token_not_contains_pii(self):
         """Token gerado não deve conter email, nome ou qualquer PII."""
-        from app.services.email_tracking_service import EmailTrackingService
+        from app.domains.communication.services.email_tracking_service import EmailTrackingService
         svc = EmailTrackingService()
         email = "candidato@empresa.com.br"
         token = svc.generate_tracking_token(
@@ -79,7 +79,7 @@ class TestInjectPixelAndLinks:
         assert "@" not in token
 
     def test_each_call_generates_unique_token(self):
-        from app.services.email_tracking_service import EmailTrackingService
+        from app.domains.communication.services.email_tracking_service import EmailTrackingService
         svc = EmailTrackingService()
         tokens = {
             svc.generate_tracking_token("n1", "c1")
@@ -120,7 +120,7 @@ class TestEmailTrackingEndToEnd:
 
     def test_full_pipeline_injects_pixel_into_realistic_html(self):
         """Pipeline completo: token gerado + injetado no HTML realista de notificação."""
-        from app.services.email_tracking_service import EmailTrackingService
+        from app.domains.communication.services.email_tracking_service import EmailTrackingService
         svc = EmailTrackingService()
 
         token = svc.generate_tracking_token(
@@ -154,7 +154,7 @@ class TestEmailTrackingEndToEnd:
         Se inject_pixel_and_links levantar exceção, chamador deve capturar
         e enviar HTML original sem rastrear.
         """
-        from app.services.email_tracking_service import EmailTrackingService
+        from app.domains.communication.services.email_tracking_service import EmailTrackingService
         svc = EmailTrackingService()
 
         original_html = "<html><body><p>Conteúdo original</p></body></html>"
@@ -172,7 +172,7 @@ class TestEmailTrackingEndToEnd:
 
     def test_tracking_token_is_url_safe(self):
         """Token deve ser URL-safe (sem chars que quebrem URLs)."""
-        from app.services.email_tracking_service import EmailTrackingService
+        from app.domains.communication.services.email_tracking_service import EmailTrackingService
         import re
         svc = EmailTrackingService()
         token = svc.generate_tracking_token("n1", "c1")
@@ -181,7 +181,7 @@ class TestEmailTrackingEndToEnd:
 
     def test_pixel_url_format_valid(self):
         """URL do pixel deve ter formato válido acessível pelo cliente de email."""
-        from app.services.email_tracking_service import EmailTrackingService
+        from app.domains.communication.services.email_tracking_service import EmailTrackingService
         svc = EmailTrackingService()
         token = svc.generate_tracking_token("n1", "c1")
         html = "<body><p>Test</p></body>"

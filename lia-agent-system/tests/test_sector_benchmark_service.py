@@ -6,7 +6,7 @@ Referência: wedo-governance Crença #11 (Anti-sycophancy)
 import pytest
 from unittest.mock import patch, AsyncMock
 
-from app.services.sector_benchmark_service import (
+from app.domains.analytics.services.sector_benchmark_service import (
     SectorBenchmarkService,
     sector_benchmark_service,
     BenchmarkProfile,

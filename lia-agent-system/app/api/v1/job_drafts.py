@@ -526,7 +526,7 @@ async def publish_job_draft(
     logger.info(f"Published job draft {draft_id} as job vacancy {job_vacancy.id}")
     
     try:
-        from app.services.event_dispatcher import event_dispatcher
+        from app.shared.services.event_dispatcher import event_dispatcher
 
 # RAILS-DEPRECATED: This endpoint manages Rails-owned entities (candidates/jobs/applies/users).
 # Direct DB calls will be replaced by RailsAdapter after ats-api-rails handoff.

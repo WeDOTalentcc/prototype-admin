@@ -103,7 +103,7 @@ class TestToolExecutorServiceScope:
     @pytest.mark.asyncio
     async def test_scope_violation_logs_and_continues(self, caplog):
         """Scope violation loga [SCOPE-VIOLATION] mas executa a tool (fail-open)."""
-        from app.services.tool_executor_service import ToolExecutorService, ToolExecutionRequest
+        from app.shared.services.tool_executor_service import ToolExecutorService, ToolExecutionRequest
 
         service = ToolExecutorService()
 
@@ -138,7 +138,7 @@ class TestToolExecutorServiceScope:
     @pytest.mark.asyncio
     async def test_no_scope_skips_validation(self):
         """active_scope=None → nenhuma chamada a is_tool_allowed_in_scope."""
-        from app.services.tool_executor_service import ToolExecutorService, ToolExecutionRequest
+        from app.shared.services.tool_executor_service import ToolExecutorService, ToolExecutionRequest
 
         service = ToolExecutorService()
         request = ToolExecutionRequest(

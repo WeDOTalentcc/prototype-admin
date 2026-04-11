@@ -12,7 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
 from app.core.database import get_db
-from app.services.pipeline_velocity_service import pipeline_velocity_service
+from app.shared.services.pipeline_velocity_service import pipeline_velocity_service
 
 logger = logging.getLogger(__name__)
 

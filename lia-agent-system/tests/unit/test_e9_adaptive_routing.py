@@ -21,7 +21,7 @@ class TestRecordCorrectionSuccess(unittest.IsolatedAsyncioTestCase):
         mock_db.commit = AsyncMock()
 
         with patch("app.services.routing_learning_service.USE_ADAPTIVE_ROUTING", True):
-            from app.services.routing_learning_service import RoutingLearningService
+            from app.shared.services.routing_learning_service import RoutingLearningService
             svc = RoutingLearningService()
             result = await svc.record_correction(
                 session_id="sess-1",
@@ -44,7 +44,7 @@ class TestRecordCorrectionFailOpen(unittest.IsolatedAsyncioTestCase):
         mock_db.commit = AsyncMock()
 
         with patch("app.services.routing_learning_service.USE_ADAPTIVE_ROUTING", True):
-            from app.services.routing_learning_service import RoutingLearningService
+            from app.shared.services.routing_learning_service import RoutingLearningService
             svc = RoutingLearningService()
             # Must not raise — fail-open
             result = await svc.record_correction(
@@ -63,7 +63,7 @@ class TestRecordCorrectionDisabledFlag(unittest.IsolatedAsyncioTestCase):
     async def test_record_correction_disabled_when_flag_false(self):
         mock_db = AsyncMock()
         with patch("app.services.routing_learning_service.USE_ADAPTIVE_ROUTING", False):
-            from app.services.routing_learning_service import RoutingLearningService
+            from app.shared.services.routing_learning_service import RoutingLearningService
             svc = RoutingLearningService()
             result = await svc.record_correction(
                 session_id="s",
@@ -82,7 +82,7 @@ class TestComputeAdjustmentsNoDb(unittest.IsolatedAsyncioTestCase):
 
     async def test_compute_adjustments_returns_empty_no_db(self):
         with patch("app.services.routing_learning_service.USE_ADAPTIVE_ROUTING", True):
-            from app.services.routing_learning_service import RoutingLearningService
+            from app.shared.services.routing_learning_service import RoutingLearningService
             svc = RoutingLearningService()
             result = await svc.compute_domain_confidence_adjustments("co-4", db=None)
         assert result == {}
@@ -109,7 +109,7 @@ class TestComputeAdjustmentsHighError(unittest.IsolatedAsyncioTestCase):
                 "app.models.routing_feedback": MagicMock(RoutingFeedback=MagicMock()),
                 "sqlalchemy": MagicMock(),
             }):
-                from app.services.routing_learning_service import RoutingLearningService
+                from app.shared.services.routing_learning_service import RoutingLearningService
                 svc = RoutingLearningService()
 
                 async def _mock_execute(_query):
@@ -159,7 +159,7 @@ class TestComputeAdjustmentsInsufficientSamples(unittest.IsolatedAsyncioTestCase
         mock_result.all = MagicMock(return_value=[fake_row])
 
         with patch("app.services.routing_learning_service.USE_ADAPTIVE_ROUTING", True):
-            from app.services.routing_learning_service import _MIN_SAMPLES
+            from app.shared.services.routing_learning_service import _MIN_SAMPLES
             assert _MIN_SAMPLES == 10
 
             # Simulate the logic directly
@@ -181,7 +181,7 @@ class TestGetCachedAdjustmentsRedisError(unittest.IsolatedAsyncioTestCase):
     """test_get_cached_adjustments_returns_empty_on_error"""
 
     async def test_get_cached_adjustments_returns_empty_on_error(self):
-        from app.services.routing_learning_service import RoutingLearningService
+        from app.shared.services.routing_learning_service import RoutingLearningService
 
         svc = RoutingLearningService()
 
@@ -197,7 +197,7 @@ class TestGetCachedAdjustmentsRedisError(unittest.IsolatedAsyncioTestCase):
 
     async def test_get_cached_adjustments_returns_empty_on_redis_error_direct(self):
         """Direct test: patching get_redis to raise."""
-        from app.services.routing_learning_service import RoutingLearningService
+        from app.shared.services.routing_learning_service import RoutingLearningService
 
         svc = RoutingLearningService()
 

@@ -14,7 +14,7 @@ import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 from datetime import datetime, timezone, timedelta
 
-from app.services.journey_intelligence_service import (
+from app.shared.services.journey_intelligence_service import (
     JourneyIntelligenceService,
     compute_health_score,
     health_label,

@@ -14,7 +14,7 @@ class TestAuditRankingResults:
     """Testa BiasAuditService.audit_ranking_results()."""
 
     def setup_method(self):
-        from app.services.bias_audit_service import BiasAuditService
+        from app.shared.services.bias_audit_service import BiasAuditService
         self.service = BiasAuditService()
 
     def test_detects_gender_imbalance_above_threshold(self):

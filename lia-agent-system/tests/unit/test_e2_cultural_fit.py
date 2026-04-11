@@ -15,7 +15,7 @@ class TestCulturalFitService:
 
     @pytest.mark.asyncio
     async def test_compute_integrated_fit_returns_result(self):
-        from app.services.cultural_fit_integration_service import (
+        from app.shared.services.cultural_fit_integration_service import (
             CulturalFitIntegrationService, CulturalFitResult
         )
         svc = CulturalFitIntegrationService()
@@ -33,13 +33,13 @@ class TestCulturalFitService:
 
     @pytest.mark.asyncio
     async def test_weights_sum_to_1(self):
-        from app.services.cultural_fit_integration_service import WSI_WEIGHT, INTERVIEW_WEIGHT, CULTURE_WEIGHT
+        from app.shared.services.cultural_fit_integration_service import WSI_WEIGHT, INTERVIEW_WEIGHT, CULTURE_WEIGHT
         total = WSI_WEIGHT + INTERVIEW_WEIGHT + CULTURE_WEIGHT
         assert abs(total - 1.0) < 0.001
 
     @pytest.mark.asyncio
     async def test_fail_open_on_db_error(self):
-        from app.services.cultural_fit_integration_service import CulturalFitIntegrationService
+        from app.shared.services.cultural_fit_integration_service import CulturalFitIntegrationService
         svc = CulturalFitIntegrationService()
         db = MagicMock()
 
@@ -50,7 +50,7 @@ class TestCulturalFitService:
         assert result.error is not None
 
     def test_cultural_fit_result_to_dict(self):
-        from app.services.cultural_fit_integration_service import CulturalFitResult
+        from app.shared.services.cultural_fit_integration_service import CulturalFitResult
         from datetime import datetime
 
         r = CulturalFitResult(
@@ -68,7 +68,7 @@ class TestCulturalFitService:
 
     @pytest.mark.asyncio
     async def test_wsi_score_fallback_returns_50(self):
-        from app.services.cultural_fit_integration_service import CulturalFitIntegrationService
+        from app.shared.services.cultural_fit_integration_service import CulturalFitIntegrationService
         svc = CulturalFitIntegrationService()
         db = MagicMock()
         db.execute = AsyncMock(side_effect=RuntimeError("no table"))
@@ -78,7 +78,7 @@ class TestCulturalFitService:
 
     @pytest.mark.asyncio
     async def test_interview_score_fallback_returns_50(self):
-        from app.services.cultural_fit_integration_service import CulturalFitIntegrationService
+        from app.shared.services.cultural_fit_integration_service import CulturalFitIntegrationService
         svc = CulturalFitIntegrationService()
         db = MagicMock()
         db.execute = AsyncMock(side_effect=RuntimeError("no table"))
@@ -88,7 +88,7 @@ class TestCulturalFitService:
 
     @pytest.mark.asyncio
     async def test_culture_alignment_fallback_returns_50(self):
-        from app.services.cultural_fit_integration_service import CulturalFitIntegrationService
+        from app.shared.services.cultural_fit_integration_service import CulturalFitIntegrationService
         svc = CulturalFitIntegrationService()
         db = MagicMock()
 
@@ -117,7 +117,7 @@ class TestCulturalFitService:
         from fastapi import FastAPI
         from app.api.v1.cultural_fit import router
         from app.core.database import get_db
-        from app.services.cultural_fit_integration_service import CulturalFitResult
+        from app.shared.services.cultural_fit_integration_service import CulturalFitResult
         from datetime import datetime
 
         app = FastAPI()

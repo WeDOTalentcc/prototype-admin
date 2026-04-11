@@ -15,7 +15,7 @@ import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.candidate import Candidate
-from app.services.candidate_enrichment_service import CandidateEnrichmentService
+from app.domains.candidates.services.candidate_enrichment_service import CandidateEnrichmentService
 
 
 class TestCandidateEnrichmentServiceHelpers:

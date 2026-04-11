@@ -65,7 +65,7 @@ class JDParserService:
         Returns raw dict with keys: job_title, requirements, is_affirmative, etc.
         Raises RuntimeError if extraction fails.
         """
-        from app.services.llm import llm_service
+        from app.domains.ai.services.llm import llm_service
 
         cached = await jd_template_cache_service.get_cached_extraction(
             jd_text, company_id

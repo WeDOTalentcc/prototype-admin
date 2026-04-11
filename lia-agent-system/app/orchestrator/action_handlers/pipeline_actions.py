@@ -253,7 +253,7 @@ async def _generate_daily_briefing(params: dict[str, Any], context: dict[str, An
     from app.orchestrator.action_executor import ActionResult
     try:
         from app.core.database import AsyncSessionLocal
-        from app.services.briefing_service import BriefingService
+        from app.shared.services.briefing_service import BriefingService
 
         user_id = context.get("user_id") if context else None
         if not user_id:

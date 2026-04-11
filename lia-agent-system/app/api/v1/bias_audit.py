@@ -19,7 +19,7 @@ from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.services.bias_audit_service import (
+from app.shared.services.bias_audit_service import (
     BiasAuditReport,
     bias_audit_service,
 )

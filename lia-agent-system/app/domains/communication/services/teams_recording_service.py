@@ -12,7 +12,7 @@ from typing import Any
 import httpx
 from pydantic import BaseModel
 
-from app.services.graph_client import graph_client
+from app.shared.services.graph_client import graph_client
 
 logger = logging.getLogger(__name__)
 

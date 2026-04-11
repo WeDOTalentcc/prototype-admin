@@ -13,7 +13,7 @@ import pytest
 
 pytestmark = pytest.mark.easy
 
-from app.services.intent_classifier import (
+from app.shared.services.intent_classifier import (
     IntentType,
     ClassificationResult,
     IntentClassifierService,

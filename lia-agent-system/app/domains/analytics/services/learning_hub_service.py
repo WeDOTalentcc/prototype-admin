@@ -14,13 +14,13 @@ from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.services.learning_analytics_service import learning_analytics_service
-from app.services.learning_confirmation_service import (
+from app.shared.services.learning_analytics_service import learning_analytics_service
+from app.shared.services.learning_confirmation_service import (
     ConfirmationResult,
     LearningContext,
     learning_confirmation_service,
 )
-from app.services.learning_outcome_service import learning_outcome_service
+from app.shared.services.learning_outcome_service import learning_outcome_service
 
 
 class LearningHubService:
@@ -65,13 +65,13 @@ class LearningHubService:
         return await learning_confirmation_service.update_pattern(db, company_id, *args, **kwargs)
 
     def _calculate_confidence(self, sample_size: int) -> str:
-        from app.services.learning_confirmation_service import _calculate_confidence
+        from app.shared.services.learning_confirmation_service import _calculate_confidence
         return _calculate_confidence(sample_size)
 
     @staticmethod
     def _hash_description(description: str) -> str:
         """Delegate to LearningConfirmationService._hash_description."""
-        from app.services.learning_confirmation_service import LearningConfirmationService
+        from app.shared.services.learning_confirmation_service import LearningConfirmationService
         return LearningConfirmationService._hash_description(description)
 
     async def get_agent_performance(

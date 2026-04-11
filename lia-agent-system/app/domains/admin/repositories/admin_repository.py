@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.alert import AlertRule
 from app.models.task import TaskTemplate
-from app.services.seed_service import clear_demo_data, seed_demo_data
+from app.shared.services.seed_service import clear_demo_data, seed_demo_data
 
 logger = logging.getLogger(__name__)
 

@@ -6,7 +6,7 @@ This service provides a centralized way to dispatch events to automation handler
 when important database events occur (stage changes, screening completed, etc.).
 
 Usage:
-    from app.services.event_dispatcher import event_dispatcher
+    from app.shared.services.event_dispatcher import event_dispatcher
     
     await event_dispatcher.on_screening_completed(
         candidate_id="...",

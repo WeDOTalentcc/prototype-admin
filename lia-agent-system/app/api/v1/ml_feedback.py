@@ -15,7 +15,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.services.ml_feedback_service import FeedbackSignal, MLFeedbackService
+from app.shared.services.ml_feedback_service import FeedbackSignal, MLFeedbackService
 from app.domains.analytics.services.ml_feedback_service import get_ml_feedback_service
 
 logger = logging.getLogger(__name__)

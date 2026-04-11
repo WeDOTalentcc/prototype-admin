@@ -252,7 +252,7 @@ async def process_ats_candidate_created(platform: str, payload: dict[str, Any]):
 async def process_ats_candidate_hired(platform: str, payload: dict[str, Any]):
     """Handle candidate hired in ATS."""
     try:
-        from app.services.activity_service import activity_service
+        from app.domains.analytics.services.activity_service import activity_service
         
         candidate_id = (
             payload.get("ats_candidate_id") or 

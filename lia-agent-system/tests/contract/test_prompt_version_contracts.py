@@ -66,32 +66,32 @@ class TestPromptVersionRegistryInterface:
         assert hasattr(module, "prompt_version_registry")
 
     def test_metodo_register_existe(self):
-        from app.services.prompt_version_registry import PromptVersionRegistry
+        from app.shared.services.prompt_version_registry import PromptVersionRegistry
         assert hasattr(PromptVersionRegistry, "register")
         assert callable(PromptVersionRegistry.register)
 
     def test_metodo_get_existe(self):
-        from app.services.prompt_version_registry import PromptVersionRegistry
+        from app.shared.services.prompt_version_registry import PromptVersionRegistry
         assert hasattr(PromptVersionRegistry, "get")
         assert callable(PromptVersionRegistry.get)
 
     def test_metodo_get_by_hash_existe(self):
-        from app.services.prompt_version_registry import PromptVersionRegistry
+        from app.shared.services.prompt_version_registry import PromptVersionRegistry
         assert hasattr(PromptVersionRegistry, "get_by_hash")
         assert callable(PromptVersionRegistry.get_by_hash)
 
     def test_metodo_list_versions_existe(self):
-        from app.services.prompt_version_registry import PromptVersionRegistry
+        from app.shared.services.prompt_version_registry import PromptVersionRegistry
         assert hasattr(PromptVersionRegistry, "list_versions")
         assert callable(PromptVersionRegistry.list_versions)
 
     def test_metodo_get_current_hash_existe(self):
-        from app.services.prompt_version_registry import PromptVersionRegistry
+        from app.shared.services.prompt_version_registry import PromptVersionRegistry
         assert hasattr(PromptVersionRegistry, "get_current_hash")
         assert callable(PromptVersionRegistry.get_current_hash)
 
     def test_register_retorna_string_12_chars(self):
-        from app.services.prompt_version_registry import PromptVersionRegistry
+        from app.shared.services.prompt_version_registry import PromptVersionRegistry
         r = PromptVersionRegistry()
         result = r.register("contract_test", "1.0.0", "template de contrato")
         assert isinstance(result, str)
@@ -99,7 +99,7 @@ class TestPromptVersionRegistryInterface:
 
     def test_register_retorna_prefixo_sha256(self):
         """O prefixo retornado deve ser os primeiros 12 chars do SHA-256."""
-        from app.services.prompt_version_registry import PromptVersionRegistry
+        from app.shared.services.prompt_version_registry import PromptVersionRegistry
         r = PromptVersionRegistry()
         template = "template para validar sha256"
         prefix = r.register("sha256_test", "1.0.0", template)
@@ -111,7 +111,7 @@ class TestPromptVersionRegistryInterface:
 
     def test_register_signature_tem_parametros_corretos(self):
         """register(self, name, version, template) -> str."""
-        from app.services.prompt_version_registry import PromptVersionRegistry
+        from app.shared.services.prompt_version_registry import PromptVersionRegistry
         sig = inspect.signature(PromptVersionRegistry.register)
         params = list(sig.parameters.keys())
         assert "name" in params
@@ -120,7 +120,7 @@ class TestPromptVersionRegistryInterface:
 
     def test_get_signature_tem_version_default_latest(self):
         """get(self, name, version="latest") deve ter default "latest"."""
-        from app.services.prompt_version_registry import PromptVersionRegistry
+        from app.shared.services.prompt_version_registry import PromptVersionRegistry
         sig = inspect.signature(PromptVersionRegistry.get)
         version_param = sig.parameters.get("version")
         assert version_param is not None

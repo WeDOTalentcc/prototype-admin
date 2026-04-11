@@ -284,7 +284,7 @@ class SourcingPipelineService:
             
             if total_added > 0:
                 try:
-                    from app.services.event_dispatcher import event_dispatcher
+                    from app.shared.services.event_dispatcher import event_dispatcher
                     await event_dispatcher.on_candidates_sourced(
                         job_id=job_id,
                         company_id=str(job.company_id) if hasattr(job, 'company_id') else "",

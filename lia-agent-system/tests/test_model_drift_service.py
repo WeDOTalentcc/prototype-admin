@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import uuid4
 
-from app.services.model_drift_service import (
+from app.shared.services.model_drift_service import (
     ModelDriftService,
     DriftStatus,
     DriftTrigger,

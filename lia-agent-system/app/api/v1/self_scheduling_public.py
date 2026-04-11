@@ -21,7 +21,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
 from app.core.database import get_db
-from app.services.zero_touch_scheduling_service import zero_touch_scheduling_service
+from app.shared.services.zero_touch_scheduling_service import zero_touch_scheduling_service
 
 logger = logging.getLogger(__name__)
 

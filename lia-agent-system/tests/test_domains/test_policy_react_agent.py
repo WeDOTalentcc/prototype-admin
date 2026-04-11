@@ -121,11 +121,11 @@ class TestPolicyAntiSycophancy:
     """Anti-sycophancy: benchmark setorial injetado."""
 
     def test_sector_benchmark_service_importable(self):
-        from app.services.sector_benchmark_service import sector_benchmark_service
+        from app.domains.analytics.services.sector_benchmark_service import sector_benchmark_service
         assert sector_benchmark_service is not None
 
     def test_benchmark_service_has_evaluate_method(self):
-        from app.services.sector_benchmark_service import sector_benchmark_service
+        from app.domains.analytics.services.sector_benchmark_service import sector_benchmark_service
         assert hasattr(sector_benchmark_service, "get_benchmark_context") or \
                hasattr(sector_benchmark_service, "get_profile") or \
                hasattr(sector_benchmark_service, "list_supported")

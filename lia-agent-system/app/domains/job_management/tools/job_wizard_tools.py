@@ -12,11 +12,11 @@ from uuid import UUID
 
 from app.domains.job_management.services.jd_enrichment_service import JdEnrichmentService
 from app.schemas.jd_enrichment import EnrichmentRequest
-from app.services.company_configuration_service import CompanyConfigurationService
-from app.services.config_completeness_service import ConfigCompletenessService
-from app.services.intelligent_data_orchestrator import JobContext, intelligent_data_orchestrator
-from app.services.market_benchmark_service import MarketBenchmarkService
-from app.services.skills_catalog_service import skills_catalog_service
+from app.domains.company.services.company_configuration_service import CompanyConfigurationService
+from app.shared.services.config_completeness_service import ConfigCompletenessService
+from app.shared.services.intelligent_data_orchestrator import JobContext, intelligent_data_orchestrator
+from app.shared.services.market_benchmark_service import MarketBenchmarkService
+from app.shared.services.skills_catalog_service import skills_catalog_service
 from app.tools.registry import ToolDefinition, tool_registry
 
 logger = logging.getLogger(__name__)

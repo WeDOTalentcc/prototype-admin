@@ -231,7 +231,7 @@ async def list_managers(
 ):
     """List managers for a company."""
     try:
-        from app.services.manager_inference_service import manager_inference_service
+        from app.shared.services.manager_inference_service import manager_inference_service
 
         if not company_id:
             company_id = str(getattr(current_user, 'company_id', None) or '')
@@ -263,7 +263,7 @@ async def infer_manager_email(
 ):
     """Infer manager email from name."""
     try:
-        from app.services.manager_inference_service import manager_inference_service
+        from app.shared.services.manager_inference_service import manager_inference_service
 
         if not company_id:
             company_id = str(getattr(current_user, 'company_id', None) or '')

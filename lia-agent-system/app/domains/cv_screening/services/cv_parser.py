@@ -15,7 +15,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from lia_models.candidate import Candidate
 from app.schemas.cv_parser import DuplicateCheck, Education, Experience, ParsedCV
-from app.services.llm import LLMService
+from app.domains.ai.services.llm import LLMService
 from app.shared.robustness.document_scanner import scan_document
 
 logger = logging.getLogger(__name__)

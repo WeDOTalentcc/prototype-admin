@@ -691,7 +691,7 @@ class CommunicationDispatcher:
             Dict with success, session_id, call_sid, status, fallback_channel
         """
         try:
-            from app.services.voice_screening_orchestrator import (
+            from app.domains.voice.services.voice_screening_orchestrator import (
                 ConsentNotGrantedError,
                 voice_screening_orchestrator,
             )

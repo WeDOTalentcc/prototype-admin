@@ -526,7 +526,7 @@ class CascadedRouter:
         if os.getenv("USE_ADAPTIVE_ROUTING", "true").lower() != "true":
             return route_result
         try:
-            from app.services.routing_learning_service import routing_learning_service
+            from app.shared.services.routing_learning_service import routing_learning_service
             cid = company_id or 'global'
             adjustments = await routing_learning_service.get_cached_adjustments(cid)
             if route_result.domain_id in adjustments:

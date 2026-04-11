@@ -11,7 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.auth import get_current_user_or_demo
 from app.core.database import get_db
-from app.services.journey_intelligence_service import journey_intelligence_service
+from app.shared.services.journey_intelligence_service import journey_intelligence_service
 
 logger = logging.getLogger(__name__)
 

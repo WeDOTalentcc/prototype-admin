@@ -632,7 +632,7 @@ async def _wrap_validate_job_action_fairness(**kwargs: Any) -> dict[str, Any]:
 @tool_handler("jobs_mgmt")
 async def _wrap_get_pipeline_prediction_jobs_mgmt(**kwargs: Any) -> dict[str, Any]:
     """Return closure probability prediction for company overview or individual vacancy."""
-    from app.services.pipeline_prediction_service import pipeline_prediction_service
+    from app.shared.services.pipeline_prediction_service import pipeline_prediction_service
 
     vacancy_id = kwargs.get("vacancy_id", "")
     company_id = kwargs.get("company_id", "")

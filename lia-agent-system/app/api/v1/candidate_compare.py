@@ -15,7 +15,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.services.candidate_comparison_service import CandidateComparisonService
+from app.domains.candidates.services.candidate_comparison_service import CandidateComparisonService
 from app.domains.candidates.services.candidate_comparison_service import get_candidate_comparison_service
 
 logger = logging.getLogger(__name__)

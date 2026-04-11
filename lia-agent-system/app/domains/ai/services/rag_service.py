@@ -8,7 +8,7 @@ from typing import Any
 from uuid import UUID
 
 from app.domains.recruiter_assistant.services.memory_service import memory_service
-from app.services.llm import LLMProvider, llm_service
+from app.domains.ai.services.llm import LLMProvider, llm_service
 
 logger = logging.getLogger(__name__)
 

@@ -14,13 +14,13 @@ import os
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
-from app.services.candidate_comparison_service import (
+from app.domains.candidates.services.candidate_comparison_service import (
     CandidateComparisonService,
     ComparisonScenario,
     ScenarioWeights,
     CandidateComparisonResult,
 )
-from app.services.lia_score_service import (
+from app.shared.services.lia_score_service import (
     DataAvailability,
     WEIGHT_DISTRIBUTION,
 )

@@ -938,7 +938,7 @@ class LIAScoreService:
         try:
             if db is None:
                 return 0.0
-            from app.services.ml_feedback_service import ml_feedback_service
+            from app.shared.services.ml_feedback_service import ml_feedback_service
             adjustment = await ml_feedback_service.compute_calibration_adjustment(
                 db=db,
                 company_id=company_id or "",

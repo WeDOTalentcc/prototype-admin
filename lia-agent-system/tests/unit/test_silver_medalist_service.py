@@ -4,7 +4,7 @@ Unit tests for SilverMedalistService — Sprint 1E.
 Tests scoring functions that are pure Python (no DB required).
 """
 import pytest
-from app.services.silver_medalist_service import (
+from app.shared.services.silver_medalist_service import (
     SilverMedalistService,
     _stage_weight,
     _recency_score,

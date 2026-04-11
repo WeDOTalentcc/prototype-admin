@@ -14,7 +14,7 @@ from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.services.granular_consent_service import (
+from app.shared.services.granular_consent_service import (
     ALL_PURPOSES,
     GranularConsentService,
 )

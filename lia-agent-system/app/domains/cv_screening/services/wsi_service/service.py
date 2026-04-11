@@ -20,7 +20,7 @@ from .response_analyzer import WSIResponseAnalyzer
 from .score_calculator import WSIScoreCalculator
 from .report_generator import WSIReportGenerator
 
-from app.services.llm import llm_service
+from app.domains.ai.services.llm import llm_service
 
 logger = logging.getLogger(__name__)
 

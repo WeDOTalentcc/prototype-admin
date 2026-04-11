@@ -800,7 +800,7 @@ class FairnessGuard:
         to improve bias detection accuracy for that industry.
         """
         try:
-            from app.services.policy_engine_service import ALPHA1_SECTOR_RULES
+            from app.shared.services.policy_engine_service import ALPHA1_SECTOR_RULES
         except ImportError:
             ALPHA1_SECTOR_RULES = {}
 

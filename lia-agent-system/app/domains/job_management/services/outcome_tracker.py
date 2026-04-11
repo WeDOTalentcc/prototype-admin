@@ -14,7 +14,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from lia_models.candidate import VacancyCandidate
 from lia_models.feedback_learning import JobOutcome, JobOutcomeType
 from lia_models.job_vacancy import JobVacancy
-from app.services.feedback_learning_service import FeedbackLearningService
+from app.shared.services.feedback_learning_service import FeedbackLearningService
 
 logger = logging.getLogger(__name__)
 

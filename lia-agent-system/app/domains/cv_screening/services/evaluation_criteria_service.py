@@ -13,8 +13,8 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from lia_models.evaluation_criteria import CriterionCategory, EvaluationCriteria
-from app.services.responsibilities_catalog_service import RESPONSIBILITIES_CATALOG
-from app.services.skills_catalog_service import (
+from app.shared.services.responsibilities_catalog_service import RESPONSIBILITIES_CATALOG
+from app.shared.services.skills_catalog_service import (
     BEHAVIORAL_COMPETENCIES_CATALOG,
     TECH_SKILLS_CATALOG,
 )

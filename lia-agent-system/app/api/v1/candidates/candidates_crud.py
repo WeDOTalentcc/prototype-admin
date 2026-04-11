@@ -521,7 +521,7 @@ async def update_candidate_stage(
                     )
                 try:
                     import asyncio as _asyncio
-                    from app.services.ml_feedback_service import ml_feedback_service as _ml_fb
+                    from app.shared.services.ml_feedback_service import ml_feedback_service as _ml_fb
                     _decision_map = {"advance": "hire", "reject": "reject"}
                     _ml_decision = _decision_map.get(feedback_action)
                     if _ml_decision:
@@ -599,7 +599,7 @@ async def enrich_candidate(
 ):
     """Enrich candidate data from LinkedIn using Apify scrapers."""
     try:
-        from app.services.candidate_enrichment_service import candidate_enrichment_service
+        from app.domains.candidates.services.candidate_enrichment_service import candidate_enrichment_service
         result = await candidate_enrichment_service.enrich_candidate(
             db=candidate_repo.db,
             candidate_id=uuid.UUID(candidate_id),

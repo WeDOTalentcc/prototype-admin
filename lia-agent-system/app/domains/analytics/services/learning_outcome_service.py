@@ -16,7 +16,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from lia_models.company_learning import CompanyPattern, CompanySkill, LearningSource
 from lia_models.feedback_learning import JobOutcome
-from app.services.learning_confirmation_service import (
+from app.shared.services.learning_confirmation_service import (
     _calculate_confidence,
     learning_confirmation_service,
 )

@@ -24,7 +24,7 @@ from app.domains.recruiter_assistant.agents.kanban_system_prompt import get_kanb
 from app.domains.recruiter_assistant.agents.kanban_tool_registry import (
     get_kanban_tools,
 )
-from app.services.confidence_policy_service import confidence_policy_service
+from app.shared.services.confidence_policy_service import confidence_policy_service
 
 logger = logging.getLogger(__name__)
 

@@ -10,14 +10,14 @@ from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from lia_models.job_draft import ChangeType, JobDraft, JobDraftStatus
-from app.services.confidence_policy_service import ConfidencePolicyService
-from app.services.config_completeness_service import ConfigCompletenessService
-from app.services.context_aggregator_service import context_aggregator
-from app.services.enhanced_intent_classifier import EnhancedIntentType, enhanced_intent_classifier
-from app.services.intent_classifier import IntentType, intent_classifier_service
-from app.services.knowledge_base_service import knowledge_base
-from app.services.learning_hub_service import learning_hub_service
-from app.services.organization_catalog_service import OrganizationCatalogService
+from app.shared.services.confidence_policy_service import ConfidencePolicyService
+from app.shared.services.config_completeness_service import ConfigCompletenessService
+from app.shared.services.context_aggregator_service import context_aggregator
+from app.shared.services.enhanced_intent_classifier import EnhancedIntentType, enhanced_intent_classifier
+from app.shared.services.intent_classifier import IntentType, intent_classifier_service
+from app.shared.services.knowledge_base_service import knowledge_base
+from app.shared.services.learning_hub_service import learning_hub_service
+from app.shared.services.organization_catalog_service import OrganizationCatalogService
 
 from ._shared import (
     WIZARD_STAGES,
@@ -663,7 +663,7 @@ class WizardStepService:
                 detected_criteria["manager_email"] = job_draft.get("manager_email")
 
             if next_stage and next_stage > current_stage:
-                from app.services.job_stage_config import get_stage_config
+                from app.domains.job_management.services.job_stage_config import get_stage_config
 
                 cargo_data = (detected_criteria or {}).get("cargo")
                 role = job_draft.get("job_title") or (
@@ -1203,7 +1203,7 @@ COMPETÊNCIAS COMPORTAMENTAIS VALORIZADAS:
         suggestions_data: dict,
     ) -> tuple[str, any, dict]:
         """Check required field completeness for the current stage and block if critical fields missing."""
-        from app.services.config_completeness_service import ConfigCompletenessService
+        from app.shared.services.config_completeness_service import ConfigCompletenessService
 
         completeness_service = ConfigCompletenessService()
 

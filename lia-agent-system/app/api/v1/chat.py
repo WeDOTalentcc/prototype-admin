@@ -166,7 +166,7 @@ async def _try_extract_params_with_llm(
     continuarem faltando após a extração.
     """
     try:
-        from app.services.llm import LLMService as _LLMService  # lazy import — patchable by tests
+        from app.domains.ai.services.llm import LLMService as _LLMService  # lazy import — patchable by tests
         llm_svc = _LLMService()
         tool_schema = _build_tool_schema_for_intent(config["action_id"], config)
         messages = [{"role": "user", "content": user_message}]

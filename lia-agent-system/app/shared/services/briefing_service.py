@@ -25,7 +25,7 @@ from lia_models.candidate import Candidate
 from lia_models.interview import Interview
 from lia_models.job_vacancy import JobVacancy
 from lia_models.task import Task, TaskPriority, TaskStatus, TaskType
-from app.services.recruiter_metrics_service import recruiter_metrics_service
+from app.shared.services.recruiter_metrics_service import recruiter_metrics_service
 
 logger = logging.getLogger(__name__)
 
@@ -534,7 +534,7 @@ class BriefingService:
         if not company_id:
             return {"available": False, "vacancies": []}
         try:
-            from app.services.pipeline_prediction_service import pipeline_prediction_service
+            from app.shared.services.pipeline_prediction_service import pipeline_prediction_service
             vacancies = await pipeline_prediction_service.get_recruiter_vacancies_prediction(
                 company_id=company_id,
                 recruiter_id=user_id,

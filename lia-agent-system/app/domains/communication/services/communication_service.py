@@ -744,7 +744,7 @@ class CommunicationService:
                 await db.refresh(log)
                 
                 try:
-                    from app.services.event_dispatcher import event_dispatcher
+                    from app.shared.services.event_dispatcher import event_dispatcher
                     await event_dispatcher.on_message_sent(
                         company_id=company_id,
                         candidate_id=candidate_id,

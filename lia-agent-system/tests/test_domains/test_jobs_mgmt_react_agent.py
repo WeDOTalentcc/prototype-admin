@@ -68,17 +68,17 @@ class TestWizardOrchestratorIntegration:
 class TestJobStageConfig:
 
     def test_job_stage_config_importable(self):
-        from app.services.job_stage_config import JOB_CREATION_STAGES, get_stage_config
+        from app.domains.job_management.services.job_stage_config import JOB_CREATION_STAGES, get_stage_config
         assert len(JOB_CREATION_STAGES) == 8
 
     def test_get_stage_config_returns_dict(self):
-        from app.services.job_stage_config import get_stage_config
+        from app.domains.job_management.services.job_stage_config import get_stage_config
         cfg = get_stage_config(1)
         assert isinstance(cfg, dict)
         assert cfg["stage"] == 1
 
     def test_get_stage_config_unknown_returns_empty(self):
-        from app.services.job_stage_config import get_stage_config
+        from app.domains.job_management.services.job_stage_config import get_stage_config
         assert get_stage_config(99) == {}
 
 
@@ -89,12 +89,12 @@ class TestJobStageConfig:
 class TestShouldSkipStage:
 
     def test_stage_1_never_skipped(self):
-        from app.services.job_stage_config import should_skip_stage
+        from app.domains.job_management.services.job_stage_config import should_skip_stage
         can_skip, _ = should_skip_stage(1, {})
         assert can_skip is False
 
     def test_stage_2_skipped_when_confident(self):
-        from app.services.job_stage_config import should_skip_stage
+        from app.domains.job_management.services.job_stage_config import should_skip_stage
         detected = {
             "seniority": {"value": "senior", "confidence": 0.9},
             "department": {"value": "Engineering", "confidence": 0.9},
@@ -104,7 +104,7 @@ class TestShouldSkipStage:
         assert can_skip is True
 
     def test_stage_2_not_skipped_below_threshold(self):
-        from app.services.job_stage_config import should_skip_stage
+        from app.domains.job_management.services.job_stage_config import should_skip_stage
         detected = {
             "seniority": {"value": "senior", "confidence": 0.5},
         }
@@ -119,18 +119,18 @@ class TestShouldSkipStage:
 class TestJobServicesExtracted:
 
     def test_jd_parser_service_importable(self):
-        from app.services.jd_parser_service import JDParserService, jd_parser_service
+        from app.shared.services.jd_parser_service import JDParserService, jd_parser_service
         assert callable(jd_parser_service.to_requirement_creates)
 
     def test_job_requirements_service_importable(self):
-        from app.services.job_requirements_service import (
+        from app.domains.job_management.services.job_requirements_service import (
             JobRequirementsService,
             job_requirements_service,
         )
         assert callable(job_requirements_service.parse_requirements_from_raw)
 
     def test_parse_requirements_from_string_list(self):
-        from app.services.job_requirements_service import job_requirements_service
+        from app.domains.job_management.services.job_requirements_service import job_requirements_service
         reqs = job_requirements_service.parse_requirements_from_raw(
             ["Python 5+ years", "FastAPI"]
         )

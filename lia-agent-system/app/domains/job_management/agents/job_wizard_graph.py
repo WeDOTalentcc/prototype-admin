@@ -30,7 +30,7 @@ from lia_agents_core.state_machine import (
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.agents.nodes import JobWizardNodes, job_wizard_nodes
-from app.services.checkpoint_service import delete_checkpoint, restore_checkpoint, save_checkpoint
+from app.shared.services.checkpoint_service import delete_checkpoint, restore_checkpoint, save_checkpoint
 from app.tools import initialize_tools
 
 logger = logging.getLogger(__name__)
@@ -476,7 +476,7 @@ class JobWizardGraph:
             if db is not None and _job_id and _company_id_es and _is_confirm:
                 import asyncio as _asyncio
 
-                from app.services.event_store_service import event_store_service as _es
+                from app.shared.services.event_store_service import event_store_service as _es
                 _asyncio.create_task(_es.append(
                     aggregate_type="job",
                     aggregate_id=str(_job_id),

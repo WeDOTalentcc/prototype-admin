@@ -132,6 +132,6 @@ class TestTalentAgentGracefulDegradation:
 
     def test_candidate_goal_service_importable_without_agent(self):
         """CandidateGoalService must be importable standalone (no agent dep)."""
-        from app.services.candidate_goal_service import CandidateGoalService
+        from app.domains.candidates.services.candidate_goal_service import CandidateGoalService
         svc = CandidateGoalService()
         assert callable(svc.check_vacancy_candidate_goal)

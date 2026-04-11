@@ -10,7 +10,7 @@ import pytest
 from datetime import datetime, timedelta
 from unittest.mock import MagicMock, patch
 
-from app.services.feature_flag_service import FeatureFlagService
+from app.shared.services.feature_flag_service import FeatureFlagService
 
 
 class TestFeatureFlagService:

@@ -112,7 +112,7 @@ class VacancyGoalResponse(BaseModel):
     suggested_actions: list[dict[str, Any]]
 
 
-from app.services.candidate_goal_service import candidate_goal_service as _recruiter_agent
+from app.domains.candidates.services.candidate_goal_service import candidate_goal_service as _recruiter_agent
 
 
 @router.post("/calibration/feedback", response_model=CalibrationFeedbackResponse)

@@ -232,7 +232,7 @@ async def check_job_completeness(
     """
     from app.models.company import CompanyProfile
     from app.models.job_vacancy import JobVacancy
-    from app.services.config_completeness_service import config_completeness_service
+    from app.shared.services.config_completeness_service import config_completeness_service
     
     try:
         company_uuid = uuid_lib.UUID(company_id)
@@ -408,7 +408,7 @@ async def get_agent_context(
     
     AI agents should call this endpoint before making suggestions.
     """
-    from app.services.lia_field_config_service import LiaFieldConfigService
+    from app.shared.services.lia_field_config_service import LiaFieldConfigService
     
     service = LiaFieldConfigService(db)
     
@@ -523,7 +523,7 @@ async def get_empty_field_notifications(
     
     Respects user preferences (snooze, dont_remind).
     """
-    from app.services.lia_field_config_service import LiaFieldConfigService
+    from app.shared.services.lia_field_config_service import LiaFieldConfigService
     
     user_id = str(current_user.id)
     
@@ -573,7 +573,7 @@ async def update_empty_field_preference(
     - dont_remind: Disables reminders for this field permanently
     - dismissed: Snoozes for 24 hours
     """
-    from app.services.lia_field_config_service import LiaFieldConfigService
+    from app.shared.services.lia_field_config_service import LiaFieldConfigService
     
     valid_actions = ["fill_now", "remind_later", "dont_remind", "dismissed"]
     if update.action not in valid_actions:
@@ -618,7 +618,7 @@ async def suggest_field_value(
     
     Called when recruiter chooses "Preencher Agora" action.
     """
-    from app.services.lia_field_config_service import LiaFieldConfigService
+    from app.shared.services.lia_field_config_service import LiaFieldConfigService
 
 # RAILS-DEPRECATED: This endpoint manages Rails-owned entities (candidates/jobs/applies/users).
 # Direct DB calls will be replaced by RailsAdapter after ats-api-rails handoff.

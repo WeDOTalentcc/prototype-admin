@@ -13,7 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.auth import get_current_user_or_demo
 from app.core.database import get_db
-from app.services.recruiter_metrics_service import recruiter_metrics_service
+from app.shared.services.recruiter_metrics_service import recruiter_metrics_service
 
 logger = logging.getLogger(__name__)
 

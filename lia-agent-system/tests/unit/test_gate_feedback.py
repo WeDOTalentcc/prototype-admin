@@ -21,7 +21,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 # ─────────────────────────────────────────────
 
 def _make_service():
-    from app.services.candidate_feedback_service import CandidateFeedbackService
+    from app.domains.candidates.services.candidate_feedback_service import CandidateFeedbackService
     return CandidateFeedbackService()
 
 

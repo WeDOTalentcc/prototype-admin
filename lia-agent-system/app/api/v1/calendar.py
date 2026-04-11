@@ -304,7 +304,7 @@ async def google_check_availability(request: GoogleAvailabilityRequest):
     Returns list of available time slots.
     """
     try:
-        from app.services.google_calendar_client import GoogleCalendarClient
+        from app.shared.services.google_calendar_client import GoogleCalendarClient
         client = GoogleCalendarClient()
         slots = await client.get_available_slots(
             organizer_email=request.organizer_email,
@@ -330,7 +330,7 @@ async def google_schedule_interview(request: GoogleScheduleInterviewRequest):
     Create a Google Calendar event for an interview with optional Google Meet link.
     """
     try:
-        from app.services.google_calendar_client import GoogleCalendarClient
+        from app.shared.services.google_calendar_client import GoogleCalendarClient
         client = GoogleCalendarClient()
         event = await client.create_calendar_event(
             attendees=request.attendees,
@@ -358,7 +358,7 @@ async def google_cancel_interview(request: GoogleCancelInterviewRequest):
     Cancel a Google Calendar event and notify attendees.
     """
     try:
-        from app.services.google_calendar_client import GoogleCalendarClient
+        from app.shared.services.google_calendar_client import GoogleCalendarClient
         client = GoogleCalendarClient()
         success = await client.delete_calendar_event(
             event_id=request.event_id,

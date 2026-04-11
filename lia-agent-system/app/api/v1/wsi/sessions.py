@@ -17,7 +17,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.domains.voice.repositories.wsi_repository import WsiRepository
-from app.services.interview_session_store import interview_session_store
+from app.shared.services.interview_session_store import interview_session_store
 
 logger = logging.getLogger(__name__)
 

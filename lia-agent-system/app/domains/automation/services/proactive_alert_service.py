@@ -688,7 +688,7 @@ class ProactiveAlertService:
             logger.debug(f"Error checking credits: {e}")
         
         try:
-            from app.services.audit_service import AuditService
+            from app.shared.services.audit_service import AuditService
             
             audit_service = AuditService()
             threshold = self.get_threshold(AlertCondition.AI_DECISION_ERROR)

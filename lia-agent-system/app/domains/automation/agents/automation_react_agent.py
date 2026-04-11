@@ -22,7 +22,7 @@ from app.domains.automation.agents.automation_system_prompt import get_automatio
 from app.domains.automation.agents.automation_tool_registry import (
     get_automation_tools,
 )
-from app.services.confidence_policy_service import confidence_policy_service
+from app.shared.services.confidence_policy_service import confidence_policy_service
 
 logger = logging.getLogger(__name__)
 

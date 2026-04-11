@@ -25,7 +25,7 @@ from app.domains.cv_screening.constants.wsi_constants import WSI_DIMENSION_LABEL
 from lia_models.candidate import Candidate
 from lia_models.job_vacancy import JobVacancy
 from lia_models.voice_screening import VoiceScreeningAnalysis, VoiceScreeningCall
-from app.services.llm import llm_service
+from app.domains.ai.services.llm import llm_service
 from app.shared.compliance.fairness_guard import FairnessGuard
 
 logger = logging.getLogger(__name__)

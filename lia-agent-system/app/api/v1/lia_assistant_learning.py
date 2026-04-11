@@ -16,7 +16,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
 from app.core.database import get_db
-from app.services.learning_hub_service import learning_hub_service
+from app.shared.services.learning_hub_service import learning_hub_service
 
 logger = logging.getLogger(__name__)
 

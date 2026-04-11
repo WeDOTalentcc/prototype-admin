@@ -303,7 +303,7 @@ class WSIInterviewNodes:
         if state.candidate_id and state.company_id:
             try:
                 from app.core.database import AsyncSessionLocal
-                from app.services.consent_checker_service import ConsentCheckerService
+                from app.shared.services.consent_checker_service import ConsentCheckerService
                 async with AsyncSessionLocal() as _db:
                     _consent_svc = ConsentCheckerService(_db)
                     _consent = await _consent_svc.check_candidate_consent(
@@ -744,7 +744,7 @@ class WSIInterviewNodes:
             # Envia email de resultado apenas quando há email no perfil do candidato.
             if state.recommendation == "reprovado":
                 try:
-                    from app.services.candidate_feedback_service import (
+                    from app.domains.candidates.services.candidate_feedback_service import (
                         candidate_feedback_service as _cfs,
                     )
                     _email = state.candidate_profile.get("email")

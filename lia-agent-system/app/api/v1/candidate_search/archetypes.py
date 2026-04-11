@@ -885,7 +885,7 @@ async def search_by_archetype(
     from sqlalchemy import select, update
 
     from app.models.archetype import SearchArchetype
-    from app.services.lia_score_service import lia_score_service
+    from app.shared.services.lia_score_service import lia_score_service
     
     logger = logging.getLogger(__name__)
     

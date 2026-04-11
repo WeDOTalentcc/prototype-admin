@@ -843,7 +843,7 @@ class NotificationService:
             # Fail-safe: tracking nunca bloqueia envio.
             # LGPD Art. 7 VI: base legal = interesse legítimo.
             try:
-                from app.services.email_tracking_service import email_tracking_service
+                from app.domains.communication.services.email_tracking_service import email_tracking_service
                 _track_notif_id = notification_id or title[:64]
                 _track_company_id = company_id or "platform"
                 _token = email_tracking_service.generate_tracking_token(

@@ -44,7 +44,7 @@ async def infer_manager_email_if_missing(
         return None
     
     try:
-        from app.services.manager_inference_service import manager_inference_service
+        from app.shared.services.manager_inference_service import manager_inference_service
         result = await manager_inference_service.get_manager_by_name(
             manager_name=manager_name,
             company_id=company_id,
@@ -69,7 +69,7 @@ async def calculate_job_deadlines(
     Returns dict with deadline_screening, deadline_shortlist, deadline_closing, deadline.
     """
     try:
-        from app.services.deadline_calculator_service import deadline_calculator_service
+        from app.shared.services.deadline_calculator_service import deadline_calculator_service
         return await deadline_calculator_service.calculate_deadlines_from_pipeline(
             pipeline_template_id=pipeline_template_id,
             company_id=company_id,

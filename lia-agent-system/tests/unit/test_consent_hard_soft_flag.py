@@ -44,7 +44,7 @@ class TestConsentSoftFlag:
         db = _make_db()
         db.execute.return_value = _make_result(None)  # ausente
 
-        from app.services.consent_checker_service import ConsentCheckerService
+        from app.shared.services.consent_checker_service import ConsentCheckerService
         svc = ConsentCheckerService(db=db)
         svc._record_audit_log = AsyncMock()
 
@@ -64,7 +64,7 @@ class TestConsentSoftFlag:
         db = _make_db()
         db.execute.return_value = _make_result(None)
 
-        from app.services.consent_checker_service import ConsentCheckerService
+        from app.shared.services.consent_checker_service import ConsentCheckerService
         svc = ConsentCheckerService(db=db)
         svc._record_audit_log = AsyncMock()
 
@@ -88,7 +88,7 @@ class TestConsentHardFlag:
         db = _make_db()
         db.execute.return_value = _make_result(None)
 
-        from app.services.consent_checker_service import ConsentCheckerService
+        from app.shared.services.consent_checker_service import ConsentCheckerService
         svc = ConsentCheckerService(db=db)
         svc._record_audit_log = AsyncMock()
 
@@ -105,7 +105,7 @@ class TestConsentHardFlag:
         db = _make_db()
         db.execute.return_value = _make_result(None)
 
-        from app.services.consent_checker_service import ConsentCheckerService
+        from app.shared.services.consent_checker_service import ConsentCheckerService
         svc = ConsentCheckerService(db=db)
         svc._record_audit_log = AsyncMock()
 
@@ -131,7 +131,7 @@ class TestConsentFlagNaoAfetaRevogadoNemPresente:
             _make_consent(given=False, revoked_at=datetime.utcnow())
         )
 
-        from app.services.consent_checker_service import ConsentCheckerService
+        from app.shared.services.consent_checker_service import ConsentCheckerService
         svc = ConsentCheckerService(db=db)
 
         with patch("lia_config.config.settings") as mock_s:
@@ -148,7 +148,7 @@ class TestConsentFlagNaoAfetaRevogadoNemPresente:
             _make_consent(given=False, revoked_at=datetime.utcnow())
         )
 
-        from app.services.consent_checker_service import ConsentCheckerService
+        from app.shared.services.consent_checker_service import ConsentCheckerService
         svc = ConsentCheckerService(db=db)
 
         with patch("lia_config.config.settings") as mock_s:
@@ -165,7 +165,7 @@ class TestConsentFlagNaoAfetaRevogadoNemPresente:
             _make_consent(given=True, revoked_at=None)
         )
 
-        from app.services.consent_checker_service import ConsentCheckerService
+        from app.shared.services.consent_checker_service import ConsentCheckerService
         svc = ConsentCheckerService(db=db)
 
         with patch("lia_config.config.settings") as mock_s:
@@ -184,7 +184,7 @@ class TestConsentFlagFailSafe:
         db = _make_db()
         db.execute.return_value = _make_result(None)
 
-        from app.services.consent_checker_service import ConsentCheckerService
+        from app.shared.services.consent_checker_service import ConsentCheckerService
         svc = ConsentCheckerService(db=db)
         svc._record_audit_log = AsyncMock()
 

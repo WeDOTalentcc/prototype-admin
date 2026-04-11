@@ -10,7 +10,7 @@ from langchain_core.output_parsers import JsonOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 
 from app.core.config import settings
-from app.services.llm import llm_service
+from app.domains.ai.services.llm import llm_service
 
 logger = logging.getLogger(__name__)
 

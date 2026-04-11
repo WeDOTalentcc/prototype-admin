@@ -34,7 +34,7 @@ from app.schemas.archetype import (
     ArchetypeResponse,  # noqa: F401
 )
 from app.schemas.rubric import JobRequirementCreate, RequirementPriorityEnum
-from app.services.archetype_builder_service import (
+from app.shared.services.archetype_builder_service import (
     build_archetype_from_search,  # noqa: F401
     extract_tags_from_search_spec,  # noqa: F401
 )

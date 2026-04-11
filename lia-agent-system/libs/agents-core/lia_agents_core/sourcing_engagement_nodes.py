@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 import logging
 import uuid
 
-from app.services.llm import llm_service
+from app.domains.ai.services.llm import llm_service
 from app.schemas.sourcing_engagement_state import (
     SourcingEngagementState,
     PipelineCandidate,

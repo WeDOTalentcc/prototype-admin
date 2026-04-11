@@ -48,7 +48,7 @@ async def tracking_pixel(
     Registra abertura do email. Retorna GIF transparente.
     IP é armazenado apenas como SHA256 hash (LGPD-safe).
     """
-    from app.services.email_tracking_service import email_tracking_service
+    from app.domains.communication.services.email_tracking_service import email_tracking_service
 
     ip = request.client.host if request.client else None
     user_agent = request.headers.get("user-agent", "")
@@ -86,7 +86,7 @@ async def tracking_click(
 
     Registra clique e redireciona para URL de destino.
     """
-    from app.services.email_tracking_service import email_tracking_service
+    from app.domains.communication.services.email_tracking_service import email_tracking_service
 
     ip = request.client.host if request.client else None
     user_agent = request.headers.get("user-agent", "")
@@ -184,7 +184,7 @@ async def tracking_webhook(
     Security: Validates Mailgun webhook HMAC signature when MAILGUN_WEBHOOK_SIGNING_KEY is set.
     LGPD: email addresses are stored as SHA256 hashes only.
     """
-    from app.services.email_tracking_service import email_tracking_service
+    from app.domains.communication.services.email_tracking_service import email_tracking_service
 
     body = await request.body()
 
@@ -320,7 +320,7 @@ async def get_tracking_stats(
     Retorna opens, clicks, unique_opens.
     Dados agregados — sem PII individual (LGPD-safe).
     """
-    from app.services.email_tracking_service import email_tracking_service
+    from app.domains.communication.services.email_tracking_service import email_tracking_service
 
     stats = await email_tracking_service.get_stats(
         db=db,

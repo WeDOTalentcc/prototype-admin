@@ -21,7 +21,7 @@ from unittest.mock import AsyncMock, MagicMock, patch, call
 # ---------------------------------------------------------------------------
 
 def _make_service():
-    from app.services.agent_health_alert_service import AgentHealthAlertService
+    from app.shared.services.agent_health_alert_service import AgentHealthAlertService
     import app.shared.services.agent_health_alert_service as _mod
     svc = AgentHealthAlertService()
     # Forçar fallback in-memory (sem Redis) — patch _get_redis to always return None
@@ -198,7 +198,7 @@ class TestRedisFallback:
 
     @pytest.mark.asyncio
     async def test_fallback_when_redis_unavailable(self):
-        from app.services.agent_health_alert_service import AgentHealthAlertService
+        from app.shared.services.agent_health_alert_service import AgentHealthAlertService
         svc = AgentHealthAlertService()
         # Simula Redis indisponível — _get_redis retorna None
         svc._get_redis = AsyncMock(return_value=None)
@@ -211,7 +211,7 @@ class TestRedisFallback:
 
     @pytest.mark.asyncio
     async def test_fallback_reset_works(self):
-        from app.services.agent_health_alert_service import AgentHealthAlertService
+        from app.shared.services.agent_health_alert_service import AgentHealthAlertService
         svc = AgentHealthAlertService()
         svc._get_redis = AsyncMock(return_value=None)
 

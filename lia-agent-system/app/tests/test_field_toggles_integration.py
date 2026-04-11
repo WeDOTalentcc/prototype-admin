@@ -19,7 +19,7 @@ from app.models.lia_field_toggles import (
     FIELD_FALLBACK_CONFIG,
     LiaFieldToggle,
 )
-from app.services.lia_field_config_service import (
+from app.shared.services.lia_field_config_service import (
     MARKET_BENCHMARKS,
     DataSource,
     FieldConfig,
@@ -514,7 +514,7 @@ class TestEmptyFieldDetection:
     
     def test_is_empty_value_helper(self):
         """Test the _is_empty_value helper method."""
-        from app.services.lia_field_config_service import LiaFieldConfigService
+        from app.shared.services.lia_field_config_service import LiaFieldConfigService
         
         service = LiaFieldConfigService(None)
         

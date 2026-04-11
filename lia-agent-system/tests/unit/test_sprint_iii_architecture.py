@@ -5,12 +5,12 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 class TestTenantContextService:
     def test_module_importable(self):
-        from app.services.tenant_context_service import TenantContextService, TenantContext
+        from app.shared.services.tenant_context_service import TenantContextService, TenantContext
         assert TenantContextService is not None
         assert TenantContext is not None
 
     def test_tenant_context_to_prompt_snippet(self):
-        from app.services.tenant_context_service import TenantContext
+        from app.shared.services.tenant_context_service import TenantContext
         ctx = TenantContext(
             company_id="c1", company_name="Acme", sector="tech",
             open_vacancies=5, autonomy_level="high", plan="pro"
@@ -22,7 +22,7 @@ class TestTenantContextService:
 
     @pytest.mark.asyncio
     async def test_get_context_fallback_on_error(self):
-        from app.services.tenant_context_service import TenantContextService
+        from app.shared.services.tenant_context_service import TenantContextService
         svc = TenantContextService()
         mock_db = AsyncMock()
         mock_db.execute.side_effect = Exception("DB error")
@@ -72,7 +72,7 @@ class TestDynamicAlphaRAG:
 class TestPolicyEngineAlpha1Rules:
     def test_alpha1_rules_all_sectors_present(self):
         try:
-            from app.services.policy_engine_service import ALPHA1_SECTOR_RULES
+            from app.shared.services.policy_engine_service import ALPHA1_SECTOR_RULES
             expected_sectors = {"tech", "varejo", "logistica", "financeiro", "saude", "rpo"}
             assert expected_sectors.issubset(set(ALPHA1_SECTOR_RULES.keys()))
         except ImportError:
@@ -80,7 +80,7 @@ class TestPolicyEngineAlpha1Rules:
 
     def test_all_rules_have_required_fields(self):
         try:
-            from app.services.policy_engine_service import ALPHA1_SECTOR_RULES
+            from app.shared.services.policy_engine_service import ALPHA1_SECTOR_RULES
             required_fields = {"autonomy_level", "hitl_threshold", "auto_approve_threshold"}
             for sector, rules in ALPHA1_SECTOR_RULES.items():
                 for field in required_fields:
@@ -89,22 +89,22 @@ class TestPolicyEngineAlpha1Rules:
             pytest.skip("ALPHA1_SECTOR_RULES não encontrado")
 
     def test_financeiro_low_autonomy(self):
-        from app.services.policy_engine_service import ALPHA1_SECTOR_RULES
+        from app.shared.services.policy_engine_service import ALPHA1_SECTOR_RULES
         assert ALPHA1_SECTOR_RULES["financeiro"]["autonomy_level"] == "low"
         assert ALPHA1_SECTOR_RULES["financeiro"]["fairness_layer3_enabled"] is True
 
     def test_tech_high_autonomy(self):
-        from app.services.policy_engine_service import ALPHA1_SECTOR_RULES
+        from app.shared.services.policy_engine_service import ALPHA1_SECTOR_RULES
         assert ALPHA1_SECTOR_RULES["tech"]["autonomy_level"] == "high"
 
     def test_saude_strict_thresholds(self):
-        from app.services.policy_engine_service import ALPHA1_SECTOR_RULES
+        from app.shared.services.policy_engine_service import ALPHA1_SECTOR_RULES
         saude = ALPHA1_SECTOR_RULES["saude"]
         assert saude["hitl_threshold"] >= 0.80
         assert saude["auto_approve_threshold"] >= 0.90
 
     def test_rpo_high_autonomy(self):
-        from app.services.policy_engine_service import ALPHA1_SECTOR_RULES
+        from app.shared.services.policy_engine_service import ALPHA1_SECTOR_RULES
         assert ALPHA1_SECTOR_RULES["rpo"]["autonomy_level"] == "high"
         assert ALPHA1_SECTOR_RULES["rpo"]["fairness_layer3_enabled"] is True
 
@@ -128,7 +128,7 @@ class TestLearningLoopDriftConnection:
 
 class TestModelDriftCheckTrigger:
     def test_model_drift_service_has_check_trigger(self):
-        from app.services.model_drift_service import ModelDriftService
+        from app.shared.services.model_drift_service import ModelDriftService
         svc = ModelDriftService()
         assert hasattr(svc, "check_drift_trigger")
         assert callable(svc.check_drift_trigger)
@@ -136,7 +136,7 @@ class TestModelDriftCheckTrigger:
     @pytest.mark.asyncio
     async def test_check_drift_trigger_invalid_company_id(self):
         """check_drift_trigger não deve propagar exceções para IDs inválidos."""
-        from app.services.model_drift_service import ModelDriftService
+        from app.shared.services.model_drift_service import ModelDriftService
         svc = ModelDriftService()
         # ID inválido — deve falhar silenciosamente
         await svc.check_drift_trigger("not-a-valid-uuid", "learning_feedback")
@@ -144,7 +144,7 @@ class TestModelDriftCheckTrigger:
 
 class TestTenantContextServicePromptSnippet:
     def test_snippet_contains_all_fields(self):
-        from app.services.tenant_context_service import TenantContext
+        from app.shared.services.tenant_context_service import TenantContext
         ctx = TenantContext(
             company_id="x", company_name="TechCorp", sector="financeiro",
             open_vacancies=12, autonomy_level="low", plan="enterprise"
@@ -157,7 +157,7 @@ class TestTenantContextServicePromptSnippet:
         assert "enterprise" in snippet
 
     def test_snippet_zero_vacancies(self):
-        from app.services.tenant_context_service import TenantContext
+        from app.shared.services.tenant_context_service import TenantContext
         ctx = TenantContext(
             company_id="x", company_name="Startup", sector="tech",
             open_vacancies=0, autonomy_level="medium", plan="starter"

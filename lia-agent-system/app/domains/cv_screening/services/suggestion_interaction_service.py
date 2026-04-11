@@ -20,7 +20,7 @@ from app.schemas.suggestion_interaction import (
     DetectedInteraction,
     SuggestionInteractionType,
 )
-from app.services.skills_catalog_service import skills_catalog_service
+from app.shared.services.skills_catalog_service import skills_catalog_service
 
 logger = logging.getLogger(__name__)
 

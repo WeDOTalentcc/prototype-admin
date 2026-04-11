@@ -10,7 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.auth import get_current_user_or_demo
 from app.core.database import get_db
-from app.services.early_warning_service import early_warning_service
+from app.shared.services.early_warning_service import early_warning_service
 
 logger = logging.getLogger(__name__)
 

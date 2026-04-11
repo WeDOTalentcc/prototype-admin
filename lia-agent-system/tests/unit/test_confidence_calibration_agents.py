@@ -9,7 +9,7 @@ Verifica que:
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from app.services.confidence_policy_service import (
+from app.shared.services.confidence_policy_service import (
     ConfidenceAction,
     ConfidencePolicyService,
     ConfidenceThresholds,

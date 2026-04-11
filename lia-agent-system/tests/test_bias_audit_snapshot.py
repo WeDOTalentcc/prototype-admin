@@ -23,7 +23,7 @@ from httpx import AsyncClient, ASGITransport
 from app.api.v1.bias_audit import router as bias_audit_router
 from app.core.database import get_db
 from app.models.bias_audit_snapshot import BiasAuditSnapshot
-from app.services.bias_audit_service import (
+from app.shared.services.bias_audit_service import (
     BiasAuditService,
     BiasAuditReport,
     DemographicAuditResult,

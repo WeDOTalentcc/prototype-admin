@@ -12,7 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.auth.dependencies import get_current_user_or_demo, get_user_company_id
 from app.auth.models import User
 from app.core.database import get_db
-from app.services.recruiter_personalization_service import recruiter_personalization_service
+from app.shared.services.recruiter_personalization_service import recruiter_personalization_service
 
 router = APIRouter()
 logger = logging.getLogger(__name__)

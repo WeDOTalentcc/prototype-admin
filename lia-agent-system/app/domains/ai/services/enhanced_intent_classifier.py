@@ -15,7 +15,7 @@ from enum import Enum, StrEnum
 from typing import Any
 
 from app.prompts import PromptLoader
-from app.services.llm import llm_service
+from app.domains.ai.services.llm import llm_service
 from app.shared.prompts.loader import PromptLoader
 
 logger = logging.getLogger(__name__)

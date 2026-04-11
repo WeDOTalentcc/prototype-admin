@@ -19,7 +19,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import AsyncSessionLocal
 from app.domains.communication.services.email_providers import get_email_provider
 from app.domains.communication.services.email_service import EmailService
-from app.services.briefing_service import briefing_service
+from app.shared.services.briefing_service import briefing_service
 from app.templates.report_templates import report_templates
 
 logger = logging.getLogger(__name__)
@@ -454,7 +454,7 @@ class ReportService:
             logger.info(f"📧 Daily briefing generated for user {user_id}")
             
             try:
-                from app.services.event_dispatcher import event_dispatcher
+                from app.shared.services.event_dispatcher import event_dispatcher
                 await event_dispatcher.on_report_generated(
                     company_id=company_name,
                     report_type="daily_briefing",
@@ -549,7 +549,7 @@ class ReportService:
         logger.info(f"📊 Weekly report generated and sent to {len(result['emails_sent'])} recipients")
         
         try:
-            from app.services.event_dispatcher import event_dispatcher
+            from app.shared.services.event_dispatcher import event_dispatcher
             await event_dispatcher.on_report_generated(
                 company_id=company_name,
                 report_type="weekly_performance",
@@ -648,7 +648,7 @@ class ReportService:
         logger.info(f"📈 Monthly manager report generated and sent to {len(result['emails_sent'])} recipients")
         
         try:
-            from app.services.event_dispatcher import event_dispatcher
+            from app.shared.services.event_dispatcher import event_dispatcher
             await event_dispatcher.on_report_generated(
                 company_id=company_name,
                 report_type="monthly_manager",

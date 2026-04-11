@@ -403,7 +403,7 @@ class ATSSyncService:
         sync_success = result == ATSSyncResult.SUCCESS
         
         try:
-            from app.services.event_dispatcher import event_dispatcher
+            from app.shared.services.event_dispatcher import event_dispatcher
             await event_dispatcher.on_ats_sync_completed(
                 company_id="",
                 ats_type=ats_type,

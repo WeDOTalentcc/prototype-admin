@@ -12,7 +12,7 @@ import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 from datetime import datetime, timezone, timedelta
 
-from app.services.recruiter_metrics_service import (
+from app.shared.services.recruiter_metrics_service import (
     RecruiterMetricsService,
     _urgency_threshold,
     _urgency_weight,

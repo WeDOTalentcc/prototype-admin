@@ -17,7 +17,7 @@ async def get_candidate_event_history(
 ):
     if not x_company_id:
         raise HTTPException(status_code=401, detail="X-Company-ID required")
-    from app.services.event_store_service import event_store_service
+    from app.shared.services.event_store_service import event_store_service
     events = await event_store_service.get_history(
         aggregate_type="candidate",
         aggregate_id=candidate_id,

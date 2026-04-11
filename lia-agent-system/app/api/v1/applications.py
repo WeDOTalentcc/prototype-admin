@@ -21,7 +21,7 @@ from app.domains.recruitment.repositories.application_repository import Applicat
 from app.domains.cv_screening.services.cv_parser import CVParserService, cv_parser_service, get_cv_parser_service
 from app.domains.cv_screening.services.rubric_evaluation_service import RubricEvaluationService, rubric_evaluation_service, get_rubric_evaluation_service
 from app.schemas.rubric import JobRequirementCreate, RequirementPriorityEnum
-from app.services.candidate_feedback_service import candidate_feedback_service
+from app.domains.candidates.services.candidate_feedback_service import candidate_feedback_service
 from app.domains.cv_screening.services.lia_score_service import lia_score_service
 from app.services.notification_service import NotificationType, notification_service
 

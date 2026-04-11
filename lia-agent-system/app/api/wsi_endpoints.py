@@ -895,7 +895,7 @@ async def generate_job_screening_questions(request: GenerateJobScreeningQuestion
     
     Questions follow WSI methodology for effective candidate screening.
     """
-    from app.services.llm import llm_service
+    from app.domains.ai.services.llm import llm_service
     
     try:
         from app.domains.cv_screening.constants.wsi_constants import (
@@ -1202,7 +1202,7 @@ async def trigger_post_screening_feedback(
 ):
     """Trigger automated feedback to candidate after WSI screening completion."""
     try:
-        from app.services.candidate_feedback_service import candidate_feedback_service
+        from app.domains.candidates.services.candidate_feedback_service import candidate_feedback_service
         repo = WsiRepository(db)
         wsi_row = await repo.get_result_summary(result_id)
         if not wsi_row:

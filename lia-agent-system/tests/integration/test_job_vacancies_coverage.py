@@ -17,7 +17,7 @@ from app.auth.dependencies import (
     get_user_company_id,
 )
 from app.middleware.trial_enforcement import require_active_subscription
-from app.services.plan_limits_service import check_active_jobs_limit
+from app.shared.services.plan_limits_service import check_active_jobs_limit
 
 UUID1 = "123e4567-e89b-12d3-a456-426614174000"
 UUID2 = "223e4567-e89b-12d3-a456-426614174001"

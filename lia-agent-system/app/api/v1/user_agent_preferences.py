@@ -18,7 +18,7 @@ from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.services.user_agent_preference_service import UserAgentPreferenceService
+from app.shared.services.user_agent_preference_service import UserAgentPreferenceService
 
 logger = logging.getLogger(__name__)
 

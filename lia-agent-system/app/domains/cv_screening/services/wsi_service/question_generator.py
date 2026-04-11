@@ -9,7 +9,7 @@ from collections.abc import Callable
 from typing import Any, Literal
 
 from app.domains.cv_screening.constants.wsi_constants import SENIORITY_DISTRIBUTIONS
-from app.services.llm import llm_service
+from app.domains.ai.services.llm import llm_service
 
 from .models import (
     Competency,

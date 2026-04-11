@@ -18,7 +18,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 @pytest.mark.asyncio
 async def test_policy_invalid_company_id_no_exception():
     """UUID inválido em evaluate_policy é tratado com warning, sem ValueError."""
-    from app.services.policy_engine_service import PolicyEngineService
+    from app.shared.services.policy_engine_service import PolicyEngineService
 
     service = PolicyEngineService()
 
@@ -51,7 +51,7 @@ async def test_policy_invalid_company_id_no_exception():
 @pytest.mark.asyncio
 async def test_policy_valid_company_id_still_works():
     """UUID válido continua funcionando após o fix."""
-    from app.services.policy_engine_service import PolicyEngineService
+    from app.shared.services.policy_engine_service import PolicyEngineService
 
     service = PolicyEngineService()
 
@@ -80,7 +80,7 @@ async def test_policy_valid_company_id_still_works():
 @pytest.mark.asyncio
 async def test_policy_none_company_id_no_exception():
     """company_id=None não lança exceção (path existente)."""
-    from app.services.policy_engine_service import PolicyEngineService
+    from app.shared.services.policy_engine_service import PolicyEngineService
 
     service = PolicyEngineService()
 

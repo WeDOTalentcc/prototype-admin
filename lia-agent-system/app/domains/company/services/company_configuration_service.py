@@ -582,7 +582,7 @@ class CompanyConfigurationService:
         """
         from lia_models.company import Department, DepartmentMember
         from lia_models.company_learning import CompanySkill
-        from app.services.skills_catalog_service import skills_catalog_service
+        from app.shared.services.skills_catalog_service import skills_catalog_service
         
         config = await self.get_configuration(company_id, db)
         

@@ -11,7 +11,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.services.briefing_service import briefing_service
+from app.shared.services.briefing_service import briefing_service
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/briefing", tags=["briefing"])

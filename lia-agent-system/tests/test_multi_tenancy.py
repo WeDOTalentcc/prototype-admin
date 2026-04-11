@@ -85,7 +85,7 @@ class TestCandidateGoalServiceTenantIsolation:
 
     @pytest.mark.asyncio
     async def test_goal_result_includes_vacancy_id(self, company_a):
-        from app.services.candidate_goal_service import candidate_goal_service
+        from app.domains.candidates.services.candidate_goal_service import candidate_goal_service
         result = await candidate_goal_service.check_vacancy_candidate_goal(
             vacancy_id="vac-001", current_count=20
         )
@@ -93,7 +93,7 @@ class TestCandidateGoalServiceTenantIsolation:
 
     @pytest.mark.asyncio
     async def test_calibration_patterns_session_id_isolated(self):
-        from app.services.candidate_goal_service import candidate_goal_service
+        from app.domains.candidates.services.candidate_goal_service import candidate_goal_service
         feedbacks_a = [
             {"feedback": "like", "candidate_snapshot": {"skills": ["Python", "FastAPI"]}},
         ]
@@ -112,7 +112,7 @@ class TestCandidateGoalServiceTenantIsolation:
 
     @pytest.mark.asyncio
     async def test_goal_below_target_progress_percentage(self):
-        from app.services.candidate_goal_service import candidate_goal_service
+        from app.domains.candidates.services.candidate_goal_service import candidate_goal_service
         result = await candidate_goal_service.check_vacancy_candidate_goal(
             vacancy_id="v1", current_count=25, target_min=50
         )
@@ -120,7 +120,7 @@ class TestCandidateGoalServiceTenantIsolation:
 
     @pytest.mark.asyncio
     async def test_goal_zero_candidates(self):
-        from app.services.candidate_goal_service import candidate_goal_service
+        from app.domains.candidates.services.candidate_goal_service import candidate_goal_service
         result = await candidate_goal_service.check_vacancy_candidate_goal(
             vacancy_id="v1", current_count=0
         )
@@ -137,7 +137,7 @@ class TestLearningConfirmationTenantIsolation:
     def test_confirmation_service_requires_company_id_param(self):
         """record_skill_confirmation must have company_id as explicit param."""
         import inspect
-        from app.services.learning_confirmation_service import (
+        from app.shared.services.learning_confirmation_service import (
             LearningConfirmationService,
         )
         sig = inspect.signature(LearningConfirmationService.record_skill_confirmation)
@@ -145,7 +145,7 @@ class TestLearningConfirmationTenantIsolation:
 
     def test_get_company_skills_requires_company_id(self):
         import inspect
-        from app.services.learning_confirmation_service import (
+        from app.shared.services.learning_confirmation_service import (
             LearningConfirmationService,
         )
         sig = inspect.signature(LearningConfirmationService.get_company_skills)
@@ -153,7 +153,7 @@ class TestLearningConfirmationTenantIsolation:
 
     def test_update_pattern_requires_company_id(self):
         import inspect
-        from app.services.learning_confirmation_service import (
+        from app.shared.services.learning_confirmation_service import (
             LearningConfirmationService,
         )
         sig = inspect.signature(LearningConfirmationService.update_pattern)
@@ -161,7 +161,7 @@ class TestLearningConfirmationTenantIsolation:
 
     def test_analytics_service_requires_company_id(self):
         import inspect
-        from app.services.learning_analytics_service import LearningAnalyticsService
+        from app.shared.services.learning_analytics_service import LearningAnalyticsService
         sig = inspect.signature(LearningAnalyticsService.get_learning_dashboard)
         assert "company_id" in sig.parameters
 

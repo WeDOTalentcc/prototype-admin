@@ -12,7 +12,7 @@ import logging
 
 from fastapi import APIRouter, HTTPException, Query
 
-from app.services.pipeline_prediction_service import pipeline_prediction_service
+from app.shared.services.pipeline_prediction_service import pipeline_prediction_service
 
 logger = logging.getLogger(__name__)
 

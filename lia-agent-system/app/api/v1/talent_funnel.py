@@ -7,10 +7,10 @@ import logging
 from fastapi import APIRouter
 from pydantic import BaseModel, Field
 
-from app.services.es_score_drop_analyzer import es_score_drop_analyzer
-from app.services.pgv_gap_analyzer import pgv_gap_analyzer
-from app.services.pre_wrf_filter_service import pre_wrf_filter_service
-from app.services.wrf_dynamic_k_service import wrf_dynamic_k_service
+from app.shared.services.es_score_drop_analyzer import es_score_drop_analyzer
+from app.shared.services.pgv_gap_analyzer import pgv_gap_analyzer
+from app.shared.services.pre_wrf_filter_service import pre_wrf_filter_service
+from app.shared.services.wrf_dynamic_k_service import wrf_dynamic_k_service
 
 logger = logging.getLogger(__name__)
 
