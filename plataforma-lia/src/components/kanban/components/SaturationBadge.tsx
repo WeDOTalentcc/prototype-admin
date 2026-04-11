@@ -214,7 +214,7 @@ export function SaturationBadge({ jobId }: SaturationBadgeProps) {
               </div>
               <div className="w-full bg-lia-bg-tertiary rounded-full h-1.5">
                 <div
-                  className={`h-1.5 rounded-full transition-[width,height] ${data.sourcing.is_saturated ? 'bg-status-error' : sourcingPercent >= 90 ? 'bg-status-warning' : 'bg-lia-bg-secondary0'}`}
+                  className={`h-1.5 rounded-full transition-[width,height] ${data.sourcing.is_saturated ? 'bg-status-error' : sourcingPercent >= 90 ? 'bg-status-warning' : 'bg-lia-bg-secondary'}`}
                   style={{width: `${sourcingPercent}%`}}
                 />
               </div>
