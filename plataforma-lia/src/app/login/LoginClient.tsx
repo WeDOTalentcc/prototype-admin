@@ -112,6 +112,9 @@ export default function LoginPage() {
             Sourcing global&nbsp;·&nbsp;Triagem inteligente&nbsp;·&nbsp;Agendamentos automáticos<br />
             Recrutamento <span className="text-wedo-cyan font-semibold">simples</span>
           </p>
+          <p className="mt-5 text-[13px] text-lia-text-tertiary dark:text-lia-text-tertiary tracking-wide border-l-2 border-wedo-cyan/50 pl-3">
+            Conecta ao seu ATS&nbsp;&nbsp;·&nbsp;&nbsp;Ou seja o seu
+          </p>
         </div>
 
         <div className="absolute bottom-0 left-0 pb-8 px-12">
