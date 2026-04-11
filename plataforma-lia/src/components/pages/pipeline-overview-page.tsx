@@ -546,7 +546,7 @@ export function PipelineOverviewPage() {
             </div>
           )}
 
-          <div className="flex-1 min-h-0 overflow-hidden border-t border-lia-border-subtle">
+          <div className="flex-1 min-h-0 overflow-hidden">
             {!selectedStage ? (
               <div className="h-full flex flex-col items-center justify-center gap-3 text-lia-text-disabled">
                 <GitBranch className="w-10 h-10 opacity-30" />
