@@ -14,6 +14,10 @@ global:
       - get_candidate_history
       - get_ml_predictions
       - get_conversion_patterns
+      - analyze_skill_gaps
+      - map_candidate_skills_to_ontology
+      - match_internal_candidates
+      - get_engagement_metrics
       action:
       - add_candidate_to_vacancy
       - reject_candidate
@@ -24,6 +28,8 @@ global:
       - send_whatsapp
       - send_bulk_email
       - export_candidates
+      - create_nurture_sequence
+      - suggest_reengagement
     job_table:
       query:
       - search_jobs
@@ -62,6 +68,7 @@ global:
       - get_prediction_metrics
       - get_job_benchmark
       - get_smart_alerts
+      - analyze_interview_recording
       action:
       - update_candidate_stage
       - bulk_update_candidates_stage
@@ -75,7 +82,11 @@ global:
       - schedule_interview
       - send_feedback
     global:
-      query: []
+      query:
+      - infer_related_skills
+      - get_skill_adjacencies
+      - forecast_hiring_needs
+      - get_market_intelligence
       action:
       - generate_report
       - schedule_report
@@ -118,6 +129,16 @@ global:
       - get_prediction_metrics
       - get_job_benchmark
       - get_smart_alerts
+      - infer_related_skills
+      - get_skill_adjacencies
+      - analyze_skill_gaps
+      - map_candidate_skills_to_ontology
+      - match_internal_candidates
+      - forecast_hiring_needs
+      - analyze_interview_recording
+      - get_engagement_metrics
+      - get_market_intelligence
+      - suggest_reengagement
       action:
       - add_candidate_to_vacancy
       - add_to_list
@@ -146,6 +167,8 @@ global:
       - update_candidate_stage
       - update_job
       - wsi_screening
+      - create_nurture_sequence
+      - suggest_reengagement
   llm_provider: gemini
   llm_fallback_order:
   - gemini

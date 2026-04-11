@@ -99,6 +99,7 @@ def initialize_tools() -> None:
     from app.domains.job_management.tools.job_tools import register_job_tools
     from app.domains.job_management.tools.job_wizard_tools import register_job_wizard_tools
     from app.domains.recruiter_assistant.tools.pipeline_tools import register_pipeline_tools
+    from app.domains.talent_intelligence.tools.registry import register_talent_intelligence_tools
     from app.shared.tools.export_tools import register_export_tools
     
     register_job_wizard_tools()
@@ -110,6 +111,7 @@ def initialize_tools() -> None:
     register_pipeline_tools()
     register_cv_match_tool()
     register_cv_upload_tools()
+    register_talent_intelligence_tools()
     
     import logging
     logger = logging.getLogger(__name__)

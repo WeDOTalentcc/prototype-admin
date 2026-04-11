@@ -36,7 +36,7 @@ from app.shared.tool_handler import tool_handler
 
 logger = logging.getLogger(__name__)
 
-MARKET_SALARY_BENCHMARKS = {
+_SALARY_FALLBACK = {
     "estagio": {"min": 1200, "max": 2500, "currency": "BRL"},
     "estagiario": {"min": 1200, "max": 2500, "currency": "BRL"},
     "junior": {"min": 3000, "max": 6000, "currency": "BRL"},
@@ -50,11 +50,42 @@ MARKET_SALARY_BENCHMARKS = {
     "c-level": {"min": 40000, "max": 80000, "currency": "BRL"},
 }
 
-MARKET_BENCHMARK_SOURCES = [
-    "Robert Half - Guia Salarial 2024",
-    "Gupy - Pesquisa de Remuneração 2024",
-    "Glassdoor Brasil - Dados salariais agregados",
-]
+
+async def _fetch_market_range(job_title: str, seniority: str, location: str | None = None) -> dict[str, Any]:
+    """Fetch market salary range from MarketBenchmarkService, falling back to
+    static estimates only when the external service is unavailable."""
+    try:
+        from app.domains.analytics.services.market_benchmark_service import MarketBenchmarkService
+        service = MarketBenchmarkService()
+        data = await service.search_salary_benchmark(
+            role=job_title or seniority,
+            seniority=seniority,
+            location=location,
+        )
+        if data and data.get("min") and data.get("max"):
+            return {
+                "min": data["min"],
+                "max": data["max"],
+                "currency": data.get("currency", "BRL"),
+                "sources": data.get("sources", []),
+                "confidence": data.get("confidence", "medium"),
+                "is_external": True,
+            }
+    except Exception as e:
+        logger.warning(f"[wizard_tools] MarketBenchmarkService unavailable, using fallback: {e}")
+    import unicodedata
+
+    seniority_key = seniority.lower().strip() if seniority else "pleno"
+    seniority_key = unicodedata.normalize("NFKD", seniority_key).encode("ascii", "ignore").decode("ascii")
+    fallback = _SALARY_FALLBACK.get(seniority_key, _SALARY_FALLBACK.get("pleno"))
+    return {
+        "min": fallback["min"] if fallback else 6000,
+        "max": fallback["max"] if fallback else 12000,
+        "currency": "BRL",
+        "sources": ["Estimativa interna (fallback)"],
+        "confidence": "low",
+        "is_external": False,
+    }
 
 _fairness_guard = FairnessGuard()
 
@@ -144,8 +175,7 @@ async def _wrap_get_salary_benchmarks(**kwargs: Any) -> dict[str, Any]:
     except Exception as e:
         logger.warning(f"[wizard_tools] get_salary_benchmarks SQL error (non-fatal): {e}")
 
-    seniority_key = seniority.lower().strip() if seniority else "pleno"
-    market_range = MARKET_SALARY_BENCHMARKS.get(seniority_key, MARKET_SALARY_BENCHMARKS.get("pleno"))
+    market_range = await _fetch_market_range(job_title, seniority, location)
 
     recommendation = None
     if internal_avg and internal_avg.get("avg_min") and market_range:
@@ -177,10 +207,11 @@ async def _wrap_get_salary_benchmarks(**kwargs: Any) -> dict[str, Any]:
         "market_range": {
             "min": market_range["min"] if market_range else None,
             "max": market_range["max"] if market_range else None,
-            "currency": "BRL",
+            "currency": market_range.get("currency", "BRL"),
             "seniority": seniority,
+            "confidence": market_range.get("confidence", "low"),
         },
-        "sources": MARKET_BENCHMARK_SOURCES,
+        "sources": market_range.get("sources", []),
         "recommendation": recommendation,
         "job_title": job_title,
         "location": location or "Brasil",
@@ -244,8 +275,7 @@ async def _wrap_check_job_draft_health(**kwargs: Any) -> dict[str, Any]:
         })
 
     if salary_max > 0 and seniority:
-        key = seniority.lower().replace("í", "i").replace("ê", "e")
-        bench = MARKET_SALARY_BENCHMARKS.get(key)
+        bench = await _fetch_market_range(title or seniority, seniority)
         if bench and salary_max < bench["min"]:
             risks.append({
                 "level": "high",
@@ -281,7 +311,6 @@ async def _wrap_check_job_draft_health(**kwargs: Any) -> dict[str, Any]:
             "overall_health": overall_health,
             "completeness": max(0, 100 - len(risks) * 15),
         },
-        "sources": MARKET_BENCHMARK_SOURCES,
         "message": f"Saude do rascunho: {overall_health}. {len(risks)} riscos identificados.",
     }
 

@@ -724,3 +724,156 @@ tools:
         search_type: {type: string, enum: [fast, pro]}
         limit: {type: integer, maximum: 50}
         show_emails: {type: boolean}
+
+  # ── Talent Intelligence: Skills Ontology ─────────────────────────────────
+
+  - name: infer_related_skills
+    description: Infer related skills from a set of input skills using the ontology graph with adjacency traversal and semantic proximity scoring
+    allowed_agents: [orchestrator, recruiter_assistant, sourcing, analytics, job_planner, job_wizard]
+    scope: GLOBAL
+    version: "1.0"
+    parameters:
+      type: object
+      required: [skills]
+      properties:
+        skills: {type: array, items: {type: string}}
+        depth: {type: integer, minimum: 1, maximum: 3}
+        limit: {type: integer, minimum: 1, maximum: 30}
+
+  - name: get_skill_adjacencies
+    description: Get adjacent skills for a given skill with proximity weights, domain classification, and relationship type from the skills ontology graph
+    allowed_agents: [orchestrator, recruiter_assistant, sourcing, analytics, job_planner, job_wizard]
+    scope: GLOBAL
+    version: "1.0"
+    parameters:
+      type: object
+      required: [skill]
+      properties:
+        skill: {type: string}
+        min_weight: {type: number, minimum: 0, maximum: 1}
+
+  - name: analyze_skill_gaps
+    description: Analyze skill gaps between candidate and job requirements using ontology adjacencies, identifying matched, missing, and transferable skills with development suggestions
+    allowed_agents: [orchestrator, recruiter_assistant, sourcing, analytics, screening]
+    scope: TALENT_FUNNEL
+    version: "1.0"
+    parameters:
+      type: object
+      properties:
+        candidate_skills: {type: array, items: {type: string}}
+        required_skills: {type: array, items: {type: string}}
+        candidate_id: {type: string}
+        job_id: {type: string}
+
+  - name: map_candidate_skills_to_ontology
+    description: Map raw skill strings from a candidate profile to canonical ontology nodes with domain and specialization classification
+    allowed_agents: [orchestrator, recruiter_assistant, sourcing, analytics, screening]
+    scope: TALENT_FUNNEL
+    version: "1.0"
+    parameters:
+      type: object
+      properties:
+        skills: {type: array, items: {type: string}}
+        candidate_id: {type: string}
+
+  # ── Talent Intelligence: Internal Mobility ───────────────────────────────
+
+  - name: match_internal_candidates
+    description: Match internal employees to an open position considering direct skill matches, adjacent/transferable skills via ontology, and development potential
+    allowed_agents: [orchestrator, recruiter_assistant, analytics]
+    scope: TALENT_FUNNEL
+    version: "1.0"
+    parameters:
+      type: object
+      properties:
+        job_id: {type: string}
+        required_skills: {type: array, items: {type: string}}
+        job_title: {type: string}
+        seniority: {type: string}
+        department: {type: string}
+        limit: {type: integer, minimum: 1, maximum: 50}
+
+  # ── Talent Intelligence: Workforce Planning ──────────────────────────────
+
+  - name: forecast_hiring_needs
+    description: Forecast hiring needs based on historical turnover data, pipeline velocity, growth targets, and seasonality for a given time period
+    allowed_agents: [orchestrator, recruiter_assistant, analytics]
+    scope: GLOBAL
+    version: "1.0"
+    parameters:
+      type: object
+      properties:
+        period: {type: string, enum: [month, quarter, half_year, year]}
+        department: {type: string}
+        growth_rate: {type: number}
+        include_backfills: {type: boolean}
+
+  # ── Talent Intelligence: Interview Intelligence ──────────────────────────
+
+  - name: analyze_interview_recording
+    description: Analyze an interview transcript for sentiment analysis, competency mapping, and bias detection with structured recommendations
+    allowed_agents: [orchestrator, recruiter_assistant, screening, analytics]
+    scope: IN_JOB
+    version: "1.0"
+    parameters:
+      type: object
+      required: [transcript]
+      properties:
+        transcript: {type: string}
+        candidate_id: {type: string}
+        job_id: {type: string}
+        interviewer_name: {type: string}
+        interview_type: {type: string, enum: [behavioral, technical, cultural, final]}
+
+  # ── Talent Intelligence: Passive Candidate Nurture ───────────────────────
+
+  - name: create_nurture_sequence
+    description: Create an automated nurture sequence to engage passive candidates over time with multi-channel touchpoints
+    allowed_agents: [orchestrator, recruiter_assistant, communication, recruitment_campaign]
+    scope: TALENT_FUNNEL
+    version: "1.0"
+    parameters:
+      type: object
+      required: [candidate_ids]
+      properties:
+        candidate_ids: {type: array, items: {type: string}}
+        template: {type: string, enum: [tech_talent, leadership, silver_medalist, general]}
+        custom_name: {type: string}
+        tags: {type: array, items: {type: string}}
+
+  - name: get_engagement_metrics
+    description: Get engagement metrics for nurture sequences including open rates, click rates, and conversion to applicant/hire
+    allowed_agents: [orchestrator, recruiter_assistant, analytics, recruitment_campaign]
+    scope: TALENT_FUNNEL
+    version: "1.0"
+    parameters:
+      type: object
+      properties:
+        sequence_id: {type: string}
+        period: {type: string, enum: [week, month, quarter]}
+
+  - name: suggest_reengagement
+    description: Suggest inactive candidates for re-engagement based on inactivity period, past scores, and engagement signals
+    allowed_agents: [orchestrator, recruiter_assistant, sourcing, recruitment_campaign]
+    scope: TALENT_FUNNEL
+    version: "1.0"
+    parameters:
+      type: object
+      properties:
+        days_inactive: {type: integer, minimum: 7}
+        limit: {type: integer, minimum: 1, maximum: 50}
+
+  - name: get_market_intelligence
+    description: Get real-time market intelligence for a role — salary benchmarks from external sources (web search + LLM parsing), demand trends, in-demand skills, and competitive analysis
+    allowed_agents: [orchestrator, recruiter_assistant, sourcing, analyst_feedback, wsi_evaluator]
+    scope: GLOBAL
+    version: "1.0"
+    parameters:
+      type: object
+      properties:
+        job_title: {type: string, description: "Job title to research"}
+        seniority: {type: string, description: "Seniority level (Junior, Pleno, Senior)"}
+        location: {type: string, description: "Location for regional adjustment"}
+        industry: {type: string, description: "Industry sector"}
+        include_trends: {type: boolean, default: true}
+      required: [job_title]
