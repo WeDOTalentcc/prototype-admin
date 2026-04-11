@@ -5,7 +5,7 @@ Supports Iugu and Vindi as payment gateway providers.
 """
 from datetime import datetime, date
 from sqlalchemy import Column, String, DateTime, Date, Boolean, Integer, ForeignKey, Index, Text
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import relationship
 import uuid
 import enum
@@ -457,18 +457,12 @@ class CompanyModule(Base):
     tier = Column(String(20), nullable=False, default=ModuleTier.FREE.value)
     activated_at = Column(DateTime, default=datetime.utcnow)
     expires_at = Column(DateTime, nullable=True)
-    metadata_json = Column("metadata", Text, nullable=True, default="{}")
+    metadata_json = Column("metadata", JSONB, nullable=True, default=dict)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     def to_dict(self) -> Dict[str, Any]:
-        import json
-        meta = {}
-        if self.metadata_json:
-            try:
-                meta = json.loads(self.metadata_json) if isinstance(self.metadata_json, str) else self.metadata_json
-            except (json.JSONDecodeError, TypeError):
-                meta = {}
+        meta = self.metadata_json if isinstance(self.metadata_json, dict) else {}
         module_info = AVAILABLE_MODULES.get(self.module_name, {})
         return {
             "id": str(self.id),

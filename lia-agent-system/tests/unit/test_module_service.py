@@ -1,4 +1,4 @@
-import json
+
 import pytest
 from datetime import datetime, timedelta
 from unittest.mock import AsyncMock, MagicMock, patch
@@ -44,13 +44,13 @@ class TestCompanyModuleModel:
 
     def test_to_dict_with_metadata(self):
         mod = _make_module()
-        mod.metadata_json = json.dumps({"trial_days": 30})
+        mod.metadata_json = {"trial_days": 30}
         d = mod.to_dict()
         assert d["metadata"]["trial_days"] == 30
 
     def test_to_dict_bad_metadata(self):
         mod = _make_module()
-        mod.metadata_json = "not-json{"
+        mod.metadata_json = None
         d = mod.to_dict()
         assert d["metadata"] == {}
 

@@ -24,10 +24,12 @@ def _get_company_id(request: Request) -> str:
 
 def _enforce_tenant(request: Request, company_id: str) -> None:
     tenant_id = getattr(request.state, "company_id", None)
+    if not tenant_id:
+        raise HTTPException(status_code=401, detail="Company context required")
     is_admin = getattr(request.state, "is_admin", False)
     if is_admin:
         return
-    if tenant_id and tenant_id != company_id:
+    if tenant_id != company_id:
         raise HTTPException(status_code=403, detail="Access denied: company mismatch")
 
 

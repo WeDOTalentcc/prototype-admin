@@ -8,7 +8,7 @@ Supports Task #157 — Módulos Monetizáveis infrastructure.
 """
 from alembic import op
 import sqlalchemy as sa
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.dialects.postgresql import UUID, JSONB
 
 revision = "066"
 down_revision = "065"
@@ -39,7 +39,7 @@ def upgrade() -> None:
         sa.Column("tier", sa.String(20), nullable=False, server_default="free"),
         sa.Column("activated_at", sa.DateTime, server_default=sa.func.now()),
         sa.Column("expires_at", sa.DateTime, nullable=True),
-        sa.Column("metadata", sa.Text, nullable=True, server_default="{}"),
+        sa.Column("metadata", JSONB, nullable=True, server_default=sa.text("'{}'::jsonb")),
         sa.Column("created_at", sa.DateTime, server_default=sa.func.now()),
         sa.Column("updated_at", sa.DateTime, server_default=sa.func.now()),
     )
