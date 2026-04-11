@@ -6,9 +6,11 @@ know the feature is pending rather than silently receiving empty data.
 """
 import logging
 from fastapi import APIRouter, Depends, Query
+from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Any
 from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
+from app.core.database import get_db
 
 logger = logging.getLogger(__name__)
 
@@ -38,7 +40,10 @@ async def list_campaigns(
 async def create_campaign(
     payload: dict[str, Any],
     current_user: User = Depends(get_current_user_or_demo),
+    db: AsyncSession = Depends(get_db),
 ):
+    from app.services.quota_enforcement import enforce_quota
+    await enforce_quota("campaigns", current_user.company_id, db)
     return _NOT_IMPLEMENTED
 
 

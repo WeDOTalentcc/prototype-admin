@@ -37,6 +37,8 @@ async def create_sourcing_agent(
     db: AsyncSession = Depends(get_db),
 ):
     """Create a new persistent sourcing agent for a job or talent pool."""
+    from app.services.quota_enforcement import enforce_quota
+    await enforce_quota("sourcing_agents", current_user.company_id, db)
     from app.services.sourcing_agent_orchestrator import sourcing_agent_orchestrator
     result = await sourcing_agent_orchestrator.create_agent(
         company_id=current_user.company_id,

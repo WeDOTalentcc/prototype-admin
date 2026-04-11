@@ -49,8 +49,10 @@ async def create_twin(
     The twin captures the decision-making reasoning of a Subject Matter Expert.
     """
     from libs.models.lia_models.digital_twin import DigitalTwin
+    from app.services.quota_enforcement import enforce_quota
 
     company_id = current_user.get("company_id", "unknown")
+    await enforce_quota("digital_twins", company_id, db)
 
     twin = DigitalTwin(
         id=str(uuid.uuid4()),

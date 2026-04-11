@@ -47,6 +47,8 @@ async def create_custom_agent(
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
+    from app.services.quota_enforcement import enforce_quota
+    await enforce_quota("custom_agents", current_user.company_id, db)
     try:
         agent = await agent_marketplace_service.create_agent(
             db=db,
