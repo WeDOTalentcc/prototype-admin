@@ -219,3 +219,64 @@
 .animate-scale-in-delayed { animation: scaleInDelayed 0.2s ease-out; }
 .animate-check-pulse { animation: check-pulse 2s ease-in-out infinite; }
 .animate-none-no-transition { animation: none; transition-duration: 0ms; }
+
+.tiptap p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: var(--lia-text-disabled, #9ca3af);
+  pointer-events: none;
+  height: 0;
+}
+
+.tiptap:focus {
+  outline: none;
+}
+
+.tiptap h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-top: 0.75rem;
+  margin-bottom: 0.25rem;
+}
+
+.tiptap h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-top: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.tiptap ul,
+.tiptap ol {
+  padding-left: 1.5rem;
+}
+
+.tiptap ul {
+  list-style-type: disc;
+}
+
+.tiptap ol {
+  list-style-type: decimal;
+}
+
+.tiptap blockquote {
+  border-left: 3px solid var(--lia-border-subtle, #e5e7eb);
+  padding-left: 0.75rem;
+  margin: 0.5rem 0;
+  font-style: italic;
+}
+
+.tiptap hr {
+  border-color: var(--lia-border-subtle, #e5e7eb);
+  margin: 0.75rem 0;
+}
+
+.tiptap a {
+  color: var(--wedo-cyan, #06b6d4);
+  text-decoration: underline;
+}
+
+.lia-variable-chip {
+  user-select: none;
+  cursor: default;
+}

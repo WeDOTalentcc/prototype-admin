@@ -1,19 +1,24 @@
 "use client"
 
-import { useState, useEffect, useMemo } from "react"
+import { useState, useEffect, useMemo, useRef } from "react"
 import { DEMO_VALUES } from "@/lib/pricing"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent } from "@/components/ui/card"
-import { Mail, Save, X, Eye, Code, FileText, RefreshCw, Info, Copy } from "lucide-react"
+import { Mail, Save, X, Eye, Edit3, FileText, RefreshCw, Info, Copy } from "lucide-react"
 import { liaApi, type EmailTemplate, type EmailTemplateCreateRequest, type EmailTemplateUpdateRequest } from "@/services/lia-api"
 import { sanitizeEmailHtml } from "@/lib/sanitize"
+import { LiaEditor, type Editor } from "@/components/ui/lia-editor"
+import {
+  TemplateVariable,
+  htmlToTiptapContent,
+  tiptapContentToHtml,
+} from "@/components/ui/lia-editor-variable-extension"
 
 interface EmailTemplateFormModalProps {
   isOpen: boolean
@@ -65,6 +70,10 @@ const CATEGORY_OPTIONS = [
   { value: "followup", label: "Follow-up" },
 ]
 
+const DEFAULT_TEMPLATE = `<h2>Olá, {{candidate_name}}!</h2><p>Escreva aqui o conteúdo do seu email...</p><p>Atenciosamente,<br><strong>{{recruiter_name}}</strong><br>{{company_name}}</p>`
+
+const TEMPLATE_VARIABLE_EXTENSIONS = [TemplateVariable]
+
 export function EmailTemplateFormModal({
   isOpen,
   onClose,
@@ -82,6 +91,8 @@ export function EmailTemplateFormModal({
   })
 
   const isEditing = !!template
+  const [editorKey, setEditorKey] = useState(0)
+  const editorRef = useRef<Editor | null>(null)
 
   useEffect(() => {
     if (isOpen) {
@@ -97,30 +108,15 @@ export function EmailTemplateFormModal({
         setFormData({
           name: "",
           subject: "",
-          body_html: getDefaultTemplate(),
+          body_html: DEFAULT_TEMPLATE,
           body_text: "",
           category: "",
         })
       }
       setActiveTab("editor")
+      setEditorKey((k) => k + 1)
     }
   }, [isOpen, template])
-
-  const getDefaultTemplate = () => {
-    return `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-  <h2 style="color: #333;">Olá, {{candidate_name}}!</h2>
-  
-  <p style="color: #555; line-height: 1.6;">
-    Escreva aqui o conteúdo do seu email...
-  </p>
-  
-  <p style="color: #555; line-height: 1.6;">
-    Atenciosamente,<br>
-    <strong>{{recruiter_name}}</strong><br>
-    {{company_name}}
-  </p>
-</div>`
-  }
 
   const extractVariables = (content: string): string[] => {
     const regex = /\{\{(\w+)\}\}/g
@@ -133,12 +129,13 @@ export function EmailTemplateFormModal({
   }
 
   const detectedVariables = useMemo(() => {
-    const allContent = formData.subject + formData.body_html + formData.body_text
+    const outputHtml = tiptapContentToHtml(formData.body_html)
+    const allContent = formData.subject + outputHtml + formData.body_text
     return extractVariables(allContent)
   }, [formData.subject, formData.body_html, formData.body_text])
 
   const renderPreview = (content: string): string => {
-    let rendered = content
+    let rendered = tiptapContentToHtml(content)
     for (const [key, value] of Object.entries(MOCK_DATA)) {
       rendered = rendered.replace(new RegExp(`\\{\\{${key}\\}\\}`, "g"), value)
     }
@@ -150,40 +147,29 @@ export function EmailTemplateFormModal({
   }
 
   const insertVariable = (variableName: string) => {
-    const textarea = document.getElementById("body_html") as HTMLTextAreaElement
-    if (textarea) {
-      const start = textarea.selectionStart
-      const end = textarea.selectionEnd
-      const text = formData.body_html
-      const before = text.substring(0, start)
-      const after = text.substring(end)
-      const newText = before + `{{${variableName}}}` + after
-
-      setFormData((prev) => ({ ...prev, body_html: newText }))
-
-      setTimeout(() => {
-        textarea.focus()
-        const newCursorPos = start + variableName.length + 4
-        textarea.setSelectionRange(newCursorPos, newCursorPos)
-      }, 0)
+    const editor = editorRef.current
+    if (editor && !editor.isDestroyed) {
+      editor.chain().focus().insertVariable(variableName).run()
     }
+    setActiveTab("editor")
   }
 
   const handleSubmit = async () => {
     try {
       setSaving(true)
 
+      const outputHtml = tiptapContentToHtml(formData.body_html)
       const variables = extractVariables(
-        formData.subject + formData.body_html + formData.body_text
+        formData.subject + outputHtml + formData.body_text
       )
 
       if (isEditing && template) {
         const updateData: EmailTemplateUpdateRequest = {
           name: formData.name,
           subject: formData.subject,
-          body_html: formData.body_html,
+          body_html: outputHtml,
           body_text: formData.body_text || undefined,
-          category: (formData.category || undefined) as any,
+          category: (formData.category || undefined) as EmailTemplateUpdateRequest["category"],
           variables,
         }
         await liaApi.updateEmailTemplate(template.id, updateData)
@@ -191,9 +177,9 @@ export function EmailTemplateFormModal({
         const createData: EmailTemplateCreateRequest = {
           name: formData.name,
           subject: formData.subject,
-          body_html: formData.body_html,
+          body_html: outputHtml,
           body_text: formData.body_text || undefined,
-          category: (formData.category || undefined) as any,
+          category: (formData.category || undefined) as EmailTemplateCreateRequest["category"],
           variables,
         }
         await liaApi.createEmailTemplate(createData)
@@ -207,6 +193,12 @@ export function EmailTemplateFormModal({
   }
 
   const isValid = formData.name.trim() && formData.subject.trim() && formData.body_html.trim()
+
+  const initialContent = useMemo(
+    () => htmlToTiptapContent(formData.body_html),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [editorKey]
+  )
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -267,8 +259,8 @@ export function EmailTemplateFormModal({
           <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 overflow-hidden flex flex-col">
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="editor" className="gap-2">
-                <Code className="w-4 h-4" />
-                Editor HTML
+                <Edit3 className="w-4 h-4" />
+                Editor
               </TabsTrigger>
               <TabsTrigger value="preview" className="gap-2">
                 <Eye className="w-4 h-4" />
@@ -281,22 +273,24 @@ export function EmailTemplateFormModal({
             </TabsList>
 
             <div className="flex-1 overflow-y-auto mt-4">
-              <TabsContent value="editor" className="h-full m-0">
+              <TabsContent value="editor" className="h-full m-0" forceMount style={{ display: activeTab === "editor" ? undefined : "none" }}>
                 <div className="space-y-2 h-full">
                   <div className="flex items-center justify-between">
-                    <Label htmlFor="body_html">Corpo do Email (HTML) *</Label>
+                    <Label>Corpo do Email *</Label>
                     <div className="flex items-center gap-2 text-xs text-lia-text-secondary">
                       <Info className="w-3 h-3 text-lia-text-secondary" />
-                      Use {`{{variavel}}`} para inserir variáveis
+                      Clique em "Variáveis" para inserir campos dinâmicos
                     </div>
                   </div>
-                  <Textarea
-                    id="body_html"
-                    value={formData.body_html}
-                    onChange={(e) => handleInputChange("body_html", e.target.value)}
-                    placeholder="<div>...</div>"
-                    className="font-mono text-sm min-h-content-md"
-                    rows={15}
+                  <LiaEditor
+                    key={editorKey}
+                    content={initialContent}
+                    onUpdate={(html) => setFormData((prev) => ({ ...prev, body_html: html }))}
+                    placeholder="Escreva o conteúdo do email..."
+                    toolbar="full"
+                    minHeight="280px"
+                    extensions={TEMPLATE_VARIABLE_EXTENSIONS}
+                    editorRef={editorRef}
                   />
                 </div>
               </TabsContent>
@@ -348,7 +342,7 @@ export function EmailTemplateFormModal({
                   <Card>
                     <CardContent className="pt-4">
                       <h4 className="font-medium text-lia-text-primary mb-3">
-                        Variáveis disponíveis (clique para copiar):
+                        Variáveis disponíveis (clique para inserir no editor):
                       </h4>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                         {AVAILABLE_VARIABLES.map((variable) => (

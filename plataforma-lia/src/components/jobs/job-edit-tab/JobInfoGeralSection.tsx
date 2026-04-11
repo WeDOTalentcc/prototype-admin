@@ -21,6 +21,8 @@ import {
   formatDateValue,
 } from "./job-edit-tab.constants"
 import { ScreeningBadge } from "./ScreeningBadge"
+import { LiaEditor } from "@/components/ui/lia-editor"
+import { sanitizeHtml } from "@/lib/sanitize"
 
 interface JobInfoGeralSectionProps {
   jobEditForm: Record<string, unknown>
@@ -242,7 +244,21 @@ export function JobInfoGeralSection({
           <CardContent className="p-4">
             <div>
               <label className={labelClass}>Descrição da Vaga<ScreeningBadge /></label>
-              <textarea className={`${inputClass(!isEditing)} resize-vertical`} rows={16} value={(jobEditForm.description as string) || ""} onChange={(e) => updateField("description", e.target.value)} disabled={!isEditing} placeholder="Descrição detalhada da vaga..." />
+              {isEditing ? (
+                <LiaEditor
+                  content={(jobEditForm.description as string) || ""}
+                  onUpdate={(html) => updateField("description", html)}
+                  placeholder="Descrição detalhada da vaga..."
+                  toolbar="basic"
+                  minHeight="300px"
+                  disabled={!isEditing}
+                />
+              ) : (
+                <div
+                  className={`${inputClass(!isEditing)} resize-vertical min-h-[300px] prose prose-sm max-w-none p-3`}
+                  dangerouslySetInnerHTML={{ __html: sanitizeHtml((jobEditForm.description as string) || '') || '<span class="text-lia-text-disabled">Descrição detalhada da vaga...</span>' }}
+                />
+              )}
             </div>
           </CardContent>
         </Card>
