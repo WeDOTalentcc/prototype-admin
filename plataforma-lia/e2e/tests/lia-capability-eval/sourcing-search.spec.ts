@@ -57,4 +57,54 @@ test.describe('Domain 2: Sourcing & Search', () => {
     evalAndAssert(testInfo, response, [/cadastr/i, /adicion/i, /candidato/i, /joão/i]);
     await takeEvalScreenshot(page, 'SS-005', testInfo);
   });
+
+  test('SS-006: Search with informal language', async ({ authenticatedPage: page }, testInfo) => {
+    await navigateToChat(page);
+    const { response } = await sendPromptAndWait(
+      page,
+      'acha alguém q manja de react e node, pode ser jr',
+    );
+    evalAndAssert(testInfo, response, [/candidato/i, /react/i, /node/i, /encontr/i, /busca/i]);
+    await takeEvalScreenshot(page, 'SS-006', testInfo);
+  });
+
+  test('SS-007: Search with location filter', async ({ authenticatedPage: page }, testInfo) => {
+    await navigateToChat(page);
+    const { response } = await sendPromptAndWait(
+      page,
+      'Busque candidatos de São Paulo com inglês fluente e 5+ anos de experiência',
+    );
+    evalAndAssert(testInfo, response, [/candidato/i, /são paulo/i, /inglês/i, /experiência/i, /nenhum/i]);
+    await takeEvalScreenshot(page, 'SS-007', testInfo);
+  });
+
+  test('SS-008: Search with negation', async ({ authenticatedPage: page }, testInfo) => {
+    await navigateToChat(page);
+    const { response } = await sendPromptAndWait(
+      page,
+      'Busque candidatos que NÃO tenham sido reprovados anteriormente',
+    );
+    evalAndAssert(testInfo, response, [/candidato/i, /busca/i, /filtro/i, /resultado/i, /nenhum/i]);
+    await takeEvalScreenshot(page, 'SS-008', testInfo);
+  });
+
+  test('SS-009: Boolean search query', async ({ authenticatedPage: page }, testInfo) => {
+    await navigateToChat(page);
+    const { response } = await sendPromptAndWait(
+      page,
+      'Busque candidatos com (Python OR Java) AND (AWS OR GCP) e mínimo 3 anos',
+    );
+    evalAndAssert(testInfo, response, [/candidato/i, /python/i, /java/i, /aws/i, /busca/i]);
+    await takeEvalScreenshot(page, 'SS-009', testInfo);
+  });
+
+  test('SS-010: Search with implicit context', async ({ authenticatedPage: page }, testInfo) => {
+    await navigateToChat(page);
+    const { response } = await sendPromptAndWait(
+      page,
+      'Tem alguém bom pra aquela vaga que abri semana passada?',
+    );
+    evalAndAssert(testInfo, response, [/vaga/i, /candidato/i, /qual vaga/i, /especificar/i]);
+    await takeEvalScreenshot(page, 'SS-010', testInfo);
+  });
 });

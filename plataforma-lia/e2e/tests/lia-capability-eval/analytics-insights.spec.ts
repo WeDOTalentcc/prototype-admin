@@ -57,4 +57,54 @@ test.describe('Domain 7: Analytics & Insights', () => {
     evalAndAssert(testInfo, response, [/vaga/i, /fechada/i, /mês/i, /nenhuma/i]);
     await takeEvalScreenshot(page, 'AI-005', testInfo);
   });
+
+  test('AI-006: Source effectiveness', async ({ authenticatedPage: page }, testInfo) => {
+    await navigateToChat(page);
+    const { response } = await sendPromptAndWait(
+      page,
+      'Qual a fonte de candidatos mais efetiva este trimestre?',
+    );
+    evalAndAssert(testInfo, response, [/fonte/i, /candidato/i, /efetiv/i, /trimestre/i, /resultado/i]);
+    await takeEvalScreenshot(page, 'AI-006', testInfo);
+  });
+
+  test('AI-007: Cost per hire', async ({ authenticatedPage: page }, testInfo) => {
+    await navigateToChat(page);
+    const { response } = await sendPromptAndWait(
+      page,
+      'Qual o custo médio por contratação?',
+    );
+    evalAndAssert(testInfo, response, [/custo/i, /contratação/i, /médio/i, /valor/i]);
+    await takeEvalScreenshot(page, 'AI-007', testInfo);
+  });
+
+  test('AI-008: Diversity metrics', async ({ authenticatedPage: page }, testInfo) => {
+    await navigateToChat(page);
+    const { response } = await sendPromptAndWait(
+      page,
+      'Mostre as métricas de diversidade do pipeline atual',
+    );
+    evalAndAssert(testInfo, response, [/diversidade/i, /métrica/i, /pipeline/i, /candidato/i]);
+    await takeEvalScreenshot(page, 'AI-008', testInfo);
+  });
+
+  test('AI-009: Analytics with informal language', async ({ authenticatedPage: page }, testInfo) => {
+    await navigateToChat(page);
+    const { response } = await sendPromptAndWait(
+      page,
+      'como tá o recrutamento esse mês? tá bom ou ruim?',
+    );
+    evalAndAssert(testInfo, response, [/recrutamento/i, /mês/i, /métrica/i, /resultado/i, /resumo/i]);
+    await takeEvalScreenshot(page, 'AI-009', testInfo);
+  });
+
+  test('AI-010: Comparative analysis', async ({ authenticatedPage: page }, testInfo) => {
+    await navigateToChat(page);
+    const { response } = await sendPromptAndWait(
+      page,
+      'Compare os resultados de recrutamento deste mês com o anterior',
+    );
+    evalAndAssert(testInfo, response, [/comparar/i, /comparação/i, /mês/i, /anterior/i, /resultado/i]);
+    await takeEvalScreenshot(page, 'AI-010', testInfo);
+  });
 });

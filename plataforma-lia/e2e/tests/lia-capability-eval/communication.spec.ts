@@ -57,4 +57,54 @@ test.describe('Domain 4: Communication', () => {
     evalAndAssert(testInfo, response, [/relatório/i, /progresso/i, /vaga/i, /enviar/i, /qual vaga/i]);
     await takeEvalScreenshot(page, 'CM-005', testInfo);
   });
+
+  test('CM-006: Send rejection email with empathy', async ({ authenticatedPage: page }, testInfo) => {
+    await navigateToChat(page);
+    const { response } = await sendPromptAndWait(
+      page,
+      'Envie um email de reprovação empático para o candidato, mantendo a porta aberta para futuras vagas',
+    );
+    evalAndAssert(testInfo, response, [/email/i, /reprovação/i, /candidato/i, /enviar/i, /futuras/i]);
+    await takeEvalScreenshot(page, 'CM-006', testInfo);
+  });
+
+  test('CM-007: Send WhatsApp message', async ({ authenticatedPage: page }, testInfo) => {
+    await navigateToChat(page);
+    const { response } = await sendPromptAndWait(
+      page,
+      'Manda um WhatsApp pro candidato confirmando a entrevista de amanhã',
+    );
+    evalAndAssert(testInfo, response, [/whatsapp/i, /enviar/i, /entrevista/i, /candidato/i, /confirmação/i]);
+    await takeEvalScreenshot(page, 'CM-007', testInfo);
+  });
+
+  test('CM-008: Bulk communication', async ({ authenticatedPage: page }, testInfo) => {
+    await navigateToChat(page);
+    const { response } = await sendPromptAndWait(
+      page,
+      'Envie uma mensagem para todos os candidatos da vaga informando sobre atraso no processo',
+    );
+    evalAndAssert(testInfo, response, [/mensagem/i, /candidato/i, /enviar/i, /todos/i, /qual vaga/i]);
+    await takeEvalScreenshot(page, 'CM-008', testInfo);
+  });
+
+  test('CM-009: Draft offer letter', async ({ authenticatedPage: page }, testInfo) => {
+    await navigateToChat(page);
+    const { response } = await sendPromptAndWait(
+      page,
+      'Prepare uma carta proposta para o candidato aprovado',
+    );
+    evalAndAssert(testInfo, response, [/proposta/i, /carta/i, /candidato/i, /oferta/i, /qual candidato/i]);
+    await takeEvalScreenshot(page, 'CM-009', testInfo);
+  });
+
+  test('CM-010: Communication with implicit context', async ({ authenticatedPage: page }, testInfo) => {
+    await navigateToChat(page);
+    const { response } = await sendPromptAndWait(
+      page,
+      'avisa ele que mudou o horário',
+    );
+    evalAndAssert(testInfo, response, [/qual/i, /candidato/i, /horário/i, /especificar/i, /informar/i]);
+    await takeEvalScreenshot(page, 'CM-010', testInfo);
+  });
 });

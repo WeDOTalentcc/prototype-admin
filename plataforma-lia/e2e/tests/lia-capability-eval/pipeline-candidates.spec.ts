@@ -57,4 +57,54 @@ test.describe('Domain 3: Pipeline & Candidate Management', () => {
     evalAndAssert(testInfo, response, [/candidato/i, /dia/i, /parado/i, /nenhum/i]);
     await takeEvalScreenshot(page, 'PC-005', testInfo);
   });
+
+  test('PC-006: Reject candidate with reason', async ({ authenticatedPage: page }, testInfo) => {
+    await navigateToChat(page);
+    const { response } = await sendPromptAndWait(
+      page,
+      'Reprove o candidato por falta de experiência na stack',
+    );
+    evalAndAssert(testInfo, response, [/reprov/i, /candidato/i, /motivo/i, /qual candidato/i, /confirmar/i]);
+    await takeEvalScreenshot(page, 'PC-006', testInfo);
+  });
+
+  test('PC-007: Batch move candidates', async ({ authenticatedPage: page }, testInfo) => {
+    await navigateToChat(page);
+    const { response } = await sendPromptAndWait(
+      page,
+      'Mova todos os candidatos aprovados na triagem para a etapa de entrevista técnica',
+    );
+    evalAndAssert(testInfo, response, [/mover/i, /candidato/i, /entrevista/i, /confirmar/i, /etapa/i]);
+    await takeEvalScreenshot(page, 'PC-007', testInfo);
+  });
+
+  test('PC-008: Move with informal language', async ({ authenticatedPage: page }, testInfo) => {
+    await navigateToChat(page);
+    const { response } = await sendPromptAndWait(
+      page,
+      'joga o candidato pra próxima fase aí',
+    );
+    evalAndAssert(testInfo, response, [/mover/i, /etapa/i, /candidato/i, /qual/i, /próxim/i]);
+    await takeEvalScreenshot(page, 'PC-008', testInfo);
+  });
+
+  test('PC-009: Pipeline summary by stage', async ({ authenticatedPage: page }, testInfo) => {
+    await navigateToChat(page);
+    const { response } = await sendPromptAndWait(
+      page,
+      'Quantos candidatos temos em cada etapa do pipeline?',
+    );
+    evalAndAssert(testInfo, response, [/candidato/i, /etapa/i, /pipeline/i, /total/i, /nenhum/i]);
+    await takeEvalScreenshot(page, 'PC-009', testInfo);
+  });
+
+  test('PC-010: Add tag to candidate', async ({ authenticatedPage: page }, testInfo) => {
+    await navigateToChat(page);
+    const { response } = await sendPromptAndWait(
+      page,
+      'Adicione a tag "destaque" ao candidato',
+    );
+    evalAndAssert(testInfo, response, [/tag/i, /adicion/i, /candidato/i, /destaque/i, /qual candidato/i]);
+    await takeEvalScreenshot(page, 'PC-010', testInfo);
+  });
 });
