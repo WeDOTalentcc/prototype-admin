@@ -35,11 +35,22 @@ async def execute_communication_action(
         return await _send_progress_report(params, context)
     elif action_id == "share_candidate_profile":
         return await _share_candidate_profile(params, context)
+    elif action_id == "create_template":
+        return await _create_template(params, context)
     return None
 
 
 async def _send_email(params: dict[str, Any], context: dict[str, Any]):
+    import os
     from app.orchestrator.action_executor import ActionResult
+
+    candidate_name = params.get("candidate_name", "")
+    to_email = params.get("email", params.get("candidate_email", ""))
+    subject = params.get("subject", "")
+    body = params.get("body", "")
+    env = os.environ.get("ENVIRONMENT", "development").lower()
+    is_dev = env in ("development", "dev", "local", "test")
+
     try:
         import html as html_module
 
@@ -47,41 +58,52 @@ async def _send_email(params: dict[str, Any], context: dict[str, Any]):
 
         provider = get_email_provider()
         status = provider.get_status()
-        if status.get("configured") and status.get("healthy"):
-            candidate_name = params.get("candidate_name", "")
-            to_email = params.get("email", params.get("candidate_email", ""))
-            subject = params.get("subject", "")
-            body = params.get("body", "")
-            if to_email and subject:
-                safe_body = html_module.escape(body)
-                result = await provider.send_email(
-                    to=to_email,
-                    subject=subject,
-                    html_content=f"<p>{safe_body}</p>",
-                    text_content=body,
+        if status.get("configured") and status.get("healthy") and to_email and subject:
+            safe_body = html_module.escape(body)
+            result = await provider.send_email(
+                to=to_email,
+                subject=subject,
+                html_content=f"<p>{safe_body}</p>",
+                text_content=body,
+            )
+            if result.success:
+                return ActionResult(
+                    status="executed",
+                    message=f'Email enviado para **{candidate_name}** com assunto "{subject}".',
+                    data={
+                        "candidate_id": params.get("candidate_id", ""),
+                        "candidate_name": candidate_name,
+                        "subject": subject,
+                        "to_email": to_email,
+                        "message_id": result.message_id,
+                        "sent_at": datetime.utcnow().isoformat(),
+                        "simulated": False,
+                        "provider": result.provider,
+                    },
+                    action_type="send_email",
                 )
-                if result.success:
-                    return ActionResult(
-                        status="executed",
-                        message=f'Email enviado para **{candidate_name}** com assunto "{subject}".',
-                        data={
-                            "candidate_id": params.get("candidate_id", ""),
-                            "candidate_name": candidate_name,
-                            "subject": subject,
-                            "to_email": to_email,
-                            "message_id": result.message_id,
-                            "sent_at": datetime.utcnow().isoformat(),
-                            "simulated": False,
-                            "provider": result.provider,
-                        },
-                        action_type="send_email",
-                    )
     except Exception as e:
         logger.warning(f"Direct email sending failed: {e}")
+
+    if is_dev:
+        logger.info("=" * 70)
+        logger.info("[DEV EMAIL] Mensagem enviada (modo desenvolvimento)")
+        logger.info(f"[DEV EMAIL] Para: {to_email}")
+        logger.info(f"[DEV EMAIL] Assunto: {subject}")
+        logger.info(f"[DEV EMAIL] Corpo ({len(body)} caracteres): {body[:200]}")
+        logger.info("=" * 70)
         return ActionResult(
-            status="error",
-            message="Erro ao enviar email. Verifique as configurações do provedor.",
-            error_detail=str(e),
+            status="executed",
+            message=f'Email enviado para **{candidate_name}** com assunto "{subject}".\n\n_(Modo desenvolvimento — email registrado no log do servidor.)_',
+            data={
+                "candidate_id": params.get("candidate_id", ""),
+                "candidate_name": candidate_name,
+                "subject": subject,
+                "to_email": to_email,
+                "sent_at": datetime.utcnow().isoformat(),
+                "simulated": True,
+                "delivered_via": "development_log",
+            },
             action_type="send_email",
         )
 
@@ -352,15 +374,38 @@ async def _send_whatsapp(params: dict[str, Any], context: dict[str, Any]):
                 action_type="send_whatsapp",
             )
 
-        logger.info(f"[WHATSAPP] Queueing WhatsApp message to {candidate_name} ({phone})")
+        from app.domains.communication.services.whatsapp_service import WhatsAppService
+        wa_service = WhatsAppService()
+        wa_result = await wa_service.send_message(
+            to_phone=phone,
+            message=message,
+            metadata={
+                "candidate_id": candidate_id,
+                "candidate_name": candidate_name,
+                "company_id": context.get("company_id") if context else None,
+            },
+        )
 
+        if not wa_result.success:
+            return ActionResult(
+                status="error",
+                message=f"Falha ao enviar WhatsApp para **{candidate_name}**: {wa_result.error}",
+                error_detail=wa_result.error or "WhatsApp send failed",
+                action_type="send_whatsapp",
+            )
+
+        is_dev_delivery = wa_result.provider == "development"
+        suffix = "\n\n_(Modo desenvolvimento — mensagem registrada no log do servidor.)_" if is_dev_delivery else ""
         return ActionResult(
             status="executed",
-            message=f"Mensagem WhatsApp enviada para **{candidate_name}** ({phone}).",
+            message=f"Mensagem WhatsApp enviada para **{candidate_name}** ({phone}).{suffix}",
             data={
                 "candidate_id": candidate_id, "candidate_name": candidate_name,
                 "phone": phone, "message": message[:100],
-                "sent_at": datetime.utcnow().isoformat(), "simulated": False,
+                "message_id": wa_result.message_id,
+                "provider": wa_result.provider,
+                "sent_at": datetime.utcnow().isoformat(),
+                "simulated": is_dev_delivery,
             },
             action_type="send_whatsapp",
         )
@@ -673,4 +718,118 @@ async def _share_candidate_profile(params: dict[str, Any], context: dict[str, An
             message="Erro ao compartilhar perfil do candidato.",
             error_detail=str(e),
             action_type="share_candidate_profile",
+        )
+
+
+async def _create_template(params: dict[str, Any], context: dict[str, Any]):
+    from app.orchestrator.action_executor import ActionResult
+    try:
+        import uuid as uuid_mod
+
+        from sqlalchemy import text
+
+        from app.core.database import AsyncSessionLocal
+        from app.orchestrator.action_handlers._handler_hooks import (
+            log_action_audit,
+            sync_to_rails,
+        )
+
+        name = params.get("name", "").strip()
+        subject = params.get("subject", "").strip()
+        body_html = params.get("body_html", "").strip()
+        body_text = params.get("body_text", "").strip()
+        category = params.get("category", "custom")
+        channel = params.get("channel", "email")
+        variables = params.get("variables", [])
+        company_id = context.get("company_id") if context else None
+        user_id = context.get("user_id") if context else None
+
+        if not company_id:
+            return ActionResult(
+                status="error",
+                message="Contexto de empresa ausente. Não é possível criar templates sem empresa associada.",
+                error_detail="Missing company_id — tenant isolation required",
+                action_type="create_template",
+            )
+        if not user_id:
+            return ActionResult(
+                status="error",
+                message="Usuário não identificado. Faça login para criar templates.",
+                error_detail="Missing user_id",
+                action_type="create_template",
+            )
+        if not name:
+            return ActionResult(
+                status="error",
+                message="Nome do template é obrigatório.",
+                error_detail="Missing template name",
+                action_type="create_template",
+            )
+        if not body_html:
+            return ActionResult(
+                status="error",
+                message="Conteúdo HTML do template é obrigatório.",
+                error_detail="Missing body_html",
+                action_type="create_template",
+            )
+
+        template_id = str(uuid_mod.uuid4())
+
+        async with AsyncSessionLocal() as db:
+            existing = await db.execute(text(
+                "SELECT id FROM email_templates WHERE name = :name AND (company_id = :co OR company_id IS NULL) LIMIT 1"
+            ), {"name": name, "co": str(company_id) if company_id else None})
+            if existing.fetchone():
+                return ActionResult(
+                    status="error",
+                    message=f'Já existe um template com o nome "{name}".',
+                    error_detail="Duplicate template name",
+                    action_type="create_template",
+                )
+
+            await db.execute(text("""
+                INSERT INTO email_templates (id, name, subject, body_html, body_text,
+                    category, channel, variables, is_active, company_id, created_by,
+                    created_at, updated_at)
+                VALUES (CAST(:id AS uuid), :name, :subject, :body_html, :body_text,
+                    :category, :channel, CAST(:variables AS jsonb), true,
+                    :company_id, :created_by, NOW(), NOW())
+            """), {
+                "id": template_id,
+                "name": name,
+                "subject": subject or None,
+                "body_html": body_html,
+                "body_text": body_text or None,
+                "category": category,
+                "channel": channel,
+                "variables": __import__("json").dumps(variables),
+                "company_id": str(company_id) if company_id else None,
+                "created_by": str(user_id) if user_id else "system",
+            })
+            await db.commit()
+
+        await log_action_audit("create_template", company_id, details={"template_id": template_id, "name": name})
+        await sync_to_rails("template_created", "email_template", template_id, {"name": name, "channel": channel})
+
+        return ActionResult(
+            status="executed",
+            message=f'Template **"{name}"** criado com sucesso (canal: {channel}).',
+            data={
+                "template_id": template_id,
+                "name": name,
+                "channel": channel,
+                "category": category,
+                "created_at": datetime.utcnow().isoformat(),
+                "simulated": False,
+            },
+            action_type="create_template",
+        )
+    except Exception as e:
+        logger.warning(f"create_template failed: {e}")
+        from app.orchestrator.action_executor import ActionResult
+        return ActionResult(
+            status="error",
+            message="Erro ao criar template.",
+            error_detail=str(e),
+            action_type="create_template",
         )
