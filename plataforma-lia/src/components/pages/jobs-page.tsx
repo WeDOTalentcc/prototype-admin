@@ -78,7 +78,7 @@ export function JobsPage(props: JobsPageProps) {
     reactivateScreeningJobs, setReactivateScreeningJobs,
     reactivateEndDate, setReactivateEndDate,
     showWSITutorialModal, setShowWSITutorialModal,
-    companyRecruiters, selectedJobsForBatch,
+    companyRecruiters, selectedJobsForBatch, dashboardStats,
     setBackendJobs, setSelectedJob, setPreviewJob, setEditingJob,
     setPendingNavigateJobId, loadBackendJobs, setActivePreviewTab,
     selectedJob, navigateToCreatedJob,
@@ -148,27 +148,37 @@ export function JobsPage(props: JobsPageProps) {
           </div>
         </div>
 
-        {/* Stats Bar */}
-        {!isLoadingJobs && (
+        {/* Stats Bar — metrics that complement the tabs */}
+        {!isLoadingJobs && dashboardStats && (
           <div className="flex items-center gap-6 mt-1 mb-2">
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
               <span className="text-xs text-lia-text-secondary">
-                <span className="font-semibold text-lia-text-primary">{navigationFilters.find(f => f.id === 'ativas')?.count || 0}</span> ativas
+                <span className="font-semibold text-lia-text-primary">{(dashboardStats as Record<string, number>).noFunil || 0}</span> no funil
               </span>
             </div>
             <div className="flex items-center gap-1.5">
               <Users className="w-3.5 h-3.5 text-wedo-cyan" />
               <span className="text-xs text-lia-text-secondary">
-                <span className="font-semibold text-lia-text-primary">{allJobs.length}</span> vagas
+                <span className="font-semibold text-lia-text-primary">{(dashboardStats as Record<string, number>).entrevistasRecentes || 0}</span> entrevistas
               </span>
             </div>
-            <div className="flex items-center gap-1.5">
-              <Clock className="w-3.5 h-3.5 text-amber-500" />
-              <span className="text-xs text-lia-text-secondary">
-                <span className="font-semibold text-lia-text-primary">{navigationFilters.find(f => f.id === 'paralisadas')?.count || 0}</span> paralisadas
-              </span>
-            </div>
+            {((dashboardStats as Record<string, number>).taxaConversao || 0) > 0 && (
+              <div className="flex items-center gap-1.5">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                <span className="text-xs text-lia-text-secondary">
+                  <span className="font-semibold text-lia-text-primary">{(dashboardStats as Record<string, number>).taxaConversao}%</span> conversão
+                </span>
+              </div>
+            )}
+            {((dashboardStats as Record<string, number>).atRisco || 0) > 0 && (
+              <div className="flex items-center gap-1.5">
+                <AlertTriangle className="w-3.5 h-3.5 text-rose-500" />
+                <span className="text-xs text-lia-text-secondary">
+                  <span className="font-semibold text-rose-600">{(dashboardStats as Record<string, number>).atRisco}</span> em risco
+                </span>
+              </div>
+            )}
           </div>
         )}
         <div className="mb-0">
