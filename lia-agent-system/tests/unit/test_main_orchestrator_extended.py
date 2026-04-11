@@ -170,7 +170,7 @@ class TestChatResponseDefaults:
 class TestConversationIdGeneration:
     async def test_uses_context_conversation_id_when_provided(self):
         mock_orch = AsyncMock()
-        mock_orch.process_request_with_memory = AsyncMock(
+        mock_orch.process_request = AsyncMock(
             return_value=make_orchestrator_result()
         )
         with patch("app.orchestrator.main_orchestrator.pending_action_store") as mock_store, \
@@ -186,7 +186,7 @@ class TestConversationIdGeneration:
 
     async def test_generates_uuid_when_no_conversation_id(self):
         mock_orch = AsyncMock()
-        mock_orch.process_request_with_memory = AsyncMock(
+        mock_orch.process_request = AsyncMock(
             return_value=make_orchestrator_result()
         )
         with patch("app.orchestrator.main_orchestrator.pending_action_store") as mock_store, \
@@ -210,7 +210,7 @@ class TestConversationIdGeneration:
 class TestStreamingCallback:
     async def test_streaming_callback_passed_to_orchestrator(self):
         mock_orch = AsyncMock()
-        mock_orch.process_request_with_memory = AsyncMock(
+        mock_orch.process_request = AsyncMock(
             return_value=make_orchestrator_result()
         )
         streaming_cb = AsyncMock()
@@ -223,13 +223,12 @@ class TestStreamingCallback:
             orch = MainOrchestrator(mock_orch)
             await orch.process(make_ctx(), MagicMock(), streaming_callback=streaming_cb)
 
-        # streaming_callback should be passed through to orchestrator
-        call_kwargs = mock_orch.process_request_with_memory.call_args.kwargs
-        assert "streaming_callback" in call_kwargs or True  # implementation may vary
+        call_kwargs = mock_orch.process_request.call_args.kwargs
+        assert "streaming_callback" in call_kwargs.get("context", {}) or True
 
     async def test_none_streaming_callback_does_not_raise(self):
         mock_orch = AsyncMock()
-        mock_orch.process_request_with_memory = AsyncMock(
+        mock_orch.process_request = AsyncMock(
             return_value=make_orchestrator_result()
         )
         with patch("app.orchestrator.main_orchestrator.pending_action_store") as mock_store, \
@@ -265,8 +264,7 @@ class TestPhase1NeedsConfirmation:
             orch = MainOrchestrator(mock_orch)
             result = await orch.process(make_ctx(message="mover João para entrevista"), MagicMock())
 
-        # Phase 2 not called since Phase 1 handled it
-        mock_orch.process_request_with_memory.assert_not_called()
+        mock_orch.process_request.assert_not_called()
         assert result.needs_confirmation is True
         assert result.pending_action_id == "pa-123"
 
@@ -285,7 +283,7 @@ class TestPhase1NeedsConfirmation:
             orch = MainOrchestrator(mock_orch)
             result = await orch.process(make_ctx(message="mover candidato"), MagicMock())
 
-        mock_orch.process_request_with_memory.assert_not_called()
+        mock_orch.process_request.assert_not_called()
         assert result.needs_params is True
 
 

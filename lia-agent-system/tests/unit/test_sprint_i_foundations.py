@@ -177,7 +177,7 @@ class TestFairnessGuardOrchestrator:
         from app.orchestrator.main_orchestrator import MainOrchestrator, ChatResponse
 
         mock_orchestrator = MagicMock()
-        mock_orchestrator.process_request_with_memory = AsyncMock(return_value={
+        mock_orchestrator.process_request = AsyncMock(return_value={
             "success": True,
             "response": "Aqui estão os candidatos.",
             "agent_used": "talent",
