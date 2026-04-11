@@ -3,6 +3,11 @@ Embedding service for generating text embeddings — Task #134.
 
 Refactored to use EmbeddingProviderFactory instead of calling Gemini directly.
 Supports multi-provider operation, fallback, and per-embedding provider metadata.
+
+Chunking strategies (Task #126):
+- sliding_window: Original fixed-size overlapping chunks
+- section_aware: Header/section-based chunking for CVs and JDs
+- semantic: Embedding similarity-based sentence grouping
 """
 import hashlib
 import logging
@@ -234,15 +239,23 @@ class EmbeddingService:
         text: str,
         chunk_size: int = 1000,
         overlap: int = 100,
+        document_type: str = "generic",
+        strategy_override: str | None = None,
     ) -> list[str]:
-        """Split text into overlapping chunks for embedding.
+        """Split text into chunks for embedding.
+
+        Uses the ChunkingStrategyFactory to select the best strategy based on
+        document type and the CHUNKING_STRATEGY feature flag.
 
         Instrumented with sync span for chunk_generation phase.
 
         Args:
             text: The text to chunk.
-            chunk_size: Maximum characters per chunk.
-            overlap: Number of characters to overlap between chunks.
+            chunk_size: Maximum characters per chunk (used by sliding_window).
+            overlap: Number of characters to overlap (used by sliding_window).
+            document_type: One of "cv", "job_description", "generic".
+            strategy_override: Force a specific strategy ("sliding_window",
+                "section_aware", or "semantic").
 
         Returns:
             List of text chunks.
@@ -252,34 +265,26 @@ class EmbeddingService:
             "service": "embedding_service", "tier_name": "embedding_chunk",
             "chunk_size": str(chunk_size), "overlap": str(overlap),
             "text_length": str(len(text) if text else 0),
+            "document_type": document_type,
+            "strategy_override": strategy_override or "auto",
         }, _start_otel=True)
 
         try:
-            if not text or len(text) <= chunk_size:
-                chunks = [text] if text else []
-                span.set_attribute("chunks_produced", str(len(chunks)))
-                return chunks
+            from app.shared.intelligence.chunking.factory import ChunkingStrategyFactory
 
-            chunks = []
-            start = 0
+            strategy = ChunkingStrategyFactory.get_strategy(
+                document_type=document_type,
+                override=strategy_override,
+            )
 
-            while start < len(text):
-                end = start + chunk_size
+            if strategy.strategy_name == "sliding_window":
+                from app.shared.intelligence.chunking.sliding_window import SlidingWindowChunker
+                strategy = SlidingWindowChunker(chunk_size=chunk_size, overlap=overlap)
 
-                if end < len(text):
-                    last_period = text.rfind(".", start, end)
-                    last_newline = text.rfind("\n", start, end)
-                    break_point = max(last_period, last_newline)
+            span.set_attribute("strategy_resolved", strategy.strategy_name)
 
-                    if break_point > start + chunk_size // 2:
-                        end = break_point + 1
-
-                chunk = text[start:end].strip()
-                if chunk:
-                    chunks.append(chunk)
-
-                start = end - overlap
-
+            chunk_objects = strategy.chunk(text)
+            chunks = [c.text for c in chunk_objects]
             span.set_attribute("chunks_produced", str(len(chunks)))
             return chunks
         finally:
