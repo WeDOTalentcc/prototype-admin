@@ -182,7 +182,6 @@ export function CandidateTableRow({
   const rowStyle: React.CSSProperties = {
     ...(stageBorderColor ? { 
       borderLeft: `3px solid ${stageBorderColor}`,
-      // shadow removed - using border-l-4 only
     } : {})
   }
 

@@ -165,12 +165,6 @@ const CandidateCard = memo(function CandidateCard({
         minHeight: '110px',
         transition: 'all 0.3s ease',
         animation: dropZoneActive ? 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' : undefined}}
-      onMouseEnter={(e) => {
-        if (!isDragging) {
-          // transform via Tailwind hover:-translate-y-px
-          // shadow via Tailwind hover:shadow-md
-        }
-      }}
       onMouseLeave={(e) => {
         if (!isDragging) {
           e.currentTarget.style.transform = 'translateY(0)'
