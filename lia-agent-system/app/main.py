@@ -187,6 +187,13 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.warning("⚠️  LLM circuit breaker validation error (non-blocking): %s", e)
 
+    try:
+        from app.domains.recruiter_assistant.services.monitoring_loop import monitoring_loop
+        await monitoring_loop.start()
+        logger.info("✅ MonitoringLoop started (proactive pipeline checks every hour)")
+    except Exception as e:
+        logger.warning("⚠️  MonitoringLoop não iniciou: %s — alertas proativos inativos", e)
+
     # Seed PolicyEngine default rules (idempotente — skip-if-exists)
     try:
         from app.shared.services.policy_engine_service import PolicyEngineService
@@ -270,6 +277,12 @@ async def lifespan(app: FastAPI):
         pass
     logger.info("🛑 Shutting down LIA Agent System...")
     
+    try:
+        from app.domains.recruiter_assistant.services.monitoring_loop import monitoring_loop
+        await monitoring_loop.stop()
+    except Exception:
+        pass
+
     # Stop Automation Scheduler
     try:
         automation_scheduler.stop()

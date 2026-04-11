@@ -130,6 +130,28 @@ _KEYWORD_ACTION_MAP: dict[str, str] = {
     "análise proativa": "generate_insights",
     "sugestões proativas": "generate_insights",
 
+    "alertas": "proactive_alerts",
+    "alertas proativos": "proactive_alerts",
+    "smart alerts": "proactive_alerts",
+    "alertas inteligentes": "proactive_alerts",
+    "riscos do pipeline": "proactive_alerts",
+
+    "ações autônomas": "autonomous_actions",
+    "ações automáticas": "autonomous_actions",
+    "ações pendentes": "autonomous_actions",
+    "autonomous actions": "autonomous_actions",
+
+    "notificar gestor": "stakeholder_notify",
+    "notificar hiring manager": "stakeholder_notify",
+    "decisões pendentes": "stakeholder_notify",
+    "pending decisions": "stakeholder_notify",
+    "escalar decisão": "stakeholder_notify",
+
+    "aprendizado": "learning_insights",
+    "learning insights": "learning_insights",
+    "o que a lia aprendeu": "learning_insights",
+    "insights de contratação": "learning_insights",
+
     "comparar candidatos": "compare_candidates",
     "compare candidates": "compare_candidates",
     "comparação de candidatos": "compare_candidates",
@@ -241,6 +263,10 @@ class RecruiterAssistantDomain(ComplianceDomainPrompt):
             "generate_insights": self._handle_generate_insights,
             "compare_candidates": self._handle_compare_candidates,
             "stage_recommendation": self._handle_stage_recommendation,
+            "proactive_alerts": self._handle_proactive_alerts,
+            "autonomous_actions": self._handle_autonomous_actions,
+            "stakeholder_notify": self._handle_stakeholder_notify,
+            "learning_insights": self._handle_learning_insights,
             "help_command": self._handle_help,
         }
 
@@ -268,7 +294,7 @@ class RecruiterAssistantDomain(ComplianceDomainPrompt):
         from sqlalchemy import text
 
         today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-        briefing = {"date": today, "sections": {}}
+        briefing: dict[str, Any] = {"date": today, "sections": {}, "alerts": [], "priorities": []}
 
         async with AsyncSessionLocal() as session:
             try:
@@ -311,17 +337,78 @@ class RecruiterAssistantDomain(ComplianceDomainPrompt):
             except Exception:
                 briefing["sections"]["entrevistas_hoje"] = 0
 
+            try:
+                result = await session.execute(text("""
+                    SELECT COUNT(*) FROM vacancy_candidates
+                    WHERE company_id = :company_id
+                      AND updated_at >= CURRENT_DATE - INTERVAL '1 day'
+                """), {"company_id": context.tenant_id})
+                briefing["sections"]["movimentacoes_ontem"] = result.scalar() or 0
+            except Exception:
+                briefing["sections"]["movimentacoes_ontem"] = 0
+
+            try:
+                result = await session.execute(text("""
+                    SELECT COUNT(*) FROM job_vacancies
+                    WHERE company_id = :company_id
+                      AND status = 'Ativa'
+                      AND deadline IS NOT NULL
+                      AND deadline < NOW() + INTERVAL '7 days'
+                """), {"company_id": context.tenant_id})
+                briefing["sections"]["vagas_sla_risco"] = result.scalar() or 0
+            except Exception:
+                briefing["sections"]["vagas_sla_risco"] = 0
+
+        try:
+            from app.domains.recruiter_assistant.services.monitoring_loop import monitoring_loop
+            alert_summary = monitoring_loop.get_alert_summary(context.tenant_id or "")
+            briefing["alerts"] = alert_summary
+            if not monitoring_loop.get_alerts(context.tenant_id or ""):
+                await monitoring_loop.run_checks(context.tenant_id or "")
+                alert_summary = monitoring_loop.get_alert_summary(context.tenant_id or "")
+                briefing["alerts"] = alert_summary
+        except Exception:
+            briefing["alerts"] = {"total": 0}
+
+        try:
+            from app.domains.recruiter_assistant.services.stakeholder_notification_service import stakeholder_service
+            pending = await stakeholder_service.detect_pending_decisions(context.tenant_id or "")
+            briefing["sections"]["decisoes_pendentes_hm"] = len(pending)
+        except Exception:
+            briefing["sections"]["decisoes_pendentes_hm"] = 0
+
         s = briefing["sections"]
+        alert_total = briefing.get("alerts", {}).get("total", 0)
+
         msg = (
             f"**Bom dia! Briefing de {today}:**\n\n"
+            f"**Pipeline:**\n"
             f"• **{s.get('vagas_ativas', 0)}** vagas ativas\n"
             f"• **{s.get('novos_candidatos_hoje', 0)}** novos candidatos hoje\n"
-            f"• **{s.get('entrevistas_hoje', 0)}** entrevistas agendadas para hoje\n"
+            f"• **{s.get('movimentacoes_ontem', 0)}** movimentações nas últimas 24h\n"
+            f"• **{s.get('entrevistas_hoje', 0)}** entrevistas agendadas para hoje\n\n"
+            f"**Atenção:**\n"
             f"• **{s.get('candidatos_parados', 0)}** candidatos parados (>7 dias sem ação)\n"
+            f"• **{s.get('vagas_sla_risco', 0)}** vagas com SLA em risco (<7 dias)\n"
+            f"• **{s.get('decisoes_pendentes_hm', 0)}** decisões pendentes de hiring managers\n"
+            f"• **{alert_total}** alertas proativos no sistema\n"
         )
 
-        if s.get("candidatos_parados", 0) > 0:
-            msg += "\n💡 Recomendação: Verifique os candidatos parados para não perder bons talentos."
+        priorities = []
+        if s.get("entrevistas_hoje", 0) > 0:
+            priorities.append(f"Preparar-se para **{s['entrevistas_hoje']}** entrevista(s)")
+        if s.get("candidatos_parados", 0) > 5:
+            priorities.append(f"Revisar os **{s['candidatos_parados']}** candidatos parados")
+        if s.get("vagas_sla_risco", 0) > 0:
+            priorities.append(f"Ação urgente em **{s['vagas_sla_risco']}** vagas com SLA em risco")
+        if s.get("decisoes_pendentes_hm", 0) > 0:
+            priorities.append(f"Follow-up com hiring managers ({s['decisoes_pendentes_hm']} pendências)")
+
+        if priorities:
+            msg += "\n**Prioridades do dia:**\n" + "\n".join(f"{i+1}. {p}" for i, p in enumerate(priorities))
+            briefing["priorities"] = priorities
+        else:
+            msg += "\nSem prioridades urgentes — bom dia para sourcing proativo!"
 
         return DomainResponse.success_response(
             message=msg,
@@ -334,7 +421,7 @@ class RecruiterAssistantDomain(ComplianceDomainPrompt):
         from sqlalchemy import text
 
         today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-        summary = {"date": today, "activities": {}}
+        summary: dict[str, Any] = {"date": today, "activities": {}, "pending": {}, "suggestions": []}
 
         async with AsyncSessionLocal() as session:
             try:
@@ -357,13 +444,93 @@ class RecruiterAssistantDomain(ComplianceDomainPrompt):
             except Exception:
                 summary["activities"]["novos_candidatos"] = 0
 
+            try:
+                result = await session.execute(text("""
+                    SELECT COUNT(*) FROM vacancy_candidates
+                    WHERE company_id = :company_id
+                      AND stage IN ('Rejeitado', 'Desistiu')
+                      AND updated_at >= CURRENT_DATE
+                """), {"company_id": context.tenant_id})
+                summary["activities"]["rejeitados_hoje"] = result.scalar() or 0
+            except Exception:
+                summary["activities"]["rejeitados_hoje"] = 0
+
+            try:
+                result = await session.execute(text("""
+                    SELECT COUNT(*) FROM vacancy_candidates
+                    WHERE company_id = :company_id
+                      AND stage = 'Contratado'
+                      AND updated_at >= CURRENT_DATE
+                """), {"company_id": context.tenant_id})
+                summary["activities"]["contratados_hoje"] = result.scalar() or 0
+            except Exception:
+                summary["activities"]["contratados_hoje"] = 0
+
+            try:
+                result = await session.execute(text("""
+                    SELECT COUNT(*) FROM vacancy_candidates
+                    WHERE company_id = :company_id
+                      AND updated_at < CURRENT_DATE - INTERVAL '7 days'
+                      AND stage NOT IN ('Contratado', 'Rejeitado', 'Desistiu')
+                """), {"company_id": context.tenant_id})
+                summary["pending"]["candidatos_parados"] = result.scalar() or 0
+            except Exception:
+                summary["pending"]["candidatos_parados"] = 0
+
+            try:
+                result = await session.execute(text("""
+                    SELECT COUNT(*) FROM job_vacancies
+                    WHERE company_id = :company_id
+                      AND status = 'Ativa'
+                      AND deadline IS NOT NULL
+                      AND deadline < NOW() + INTERVAL '7 days'
+                """), {"company_id": context.tenant_id})
+                summary["pending"]["vagas_sla_risco"] = result.scalar() or 0
+            except Exception:
+                summary["pending"]["vagas_sla_risco"] = 0
+
+        try:
+            from app.domains.recruiter_assistant.services.autonomous_actions_engine import autonomous_engine
+            executed = autonomous_engine.get_action_log(context.tenant_id or "")
+            today_actions = [a for a in executed if a.created_at.strftime("%Y-%m-%d") == today]
+            summary["activities"]["acoes_autonomas_executadas"] = len(today_actions)
+        except Exception:
+            summary["activities"]["acoes_autonomas_executadas"] = 0
+
         a = summary["activities"]
+        p = summary["pending"]
+
+        suggestions = []
+        if p.get("candidatos_parados", 0) > 0:
+            suggestions.append(f"Revisar {p['candidatos_parados']} candidatos parados no pipeline")
+        if p.get("vagas_sla_risco", 0) > 0:
+            suggestions.append(f"Priorizar {p['vagas_sla_risco']} vagas com SLA em risco")
+        if a.get("novos_candidatos", 0) > 5:
+            suggestions.append("Avaliar os novos candidatos que chegaram hoje")
+        summary["suggestions"] = suggestions
+
         msg = (
             f"**Resumo do dia {today}:**\n\n"
+            f"**O que foi feito:**\n"
             f"• **{a.get('novos_candidatos', 0)}** novos candidatos adicionados\n"
             f"• **{a.get('candidatos_movidos', 0)}** candidatos atualizados\n"
-            f"\nBom descanso! Amanhã trago seu briefing matinal."
+            f"• **{a.get('contratados_hoje', 0)}** contratações realizadas\n"
+            f"• **{a.get('rejeitados_hoje', 0)}** candidatos rejeitados/desistentes\n"
+            f"• **{a.get('acoes_autonomas_executadas', 0)}** ações autônomas executadas pela LIA\n"
         )
+
+        if p.get("candidatos_parados", 0) > 0 or p.get("vagas_sla_risco", 0) > 0:
+            msg += (
+                f"\n**O que ficou pendente:**\n"
+                f"• **{p.get('candidatos_parados', 0)}** candidatos parados (>7 dias)\n"
+                f"• **{p.get('vagas_sla_risco', 0)}** vagas com SLA em risco\n"
+            )
+
+        if suggestions:
+            msg += "\n**Sugestões para amanhã:**\n"
+            msg += "\n".join(f"{i+1}. {s}" for i, s in enumerate(suggestions))
+
+        msg += "\n\nBom descanso! Amanhã trago seu briefing matinal."
 
         return DomainResponse.success_response(
             message=msg,
@@ -665,6 +832,191 @@ class RecruiterAssistantDomain(ComplianceDomainPrompt):
             message=msg,
             data={"action_id": "stage_recommendation", "candidate_id": candidate_id},
             domain_id=self.domain_id, action_id="stage_recommendation",
+        )
+
+    async def _handle_proactive_alerts(self, params: dict, context: DomainContext) -> DomainResponse:
+        from app.domains.recruiter_assistant.services.monitoring_loop import monitoring_loop
+
+        try:
+            alerts = monitoring_loop.get_alerts(context.tenant_id or "")
+            if not alerts:
+                await monitoring_loop.run_checks(context.tenant_id or "")
+                alerts = monitoring_loop.get_alerts(context.tenant_id or "")
+        except Exception as exc:
+            logger.error("Proactive alerts failed: %s", exc)
+            return DomainResponse.error_response(
+                error=f"Erro ao buscar alertas: {exc}",
+                domain_id=self.domain_id, action_id="proactive_alerts",
+            )
+
+        if not alerts:
+            return DomainResponse.success_response(
+                message="Nenhum alerta proativo no momento. Pipeline está saudável!",
+                data={"action_id": "proactive_alerts", "alerts": [], "total": 0},
+                domain_id=self.domain_id, action_id="proactive_alerts",
+            )
+
+        summary = monitoring_loop.get_alert_summary(context.tenant_id or "")
+        high_alerts = [a for a in alerts if a.severity in ("high", "critical")]
+        medium_alerts = [a for a in alerts if a.severity == "medium"]
+        low_alerts = [a for a in alerts if a.severity == "low"]
+
+        lines = []
+        if high_alerts:
+            lines.append("**Alertas críticos/altos:**")
+            for a in high_alerts[:5]:
+                lines.append(f"• [{a.severity.upper()}] {a.message}")
+        if medium_alerts:
+            lines.append("\n**Alertas médios:**")
+            for a in medium_alerts[:5]:
+                lines.append(f"• {a.message}")
+        if low_alerts:
+            lines.append(f"\n*+ {len(low_alerts)} alertas de baixa prioridade*")
+
+        msg = f"**Alertas proativos ({len(alerts)} total):**\n\n" + "\n".join(lines)
+
+        return DomainResponse.success_response(
+            message=msg,
+            data={
+                "action_id": "proactive_alerts",
+                "alerts": [a.to_dict() for a in alerts[:20]],
+                "summary": summary,
+            },
+            domain_id=self.domain_id, action_id="proactive_alerts",
+        )
+
+    async def _handle_autonomous_actions(self, params: dict, context: DomainContext) -> DomainResponse:
+        from app.domains.recruiter_assistant.services.autonomous_actions_engine import autonomous_engine
+
+        pending = autonomous_engine.get_pending_confirmations(context.tenant_id)
+        recent_log = autonomous_engine.get_action_log(context.tenant_id, limit=10)
+
+        lines = []
+
+        if pending:
+            lines.append("**Ações aguardando confirmação:**")
+            for a in pending[:5]:
+                lines.append(
+                    f"• [{a.risk_level.upper()}] {a.description} "
+                    f"(ID: {a.action_id[:8]}...)"
+                )
+
+        executed_today = [
+            a for a in recent_log
+            if a.status.value == "executed"
+            and a.created_at.strftime("%Y-%m-%d") == datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        ]
+        if executed_today:
+            lines.append(f"\n**Ações executadas automaticamente hoje:** {len(executed_today)}")
+            for a in executed_today[:5]:
+                lines.append(f"• {a.description}")
+
+        if not lines:
+            msg = "Nenhuma ação autônoma pendente ou recente."
+        else:
+            msg = "**Ações Autônomas da LIA:**\n\n" + "\n".join(lines)
+
+        return DomainResponse.success_response(
+            message=msg,
+            data={
+                "action_id": "autonomous_actions",
+                "pending": [a.to_dict() for a in pending],
+                "recent": [a.to_dict() for a in recent_log[:10]],
+            },
+            domain_id=self.domain_id, action_id="autonomous_actions",
+        )
+
+    async def _handle_stakeholder_notify(self, params: dict, context: DomainContext) -> DomainResponse:
+        from app.domains.recruiter_assistant.services.stakeholder_notification_service import stakeholder_service
+
+        try:
+            decisions = await stakeholder_service.detect_pending_decisions(context.tenant_id or "")
+        except Exception as exc:
+            logger.error("Stakeholder detection failed: %s", exc)
+            return DomainResponse.error_response(
+                error=f"Erro ao detectar decisões pendentes: {exc}",
+                domain_id=self.domain_id, action_id="stakeholder_notify",
+            )
+
+        if not decisions:
+            return DomainResponse.success_response(
+                message="Nenhuma decisão pendente de hiring managers no momento.",
+                data={"action_id": "stakeholder_notify", "pending": [], "total": 0},
+                domain_id=self.domain_id, action_id="stakeholder_notify",
+            )
+
+        result = await stakeholder_service.send_escalation_notifications(
+            context.tenant_id or "", decisions
+        )
+
+        lines = []
+        for d in decisions[:10]:
+            level_emoji = {"gentle_reminder": "", "follow_up": "", "escalation": ""}
+            emoji = level_emoji.get(d.escalation_level.value, "")
+            lines.append(
+                f"• {emoji} **{d.stakeholder_name}** — {d.description} "
+                f"(pendente há {d.days_pending} dias, nível: {d.escalation_level.value})"
+            )
+
+        msg = (
+            f"**Decisões pendentes de stakeholders ({len(decisions)}):**\n\n"
+            + "\n".join(lines)
+            + f"\n\n{result.get('notifications_sent', 0)} notificações enviadas."
+        )
+
+        return DomainResponse.success_response(
+            message=msg,
+            data={
+                "action_id": "stakeholder_notify",
+                "pending": [d.to_dict() for d in decisions],
+                "notification_result": result,
+            },
+            domain_id=self.domain_id, action_id="stakeholder_notify",
+        )
+
+    async def _handle_learning_insights(self, params: dict, context: DomainContext) -> DomainResponse:
+        from app.domains.recruiter_assistant.services.outcome_learning_service import outcome_learning
+
+        try:
+            insights = await outcome_learning.get_learning_insights(context.tenant_id or "")
+        except Exception as exc:
+            logger.error("Learning insights failed: %s", exc)
+            return DomainResponse.error_response(
+                error=f"Erro ao buscar insights de aprendizado: {exc}",
+                domain_id=self.domain_id, action_id="learning_insights",
+            )
+
+        lines = []
+        for insight_text in insights.get("insights", []):
+            lines.append(f"• {insight_text}")
+
+        positive = insights.get("positive_signals", [])
+        if positive:
+            lines.append("\n**Sinais positivos (o que funciona):**")
+            for p in positive[:3]:
+                lines.append(f"• {p.get('reason', 'N/A')}")
+
+        caution = insights.get("caution_signals", [])
+        if caution:
+            lines.append("\n**Sinais de cautela (o que evitar):**")
+            for c in caution[:3]:
+                lines.append(f"• {c.get('reason', 'N/A')}")
+
+        if not lines:
+            msg = (
+                "A LIA ainda está aprendendo! Com mais contratações concluídas, "
+                "insights sobre quais perfis e fontes funcionam melhor serão gerados automaticamente."
+            )
+        else:
+            msg = (
+                f"**O que a LIA aprendeu ({insights.get('total_outcomes_analyzed', 0)} outcomes analisados):**\n\n"
+                + "\n".join(lines)
+            )
+
+        return DomainResponse.success_response(
+            message=msg,
+            data={"action_id": "learning_insights", "insights": insights},
+            domain_id=self.domain_id, action_id="learning_insights",
         )
 
     async def _handle_help(self, params: dict, context: DomainContext) -> DomainResponse:

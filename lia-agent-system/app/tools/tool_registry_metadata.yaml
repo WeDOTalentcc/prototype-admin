@@ -877,3 +877,85 @@ tools:
         industry: {type: string, description: "Industry sector"}
         include_trends: {type: boolean, default: true}
       required: [job_title]
+
+  # ── Proactive Intelligence Tools ────────────────────────────────────────────
+
+  - name: get_proactive_alerts
+    description: Get proactive pipeline alerts (stale candidates, SLA risks, bottlenecks, empty pipelines, high rejection rates)
+    allowed_agents: [orchestrator, recruiter_assistant]
+    scope: GLOBAL
+    version: "1.0"
+    parameters:
+      type: object
+      properties:
+        severity: {type: string, enum: [low, medium, high, critical]}
+        category: {type: string}
+
+  - name: get_autonomous_actions
+    description: List autonomous actions executed or pending confirmation by LIA
+    allowed_agents: [orchestrator, recruiter_assistant]
+    scope: GLOBAL
+    version: "1.0"
+    parameters:
+      type: object
+      properties:
+        status: {type: string, enum: [pending, executed, all]}
+
+  - name: confirm_autonomous_action
+    description: Confirm a pending autonomous action for execution
+    allowed_agents: [orchestrator, recruiter_assistant]
+    scope: GLOBAL
+    version: "1.0"
+    parameters:
+      type: object
+      required: [action_id]
+      properties:
+        action_id: {type: string}
+
+  - name: reject_autonomous_action
+    description: Reject a pending autonomous action
+    allowed_agents: [orchestrator, recruiter_assistant]
+    scope: GLOBAL
+    version: "1.0"
+    parameters:
+      type: object
+      required: [action_id]
+      properties:
+        action_id: {type: string}
+        reason: {type: string}
+
+  - name: detect_pending_decisions
+    description: Detect pending hiring manager decisions and send escalation notifications
+    allowed_agents: [orchestrator, recruiter_assistant]
+    scope: GLOBAL
+    version: "1.0"
+    parameters:
+      type: object
+      properties:
+        send_notifications: {type: boolean, default: false}
+
+  - name: get_learning_insights
+    description: Get insights from hiring outcome learning (successful patterns, ranking adjustments)
+    allowed_agents: [orchestrator, recruiter_assistant]
+    scope: GLOBAL
+    version: "1.0"
+    parameters:
+      type: object
+      properties:
+        role: {type: string}
+        seniority: {type: string}
+
+  - name: record_hiring_outcome
+    description: Record a hiring outcome for learning (filled, cancelled, turnover)
+    allowed_agents: [orchestrator, recruiter_assistant]
+    scope: IN_JOB
+    version: "1.0"
+    parameters:
+      type: object
+      required: [job_id, candidate_id, outcome]
+      properties:
+        job_id: {type: string}
+        candidate_id: {type: string}
+        outcome: {type: string, enum: [filled, cancelled, expired, turnover]}
+        satisfaction_score: {type: number, minimum: 1, maximum: 5}
+        retention_days: {type: integer}
