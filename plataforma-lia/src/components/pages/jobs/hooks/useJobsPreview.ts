@@ -63,7 +63,7 @@ interface UseJobsPreviewReturn {
     wsiGenerationStep: number
     wsiDynamicMessage: string
     wsiGenerationContext: Record<string, unknown> | null
-    activeDashboardModal: 'minhasVagas' | 'visaoGeral' | 'performanceLia' | null
+    activeDashboardModal: 'minhasVagas' | 'performanceLia' | null
     showWSITutorialModal: boolean
     dashboardPeriod: '1m' | '3m' | '6m' | '9m' | '12m'
     showReport: boolean
@@ -113,7 +113,7 @@ interface UseJobsPreviewReturn {
     setWsiGenerationStep: (v: number) => void
     setWsiDynamicMessage: (v: string) => void
     setWsiGenerationContext: (v: Record<string, unknown> | null) => void
-    setActiveDashboardModal: (v: 'minhasVagas' | 'visaoGeral' | 'performanceLia' | null) => void
+    setActiveDashboardModal: (v: 'minhasVagas' | 'performanceLia' | null) => void
     setShowWSITutorialModal: (v: boolean) => void
     setDashboardPeriod: (v: '1m' | '3m' | '6m' | '9m' | '12m') => void
     setShowReport: (v: boolean) => void
@@ -184,7 +184,7 @@ export function useJobsPreview({ setBackendJobs }: UseJobsPreviewOptions): UseJo
   const [wsiDynamicMessage, setWsiDynamicMessage] = useState('')
   const [wsiGenerationContext, setWsiGenerationContext] = useState<Record<string, unknown> | null>(null)
 
-  const [activeDashboardModal, setActiveDashboardModal] = useState<'minhasVagas' | 'visaoGeral' | 'performanceLia' | null>(null)
+  const [activeDashboardModal, setActiveDashboardModal] = useState<'minhasVagas' | 'performanceLia' | null>(null)
   const [showWSITutorialModal, setShowWSITutorialModal] = useState(false)
   const [dashboardPeriod, setDashboardPeriod] = useState<'1m' | '3m' | '6m' | '9m' | '12m'>('3m')
   const [showReport, setShowReport] = useState(false)
