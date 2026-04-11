@@ -209,7 +209,7 @@ class EmailService:
         
         email_log = EmailLog(
             id=uuid.uuid4(),
-            template_id=template_id,
+            template_id=template_id if template else None,
             candidate_id=candidate_id,
             recipient_email=recipient_email,
             subject=rendered_subject,
@@ -466,6 +466,9 @@ class EmailService:
         """
         Create a new email template in the database.
 
+        Includes DB timeout handling (5 s per operation) and table existence
+        verification to prevent hangs on missing migrations.
+
         Args:
             db: Database session
             name: Template name (must be unique per company)
@@ -483,12 +486,33 @@ class EmailService:
 
         Raises:
             ValueError: If a template with the same name already exists
+            RuntimeError: If the email_templates table does not exist
+            TimeoutError: If any DB operation exceeds 5 seconds
         """
-        existing = await db.execute(
-            select(EmailTemplate).where(
-                EmailTemplate.name == name,
-                EmailTemplate.company_id == company_id,
+        import asyncio
+
+        from sqlalchemy import text
+
+        table_check = await asyncio.wait_for(
+            db.execute(text(
+                "SELECT 1 FROM information_schema.tables "
+                "WHERE table_name = 'email_templates' LIMIT 1"
+            )),
+            timeout=5.0,
+        )
+        if not table_check.fetchone():
+            raise RuntimeError(
+                "email_templates table does not exist. Run database migrations first."
             )
+
+        existing = await asyncio.wait_for(
+            db.execute(
+                select(EmailTemplate).where(
+                    EmailTemplate.name == name,
+                    EmailTemplate.company_id == company_id,
+                )
+            ),
+            timeout=5.0,
         )
         if existing.scalar_one_or_none():
             raise ValueError(f"Template with name '{name}' already exists")
@@ -514,8 +538,8 @@ class EmailService:
             updated_at=datetime.utcnow(),
         )
         db.add(template)
-        await db.commit()
-        await db.refresh(template)
+        await asyncio.wait_for(db.commit(), timeout=5.0)
+        await asyncio.wait_for(db.refresh(template), timeout=5.0)
         logger.info(f"Created template: {template.name} (id={template.id}, company={company_id})")
         return template
 
