@@ -14,6 +14,12 @@ Classification of all directories under `app/domains/`.
 
 Total: 57 directories (excluding `__pycache__`)
 
+Note: The original audit (DIAGNOSTIC_REPORT_APRIL_2026.md) estimated "10 fully agentic"
+based on a narrower definition (domains with both agents/ and services/). This catalog
+uses the @register_domain decorator as the definitive criterion, yielding 13 agentic + 3
+micro-action = 16 registered domains. The difference reflects agent_studio, job_creation,
+and hiring_policy which register via @register_domain but have simpler internal structure.
+
 ## Agentic Domains (13)
 
 Registered in `DomainRegistry` via `@register_domain`. Routable by CascadedRouter.

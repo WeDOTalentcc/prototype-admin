@@ -208,6 +208,7 @@ class TestDomainCatalogClassification:
 
     def test_domain_registry_only_has_agentic_domains(self):
         """DomainRegistry deve conter apenas domínios agentic (com @register_domain)."""
+        import app.domains  # noqa: F401 — triggers @register_domain side effects
         from app.domains.registry import DomainRegistry
         registry = DomainRegistry()
         registered = set(registry.list_domains())
