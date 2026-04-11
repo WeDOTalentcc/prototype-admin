@@ -20,6 +20,7 @@ from pathlib import Path
 from typing import Any
 
 from app.core.config import settings
+from app.orchestrator.domain_mappings import AGENT_TYPE_TO_DOMAIN, resolve_domain
 from app.orchestrator.fast_router import FastRouter
 from app.orchestrator.semantic_cache import SemanticCache
 from app.shared.tracing import get_tracer, trace_span
@@ -53,43 +54,6 @@ class RouteResult:
     clarification_options: list[str] | None = None
 
 
-AGENT_TYPE_TO_DOMAIN: dict[str, str] = {
-    "job_planner": "job_management",
-    "job_intake": "job_management",
-    "sourcing": "sourcing",
-    "cv_screening": "cv_screening",
-    "screening": "cv_screening",
-    "wsi_evaluator": "cv_screening",
-    "interviewer": "interview_scheduling",
-    "scheduling": "interview_scheduling",
-    "analyst_feedback": "analytics",
-    "analytics": "analytics",
-    "communication": "communication",
-    "ats_integrator": "ats_integration",
-    "recruiter_assistant": "recruiter_assistant",
-    "task_planner": "automation",
-    # Z1-01: Kanban subagents
-    "kanban_search": "kanban_search",
-    "kanban_insight": "kanban_insight",
-    "kanban_action": "kanban_action",
-    # Z1-02: Pipeline subagents
-    "pipeline_context": "pipeline_context",
-    "pipeline_decision": "pipeline_decision",
-    "pipeline_action": "pipeline_action",
-    # Z2-02: Sourcing subagents
-    "sourcing_planner": "sourcing_planner",
-    "sourcing_search": "sourcing_search",
-    "sourcing_enrich": "sourcing_enrich",
-    "sourcing_engagement": "sourcing_engagement",
-    # Phase 6 domains
-    "talent_pool": "talent_pool",
-    "agent_studio": "agent_studio",
-    "digital_twin": "digital_twin",
-    "recruitment_campaign": "recruitment_campaign",
-    "multi_strategy": "agent_studio",
-    "voice_screening": "talent_pool",
-
-}
 
 # Opções padrão de clarificação quando o router não sabe o domínio
 _DEFAULT_CLARIFICATION_OPTIONS = [
@@ -680,16 +644,7 @@ class CascadedRouter:
             return None
 
     def _intent_to_domain(self, intent: str) -> str:
-        intent_lower = str(intent).lower().strip()
-
-        if intent_lower in AGENT_TYPE_TO_DOMAIN:
-            return AGENT_TYPE_TO_DOMAIN[intent_lower]
-
-        for agent_key, domain_id in AGENT_TYPE_TO_DOMAIN.items():
-            if agent_key in intent_lower or intent_lower in agent_key:
-                return domain_id
-
-        return "recruiter_assistant"
+        return resolve_domain(intent)
 
     def _cache_store(self, key: str, result: RouteResult) -> None:
         if len(self._memory_cache) >= self._cache_max_size:

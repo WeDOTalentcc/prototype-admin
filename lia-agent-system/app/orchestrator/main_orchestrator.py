@@ -474,98 +474,124 @@ class MainOrchestrator:
         inlining a gestão de memória diretamente aqui enquanto usa o Orchestrator
         somente para process_request (roteamento + execução de domínio).
         """
-        from app.core.config import settings
         from app.domains.ai.services.response_cache_service import response_cache_service
-        from app.domains.recruiter_assistant.services.conversation_memory import conversation_memory
 
         orchestrator_context = ctx.to_orchestrator_context()
 
-        _cache_key: str | None = None
-        if not streaming_callback:
-            try:
-                from app.orchestrator.fast_router import FastRouter
-                _fast = FastRouter()
-                _fast_match = _fast.match(ctx.message or "")
-                _detected_domain = _fast_match.domain_id if _fast_match else None
-                if _detected_domain and _detected_domain in _CACHEABLE_DOMAINS:
-                    _cache_context = {
-                        "company_id": str(ctx.company_id or ""),
-                        "user_id": str(ctx.user_id or ""),
-                        "job_id": str(ctx.entity_id or "") if ctx.context_type == "job" else "",
-                        "candidate_id": str(ctx.entity_id or "") if ctx.context_type == "candidate" else "",
-                        "conversation_id": str(conv_id or ""),
-                    }
-                    _cache_key = response_cache_service.generate_cache_key(
-                        _detected_domain,
-                        _cache_context,
-                        ctx.message or "",
-                        company_id=str(ctx.company_id or ""),
-                    )
-                    _cached = await response_cache_service.get_cached_response(_cache_key)
-                    if _cached:
-                        logger.info(
-                            "[MainOrchestrator] Cache HIT domain=%s key=%s",
-                            _detected_domain, _cache_key[:40],
-                        )
-                        resp = ChatResponse(
-                            success=True,
-                            content=_cached.get("content", ""),
-                            agent_used=_cached.get("agent_used", _detected_domain),
-                            intent_detected=_cached.get("intent_detected", _detected_domain),
-                            confidence=_cached.get("confidence", 1.0),
-                            structured_data=_cached.get("structured_data"),
-                            suggested_prompts=_cached.get("suggested_prompts", []),
-                            conversation_id=conv_id,
-                        )
-                        resp.from_cache = True
-                        return resp
-            except Exception as _cache_exc:
-                logger.debug("[MainOrchestrator] Cache lookup skipped: %s", _cache_exc)
+        _cache_key = await self._try_cache_lookup(ctx, conv_id, streaming_callback)
+        if isinstance(_cache_key, ChatResponse):
+            return _cache_key
         if streaming_callback:
             orchestrator_context["streaming_callback"] = streaming_callback
 
-        # ── Memória de conversa (inlined de Orchestrator.process_request_with_memory) ──
+        conv, conv_id = await self._setup_conversation_memory(ctx, conv_id, db, orchestrator_context)
+
+        result = await self._route_with_tenant_llm(ctx, conv_id, db, orchestrator_context)
+
+        await self._persist_response(ctx, conv_id, conv, result, db)
+
+        result.update({"conversation_id": conv_id})
+
+        if isinstance(_cache_key, str) and result.get("success"):
+            await self._write_cache(response_cache_service, _cache_key, result)
+
+        await self._persist_candidate_list(conv_id, result)
+        await self._audit_output(ctx, conv_id, result)
+
+        return ChatResponse.from_orchestrator_result(result, conv_id=conv_id)
+
+    async def _try_cache_lookup(
+        self,
+        ctx: UniversalContext,
+        conv_id: str,
+        streaming_callback: Callable | None,
+    ) -> str | ChatResponse | None:
+        """Check response cache. Returns cache_key (str), ChatResponse (hit), or None."""
+        if streaming_callback:
+            return None
+        try:
+            from app.domains.ai.services.response_cache_service import response_cache_service
+            from app.orchestrator.fast_router import FastRouter
+            _fast = FastRouter()
+            _fast_match = _fast.match(ctx.message or "")
+            _detected_domain = _fast_match.domain_id if _fast_match else None
+            if not (_detected_domain and _detected_domain in _CACHEABLE_DOMAINS):
+                return None
+            _cache_context = {
+                "company_id": str(ctx.company_id or ""),
+                "user_id": str(ctx.user_id or ""),
+                "job_id": str(ctx.entity_id or "") if ctx.context_type == "job" else "",
+                "candidate_id": str(ctx.entity_id or "") if ctx.context_type == "candidate" else "",
+                "conversation_id": str(conv_id or ""),
+            }
+            _cache_key = response_cache_service.generate_cache_key(
+                _detected_domain, _cache_context, ctx.message or "",
+                company_id=str(ctx.company_id or ""),
+            )
+            _cached = await response_cache_service.get_cached_response(_cache_key)
+            if _cached:
+                logger.info("[MainOrchestrator] Cache HIT domain=%s key=%s", _detected_domain, _cache_key[:40])
+                resp = ChatResponse(
+                    success=True,
+                    content=_cached.get("content", ""),
+                    agent_used=_cached.get("agent_used", _detected_domain),
+                    intent_detected=_cached.get("intent_detected", _detected_domain),
+                    confidence=_cached.get("confidence", 1.0),
+                    structured_data=_cached.get("structured_data"),
+                    suggested_prompts=_cached.get("suggested_prompts", []),
+                    conversation_id=conv_id,
+                )
+                resp.from_cache = True
+                return resp
+            return _cache_key
+        except Exception as _cache_exc:
+            logger.debug("[MainOrchestrator] Cache lookup skipped: %s", _cache_exc)
+            return None
+
+    async def _setup_conversation_memory(
+        self,
+        ctx: UniversalContext,
+        conv_id: str,
+        db: Any,
+        orchestrator_context: dict[str, Any],
+    ) -> tuple[Any, str]:
+        """Load or create conversation, add user message, enrich context. Returns (conv, conv_id)."""
+        from app.domains.recruiter_assistant.services.conversation_memory import conversation_memory
         try:
             if conv_id:
-                conv = await conversation_memory.get_conversation(
-                    db=db, conversation_id=conv_id, include_messages=True
-                )
+                conv = await conversation_memory.get_conversation(db=db, conversation_id=conv_id, include_messages=True)
                 if not conv:
                     conv = await conversation_memory.get_or_create_conversation(
-                        db=db,
-                        user_id=ctx.user_id,
-                        context_type=ctx.context_type,
-                        context_id=ctx.entity_id,
+                        db=db, user_id=ctx.user_id, context_type=ctx.context_type, context_id=ctx.entity_id,
                     )
                     conv_id = str(conv.id)
             else:
                 conv = await conversation_memory.get_or_create_conversation(
-                    db=db,
-                    user_id=ctx.user_id,
-                    context_type=ctx.context_type,
-                    context_id=ctx.entity_id,
+                    db=db, user_id=ctx.user_id, context_type=ctx.context_type, context_id=ctx.entity_id,
                 )
                 conv_id = str(conv.id)
 
-            await conversation_memory.add_message(
-                db=db, conversation_id=conv_id, role="user", content=ctx.message
-            )
-            llm_ctx = await conversation_memory.get_context_for_llm(
-                db=db, conversation_id=conv_id, max_messages=20
-            )
+            await conversation_memory.add_message(db=db, conversation_id=conv_id, role="user", content=ctx.message)
+            llm_ctx = await conversation_memory.get_context_for_llm(db=db, conversation_id=conv_id, max_messages=20)
             orchestrator_context.update({
                 "conversation_history": llm_ctx.get("messages", []),
                 "conversation_summary": llm_ctx.get("summary"),
                 "context_type": ctx.context_type,
                 "context_id": ctx.entity_id,
             })
+            return conv, conv_id
         except Exception as _mem_exc:
             logger.debug("[MainOrchestrator] ConversationMemory setup skipped: %s", _mem_exc)
-            conv = None
+            return None, conv_id
 
-        # ── Tenant-aware LLM provider injection ───────────────────
-        # Resolve tenant LLM config and temporarily set the provider container
-        # on the orchestrator's llm_service. Falls back to global if no config.
+    async def _route_with_tenant_llm(
+        self,
+        ctx: UniversalContext,
+        conv_id: str,
+        db: Any,
+        orchestrator_context: dict[str, Any],
+    ) -> dict[str, Any]:
+        """Inject tenant LLM provider, route via orchestrator, then restore."""
         _llm_svc = getattr(self._orchestrator, "llm_service", None)
         _original_container = getattr(_llm_svc, "_tenant_container", None) if _llm_svc else None
         _original_tenant = getattr(_llm_svc, "_current_tenant", "") if _llm_svc else ""
@@ -581,10 +607,9 @@ class MainOrchestrator:
                         for name, prov in _providers_cfg.items()
                         if prov.get("api_key")
                     }
-                    from app.shared.providers.llm_factory import TenantProviderRegistry
+                    from app.shared.providers.llm_factory import ProviderContainer, TenantProviderRegistry
                     _registry = TenantProviderRegistry.get_instance()
                     _registry.remove_container(_tenant_id)
-                    from app.shared.providers.llm_factory import ProviderContainer
                     _container = ProviderContainer(
                         tenant_id=_tenant_id,
                         primary_provider=_tenant_config.get("primary_provider"),
@@ -599,48 +624,32 @@ class MainOrchestrator:
                         _tenant_id, _container.primary_provider,
                     )
                 else:
-                    logger.debug(
-                        "[MainOrchestrator] No tenant LLM config for %s — using global",
-                        _tenant_id,
-                    )
+                    logger.debug("[MainOrchestrator] No tenant LLM config for %s — using global", _tenant_id)
             except Exception as _tenant_exc:
-                logger.debug(
-                    "[MainOrchestrator] Tenant LLM resolution failed for %s: %s — using global",
-                    _tenant_id, _tenant_exc,
-                )
+                logger.debug("[MainOrchestrator] Tenant LLM resolution failed for %s: %s — using global", _tenant_id, _tenant_exc)
 
-        # ── Roteamento + execução de domínio ──
-        # Try process_request_with_memory first (full DB-backed flow);
-        # fall back to process_request if the result is not a dict
-        # (handles test mocks that only configure process_request).
         try:
-            result = await self._orchestrator.process_request_with_memory(
-                db,
-                user_id=ctx.user_id,
-                message=ctx.message,
-                conversation_id=conv_id,
-                context=orchestrator_context,
+            result = await self._orchestrator.process_request(
+                user_id=ctx.user_id, message=ctx.message,
+                conversation_id=conv_id, context=orchestrator_context,
             )
-            if not isinstance(result, dict):
-                result = await self._orchestrator.process_request(
-                    user_id=ctx.user_id,
-                    message=ctx.message,
-                    conversation_id=conv_id,
-                    context=orchestrator_context,
-                )
         finally:
-            # Always restore original LLM service state (backward compatible)
             if _llm_svc:
                 _llm_svc._tenant_container = _original_container
                 _llm_svc._current_tenant = _original_tenant
 
-        # ── Persistir resposta na memória + commit ──
+        return result
+
+    async def _persist_response(
+        self, ctx: UniversalContext, conv_id: str, conv: Any, result: dict[str, Any], db: Any
+    ) -> None:
+        """Persist assistant response to conversation memory and commit."""
+        from app.core.config import settings
+        from app.domains.recruiter_assistant.services.conversation_memory import conversation_memory
         try:
             if result.get("success") and conv is not None:
                 await conversation_memory.add_message(
-                    db=db,
-                    conversation_id=conv_id,
-                    role="assistant",
+                    db=db, conversation_id=conv_id, role="assistant",
                     content=result.get("message", result.get("content", "")),
                     intent=result.get("intent"),
                 )
@@ -650,9 +659,7 @@ class MainOrchestrator:
                 ):
                     try:
                         await conversation_memory.update_summary(
-                            db=db,
-                            conversation_id=conv_id,
-                            llm_service=self._orchestrator.llm_service,
+                            db=db, conversation_id=conv_id, llm_service=self._orchestrator.llm_service,
                         )
                     except Exception:
                         pass
@@ -664,28 +671,28 @@ class MainOrchestrator:
                 pass
             logger.debug("[MainOrchestrator] Memory persist skipped: %s", _persist_exc)
 
-        result.update({"conversation_id": conv_id})
+    async def _write_cache(self, cache_service: Any, cache_key: str, result: dict[str, Any]) -> None:
+        """Write successful result to response cache."""
+        try:
+            _domain_for_ttl = result.get("agent_used") or result.get("domain_id") or ""
+            _ttl = _CACHE_TTL_BY_DOMAIN.get(_domain_for_ttl, 300)
+            await cache_service.cache_response(
+                cache_key,
+                {
+                    "content": result.get("response", result.get("message", result.get("content", ""))),
+                    "agent_used": result.get("agent_used", ""),
+                    "intent_detected": result.get("intent_detected", result.get("intent", "")),
+                    "confidence": result.get("confidence", 1.0),
+                    "structured_data": result.get("structured_data"),
+                    "suggested_prompts": result.get("suggested_prompts", []),
+                },
+                ttl=_ttl,
+            )
+        except Exception as _cw_exc:
+            logger.debug("[MainOrchestrator] Cache write failed: %s", _cw_exc)
 
-        if _cache_key and result.get("success"):
-            try:
-                _domain_for_ttl = result.get("agent_used") or result.get("domain_id") or ""
-                _ttl = _CACHE_TTL_BY_DOMAIN.get(_domain_for_ttl, 300)
-                await response_cache_service.cache_response(
-                    _cache_key,
-                    {
-                        "content": result.get("response", result.get("message", result.get("content", ""))),
-                        "agent_used": result.get("agent_used", ""),
-                        "intent_detected": result.get("intent_detected", result.get("intent", "")),
-                        "confidence": result.get("confidence", 1.0),
-                        "structured_data": result.get("structured_data"),
-                        "suggested_prompts": result.get("suggested_prompts", []),
-                    },
-                    ttl=_ttl,
-                )
-            except Exception as _cw_exc:
-                logger.debug("[MainOrchestrator] Cache write failed: %s", _cw_exc)
-
-        # ── Persiste lista de candidatos no Redis (TTL 30min) ──
+    async def _persist_candidate_list(self, conv_id: str, result: dict[str, Any]) -> None:
+        """Persist candidate list to Redis (TTL 30min)."""
         _structured = result.get("structured_data") or {}
         candidates_in_result = (
             result.get("candidates")
@@ -698,11 +705,10 @@ class MainOrchestrator:
             except Exception as exc:
                 logger.debug("[MainOrchestrator] CandidateListStore set error: %s", exc)
 
-        # Output auditing — apenas para ações sobre candidatos/vagas (alto impacto)
+    async def _audit_output(self, ctx: UniversalContext, conv_id: str, result: dict[str, Any]) -> None:
+        """Audit output for high-impact actions (candidate/job mutations)."""
         _should_audit = bool(
-            result.get("candidate_id")
-            or result.get("job_id")
-            or result.get("job_vacancy_id")
+            result.get("candidate_id") or result.get("job_id") or result.get("job_vacancy_id")
         )
         if _should_audit:
             try:
@@ -721,8 +727,6 @@ class MainOrchestrator:
                 )
             except Exception as _audit_err:
                 logger.warning("Output audit failed (non-blocking): %s", _audit_err)
-
-        return ChatResponse.from_orchestrator_result(result, conv_id=conv_id)
 
 
 # ---------------------------------------------------------------------------

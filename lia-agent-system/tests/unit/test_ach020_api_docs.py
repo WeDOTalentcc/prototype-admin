@@ -117,16 +117,29 @@ class TestAPIReferenceDoc:
 
 
 class TestCascadedRouterDomainMapping:
-    """Verifica mapeamento de domínios no CascadedRouter (substitui IntentRouter)."""
+    """Verifica mapeamento de domínios centralizado em domain_mappings.py."""
 
     def test_agent_type_to_domain_has_core_mappings(self):
         """AGENT_TYPE_TO_DOMAIN deve mapear os tipos de agente fundamentais."""
-        from app.orchestrator.cascaded_router import AGENT_TYPE_TO_DOMAIN
+        from app.orchestrator.domain_mappings import AGENT_TYPE_TO_DOMAIN
         assert "job_planner" in AGENT_TYPE_TO_DOMAIN
         assert "sourcing" in AGENT_TYPE_TO_DOMAIN
         assert "cv_screening" in AGENT_TYPE_TO_DOMAIN
         assert "scheduling" in AGENT_TYPE_TO_DOMAIN
         assert "analytics" in AGENT_TYPE_TO_DOMAIN
+
+    def test_resolve_domain_known_intent(self):
+        """resolve_domain() deve resolver intents conhecidos corretamente."""
+        from app.orchestrator.domain_mappings import resolve_domain
+        assert resolve_domain("job_planner") == "job_management"
+        assert resolve_domain("sourcing") == "sourcing"
+        assert resolve_domain("cv_screening") == "cv_screening"
+        assert resolve_domain("scheduling") == "interview_scheduling"
+
+    def test_resolve_domain_unknown_falls_back(self):
+        """resolve_domain() deve retornar recruiter_assistant para intents desconhecidos."""
+        from app.orchestrator.domain_mappings import resolve_domain
+        assert resolve_domain("completely_unknown_xyz") == "recruiter_assistant"
 
     def test_fast_router_has_domain_patterns(self):
         """FastRouter DOMAIN_PATTERNS deve cobrir domínios-chave."""
@@ -135,6 +148,14 @@ class TestCascadedRouterDomainMapping:
         assert "sourcing" in DOMAIN_PATTERNS
         assert "cv_screening" in DOMAIN_PATTERNS
         assert "analytics" in DOMAIN_PATTERNS
+
+    def test_cascaded_router_uses_centralized_mappings(self):
+        """CascadedRouter deve importar AGENT_TYPE_TO_DOMAIN de domain_mappings."""
+        from app.orchestrator.cascaded_router import CascadedRouter
+        from app.orchestrator.fast_router import FastRouter
+        router = CascadedRouter(fast_router=FastRouter())
+        assert router._intent_to_domain("sourcing") == "sourcing"
+        assert router._intent_to_domain("job_planner") == "job_management"
 
     def test_cascaded_router_no_intent_router_param(self):
         """CascadedRouter não deve aceitar intent_router."""

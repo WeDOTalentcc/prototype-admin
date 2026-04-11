@@ -1,4 +1,5 @@
 from .cascaded_router import CascadedRouter
+from .domain_mappings import AGENT_TYPE_TO_DOMAIN, resolve_domain
 from .llm_cascade import LLMCascadeRouter, llm_cascade_router
 from .orchestrator import Orchestrator
 from .policy_engine import PolicyEngine
@@ -13,6 +14,8 @@ __all__ = [
     "StateManager",
     "Orchestrator",
     "CascadedRouter",
+    "AGENT_TYPE_TO_DOMAIN",
+    "resolve_domain",
     "SemanticCache",
     "semantic_cache",
     "TenantBudget",
