@@ -9,7 +9,7 @@ Implementa a escada de custo Flash → Pro → Ultra (Gemini-first):
 O resultado inclui o modelo efetivamente usado e a confiança obtida,
 para rastreabilidade de custo por tenant.
 
-Integra com TenantBudget para registrar tokens consumidos.
+Integra com TenantBudget para registrar tokens consumidos por request_id.
 """
 import json
 import logging
@@ -18,6 +18,7 @@ from typing import Any
 
 from app.core.config import settings
 from app.domains.ai.services.llm import LLMProvider, llm_service
+from lia_audit.audit_callback import _estimate_cost
 
 logger = logging.getLogger(__name__)
 
@@ -71,6 +72,7 @@ class LLMCascadeRouter:
         company_id: str | None = None,
         preferred_model: str | None = None,
         system_prompt_override: str | None = None,
+        request_id: str | None = None,
     ) -> dict[str, Any]:
         """
         Rota a mensagem usando a escada de custo.
@@ -83,10 +85,14 @@ class LLMCascadeRouter:
                              disponível, usado no tier primário em vez do FAST_MODEL.
                              Fail-safe: se o modelo falhar, a cascata padrão é usada.
             system_prompt_override: A/B testing — override the default routing prompt.
+            request_id: Unique per-request identifier for granular cost tracking.
 
         Returns dict com: domain, confidence, model_used, latency_ms, tokens_est
         """
         total_start = time.time()
+        if request_id is None:
+            from app.orchestrator.tenant_budget import generate_request_id
+            request_id = generate_request_id()
 
         # E5 — Multi-Model: tentar preferred_model antes da cascata padrão
         if preferred_model:
@@ -100,7 +106,8 @@ class LLMCascadeRouter:
                     result_pref["tier"] = "preferred"
                     result_pref["tokens_est"] = tokens_pref
                     result_pref["latency_ms"] = (time.time() - total_start) * 1000
-                    await self._record_tokens(company_id, tokens_pref)
+                    result_pref["request_id"] = request_id
+                    await self._record_tokens(company_id, tokens_pref, model=preferred_model, request_id=request_id)
                     return result_pref
                 logger.debug(
                     "[LLMCascade] preferred_model=%s confidence=%.2f < %.2f, fallback para cascata padrão",
@@ -125,7 +132,8 @@ class LLMCascadeRouter:
             result["tier"] = "gemini-flash"
             result["tokens_est"] = tokens
             result["latency_ms"] = (time.time() - total_start) * 1000
-            await self._record_tokens(company_id, tokens)
+            result["request_id"] = request_id
+            await self._record_tokens(company_id, tokens, model=settings.LLM_FAST_MODEL, request_id=request_id)
             return result
 
         # Tier 3b — Claude Sonnet (capacidade média)
@@ -145,7 +153,8 @@ class LLMCascadeRouter:
             result_sonnet["tier"] = "sonnet"
             result_sonnet["tokens_est"] = tokens
             result_sonnet["latency_ms"] = (time.time() - total_start) * 1000
-            await self._record_tokens(company_id, tokens)
+            result_sonnet["request_id"] = request_id
+            await self._record_tokens(company_id, tokens, model=settings.LLM_PRIMARY_MODEL, request_id=request_id)
             return result_sonnet
 
         # Tier 3c — Claude Opus (mais caro — somente se absolutamente necessário)
@@ -169,7 +178,8 @@ class LLMCascadeRouter:
         best["tier"] = "opus"
         best["tokens_est"] = tokens
         best["latency_ms"] = (time.time() - total_start) * 1000
-        await self._record_tokens(company_id, tokens)
+        best["request_id"] = request_id
+        await self._record_tokens(company_id, tokens, model=settings.LLM_POWERFUL_MODEL, request_id=request_id)
         return best
 
     @staticmethod
@@ -229,13 +239,30 @@ class LLMCascadeRouter:
             logger.debug("[LLMCascade] _call_model(%s, provider=%s) falhou: %s", model_name, provider, exc)
             return None, tokens_est
 
-    async def _record_tokens(self, company_id: str | None, tokens: int) -> None:
-        """Registra uso de tokens no budget do tenant (best-effort)."""
+    async def _record_tokens(
+        self,
+        company_id: str | None,
+        tokens: int,
+        model: str | None = None,
+        request_id: str | None = None,
+    ) -> None:
+        """Registra uso de tokens no budget do tenant com per-request tracking."""
         if not company_id or tokens <= 0:
             return
         try:
             from app.orchestrator.tenant_budget import tenant_budget
-            allowed, total, warning = await tenant_budget.check_and_record(company_id, tokens)
+            tokens_in = tokens // 2
+            tokens_out = tokens - tokens_in
+            cost_usd = _estimate_cost(model, tokens_in, tokens_out)
+            allowed, total, warning = await tenant_budget.check_and_record(
+                company_id,
+                tokens,
+                request_id=request_id,
+                tokens_input=tokens_in,
+                tokens_output=tokens_out,
+                cost_usd=cost_usd,
+                model=model,
+            )
             if warning:
                 logger.warning("[LLMCascade] %s", warning)
         except Exception as exc:

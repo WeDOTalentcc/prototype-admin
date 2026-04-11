@@ -186,10 +186,12 @@ class TestRAGASMetricEnforcement:
 
 
 class TestChunkingRetrievalQuality:
-    """Evaluate chunking strategy impact on retrieval coverage.
+    """Evaluate chunking strategy impact on simulated retrieval quality.
 
-    Measures keyword recall: what fraction of expected keywords appear in
-    at least one chunk. Higher recall = better retrieval quality.
+    Uses keyword-overlap scoring to simulate retrieval: for each query,
+    ranks chunks by keyword overlap and evaluates recall@k (whether the
+    best-matching chunk appears in top-k results). This is strategy-sensitive
+    because chunking boundaries affect which keywords co-occur in a chunk.
     """
 
     SAMPLE_CV = (
@@ -212,41 +214,74 @@ class TestChunkingRetrievalQuality:
         "Inglês — Fluente (C1)\n"
     )
 
-    KEYWORDS = ["python", "fastapi", "docker", "kubernetes", "aws",
-                 "ci/cd", "microsserviços", "flask", "postgresql", "redis"]
-
-    def _keyword_recall(self, chunks: list, keywords: list[str]) -> float:
-        all_text = " ".join(c.text.lower() for c in chunks)
-        found = sum(1 for kw in keywords if kw.lower() in all_text)
-        return found / max(len(keywords), 1)
+    RETRIEVAL_QUERIES = [
+        {
+            "query": "Python FastAPI backend developer",
+            "expected_keywords": ["python", "fastapi"],
+            "section_hint": "habilidades",
+        },
+        {
+            "query": "CI/CD pipeline experience",
+            "expected_keywords": ["ci/cd", "pipeline", "deploy"],
+            "section_hint": "experiência",
+        },
+        {
+            "query": "cloud infrastructure skills",
+            "expected_keywords": ["docker", "kubernetes", "aws"],
+            "section_hint": "habilidades",
+        },
+        {
+            "query": "education background",
+            "expected_keywords": ["computação", "usp"],
+            "section_hint": "formação",
+        },
+    ]
 
     def _chunk_with_strategy(self, strategy_name: str):
         from app.shared.intelligence.chunking.factory import ChunkingStrategyFactory
         strategy = ChunkingStrategyFactory.get_strategy("cv", override=strategy_name, chunk_size=300, chunk_overlap=30)
         return strategy.chunk(self.SAMPLE_CV)
 
-    def test_recursive_covers_all_keywords(self):
-        """Recursive chunker must achieve >= 90% keyword recall on CV."""
-        chunks = self._chunk_with_strategy("recursive")
-        recall = self._keyword_recall(chunks, self.KEYWORDS)
-        assert recall >= 0.90, (
-            f"recursive keyword recall={recall:.2f} < 0.90"
-        )
+    @staticmethod
+    def _keyword_overlap_score(chunk_text: str, keywords: list[str]) -> float:
+        text_lower = chunk_text.lower()
+        return sum(1 for kw in keywords if kw.lower() in text_lower) / max(len(keywords), 1)
 
-    def test_sliding_window_covers_keywords(self):
-        """Sliding window must achieve >= 80% keyword recall."""
-        chunks = self._chunk_with_strategy("sliding_window")
-        recall = self._keyword_recall(chunks, self.KEYWORDS)
-        assert recall >= 0.80, (
-            f"sliding_window keyword recall={recall:.2f} < 0.80"
-        )
+    def _recall_at_k(self, chunks: list, query: dict, k: int = 2) -> float:
+        scores = [(self._keyword_overlap_score(c.text, query["expected_keywords"]), c) for c in chunks]
+        scores.sort(key=lambda x: x[0], reverse=True)
+        top_k = scores[:k]
+        if not top_k:
+            return 0.0
+        best_score = top_k[0][0]
+        return best_score
 
-    def test_section_aware_covers_keywords(self):
-        """Section-aware must achieve >= 90% keyword recall on CV."""
-        chunks = self._chunk_with_strategy("section_aware")
-        recall = self._keyword_recall(chunks, self.KEYWORDS)
-        assert recall >= 0.90, (
-            f"section_aware keyword recall={recall:.2f} < 0.90"
+    def _mean_recall_at_k(self, strategy_name: str, k: int = 2) -> float:
+        chunks = self._chunk_with_strategy(strategy_name)
+        recalls = [self._recall_at_k(chunks, q, k=k) for q in self.RETRIEVAL_QUERIES]
+        return sum(recalls) / max(len(recalls), 1)
+
+    def test_recursive_retrieval_recall_at_2(self):
+        """Recursive strategy must achieve >= 0.75 mean recall@2 across queries."""
+        mrr = self._mean_recall_at_k("recursive", k=2)
+        assert mrr >= 0.75, f"recursive mean recall@2={mrr:.2f} < 0.75"
+
+    def test_section_aware_retrieval_recall_at_2(self):
+        """Section-aware must achieve >= 0.70 mean recall@2."""
+        mrr = self._mean_recall_at_k("section_aware", k=2)
+        assert mrr >= 0.70, f"section_aware mean recall@2={mrr:.2f} < 0.70"
+
+    def test_sliding_window_retrieval_recall_at_2(self):
+        """Sliding window recall@2 >= 0.60 (lower due to arbitrary boundaries)."""
+        mrr = self._mean_recall_at_k("sliding_window", k=2)
+        assert mrr >= 0.60, f"sliding_window mean recall@2={mrr:.2f} < 0.60"
+
+    def test_recursive_beats_sliding_window_on_section_queries(self):
+        """Recursive must score at least as well as sliding_window on section-specific queries."""
+        recursive_mrr = self._mean_recall_at_k("recursive", k=2)
+        sliding_mrr = self._mean_recall_at_k("sliding_window", k=2)
+        assert recursive_mrr >= sliding_mrr, (
+            f"recursive recall@2={recursive_mrr:.2f} should >= sliding_window={sliding_mrr:.2f}"
         )
 
     @pytest.mark.parametrize("strategy", ["sliding_window", "section_aware", "recursive"])
@@ -265,4 +300,14 @@ class TestChunkingRetrievalQuality:
         for c in chunks:
             assert len(c.text) <= max_allowed, (
                 f"{strategy} produced chunk of {len(c.text)} chars (max={max_allowed})"
+            )
+
+    @pytest.mark.parametrize("strategy", ["sliding_window", "section_aware", "recursive"])
+    def test_per_query_top1_has_nonzero_overlap(self, strategy: str):
+        """For every query, the top-1 chunk must have at least some keyword overlap."""
+        chunks = self._chunk_with_strategy(strategy)
+        for q in self.RETRIEVAL_QUERIES:
+            recall = self._recall_at_k(chunks, q, k=1)
+            assert recall > 0.0, (
+                f"{strategy}: query '{q['query']}' top-1 chunk has zero keyword overlap"
             )

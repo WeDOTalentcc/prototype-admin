@@ -19,6 +19,32 @@ from lia_audit.audit_models import ExecutionAuditRecord, RequestCostRecord
 
 logger = logging.getLogger(__name__)
 
+_MODEL_PRICING_PER_1K: Dict[str, Dict[str, float]] = {
+    "gemini-2.0-flash": {"input": 0.0001, "output": 0.0004},
+    "gemini-1.5-flash": {"input": 0.000075, "output": 0.0003},
+    "gemini-1.5-pro": {"input": 0.00125, "output": 0.005},
+    "claude-3-5-sonnet": {"input": 0.003, "output": 0.015},
+    "claude-3-sonnet": {"input": 0.003, "output": 0.015},
+    "claude-3-haiku": {"input": 0.00025, "output": 0.00125},
+    "claude-3-opus": {"input": 0.015, "output": 0.075},
+    "gpt-4o": {"input": 0.005, "output": 0.015},
+    "gpt-4o-mini": {"input": 0.00015, "output": 0.0006},
+}
+
+_DEFAULT_PRICING = {"input": 0.003, "output": 0.015}
+
+
+def _estimate_cost(model: Optional[str], tokens_input: int, tokens_output: int) -> float:
+    pricing = _DEFAULT_PRICING
+    if model:
+        model_lower = model.lower()
+        for key, price in _MODEL_PRICING_PER_1K.items():
+            if key in model_lower:
+                pricing = price
+                break
+    return (tokens_input / 1000.0) * pricing["input"] + (tokens_output / 1000.0) * pricing["output"]
+
+
 try:
     from langchain_core.callbacks import BaseCallbackHandler
     _HAS_LANGCHAIN = True
@@ -231,11 +257,14 @@ class AuditCallback(BaseCallbackHandler):
         tokens_total = sum(e.get("tokens_total") or 0 for e in llm_entries)
         model = llm_entries[-1].get("model") if llm_entries else None
 
+        estimated_cost = _estimate_cost(model, tokens_input, tokens_output)
+
         request_cost = RequestCostRecord(
             request_id=self.request_id,
             tokens_input=tokens_input,
             tokens_output=tokens_output,
             tokens_total=tokens_total,
+            estimated_cost_usd=estimated_cost,
             model=model,
             llm_calls=len(llm_entries),
             tool_calls=len(tool_entries),
