@@ -21,7 +21,6 @@ export type {
   UseLiaChatConnectionResult,
   TransportMode,
 } from "./lia-chat-connection-types"
-export { formatMessageTime } from "./lia-chat-connection-types"
 
 // Re-export sub-hooks for direct use
 export { useChatSocket } from "./useChatSocket"

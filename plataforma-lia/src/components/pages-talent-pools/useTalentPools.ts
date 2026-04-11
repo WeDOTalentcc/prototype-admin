@@ -25,8 +25,8 @@ export function useTalentPools() {
       const data = await res.json()
       const mapped = (data?.data || []).map(
         (d: { id: string; attributes: TalentPoolSummary }) => ({
-          id: d.id,
           ...d.attributes,
+          id: d.id,
         })
       )
       setPools(mapped)

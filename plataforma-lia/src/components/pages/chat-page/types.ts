@@ -6,7 +6,7 @@ interface Message {
   sender: "lia" | "user"
   content: string
   timestamp: string
-  type?: "text" | "action" | "structured" | "file" | "system" | "approval" | "thinking" | "progress" | "command" | "file-creation" | "completion"
+  type?: "text" | "action" | "structured" | "file" | "system" | "approval" | "thinking" | "progress" | "command" | "file-creation" | "completion" | "flow"
   actions?: Array<{ label: string; icon?: React.ElementType; variant?: "default" | "outline" | "secondary" }>
   data?: Record<string, unknown>
   step?: string

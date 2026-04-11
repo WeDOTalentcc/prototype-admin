@@ -2,7 +2,8 @@
 
 import { useState, useRef, useCallback, useEffect } from "react"
 
-export type TransportMode = "ws" | "sse" | "disconnected"
+import type { TransportMode } from "./lia-chat-connection-types"
+export type { TransportMode }
 
 const WS_BASE_URL =
   process.env.NEXT_PUBLIC_WS_URL ||

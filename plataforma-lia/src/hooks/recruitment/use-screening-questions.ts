@@ -2,13 +2,8 @@
 
 import { useState, useCallback } from 'react'
 
-export interface BigFiveProfile {
-  openness: number
-  conscientiousness: number
-  extraversion: number
-  agreeableness: number
-  stability: number
-}
+import type { BigFiveProfile } from '@/hooks/company/use-company-culture'
+export type { BigFiveProfile }
 
 export interface ScreeningQuestion {
   id: string

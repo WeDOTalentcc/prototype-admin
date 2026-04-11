@@ -3,7 +3,7 @@
 
 import { CURRENCY_SYMBOL } from "@/lib/pricing"
 import { useState, useEffect, useRef, useMemo } from "react"
-import { useJobFiltersPersistence, type SavedSearch } from "@/hooks/jobs/useJobFiltersPersistence"
+import { useJobFiltersPersistence, type JobSavedSearch as SavedSearch } from "@/hooks/jobs/useJobFiltersPersistence"
 import { toast } from "sonner"
 import type { Job, JobFilters } from "@/components/jobs"
 

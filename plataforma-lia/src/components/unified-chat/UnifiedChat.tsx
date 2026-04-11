@@ -6,6 +6,7 @@ import { useLiaFloat, useLiaChatContext } from "@/contexts/lia-float-context"
 import { useAuthStore } from "@/stores/auth-store"
 import { HITLConfirmCard } from "@/components/lia-float/HITLConfirmCard"
 import { DynamicContextPanel } from "./wizard/DynamicContextPanel"
+import type { WizardStage } from "./wizard/wizard-types"
 import { SwitchTaskModal } from "@/components/lia-float/SwitchTaskModal"
 import { useNavigationIntent } from "@/hooks/shared/use-navigation-intent"
 import { useWizardIntegration } from "./wizard/useWizardIntegration"
@@ -303,7 +304,7 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
         {/* Progressive disclosure tips (wizard active) */}
         {hasDynamicPanel && (
           <ProgressiveDisclosure
-            currentStage={dynamicPanel?.stage ?? null}
+            currentStage={(dynamicPanel?.stage as WizardStage) ?? null}
             interactionCount={chatMessages.filter(m => m.sender === "user").length}
           />
         )}
@@ -330,7 +331,7 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
       {hasDynamicPanel && (
         <div className="w-[340px] flex-shrink-0 border-l border-lia-border-subtle overflow-y-auto">
           <DynamicContextPanel
-            stage={dynamicPanel?.stage ?? null}
+            stage={(dynamicPanel?.stage as WizardStage) ?? null}
             data={dynamicPanel?.data ?? {}}
             requiresApproval={dynamicPanel?.requires_approval ?? false}
             onApprove={() => sendApproval(true)}

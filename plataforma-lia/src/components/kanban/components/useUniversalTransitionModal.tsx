@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from 'react'
-import { useInterpretContext, type ChatMessage } from '@/hooks/shared/use-interpret-context'
+import { useInterpretContext, type InterpretChatMessage as ChatMessage } from '@/hooks/shared/use-interpret-context'
 import { useTransitionContext, type CandidateContext, type JobContext } from '@/hooks/recruitment/use-transition-context'
 import { RECRUITMENT_STAGES } from '@/lib/recruitment-stages'
 import { isLiaAutoAllowed } from '../utils/action-matrix'
@@ -181,7 +181,7 @@ export function useUniversalTransitionModal({
         email: c.email,
         phone: c.phone,
         avatar: c.avatar,
-        current_title: c.role,
+        current_title: c.role ?? undefined,
         current_company: c.currentCompany || c.company,
       }))
     : []

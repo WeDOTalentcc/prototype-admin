@@ -4,7 +4,8 @@ import { useCallback } from 'react'
 import { useJobFiltersStore } from '@/stores/job-filters-store'
 import type { JobFiltersState, SavedSearch } from '@/stores/job-filters-store'
 
-export type { JobFiltersState, SavedSearch }
+export type { JobFiltersState }
+export type { SavedSearch as JobSavedSearch } from '@/stores/job-filters-store'
 
 export function useJobFiltersPersistence() {
   const filtersState = useJobFiltersStore(s => s.filtersState)

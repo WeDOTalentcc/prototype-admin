@@ -157,7 +157,7 @@ export function JobsPage(props: JobsPageProps) {
               id: filter.id,
               label: filter.label,
               icon: TAB_ICONS[filter.id] || Briefcase,
-              count: filter.isDashboard ? null : filter.count,
+              count: (filter as Record<string, unknown>).isDashboard ? null : filter.count,
             } satisfies PageTab
           })}
           activeTab={activeFilter}

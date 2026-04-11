@@ -39,7 +39,7 @@ export function BigFivePanel({ data }: Props) {
   const traits = Object.entries(TRAIT_CONFIG).map(([key, cfg]) => ({
     key,
     ...cfg,
-    score: (profile as Record<string, number>)[key] ?? 0,
+    score: (profile as unknown as Record<string, number>)[key] ?? 0,
     evidence: profile.evidences?.[key] || [],
     rank: rankings.find((r) => r.trait === key)?.rank,
   }))

@@ -460,7 +460,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
           />
         )}
 
-        {activeTab === 'talent-pools' && (
+        {(activeTab as string) === 'talent-pools' && (
           <TalentPoolsTab onSelectPool={(id) => {}} />
         )}
 

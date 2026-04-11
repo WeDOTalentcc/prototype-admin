@@ -112,18 +112,6 @@ export function CompanyTagsInput({
     }
   }, [])
 
-  useEffect(() => {
-    if (inputValue.trim().length < 3) {
-      return
-    }
-
-    const timer = setTimeout(() => {
-      fetchAISuggestions(inputValue.trim())
-    }, 500)
-
-    return () => clearTimeout(timer)
-  }, [inputValue, fetchAISuggestions])
-
   const fetchAISuggestions = useCallback(async (query: string) => {
     if (!query || query.length < 3) return
     
@@ -181,6 +169,18 @@ export function CompanyTagsInput({
       }
     }
   }, [existingTags])
+
+  useEffect(() => {
+    if (inputValue.trim().length < 3) {
+      return
+    }
+
+    const timer = setTimeout(() => {
+      fetchAISuggestions(inputValue.trim())
+    }, 500)
+
+    return () => clearTimeout(timer)
+  }, [inputValue, fetchAISuggestions])
 
   const addTag = useCallback((tag: CompanyTagItem) => {
     if (!tag.name.trim()) return

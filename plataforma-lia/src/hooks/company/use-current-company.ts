@@ -36,7 +36,7 @@ export function useCurrentCompany(): UseCurrentCompanyReturn {
   return {
     company: data ?? null,
     companyId: data?.id ?? null,
-    tenantId: user?.company_id ?? null,
+    tenantId: (user as Record<string, unknown> | null)?.company_id as string ?? null,
     loading: isLoading,
     error: error?.message ?? null,
     refetch: async () => { await mutate() },

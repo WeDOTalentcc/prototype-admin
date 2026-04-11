@@ -10,7 +10,7 @@ interface ChatSuggestionsPanelProps {
   isOpen: boolean
   onClose: () => void
   onSelectQuery: (query: string) => void
-  mode: "sidebar" | "floating" | "fullscreen"
+  mode: "sidebar" | "floating" | "fullscreen" | "minimized"
 }
 
 export function ChatSuggestionsPanel({

@@ -9,8 +9,8 @@ import type {
   UseTransitionContextOptions,
 } from './transition-context-types'
 import {
-  API_BASE,
-  fetchWithTimeout,
+  TRANSITION_API_BASE as API_BASE,
+  fetchWithTimeoutTransition as fetchWithTimeout,
   getAvailableActionsForTransition,
   getDefaultSubStatus,
   getDefaultSubStatusOptions,

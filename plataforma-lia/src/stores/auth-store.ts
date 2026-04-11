@@ -140,8 +140,8 @@ export const useAuthStore = create<AuthStore>()(
       },
 
       initAuth: async () => {
-        if (typeof window !== 'undefined' && (window as Record<string, unknown>).__INITIAL_USER__) {
-          const serverData = (window as Record<string, unknown>).__INITIAL_USER__ as Record<string, unknown>
+        if (typeof window !== 'undefined' && (window as unknown as Record<string, unknown>).__INITIAL_USER__) {
+          const serverData = (window as unknown as Record<string, unknown>).__INITIAL_USER__ as Record<string, unknown>
           const roleStr = String(serverData.role || 'viewer')
           const userData: AuthenticatedUser = {
             id: String(serverData.id || ''),
@@ -161,7 +161,7 @@ export const useAuthStore = create<AuthStore>()(
               isSSO: false,
               isLoading: false,
             }, false, 'auth/init/server-injected')
-            delete (window as Record<string, unknown>).__INITIAL_USER__
+            delete (window as unknown as Record<string, unknown>).__INITIAL_USER__
             return
           }
         }

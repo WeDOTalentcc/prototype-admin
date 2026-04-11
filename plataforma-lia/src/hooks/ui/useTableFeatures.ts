@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect, useMemo } from "react"
 import { useTableFeaturesStore } from "@/stores/table-features-store"
 
-export interface ColumnConfig {
+export interface TableColumnConfig {
   id: string
   label: string
   sortKey?: string
@@ -20,7 +20,7 @@ export interface SortState {
 
 export interface UseTableFeaturesOptions {
   tableId: string
-  columns: ColumnConfig[]
+  columns: TableColumnConfig[]
   defaultSortField?: string
   defaultSortOrder?: 'asc' | 'desc'
 }

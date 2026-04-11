@@ -46,6 +46,7 @@ interface PoolCandidate {
   moved_to_job_id: number | null
   screening_data: Record<string, unknown>
   match_criteria: Record<string, unknown>
+  created_at?: string
   candidate: {
     id: number
     name: string

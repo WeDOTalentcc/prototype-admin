@@ -196,7 +196,6 @@ export function useGlobalSearchHub(
 
   useImperativeHandle(ref, () => ({
     save: handleSave,
-    save: handleSave,
     cancel: handleCancel,
     hasChanges
   }), [handleSave, handleCancel, hasChanges])

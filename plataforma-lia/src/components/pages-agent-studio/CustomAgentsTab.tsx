@@ -29,6 +29,8 @@ interface CustomAgent {
   is_marketplace_published: boolean
   created_at: string | null
   updated_at: string | null
+  max_steps?: number
+  temperature?: number
 }
 
 const STATUS_CONFIG: Record<string, { label: string; dot: string; bg: string; text: string }> = {

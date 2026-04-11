@@ -12,7 +12,7 @@ interface InterpretContextParams {
   action_behavior: string
   prompt?: string
   company_id?: string
-  message_history?: ChatMessage[]
+  message_history?: InterpretChatMessage[]
   conversation_id?: string
 }
 
@@ -52,7 +52,7 @@ interface InterpretContextResult {
   conversation_id?: string
 }
 
-export interface ChatMessage {
+export interface InterpretChatMessage {
   role: 'user' | 'lia'
   content: string
   timestamp: number
@@ -80,14 +80,14 @@ export interface ChatMessage {
 export function useInterpretContext() {
   const [isLoading, setIsLoading] = useState(false)
   const [result, setResult] = useState<InterpretContextResult | null>(null)
-  const [messages, setMessages] = useState<ChatMessage[]>([])
+  const [messages, setMessages] = useState<InterpretChatMessage[]>([])
   const [conversationId, setConversationId] = useState<string | undefined>(undefined)
 
   const sendMessage = useCallback(async (
     userMessage: string,
     params: Omit<InterpretContextParams, 'prompt' | 'message_history'>
   ) => {
-    const userChatMessage: ChatMessage = {
+    const userChatMessage: InterpretChatMessage = {
       role: 'user',
       content: userMessage,
       timestamp: Date.now(),
@@ -119,7 +119,7 @@ export function useInterpretContext() {
         }
 
         if (data.lia_message) {
-          const liaChatMessage: ChatMessage = {
+          const liaChatMessage: InterpretChatMessage = {
             role: 'lia',
             content: data.lia_message,
             timestamp: Date.now(),
@@ -142,7 +142,7 @@ export function useInterpretContext() {
         return data
       }
     } catch (error) {
-      const errorMessage: ChatMessage = {
+      const errorMessage: InterpretChatMessage = {
         role: 'lia',
         content: 'Desculpe, não consegui processar sua mensagem. Tente novamente.',
         timestamp: Date.now(),

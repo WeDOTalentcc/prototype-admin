@@ -25,7 +25,7 @@ import { cn } from '@/lib/utils'
 import { isClearChatCommand } from '@/lib/chat-commands'
 import { cleanAgentResponse, parseChatMarkdown, escapeHtml } from '@/lib/chat-format'
 import { MessageFeedback } from '@/components/chat/message-feedback'
-import type { ChatMessage, TaskItem, LearnedSuggestion } from '@/hooks/shared/use-interpret-context'
+import type { InterpretChatMessage as ChatMessage, TaskItem, LearnedSuggestion } from '@/hooks/shared/use-interpret-context'
 import { sanitizeHtml } from "@/lib/sanitize"
 import { ThinkingDots } from "@/components/ui/thinking-dots"
 import { ContextBadge } from "@/components/lia-float/ContextBadge"

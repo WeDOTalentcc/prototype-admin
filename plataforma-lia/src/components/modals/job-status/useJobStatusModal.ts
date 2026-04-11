@@ -238,25 +238,6 @@ export function useJobStatusModal({
     }
   }, [isCancelMode, isPauseMode, cancelInterviews, totalInterviews, cancelScreenings, totalScreenings, notifyApplicants, selectedCandidateIds.size, notifyRecruiters, jobs.length])
 
-  const handleProceed = useCallback(() => {
-    if (hasProposalBlock && isPauseMode) {
-      toast.error(`${candidatesInProposal.length} candidato(s) em etapa de Proposta devem ser finalizados antes de continuar.`)
-      return
-    }
-
-    if ((isPauseMode || isCancelMode) && notifyApplicants && onNavigateToJobWithCommunication) {
-      handleSubmitAndNavigate()
-    } else if ((isPauseMode || isCancelMode) && notifyApplicants) {
-      setCurrentStep('communication')
-    } else {
-      setCurrentStep('confirmation')
-    }
-  }, [hasProposalBlock, isPauseMode, isCancelMode, candidatesInProposal.length, notifyApplicants, onNavigateToJobWithCommunication, handleSubmitAndNavigate])
-
-  const handleCommunicationProceed = useCallback(() => {
-    setCurrentStep('confirmation')
-  }, [])
-
   const handleSubmitAndNavigate = useCallback(async () => {
     if (isSubmitting) return
     setIsSubmitting(true)
@@ -300,6 +281,25 @@ export function useJobStatusModal({
       setIsSubmitting(false)
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps -- intentionally omitting all deps; this callback is used as a navigation action
+  }, [])
+
+  const handleProceed = useCallback(() => {
+    if (hasProposalBlock && isPauseMode) {
+      toast.error(`${candidatesInProposal.length} candidato(s) em etapa de Proposta devem ser finalizados antes de continuar.`)
+      return
+    }
+
+    if ((isPauseMode || isCancelMode) && notifyApplicants && onNavigateToJobWithCommunication) {
+      handleSubmitAndNavigate()
+    } else if ((isPauseMode || isCancelMode) && notifyApplicants) {
+      setCurrentStep('communication')
+    } else {
+      setCurrentStep('confirmation')
+    }
+  }, [hasProposalBlock, isPauseMode, isCancelMode, candidatesInProposal.length, notifyApplicants, onNavigateToJobWithCommunication, handleSubmitAndNavigate])
+
+  const handleCommunicationProceed = useCallback(() => {
+    setCurrentStep('confirmation')
   }, [])
 
   const handleSubmit = async () => {

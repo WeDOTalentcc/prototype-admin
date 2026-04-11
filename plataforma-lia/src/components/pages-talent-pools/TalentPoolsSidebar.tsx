@@ -117,7 +117,7 @@ function PoolItem({
     >
       <div className="flex items-center gap-2 min-w-0">
         {pool.agent_sourcing_enabled && (
-          <Bot className="w-3.5 h-3.5 text-lia-text-tertiary flex-shrink-0" title="Agente ativo" />
+          <Bot className="w-3.5 h-3.5 text-lia-text-tertiary flex-shrink-0" />
         )}
         <span className={`${textStyles.sidebarItem} truncate`}>{pool.name}</span>
       </div>

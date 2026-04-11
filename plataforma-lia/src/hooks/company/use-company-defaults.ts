@@ -6,10 +6,10 @@ export interface CompanyDefaults {
   workModel: string
   employmentTypes: string[]
   defaultLanguages: string[]
-  benefits: CompanyBenefit[]
+  benefits: CompanyDefaultBenefit[]
 }
 
-export interface CompanyBenefit {
+export interface CompanyDefaultBenefit {
   id: string
   name: string
   category: string
@@ -70,7 +70,7 @@ export function useCompanyDefaults(): UseCompanyDefaultsResult {
         }
       }
 
-      let benefits: CompanyBenefit[] = []
+      let benefits: CompanyDefaultBenefit[] = []
       if (companyId && responses[1]?.ok) {
         const benefitsData = await responses[1].json()
         const rawBenefits = Array.isArray(benefitsData) ? benefitsData : benefitsData.items || []

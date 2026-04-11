@@ -21,10 +21,7 @@ function maskPII(text: string): string {
     .replace(/\b(?:\+55\s?)?(?:\(?\d{2}\)?\s?)(?:9\d{4}|\d{4})-?\d{4}\b/g, "[tel]")
 }
 
-export function formatMessageTime(isoDate?: string): string {
-  const d = isoDate ? new Date(isoDate) : new Date()
-  return d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })
-}
+import { formatMessageTime } from "./lia-chat-connection-types"
 
 interface UseFloatConversationResult {
   conversationId: string | null

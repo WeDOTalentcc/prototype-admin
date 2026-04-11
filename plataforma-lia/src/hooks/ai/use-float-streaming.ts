@@ -12,30 +12,8 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { useAgentStreaming, type StreamingEvent } from './use-agent-streaming'
 
-export interface HITLPending {
-  pendingId: string
-  threadId: string
-  action: string
-  description: string
-  data: Record<string, unknown>
-}
-
-export interface PanelUpdateEvent {
-  panel_type: string
-  panel_data: Record<string, unknown>
-  panel_title?: string
-  action: "open" | "update" | "close"
-}
-
-export interface BackgroundTaskEvent {
-  task_id: string
-  task_type: "sourcing" | "screening" | "communication" | "analysis"
-  label: string
-  status: "running" | "completed" | "failed"
-  progress?: number
-  message?: string
-  result?: Record<string, unknown>
-}
+import type { HITLPending, PanelUpdateEvent, BackgroundTaskEvent } from '@/hooks/chat/lia-chat-connection-types'
+export type { HITLPending, PanelUpdateEvent, BackgroundTaskEvent }
 
 import type { TransportMode } from '@/hooks/chat/useChatTransport'
 

@@ -125,7 +125,7 @@ export interface SearchTag {
 }
 
 export type SearchTab = 'natural' | 'similar' | 'job-description' | 'boolean' | 'arquetipos' | 'filtros'
-export type SearchSource = 'local' | 'global' | 'hybrid'
+export type PromptSearchSource = 'local' | 'global' | 'hybrid'
 
 export interface UsePromptStateParams {
   forceExpanded?: boolean

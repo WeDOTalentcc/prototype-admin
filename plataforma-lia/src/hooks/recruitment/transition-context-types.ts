@@ -96,9 +96,9 @@ export interface UseTransitionContextReturn {
   setChannel: (channel: 'email' | 'whatsapp') => void
 }
 
-export const API_BASE = '/api/backend-proxy'
+export const TRANSITION_API_BASE = '/api/backend-proxy'
 
-export async function fetchWithTimeout(url: string, options: RequestInit, timeout = 30000): Promise<Response> {
+export async function fetchWithTimeoutTransition(url: string, options: RequestInit, timeout = 30000): Promise<Response> {
   const controller = new AbortController()
   const id = setTimeout(() => controller.abort(), timeout)
   try {

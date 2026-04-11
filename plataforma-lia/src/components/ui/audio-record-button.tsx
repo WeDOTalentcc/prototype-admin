@@ -5,6 +5,29 @@ import { Button } from "@/components/ui/button"
 import { Mic, Loader2, Square } from "lucide-react"
 import { cn } from "@/lib/utils"
 
+interface SpeechRecognitionEvent extends Event {
+  results: SpeechRecognitionResultList
+  resultIndex: number
+}
+
+interface SpeechRecognitionErrorEvent extends Event {
+  error: string
+  message: string
+}
+
+interface SpeechRecognition extends EventTarget {
+  continuous: boolean
+  interimResults: boolean
+  maxAlternatives: number
+  lang: string
+  start(): void
+  stop(): void
+  abort(): void
+  onresult: ((event: SpeechRecognitionEvent) => void) | null
+  onerror: ((event: SpeechRecognitionErrorEvent) => void) | null
+  onend: (() => void) | null
+}
+
 interface AudioRecordButtonProps {
   onTranscription: (text: string) => void
   onRecordingStart?: () => void

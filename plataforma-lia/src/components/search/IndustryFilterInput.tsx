@@ -126,18 +126,6 @@ export function IndustryFilterInput({
     }
   }, [])
 
-  useEffect(() => {
-    if (inputValue.trim().length < 3) {
-      return
-    }
-
-    const timer = setTimeout(() => {
-      fetchAISuggestions(inputValue.trim())
-    }, 500)
-
-    return () => clearTimeout(timer)
-  }, [inputValue, fetchAISuggestions])
-
   const fetchAISuggestions = useCallback(async (query: string) => {
     if (!query || query.length < 3) return
     
@@ -191,6 +179,18 @@ export function IndustryFilterInput({
       }
     }
   }, [existingIndustries])
+
+  useEffect(() => {
+    if (inputValue.trim().length < 3) {
+      return
+    }
+
+    const timer = setTimeout(() => {
+      fetchAISuggestions(inputValue.trim())
+    }, 500)
+
+    return () => clearTimeout(timer)
+  }, [inputValue, fetchAISuggestions])
 
   const addIndustry = useCallback((industry: string) => {
     const trimmed = industry.trim()

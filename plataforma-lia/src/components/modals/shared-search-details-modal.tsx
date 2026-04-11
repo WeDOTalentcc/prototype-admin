@@ -57,6 +57,18 @@ const [sharedSearch, setSharedSearch] = useState<SharedSearchDetail | null>(null
   const [activeFilter, setActiveFilter] = useState<FilterType>('all')
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
 
+  const loadDetails = useCallback(async () => {
+    try {
+      setLoading(true)
+      const data = await liaApi.getSharedSearchDetail(sharedSearchId)
+      setSharedSearch(data)
+    } catch (error) {
+      toast.error("Erro ao carregar detalhes", { description:"Não foi possível carregar os detalhes do compartilhamento." })
+    } finally {
+      setLoading(false)
+    }
+  }, [sharedSearchId])
+
   useEffect(() => {
     if (open && sharedSearchId) {
       loadDetails()
@@ -71,18 +83,6 @@ const [sharedSearch, setSharedSearch] = useState<SharedSearchDetail | null>(null
       setSelectedIds(new Set())
     }
   }, [open])
-
-  const loadDetails = useCallback(async () => {
-    try {
-      setLoading(true)
-      const data = await liaApi.getSharedSearchDetail(sharedSearchId)
-      setSharedSearch(data)
-    } catch (error) {
-      toast.error("Erro ao carregar detalhes", { description:"Não foi possível carregar os detalhes do compartilhamento." })
-    } finally {
-      setLoading(false)
-    }
-  }, [sharedSearchId])
   const feedbackMap = useMemo(() => {
     if (!sharedSearch) return new Map<string, CandidateFeedback>()
     const map = new Map<string, CandidateFeedback>()

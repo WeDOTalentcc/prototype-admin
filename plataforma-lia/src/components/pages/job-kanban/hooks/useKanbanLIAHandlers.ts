@@ -9,7 +9,7 @@ import { type CommunicationType } from "@/components/modals/unified-communicatio
 import { toast } from "sonner"
 import { useCompanyId } from "@/hooks/company/useCompanyId"
 import { useLiaChatContext } from "@/contexts/lia-float-context"
-import { formatMessageTime } from "@/hooks/chat/use-lia-chat-connection"
+import { formatMessageTime } from "@/hooks/chat/lia-chat-connection-types"
 
 interface KanbanJob {
   id?: string | number

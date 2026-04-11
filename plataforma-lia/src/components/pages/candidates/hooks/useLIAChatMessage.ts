@@ -8,7 +8,7 @@ import type { LIAChatMessage, CandidatesLIAHandlersContext } from "./useCandidat
 import type { SearchFilters } from "@/components/search/advanced-filters-modal"
 import { useCompanyId } from "@/hooks/company/useCompanyId"
 import { useLiaChatContext } from "@/contexts/lia-float-context"
-import { formatMessageTime } from "@/hooks/chat/use-lia-chat-connection"
+import { formatMessageTime } from "@/hooks/chat/lia-chat-connection-types"
 
 type SearchTab = 'ia-natural' | 'similar' | 'job-description' | 'boolean' | 'arquetipos' | 'filtros'
 

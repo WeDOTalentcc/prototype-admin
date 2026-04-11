@@ -137,7 +137,7 @@ export function FairnessComplianceHub({ activeSubsection }: FairnessComplianceHu
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {[1, 2, 3].map((i) => (
-            <Card key={i} className={cardStyles.base}>
+            <Card key={i} className={cardStyles.default}>
               <CardContent className="p-5">
                 <div className="animate-pulse space-y-3">
                   <div className="h-4 bg-lia-bg-tertiary rounded w-2/3" />
@@ -149,7 +149,7 @@ export function FairnessComplianceHub({ activeSubsection }: FairnessComplianceHu
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Card className={cardStyles.base}>
+          <Card className={cardStyles.default}>
             <CardContent className="p-5">
               <div className="flex items-center gap-3 mb-2">
                 <div className="w-9 h-9 rounded-lg bg-blue-500/10 flex items-center justify-center">
@@ -160,7 +160,7 @@ export function FairnessComplianceHub({ activeSubsection }: FairnessComplianceHu
               <p className="text-2xl font-semibold text-lia-text-primary">{summary?.total_events ?? 0}</p>
             </CardContent>
           </Card>
-          <Card className={cardStyles.base}>
+          <Card className={cardStyles.default}>
             <CardContent className="p-5">
               <div className="flex items-center gap-3 mb-2">
                 <div className="w-9 h-9 rounded-lg bg-red-500/10 flex items-center justify-center">
@@ -171,7 +171,7 @@ export function FairnessComplianceHub({ activeSubsection }: FairnessComplianceHu
               <p className="text-2xl font-semibold text-red-500">{summary?.total_blocks ?? 0}</p>
             </CardContent>
           </Card>
-          <Card className={cardStyles.base}>
+          <Card className={cardStyles.default}>
             <CardContent className="p-5">
               <div className="flex items-center gap-3 mb-2">
                 <div className="w-9 h-9 rounded-lg bg-yellow-500/10 flex items-center justify-center">
@@ -187,7 +187,7 @@ export function FairnessComplianceHub({ activeSubsection }: FairnessComplianceHu
 
       {/* Bar Chart */}
       {!loading && chartData.length > 0 && (
-        <Card className={cardStyles.base}>
+        <Card className={cardStyles.default}>
           <CardHeader className="pb-2">
             <CardTitle className={textStyles.subtitle}>Eventos por Categoria</CardTitle>
           </CardHeader>
@@ -208,7 +208,7 @@ export function FairnessComplianceHub({ activeSubsection }: FairnessComplianceHu
 
       {/* Recent Incidents Table */}
       {!loading && logs.length > 0 && (
-        <Card className={cardStyles.base}>
+        <Card className={cardStyles.default}>
           <CardHeader className="pb-2">
             <CardTitle className={textStyles.subtitle}>Incidentes Recentes</CardTitle>
           </CardHeader>
@@ -262,7 +262,7 @@ export function FairnessComplianceHub({ activeSubsection }: FairnessComplianceHu
       )}
 
       {!loading && logs.length === 0 && !error && (
-        <Card className={cardStyles.base}>
+        <Card className={cardStyles.default}>
           <CardContent className="py-8 text-center">
             <Shield className="w-10 h-10 text-green-500 mx-auto mb-3" />
             <p className={textStyles.subtitle}>Nenhum incidente registrado</p>

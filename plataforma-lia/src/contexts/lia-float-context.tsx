@@ -11,15 +11,15 @@ import React, {
   ReactNode,
 } from "react"
 import type { FloatMessage } from "@/hooks/chat/use-float-conversation"
+import { useLiaChatConnection } from "@/hooks/chat/use-lia-chat-connection"
 import {
-  useLiaChatConnection,
   formatMessageTime,
   type LiaChatMessage,
   type HITLPending,
   type PanelUpdateEvent,
   type BackgroundTaskEvent,
   type TransportMode,
-} from "@/hooks/chat/use-lia-chat-connection"
+} from "@/hooks/chat/lia-chat-connection-types"
 
 export interface SplitViewState {
   active: boolean
@@ -45,6 +45,8 @@ export interface DynamicPanelData {
   panelType: DynamicPanelType
   data: Record<string, unknown>
   title?: string
+  stage?: string | null
+  requires_approval?: boolean
 }
 
 export type ChatContextType =

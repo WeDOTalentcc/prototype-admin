@@ -190,7 +190,7 @@ export function useWizardFlow() {
    * Check if a WS message is a wizard_stage payload.
    * Call from the WS message handler in useLiaChatContext.
    */
-  const isWizardMessage = useCallback((msg: Record<string, unknown>): msg is WizardStagePayload => {
+  const isWizardMessage = useCallback((msg: Record<string, unknown>): msg is Record<string, unknown> & WizardStagePayload => {
     return msg?.type === "wizard_stage" && typeof msg?.stage === "string"
   }, [])
 

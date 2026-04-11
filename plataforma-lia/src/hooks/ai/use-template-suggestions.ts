@@ -107,26 +107,6 @@ export const useTemplateSuggestions = () => {
     return Math.round(complexity)
   }, [])
 
-  const addCommand = useCallback((command: string, filters?: Record<string, unknown>, actions?: string[]) => {
-    if (!settings.enabled || !command.trim()) return
-
-    const complexity = calculateComplexity(command, filters, actions)
-
-    const newCommand: CommandHistory = {
-      command: command.trim(),
-      timestamp: new Date(),
-      filters,
-      actions,
-      complexity,
-      sessionId
-    }
-
-    const updatedHistory = [...commandHistory, newCommand]
-    saveToStore(updatedHistory)
-
-    analyzePatterns(updatedHistory, newCommand)
-  }, [commandHistory, settings, sessionId, calculateComplexity, saveToStore, analyzePatterns])
-
   const analyzePatterns = useCallback((history: CommandHistory[], newCommand: CommandHistory) => {
     if (!settings.enabled) return
 
@@ -167,6 +147,26 @@ export const useTemplateSuggestions = () => {
       setTemplateSuggestions(prev => [...prev, suggestion])
     }
   }, [settings, templateSuggestions])
+
+  const addCommand = useCallback((command: string, filters?: Record<string, unknown>, actions?: string[]) => {
+    if (!settings.enabled || !command.trim()) return
+
+    const complexity = calculateComplexity(command, filters, actions)
+
+    const newCommand: CommandHistory = {
+      command: command.trim(),
+      timestamp: new Date(),
+      filters,
+      actions,
+      complexity,
+      sessionId
+    }
+
+    const updatedHistory = [...commandHistory, newCommand]
+    saveToStore(updatedHistory)
+
+    analyzePatterns(updatedHistory, newCommand)
+  }, [commandHistory, settings, sessionId, calculateComplexity, saveToStore, analyzePatterns])
 
   const getPendingSuggestions = useCallback((): TemplateSuggestion[] => {
     return templateSuggestions.filter(s => !s.suggested)

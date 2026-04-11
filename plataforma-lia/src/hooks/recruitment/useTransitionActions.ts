@@ -8,8 +8,8 @@ import type {
   GeneratedMessage,
 } from './transition-context-types'
 import {
-  API_BASE,
-  fetchWithTimeout,
+  TRANSITION_API_BASE as API_BASE,
+  fetchWithTimeoutTransition as fetchWithTimeout,
   getDefaultSubStatus,
   generateFallbackMessage,
   getSubStatusFromMessage,
