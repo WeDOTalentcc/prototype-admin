@@ -260,6 +260,9 @@ class EmailService:
         a failure, FallbackEmailProvider automatically retries via Resend
         (when RESEND_CIRCUIT is closed and RESEND_API_KEY is set).
 
+        In development/test environments, falls back to logging when no
+        provider is configured or all providers fail.
+
         Args:
             to_email: Recipient email address
             subject: Email subject line
@@ -272,6 +275,9 @@ class EmailService:
         Returns:
             True if email was sent successfully, False otherwise
         """
+        env = os.getenv("ENVIRONMENT", "development").lower()
+        is_dev = env in ("development", "dev", "local", "test")
+
         try:
             if client_id and client_config:
                 provider: EmailProvider = get_provider_for_client(client_id, client_config)
@@ -299,11 +305,30 @@ class EmailService:
                     f"Failed to send email via {result.provider}: "
                     f"{result.error} (code: {result.error_code})"
                 )
+                if is_dev:
+                    return self._log_dev_email(to_email, subject, body_html, body_text)
                 return False
 
         except Exception as e:
             logger.error(f"Failed to send email: {str(e)}")
+            if is_dev:
+                return self._log_dev_email(to_email, subject, body_html, body_text)
             raise
+
+    def _log_dev_email(
+        self,
+        to_email: str,
+        subject: str,
+        body_html: str,
+        body_text: str | None = None,
+    ) -> bool:
+        logger.info("=" * 70)
+        logger.info("[DEV EMAIL] Email logged (development mode fallback)")
+        logger.info(f"[DEV EMAIL] To: {to_email}")
+        logger.info(f"[DEV EMAIL] Subject: {subject}")
+        logger.info(f"[DEV EMAIL] Body ({len(body_html)} chars): {body_html[:200]}")
+        logger.info("=" * 70)
+        return True
     
     async def send_user_notification(
         self,

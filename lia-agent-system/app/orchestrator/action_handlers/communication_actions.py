@@ -773,40 +773,72 @@ async def _create_template(params: dict[str, Any], context: dict[str, Any]):
                 action_type="create_template",
             )
 
+        import asyncio
+        import json as json_mod
+
         template_id = str(uuid_mod.uuid4())
 
-        async with AsyncSessionLocal() as db:
-            existing = await db.execute(text(
-                "SELECT id FROM email_templates WHERE name = :name AND (company_id = :co OR company_id IS NULL) LIMIT 1"
-            ), {"name": name, "co": str(company_id) if company_id else None})
-            if existing.fetchone():
-                return ActionResult(
-                    status="error",
-                    message=f'Já existe um template com o nome "{name}".',
-                    error_detail="Duplicate template name",
-                    action_type="create_template",
+        try:
+            async with AsyncSessionLocal() as db:
+                table_check = await asyncio.wait_for(
+                    db.execute(text(
+                        "SELECT 1 FROM information_schema.tables WHERE table_name = 'email_templates' LIMIT 1"
+                    )),
+                    timeout=5.0,
                 )
+                if not table_check.fetchone():
+                    return ActionResult(
+                        status="error",
+                        message="Tabela de templates não encontrada. Execute as migrações do banco de dados.",
+                        error_detail="email_templates table does not exist",
+                        action_type="create_template",
+                    )
 
-            await db.execute(text("""
-                INSERT INTO email_templates (id, name, subject, body_html, body_text,
-                    category, channel, variables, is_active, company_id, created_by,
-                    created_at, updated_at)
-                VALUES (CAST(:id AS uuid), :name, :subject, :body_html, :body_text,
-                    :category, :channel, CAST(:variables AS jsonb), true,
-                    :company_id, :created_by, NOW(), NOW())
-            """), {
-                "id": template_id,
-                "name": name,
-                "subject": subject or None,
-                "body_html": body_html,
-                "body_text": body_text or None,
-                "category": category,
-                "channel": channel,
-                "variables": __import__("json").dumps(variables),
-                "company_id": str(company_id) if company_id else None,
-                "created_by": str(user_id) if user_id else "system",
-            })
-            await db.commit()
+                existing = await asyncio.wait_for(
+                    db.execute(text(
+                        "SELECT id FROM email_templates WHERE name = :name AND (company_id = :co OR company_id IS NULL) LIMIT 1"
+                    ), {"name": name, "co": str(company_id) if company_id else None}),
+                    timeout=5.0,
+                )
+                if existing.fetchone():
+                    return ActionResult(
+                        status="error",
+                        message=f'Já existe um template com o nome "{name}".',
+                        error_detail="Duplicate template name",
+                        action_type="create_template",
+                    )
+
+                await asyncio.wait_for(
+                    db.execute(text("""
+                        INSERT INTO email_templates (id, name, subject, body_html, body_text,
+                            category, channel, variables, is_active, company_id, created_by,
+                            created_at, updated_at)
+                        VALUES (CAST(:id AS uuid), :name, :subject, :body_html, :body_text,
+                            :category, :channel, CAST(:variables AS jsonb), true,
+                            :company_id, :created_by, NOW(), NOW())
+                    """), {
+                        "id": template_id,
+                        "name": name,
+                        "subject": subject or None,
+                        "body_html": body_html,
+                        "body_text": body_text or None,
+                        "category": category,
+                        "channel": channel,
+                        "variables": json_mod.dumps(variables),
+                        "company_id": str(company_id),
+                        "created_by": str(user_id),
+                    }),
+                    timeout=5.0,
+                )
+                await db.commit()
+        except asyncio.TimeoutError:
+            logger.error("create_template DB timeout")
+            return ActionResult(
+                status="error",
+                message="Tempo limite excedido ao acessar o banco de dados. Tente novamente.",
+                error_detail="Database operation timed out",
+                action_type="create_template",
+            )
 
         await log_action_audit("create_template", company_id, details={"template_id": template_id, "name": name})
         await sync_to_rails("template_created", "email_template", template_id, {"name": name, "channel": channel})

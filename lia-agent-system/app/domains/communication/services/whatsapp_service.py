@@ -409,12 +409,12 @@ class WhatsAppService:
     ) -> WhatsAppSendResult:
         """Send WhatsApp message via Twilio API in production mode."""
         if not TWILIO_SDK_AVAILABLE:
-            logger.warning("Twilio SDK not installed")
-            return WhatsAppSendResult(
-                success=False,
-                status=WhatsAppStatus.FAILED,
-                error="Twilio SDK not installed. Run: pip install twilio",
-                error_code="SDK_NOT_AVAILABLE"
+            logger.warning("Twilio SDK not installed — falling back to development mode")
+            return await self._send_development(
+                to_phone=to_phone,
+                message=message,
+                media_url=media_url,
+                metadata={**(metadata or {}), "fallback_reason": "sdk_not_available"},
             )
         
         if not self.is_configured:
