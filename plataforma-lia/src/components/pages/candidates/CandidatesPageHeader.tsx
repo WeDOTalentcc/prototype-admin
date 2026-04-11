@@ -2,13 +2,14 @@
 
 import { Button } from "@/components/ui/button"
 import { Plus, Search, Bookmark } from "lucide-react"
-import { CandidateTabs } from "@/components/pages/candidates/CandidateTabs"
+import { PageTabNavigation } from "@/components/ui/page-tab-navigation"
 
 interface Tab {
   id: string
   label: string
   icon?: React.ComponentType<{ className?: string }>
   count?: number
+  comingSoon?: boolean
 }
 
 interface CandidatesPageHeaderProps {
@@ -38,15 +39,10 @@ export function CandidatesPageHeader({
 }: CandidatesPageHeaderProps) {
   return (
     <div data-testid="candidates-page-header" className="flex-shrink-0 px-4 pt-3 pb-0 bg-lia-bg-primary dark:bg-lia-bg-primary">
-      {/* Header Principal - Padrão Gestão de Vagas */}
-      <div className="flex items-center justify-between mb-0.5">
-        <div className="flex items-center gap-3">
-          <div>
-            <h1 className="text-xl font-semibold text-lia-text-primary">
-              Funil de Talentos
-            </h1>
-          </div>
-        </div>
+      <div className="flex items-center justify-between mb-2">
+        <h1 className="text-lg font-semibold text-lia-text-primary">
+          Funil de Talentos
+        </h1>
         <div className="flex gap-2">
           {/* Botão Novo Candidato - visível em todas as abas */}
           <Button
@@ -100,8 +96,7 @@ export function CandidatesPageHeader({
         </div>
       </div>
 
-      {/* Sistema de Abas - extraído para CandidateTabs (Sprint F5) */}
-      <CandidateTabs
+      <PageTabNavigation
         tabs={tabs}
         activeTab={activeTab}
         onTabChange={onTabChange}

@@ -16,6 +16,7 @@ import {
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
+import { PageTabNavigation } from "@/components/ui/page-tab-navigation"
 
 interface SourcingAgent {
   id: string
@@ -131,14 +132,11 @@ export default function AgentStudioPage({
 
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden bg-lia-bg-primary">
-      {/* Header */}
-      <div className="px-6 py-5 flex-shrink-0">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-lg font-semibold text-lia-text-primary">
-              Agent Studio
-            </h1>
-          </div>
+      <div className="flex-shrink-0 px-4 pt-3 pb-0">
+        <div className="flex items-center justify-between mb-2">
+          <h1 className="text-lg font-semibold text-lia-text-primary">
+            Agent Studio
+          </h1>
           <div className="flex items-center gap-2">
             <Button
               variant="ghost"
@@ -158,12 +156,21 @@ export default function AgentStudioPage({
             </Button>
           </div>
         </div>
-      </div>
 
-      {/* Stats Bar */}
-      {agents.length > 0 && (
-        <div className="px-6 py-3 flex-shrink-0">
-          <div className="flex items-center gap-6">
+        <PageTabNavigation
+          tabs={[
+            { id: "agents", label: "Sourcing Agents", icon: Bot, count: agents.length },
+            { id: "custom", label: "Custom Agents", icon: Wand2 },
+            { id: "marketplace", label: "Marketplace", icon: Store },
+            { id: "twins", label: "Digital Twins", icon: Users },
+            { id: "search", label: "Busca Inteligente", icon: Search },
+          ]}
+          activeTab={activeTab}
+          onTabChange={(id) => setActiveTab(id as typeof activeTab)}
+        />
+
+        {agents.length > 0 && (
+          <div className="flex items-center gap-6 mt-2 mb-1">
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
               <span className="text-xs font-medium text-lia-text-secondary">
@@ -191,48 +198,10 @@ export default function AgentStudioPage({
               </div>
             )}
           </div>
-        </div>
-      )}
-
-      {/* Tab Navigation */}
-      <div className="px-6 pt-4 flex-shrink-0">
-        <div className="flex gap-1 p-1 bg-lia-bg-secondary rounded-lg w-fit">
-          {[
-            { id: "agents" as const, label: "Sourcing Agents", icon: Bot, count: agents.length },
-            { id: "custom" as const, label: "Custom Agents", icon: Wand2, count: null },
-            { id: "marketplace" as const, label: "Marketplace", icon: Store, count: null },
-            { id: "twins" as const, label: "Digital Twins", icon: Users, count: null },
-            { id: "search" as const, label: "Busca Inteligente", icon: Search, count: null },
-          ].map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={cn(
-                "flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all duration-200",
-                activeTab === tab.id
-                  ? "bg-lia-bg-primary text-lia-text-primary shadow-sm"
-                  : "text-lia-text-secondary hover:text-lia-text-primary"
-              )}
-            >
-              <tab.icon className="w-3.5 h-3.5" />
-              {tab.label}
-              {tab.count !== null && tab.count > 0 && (
-                <span className={cn(
-                  "px-1.5 py-0.5 rounded-full text-[10px] font-bold",
-                  activeTab === tab.id
-                    ? "bg-lia-interactive-active text-lia-text-primary"
-                    : "bg-lia-bg-tertiary text-lia-text-disabled"
-                )}>
-                  {tab.count}
-                </span>
-              )}
-            </button>
-          ))}
-        </div>
+        )}
       </div>
 
-      {/* Content */}
-      <div className="flex-1 overflow-auto px-6 py-6">
+      <div className="flex-1 overflow-auto px-4 py-4">
         {activeTab === "agents" && (
           <div className="space-y-8">
             {/* How It Works — show prominently when no agents */}

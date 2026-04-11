@@ -4,6 +4,8 @@ import React, { useMemo } from "react"
 import dynamic from "next/dynamic"
 import { Button } from "@/components/ui/button"
 import { Plus, Users, Clock, AlertTriangle, CheckCircle2, Briefcase, Zap, Pause, CheckCircle, XCircle } from "lucide-react"
+import { PageTabNavigation } from "@/components/ui/page-tab-navigation"
+import type { PageTab } from "@/components/ui/page-tab-navigation"
 import { JobKanbanPage } from "./job-kanban-page"
 import { LoadingModal as JobsLoadingModal } from "@/components/ui/loading"
 import { toast } from "sonner"
@@ -127,29 +129,44 @@ export function JobsPage(props: JobsPageProps) {
         </div>
       )}
 
-      <div className={`flex-shrink-0 px-4 pt-3 pb-2 bg-lia-bg-primary dark:bg-lia-bg-primary ${chatMode === 'job-creation' && isChatFullscreen ? 'hidden' : ''}`}>
-        <div className="flex items-center justify-between mb-0.5">
-          <div className="flex items-center gap-3">
-            <div>
-              <h1 className="text-lg font-semibold text-lia-text-primary">
-                Gestão de Vagas
-              </h1>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button
-              className="gap-2 h-8 px-3 bg-lia-btn-primary-hover"
-              onClick={() => setShowCreateJobModal(true)}
-            >
-              <Plus className="w-4 h-4" />
-              Nova Vaga
-            </Button>
-          </div>
+      <div className={`flex-shrink-0 px-4 pt-3 pb-0 bg-lia-bg-primary dark:bg-lia-bg-primary ${chatMode === 'job-creation' && isChatFullscreen ? 'hidden' : ''}`}>
+        <div className="flex items-center justify-between mb-2">
+          <h1 className="text-lg font-semibold text-lia-text-primary">
+            Gestão de Vagas
+          </h1>
+          <Button
+            className="gap-2 h-8 px-3 bg-lia-btn-primary-hover"
+            onClick={() => setShowCreateJobModal(true)}
+          >
+            <Plus className="w-4 h-4" />
+            Nova Vaga
+          </Button>
         </div>
 
-        {/* Stats Bar — metrics that complement the tabs */}
+        <PageTabNavigation
+          tabs={navigationFilters.map((filter) => {
+            const TAB_ICONS: Record<string, React.ComponentType<{className?: string}>> = {
+              'todas': Briefcase,
+              'ativas': Zap,
+              'urgentes': AlertTriangle,
+              'paralisadas': Pause,
+              'concluidas': CheckCircle,
+              'canceladas': XCircle,
+            }
+            return {
+              id: filter.id,
+              label: filter.label,
+              icon: TAB_ICONS[filter.id] || Briefcase,
+              count: filter.isDashboard ? null : filter.count,
+            } satisfies PageTab
+          })}
+          activeTab={activeFilter}
+          onTabChange={setActiveFilter}
+          isLoading={isLoadingJobs}
+        />
+
         {!isLoadingJobs && dashboardStats && (
-          <div className="flex items-center gap-6 mt-1 mb-2">
+          <div className="flex items-center gap-6 mt-2 mb-1">
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
               <span className="text-xs text-lia-text-secondary">
@@ -180,50 +197,6 @@ export function JobsPage(props: JobsPageProps) {
             )}
           </div>
         )}
-        <div className="mb-0">
-          <div className="flex gap-1 p-1 bg-lia-bg-secondary rounded-lg w-fit" role="tablist" aria-label="Tabs">
-            {navigationFilters.map((filter) => {
-              const TAB_ICONS: Record<string, React.ComponentType<{className?: string}>> = {
-                'todas': Briefcase,
-                'ativas': Zap,
-                'urgentes': AlertTriangle,
-                'paralisadas': Pause,
-                'concluidas': CheckCircle,
-                'canceladas': XCircle,
-              }
-              const TabIcon = TAB_ICONS[filter.id] || Briefcase
-              return (
-              <button
-                key={filter.id}
-                onClick={() => { setActiveFilter(filter.id) }}
-                role="tab"
-                aria-selected={activeFilter === filter.id}
-                className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
-                  activeFilter === filter.id
-                    ? 'bg-lia-bg-primary text-lia-text-primary shadow-sm'
-                    : 'text-lia-text-secondary hover:text-lia-text-primary'
-                }`}
-              >
-                <TabIcon className="w-3.5 h-3.5" />
-                <span>{filter.label}</span>
-                {!filter.isDashboard && (
-                  <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-semibold ${
-                    activeFilter === filter.id
-                      ? 'bg-lia-interactive-active text-lia-text-primary'
-                      : 'bg-lia-bg-tertiary text-lia-text-disabled'
-                  }`}>
-                    {isLoadingJobs ? (
-                      <span className="inline-block w-4 h-3 bg-lia-interactive-active dark:bg-lia-bg-elevated rounded animate-pulse motion-reduce:animate-none" />
-                    ) : (
-                      filter.count
-                    )}
-                  </span>
-                )}
-              </button>
-              )
-            })}
-          </div>
-        </div>
       </div>
 
       <div className={`flex-1 flex flex-col overflow-hidden px-4 pt-2 pb-2 ${chatMode === 'job-creation' && isChatFullscreen ? 'hidden' : ''}`}>

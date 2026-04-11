@@ -342,10 +342,9 @@ export const tabStyles = {
   tabActive: 'px-4 py-2 text-xs font-semibold text-lia-text-primary border-b-2 border-lia-btn-primary-bg dark:text-lia-text-primary dark:border-lia-border-medium',
   tabDisabled: 'px-4 py-2 text-xs font-medium text-lia-text-disabled cursor-not-allowed',
   
-  // Estilo pill (badges arredondadas) - PADRÃO para Settings hubs
   pillContainer: 'flex gap-1 p-1 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-lg w-fit',
-  pill: "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors cursor-pointer font-['Open_Sans',sans-serif] text-lia-text-secondary hover:bg-lia-bg-tertiary dark:text-lia-text-secondary dark:hover:bg-lia-btn-primary-hover",
-  pillActive: "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors cursor-pointer font-['Open_Sans',sans-serif] bg-lia-btn-primary-bg text-lia-btn-primary-text dark:bg-lia-bg-secondary dark:text-lia-text-disabled",
+  pill: "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer font-['Open_Sans',sans-serif] text-lia-text-secondary hover:bg-lia-bg-tertiary dark:text-lia-text-secondary dark:hover:bg-lia-btn-primary-hover",
+  pillActive: "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer font-['Open_Sans',sans-serif] bg-lia-bg-primary text-lia-text-primary shadow-sm dark:bg-lia-bg-primary dark:text-lia-text-primary",
   pillIcon: 'w-3.5 h-3.5',
 } as const
 

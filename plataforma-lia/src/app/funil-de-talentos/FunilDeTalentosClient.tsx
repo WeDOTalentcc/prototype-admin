@@ -188,21 +188,15 @@ const STATUS_OPTIONS = ["Novo","Em triagem","Aprovado","Reprovado"]
         />
       )}
 
-      <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 py-6 space-y-4">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <div>
-            <h1 className={cn(textStyles.title,"text-xl font-semibold")}>
-              Funil de Talentos
-            </h1>
-
-            <p className={cn(textStyles.description,"text-xs mt-0.5")} aria-live="polite">"Gerencie sua base de candidatos"
-            </p>
-          </div>
+      <div className="max-w-screen-2xl mx-auto px-4 pt-3 pb-0 space-y-0">
+        <div className="flex items-center justify-between mb-2">
+          <h1 className="text-lg font-semibold text-lia-text-primary">
+            Funil de Talentos
+          </h1>
           <Button
             variant="outline"
             size="sm"
-            className="rounded-xl border-lia-border-default dark:border-lia-border-subtle self-start sm:self-auto"
+            className="rounded-xl border-lia-border-default dark:border-lia-border-subtle"
             onClick={() => setShareModalOpen(true)}
             disabled={candidates.length === 0}
           >
@@ -211,27 +205,9 @@ const STATUS_OPTIONS = ["Novo","Em triagem","Aprovado","Reprovado"]
           </Button>
         </div>
 
-
-        {/* Stats Bar */}
-        <div className="flex items-center gap-6">
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-wedo-cyan animate-pulse" />
-            <span className="text-xs text-lia-text-secondary">
-              <span className="font-semibold text-lia-text-primary">{total.toLocaleString("pt-BR")}</span> candidatos
-            </span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <Heart className="w-3.5 h-3.5 text-rose-500" />
-            <span className="text-xs text-lia-text-secondary">
-              <span className="font-semibold text-lia-text-primary">{favoriteIds.size}</span> favoritos
-            </span>
-          </div>
-        </div>
-
-        {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="bg-lia-bg-secondary dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-lg">
-            <TabsTrigger value="todos" className="rounded-md text-xs">
+          <TabsList className="bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-lg">
+            <TabsTrigger value="todos" className="rounded-lg text-xs">
               Todos
               {activeTab ==="todos" && total > 0 && (
                 <Badge className="ml-1.5 h-4 px-1.5 text-micro  dark:bg-wedo-cyan/20 dark:text-wedo-cyan">
@@ -239,11 +215,26 @@ const STATUS_OPTIONS = ["Novo","Em triagem","Aprovado","Reprovado"]
                 </Badge>
               )}
             </TabsTrigger>
-            <TabsTrigger value="favoritos" className="rounded-md text-xs">Favoritos</TabsTrigger>
-            <TabsTrigger value="listas" className="rounded-md text-xs">Listas</TabsTrigger>
-            <TabsTrigger value="buscas" className="rounded-md text-xs">Buscas Salvas</TabsTrigger>
-            <TabsTrigger value="bancos-vivos" className="rounded-md text-xs">Bancos Vivos</TabsTrigger>
+            <TabsTrigger value="favoritos" className="rounded-lg text-xs">Favoritos</TabsTrigger>
+            <TabsTrigger value="listas" className="rounded-lg text-xs">Listas</TabsTrigger>
+            <TabsTrigger value="buscas" className="rounded-lg text-xs">Buscas Salvas</TabsTrigger>
+            <TabsTrigger value="bancos-vivos" className="rounded-lg text-xs">Bancos Vivos</TabsTrigger>
           </TabsList>
+
+          <div className="flex items-center gap-6 mt-2 mb-1">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-wedo-cyan animate-pulse" />
+              <span className="text-xs text-lia-text-secondary">
+                <span className="font-semibold text-lia-text-primary">{total.toLocaleString("pt-BR")}</span> candidatos
+              </span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <Heart className="w-3.5 h-3.5 text-rose-500" />
+              <span className="text-xs text-lia-text-secondary">
+                <span className="font-semibold text-lia-text-primary">{favoriteIds.size}</span> favoritos
+              </span>
+            </div>
+          </div>
 
           {/* Tab: Todos */}
           <TabsContent value="todos" className="mt-4 space-y-3">
