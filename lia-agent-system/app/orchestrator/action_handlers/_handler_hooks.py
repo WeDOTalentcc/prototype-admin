@@ -71,7 +71,7 @@ async def log_action_audit(
             job_vacancy_id=job_vacancy_id,
         )
     except Exception as e:
-        logger.debug(f"Audit log skipped for {action_type}: {e}")
+        logger.warning(f"Audit log skipped for {action_type}: {e}")
 
 
 async def sync_to_rails(
