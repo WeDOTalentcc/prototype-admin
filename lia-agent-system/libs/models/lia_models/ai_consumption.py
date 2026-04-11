@@ -33,8 +33,10 @@ class AiConsumption(Base):
     user_id = Column(UUID(as_uuid=True), nullable=True, index=True)
     
     agent_type = Column(String(50), nullable=False, index=True)
+    agent_category = Column(String(20), nullable=False, default="core", index=True)
     operation = Column(String(100), nullable=False)
     model = Column(String(50), nullable=False, index=True)
+    studio_agent_id = Column(String(64), nullable=True, index=True)
     
     input_tokens = Column(Integer, default=0)
     output_tokens = Column(Integer, default=0)
@@ -58,12 +60,14 @@ class AiConsumption(Base):
             "company_id": str(self.company_id),
             "user_id": str(self.user_id) if self.user_id else None,
             "agent_type": self.agent_type,
+            "agent_category": self.agent_category,
             "operation": self.operation,
             "model": self.model,
             "input_tokens": self.input_tokens,
             "output_tokens": self.output_tokens,
             "total_tokens": self.total_tokens,
             "cost_cents": self.cost_cents,
+            "studio_agent_id": self.studio_agent_id,
             "candidate_id": str(self.candidate_id) if self.candidate_id else None,
             "vacancy_id": str(self.vacancy_id) if self.vacancy_id else None,
             "metadata": self.extra_data,

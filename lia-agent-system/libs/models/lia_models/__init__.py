@@ -91,6 +91,8 @@ from lia_models.integration_hub import (
     IntegrationStatus,
     DEFAULT_INTEGRATION_PROVIDERS
 )
+from lia_models.agent_quota import AgentQuota, get_limits_for_plan, PLAN_AGENT_LIMITS
+from lia_models.recruitment_campaign import RecruitmentCampaign, CampaignStatus, DEFAULT_CAMPAIGN_STAGES
 from lia_models.recruitment_stages import (
     RecruitmentStage,
     RecruitmentSubStatus,

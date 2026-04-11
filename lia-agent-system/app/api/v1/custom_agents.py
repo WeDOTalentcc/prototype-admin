@@ -470,3 +470,55 @@ async def review_listing(
         await db.rollback()
         logger.error("Error reviewing listing: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail="Failed to review listing")
+
+
+@router.get("/studio/consumption", summary="Get Studio agent consumption breakdown")
+async def get_studio_consumption(
+    days: int = Query(default=30, ge=1, le=365),
+    current_user=Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    from app.services.studio_metering_service import studio_metering_service
+
+    company_id = current_user.company_id
+    try:
+        consumption = await studio_metering_service.get_studio_consumption(
+            db=db, company_id=company_id, days=days,
+        )
+        return consumption
+    except Exception as e:
+        logger.error("Error fetching studio consumption: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail="Failed to fetch studio consumption")
+
+
+@router.get("/studio/quota", summary="Get Studio agent quota status")
+async def get_studio_quota(
+    current_user=Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    from lia_models.agent_quota import AgentQuota, get_limits_for_plan
+    from sqlalchemy import select
+
+    company_id = current_user.company_id
+    try:
+        result = await db.execute(
+            select(AgentQuota).where(AgentQuota.company_id == company_id)
+        )
+        quota = result.scalar_one_or_none()
+        if not quota:
+            from app.services.token_budget_service import get_plan_for_company
+            plan_code = await get_plan_for_company(company_id)
+            limits = get_limits_for_plan(plan_code)
+            return {
+                "company_id": company_id,
+                "plan_code": plan_code or "starter",
+                **limits,
+                "active_sourcing_agents": 0,
+                "active_custom_agents": 0,
+                "active_digital_twins": 0,
+                "active_campaigns": 0,
+            }
+        return quota.to_dict()
+    except Exception as e:
+        logger.error("Error fetching studio quota: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail="Failed to fetch studio quota")

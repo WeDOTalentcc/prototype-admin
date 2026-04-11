@@ -56,7 +56,7 @@ class TwinKnowledgeIndexer:
             WHERE a.company_id = :company_id
               AND a.reviewer_notes IS NOT NULL
               AND a.reviewer_notes != ''
-              AND a.created_at >= NOW() - INTERVAL ':months months'
+              AND a.created_at >= NOW() - make_interval(months => :months)
             LIMIT 2000
         """)
 

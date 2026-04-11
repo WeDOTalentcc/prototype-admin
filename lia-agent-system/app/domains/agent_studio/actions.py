@@ -18,4 +18,7 @@ AGENT_STUDIO_ACTIONS = [
     DomainAction(action_id="browse_marketplace", name="Explorar Marketplace", description="Navegar e buscar agentes disponíveis no marketplace", required_params=[], optional_params=["category", "search"], requires_confirmation=False),
     DomainAction(action_id="install_from_marketplace", name="Instalar do Marketplace", description="Instalar agente do marketplace na empresa", required_params=["listing_id"], optional_params=[], requires_confirmation=True),
     DomainAction(action_id="assign_to_crew", name="Atribuir a Crew", description="Atribuir agente custom como role em uma crew", required_params=["agent_id", "crew_id", "role_name"], optional_params=[], requires_confirmation=False),
+    DomainAction(action_id="get_studio_consumption", name="Consumo do Studio", description="Ver consumo de tokens e créditos dos agentes do Studio", required_params=[], optional_params=["days"], requires_confirmation=False),
+    DomainAction(action_id="deactivate_agent", name="Desativar Agente", description="Desativar agente de sourcing ou custom (libera quota)", required_params=["agent_id"], optional_params=["agent_type"], requires_confirmation=True),
+    DomainAction(action_id="uninstall_agent", name="Desinstalar Agente", description="Desinstalar agente do marketplace (libera quota)", required_params=["installation_id"], optional_params=[], requires_confirmation=True),
 ]
