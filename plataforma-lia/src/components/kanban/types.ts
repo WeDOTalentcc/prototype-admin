@@ -31,14 +31,18 @@ export interface KanbanCandidate {
   email?: string
   phone?: string
   avatar?: string
-  role?: string
+  role?: string | null
   currentTitle?: string
-  currentCompany?: string
+  currentCompany?: string | null
   company?: string
-  location?: string
+  location?: string | null
+  jobTitle?: string | null
+  jobId?: string | null
+  recruiter?: string | null
+  manager?: string | null
   score?: number | null
-  fitScore?: number
-  wsiScore?: number
+  fitScore?: number | null
+  wsiScore?: number | null
   warnings?: number
   source?: string
   origin?: 'web' | 'whatsapp' | 'sourcing' | 'ats' | string
@@ -74,21 +78,21 @@ export interface KanbanCandidate {
     extraversion: number
     agreeableness: number
     neuroticism: number
-  }
+  } | null
   workHistory?: Array<{
     company: string
     title: string
     startDate: string
     endDate: string | null
     description?: string
-  }>
+  }> | null
   educationHistory?: Array<{
     institution: string
     degree: string
     field: string
     startYear: number
     endYear: number | null
-  }>
+  }> | null
   is_hired?: boolean
   hired_job_title?: string
   is_blacklisted?: boolean

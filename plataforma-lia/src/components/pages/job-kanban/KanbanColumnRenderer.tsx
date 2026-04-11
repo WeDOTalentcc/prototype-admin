@@ -563,18 +563,25 @@ export function KanbanColumnRenderer({
 
               {/* Informações do candidato - Alinhadas à esquerda */}
               <div className="space-y-0 mb-1.5">
-                <div className="flex items-center gap-1 text-xs">
+                <div className="flex items-center gap-1 text-xs text-lia-text-secondary">
                   <Briefcase className="w-2.5 h-2.5 flex-shrink-0" />
-                  <span className="truncate">{candidate.role}</span>
+                  <span className="truncate">{candidate.role || "Não disponível"}</span>
                 </div>
-                <div className="flex items-center gap-1 text-xs">
+                <div className="flex items-center gap-1 text-xs text-lia-text-secondary">
                   <Building className="w-2.5 h-2.5 flex-shrink-0" />
-                  <span className="truncate">{candidate.currentCompany || "Não informado"}</span>
+                  <span className="truncate">{candidate.currentCompany || "Não disponível"}</span>
                 </div>
-                <div className="flex items-center gap-1 text-xs">
-                  <MapPin className="w-2.5 h-2.5 flex-shrink-0" />
-                  <span className="truncate">{candidate.location}</span>
-                </div>
+                {candidate.location ? (
+                  <div className="flex items-center gap-1 text-xs text-lia-text-secondary">
+                    <MapPin className="w-2.5 h-2.5 flex-shrink-0" />
+                    <span className="truncate">{candidate.location}</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-1 text-xs text-lia-text-disabled">
+                    <MapPin className="w-2.5 h-2.5 flex-shrink-0" />
+                    <span className="truncate">Não disponível</span>
+                  </div>
+                )}
               </div>
 
               {/* Tags de Status Compactas */}

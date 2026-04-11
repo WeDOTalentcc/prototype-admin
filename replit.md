@@ -56,6 +56,7 @@ The platform utilizes Next.js, React, and TypeScript for the frontend, styled wi
 - **Rails→FastAPI Frontend Migration**: All frontend proxy route files migrated from Rails to FastAPI, making FastAPI the sole backend for all frontend routes.
 - **Choose Your AI — LLM Config Integration**: Full end-to-end integration of per-tenant LLM provider configuration, allowing tenants to configure their own API keys for Gemini, Claude, and OpenAI via Settings.
 - **NEXT_PUBLIC_* Env Var Cleanup**: Eliminated direct use of `NEXT_PUBLIC_BACKEND_URL` or `NEXT_PUBLIC_API_URL` in frontend, with all client-side API calls now going through `/api/backend-proxy/*` routes exclusively.
+- **Pipeline Stage Maps**: Centralized icon/color mapping for pipeline stages in `plataforma-lia/src/lib/pipeline-stage-maps.ts` with dynamic fallback by action_behavior/stage_category and hash-based pool for custom stages. Includes status translation map (PT-BR). Internal/legacy stages grouped under "Outros" in pipeline overview proxy.
 - **Pipeline Pulse**: Real-time pipeline stage counts displayed as badges below Workflow Reels nodes.
 - **Voice Abstraction in LLM Factory**: Created `VoiceStreamProviderABC` abstraction with `NATIVE_MULTIMODAL` and `COMPOSITE_PIPELINE` strategies, supporting `GeminiLiveVoiceProvider`, `OpenAIRealtimeVoiceProvider`, and `CompositeVoiceProvider`.
 - **TipTap Rich Text Editor Integration**: Replaced raw HTML textareas with TipTap WYSIWYG editor for email templates and job description editing, including a custom `TemplateVariable` TipTap extension.

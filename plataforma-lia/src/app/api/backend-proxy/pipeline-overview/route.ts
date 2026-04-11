@@ -113,26 +113,80 @@ export async function GET(request: NextRequest) {
         }
       })
 
-    // Append any stages from backend that are not in the company pipeline definition
-    // (these could be custom or legacy stages that have real data)
+    const INTERNAL_STAGE_NAMES = new Set([
+      "initial",
+      "pending_gate1",
+      "pending_gate2",
+      "new",
+      "novo",
+      "triagem",
+      "entrevista rh",
+      "entrevista técnica",
+      "entrevista final",
+      "proposta",
+    ])
+
+    let otherCandidates: typeof backendStages[0]["candidates"] = []
+    let otherCount = 0
+
     for (const s of backendStages) {
       const key = s.stage.toLowerCase()
       if (!knownStageNames.has(key) && s.count > 0) {
-        pipelineWithCounts.push({
-          id: s.stage,
-          name: s.stage,
-          display_name: s.stage,
-          stage_order: 9999,
-          color: "#6366f1",
-          icon: "📋",
-          is_active: true,
-          is_final: false,
-          is_rejection: false,
-          stage_category: "other",
-          count: s.count,
-          candidates: s.candidates,
-        })
+        if (INTERNAL_STAGE_NAMES.has(key)) {
+          console.log(
+            `[pipeline-overview] Unmapped internal stage "${s.stage}" with ${s.count} candidates grouped under "Outros"`
+          )
+          otherCandidates = otherCandidates.concat(s.candidates)
+          otherCount += s.count
+        } else {
+          console.log(
+            `[pipeline-overview] Unmapped custom stage "${s.stage}" with ${s.count} candidates appended`
+          )
+          const customColorPalette = [
+            "#5DA47A", "#60BED1", "#D19960", "#D17060",
+            "#9860D1", "#6078D1", "#D1A960", "#8B5CF6",
+            "#4DA6A0", "#C96B8A", "#7B8FD1", "#D18B60",
+          ]
+          let colorHash = 0
+          for (let ci = 0; ci < key.length; ci++) {
+            colorHash = ((colorHash << 5) - colorHash) + key.charCodeAt(ci)
+            colorHash = colorHash & colorHash
+          }
+          const customColor = customColorPalette[Math.abs(colorHash) % customColorPalette.length]
+
+          pipelineWithCounts.push({
+            id: s.stage,
+            name: s.stage,
+            display_name: s.stage,
+            stage_order: 9999,
+            color: customColor,
+            icon: "📋",
+            is_active: true,
+            is_final: false,
+            is_rejection: false,
+            stage_category: "custom",
+            count: s.count,
+            candidates: s.candidates,
+          })
+        }
       }
+    }
+
+    if (otherCount > 0) {
+      pipelineWithCounts.push({
+        id: "outros",
+        name: "outros",
+        display_name: "Outros",
+        stage_order: 9998,
+        color: "#8A8F98",
+        icon: "📋",
+        is_active: true,
+        is_final: false,
+        is_rejection: false,
+        stage_category: "other",
+        count: otherCount,
+        candidates: otherCandidates,
+      })
     }
 
     const totalCandidates = overviewData.total_candidates ?? 0

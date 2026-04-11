@@ -29,12 +29,14 @@ import {
   Target,
   Code,
   Globe,
-  Fingerprint
+  Fingerprint,
+  UserCircle
 } from 'lucide-react'
 import { ScoreIconButton } from '@/components/ui/score-icon-button'
 import { WarningBadge, SourceBadge, StatusBadge, ChannelBadge, DateTimeBadge, OriginBadge, AwaitingBadge, HiredBadge, OffLimitsBadge } from '@/components/ui/status-badge'
 import { textStyles, buttonStyles, cardStyles, badgeStyles, formatScorePercent } from '@/lib/design-tokens'
 import { isApplicationSource } from '@/lib/recruitment-stages'
+import { translateStatus } from '@/lib/pipeline-stage-maps'
 import type { KanbanCandidate } from '../types'
 import { CandidateBadges } from './CandidateBadges'
 import { OverrideApproveButton } from './OverrideApproveButton'
@@ -260,14 +262,6 @@ const CandidateCard = memo(function CandidateCard({
             </DropdownMenuContent>
           </DropdownMenu>
 
-          <button
-            data-testid={`candidate-view-details-${candidate.id}`}
-            className="p-1 hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover rounded-xl transition-colors motion-reduce:transition-none bg-lia-bg-primary/80 dark:bg-lia-bg-primary/80"
-            onClick={handleQuickAction('view_details')}
-            title="Ver detalhes do candidato"
-          >
-            <Eye className="w-3.5 h-3.5 text-lia-text-primary" />
-          </button>
         </div>
 
         <div className="flex items-center gap-1.5 mb-2 pr-6">
@@ -315,18 +309,35 @@ const CandidateCard = memo(function CandidateCard({
         </div>
 
         <div className="space-y-0 mb-1.5">
-          <div className="flex items-center gap-1 text-xs">
+          <div className="flex items-center gap-1 text-xs text-lia-text-secondary">
             <Briefcase className="w-2.5 h-2.5 flex-shrink-0" />
-            <span className="truncate">{candidate.role || 'Cargo não informado'}</span>
+            <span className="truncate">{candidate.role || 'Não disponível'}</span>
           </div>
-          <div className="flex items-center gap-1 text-xs">
+          <div className="flex items-center gap-1 text-xs text-lia-text-secondary">
             <Building className="w-2.5 h-2.5 flex-shrink-0" />
-            <span className="truncate">{candidate.currentCompany || candidate.company || 'Não informado'}</span>
+            <span className="truncate">{candidate.currentCompany || candidate.company || 'Não disponível'}</span>
           </div>
-          {candidate.location && (
-            <div className="flex items-center gap-1 text-xs">
-              <MapPin className="w-2.5 h-2.5 flex-shrink-0" />
-              <span className="truncate">{candidate.location}</span>
+          <div className={`flex items-center gap-1 text-xs ${candidate.location ? 'text-lia-text-secondary' : 'text-lia-text-disabled'}`}>
+            <MapPin className="w-2.5 h-2.5 flex-shrink-0" />
+            <span className="truncate">{candidate.location || 'Não disponível'}</span>
+          </div>
+          {(candidate.jobTitle || candidate.jobId) && (
+            <div className="flex items-center gap-1 text-xs text-lia-text-tertiary">
+              <Briefcase className="w-2.5 h-2.5 flex-shrink-0 opacity-60" />
+              <span className="truncate italic">
+                {candidate.jobTitle || 'Vaga'}
+                {candidate.jobId && <span className="ml-0.5 opacity-50">#{String(candidate.jobId).slice(0, 6)}</span>}
+              </span>
+            </div>
+          )}
+          {(candidate.recruiter || candidate.manager) && (
+            <div className="flex items-center gap-1 text-xs text-lia-text-tertiary">
+              <UserCircle className="w-2.5 h-2.5 flex-shrink-0 opacity-60" />
+              <span className="truncate">
+                {candidate.recruiter && <span>{candidate.recruiter}</span>}
+                {candidate.recruiter && candidate.manager && <span className="opacity-50 mx-0.5">·</span>}
+                {candidate.manager && <span>{candidate.manager}</span>}
+              </span>
             </div>
           )}
         </div>
@@ -402,6 +413,10 @@ const CandidateCard = memo(function CandidateCard({
               stageId={stageId}
               subStatus={candidate.subStatus || candidate.sub_status}
             />
+          ) : candidate.status ? (
+            <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-micro font-medium bg-lia-bg-secondary dark:bg-lia-bg-elevated border border-lia-border-subtle text-lia-text-secondary">
+              {translateStatus(candidate.status)}
+            </span>
           ) : null}
         </div>
 

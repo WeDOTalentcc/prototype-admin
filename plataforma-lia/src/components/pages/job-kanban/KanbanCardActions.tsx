@@ -10,7 +10,6 @@ import {
 } from "@/components/ui/dropdown-menu"
 import {
   MoreVertical,
-  Eye,
   Mail,
   MessageCircle,
   Calendar,
@@ -158,18 +157,6 @@ export function KanbanCardActions({
     </DropdownMenuContent>
   </DropdownMenu>
 
-  {/* Botão de Preview */}
-  <button
-    className="p-1 hover:bg-lia-bg-tertiary rounded-xl transition-colors motion-reduce:transition-none bg-lia-bg-primary/80"
-    onClick={(e) => {
-      e.stopPropagation()
-      onOpenPreview(candidate)
-    }}
-    title="Ver detalhes do candidato"
-    aria-label={`Ver detalhes de ${candidate.name}`}
-  >
-    <Eye className="w-3.5 h-3.5 text-lia-text-primary" aria-hidden="true" />
-  </button>
 </div>
     </>
   )

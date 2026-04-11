@@ -18,23 +18,12 @@ import {
   Code,
   Globe,
   Fingerprint,
-  Search,
-  FileText,
-  ClipboardList,
-  CheckCircle,
-  UserCheck,
-  MonitorPlay,
-  Languages,
-  Handshake,
-  UserCog,
-  Phone,
-  FileCheck,
-  Award,
-  type LucideIcon,
+  Info,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { formatScorePercent } from "@/lib/design-tokens"
+import { getStageIcon, getStageColor, translateStatus } from "@/lib/pipeline-stage-maps"
 import dynamic from "next/dynamic"
 
 const GeneralScoreModal = dynamic(
@@ -95,49 +84,13 @@ interface PipelineStageWithCount {
   is_final: boolean
   is_rejection: boolean
   stage_category: string
+  action_behavior?: string
   count: number
   candidates: CandidateItem[]
 }
 
-const STAGE_ICON_MAP: Record<string, LucideIcon> = {
-  sourcing: Search,
-  screening: ClipboardList,
-  long_list: FileText,
-  short_list: CheckCircle,
-  interview_hr: UserCheck,
-  technical_test: MonitorPlay,
-  english_test: Languages,
-  interview_technical: Code,
-  interview_manager: Handshake,
-  reference_check: Phone,
-  offer: FileCheck,
-  hired: Award,
-  contratado: Award,
-}
-
-const STAGE_VIBRANT_COLORS: Record<string, string> = {
-  sourcing: "#5DA47A",
-  screening: "#5DA47A",
-  long_list: "#60BED1",
-  short_list: "#60BED1",
-  interview_hr: "#D19960",
-  technical_test: "#D17060",
-  english_test: "#D1A960",
-  interview_technical: "#9860D1",
-  interview_manager: "#9860D1",
-  interview_final: "#9860D1",
-  reference_check: "#D19960",
-  offer: "#6078D1",
-  proposal: "#6078D1",
-  proposta: "#6078D1",
-  hired: "#5DA47A",
-  contratado: "#5DA47A",
-  rejected: "#8A8F98",
-  recusado: "#8A8F98",
-}
-
 function getVibrantColor(stageName: string, fallbackHex: string): string {
-  return STAGE_VIBRANT_COLORS[stageName] || fallbackHex
+  return getStageColor(stageName, fallbackHex)
 }
 
 const PAGE_SIZE = 20
@@ -432,7 +385,7 @@ export function PipelineOverviewPage() {
                   const isSelected = selectedStage === stage.name
                   const isLast = index === stages.length - 1
                   const stageColor = getVibrantColor(stage.name, stage.color || "#2D2D2D")
-                  const StageIcon = STAGE_ICON_MAP[stage.name] || GitBranch
+                  const StageIcon = getStageIcon(stage.name, stage.action_behavior, stage.stage_category)
                   const scale = getScale(index, stageNodeRefs)
 
                   return (
@@ -804,7 +757,10 @@ function PipelineCandidateCard({
 
   return (
     <div
-      className="flex items-center gap-3 px-4 py-3 rounded-lg bg-lia-bg-secondary hover:bg-lia-bg-tertiary transition-colors border border-transparent hover:border-lia-border-subtle group"
+      className="flex items-center gap-3 px-4 py-3 rounded-lg bg-lia-bg-secondary hover:bg-lia-bg-tertiary transition-colors border border-transparent hover:border-lia-border-subtle group cursor-pointer"
+      onClick={() => onOpenPreview(candidate)}
+      role="button"
+      aria-label={`Ver detalhes de ${candidate.name}`}
     >
       <div
         className="w-9 h-9 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-semibold text-white"
@@ -820,7 +776,7 @@ function PipelineCandidateCard({
           </p>
           {candidate.sub_status && (
             <span className="flex-shrink-0 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-lia-bg-tertiary text-lia-text-secondary border border-lia-border-subtle">
-              {candidate.sub_status}
+              {translateStatus(candidate.sub_status)}
             </span>
           )}
         </div>
@@ -841,7 +797,7 @@ function PipelineCandidateCard({
         </div>
       </div>
 
-      {visibleScores.length > 0 && (
+      {visibleScores.length > 0 ? (
         <div className="flex items-center gap-1.5 flex-shrink-0">
           {visibleScores.map(({ id, icon: Icon, value, label }) => (
             <Tooltip key={id}>
@@ -866,6 +822,11 @@ function PipelineCandidateCard({
               </TooltipContent>
             </Tooltip>
           ))}
+        </div>
+      ) : (
+        <div className="flex items-center gap-1 flex-shrink-0 text-lia-text-disabled">
+          <Info className="w-3 h-3" />
+          <span className="text-[10px]">Sem scores</span>
         </div>
       )}
 

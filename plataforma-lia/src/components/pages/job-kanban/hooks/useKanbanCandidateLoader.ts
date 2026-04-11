@@ -10,12 +10,6 @@ import {
   type DynamicStage,
 } from "@/components/pages/job-kanban/utils/kanbanStageUtils"
 import { mapLegacyStage } from "@/lib/recruitment-stages"
-import {
-  generateWorkHistory,
-  generateEducation,
-  seededRandom,
-  getSalaryByExperience,
-} from "@/components/kanban/utils/candidate-data-enrichment"
 
 export function useKanbanCandidateLoader({
   job,
@@ -62,17 +56,12 @@ export function useKanbanCandidateLoader({
         try {
           if (!response.items || response.items.length === 0) { setIsLoadingCandidates(false); return }
 
-          const mapCandidateToKanban = (c: CandidateLocal, index: number) => {
+          const mapCandidateToKanban = (c: CandidateLocal, _index: number) => {
             try {
-              const experience = c.years_of_experience || ((index % 12) + 1)
-              const monthlySalary = c.current_salary || getSalaryByExperience(experience, index)
+              const experience = c.years_of_experience ?? null
               const location = c.location_city && c.location_state
                 ? `${c.location_city}, ${c.location_state}`
-                : c.location_city || 'Não especificado'
-              let educationData: unknown[] = []
-              let workHistoryData: unknown[] = []
-              try { educationData = generateEducation(c as unknown as Record<string, unknown>, experience) as unknown[] } catch { educationData = [] }
-              try { workHistoryData = generateWorkHistory(c as unknown as Record<string, unknown>, experience) as unknown[] } catch { workHistoryData = [] }
+                : c.location_city || null
 
               const rawStatus = (c.status || 'novo').toLowerCase()
               let mappedStage = 'funil'
@@ -82,41 +71,44 @@ export function useKanbanCandidateLoader({
               else if (['entrevista', 'interview', 'entrevistando'].includes(rawStatus)) mappedStage = 'entrevista'
               else if (['triagem', 'screening', 'em_triagem'].includes(rawStatus)) mappedStage = 'triagem'
 
+              const jobTitle = (job as Record<string, unknown>)?.title as string || null
+              const jobIdVal = (job as Record<string, unknown>)?.id as string || (job as Record<string, unknown>)?.backendId as string || null
+              const recruiterName = (job as Record<string, unknown>)?.recruiter_name as string || (job as Record<string, unknown>)?.recruiterName as string || null
+              const managerName = (job as Record<string, unknown>)?.hiring_manager as string || (job as Record<string, unknown>)?.hiringManager as string || null
+
               return {
-                id: c.id, name: c.name || 'Sem nome', role: c.current_title || 'Não especificado',
-                currentCompany: c.current_company || '', location,
-                score: c.lia_score || null,
-                fitScore: c.skills_match_percentage || Math.floor(70 + seededRandom(c.id || String(index), 1) * 25),
+                id: c.id, name: c.name || 'Sem nome', role: c.current_title || null,
+                currentCompany: c.current_company || null, location,
+                jobTitle: jobTitle,
+                jobId: jobIdVal,
+                recruiter: recruiterName,
+                manager: managerName,
+                score: c.lia_score ?? null,
+                fitScore: c.skills_match_percentage ?? null,
                 warnings: 0, avatar: c.avatar_url || '', source: c.source || 'website',
-                appliedDate: c.created_at ? new Date(c.created_at).toLocaleDateString('pt-BR') : 'Hoje',
+                appliedDate: c.created_at ? new Date(c.created_at).toLocaleDateString('pt-BR') : null,
                 email: c.email || '', phone: c.phone || '', linkedin: c.linkedin_url || '',
-                experience: `${experience} anos`, stage: mappedStage, etapa: mappedStage,
-                education: educationData, skills: c.technical_skills || [],
+                experience: experience ? `${experience} anos` : null, stage: mappedStage, etapa: mappedStage,
+                education: null, skills: c.technical_skills || [],
                 languages: Array.isArray(c.languages)
                   ? c.languages.map((l: Record<string, unknown>) => typeof l === 'string' ? l : l.language)
                   : Object.keys(c.languages || {}),
                 expectedSalary: c.desired_salary_max
                   ? `${formatBRL(c.desired_salary_max)}`
-                  : `${formatBRL(Math.floor(monthlySalary * 1.2))}`,
-                currentSalary: `${formatBRL(monthlySalary)}`,
-                contractType: c.contract_type_preference || 'CLT',
-                workModel: c.work_model_preference || 'híbrido',
-                availability: 'A confirmar', portfolio: c.portfolio_url || '', github: c.github_url || '',
-                workHistory: workHistoryData,
-                bigFive: {
-                  openness: 70 + Math.floor(seededRandom(c.id || String(index), 10) * 20),
-                  conscientiousness: 70 + Math.floor(seededRandom(c.id || String(index), 11) * 20),
-                  extraversion: 60 + Math.floor(seededRandom(c.id || String(index), 12) * 25),
-                  agreeableness: 70 + Math.floor(seededRandom(c.id || String(index), 13) * 20),
-                  neuroticism: 25 + Math.floor(seededRandom(c.id || String(index), 14) * 25),
-                },
+                  : null,
+                currentSalary: c.current_salary ? `${formatBRL(c.current_salary)}` : null,
+                contractType: c.contract_type_preference || null,
+                workModel: c.work_model_preference || null,
+                availability: null, portfolio: c.portfolio_url || '', github: c.github_url || '',
+                workHistory: null,
+                bigFive: null,
                 notes: c.notes || '',
-                liaAnalysis: {
-                  score: c.lia_score || 75,
-                  strengths: c.lia_insights?.strengths || ['Perfil técnico sólido'],
+                liaAnalysis: c.lia_score ? {
+                  score: c.lia_score,
+                  strengths: c.lia_insights?.strengths || [],
                   concerns: c.lia_insights?.concerns || [],
-                  recommendation: c.lia_insights?.recommendation || 'Avaliar com atenção'
-                },
+                  recommendation: c.lia_insights?.recommendation || null
+                } : null,
                 status: c.status || 'novo'
               }
             } catch { return null }

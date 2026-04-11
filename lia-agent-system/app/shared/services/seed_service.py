@@ -1171,7 +1171,27 @@ def generate_demo_candidates() -> list[dict[str, Any]]:
 def generate_vacancy_candidates(job_ids: list[str], candidate_ids: list[str]) -> list[dict[str, Any]]:
     """Generate vacancy-candidate relationships with various stages."""
     
-    stages = ["Novo", "Triagem", "Entrevista RH", "Entrevista Técnica", "Entrevista Final", "Proposta", "Contratado", "Recusado"]
+    stages = [
+        "sourcing",
+        "screening",
+        "interview_hr",
+        "interview_technical",
+        "interview_manager",
+        "offer",
+        "hired",
+        "rejected",
+    ]
+
+    STAGE_STATUS_MAP = {
+        "hired": "hired",
+        "rejected": "rejected",
+        "sourcing": "active",
+        "screening": "active",
+        "interview_hr": "active",
+        "interview_technical": "active",
+        "interview_manager": "active",
+        "offer": "active",
+    }
     
     result = []
     
@@ -1192,7 +1212,7 @@ def generate_vacancy_candidates(job_ids: list[str], candidate_ids: list[str]) ->
                 "source": "SEED_DATA",
                 "lia_score": lia_score,
                 "match_percentage": match_percentage,
-                "status": "active" if stage not in ["Contratado", "Recusado"] else stage.lower(),
+                "status": STAGE_STATUS_MAP.get(stage, "active"),
                 "stage": stage,
                 "added_by": "seed_service",
                 "notes": f"Candidato adicionado via seed data. Etapa atual: {stage}",
