@@ -48,6 +48,7 @@ test.describe('Resilience & Edge Cases', () => {
     const cls = classifyResponse(response, [/candidato/i, /busca/i, /javascript/i]);
     testInfo.annotations.push({ type: 'eval_classification', description: cls });
     testInfo.annotations.push({ type: 'eval_response', description: response.substring(0, 500) });
+    expect(response.length).toBeGreaterThan(10);
     await takeEvalScreenshot(page, 'RE-002', testInfo);
   });
 
@@ -62,6 +63,7 @@ test.describe('Resilience & Edge Cases', () => {
     testInfo.annotations.push({ type: 'eval_classification', description: cls });
     testInfo.annotations.push({ type: 'eval_response', description: response.substring(0, 500) });
     testInfo.annotations.push({ type: 'eval_portuguese', description: hasPortuguese ? 'YES' : 'NO' });
+    expect(hasPortuguese).toBe(true);
     await takeEvalScreenshot(page, 'RE-003', testInfo);
   });
 

@@ -208,5 +208,8 @@ export function evalAndAssert(
   const cls = classifyResponse(response, positivePatterns);
   testInfo.annotations.push({ type: 'eval_classification', description: cls });
   testInfo.annotations.push({ type: 'eval_response', description: response.substring(0, 500) });
+  expect(cls).not.toBe('SEM RESPOSTA');
+  expect(cls).not.toBe('ALUCINAÇÃO');
+  expect(['AÇÃO EXECUTADA', 'RESPOSTA COERENTE', 'FALHA']).toContain(cls);
   return cls;
 }
