@@ -13,7 +13,7 @@ export default function AccessPage() {
         {/* Header */}
         <div className="text-center mb-12">
           <h1
-            className="text-4xl font-bold mb-3 text-lia-text-primary dark:text-lia-text-primary"
+            className="text-4xl font-semibold mb-3 text-lia-text-primary dark:text-lia-text-primary"
           >
             WedoTalent
           </h1>

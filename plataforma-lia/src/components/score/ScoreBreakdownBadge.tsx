@@ -107,7 +107,7 @@ export function ScoreBreakdownBadgeLazy({
     [data, loading, fetch, reset, jobId, candidateId]
   )
 
-  const sizeClasses = { sm: "text-sm font-bold", md: "text-lg font-bold", lg: "text-2xl font-bold" }
+  const sizeClasses = { sm: "text-sm font-semibold", md: "text-lg font-semibold", lg: "text-2xl font-semibold" }
 
   return (
     <Popover open={open} onOpenChange={handleOpenChange}>
@@ -223,8 +223,8 @@ export function ScoreBreakdownBadge({
 
   const sizeClasses = {
     sm: "text-sm font-bold",
-    md: "text-lg font-bold",
-    lg: "text-2xl font-bold",
+    md: "text-lg font-semibold",
+    lg: "text-2xl font-semibold",
   }
 
   const badgeContent = (

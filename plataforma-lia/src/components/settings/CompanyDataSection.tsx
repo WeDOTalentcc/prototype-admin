@@ -72,13 +72,13 @@ export function CompanyDataSection({
   return (
     <div className="space-y-4">
       {successMessage && (
-        <div className="bg-status-success/10 border border-status-success/30 text-status-success dark:bg-status-success/20 dark:border-status-success/30 dark:text-status-success px-3 py-2 rounded-xl flex items-center gap-2 text-xs font-['Open_Sans',sans-serif]">
+        <div className="bg-status-success/10 border border-status-success/30 text-status-success dark:bg-status-success/20 dark:border-status-success/30 dark:text-status-success px-3 py-2 rounded-xl flex items-center gap-2 text-xs">
           <CheckCircle className="w-3.5 h-3.5" />
           {successMessage}
         </div>
       )}
       {error && (
-        <div className="bg-status-error/10 border border-status-error/30 text-status-error dark:bg-status-error/20 dark:border-status-error/30 dark:text-status-error px-3 py-2 rounded-xl flex items-center gap-2 text-xs font-['Open_Sans',sans-serif]">
+        <div className="bg-status-error/10 border border-status-error/30 text-status-error dark:bg-status-error/20 dark:border-status-error/30 dark:text-status-error px-3 py-2 rounded-xl flex items-center gap-2 text-xs">
           <AlertCircle className="w-3.5 h-3.5" />
           {error}
         </div>
@@ -99,7 +99,7 @@ export function CompanyDataSection({
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-bg-elevated font-['Open_Sans',sans-serif]">
+          <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-bg-elevated">
             {countActiveFields()} de {totalFields} campos ativos
           </span>
           {!isEditingCompanyData ? (

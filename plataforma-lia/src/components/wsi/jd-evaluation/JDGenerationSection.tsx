@@ -42,19 +42,19 @@ function formatJDText(text: string): React.ReactNode {
 
     if (line.startsWith('### ')) {
       elements.push(
-        <h4 key={i} className="text-xs font-bold text-lia-text-primary mt-3 mb-1">
+        <h4 key={i} className="text-xs font-semibold text-lia-text-primary mt-3 mb-1">
           {line.replace('### ', '')}
         </h4>
       )
     } else if (line.startsWith('## ')) {
       elements.push(
-        <h3 key={i} className="text-base-ui font-bold text-lia-text-primary mt-4 mb-1.5">
+        <h3 key={i} className="text-base-ui font-semibold text-lia-text-primary mt-4 mb-1.5">
           {line.replace('## ', '')}
         </h3>
       )
     } else if (line.startsWith('# ')) {
       elements.push(
-        <h2 key={i} className="text-sm font-bold text-lia-text-primary mb-2">
+        <h2 key={i} className="text-sm font-semibold text-lia-text-primary mb-2">
           {line.replace('# ', '')}
         </h2>
       )

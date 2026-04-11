@@ -53,7 +53,7 @@ export function RecruiterRankingView({ filteredRecruiters }: RecruiterRankingVie
 
               <div className="flex-1 grid grid-cols-5 gap-4 text-center">
                 <div>
-                  <div className="text-lg font-bold text-lia-text-primary">
+                  <div className="text-lg font-semibold text-lia-text-primary">
                     {recruiter.totalScore}
                   </div>
                   <div className="text-xs text-lia-text-primary">
@@ -61,7 +61,7 @@ export function RecruiterRankingView({ filteredRecruiters }: RecruiterRankingVie
                   </div>
                 </div>
                 <div>
-                  <div className="text-lg font-bold text-status-success">
+                  <div className="text-lg font-semibold text-status-success">
                     {recruiter.totalHires}
                   </div>
                   <div className="text-xs text-lia-text-primary">
@@ -69,7 +69,7 @@ export function RecruiterRankingView({ filteredRecruiters }: RecruiterRankingVie
                   </div>
                 </div>
                 <div>
-                  <div className="text-lg font-bold text-wedo-purple">
+                  <div className="text-lg font-semibold text-wedo-purple">
                     {recruiter.avgTimeToFill}d
                   </div>
                   <div className="text-xs text-lia-text-primary">
@@ -77,11 +77,11 @@ export function RecruiterRankingView({ filteredRecruiters }: RecruiterRankingVie
                   </div>
                 </div>
                 <div>
-                  <div className="text-lg font-bold text-wedo-orange">{recruiter.npsScore}%</div>
+                  <div className="text-lg font-semibold text-wedo-orange">{recruiter.npsScore}%</div>
                   <div className="text-xs text-lia-text-primary">NPS</div>
                 </div>
                 <div>
-                  <div className="text-lg font-bold text-status-error">
+                  <div className="text-lg font-semibold text-status-error">
                     {recruiter.conversionRate}%
                   </div>
                   <div className="text-xs text-lia-text-primary">

@@ -49,7 +49,7 @@ export function TestLibraryModal({ open, onClose, onTestPreview, onTestHistoryOp
                 <Library className="w-5 h-5" />
               </div>
               <div>
-                <h2 className="text-xl font-bold">Biblioteca de Testes da LIA</h2>
+                <h2 className="text-xl font-semibold">Biblioteca de Testes da LIA</h2>
                 <p className="text-wedo-purple text-sm">Testes validados e organizados por área de atuação</p>
               </div>
             </div>
@@ -161,7 +161,7 @@ export function TestLibraryModal({ open, onClose, onTestPreview, onTestHistoryOp
                         <div>
                           <p className="text-xs text-lia-text-primary">Nota Média Geral</p>
                           <div className="flex items-baseline gap-2">
-                            <p className="text-2xl font-bold text-lia-text-primary">7.4</p>
+                            <p className="text-2xl font-semibold text-lia-text-primary">7.4</p>
                             <span className="text-xs text-lia-text-primary">/10</span>
                             <Badge className="bg-lia-btn-primary-bg text-lia-btn-primary-text text-xs">
                               <TrendingUp className="w-2.5 h-2.5 mr-0.5" />

@@ -219,7 +219,7 @@ export function LiaSuperPrompt() {
                 <div className="flex items-center gap-2">
                   <Brain className="w-5 h-5 text-wedo-cyan" strokeWidth={2.5} />
                   <span
-                    className="text-lg font-bold text-lia-text-primary"
+                    className="text-lg font-semibold text-lia-text-primary"
                   >
                     LIA
                   </span>

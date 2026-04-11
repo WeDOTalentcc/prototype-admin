@@ -58,7 +58,7 @@ export function ActivityTimeline({
               <div key={dateKey} className="mb-6">
                 <div className="relative flex items-center mb-3">
                   <div className="absolute left-4 w-4 h-4 bg-lia-bg-primary rounded-full border-2 border-lia-border-medium dark:border-lia-border-medium z-10"></div>
-                  <h3 className="ml-12 text-xs font-bold text-lia-text-primary">{dateKey}</h3>
+                  <h3 className="ml-12 text-xs font-semibold text-lia-text-primary">{dateKey}</h3>
                   <div className="ml-3 flex-1 h-px bg-lia-interactive-active"></div>
                 </div>
                 <div className="space-y-3">

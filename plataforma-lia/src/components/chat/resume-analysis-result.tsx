@@ -61,7 +61,7 @@ export function ResumeAnalysisResult({
           </div>
           
           <div className="text-right">
-            <div className={cn("text-lg font-bold", getScoreColor(result.layout_score))}>
+            <div className={cn("text-lg font-semibold", getScoreColor(result.layout_score))}>
               {result.layout_score}%
             </div>
             <div className="text-xs text-lia-text-secondary">Layout Score</div>
@@ -126,7 +126,7 @@ export function ResumeAnalysisResult({
               Qualidade do Layout
             </span>
             <div className="flex items-center gap-2">
-              <span className={cn("text-2xl font-bold", getScoreColor(result.layout_score))}>
+              <span className={cn("text-2xl font-semibold", getScoreColor(result.layout_score))}>
                 {result.layout_score}%
               </span>
               <span className={cn(

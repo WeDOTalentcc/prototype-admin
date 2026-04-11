@@ -49,7 +49,7 @@ export function JobProcessSection({
     <div className="space-y-5">
       <div>
         <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-4 text-micro text-lia-text-secondary p-2.5 bg-lia-bg-secondary/50 rounded-lg font-['Open_Sans',sans-serif] flex-1">
+          <div className="flex items-center gap-4 text-micro text-lia-text-secondary p-2.5 bg-lia-bg-secondary/50 rounded-lg flex-1">
             <div className="flex items-center gap-1"><Lock className="w-3 h-3" /><span><strong>Sistema:</strong> Fixas</span></div>
             <div className="flex items-center gap-1"><Target className="w-3 h-3" /><span><strong>Padrão:</strong> Nome editável</span></div>
             <div className="flex items-center gap-1"><Settings className="w-3 h-3" /><span><strong>Custom:</strong> Editável</span></div>
@@ -62,14 +62,14 @@ export function JobProcessSection({
             <CardContent className="p-4">
               <div className="flex items-center justify-center gap-2 py-6">
                 <Loader2 className="w-3.5 h-3.5 animate-spin text-lia-text-tertiary" />
-                <span className="text-xs text-lia-text-tertiary font-['Open_Sans',sans-serif]">Carregando etapas da empresa...</span>
+                <span className="text-xs text-lia-text-tertiary">Carregando etapas da empresa...</span>
               </div>
             </CardContent>
           </Card>
         ) : stages.length === 0 ? (
           <Card className="border border-lia-border-subtle">
             <CardContent className="p-4">
-              <p className="text-xs text-lia-text-tertiary text-center py-6 font-['Open_Sans',sans-serif]">
+              <p className="text-xs text-lia-text-tertiary text-center py-6">
                 Nenhuma etapa configurada. As etapas padrão da empresa serão utilizadas.
               </p>
             </CardContent>
@@ -102,7 +102,7 @@ export function JobProcessSection({
                 >
                   <CardContent className="p-3">
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-lia-btn-primary-bg flex items-center justify-center text-xs font-bold text-white font-['Open_Sans',sans-serif] shrink-0">
+                      <div className="w-8 h-8 rounded-full bg-lia-btn-primary-bg flex items-center justify-center text-xs font-bold text-white shrink-0">
                         {index + 1}
                       </div>
                       <div className="flex-1 min-w-0">
@@ -117,7 +117,7 @@ export function JobProcessSection({
                             />
                           ) : (
                             <span
-                              className={`text-base-ui font-semibold font-['Open_Sans',sans-serif] ${
+                              className={`text-base-ui font-semibold ${
                                 isSystem ? "text-lia-text-secondary" : "text-lia-text-primary"
                               }`}
                             >
@@ -127,13 +127,13 @@ export function JobProcessSection({
                         </div>
                         <div className="flex items-center gap-2 mt-1.5">
                           <span
-                            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-micro font-medium ${badge.color} font-['Open_Sans',sans-serif]`}
+                            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-micro font-medium ${badge.color}`}
                           >
                             <BadgeIcon className="w-2.5 h-2.5" />
                             {badge.label}
                           </span>
                           {isLiaAssisted && (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-micro font-medium text-wedo-cyan bg-wedo-cyan/10 font-['Open_Sans',sans-serif]">
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-micro font-medium text-wedo-cyan bg-wedo-cyan/10">
                               <Brain className="w-2.5 h-2.5 text-wedo-cyan" />LIA auxilia
                             </span>
                           )}
@@ -145,20 +145,20 @@ export function JobProcessSection({
                                   type="number"
                                   min={1}
                                   max={90}
-                                  className="w-12 text-xs text-center px-1 py-0.5 border border-lia-border-subtle rounded-full bg-lia-bg-primary text-lia-text-primary font-['Open_Sans',sans-serif]"
+                                  className="w-12 text-xs text-center px-1 py-0.5 border border-lia-border-subtle rounded-full bg-lia-bg-primary text-lia-text-primary"
                                   value={currentSla}
                                   onChange={(e) => updateStage(index, "slaDays", parseInt(e.target.value) || 1)}
                                 />
-                                <span className="text-micro text-lia-text-tertiary font-['Open_Sans',sans-serif]">dias</span>
+                                <span className="text-micro text-lia-text-tertiary">dias</span>
                                 {slaModified && (
-                                  <span className="text-micro text-status-warning font-['Open_Sans',sans-serif]">
+                                  <span className="text-micro text-status-warning">
                                     (padrão: {defaultSla}d)
                                   </span>
                                 )}
                               </div>
                             ) : (
                               <span
-                                className={`text-micro font-['Open_Sans',sans-serif] ${
+                                className={`text-micro ${
                                   slaModified
                                     ? "text-status-warning font-medium"
                                     : "text-lia-text-tertiary"

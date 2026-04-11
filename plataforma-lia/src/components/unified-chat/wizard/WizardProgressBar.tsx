@@ -57,7 +57,7 @@ export function WizardProgressBar({ currentStage, completeness, stageHistory }: 
               </div>
               <span
                 className={cn(
-                  "text-[10px] font-['Open_Sans',sans-serif] leading-tight text-center max-w-[60px]",
+                  "text-[10px] leading-tight text-center max-w-[60px]",
                   isCurrent ? "text-wedo-cyan font-medium" : "text-lia-text-tertiary",
                 )}
               >

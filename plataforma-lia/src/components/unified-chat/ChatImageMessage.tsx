@@ -39,7 +39,7 @@ export function ChatImageMessage({ src, caption, alt }: Props) {
           </div>
         </button>
         {caption && (
-          <p className="text-[10px] text-lia-text-tertiary font-['Open_Sans',sans-serif] mt-1 px-1">
+          <p className="text-[10px] text-lia-text-tertiary mt-1 px-1">
             {caption}
           </p>
         )}

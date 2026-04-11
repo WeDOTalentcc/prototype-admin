@@ -25,7 +25,7 @@ export function CompanyDefaultQuestions({
       >
         <div className="flex items-center gap-2">
           <Shield className="w-4 h-4 text-lia-text-tertiary" />
-          <span className="font-['Open_Sans',sans-serif] text-xs uppercase tracking-wider font-semibold text-lia-text-tertiary">
+          <span className="text-xs uppercase tracking-wider font-semibold text-lia-text-tertiary">
             Padrão da Empresa
           </span>
           {questions.length > 0 && (
@@ -44,7 +44,7 @@ export function CompanyDefaultQuestions({
       {isExpanded && (
         <div className="px-4 pb-4 space-y-2">
           {questions.length === 0 ? (
-            <p className="text-xs font-['Open_Sans',sans-serif] text-lia-text-disabled text-center py-4 italic">
+            <p className="text-xs text-lia-text-disabled text-center py-4 italic">
               Nenhuma pergunta padrão configurada. Acesse <strong>Configurações → Perguntas Padrão</strong>.
             </p>
           ) : (
@@ -66,7 +66,7 @@ export function CompanyDefaultQuestions({
                     onChange={e => onToggle(q.id, e.target.checked)}
                     className="w-3.5 h-3.5 rounded-xl border-lia-border-default accent-lia-btn-primary-bg cursor-pointer disabled:cursor-default"
                   />
-                  <span className="font-['Open_Sans',sans-serif] text-xs text-lia-text-secondary flex-1">
+                  <span className="text-xs text-lia-text-secondary flex-1">
                     {q.question}
                   </span>
                   {q.is_eliminatory && (

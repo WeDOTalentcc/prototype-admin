@@ -70,7 +70,7 @@ export function PhoneConfirmModal({
     >
       <div className="w-full max-w-sm bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-subtle rounded-xl shadow-lia-md p-6 space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-base font-semibold text-lia-text-primary font-['Open_Sans',sans-serif]">
+          <h2 className="text-base font-semibold text-lia-text-primary">
             Receber Ligação
           </h2>
           <button
@@ -85,7 +85,7 @@ export function PhoneConfirmModal({
           </button>
         </div>
 
-        <p className="text-sm text-lia-text-secondary font-['Open_Sans',sans-serif] leading-relaxed">
+        <p className="text-sm text-lia-text-secondary leading-relaxed">
           Informe seu telefone para receber uma ligação da LIA. A triagem sera conduzida por voz.
         </p>
 
@@ -93,7 +93,7 @@ export function PhoneConfirmModal({
           <div>
             <label
               htmlFor="phone-input"
-              className="block text-xs font-medium text-lia-text-secondary font-['Open_Sans',sans-serif] mb-1.5"
+              className="block text-xs font-medium text-lia-text-secondary mb-1.5"
             >
               Telefone (com DDD)
             </label>
@@ -114,7 +114,7 @@ export function PhoneConfirmModal({
           </div>
 
           {error && (
-            <p className="text-xs text-status-error font-['Open_Sans',sans-serif]">
+            <p className="text-xs text-status-error">
               {error}
             </p>
           )}
@@ -122,7 +122,7 @@ export function PhoneConfirmModal({
           <button
             type="submit"
             disabled={!valid || isLoading}
-            className="w-full h-11 flex items-center justify-center gap-2 rounded-lg bg-lia-btn-primary-bg text-lia-btn-primary-text text-sm font-medium hover:bg-lia-btn-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-['Open_Sans',sans-serif]"
+            className="w-full h-11 flex items-center justify-center gap-2 rounded-lg bg-lia-btn-primary-bg text-lia-btn-primary-text text-sm font-medium hover:bg-lia-btn-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {isLoading ? (
               <>

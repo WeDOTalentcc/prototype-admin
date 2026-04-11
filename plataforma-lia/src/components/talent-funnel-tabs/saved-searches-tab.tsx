@@ -293,7 +293,7 @@ export function SavedSearchesTab({
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-semibold text-lia-text-primary font-['Open_Sans',sans-serif] flex items-center gap-2">
+          <h2 className="text-lg font-semibold text-lia-text-primary flex items-center gap-2">
             <Bookmark className="w-5 h-5 text-lia-text-secondary" />
             Buscas Salvas
           </h2>
@@ -323,7 +323,7 @@ export function SavedSearchesTab({
                 <Bookmark className="w-5 h-5 text-lia-text-secondary" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-lia-text-primary">{savedSearches.length}</p>
+                <p className="text-2xl font-semibold text-lia-text-primary">{savedSearches.length}</p>
                 <p className="text-xs text-lia-text-primary">Buscas Salvas</p>
               </div>
             </CardContent>
@@ -335,7 +335,7 @@ export function SavedSearchesTab({
                 <TrendingUp className="w-5 h-5 text-status-success" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-lia-text-primary">{totalUsage}</p>
+                <p className="text-2xl font-semibold text-lia-text-primary">{totalUsage}</p>
                 <p className="text-xs text-lia-text-primary">Execuções</p>
               </div>
             </CardContent>
@@ -347,7 +347,7 @@ export function SavedSearchesTab({
                 <Star className="w-5 h-5 text-wedo-orange" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-lia-text-primary">{favoriteSearches.length}</p>
+                <p className="text-2xl font-semibold text-lia-text-primary">{favoriteSearches.length}</p>
                 <p className="text-xs text-lia-text-primary">Favoritas</p>
               </div>
             </CardContent>

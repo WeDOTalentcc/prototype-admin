@@ -29,7 +29,7 @@ export function JobPreviewAnalytics({ previewJob, jobMetrics, isLoadingJobMetric
             <span className="text-xs font-medium text-lia-text-primary">Sucesso de Fechamento</span>
             <Target className="w-3 h-3 text-lia-text-primary" />
           </div>
-          <div className="text-xl font-bold text-lia-text-primary font-semibold">
+          <div className="text-xl font-semibold text-lia-text-primary font-semibold">
             {isLoadingJobMetrics ? '...' : jobMetrics?.performance?.conversion_rate != null 
               ? `${Math.round(jobMetrics.performance.conversion_rate)}%` 
               : previewJob.funnel.hired > 0 
@@ -46,7 +46,7 @@ export function JobPreviewAnalytics({ previewJob, jobMetrics, isLoadingJobMetric
             <span className="text-xs font-medium text-lia-text-primary">Atividade 7d</span>
             <TrendingUp className="w-3 h-3 text-lia-text-secondary" />
           </div>
-          <div className="text-xl font-bold text-lia-text-primary">
+          <div className="text-xl font-semibold text-lia-text-primary">
             {isLoadingJobMetrics ? '...' : jobMetrics ? jobMetrics.activity.applications_7d : 0}
           </div>
           <div className="mt-1 text-xs text-lia-text-secondary">
@@ -59,7 +59,7 @@ export function JobPreviewAnalytics({ previewJob, jobMetrics, isLoadingJobMetric
             <span className="text-xs font-medium text-lia-text-primary">Time to Fill</span>
             <Clock className="w-3 h-3 text-lia-text-primary" />
           </div>
-          <div className="text-xl font-bold text-lia-text-primary font-semibold">
+          <div className="text-xl font-semibold text-lia-text-primary font-semibold">
             {isLoadingJobMetrics ? '...' : jobMetrics?.performance.time_to_fill_days != null ? `${jobMetrics.performance.time_to_fill_days}d` : (previewJob.urgencyLevel > 3 ? '15d' : previewJob.urgencyLevel > 2 ? '25d' : '35d')}
           </div>
           <div className="mt-1 text-xs text-lia-text-primary">
@@ -72,7 +72,7 @@ export function JobPreviewAnalytics({ previewJob, jobMetrics, isLoadingJobMetric
             <span className="text-xs font-medium text-lia-text-primary">Status SLA</span>
             <Shield className={`w-3 h-3 ${jobMetrics?.sla.within_sla === false ? 'text-status-error' : 'text-lia-text-primary'}`} />
           </div>
-          <div className={`text-xl font-bold font-semibold ${jobMetrics?.sla.within_sla === false ? 'text-status-error dark:text-status-error' : 'text-lia-text-primary'}`}>
+          <div className={`text-xl font-semibold font-semibold ${jobMetrics?.sla.within_sla === false ? 'text-status-error dark:text-status-error' : 'text-lia-text-primary'}`}>
             {isLoadingJobMetrics ? '...' : jobMetrics?.sla.within_sla ? 'OK' : 'Atrasado'}
           </div>
           <div className={`mt-1 text-xs ${jobMetrics?.sla.within_sla === false ? 'text-status-error dark:text-status-error' : 'text-lia-text-primary'}`}>

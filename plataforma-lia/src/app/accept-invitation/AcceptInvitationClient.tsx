@@ -108,7 +108,7 @@ function AcceptInvitationContent() {
           <div className="w-16 h-16 bg-status-error/15 rounded-full flex items-center justify-center mx-auto mb-6">
             <AlertCircle className="w-8 h-8 text-status-error" />
           </div>
-          <h2 className="text-2xl font-bold text-lia-text-primary dark:text-lia-text-primary mb-3">Convite Inválido</h2>
+          <h2 className="text-2xl font-semibold text-lia-text-primary dark:text-lia-text-primary mb-3">Convite Inválido</h2>
           <p className="text-lia-text-secondary mb-6">
             {error || "O link de convite é inválido ou expirou. Por favor, solicite um novo convite ao administrador."}
           </p>
@@ -129,7 +129,7 @@ function AcceptInvitationContent() {
           <div className="w-16 h-16 bg-status-success/15 rounded-full flex items-center justify-center mx-auto mb-6">
             <CheckCircle className="w-8 h-8 text-status-success" />
           </div>
-          <h2 className="text-2xl font-bold text-lia-text-primary dark:text-lia-text-primary mb-3">Conta Ativada!</h2>
+          <h2 className="text-2xl font-semibold text-lia-text-primary dark:text-lia-text-primary mb-3">Conta Ativada!</h2>
           <p className="text-lia-text-secondary mb-6">
             Sua conta foi ativada com sucesso. Agora você pode fazer login e começar a usar a plataforma.
           </p>
@@ -157,7 +157,7 @@ function AcceptInvitationContent() {
             <div className="w-16 h-16 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-full flex items-center justify-center mx-auto mb-4">
               <UserPlus className="w-8 h-8 text-lia-text-secondary dark:text-lia-text-tertiary" />
             </div>
-            <h2 className="text-2xl font-bold text-lia-text-primary dark:text-lia-text-primary mb-3">Bem-vindo(a)!</h2>
+            <h2 className="text-2xl font-semibold text-lia-text-primary dark:text-lia-text-primary mb-3">Bem-vindo(a)!</h2>
             <p className="text-lia-text-secondary text-base leading-relaxed">
               Você foi convidado(a) para participar da plataforma LIA.
             </p>

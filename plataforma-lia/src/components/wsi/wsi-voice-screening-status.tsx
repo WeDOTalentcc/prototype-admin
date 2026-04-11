@@ -347,7 +347,7 @@ export function WSIVoiceScreeningStatus({
                 {result && status === 'completed' && (
                   <div className="w-full space-y-3 pt-2">
                     <div className="text-center">
-                      <div className={`text-3xl font-bold ${
+                      <div className={`text-3xl font-semibold ${
  result.overall_wsi >= 4 ? 'text-status-success' :
                         result.overall_wsi >= 3 ? 'text-status-warning' :
                         'text-status-error'

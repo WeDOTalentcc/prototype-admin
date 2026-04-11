@@ -23,7 +23,7 @@ export function ContactPresenceSection({
 }: ContactPresenceSectionProps) {
   return (
     <div className="space-y-3" data-testid="contact-presence-section">
-      <h3 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wider px-1 font-['Open_Sans',sans-serif]">
+      <h3 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wider px-1">
         Contato e Presença Online
       </h3>
       

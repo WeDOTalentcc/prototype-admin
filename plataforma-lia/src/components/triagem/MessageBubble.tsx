@@ -217,7 +217,7 @@ const MessageBubble = memo(function MessageBubble({
         <div className="flex items-end gap-1.5">
           <div
             className={cn(
-              "px-3.5 py-2.5 text-sm font-['Open_Sans',sans-serif] leading-relaxed",
+              "px-3.5 py-2.5 text-sm leading-relaxed",
               isLia
                 ? "bg-wedo-cyan/[0.04] text-lia-text-primary rounded-[14px] rounded-bl-[4px]"
                 : "bg-lia-bg-tertiary text-lia-text-secondary rounded-[14px] rounded-br-[4px]"

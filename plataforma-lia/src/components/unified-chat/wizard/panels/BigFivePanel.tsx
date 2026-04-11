@@ -29,7 +29,7 @@ export function BigFivePanel({ data }: Props) {
     return (
       <div className="p-4 text-center">
         <div className="w-5 h-5 mx-auto mb-2 border-2 border-wedo-cyan border-t-transparent rounded-full animate-spin" />
-        <p className="text-sm text-lia-text-secondary font-['Open_Sans',sans-serif]">
+        <p className="text-sm text-lia-text-secondary">
           Extraindo perfil Big Five do JD...
         </p>
       </div>
@@ -45,7 +45,7 @@ export function BigFivePanel({ data }: Props) {
   }))
 
   return (
-    <div className="p-4 space-y-4 font-['Open_Sans',sans-serif]">
+    <div className="p-4 space-y-4">
       {/* Header */}
       <div className="flex items-center gap-2">
         <Brain className="w-4 h-4 text-wedo-cyan" />

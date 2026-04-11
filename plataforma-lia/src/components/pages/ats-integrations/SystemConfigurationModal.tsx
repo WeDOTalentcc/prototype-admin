@@ -421,15 +421,15 @@ export function SystemConfigurationModal({ system, onClose }: SystemConfiguratio
                   <h5 className="font-medium text-lia-text-primary mb-3">Resumo do Mapeamento</h5>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                     <div className="text-center">
-                      <p className="text-2xl font-bold text-lia-text-primary">{mappings.length}</p>
+                      <p className="text-2xl font-semibold text-lia-text-primary">{mappings.length}</p>
                       <p className="text-sm text-lia-text-secondary">Campos Mapeados</p>
                     </div>
                     <div className="text-center">
-                      <p className="text-2xl font-bold text-status-success">{mappings.filter(m => m.confidence >= 90).length}</p>
+                      <p className="text-2xl font-semibold text-status-success">{mappings.filter(m => m.confidence >= 90).length}</p>
                       <p className="text-sm text-lia-text-secondary">Alta Confiança (≥90%)</p>
                     </div>
                     <div className="text-center">
-                      <p className="text-2xl font-bold text-wedo-orange">{liaFields.filter(f => f.required && !mappings.some(m => m.targetField === f.id)).length}</p>
+                      <p className="text-2xl font-semibold text-wedo-orange">{liaFields.filter(f => f.required && !mappings.some(m => m.targetField === f.id)).length}</p>
                       <p className="text-sm text-lia-text-secondary">Obrigatórios Pendentes</p>
                     </div>
                   </div>

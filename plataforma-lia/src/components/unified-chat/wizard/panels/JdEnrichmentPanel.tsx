@@ -39,16 +39,16 @@ export function JdEnrichmentPanel({ data, requiresApproval, onApprove, onReject 
         <div className="flex items-center gap-2">
           <div className={cn("flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium", badge.color)}>
             <BadgeIcon className="w-3.5 h-3.5" />
-            <span className="font-['Open_Sans',sans-serif]">{badge.label}</span>
+            <span className="">{badge.label}</span>
           </div>
-          <span className="text-xs text-lia-text-secondary font-['Open_Sans',sans-serif]">
+          <span className="text-xs text-lia-text-secondary">
             Score: {score}/100
           </span>
         </div>
         {warnings.length > 0 && (
           <div className="mt-2 space-y-1">
             {warnings.map((w, i) => (
-              <p key={i} className="text-xs text-status-warning font-['Open_Sans',sans-serif] flex items-start gap-1">
+              <p key={i} className="text-xs text-status-warning flex items-start gap-1">
                 <AlertTriangle className="w-3 h-3 mt-0.5 flex-shrink-0" />
                 {w}
               </p>
@@ -61,10 +61,10 @@ export function JdEnrichmentPanel({ data, requiresApproval, onApprove, onReject 
         <div className="px-4 py-3 space-y-4">
           {/* Title + Seniority */}
           <div>
-            <h4 className="text-sm font-semibold text-lia-text-primary font-['Open_Sans',sans-serif]">
+            <h4 className="text-sm font-semibold text-lia-text-primary">
               {enriched.titulo_padronizado}
             </h4>
-            <p className="text-xs text-lia-text-secondary font-['Open_Sans',sans-serif] mt-0.5">
+            <p className="text-xs text-lia-text-secondary mt-0.5">
               {enriched.senioridade_confirmada}
             </p>
           </div>
@@ -72,8 +72,8 @@ export function JdEnrichmentPanel({ data, requiresApproval, onApprove, onReject 
           {/* About */}
           {enriched.about_role && (
             <div>
-              <p className="text-xs font-medium text-lia-text-secondary font-['Open_Sans',sans-serif] mb-1">Sobre o cargo</p>
-              <p className="text-sm text-lia-text-primary font-['Open_Sans',sans-serif] leading-relaxed">
+              <p className="text-xs font-medium text-lia-text-secondary mb-1">Sobre o cargo</p>
+              <p className="text-sm text-lia-text-primary leading-relaxed">
                 {enriched.about_role}
               </p>
             </div>
@@ -82,14 +82,14 @@ export function JdEnrichmentPanel({ data, requiresApproval, onApprove, onReject 
           {/* Skills obrigatorias */}
           {enriched.skills_obrigatorias?.length > 0 && (
             <div>
-              <p className="text-xs font-medium text-lia-text-secondary font-['Open_Sans',sans-serif] mb-1.5">
+              <p className="text-xs font-medium text-lia-text-secondary mb-1.5">
                 Skills obrigatorias ({enriched.skills_obrigatorias.length})
               </p>
               <div className="flex flex-wrap gap-1.5">
                 {enriched.skills_obrigatorias.map((s, i) => (
                   <span
                     key={i}
-                    className="inline-flex items-center px-2 py-0.5 rounded bg-lia-bg-secondary border border-lia-border-subtle text-xs text-lia-text-primary font-['Open_Sans',sans-serif]"
+                    className="inline-flex items-center px-2 py-0.5 rounded bg-lia-bg-secondary border border-lia-border-subtle text-xs text-lia-text-primary"
                   >
                     {s.skill}
                   </span>
@@ -101,12 +101,12 @@ export function JdEnrichmentPanel({ data, requiresApproval, onApprove, onReject 
           {/* Competencias comportamentais */}
           {enriched.competencias_comportamentais?.length > 0 && (
             <div>
-              <p className="text-xs font-medium text-lia-text-secondary font-['Open_Sans',sans-serif] mb-1.5">
+              <p className="text-xs font-medium text-lia-text-secondary mb-1.5">
                 Competencias comportamentais ({enriched.competencias_comportamentais.length})
               </p>
               <div className="space-y-1.5">
                 {enriched.competencias_comportamentais.map((c, i) => (
-                  <div key={i} className="flex items-center gap-2 text-xs font-['Open_Sans',sans-serif]">
+                  <div key={i} className="flex items-center gap-2 text-xs">
                     <span className="text-lia-text-primary">{c.competencia}</span>
                     <span className="px-1.5 py-0.5 rounded bg-wedo-cyan/10 text-wedo-cyan text-[10px] font-medium">
                       {c.trait_big_five}
@@ -122,12 +122,12 @@ export function JdEnrichmentPanel({ data, requiresApproval, onApprove, onReject 
             <div className="p-2.5 rounded-xl bg-status-success/5 border border-status-success/20">
               <div className="flex items-center gap-1.5 mb-1">
                 <Shield className="w-3.5 h-3.5 text-status-success" />
-                <span className="text-xs font-medium text-status-success font-['Open_Sans',sans-serif]">
+                <span className="text-xs font-medium text-status-success">
                   Correcoes de fairness aplicadas
                 </span>
               </div>
               {enriched.fairness_corrections.map((c, i) => (
-                <p key={i} className="text-xs text-lia-text-secondary font-['Open_Sans',sans-serif] ml-5">
+                <p key={i} className="text-xs text-lia-text-secondary ml-5">
                   {c}
                 </p>
               ))}
@@ -139,13 +139,13 @@ export function JdEnrichmentPanel({ data, requiresApproval, onApprove, onReject 
             <div>
               <div className="flex items-center gap-1.5 mb-1">
                 <Sparkles className="w-3.5 h-3.5 text-wedo-cyan" />
-                <span className="text-xs font-medium text-lia-text-secondary font-['Open_Sans',sans-serif]">
+                <span className="text-xs font-medium text-lia-text-secondary">
                   Alteracoes realizadas pela IA
                 </span>
               </div>
               <ul className="space-y-0.5 ml-5">
                 {enriched.alteracoes_realizadas.map((a, i) => (
-                  <li key={i} className="text-xs text-lia-text-secondary font-['Open_Sans',sans-serif]">
+                  <li key={i} className="text-xs text-lia-text-secondary">
                     {a}
                   </li>
                 ))}
@@ -162,13 +162,13 @@ export function JdEnrichmentPanel({ data, requiresApproval, onApprove, onReject 
         <div className="flex-shrink-0 px-4 py-3 border-t border-lia-border-subtle bg-lia-bg-primary flex items-center gap-2">
           <button
             onClick={onReject}
-            className="flex-1 px-3 py-2 rounded-xl border border-lia-border-subtle text-sm font-medium text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none font-['Open_Sans',sans-serif]"
+            className="flex-1 px-3 py-2 rounded-xl border border-lia-border-subtle text-sm font-medium text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none"
           >
             Editar
           </button>
           <button
             onClick={onApprove}
-            className="flex-1 px-3 py-2 rounded-md bg-wedo-cyan text-white text-sm font-medium hover:bg-wedo-cyan/90 transition-colors motion-reduce:transition-none font-['Open_Sans',sans-serif]"
+            className="flex-1 px-3 py-2 rounded-md bg-wedo-cyan text-white text-sm font-medium hover:bg-wedo-cyan/90 transition-colors motion-reduce:transition-none"
           >
             Aprovar JD
           </button>
@@ -189,15 +189,15 @@ function JdLoadingState() {
   if (timedOut) {
     return (
       <div className="px-4 py-8 text-center space-y-3">
-        <p className="text-sm text-status-warning font-medium font-['Open_Sans',sans-serif]">
+        <p className="text-sm text-status-warning font-medium">
           O enriquecimento esta demorando mais que o esperado.
         </p>
-        <p className="text-xs text-lia-text-tertiary font-['Open_Sans',sans-serif]">
+        <p className="text-xs text-lia-text-tertiary">
           Verifique a conexao ou tente novamente no chat.
         </p>
         <button
           onClick={() => setTimedOut(false)}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-lia-border-subtle text-xs font-medium text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors font-['Open_Sans',sans-serif]"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-lia-border-subtle text-xs font-medium text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors"
         >
           Aguardar mais
         </button>
@@ -208,7 +208,7 @@ function JdLoadingState() {
   return (
     <div className="px-4 py-8 text-center space-y-2">
       <div className="w-5 h-5 mx-auto border-2 border-wedo-cyan border-t-transparent rounded-full animate-spin" />
-      <p className="text-sm text-lia-text-secondary font-['Open_Sans',sans-serif]">
+      <p className="text-sm text-lia-text-secondary">
         Enriquecendo JD...
       </p>
     </div>

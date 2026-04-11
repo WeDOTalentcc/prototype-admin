@@ -39,7 +39,7 @@ export function MultipleChoiceCard({
       role="group"
       aria-label={question}
     >
-      <p className="text-sm text-lia-text-secondary font-['Open_Sans',sans-serif]">
+      <p className="text-sm text-lia-text-secondary">
         {question}
       </p>
       <div className="flex flex-col gap-2">
@@ -54,7 +54,7 @@ export function MultipleChoiceCard({
               aria-pressed={isSelected}
               aria-label={option.label}
               className={cn(
- "w-full min-h-[44px] px-4 py-3 text-sm text-left rounded-lg font-medium transition-colors duration-200 focus:ring-2 focus:ring-lia-btn-primary-bg/20 focus:outline-none font-['Open_Sans',sans-serif]",
+ "w-full min-h-[44px] px-4 py-3 text-sm text-left rounded-lg font-medium transition-colors duration-200 focus:ring-2 focus:ring-lia-btn-primary-bg/20 focus:outline-none",
                 isSelected
                   ? "bg-lia-btn-primary-bg text-lia-btn-primary-text border border-lia-btn-primary-bg"
                   : "bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary border border-lia-border-default dark:border-lia-border-default hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-elevated",

@@ -52,10 +52,10 @@ export function OnboardingSettingsToggle({ accountId }: Props) {
           <Sparkles className="w-5 h-5 text-wedo-cyan" />
         </div>
         <div>
-          <p className="text-sm font-medium text-lia-text-primary font-['Open_Sans',sans-serif]">
+          <p className="text-sm font-medium text-lia-text-primary">
             Onboarding com LIA
           </p>
-          <p className="text-xs text-lia-text-secondary font-['Open_Sans',sans-serif]">
+          <p className="text-xs text-lia-text-secondary">
             Novos recrutadores recebem apresentacao conversacional da LIA via WhatsApp e chat
           </p>
         </div>

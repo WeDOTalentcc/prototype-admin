@@ -89,15 +89,15 @@ export function KpiAlertCard({
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-3 p-3 bg-lia-bg-secondary rounded-xl">
               <div className="text-center">
-                <div className="text-lg font-bold text-lia-text-primary">{alert.currentValue}</div>
+                <div className="text-lg font-semibold text-lia-text-primary">{alert.currentValue}</div>
                 <div className="text-xs text-lia-text-secondary">Atual</div>
               </div>
               <div className="text-center">
-                <div className="text-lg font-bold text-lia-text-secondary">{alert.targetValue}</div>
+                <div className="text-lg font-semibold text-lia-text-secondary">{alert.targetValue}</div>
                 <div className="text-xs text-lia-text-secondary">Meta</div>
               </div>
               <div className="text-center">
-                <div className={`text-lg font-bold ${alert.variance > 25 ? 'text-status-error' : 'text-status-warning'}`}>
+                <div className={`text-lg font-semibold ${alert.variance > 25 ? 'text-status-error' : 'text-status-warning'}`}>
                   {alert.variance.toFixed(1)}%
                 </div>
                 <div className="text-xs text-lia-text-secondary">Variação</div>

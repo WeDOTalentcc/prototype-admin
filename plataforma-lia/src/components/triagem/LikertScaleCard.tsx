@@ -46,7 +46,7 @@ export function LikertScaleCard({
       role="group"
       aria-label={question}
     >
-      <p className="text-sm text-lia-text-secondary font-['Open_Sans',sans-serif]">
+      <p className="text-sm text-lia-text-secondary">
         {question}
       </p>
 
@@ -76,10 +76,10 @@ export function LikertScaleCard({
       </div>
 
       <div className="flex justify-between">
-        <span className="text-micro text-lia-text-disabled font-['Open_Sans',sans-serif]">
+        <span className="text-micro text-lia-text-disabled">
           {labels[0]}
         </span>
-        <span className="text-micro text-lia-text-disabled font-['Open_Sans',sans-serif]">
+        <span className="text-micro text-lia-text-disabled">
           {labels[labels.length - 1]}
         </span>
       </div>

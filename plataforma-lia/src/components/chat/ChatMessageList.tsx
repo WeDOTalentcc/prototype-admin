@@ -91,7 +91,7 @@ const ChatMessageListComponent = memo(function ChatMessageList({
                   message.type !== "command" &&
                   message.type !== "file-creation" && (
                     <div
-                      className="text-xs leading-relaxed text-lia-text-primary font-['Open_Sans',sans-serif] lia-markdown-content"
+                      className="text-xs leading-relaxed text-lia-text-primary lia-markdown-content"
                       dangerouslySetInnerHTML={{
                         __html: onHighlightSearchTerm(
                           renderMarkdown(message.content),
@@ -373,7 +373,7 @@ const ChatMessageListComponent = memo(function ChatMessageList({
                 {message.type === "completion" && message.completion && (
                   <>
                     <div
-                      className="text-xs text-lia-text-primary mb-4 font-['Open_Sans',sans-serif]"
+                      className="text-xs text-lia-text-primary mb-4"
                       dangerouslySetInnerHTML={{
                         __html: onHighlightSearchTerm(
                           renderMarkdown(message.content),
@@ -530,7 +530,7 @@ const ChatMessageListComponent = memo(function ChatMessageList({
         <ChatBubbleBase sender="lia">
           <div className="flex items-center space-x-2" role="status" aria-live="polite" aria-label="Carregando...">
             <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none" />
-            <span className="text-xs text-lia-text-secondary font-['Open_Sans',sans-serif]">
+            <span className="text-xs text-lia-text-secondary">
               Analisando...
             </span>
           </div>

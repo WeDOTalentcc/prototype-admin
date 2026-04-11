@@ -266,7 +266,7 @@ export function JobPublishModal({
               <Share2 className="w-4 h-4 text-lia-text-secondary" />
             </div>
             <div>
-              <DialogTitle className="text-sm font-semibold text-lia-text-primary font-['Open_Sans',sans-serif]">
+              <DialogTitle className="text-sm font-semibold text-lia-text-primary">
                 {getModalTitle()}
               </DialogTitle>
               <p className="text-xs text-lia-text-secondary mt-0.5" aria-live="polite" aria-atomic="true">
@@ -283,7 +283,7 @@ export function JobPublishModal({
           )}>
             <div className="space-y-3">
               <div>
-                <h4 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-2 font-['Open_Sans',sans-serif]">
+                <h4 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-2">
                   Vagas Selecionadas
                 </h4>
                 <div className={cn(
@@ -317,7 +317,7 @@ export function JobPublishModal({
 
               {(mode === 'publish' || mode === 'mixed') && (
                 <div>
-                  <h4 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-2 flex items-center gap-1 font-['Open_Sans',sans-serif]">
+                  <h4 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-2 flex items-center gap-1">
                     <Calendar className="w-3 h-3" />
                     Agendamento
                   </h4>
@@ -462,7 +462,7 @@ export function JobPublishModal({
             <div className="space-y-3">
               {(mode === 'publish' || mode === 'mixed') && (
                 <div className="rounded-xl border border-lia-border-subtle bg-lia-bg-secondary p-3 space-y-2">
-                  <h4 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide font-['Open_Sans',sans-serif]">
+                  <h4 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide">
                     Checklist de Publicação
                   </h4>
                   <div className="space-y-1.5">
@@ -520,7 +520,7 @@ export function JobPublishModal({
               {(mode === 'publish' || mode === 'mixed') && (
                 <>
                   <div>
-                    <h4 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-2 font-['Open_Sans',sans-serif]">
+                    <h4 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-2">
                       Canais de Publicação
                     </h4>
                     <div className="grid grid-cols-2 gap-1.5">
@@ -566,7 +566,7 @@ export function JobPublishModal({
                   </div>
 
                   <div>
-                    <h4 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-2 flex items-center gap-1 font-['Open_Sans',sans-serif]">
+                    <h4 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-2 flex items-center gap-1">
                       <Search className="w-3 h-3" />
                       Busca Automática
                     </h4>
@@ -671,7 +671,7 @@ export function JobPublishModal({
             <div className="w-7 h-7 rounded-xl bg-lia-bg-tertiary flex items-center justify-center">
               <Info className="w-4 h-4 text-lia-text-secondary" />
             </div>
-            <DialogTitle className="text-sm font-semibold text-lia-text-primary font-['Open_Sans',sans-serif]">
+            <DialogTitle className="text-sm font-semibold text-lia-text-primary">
               {channelInfoModal?.name} — Integração não configurada
             </DialogTitle>
           </div>

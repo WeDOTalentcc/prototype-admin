@@ -59,7 +59,7 @@ export function IndicatorsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-lia-text-primary">
+          <h1 className="text-lg font-semibold text-lia-text-primary">
             Indicadores e Analytics
           </h1>
           <p className="text-lia-text-secondary">

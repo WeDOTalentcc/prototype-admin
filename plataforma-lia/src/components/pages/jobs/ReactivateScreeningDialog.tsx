@@ -30,7 +30,7 @@ export function ReactivateScreeningDialog({
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
       <DialogContent className="max-w-sm rounded-xl bg-lia-bg-primary border border-lia-border-subtle dark:bg-lia-bg-primary dark:border-lia-border-subtle">
         <DialogHeader className="pb-3 dark:border-lia-border-subtle">
-          <DialogTitle className="text-sm font-semibold text-lia-text-primary font-['Open_Sans',sans-serif]">
+          <DialogTitle className="text-sm font-semibold text-lia-text-primary">
             Reativar Triagem?
           </DialogTitle>
         </DialogHeader>

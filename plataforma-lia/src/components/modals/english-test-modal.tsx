@@ -170,7 +170,7 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
                     </span>
                   </div>
                   <span 
-                    className="text-2xl font-bold"
+                    className="text-2xl font-semibold"
                     style={{color: getScoreColor((testData).score ?? 0)}}
                   >
                     {((testData).score as React.ReactNode)}
@@ -196,7 +196,7 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
                     </span>
                   </div>
                   <span 
-                    className="text-lg font-bold"
+                    className="text-lg font-semibold"
                     style={{color: levelInfo.color}}
                   >
                     {((testData).level as React.ReactNode)}

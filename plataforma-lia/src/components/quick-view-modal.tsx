@@ -290,7 +290,7 @@ export function QuickViewModal({
                 <>
                   {/* Score */}
                   <div className="text-center">
-                    <div className={`inline-flex items-center justify-center w-20 h-20 rounded-full text-2xl font-bold ${getScoreColor(candidate.liaAnalysis.score)}`}>
+                    <div className={`inline-flex items-center justify-center w-20 h-20 rounded-full text-2xl font-semibold ${getScoreColor(candidate.liaAnalysis.score)}`}>
                       {candidate.liaAnalysis.score}%
                     </div>
                     <p className="text-xs text-lia-text-tertiary mt-2">Score de Compatibilidade LIA</p>

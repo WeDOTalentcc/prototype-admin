@@ -96,7 +96,7 @@ export function VacancySummaryCard({ jobData, onConfirmPublish, onEdit, classNam
   }
 
   return (
-    <div className={`${cardStyles.elevated} p-5 font-['Open_Sans',sans-serif] ${className || ''}`}>
+    <div className={`${cardStyles.elevated} p-5 ${className || ''}`}>
       <div className="mb-4">
         <div className="flex items-center justify-between mb-2">
           <span className={textStyles.h3}>Resumo da Vaga</span>

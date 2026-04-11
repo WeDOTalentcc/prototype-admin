@@ -54,19 +54,19 @@ export function WelcomeCard({ config, onStart, onRequestCall, isStarting = false
             />
           ) : (
             <div className="h-12 px-4 flex items-center justify-center bg-lia-bg-tertiary dark:bg-lia-bg-elevated rounded-lg">
-              <span className="text-sm font-semibold text-lia-text-secondary font-['Open_Sans',sans-serif]">
+              <span className="text-sm font-semibold text-lia-text-secondary">
                 {config.companyName}
               </span>
             </div>
           )}
 
-          <h1 className="text-lg font-semibold text-lia-text-primary font-['Open_Sans',sans-serif]">
+          <h1 className="text-lg font-semibold text-lia-text-primary">
             {config.jobTitle}
           </h1>
         </div>
 
         {hasJobDetails && (
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-lia-text-tertiary font-['Open_Sans',sans-serif]">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-lia-text-tertiary">
             {config.location && (
               <span className="flex items-center gap-1">
                 <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
@@ -83,7 +83,7 @@ export function WelcomeCard({ config, onStart, onRequestCall, isStarting = false
         )}
 
         {config.jobDescription && (
-          <p className="text-sm text-lia-text-secondary font-['Open_Sans',sans-serif] leading-relaxed line-clamp-4">
+          <p className="text-sm text-lia-text-secondary leading-relaxed line-clamp-4">
             {config.jobDescription}
           </p>
         )}
@@ -91,13 +91,13 @@ export function WelcomeCard({ config, onStart, onRequestCall, isStarting = false
         {(hasSalary || hasBenefits) && (
           <div className="space-y-2">
             {hasSalary && config.salaryRange && (
-              <div className="flex items-center gap-2 text-xs text-lia-text-tertiary font-['Open_Sans',sans-serif]">
+              <div className="flex items-center gap-2 text-xs text-lia-text-tertiary">
                 <DollarSign className="w-3.5 h-3.5 flex-shrink-0" />
                 <span>{formatSalary(config.salaryRange)}</span>
               </div>
             )}
             {hasBenefits && config.benefits && (
-              <div className="flex items-start gap-2 text-xs text-lia-text-tertiary font-['Open_Sans',sans-serif]">
+              <div className="flex items-start gap-2 text-xs text-lia-text-tertiary">
                 <Gift className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
                 <span>{config.benefits.join(" · ")}</span>
               </div>
@@ -107,7 +107,7 @@ export function WelcomeCard({ config, onStart, onRequestCall, isStarting = false
 
         <div className="flex items-start gap-3 p-4 bg-wedo-cyan/10 dark:bg-wedo-cyan/15 rounded-lg">
           <LIAIcon size="sm" className="flex-shrink-0 bg-wedo-cyan/10" />
-          <div className="text-sm text-lia-text-secondary font-['Open_Sans',sans-serif] leading-relaxed">
+          <div className="text-sm text-lia-text-secondary leading-relaxed">
             <p className="font-semibold text-lia-text-primary mb-1">
               Olá, {config.candidateName}. Eu sou a LIA.
             </p>
@@ -115,7 +115,7 @@ export function WelcomeCard({ config, onStart, onRequestCall, isStarting = false
           </div>
         </div>
 
-        <div className="flex items-center gap-2 text-xs text-lia-text-tertiary font-['Open_Sans',sans-serif]">
+        <div className="flex items-center gap-2 text-xs text-lia-text-tertiary">
           <Clock className="w-3.5 h-3.5" />
           <span>
             Tempo estimado:{" "}
@@ -141,7 +141,7 @@ export function WelcomeCard({ config, onStart, onRequestCall, isStarting = false
               <Square className="w-5 h-5 text-lia-text-tertiary group-hover:text-lia-text-secondary transition-colors" />
             )}
           </button>
-          <span className="text-xs text-lia-text-secondary font-['Open_Sans',sans-serif] leading-relaxed select-none">
+          <span className="text-xs text-lia-text-secondary leading-relaxed select-none">
             Concordo com o tratamento dos meus dados pessoais para fins desta triagem, conforme a{" "}
             <a
               href={config.privacyPolicyUrl}
@@ -163,7 +163,7 @@ export function WelcomeCard({ config, onStart, onRequestCall, isStarting = false
             disabled={isStarting || !consentChecked}
             aria-label="Iniciar conversa de triagem"
             className={cn(
-              "h-11 flex items-center justify-center rounded-lg bg-lia-btn-primary-bg text-lia-btn-primary-text text-sm font-medium hover:bg-lia-btn-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 focus:outline-none font-['Open_Sans',sans-serif]",
+              "h-11 flex items-center justify-center rounded-lg bg-lia-btn-primary-bg text-lia-btn-primary-text text-sm font-medium hover:bg-lia-btn-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 focus:outline-none",
               config.phoneEnabled ? "flex-1" : "w-full"
             )}
           >
@@ -176,7 +176,7 @@ export function WelcomeCard({ config, onStart, onRequestCall, isStarting = false
               onClick={onRequestCall}
               disabled={isStarting || !consentChecked}
               aria-label="Solicitar ligação telefônica"
-              className="h-11 flex items-center justify-center gap-2 px-4 rounded-lg border border-lia-border-subtle text-lia-text-primary text-sm font-medium hover:bg-lia-bg-tertiary disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 focus:outline-none font-['Open_Sans',sans-serif]"
+              className="h-11 flex items-center justify-center gap-2 px-4 rounded-lg border border-lia-border-subtle text-lia-text-primary text-sm font-medium hover:bg-lia-bg-tertiary disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 focus:outline-none"
             >
               <Phone className="w-4 h-4" />
               Receber Ligação
@@ -188,7 +188,7 @@ export function WelcomeCard({ config, onStart, onRequestCall, isStarting = false
           href={config.privacyPolicyUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center justify-center gap-1.5 text-xs text-lia-text-disabled hover:text-lia-text-secondary transition-colors motion-reduce:transition-none font-['Open_Sans',sans-serif]"
+          className="flex items-center justify-center gap-1.5 text-xs text-lia-text-disabled hover:text-lia-text-secondary transition-colors motion-reduce:transition-none"
           aria-label="Política de privacidade"
         >
           <Shield className="w-3 h-3" />

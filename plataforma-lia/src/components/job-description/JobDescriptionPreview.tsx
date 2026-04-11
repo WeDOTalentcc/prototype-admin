@@ -129,7 +129,7 @@ export function JobDescriptionPreview({
       <CardHeader className="pb-4">
         <div className="flex items-start justify-between">
           <div>
-            <CardTitle className="text-2xl font-bold">
+            <CardTitle className="text-2xl font-semibold">
               {data.title}
               {data.num_positions > 1 && (
                 <span className="text-lia-text-tertiary ml-2">

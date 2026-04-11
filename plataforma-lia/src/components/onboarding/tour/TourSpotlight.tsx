@@ -146,7 +146,7 @@ export function TourSpotlight({
           >
             <X className="w-3.5 h-3.5" />
           </button>
-          <p className="text-sm text-lia-text-primary font-['Open_Sans',sans-serif] leading-relaxed pr-4">
+          <p className="text-sm text-lia-text-primary leading-relaxed pr-4">
             {message}
           </p>
         </div>

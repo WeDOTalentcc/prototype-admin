@@ -25,7 +25,7 @@ export function StrategicTab() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-status-success">+24.8%</div>
+            <div className="text-2xl font-semibold text-status-success">+24.8%</div>
             <div className="text-xs text-status-success mt-1">vs trimestre anterior</div>
             <div className="mt-3 text-xs text-lia-text-secondary">
               Contratações cresceram 35% e pipeline aumentou 18%
@@ -41,7 +41,7 @@ export function StrategicTab() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-lia-text-primary">87.3%</div>
+            <div className="text-2xl font-semibold text-lia-text-primary">87.3%</div>
             <div className="text-xs text-lia-text-secondary mt-1">Metas atingidas</div>
             <div className="mt-3 text-xs text-lia-text-secondary">
               94% das vagas preenchidas dentro do prazo
@@ -57,7 +57,7 @@ export function StrategicTab() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-wedo-purple">4.6/5.0</div>
+            <div className="text-2xl font-semibold text-wedo-purple">4.6/5.0</div>
             <div className="text-xs text-wedo-purple mt-1">Score médio</div>
             <div className="mt-3 text-xs text-lia-text-secondary">
               89% dos contratados ainda na empresa após 6 meses
@@ -73,7 +73,7 @@ export function StrategicTab() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-wedo-orange">325%</div>
+            <div className="text-2xl font-semibold text-wedo-orange">325%</div>
             <div className="text-xs text-wedo-orange mt-1">Retorno sobre investimento</div>
             <div className="mt-3 text-xs text-lia-text-secondary">
               Economia de {CURRENCY_SYMBOL} 2.4M em terceirização
@@ -202,7 +202,7 @@ export function StrategicTab() {
                 Inclusão PCD
               </h4>
               <div className="text-center p-4 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-xl">
-                <div className="text-2xl font-bold text-lia-text-primary">
+                <div className="text-2xl font-semibold text-lia-text-primary">
                   8.2%
                 </div>
                 <div className="text-sm text-lia-text-secondary">

@@ -29,7 +29,7 @@ export function BigFiveSection({
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <h3 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wider px-1 font-['Open_Sans',sans-serif]">
+        <h3 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wider px-1">
           Perfil Organizacional (Big Five)
         </h3>
         <Button

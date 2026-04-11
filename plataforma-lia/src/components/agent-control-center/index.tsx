@@ -19,7 +19,7 @@ function MetricCard({ variant, icon, title, value, trend, accentColor }: {
         <span className="text-xs text-lia-text-disabled">{title}</span>
       </div>
       <div className="flex items-baseline gap-2">
-        <span className="text-lg font-bold text-lia-text-primary">{value}</span>
+        <span className="text-lg font-semibold text-lia-text-primary">{value}</span>
         {trend !== undefined && <CompactDelta value={trend} />}
       </div>
     </div>
@@ -315,7 +315,7 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
                       <CompactDelta value={agent.delta} />
                     </div>
                     <div className="flex items-baseline gap-1">
-                      <span className="text-lg font-bold text-lia-text-primary">{agent.actions_today}</span>
+                      <span className="text-lg font-semibold text-lia-text-primary">{agent.actions_today}</span>
                       <span className="text-xs text-lia-text-disabled">
                         /{agent.daily_goal}
                       </span>
@@ -332,7 +332,7 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
                       Progresso
                     </span>
                     <span 
-                      className={`text-lg font-bold ${agent.progress >= 80 ? 'text-wedo-green-bright' : agent.progress >= 50 ? 'text-lia-btn-primary-bg' : 'text-status-warning'}`}
+                      className={`text-lg font-semibold ${agent.progress >= 80 ? 'text-wedo-green-bright' : agent.progress >= 50 ? 'text-lia-btn-primary-bg' : 'text-status-warning'}`}
                     >
                       {agent.progress}%
                     </span>

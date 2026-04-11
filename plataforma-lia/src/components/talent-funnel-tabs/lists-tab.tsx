@@ -76,7 +76,7 @@ export function ListsTab({ onListSelect, onAddToJobs, onGoToSearch, onAddCandida
     <div className="space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h2 className="text-lg font-semibold text-lia-text-primary font-['Open_Sans',sans-serif] flex items-center gap-2">
+          <h2 className="text-lg font-semibold text-lia-text-primary flex items-center gap-2">
             <List className="w-5 h-5 text-lia-text-secondary" />
             Listas de Candidatos
           </h2>
@@ -132,7 +132,7 @@ export function ListsTab({ onListSelect, onAddToJobs, onGoToSearch, onAddCandida
           <div className="w-16 h-16 rounded-full flex items-center justify-center mb-4 bg-lia-bg-tertiary">
             <FolderOpen className="w-8 h-8 text-lia-text-tertiary" />
           </div>
-          <h3 className="text-lg font-medium text-lia-text-primary mb-2 font-['Open_Sans',sans-serif]">
+          <h3 className="text-lg font-medium text-lia-text-primary mb-2">
             {searchTerm ? 'Nenhuma lista encontrada' : 'Nenhuma lista criada'}
           </h3>
           <p className="text-sm text-lia-text-primary text-center max-w-md mb-6" aria-live="polite" aria-atomic="true">

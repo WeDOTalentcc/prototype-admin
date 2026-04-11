@@ -80,7 +80,7 @@ export function StageTransitionActionsModal(props: StageTransitionActionsModalPr
               )} />
             </div>
             <div>
-              <h3 className={cn(textStyles.title, "font-['Open_Sans',sans-serif]")}>
+              <h3 className={cn(textStyles.title, "")}>
                 Mover Candidato
               </h3>
               <p className={textStyles.description}>

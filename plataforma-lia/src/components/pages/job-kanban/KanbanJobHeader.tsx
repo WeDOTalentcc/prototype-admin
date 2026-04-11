@@ -320,7 +320,7 @@ export const KanbanJobHeader = React.memo(function KanbanJobHeader(props: Kanban
           <div className="flex items-center gap-1 px-4 mt-2">
             <button
               onClick={() => { setActiveTab('management'); setShowJobEditor(false); }}
-              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors cursor-pointer font-['Open_Sans',sans-serif] ${
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors cursor-pointer ${
                 activeTab === 'management'
                   ? 'bg-lia-bg-tertiary text-lia-text-primary'
                   : 'text-lia-text-secondary hover:bg-lia-interactive-hover'
@@ -338,7 +338,7 @@ export const KanbanJobHeader = React.memo(function KanbanJobHeader(props: Kanban
             </button>
             <button
               onClick={() => { setActiveTab('edit'); setShowJobEditor(true); }}
-              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors cursor-pointer font-['Open_Sans',sans-serif] ${
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors cursor-pointer ${
                 activeTab === 'edit'
                   ? 'bg-lia-bg-tertiary text-lia-text-primary'
                   : 'text-lia-text-secondary hover:bg-lia-interactive-hover'

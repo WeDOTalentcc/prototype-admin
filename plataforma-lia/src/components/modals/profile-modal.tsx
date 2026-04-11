@@ -103,7 +103,7 @@ export function ProfileModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[440px]">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-lia-text-primary font-['Open_Sans',sans-serif]">
+          <DialogTitle className="flex items-center gap-2 text-lia-text-primary">
             <User className="w-5 h-5 text-lia-text-secondary" />
             Meu Perfil
           </DialogTitle>
@@ -114,7 +114,7 @@ export function ProfileModal({
             <div className="relative group">
               <Avatar className="h-20 w-20 border-2 border-lia-border-subtle">
                 <AvatarImage src={user.avatar_url || undefined} alt={user.name} />
-                <AvatarFallback className="text-xl bg-lia-bg-inverse text-lia-text-on-inverse font-['Open_Sans',sans-serif]">
+                <AvatarFallback className="text-xl bg-lia-bg-inverse text-lia-text-on-inverse">
                   {initials}
                 </AvatarFallback>
               </Avatar>
@@ -140,7 +140,7 @@ export function ProfileModal({
 
           <div className="space-y-4">
             <div className="space-y-1.5">
-              <Label className="text-xs text-lia-text-secondary font-['Open_Sans',sans-serif] flex items-center gap-1.5">
+              <Label className="text-xs text-lia-text-secondary flex items-center gap-1.5">
                 <User className="w-3 h-3" />
                 Nome
               </Label>
@@ -188,7 +188,7 @@ export function ProfileModal({
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-xs text-lia-text-secondary font-['Open_Sans',sans-serif] flex items-center gap-1.5">
+              <Label className="text-xs text-lia-text-secondary flex items-center gap-1.5">
                 <Mail className="w-3 h-3" />
                 E-mail
                 {isSSOUser && (
@@ -201,7 +201,7 @@ export function ProfileModal({
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-xs text-lia-text-secondary font-['Open_Sans',sans-serif] flex items-center gap-1.5">
+              <Label className="text-xs text-lia-text-secondary flex items-center gap-1.5">
                 <Shield className="w-3 h-3" />
                 Perfil de acesso
               </Label>

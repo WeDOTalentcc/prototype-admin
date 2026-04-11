@@ -74,7 +74,7 @@ export function ScreeningChannelsModal({
               <MessageSquare className="w-4 h-4 text-lia-text-secondary" />
             </div>
             <div>
-              <DialogTitle className="text-sm font-semibold text-lia-text-primary font-['Open_Sans',sans-serif]">
+              <DialogTitle className="text-sm font-semibold text-lia-text-primary">
                 Canais de Comunicação
               </DialogTitle>
               <p className="text-xs text-lia-text-secondary mt-0.5" aria-live="polite" aria-atomic="true">

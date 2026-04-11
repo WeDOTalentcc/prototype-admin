@@ -23,7 +23,7 @@ export function SettingsNotificationsTab({ onSettingsChange }: SettingsNotificat
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-xl font-medium font-inter">
+          <CardTitle className="flex items-center gap-2 text-sm font-semibold">
             <Bell className="w-4 h-4" />
             Canais de Notificação
           </CardTitle>

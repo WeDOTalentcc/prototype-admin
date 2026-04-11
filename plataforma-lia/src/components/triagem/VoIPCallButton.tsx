@@ -356,7 +356,7 @@ export function VoIPCallButton({
           title="Chamada por voz não disponível neste momento"
           aria-label="Chamada por voz indisponível"
           className={cn(
-            "h-11 flex items-center justify-center gap-2 px-4 rounded-lg border border-lia-border-subtle text-lia-text-disabled text-sm font-medium opacity-50 cursor-not-allowed font-['Open_Sans',sans-serif]",
+            "h-11 flex items-center justify-center gap-2 px-4 rounded-lg border border-lia-border-subtle text-lia-text-disabled text-sm font-medium opacity-50 cursor-not-allowed",
             className
           )}
         >
@@ -364,7 +364,7 @@ export function VoIPCallButton({
           Voz indisponível
         </button>
         {errorMessage && (
-          <p className="text-xs text-lia-text-secondary text-center leading-snug font-['Open_Sans',sans-serif] px-1">
+          <p className="text-xs text-lia-text-secondary text-center leading-snug px-1">
             {errorMessage}
           </p>
         )}
@@ -381,7 +381,7 @@ export function VoIPCallButton({
           title="Tentar novamente"
           aria-label="Tentar chamada de voz novamente"
           className={cn(
-            "h-11 flex items-center justify-center gap-2 px-4 rounded-lg border border-status-error/40 text-status-error text-sm font-medium hover:bg-status-error/10 transition-colors font-['Open_Sans',sans-serif]",
+            "h-11 flex items-center justify-center gap-2 px-4 rounded-lg border border-status-error/40 text-status-error text-sm font-medium hover:bg-status-error/10 transition-colors",
             className
           )}
         >
@@ -389,7 +389,7 @@ export function VoIPCallButton({
           Tentar novamente
         </button>
         {errorMessage && (
-          <p className="text-xs text-status-error text-center leading-snug font-['Open_Sans',sans-serif] px-1">
+          <p className="text-xs text-status-error text-center leading-snug px-1">
             {errorMessage}
           </p>
         )}
@@ -405,7 +405,7 @@ export function VoIPCallButton({
         title="Iniciar nova chamada de voz"
         aria-label="Iniciar nova chamada de voz"
         className={cn(
-          "h-11 flex items-center justify-center gap-2 px-4 rounded-lg border border-lia-border-subtle text-lia-text-secondary text-sm font-medium hover:bg-lia-bg-tertiary transition-colors font-['Open_Sans',sans-serif]",
+          "h-11 flex items-center justify-center gap-2 px-4 rounded-lg border border-lia-border-subtle text-lia-text-secondary text-sm font-medium hover:bg-lia-bg-tertiary transition-colors",
           className
         )}
       >
@@ -424,7 +424,7 @@ export function VoIPCallButton({
           title={voipState === "muted" ? "Ativar microfone" : "Silenciar microfone"}
           aria-label={voipState === "muted" ? "Ativar microfone" : "Silenciar microfone"}
           className={cn(
-            "h-11 flex items-center justify-center gap-2 px-3 rounded-lg border text-sm font-medium transition-colors font-['Open_Sans',sans-serif]",
+            "h-11 flex items-center justify-center gap-2 px-3 rounded-lg border text-sm font-medium transition-colors",
             voipState === "muted"
               ? "border-status-warning/40 text-status-warning bg-status-warning/10 hover:bg-status-warning/20"
               : "border-lia-border-subtle text-lia-text-secondary hover:bg-lia-bg-tertiary"
@@ -439,7 +439,7 @@ export function VoIPCallButton({
           onClick={endCall}
           title="Encerrar chamada"
           aria-label="Encerrar chamada de voz"
-          className="h-11 flex items-center justify-center gap-2 px-4 rounded-lg bg-status-error text-white text-sm font-medium hover:bg-status-error/90 transition-colors font-['Open_Sans',sans-serif]"
+          className="h-11 flex items-center justify-center gap-2 px-4 rounded-lg bg-status-error text-white text-sm font-medium hover:bg-status-error/90 transition-colors"
         >
           <PhoneOff className="w-4 h-4" />
           Encerrar
@@ -455,7 +455,7 @@ export function VoIPCallButton({
         disabled
         aria-label="Conectando chamada de voz..."
         className={cn(
-          "h-11 flex items-center justify-center gap-2 px-4 rounded-lg border border-lia-border-subtle text-lia-text-secondary text-sm font-medium opacity-70 cursor-not-allowed font-['Open_Sans',sans-serif]",
+          "h-11 flex items-center justify-center gap-2 px-4 rounded-lg border border-lia-border-subtle text-lia-text-secondary text-sm font-medium opacity-70 cursor-not-allowed",
           className
         )}
       >
@@ -473,7 +473,7 @@ export function VoIPCallButton({
       title="Iniciar chamada de voz pelo navegador"
       aria-label="Iniciar chamada de voz"
       className={cn(
-        "h-11 flex items-center justify-center gap-2 px-4 rounded-lg border border-lia-border-subtle text-lia-text-primary text-sm font-medium hover:bg-lia-bg-tertiary disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 focus:outline-none font-['Open_Sans',sans-serif]",
+        "h-11 flex items-center justify-center gap-2 px-4 rounded-lg border border-lia-border-subtle text-lia-text-primary text-sm font-medium hover:bg-lia-bg-tertiary disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 focus:outline-none",
         className
       )}
     >

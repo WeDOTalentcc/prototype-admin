@@ -235,12 +235,12 @@ export function KanbanPageModalsExtra(state: KanbanPageCoreState) {
         <div className="fixed inset-0 bg-lia-overlay z-50 flex items-center justify-center" onClick={() => setShowPublishSuccess(false)}>
           <div className="bg-lia-bg-secondary rounded-xl shadow-lia-lg w-full max-w-sm mx-4 animate-in fade-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
             <div className="px-6 py-4">
-              <h3 className="text-base font-semibold text-lia-text-primary font-['Open_Sans',sans-serif]">
+              <h3 className="text-base font-semibold text-lia-text-primary">
                 Vaga Publicada!
               </h3>
             </div>
             <div className="px-6 py-4 space-y-4">
-              <p className="text-sm text-lia-text-secondary font-['Open_Sans',sans-serif]">
+              <p className="text-sm text-lia-text-secondary">
                 A vaga está ativa. Compartilhe o link abaixo com candidatos:
               </p>
               <div className="flex items-center gap-2">
@@ -248,7 +248,7 @@ export function KanbanPageModalsExtra(state: KanbanPageCoreState) {
                   type="text"
                   readOnly
                   value={publicLink}
-                  className="flex-1 px-3 py-2 text-xs text-lia-text-secondary bg-lia-bg-secondary border border-lia-border-subtle rounded-md font-['Open_Sans',sans-serif] select-all"
+                  className="flex-1 px-3 py-2 text-xs text-lia-text-secondary bg-lia-bg-secondary border border-lia-border-subtle rounded-md select-all"
                   onClick={e => (e.target as HTMLInputElement).select()}
                 />
                 <button
@@ -270,7 +270,7 @@ export function KanbanPageModalsExtra(state: KanbanPageCoreState) {
             <div className="px-6 py-4 bg-lia-bg-secondary border-t border-lia-border-subtle flex justify-end">
               <button
                 onClick={() => setShowPublishSuccess(false)}
-                className="px-4 py-2 text-sm font-medium rounded-xl bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover transition-colors motion-reduce:transition-none font-['Open_Sans',sans-serif]"
+                className="px-4 py-2 text-sm font-medium rounded-xl bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover transition-colors motion-reduce:transition-none"
               >
                 Fechar
               </button>

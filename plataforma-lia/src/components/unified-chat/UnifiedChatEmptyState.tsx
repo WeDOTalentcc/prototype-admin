@@ -30,7 +30,7 @@ export function UnifiedChatEmptyState({ mode, onSuggestionClick }: Props) {
       </div>
 
       <h2 className={cn(
-        "font-semibold text-lia-text-primary text-center font-['Open_Sans',sans-serif]",
+        "font-semibold text-lia-text-primary text-center",
         isCompact ? "text-base" : "text-xl"
       )}>
         Como posso ajudar hoje?

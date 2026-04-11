@@ -37,10 +37,10 @@ export function ChatContextPanelPart2({ contextData }: Props) {
             <CardContent className="p-6">
               <div className="space-y-6">
                 <div className="grid grid-cols-4 gap-3">
-                  <div className="text-center p-4 rounded-xl bg-stone-50 dark:bg-stone-900/20"><p className="text-lg font-bold text-lia-text-primary">{data.realtime_metrics.applications_received}</p><p className="text-xs mt-1 text-lia-text-secondary">Aplicações</p></div>
-                  <div className="text-center p-4 rounded-xl bg-status-success/10 dark:bg-status-success/20"><p className="text-lg font-bold text-lia-text-primary">{data.realtime_metrics.active_sourcing_reached}</p><p className="text-xs mt-1 text-lia-text-secondary">Sourcing Ativo</p></div>
-                  <div className="text-center p-4 rounded-xl bg-status-error/10 dark:bg-status-error/20"><p className="text-lg font-bold text-lia-text-primary">{data.realtime_metrics.response_rate}</p><p className="text-xs mt-1 text-lia-text-secondary">Taxa Resposta</p></div>
-                  <div className="text-center p-4 rounded-xl bg-wedo-cyan/15 dark:bg-wedo-cyan/20"><p className="text-lg font-bold text-lia-text-primary">{data.realtime_metrics.avg_candidate_score}</p><p className="text-xs mt-1 text-lia-text-secondary">Score Médio</p></div>
+                  <div className="text-center p-4 rounded-xl bg-stone-50 dark:bg-stone-900/20"><p className="text-lg font-semibold text-lia-text-primary">{data.realtime_metrics.applications_received}</p><p className="text-xs mt-1 text-lia-text-secondary">Aplicações</p></div>
+                  <div className="text-center p-4 rounded-xl bg-status-success/10 dark:bg-status-success/20"><p className="text-lg font-semibold text-lia-text-primary">{data.realtime_metrics.active_sourcing_reached}</p><p className="text-xs mt-1 text-lia-text-secondary">Sourcing Ativo</p></div>
+                  <div className="text-center p-4 rounded-xl bg-status-error/10 dark:bg-status-error/20"><p className="text-lg font-semibold text-lia-text-primary">{data.realtime_metrics.response_rate}</p><p className="text-xs mt-1 text-lia-text-secondary">Taxa Resposta</p></div>
+                  <div className="text-center p-4 rounded-xl bg-wedo-cyan/15 dark:bg-wedo-cyan/20"><p className="text-lg font-semibold text-lia-text-primary">{data.realtime_metrics.avg_candidate_score}</p><p className="text-xs mt-1 text-lia-text-secondary">Score Médio</p></div>
                 </div>
                 <div>
                   <h4 className="text-sm font-medium text-lia-text-secondary mb-3">Candidatos Top Performance</h4>
@@ -168,7 +168,7 @@ export function ChatContextPanelPart2({ contextData }: Props) {
             <CardContent className="p-6">
               <div className="space-y-6 font-open-sans">
                 <div className="p-5 rounded-xl bg-wedo-cyan/15 dark:bg-wedo-cyan/20">
-                  <h4 className="text-base font-bold mb-2 text-lia-text-primary">Programa de 90 Dias</h4>
+                  <h4 className="text-base font-semibold mb-2 text-lia-text-primary">Programa de 90 Dias</h4>
                   <p className="text-sm text-lia-text-secondary">Integração estratégica e cultural personalizada</p>
                 </div>
                 <div>

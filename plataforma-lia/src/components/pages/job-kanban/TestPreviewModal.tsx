@@ -27,7 +27,7 @@ export function TestPreviewModal({ open, onClose }: TestPreviewModalProps) {
         <div className="bg-wedo-purple p-6 text-white">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-2xl font-bold mb-2">Teste Técnico - UX Design</h2>
+              <h2 className="text-2xl font-semibold mb-2">Teste Técnico - UX Design</h2>
               <p className="text-wedo-purple text-sm">Vaga: UX Designer • Sodexo</p>
             </div>
             <button

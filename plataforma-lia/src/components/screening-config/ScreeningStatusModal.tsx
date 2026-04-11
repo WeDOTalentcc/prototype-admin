@@ -141,7 +141,7 @@ export function ScreeningStatusModal({
               <BrainCircuit className="w-4 h-4 text-lia-text-secondary" />
             </div>
             <div className="flex-1 min-w-0">
-              <DialogTitle className="text-sm font-semibold text-lia-text-primary font-['Open_Sans',sans-serif]">
+              <DialogTitle className="text-sm font-semibold text-lia-text-primary">
                 Status da Triagem
               </DialogTitle>
               <p className="text-xs text-lia-text-tertiary truncate mt-0.5">

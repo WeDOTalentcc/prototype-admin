@@ -49,7 +49,7 @@ export function CandidateProfilePanel({ data }: CandidateProfilePanelProps) {
     <div className="flex flex-col h-full">
       <div className="px-4 py-4 bg-lia-bg-secondary">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-full bg-lia-bg-tertiary flex items-center justify-center text-lg font-bold text-lia-text-primary">
+          <div className="w-12 h-12 rounded-full bg-lia-bg-tertiary flex items-center justify-center text-lg font-semibold text-lia-text-primary">
             {initials}
           </div>
           <div className="flex-1 min-w-0">

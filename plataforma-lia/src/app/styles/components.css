@@ -343,9 +343,7 @@
 
 
 /* Fonte Open Sans para elementos específicos (DS v4.1 - Source Serif 4 removido) */
-.font-source-serif {
-  font-family: var(--font-open-sans), 'Open Sans', sans-serif;
-}
+
 
 .font-open-sans {
   font-family: var(--font-open-sans);

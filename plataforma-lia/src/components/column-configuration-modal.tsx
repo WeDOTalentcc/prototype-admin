@@ -178,7 +178,7 @@ export function ColumnConfigurationModal({
         <div className="flex flex-col h-full">
           {/* Header */}
           <SheetHeader className="p-4 dark:border-lia-border-subtle">
-            <SheetTitle className="flex items-center gap-2 font-['Open_Sans',sans-serif]">
+            <SheetTitle className="flex items-center gap-2">
               <Settings className="w-4 h-4" />
               Columns
             </SheetTitle>

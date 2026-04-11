@@ -132,7 +132,7 @@ export function JobsPage(props: JobsPageProps) {
         <div className="flex items-center justify-between mb-0.5">
           <div className="flex items-center gap-3">
             <div>
-              <h1 className="text-xl font-['Open_Sans',sans-serif] font-semibold text-lia-text-primary">
+              <h1 className="text-lg font-semibold text-lia-text-primary">
                 Gestão de Vagas
               </h1>
             </div>
@@ -189,7 +189,7 @@ export function JobsPage(props: JobsPageProps) {
                 onClick={() => { setActiveFilter(filter.id) }}
                 role="tab"
                 aria-selected={activeFilter === filter.id}
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer font-['Open_Sans',sans-serif] ${
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
                   activeFilter === filter.id
                     ? 'bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-btn-primary-hover shadow-sm'
                     : 'text-lia-text-secondary hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover'

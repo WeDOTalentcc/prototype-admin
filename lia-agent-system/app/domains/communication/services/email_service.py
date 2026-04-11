@@ -171,25 +171,33 @@ class EmailService:
             select(EmailTemplate).where(EmailTemplate.id == template_id)
         )
         template = result.scalar_one_or_none()
-        if not template:
-            raise ValueError(f"Template {template_id} not found")
-        
-        # Explicit runtime check for is_active
-        is_active = bool(template.is_active) if template.is_active is not None else False
-        if not is_active:
-            raise ValueError(f"Template {template_id} is not active")
-        
-        # Get template values with explicit string conversion for runtime safety
-        # Note: SQLAlchemy ORM returns actual Python values at runtime, not Column objects
-        subj = getattr(template, 'subject', None)
-        html = getattr(template, 'body_html', None)
-        text = getattr(template, 'body_text', None)
-        template_subject = str(subj) if subj else ""
-        template_body_html = str(html) if html else ""
-        template_body_text = str(text) if text else ""
+
+        if template:
+            is_active = bool(template.is_active) if template.is_active is not None else False
+            if not is_active:
+                raise ValueError(f"Template {template_id} is not active")
+            subj = getattr(template, 'subject', None)
+            html = getattr(template, 'body_html', None)
+            text = getattr(template, 'body_text', None)
+            template_subject = str(subj) if subj else ""
+            template_body_html = str(html) if html else ""
+            template_body_text = str(text) if text else ""
+        else:
+            logger.warning(
+                f"Template {template_id} not found — using overrides or default fallback"
+            )
+            template_subject = ""
+            template_body_html = ""
+            template_body_text = ""
         
         subject_to_use: str = subject_override if subject_override else template_subject
         body_to_use: str = body_override if body_override else template_body_html
+
+        if not subject_to_use:
+            subject_to_use = "Notificação — Plataforma LIA"
+        if not body_to_use:
+            candidate_name = variables.get("candidate_name", "")
+            body_to_use = f"<p>Olá{(' ' + candidate_name) if candidate_name else ''},</p><p>Esta é uma notificação da Plataforma LIA.</p>"
         
         rendered_subject, subject_missing = self.render_template(subject_to_use, variables)
         rendered_html, html_missing = self.render_template(body_to_use, variables)
@@ -442,6 +450,75 @@ class EmailService:
         
         return created_templates
     
+    async def create_template(
+        self,
+        db: AsyncSession,
+        name: str,
+        body_html: str,
+        subject: str | None = None,
+        body_text: str | None = None,
+        category: str = "custom",
+        channel: str = "email",
+        variables: list | None = None,
+        company_id: str | None = None,
+        created_by: str = "system",
+    ) -> EmailTemplate:
+        """
+        Create a new email template in the database.
+
+        Args:
+            db: Database session
+            name: Template name (must be unique per company)
+            body_html: HTML content of the template
+            subject: Email subject line (optional for WhatsApp templates)
+            body_text: Plain text fallback
+            category: Template category (default: "custom")
+            channel: Communication channel — "email" or "whatsapp"
+            variables: List of variable names used in the template
+            company_id: Owning company (tenant isolation)
+            created_by: User ID who created the template
+
+        Returns:
+            The created EmailTemplate instance
+
+        Raises:
+            ValueError: If a template with the same name already exists
+        """
+        existing = await db.execute(
+            select(EmailTemplate).where(
+                EmailTemplate.name == name,
+                EmailTemplate.company_id == company_id,
+            )
+        )
+        if existing.scalar_one_or_none():
+            raise ValueError(f"Template with name '{name}' already exists")
+
+        extracted_vars = variables or []
+        if not extracted_vars:
+            all_text = (subject or "") + body_html + (body_text or "")
+            extracted_vars = self.extract_variables(all_text)
+
+        template = EmailTemplate(
+            id=uuid.uuid4(),
+            name=name,
+            subject=subject,
+            body_html=body_html.strip(),
+            body_text=body_text.strip() if body_text else None,
+            category=category,
+            channel=channel,
+            variables=extracted_vars,
+            is_active=True,
+            company_id=company_id,
+            created_by=created_by,
+            created_at=datetime.utcnow(),
+            updated_at=datetime.utcnow(),
+        )
+        db.add(template)
+        await db.commit()
+        await db.refresh(template)
+        logger.info(f"Created template: {template.name} (id={template.id}, company={company_id})")
+        return template
+
     def get_provider_status(self) -> dict[str, Any]:
         """
         Get status of all configured email providers.

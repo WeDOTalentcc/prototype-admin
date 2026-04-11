@@ -30,10 +30,10 @@ export function LiaAnalysisCard({
           <Brain className="w-6 h-6 text-white" />
         </div>
         <div className="flex-1 min-w-0">
-          <h4 className="text-sm font-bold text-lia-text-primary mb-1 font-['Open_Sans',sans-serif]">
+          <h4 className="text-sm font-semibold text-lia-text-primary mb-1">
             Análise Inteligente com LIA
           </h4>
-          <p className="text-xs text-lia-text-secondary mb-3 leading-relaxed font-['Open_Sans',sans-serif]">
+          <p className="text-xs text-lia-text-secondary mb-3 leading-relaxed">
             A LIA pode analisar o website e LinkedIn da empresa para preencher automaticamente os campos de Cultura, Missão, Visão, Valores e ajustar o perfil Big Five.
           </p>
 

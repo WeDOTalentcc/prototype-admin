@@ -83,13 +83,13 @@ export function DynamicContextPanel({
     <div className="flex flex-col h-full bg-lia-bg-primary">
       {/* Panel header */}
       <div className="flex items-center justify-between px-4 py-2.5 flex-shrink-0">
-        <h3 className="text-sm font-semibold text-lia-text-primary font-['Open_Sans',sans-serif]">
+        <h3 className="text-sm font-semibold text-lia-text-primary">
           {STAGE_LABELS[stage] || stage}
         </h3>
         {onClose && (
           <button
             onClick={onClose}
-            className="flex items-center gap-1 px-2 py-1 rounded-md text-xs text-lia-text-disabled hover:text-status-error hover:bg-status-error/5 transition-colors motion-reduce:transition-none font-['Open_Sans',sans-serif]"
+            className="flex items-center gap-1 px-2 py-1 rounded-md text-xs text-lia-text-disabled hover:text-status-error hover:bg-status-error/5 transition-colors motion-reduce:transition-none"
             title="Cancelar criacao"
           >
             <X className="w-3.5 h-3.5" />
@@ -165,7 +165,7 @@ function renderPanel(
       return <DonePanel data={data} />
     default:
       return (
-        <div className="p-4 text-sm text-lia-text-secondary font-['Open_Sans',sans-serif]">
+        <div className="p-4 text-sm text-lia-text-secondary">
           Processando {STAGE_LABELS[stage] || stage}...
         </div>
       )

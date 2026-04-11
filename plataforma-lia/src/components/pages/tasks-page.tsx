@@ -62,7 +62,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
 
         <div className="flex items-center justify-between mb-1.5">
           <div>
-            <h1 className="text-base font-['Open_Sans',sans-serif] font-semibold text-lia-text-primary mb-0.5">
+            <h1 className="text-lg font-semibold text-lia-text-primary mb-0.5">
               Tarefas
             </h1>
             <p className={`${textStyles.bodySmall} text-lia-text-secondary`}>

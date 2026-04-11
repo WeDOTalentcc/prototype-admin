@@ -21,7 +21,7 @@ export function IntegrationsStatsCards({ integrations, templates, webhookEvents 
               <p className="text-sm font-medium text-lia-text-secondary">
                 Integrações Ativas
               </p>
-              <p className="text-2xl font-bold text-lia-text-primary">
+              <p className="text-2xl font-semibold text-lia-text-primary">
                 {integrations.filter(i => i.status === 'active').length}
               </p>
             </div>
@@ -37,7 +37,7 @@ export function IntegrationsStatsCards({ integrations, templates, webhookEvents 
               <p className="text-sm font-medium text-lia-text-secondary">
                 Mensagens Enviadas
               </p>
-              <p className="text-2xl font-bold text-lia-text-primary">
+              <p className="text-2xl font-semibold text-lia-text-primary">
                 {integrations.reduce((acc, i) => acc + i.messagesCount, 0)}
               </p>
             </div>
@@ -53,7 +53,7 @@ export function IntegrationsStatsCards({ integrations, templates, webhookEvents 
               <p className="text-sm font-medium text-lia-text-secondary">
                 Templates Ativos
               </p>
-              <p className="text-2xl font-bold text-lia-text-primary">
+              <p className="text-2xl font-semibold text-lia-text-primary">
                 {templates.filter(t => t.active).length}
               </p>
             </div>
@@ -69,7 +69,7 @@ export function IntegrationsStatsCards({ integrations, templates, webhookEvents 
               <p className="text-sm font-medium text-lia-text-secondary">
                 Taxa de Sucesso
               </p>
-              <p className="text-2xl font-bold text-lia-text-primary">
+              <p className="text-2xl font-semibold text-lia-text-primary">
                 {Math.round(((webhookEvents.filter(e => e.status === 'success').length / webhookEvents.length) * 100) || 0)}%
               </p>
             </div>

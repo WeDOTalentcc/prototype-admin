@@ -87,7 +87,7 @@ function AnalysisResultDisplay({ result }: { result: InterviewAnalysisResult }) 
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="text-center">
-            <div className="text-3xl font-bold text-lia-text-primary">
+            <div className="text-3xl font-semibold text-lia-text-primary">
               {result.overall_wsi_score.toFixed(1)}
             </div>
             <div className="text-xs text-lia-text-tertiary">Score WSI</div>

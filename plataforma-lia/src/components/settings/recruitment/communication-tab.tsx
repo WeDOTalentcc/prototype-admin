@@ -382,7 +382,7 @@ export function CommunicationTab({ onSettingsChange }: { onSettingsChange: (chan
               <button
                 key={tab.id}
                 onClick={() => setActiveSubTab(tab.id as Parameters<typeof setActiveSubTab>[0])}
-                className={`flex items-center gap-2 px-4 py-3 rounded-md text-sm font-medium whitespace-nowrap transition-colors motion-reduce:transition-none font-crimson ${
+                className={`flex items-center gap-2 px-4 py-3 rounded-md text-sm font-medium whitespace-nowrap transition-colors motion-reduce:transition-none ${
                   activeSubTab === tab.id
                     ? 'bg-lia-bg-secondary dark:bg-lia-bg-secondary text-lia-text-primary'
                     : 'hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover text-lia-text-primary'

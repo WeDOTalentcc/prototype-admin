@@ -42,7 +42,7 @@ export function TestHistoryModal({ open, onClose, testName }: TestHistoryModalPr
                 <History className="w-5 h-5" />
               </div>
               <div>
-                <h2 className="text-xl font-bold">Histórico de Uso do Teste</h2>
+                <h2 className="text-xl font-semibold">Histórico de Uso do Teste</h2>
                 <p className="text-lia-text-disabled text-sm">{testName || 'UX Design - Fundamentos'}</p>
               </div>
             </div>

@@ -83,7 +83,7 @@ export function JobEditTab({
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3 flex-1 bg-status-warning/10 dark:bg-status-warning/20 border border-status-warning/30 dark:border-status-warning/30 rounded-xl px-4 py-3">
             <Info className="w-4 h-4 text-status-warning flex-shrink-0" />
-            <p className="text-sm text-status-warning font-['Open_Sans',sans-serif]">
+            <p className="text-sm text-status-warning">
               Vaga em rascunho — preencha os dados e publique quando estiver pronta
             </p>
           </div>
@@ -112,7 +112,7 @@ export function JobEditTab({
           <Card className="border border-lia-border-subtle bg-lia-bg-primary rounded-xl overflow-hidden">
             <nav className="p-3 h-full overflow-y-auto">
               <div className="mb-2">
-                <span className="text-micro font-semibold text-lia-text-tertiary uppercase tracking-wider px-3 font-['Open_Sans',sans-serif]">
+                <span className="text-micro font-semibold text-lia-text-tertiary uppercase tracking-wider px-3">
                   Configurações da Vaga
                 </span>
               </div>
@@ -147,7 +147,7 @@ export function JobEditTab({
               <div className="my-3 border-t border-lia-border-subtle" />
 
               <div className="mb-2">
-                <span className="text-micro font-semibold text-lia-text-tertiary uppercase tracking-wider px-3 font-['Open_Sans',sans-serif]">
+                <span className="text-micro font-semibold text-lia-text-tertiary uppercase tracking-wider px-3">
                   Configurações de Triagem
                 </span>
               </div>

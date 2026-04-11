@@ -13,7 +13,7 @@ export function SettingsAPIKeysTab({ onSettingsChange }: SettingsAPIKeysTabProps
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-xl font-medium font-inter">
+          <CardTitle className="flex items-center gap-2 text-sm font-semibold">
             <Shield className="w-4 h-4" />
             Chaves de API
           </CardTitle>

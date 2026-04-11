@@ -42,7 +42,7 @@ export function ChatContextPanelPart1({ contextData }: Props) {
                   <div className="flex items-center justify-between mb-4">
                     <div>
                       <p className="text-sm text-lia-text-secondary">Recomendação LIA - Target</p>
-                      <p className="text-xl font-bold text-lia-text-primary">{data.recommended_package.base_salary.target}</p>
+                      <p className="text-xl font-semibold text-lia-text-primary">{data.recommended_package.base_salary.target}</p>
                     </div>
                     <Badge className="bg-status-warning/10 dark:bg-status-warning/20 text-lia-text-primary">Percentil 90</Badge>
                   </div>
@@ -86,7 +86,7 @@ export function ChatContextPanelPart1({ contextData }: Props) {
                 <div className="p-4 rounded-xl border bg-lia-bg-tertiary border-lia-border-subtle">
                   <div className="flex items-center justify-between">
                     <span className="text-base font-semibold text-lia-text-primary">Compensação Total Anual</span>
-                    <span className="text-xl font-bold text-lia-text-primary">{data.recommended_package.total_compensation.total_annual}</span>
+                    <span className="text-xl font-semibold text-lia-text-primary">{data.recommended_package.total_compensation.total_annual}</span>
                   </div>
                 </div>
                 <div className="flex gap-3 pt-2">
@@ -112,7 +112,7 @@ export function ChatContextPanelPart1({ contextData }: Props) {
             <CardContent className="p-6">
               <div className="space-y-6">
                 <div className="p-5 rounded-xl bg-wedo-cyan/15 dark:bg-wedo-cyan/20">
-                  <h5 className="text-lg font-bold mb-2 text-lia-text-primary">{data.current_structure.missing_layer.role}</h5>
+                  <h5 className="text-lg font-semibold mb-2 text-lia-text-primary">{data.current_structure.missing_layer.role}</h5>
                   <p className="text-sm mb-3 text-lia-text-secondary">{data.current_structure.missing_layer.purpose}</p>
                   <div className="p-3 rounded-xl bg-lia-bg-tertiary">
                     <p className="text-sm font-medium text-lia-text-primary">{data.current_structure.missing_layer.impact}</p>
@@ -285,7 +285,7 @@ export function ChatContextPanelPart1({ contextData }: Props) {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium text-lia-text-secondary">Sistema ATS Integrado</p>
-                      <h4 className="text-base font-bold mt-1 text-lia-text-primary">{data.ats_integration.system}</h4>
+                      <h4 className="text-base font-semibold mt-1 text-lia-text-primary">{data.ats_integration.system}</h4>
                     </div>
                     <div className="text-right">
                       <p className="text-xs text-lia-text-secondary">Job ID</p>
@@ -312,7 +312,7 @@ export function ChatContextPanelPart1({ contextData }: Props) {
                   <div className="grid grid-cols-2 gap-3">
                     {Object.entries(data.success_metrics.targets).map(([key, value]: [string, any]) => (
                       <div key={key} className="text-center p-4 rounded-xl border bg-lia-bg-tertiary border-lia-border-subtle">
-                        <p className="text-lg font-bold text-lia-text-primary">{String(value)}</p>
+                        <p className="text-lg font-semibold text-lia-text-primary">{String(value)}</p>
                         <p className="text-xs mt-1 capitalize text-lia-text-secondary">{key.replace('_', ' ')}</p>
                       </div>
                     ))}

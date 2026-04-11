@@ -62,7 +62,7 @@ export function WsiQuestionsPanel({ data, requiresApproval, onApprove, onReject 
     <div className="flex flex-col">
       {/* Summary header */}
       <div className="px-4 py-3">
-        <div className="flex items-center gap-3 text-xs font-['Open_Sans',sans-serif]">
+        <div className="flex items-center gap-3 text-xs">
           <span className="text-lia-text-secondary">
             {questions.length} perguntas {isAtMinimum && `(min: ${minQuestions})`}
           </span>
@@ -72,7 +72,7 @@ export function WsiQuestionsPanel({ data, requiresApproval, onApprove, onReject 
           <span className="text-lia-text-secondary">{behavCount} comportamentais</span>
         </div>
         {mode && (
-          <span className="inline-flex items-center mt-1 px-2 py-0.5 rounded bg-wedo-cyan/10 text-wedo-cyan text-[10px] font-medium font-['Open_Sans',sans-serif]">
+          <span className="inline-flex items-center mt-1 px-2 py-0.5 rounded bg-wedo-cyan/10 text-wedo-cyan text-[10px] font-medium">
             Modo {mode === "compact" ? "Compacto" : "Completo"}
           </span>
         )}
@@ -99,14 +99,14 @@ export function WsiQuestionsPanel({ data, requiresApproval, onApprove, onReject 
         <div className="flex-shrink-0 px-4 py-3 border-t border-lia-border-subtle bg-lia-bg-primary flex items-center gap-2">
           <button
             onClick={onReject}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-lia-border-subtle text-sm font-medium text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none font-['Open_Sans',sans-serif]"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-lia-border-subtle text-sm font-medium text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none"
           >
             <RefreshCw className="w-3.5 h-3.5" />
             Regenerar
           </button>
           <button
             onClick={onApprove}
-            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-md bg-wedo-cyan text-white text-sm font-medium hover:bg-wedo-cyan/90 transition-colors motion-reduce:transition-none font-['Open_Sans',sans-serif]"
+            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-md bg-wedo-cyan text-white text-sm font-medium hover:bg-wedo-cyan/90 transition-colors motion-reduce:transition-none"
           >
             <Check className="w-3.5 h-3.5" />
             Aprovar todas
@@ -143,18 +143,18 @@ function QuestionCard({
         onClick={onToggle}
         className="w-full flex items-start gap-2 px-3 py-2 text-left hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none"
       >
-        <span className="flex-shrink-0 w-5 h-5 rounded-full bg-lia-bg-secondary flex items-center justify-center text-[10px] font-medium text-lia-text-secondary font-['Open_Sans',sans-serif] mt-0.5">
+        <span className="flex-shrink-0 w-5 h-5 rounded-full bg-lia-bg-secondary flex items-center justify-center text-[10px] font-medium text-lia-text-secondary mt-0.5">
           {index + 1}
         </span>
         <div className="flex-1 min-w-0">
-          <p className="text-sm text-lia-text-primary font-['Open_Sans',sans-serif] leading-snug">
+          <p className="text-sm text-lia-text-primary leading-snug">
             {question.question}
           </p>
           <div className="flex items-center gap-1.5 mt-1">
             <span className={cn("px-1.5 py-0.5 rounded text-[10px] font-medium", frameworkColor)}>
               {question.framework}
             </span>
-            <span className="px-1.5 py-0.5 rounded bg-lia-bg-secondary text-[10px] text-lia-text-secondary font-['Open_Sans',sans-serif]">
+            <span className="px-1.5 py-0.5 rounded bg-lia-bg-secondary text-[10px] text-lia-text-secondary">
               {question.block === "technical" ? "Tecnica" : "Comportamental"}
             </span>
             {question.trait_ocean && (
@@ -175,22 +175,22 @@ function QuestionCard({
       {isExpanded && (
         <div className="px-3 pb-3 pt-1 border-t border-lia-border-subtle bg-lia-bg-secondary/50 space-y-2">
           <div>
-            <p className="text-[10px] font-medium text-lia-text-tertiary font-['Open_Sans',sans-serif] mb-0.5">
+            <p className="text-[10px] font-medium text-lia-text-tertiary mb-0.5">
               Resposta ideal
             </p>
-            <p className="text-xs text-lia-text-secondary font-['Open_Sans',sans-serif] leading-relaxed">
+            <p className="text-xs text-lia-text-secondary leading-relaxed">
               {question.ideal_answer}
             </p>
           </div>
 
           {question.skill && (
-            <div className="flex items-center gap-1.5 text-xs font-['Open_Sans',sans-serif]">
+            <div className="flex items-center gap-1.5 text-xs">
               <span className="text-lia-text-tertiary">Skill:</span>
               <span className="text-lia-text-primary">{question.skill}</span>
             </div>
           )}
 
-          <div className="flex items-center gap-3 text-[10px] text-lia-text-tertiary font-['Open_Sans',sans-serif]">
+          <div className="flex items-center gap-3 text-[10px] text-lia-text-tertiary">
             {question.bloom_level && <span>Bloom: {question.bloom_level}/6</span>}
             {question.dreyfus_level && <span>Dreyfus: {question.dreyfus_level}/5</span>}
             <span>Peso: {(question.weight * 100).toFixed(0)}%</span>
@@ -200,14 +200,14 @@ function QuestionCard({
           <div className="flex items-center gap-1.5 pt-1.5 border-t border-lia-border-subtle mt-1.5">
             <button
               onClick={() => onEdit?.(index, question.question)}
-              className="flex items-center gap-1 px-2 py-1 rounded text-[10px] font-medium text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none font-['Open_Sans',sans-serif]"
+              className="flex items-center gap-1 px-2 py-1 rounded text-[10px] font-medium text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none"
             >
               <Edit2 className="w-3 h-3" />
               Editar
             </button>
             <button
               onClick={() => onRegenerate?.(index)}
-              className="flex items-center gap-1 px-2 py-1 rounded text-[10px] font-medium text-wedo-cyan hover:bg-wedo-cyan/10 transition-colors motion-reduce:transition-none font-['Open_Sans',sans-serif]"
+              className="flex items-center gap-1 px-2 py-1 rounded text-[10px] font-medium text-wedo-cyan hover:bg-wedo-cyan/10 transition-colors motion-reduce:transition-none"
             >
               <RefreshCw className="w-3 h-3" />
               Regenerar
@@ -215,7 +215,7 @@ function QuestionCard({
             <button
               onClick={() => onRemove?.(index)}
               disabled={!onRemove}
-              className="flex items-center gap-1 px-2 py-1 rounded text-[10px] font-medium transition-colors motion-reduce:transition-none font-['Open_Sans',sans-serif] disabled:opacity-30 disabled:cursor-not-allowed text-status-error hover:bg-status-error/10 disabled:hover:bg-transparent"
+              className="flex items-center gap-1 px-2 py-1 rounded text-[10px] font-medium transition-colors motion-reduce:transition-none disabled:opacity-30 disabled:cursor-not-allowed text-status-error hover:bg-status-error/10 disabled:hover:bg-transparent"
               aria-label={`Remover pergunta ${index + 1}`}
             >
               <Trash2 className="w-3 h-3" />

@@ -133,28 +133,28 @@ export function ProactiveInsightCard({
           <div className={`${cardStyles.compact} dark:bg-lia-bg-secondary text-center`}>
             <div className="flex items-center justify-center gap-1 mb-0.5">
               <Users className="w-3 h-3 text-lia-text-secondary" />
-              <span className="text-lg font-bold text-lia-text-primary">{summary.total_candidates}</span>
+              <span className="text-lg font-semibold text-lia-text-primary">{summary.total_candidates}</span>
             </div>
             <span className={`${textStyles.bodySmall}`}>Total</span>
           </div>
           <div className={`${cardStyles.compact} dark:bg-lia-bg-secondary text-center`}>
             <div className="flex items-center justify-center gap-1 mb-0.5">
               <Building className="w-3 h-3 text-lia-text-secondary" />
-              <span className="text-lg font-bold text-lia-text-primary">{summary.local_count}</span>
+              <span className="text-lg font-semibold text-lia-text-primary">{summary.local_count}</span>
             </div>
             <span className={`${textStyles.bodySmall}`}>Base Local</span>
           </div>
           <div className={`${cardStyles.compact} dark:bg-lia-bg-secondary text-center`}>
             <div className="flex items-center justify-center gap-1 mb-0.5">
               <Globe className="w-3 h-3 text-lia-text-secondary" />
-              <span className="text-lg font-bold text-lia-text-primary">{summary.global_count}</span>
+              <span className="text-lg font-semibold text-lia-text-primary">{summary.global_count}</span>
             </div>
             <span className={`${textStyles.bodySmall}`}>Base Global</span>
           </div>
           <div className={`${cardStyles.compact} dark:bg-lia-bg-secondary text-center`}>
             <div className="flex items-center justify-center gap-1 mb-0.5">
               <Star className="w-3 h-3 text-lia-text-secondary" />
-              <span className="text-lg font-bold text-lia-text-primary">{summary.average_lia_score.toFixed(0)}</span>
+              <span className="text-lg font-semibold text-lia-text-primary">{summary.average_lia_score.toFixed(0)}</span>
             </div>
             <span className={`${textStyles.bodySmall}`}>Score Médio</span>
           </div>

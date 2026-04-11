@@ -33,7 +33,7 @@ export function GlobalSearchLimitsTab({
       <Card className="border-lia-border-subtle/50 dark:border-lia-border-subtle/50">
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
-            <CardTitle className="font-['Open_Sans',sans-serif] text-base-ui font-semibold flex items-center gap-2 text-lia-text-primary">
+            <CardTitle className="text-base-ui font-semibold flex items-center gap-2 text-lia-text-primary">
               <Users className="w-3.5 h-3.5 text-lia-text-secondary" />
               Limite de Candidatos por Busca Global
             </CardTitle>

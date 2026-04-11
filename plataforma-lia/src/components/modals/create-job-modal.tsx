@@ -168,7 +168,7 @@ export function CreateJobModal({ isOpen, onClose, onCreateWithWizard, onJobCreat
         <div className="px-6 pt-5 pb-3 flex items-center justify-between">
           <h2
             id="create-job-modal-title"
-            className="text-base font-semibold text-lia-text-primary font-['Open_Sans',sans-serif]"
+            className="text-base font-semibold text-lia-text-primary"
           >
             {step === "choose" ? "Nova Vaga" : "Criar Vaga Manualmente"}
           </h2>
@@ -185,7 +185,7 @@ export function CreateJobModal({ isOpen, onClose, onCreateWithWizard, onJobCreat
         <div className="px-6 py-4">
           {step === "choose" && (
             <div className="space-y-3">
-              <p className="text-xs text-lia-text-secondary font-['Open_Sans',sans-serif] mb-4" aria-live="polite" aria-atomic="true">
+              <p className="text-xs text-lia-text-secondary mb-4" aria-live="polite" aria-atomic="true">
                 Como você deseja criar a vaga?
               </p>
               <div className="grid grid-cols-2 gap-3">
@@ -196,10 +196,10 @@ export function CreateJobModal({ isOpen, onClose, onCreateWithWizard, onJobCreat
                   <div className="w-10 h-10 rounded-lg bg-wedo-cyan/10 flex items-center justify-center mb-3">
                     <Brain className="w-5 h-5 text-wedo-cyan" />
                   </div>
-                  <h3 className="text-sm font-semibold text-lia-text-primary font-['Open_Sans',sans-serif] mb-1">
+                  <h3 className="text-sm font-semibold text-lia-text-primary mb-1">
                     Criar com a LIA
                   </h3>
-                  <p className="text-xs text-lia-text-secondary font-['Open_Sans',sans-serif]">
+                  <p className="text-xs text-lia-text-secondary">
                     A LIA guia você no processo
                   </p>
                 </button>
@@ -211,10 +211,10 @@ export function CreateJobModal({ isOpen, onClose, onCreateWithWizard, onJobCreat
                   <div className="w-10 h-10 rounded-lg bg-lia-bg-tertiary flex items-center justify-center mb-3">
                     <ClipboardList className="w-5 h-5 text-lia-text-secondary" />
                   </div>
-                  <h3 className="text-sm font-semibold text-lia-text-primary font-['Open_Sans',sans-serif] mb-1">
+                  <h3 className="text-sm font-semibold text-lia-text-primary mb-1">
                     Criar manualmente
                   </h3>
-                  <p className="text-xs text-lia-text-secondary font-['Open_Sans',sans-serif]">
+                  <p className="text-xs text-lia-text-secondary">
                     Preencha os dados diretamente
                   </p>
                 </button>
@@ -227,7 +227,7 @@ export function CreateJobModal({ isOpen, onClose, onCreateWithWizard, onJobCreat
               <div className="space-y-1.5">
                 <label
                   htmlFor="job-title"
-                  className="text-xs font-semibold text-lia-text-primary font-['Open_Sans',sans-serif] block"
+                  className="text-xs font-semibold text-lia-text-primary block"
                 >
                   Título da Vaga <span className="text-status-error">*</span>
                 </label>
@@ -237,7 +237,7 @@ export function CreateJobModal({ isOpen, onClose, onCreateWithWizard, onJobCreat
                   value={formData.title}
                   onChange={e => updateField("title", e.target.value)}
                   placeholder="Ex: Engenheiro de Software Senior"
-                  className={`w-full px-3 py-2 text-sm text-lia-text-primary placeholder:text-lia-text-disabled bg-lia-bg-primary border rounded-md transition-colors motion-reduce:transition-none duration-150 focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 font-['Open_Sans',sans-serif] ${
+                  className={`w-full px-3 py-2 text-sm text-lia-text-primary placeholder:text-lia-text-disabled bg-lia-bg-primary border rounded-md transition-colors motion-reduce:transition-none duration-150 focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 ${
                     errors.title
                       ? "border-status-error/30 focus:ring-red-500/20 bg-status-error/10 dark:bg-status-error/10"
                       : "border-lia-border-default hover:border-lia-border-medium focus:border-lia-btn-primary-bg"
@@ -255,7 +255,7 @@ export function CreateJobModal({ isOpen, onClose, onCreateWithWizard, onJobCreat
               <div className="space-y-1.5">
                 <label
                   htmlFor="job-department"
-                  className="text-xs font-semibold text-lia-text-primary font-['Open_Sans',sans-serif] block"
+                  className="text-xs font-semibold text-lia-text-primary block"
                 >
                   Departamento
                 </label>
@@ -263,7 +263,7 @@ export function CreateJobModal({ isOpen, onClose, onCreateWithWizard, onJobCreat
                   id="job-department"
                   value={formData.department}
                   onChange={e => updateField("department", e.target.value)}
-                  className="w-full px-3 py-2 text-sm text-lia-text-primary bg-lia-bg-primary border border-lia-border-default rounded-xl transition-colors motion-reduce:transition-none duration-150 hover:border-lia-border-medium focus:border-lia-btn-primary-bg focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 cursor-pointer font-['Open_Sans',sans-serif]"
+                  className="w-full px-3 py-2 text-sm text-lia-text-primary bg-lia-bg-primary border border-lia-border-default rounded-xl transition-colors motion-reduce:transition-none duration-150 hover:border-lia-border-medium focus:border-lia-btn-primary-bg focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 cursor-pointer"
                 >
                   <option value="">Selecione...</option>
                   {DEPARTMENT_OPTIONS.map(dept => (
@@ -276,7 +276,7 @@ export function CreateJobModal({ isOpen, onClose, onCreateWithWizard, onJobCreat
                 <div className="space-y-1.5">
                   <label
                     htmlFor="job-work-model"
-                    className="text-xs font-semibold text-lia-text-primary font-['Open_Sans',sans-serif] block"
+                    className="text-xs font-semibold text-lia-text-primary block"
                   >
                     Modelo de Trabalho
                   </label>
@@ -284,7 +284,7 @@ export function CreateJobModal({ isOpen, onClose, onCreateWithWizard, onJobCreat
                     id="job-work-model"
                     value={formData.workModel}
                     onChange={e => updateField("workModel", e.target.value)}
-                    className="w-full px-3 py-2 text-sm text-lia-text-primary bg-lia-bg-primary border border-lia-border-default rounded-xl transition-colors motion-reduce:transition-none duration-150 hover:border-lia-border-medium focus:border-lia-btn-primary-bg focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 cursor-pointer font-['Open_Sans',sans-serif]"
+                    className="w-full px-3 py-2 text-sm text-lia-text-primary bg-lia-bg-primary border border-lia-border-default rounded-xl transition-colors motion-reduce:transition-none duration-150 hover:border-lia-border-medium focus:border-lia-btn-primary-bg focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 cursor-pointer"
                   >
                     <option value="">Selecione...</option>
                     {WORK_MODEL_OPTIONS.map(opt => (
@@ -296,7 +296,7 @@ export function CreateJobModal({ isOpen, onClose, onCreateWithWizard, onJobCreat
                 <div className="space-y-1.5">
                   <label
                     htmlFor="job-employment-type"
-                    className="text-xs font-semibold text-lia-text-primary font-['Open_Sans',sans-serif] block"
+                    className="text-xs font-semibold text-lia-text-primary block"
                   >
                     Forma de Contratação
                   </label>
@@ -304,7 +304,7 @@ export function CreateJobModal({ isOpen, onClose, onCreateWithWizard, onJobCreat
                     id="job-employment-type"
                     value={formData.employmentType}
                     onChange={e => updateField("employmentType", e.target.value)}
-                    className="w-full px-3 py-2 text-sm text-lia-text-primary bg-lia-bg-primary border border-lia-border-default rounded-xl transition-colors motion-reduce:transition-none duration-150 hover:border-lia-border-medium focus:border-lia-btn-primary-bg focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 cursor-pointer font-['Open_Sans',sans-serif]"
+                    className="w-full px-3 py-2 text-sm text-lia-text-primary bg-lia-bg-primary border border-lia-border-default rounded-xl transition-colors motion-reduce:transition-none duration-150 hover:border-lia-border-medium focus:border-lia-btn-primary-bg focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 cursor-pointer"
                   >
                     <option value="">Selecione...</option>
                     {EMPLOYMENT_TYPE_OPTIONS.map(opt => (
@@ -317,7 +317,7 @@ export function CreateJobModal({ isOpen, onClose, onCreateWithWizard, onJobCreat
               <div className="space-y-1.5">
                 <label
                   htmlFor="job-manager"
-                  className="text-xs font-semibold text-lia-text-primary font-['Open_Sans',sans-serif] block"
+                  className="text-xs font-semibold text-lia-text-primary block"
                 >
                   Gestor Responsável <span className="text-status-error">*</span>
                 </label>
@@ -327,7 +327,7 @@ export function CreateJobModal({ isOpen, onClose, onCreateWithWizard, onJobCreat
                   value={formData.manager}
                   onChange={e => updateField("manager", e.target.value)}
                   placeholder="Nome do gestor"
-                  className={`w-full px-3 py-2 text-sm text-lia-text-primary placeholder:text-lia-text-disabled bg-lia-bg-primary border rounded-md transition-colors motion-reduce:transition-none duration-150 focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 font-['Open_Sans',sans-serif] ${
+                  className={`w-full px-3 py-2 text-sm text-lia-text-primary placeholder:text-lia-text-disabled bg-lia-bg-primary border rounded-md transition-colors motion-reduce:transition-none duration-150 focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 ${
                     errors.manager
                       ? "border-status-error/30 focus:ring-red-500/20 bg-status-error/10 dark:bg-status-error/10"
                       : "border-lia-border-default hover:border-lia-border-medium focus:border-lia-btn-primary-bg"
@@ -345,7 +345,7 @@ export function CreateJobModal({ isOpen, onClose, onCreateWithWizard, onJobCreat
               <div className="space-y-1.5">
                 <label
                   htmlFor="job-manager-email"
-                  className="text-xs font-semibold text-lia-text-primary font-['Open_Sans',sans-serif] block"
+                  className="text-xs font-semibold text-lia-text-primary block"
                 >
                   Email do Gestor <span className="text-status-error">*</span>
                 </label>
@@ -355,7 +355,7 @@ export function CreateJobModal({ isOpen, onClose, onCreateWithWizard, onJobCreat
                   value={formData.managerEmail}
                   onChange={e => updateField("managerEmail", e.target.value)}
                   placeholder="gestor@empresa.com"
-                  className={`w-full px-3 py-2 text-sm text-lia-text-primary placeholder:text-lia-text-disabled bg-lia-bg-primary border rounded-md transition-colors motion-reduce:transition-none duration-150 focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 font-['Open_Sans',sans-serif] ${
+                  className={`w-full px-3 py-2 text-sm text-lia-text-primary placeholder:text-lia-text-disabled bg-lia-bg-primary border rounded-md transition-colors motion-reduce:transition-none duration-150 focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 ${
                     errors.managerEmail
                       ? "border-status-error/30 focus:ring-red-500/20 bg-status-error/10 dark:bg-status-error/10"
                       : "border-lia-border-default hover:border-lia-border-medium focus:border-lia-btn-primary-bg"
@@ -380,14 +380,14 @@ export function CreateJobModal({ isOpen, onClose, onCreateWithWizard, onJobCreat
                 setStep("choose")
                 setErrors({})
               }}
-              className="text-xs text-lia-text-secondary hover:text-lia-text-primary dark:hover:text-lia-text-inverse font-medium font-['Open_Sans',sans-serif] transition-colors motion-reduce:transition-none"
+              className="text-xs text-lia-text-secondary hover:text-lia-text-primary dark:hover:text-lia-text-inverse font-medium transition-colors motion-reduce:transition-none"
             >
               Voltar
             </button>
             <button
               onClick={handleSubmit}
               disabled={isSubmitting}
-              className="px-4 py-2 text-sm font-medium rounded-xl bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover active:bg-lia-btn-primary-bg dark:hover:bg-lia-interactive-active transition-colors motion-reduce:transition-none duration-150 focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 disabled:bg-lia-border-default disabled:text-lia-text-tertiary disabled:cursor-not-allowed font-['Open_Sans',sans-serif] flex items-center gap-2"
+              className="px-4 py-2 text-sm font-medium rounded-xl bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover active:bg-lia-btn-primary-bg dark:hover:bg-lia-interactive-active transition-colors motion-reduce:transition-none duration-150 focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 disabled:bg-lia-border-default disabled:text-lia-text-tertiary disabled:cursor-not-allowed flex items-center gap-2"
             >
               {isSubmitting ? (
                 <>

@@ -269,7 +269,7 @@ export function SmartImportZone({
             <Button
               variant="outline"
               size="sm"
-              className="gap-1.5 rounded-md text-xs font-['Open_Sans',sans-serif]"
+              className="gap-1.5 rounded-md text-xs"
               onClick={(e) => {
                 e.stopPropagation()
                 if (!disabled) fileInputRef.current?.click()
@@ -283,7 +283,7 @@ export function SmartImportZone({
               <Button
                 variant="ghost"
                 size="sm"
-                className="gap-1.5 rounded-md text-xs text-lia-text-primary hover:text-lia-text-primary font-['Open_Sans',sans-serif]"
+                className="gap-1.5 rounded-md text-xs text-lia-text-primary hover:text-lia-text-primary"
                 onClick={(e) => {
                   e.stopPropagation()
                   if (!disabled) handleDownloadTemplate()
@@ -433,7 +433,7 @@ export function SmartImportZone({
                         {previewData.headers.map((header, idx) => (
                           <th 
                             key={idx} 
-                            className="px-2 py-1.5 text-left text-micro font-medium text-lia-text-secondary dark:border-lia-border-subtle font-['Open_Sans',sans-serif]"
+                            className="px-2 py-1.5 text-left text-micro font-medium text-lia-text-secondary dark:border-lia-border-subtle"
                           >
                             {header}
                           </th>
@@ -446,7 +446,7 @@ export function SmartImportZone({
                           {previewData.headers.map((header, colIdx) => (
                             <td 
                               key={colIdx} 
-                              className="px-2 py-1.5 text-xs text-lia-text-primary dark:border-lia-border-strong truncate max-w-sidebar-content font-['Open_Sans',sans-serif]"
+                              className="px-2 py-1.5 text-xs text-lia-text-primary dark:border-lia-border-strong truncate max-w-sidebar-content"
                             >
                               {row[header] || '-'}
                             </td>
@@ -457,7 +457,7 @@ export function SmartImportZone({
                   </table>
                 </div>
                 {previewData.totalRows > 5 && (
-                  <div className="px-2 py-1.5 text-center text-micro text-lia-text-secondary bg-lia-bg-secondary/50 dark:bg-lia-bg-secondary/30 font-['Open_Sans',sans-serif]">
+                  <div className="px-2 py-1.5 text-center text-micro text-lia-text-secondary bg-lia-bg-secondary/50 dark:bg-lia-bg-secondary/30">
                     ... e mais {previewData.totalRows - 5} registros
                   </div>
                 )}
@@ -469,7 +469,7 @@ export function SmartImportZone({
                 variant="outline"
                 size="sm"
                 onClick={resetState}
-                className="gap-1.5 rounded-md text-xs font-['Open_Sans',sans-serif]"
+                className="gap-1.5 rounded-md text-xs"
               >
                 <X className="w-3.5 h-3.5" />
                 Cancelar
@@ -477,7 +477,7 @@ export function SmartImportZone({
               <Button
                 size="sm"
                 onClick={handleConfirmImport}
-                className="gap-1.5 rounded-md text-xs bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover dark:hover:bg-lia-interactive-active font-['Open_Sans',sans-serif]"
+                className="gap-1.5 rounded-md text-xs bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover dark:hover:bg-lia-interactive-active"
               >
                 <CheckCircle className="w-3.5 h-3.5" />
                 Confirmar Importação
@@ -524,7 +524,7 @@ export function SmartImportZone({
             variant="outline"
             size="sm"
             onClick={resetState}
-            className="gap-1.5 rounded-md text-xs border-status-success/30 text-status-success hover:bg-status-success/15 dark:border-status-success/30 dark:text-status-success dark:hover:bg-status-success/30 font-['Open_Sans',sans-serif]"
+            className="gap-1.5 rounded-md text-xs border-status-success/30 text-status-success hover:bg-status-success/15 dark:border-status-success/30 dark:text-status-success dark:hover:bg-status-success/30"
           >
             <Upload className="w-3.5 h-3.5" />
             Nova Importação
@@ -551,7 +551,7 @@ export function SmartImportZone({
             variant="outline"
             size="sm"
             onClick={resetState}
-            className="gap-1.5 rounded-md text-xs border-status-error/30 text-status-error hover:bg-status-error/15 dark:border-status-error/30 dark:text-status-error dark:hover:bg-status-error/30 font-['Open_Sans',sans-serif]"
+            className="gap-1.5 rounded-md text-xs border-status-error/30 text-status-error hover:bg-status-error/15 dark:border-status-error/30 dark:text-status-error dark:hover:bg-status-error/30"
           >
             <X className="w-3.5 h-3.5" />
             Tentar Novamente

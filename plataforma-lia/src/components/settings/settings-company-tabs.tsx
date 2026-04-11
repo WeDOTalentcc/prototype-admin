@@ -42,7 +42,7 @@ export function InstitutionalTab({ onSettingsChange }: { onSettingsChange: (chan
               <button
                 key={tab.id}
                 onClick={() => setActiveSubTab(tab.id)}
-                className={`flex items-center gap-2 px-4 py-3 rounded-md text-sm font-medium whitespace-nowrap transition-colors motion-reduce:transition-none font-crimson ${
+                className={`flex items-center gap-2 px-4 py-3 rounded-md text-sm font-medium whitespace-nowrap transition-colors motion-reduce:transition-none ${
                   activeSubTab === tab.id
  ? 'bg-lia-bg-secondary dark:bg-lia-bg-secondary text-lia-text-primary'
                     : 'hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover text-lia-text-primary'
@@ -70,7 +70,7 @@ export function CultureTab({ onSettingsChange }: { onSettingsChange: (changed: b
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-xl font-medium font-inter">
+          <CardTitle className="flex items-center gap-2 text-sm font-semibold">
             <Heart className="w-4 h-4" />
             Identidade Corporativa
           </CardTitle>
@@ -159,7 +159,7 @@ export function StructureTab({ onSettingsChange }: { onSettingsChange: (changed:
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-xl font-medium font-inter">
+          <CardTitle className="flex items-center gap-2 text-sm font-semibold">
             <Network className="w-4 h-4" />
             Upload de Organograma
           </CardTitle>

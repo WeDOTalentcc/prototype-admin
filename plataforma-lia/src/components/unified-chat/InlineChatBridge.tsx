@@ -74,7 +74,7 @@ export function InlineChatBridge({
           "border border-lia-border-subtle bg-lia-bg-primary",
           "text-sm text-lia-text-secondary hover:text-lia-text-primary",
           "hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none",
-          "font-['Open_Sans',sans-serif]",
+          "",
           className
         )}
       >
@@ -99,10 +99,10 @@ export function InlineChatBridge({
     >
       <Brain className="w-5 h-5 text-wedo-cyan flex-shrink-0" strokeWidth={1.5} />
       <div className="flex-1 min-w-0">
-        <p className="text-sm text-lia-text-primary font-medium font-['Open_Sans',sans-serif]">
+        <p className="text-sm text-lia-text-primary font-medium">
           {label}
         </p>
-        <p className="text-xs text-lia-text-tertiary font-['Open_Sans',sans-serif]">
+        <p className="text-xs text-lia-text-tertiary">
           Abre o chat lateral com contexto desta página
         </p>
       </div>

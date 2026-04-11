@@ -136,7 +136,7 @@ export function SharedContent({ hook }: SharedContentProps) {
 
       <main className="max-w-6xl mx-auto px-4 py-8">
         <section className="mb-8">
-          <h1 className="text-3xl font-bold text-lia-text-on-inverse mb-2">
+          <h1 className="text-3xl font-semibold text-lia-text-on-inverse mb-2">
             Candidatos para sua avaliação
           </h1>
           {sharedData?.title && (

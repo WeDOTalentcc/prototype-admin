@@ -47,7 +47,7 @@ export function LiaMetricsKPIs({
               {contactRate.toFixed(0)}%
             </Badge>
           </div>
-          <div className={`text-lg font-bold text-lia-text-primary`}>
+          <div className={`text-lg font-semibold text-lia-text-primary`}>
             {contacted}/{totalCandidates}
           </div>
           <div className={`${textStyles.bodySmall}`}>
@@ -64,7 +64,7 @@ export function LiaMetricsKPIs({
               {triageConversionRate.toFixed(0)}%
             </Badge>
           </div>
-          <div className={`text-lg font-bold text-lia-text-primary`}>
+          <div className={`text-lg font-semibold text-lia-text-primary`}>
             {triageCompleted}/{contacted}
           </div>
           <div className={`${textStyles.bodySmall}`}>
@@ -81,7 +81,7 @@ export function LiaMetricsKPIs({
               {triageApprovalRate.toFixed(0)}%
             </Badge>
           </div>
-          <div className={`text-lg font-bold text-lia-text-primary`}>
+          <div className={`text-lg font-semibold text-lia-text-primary`}>
             {triageApproved}/{triageCompleted}
           </div>
           <div className={`${textStyles.bodySmall}`}>
@@ -98,7 +98,7 @@ export function LiaMetricsKPIs({
               {interviewConversionRate.toFixed(0)}%
             </Badge>
           </div>
-          <div className={`text-lg font-bold text-lia-text-primary`}>
+          <div className={`text-lg font-semibold text-lia-text-primary`}>
             {interviewScheduled}/{triageApproved}
           </div>
           <div className={`${textStyles.bodySmall}`}>
@@ -113,7 +113,7 @@ export function LiaMetricsKPIs({
             <Clock className="w-4 h-4 text-wedo-orange" />
             <TrendingUp className="w-3 h-3 text-status-success" />
           </div>
-          <div className={`text-lg font-bold text-lia-text-primary`}>
+          <div className={`text-lg font-semibold text-lia-text-primary`}>
             {avgTimeContact.toFixed(1)}h
           </div>
           <div className={`${textStyles.bodySmall}`}>
@@ -130,7 +130,7 @@ export function LiaMetricsKPIs({
               {avgLiaScore.toFixed(1)}
             </Badge>
           </div>
-          <div className={`text-lg font-bold text-lia-text-primary`}>
+          <div className={`text-lg font-semibold text-lia-text-primary`}>
             {avgSkillsMatch}%
           </div>
           <div className={`${textStyles.bodySmall}`}>

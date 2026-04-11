@@ -220,7 +220,7 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
                     {!isCollapsed && (
                       <div className="border-t border-lia-border-subtle bg-lia-bg-secondary/50 dark:bg-lia-bg-secondary/50">
                         <div className="overflow-x-auto">
-                        <table className="w-full text-xs font-['Open_Sans',sans-serif]">
+                        <table className="w-full text-xs">
                           <thead>
                             <tr className="border-b border-lia-border-subtle dark:border-lia-border-subtle">
                               <th className="text-left p-2 min-w-[140px] sticky left-0 bg-lia-bg-secondary dark:bg-lia-bg-secondary font-medium text-lia-text-secondary border-r border-lia-border-subtle dark:border-lia-border-subtle">

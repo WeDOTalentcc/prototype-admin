@@ -77,7 +77,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex font-['Open_Sans',sans-serif] relative overflow-hidden">
+    <div className="min-h-screen flex relative overflow-hidden">
       <CloudsBackground />
 
       <div className="hidden lg:flex lg:w-1/2 relative flex-col z-10">
@@ -104,11 +104,11 @@ export default function LoginPage() {
               IA Agêntica para Recrutamento
             </span>
           </div>
-          <h1 className="text-5xl text-lia-text-primary dark:text-lia-text-primary font-light leading-tight mb-7 font-['Open_Sans',sans-serif]">
+          <h1 className="text-5xl text-lia-text-primary dark:text-lia-text-primary font-light leading-tight mb-7">
             Entre. A <span className="font-['Source_Serif_4',serif] font-bold">LIA</span> já está<br />
             trabalhando por você.
           </h1>
-          <p className="text-base text-lia-text-secondary dark:text-lia-text-secondary font-normal leading-relaxed font-['Open_Sans',sans-serif]">
+          <p className="text-base text-lia-text-secondary dark:text-lia-text-secondary font-normal leading-relaxed">
             Sourcing global&nbsp;·&nbsp;Triagem inteligente&nbsp;·&nbsp;Agendamentos automáticos<br />
             Recrutamento <span className="text-wedo-cyan font-semibold">simples</span>
           </p>

@@ -26,7 +26,7 @@ function PreferencesTab({ onSettingsChange }: { onSettingsChange: (changed: bool
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-xl font-medium font-inter">
+          <CardTitle className="flex items-center gap-2 text-sm font-semibold">
             <Palette className="w-4 h-4" />
             Aparência
           </CardTitle>
@@ -83,7 +83,7 @@ function PreferencesTab({ onSettingsChange }: { onSettingsChange: (changed: bool
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-xl font-medium font-inter">
+          <CardTitle className="flex items-center gap-2 text-sm font-semibold">
             <Globe className="w-4 h-4" />
             Localização
           </CardTitle>
@@ -126,7 +126,7 @@ function LIATab({ onSettingsChange }: { onSettingsChange: (changed: boolean) => 
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-xl font-medium font-inter">
+          <CardTitle className="flex items-center gap-2 text-sm font-semibold">
             <Bot className="w-4 h-4" />
             Personalidade da LIA
           </CardTitle>

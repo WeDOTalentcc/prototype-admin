@@ -18,7 +18,7 @@ export function SocialMediaSection({ onSettingsChange }: SectionProps) {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-xl font-medium font-inter">
+          <CardTitle className="flex items-center gap-2 text-sm font-semibold">
             <MessageSquare className="w-4 h-4" />
             Redes Sociais e Canais Digitais
           </CardTitle>
@@ -137,7 +137,7 @@ export function SegmentSection({ onSettingsChange }: SectionProps) {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-xl font-medium font-inter">
+          <CardTitle className="flex items-center gap-2 text-sm font-semibold">
             <Target className="w-4 h-4" />
             Segmento e Mercado
           </CardTitle>

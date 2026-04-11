@@ -52,7 +52,7 @@ export function ListCard({
       </div>
 
       <div className="flex-shrink-0 flex flex-col items-center justify-center px-4 border-l border-r border-lia-border-subtle dark:border-lia-border-subtle">
-        <span className="text-2xl font-bold text-lia-text-primary">
+        <span className="text-2xl font-semibold text-lia-text-primary">
           {list.candidate_count || 0}
         </span>
         <span className="text-micro text-lia-text-tertiary uppercase tracking-wide" aria-live="polite" aria-atomic="true">

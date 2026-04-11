@@ -140,7 +140,7 @@ export function WSIScoreCard({
           </div>
 
           <div className="text-right">
-            <div className={`text-2xl font-bold ${scoreDisplay.text}`}>
+            <div className={`text-2xl font-semibold ${scoreDisplay.text}`}>
               {percentage}%
             </div>
             <div className="text-xs text-lia-text-tertiary">

@@ -224,7 +224,7 @@ export default function PrivacidadePage() {
                     </p>
                     <div className="bg-lia-bg-primary rounded-xl p-4 inline-block mb-4">
                       <p className="text-sm text-lia-text-secondary mb-1">Código de Acompanhamento:</p>
-                      <p className="text-2xl font-mono font-bold text-lia-text-primary dark:text-lia-text-primary">{submittedId}</p>
+                      <p className="text-2xl font-mono font-semibold text-lia-text-primary dark:text-lia-text-primary">{submittedId}</p>
                     </div>
                     <p className="text-sm text-status-success mb-6">
                       Guarde este código para acompanhar o status da sua solicitação.

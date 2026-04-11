@@ -24,7 +24,7 @@ export function WorkModelSection({
 }: WorkModelSectionProps) {
   return (
     <div className="space-y-3">
-      <h3 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wider px-1 font-['Open_Sans',sans-serif]">
+      <h3 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wider px-1">
         Modelo de Trabalho e Contratação
       </h3>
       

@@ -159,7 +159,7 @@ export function ActivityOfferSentDetails({ activity }: { activity: ActivityData 
           <Badge className={`ml-2 ${badgeStyles.primary}`}>{activity.statusLabel || 'Enviada'}</Badge>
         </h5>
         <div className="text-center p-3 bg-gradient-to-r from-lia-bg-secondary to-lia-bg-tertiary rounded-xl border border-lia-border-subtle mb-3">
-          <p className="text-2xl font-bold text-lia-text-primary">{activity.details.salary}</p>
+          <p className="text-2xl font-semibold text-lia-text-primary">{activity.details.salary}</p>
           {activity.details.annualBonus && <p className="text-xs text-lia-text-secondary">+ Bônus: {activity.details.annualBonus}</p>}
         </div>
         <div className="grid grid-cols-2 gap-2 mb-3">
@@ -245,7 +245,7 @@ export function ActivityRubricEvaluationDetails({ activity }: { activity: Activi
           </Badge>
         </h5>
         <div className="text-center p-3 bg-gradient-to-r from-lia-bg-secondary to-lia-bg-tertiary rounded-xl border border-lia-border-subtle mb-3">
-          <p className="text-3xl font-bold text-lia-text-primary">{activity.details.overallFit}%</p>
+          <p className="text-3xl font-semibold text-lia-text-primary">{activity.details.overallFit}%</p>
           <p className={textStyles.caption}>Fit Geral</p>
         </div>
         {activity.details.criteriaScores && (
@@ -280,7 +280,7 @@ export function ActivityAssessmentDetails({ activity, candidate, onSetDiscModalD
           <Badge className={`ml-2 ${badgeStyles.primary}`}>{activity.details.profile}</Badge>
         </h5>
         <div className="text-center p-3 bg-gradient-to-r from-lia-bg-tertiary to-lia-bg-secondary rounded-xl border border-lia-border-default mb-3">
-          <p className="text-xl font-bold text-lia-text-primary">{activity.details.profile}</p>
+          <p className="text-xl font-semibold text-lia-text-primary">{activity.details.profile}</p>
           <p className={textStyles.caption}>{activity.details.profileDescription}</p>
         </div>
         <div className="grid grid-cols-2 gap-2 mb-3">

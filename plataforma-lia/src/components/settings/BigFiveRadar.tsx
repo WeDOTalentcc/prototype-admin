@@ -160,7 +160,7 @@ export function BigFiveRadar({
                 x={labelPoint.x}
                 y={labelPoint.y + dy}
                 textAnchor={textAnchor}
-                className="text-xs font-medium fill-lia-text-secondary dark:fill-lia-text-tertiary font-['Open_Sans',sans-serif]"
+                className="text-xs font-medium fill-lia-text-secondary dark:fill-lia-text-tertiary"
               >
                 {trait.label}
               </text>

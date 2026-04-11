@@ -76,7 +76,7 @@ const MessageBubbleComponent = memo(function MessageBubble({
       <RichTextContent
         html={renderedContent}
         className={cn(
-          "text-xs leading-relaxed font-['Open_Sans',sans-serif] text-lia-text-primary"
+          "text-xs leading-relaxed text-lia-text-primary"
         )}
       />
 

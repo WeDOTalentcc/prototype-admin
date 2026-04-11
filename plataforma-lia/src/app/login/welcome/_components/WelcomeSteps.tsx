@@ -232,7 +232,7 @@ export function WelcomeSteps() {
   const isFlowPhase = phase === "flow-intro" || phase === "flow-steps" || phase === "flow-tagline" || phase === "fade-flow"
 
   return (
-    <div className="min-h-screen bg-lia-bg-primary overflow-hidden relative font-['Open_Sans',sans-serif]">
+    <div className="min-h-screen bg-lia-bg-primary overflow-hidden relative">
       <style>{`
         @keyframes brain-pulse-anim {
           0%, 100% { transform: scale(1); opacity: 1; }
@@ -287,7 +287,7 @@ export function WelcomeSteps() {
                     transition: "opacity 0.3s ease",
                   }}
                 >
-                  <p className="text-2xl text-lia-text-primary font-['Open_Sans',sans-serif] font-light">
+                  <p className="text-2xl text-lia-text-primary font-light">
                     {typedText1}
                     {typedText1.length < text1.length && (
                       <span className="animate-pulse motion-reduce:animate-none">|</span>
@@ -412,7 +412,7 @@ export function WelcomeSteps() {
 
               {(phase === "welcome-message" || phase === "complete") && (
                 <div className="flex flex-col items-center gap-4 animate-in fade-in slide-in-from-bottom-4 duration-400">
-                  <h1 className="text-3xl font-['Open_Sans',sans-serif] text-lia-text-primary">
+                  <h1 className="text-3xl text-lia-text-primary">
                     Olá, <span className="text-wedo-cyan font-semibold">{userName}</span>
                   </h1>
                   <p className="text-lia-text-primary text-lg max-w-xl leading-relaxed text-center">

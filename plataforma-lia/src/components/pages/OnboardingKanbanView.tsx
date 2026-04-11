@@ -44,7 +44,7 @@ export function OnboardingKanbanView({
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-lia-text-secondary">Novos Colaboradores</p>
-                <p className="text-2xl font-bold text-lia-text-primary">{approvedCandidates.length}</p>
+                <p className="text-2xl font-semibold text-lia-text-primary">{approvedCandidates.length}</p>
                 <p className="text-xs text-lia-text-primary">em onboarding</p>
               </div>
               <div className="w-12 h-12 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-xl flex items-center justify-center">
@@ -59,7 +59,7 @@ export function OnboardingKanbanView({
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-lia-text-secondary">Em Andamento</p>
-                <p className="text-2xl font-bold text-status-warning">
+                <p className="text-2xl font-semibold text-status-warning">
                   {approvedCandidates.filter(c => c.stage !== 'completed').length}
                 </p>
                 <p className="text-xs text-lia-text-primary">processos ativos</p>
@@ -76,7 +76,7 @@ export function OnboardingKanbanView({
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-lia-text-secondary">Concluídos</p>
-                <p className="text-2xl font-bold text-status-success">
+                <p className="text-2xl font-semibold text-status-success">
                   {approvedCandidates.filter(c => c.stage === 'completed').length}
                 </p>
                 <p className="text-xs text-lia-text-primary">este mês</p>
@@ -93,7 +93,7 @@ export function OnboardingKanbanView({
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-lia-text-secondary">Tempo Médio</p>
-                <p className="text-2xl font-bold text-wedo-purple">12d</p>
+                <p className="text-2xl font-semibold text-wedo-purple">12d</p>
                 <p className="text-xs text-lia-text-primary">para conclusão</p>
               </div>
               <div className="w-12 h-12 bg-wedo-purple/15 rounded-md flex items-center justify-center">

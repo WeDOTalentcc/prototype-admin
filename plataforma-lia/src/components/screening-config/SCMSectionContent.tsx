@@ -115,7 +115,7 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
             <CardContent className="p-4">
               <div className="space-y-4">
                 <div>
-                  <h4 className="text-xs font-semibold text-lia-text-tertiary uppercase tracking-wider font-['Open_Sans',sans-serif] mb-3">Blocos WSI</h4>
+                  <h4 className="text-xs font-semibold text-lia-text-tertiary uppercase tracking-wider mb-3">Blocos WSI</h4>
                   <div className="flex items-center gap-3 text-micro text-lia-text-secondary flex-wrap mb-3">
                     <span>Total: {(job.screeningQuestions as unknown[] | undefined)?.length || 0} perguntas WSI</span>
                     <span>•</span>

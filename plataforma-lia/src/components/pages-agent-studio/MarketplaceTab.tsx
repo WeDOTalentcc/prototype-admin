@@ -385,11 +385,11 @@ function BillingView() {
       <div className="grid grid-cols-2 gap-4">
         <div className="rounded-xl border border-lia-border-subtle bg-lia-bg-secondary p-4">
           <p className="text-xs text-lia-text-secondary mb-1">Total de Créditos</p>
-          <p className="text-2xl font-bold text-lia-text-primary">{totalCredits.toLocaleString()}</p>
+          <p className="text-2xl font-semibold text-lia-text-primary">{totalCredits.toLocaleString()}</p>
         </div>
         <div className="rounded-xl border border-lia-border-subtle bg-lia-bg-secondary p-4">
           <p className="text-xs text-lia-text-secondary mb-1">Total de Execuções</p>
-          <p className="text-2xl font-bold text-lia-text-primary">{totalExecs.toLocaleString()}</p>
+          <p className="text-2xl font-semibold text-lia-text-primary">{totalExecs.toLocaleString()}</p>
         </div>
       </div>
 

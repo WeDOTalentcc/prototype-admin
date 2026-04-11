@@ -119,7 +119,7 @@ export function JobDuplicateModal({
               <Copy className="w-4 h-4 text-lia-text-secondary" />
             </div>
             <div>
-              <DialogTitle className="text-sm font-semibold text-lia-text-primary font-['Open_Sans',sans-serif]">
+              <DialogTitle className="text-sm font-semibold text-lia-text-primary">
                 Duplicar Vaga
               </DialogTitle>
               <p className="text-xs text-lia-text-secondary mt-0.5">
@@ -133,7 +133,7 @@ export function JobDuplicateModal({
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-3">
               <div className="p-3 rounded-xl bg-lia-bg-secondary border border-lia-border-subtle">
-                <h4 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-2 font-['Open_Sans',sans-serif]">
+                <h4 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-2">
                   Vaga Original
                 </h4>
                 <div className="flex items-start gap-2">
@@ -174,7 +174,7 @@ export function JobDuplicateModal({
               </div>
 
               <div>
-                <h4 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-2 font-['Open_Sans',sans-serif]">
+                <h4 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-2">
                   O que será mantido
                 </h4>
                 <div className="grid grid-cols-2 gap-x-3 gap-y-1 p-3 rounded-xl bg-lia-bg-secondary border border-lia-border-subtle">
@@ -188,7 +188,7 @@ export function JobDuplicateModal({
               </div>
 
               <div>
-                <h4 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-2 font-['Open_Sans',sans-serif]">
+                <h4 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-2">
                   Candidatos
                 </h4>
                 <RadioGroup
@@ -222,7 +222,7 @@ export function JobDuplicateModal({
 
             <div className="space-y-3">
               <div>
-                <h4 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-2 font-['Open_Sans',sans-serif]">
+                <h4 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-2">
                   Nova Vaga
                 </h4>
                 <div className="space-y-2">
@@ -254,7 +254,7 @@ export function JobDuplicateModal({
               </div>
 
               <div>
-                <h4 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-2 font-['Open_Sans',sans-serif]">
+                <h4 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-2">
                   Novas Datas
                 </h4>
                 <div className="space-y-2">

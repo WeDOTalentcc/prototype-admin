@@ -150,7 +150,7 @@ const [vacancies, setVacancies] = useState<JobVacancy[]>([])
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="max-w-lg border-lia-border-subtle rounded-xl" data-testid="add-list-to-vacancies-modal">
         <DialogHeader>
-          <DialogTitle className="font-['Open_Sans',sans-serif] text-lg flex items-center gap-2">
+          <DialogTitle className="text-lg flex items-center gap-2">
             <Briefcase className="w-5 h-5 text-lia-text-secondary" />
             Adicionar a Vagas
           </DialogTitle>

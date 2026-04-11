@@ -123,7 +123,7 @@ export function JobAssignRecruiterModal({
               <Users className="w-4 h-4 text-lia-text-secondary" />
             </div>
             <div>
-              <DialogTitle className="text-sm font-semibold text-lia-text-primary font-['Open_Sans',sans-serif]">
+              <DialogTitle className="text-sm font-semibold text-lia-text-primary">
                 Atribuir Recrutador
               </DialogTitle>
               <p className="text-xs text-lia-text-secondary mt-0.5">
@@ -137,7 +137,7 @@ export function JobAssignRecruiterModal({
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-3">
               <div>
-                <h4 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-2 font-['Open_Sans',sans-serif]">
+                <h4 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-2">
                   Vagas Selecionadas
                 </h4>
                 <div className="space-y-1.5 max-h-[120px] overflow-y-auto">
@@ -172,7 +172,7 @@ export function JobAssignRecruiterModal({
               </div>
 
               <div>
-                <h4 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-2 font-['Open_Sans',sans-serif]">
+                <h4 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-2">
                   Opções
                 </h4>
                 <div className="space-y-2 p-3 rounded-xl bg-lia-bg-secondary border border-lia-border-subtle">
@@ -233,7 +233,7 @@ export function JobAssignRecruiterModal({
             </div>
 
             <div>
-              <h4 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-2 font-['Open_Sans',sans-serif]">
+              <h4 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-2">
                 Selecionar Recrutador
               </h4>
               <div className="relative mb-2">

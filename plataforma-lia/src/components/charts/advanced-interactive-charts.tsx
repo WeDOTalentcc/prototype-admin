@@ -566,7 +566,7 @@ export function AdvancedInteractiveChart({
               {Object.entries(selectedDataPoint).map(([key, value]) => (
                 key !== dataKeys[0] && (
                   <div key={key} className="text-center">
-                    <div className="text-lg font-bold text-lia-text-primary">{String(value)}</div>
+                    <div className="text-lg font-semibold text-lia-text-primary">{String(value)}</div>
                     <div className="text-xs text-lia-text-secondary capitalize">{key}</div>
                   </div>
                 )

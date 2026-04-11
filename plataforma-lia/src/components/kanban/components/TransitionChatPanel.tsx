@@ -356,7 +356,7 @@ export function TransitionChatPanel({
                     >
                       <RichContent
                         html={liaHtml}
-                        className="text-base-ui leading-relaxed text-lia-text-primary font-['Open_Sans',sans-serif]"
+                        className="text-base-ui leading-relaxed text-lia-text-primary"
                       />
 
                       {meta?.extracted_preferences && Object.keys(meta.extracted_preferences).length > 0 && (

@@ -45,7 +45,7 @@ export function LIASuggestionsPanel({ open, onClose, selectedTriagemQuestion }: 
                 <Wand2 className="w-5 h-5" />
               </div>
               <div>
-                <h2 className="text-lg font-bold">Sugestões de Perguntas da LIA</h2>
+                <h2 className="text-lg font-semibold">Sugestões de Perguntas da LIA</h2>
                 <p className="text-wedo-purple text-xs">Para Triagem - {selectedTriagemQuestion}</p>
               </div>
             </div>

@@ -146,13 +146,13 @@ export function UserManagement(_props: UserManagementProps) {
         </Card>
         <Card className="rounded-md">
           <CardContent className="p-3 text-center">
-            <div className="text-2xl font-bold text-status-success dark:text-status-success">{stats.active}</div>
+            <div className="text-2xl font-semibold text-status-success dark:text-status-success">{stats.active}</div>
             <div className={textStyles.description}>Usuários Ativos</div>
           </CardContent>
         </Card>
         <Card className="rounded-md">
           <CardContent className="p-3 text-center">
-            <div className="text-2xl font-bold text-wedo-purple dark:text-wedo-purple">{stats.managers}</div>
+            <div className="text-2xl font-semibold text-wedo-purple dark:text-wedo-purple">{stats.managers}</div>
             <div className={textStyles.description}>Gestores</div>
           </CardContent>
         </Card>

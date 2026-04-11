@@ -118,7 +118,7 @@ export function ActivityMiscDetails({ activity }: ActivityMiscDetailsProps) {
               </Badge>
             </h5>
             <div className="text-center p-3 bg-gradient-to-r from-lia-bg-secondary to-lia-bg-tertiary rounded-xl border border-lia-border-subtle mb-3">
-              <p className="text-2xl font-bold text-lia-text-primary">{activity.details.salary}</p>
+              <p className="text-2xl font-semibold text-lia-text-primary">{activity.details.salary}</p>
               {activity.details.annualBonus && (
                 <p className="text-xs text-lia-text-secondary">+ Bônus: {activity.details.annualBonus}</p>
               )}

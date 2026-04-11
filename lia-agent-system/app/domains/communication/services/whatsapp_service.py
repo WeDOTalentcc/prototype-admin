@@ -39,6 +39,7 @@ class WhatsAppStatus(StrEnum):
     """WhatsApp message delivery status."""
     PENDING = "pending"
     QUEUED = "queued"
+    QUEUED_DEVELOPMENT = "queued_development"
     SENT = "sent"
     DELIVERED = "delivered"
     READ = "read"
@@ -390,7 +391,7 @@ class WhatsAppService:
         return WhatsAppSendResult(
             success=True,
             message_id=message_id,
-            status=WhatsAppStatus.SENT,
+            status=WhatsAppStatus.QUEUED_DEVELOPMENT,
             provider="development",
             sent_at=datetime.utcnow(),
             metadata={

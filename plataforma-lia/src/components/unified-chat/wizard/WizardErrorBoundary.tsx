@@ -39,16 +39,16 @@ export class WizardErrorBoundary extends React.Component<Props, State> {
             <AlertTriangle className="w-5 h-5 text-status-warning" />
           </div>
           <div>
-            <p className="text-sm font-medium text-lia-text-primary font-['Open_Sans',sans-serif]">
+            <p className="text-sm font-medium text-lia-text-primary">
               {this.props.fallbackMessage || "Erro ao carregar painel"}
             </p>
-            <p className="text-xs text-lia-text-tertiary font-['Open_Sans',sans-serif] mt-1">
+            <p className="text-xs text-lia-text-tertiary mt-1">
               {this.state.error?.message || "Erro desconhecido"}
             </p>
           </div>
           <button
             onClick={this.handleReset}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-lia-border-subtle text-xs font-medium text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors font-['Open_Sans',sans-serif]"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-lia-border-subtle text-xs font-medium text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors"
           >
             <RefreshCw className="w-3.5 h-3.5" />
             Tentar novamente

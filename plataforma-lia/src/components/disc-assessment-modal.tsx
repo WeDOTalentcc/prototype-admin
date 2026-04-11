@@ -357,7 +357,7 @@ export function DISCAssessmentModal({ isOpen, onClose, candidate, assessmentData
               <div className="flex items-center gap-3">
                 <span className="text-3xl">{profileInfo.icon}</span>
                 <div>
-                  <div className="text-lg font-bold text-lia-text-primary">
+                  <div className="text-lg font-semibold text-lia-text-primary">
                     {data.profile || profileType}
                   </div>
                   <div className="text-sm text-lia-text-secondary">
@@ -373,7 +373,7 @@ export function DISCAssessmentModal({ isOpen, onClose, candidate, assessmentData
                     <TrendingUp className="w-4 h-4 text-lia-text-secondary" />
                     <span className="text-xs font-medium text-lia-text-secondary">Match</span>
                   </div>
-                  <div className="text-xl font-bold text-lia-text-primary">
+                  <div className="text-xl font-semibold text-lia-text-primary">
                     {data.comparisonToRole.matchPercentage}%
                   </div>
                 </div>
@@ -386,7 +386,7 @@ export function DISCAssessmentModal({ isOpen, onClose, candidate, assessmentData
                     <Users className="w-4 h-4 text-lia-text-secondary" />
                     <span className="text-xs font-medium text-lia-text-secondary">Fit Cultural</span>
                   </div>
-                  <div className="text-xl font-bold text-lia-text-primary">
+                  <div className="text-xl font-semibold text-lia-text-primary">
                     {data.culturalFitScore}%
                   </div>
                 </div>
@@ -413,7 +413,7 @@ export function DISCAssessmentModal({ isOpen, onClose, candidate, assessmentData
                   <div key={key} className={`${dim.bgColor} ${dim.borderColor} border rounded-md p-4`}>
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex items-center gap-3">
-                        <div className={`w-10 h-10 rounded-md flex items-center justify-center font-bold text-lg`} style={{backgroundColor: dim.bgColor + '20', color: dim.bgColor}}>
+                        <div className={`w-10 h-10 rounded-md flex items-center justify-center font-semibold text-lg`} style={{backgroundColor: dim.bgColor + '20', color: dim.bgColor}}>
                           {dim.letter}
                         </div>
                         <div>
@@ -421,7 +421,7 @@ export function DISCAssessmentModal({ isOpen, onClose, candidate, assessmentData
                           <div className="text-xs text-lia-text-secondary">{levelData.label}</div>
                         </div>
                       </div>
-                      <div className="text-2xl font-bold" style={{color: dim.bgColor}}>
+                      <div className="text-2xl font-semibold" style={{color: dim.bgColor}}>
                         {score}%
                       </div>
                     </div>
@@ -481,7 +481,7 @@ export function DISCAssessmentModal({ isOpen, onClose, candidate, assessmentData
                       {data.leadershipStyle}
                     </Badge>
                     {data.leadershipScore && (
-                      <span className="text-lg font-bold text-lia-text-primary">{data.leadershipScore}%</span>
+                      <span className="text-lg font-semibold text-lia-text-primary">{data.leadershipScore}%</span>
                     )}
                   </div>
                   {data.leadershipStrengths && data.leadershipStrengths.length > 0 && (
@@ -519,19 +519,19 @@ export function DISCAssessmentModal({ isOpen, onClose, candidate, assessmentData
               <div className="grid grid-cols-3 gap-2">
                 {data.teamworkScore && (
                   <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-xl p-3 border border-lia-border-subtle dark:border-lia-border-subtle text-center">
-                    <p className="text-lg font-bold text-lia-text-primary">{data.teamworkScore}%</p>
+                    <p className="text-lg font-semibold text-lia-text-primary">{data.teamworkScore}%</p>
                     <p className="text-micro text-lia-text-secondary">Trabalho em Equipe</p>
                   </div>
                 )}
                 {data.adaptabilityScore && (
                   <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-xl p-3 border border-lia-border-subtle dark:border-lia-border-subtle text-center">
-                    <p className="text-lg font-bold text-lia-text-primary">{data.adaptabilityScore}%</p>
+                    <p className="text-lg font-semibold text-lia-text-primary">{data.adaptabilityScore}%</p>
                     <p className="text-micro text-lia-text-secondary">Adaptabilidade</p>
                   </div>
                 )}
                 {data.stressResilienceScore && (
                   <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-xl p-3 border border-lia-border-subtle dark:border-lia-border-subtle text-center">
-                    <p className="text-lg font-bold text-lia-text-primary">{data.stressResilienceScore}%</p>
+                    <p className="text-lg font-semibold text-lia-text-primary">{data.stressResilienceScore}%</p>
                     <p className="text-micro text-lia-text-secondary">Resiliência</p>
                   </div>
                 )}

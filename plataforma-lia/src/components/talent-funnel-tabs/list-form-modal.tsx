@@ -41,7 +41,7 @@ export function ListFormModal({
     <Dialog open={open} onOpenChange={(v) => { if (!v) onClose() }}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="font-['Open_Sans',sans-serif]">
+          <DialogTitle className="">
             {editingList ? 'Editar Lista' : 'Nova Lista'}
           </DialogTitle>
         </DialogHeader>
@@ -139,7 +139,7 @@ export function DeleteListDialog({
     <AlertDialog open={!!listToDelete} onOpenChange={(open: boolean) => !open && onCancel()}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle className="font-['Open_Sans',sans-serif]">
+          <AlertDialogTitle className="">
             Excluir lista?
           </AlertDialogTitle>
           <AlertDialogDescription>

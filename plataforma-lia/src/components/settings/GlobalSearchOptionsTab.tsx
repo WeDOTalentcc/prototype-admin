@@ -28,7 +28,7 @@ export function GlobalSearchOptionsTab({
 }: GlobalSearchOptionsTabProps) {
   const editHeader = (
     <div className="flex items-center justify-between">
-      <CardTitle className="font-['Open_Sans',sans-serif] text-base-ui font-semibold flex items-center gap-2 text-lia-text-primary">
+      <CardTitle className="text-base-ui font-semibold flex items-center gap-2 text-lia-text-primary">
         <Settings className="w-3.5 h-3.5 text-lia-text-secondary" />
         Opções de Busca
       </CardTitle>
@@ -130,7 +130,7 @@ export function GlobalSearchOptionsTab({
 
       <Card className="border-lia-border-subtle/50 dark:border-lia-border-subtle/50">
         <CardHeader className="pb-2">
-          <CardTitle className="font-['Open_Sans',sans-serif] text-base-ui font-semibold flex items-center gap-2 text-lia-text-primary">
+          <CardTitle className="text-base-ui font-semibold flex items-center gap-2 text-lia-text-primary">
             <Shield className="w-3.5 h-3.5 text-lia-text-secondary" />
             Controle de Gastos
           </CardTitle>

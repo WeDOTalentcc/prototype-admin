@@ -61,7 +61,7 @@ export default function AjudaPage() {
               <Brain className="w-8 h-8 text-wedo-cyan" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-lia-text-primary dark:text-lia-text-primary">Central de Ajuda</h1>
+              <h1 className="text-3xl font-semibold text-lia-text-primary dark:text-lia-text-primary">Central de Ajuda</h1>
               <p className="text-lia-text-secondary dark:text-lia-text-tertiary">Entenda como a LIA analisa candidatos</p>
             </div>
           </div>
@@ -246,7 +246,7 @@ export default function AjudaPage() {
                 <Fingerprint className="w-6 h-6 text-lia-text-primary" />
               </div>
               <div>
-                <h2 className="text-xl font-bold text-lia-text-primary dark:text-lia-text-primary">Análise de Perfil de Personalidade</h2>
+                <h2 className="text-xl font-semibold text-lia-text-primary dark:text-lia-text-primary">Análise de Perfil de Personalidade</h2>
                 <p className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary">Inferência probabilística baseada no modelo Big Five (OCEAN)</p>
               </div>
             </div>

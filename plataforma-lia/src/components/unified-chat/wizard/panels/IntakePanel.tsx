@@ -27,7 +27,7 @@ export function IntakePanel({ data, onUpdate }: Props) {
   }
 
   return (
-    <div className="p-4 space-y-4 font-['Open_Sans',sans-serif]">
+    <div className="p-4 space-y-4">
       {/* Source indicator */}
       <div className="flex items-center justify-between text-xs text-lia-text-disabled">
         <div className="flex items-center gap-2">

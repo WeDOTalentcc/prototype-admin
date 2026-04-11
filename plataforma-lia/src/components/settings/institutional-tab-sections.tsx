@@ -17,7 +17,7 @@ export function BasicDataSection({ onSettingsChange }: SectionProps) {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-xl font-medium font-inter">
+          <CardTitle className="flex items-center gap-2 text-sm font-semibold">
             <Building className="w-4 h-4" />
             Informações Básicas
           </CardTitle>
@@ -184,7 +184,7 @@ export function AddressSection({ onSettingsChange }: SectionProps) {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-xl font-medium font-inter">
+          <CardTitle className="flex items-center gap-2 text-sm font-semibold">
             <Globe className="w-4 h-4" />
             Endereço da Matriz
           </CardTitle>

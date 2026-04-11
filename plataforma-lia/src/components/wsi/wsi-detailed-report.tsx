@@ -179,7 +179,7 @@ function ScoresByDimension({ data }: { data: WSIResultDetails }) {
       <div className="grid grid-cols-3 gap-4">
         {dims.map((s) => (
           <div key={s.label} className="text-center">
-            <p className="text-3xl font-bold text-lia-text-primary">{s.value.toFixed(1)}</p>
+            <p className="text-3xl font-semibold text-lia-text-primary">{s.value.toFixed(1)}</p>
             <p className="text-xs text-lia-text-tertiary mb-2">{s.label} ({s.pct}%)</p>
             <div className="h-1.5 bg-lia-bg-secondary rounded-full overflow-hidden">
               <div className="h-full bg-lia-text-primary rounded-full transition-[width]" style={{ width: `${s.pct}%` }} />

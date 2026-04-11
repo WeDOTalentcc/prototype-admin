@@ -67,7 +67,7 @@ function ResetPasswordContent() {
           <div className="w-16 h-16 bg-status-error/15 rounded-full flex items-center justify-center mx-auto mb-6">
             <AlertCircle className="w-8 h-8 text-status-error" />
           </div>
-          <h2 className="text-2xl font-bold text-lia-text-primary dark:text-lia-text-primary mb-3">Link Inválido</h2>
+          <h2 className="text-2xl font-semibold text-lia-text-primary dark:text-lia-text-primary mb-3">Link Inválido</h2>
           <p className="text-lia-text-secondary mb-6">
             O link de redefinição de senha é inválido ou expirou. Por favor, solicite um novo link.
           </p>
@@ -88,7 +88,7 @@ function ResetPasswordContent() {
           <div className="w-16 h-16 bg-status-success/15 rounded-full flex items-center justify-center mx-auto mb-6">
             <CheckCircle className="w-8 h-8 text-status-success" />
           </div>
-          <h2 className="text-2xl font-bold text-lia-text-primary dark:text-lia-text-primary mb-3">Senha Redefinida!</h2>
+          <h2 className="text-2xl font-semibold text-lia-text-primary dark:text-lia-text-primary mb-3">Senha Redefinida!</h2>
           <p className="text-lia-text-secondary mb-6">
             Sua senha foi alterada com sucesso. Agora você pode fazer login com sua nova senha.
           </p>
@@ -116,7 +116,7 @@ function ResetPasswordContent() {
             <div className="w-16 h-16 bg-lia-bg-tertiary rounded-full flex items-center justify-center mx-auto mb-4">
               <KeyRound className="w-8 h-8 text-lia-text-secondary" aria-hidden="true" />
             </div>
-            <h2 className="text-2xl font-bold text-lia-text-primary dark:text-lia-text-primary mb-3">Nova Senha</h2>
+            <h2 className="text-2xl font-semibold text-lia-text-primary dark:text-lia-text-primary mb-3">Nova Senha</h2>
             <p className="text-lia-text-secondary text-base leading-relaxed">
               Digite sua nova senha abaixo.
             </p>

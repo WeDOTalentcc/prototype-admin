@@ -77,7 +77,7 @@ export function ChatInputBar({
         rows={1}
         aria-label="Mensagem para a LIA"
         className={cn(
-          "flex-1 bg-transparent text-base-ui font-['Open_Sans',sans-serif]",
+          "flex-1 bg-transparent text-base-ui",
           "text-lia-text-primary placeholder:text-lia-text-disabled",
           "focus:outline-none leading-relaxed min-w-0 resize-none max-h-[120px]"
         )}

@@ -99,7 +99,7 @@ export function OnboardingChatPage({ sessionId, userId, children }: Props) {
           <div className="flex items-center justify-center h-full text-lia-text-secondary">
             <div className="text-center">
               <div className="w-6 h-6 mx-auto mb-3 border-2 border-wedo-cyan border-t-transparent rounded-full animate-spin" />
-              <p className="text-sm font-['Open_Sans',sans-serif]">Preparando sua experiencia...</p>
+              <p className="text-sm">Preparando sua experiencia...</p>
             </div>
           </div>
         ) : (
@@ -166,7 +166,7 @@ function OnboardingProgressBar({
               )}
               <div className="flex flex-col items-center gap-1">
                 <div
-                  className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-medium font-['Open_Sans',sans-serif] ${
+                  className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-medium ${
                     completed
                       ? "bg-wedo-cyan text-white"
                       : active
@@ -176,7 +176,7 @@ function OnboardingProgressBar({
                 >
                   {completed ? "✓" : i + 1}
                 </div>
-                <span className={`text-[9px] font-['Open_Sans',sans-serif] whitespace-nowrap ${
+                <span className={`text-[9px] whitespace-nowrap ${
                   completed || active ? "text-lia-text-primary" : "text-lia-text-disabled"
                 }`}>
                   {step.label}

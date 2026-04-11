@@ -340,22 +340,22 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
                 <div className="grid grid-cols-4 gap-2">
                   <div className="text-center p-2 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-xl border border-lia-border-default dark:border-lia-border-default">
                     <Users className="w-4 h-4 text-lia-text-secondary mx-auto mb-0.5" />
-                    <p className="text-lg font-bold text-lia-text-primary">{reportData.funnelMetrics.totalCandidates}</p>
+                    <p className="text-lg font-semibold text-lia-text-primary">{reportData.funnelMetrics.totalCandidates}</p>
                     <p className="text-micro text-lia-text-secondary">Total Candidatos</p>
                   </div>
                   <div className="text-center p-2 bg-status-success/10 rounded-xl border border-status-success/30">
                     <Target className="w-4 h-4 text-status-success mx-auto mb-0.5" />
-                    <p className="text-lg font-bold text-status-success">{reportData.funnelMetrics.hired}</p>
+                    <p className="text-lg font-semibold text-status-success">{reportData.funnelMetrics.hired}</p>
                     <p className="text-micro text-lia-text-secondary">Contratados</p>
                   </div>
                   <div className="text-center p-2 bg-wedo-purple/10 rounded-xl border border-wedo-purple/30">
                     <Clock className="w-4 h-4 text-wedo-purple mx-auto mb-0.5" />
-                    <p className="text-lg font-bold text-wedo-purple">{reportData.funnelMetrics.averageTimeToHire}</p>
+                    <p className="text-lg font-semibold text-wedo-purple">{reportData.funnelMetrics.averageTimeToHire}</p>
                     <p className="text-micro text-lia-text-secondary">Dias p/ Contratar</p>
                   </div>
                   <div className="text-center p-2 bg-wedo-orange/10 rounded-xl border border-wedo-orange/30">
                     <DollarSign className="w-4 h-4 text-wedo-orange mx-auto mb-0.5" />
-                    <p className="text-lg font-bold text-wedo-orange">{formatBRL(reportData.funnelMetrics.costPerHire)}</p>
+                    <p className="text-lg font-semibold text-wedo-orange">{formatBRL(reportData.funnelMetrics.costPerHire)}</p>
                     <p className="text-micro text-lia-text-secondary">Custo/Contratação</p>
                   </div>
                 </div>

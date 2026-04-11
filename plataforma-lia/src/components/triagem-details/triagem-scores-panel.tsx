@@ -30,17 +30,17 @@ export function TriagemScoresPanel({ scores, sessionInfo, f11Report, details }: 
       </h3>
       <div className="grid grid-cols-3 gap-3">
         <div className="text-center p-3 rounded-lg border border-lia-border-subtle">
-          <p className="text-xl font-bold text-lia-text-primary">{scores.overall_wsi.toFixed(1)}</p>
+          <p className="text-xl font-semibold text-lia-text-primary">{scores.overall_wsi.toFixed(1)}</p>
           <p className="text-micro text-lia-text-secondary">Geral ({wsiToPercent(scores.overall_wsi)}%)</p>
           <Progress value={wsiToPercent(scores.overall_wsi)} className="h-1.5 mt-1.5" />
         </div>
         <div className="text-center p-3 rounded-lg border border-lia-border-subtle">
-          <p className="text-xl font-bold text-lia-text-primary">{scores.technical_wsi.toFixed(1)}</p>
+          <p className="text-xl font-semibold text-lia-text-primary">{scores.technical_wsi.toFixed(1)}</p>
           <p className="text-micro text-lia-text-secondary">Comp. Técnicas ({wsiToPercent(scores.technical_wsi)}%)</p>
           <Progress value={wsiToPercent(scores.technical_wsi)} className="h-1.5 mt-1.5" />
         </div>
         <div className="text-center p-3 rounded-lg border border-lia-border-subtle">
-          <p className="text-xl font-bold text-lia-text-primary">{scores.behavioral_wsi.toFixed(1)}</p>
+          <p className="text-xl font-semibold text-lia-text-primary">{scores.behavioral_wsi.toFixed(1)}</p>
           <p className="text-micro text-lia-text-secondary">Comp. Comportamentais ({wsiToPercent(scores.behavioral_wsi)}%)</p>
           <Progress value={wsiToPercent(scores.behavioral_wsi)} className="h-1.5 mt-1.5" />
         </div>

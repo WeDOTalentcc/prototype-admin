@@ -284,31 +284,31 @@ export function JobInfoGeralSection({
               return (
                 <div className="space-y-3">
                   {langs.length === 0 && !isEditing && (
-                    <p className="text-xs text-lia-text-tertiary font-['Open_Sans',sans-serif] italic">Nenhum idioma adicionado</p>
+                    <p className="text-xs text-lia-text-tertiary italic">Nenhum idioma adicionado</p>
                   )}
                   {langs.map((lang, idx) => (
                     <div key={idx} className="flex items-center gap-3 p-3 bg-lia-bg-secondary/50 rounded-xl">
                       <Languages className="w-4 h-4 text-lia-text-tertiary flex-shrink-0" />
                       <div className="flex-1 grid grid-cols-3 gap-3">
                         <div>
-                          <label className="text-micro text-lia-text-secondary font-['Open_Sans',sans-serif] mb-1 block">Idioma</label>
+                          <label className="text-micro text-lia-text-secondary mb-1 block">Idioma</label>
                           <select className={selectClass(!isEditing)} value={lang.language || ""} onChange={(e) => updateLanguage(idx, "language", e.target.value)} disabled={!isEditing}>
                             <option value="">Selecione...</option>
                             {LANGUAGE_OPTIONS.map((opt) => <option key={opt} value={opt}>{opt}</option>)}
                           </select>
                         </div>
                         <div>
-                          <label className="text-micro text-lia-text-secondary font-['Open_Sans',sans-serif] mb-1 block">Nível</label>
+                          <label className="text-micro text-lia-text-secondary mb-1 block">Nível</label>
                           <select className={selectClass(!isEditing)} value={lang.level || "intermediario"} onChange={(e) => updateLanguage(idx, "level", e.target.value)} disabled={!isEditing}>
                             {LEVEL_OPTIONS.map((opt) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
                           </select>
                         </div>
                         <div className="flex items-end gap-2">
                           <div className="flex-1">
-                            <label className="text-micro text-lia-text-secondary font-['Open_Sans',sans-serif] mb-1 block">Obrigatório</label>
+                            <label className="text-micro text-lia-text-secondary mb-1 block">Obrigatório</label>
                             <div className="flex items-center gap-2 h-[38px]">
                               <Switch checked={!!lang.required} onCheckedChange={(val: boolean) => updateLanguage(idx, "required", val)} disabled={!isEditing} className="data-[state=checked]:bg-lia-btn-primary-bg dark:data-[state=checked]:bg-lia-interactive-active" />
-                              <span className="text-xs text-lia-text-secondary font-['Open_Sans',sans-serif]">{lang.required ? "Sim" : "Não"}</span>
+                              <span className="text-xs text-lia-text-secondary">{lang.required ? "Sim" : "Não"}</span>
                             </div>
                           </div>
                           {isEditing && (
@@ -495,9 +495,9 @@ export function JobInfoGeralSection({
           <CardContent className="p-4">
             {(jobEditForm.status === "Ativa" || jobEditForm.status === "Paralisada" || jobEditForm.status === "Concluída") && (publicLink || jobEditForm.public_url) ? (
               <div className="space-y-2">
-                <p className="text-xs text-lia-text-secondary font-['Open_Sans',sans-serif]">Link público para candidatos se candidatarem:</p>
+                <p className="text-xs text-lia-text-secondary">Link público para candidatos se candidatarem:</p>
                 <div className="flex items-center gap-2">
-                  <input type="text" readOnly value={publicLink || (jobEditForm.public_url as string) || ""} className="flex-1 px-3 py-2 text-xs text-lia-text-primary bg-lia-bg-secondary border border-lia-border-subtle rounded-xl font-['Open_Sans',sans-serif]" onClick={(e) => (e.target as HTMLInputElement).select()} />
+                  <input type="text" readOnly value={publicLink || (jobEditForm.public_url as string) || ""} className="flex-1 px-3 py-2 text-xs text-lia-text-primary bg-lia-bg-secondary border border-lia-border-subtle rounded-xl" onClick={(e) => (e.target as HTMLInputElement).select()} />
                   <button onClick={() => { navigator.clipboard.writeText(publicLink || (jobEditForm.public_url as string) || ""); toast.success("Link copiado!") }} className="p-2 rounded-md bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover dark:hover:bg-lia-interactive-active transition-colors flex-shrink-0" title="Copiar link">
                     <Copy className="w-3.5 h-3.5" />
                   </button>
@@ -507,7 +507,7 @@ export function JobInfoGeralSection({
                 </div>
               </div>
             ) : (
-              <div className="flex items-center gap-2 text-xs text-lia-text-tertiary font-['Open_Sans',sans-serif]">
+              <div className="flex items-center gap-2 text-xs text-lia-text-tertiary">
                 <Link className="w-3.5 h-3.5" />
                 <span>Publique a vaga para gerar o link de candidatura</span>
               </div>

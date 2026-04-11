@@ -198,13 +198,13 @@ export function BatchReviewStep({
         <div className="grid grid-cols-4 gap-4 mb-8">
           <Card>
             <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold text-lia-text-primary mb-1">{selectedCount}</div>
+              <div className="text-2xl font-semibold text-lia-text-primary mb-1">{selectedCount}</div>
               <div className="text-sm text-lia-text-secondary">Candidatos Selecionados</div>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold text-status-success mb-1">
+              <div className="text-2xl font-semibold text-status-success mb-1">
                 {batchAction.type === 'approve' ? selectedCount : 0}
               </div>
               <div className="text-sm text-lia-text-secondary">Serão Aprovados</div>
@@ -212,7 +212,7 @@ export function BatchReviewStep({
           </Card>
           <Card>
             <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold text-status-error mb-1">
+              <div className="text-2xl font-semibold text-status-error mb-1">
                 {batchAction.type === 'reject' ? selectedCount : 0}
               </div>
               <div className="text-sm text-lia-text-secondary">Serão Rejeitados</div>
@@ -220,7 +220,7 @@ export function BatchReviewStep({
           </Card>
           <Card>
             <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold text-wedo-purple mb-1">
+              <div className="text-2xl font-semibold text-wedo-purple mb-1">
                 {batchAction.type === 'move' ? selectedCount : 0}
               </div>
               <div className="text-sm text-lia-text-secondary">Serão Movidos</div>

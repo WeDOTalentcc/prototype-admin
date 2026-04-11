@@ -35,10 +35,10 @@ export function ConfirmationCard({
           <ClipboardCheck className="w-5 h-5 text-lia-text-secondary" />
         </div>
         <div>
-          <h3 className="text-sm font-semibold text-lia-text-primary font-['Open_Sans',sans-serif]">
+          <h3 className="text-sm font-semibold text-lia-text-primary">
             Chegamos ao final!
           </h3>
-          <p className="text-xs text-lia-text-tertiary mt-1 font-['Open_Sans',sans-serif]">
+          <p className="text-xs text-lia-text-tertiary mt-1">
             Quer revisar algo antes de concluir?
           </p>
         </div>
@@ -56,7 +56,7 @@ export function ConfirmationCard({
           onClick={onReview}
           disabled={isSubmitting}
           aria-label="Quero revisar minhas respostas"
-          className="flex-1 h-10 flex items-center justify-center rounded-lg bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary text-sm font-medium border border-lia-border-default dark:border-lia-border-default hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-elevated disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 focus:outline-none font-['Open_Sans',sans-serif]"
+          className="flex-1 h-10 flex items-center justify-center rounded-lg bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary text-sm font-medium border border-lia-border-default dark:border-lia-border-default hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-elevated disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 focus:outline-none"
         >
           Quero revisar
         </button>
@@ -65,7 +65,7 @@ export function ConfirmationCard({
           onClick={onConfirm}
           disabled={isSubmitting}
           aria-label="Finalizar triagem"
-          className="flex-1 h-10 flex items-center justify-center rounded-lg bg-lia-btn-primary-bg text-lia-btn-primary-text text-sm font-medium hover:bg-lia-btn-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 focus:outline-none font-['Open_Sans',sans-serif]"
+          className="flex-1 h-10 flex items-center justify-center rounded-lg bg-lia-btn-primary-bg text-lia-btn-primary-text text-sm font-medium hover:bg-lia-btn-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 focus:outline-none"
         >
           {isSubmitting ? "Finalizando..." : "Finalizar Triagem"}
         </button>

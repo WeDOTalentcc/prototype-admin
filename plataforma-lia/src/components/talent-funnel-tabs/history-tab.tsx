@@ -169,7 +169,7 @@ export function HistoryTab({
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-semibold text-lia-text-primary font-['Open_Sans',sans-serif] flex items-center gap-2">
+          <h2 className="text-lg font-semibold text-lia-text-primary flex items-center gap-2">
             <Clock className="w-5 h-5 text-lia-text-secondary" />
             Histórico de Buscas
           </h2>

@@ -66,25 +66,25 @@ export function BatchCompleteStep({ results, onApprovalComplete, onClose }: Batc
         <div className="grid grid-cols-4 gap-4 mb-8">
           <Card>
             <CardContent className="p-6 text-center">
-              <div className="text-3xl font-bold text-lia-text-primary mb-2">{results.total}</div>
+              <div className="text-3xl font-semibold text-lia-text-primary mb-2">{results.total}</div>
               <div className="text-sm text-lia-text-secondary">Total Processados</div>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-6 text-center">
-              <div className="text-3xl font-bold text-status-success mb-2">{results.approved}</div>
+              <div className="text-3xl font-semibold text-status-success mb-2">{results.approved}</div>
               <div className="text-sm text-lia-text-secondary">Aprovados</div>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-6 text-center">
-              <div className="text-3xl font-bold text-status-error mb-2">{results.rejected}</div>
+              <div className="text-3xl font-semibold text-status-error mb-2">{results.rejected}</div>
               <div className="text-sm text-lia-text-secondary">Rejeitados</div>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-6 text-center">
-              <div className="text-3xl font-bold text-wedo-purple mb-2">{results.moved}</div>
+              <div className="text-3xl font-semibold text-wedo-purple mb-2">{results.moved}</div>
               <div className="text-sm text-lia-text-secondary">Movidos</div>
             </CardContent>
           </Card>

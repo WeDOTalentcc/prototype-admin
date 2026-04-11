@@ -66,7 +66,7 @@ export default function RegisterPage() {
           <div className="w-16 h-16 bg-status-success/15 rounded-full flex items-center justify-center mx-auto mb-6">
             <CheckCircle className="w-8 h-8 text-status-success" />
           </div>
-          <h2 className="text-2xl font-bold text-lia-text-primary dark:text-lia-text-primary mb-3">Conta criada com sucesso!</h2>
+          <h2 className="text-2xl font-semibold text-lia-text-primary dark:text-lia-text-primary mb-3">Conta criada com sucesso!</h2>
           <p className="text-lia-text-secondary mb-6">
             Enviamos um email de verificação para <strong>{email}</strong>. 
             Por favor, verifique sua caixa de entrada e clique no link para ativar sua conta.
@@ -93,7 +93,7 @@ export default function RegisterPage() {
         </div>
         
         <div className="max-w-md text-center">
-          <h1 className="text-5xl font-bold text-white leading-tight mb-6">
+          <h1 className="text-5xl font-semibold text-white leading-tight mb-6">
             Junte-se à LIA
           </h1>
           <p className="text-xl text-lia-text-disabled leading-relaxed mb-8">
@@ -125,7 +125,7 @@ export default function RegisterPage() {
                   <WeDOLogo className="h-4 text-white" />
                 </div>
               </div>
-              <h2 className="text-3xl font-bold text-lia-text-primary dark:text-lia-text-primary mb-3">Criar Conta</h2>
+              <h2 className="text-3xl font-semibold text-lia-text-primary dark:text-lia-text-primary mb-3">Criar Conta</h2>
               <p className="text-lia-text-secondary text-base leading-relaxed">
                 Preencha seus dados para começar a usar a LIA.
               </p>

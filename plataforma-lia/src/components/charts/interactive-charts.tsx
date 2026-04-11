@@ -626,7 +626,7 @@ export function PredictiveAnalyticsChart() {
               <TrendingUp className="w-5 h-5 text-status-success" />
               <div>
                 <p className="text-sm font-medium text-status-success">Tendência Positiva</p>
-                <p className="text-lg font-bold text-status-success">+24%</p>
+                <p className="text-lg font-semibold text-status-success">+24%</p>
                 <p className="text-xs text-status-success">Próximos 3 meses</p>
               </div>
             </div>
@@ -639,7 +639,7 @@ export function PredictiveAnalyticsChart() {
               <Target className="w-5 h-5 text-lia-text-secondary" />
               <div>
                 <p className="text-sm font-medium text-lia-text-secondary">Precisão Modelo</p>
-                <p className="text-lg font-bold text-lia-text-primary">92.4%</p>
+                <p className="text-lg font-semibold text-lia-text-primary">92.4%</p>
                 <p className="text-xs text-lia-text-secondary">Últimos 6 meses</p>
               </div>
             </div>
@@ -652,7 +652,7 @@ export function PredictiveAnalyticsChart() {
               <AlertCircle className="w-5 h-5 text-wedo-orange" />
               <div>
                 <p className="text-sm font-medium text-wedo-orange">Atenção Necessária</p>
-                <p className="text-lg font-bold text-wedo-orange">Tech</p>
+                <p className="text-lg font-semibold text-wedo-orange">Tech</p>
                 <p className="text-xs text-wedo-orange">Demanda crescente</p>
               </div>
             </div>

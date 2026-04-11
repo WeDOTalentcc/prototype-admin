@@ -36,7 +36,7 @@ export function FairnessWarningBanner({ warnings, onDismiss }: Props) {
       <div className="flex items-start gap-2">
         <Shield className={`w-4 h-4 ${iconColor} flex-shrink-0 mt-0.5`} />
         <div className="flex-1 min-w-0">
-          <p className={`text-xs font-medium ${iconColor} font-['Open_Sans',sans-serif] mb-1`}>
+          <p className={`text-xs font-medium ${iconColor} mb-1`}>
             {hasError ? "Alerta de compliance" : "Correcoes de fairness aplicadas"}
           </p>
           <ul className="space-y-0.5">
@@ -47,7 +47,7 @@ export function FairnessWarningBanner({ warnings, onDismiss }: Props) {
                 ) : (
                   <span className="w-1 h-1 rounded-full bg-status-warning flex-shrink-0 mt-1.5" />
                 )}
-                <span className="text-xs text-lia-text-secondary font-['Open_Sans',sans-serif]">
+                <span className="text-xs text-lia-text-secondary">
                   {w.message}
                 </span>
               </li>

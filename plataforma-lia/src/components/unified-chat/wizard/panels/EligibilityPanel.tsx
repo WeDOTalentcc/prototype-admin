@@ -55,7 +55,7 @@ export function EligibilityPanel({ data, onUpdate }: Props) {
     <div className="px-4 py-3 space-y-3">
       <div className="flex items-center gap-1.5">
         <ShieldCheck className="w-4 h-4 text-wedo-cyan" />
-        <span className="text-xs font-medium text-lia-text-secondary font-['Open_Sans',sans-serif]">
+        <span className="text-xs font-medium text-lia-text-secondary">
           Perguntas eliminatorias ({questions.length})
         </span>
       </div>
@@ -73,7 +73,7 @@ export function EligibilityPanel({ data, onUpdate }: Props) {
                       type="text"
                       value={editText}
                       onChange={(e) => setEditText(e.target.value)}
-                      className="flex-1 text-sm bg-lia-bg-secondary rounded px-2 py-1 text-lia-text-primary font-['Open_Sans',sans-serif] border border-lia-border-subtle focus:border-wedo-cyan outline-none"
+                      className="flex-1 text-sm bg-lia-bg-secondary rounded px-2 py-1 text-lia-text-primary border border-lia-border-subtle focus:border-wedo-cyan outline-none"
                       autoFocus
                       onKeyDown={(e) => e.key === "Enter" && handleEditSave()}
                     />
@@ -86,8 +86,8 @@ export function EligibilityPanel({ data, onUpdate }: Props) {
                   </div>
                 ) : (
                   <>
-                    <p className="text-sm text-lia-text-primary font-['Open_Sans',sans-serif]">{q.question}</p>
-                    <p className="text-[10px] text-lia-text-tertiary font-['Open_Sans',sans-serif] mt-0.5">
+                    <p className="text-sm text-lia-text-primary">{q.question}</p>
+                    <p className="text-[10px] text-lia-text-tertiary mt-0.5">
                       Resposta obrigatoria: {q.required_answer === "yes" ? "Sim" : "Nao"}
                     </p>
                   </>
@@ -115,7 +115,7 @@ export function EligibilityPanel({ data, onUpdate }: Props) {
       )}
 
       {questions.length === 0 && (
-        <p className="text-xs text-lia-text-tertiary font-['Open_Sans',sans-serif]">
+        <p className="text-xs text-lia-text-tertiary">
           Nenhuma pergunta eliminatoria configurada.
         </p>
       )}
@@ -127,7 +127,7 @@ export function EligibilityPanel({ data, onUpdate }: Props) {
           value={newQuestion}
           onChange={(e) => setNewQuestion(e.target.value)}
           placeholder="Nova pergunta eliminatoria..."
-          className="flex-1 text-xs bg-lia-bg-secondary rounded-md px-3 py-2 text-lia-text-primary font-['Open_Sans',sans-serif] border border-lia-border-subtle focus:border-wedo-cyan outline-none placeholder:text-lia-text-disabled"
+          className="flex-1 text-xs bg-lia-bg-secondary rounded-md px-3 py-2 text-lia-text-primary border border-lia-border-subtle focus:border-wedo-cyan outline-none placeholder:text-lia-text-disabled"
           onKeyDown={(e) => e.key === "Enter" && handleAdd()}
         />
         <button

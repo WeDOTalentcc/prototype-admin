@@ -139,7 +139,7 @@ export function CreditCostDisplay({
             </div>
             <div className="flex items-center justify-between mt-1">
               <span>Total ({limit} candidatos)</span>
-              <span className={`font-bold text-lg ${costColor}`}>
+              <span className={`font-semibold text-lg ${costColor}`}>
                 {estimate.total_estimated} creditos
               </span>
             </div>

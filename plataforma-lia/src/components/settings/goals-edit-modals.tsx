@@ -148,7 +148,7 @@ export function GoalsEditTemplateModal({
               type="text"
               value={editingTemplate.name}
               onChange={(e) => setEditingTemplate(prev => prev ? { ...prev, name: e.target.value } : null)}
-              className="w-full px-2.5 py-1.5 border border-lia-border-subtle rounded-xl text-xs font-['Open_Sans',sans-serif]"
+              className="w-full px-2.5 py-1.5 border border-lia-border-subtle rounded-xl text-xs"
             />
           </div>
 
@@ -158,7 +158,7 @@ export function GoalsEditTemplateModal({
               type="text"
               value={editingTemplate.description}
               onChange={(e) => setEditingTemplate(prev => prev ? { ...prev, description: e.target.value } : null)}
-              className="w-full px-2.5 py-1.5 border border-lia-border-subtle rounded-xl text-xs font-['Open_Sans',sans-serif]"
+              className="w-full px-2.5 py-1.5 border border-lia-border-subtle rounded-xl text-xs"
             />
           </div>
 
@@ -169,7 +169,7 @@ export function GoalsEditTemplateModal({
                 type="number"
                 value={editingTemplate.defaultTarget}
                 onChange={(e) => setEditingTemplate(prev => prev ? { ...prev, defaultTarget: parseFloat(e.target.value) || 0 } : null)}
-                className="w-full px-2.5 py-1.5 border border-lia-border-subtle rounded-xl text-xs font-['Open_Sans',sans-serif]"
+                className="w-full px-2.5 py-1.5 border border-lia-border-subtle rounded-xl text-xs"
               />
             </div>
             <div>
@@ -178,7 +178,7 @@ export function GoalsEditTemplateModal({
                 type="text"
                 value={editingTemplate.unit}
                 onChange={(e) => setEditingTemplate(prev => prev ? { ...prev, unit: e.target.value } : null)}
-                className="w-full px-2.5 py-1.5 border border-lia-border-subtle rounded-xl text-xs font-['Open_Sans',sans-serif]"
+                className="w-full px-2.5 py-1.5 border border-lia-border-subtle rounded-xl text-xs"
               />
             </div>
           </div>
@@ -189,7 +189,7 @@ export function GoalsEditTemplateModal({
               <select
                 value={editingTemplate.period}
                 onChange={(e) => setEditingTemplate(prev => prev ? { ...prev, period: e.target.value as GoalTemplate['period'] } : null)}
-                className="w-full px-2.5 py-1.5 border border-lia-border-subtle rounded-xl text-xs font-['Open_Sans',sans-serif]"
+                className="w-full px-2.5 py-1.5 border border-lia-border-subtle rounded-xl text-xs"
               >
                 <option value="monthly">Mensal</option>
                 <option value="quarterly">Trimestral</option>
@@ -201,7 +201,7 @@ export function GoalsEditTemplateModal({
               <select
                 value={editingTemplate.category}
                 onChange={(e) => setEditingTemplate(prev => prev ? { ...prev, category: e.target.value as GoalTemplate['category'] } : null)}
-                className="w-full px-2.5 py-1.5 border border-lia-border-subtle rounded-xl text-xs font-['Open_Sans',sans-serif]"
+                className="w-full px-2.5 py-1.5 border border-lia-border-subtle rounded-xl text-xs"
               >
                 <option value="recruitment">Recrutamento</option>
                 <option value="quality">Qualidade</option>
@@ -216,7 +216,7 @@ export function GoalsEditTemplateModal({
               variant="outline" 
               size="sm"
               onClick={() => setEditingTemplate(null)}
-              className="text-xs h-8 font-['Open_Sans',sans-serif]"
+              className="text-xs h-8"
             >
               Cancelar
             </Button>
@@ -238,7 +238,7 @@ export function GoalsEditTemplateModal({
                   setEditingTemplate(null)
                 }
               }}
-              className="text-xs h-8 font-['Open_Sans',sans-serif] bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
+              className="text-xs h-8 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
             >
               <Save className="w-3 h-3 mr-1.5" />
               Salvar Alterações

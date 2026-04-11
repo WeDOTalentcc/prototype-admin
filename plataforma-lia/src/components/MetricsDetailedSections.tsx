@@ -161,9 +161,9 @@ export function MetricsDetailedSections({
             <div className="flex items-center justify-between">
               <div>
                 <div className="text-xs text-lia-text-secondary mb-1">Score Médio LIA</div>
-                <div className="text-3xl font-bold text-lia-text-primary">{avgLiaScore.toFixed(1)}</div>
+                <div className="text-3xl font-semibold text-lia-text-primary">{avgLiaScore.toFixed(1)}</div>
               </div>
-              <div className="w-16 h-16 rounded-full bg-wedo-cyan flex items-center justify-center text-white text-xl font-bold">
+              <div className="w-16 h-16 rounded-full bg-wedo-cyan flex items-center justify-center text-white text-xl font-semibold">
                 {(avgLiaScore * 10).toFixed(0)}
               </div>
             </div>
@@ -177,9 +177,9 @@ export function MetricsDetailedSections({
             <div className="flex items-center justify-between">
               <div>
                 <div className="text-xs text-lia-text-secondary mb-1">Match Médio de Skills</div>
-                <div className="text-3xl font-bold text-lia-text-primary">{avgSkillsMatch.toFixed(0)}%</div>
+                <div className="text-3xl font-semibold text-lia-text-primary">{avgSkillsMatch.toFixed(0)}%</div>
               </div>
-              <div className="w-16 h-16 rounded-full bg-wedo-green flex items-center justify-center text-white text-xl font-bold">
+              <div className="w-16 h-16 rounded-full bg-wedo-green flex items-center justify-center text-white text-xl font-semibold">
                 {avgSkillsMatch.toFixed(0)}
               </div>
             </div>
@@ -219,25 +219,25 @@ export function MetricsDetailedSections({
             <div className="grid grid-cols-4 gap-4 mb-4">
               <div className="p-3 bg-lia-bg-tertiary rounded-xl">
                 <div className="flex items-center justify-between mb-2"><Timer className="w-5 h-5 text-lia-text-secondary" /><Badge className="bg-status-success text-white text-xs">✓ No Prazo</Badge></div>
-                <div className="text-2xl font-bold text-lia-text-primary">{avgTimeContact.toFixed(1)}d</div>
+                <div className="text-2xl font-semibold text-lia-text-primary">{avgTimeContact.toFixed(1)}d</div>
                 <div className="text-xs text-lia-text-secondary mt-1">Contato Inicial</div>
                 <div className="text-xs text-lia-text-secondary mt-1">SLA: 2 dias</div>
               </div>
               <div className="p-3 bg-status-success/10 dark:bg-lia-bg-secondary rounded-xl">
                 <div className="flex items-center justify-between mb-2"><Timer className="w-5 h-5 text-status-success" /><Badge className="bg-status-success text-white text-xs">✓ No Prazo</Badge></div>
-                <div className="text-2xl font-bold text-lia-text-primary">{avgTimeTriage.toFixed(1)}d</div>
+                <div className="text-2xl font-semibold text-lia-text-primary">{avgTimeTriage.toFixed(1)}d</div>
                 <div className="text-xs text-lia-text-secondary mt-1">Triagem Completa</div>
                 <div className="text-xs text-lia-text-secondary mt-1">SLA: 3 dias</div>
               </div>
               <div className="p-3 bg-status-warning/10 dark:bg-lia-bg-secondary rounded-xl">
                 <div className="flex items-center justify-between mb-2"><Timer className="w-5 h-5 text-status-warning" /><Badge className="bg-status-warning text-white text-xs">⚠ Atenção</Badge></div>
-                <div className="text-2xl font-bold text-lia-text-primary">{avgTimeInterview.toFixed(1)}d</div>
+                <div className="text-2xl font-semibold text-lia-text-primary">{avgTimeInterview.toFixed(1)}d</div>
                 <div className="text-xs text-lia-text-secondary mt-1">Agendamento</div>
                 <div className="text-xs text-lia-text-secondary mt-1">SLA: 5 dias</div>
               </div>
               <div className="p-3 bg-wedo-purple/10 dark:bg-lia-bg-secondary rounded-xl">
                 <div className="flex items-center justify-between mb-2"><Clock className="w-5 h-5 text-wedo-purple" /><Badge className="bg-lia-btn-primary-bg text-lia-btn-primary-text text-xs">Total</Badge></div>
-                <div className="text-2xl font-bold text-lia-text-primary">{avgTimeTotal.toFixed(1)}d</div>
+                <div className="text-2xl font-semibold text-lia-text-primary">{avgTimeTotal.toFixed(1)}d</div>
                 <div className="text-xs text-lia-text-secondary mt-1">Tempo Total</div>
                 <div className="text-xs text-lia-text-secondary mt-1">Contato → Entrevista</div>
               </div>
@@ -249,7 +249,7 @@ export function MetricsDetailedSections({
                   <div className="w-12 h-12 bg-lia-border-medium rounded-md flex items-center justify-center"><Award className="w-6 h-6 text-white" /></div>
                   <div>
                     <div className="text-xs text-lia-text-secondary mb-1">Tempo Médio até Contratação</div>
-                    <div className="text-3xl font-bold text-lia-text-primary">{(avgTimeTotal + 7).toFixed(0)} dias</div>
+                    <div className="text-3xl font-semibold text-lia-text-primary">{(avgTimeTotal + 7).toFixed(0)} dias</div>
                   </div>
                 </div>
                 <div className="text-right">
@@ -274,21 +274,21 @@ export function MetricsDetailedSections({
                 <div className="text-xs text-lia-text-secondary mb-2">Mais Rápido</div>
                 <div className="flex items-center gap-2">
                   <CheckCircle className="w-4 h-4 text-status-success" />
-                  <div><div className="text-lg font-bold text-lia-text-primary">{(avgTimeTotal * 0.6).toFixed(1)}d</div><div className="text-xs text-lia-text-secondary">Melhor caso</div></div>
+                  <div><div className="text-lg font-semibold text-lia-text-primary">{(avgTimeTotal * 0.6).toFixed(1)}d</div><div className="text-xs text-lia-text-secondary">Melhor caso</div></div>
                 </div>
               </div>
               <div className="p-3 bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-xl">
                 <div className="text-xs text-lia-text-secondary mb-2">Médio</div>
                 <div className="flex items-center gap-2">
                   <Target className="w-4 h-4 text-lia-text-secondary" />
-                  <div><div className="text-lg font-bold text-lia-text-primary">{avgTimeTotal.toFixed(1)}d</div><div className="text-xs text-lia-text-secondary">Caso típico</div></div>
+                  <div><div className="text-lg font-semibold text-lia-text-primary">{avgTimeTotal.toFixed(1)}d</div><div className="text-xs text-lia-text-secondary">Caso típico</div></div>
                 </div>
               </div>
               <div className="p-3 bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-xl">
                 <div className="text-xs text-lia-text-secondary mb-2">Mais Lento</div>
                 <div className="flex items-center gap-2">
                   <AlertCircle className="w-4 h-4 text-wedo-orange" />
-                  <div><div className="text-lg font-bold text-lia-text-primary">{(avgTimeTotal * 1.8).toFixed(1)}d</div><div className="text-xs text-lia-text-secondary">Pior caso</div></div>
+                  <div><div className="text-lg font-semibold text-lia-text-primary">{(avgTimeTotal * 1.8).toFixed(1)}d</div><div className="text-xs text-lia-text-secondary">Pior caso</div></div>
                 </div>
               </div>
             </div>

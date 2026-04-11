@@ -39,11 +39,11 @@ export function CalibrationPanel({ data, onApprove, onReject }: Props) {
       {/* Progress header */}
       <div className="px-4 py-2.5">
         <div className="flex items-center justify-between">
-          <span className="text-xs text-lia-text-secondary font-['Open_Sans',sans-serif]">
+          <span className="text-xs text-lia-text-secondary">
             Calibracao: {approvedCount}/{threshold} perfis
           </span>
           {d.complete && (
-            <span className="px-2 py-0.5 rounded bg-status-success/10 text-status-success text-[10px] font-medium font-['Open_Sans',sans-serif]">
+            <span className="px-2 py-0.5 rounded bg-status-success/10 text-status-success text-[10px] font-medium">
               Completa
             </span>
           )}
@@ -59,7 +59,7 @@ export function CalibrationPanel({ data, onApprove, onReject }: Props) {
           />
         </div>
         {!canAdvance && (
-          <p className="text-[10px] text-status-warning font-['Open_Sans',sans-serif] mt-1">
+          <p className="text-[10px] text-status-warning mt-1">
             Avalie pelo menos {threshold} perfis para continuar
           </p>
         )}
@@ -78,7 +78,7 @@ export function CalibrationPanel({ data, onApprove, onReject }: Props) {
         {candidates.length === 0 && (
           <div className="text-center py-4">
             <div className="w-5 h-5 mx-auto mb-2 border-2 border-wedo-cyan border-t-transparent rounded-full animate-spin" />
-            <p className="text-xs text-lia-text-tertiary font-['Open_Sans',sans-serif]">
+            <p className="text-xs text-lia-text-tertiary">
               Aguardando candidatos para calibracao...
             </p>
           </div>
@@ -92,7 +92,7 @@ export function CalibrationPanel({ data, onApprove, onReject }: Props) {
             onClick={onApprove}
             disabled={!canAdvance}
             className={cn(
-              "w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-md text-sm font-medium transition-colors font-['Open_Sans',sans-serif]",
+              "w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-md text-sm font-medium transition-colors",
               canAdvance
                 ? "bg-wedo-cyan text-white hover:bg-wedo-cyan/90"
                 : "bg-lia-bg-tertiary text-lia-text-disabled cursor-not-allowed"
@@ -128,15 +128,15 @@ function CandidateCard({
           <User className="w-4 h-4 text-lia-text-disabled" />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-lia-text-primary font-['Open_Sans',sans-serif] truncate">
+          <p className="text-sm font-medium text-lia-text-primary truncate">
             {candidate.name}
           </p>
-          <p className="text-xs text-lia-text-secondary font-['Open_Sans',sans-serif] truncate">
+          <p className="text-xs text-lia-text-secondary truncate">
             {candidate.current_title} @ {candidate.current_company}
           </p>
           <div className="flex items-center gap-1.5 mt-1">
             <Target className="w-3 h-3 text-wedo-cyan" />
-            <span className="text-[10px] text-wedo-cyan font-medium font-['Open_Sans',sans-serif]">
+            <span className="text-[10px] text-wedo-cyan font-medium">
               Match: {Math.round(candidate.match_score * 100)}%
             </span>
           </div>
@@ -158,7 +158,7 @@ function CandidateCard({
             <span
               key={i}
               className={cn(
-                "px-1.5 py-0.5 rounded text-[10px] font-['Open_Sans',sans-serif]",
+                "px-1.5 py-0.5 rounded text-[10px]",
                 mc.met ? "bg-status-success/10 text-status-success" : "bg-status-error/10 text-status-error",
               )}
             >
@@ -173,7 +173,7 @@ function CandidateCard({
         <div className="flex border-t border-lia-border-subtle">
           <button
             onClick={() => onRejectCandidate(candidate.id)}
-            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium text-status-error hover:bg-status-error/5 transition-colors font-['Open_Sans',sans-serif]"
+            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium text-status-error hover:bg-status-error/5 transition-colors"
           >
             <ThumbsDown className="w-3.5 h-3.5" />
             Rejeitar
@@ -181,7 +181,7 @@ function CandidateCard({
           <div className="w-px bg-lia-border-subtle" />
           <button
             onClick={() => onApproveCandidate(candidate.id)}
-            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium text-status-success hover:bg-status-success/5 transition-colors font-['Open_Sans',sans-serif]"
+            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium text-status-success hover:bg-status-success/5 transition-colors"
           >
             <ThumbsUp className="w-3.5 h-3.5" />
             Aprovar

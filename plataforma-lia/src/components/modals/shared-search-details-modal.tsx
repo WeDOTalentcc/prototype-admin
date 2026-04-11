@@ -334,22 +334,22 @@ const [sharedSearch, setSharedSearch] = useState<SharedSearchDetail | null>(null
                 <div className="grid grid-cols-4 gap-3">
                   <div className="bg-lia-bg-tertiary dark:bg-lia-btn-primary-bg rounded-xl p-4 border border-lia-border-default text-center">
                     <div className="text-2xl mb-1">👍</div>
-                    <p className="text-2xl font-bold text-status-success">{feedbackCounts.approved}</p>
+                    <p className="text-2xl font-semibold text-status-success">{feedbackCounts.approved}</p>
                     <p className="text-xs text-lia-text-tertiary">Interessados</p>
                   </div>
                   <div className="bg-lia-bg-tertiary dark:bg-lia-btn-primary-bg rounded-xl p-4 border border-lia-border-default text-center">
                     <div className="text-2xl mb-1">🤔</div>
-                    <p className="text-2xl font-bold text-status-warning">{feedbackCounts.maybe}</p>
+                    <p className="text-2xl font-semibold text-status-warning">{feedbackCounts.maybe}</p>
                     <p className="text-xs text-lia-text-tertiary">Talvez</p>
                   </div>
                   <div className="bg-lia-bg-tertiary dark:bg-lia-btn-primary-bg rounded-xl p-4 border border-lia-border-default text-center">
                     <div className="text-2xl mb-1">👎</div>
-                    <p className="text-2xl font-bold text-status-error">{feedbackCounts.rejected}</p>
+                    <p className="text-2xl font-semibold text-status-error">{feedbackCounts.rejected}</p>
                     <p className="text-xs text-lia-text-tertiary">Não Interessados</p>
                   </div>
                   <div className="bg-lia-bg-tertiary dark:bg-lia-btn-primary-bg rounded-xl p-4 border border-lia-border-default text-center">
                     <div className="text-2xl mb-1">⏳</div>
-                    <p className="text-2xl font-bold text-lia-text-tertiary">{feedbackCounts.pending}</p>
+                    <p className="text-2xl font-semibold text-lia-text-tertiary">{feedbackCounts.pending}</p>
                     <p className="text-xs text-lia-text-tertiary">Pendentes</p>
                   </div>
                 </div>

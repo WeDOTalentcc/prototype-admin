@@ -93,12 +93,12 @@ export function SmartSuggestions({ contextPage, mode, onSuggestionClick }: Props
           <Sparkles className="w-5 h-5 text-wedo-cyan" />
         </div>
         <h3 className={cn(
-          "font-semibold text-lia-text-primary font-['Open_Sans',sans-serif]",
+          "font-semibold text-lia-text-primary",
           isCompact ? "text-sm" : "text-lg",
         )}>
           {getGreeting()}! Sou a LIA.
         </h3>
-        <p className="text-xs text-lia-text-secondary font-['Open_Sans',sans-serif] mt-1">
+        <p className="text-xs text-lia-text-secondary mt-1">
           Como posso ajudar no recrutamento hoje?
         </p>
       </div>
@@ -118,7 +118,7 @@ export function SmartSuggestions({ contextPage, mode, onSuggestionClick }: Props
             >
               <Icon className="w-4 h-4 text-lia-text-disabled group-hover:text-wedo-cyan flex-shrink-0 mt-0.5 transition-colors" />
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-lia-text-primary font-['Open_Sans',sans-serif]">
+                <p className="text-sm font-medium text-lia-text-primary">
                   {s.label}
                 </p>
               </div>
@@ -128,7 +128,7 @@ export function SmartSuggestions({ contextPage, mode, onSuggestionClick }: Props
       </div>
 
       {/* Progressive disclosure hint */}
-      <p className="text-[10px] text-lia-text-tertiary font-['Open_Sans',sans-serif] mt-4">
+      <p className="text-[10px] text-lia-text-tertiary mt-4">
         Digite /ajuda para ver todas as funcionalidades
       </p>
     </div>

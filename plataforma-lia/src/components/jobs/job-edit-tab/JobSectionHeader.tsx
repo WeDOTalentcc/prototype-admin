@@ -40,7 +40,7 @@ export function JobSectionHeader({
         </div>
       </div>
       <div className="flex items-center gap-3">
-        <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-lia-bg-tertiary text-lia-text-primary font-['Open_Sans',sans-serif]">
+        <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-lia-bg-tertiary text-lia-text-primary">
           {filled} de {total} campos
         </span>
         {isCreationMode ? (

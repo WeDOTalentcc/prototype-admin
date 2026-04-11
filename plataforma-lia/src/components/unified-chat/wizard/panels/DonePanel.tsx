@@ -17,7 +17,7 @@ export function DonePanel({ data }: Props) {
   const jobTitle = data.job_title as string | null
 
   return (
-    <div className="p-4 space-y-5 font-['Open_Sans',sans-serif]">
+    <div className="p-4 space-y-5">
       {/* Success icon */}
       <div className="flex flex-col items-center gap-3 py-4">
         <div className="w-12 h-12 rounded-full bg-status-success/10 flex items-center justify-center">

@@ -36,11 +36,11 @@ export function SalaryPanel({ data, onUpdate }: Props) {
       <div>
         <div className="flex items-center gap-1.5 mb-2">
           <DollarSign className="w-4 h-4 text-wedo-cyan" />
-          <span className="text-xs font-medium text-lia-text-secondary font-['Open_Sans',sans-serif]">Faixa salarial</span>
+          <span className="text-xs font-medium text-lia-text-secondary">Faixa salarial</span>
         </div>
 
         {/* Range display */}
-        <div className="flex items-center gap-3 text-sm font-['Open_Sans',sans-serif] mb-3">
+        <div className="flex items-center gap-3 text-sm mb-3">
           <span className="text-lia-text-primary">{fmt(min || d.salary_min)}</span>
           <span className="text-lia-text-disabled">—</span>
           <span className="text-lia-text-primary">{fmt(max || d.salary_max)}</span>
@@ -49,7 +49,7 @@ export function SalaryPanel({ data, onUpdate }: Props) {
         {/* Range sliders */}
         <div className="space-y-3">
           <div>
-            <label className="text-[10px] text-lia-text-tertiary font-['Open_Sans',sans-serif]">Minimo</label>
+            <label className="text-[10px] text-lia-text-tertiary">Minimo</label>
             <input
               type="range"
               min={0}
@@ -61,7 +61,7 @@ export function SalaryPanel({ data, onUpdate }: Props) {
             />
           </div>
           <div>
-            <label className="text-[10px] text-lia-text-tertiary font-['Open_Sans',sans-serif]">Maximo</label>
+            <label className="text-[10px] text-lia-text-tertiary">Maximo</label>
             <input
               type="range"
               min={0}
@@ -78,10 +78,10 @@ export function SalaryPanel({ data, onUpdate }: Props) {
       {/* Benchmark */}
       {d.benchmark && (
         <div className="p-2.5 rounded-xl bg-wedo-cyan/5 border border-wedo-cyan/20">
-          <p className="text-[10px] font-medium text-wedo-cyan font-['Open_Sans',sans-serif]">Benchmark de mercado</p>
+          <p className="text-[10px] font-medium text-wedo-cyan">Benchmark de mercado</p>
           <div className="mt-1 space-y-0.5">
             {Object.entries(d.benchmark).map(([key, val]) => (
-              <div key={key} className="flex items-center justify-between text-xs font-['Open_Sans',sans-serif]">
+              <div key={key} className="flex items-center justify-between text-xs">
                 <span className="text-lia-text-secondary capitalize">{key.replace(/_/g, " ")}</span>
                 <span className="text-lia-text-primary font-medium">
                   {typeof val === "number" ? `${currency} ${val.toLocaleString("pt-BR")}` : String(val)}
@@ -96,11 +96,11 @@ export function SalaryPanel({ data, onUpdate }: Props) {
         <div>
           <div className="flex items-center gap-1.5 mb-1.5">
             <Gift className="w-4 h-4 text-wedo-cyan" />
-            <span className="text-xs font-medium text-lia-text-secondary font-['Open_Sans',sans-serif]">Beneficios</span>
+            <span className="text-xs font-medium text-lia-text-secondary">Beneficios</span>
           </div>
           <div className="flex flex-wrap gap-1.5">
             {d.benefits.map((b, i) => (
-              <span key={i} className="px-2 py-0.5 rounded bg-lia-bg-secondary border border-lia-border-subtle text-xs text-lia-text-primary font-['Open_Sans',sans-serif]">
+              <span key={i} className="px-2 py-0.5 rounded bg-lia-bg-secondary border border-lia-border-subtle text-xs text-lia-text-primary">
                 {b}
               </span>
             ))}

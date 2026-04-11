@@ -90,7 +90,7 @@ export function RecruitersTab({
                 <p className="text-sm text-lia-text-secondary font-medium">
                   Total Recrutadores
                 </p>
-                <p className="text-2xl font-bold text-lia-text-primary">
+                <p className="text-2xl font-semibold text-lia-text-primary">
                   {teamMetrics.totalRecruiters}
                 </p>
               </div>
@@ -108,7 +108,7 @@ export function RecruitersTab({
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-status-success font-medium">Contratações Total</p>
-                <p className="text-2xl font-bold text-status-success">{teamMetrics.totalHires}</p>
+                <p className="text-2xl font-semibold text-status-success">{teamMetrics.totalHires}</p>
               </div>
               <UserCheck className="w-8 h-8 text-status-success" />
             </div>
@@ -124,7 +124,7 @@ export function RecruitersTab({
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-wedo-purple font-medium">NPS Médio</p>
-                <p className="text-2xl font-bold text-wedo-purple">{teamMetrics.avgNPS}%</p>
+                <p className="text-2xl font-semibold text-wedo-purple">{teamMetrics.avgNPS}%</p>
               </div>
               <Trophy className="w-8 h-8 text-wedo-purple" />
             </div>
@@ -140,7 +140,7 @@ export function RecruitersTab({
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-wedo-orange font-medium">Time to Fill Médio</p>
-                <p className="text-2xl font-bold text-wedo-orange">{teamMetrics.avgTimeToFill}d</p>
+                <p className="text-2xl font-semibold text-wedo-orange">{teamMetrics.avgTimeToFill}d</p>
               </div>
               <Clock className="w-8 h-8 text-wedo-orange" />
             </div>
@@ -184,17 +184,17 @@ export function RecruitersTab({
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="text-center p-4 bg-status-error/10 rounded-xl">
-              <div className="text-2xl font-bold text-status-error">2</div>
+              <div className="text-2xl font-semibold text-status-error">2</div>
               <div className="text-sm text-status-error">Alertas Críticos</div>
               <div className="text-xs text-status-error mt-1">Time to Fill &gt; 45 dias</div>
             </div>
             <div className="text-center p-4 bg-status-warning/10 rounded-xl">
-              <div className="text-2xl font-bold text-status-warning">5</div>
+              <div className="text-2xl font-semibold text-status-warning">5</div>
               <div className="text-sm text-status-warning">Avisos</div>
               <div className="text-xs text-status-warning mt-1">NPS abaixo da meta</div>
             </div>
             <div className="text-center p-4 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-xl">
-              <div className="text-2xl font-bold text-lia-text-primary">
+              <div className="text-2xl font-semibold text-lia-text-primary">
                 12
               </div>
               <div className="text-sm text-lia-text-secondary">

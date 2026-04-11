@@ -121,7 +121,7 @@ export function WorkModelCharts({ className }: WorkModelChartsProps) {
           {/* Centro do donut */}
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="text-center">
-              <div className="text-2xl font-bold text-lia-text-primary">
+              <div className="text-2xl font-semibold text-lia-text-primary">
                 {total}
               </div>
               <div className="text-xs text-lia-text-primary">
@@ -309,7 +309,7 @@ export function WorkModelCharts({ className }: WorkModelChartsProps) {
               key={(region as Record<string, unknown>).name as string || (region as Record<string, unknown>).region as string}
               className={`p-4 rounded-md text-white text-center transition-transform motion-reduce:transition-none duration-300 hover:scale-105 ${getDensityColor(region.densidade)}`}
             >
-              <div className="font-bold text-lg">{region.regiao}</div>
+              <div className="font-semibold text-lg">{region.regiao}</div>
               <div className="text-sm opacity-90">{region.total} candidatos</div>
               <div className="text-xs opacity-75 capitalize">{region.densidade} densidade</div>
             </div>

@@ -64,7 +64,7 @@ export function RubricOverviewSection({
               style={{width: `${score}%`, backgroundColor: getScoreColor(score)}}
             />
           </div>
-          <span className="text-xl font-bold min-w-[55px] text-right text-lia-text-primary">
+          <span className="text-xl font-semibold min-w-[55px] text-right text-lia-text-primary">
             {score}%
           </span>
         </div>

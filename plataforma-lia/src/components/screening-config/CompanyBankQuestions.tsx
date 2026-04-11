@@ -102,7 +102,7 @@ export function CompanyBankQuestions({ isEditing, selectedQuestions, questionOve
       >
         <div className="flex items-center gap-2">
           <Building2 className="w-4 h-4 text-lia-text-tertiary" />
-          <span className="font-['Open_Sans',sans-serif] text-xs uppercase tracking-wider font-semibold text-lia-text-tertiary">
+          <span className="text-xs uppercase tracking-wider font-semibold text-lia-text-tertiary">
             Banco da Empresa
           </span>
           {selectedCount > 0 && (
@@ -135,10 +135,10 @@ export function CompanyBankQuestions({ isEditing, selectedQuestions, questionOve
                         className="w-full flex items-center gap-2 px-2 py-1.5 hover:bg-lia-interactive-hover dark:hover:bg-lia-btn-primary-hover rounded-lg transition-colors motion-reduce:transition-none"
                       >
                         <span className="text-xs">{catInfo.icon}</span>
-                        <span className="font-['Open_Sans',sans-serif] text-micro uppercase tracking-wider font-semibold text-lia-text-tertiary flex-1 text-left">
+                        <span className="text-micro uppercase tracking-wider font-semibold text-lia-text-tertiary flex-1 text-left">
                           {catInfo.label}
                         </span>
-                        <span className="font-['Open_Sans',sans-serif] text-micro text-lia-text-disabled">
+                        <span className="text-micro text-lia-text-disabled">
                           {questions.length}
                         </span>
                         {isCatExpanded ? (
@@ -162,7 +162,7 @@ export function CompanyBankQuestions({ isEditing, selectedQuestions, questionOve
                                   </span>
                                   <CharacterBadge character={q.eliminatory ? 'eliminatoria' : 'classificatoria'} />
                                 </div>
-                                <p className="font-['Open_Sans',sans-serif] text-micro text-lia-text-disabled italic mt-0.5">
+                                <p className="text-micro text-lia-text-disabled italic mt-0.5">
                                   {q.contextHint}
                                 </p>
                               </div>
@@ -182,19 +182,19 @@ export function CompanyBankQuestions({ isEditing, selectedQuestions, questionOve
                 })}
 
                 {Object.keys(categorizedQuestions).length === 0 && (
-                  <p className="text-xs font-['Open_Sans',sans-serif] text-lia-text-disabled text-center py-3">
+                  <p className="text-xs text-lia-text-disabled text-center py-3">
                     Todas as perguntas já foram selecionadas.
                   </p>
                 )}
               </div>
 
               <div className="border-t border-lia-border-subtle pt-3">
-                <span className="font-['Open_Sans',sans-serif] text-xs uppercase tracking-wider font-semibold text-lia-text-tertiary">
+                <span className="text-xs uppercase tracking-wider font-semibold text-lia-text-tertiary">
                   Perguntas Selecionadas ({selectedCount})
                 </span>
 
                 {selectedCount === 0 ? (
-                  <p className="text-xs font-['Open_Sans',sans-serif] text-lia-text-disabled text-center py-4">
+                  <p className="text-xs text-lia-text-disabled text-center py-4">
                     Nenhuma pergunta selecionada.
                   </p>
                 ) : (
@@ -223,13 +223,13 @@ export function CompanyBankQuestions({ isEditing, selectedQuestions, questionOve
 
                           <div className="ml-0 mt-1.5 space-y-2 pb-1">
                             <div className="flex items-center gap-2">
-                              <label className="font-['Open_Sans',sans-serif] text-micro font-medium text-lia-text-tertiary whitespace-nowrap">
+                              <label className="text-micro font-medium text-lia-text-tertiary whitespace-nowrap">
                                 Caráter:
                               </label>
                               <select
                                 value={question.character}
                                 onChange={(e) => onUpdateSelectedQuestion?.(question.id, { character: e.target.value as 'eliminatoria' | 'classificatoria' })}
-                                className="font-['Open_Sans',sans-serif] text-xs rounded-xl border border-lia-border-subtle bg-lia-bg-primary text-lia-text-secondary px-2 py-1 focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg/10 cursor-pointer"
+                                className="text-xs rounded-xl border border-lia-border-subtle bg-lia-bg-primary text-lia-text-secondary px-2 py-1 focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg/10 cursor-pointer"
                               >
                                 <option value="classificatoria">Classificatória</option>
                                 <option value="eliminatoria">Eliminatória</option>
@@ -238,7 +238,7 @@ export function CompanyBankQuestions({ isEditing, selectedQuestions, questionOve
 
                             {question.character === 'eliminatoria' && (
                               <div className="flex items-center gap-2">
-                                <label className="font-['Open_Sans',sans-serif] text-micro font-medium text-lia-text-tertiary whitespace-nowrap">
+                                <label className="text-micro font-medium text-lia-text-tertiary whitespace-nowrap">
                                   Resposta esperada:
                                 </label>
                                 <input
@@ -246,13 +246,13 @@ export function CompanyBankQuestions({ isEditing, selectedQuestions, questionOve
                                   placeholder="Resposta esperada"
                                   value={question.expectedAnswer || ''}
                                   onChange={(e) => onUpdateSelectedQuestion?.(question.id, { expectedAnswer: e.target.value })}
-                                  className="font-['Open_Sans',sans-serif] text-xs rounded-md border border-lia-border-subtle bg-lia-bg-primary text-lia-text-secondary px-2 py-1 flex-1 max-w-[220px] placeholder-lia-text-tertiary focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg/10"
+                                  className="text-xs rounded-md border border-lia-border-subtle bg-lia-bg-primary text-lia-text-secondary px-2 py-1 flex-1 max-w-[220px] placeholder-lia-text-tertiary focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg/10"
                                 />
                               </div>
                             )}
 
                             {contextHint && (
-                              <p className="font-['Open_Sans',sans-serif] text-micro text-lia-text-disabled italic">
+                              <p className="text-micro text-lia-text-disabled italic">
                                 {contextHint}
                               </p>
                             )}
@@ -267,7 +267,7 @@ export function CompanyBankQuestions({ isEditing, selectedQuestions, questionOve
           ) : (
             <div className="space-y-2">
               {selectedCount === 0 ? (
-                <p className="text-xs font-['Open_Sans',sans-serif] text-lia-text-disabled text-center py-3">
+                <p className="text-xs text-lia-text-disabled text-center py-3">
                   Nenhuma pergunta selecionada.
                 </p>
               ) : (
@@ -290,12 +290,12 @@ export function CompanyBankQuestions({ isEditing, selectedQuestions, questionOve
                       {(question.expectedAnswer || contextHint) && (
                         <div className="ml-8 mt-1 space-y-0.5">
                           {question.expectedAnswer && (
-                            <p className="font-['Open_Sans',sans-serif] text-micro text-lia-text-tertiary">
+                            <p className="text-micro text-lia-text-tertiary">
                               <span className="font-semibold">Resposta esperada:</span> {question.expectedAnswer}
                             </p>
                           )}
                           {contextHint && (
-                            <p className="font-['Open_Sans',sans-serif] text-micro text-lia-text-disabled italic">
+                            <p className="text-micro text-lia-text-disabled italic">
                               {contextHint}
                             </p>
                           )}

@@ -104,7 +104,7 @@ export const JDEvaluationHeader = React.memo(function JDEvaluationHeader({
       >
         <div className="flex items-center gap-2">
           <FileText className="h-4 w-4 text-lia-text-secondary" />
-          <span className="text-base-ui font-semibold text-lia-text-primary font-['Open_Sans',sans-serif]">
+          <span className="text-base-ui font-semibold text-lia-text-primary">
             Descrição do Cargo
           </span>
           <span className="text-xs text-lia-text-tertiary">
@@ -142,7 +142,7 @@ export const JDEvaluationHeader = React.memo(function JDEvaluationHeader({
       >
         <div className="flex items-center gap-2">
           <FileText className="h-4 w-4 text-lia-text-secondary" />
-          <span className="text-base-ui font-semibold text-lia-text-primary font-['Open_Sans',sans-serif]">Descrição do Cargo</span>
+          <span className="text-base-ui font-semibold text-lia-text-primary">Descrição do Cargo</span>
           <span className="text-xs text-lia-text-tertiary">— {jobTitle}</span>
         </div>
         <div className="flex items-center gap-2">

@@ -548,7 +548,7 @@ export function AddCandidateModal({ isOpen, onClose, onAdd }: AddCandidateModalP
                           <span className="text-sm text-lia-text-primary">Score Geral</span>
                           <Target className="w-4 h-4 text-lia-text-secondary" />
                         </div>
-                        <div className="text-2xl font-bold text-lia-text-primary">{liaAnalysis.score}%</div>
+                        <div className="text-2xl font-semibold text-lia-text-primary">{liaAnalysis.score}%</div>
                         <div className="w-full bg-lia-interactive-active rounded-full h-1.5 mt-2">
                           <div
                             className="bg-lia-btn-primary-bg dark:bg-lia-text-tertiary h-1.5 rounded-full"
@@ -564,7 +564,7 @@ export function AddCandidateModal({ isOpen, onClose, onAdd }: AddCandidateModalP
                           <span className="text-sm text-lia-text-primary">Fit Cultural</span>
                           <User className="w-4 h-4 text-status-success" />
                         </div>
-                        <div className="text-2xl font-bold text-status-success">{liaAnalysis.culturalFit}%</div>
+                        <div className="text-2xl font-semibold text-status-success">{liaAnalysis.culturalFit}%</div>
                         <div className="w-full bg-lia-interactive-active rounded-full h-1.5 mt-2">
                           <div
                             className="bg-status-success h-1.5 rounded-full"
@@ -580,7 +580,7 @@ export function AddCandidateModal({ isOpen, onClose, onAdd }: AddCandidateModalP
                           <span className="text-sm text-lia-text-primary">Fit Técnico</span>
                           <Zap className="w-4 h-4 text-wedo-purple" />
                         </div>
-                        <div className="text-2xl font-bold text-wedo-purple">{liaAnalysis.technicalFit}%</div>
+                        <div className="text-2xl font-semibold text-wedo-purple">{liaAnalysis.technicalFit}%</div>
                         <div className="w-full bg-lia-interactive-active rounded-full h-1.5 mt-2">
                           <div
                             className="bg-wedo-purple h-1.5 rounded-full"

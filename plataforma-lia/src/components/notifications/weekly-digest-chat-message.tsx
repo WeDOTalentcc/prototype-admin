@@ -37,15 +37,15 @@ export function WeeklyDigestChatMessage({
             <p className="text-xs font-semibold text-lia-text-tertiary mb-2 uppercase tracking-wide">Pipeline</p>
             <div className="flex items-center gap-4">
               <div className="text-center">
-                <p className="text-xl font-bold text-wedo-cyan">{digest.pipeline.activeJobs}</p>
+                <p className="text-xl font-semibold text-wedo-cyan">{digest.pipeline.activeJobs}</p>
                 <p className="text-[10px] text-lia-text-tertiary">vagas</p>
               </div>
               <div className="text-center">
-                <p className="text-xl font-bold text-status-success">{digest.pipeline.screened}</p>
+                <p className="text-xl font-semibold text-status-success">{digest.pipeline.screened}</p>
                 <p className="text-[10px] text-lia-text-tertiary">triados</p>
               </div>
               <div className="text-center">
-                <p className="text-xl font-bold text-status-warning">{digest.pipeline.interviews}</p>
+                <p className="text-xl font-semibold text-status-warning">{digest.pipeline.interviews}</p>
                 <p className="text-[10px] text-lia-text-tertiary">entrevistas</p>
               </div>
             </div>

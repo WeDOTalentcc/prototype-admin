@@ -61,15 +61,15 @@ export function WeeklyDigestTeamsCard({
               <div className="p-3 border-t border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary">
                 <div className="grid grid-cols-3 gap-3 mb-3">
                   <div className="text-center">
-                    <p className="text-2xl font-bold text-[#6264A7]">{digest.pipeline.activeJobs}</p>
+                    <p className="text-2xl font-semibold text-[#6264A7]">{digest.pipeline.activeJobs}</p>
                     <p className="text-xs text-lia-text-tertiary">vagas ativas</p>
                   </div>
                   <div className="text-center">
-                    <p className="text-2xl font-bold text-status-success">{digest.pipeline.screened}</p>
+                    <p className="text-2xl font-semibold text-status-success">{digest.pipeline.screened}</p>
                     <p className="text-xs text-lia-text-tertiary">candidatos triados</p>
                   </div>
                   <div className="text-center">
-                    <p className="text-2xl font-bold text-status-warning">{digest.pipeline.interviews}</p>
+                    <p className="text-2xl font-semibold text-status-warning">{digest.pipeline.interviews}</p>
                     <p className="text-xs text-lia-text-tertiary">entrevistas agendadas</p>
                   </div>
                 </div>

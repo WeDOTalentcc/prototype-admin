@@ -143,7 +143,7 @@ export function PipelineStagesCarousel({
                     <div className="flex items-baseline gap-1">
                       <span
                         className={cn(
- 'text-xl font-bold leading-none',
+ 'text-xl font-semibold leading-none',
                           isSelected
                             ? 'text-lia-text-primary'
                             : 'text-lia-text-primary'

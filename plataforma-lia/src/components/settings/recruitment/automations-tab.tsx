@@ -67,7 +67,7 @@ export function AutomationsTab({ onSettingsChange }: { onSettingsChange: (change
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-lia-text-primary">Workflows Ativos</p>
-                <p className="text-2xl font-bold text-status-success">
+                <p className="text-2xl font-semibold text-status-success">
                   {workflows.filter(w => w.status === 'active').length}
                 </p>
                 <p className="text-xs text-lia-text-primary">de {workflows.length} total</p>
@@ -84,7 +84,7 @@ export function AutomationsTab({ onSettingsChange }: { onSettingsChange: (change
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-lia-text-primary">Execuções Hoje</p>
-                <p className="text-2xl font-bold text-lia-text-primary">47</p>
+                <p className="text-2xl font-semibold text-lia-text-primary">47</p>
                 <p className="text-xs text-status-success">+12% vs ontem</p>
               </div>
               <div className="w-10 h-10 bg-wedo-cyan/15 rounded-md flex items-center justify-center">
@@ -99,7 +99,7 @@ export function AutomationsTab({ onSettingsChange }: { onSettingsChange: (change
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-lia-text-primary">Taxa de Sucesso</p>
-                <p className="text-2xl font-bold text-wedo-orange">97.3%</p>
+                <p className="text-2xl font-semibold text-wedo-orange">97.3%</p>
                 <p className="text-xs text-lia-text-primary">últimos 7 dias</p>
               </div>
               <div className="w-10 h-10 bg-wedo-orange/15 rounded-md flex items-center justify-center">
@@ -114,7 +114,7 @@ export function AutomationsTab({ onSettingsChange }: { onSettingsChange: (change
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-lia-text-primary">Templates</p>
-                <p className="text-2xl font-bold text-wedo-purple">12</p>
+                <p className="text-2xl font-semibold text-wedo-purple">12</p>
                 <p className="text-xs text-lia-text-primary">pré-configurados</p>
               </div>
               <div className="w-10 h-10 bg-wedo-purple/15 rounded-md flex items-center justify-center">
@@ -273,7 +273,7 @@ export function AutomationsTab({ onSettingsChange }: { onSettingsChange: (change
           <button
             key={tab.id}
             onClick={() => setSelectedView(tab.id as Parameters<typeof setSelectedView>[0])}
-            className={`flex items-center gap-2 px-3 py-3 rounded-md text-sm font-medium transition-colors motion-reduce:transition-none font-crimson ${
+            className={`flex items-center gap-2 px-3 py-3 rounded-md text-sm font-medium transition-colors motion-reduce:transition-none ${
               selectedView === tab.id
                 ? 'bg-lia-bg-primary text-lia-text-primary'
                 : 'text-lia-text-primary hover:text-lia-text-primary'

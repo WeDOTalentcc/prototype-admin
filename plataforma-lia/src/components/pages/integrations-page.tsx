@@ -43,7 +43,7 @@ export function IntegrationsPage() {
         <div className="mb-8">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-lia-text-primary mb-2 flex items-center gap-3 font-sans">
+              <h1 className="text-lg font-semibold text-lia-text-primary mb-2 flex items-center gap-3 font-sans">
                 <Settings className="w-8 h-8 text-lia-text-secondary" />
                 Integrações Externas
               </h1>

@@ -170,7 +170,7 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
                     </span>
                   </div>
                   <span 
-                    className="text-2xl font-bold"
+                    className="text-2xl font-semibold"
                     style={{color: getScoreColor(testData.score ?? 0)}}
                   >
                     {testData.score}
@@ -187,7 +187,7 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
                       Tempo de Conclusão
                     </span>
                   </div>
-                  <span className="text-2xl font-bold text-lia-text-primary">
+                  <span className="text-2xl font-semibold text-lia-text-primary">
                     {testData.duration}
                   </span>
                   <span className="text-sm ml-1 text-lia-text-disabled">

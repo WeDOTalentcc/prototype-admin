@@ -102,14 +102,14 @@ export function UnifiedChatInput({
       {/* Drag overlay */}
       {isDragOver && (
         <div className="absolute inset-0 z-10 flex items-center justify-center rounded-xl border-2 border-dashed border-wedo-cyan bg-wedo-cyan/5">
-          <p className="text-sm font-medium text-wedo-cyan font-['Open_Sans',sans-serif]">Solte o arquivo aqui</p>
+          <p className="text-sm font-medium text-wedo-cyan">Solte o arquivo aqui</p>
         </div>
       )}
       {/* Attached file indicator */}
       {attachedFile && (
         <div className="flex items-center gap-2 mb-2 px-3 py-1.5 rounded-xl bg-lia-bg-secondary border border-lia-border-subtle">
           <FileText className="w-3.5 h-3.5 text-wedo-cyan flex-shrink-0" />
-          <span className="text-xs text-lia-text-primary truncate flex-1 font-['Open_Sans',sans-serif]">
+          <span className="text-xs text-lia-text-primary truncate flex-1">
             {attachedFile.name}
           </span>
           <button
@@ -131,7 +131,7 @@ export function UnifiedChatInput({
         {/* Context badge row */}
         {showContext && (
           <div className="px-3 pt-2.5">
-            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-lia-bg-secondary border border-lia-border-subtle text-xs text-lia-text-secondary font-['Open_Sans',sans-serif]">
+            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-lia-bg-secondary border border-lia-border-subtle text-xs text-lia-text-secondary">
               {contextPage}
             </span>
           </div>
@@ -150,7 +150,7 @@ export function UnifiedChatInput({
             "w-full resize-none bg-transparent px-3 py-2.5",
             "text-sm text-lia-text-primary placeholder:text-lia-text-disabled",
             "focus:outline-none disabled:opacity-50",
-            "font-['Open_Sans',sans-serif]",
+            "",
             showContext ? "pt-1.5" : ""
           )}
           aria-label="Mensagem para a LIA"
@@ -181,7 +181,7 @@ export function UnifiedChatInput({
                         onFileButtonClick()
                         setShowPlusMenu(false)
                       }}
-                      className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-lia-text-secondary hover:bg-lia-bg-secondary font-['Open_Sans',sans-serif]"
+                      className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-lia-text-secondary hover:bg-lia-bg-secondary"
                     >
                       <Paperclip className="w-4 h-4" />
                       Anexar PDF, DOCX ou CSV
@@ -192,7 +192,7 @@ export function UnifiedChatInput({
                         textareaRef.current?.focus()
                         setShowPlusMenu(false)
                       }}
-                      className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-lia-text-secondary hover:bg-lia-bg-secondary font-['Open_Sans',sans-serif]"
+                      className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-lia-text-secondary hover:bg-lia-bg-secondary"
                     >
                       <AtSign className="w-4 h-4" />
                       Mencionar vaga ou candidato
@@ -225,7 +225,7 @@ export function UnifiedChatInput({
 
           <div className="flex items-center gap-1">
             {/* Auto label (like Notion) */}
-            <span className="text-xs text-lia-text-disabled font-['Open_Sans',sans-serif] mr-1">
+            <span className="text-xs text-lia-text-disabled mr-1">
               Auto
             </span>
 

@@ -52,7 +52,7 @@ export default function ForgotPasswordPage() {
               <div className="w-16 h-16 bg-status-success/15 rounded-full flex items-center justify-center mx-auto mb-6">
                 <CheckCircle className="w-8 h-8 text-status-success" />
               </div>
-              <h2 className="text-2xl font-bold text-lia-text-primary dark:text-lia-text-primary mb-3">Email Enviado!</h2>
+              <h2 className="text-2xl font-semibold text-lia-text-primary dark:text-lia-text-primary mb-3">Email Enviado!</h2>
               <p className="text-lia-text-secondary mb-6">
                 Se existe uma conta com o email <strong>{email}</strong>, você receberá um link para redefinir sua senha.
               </p>
@@ -71,7 +71,7 @@ export default function ForgotPasswordPage() {
                 <div className="w-16 h-16 bg-lia-bg-tertiary rounded-full flex items-center justify-center mx-auto mb-4">
                   <Mail className="w-8 h-8 text-lia-text-secondary" aria-hidden="true" />
                 </div>
-                <h2 className="text-2xl font-bold text-lia-text-primary dark:text-lia-text-primary mb-3">Esqueceu a senha?</h2>
+                <h2 className="text-2xl font-semibold text-lia-text-primary dark:text-lia-text-primary mb-3">Esqueceu a senha?</h2>
                 <p className="text-lia-text-secondary text-base leading-relaxed">
                   Digite seu email e enviaremos um link para você redefinir sua senha.
                 </p>

@@ -30,7 +30,7 @@ export function MentionDropdown({ items, selectedIndex, onSelect }: Props) {
         const CategoryIcon = category === "Candidatos" ? Users : Briefcase
         return (
           <div key={category}>
-            <div className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-lia-text-disabled font-['Open_Sans',sans-serif]">
+            <div className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-lia-text-disabled">
               <CategoryIcon className="w-3 h-3" />
               {category}
             </div>
@@ -47,7 +47,7 @@ export function MentionDropdown({ items, selectedIndex, onSelect }: Props) {
                     onSelect(item)
                   }}
                   className={cn(
-                    "w-full flex items-center gap-2.5 px-3 py-2 text-sm font-['Open_Sans',sans-serif]",
+                    "w-full flex items-center gap-2.5 px-3 py-2 text-sm",
                     isSelected
                       ? "bg-lia-interactive-active text-lia-text-primary"
                       : "text-lia-text-secondary hover:bg-lia-bg-secondary"

@@ -31,11 +31,11 @@ export function LiaMetricsPerformanceSection({ data }: LiaMetricsPerformanceSect
                 <div className="text-xs text-lia-text-secondary mb-1">
                   Score Médio LIA
                 </div>
-                <div className="text-3xl font-bold text-lia-text-primary">
+                <div className="text-3xl font-semibold text-lia-text-primary">
                   {avgLiaScore.toFixed(1)}
                 </div>
               </div>
-              <div className="w-16 h-16 rounded-full bg-wedo-cyan flex items-center justify-center text-white text-xl font-bold">
+              <div className="w-16 h-16 rounded-full bg-wedo-cyan flex items-center justify-center text-white text-xl font-semibold">
                 {(avgLiaScore * 10).toFixed(0)}
               </div>
             </div>
@@ -55,11 +55,11 @@ export function LiaMetricsPerformanceSection({ data }: LiaMetricsPerformanceSect
                 <div className="text-xs text-lia-text-secondary mb-1">
                   Match Médio de Skills
                 </div>
-                <div className="text-3xl font-bold text-lia-text-primary">
+                <div className="text-3xl font-semibold text-lia-text-primary">
                   {avgSkillsMatch.toFixed(0)}%
                 </div>
               </div>
-              <div className="w-16 h-16 rounded-full bg-wedo-green flex items-center justify-center text-white text-xl font-bold">
+              <div className="w-16 h-16 rounded-full bg-wedo-green flex items-center justify-center text-white text-xl font-semibold">
                 {avgSkillsMatch.toFixed(0)}
               </div>
             </div>
@@ -127,7 +127,7 @@ export function LiaMetricsPerformanceSection({ data }: LiaMetricsPerformanceSect
                     ✓ No Prazo
                   </Badge>
                 </div>
-                <div className="text-2xl font-bold text-lia-text-primary">
+                <div className="text-2xl font-semibold text-lia-text-primary">
                   {avgTimeContact.toFixed(1)}d
                 </div>
                 <div className="text-xs text-lia-text-secondary mt-1">
@@ -145,7 +145,7 @@ export function LiaMetricsPerformanceSection({ data }: LiaMetricsPerformanceSect
                     ✓ No Prazo
                   </Badge>
                 </div>
-                <div className="text-2xl font-bold text-lia-text-primary">
+                <div className="text-2xl font-semibold text-lia-text-primary">
                   {avgTimeTriage.toFixed(1)}d
                 </div>
                 <div className="text-xs text-lia-text-secondary mt-1">
@@ -163,7 +163,7 @@ export function LiaMetricsPerformanceSection({ data }: LiaMetricsPerformanceSect
                     ⚠ Atenção
                   </Badge>
                 </div>
-                <div className="text-2xl font-bold text-lia-text-primary">
+                <div className="text-2xl font-semibold text-lia-text-primary">
                   {avgTimeInterview.toFixed(1)}d
                 </div>
                 <div className="text-xs text-lia-text-secondary mt-1">
@@ -181,7 +181,7 @@ export function LiaMetricsPerformanceSection({ data }: LiaMetricsPerformanceSect
                     Total
                   </Badge>
                 </div>
-                <div className="text-2xl font-bold text-lia-text-primary">
+                <div className="text-2xl font-semibold text-lia-text-primary">
                   {avgTimeTotal.toFixed(1)}d
                 </div>
                 <div className="text-xs text-lia-text-secondary mt-1">
@@ -203,7 +203,7 @@ export function LiaMetricsPerformanceSection({ data }: LiaMetricsPerformanceSect
                     <div className="text-xs text-lia-text-secondary mb-1">
                       Tempo Médio até Contratação
                     </div>
-                    <div className="text-3xl font-bold text-lia-text-primary">
+                    <div className="text-3xl font-semibold text-lia-text-primary">
                       {(avgTimeTotal + 7).toFixed(0)} dias
                     </div>
                   </div>
@@ -248,7 +248,7 @@ export function LiaMetricsPerformanceSection({ data }: LiaMetricsPerformanceSect
                 <div className="flex items-center gap-2">
                   <CheckCircle className="w-4 h-4 text-status-success" />
                   <div>
-                    <div className="text-lg font-bold text-lia-text-primary">
+                    <div className="text-lg font-semibold text-lia-text-primary">
                       {(avgTimeTotal * 0.6).toFixed(1)}d
                     </div>
                     <div className="text-xs text-lia-text-secondary">
@@ -265,7 +265,7 @@ export function LiaMetricsPerformanceSection({ data }: LiaMetricsPerformanceSect
                 <div className="flex items-center gap-2">
                   <Target className="w-4 h-4 text-lia-text-secondary" />
                   <div>
-                    <div className="text-lg font-bold text-lia-text-primary">
+                    <div className="text-lg font-semibold text-lia-text-primary">
                       {avgTimeTotal.toFixed(1)}d
                     </div>
                     <div className="text-xs text-lia-text-secondary">
@@ -282,7 +282,7 @@ export function LiaMetricsPerformanceSection({ data }: LiaMetricsPerformanceSect
                 <div className="flex items-center gap-2">
                   <AlertCircle className="w-4 h-4 text-wedo-orange" />
                   <div>
-                    <div className="text-lg font-bold text-lia-text-primary">
+                    <div className="text-lg font-semibold text-lia-text-primary">
                       {(avgTimeTotal * 1.8).toFixed(1)}d
                     </div>
                     <div className="text-xs text-lia-text-secondary">

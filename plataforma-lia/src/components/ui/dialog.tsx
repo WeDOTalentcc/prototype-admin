@@ -39,7 +39,7 @@ const DialogContent = React.forwardRef<
       <DialogPrimitive.Content
         ref={ref}
         className={cn(
- "relative z-modal grid w-full max-w-lg gap-4 border border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary p-6 rounded-md duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 pointer-events-auto",
+ "relative z-modal grid w-full max-w-lg gap-4 border border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary p-6 rounded-xl duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 pointer-events-auto",
           className
         )}
         style={style}
@@ -121,7 +121,7 @@ const DraggableDialogContent = React.forwardRef<
             dialogRef.current = node
           }}
           className={cn(
- "relative z-modal grid w-full max-w-lg gap-4 border border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary p-6 rounded-md duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 pointer-events-auto",
+ "relative z-modal grid w-full max-w-lg gap-4 border border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary p-6 rounded-xl duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 pointer-events-auto",
             className
           )}
           style={{...style,

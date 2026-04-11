@@ -133,7 +133,7 @@ export function WSIScorecard({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className={`w-10 h-10 rounded-full flex items-center justify-center ${scoreDisplay.bgColor}`}>
-                <span className={`text-lg font-bold ${scoreDisplay.color}`}>
+                <span className={`text-lg font-semibold ${scoreDisplay.color}`}>
                   {latestResult.overall_wsi.toFixed(1)}
                 </span>
               </div>
@@ -182,7 +182,7 @@ export function WSIScorecard({
       <CardContent className="space-y-4">
         <div className="flex items-center gap-4">
           <div className={`w-20 h-20 rounded-full flex flex-col items-center justify-center ${scoreDisplay.bgColor}`}>
-            <span className={`text-2xl font-bold ${scoreDisplay.color}`}>
+            <span className={`text-2xl font-semibold ${scoreDisplay.color}`}>
               {latestResult.overall_wsi.toFixed(1)}
             </span>
             <span className="text-xs text-lia-text-tertiary">de 5.0</span>

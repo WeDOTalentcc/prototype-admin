@@ -21,7 +21,7 @@ export function GlobalSearchCostsTab({
     <div className="space-y-3">
       <Card className="border-lia-border-subtle/50 dark:border-lia-border-subtle/50">
         <CardHeader className="pb-2">
-          <CardTitle className="font-['Open_Sans',sans-serif] text-base-ui font-semibold flex items-center gap-2 text-lia-text-primary">
+          <CardTitle className="text-base-ui font-semibold flex items-center gap-2 text-lia-text-primary">
             <DollarSign className="w-3.5 h-3.5 text-lia-text-secondary" />
             Tabela de Custos da Busca Global
           </CardTitle>
@@ -76,7 +76,7 @@ export function GlobalSearchCostsTab({
 
       <Card className="border-lia-border-subtle/50 dark:border-lia-border-subtle/50">
         <CardHeader className="pb-2">
-          <CardTitle className="font-['Open_Sans',sans-serif] text-base-ui font-semibold flex items-center gap-2 text-lia-text-primary">
+          <CardTitle className="text-base-ui font-semibold flex items-center gap-2 text-lia-text-primary">
             <Zap className="w-3.5 h-3.5 text-lia-text-secondary" />
             Detalhamento de Custos por Opção
           </CardTitle>
@@ -207,7 +207,7 @@ export function GlobalSearchCostsTab({
 
       <Card className="border-lia-border-subtle/50 dark:border-lia-border-subtle/50">
         <CardHeader className="pb-2">
-          <CardTitle className="font-['Open_Sans',sans-serif] text-base-ui font-semibold flex items-center gap-2 text-lia-text-primary">
+          <CardTitle className="text-base-ui font-semibold flex items-center gap-2 text-lia-text-primary">
             <TrendingUp className="w-3.5 h-3.5 text-lia-text-secondary" />
             Resumo da Configuração Atual
           </CardTitle>
@@ -216,12 +216,12 @@ export function GlobalSearchCostsTab({
           <div className="grid grid-cols-2 gap-3">
             <div className="p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl col-span-2">
               <div className="text-micro text-lia-text-primary mb-0.5">Limite por busca</div>
-              <div className="text-lg font-bold text-lia-text-primary">{settings.defaultLimit}</div>
+              <div className="text-lg font-semibold text-lia-text-primary">{settings.defaultLimit}</div>
               <div className="text-micro text-lia-text-primary">candidatos (~1 crédito/cand)</div>
             </div>
             <div className="p-3 bg-lia-bg-tertiary dark:bg-lia-bg-secondary/50 rounded-xl col-span-2">
               <div className="text-micro text-lia-text-primary mb-0.5">Custo estimado por busca</div>
-              <div className="text-xl font-bold text-lia-text-primary">~{estimatedCreditsPerSearch} créditos</div>
+              <div className="text-xl font-semibold text-lia-text-primary">~{estimatedCreditsPerSearch} créditos</div>
               <div className="text-micro text-lia-text-secondary mt-0.5">
                 {settings.showEmails && '+emails '}
                 {settings.showPhoneNumbers && '+telefones '}

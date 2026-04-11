@@ -25,10 +25,10 @@ export function CompletionCard({ candidateName, summary, onClose, className }: C
           <div className="w-12 h-12 rounded-full bg-status-success/15 dark:bg-status-success/30 flex items-center justify-center">
             <CheckCircle2 className="w-7 h-7 text-status-success dark:text-status-success" />
           </div>
-          <h2 className="text-lg font-semibold text-lia-text-primary font-['Open_Sans',sans-serif]">
+          <h2 className="text-lg font-semibold text-lia-text-primary">
             Triagem concluída com sucesso!
           </h2>
-          <p className="text-sm text-lia-text-secondary font-['Open_Sans',sans-serif]">
+          <p className="text-sm text-lia-text-secondary">
             Obrigada, {candidateName}! Suas respostas foram registradas.
           </p>
         </div>
@@ -41,14 +41,14 @@ export function CompletionCard({ candidateName, summary, onClose, className }: C
 
         {summary.nextSteps.length > 0 && (
           <div className="space-y-3">
-            <h3 className="text-sm font-medium text-lia-text-primary font-['Open_Sans',sans-serif]">
+            <h3 className="text-sm font-medium text-lia-text-primary">
               Próximos passos:
             </h3>
             <ul className="space-y-2" aria-label="Próximos passos">
               {summary.nextSteps.map((step, i) => (
                 <li
                   key={i}
-                  className="flex items-start gap-2 text-sm text-lia-text-secondary font-['Open_Sans',sans-serif]"
+                  className="flex items-start gap-2 text-sm text-lia-text-secondary"
                 >
                   <span className="flex-shrink-0 w-5 h-5 rounded-full bg-lia-bg-tertiary dark:bg-lia-bg-elevated flex items-center justify-center text-micro font-['Inter',sans-serif] font-medium text-lia-text-tertiary mt-0.5">
                     {i + 1}
@@ -65,14 +65,14 @@ export function CompletionCard({ candidateName, summary, onClose, className }: C
             type="button"
             onClick={onClose}
             aria-label="Fechar triagem"
-            className="w-full h-10 flex items-center justify-center rounded-lg bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary text-sm font-medium border border-lia-border-default dark:border-lia-border-default hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-elevated transition-colors motion-reduce:transition-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 focus:outline-none font-['Open_Sans',sans-serif]"
+            className="w-full h-10 flex items-center justify-center rounded-lg bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary text-sm font-medium border border-lia-border-default dark:border-lia-border-default hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-elevated transition-colors motion-reduce:transition-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 focus:outline-none"
           >
             Fechar
           </button>
         )}
 
         <div className="pt-2 border-t border-lia-border-subtle dark:border-lia-border-subtle text-center">
-          <span className="text-micro text-lia-text-disabled font-['Open_Sans',sans-serif]">
+          <span className="text-micro text-lia-text-disabled">
             Powered by <span className="text-wedo-cyan font-medium">LIA</span> · WeDOTalent
           </span>
         </div>

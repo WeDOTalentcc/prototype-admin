@@ -594,7 +594,7 @@ export function InteractiveStageCell({
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-md" onClick={(e) => e.stopPropagation()}>
           <DialogHeader className="px-6 py-4 dark:border-lia-border-subtle">
-            <DialogTitle className="flex items-center gap-3 font-['Open_Sans',sans-serif] text-base font-semibold text-lia-text-primary">
+            <DialogTitle className="flex items-center gap-3 text-base font-semibold text-lia-text-primary">
               <div className="w-10 h-10 rounded-full bg-lia-bg-tertiary dark:bg-lia-bg-secondary flex items-center justify-center">
                 <ArrowRight className="w-5 h-5 text-lia-text-secondary" />
               </div>

@@ -144,12 +144,12 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
             {/* Quick Stats */}
             <div className="grid grid-cols-3 gap-3 p-4 pb-5">
               <div className="text-center">
-                <div className="text-xl font-bold text-lia-text-primary">{agent.actions_today}</div>
+                <div className="text-xl font-semibold text-lia-text-primary">{agent.actions_today}</div>
                 <div className="text-xs text-lia-text-disabled">Ações Hoje</div>
               </div>
               <div className="text-center">
                 <div
-                  className={`text-xl font-bold ${agent.progress >= 80 ? 'text-wedo-green-bright' : agent.progress >= 50 ? 'text-lia-btn-primary-bg' : 'text-status-warning'}`}
+                  className={`text-xl font-semibold ${agent.progress >= 80 ? 'text-wedo-green-bright' : agent.progress >= 50 ? 'text-lia-btn-primary-bg' : 'text-status-warning'}`}
                 >
                   {agent.progress}%
                 </div>
@@ -157,7 +157,7 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
               </div>
               <div className="text-center">
                 <div className="flex items-center justify-center gap-1">
-                  <span className="text-xl font-bold text-lia-text-primary">{agent.daily_goal}</span>
+                  <span className="text-xl font-semibold text-lia-text-primary">{agent.daily_goal}</span>
                 </div>
                 <div className="text-xs text-lia-text-disabled">Meta Diária</div>
               </div>
@@ -264,7 +264,7 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
                       <div
                         className="w-20 h-20 rounded-full flex flex-col items-center justify-center bg-lia-bg-primary"
                       >
-                        <span className="text-2xl font-bold" style={{color: getHealthTierColor(healthScore.tier)}}>
+                        <span className="text-2xl font-semibold" style={{color: getHealthTierColor(healthScore.tier)}}>
                           {healthScore.score}
                         </span>
                         <span className="text-xs text-lia-text-disabled">

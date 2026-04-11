@@ -156,7 +156,7 @@ const STATUS_OPTIONS = ["Novo", "Em triagem", "Aprovado", "Reprovado"]
       <div className="min-h-screen bg-lia-bg-primary dark:bg-lia-bg-primary">
         <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 py-6 space-y-4">
           <div>
-            <h1 className={cn(textStyles.title, "text-xl font-semibold")}>
+            <h1 className={cn(textStyles.title, "text-lg font-semibold")}>
               Funil de Talentos
             </h1>
             <p className={cn(textStyles.description, "text-xs mt-0.5")}>

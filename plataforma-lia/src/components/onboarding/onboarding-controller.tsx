@@ -213,7 +213,7 @@ export function OnboardingController({ children, forceOnboarding = false }: Onbo
   return (
     <div className="min-h-screen bg-lia-bg-primary flex items-center justify-center p-4">
       <div className="bg-lia-bg-primary rounded-xl p-8 max-w-md w-full text-center">
-        <h2 className="text-2xl font-bold text-lia-text-primary mb-4">
+        <h2 className="text-2xl font-semibold text-lia-text-primary mb-4">
           Acesso Restrito
         </h2>
         <p className="text-lia-text-primary mb-6">

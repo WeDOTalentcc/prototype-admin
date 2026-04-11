@@ -80,23 +80,23 @@ export function KPIAlertSystem({ recruiterData, onAlertAction }: KPIAlertSystemP
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
             <div className="text-center">
-              <div className="text-2xl font-bold text-lia-text-primary">{alertStats.total}</div>
+              <div className="text-2xl font-semibold text-lia-text-primary">{alertStats.total}</div>
               <div className="text-sm text-lia-text-secondary">Total de Alertas</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-status-error">{alertStats.critical}</div>
+              <div className="text-2xl font-semibold text-status-error">{alertStats.critical}</div>
               <div className="text-sm text-lia-text-secondary">Críticos</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-status-warning">{alertStats.warning}</div>
+              <div className="text-2xl font-semibold text-status-warning">{alertStats.warning}</div>
               <div className="text-sm text-lia-text-secondary">Avisos</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-wedo-purple">{alertStats.byCategory.performance}</div>
+              <div className="text-2xl font-semibold text-wedo-purple">{alertStats.byCategory.performance}</div>
               <div className="text-sm text-lia-text-secondary">Performance</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-wedo-orange">{alertStats.byCategory.deadline}</div>
+              <div className="text-2xl font-semibold text-wedo-orange">{alertStats.byCategory.deadline}</div>
               <div className="text-sm text-lia-text-secondary">Prazos</div>
             </div>
           </div>

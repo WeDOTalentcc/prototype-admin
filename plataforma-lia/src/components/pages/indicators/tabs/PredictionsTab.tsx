@@ -41,7 +41,7 @@ export function PredictionsTab({ recruiters }: PredictionsTabProps) {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-status-success font-medium">Contratações</p>
-                <p className="text-2xl font-bold text-status-success">{loading ? "..." : totalHires}</p>
+                <p className="text-2xl font-semibold text-status-success">{loading ? "..." : totalHires}</p>
                 <p className="text-xs text-lia-text-primary">Históricas</p>
               </div>
               <TrendingUp className="w-8 h-8 text-status-success" />
@@ -59,7 +59,7 @@ export function PredictionsTab({ recruiters }: PredictionsTabProps) {
                 <p className="text-sm text-lia-text-secondary font-medium">
                   Time to Fill
                 </p>
-                <p className="text-2xl font-bold text-lia-text-primary">
+                <p className="text-2xl font-semibold text-lia-text-primary">
                   {loading ? "..." : `${ttfDays} dias`}
                 </p>
                 <p className="text-xs text-lia-text-primary">
@@ -79,7 +79,7 @@ export function PredictionsTab({ recruiters }: PredictionsTabProps) {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-wedo-purple font-medium">Faixa Salarial</p>
-                <p className="text-2xl font-bold text-wedo-purple">
+                <p className="text-2xl font-semibold text-wedo-purple">
                   {loading ? "..." : salary ? `P${salary.market_percentile}` : "--"}
                 </p>
                 <p className="text-xs text-lia-text-primary">
@@ -99,7 +99,7 @@ export function PredictionsTab({ recruiters }: PredictionsTabProps) {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-wedo-orange font-medium">Salário Sugerido</p>
-                <p className="text-2xl font-bold text-wedo-orange">
+                <p className="text-2xl font-semibold text-wedo-orange">
                   {loading ? "..." : salary ? formatBRL(salaryMin) : `${CURRENCY_SYMBOL} --`}
                 </p>
                 <p className="text-xs text-lia-text-primary">

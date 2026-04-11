@@ -233,7 +233,7 @@ export function FavoritesTab({
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div className="flex items-center gap-4">
           <div>
-            <h2 className="text-lg font-semibold text-lia-text-primary font-['Open_Sans',sans-serif] flex items-center gap-2">
+            <h2 className="text-lg font-semibold text-lia-text-primary flex items-center gap-2">
               <Star className="w-5 h-5 text-wedo-orange" />
               Candidatos Favoritos
             </h2>

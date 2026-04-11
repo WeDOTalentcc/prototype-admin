@@ -59,7 +59,7 @@ export function ModuleUpsell({ moduleId, title, description, onUpgrade }: Module
                   {getModuleIcon(moduleId)}
                 </div>
                 <div>
-                  <h1 className="text-3xl font-bold">{moduleInfo.name}</h1>
+                  <h1 className="text-3xl font-semibold">{moduleInfo.name}</h1>
                   <p className="text-white text-lg">{moduleInfo.description}</p>
                 </div>
               </div>
@@ -117,7 +117,7 @@ export function ModuleUpsell({ moduleId, title, description, onUpgrade }: Module
                 <div>
                   <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl p-6 mb-6">
                     <div className="text-center mb-4">
-                      <div className="text-3xl font-bold text-lia-text-primary">
+                      <div className="text-3xl font-semibold text-lia-text-primary">
                         {moduleInfo.price}
                       </div>
                       <p className="text-lia-text-primary">por empresa</p>
@@ -201,7 +201,7 @@ export function ModuleUpsell({ moduleId, title, description, onUpgrade }: Module
                   <p className="text-lia-text-primary">{tier.label}</p>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold mb-4">{tier.price.formatted}</div>
+                  <div className="text-2xl font-semibold mb-4">{tier.price.formatted}</div>
                   <ul className="space-y-2 text-sm">
                     {tier.features.map((f) => (
                       <li key={f.name} className="flex items-center gap-2">

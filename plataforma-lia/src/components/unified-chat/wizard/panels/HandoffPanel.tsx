@@ -21,10 +21,10 @@ export function HandoffPanel({ data }: Props) {
       </div>
 
       <div className="text-center">
-        <h4 className="text-sm font-semibold text-lia-text-primary font-['Open_Sans',sans-serif]">
+        <h4 className="text-sm font-semibold text-lia-text-primary">
           Vaga publicada!
         </h4>
-        <p className="text-xs text-lia-text-secondary font-['Open_Sans',sans-serif] mt-1">
+        <p className="text-xs text-lia-text-secondary mt-1">
           A vaga esta ativa e o screening automatico foi iniciado.
         </p>
       </div>
@@ -32,7 +32,7 @@ export function HandoffPanel({ data }: Props) {
       {d.handoff_url && (
         <a
           href={d.handoff_url}
-          className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-wedo-cyan text-white text-sm font-medium hover:bg-wedo-cyan/90 transition-colors motion-reduce:transition-none font-['Open_Sans',sans-serif]"
+          className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-wedo-cyan text-white text-sm font-medium hover:bg-wedo-cyan/90 transition-colors motion-reduce:transition-none"
         >
           <ExternalLink className="w-4 h-4" />
           Ir para a vaga
@@ -43,11 +43,11 @@ export function HandoffPanel({ data }: Props) {
         <div className="w-full p-2.5 rounded-xl bg-lia-bg-secondary border border-lia-border-subtle">
           <div className="flex items-center gap-1.5 mb-1">
             <Link2 className="w-3.5 h-3.5 text-wedo-cyan" />
-            <span className="text-xs font-medium text-lia-text-secondary font-['Open_Sans',sans-serif]">
+            <span className="text-xs font-medium text-lia-text-secondary">
               Link de compartilhamento
             </span>
           </div>
-          <p className="text-xs text-lia-text-primary font-['Open_Sans',sans-serif] break-all">
+          <p className="text-xs text-lia-text-primary break-all">
             {d.share_link}
           </p>
         </div>

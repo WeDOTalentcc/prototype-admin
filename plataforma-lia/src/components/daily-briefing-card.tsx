@@ -361,7 +361,7 @@ export function DailyBriefingCard({
                 <AlertCircle className="w-3.5 h-3.5 text-lia-text-secondary" />
                 <span className="text-xs font-medium text-lia-text-secondary">Urgentes</span>
               </div>
-              <p className="text-lg font-bold text-wedo-cyan-dark">
+              <p className="text-lg font-semibold text-wedo-cyan-dark">
                 {briefing.summary.urgent_count}
               </p>
             </div>
@@ -376,7 +376,7 @@ export function DailyBriefingCard({
                 <Target className="w-3.5 h-3.5 text-lia-text-secondary" />
                 <span className="text-xs font-medium text-lia-text-secondary">Tarefas Hoje</span>
               </div>
-              <p className="text-lg font-bold text-wedo-cyan-dark">
+              <p className="text-lg font-semibold text-wedo-cyan-dark">
                 {briefing.summary.tasks_today}
               </p>
             </div>
@@ -391,7 +391,7 @@ export function DailyBriefingCard({
                 <Calendar className="w-3.5 h-3.5 text-lia-text-secondary" />
                 <span className="text-xs font-medium text-lia-text-secondary">Entrevistas</span>
               </div>
-              <p className="text-lg font-bold text-wedo-cyan-dark">
+              <p className="text-lg font-semibold text-wedo-cyan-dark">
                 {briefing.summary.interviews_today}
               </p>
             </div>
@@ -406,7 +406,7 @@ export function DailyBriefingCard({
                 <Bell className="w-3.5 h-3.5 text-lia-text-secondary" />
                 <span className="text-xs font-medium text-lia-text-secondary">Alertas</span>
               </div>
-              <p className="text-lg font-bold text-wedo-cyan-dark">
+              <p className="text-lg font-semibold text-wedo-cyan-dark">
                 {briefing.summary.alerts_active}
               </p>
             </div>

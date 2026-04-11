@@ -48,7 +48,7 @@ export function ApplyAllModal({
               type="number"
               value={applyAllValue}
               onChange={(e) => setApplyAllValue(parseFloat(e.target.value) || 0)}
-              className="w-full px-3 py-2 border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary text-sm font-['Open_Sans',sans-serif]"
+              className="w-full px-3 py-2 border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary text-sm"
             />
           </div>
 

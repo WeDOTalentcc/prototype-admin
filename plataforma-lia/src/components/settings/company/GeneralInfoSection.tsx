@@ -10,10 +10,10 @@ import {
 } from "@/lib/industry-constants"
 
 const inputClass = (disabled: boolean) =>
-  `w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-lia-btn-primary-bg/10 focus:border-lia-btn-primary-bg dark:focus:ring-lia-border-subtle/10 dark:focus:border-lia-border-subtle transition-colors ${disabled ? "opacity-60 cursor-not-allowed bg-lia-bg-secondary dark:bg-lia-bg-primary" : ""}`
+  `w-full px-3 py-2 text-xs border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-lia-btn-primary-bg/10 focus:border-lia-btn-primary-bg dark:focus:ring-lia-border-subtle/10 dark:focus:border-lia-border-subtle transition-colors ${disabled ? "opacity-60 cursor-not-allowed bg-lia-bg-secondary dark:bg-lia-bg-primary" : ""}`
 
 const selectClass = (disabled: boolean) =>
-  `w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-lia-btn-primary-bg/10 focus:border-lia-btn-primary-bg dark:focus:ring-lia-border-subtle/10 dark:focus:border-lia-border-subtle transition-colors ${disabled ? "opacity-60 cursor-not-allowed bg-lia-bg-secondary dark:bg-lia-bg-primary" : ""}`
+  `w-full px-3 py-2 text-xs border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-lia-btn-primary-bg/10 focus:border-lia-btn-primary-bg dark:focus:ring-lia-border-subtle/10 dark:focus:border-lia-border-subtle transition-colors ${disabled ? "opacity-60 cursor-not-allowed bg-lia-bg-secondary dark:bg-lia-bg-primary" : ""}`
 
 interface GeneralInfoSectionProps {
   companyData: Record<string, any>
@@ -32,7 +32,7 @@ export function GeneralInfoSection({
 }: GeneralInfoSectionProps) {
   return (
     <div className="space-y-3">
-      <h3 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wider px-1 font-['Open_Sans',sans-serif]">
+      <h3 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wider px-1">
         Informações Gerais
       </h3>
       <div className="grid grid-cols-1 gap-3">
@@ -44,13 +44,13 @@ export function GeneralInfoSection({
             ) : (
               <div className="text-center">
                 <Image className="w-5 h-5 mx-auto text-lia-text-tertiary mb-0.5" />
-                <span className="text-micro text-lia-text-secondary font-['Open_Sans',sans-serif]">Upload</span>
+                <span className="text-micro text-lia-text-secondary">Upload</span>
               </div>
             )}
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="text-xs font-medium text-lia-text-primary font-['Open_Sans',sans-serif]">Logo da Empresa</span>
-            <span className="text-micro text-lia-text-secondary bg-lia-bg-tertiary dark:bg-lia-bg-elevated px-1.5 py-0.5 rounded-full font-['Open_Sans',sans-serif]">Identidade Visual</span>
+            <span className="text-xs font-medium text-lia-text-primary">Logo da Empresa</span>
+            <span className="text-micro text-lia-text-secondary bg-lia-bg-tertiary dark:bg-lia-bg-elevated px-1.5 py-0.5 rounded-full">Identidade Visual</span>
           </div>
         </div>
 

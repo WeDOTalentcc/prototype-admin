@@ -326,7 +326,7 @@ export function ScoreCardWSI({
                   className="w-32 h-3"
                 />
                 <span
-                  className="text-xl font-bold text-lia-text-secondary"
+                  className="text-xl font-semibold text-lia-text-secondary"
                 >
                   {wsiScore.totalWSI.toFixed(2)}
                 </span>

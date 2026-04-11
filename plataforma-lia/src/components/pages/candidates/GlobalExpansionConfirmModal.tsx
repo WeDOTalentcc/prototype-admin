@@ -58,7 +58,7 @@ export function GlobalExpansionConfirmModal({
               <div className="border-t border-lia-border-subtle dark:border-lia-border-subtle pt-2">
                 <div className="flex justify-between items-center">
                   <span className="font-medium" aria-live="polite" aria-atomic="true">Custo por candidato:</span>
-                  <span className="font-bold text-lg text-lia-text-secondary">
+                  <span className="font-semibold text-lg text-lia-text-secondary">
                     1 crédito
                   </span>
                 </div>

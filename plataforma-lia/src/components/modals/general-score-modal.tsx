@@ -130,7 +130,7 @@ export function GeneralScoreModal({ isOpen, onClose, candidate }: GeneralScoreMo
               </p>
               <div className="flex items-baseline gap-2">
                 <span 
-                  className="text-3xl font-bold"
+                  className="text-3xl font-semibold"
                   style={{color: getScoreColor(finalScore)}}
                 >
                   {finalScore}

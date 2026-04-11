@@ -60,10 +60,10 @@ function ErrorCard({ code, message }: { code: string; message: string }) {
       <div className="flex-1 flex items-center justify-center px-4">
         <div className="w-full max-w-sm bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl shadow-lia-sm p-6 text-center space-y-4">
           <div className="flex justify-center">{iconMap[code] || iconMap.SERVER_ERROR}</div>
-          <h2 className="text-base font-semibold text-lia-text-primary dark:text-lia-text-primary font-['Open_Sans',sans-serif]">
+          <h2 className="text-base font-semibold text-lia-text-primary dark:text-lia-text-primary">
             {titleMap[code] || "Erro"}
           </h2>
-          <p className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary font-['Open_Sans',sans-serif]">
+          <p className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary">
             {message}
           </p>
         </div>
@@ -123,7 +123,7 @@ function MessageRenderer({
 function LGPDFooter() {
   return (
     <div className="py-3 px-4 text-center">
-      <p className="text-micro text-lia-text-tertiary dark:text-lia-text-secondary font-['Open_Sans',sans-serif]">
+      <p className="text-micro text-lia-text-tertiary dark:text-lia-text-secondary">
         Powered by <span className="text-wedo-cyan font-medium">LIA</span> · WeDOTalent ·{" "}
         <a
           href="/privacidade"
@@ -195,15 +195,15 @@ export function TriagemFlow({ hook }: TriagemFlowProps) {
                   <Phone className="w-6 h-6 text-wedo-cyan" />
                 </div>
               </div>
-              <h2 className="text-base font-semibold text-lia-text-primary font-['Open_Sans',sans-serif]">
+              <h2 className="text-base font-semibold text-lia-text-primary">
                 Ligação solicitada
               </h2>
-              <p className="text-sm text-lia-text-secondary font-['Open_Sans',sans-serif] leading-relaxed">
+              <p className="text-sm text-lia-text-secondary leading-relaxed">
                 Você receberá uma ligação da LIA em instantes. Fique atento ao seu telefone.
               </p>
               {showVoipButton && (
                 <div className="pt-2">
-                  <p className="text-xs text-lia-text-tertiary mb-3 font-['Open_Sans',sans-serif]">
+                  <p className="text-xs text-lia-text-tertiary mb-3">
                     Ou ligue diretamente pelo navegador:
                   </p>
                   <VoIPCallButton
@@ -230,7 +230,7 @@ export function TriagemFlow({ hook }: TriagemFlowProps) {
                   {!voipCallActive && (
                     <div className="flex items-center gap-3 mb-3">
                       <div className="flex-1 h-px bg-lia-border-subtle" />
-                      <span className="text-xs text-lia-text-tertiary font-['Open_Sans',sans-serif] whitespace-nowrap">
+                      <span className="text-xs text-lia-text-tertiary whitespace-nowrap">
                         ou ligue pelo navegador
                       </span>
                       <div className="flex-1 h-px bg-lia-border-subtle" />

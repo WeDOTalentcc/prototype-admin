@@ -89,7 +89,7 @@ export function ScreeningSchedulingModal({
               <CalendarCheck className="w-4 h-4 text-lia-text-secondary" />
             </div>
             <div>
-              <DialogTitle className="text-sm font-semibold text-lia-text-primary font-['Open_Sans',sans-serif]">
+              <DialogTitle className="text-sm font-semibold text-lia-text-primary">
                 Agendamento Automático
               </DialogTitle>
               <p className="text-xs text-lia-text-secondary mt-0.5">

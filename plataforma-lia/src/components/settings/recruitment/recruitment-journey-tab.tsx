@@ -106,7 +106,7 @@ export function RecruitmentJourneyTab({ onSettingsChange }: { onSettingsChange: 
         <CardHeader className="pb-4">
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="text-xl font-medium font-inter">Recrutamento</CardTitle>
+              <CardTitle className="text-sm font-semibold">Recrutamento</CardTitle>
               <p className="text-sm text-lia-text-secondary mt-1">Pipeline e elegibilidade</p>
             </div>
             <div className="flex items-center gap-2">

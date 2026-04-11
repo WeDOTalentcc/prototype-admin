@@ -18,7 +18,7 @@ export default function UpgradePage() {
         <Badge variant="outline" className="mb-4 border-status-warning/30 text-status-warning bg-status-warning/10">
           Período de trial encerrado
         </Badge>
-        <h1 className="text-2xl font-bold text-lia-text-primary dark:text-lia-text-primary mb-3">
+        <h1 className="text-2xl font-semibold text-lia-text-primary dark:text-lia-text-primary mb-3">
           Seu trial expirou
         </h1>
         <p className="text-lia-text-secondary dark:text-lia-text-tertiary text-sm leading-relaxed">
@@ -41,7 +41,7 @@ export default function UpgradePage() {
               )}
               <h2 className="text-lg font-semibold text-lia-text-primary dark:text-lia-text-primary">{plan.name}</h2>
               <div className="flex items-baseline gap-1 mt-1">
-                <span className="text-2xl font-bold text-lia-text-primary dark:text-lia-text-primary">{plan.price ? plan.price.formatted : 'Sob consulta'}</span>
+                <span className="text-2xl font-semibold text-lia-text-primary dark:text-lia-text-primary">{plan.price ? plan.price.formatted : 'Sob consulta'}</span>
               </div>
             </div>
 

@@ -80,7 +80,7 @@ export const GlobalSearchHub = forwardRef<GlobalSearchHubRef, GlobalSearchHubPro
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-1.5">
                 <Globe className="w-4 h-4 text-lia-text-secondary" />
-                <span className="font-['Open_Sans',sans-serif] text-base-ui font-semibold text-lia-text-primary">
+                <span className="text-base-ui font-semibold text-lia-text-primary">
                   Habilitar Busca Global
                 </span>
                 {settings.globalSearchEnabled ? (

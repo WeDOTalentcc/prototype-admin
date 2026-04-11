@@ -94,7 +94,7 @@ export function GoalsTemplateSelectModal({
               <select
                 value={templateApplyMode}
                 onChange={(e) => setTemplateApplyMode(e.target.value as 'all' | 'selected')}
-                className="border rounded-full px-1.5 py-0.5 text-micro bg-lia-bg-primary dark:bg-lia-bg-secondary border-lia-border-default dark:border-lia-border-default text-lia-text-primary font-['Open_Sans',sans-serif]"
+                className="border rounded-full px-1.5 py-0.5 text-micro bg-lia-bg-primary dark:bg-lia-bg-secondary border-lia-border-default dark:border-lia-border-default text-lia-text-primary"
               >
                 <option value="all">Aplicar a todos usuários</option>
                 {selectedUser && <option value="selected">Aplicar a {selectedUser.name}</option>}
@@ -103,7 +103,7 @@ export function GoalsTemplateSelectModal({
                 size="sm"
                 onClick={handleApplySelectedTemplates}
                 disabled={isSaving}
-                className="text-micro h-6 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active font-['Open_Sans',sans-serif]"
+                className="text-micro h-6 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
               >
                 {isSaving ? <Loader2 className="w-2.5 h-2.5 animate-spin motion-reduce:animate-none mr-1" /> : <Plus className="w-2.5 h-2.5 mr-1" />}
                 Aplicar Selecionados
@@ -112,7 +112,7 @@ export function GoalsTemplateSelectModal({
                 size="sm"
                 variant="ghost"
                 onClick={() => setSelectedTemplateIds(new Set())}
-                className="text-micro h-6 font-['Open_Sans',sans-serif]"
+                className="text-micro h-6"
               >
                 Limpar
               </Button>
@@ -129,14 +129,14 @@ export function GoalsTemplateSelectModal({
                 placeholder="Buscar templates..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-7 pr-2.5 py-1 border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary text-micro font-['Open_Sans',sans-serif]"
+                className="w-full pl-7 pr-2.5 py-1 border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary text-micro"
               />
             </div>
           </div>
           <select
             value={filterCategory}
             onChange={(e) => setFilterCategory(e.target.value)}
-            className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-full bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary px-2 py-1 text-micro font-['Open_Sans',sans-serif]"
+            className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-full bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary px-2 py-1 text-micro"
           >
             <option value="all">Todas Categorias</option>
             <option value="recruitment">Recrutamento</option>
@@ -147,7 +147,7 @@ export function GoalsTemplateSelectModal({
           <select
             value={filterPeriod}
             onChange={(e) => setFilterPeriod(e.target.value)}
-            className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-full bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary px-2 py-1 text-micro font-['Open_Sans',sans-serif]"
+            className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-full bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary px-2 py-1 text-micro"
           >
             <option value="all">Todos Períodos</option>
             <option value="monthly">Mensal</option>
@@ -165,7 +165,7 @@ export function GoalsTemplateSelectModal({
               variant="ghost"
               size="sm"
               onClick={() => setHiddenTemplates(new Set())}
-              className="text-xs text-status-warning hover:text-status-warning hover:bg-status-warning/15 h-7 font-['Open_Sans',sans-serif]"
+              className="text-xs text-status-warning hover:text-status-warning hover:bg-status-warning/15 h-7"
             >
               Restaurar Todos
             </Button>
@@ -215,22 +215,22 @@ export function GoalsTemplateSelectModal({
                   </div>
                 </div>
                 <div className="flex flex-col items-end gap-0.5">
-                  <Badge className={`text-micro px-1.5 py-0.5 font-['Open_Sans',sans-serif] ${getCategoryColor(template.category)}`}>
+                  <Badge className={`text-micro px-1.5 py-0.5 ${getCategoryColor(template.category)}`}>
                     {template.category}
                   </Badge>
                   {isAppliedToAll && (
-                    <Badge className="text-micro px-1.5 py-0.5 bg-status-success/15 text-status-success border-status-success/30 font-['Open_Sans',sans-serif]">
+                    <Badge className="text-micro px-1.5 py-0.5 bg-status-success/15 text-status-success border-status-success/30">
                       <CheckCircle className="w-2.5 h-2.5 mr-0.5" />
                       Aplicado a Todos
                     </Badge>
                   )}
                   {isPartiallyApplied && (
-                    <Badge className="text-micro px-1.5 py-0.5 bg-status-warning/15 text-status-warning border-status-warning/30 font-['Open_Sans',sans-serif]">
+                    <Badge className="text-micro px-1.5 py-0.5 bg-status-warning/15 text-status-warning border-status-warning/30">
                       {appliedCount}/{users.length} usuários
                     </Badge>
                   )}
                   {selectedUser && isAppliedToSelectedUser && !isAppliedToAll && (
-                    <Badge className="text-micro px-1.5 py-0.5 bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-subtle font-['Open_Sans',sans-serif]">
+                    <Badge className="text-micro px-1.5 py-0.5 bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-subtle">
                       Já aplicado a {selectedUser.name.split(' ')[0]}
                     </Badge>
                   )}
@@ -252,7 +252,7 @@ export function GoalsTemplateSelectModal({
                   Meta: {template.defaultTarget} {template.unit}
                 </span>
                 <div className="flex items-center gap-1.5">
-                  <Badge variant="outline" className="text-micro px-1.5 py-0.5 font-['Open_Sans',sans-serif]">
+                  <Badge variant="outline" className="text-micro px-1.5 py-0.5">
                     {template.period === 'monthly' ? 'Mensal' :
                      template.period === 'quarterly' ? 'Trimestral' : 'Anual'}
                   </Badge>

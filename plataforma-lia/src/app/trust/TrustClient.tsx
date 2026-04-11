@@ -133,7 +133,7 @@ export default function PublicTrustCenterPage() {
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-lia-btn-primary-bg dark:bg-lia-bg-secondary flex items-center justify-center">
-              <span className="text-white font-bold text-lg">W</span>
+              <span className="text-white font-semibold text-lg">W</span>
             </div>
             <div>
               <h1 className="font-semibold text-lia-text-primary dark:text-lia-text-primary">WeDo Talent</h1>
@@ -163,7 +163,7 @@ export default function PublicTrustCenterPage() {
             <Shield className="w-4 h-4" />
             Segurança & Compliance
           </div>
-          <h1 className="text-4xl font-bold text-lia-text-primary dark:text-lia-text-primary mb-4">
+          <h1 className="text-4xl font-semibold text-lia-text-primary dark:text-lia-text-primary mb-4">
             Centro de Confiança
           </h1>
           <p className="text-lg text-lia-text-secondary max-w-2xl mx-auto">
@@ -176,7 +176,7 @@ export default function PublicTrustCenterPage() {
             <div className="w-12 h-12 rounded-full bg-status-success/15 flex items-center justify-center mx-auto mb-4">
               <BadgeCheck className="w-6 h-6 text-status-success" />
             </div>
-            <div className="text-3xl font-bold text-lia-text-primary dark:text-lia-text-primary mb-1">{activeCompliance}</div>
+            <div className="text-3xl font-semibold text-lia-text-primary dark:text-lia-text-primary mb-1">{activeCompliance}</div>
             <p className="text-lia-text-secondary text-sm">Frameworks Ativos</p>
           </div>
 
@@ -184,7 +184,7 @@ export default function PublicTrustCenterPage() {
             <div className="w-12 h-12 rounded-full bg-lia-bg-tertiary dark:bg-lia-bg-secondary flex items-center justify-center mx-auto mb-4">
               <Building2 className="w-6 h-6 text-lia-text-secondary dark:text-lia-text-tertiary" />
             </div>
-            <div className="text-3xl font-bold text-lia-text-primary dark:text-lia-text-primary mb-1">{subprocessors.length}</div>
+            <div className="text-3xl font-semibold text-lia-text-primary dark:text-lia-text-primary mb-1">{subprocessors.length}</div>
             <p className="text-lia-text-secondary text-sm">Subprocessadores</p>
           </div>
 
@@ -192,7 +192,7 @@ export default function PublicTrustCenterPage() {
             <div className="w-12 h-12 rounded-full bg-wedo-purple/15 flex items-center justify-center mx-auto mb-4">
               <FileText className="w-6 h-6 text-wedo-purple" />
             </div>
-            <div className="text-3xl font-bold text-lia-text-primary dark:text-lia-text-primary mb-1">{resources.length}</div>
+            <div className="text-3xl font-semibold text-lia-text-primary dark:text-lia-text-primary mb-1">{resources.length}</div>
             <p className="text-lia-text-secondary text-sm">Documentos</p>
           </div>
 
@@ -200,7 +200,7 @@ export default function PublicTrustCenterPage() {
             <div className="w-12 h-12 rounded-full bg-status-warning/15 flex items-center justify-center mx-auto mb-4">
               <Globe className="w-6 h-6 text-status-warning" />
             </div>
-            <div className="text-3xl font-bold text-lia-text-primary dark:text-lia-text-primary mb-1">33+</div>
+            <div className="text-3xl font-semibold text-lia-text-primary dark:text-lia-text-primary mb-1">33+</div>
             <p className="text-lia-text-secondary text-sm">Integrações</p>
           </div>
         </div>
@@ -208,7 +208,7 @@ export default function PublicTrustCenterPage() {
         <section className="mb-12">
           <div className="flex items-center gap-3 mb-6">
             <Award className="w-6 h-6 text-lia-text-secondary dark:text-lia-text-tertiary" />
-            <h2 className="text-2xl font-bold text-lia-text-primary dark:text-lia-text-primary">Certificações & Compliance</h2>
+            <h2 className="text-2xl font-semibold text-lia-text-primary dark:text-lia-text-primary">Certificações & Compliance</h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {certifications.map((cert) => {
@@ -244,7 +244,7 @@ export default function PublicTrustCenterPage() {
         <section className="mb-12">
           <div className="flex items-center gap-3 mb-6">
             <Building2 className="w-6 h-6 text-lia-text-secondary dark:text-lia-text-tertiary" />
-            <h2 className="text-2xl font-bold text-lia-text-primary dark:text-lia-text-primary">Subprocessadores</h2>
+            <h2 className="text-2xl font-semibold text-lia-text-primary dark:text-lia-text-primary">Subprocessadores</h2>
           </div>
           <p className="text-lia-text-secondary mb-6">
             Lista completa de terceiros que processam dados em nosso nome, conforme exigido pela LGPD e GDPR. 
@@ -294,7 +294,7 @@ export default function PublicTrustCenterPage() {
         <section className="mb-12">
           <div className="flex items-center gap-3 mb-6">
             <Download className="w-6 h-6 text-lia-text-secondary dark:text-lia-text-tertiary" />
-            <h2 className="text-2xl font-bold text-lia-text-primary dark:text-lia-text-primary">Recursos para Download</h2>
+            <h2 className="text-2xl font-semibold text-lia-text-primary dark:text-lia-text-primary">Recursos para Download</h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {resources.map((resource) => (
@@ -318,7 +318,7 @@ export default function PublicTrustCenterPage() {
         <section className="mb-12">
           <div className="flex items-center gap-3 mb-6">
             <Brain className="w-6 h-6 text-wedo-cyan" />
-            <h2 className="text-2xl font-bold text-lia-text-primary dark:text-lia-text-primary">IA Responsável</h2>
+            <h2 className="text-2xl font-semibold text-lia-text-primary dark:text-lia-text-primary">IA Responsável</h2>
           </div>
           
           <div className="bg-lia-bg-primary rounded-xl border border-lia-border-subtle p-6 mb-6">
@@ -482,7 +482,7 @@ export default function PublicTrustCenterPage() {
               <Mail className="w-6 h-6 text-lia-text-secondary dark:text-lia-text-tertiary" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-lia-text-primary dark:text-lia-text-primary mb-2">Dúvidas sobre Segurança?</h2>
+              <h2 className="text-xl font-semibold text-lia-text-primary dark:text-lia-text-primary mb-2">Dúvidas sobre Segurança?</h2>
               <p className="text-lia-text-secondary mb-4">
                 Entre em contato com nossa equipe de segurança e compliance para questões sobre certificações, 
                 auditorias, avaliações de fornecedores ou solicitações de DPA.

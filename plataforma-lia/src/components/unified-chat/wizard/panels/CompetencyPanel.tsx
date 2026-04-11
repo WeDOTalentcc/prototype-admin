@@ -43,11 +43,11 @@ export function CompetencyPanel({ data, onUpdate }: Props) {
       <div className="px-4 py-3">
         <div className="flex items-center gap-2">
           <Target className="w-4 h-4 text-wedo-cyan" />
-          <span className="text-sm font-semibold text-lia-text-primary font-['Open_Sans',sans-serif]">
+          <span className="text-sm font-semibold text-lia-text-primary">
             {d.seniority_display || seniority}
           </span>
           {d.seniority_confidence > 0 && (
-            <span className="text-[10px] text-lia-text-tertiary font-['Open_Sans',sans-serif]">
+            <span className="text-[10px] text-lia-text-tertiary">
               ({Math.round(d.seniority_confidence * 100)}% confianca)
             </span>
           )}
@@ -57,7 +57,7 @@ export function CompetencyPanel({ data, onUpdate }: Props) {
         {d.seniority_signals?.length > 0 && (
           <div className="mt-2 space-y-1">
             {d.seniority_signals.map((s, i) => (
-              <div key={i} className="flex items-center justify-between text-xs font-['Open_Sans',sans-serif]">
+              <div key={i} className="flex items-center justify-between text-xs">
                 <span className="text-lia-text-secondary">{s.signal}</span>
                 <span className="text-lia-text-primary">{s.value}</span>
               </div>
@@ -68,7 +68,7 @@ export function CompetencyPanel({ data, onUpdate }: Props) {
 
       {/* Screening mode selector */}
       <div className="px-4 py-3">
-        <p className="text-xs font-medium text-lia-text-secondary font-['Open_Sans',sans-serif] mb-2">
+        <p className="text-xs font-medium text-lia-text-secondary mb-2">
           Modo de triagem
         </p>
         <div className="grid grid-cols-2 gap-2">
@@ -82,8 +82,8 @@ export function CompetencyPanel({ data, onUpdate }: Props) {
             )}
           >
             <Zap className="w-4 h-4" />
-            <span className="text-xs font-medium font-['Open_Sans',sans-serif]">Compacto</span>
-            <span className="text-[10px] font-['Open_Sans',sans-serif]">7 perguntas</span>
+            <span className="text-xs font-medium">Compacto</span>
+            <span className="text-[10px]">7 perguntas</span>
           </button>
           <button
             onClick={() => handleModeSelect("full")}
@@ -95,14 +95,14 @@ export function CompetencyPanel({ data, onUpdate }: Props) {
             )}
           >
             <Brain className="w-4 h-4" />
-            <span className="text-xs font-medium font-['Open_Sans',sans-serif]">Completo</span>
-            <span className="text-[10px] font-['Open_Sans',sans-serif]">12 perguntas</span>
+            <span className="text-xs font-medium">Completo</span>
+            <span className="text-[10px]">12 perguntas</span>
           </button>
         </div>
 
         {/* Distribution preview */}
         {distribution && (
-          <div className="mt-2 flex items-center gap-3 text-[10px] text-lia-text-tertiary font-['Open_Sans',sans-serif]">
+          <div className="mt-2 flex items-center gap-3 text-[10px] text-lia-text-tertiary">
             <span>{distribution.technical} tecnicas</span>
             <span className="w-px h-3 bg-lia-border-subtle" />
             <span>{distribution.behavioral} comportamentais</span>
@@ -114,14 +114,14 @@ export function CompetencyPanel({ data, onUpdate }: Props) {
       <div className="px-4 py-3 space-y-3">
         {techSkills.length > 0 && (
           <div>
-            <p className="text-xs font-medium text-lia-text-secondary font-['Open_Sans',sans-serif] mb-1.5">
+            <p className="text-xs font-medium text-lia-text-secondary mb-1.5">
               Tecnicas ({techSkills.length})
             </p>
             <div className="flex flex-wrap gap-1.5">
               {techSkills.map((s, i) => (
                 <span
                   key={i}
-                  className="inline-flex px-2 py-0.5 rounded bg-lia-bg-secondary border border-lia-border-subtle text-xs text-lia-text-primary font-['Open_Sans',sans-serif]"
+                  className="inline-flex px-2 py-0.5 rounded bg-lia-bg-secondary border border-lia-border-subtle text-xs text-lia-text-primary"
                 >
                   {s.skill}
                 </span>
@@ -132,12 +132,12 @@ export function CompetencyPanel({ data, onUpdate }: Props) {
 
         {behavSkills.length > 0 && (
           <div>
-            <p className="text-xs font-medium text-lia-text-secondary font-['Open_Sans',sans-serif] mb-1.5">
+            <p className="text-xs font-medium text-lia-text-secondary mb-1.5">
               Comportamentais ({behavSkills.length})
             </p>
             <div className="space-y-1">
               {behavSkills.map((s, i) => (
-                <div key={i} className="flex items-center gap-2 text-xs font-['Open_Sans',sans-serif]">
+                <div key={i} className="flex items-center gap-2 text-xs">
                   <span className="text-lia-text-primary">{s.skill}</span>
                   {s.trait && (
                     <span className="px-1.5 py-0.5 rounded bg-wedo-cyan/10 text-wedo-cyan text-[10px] font-medium">

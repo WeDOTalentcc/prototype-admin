@@ -106,7 +106,7 @@ export function JobRemuneracaoSection({
                         const isSelected = selectedBenefits.includes(name)
                         const isFromCompany = companyBenefitNames.includes(name)
                         return (
-                          <button key={name} type="button" onClick={() => isEditing && toggleBenefit(name)} disabled={!isEditing} className={`px-3 py-1.5 rounded-md text-xs font-['Open_Sans',sans-serif] font-medium border transition-colors ${isSelected ? "bg-lia-btn-primary-bg text-lia-btn-primary-text border-lia-btn-primary-bg" : "bg-lia-bg-primary text-lia-text-secondary border-lia-border-subtle hover:border-lia-border-medium"} ${!isEditing ? "cursor-default opacity-75" : "cursor-pointer"}`}>
+                          <button key={name} type="button" onClick={() => isEditing && toggleBenefit(name)} disabled={!isEditing} className={`px-3 py-1.5 rounded-md text-xs font-medium border transition-colors ${isSelected ? "bg-lia-btn-primary-bg text-lia-btn-primary-text border-lia-btn-primary-bg" : "bg-lia-bg-primary text-lia-text-secondary border-lia-border-subtle hover:border-lia-border-medium"} ${!isEditing ? "cursor-default opacity-75" : "cursor-pointer"}`}>
                             {isSelected ? "✓ " : ""}{name}
                             {!isFromCompany && <span className="ml-1 text-micro opacity-60">(custom)</span>}
                           </button>
@@ -116,7 +116,7 @@ export function JobRemuneracaoSection({
                   ) : (
                     <div className="flex flex-wrap gap-2">
                       {selectedBenefits.map((name) => (
-                        <span key={name} className="px-3 py-1.5 rounded-full text-xs font-['Open_Sans',sans-serif] font-medium bg-lia-btn-primary-bg text-lia-btn-primary-text flex items-center gap-1.5">
+                        <span key={name} className="px-3 py-1.5 rounded-full text-xs font-medium bg-lia-btn-primary-bg text-lia-btn-primary-text flex items-center gap-1.5">
                           {name}
                           {isEditing && <button onClick={() => toggleBenefit(name)} className="hover:text-status-error"><X className="w-3 h-3" /></button>}
                         </span>
@@ -138,7 +138,7 @@ export function JobRemuneracaoSection({
                     </div>
                   )}
                   {selectedBenefits.length === 0 && !isEditing && (
-                    <p className="text-xs text-lia-text-tertiary font-['Open_Sans',sans-serif] italic">Nenhum benefício selecionado</p>
+                    <p className="text-xs text-lia-text-tertiary italic">Nenhum benefício selecionado</p>
                   )}
                 </div>
               )

@@ -181,7 +181,7 @@ export function VacancyFullSummary({
       <div className="flex-1 space-y-3">
         <div className="rounded-xl rounded-tl-sm bg-lia-bg-primary border border-lia-border-subtle p-4 space-y-4">
           <div className="pb-2">
-            <h3 className="text-sm font-bold text-lia-text-primary dark:text-white">{vacancy.title}</h3>
+            <h3 className="text-sm font-semibold text-lia-text-primary dark:text-white">{vacancy.title}</h3>
             <p className="text-xs text-lia-text-tertiary mt-0.5" aria-live="polite" aria-atomic="true">
               Resumo completo da vaga baseada em processo anterior
             </p>

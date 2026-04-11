@@ -114,7 +114,7 @@ export function AudioPlayer({
   return (
     <div
       className={cn(
- "flex items-center gap-2 px-3 py-2 rounded-md bg-lia-bg-secondary border border-lia-border-subtle min-w-sidebar-content max-w-[280px] font-['Open_Sans',sans-serif]",
+ "flex items-center gap-2 px-3 py-2 rounded-md bg-lia-bg-secondary border border-lia-border-subtle min-w-sidebar-content max-w-[280px]",
         className
       )}
     >

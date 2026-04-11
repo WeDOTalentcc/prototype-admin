@@ -56,7 +56,7 @@ export function ContactFilterConfirmModal({
               <div className="border-t border-lia-border-subtle dark:border-lia-border-subtle pt-2">
                 <div className="flex justify-between items-center">
                   <span className="font-medium">Custo adicional:</span>
-                  <span className="font-bold text-lg text-wedo-green">
+                  <span className="font-semibold text-lg text-wedo-green">
                     +1 crédito/cand
                   </span>
                 </div>

@@ -132,7 +132,7 @@ export function ChatMessageList({
               timestamp={formatTimestamp(message.timestamp)}
               userName={userDisplayName}
             >
-              <p className="text-xs text-lia-text-primary leading-relaxed font-['Open_Sans',sans-serif]">{message.content}</p>
+              <p className="text-xs text-lia-text-primary leading-relaxed">{message.content}</p>
             </ChatBubbleBase>
           ) : message.messageType === 'parecer-lia' && message.parecerData ? (
             <ChatBubbleBase
@@ -141,7 +141,7 @@ export function ChatMessageList({
               afterBubble={renderFeedback(message.id, message.content)}
               bubbleClassName="bg-transparent p-0"
             >
-              <p className="text-xs text-lia-text-primary mb-3 font-['Open_Sans',sans-serif]">{message.content}</p>
+              <p className="text-xs text-lia-text-primary mb-3">{message.content}</p>
               <ParecerLIACard
                 data={message.parecerData}
                 onAcceptSuggestion={(suggestion) => {
@@ -156,7 +156,7 @@ export function ChatMessageList({
               timestamp={formatTimestamp(message.timestamp)}
               afterBubble={renderFeedback(message.id, message.content)}
             >
-              <div className="text-xs text-lia-text-primary leading-relaxed whitespace-pre-wrap font-['Open_Sans',sans-serif]">
+              <div className="text-xs text-lia-text-primary leading-relaxed whitespace-pre-wrap">
                 {formatSalaryAnalysisText(message.compensationAnalysis || null)}
               </div>
             </ChatBubbleBase>
@@ -320,7 +320,7 @@ export function ChatMessageList({
                 result={(message.actionResult || {}) as Record<string, unknown> & { candidate_id?: string; candidate_name?: string; from_stage?: string; to_stage?: string; subject?: string; datetime?: string; moved_at?: string; sent_at?: string; scheduled_at?: string; simulated?: boolean; action?: string }}
               />
               {message.content && (
-                <p className="text-xs text-lia-text-primary mt-1.5 leading-relaxed font-['Open_Sans',sans-serif]">
+                <p className="text-xs text-lia-text-primary mt-1.5 leading-relaxed">
                   {message.content}
                 </p>
               )}
@@ -340,7 +340,7 @@ export function ChatMessageList({
                 message.proactiveData.severity === 'warning' ? "border-l-status-warning bg-status-warning/5" :
                 "border-l-wedo-cyan bg-wedo-cyan/5"
               )}>
-                <p className="text-xs text-lia-text-primary leading-relaxed font-['Open_Sans',sans-serif]">{message.content}</p>
+                <p className="text-xs text-lia-text-primary leading-relaxed">{message.content}</p>
               </div>
               <div className="flex items-center gap-2 mt-1.5">
                 <button
@@ -407,7 +407,7 @@ export function ChatMessageList({
                 ) : undefined
               }
             >
-              <div className="text-xs text-lia-text-primary space-y-1 leading-relaxed break-words overflow-wrap-anywhere font-['Open_Sans',sans-serif]">
+              <div className="text-xs text-lia-text-primary space-y-1 leading-relaxed break-words overflow-wrap-anywhere">
                 {formatMessageContent(message.content, message.isTyping || false, message.id)}
                 {message.isTyping && messages[messages.length - 1]?.id === message.id && isTypingEffect && (
                   <span className="inline-block w-1.5 h-3.5 bg-wedo-cyan animate-pulse motion-reduce:animate-none ml-0.5" />

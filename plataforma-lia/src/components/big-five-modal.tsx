@@ -203,7 +203,7 @@ export function BigFiveModal({ isOpen, onClose, candidate }: BigFiveModalProps) 
                 </AvatarFallback>
               </Avatar>
               <div>
-                <DialogTitle className="text-sm font-semibold text-lia-text-primary font-['Open_Sans',sans-serif]">
+                <DialogTitle className="text-sm font-semibold text-lia-text-primary">
                   Relatório Big Five
                 </DialogTitle>
                 <DialogDescription className="text-xs text-lia-text-secondary mt-0.5">
@@ -217,10 +217,10 @@ export function BigFiveModal({ isOpen, onClose, candidate }: BigFiveModalProps) 
             <div className="w-14 h-14 bg-lia-bg-tertiary dark:bg-lia-bg-elevated rounded-full flex items-center justify-center mb-4">
               <BrainCircuit className="w-7 h-7 text-lia-text-secondary" />
             </div>
-            <h3 className="text-base-ui font-medium text-lia-text-primary mb-2 font-['Open_Sans',sans-serif]">
+            <h3 className="text-base-ui font-medium text-lia-text-primary mb-2">
               Assessment não realizado
             </h3>
-            <p className="text-xs text-lia-text-secondary max-w-xs font-['Open_Sans',sans-serif]">
+            <p className="text-xs text-lia-text-secondary max-w-xs">
               Este candidato ainda não completou o assessment de personalidade Big Five. O relatório será gerado automaticamente após a conclusão.
             </p>
           </div>
@@ -228,7 +228,7 @@ export function BigFiveModal({ isOpen, onClose, candidate }: BigFiveModalProps) 
           <DialogFooter className="border-t border-lia-border-subtle dark:border-lia-border-subtle pt-4">
             <Button
               onClick={onClose}
-              className="bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active h-9 px-4 text-xs font-medium font-['Open_Sans',sans-serif]"
+              className="bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active h-9 px-4 text-xs font-medium"
             >
               Entendido
             </Button>
@@ -250,7 +250,7 @@ export function BigFiveModal({ isOpen, onClose, candidate }: BigFiveModalProps) 
               </AvatarFallback>
             </Avatar>
             <div>
-              <DialogTitle className="text-sm font-semibold text-lia-text-primary font-['Open_Sans',sans-serif]">
+              <DialogTitle className="text-sm font-semibold text-lia-text-primary">
                 Relatório Big Five
               </DialogTitle>
               <DialogDescription className="text-xs text-lia-text-secondary mt-0.5">
@@ -308,7 +308,7 @@ export function BigFiveModal({ isOpen, onClose, candidate }: BigFiveModalProps) 
           <div className="grid grid-cols-2 gap-6">
             <div className="col-span-2 lg:col-span-1">
               <div className="bg-lia-bg-secondary dark:bg-lia-bg-elevated rounded-xl p-4 h-full border border-lia-border-subtle dark:border-lia-border-subtle">
-                <h3 className="text-xs font-medium uppercase tracking-wide text-lia-text-primary mb-4 flex items-center gap-2 font-['Open_Sans',sans-serif]">
+                <h3 className="text-xs font-medium uppercase tracking-wide text-lia-text-primary mb-4 flex items-center gap-2">
                   <div className="w-2 h-2 bg-wedo-purple rounded-full"></div>
                   Perfil de Personalidade
                 </h3>
@@ -421,7 +421,7 @@ export function BigFiveModal({ isOpen, onClose, candidate }: BigFiveModalProps) 
             </div>
 
             <div className="col-span-2 lg:col-span-1 space-y-3">
-              <h3 className="text-xs font-medium uppercase tracking-wide text-lia-text-primary mb-3 flex items-center gap-2 font-['Open_Sans',sans-serif]">
+              <h3 className="text-xs font-medium uppercase tracking-wide text-lia-text-primary mb-3 flex items-center gap-2">
                 <div className="w-2 h-2 bg-lia-btn-primary-bg rounded-full"></div>
                 Scores por Traço
               </h3>
@@ -466,7 +466,7 @@ export function BigFiveModal({ isOpen, onClose, candidate }: BigFiveModalProps) 
             </div>
 
             <div className="col-span-2 space-y-3 mt-2">
-              <h3 className="text-xs font-medium uppercase tracking-wide text-lia-text-primary mb-3 flex items-center gap-2 font-['Open_Sans',sans-serif]">
+              <h3 className="text-xs font-medium uppercase tracking-wide text-lia-text-primary mb-3 flex items-center gap-2">
                 <div className="w-2 h-2 bg-status-success rounded-full"></div>
                 Análise Detalhada
               </h3>
@@ -487,7 +487,7 @@ export function BigFiveModal({ isOpen, onClose, candidate }: BigFiveModalProps) 
                       </div>
                       <div className="flex-1">
                         <div className="flex items-center justify-between mb-2">
-                          <h4 className="text-base-ui font-medium text-lia-text-primary font-['Open_Sans',sans-serif]">
+                          <h4 className="text-base-ui font-medium text-lia-text-primary">
                             {trait}
                           </h4>
                           <Badge className={`${info.color} text-white text-micro px-1.5 py-0.5`}>
@@ -526,12 +526,12 @@ export function BigFiveModal({ isOpen, onClose, candidate }: BigFiveModalProps) 
               <Button 
                 variant="outline" 
                 onClick={onClose}
-                className="h-9 px-4 text-xs font-medium bg-lia-bg-primary border border-lia-border-default hover:bg-lia-bg-secondary dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-lia-bg-inverse text-lia-text-secondary font-['Open_Sans',sans-serif]"
+                className="h-9 px-4 text-xs font-medium bg-lia-bg-primary border border-lia-border-default hover:bg-lia-bg-secondary dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-lia-bg-inverse text-lia-text-secondary"
               >
                 Fechar
               </Button>
               <Button 
-                className="bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active h-9 px-4 text-xs font-medium font-['Open_Sans',sans-serif]"
+                className="bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active h-9 px-4 text-xs font-medium"
               >
                 Exportar Relatório
               </Button>

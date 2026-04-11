@@ -204,7 +204,7 @@ export function KanbanPageModalsInline(state: KanbanPageCoreState) {
                 <div className="space-y-6">
                   <div className="text-center py-8">
                     <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-lia-bg-tertiary mb-4">
-                      <span className="text-4xl font-bold text-lia-text-primary">
+                      <span className="text-4xl font-semibold text-lia-text-primary">
                         {calculateNotaLiaGeral(selectedCandidateForModal as unknown as Parameters<typeof calculateNotaLiaGeral>[0])}
                       </span>
                     </div>
@@ -249,7 +249,7 @@ export function KanbanPageModalsInline(state: KanbanPageCoreState) {
                     <div 
                       className="inline-flex items-center justify-center w-20 h-20 rounded-full mb-4 bg-lia-bg-tertiary"
                     >
-                      <span className="text-3xl font-bold text-lia-text-primary">
+                      <span className="text-3xl font-semibold text-lia-text-primary">
                         {formatScorePercent((selectedCandidateForModal.liaScore ?? selectedCandidateForModal.score) as number | null | undefined, 0)}
                       </span>
                     </div>
@@ -272,7 +272,7 @@ export function KanbanPageModalsInline(state: KanbanPageCoreState) {
                     <div 
                       className={`inline-flex items-center justify-center w-20 h-20 rounded-full mb-4 ${(selectedCandidateForModal.technicalTestScore as number) >= 80 ? 'bg-status-success' : (selectedCandidateForModal.technicalTestScore as number) >= 60 ? 'bg-status-warning' : 'bg-lia-border-medium'}`}
                     >
-                      <span className="text-3xl font-bold text-lia-text-primary">
+                      <span className="text-3xl font-semibold text-lia-text-primary">
                         {formatScorePercent(selectedCandidateForModal.technicalTestScore as number | null | undefined, 0)}
                       </span>
                     </div>
@@ -295,7 +295,7 @@ export function KanbanPageModalsInline(state: KanbanPageCoreState) {
                     <div 
                       className={`inline-flex items-center justify-center w-20 h-20 rounded-full mb-4 ${(selectedCandidateForModal.englishTestScore as number) >= 80 ? 'bg-status-success' : (selectedCandidateForModal.englishTestScore as number) >= 60 ? 'bg-lia-border-default' : 'bg-lia-border-medium'}`}
                     >
-                      <span className="text-3xl font-bold text-lia-text-primary">
+                      <span className="text-3xl font-semibold text-lia-text-primary">
                         {formatScorePercent(selectedCandidateForModal.englishTestScore as number | null | undefined, 0)}
                       </span>
                     </div>

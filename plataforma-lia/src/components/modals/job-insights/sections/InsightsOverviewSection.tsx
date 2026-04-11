@@ -157,7 +157,7 @@ export function InsightsOverviewSection({
                 <Icon className="w-3.5 h-3.5 text-lia-text-tertiary" />
                 <span className="text-xs text-lia-text-secondary">{label}</span>
               </div>
-              <p className={`text-xl font-bold ${color}`}>{value}</p>
+              <p className={`text-xl font-semibold ${color}`}>{value}</p>
             </div>
           ))}
         </div>

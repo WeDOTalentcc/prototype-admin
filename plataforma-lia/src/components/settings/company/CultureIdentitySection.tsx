@@ -23,7 +23,7 @@ export function CultureIdentitySection({
 }: CultureIdentitySectionProps) {
   return (
     <div className="space-y-3">
-      <h3 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wider px-1 font-['Open_Sans',sans-serif]">
+      <h3 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wider px-1">
         Cultura e Identidade
       </h3>
       

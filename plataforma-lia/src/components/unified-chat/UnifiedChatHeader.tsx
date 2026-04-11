@@ -98,7 +98,7 @@ export function UnifiedChatHeader({
           onChange={(e) => setRenameValue(e.target.value)}
           onBlur={handleFinishRename}
           onKeyDown={handleRenameKeyDown}
-          className="text-sm font-medium text-lia-text-primary bg-lia-bg-secondary border border-lia-border-subtle rounded px-1.5 py-0.5 max-w-[200px] outline-none focus:border-wedo-cyan font-['Open_Sans',sans-serif]"
+          className="text-sm font-medium text-lia-text-primary bg-lia-bg-secondary border border-lia-border-subtle rounded px-1.5 py-0.5 max-w-[200px] outline-none focus:border-wedo-cyan"
           aria-label="Renomear conversa"
         />
       )
@@ -115,7 +115,7 @@ export function UnifiedChatHeader({
         {mode === "fullscreen" ? (
           /* Fullscreen: breadcrumb style like Notion */
           <div className="flex items-center gap-1 min-w-0">
-            <span className="text-sm text-lia-text-secondary font-['Open_Sans',sans-serif]">
+            <span className="text-sm text-lia-text-secondary">
               LIA
             </span>
             <span className="text-sm text-lia-text-disabled">/</span>
@@ -126,7 +126,7 @@ export function UnifiedChatHeader({
                 onClick={() => setShowOptionsMenu(!showOptionsMenu)}
                 className="flex items-center gap-1 min-w-0 group"
               >
-                <span className="text-sm text-lia-text-primary font-medium truncate max-w-[200px] font-['Open_Sans',sans-serif]">
+                <span className="text-sm text-lia-text-primary font-medium truncate max-w-[200px]">
                   {title}
                 </span>
                 <ChevronDown className="w-3 h-3 text-lia-text-disabled group-hover:text-lia-text-secondary flex-shrink-0" />
@@ -142,7 +142,7 @@ export function UnifiedChatHeader({
               onClick={() => setShowOptionsMenu(!showOptionsMenu)}
               className="flex items-center gap-1 min-w-0 group"
             >
-              <span className="text-sm font-medium text-lia-text-primary truncate max-w-[160px] font-['Open_Sans',sans-serif]">
+              <span className="text-sm font-medium text-lia-text-primary truncate max-w-[160px]">
                 {title}
               </span>
               <ChevronDown className="w-3 h-3 text-lia-text-disabled group-hover:text-lia-text-secondary flex-shrink-0" />
@@ -207,7 +207,7 @@ export function UnifiedChatHeader({
                       setShowModeMenu(false)
                     }}
                     className={cn(
-                      "w-full flex items-center gap-2.5 px-3 py-2 text-sm font-['Open_Sans',sans-serif]",
+                      "w-full flex items-center gap-2.5 px-3 py-2 text-sm",
                       "hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none",
                       mode === opt.mode
                         ? "text-lia-text-primary"
@@ -255,7 +255,7 @@ export function UnifiedChatHeader({
               <div className="absolute right-0 top-full mt-1 z-50 w-44 rounded-xl border border-lia-border-subtle bg-lia-bg-primary py-1">
                 <button
                   onClick={handleStartRename}
-                  className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-lia-text-secondary hover:bg-lia-bg-secondary font-['Open_Sans',sans-serif]"
+                  className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-lia-text-secondary hover:bg-lia-bg-secondary"
                 >
                   <Pencil className="w-3.5 h-3.5" />
                   Renomear
@@ -263,7 +263,7 @@ export function UnifiedChatHeader({
                 <div className="my-1 border-t border-lia-border-subtle" />
                 <button
                   onClick={handleDelete}
-                  className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-status-error hover:bg-lia-bg-secondary font-['Open_Sans',sans-serif]"
+                  className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-status-error hover:bg-lia-bg-secondary"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                   Excluir

@@ -39,7 +39,7 @@ export function JobPreviewLiaMetrics({ previewJob }: JobPreviewLiaMetricsProps) 
             <span className="text-xs font-medium text-lia-text-primary">Triagens Realizadas</span>
             <Clock className="w-3 h-3 text-lia-text-primary" />
           </div>
-          <div className="text-2xl font-bold text-lia-text-primary">
+          <div className="text-2xl font-semibold text-lia-text-primary">
             {previewJob.liaMetrics?.triagens_realizadas ?? 0}
           </div>
           <div className="mt-1 text-xs text-lia-text-primary">
@@ -52,7 +52,7 @@ export function JobPreviewLiaMetrics({ previewJob }: JobPreviewLiaMetricsProps) 
             <span className="text-xs font-medium text-lia-text-primary">Pipeline LIA</span>
             <TrendingUp className="w-3 h-3 text-lia-text-primary" />
           </div>
-          <div className="text-2xl font-bold text-lia-text-primary">
+          <div className="text-2xl font-semibold text-lia-text-primary">
             {previewJob.liaMetrics?.pipeline_lia ?? 0}
           </div>
           <div className="mt-1 text-xs text-lia-text-primary">
@@ -65,7 +65,7 @@ export function JobPreviewLiaMetrics({ previewJob }: JobPreviewLiaMetricsProps) 
             <span className="text-xs font-medium text-lia-text-primary">Sem Resposta</span>
             <Zap className="w-3 h-3 text-lia-text-primary" />
           </div>
-          <div className="text-2xl font-bold text-lia-text-primary">
+          <div className="text-2xl font-semibold text-lia-text-primary">
             {previewJob.liaMetrics?.sem_resposta ?? 0}
           </div>
           <div className="mt-1 text-xs text-lia-text-primary">
@@ -78,7 +78,7 @@ export function JobPreviewLiaMetrics({ previewJob }: JobPreviewLiaMetricsProps) 
             <span className="text-xs font-medium text-lia-text-primary">Taxa de Conclusão</span>
             <CheckCircle className="w-3 h-3 text-lia-text-primary" />
           </div>
-          <div className="text-2xl font-bold text-lia-text-primary">
+          <div className="text-2xl font-semibold text-lia-text-primary">
             {(() => {
               const realizadas = previewJob.liaMetrics?.triagens_realizadas ?? 0
               const agendadas = previewJob.liaMetrics?.triagens_agendadas ?? 0

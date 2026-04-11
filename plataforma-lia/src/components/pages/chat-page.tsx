@@ -192,7 +192,7 @@ export function LegacyChatPage({ initialConversationId }: { initialConversationI
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   placeholder="Buscar na conversa..."
-                  className="w-full px-3 py-2 rounded-xl text-xs font-['Open_Sans',sans-serif] focus:outline-none border border-lia-border-subtle bg-lia-bg-primary text-lia-text-primary"
+                  className="w-full px-3 py-2 rounded-xl text-xs focus:outline-none border border-lia-border-subtle bg-lia-bg-primary text-lia-text-primary"
                   autoFocus
                 />
                 <Search className="absolute right-3 top-2.5 w-4 h-4 text-lia-text-secondary" />
@@ -374,7 +374,7 @@ export function LegacyChatPage({ initialConversationId }: { initialConversationI
                             key={suggestion}
                             size="sm"
                             onClick={() => setInput(suggestion)}
-                            className="text-xs h-7 px-3 font-['Open_Sans',sans-serif] transition-transform motion-reduce:transition-none duration-200 hover:scale-105 text-lia-text-primary border border-lia-border-subtle bg-lia-bg-primary hover:bg-lia-bg-tertiary"
+                            className="text-xs h-7 px-3 transition-transform motion-reduce:transition-none duration-200 hover:scale-105 text-lia-text-primary border border-lia-border-subtle bg-lia-bg-primary hover:bg-lia-bg-tertiary"
                           >
                             {suggestion}
                           </Button>

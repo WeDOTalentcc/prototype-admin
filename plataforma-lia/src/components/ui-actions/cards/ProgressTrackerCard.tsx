@@ -142,14 +142,14 @@ export function ProgressTrackerCard({
           <div
             className="text-center p-2 rounded-xl border bg-lia-bg-primary border-lia-border-subtle"
           >
-            <div className="text-lg font-bold text-lia-text-secondary">{data.days_open}</div>
+            <div className="text-lg font-semibold text-lia-text-secondary">{data.days_open}</div>
             <div className="text-xs text-lia-text-tertiary">Dias Aberta</div>
           </div>
           {data.avg_time_to_hire !== undefined && (
             <div
               className="text-center p-2 rounded-xl border bg-lia-bg-primary border-lia-border-subtle"
             >
-              <div className="text-lg font-bold text-lia-text-primary">
+              <div className="text-lg font-semibold text-lia-text-primary">
                 {data.avg_time_to_hire}d
               </div>
               <div className="text-xs text-lia-text-tertiary">Tempo Médio</div>
@@ -159,7 +159,7 @@ export function ProgressTrackerCard({
             <div
               className="text-center p-2 rounded-xl border bg-lia-bg-primary border-lia-border-subtle"
             >
-              <div className="text-lg font-bold text-wedo-green">{data.conversion_rate}%</div>
+              <div className="text-lg font-semibold text-wedo-green">{data.conversion_rate}%</div>
               <div className="text-xs text-lia-text-tertiary">Conversão</div>
             </div>
           )}

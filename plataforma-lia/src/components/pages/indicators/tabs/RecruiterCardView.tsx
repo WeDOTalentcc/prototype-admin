@@ -41,7 +41,7 @@ export function RecruiterCardView({ filteredRecruiters, getStatusColor }: Recrui
                 </div>
               </div>
               <div className="text-right">
-                <div className="text-2xl font-bold text-lia-text-primary">
+                <div className="text-2xl font-semibold text-lia-text-primary">
                   {recruiter.totalScore}
                 </div>
                 <div className="text-xs text-lia-text-primary">
@@ -53,7 +53,7 @@ export function RecruiterCardView({ filteredRecruiters, getStatusColor }: Recrui
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="text-center p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl">
-                <div className="text-lg font-bold text-lia-text-primary">
+                <div className="text-lg font-semibold text-lia-text-primary">
                   {recruiter.totalHires}
                 </div>
                 <div className="text-xs text-lia-text-secondary">
@@ -61,7 +61,7 @@ export function RecruiterCardView({ filteredRecruiters, getStatusColor }: Recrui
                 </div>
               </div>
               <div className="text-center p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl">
-                <div className="text-lg font-bold text-lia-text-primary">
+                <div className="text-lg font-semibold text-lia-text-primary">
                   {recruiter.avgTimeToFill}d
                 </div>
                 <div className="text-xs text-lia-text-secondary">
@@ -69,7 +69,7 @@ export function RecruiterCardView({ filteredRecruiters, getStatusColor }: Recrui
                 </div>
               </div>
               <div className="text-center p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl">
-                <div className="text-lg font-bold text-lia-text-primary">
+                <div className="text-lg font-semibold text-lia-text-primary">
                   {recruiter.npsScore}%
                 </div>
                 <div className="text-xs text-lia-text-secondary">
@@ -77,7 +77,7 @@ export function RecruiterCardView({ filteredRecruiters, getStatusColor }: Recrui
                 </div>
               </div>
               <div className="text-center p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl">
-                <div className="text-lg font-bold text-lia-text-primary">
+                <div className="text-lg font-semibold text-lia-text-primary">
                   {recruiter.conversionRate}%
                 </div>
                 <div className="text-xs text-lia-text-secondary">

@@ -157,7 +157,7 @@ export function FairnessComplianceHub({ activeSubsection }: FairnessComplianceHu
                 </div>
                 <span className={textStyles.description}>Total de Eventos</span>
               </div>
-              <p className="text-2xl font-bold text-lia-text-primary">{summary?.total_events ?? 0}</p>
+              <p className="text-2xl font-semibold text-lia-text-primary">{summary?.total_events ?? 0}</p>
             </CardContent>
           </Card>
           <Card className={cardStyles.base}>
@@ -168,7 +168,7 @@ export function FairnessComplianceHub({ activeSubsection }: FairnessComplianceHu
                 </div>
                 <span className={textStyles.description}>Bloqueios</span>
               </div>
-              <p className="text-2xl font-bold text-red-500">{summary?.total_blocks ?? 0}</p>
+              <p className="text-2xl font-semibold text-red-500">{summary?.total_blocks ?? 0}</p>
             </CardContent>
           </Card>
           <Card className={cardStyles.base}>
@@ -179,7 +179,7 @@ export function FairnessComplianceHub({ activeSubsection }: FairnessComplianceHu
                 </div>
                 <span className={textStyles.description}>Alertas</span>
               </div>
-              <p className="text-2xl font-bold text-yellow-500">{totalWarnings}</p>
+              <p className="text-2xl font-semibold text-yellow-500">{totalWarnings}</p>
             </CardContent>
           </Card>
         </div>

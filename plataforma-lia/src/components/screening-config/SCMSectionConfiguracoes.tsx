@@ -89,7 +89,7 @@ export function SCMSectionConfiguracoes({
 
             {/* Canal de Triagem preview */}
             <div>
-              <h3 className="text-xs font-semibold text-lia-text-tertiary uppercase tracking-wider px-1 font-['Open_Sans',sans-serif] mb-3">Canal de Triagem</h3>
+              <h3 className="text-xs font-semibold text-lia-text-tertiary uppercase tracking-wider px-1 mb-3">Canal de Triagem</h3>
               {(() => {
                 const primaryKey = screeningConfig?.screening_channels?.primary_channel ?? 'chat_web'
                 const fallbackKeys = screeningConfig?.screening_channels?.fallback_order ?? ['whatsapp']
@@ -133,7 +133,7 @@ export function SCMSectionConfiguracoes({
 
             {/* Channels preview */}
             <div>
-              <h3 className="text-xs font-semibold text-lia-text-tertiary uppercase tracking-wider px-1 font-['Open_Sans',sans-serif] mb-3">Canais Habilitados</h3>
+              <h3 className="text-xs font-semibold text-lia-text-tertiary uppercase tracking-wider px-1 mb-3">Canais Habilitados</h3>
               <div className="border border-lia-border-subtle rounded-xl divide-y divide-lia-border-subtle">
                 {[
                   { key: 'whatsapp', label: 'WhatsApp', icon: MessageSquare, enabled: screeningConfig?.channels?.whatsapp?.enabled ?? true },
@@ -159,10 +159,10 @@ export function SCMSectionConfiguracoes({
 
             {/* Settings preview */}
             <div>
-              <h3 className="text-xs font-semibold text-lia-text-tertiary uppercase tracking-wider px-1 font-['Open_Sans',sans-serif] mb-3">Configurações</h3>
+              <h3 className="text-xs font-semibold text-lia-text-tertiary uppercase tracking-wider px-1 mb-3">Configurações</h3>
               <div className="space-y-3">
                 <div>
-                  <label className="text-xs font-medium text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Score Mínimo Aprovação (WSI)</label>
+                  <label className="text-xs font-medium text-lia-text-primary block mb-2">Score Mínimo Aprovação (WSI)</label>
                   <div className="grid grid-cols-3 gap-2">
                     {[
                       { key: 'rigorous', label: 'Rigoroso', score: '≥ 4.2/5.0', desc: 'Só aprovados automaticamente' },
@@ -185,14 +185,14 @@ export function SCMSectionConfiguracoes({
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="text-xs font-medium text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Timeout Resposta</label>
-                    <div className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle rounded-xl bg-lia-bg-secondary text-lia-text-secondary opacity-60">
+                    <label className="text-xs font-medium text-lia-text-primary block mb-2">Timeout Resposta</label>
+                    <div className="w-full px-3 py-2 text-xs border border-lia-border-subtle rounded-xl bg-lia-bg-secondary text-lia-text-secondary opacity-60">
                       {screeningConfig?.settings?.response_timeout_hours ?? 48}h
                     </div>
                   </div>
                   <div>
-                    <label className="text-xs font-medium text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Re-tentativas</label>
-                    <div className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle rounded-xl bg-lia-bg-secondary text-lia-text-secondary opacity-60">
+                    <label className="text-xs font-medium text-lia-text-primary block mb-2">Re-tentativas</label>
+                    <div className="w-full px-3 py-2 text-xs border border-lia-border-subtle rounded-xl bg-lia-bg-secondary text-lia-text-secondary opacity-60">
                       {screeningConfig?.settings?.max_retries ?? 2}x
                     </div>
                   </div>
@@ -204,18 +204,18 @@ export function SCMSectionConfiguracoes({
             <div className="pt-3 border-t border-lia-border-subtle">
               <div className="flex items-center gap-2 mb-2">
                 <Calendar className="w-3.5 h-3.5 text-lia-text-disabled" />
-                <span className="text-xs font-semibold text-lia-text-tertiary uppercase tracking-wider font-['Open_Sans',sans-serif]">Prazo da Triagem</span>
+                <span className="text-xs font-semibold text-lia-text-tertiary uppercase tracking-wider">Prazo da Triagem</span>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs font-medium text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Data Limite</label>
-                  <div className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle rounded-xl bg-lia-bg-secondary text-lia-text-secondary opacity-60">
+                  <label className="text-xs font-medium text-lia-text-primary block mb-2">Data Limite</label>
+                  <div className="w-full px-3 py-2 text-xs border border-lia-border-subtle rounded-xl bg-lia-bg-secondary text-lia-text-secondary opacity-60">
                     {job.deadlineScreening ? new Date(String(job.deadlineScreening)).toLocaleDateString('pt-BR') : 'Não definido'}
                   </div>
                 </div>
                 <div>
-                  <label className="text-xs font-medium text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Dias Restantes</label>
-                  <div className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle rounded-xl bg-lia-bg-secondary text-lia-text-secondary opacity-60">
+                  <label className="text-xs font-medium text-lia-text-primary block mb-2">Dias Restantes</label>
+                  <div className="w-full px-3 py-2 text-xs border border-lia-border-subtle rounded-xl bg-lia-bg-secondary text-lia-text-secondary opacity-60">
                     {job.deadlineScreening ? (() => { const days = Math.ceil((new Date(String(job.deadlineScreening)).getTime() - Date.now()) / (1000*60*60*24)); return days > 0 ? `${days} dias` : days === 0 ? 'Hoje' : 'Expirado' })() : '—'}
                   </div>
                 </div>
@@ -226,11 +226,11 @@ export function SCMSectionConfiguracoes({
             <div className="pt-3 border-t border-lia-border-subtle">
               <div className="flex items-center gap-2 mb-2">
                 <ShieldAlert className="w-3.5 h-3.5 text-lia-text-disabled" />
-                <span className="text-xs font-semibold text-lia-text-tertiary uppercase tracking-wider font-['Open_Sans',sans-serif]">Controle de Paralização</span>
+                <span className="text-xs font-semibold text-lia-text-tertiary uppercase tracking-wider">Controle de Paralização</span>
               </div>
               <div className="space-y-3">
                 <div>
-                  <label className="text-xs font-medium text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Limite de aprovações automáticas</label>
+                  <label className="text-xs font-medium text-lia-text-primary block mb-2">Limite de aprovações automáticas</label>
                   <div className="grid grid-cols-3 gap-2">
                     {[
                       { key: 'conservative' as const, label: 'Conservador', limit: '5 aprovações', desc: 'Revisão humana frequente' },
@@ -282,7 +282,7 @@ export function SCMSectionConfiguracoes({
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
                   <CalendarCheck className="w-3.5 h-3.5 text-lia-text-disabled" />
-                  <span className="text-xs font-semibold text-lia-text-tertiary uppercase tracking-wider font-['Open_Sans',sans-serif]">Agendamento Automático</span>
+                  <span className="text-xs font-semibold text-lia-text-tertiary uppercase tracking-wider">Agendamento Automático</span>
                 </div>
                 <div className={`relative inline-flex h-5 w-9 items-center rounded-full ${(screeningConfig?.scheduling?.auto_enabled ?? true) ? 'bg-lia-border-medium' : 'bg-lia-interactive-active'}`}>
                   <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-lia-bg-primary ${(screeningConfig?.scheduling?.auto_enabled ?? true) ? 'translate-x-4' : 'translate-x-0.5'}`} />
@@ -291,7 +291,7 @@ export function SCMSectionConfiguracoes({
               {(screeningConfig?.scheduling?.auto_enabled ?? true) && (
                 <div className="space-y-3">
                   <div>
-                    <label className="text-xs font-medium text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Score Mínimo para Agendamento (WSI)</label>
+                    <label className="text-xs font-medium text-lia-text-primary block mb-2">Score Mínimo para Agendamento (WSI)</label>
                     <div className="grid grid-cols-3 gap-2">
                       {[
                         { key: 'rigorous', label: 'Rigoroso', score: '≥ 4.2/5.0', desc: 'Só aprovados automaticamente' },
@@ -314,14 +314,14 @@ export function SCMSectionConfiguracoes({
                   </div>
                   <div className="grid grid-cols-3 gap-3">
                     <div>
-                      <label className="text-xs font-medium text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Calendário</label>
-                      <div className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle rounded-xl bg-lia-bg-secondary text-lia-text-secondary opacity-60">
+                      <label className="text-xs font-medium text-lia-text-primary block mb-2">Calendário</label>
+                      <div className="w-full px-3 py-2 text-xs border border-lia-border-subtle rounded-xl bg-lia-bg-secondary text-lia-text-secondary opacity-60">
                         {screeningConfig?.scheduling?.calendar_provider || 'Microsoft'}
                       </div>
                     </div>
                     <div>
-                      <label className="text-xs font-medium text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Horários</label>
-                      <div className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle rounded-xl bg-lia-bg-secondary text-lia-text-secondary opacity-60">
+                      <label className="text-xs font-medium text-lia-text-primary block mb-2">Horários</label>
+                      <div className="w-full px-3 py-2 text-xs border border-lia-border-subtle rounded-xl bg-lia-bg-secondary text-lia-text-secondary opacity-60">
                         {screeningConfig?.scheduling?.available_hours || '9h-18h'}
                       </div>
                       {(screeningConfig?.scheduling?.available_hours_inherited ?? true) && (
@@ -329,8 +329,8 @@ export function SCMSectionConfiguracoes({
                       )}
                     </div>
                     <div>
-                      <label className="text-xs font-medium text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Duração</label>
-                      <div className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle rounded-xl bg-lia-bg-secondary text-lia-text-secondary opacity-60">
+                      <label className="text-xs font-medium text-lia-text-primary block mb-2">Duração</label>
+                      <div className="w-full px-3 py-2 text-xs border border-lia-border-subtle rounded-xl bg-lia-bg-secondary text-lia-text-secondary opacity-60">
                         {screeningConfig?.scheduling?.interview_duration_min ?? 60}min
                       </div>
                     </div>
@@ -390,7 +390,7 @@ export function SCMSectionConfiguracoes({
 
             {/* Canal de Triagem editing */}
             <div>
-              <h3 className="text-xs font-semibold text-lia-text-tertiary uppercase tracking-wider px-1 font-['Open_Sans',sans-serif] mb-1">Canal de Triagem</h3>
+              <h3 className="text-xs font-semibold text-lia-text-tertiary uppercase tracking-wider px-1 mb-1">Canal de Triagem</h3>
               <p className="text-micro text-lia-text-disabled px-1 mb-3">Escolha o canal principal e a ordem de fallback caso o candidato não responda</p>
               <div className="space-y-2">
                 {CHANNEL_DEFS.map((ch) => {
@@ -491,7 +491,7 @@ export function SCMSectionConfiguracoes({
 
             {/* Channels editing */}
             <div>
-              <h3 className="text-xs font-semibold text-lia-text-tertiary uppercase tracking-wider px-1 font-['Open_Sans',sans-serif] mb-3">Canais Habilitados</h3>
+              <h3 className="text-xs font-semibold text-lia-text-tertiary uppercase tracking-wider px-1 mb-3">Canais Habilitados</h3>
               <div className="border border-lia-border-subtle rounded-xl divide-y divide-lia-border-subtle">
                 {([
                   { key: 'whatsapp' as const, label: 'WhatsApp', icon: MessageSquare },
@@ -519,10 +519,10 @@ export function SCMSectionConfiguracoes({
 
             {/* Settings editing */}
             <div>
-              <h3 className="text-xs font-semibold text-lia-text-tertiary uppercase tracking-wider px-1 font-['Open_Sans',sans-serif] mb-3">Configurações</h3>
+              <h3 className="text-xs font-semibold text-lia-text-tertiary uppercase tracking-wider px-1 mb-3">Configurações</h3>
               <div className="space-y-3">
                 <div>
-                  <label className="text-xs font-medium text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Score Mínimo Aprovação (WSI)</label>
+                  <label className="text-xs font-medium text-lia-text-primary block mb-2">Score Mínimo Aprovação (WSI)</label>
                   <div className="grid grid-cols-3 gap-2">
                     {([
                       { key: 'rigorous' as const, label: 'Rigoroso', score: '≥ 4.2/5.0', desc: 'Só aprovados automaticamente' },
@@ -546,14 +546,14 @@ export function SCMSectionConfiguracoes({
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="text-xs font-medium text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Timeout Resposta</label>
-                    <select value={editTimeoutHours} onChange={(e) => setEditTimeoutHours(Number(e.target.value))} className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle rounded-xl bg-lia-bg-secondary focus:ring-2 focus:ring-lia-btn-primary-bg/10 focus:border-lia-btn-primary-bg transition-colors motion-reduce:transition-none">
+                    <label className="text-xs font-medium text-lia-text-primary block mb-2">Timeout Resposta</label>
+                    <select value={editTimeoutHours} onChange={(e) => setEditTimeoutHours(Number(e.target.value))} className="w-full px-3 py-2 text-xs border border-lia-border-subtle rounded-xl bg-lia-bg-secondary focus:ring-2 focus:ring-lia-btn-primary-bg/10 focus:border-lia-btn-primary-bg transition-colors motion-reduce:transition-none">
                       {[12, 24, 48, 72].map(h => (<option key={h} value={h}>{h}h</option>))}
                     </select>
                   </div>
                   <div>
-                    <label className="text-xs font-medium text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Re-tentativas</label>
-                    <select value={editMaxRetries} onChange={(e) => setEditMaxRetries(Number(e.target.value))} className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle rounded-xl bg-lia-bg-secondary focus:ring-2 focus:ring-lia-btn-primary-bg/10 focus:border-lia-btn-primary-bg transition-colors motion-reduce:transition-none">
+                    <label className="text-xs font-medium text-lia-text-primary block mb-2">Re-tentativas</label>
+                    <select value={editMaxRetries} onChange={(e) => setEditMaxRetries(Number(e.target.value))} className="w-full px-3 py-2 text-xs border border-lia-border-subtle rounded-xl bg-lia-bg-secondary focus:ring-2 focus:ring-lia-btn-primary-bg/10 focus:border-lia-btn-primary-bg transition-colors motion-reduce:transition-none">
                       {[1, 2, 3, 4, 5].map(n => (<option key={n} value={n}>{n}x</option>))}
                     </select>
                   </div>
@@ -565,11 +565,11 @@ export function SCMSectionConfiguracoes({
             <div className="pt-3 border-t border-lia-border-subtle">
               <div className="flex items-center gap-2 mb-2">
                 <ShieldAlert className="w-3.5 h-3.5 text-lia-text-tertiary" />
-                <span className="text-xs font-semibold text-lia-text-tertiary uppercase tracking-wider font-['Open_Sans',sans-serif]">Controle de Paralização</span>
+                <span className="text-xs font-semibold text-lia-text-tertiary uppercase tracking-wider">Controle de Paralização</span>
               </div>
               <div className="space-y-3">
                 <div>
-                  <label className="text-xs font-medium text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Limite de aprovações automáticas</label>
+                  <label className="text-xs font-medium text-lia-text-primary block mb-2">Limite de aprovações automáticas</label>
                   <div className="grid grid-cols-3 gap-2">
                     {([
                       { key: 'conservative' as const, label: 'Conservador', limit: '5 aprovações', desc: 'Revisão humana frequente' },
@@ -621,15 +621,15 @@ export function SCMSectionConfiguracoes({
             <div className="pt-3 border-t border-lia-border-subtle">
               <div className="flex items-center gap-2 mb-2">
                 <Calendar className="w-3.5 h-3.5 text-lia-text-secondary" />
-                <span className="text-xs font-semibold text-lia-text-tertiary uppercase tracking-wider font-['Open_Sans',sans-serif]">Prazo da Triagem</span>
+                <span className="text-xs font-semibold text-lia-text-tertiary uppercase tracking-wider">Prazo da Triagem</span>
               </div>
               <div>
-                <label className="text-xs font-medium text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Data Limite</label>
+                <label className="text-xs font-medium text-lia-text-primary block mb-2">Data Limite</label>
                 <input
                   type="date"
                   value={job.deadlineScreening ? new Date(String(job.deadlineScreening)).toISOString().split('T')[0] : ''}
                   onChange={(e) => onJobUpdate?.({ ...job, deadlineScreening: e.target.value || null })}
-                  className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle rounded-xl bg-lia-bg-primary text-lia-text-primary"
+                  className="w-full px-3 py-2 text-xs border border-lia-border-subtle rounded-xl bg-lia-bg-primary text-lia-text-primary"
                 />
               </div>
             </div>
@@ -639,7 +639,7 @@ export function SCMSectionConfiguracoes({
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
                   <CalendarCheck className="w-3.5 h-3.5 text-lia-text-tertiary" />
-                  <span className="text-xs font-semibold text-lia-text-tertiary uppercase tracking-wider font-['Open_Sans',sans-serif]">Agendamento Automático</span>
+                  <span className="text-xs font-semibold text-lia-text-tertiary uppercase tracking-wider">Agendamento Automático</span>
                 </div>
                 <button onClick={() => setEditSchedulingEnabled(!editSchedulingEnabled)}
                   className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors motion-reduce:transition-none ${editSchedulingEnabled ? 'bg-lia-btn-primary-bg' : 'bg-lia-border-default'}`}>
@@ -649,7 +649,7 @@ export function SCMSectionConfiguracoes({
               {editSchedulingEnabled && (
                 <div className="space-y-3">
                   <div>
-                    <label className="text-xs font-medium text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Score Mínimo para Agendamento (WSI)</label>
+                    <label className="text-xs font-medium text-lia-text-primary block mb-2">Score Mínimo para Agendamento (WSI)</label>
                     <div className="grid grid-cols-3 gap-2">
                       {([
                         { key: 'rigorous' as const, label: 'Rigoroso', score: '≥ 4.2/5.0', desc: 'Só aprovados automaticamente' },
@@ -673,21 +673,21 @@ export function SCMSectionConfiguracoes({
                   </div>
                   <div className="grid grid-cols-3 gap-3">
                     <div>
-                      <label className="text-xs font-medium text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Calendário</label>
-                      <select value={editCalendarProvider} onChange={(e) => setEditCalendarProvider(e.target.value)} className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle rounded-xl bg-lia-bg-secondary focus:ring-2 focus:ring-lia-btn-primary-bg/10 focus:border-lia-btn-primary-bg transition-colors motion-reduce:transition-none">
+                      <label className="text-xs font-medium text-lia-text-primary block mb-2">Calendário</label>
+                      <select value={editCalendarProvider} onChange={(e) => setEditCalendarProvider(e.target.value)} className="w-full px-3 py-2 text-xs border border-lia-border-subtle rounded-xl bg-lia-bg-secondary focus:ring-2 focus:ring-lia-btn-primary-bg/10 focus:border-lia-btn-primary-bg transition-colors motion-reduce:transition-none">
                         <option value="Microsoft">Microsoft</option>
                         <option value="Google">Google</option>
                         <option value="Outlook">Outlook</option>
                       </select>
                     </div>
                     <div>
-                      <label className="text-xs font-medium text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Horários</label>
-                      <input type="text" value={editAvailableHours} onChange={(e) => { setEditAvailableHours(e.target.value); setEditAvailableHoursInherited(false) }} className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle rounded-xl bg-lia-bg-secondary focus:ring-2 focus:ring-lia-btn-primary-bg/10 focus:border-lia-btn-primary-bg transition-colors motion-reduce:transition-none" />
+                      <label className="text-xs font-medium text-lia-text-primary block mb-2">Horários</label>
+                      <input type="text" value={editAvailableHours} onChange={(e) => { setEditAvailableHours(e.target.value); setEditAvailableHoursInherited(false) }} className="w-full px-3 py-2 text-xs border border-lia-border-subtle rounded-xl bg-lia-bg-secondary focus:ring-2 focus:ring-lia-btn-primary-bg/10 focus:border-lia-btn-primary-bg transition-colors motion-reduce:transition-none" />
                       {editAvailableHoursInherited && <span className="text-micro text-lia-text-disabled mt-0.5 block">Conforme config. da empresa</span>}
                     </div>
                     <div>
-                      <label className="text-xs font-medium text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Duração</label>
-                      <select value={editInterviewDuration} onChange={(e) => setEditInterviewDuration(Number(e.target.value))} className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle rounded-xl bg-lia-bg-secondary focus:ring-2 focus:ring-lia-btn-primary-bg/10 focus:border-lia-btn-primary-bg transition-colors motion-reduce:transition-none">
+                      <label className="text-xs font-medium text-lia-text-primary block mb-2">Duração</label>
+                      <select value={editInterviewDuration} onChange={(e) => setEditInterviewDuration(Number(e.target.value))} className="w-full px-3 py-2 text-xs border border-lia-border-subtle rounded-xl bg-lia-bg-secondary focus:ring-2 focus:ring-lia-btn-primary-bg/10 focus:border-lia-btn-primary-bg transition-colors motion-reduce:transition-none">
                         {[30, 45, 60, 90].map(d => (<option key={d} value={d}>{d}min</option>))}
                       </select>
                     </div>

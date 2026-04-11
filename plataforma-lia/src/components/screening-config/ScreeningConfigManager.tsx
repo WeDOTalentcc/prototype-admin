@@ -131,7 +131,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
             <div className="flex items-center gap-3">
               {activeSection === 'configuracoes' && (
                 <>
-                  <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-lia-bg-tertiary text-lia-text-secondary font-['Open_Sans',sans-serif]">
+                  <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-lia-bg-tertiary text-lia-text-secondary">
                     {getConfigStatusInfo()}
                   </span>
                   {!isEditingScreeningConfig ? (
@@ -233,13 +233,13 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                 </>
               )}
               {activeSection === 'descricao' && (
-                <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-lia-bg-tertiary text-lia-text-secondary font-['Open_Sans',sans-serif]">
+                <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-lia-bg-tertiary text-lia-text-secondary">
                   {jdDone ? 'Descrição preenchida' : 'Descrição pendente'}
                 </span>
               )}
               {activeSection === 'perguntas' && (
                 <>
-                  <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-lia-bg-tertiary text-lia-text-secondary font-['Open_Sans',sans-serif]">
+                  <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-lia-bg-tertiary text-lia-text-secondary">
                     {(job.screeningQuestions as unknown[] | undefined)?.length || 0} WSI
                     {((companyQuestions.length - disabledCompanyQIds.size) + selectedBankQuestions.length + customQuestions.length) > 0 && (
                       <> · {(companyQuestions.length - disabledCompanyQIds.size) + selectedBankQuestions.length + customQuestions.length} extras</>

@@ -84,7 +84,7 @@ const KPISlide = React.memo(({ data }: { data: Record<string, unknown> }) => {
 
   return (
     <div className="h-full flex flex-col justify-center p-16">
-      <h1 className="text-6xl font-bold text-lia-text-primary mb-4 text-center">
+      <h1 className="text-6xl font-semibold text-lia-text-primary mb-4 text-center">
         Indicadores Principais
       </h1>
       <p className="text-2xl text-lia-text-secondary text-center mb-16">
@@ -107,7 +107,7 @@ const DepartmentCard = React.memo(({ dept, index }: { dept: { name: string; effi
   <Card key={dept.name} className="bg-lia-bg-primary dark:bg-lia-bg-secondary border">
     <CardContent className="p-8">
       <div className="text-center mb-6">
-        <h3 className="text-3xl font-bold text-lia-text-primary mb-2">
+        <h3 className="text-3xl font-semibold text-lia-text-primary mb-2">
           {dept.name}
         </h3>
         <div className="text-6xl font-bold text-lia-text-primary mb-4">
@@ -119,7 +119,7 @@ const DepartmentCard = React.memo(({ dept, index }: { dept: { name: string; effi
       </div>
       <div className="grid grid-cols-2 gap-4 text-center">
         <div>
-          <div className="text-2xl font-bold text-lia-text-primary">
+          <div className="text-2xl font-semibold text-lia-text-primary">
             {((dept as any).jobs as React.ReactNode)}
           </div>
           <div className="text-sm text-lia-text-secondary">
@@ -127,7 +127,7 @@ const DepartmentCard = React.memo(({ dept, index }: { dept: { name: string; effi
           </div>
         </div>
         <div>
-          <div className="text-2xl font-bold text-lia-text-primary">
+          <div className="text-2xl font-semibold text-lia-text-primary">
             {((dept as any).hires as React.ReactNode)}
           </div>
           <div className="text-sm text-lia-text-secondary">
@@ -143,7 +143,7 @@ DepartmentCard.displayName = 'DepartmentCard'
 
 const DepartmentSlide = React.memo(({ data }: { data: Record<string, unknown> }) => (
   <div className="h-full flex flex-col justify-center p-16">
-    <h1 className="text-6xl font-bold text-lia-text-primary mb-4 text-center">
+    <h1 className="text-6xl font-semibold text-lia-text-primary mb-4 text-center">
       Performance por Departamento
     </h1>
     <p className="text-2xl text-lia-text-secondary text-center mb-16">
@@ -196,7 +196,7 @@ AlertItem.displayName = 'AlertItem'
 
 const AlertsSlide = React.memo(({ data }: { data: Record<string, unknown> }) => (
   <div className="h-full flex flex-col justify-center p-16">
-    <h1 className="text-6xl font-bold text-lia-text-primary mb-4 text-center">
+    <h1 className="text-6xl font-semibold text-lia-text-primary mb-4 text-center">
       Alertas e Status
     </h1>
     <p className="text-2xl text-lia-text-secondary text-center mb-16">

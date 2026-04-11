@@ -11,7 +11,7 @@ export default function NotFound() {
           </div>
         </div>
         <div className="space-y-2">
-          <h1 className="text-4xl font-bold text-lia-text-primary">404</h1>
+          <h1 className="text-4xl font-semibold text-lia-text-primary">404</h1>
           <h2 className="text-xl font-semibold text-lia-text-primary">Página não encontrada</h2>
           <p className="text-lia-text-secondary text-sm">
             A página que você está procurando não existe ou foi movida.

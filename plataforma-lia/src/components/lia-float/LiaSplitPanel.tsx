@@ -311,7 +311,7 @@ function SplitMessageBubble({ msg }: { msg: LiaChatMessage }) {
       sender={isUser ? "user" : "lia"}
       timestamp={msg.timestamp}
     >
-      <p className="text-xs leading-relaxed font-['Open_Sans',sans-serif] text-lia-text-primary whitespace-pre-wrap">{msg.content}</p>
+      <p className="text-xs leading-relaxed text-lia-text-primary whitespace-pre-wrap">{msg.content}</p>
     </ChatBubbleBase>
   )
 }
@@ -324,7 +324,7 @@ function SplitStreamingBubble({ content }: { content: string }) {
           <ThinkingDots dotClassName="bg-lia-border-medium" size="md" />
         </span>
       ) : (
-        <p className="text-xs leading-relaxed font-['Open_Sans',sans-serif] text-lia-text-primary whitespace-pre-wrap">{content}</p>
+        <p className="text-xs leading-relaxed text-lia-text-primary whitespace-pre-wrap">{content}</p>
       )}
     </ChatBubbleBase>
   )
