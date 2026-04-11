@@ -35,10 +35,10 @@ export function TriagemDetailsHeader({ candidate, details, ranking, onClose }: T
             const printWindow = window.open('', '_blank')
             if (!printWindow) return
             const respHtml = details.responses.map((resp, idx) => `
-              <div style="margin-bottom:16px;padding:12px;border:1px solid #F3F4F6;border-radius:8px;">
+              <div style="margin-bottom:16px;padding:12px;border:1px solid #D4D4D4;border-radius:8px;">
                 <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
                   <strong>${resp.competency}</strong>
-                  <span style="font-weight:bold;color:${resp.scores.final_score >= 4 ? '#166534' : resp.scores.final_score >= 3 ? '#854D0E' : '#991B1B'}">${resp.scores.final_score.toFixed(1)}/5.0</span>
+                  <span style="font-weight:bold;color:${resp.scores.final_score >= 4 ? 'var(--status-success)' : resp.scores.final_score >= 3 ? 'var(--status-warning)' : 'var(--status-error)'}">${resp.scores.final_score.toFixed(1)}/5.0</span>
                 </div>
                 <p style="color:var(--lia-text-secondary);font-size:12px;margin-bottom:4px;"><strong>Pergunta:</strong> ${resp.question.text}</p>
                 <p style="font-size:12px;margin-bottom:4px;"><strong>Resposta:</strong> ${resp.response_text}</p>
@@ -49,7 +49,7 @@ export function TriagemDetailsHeader({ candidate, details, ranking, onClose }: T
               <html><head><title>Triagem WSI - ${candidate.name}</title>
               <style>body{font-family:'Open Sans',sans-serif;padding:32px;color:var(--lia-text-primary);max-width:800px;margin:0 auto;}
               h1{font-size:20px;margin-bottom:4px;}h2{font-size:16px;margin-top:24px;margin-bottom:12px;color:var(--lia-text-primary);}
-              .scores{display:flex;gap:24px;margin:16px 0;}.score-box{text-align:center;padding:12px 20px;border:1px solid #F3F4F6;border-radius:8px;}
+              .scores{display:flex;gap:24px;margin:16px 0;}.score-box{text-align:center;padding:12px 20px;border:1px solid #D4D4D4;border-radius:8px;}
               .score-box .value{font-size:24px;font-weight:bold;}.score-box .label{font-size:12px;color:var(--lia-text-secondary);}
               .meta{font-size:12px;color:var(--lia-text-secondary);margin-bottom:16px;}
               @media print{body{padding:16px;}}</style></head><body>
