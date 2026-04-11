@@ -205,7 +205,7 @@ export const DataRequestIndicator = React.memo(function DataRequestIndicator({
                 <Button
                   size="sm"
                   variant="outline"
-                  className="flex-1 h-7 text-xs gap-1"
+                  className="flex-1 h-7 text-xs gap-1 hover:bg-lia-interactive-hover transition-colors cursor-pointer"
                   onClick={(e) => {
                     e.stopPropagation()
                     onResend?.(candidateId)
@@ -218,7 +218,7 @@ export const DataRequestIndicator = React.memo(function DataRequestIndicator({
               <Button
                 size="sm"
                 variant="secondary"
-                className="flex-1 h-7 text-xs gap-1 bg-wedo-cyan/15"
+                className="flex-1 h-7 text-xs gap-1 bg-wedo-cyan/15 hover:bg-lia-interactive-hover transition-colors cursor-pointer"
                 onClick={(e) => {
                   e.stopPropagation()
                   onViewDetails?.(candidateId)

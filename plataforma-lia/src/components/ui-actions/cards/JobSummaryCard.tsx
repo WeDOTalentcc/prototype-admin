@@ -253,7 +253,7 @@ export function JobSummaryCard({
               <Button
                 size="sm"
                 variant="outline"
-                className="border-lia-border-default text-lia-text-primary"
+                className="border-lia-border-default text-lia-text-primary hover:bg-lia-interactive-hover transition-colors cursor-pointer"
                 onClick={onEdit}
               >
                 <Edit className="h-3.5 w-3.5 mr-1.5" />
@@ -263,7 +263,7 @@ export function JobSummaryCard({
             {onPublish && data.status === "rascunho" && (
               <Button
                 size="sm"
-                className="bg-lia-btn-primary-bg text-lia-btn-primary-text"
+                className="bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-interactive-hover transition-colors cursor-pointer"
                 onClick={onPublish}
               >
                 Publicar
@@ -273,7 +273,7 @@ export function JobSummaryCard({
               <Button
                 size="sm"
                 variant="ghost"
-                className="ml-auto text-lia-text-secondary"
+                className="ml-auto text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors cursor-pointer"
                 onClick={onView}
               >
                 Ver Detalhes

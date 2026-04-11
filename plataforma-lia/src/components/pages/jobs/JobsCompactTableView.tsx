@@ -108,37 +108,37 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
           <thead>
             <tr className="">
               <th className="py-3 px-3 text-center w-12">
-                <div className="w-4 h-4 bg-lia-interactive-active rounded-md animate-pulse motion-reduce:animate-none mx-auto" />
+                <div className="w-4 h-4 bg-lia-interactive-active rounded-xl animate-pulse motion-reduce:animate-none mx-auto" />
               </th>
               <th className="py-3 px-3 text-left w-[80px]">
-                <div className="w-8 h-4 bg-lia-interactive-active rounded-md animate-pulse motion-reduce:animate-none" />
+                <div className="w-8 h-4 bg-lia-interactive-active rounded-xl animate-pulse motion-reduce:animate-none" />
               </th>
               <th className="py-3 px-3 text-left w-[200px]">
-                <div className="w-16 h-4 bg-lia-interactive-active rounded-md animate-pulse motion-reduce:animate-none" />
+                <div className="w-16 h-4 bg-lia-interactive-active rounded-xl animate-pulse motion-reduce:animate-none" />
               </th>
               <th className="py-3 px-3 text-center w-[100px]">
-                <div className="w-20 h-4 bg-lia-interactive-active rounded-md animate-pulse motion-reduce:animate-none mx-auto" />
+                <div className="w-20 h-4 bg-lia-interactive-active rounded-xl animate-pulse motion-reduce:animate-none mx-auto" />
               </th>
               <th className="py-3 px-3 text-left w-[180px]">
-                <div className="w-32 h-4 bg-lia-interactive-active rounded-md animate-pulse motion-reduce:animate-none" />
+                <div className="w-32 h-4 bg-lia-interactive-active rounded-xl animate-pulse motion-reduce:animate-none" />
               </th>
               <th className="py-3 px-3 text-left w-[100px]">
-                <div className="w-14 h-4 bg-lia-interactive-active rounded-md animate-pulse motion-reduce:animate-none" />
+                <div className="w-14 h-4 bg-lia-interactive-active rounded-xl animate-pulse motion-reduce:animate-none" />
               </th>
               <th className="py-3 px-3 text-left w-[60px]">
-                <div className="w-10 h-4 bg-lia-interactive-active rounded-md animate-pulse motion-reduce:animate-none" />
+                <div className="w-10 h-4 bg-lia-interactive-active rounded-xl animate-pulse motion-reduce:animate-none" />
               </th>
               <th className="py-3 px-3 text-left w-[120px]">
-                <div className="w-20 h-4 bg-lia-interactive-active rounded-md animate-pulse motion-reduce:animate-none" />
+                <div className="w-20 h-4 bg-lia-interactive-active rounded-xl animate-pulse motion-reduce:animate-none" />
               </th>
               <th className="py-3 px-3 text-left w-[100px]">
-                <div className="w-14 h-4 bg-lia-interactive-active rounded-md animate-pulse motion-reduce:animate-none" />
+                <div className="w-14 h-4 bg-lia-interactive-active rounded-xl animate-pulse motion-reduce:animate-none" />
               </th>
               <th className="py-3 px-3 text-center w-[100px]">
-                <div className="w-16 h-4 bg-lia-interactive-active rounded-md animate-pulse motion-reduce:animate-none mx-auto" />
+                <div className="w-16 h-4 bg-lia-interactive-active rounded-xl animate-pulse motion-reduce:animate-none mx-auto" />
               </th>
               <th className="py-3 px-3 text-center w-[80px]">
-                <div className="w-12 h-4 bg-lia-interactive-active rounded-md animate-pulse motion-reduce:animate-none mx-auto" />
+                <div className="w-12 h-4 bg-lia-interactive-active rounded-xl animate-pulse motion-reduce:animate-none mx-auto" />
               </th>
             </tr>
           </thead>
@@ -146,49 +146,49 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
             {[1, 2, 3, 4, 5, 6, 7, 8].map((row) => (
               <tr key={row} className="">
                 <td className="py-3 px-3 text-center">
-                  <div className="w-4 h-4 bg-lia-bg-tertiary rounded-md animate-pulse motion-reduce:animate-none mx-auto" />
+                  <div className="w-4 h-4 bg-lia-bg-tertiary rounded-xl animate-pulse motion-reduce:animate-none mx-auto" />
                 </td>
                 <td className="py-3 px-3">
-                  <div className="w-16 h-4 bg-lia-bg-tertiary rounded-md animate-pulse motion-reduce:animate-none" />
+                  <div className="w-16 h-4 bg-lia-bg-tertiary rounded-xl animate-pulse motion-reduce:animate-none" />
                 </td>
                 <td className="py-3 px-3">
                   <div className="space-y-1">
-                    <div className="w-40 h-4 bg-lia-bg-tertiary rounded-md animate-pulse motion-reduce:animate-none" />
-                    <div className="w-24 h-3 bg-lia-bg-secondary rounded-md animate-pulse motion-reduce:animate-none" />
+                    <div className="w-40 h-4 bg-lia-bg-tertiary rounded-xl animate-pulse motion-reduce:animate-none" />
+                    <div className="w-24 h-3 bg-lia-bg-secondary rounded-xl animate-pulse motion-reduce:animate-none" />
                   </div>
                 </td>
                 <td className="py-3 px-3 text-center">
-                  <div className="w-8 h-6 bg-lia-bg-tertiary rounded-md animate-pulse motion-reduce:animate-none mx-auto" />
+                  <div className="w-8 h-6 bg-lia-bg-tertiary rounded-xl animate-pulse motion-reduce:animate-none mx-auto" />
                 </td>
                 <td className="py-3 px-3">
                   <div className="flex gap-1">
-                    <div className="w-6 h-4 bg-lia-bg-tertiary rounded-md animate-pulse motion-reduce:animate-none" />
-                    <div className="w-6 h-4 bg-lia-bg-tertiary rounded-md animate-pulse motion-reduce:animate-none" />
-                    <div className="w-6 h-4 bg-lia-bg-tertiary rounded-md animate-pulse motion-reduce:animate-none" />
-                    <div className="w-6 h-4 bg-lia-bg-tertiary rounded-md animate-pulse motion-reduce:animate-none" />
-                    <div className="w-6 h-4 bg-lia-bg-tertiary rounded-md animate-pulse motion-reduce:animate-none" />
+                    <div className="w-6 h-4 bg-lia-bg-tertiary rounded-xl animate-pulse motion-reduce:animate-none" />
+                    <div className="w-6 h-4 bg-lia-bg-tertiary rounded-xl animate-pulse motion-reduce:animate-none" />
+                    <div className="w-6 h-4 bg-lia-bg-tertiary rounded-xl animate-pulse motion-reduce:animate-none" />
+                    <div className="w-6 h-4 bg-lia-bg-tertiary rounded-xl animate-pulse motion-reduce:animate-none" />
+                    <div className="w-6 h-4 bg-lia-bg-tertiary rounded-xl animate-pulse motion-reduce:animate-none" />
                   </div>
                 </td>
                 <td className="py-3 px-3">
                   <div className="w-16 h-5 bg-lia-bg-tertiary rounded-full animate-pulse motion-reduce:animate-none" />
                 </td>
                 <td className="py-3 px-3">
-                  <div className="w-8 h-4 bg-lia-bg-tertiary rounded-md animate-pulse motion-reduce:animate-none" />
+                  <div className="w-8 h-4 bg-lia-bg-tertiary rounded-xl animate-pulse motion-reduce:animate-none" />
                 </td>
                 <td className="py-3 px-3">
                   <div className="flex items-center gap-2">
                     <div className="w-6 h-6 bg-lia-bg-tertiary rounded-full animate-pulse motion-reduce:animate-none" />
-                    <div className="w-20 h-4 bg-lia-bg-tertiary rounded-md animate-pulse motion-reduce:animate-none" />
+                    <div className="w-20 h-4 bg-lia-bg-tertiary rounded-xl animate-pulse motion-reduce:animate-none" />
                   </div>
                 </td>
                 <td className="py-3 px-3">
-                  <div className="w-20 h-4 bg-lia-bg-tertiary rounded-md animate-pulse motion-reduce:animate-none" />
+                  <div className="w-20 h-4 bg-lia-bg-tertiary rounded-xl animate-pulse motion-reduce:animate-none" />
                 </td>
                 <td className="py-3 px-3 text-center">
-                  <div className="w-16 h-5 bg-lia-bg-tertiary rounded-md animate-pulse motion-reduce:animate-none mx-auto" />
+                  <div className="w-16 h-5 bg-lia-bg-tertiary rounded-xl animate-pulse motion-reduce:animate-none mx-auto" />
                 </td>
                 <td className="py-3 px-3 text-center">
-                  <div className="w-6 h-6 bg-lia-bg-tertiary rounded-md animate-pulse motion-reduce:animate-none mx-auto" />
+                  <div className="w-6 h-6 bg-lia-bg-tertiary rounded-xl animate-pulse motion-reduce:animate-none mx-auto" />
                 </td>
               </tr>
             ))}
@@ -205,7 +205,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
   }
 
   return (
-    <div className="overflow-auto max-h-full border border-lia-border-subtle rounded-md">
+    <div className="overflow-auto max-h-full border border-lia-border-subtle rounded-xl">
       <table className="w-full table-fixed">
         <thead className="sticky top-0 z-10 bg-lia-bg-primary">
           <tr className="">
@@ -496,7 +496,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                                 <div className="flex items-center gap-0.5">
                                   <div className="flex flex-col items-center group relative cursor-help">
                                     <div 
-                                      className="h-6 rounded-md flex items-center justify-center transition-[color,background-color,border-color,transform] hover:ring-2 hover:scale-105 bg-lia-interactive-active" 
+                                      className="h-6 rounded-xl flex items-center justify-center transition-[color,background-color,border-color,transform] hover:ring-2 hover:scale-105 bg-lia-interactive-active" 
                                       style={{width: `${getCardWidth(liaTriages.pipeline)}px`,
                                         minWidth: '24px'}} /* dynamic */>
                                       <span className="text-xs font-normal text-lia-text-primary">
@@ -504,7 +504,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                                       </span>
                                     </div>
                                     <div className="absolute bottom-full mb-2 hidden group-hover:block z-50">
-                                      <div className="bg-lia-bg-inverse text-lia-text-on-inverse px-3 py-2 rounded-md whitespace-nowrap text-xs">
+                                      <div className="bg-lia-bg-inverse text-lia-text-on-inverse px-3 py-2 rounded-xl whitespace-nowrap text-xs">
                                         <div className="font-semibold mb-1 flex items-center gap-1">
                                           <Brain className="w-3 h-3 text-wedo-cyan" />
                                           Pipeline LIA
@@ -517,7 +517,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                                   <ChevronRight className="w-2 h-2 text-lia-text-primary flex-shrink-0" />
                                   <div className="flex flex-col items-center group relative cursor-help">
                                     <div 
-                                      className="h-6 rounded-md flex items-center justify-center transition-[color,background-color,border-color,transform] hover:ring-2 hover:scale-105 bg-lia-border-default" 
+                                      className="h-6 rounded-xl flex items-center justify-center transition-[color,background-color,border-color,transform] hover:ring-2 hover:scale-105 bg-lia-border-default" 
                                       style={{width: `${getCardWidth(liaTriages.agendadas)}px`,
                                         minWidth: '24px'}} /* dynamic */>
                                       <span className="text-xs font-normal text-lia-text-primary">
@@ -525,7 +525,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                                       </span>
                                     </div>
                                     <div className="absolute bottom-full mb-2 hidden group-hover:block z-50">
-                                      <div className="bg-lia-bg-inverse text-lia-text-on-inverse px-3 py-2 rounded-md whitespace-nowrap text-xs">
+                                      <div className="bg-lia-bg-inverse text-lia-text-on-inverse px-3 py-2 rounded-xl whitespace-nowrap text-xs">
                                         <div className="font-semibold mb-1">Triagens Agendadas</div>
                                         <div className="text-xs text-lia-text-tertiary">{liaTriages.agendadas} triagens marcadas</div>
                                         <div className="absolute top-full left-1/2 -translate-x-1/2 bg-lia-bg-inverse"></div>
@@ -535,7 +535,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                                   <ChevronRight className="w-2 h-2 text-lia-text-primary flex-shrink-0" />
                                   <div className="flex flex-col items-center group relative cursor-help">
                                     <div 
-                                      className="h-6 rounded-md flex items-center justify-center transition-[color,background-color,border-color,transform] hover:ring-2 hover:scale-105 bg-wedo-green-pastel" 
+                                      className="h-6 rounded-xl flex items-center justify-center transition-[color,background-color,border-color,transform] hover:ring-2 hover:scale-105 bg-wedo-green-pastel" 
                                       style={{width: `${getCardWidth(liaTriages.realizadas)}px`,
                                         minWidth: '24px'}} /* dynamic */>
                                       <span className="text-xs font-normal text-lia-text-primary">
@@ -543,7 +543,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                                       </span>
                                     </div>
                                     <div className="absolute bottom-full mb-2 hidden group-hover:block z-50">
-                                      <div className="bg-lia-bg-inverse text-lia-text-on-inverse px-3 py-2 rounded-md whitespace-nowrap text-xs">
+                                      <div className="bg-lia-bg-inverse text-lia-text-on-inverse px-3 py-2 rounded-xl whitespace-nowrap text-xs">
                                         <div className="font-semibold mb-1">Triagens Completas</div>
                                         <div className="text-xs text-lia-text-tertiary">{liaTriages.realizadas} triagens finalizadas</div>
                                         <div className="absolute top-full left-1/2 -translate-x-1/2 bg-lia-bg-inverse"></div>
@@ -553,7 +553,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                                   <ChevronRight className="w-2 h-2 text-lia-text-primary flex-shrink-0" />
                                   <div className="flex flex-col items-center group relative cursor-help">
                                     <div 
-                                      className="h-6 rounded-md flex items-center justify-center transition-[color,background-color,border-color,transform] hover:ring-2 hover:scale-105 bg-lia-interactive-active" 
+                                      className="h-6 rounded-xl flex items-center justify-center transition-[color,background-color,border-color,transform] hover:ring-2 hover:scale-105 bg-lia-interactive-active" 
                                       style={{width: `${getCardWidth(liaTriages.entrevistasAgendadas)}px`,
                                         minWidth: '24px'}} /* dynamic */>
                                       <span className="text-xs font-normal text-lia-text-primary">
@@ -561,7 +561,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                                       </span>
                                     </div>
                                     <div className="absolute bottom-full mb-2 hidden group-hover:block z-50">
-                                      <div className="bg-lia-bg-inverse text-lia-text-on-inverse px-3 py-2 rounded-md whitespace-nowrap text-xs">
+                                      <div className="bg-lia-bg-inverse text-lia-text-on-inverse px-3 py-2 rounded-xl whitespace-nowrap text-xs">
                                         <div className="font-semibold mb-1">Entrevistas Agendadas</div>
                                         <div className="text-xs text-lia-text-tertiary">{liaTriages.entrevistasAgendadas} entrevistas marcadas</div>
                                         <div className="absolute top-full left-1/2 -translate-x-1/2 bg-lia-bg-inverse"></div>

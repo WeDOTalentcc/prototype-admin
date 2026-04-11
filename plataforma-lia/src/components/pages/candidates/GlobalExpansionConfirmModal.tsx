@@ -78,7 +78,7 @@ export function GlobalExpansionConfirmModal({
           <AlertDialogAction
             onClick={onConfirm}
             disabled={isExpandingToGlobal}
-            className="text-white gap-2 bg-lia-btn-primary-bg"
+            className="text-white gap-2 bg-lia-btn-primary-bg hover:bg-lia-interactive-hover transition-colors cursor-pointer"
           >
             {isExpandingToGlobal ? (
               <>

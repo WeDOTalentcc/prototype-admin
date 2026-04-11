@@ -48,7 +48,7 @@ export const EmptyState = React.memo(function EmptyState({
           variant="outline"
           size="sm"
           onClick={action.onClick}
-          className="mt-2 rounded-md text-xs"
+          className="mt-2 rounded-md text-xs hover:bg-lia-interactive-hover transition-colors cursor-pointer"
         >
           {action.label}
         </Button>

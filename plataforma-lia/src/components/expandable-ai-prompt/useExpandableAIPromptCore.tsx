@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useMemo, useRef } from "react"
+import React, { useState, useMemo, useRef, useCallback } from "react"
 import {
   MapPin, Briefcase, Clock, Building2, Code
 } from "lucide-react"

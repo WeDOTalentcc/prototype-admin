@@ -176,7 +176,7 @@ export function JobPreviewHeader({ previewJob, onClose, onJobClick }: JobPreview
               variant="ghost"
               size="sm"
               onClick={() => onJobClick(previewJob)}
-              className="h-6 w-6 p-0"
+              className="h-6 w-6 p-0 hover:bg-lia-interactive-hover transition-colors cursor-pointer"
               title="Abrir vaga completa"
             >
               <Expand className="w-3 h-3" />
@@ -187,7 +187,7 @@ export function JobPreviewHeader({ previewJob, onClose, onJobClick }: JobPreview
               onClick={() => {
                 onClose()
               }}
-              className="h-6 w-6 p-0"
+              className="h-6 w-6 p-0 hover:bg-lia-interactive-hover transition-colors cursor-pointer"
             >
               <X className="w-3 h-3" />
             </Button>

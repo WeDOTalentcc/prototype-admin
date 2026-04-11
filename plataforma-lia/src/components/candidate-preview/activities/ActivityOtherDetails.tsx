@@ -23,7 +23,7 @@ interface ActivityOtherDetailsProps {
 export function ActivityInterviewScheduledDetails({ activity }: { activity: ActivityData & { details: NonNullable<ActivityData['details']> } }) {
   return (
     <div className="mt-3 space-y-3">
-      <div className="bg-lia-bg-primary p-3 rounded-md border border-lia-border-subtle">
+      <div className="bg-lia-bg-primary p-3 rounded-xl border border-lia-border-subtle">
         <h5 className="text-xs font-semibold text-lia-text-primary mb-2 flex items-center gap-1">
           <Calendar className="w-3 h-3 text-wedo-purple" />
           {activity.details.interviewType}
@@ -32,16 +32,16 @@ export function ActivityInterviewScheduledDetails({ activity }: { activity: Acti
           )}
         </h5>
         <div className="grid grid-cols-2 gap-2 mb-3">
-          <div className="bg-lia-bg-secondary p-2 rounded-md">
+          <div className="bg-lia-bg-secondary p-2 rounded-xl">
             <p className={textStyles.bodySmall}>Data e Hora</p>
             <p className="text-xs font-semibold text-lia-text-primary">{activity.details.dateTime}</p>
           </div>
-          <div className="bg-lia-bg-secondary p-2 rounded-md">
+          <div className="bg-lia-bg-secondary p-2 rounded-xl">
             <p className={textStyles.bodySmall}>Duração</p>
             <p className="text-xs font-semibold text-lia-text-primary">{activity.details.duration}</p>
           </div>
         </div>
-        <div className="bg-lia-bg-secondary p-2 rounded-md mb-3">
+        <div className="bg-lia-bg-secondary p-2 rounded-xl mb-3">
           <p className={`${textStyles.bodySmall} mb-1`}>📍 Local</p>
           <p className="text-xs font-medium text-lia-text-primary">{activity.details.location}</p>
           {activity.details.meetLink && (
@@ -55,7 +55,7 @@ export function ActivityInterviewScheduledDetails({ activity }: { activity: Acti
             <p className="text-xs font-semibold text-lia-text-primary mb-1">👥 Entrevistadores</p>
             <div className="space-y-1">
               {activity.details.interviewers.map((int: Record<string, unknown> | string, i: number) => (
-                <div key={`int-${i}`} className="flex items-center gap-2 text-xs bg-lia-bg-secondary p-1.5 rounded-md">
+                <div key={`int-${i}`} className="flex items-center gap-2 text-xs bg-lia-bg-secondary p-1.5 rounded-xl">
                   <div className="w-5 h-5 rounded-full bg-lia-interactive-active flex items-center justify-center text-micro font-medium text-lia-text-secondary">
                     {typeof int === 'string' ? int.charAt(0) : String(int.name ?? '').charAt(0)}
                   </div>
@@ -74,24 +74,24 @@ export function ActivityInterviewScheduledDetails({ activity }: { activity: Acti
 export function ActivityLiaEvaluationDetails({ activity }: { activity: ActivityData & { details: NonNullable<ActivityData['details']> } }) {
   return (
     <div className="mt-3 space-y-3">
-      <div className="bg-lia-bg-primary p-3 rounded-md border border-lia-border-subtle">
+      <div className="bg-lia-bg-primary p-3 rounded-xl border border-lia-border-subtle">
         <h5 className="text-xs font-semibold text-lia-text-primary mb-2 flex items-center gap-1">
           <Brain className="w-3 h-3 text-wedo-cyan" />Avaliação Automática da LIA
         </h5>
         <div className="grid grid-cols-4 gap-2 mb-3">
-          <div className="text-center p-2 bg-lia-bg-secondary rounded-md">
+          <div className="text-center p-2 bg-lia-bg-secondary rounded-xl">
             <p className="text-base font-bold text-lia-text-primary">{formatScorePercent(activity.details.technicalScore)}</p>
             <p className={textStyles.bodySmall}>Técnico</p>
           </div>
-          <div className="text-center p-2 bg-lia-bg-secondary rounded-md">
+          <div className="text-center p-2 bg-lia-bg-secondary rounded-xl">
             <p className="text-base font-bold text-lia-text-primary">{formatScorePercent(activity.details.culturalFit)}</p>
             <p className={textStyles.bodySmall}>Fit Cultural</p>
           </div>
-          <div className="text-center p-2 bg-lia-bg-secondary rounded-md">
+          <div className="text-center p-2 bg-lia-bg-secondary rounded-xl">
             <p className="text-base font-bold text-lia-text-primary">{formatScorePercent(activity.details.experience)}</p>
             <p className={textStyles.bodySmall}>Experiência</p>
           </div>
-          <div className="text-center p-2 bg-lia-bg-secondary rounded-md">
+          <div className="text-center p-2 bg-lia-bg-secondary rounded-xl">
             <p className="text-base font-bold text-lia-text-primary">{formatScorePercent(activity.details.softSkills)}</p>
             <p className={textStyles.bodySmall}>Soft Skills</p>
           </div>
@@ -106,7 +106,7 @@ export function ActivityLiaEvaluationDetails({ activity }: { activity: ActivityD
             </div>
           </div>
         )}
-        <div className="bg-lia-bg-secondary p-2 rounded-md">
+        <div className="bg-lia-bg-secondary p-2 rounded-xl">
           <p className="text-xs font-semibold text-lia-text-primary mb-1">Recomendação</p>
           <p className="text-xs text-lia-text-secondary">{activity.details.recommendation}</p>
         </div>
@@ -118,25 +118,25 @@ export function ActivityLiaEvaluationDetails({ activity }: { activity: ActivityD
 export function ActivityJobApplicationDetails({ activity }: { activity: ActivityData & { details: NonNullable<ActivityData['details']> } }) {
   return (
     <div className="mt-3 space-y-3">
-      <div className="bg-lia-bg-primary p-3 rounded-md border border-lia-border-subtle">
+      <div className="bg-lia-bg-primary p-3 rounded-xl border border-lia-border-subtle">
         <h5 className="text-xs font-semibold text-lia-text-primary mb-2 flex items-center gap-1">
           <FileText className="w-3 h-3 text-status-success" />Candidatura Recebida
           <Badge className="ml-2 text-micro px-1.5 py-0 bg-status-success/10 text-status-success">{activity.details.source}</Badge>
         </h5>
         <div className="grid grid-cols-2 gap-2 mb-3">
-          <div className="bg-lia-bg-secondary p-2 rounded-md">
+          <div className="bg-lia-bg-secondary p-2 rounded-xl">
             <p className={textStyles.bodySmall}>ID da Aplicação</p>
             <p className="text-xs font-mono font-medium text-lia-text-primary">{activity.details.applicationId}</p>
           </div>
-          <div className="bg-lia-bg-secondary p-2 rounded-md">
+          <div className="bg-lia-bg-secondary p-2 rounded-xl">
             <p className={textStyles.bodySmall}>Método</p>
             <p className="text-xs font-medium text-lia-text-primary">{activity.details.applicationMethod}</p>
           </div>
-          <div className="bg-lia-bg-secondary p-2 rounded-md">
+          <div className="bg-lia-bg-secondary p-2 rounded-xl">
             <p className={textStyles.bodySmall}>Recebido em</p>
             <p className="text-xs font-medium text-lia-text-primary">{activity.details.receivedAt}</p>
           </div>
-          <div className="bg-lia-bg-secondary p-2 rounded-md">
+          <div className="bg-lia-bg-secondary p-2 rounded-xl">
             <p className={textStyles.bodySmall}>Dispositivo</p>
             <p className="text-xs font-medium text-lia-text-primary">{activity.details.device}</p>
           </div>
@@ -158,16 +158,16 @@ export function ActivityOfferSentDetails({ activity }: { activity: ActivityData 
           <Gift className="w-3 h-3 text-lia-text-secondary" />Proposta Salarial
           <Badge className={`ml-2 ${badgeStyles.primary}`}>{activity.statusLabel || 'Enviada'}</Badge>
         </h5>
-        <div className="text-center p-3 bg-gradient-to-r from-lia-bg-secondary to-lia-bg-tertiary rounded-md border border-lia-border-subtle mb-3">
+        <div className="text-center p-3 bg-gradient-to-r from-lia-bg-secondary to-lia-bg-tertiary rounded-xl border border-lia-border-subtle mb-3">
           <p className="text-2xl font-bold text-lia-text-primary">{activity.details.salary}</p>
           {activity.details.annualBonus && <p className="text-xs text-lia-text-secondary">+ Bônus: {activity.details.annualBonus}</p>}
         </div>
         <div className="grid grid-cols-2 gap-2 mb-3">
-          <div className="bg-lia-bg-secondary p-2 rounded-md">
+          <div className="bg-lia-bg-secondary p-2 rounded-xl">
             <p className={textStyles.bodySmall}>Data de Início</p>
             <p className="text-xs font-semibold text-lia-text-primary">{activity.details.startDate}</p>
           </div>
-          <div className="bg-lia-bg-secondary p-2 rounded-md">
+          <div className="bg-lia-bg-secondary p-2 rounded-xl">
             <p className={textStyles.bodySmall}>Contrato</p>
             <p className="text-xs font-semibold text-lia-text-primary">{activity.details.contractType}</p>
           </div>
@@ -197,11 +197,11 @@ export function ActivityTestCompletedDetails({ activity }: { activity: ActivityD
           </Badge>
         </h5>
         <div className="grid grid-cols-3 gap-2 mb-3">
-          <div className="text-center p-2 bg-lia-bg-secondary rounded-md border border-lia-border-subtle">
+          <div className="text-center p-2 bg-lia-bg-secondary rounded-xl border border-lia-border-subtle">
             <p className="text-base font-bold text-lia-text-primary">{activity.details.correctAnswers}/{activity.details.totalQuestions}</p>
             <p className={textStyles.caption}>Acertos</p>
           </div>
-          <div className="text-center p-2 bg-lia-bg-secondary rounded-md border border-lia-border-subtle">
+          <div className="text-center p-2 bg-lia-bg-secondary rounded-xl border border-lia-border-subtle">
             <p className="text-base font-bold text-lia-text-primary">{activity.details.timeSpent}</p>
             <p className={textStyles.caption}>Tempo</p>
           </div>
@@ -244,7 +244,7 @@ export function ActivityRubricEvaluationDetails({ activity }: { activity: Activi
             {activity.details.overallFit}% fit
           </Badge>
         </h5>
-        <div className="text-center p-3 bg-gradient-to-r from-lia-bg-secondary to-lia-bg-tertiary rounded-md border border-lia-border-subtle mb-3">
+        <div className="text-center p-3 bg-gradient-to-r from-lia-bg-secondary to-lia-bg-tertiary rounded-xl border border-lia-border-subtle mb-3">
           <p className="text-3xl font-bold text-lia-text-primary">{activity.details.overallFit}%</p>
           <p className={textStyles.caption}>Fit Geral</p>
         </div>
@@ -253,7 +253,7 @@ export function ActivityRubricEvaluationDetails({ activity }: { activity: Activi
             {activity.details.criteriaScores.slice(0, 4).map((c: Record<string, unknown>, i: number) => {
               const cScore = Number(c.score ?? 0)
               return (
-                <div key={i} className="flex justify-between text-xs bg-lia-bg-secondary p-1.5 rounded-md border border-lia-border-subtle">
+                <div key={i} className="flex justify-between text-xs bg-lia-bg-secondary p-1.5 rounded-xl border border-lia-border-subtle">
                   <span className="text-lia-text-primary">{String(c.criteria ?? '')}</span>
                   <Badge className={`text-micro px-1.5 ${cScore >= 80 ? badgeStyles.success : cScore >= 60 ? badgeStyles.warning : badgeStyles.error}`}>{cScore}%</Badge>
                 </div>
@@ -261,7 +261,7 @@ export function ActivityRubricEvaluationDetails({ activity }: { activity: Activi
             })}
           </div>
         )}
-        <div className="bg-lia-bg-secondary p-2 rounded-md border border-lia-border-subtle">
+        <div className="bg-lia-bg-secondary p-2 rounded-xl border border-lia-border-subtle">
           <p className={`${textStyles.labelSmall} mb-1`}>💡 Recomendação</p>
           <p className={`${textStyles.caption} text-lia-text-secondary`}>{activity.details.recommendation}</p>
         </div>
@@ -279,22 +279,22 @@ export function ActivityAssessmentDetails({ activity, candidate, onSetDiscModalD
           {activity.details.assessmentType || 'Assessment Comportamental'}
           <Badge className={`ml-2 ${badgeStyles.primary}`}>{activity.details.profile}</Badge>
         </h5>
-        <div className="text-center p-3 bg-gradient-to-r from-lia-bg-tertiary to-lia-bg-secondary rounded-md border border-lia-border-default mb-3">
+        <div className="text-center p-3 bg-gradient-to-r from-lia-bg-tertiary to-lia-bg-secondary rounded-xl border border-lia-border-default mb-3">
           <p className="text-xl font-bold text-lia-text-primary">{activity.details.profile}</p>
           <p className={textStyles.caption}>{activity.details.profileDescription}</p>
         </div>
         <div className="grid grid-cols-2 gap-2 mb-3">
-          <div className="bg-lia-bg-secondary p-2 rounded-md border border-lia-border-subtle text-center">
+          <div className="bg-lia-bg-secondary p-2 rounded-xl border border-lia-border-subtle text-center">
             <p className="text-sm font-bold text-lia-text-primary">{activity.details.culturalFit || activity.details.culturalFitScore}%</p>
             <p className={textStyles.caption}>Fit Cultural</p>
           </div>
-          <div className="bg-lia-bg-secondary p-2 rounded-md border border-lia-border-subtle text-center">
+          <div className="bg-lia-bg-secondary p-2 rounded-xl border border-lia-border-subtle text-center">
             <p className="text-sm font-bold text-lia-text-primary">{activity.details.teamworkScore}%</p>
             <p className={textStyles.caption}>Trabalho em Equipe</p>
           </div>
         </div>
         {activity.details.developmentAreas && activity.details.developmentAreas.length > 0 && (
-          <div className="bg-lia-bg-secondary p-2 rounded-md border border-lia-border-subtle">
+          <div className="bg-lia-bg-secondary p-2 rounded-xl border border-lia-border-subtle">
             <p className={`${textStyles.labelSmall} text-lia-text-primary mb-1`}>⚠️ Áreas de Desenvolvimento</p>
             <div className="flex flex-wrap gap-1">
               {activity.details.developmentAreas.map((a: string, i: number) => (
@@ -322,7 +322,7 @@ export function ActivityMiscDetails({ activity }: { activity: ActivityData & { d
   if (activity.type === 'technical-test') {
     return (
       <div className="mt-2 space-y-2">
-        <div className="bg-lia-bg-primary p-2 rounded-md">
+        <div className="bg-lia-bg-primary p-2 rounded-xl">
           <p className={`${textStyles.bodySmall} mb-1`}>Teste Técnico</p>
           <div className="grid grid-cols-2 gap-1">
             <div><p className={textStyles.bodySmall}>Tipo</p><p className={`${textStyles.label}`}>{activity.details.testType}</p></div>
@@ -338,7 +338,7 @@ export function ActivityMiscDetails({ activity }: { activity: ActivityData & { d
   if (activity.type === 'english-test') {
     return (
       <div className="mt-2 space-y-2">
-        <div className="bg-lia-bg-primary p-2 rounded-md">
+        <div className="bg-lia-bg-primary p-2 rounded-xl">
           <p className={`${textStyles.bodySmall} mb-1`}>Teste de Inglês</p>
           <div className="grid grid-cols-2 gap-1">
             <div><p className={textStyles.bodySmall}>Nível</p><p className={`${textStyles.label}`}>{activity.details.level}</p></div>
@@ -354,7 +354,7 @@ export function ActivityMiscDetails({ activity }: { activity: ActivityData & { d
   if (activity.type === 'data-collection') {
     return (
       <div className="mt-2 space-y-2">
-        <div className="bg-lia-bg-primary p-2 rounded-md">
+        <div className="bg-lia-bg-primary p-2 rounded-xl">
           <p className={`${textStyles.bodySmall} mb-1`}>Coleta de Dados</p>
           <div className="grid grid-cols-2 gap-1">
             <div>
@@ -377,11 +377,11 @@ export function ActivityMiscDetails({ activity }: { activity: ActivityData & { d
   if (activity.type === 'onboarding') {
     return (
       <div className="mt-3 space-y-3">
-        <div className="bg-lia-bg-primary p-3 rounded-md">
+        <div className="bg-lia-bg-primary p-3 rounded-xl">
           <h5 className="text-xs font-semibold text-lia-text-primary mb-2 flex items-center gap-1">
             <UserCheck className="w-3 h-3 text-lia-text-primary" />Processo de Onboarding
           </h5>
-          <div className="bg-status-success/10 p-2 rounded-md mb-3">
+          <div className="bg-status-success/10 p-2 rounded-xl mb-3">
             <p className="text-xs font-semibold text-lia-text-primary mb-2">📋 Checklist de Integração</p>
             <div className="space-y-1">
               <div className="flex items-center gap-2 text-xs"><CheckCircle className="w-3 h-3 text-lia-text-primary" /><span className="text-lia-text-primary">Oferta aceita e assinada</span></div>
@@ -392,22 +392,22 @@ export function ActivityMiscDetails({ activity }: { activity: ActivityData & { d
             </div>
           </div>
           <div className="grid grid-cols-2 gap-2 mb-3">
-            <div className="bg-lia-bg-primary p-2 rounded-md">
+            <div className="bg-lia-bg-primary p-2 rounded-xl">
               <p className={`${textStyles.bodySmall} mb-1`}>Data de Início</p>
               <p className="text-xs font-semibold text-lia-text-primary">{activity.details.startDate}</p>
               <p className={textStyles.bodySmall}>Segunda-feira</p>
             </div>
-            <div className="bg-lia-bg-primary p-2 rounded-md">
+            <div className="bg-lia-bg-primary p-2 rounded-xl">
               <p className={`${textStyles.bodySmall} mb-1`}>Gestor Responsável</p>
               <p className="text-xs font-semibold text-lia-text-primary">{activity.details.onboardingManager}</p>
               <p className={textStyles.bodySmall}>People & Culture</p>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-2">
-            <div className="text-center p-2 bg-lia-bg-primary rounded-md"><FileText className="w-4 h-4 mx-auto text-lia-text-primary mb-1" /><p className={textStyles.bodySmall}>Documentos</p><p className="text-xs font-semibold text-lia-text-primary">{activity.details.documentsStatus}</p></div>
-            <div className="text-center p-2 bg-lia-bg-primary rounded-md"><Building className="w-4 h-4 mx-auto text-lia-text-secondary mb-1" /><p className={textStyles.bodySmall}>Equipamentos</p><p className="text-xs font-semibold text-lia-text-primary">{activity.details.equipmentStatus}</p></div>
-            <div className="text-center p-2 bg-lia-bg-primary rounded-md"><Shield className="w-4 h-4 mx-auto text-lia-text-primary mb-1" /><p className={textStyles.bodySmall}>Acessos</p><p className="text-xs font-semibold text-lia-text-primary">{activity.details.accessesStatus}</p></div>
-            <div className="text-center p-2 bg-lia-bg-primary rounded-md"><Users className="w-4 h-4 mx-auto text-lia-text-primary mb-1" /><p className={textStyles.bodySmall}>Buddy</p><p className="text-xs font-semibold text-lia-text-primary">A definir</p></div>
+            <div className="text-center p-2 bg-lia-bg-primary rounded-xl"><FileText className="w-4 h-4 mx-auto text-lia-text-primary mb-1" /><p className={textStyles.bodySmall}>Documentos</p><p className="text-xs font-semibold text-lia-text-primary">{activity.details.documentsStatus}</p></div>
+            <div className="text-center p-2 bg-lia-bg-primary rounded-xl"><Building className="w-4 h-4 mx-auto text-lia-text-secondary mb-1" /><p className={textStyles.bodySmall}>Equipamentos</p><p className="text-xs font-semibold text-lia-text-primary">{activity.details.equipmentStatus}</p></div>
+            <div className="text-center p-2 bg-lia-bg-primary rounded-xl"><Shield className="w-4 h-4 mx-auto text-lia-text-primary mb-1" /><p className={textStyles.bodySmall}>Acessos</p><p className="text-xs font-semibold text-lia-text-primary">{activity.details.accessesStatus}</p></div>
+            <div className="text-center p-2 bg-lia-bg-primary rounded-xl"><Users className="w-4 h-4 mx-auto text-lia-text-primary mb-1" /><p className={textStyles.bodySmall}>Buddy</p><p className="text-xs font-semibold text-lia-text-primary">A definir</p></div>
           </div>
         </div>
       </div>
@@ -418,7 +418,7 @@ export function ActivityMiscDetails({ activity }: { activity: ActivityData & { d
     return (
       <div className="mt-2 space-y-2">
         {activity.details.technicalQuestions && (
-          <div className="bg-lia-bg-primary p-2 rounded-md">
+          <div className="bg-lia-bg-primary p-2 rounded-xl">
             <p className={`${textStyles.bodySmall} mb-1`}>Questões Técnicas</p>
             <div className="space-y-1">
               {activity.details.technicalQuestions.map((q: Record<string, unknown>, i: number) => (
@@ -431,7 +431,7 @@ export function ActivityMiscDetails({ activity }: { activity: ActivityData & { d
           </div>
         )}
         {activity.details.overallScore && (
-          <div className="bg-lia-bg-primary p-2 rounded-md">
+          <div className="bg-lia-bg-primary p-2 rounded-xl">
             <div className="flex items-center justify-between">
               <span className={textStyles.bodySmall}>Score Geral</span>
               <span className="text-xs font-bold text-lia-text-primary">{activity.details.overallScore}/10</span>
@@ -446,7 +446,7 @@ export function ActivityMiscDetails({ activity }: { activity: ActivityData & { d
   if (activity.type === 'lia-screening' && activity.details.conversation) {
     return (
       <div className="mt-2 space-y-2">
-        <div className="bg-lia-bg-primary p-2 rounded-md max-h-48 overflow-y-auto">
+        <div className="bg-lia-bg-primary p-2 rounded-xl max-h-48 overflow-y-auto">
           <p className="text-xs text-lia-text-primary mb-2">{activity.platform}</p>
           <div className="space-y-2">
             {activity.details.conversation.map((msg: Record<string, unknown>, i: number) => (
@@ -460,7 +460,7 @@ export function ActivityMiscDetails({ activity }: { activity: ActivityData & { d
           </div>
         </div>
         {activity.details.keyPoints && (
-          <div className="bg-lia-bg-primary p-2 rounded-md">
+          <div className="bg-lia-bg-primary p-2 rounded-xl">
             <p className={`${textStyles.bodySmall} mb-1`}>Pontos-Chave</p>
             <div className="space-y-0.5">
               <div className="flex justify-between text-xs"><span className="text-lia-text-secondary">Disponibilidade:</span><span className="text-lia-text-primary">{activity.details.keyPoints.availability}</span></div>

@@ -186,7 +186,7 @@ export function SearchPreviewCard({
               variant="ghost"
               size="sm"
               onClick={onCancel}
-              className="flex-1 text-lia-text-secondary border-lia-border-subtle"
+              className="flex-1 text-lia-text-secondary border-lia-border-subtle hover:bg-lia-interactive-hover transition-colors cursor-pointer"
             >
               <X className="w-4 h-4 mr-1" />
               Cancelar
@@ -197,7 +197,7 @@ export function SearchPreviewCard({
                 size="sm"
                 onClick={onConfirmHybrid}
                 disabled={!canAffordPearch || isStillSearching}
-                className="flex-1 bg-lia-btn-primary-bg text-lia-btn-primary-text"
+                className="flex-1 bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-interactive-hover transition-colors cursor-pointer"
               >
                 <Check className="w-4 h-4 mr-1" />
                 Confirmar Busca
@@ -206,7 +206,7 @@ export function SearchPreviewCard({
               <Button
                 size="sm"
                 onClick={onProceedLocalOnly}
-                className="flex-1 bg-lia-btn-primary-bg text-lia-btn-primary-text"
+                className="flex-1 bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-interactive-hover transition-colors cursor-pointer"
               >
                 <Check className="w-4 h-4 mr-1" />
                 Ver {data.localCount} Candidatos

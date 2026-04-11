@@ -72,7 +72,7 @@ export function CompensationSummaryCard({
             <Button
               size="sm"
               variant="ghost"
-              className="text-lia-text-secondary"
+              className="text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors cursor-pointer"
               onClick={onEdit}
             >
               <Edit className="h-4 w-4" />

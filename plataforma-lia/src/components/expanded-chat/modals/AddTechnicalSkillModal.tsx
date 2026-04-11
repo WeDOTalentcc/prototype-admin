@@ -67,7 +67,7 @@ export function AddTechnicalSkillModal({
           <Button
             variant="outline"
             onClick={onCancel}
-            className="flex-1 h-10 rounded-md border-lia-border-subtle"
+            className="flex-1 h-10 rounded-md border-lia-border-subtle hover:bg-lia-interactive-hover transition-colors cursor-pointer"
           >
             Cancelar
           </Button>

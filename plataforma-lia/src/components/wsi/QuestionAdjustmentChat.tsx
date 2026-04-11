@@ -249,7 +249,7 @@ export function QuestionAdjustmentChat({
         <Button
           variant="ghost"
           size="sm"
-          className="absolute right-1.5 bottom-1.5 h-7 w-7 p-0 rounded-md bg-lia-btn-primary-bg"
+          className="absolute right-1.5 bottom-1.5 h-7 w-7 p-0 rounded-md bg-lia-btn-primary-bg hover:bg-lia-interactive-hover transition-colors cursor-pointer"
           onClick={handleSend}
           disabled={!input.trim() || isLoading || disabled}
         >

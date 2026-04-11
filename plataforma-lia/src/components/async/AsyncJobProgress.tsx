@@ -220,7 +220,7 @@ export function AsyncJobProgress({
         <Button
           variant="outline"
           size="sm"
-          className="h-7 text-xs"
+          className="h-7 text-xs hover:bg-lia-interactive-hover transition-colors cursor-pointer"
           onClick={() => {
             completedRef.current = false
             setStatus("queued")

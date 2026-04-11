@@ -2,7 +2,7 @@
 
 
 import { formatBRL } from "@/lib/pricing"
-import React, { useEffect, useRef } from "react"
+import React, { useEffect, useRef, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import { liaApi } from "@/services/lia-api"
 

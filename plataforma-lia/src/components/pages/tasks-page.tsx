@@ -70,7 +70,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
             </p>
           </div>
           <Button
-            className="gap-1.5 h-7 px-2.5 font-open-sans text-xs"
+            className="gap-1.5 h-7 px-2.5 font-open-sans text-xs hover:bg-lia-interactive-hover transition-colors cursor-pointer"
             onClick={() => {
               if (onNavigate) {
                 onNavigate('Chat com LIA')
@@ -120,7 +120,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
               <div className="flex items-center gap-2 p-3 rounded-md bg-status-warning/10 border border-status-warning/30 text-sm text-status-warning">
                 <AlertCircle className="w-4 h-4 shrink-0" />
                 <span className="flex-1">{error}</span>
-                <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={() => refetch()}>
+                <Button variant="ghost" size="sm" className="h-7 px-2 text-xs hover:bg-lia-interactive-hover transition-colors cursor-pointer" onClick={() => refetch()}>
                   <RefreshCw className="w-3 h-3 mr-1" />
                   Tentar novamente
                 </Button>
@@ -203,7 +203,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                             key={key}
                             variant={activityActorFilter === key ? 'primary' : 'ghost'}
                             size="sm"
-                            className="h-6 px-2 text-xs"
+                            className="h-6 px-2 text-xs hover:bg-lia-interactive-hover transition-colors cursor-pointer"
                             onClick={() => setActivityActorFilter(key)}
                           >
                             {label}

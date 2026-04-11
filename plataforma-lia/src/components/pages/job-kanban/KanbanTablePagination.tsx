@@ -39,7 +39,7 @@ export function KanbanTablePagination({
           size="sm"
           onClick={() => onCurrentPageChange(1)}
           disabled={currentPage === 1}
-          className="h-8"
+          className="h-8 hover:bg-lia-interactive-hover transition-colors cursor-pointer"
         >
           Primeira
         </Button>
@@ -48,7 +48,7 @@ export function KanbanTablePagination({
           size="sm"
           onClick={() => onCurrentPageChange(Math.max(1, currentPage - 1))}
           disabled={currentPage === 1}
-          className="h-8"
+          className="h-8 hover:bg-lia-interactive-hover transition-colors cursor-pointer"
         >
           Anterior
         </Button>
@@ -72,7 +72,7 @@ export function KanbanTablePagination({
                   variant={currentPage === page ? 'secondary' : 'outline'}
                   size="sm"
                   onClick={() => onCurrentPageChange(page)}
-                  className="h-8 w-8 p-0"
+                  className="h-8 w-8 p-0 hover:bg-lia-interactive-hover transition-colors cursor-pointer"
                 >
                   {page}
                 </Button>
@@ -86,7 +86,7 @@ export function KanbanTablePagination({
           size="sm"
           onClick={() => onCurrentPageChange(Math.min(getPaginatedCandidates().totalPages, currentPage + 1))}
           disabled={currentPage === getPaginatedCandidates().totalPages}
-          className="h-8"
+          className="h-8 hover:bg-lia-interactive-hover transition-colors cursor-pointer"
         >
           Próxima
         </Button>
@@ -95,7 +95,7 @@ export function KanbanTablePagination({
           size="sm"
           onClick={() => onCurrentPageChange(getPaginatedCandidates().totalPages)}
           disabled={currentPage === getPaginatedCandidates().totalPages}
-          className="h-8"
+          className="h-8 hover:bg-lia-interactive-hover transition-colors cursor-pointer"
         >
           Última
         </Button>

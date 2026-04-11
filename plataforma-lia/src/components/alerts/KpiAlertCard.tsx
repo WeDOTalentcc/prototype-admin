@@ -146,7 +146,7 @@ export function KpiAlertCard({
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="mt-2 text-lia-text-secondary h-auto p-0"
+                    className="mt-2 text-lia-text-secondary h-auto p-0 hover:bg-lia-interactive-hover transition-colors cursor-pointer"
                     onClick={() => onShowDetails(alert)}
                   >
                     Ver todas as {alert.suggestedActions.length} sugestões
@@ -163,7 +163,7 @@ export function KpiAlertCard({
               variant="ghost"
               size="sm"
               onClick={() => onMarkAsRead(alert.id)}
-              className="gap-2"
+              className="gap-2 hover:bg-lia-interactive-hover transition-colors cursor-pointer"
             >
               <Eye className="w-3 h-3" />
               Marcar Lido
@@ -173,7 +173,7 @@ export function KpiAlertCard({
             variant="ghost"
             size="sm"
             onClick={() => onSendNotification(alert.id)}
-            className="gap-2"
+            className="gap-2 hover:bg-lia-interactive-hover transition-colors cursor-pointer"
           >
             <Send className="w-3 h-3" />
             Notificar
@@ -182,7 +182,7 @@ export function KpiAlertCard({
             variant="ghost"
             size="sm"
             onClick={() => onArchive(alert.id)}
-            className="gap-2"
+            className="gap-2 hover:bg-lia-interactive-hover transition-colors cursor-pointer"
           >
             <Archive className="w-3 h-3" />
             Arquivar

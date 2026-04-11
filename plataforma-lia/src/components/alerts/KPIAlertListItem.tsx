@@ -108,7 +108,7 @@ export function KPIAlertListItem({ alert, onMarkAsRead, onArchive, onSendNotific
                   ))}
                 </ul>
                 {alert.suggestedActions.length > 2 && (
-                  <Button variant="ghost" size="sm" className="mt-2 text-lia-text-secondary h-auto p-0" onClick={() => onShowDetails(alert)}>
+                  <Button variant="ghost" size="sm" className="mt-2 text-lia-text-secondary h-auto p-0 hover:bg-lia-interactive-hover transition-colors cursor-pointer" onClick={() => onShowDetails(alert)}>
                     Ver todas as {alert.suggestedActions.length} sugestões
                   </Button>
                 )}
@@ -118,14 +118,14 @@ export function KPIAlertListItem({ alert, onMarkAsRead, onArchive, onSendNotific
         </div>
         <div className="flex items-center gap-2 ml-4">
           {!alert.isRead && (
-            <Button variant="ghost" size="sm" onClick={() => onMarkAsRead(alert.id)} className="gap-2">
+            <Button variant="ghost" size="sm" onClick={() => onMarkAsRead(alert.id)} className="gap-2 hover:bg-lia-interactive-hover transition-colors cursor-pointer">
               <Eye className="w-3 h-3" />Marcar Lido
             </Button>
           )}
-          <Button variant="ghost" size="sm" onClick={() => onSendNotification(alert.id)} className="gap-2">
+          <Button variant="ghost" size="sm" onClick={() => onSendNotification(alert.id)} className="gap-2 hover:bg-lia-interactive-hover transition-colors cursor-pointer">
             <Send className="w-3 h-3" />Notificar
           </Button>
-          <Button variant="ghost" size="sm" onClick={() => onArchive(alert.id)} className="gap-2">
+          <Button variant="ghost" size="sm" onClick={() => onArchive(alert.id)} className="gap-2 hover:bg-lia-interactive-hover transition-colors cursor-pointer">
             <Archive className="w-3 h-3" />Arquivar
           </Button>
         </div>

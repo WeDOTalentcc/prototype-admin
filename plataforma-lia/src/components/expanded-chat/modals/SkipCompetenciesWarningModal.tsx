@@ -58,13 +58,13 @@ export function SkipCompetenciesWarningModal({
           <Button
             variant="outline"
             onClick={onClose}
-            className="flex-1 h-10 rounded-md border-lia-btn-primary-bg text-lia-text-secondary"
+            className="flex-1 h-10 rounded-md border-lia-btn-primary-bg text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors cursor-pointer"
           >
             Voltar e completar
           </Button>
           <Button
             onClick={onConfirm}
-            className="flex-1 h-10 rounded-md bg-status-warning text-white"
+            className="flex-1 h-10 rounded-md bg-status-warning text-white hover:bg-lia-interactive-hover transition-colors cursor-pointer"
             
           >
             Confirmar assim mesmo

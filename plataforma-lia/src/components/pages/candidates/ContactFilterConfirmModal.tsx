@@ -76,7 +76,7 @@ export function ContactFilterConfirmModal({
           <AlertDialogAction
             data-testid="contact-filter-confirm-btn"
             onClick={onConfirm}
-            className="text-white gap-2 bg-wedo-green"
+            className="text-white gap-2 bg-wedo-green hover:bg-lia-interactive-hover transition-colors cursor-pointer"
           >
             {pendingContactFilter === 'email' ? (
               <>

@@ -257,7 +257,7 @@ export function WSIScoreCard({
               <Button
                 size="sm"
                 variant="outline"
-                className="border-lia-border-default text-lia-text-primary"
+                className="border-lia-border-default text-lia-text-primary hover:bg-lia-interactive-hover transition-colors cursor-pointer"
                 onClick={onViewReport}
               >
                 <FileText className="h-3.5 w-3.5 mr-1.5" />
@@ -268,7 +268,7 @@ export function WSIScoreCard({
               <Button
                 size="sm"
                 variant="ghost"
-                className="ml-auto text-lia-text-secondary"
+                className="ml-auto text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors cursor-pointer"
                 onClick={onViewDetails}
               >
                 Detalhes Completos

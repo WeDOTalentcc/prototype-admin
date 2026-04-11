@@ -60,7 +60,7 @@ export function KPIAlertSystem({ recruiterData, onAlertAction }: KPIAlertSystemP
                 size="sm"
                 onClick={handleRefreshAlerts}
                 disabled={isRefreshing}
-                className="gap-2"
+                className="gap-2 hover:bg-lia-interactive-hover transition-colors cursor-pointer"
               >
                 <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin motion-reduce:animate-none' : ''}`} />
                 Atualizar
@@ -69,7 +69,7 @@ export function KPIAlertSystem({ recruiterData, onAlertAction }: KPIAlertSystemP
                 variant="outline"
                 size="sm"
                 onClick={() => setShowSettingsModal(true)}
-                className="gap-2"
+                className="gap-2 hover:bg-lia-interactive-hover transition-colors cursor-pointer"
               >
                 <Settings className="w-4 h-4" />
                 Configurar
@@ -160,7 +160,7 @@ export function KPIAlertSystem({ recruiterData, onAlertAction }: KPIAlertSystemP
                   variant="outline"
                   size="sm"
                   onClick={() => setShowArchived(!showArchived)}
-                  className="gap-2 flex-1"
+                  className="gap-2 flex-1 hover:bg-lia-interactive-hover transition-colors cursor-pointer"
                 >
                   {showArchived ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
                   {showArchived ? 'Ocultar' : 'Mostrar'} Arquivados
@@ -235,7 +235,7 @@ export function KPIAlertSystem({ recruiterData, onAlertAction }: KPIAlertSystemP
                       handleMarkAsRead(selectedAlert.id)
                       setSelectedAlert(null)
                     }}
-                    className="gap-2"
+                    className="gap-2 hover:bg-lia-interactive-hover transition-colors cursor-pointer"
                   >
                     <CheckCircle className="w-4 h-4" />
                     Implementar Ações

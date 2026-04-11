@@ -35,7 +35,7 @@ export const EAPTabJobDescription = React.memo(function EAPTabJobDescription(pro
       </div>
       <div className="flex justify-end">
         <button
-          className="px-3 py-1.5 lia-btn-primary text-xs disabled:opacity-50"
+          className="px-3 py-1.5 lia-btn-primary text-xs disabled:opacity-50 hover:bg-lia-interactive-hover transition-colors cursor-pointer"
           onClick={() => jobDescriptionText.trim() && onCommand(jobDescriptionText, 'extract_from_jd')}
           disabled={!jobDescriptionText.trim()}
         >

@@ -26,7 +26,7 @@ export function CandidatesLoadMoreFooter({
             <Button
               data-testid="load-more-btn"
               variant="outline"
-              className="w-full max-w-md h-10 gap-2 text-sm font-medium"
+              className="w-full max-w-md h-10 gap-2 text-sm font-medium hover:bg-lia-interactive-hover transition-colors cursor-pointer"
               onClick={onLoadMore}
               disabled={isLoadingMore}
             >

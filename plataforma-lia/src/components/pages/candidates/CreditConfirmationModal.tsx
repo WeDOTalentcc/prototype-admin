@@ -130,7 +130,7 @@ export function CreditConfirmationModal({
           </AlertDialogCancel>
           <AlertDialogAction
             onClick={onConfirm}
-            className="text-white bg-lia-btn-primary-bg"
+            className="text-white bg-lia-btn-primary-bg hover:bg-lia-interactive-hover transition-colors cursor-pointer"
           >
             Confirmar Busca
           </AlertDialogAction>

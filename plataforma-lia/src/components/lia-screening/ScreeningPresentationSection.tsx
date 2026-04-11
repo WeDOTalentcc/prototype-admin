@@ -42,7 +42,7 @@ export function ScreeningPresentationSection({
             `${jobPresentation.company}\n\n${jobPresentation.role}\n\n${jobPresentation.team}\n\n${jobPresentation.growth}`,
             'presentation'
           )}
-          className="gap-2"
+          className="gap-2 hover:bg-lia-interactive-hover transition-colors cursor-pointer"
         >
           <Copy className="w-3 h-3" />
           {copiedSection === 'presentation' ? 'Copiado!' : 'Copiar Apresentação'}

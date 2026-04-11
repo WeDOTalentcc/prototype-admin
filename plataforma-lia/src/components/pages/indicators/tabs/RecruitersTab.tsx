@@ -163,7 +163,7 @@ export function RecruitersTab({
                   variant={viewMode === mode.id ? "primary" : "outline"}
                   size="sm"
                   onClick={() => setViewMode(mode.id)}
-                  className="gap-2"
+                  className="gap-2 hover:bg-lia-interactive-hover transition-colors cursor-pointer"
                 >
                   <mode.icon className="w-4 h-4" />
                   {mode.label}
@@ -208,7 +208,7 @@ export function RecruitersTab({
           <div className="mt-4">
             <Button
               variant="outline"
-              className="w-full gap-2"
+              className="w-full gap-2 hover:bg-lia-interactive-hover transition-colors cursor-pointer"
               onClick={() => setActiveTab("alerts")}
             >
               <AlertTriangle className="w-4 h-4" />

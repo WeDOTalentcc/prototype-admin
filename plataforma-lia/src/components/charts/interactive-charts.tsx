@@ -359,7 +359,7 @@ export function InteractiveChart({
                     variant={period === p ? "primary" : "ghost"}
                     size="sm"
                     onClick={() => onPeriodChange?.(p)}
-                    className="text-xs"
+                    className="text-xs hover:bg-lia-interactive-hover transition-colors cursor-pointer"
                   >
                     {p === 'monthly' ? 'Mensal' : p === 'quarterly' ? 'Trimestral' : 'Anual'}
                   </Button>
@@ -481,7 +481,7 @@ export function RecruiterPerformanceChart() {
             variant={selectedMetric === metric.key ? "primary" : "outline"}
             size="sm"
             onClick={() => setSelectedMetric(metric.key)}
-            className="gap-2"
+            className="gap-2 hover:bg-lia-interactive-hover transition-colors cursor-pointer"
           >
             <div
               className="w-3 h-3 rounded-full"
@@ -531,7 +531,7 @@ export function WorkModelDistributionChart() {
           variant={viewType === 'distribution' ? "primary" : "outline"}
           size="sm"
           onClick={() => setViewType('distribution')}
-          className="gap-2"
+          className="gap-2 hover:bg-lia-interactive-hover transition-colors cursor-pointer"
         >
           <PieIcon className="w-4 h-4" />
           Distribuição
@@ -540,7 +540,7 @@ export function WorkModelDistributionChart() {
           variant={viewType === 'trends' ? "primary" : "outline"}
           size="sm"
           onClick={() => setViewType('trends')}
-          className="gap-2"
+          className="gap-2 hover:bg-lia-interactive-hover transition-colors cursor-pointer"
         >
           <TrendingUp className="w-4 h-4" />
           Tendências

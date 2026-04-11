@@ -89,7 +89,7 @@ export function ReviewPublishStage({
       {/* Review Summary */}
       <div data-testid="review-publish-stage" className="space-y-2.5">
         {/* Job Title Card */}
-        <div data-testid="job-title-card" className="p-3 bg-lia-bg-tertiary rounded-md">
+        <div data-testid="job-title-card" className="p-3 bg-lia-bg-tertiary rounded-xl">
           <div className="flex items-start justify-between">
             <div>
               <h3 className="text-base font-semibold text-lia-text-primary">
@@ -104,7 +104,7 @@ export function ReviewPublishStage({
             </div>
             <button
               onClick={() => onGoToStage('input-evaluation')}
-              className="p-1.5 text-lia-text-secondary hover:bg-lia-bg-tertiary rounded-md transition-colors motion-reduce:transition-none"
+              className="p-1.5 text-lia-text-secondary hover:bg-lia-bg-tertiary rounded-xl transition-colors motion-reduce:transition-none"
             >
               <Edit2 className="w-3.5 h-3.5" />
             </button>
@@ -119,7 +119,7 @@ export function ReviewPublishStage({
         </div>
 
         {/* Technical Requirements Summary */}
-        <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-md">
+        <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-xl">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
               <Code className="w-3.5 h-3.5 text-lia-text-secondary" />
@@ -129,7 +129,7 @@ export function ReviewPublishStage({
             </div>
             <button
               onClick={() => { onGoToStage('competencies'); onSetCompetenciesTab('technical') }}
-              className="p-1 text-lia-text-secondary hover:bg-lia-bg-tertiary rounded-md transition-colors motion-reduce:transition-none"
+              className="p-1 text-lia-text-secondary hover:bg-lia-bg-tertiary rounded-xl transition-colors motion-reduce:transition-none"
             >
               <Edit2 className="w-3 h-3" />
             </button>
@@ -157,7 +157,7 @@ export function ReviewPublishStage({
         </div>
 
         {/* Behavioral Competencies Summary */}
-        <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-md">
+        <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-xl">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
               <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
@@ -167,7 +167,7 @@ export function ReviewPublishStage({
             </div>
             <button
               onClick={() => { onGoToStage('competencies'); onSetCompetenciesTab('behavioral') }}
-              className="p-1 text-lia-text-secondary hover:bg-lia-bg-tertiary rounded-md transition-colors motion-reduce:transition-none"
+              className="p-1 text-lia-text-secondary hover:bg-lia-bg-tertiary rounded-xl transition-colors motion-reduce:transition-none"
             >
               <Edit2 className="w-3 h-3" />
             </button>
@@ -186,7 +186,7 @@ export function ReviewPublishStage({
         </div>
 
         {/* Salary Summary */}
-        <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-md">
+        <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-xl">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
               <DollarSign className="w-3.5 h-3.5 text-lia-text-secondary" />
@@ -196,7 +196,7 @@ export function ReviewPublishStage({
             </div>
             <button
               onClick={() => onGoToStage('salary')}
-              className="p-1 text-lia-text-secondary hover:bg-lia-bg-tertiary rounded-md transition-colors motion-reduce:transition-none"
+              className="p-1 text-lia-text-secondary hover:bg-lia-bg-tertiary rounded-xl transition-colors motion-reduce:transition-none"
             >
               <Edit2 className="w-3 h-3" />
             </button>
@@ -217,7 +217,7 @@ export function ReviewPublishStage({
         </div>
 
         {/* WSI Questions Summary */}
-        <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-md">
+        <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-xl">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
               <MessageCircle className="w-3.5 h-3.5 text-lia-text-secondary" />
@@ -227,7 +227,7 @@ export function ReviewPublishStage({
             </div>
             <button
               onClick={() => onGoToStage('wsi-questions')}
-              className="p-1 text-lia-text-secondary hover:bg-lia-bg-tertiary rounded-md transition-colors motion-reduce:transition-none"
+              className="p-1 text-lia-text-secondary hover:bg-lia-bg-tertiary rounded-xl transition-colors motion-reduce:transition-none"
             >
               <Edit2 className="w-3 h-3" />
             </button>
@@ -238,7 +238,7 @@ export function ReviewPublishStage({
         </div>
 
         {/* Job Description */}
-        <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-md">
+        <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-xl">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
               <FileText className="w-3.5 h-3.5 text-lia-text-secondary" />
@@ -254,7 +254,7 @@ export function ReviewPublishStage({
             </div>
             <button
               onClick={onGenerateJobDescription}
-              className="p-1 text-lia-text-secondary hover:bg-lia-bg-tertiary rounded-md transition-colors motion-reduce:transition-none"
+              className="p-1 text-lia-text-secondary hover:bg-lia-bg-tertiary rounded-xl transition-colors motion-reduce:transition-none"
               title="Regenerar descrição"
             >
               <RefreshCw className="w-3 h-3" />
@@ -268,7 +268,7 @@ export function ReviewPublishStage({
             </div>
           ) : (
             <div
-              className="text-xs text-lia-text-primary leading-relaxed whitespace-pre-line bg-lia-bg-secondary rounded-md p-2.5 max-h-card-lg overflow-y-auto"
+              className="text-xs text-lia-text-primary leading-relaxed whitespace-pre-line bg-lia-bg-secondary rounded-xl p-2.5 max-h-card-lg overflow-y-auto"
              
             >
               {jobDescription || 'Descrição será gerada automaticamente...'}
@@ -282,7 +282,7 @@ export function ReviewPublishStage({
         </div>
 
         {/* Ready to proceed */}
-        <div className="p-3 bg-lia-bg-secondary rounded-md border border-lia-border-subtle">
+        <div className="p-3 bg-lia-bg-secondary rounded-xl border border-lia-border-subtle">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 bg-wedo-green/10 rounded-full flex items-center justify-center">
               <Globe className="w-4 h-4 text-wedo-green" />
@@ -303,7 +303,7 @@ export function ReviewPublishStage({
       {publishedJobId === null && (
         <div className="space-y-2.5 mt-2.5">
           {/* Header */}
-          <div className="p-3 bg-lia-bg-secondary rounded-md border border-lia-border-subtle">
+          <div className="p-3 bg-lia-bg-secondary rounded-xl border border-lia-border-subtle">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 bg-lia-bg-tertiary rounded-full flex items-center justify-center">
                 <Globe className="w-4 h-4 text-lia-text-secondary" />
@@ -320,15 +320,15 @@ export function ReviewPublishStage({
           </div>
 
           {/* ATS Section */}
-          <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-md">
+          <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-xl">
             <h4 className="text-micro font-semibold text-lia-text-secondary uppercase tracking-wide mb-2">
               ATS - Sistema de Vagas
             </h4>
             <div className="space-y-2">
               {publishingPlatforms.filter(p => p.type === 'ats').map(platform => (
-                <label key={platform.id} className="flex items-center justify-between p-2 bg-lia-bg-secondary rounded-md cursor-pointer hover:bg-wedo-cyan/10 transition-colors motion-reduce:transition-none">
+                <label key={platform.id} className="flex items-center justify-between p-2 bg-lia-bg-secondary rounded-xl cursor-pointer hover:bg-wedo-cyan/10 transition-colors motion-reduce:transition-none">
                   <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 bg-lia-bg-primary rounded-md flex items-center justify-center border border-lia-border-subtle">
+                    <div className="w-6 h-6 bg-lia-bg-primary rounded-xl flex items-center justify-center border border-lia-border-subtle">
                       <Building2 className="w-3.5 h-3.5 text-lia-text-secondary" />
                     </div>
                     <span className="text-xs text-lia-text-primary">{platform.name}</span>
@@ -352,13 +352,13 @@ export function ReviewPublishStage({
           </div>
 
           {/* Job Boards Section */}
-          <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-md">
+          <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-xl">
             <h4 className="text-micro font-semibold text-lia-text-secondary uppercase tracking-wide mb-2">
               Job Boards
             </h4>
             <div className="space-y-2">
               {publishingPlatforms.filter(p => p.type === 'jobboard').map(platform => (
-                <label key={platform.id} className="flex items-center justify-between p-2 bg-lia-bg-secondary rounded-md cursor-pointer hover:bg-wedo-cyan/10 transition-colors motion-reduce:transition-none">
+                <label key={platform.id} className="flex items-center justify-between p-2 bg-lia-bg-secondary rounded-xl cursor-pointer hover:bg-wedo-cyan/10 transition-colors motion-reduce:transition-none">
                   <div className="flex items-center gap-2">
                     <div className={cn(
  "w-6 h-6 rounded-md flex items-center justify-center border border-lia-border-subtle",
@@ -391,15 +391,15 @@ export function ReviewPublishStage({
           </div>
 
           {/* Company Website Section */}
-          <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-md">
+          <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-xl">
             <h4 className="text-micro font-semibold text-lia-text-secondary uppercase tracking-wide mb-2">
               Website da Empresa
             </h4>
             <div className="space-y-2">
               {publishingPlatforms.filter(p => p.type === 'website').map(platform => (
-                <label key={platform.id} className="flex items-center justify-between p-2 bg-lia-bg-secondary rounded-md cursor-pointer hover:bg-wedo-cyan/10 transition-colors motion-reduce:transition-none">
+                <label key={platform.id} className="flex items-center justify-between p-2 bg-lia-bg-secondary rounded-xl cursor-pointer hover:bg-wedo-cyan/10 transition-colors motion-reduce:transition-none">
                   <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 bg-lia-bg-tertiary rounded-md flex items-center justify-center border border-lia-border-default">
+                    <div className="w-6 h-6 bg-lia-bg-tertiary rounded-xl flex items-center justify-center border border-lia-border-default">
                       <Globe className="w-3.5 h-3.5 text-lia-text-secondary" />
                     </div>
                     <span className="text-xs text-lia-text-primary">{platform.name}</span>
@@ -423,7 +423,7 @@ export function ReviewPublishStage({
           </div>
 
           {/* Job Configuration Section */}
-          <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-md">
+          <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-xl">
             <h4 className="text-micro font-semibold text-lia-text-secondary uppercase tracking-wide mb-2">
               Configurações da Vaga
             </h4>
@@ -524,7 +524,7 @@ export function ReviewPublishStage({
 
                 {/* Affirmative Criteria Selection */}
                 {jobConfig.isAffirmative && (
-                  <div className="mt-2 p-2 bg-wedo-cyan/10 rounded-md border border-lia-border-default space-y-2">
+                  <div className="mt-2 p-2 bg-wedo-cyan/10 rounded-xl border border-lia-border-default space-y-2">
                     <div>
                       <label className="text-micro font-medium text-lia-text-primary block mb-1">
                         Critério Principal *
@@ -532,7 +532,7 @@ export function ReviewPublishStage({
                       <select
                         value={detectedCriteria.affirmativeCriteriaPrimary || ''}
                         onChange={(e) => onSetDetectedCriteria(prev => ({ ...prev, affirmativeCriteriaPrimary: e.target.value || null }))}
-                        className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary text-lia-text-primary"
+                        className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-xl bg-lia-bg-primary text-lia-text-primary"
                       >
                         <option value="">Selecione...</option>
                         <option value="gender">Gênero (Mulheres)</option>
@@ -553,7 +553,7 @@ export function ReviewPublishStage({
                       <select
                         value={detectedCriteria.affirmativeCriteriaSecondary || ''}
                         onChange={(e) => onSetDetectedCriteria(prev => ({ ...prev, affirmativeCriteriaSecondary: e.target.value || null }))}
-                        className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary text-lia-text-primary"
+                        className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-xl bg-lia-bg-primary text-lia-text-primary"
                       >
                         <option value="">Nenhum</option>
                         <option value="gender">Gênero (Mulheres)</option>
@@ -578,7 +578,7 @@ export function ReviewPublishStage({
           </div>
 
           {/* Deadlines Section */}
-          <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-md">
+          <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-xl">
             <h4 className="text-micro font-semibold text-lia-text-secondary uppercase tracking-wide mb-2 flex items-center gap-1">
               <Calendar className="w-3 h-3" />
               Prazos do Processo
@@ -590,7 +590,7 @@ export function ReviewPublishStage({
                   type="date"
                   value={jobConfig.deadlineScreening}
                   onChange={(e) => onSetJobConfig(prev => ({ ...prev, deadlineScreening: e.target.value }))}
-                  className="px-2 py-1 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-secondary text-lia-text-primary"
+                  className="px-2 py-1 text-xs border border-lia-border-subtle rounded-xl bg-lia-bg-secondary text-lia-text-primary"
                 />
               </div>
               <div className="flex items-center justify-between">
@@ -599,7 +599,7 @@ export function ReviewPublishStage({
                   type="date"
                   value={jobConfig.deadlineShortlist}
                   onChange={(e) => onSetJobConfig(prev => ({ ...prev, deadlineShortlist: e.target.value }))}
-                  className="px-2 py-1 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-secondary text-lia-text-primary"
+                  className="px-2 py-1 text-xs border border-lia-border-subtle rounded-xl bg-lia-bg-secondary text-lia-text-primary"
                 />
               </div>
               <div className="flex items-center justify-between">
@@ -608,14 +608,14 @@ export function ReviewPublishStage({
                   type="date"
                   value={jobConfig.deadline}
                   onChange={(e) => onSetJobConfig(prev => ({ ...prev, deadline: e.target.value }))}
-                  className="px-2 py-1 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-secondary text-lia-text-primary"
+                  className="px-2 py-1 text-xs border border-lia-border-subtle rounded-xl bg-lia-bg-secondary text-lia-text-primary"
                 />
               </div>
             </div>
           </div>
 
           {/* Languages Section */}
-          <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-md">
+          <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-xl">
             <h4 className="text-micro font-semibold text-lia-text-secondary uppercase tracking-wide mb-2 flex items-center gap-1">
               <Globe className="w-3 h-3" />
               Idiomas {jobConfig.languages.length > 0 && <span className="text-lia-text-secondary">({jobConfig.languages.length})</span>}
@@ -623,7 +623,7 @@ export function ReviewPublishStage({
             {jobConfig.languages.length > 0 ? (
               <div className="space-y-1">
                 {jobConfig.languages.map((lang, idx) => (
-                  <div key={idx} className="flex items-center gap-2 p-2 bg-lia-bg-secondary rounded-md">
+                  <div key={idx} className="flex items-center gap-2 p-2 bg-lia-bg-secondary rounded-xl">
                     <select
                       value={lang.name}
                       onChange={(e) => {
@@ -631,7 +631,7 @@ export function ReviewPublishStage({
                         newLanguages[idx] = { ...newLanguages[idx], name: e.target.value }
                         onUpdateLanguages(newLanguages)
                       }}
-                      className="flex-1 px-2 py-0.5 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary text-lia-text-primary"
+                      className="flex-1 px-2 py-0.5 text-xs border border-lia-border-subtle rounded-xl bg-lia-bg-primary text-lia-text-primary"
                     >
                       <option value="Inglês">Inglês</option>
                       <option value="Espanhol">Espanhol</option>
@@ -663,7 +663,7 @@ export function ReviewPublishStage({
                         const newLanguages = jobConfig.languages.filter((_, i) => i !== idx)
                         onUpdateLanguages(newLanguages)
                       }}
-                      className="w-5 h-5 flex items-center justify-center text-lia-text-secondary hover:text-status-error hover:bg-status-error/10 rounded-md transition-colors motion-reduce:transition-none"
+                      className="w-5 h-5 flex items-center justify-center text-lia-text-secondary hover:text-status-error hover:bg-status-error/10 rounded-xl transition-colors motion-reduce:transition-none"
                     >
                       <X className="w-3 h-3" />
                     </button>
@@ -682,7 +682,7 @@ export function ReviewPublishStage({
           </div>
 
           {/* Summary */}
-          <div className="p-3 bg-lia-bg-secondary rounded-md border border-lia-border-subtle">
+          <div className="p-3 bg-lia-bg-secondary rounded-xl border border-lia-border-subtle">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 bg-wedo-green/10 rounded-full flex items-center justify-center">
                 <Rocket className="w-4 h-4 text-wedo-green" />

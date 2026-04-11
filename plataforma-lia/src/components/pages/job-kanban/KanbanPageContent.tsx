@@ -105,7 +105,7 @@ export function KanbanPageContent({ state }: KanbanPageContentProps) {
                   variant="ghost"
                   size="sm"
                   onClick={clearStageFilters}
-                  className="h-6 text-micro gap-1 flex-shrink-0 px-2"
+                  className="h-6 text-micro gap-1 flex-shrink-0 px-2 hover:bg-lia-interactive-hover transition-colors cursor-pointer"
                 >
                   <X className="w-3 h-3" />
                   Limpar

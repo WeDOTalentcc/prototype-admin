@@ -26,7 +26,7 @@ export function IntegrationsTemplates({ templates, onNewTemplate, onEditTemplate
             variant="outline"
             size="sm"
             onClick={onNewTemplate}
-            className="gap-2"
+            className="gap-2 hover:bg-lia-interactive-hover transition-colors cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             Novo Template
@@ -65,7 +65,7 @@ export function IntegrationsTemplates({ templates, onNewTemplate, onEditTemplate
                     variant="ghost"
                     size="sm"
                     onClick={() => onEditTemplate(template)}
-                    className="gap-2"
+                    className="gap-2 hover:bg-lia-interactive-hover transition-colors cursor-pointer"
                   >
                     <Edit className="w-4 h-4" />
                     Editar

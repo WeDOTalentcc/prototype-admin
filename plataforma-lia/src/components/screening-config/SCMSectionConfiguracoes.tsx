@@ -48,7 +48,7 @@ export function SCMSectionConfiguracoes({
         <CardContent className="p-4">
           <div className="space-y-4">
             {/* Status Row */}
-            <div className="px-3 py-3 rounded-md border border-lia-border-subtle bg-lia-bg-secondary/50/30">
+            <div className="px-3 py-3 rounded-xl border border-lia-border-subtle bg-lia-bg-secondary/50/30">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className={`w-7 h-7 rounded-full flex items-center justify-center ${
@@ -97,7 +97,7 @@ export function SCMSectionConfiguracoes({
                 const PrimaryIcon = primaryDef?.icon ?? Globe
                 return (
                   <div className="space-y-2">
-                    <div className="border border-lia-border-subtle rounded-md p-2.5 flex items-center gap-2.5 bg-lia-bg-secondary">
+                    <div className="border border-lia-border-subtle rounded-xl p-2.5 flex items-center gap-2.5 bg-lia-bg-secondary">
                       <Star className="w-3.5 h-3.5 text-lia-text-secondary flex-shrink-0" />
                       <PrimaryIcon className="w-3.5 h-3.5 text-lia-text-secondary flex-shrink-0" />
                       <div className="flex-1">
@@ -105,7 +105,7 @@ export function SCMSectionConfiguracoes({
                         <div className="text-micro text-lia-text-tertiary">Canal principal</div>
                       </div>
                       {primaryDef?.comingSoon && (
-                        <span className="text-micro px-1.5 py-0.5 bg-lia-bg-tertiary text-lia-text-disabled rounded-md">Em breve</span>
+                        <span className="text-micro px-1.5 py-0.5 bg-lia-bg-tertiary text-lia-text-disabled rounded-xl">Em breve</span>
                       )}
                     </div>
                     {fallbackKeys.length > 0 && (
@@ -117,7 +117,7 @@ export function SCMSectionConfiguracoes({
                           return (
                             <div key={fk} className="flex items-center gap-1">
                               {i > 0 && <ArrowRight className="w-2.5 h-2.5 text-lia-text-disabled" />}
-                              <div className="flex items-center gap-1 px-1.5 py-0.5 bg-lia-bg-tertiary rounded-md border border-lia-border-subtle">
+                              <div className="flex items-center gap-1 px-1.5 py-0.5 bg-lia-bg-tertiary rounded-xl border border-lia-border-subtle">
                                 <FIcon className="w-2.5 h-2.5 text-lia-text-tertiary" />
                                 <span className="text-micro text-lia-text-secondary">{fDef?.label ?? fk}</span>
                               </div>
@@ -134,7 +134,7 @@ export function SCMSectionConfiguracoes({
             {/* Channels preview */}
             <div>
               <h3 className="text-xs font-semibold text-lia-text-tertiary uppercase tracking-wider px-1 font-['Open_Sans',sans-serif] mb-3">Canais Habilitados</h3>
-              <div className="border border-lia-border-subtle rounded-md divide-y divide-lia-border-subtle">
+              <div className="border border-lia-border-subtle rounded-xl divide-y divide-lia-border-subtle">
                 {[
                   { key: 'whatsapp', label: 'WhatsApp', icon: MessageSquare, enabled: screeningConfig?.channels?.whatsapp?.enabled ?? true },
                   { key: 'chat_web', label: 'Chat Web', icon: Globe, enabled: screeningConfig?.channels?.chat_web?.enabled ?? true },
@@ -186,13 +186,13 @@ export function SCMSectionConfiguracoes({
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="text-xs font-medium text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Timeout Resposta</label>
-                    <div className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle rounded-md bg-lia-bg-secondary text-lia-text-secondary opacity-60">
+                    <div className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle rounded-xl bg-lia-bg-secondary text-lia-text-secondary opacity-60">
                       {screeningConfig?.settings?.response_timeout_hours ?? 48}h
                     </div>
                   </div>
                   <div>
                     <label className="text-xs font-medium text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Re-tentativas</label>
-                    <div className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle rounded-md bg-lia-bg-secondary text-lia-text-secondary opacity-60">
+                    <div className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle rounded-xl bg-lia-bg-secondary text-lia-text-secondary opacity-60">
                       {screeningConfig?.settings?.max_retries ?? 2}x
                     </div>
                   </div>
@@ -209,13 +209,13 @@ export function SCMSectionConfiguracoes({
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs font-medium text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Data Limite</label>
-                  <div className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle rounded-md bg-lia-bg-secondary text-lia-text-secondary opacity-60">
+                  <div className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle rounded-xl bg-lia-bg-secondary text-lia-text-secondary opacity-60">
                     {job.deadlineScreening ? new Date(String(job.deadlineScreening)).toLocaleDateString('pt-BR') : 'Não definido'}
                   </div>
                 </div>
                 <div>
                   <label className="text-xs font-medium text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Dias Restantes</label>
-                  <div className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle rounded-md bg-lia-bg-secondary text-lia-text-secondary opacity-60">
+                  <div className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle rounded-xl bg-lia-bg-secondary text-lia-text-secondary opacity-60">
                     {job.deadlineScreening ? (() => { const days = Math.ceil((new Date(String(job.deadlineScreening)).getTime() - Date.now()) / (1000*60*60*24)); return days > 0 ? `${days} dias` : days === 0 ? 'Hoje' : 'Expirado' })() : '—'}
                   </div>
                 </div>
@@ -253,7 +253,7 @@ export function SCMSectionConfiguracoes({
                   </div>
                 </div>
                 {(screeningConfig?.settings?.auto_approvals_count ?? 0) > 0 && (
-                  <div className="border border-lia-border-subtle rounded-md p-2.5">
+                  <div className="border border-lia-border-subtle rounded-xl p-2.5">
                     <div className="flex items-center justify-between">
                       <span className="text-micro text-lia-text-disabled">Progresso atual</span>
                       <span className="text-micro font-medium text-lia-text-tertiary">
@@ -269,7 +269,7 @@ export function SCMSectionConfiguracoes({
                   </div>
                 )}
                 {screeningConfig?.settings?.auto_approval_paused && (
-                  <div className="flex items-center gap-1.5 px-2 py-1.5 bg-status-warning/10/50 dark:bg-status-warning/10 rounded-md text-status-warning">
+                  <div className="flex items-center gap-1.5 px-2 py-1.5 bg-status-warning/10/50 dark:bg-status-warning/10 rounded-xl text-status-warning">
                     <AlertTriangle className="w-3 h-3" />
                     <span className="text-micro font-medium">Triagem pausada — limite atingido, aguardando revisão humana</span>
                   </div>
@@ -315,13 +315,13 @@ export function SCMSectionConfiguracoes({
                   <div className="grid grid-cols-3 gap-3">
                     <div>
                       <label className="text-xs font-medium text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Calendário</label>
-                      <div className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle rounded-md bg-lia-bg-secondary text-lia-text-secondary opacity-60">
+                      <div className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle rounded-xl bg-lia-bg-secondary text-lia-text-secondary opacity-60">
                         {screeningConfig?.scheduling?.calendar_provider || 'Microsoft'}
                       </div>
                     </div>
                     <div>
                       <label className="text-xs font-medium text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Horários</label>
-                      <div className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle rounded-md bg-lia-bg-secondary text-lia-text-secondary opacity-60">
+                      <div className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle rounded-xl bg-lia-bg-secondary text-lia-text-secondary opacity-60">
                         {screeningConfig?.scheduling?.available_hours || '9h-18h'}
                       </div>
                       {(screeningConfig?.scheduling?.available_hours_inherited ?? true) && (
@@ -330,7 +330,7 @@ export function SCMSectionConfiguracoes({
                     </div>
                     <div>
                       <label className="text-xs font-medium text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Duração</label>
-                      <div className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle rounded-md bg-lia-bg-secondary text-lia-text-secondary opacity-60">
+                      <div className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle rounded-xl bg-lia-bg-secondary text-lia-text-secondary opacity-60">
                         {screeningConfig?.scheduling?.interview_duration_min ?? 60}min
                       </div>
                     </div>
@@ -346,7 +346,7 @@ export function SCMSectionConfiguracoes({
         <CardContent className="p-4">
           <div className="space-y-4">
             {/* Status editing */}
-            <div className="px-3 py-3 rounded-md border border-lia-border-subtle bg-lia-bg-primary">
+            <div className="px-3 py-3 rounded-xl border border-lia-border-subtle bg-lia-bg-primary">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className={`w-7 h-7 rounded-full flex items-center justify-center ${
@@ -434,10 +434,10 @@ export function SCMSectionConfiguracoes({
                               {ch.label}
                             </span>
                             {ch.comingSoon && (
-                              <span className="text-micro px-1 py-0 bg-lia-bg-tertiary text-lia-text-disabled rounded-md">Em breve</span>
+                              <span className="text-micro px-1 py-0 bg-lia-bg-tertiary text-lia-text-disabled rounded-xl">Em breve</span>
                             )}
                             {isTwilioChannel && !editChannels.phone && !ch.comingSoon && (
-                              <span className="text-micro px-1 py-0 bg-status-warning/10 text-status-warning rounded-md border border-status-warning/20">Não disponível — config. pendente</span>
+                              <span className="text-micro px-1 py-0 bg-status-warning/10 text-status-warning rounded-xl border border-status-warning/20">Não disponível — config. pendente</span>
                             )}
                           </div>
                           <div className="text-micro text-lia-text-disabled">{ch.desc}</div>
@@ -492,7 +492,7 @@ export function SCMSectionConfiguracoes({
             {/* Channels editing */}
             <div>
               <h3 className="text-xs font-semibold text-lia-text-tertiary uppercase tracking-wider px-1 font-['Open_Sans',sans-serif] mb-3">Canais Habilitados</h3>
-              <div className="border border-lia-border-subtle rounded-md divide-y divide-lia-border-subtle">
+              <div className="border border-lia-border-subtle rounded-xl divide-y divide-lia-border-subtle">
                 {([
                   { key: 'whatsapp' as const, label: 'WhatsApp', icon: MessageSquare },
                   { key: 'chat_web' as const, label: 'Chat Web', icon: Globe },
@@ -547,13 +547,13 @@ export function SCMSectionConfiguracoes({
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="text-xs font-medium text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Timeout Resposta</label>
-                    <select value={editTimeoutHours} onChange={(e) => setEditTimeoutHours(Number(e.target.value))} className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle rounded-md bg-lia-bg-secondary focus:ring-2 focus:ring-lia-btn-primary-bg/10 focus:border-lia-btn-primary-bg transition-colors motion-reduce:transition-none">
+                    <select value={editTimeoutHours} onChange={(e) => setEditTimeoutHours(Number(e.target.value))} className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle rounded-xl bg-lia-bg-secondary focus:ring-2 focus:ring-lia-btn-primary-bg/10 focus:border-lia-btn-primary-bg transition-colors motion-reduce:transition-none">
                       {[12, 24, 48, 72].map(h => (<option key={h} value={h}>{h}h</option>))}
                     </select>
                   </div>
                   <div>
                     <label className="text-xs font-medium text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Re-tentativas</label>
-                    <select value={editMaxRetries} onChange={(e) => setEditMaxRetries(Number(e.target.value))} className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle rounded-md bg-lia-bg-secondary focus:ring-2 focus:ring-lia-btn-primary-bg/10 focus:border-lia-btn-primary-bg transition-colors motion-reduce:transition-none">
+                    <select value={editMaxRetries} onChange={(e) => setEditMaxRetries(Number(e.target.value))} className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle rounded-xl bg-lia-bg-secondary focus:ring-2 focus:ring-lia-btn-primary-bg/10 focus:border-lia-btn-primary-bg transition-colors motion-reduce:transition-none">
                       {[1, 2, 3, 4, 5].map(n => (<option key={n} value={n}>{n}x</option>))}
                     </select>
                   </div>
@@ -592,7 +592,7 @@ export function SCMSectionConfiguracoes({
                   </div>
                 </div>
                 {(screeningConfig?.settings?.auto_approvals_count ?? 0) > 0 && (
-                  <div className="border border-lia-border-subtle rounded-md p-2.5">
+                  <div className="border border-lia-border-subtle rounded-xl p-2.5">
                     <div className="flex items-center justify-between">
                       <span className="text-micro text-lia-text-tertiary">Progresso atual</span>
                       <span className="text-micro font-medium text-lia-text-secondary">
@@ -608,7 +608,7 @@ export function SCMSectionConfiguracoes({
                   </div>
                 )}
                 {screeningConfig?.settings?.auto_approval_paused && (
-                  <div className="flex items-center gap-1.5 px-2 py-1.5 bg-status-warning/10 dark:bg-status-warning/20 rounded-md text-status-warning">
+                  <div className="flex items-center gap-1.5 px-2 py-1.5 bg-status-warning/10 dark:bg-status-warning/20 rounded-xl text-status-warning">
                     <AlertTriangle className="w-3 h-3" />
                     <span className="text-micro font-medium">Triagem pausada — limite atingido</span>
                     <button onClick={() => {}} className="ml-auto text-micro font-medium text-lia-text-secondary hover:text-lia-text-primary dark:hover:text-lia-text-inverse underline">Retomar</button>
@@ -629,7 +629,7 @@ export function SCMSectionConfiguracoes({
                   type="date"
                   value={job.deadlineScreening ? new Date(String(job.deadlineScreening)).toISOString().split('T')[0] : ''}
                   onChange={(e) => onJobUpdate?.({ ...job, deadlineScreening: e.target.value || null })}
-                  className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle rounded-md bg-lia-bg-primary text-lia-text-primary"
+                  className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle rounded-xl bg-lia-bg-primary text-lia-text-primary"
                 />
               </div>
             </div>
@@ -674,7 +674,7 @@ export function SCMSectionConfiguracoes({
                   <div className="grid grid-cols-3 gap-3">
                     <div>
                       <label className="text-xs font-medium text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Calendário</label>
-                      <select value={editCalendarProvider} onChange={(e) => setEditCalendarProvider(e.target.value)} className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle rounded-md bg-lia-bg-secondary focus:ring-2 focus:ring-lia-btn-primary-bg/10 focus:border-lia-btn-primary-bg transition-colors motion-reduce:transition-none">
+                      <select value={editCalendarProvider} onChange={(e) => setEditCalendarProvider(e.target.value)} className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle rounded-xl bg-lia-bg-secondary focus:ring-2 focus:ring-lia-btn-primary-bg/10 focus:border-lia-btn-primary-bg transition-colors motion-reduce:transition-none">
                         <option value="Microsoft">Microsoft</option>
                         <option value="Google">Google</option>
                         <option value="Outlook">Outlook</option>
@@ -682,12 +682,12 @@ export function SCMSectionConfiguracoes({
                     </div>
                     <div>
                       <label className="text-xs font-medium text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Horários</label>
-                      <input type="text" value={editAvailableHours} onChange={(e) => { setEditAvailableHours(e.target.value); setEditAvailableHoursInherited(false) }} className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle rounded-md bg-lia-bg-secondary focus:ring-2 focus:ring-lia-btn-primary-bg/10 focus:border-lia-btn-primary-bg transition-colors motion-reduce:transition-none" />
+                      <input type="text" value={editAvailableHours} onChange={(e) => { setEditAvailableHours(e.target.value); setEditAvailableHoursInherited(false) }} className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle rounded-xl bg-lia-bg-secondary focus:ring-2 focus:ring-lia-btn-primary-bg/10 focus:border-lia-btn-primary-bg transition-colors motion-reduce:transition-none" />
                       {editAvailableHoursInherited && <span className="text-micro text-lia-text-disabled mt-0.5 block">Conforme config. da empresa</span>}
                     </div>
                     <div>
                       <label className="text-xs font-medium text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Duração</label>
-                      <select value={editInterviewDuration} onChange={(e) => setEditInterviewDuration(Number(e.target.value))} className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle rounded-md bg-lia-bg-secondary focus:ring-2 focus:ring-lia-btn-primary-bg/10 focus:border-lia-btn-primary-bg transition-colors motion-reduce:transition-none">
+                      <select value={editInterviewDuration} onChange={(e) => setEditInterviewDuration(Number(e.target.value))} className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle rounded-xl bg-lia-bg-secondary focus:ring-2 focus:ring-lia-btn-primary-bg/10 focus:border-lia-btn-primary-bg transition-colors motion-reduce:transition-none">
                         {[30, 45, 60, 90].map(d => (<option key={d} value={d}>{d}min</option>))}
                       </select>
                     </div>

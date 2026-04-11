@@ -18,7 +18,7 @@ export const KanbanEmptyState = React.memo(function KanbanEmptyState({ onAddCand
         label: "Buscar candidatos",
         onClick: onAddCandidates,
       }}
-      className="h-64"
+      className="h-64 hover:bg-lia-interactive-hover transition-colors cursor-pointer"
     />
   )
 })

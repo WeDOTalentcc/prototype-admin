@@ -136,7 +136,7 @@ export function RubricDetailsSection({
       <div className="p-3 border border-lia-border-subtle rounded-lg bg-lia-bg-secondary">
         <button
           onClick={() => setShowAudit(!showAudit)}
-          className="w-full flex items-center justify-between text-xs font-semibold text-lia-text-primary"
+          className="w-full flex items-center justify-between text-xs font-semibold text-lia-text-primary hover:bg-lia-interactive-hover transition-colors cursor-pointer"
         >
           <span className="flex items-center gap-2">
             <BarChart3 className="w-4 h-4 text-lia-text-secondary" />

@@ -41,13 +41,13 @@ export function ClearDraftConfirmModal({ open, onClose, onConfirm }: ClearDraftC
               <Button
                 variant="outline"
                 onClick={onClose}
-                className="flex-1 h-10 rounded-md border-lia-border-default text-lia-text-secondary"
+                className="flex-1 h-10 rounded-md border-lia-border-default text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors cursor-pointer"
               >
                 Cancelar
               </Button>
               <Button
                 onClick={onConfirm}
-                className="flex-1 h-10 rounded-md bg-status-error text-white"
+                className="flex-1 h-10 rounded-md bg-status-error text-white hover:bg-lia-interactive-hover transition-colors cursor-pointer"
               >
                 <Trash2 className="w-4 h-4 mr-1.5" />
                 Limpar tudo

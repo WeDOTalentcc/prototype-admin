@@ -576,7 +576,7 @@ export function AdvancedInteractiveChart({
               variant="ghost"
               size="sm"
               onClick={() => setSelectedDataPoint(null)}
-              className="mt-3 text-lia-text-secondary"
+              className="mt-3 text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors cursor-pointer"
             >
               Fechar detalhes
             </Button>

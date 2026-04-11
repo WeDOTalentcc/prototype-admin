@@ -384,28 +384,28 @@ export function WSIVoiceScreeningStatus({
 
         <div className="flex gap-2">
           {status === 'idle' && !isVoipMode && (
-            <Button onClick={startVoiceScreening} className="flex-1 gap-2">
+            <Button onClick={startVoiceScreening} className="flex-1 gap-2 hover:bg-lia-interactive-hover transition-colors cursor-pointer">
               <PhoneCall className="w-4 h-4" />
               Iniciar Chamada
             </Button>
           )}
 
           {status === 'failed' && !isVoipMode && (
-            <Button onClick={startVoiceScreening} variant="outline" className="flex-1 gap-2">
+            <Button onClick={startVoiceScreening} variant="outline" className="flex-1 gap-2 hover:bg-lia-interactive-hover transition-colors cursor-pointer">
               <RefreshCw className="w-4 h-4" />
               Tentar novamente
             </Button>
           )}
 
           {['initiating', 'calling', 'in_progress', 'processing'].includes(status) && (
-            <Button variant="destructive" onClick={handleClose} className="flex-1 gap-2">
+            <Button variant="destructive" onClick={handleClose} className="flex-1 gap-2 hover:bg-lia-interactive-hover transition-colors cursor-pointer">
               <PhoneOff className="w-4 h-4" />
               Cancelar
             </Button>
           )}
 
           {status === 'completed' && (
-            <Button onClick={handleClose} className="flex-1">
+            <Button onClick={handleClose} className="flex-1 hover:bg-lia-interactive-hover transition-colors cursor-pointer">
               Fechar
             </Button>
           )}

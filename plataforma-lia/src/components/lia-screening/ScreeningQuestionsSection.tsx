@@ -49,7 +49,7 @@ export function ScreeningQuestionsSection({ screeningQuestions, copiedSection, o
                     section.questions.map(q => String(q)).join('\n'),
                     `questions-${sectionIndex}`
                   )}
-                  className="gap-1"
+                  className="gap-1 hover:bg-lia-interactive-hover transition-colors cursor-pointer"
                 >
                   <Copy className="w-3 h-3" />
                   {copiedSection === `questions-${sectionIndex}` ? 'Copiado!' : 'Copiar'}

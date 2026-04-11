@@ -83,7 +83,7 @@ export function StageTransitionPreviewPanel({
                 size="sm"
                 onClick={regenerateMessage}
                 disabled={isRegenerating}
-                className="h-7 text-xs"
+                className="h-7 text-xs hover:bg-lia-interactive-hover transition-colors cursor-pointer"
               >
                 <RefreshCw className={cn("h-3 w-3 mr-1", isRegenerating && "animate-spin motion-reduce:animate-none")} />
                 Regenerar

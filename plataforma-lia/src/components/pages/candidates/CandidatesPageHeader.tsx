@@ -51,7 +51,7 @@ export function CandidatesPageHeader({
           {/* Botão Novo Candidato - visível em todas as abas */}
           <Button
             data-testid="new-candidate-btn"
-            className="gap-2 h-8 px-3 font-medium"
+            className="gap-2 h-8 px-3 font-medium hover:bg-lia-interactive-hover transition-colors cursor-pointer"
             onClick={onAddCandidate}
           >
             <Plus className="w-4 h-4" />
@@ -64,7 +64,7 @@ export function CandidatesPageHeader({
               <Button
                 data-testid="new-search-btn"
                 variant="outline"
-                className="gap-2 h-8 px-3"
+                className="gap-2 h-8 px-3 hover:bg-lia-interactive-hover transition-colors cursor-pointer"
                 onClick={onNewSearch}
               >
                 <Search className="w-4 h-4" />
@@ -76,7 +76,7 @@ export function CandidatesPageHeader({
                 <Button
                   data-testid="save-search-btn"
                   variant="outline"
-                  className="gap-2 h-8 px-3"
+                  className="gap-2 h-8 px-3 hover:bg-lia-interactive-hover transition-colors cursor-pointer"
                   onClick={onSaveCurrentSearch}
                   title="Salvar esta busca para reutilizar"
                 >
@@ -90,7 +90,7 @@ export function CandidatesPageHeader({
           {(activeTab === 'favorites' || activeTab === 'history' || activeTab === 'saved-searches') && (
             <Button
               variant="outline"
-              className="gap-2 h-8 px-3"
+              className="gap-2 h-8 px-3 hover:bg-lia-interactive-hover transition-colors cursor-pointer"
               onClick={onNewSearch}
             >
               <Search className="w-4 h-4" />

@@ -49,44 +49,44 @@ export function JobScreeningSection({
                       {isLoadingScreeningConfig ? (
                         <div className="space-y-4">
                           {/* Skeleton for Performance Card */}
-                          <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-md">
-                            <div className="h-4 bg-lia-interactive-active rounded-md w-32 mb-3"></div>
+                          <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-xl">
+                            <div className="h-4 bg-lia-interactive-active rounded-xl w-32 mb-3"></div>
                             <div className="grid grid-cols-4 gap-2">
                               {[1, 2, 3, 4].map((i) => (
                                 <div key={i} className="text-center">
-                                  <div className="h-6 bg-lia-interactive-active rounded-md mb-1"></div>
-                                  <div className="h-3 bg-lia-bg-tertiary rounded-md w-12 mx-auto"></div>
+                                  <div className="h-6 bg-lia-interactive-active rounded-xl mb-1"></div>
+                                  <div className="h-3 bg-lia-bg-tertiary rounded-xl w-12 mx-auto"></div>
                                 </div>
                               ))}
                             </div>
                             <div className="grid grid-cols-4 gap-2 mt-2 pt-2 border-t border-lia-border-subtle">
                               {[1, 2, 3, 4].map((i) => (
                                 <div key={i} className="text-center">
-                                  <div className="h-6 bg-lia-interactive-active rounded-md mb-1"></div>
-                                  <div className="h-3 bg-lia-bg-tertiary rounded-md w-12 mx-auto"></div>
+                                  <div className="h-6 bg-lia-interactive-active rounded-xl mb-1"></div>
+                                  <div className="h-3 bg-lia-bg-tertiary rounded-xl w-12 mx-auto"></div>
                                 </div>
                               ))}
                             </div>
                           </div>
 
                           {/* Skeleton for Skills Card */}
-                          <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-md">
-                            <div className="h-4 bg-lia-interactive-active rounded-md w-32 mb-3"></div>
+                          <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-xl">
+                            <div className="h-4 bg-lia-interactive-active rounded-xl w-32 mb-3"></div>
                             <div className="flex flex-wrap gap-1.5">
                               {[1, 2, 3, 4, 5, 6].map((i) => (
-                                <div key={i} className="h-6 bg-lia-interactive-active rounded-md px-2 w-24"></div>
+                                <div key={i} className="h-6 bg-lia-interactive-active rounded-xl px-2 w-24"></div>
                               ))}
                             </div>
                           </div>
 
                           {/* Skeleton for Questions Card */}
-                          <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-md">
-                            <div className="h-4 bg-lia-interactive-active rounded-md w-40 mb-3"></div>
+                          <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-xl">
+                            <div className="h-4 bg-lia-interactive-active rounded-xl w-40 mb-3"></div>
                             <div className="space-y-3">
                               {[1, 2, 3].map((i) => (
-                                <div key={i} className="p-2 bg-lia-bg-secondary rounded-md border border-lia-border-subtle">
-                                  <div className="h-4 bg-lia-interactive-active rounded-md w-3/4 mb-2"></div>
-                                  <div className="h-3 bg-lia-bg-tertiary rounded-md w-1/2"></div>
+                                <div key={i} className="p-2 bg-lia-bg-secondary rounded-xl border border-lia-border-subtle">
+                                  <div className="h-4 bg-lia-interactive-active rounded-xl w-3/4 mb-2"></div>
+                                  <div className="h-3 bg-lia-bg-tertiary rounded-xl w-1/2"></div>
                                 </div>
                               ))}
                             </div>
@@ -96,7 +96,7 @@ export function JobScreeningSection({
                         <div className="space-y-4">
                       {/* 4. Descrição da Vaga */}
                       {previewJob.description && (
-                        <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-md">
+                        <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-xl">
                           <div className="flex items-center justify-between cursor-pointer" onClick={() => onToggleSection('descricao')}>
                             <h5 className="text-xs font-semibold text-lia-text-primary flex items-center gap-1.5">
                               <FileText className="w-3.5 h-3.5 text-lia-text-secondary" />
@@ -117,7 +117,7 @@ export function JobScreeningSection({
                       )}
 
                       {/* 3. Competências Avaliadas */}
-                      <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-md">
+                      <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-xl">
                         <div className="flex items-center justify-between cursor-pointer" onClick={() => onToggleSection('competencias')}>
                           <h5 className="text-xs font-semibold text-lia-text-primary flex items-center gap-1.5">
                             <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
@@ -197,7 +197,7 @@ export function JobScreeningSection({
                         </>)}
                       </div>
 
-                      <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-md">
+                      <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-xl">
                         <div className="flex items-center justify-between cursor-pointer" onClick={() => onToggleSection('idiomas')}>
                           <h5 className="text-xs font-semibold text-lia-text-primary flex items-center gap-1.5">
                             <Globe className="w-3.5 h-3.5 text-lia-text-secondary" />
@@ -238,7 +238,7 @@ export function JobScreeningSection({
                         )}
                       </div>
 
-                      <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-md">
+                      <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-xl">
                         <div className="flex items-center justify-between cursor-pointer" onClick={() => onToggleSection('remuneracao')}>
                           <h5 className="text-xs font-semibold text-lia-text-primary flex items-center gap-1.5">
                             <DollarSign className="w-3.5 h-3.5 text-lia-text-secondary" />
@@ -309,7 +309,7 @@ export function JobScreeningSection({
                         )}
                       </div>
 
-                      <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-md">
+                      <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-xl">
                         <div className="flex items-center justify-between cursor-pointer" onClick={() => onToggleSection('etapas')}>
                           <h5 className="text-xs font-semibold text-lia-text-primary flex items-center gap-1.5">
                             <Layers3 className="w-3.5 h-3.5 text-lia-text-secondary" />
@@ -330,7 +330,7 @@ export function JobScreeningSection({
                                     {idx > 0 && (
                                       <ChevronRight className="w-3 h-3 text-lia-text-disabled flex-shrink-0" />
                                     )}
-                                    <div className="flex items-center gap-1 px-2 py-1 bg-lia-bg-secondary border border-lia-border-subtle rounded-md flex-shrink-0">
+                                    <div className="flex items-center gap-1 px-2 py-1 bg-lia-bg-secondary border border-lia-border-subtle rounded-xl flex-shrink-0">
                                       <span className="text-micro font-medium text-lia-text-secondary">{step}</span>
                                     </div>
                                   </React.Fragment>
@@ -345,7 +345,7 @@ export function JobScreeningSection({
                                       {idx > 0 && (
                                         <ChevronRight className="w-3 h-3 text-lia-text-disabled flex-shrink-0" />
                                       )}
-                                      <div className="flex items-center gap-1 px-2 py-1 bg-lia-bg-secondary border border-lia-border-subtle rounded-md flex-shrink-0">
+                                      <div className="flex items-center gap-1 px-2 py-1 bg-lia-bg-secondary border border-lia-border-subtle rounded-xl flex-shrink-0">
                                         {stage.liaAssisted && (
                                           <span className="w-1.5 h-1.5 rounded-full bg-wedo-cyan flex-shrink-0" />
                                         )}
@@ -378,7 +378,7 @@ export function JobScreeningSection({
                             </div>
                           </div>
 
-                      <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-md">
+                      <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-xl">
                         <div className="flex items-center justify-between cursor-pointer" onClick={() => onToggleSection('fluxo-resumido')}>
                           <h5 className="text-xs font-semibold text-lia-text-primary flex items-center gap-1.5">
                             <ClipboardList className="w-3.5 h-3.5 text-lia-text-secondary" />
@@ -398,11 +398,11 @@ export function JobScreeningSection({
                         {!collapsedPreviewSections.includes('fluxo-resumido') && (
                           <div className="mt-2">
                             <div className="grid grid-cols-2 gap-2">
-                              <div className="text-center p-2 bg-lia-bg-secondary rounded-md">
+                              <div className="text-center p-2 bg-lia-bg-secondary rounded-xl">
                                 <div className="text-base-ui font-semibold text-lia-text-primary">{(previewJob.screeningQuestions || []).length}</div>
                                 <p className="text-micro text-lia-text-tertiary">Perguntas</p>
                               </div>
-                              <div className="text-center p-2 bg-lia-bg-secondary rounded-md">
+                              <div className="text-center p-2 bg-lia-bg-secondary rounded-xl">
                                 <div className="text-base-ui font-semibold text-lia-text-primary">{Math.ceil(((previewJob.screeningQuestions || []) as ScreeningQuestion[]).reduce((acc: number, q: ScreeningQuestion) => acc + ((q.time_limit as number) || 120), 0) / 60)}min</div>
                                 <p className="text-micro text-lia-text-tertiary">Tempo Est.</p>
                               </div>
@@ -533,7 +533,7 @@ export function JobScreeningSection({
                                     {/* Non-editable blocks show automatic WSI messages */}
                                     {!block.editable ? (
                                       WSI_AUTOMATIC_MESSAGES[block.id] ? (
-                                        <div className="rounded-md border border-lia-border-default dark:border-lia-border-default bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 overflow-hidden">
+                                        <div className="rounded-xl border border-lia-border-default dark:border-lia-border-default bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 overflow-hidden">
                                           <div className="px-2.5 py-2 border-b border-lia-btn-primary-bg dark:border-lia-border-medium/10 bg-lia-bg-tertiary dark:bg-lia-bg-secondary">
                                             <p className="text-xs font-medium text-lia-text-primary">
                                               {WSI_AUTOMATIC_MESSAGES[block.id].title}
@@ -551,7 +551,7 @@ export function JobScreeningSection({
                                           </div>
                                         </div>
                                       ) : (
-                                        <div className="p-2.5 bg-lia-bg-primary/60 border border-lia-border-subtle rounded-md">
+                                        <div className="p-2.5 bg-lia-bg-primary/60 border border-lia-border-subtle rounded-xl">
                                           <p className="text-micro text-lia-text-secondary italic">
                                             {block.description}
                                           </p>
@@ -563,7 +563,7 @@ export function JobScreeningSection({
                                     ) : (
                                       <>
                                         {blockQuestions.length === 0 ? (
-                                          <div className="p-3 bg-lia-bg-secondary border border-lia-border-subtle border-dashed rounded-md text-center">
+                                          <div className="p-3 bg-lia-bg-secondary border border-lia-border-subtle border-dashed rounded-xl text-center">
                                             <p className="text-micro text-lia-text-tertiary">
                                               Nenhuma pergunta neste bloco
                                             </p>
@@ -572,7 +572,7 @@ export function JobScreeningSection({
                                           blockQuestions.map((item: ScreeningQuestion, idx: number) => (
                                             <div 
                                               key={item.id || idx} 
-                                              className="p-2.5 bg-lia-bg-primary border border-lia-border-subtle rounded-md"
+                                              className="p-2.5 bg-lia-bg-primary border border-lia-border-subtle rounded-xl"
                                             >
                                               <div className="flex items-center gap-1.5 mb-1 flex-wrap">
                                                 <Badge className={`text-[0.625rem] leading-none px-1.5 py-0.5 rounded-full ${
@@ -638,7 +638,7 @@ export function JobScreeningSection({
                       </div>
 
                       {/* 2. Agendamento Automático */}
-                      <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-md">
+                      <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-xl">
                         <div className="flex items-center justify-between cursor-pointer" onClick={() => onToggleSection('agendamento')}>
                           <div className="flex items-center gap-2">
                             <CalendarCheck className="w-3.5 h-3.5 text-lia-text-secondary" />
@@ -659,7 +659,7 @@ export function JobScreeningSection({
                         <p className="text-micro text-lia-text-tertiary mb-2 mt-2">Aprovados na triagem são agendados automaticamente para entrevista</p>
 
                         <div className="grid grid-cols-2 gap-2">
-                          <div className="flex items-center justify-between p-1.5 bg-lia-bg-secondary rounded-md">
+                          <div className="flex items-center justify-between p-1.5 bg-lia-bg-secondary rounded-xl">
                             <span className="text-micro text-lia-text-tertiary">Score Mínimo</span>
                             <span className="text-micro font-medium text-lia-text-secondary">{(() => {
                               const preset = screeningConfig?.scheduling?.min_score_for_auto_preset
@@ -670,15 +670,15 @@ export function JobScreeningSection({
                               }
                             })()}</span>
                           </div>
-                          <div className="flex items-center justify-between p-1.5 bg-lia-bg-secondary rounded-md">
+                          <div className="flex items-center justify-between p-1.5 bg-lia-bg-secondary rounded-xl">
                             <span className="text-micro text-lia-text-tertiary">Calendário</span>
                             <span className="text-micro font-medium text-lia-text-secondary">{screeningConfig?.scheduling?.calendar_provider || 'Microsoft'}</span>
                           </div>
-                          <div className="flex items-center justify-between p-1.5 bg-lia-bg-secondary rounded-md">
+                          <div className="flex items-center justify-between p-1.5 bg-lia-bg-secondary rounded-xl">
                             <span className="text-micro text-lia-text-tertiary">Horários</span>
                             <span className="text-micro font-medium text-lia-text-secondary">{screeningConfig?.scheduling?.available_hours || '9h-18h'}</span>
                           </div>
-                          <div className="flex items-center justify-between p-1.5 bg-lia-bg-secondary rounded-md">
+                          <div className="flex items-center justify-between p-1.5 bg-lia-bg-secondary rounded-xl">
                             <span className="text-micro text-lia-text-tertiary">Duração</span>
                             <span className="text-micro font-medium text-lia-text-secondary">{screeningConfig?.scheduling?.interview_duration_min ?? 45}min</span>
                           </div>
@@ -687,7 +687,7 @@ export function JobScreeningSection({
                       </div>
 
                           {/* 1. Canais + Configurações Agrupados */}
-                          <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-md">
+                          <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-xl">
                         <div className="flex items-center justify-between cursor-pointer" onClick={() => onToggleSection('canais')}>
                           <h5 className="text-xs font-semibold text-lia-text-primary flex items-center gap-1.5">
                             <Settings className="w-3.5 h-3.5 text-lia-text-secondary" />

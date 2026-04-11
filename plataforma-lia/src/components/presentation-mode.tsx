@@ -337,7 +337,7 @@ export function PresentationMode({ isActive, onToggle, currentPage, data }: Pres
             variant="ghost"
             size="sm"
             onClick={onToggle}
-            className="gap-2"
+            className="gap-2 hover:bg-lia-interactive-hover transition-colors cursor-pointer"
           >
             <X className="w-4 h-4" />
             Sair do Modo Apresentação
@@ -377,7 +377,7 @@ export function PresentationMode({ isActive, onToggle, currentPage, data }: Pres
             variant="ghost"
             size="sm"
             onClick={togglePlayPause}
-            className="gap-2"
+            className="gap-2 hover:bg-lia-interactive-hover transition-colors cursor-pointer"
           >
             {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
             {isPlaying ? "Pausar" : "Play"}
@@ -409,7 +409,7 @@ export function PresentationMode({ isActive, onToggle, currentPage, data }: Pres
               variant={currentSlide === index ? "primary" : "ghost"}
               size="sm"
               onClick={() => goToSlide(index)}
-              className="gap-2"
+              className="gap-2 hover:bg-lia-interactive-hover transition-colors cursor-pointer"
             >
               <slide.icon className="w-4 h-4" />
               {slide.title}

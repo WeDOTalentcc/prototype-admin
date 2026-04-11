@@ -209,7 +209,7 @@ export function UserForm({ isCreating, formData, setFormData, onSave, onCancel }
             <Button variant="outline" size="sm" onClick={onCancel}>
               Cancelar
             </Button>
-            <Button onClick={onSave} size="sm" className="gap-1.5">
+            <Button onClick={onSave} size="sm" className="gap-1.5 hover:bg-lia-interactive-hover transition-colors cursor-pointer">
               <Save className="w-3.5 h-3.5" />
               {isCreating ? 'Criar Usuário' : 'Salvar Alterações'}
             </Button>
