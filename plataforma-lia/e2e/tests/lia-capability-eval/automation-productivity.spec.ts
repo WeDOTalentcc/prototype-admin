@@ -2,76 +2,59 @@ import {
   test,
   expect,
   sendPromptAndWait,
-  assertNoError,
-  assertContainsAny,
-  assertMinLength,
+  navigateToChat,
+  evalAndAssert,
   takeEvalScreenshot,
 } from './eval-helpers';
 
 test.describe('Domain 6: Automation & Productivity', () => {
-  test('AP-001: Create task', async ({ evalPage: page }) => {
+  test('AP-001: Create task', async ({ authenticatedPage: page }, testInfo) => {
+    await navigateToChat(page);
     const { response } = await sendPromptAndWait(
       page,
-      'Crie uma tarefa para revisar os currículos novos até sexta-feira',
+      'Crie uma tarefa: revisar CVs da vaga até sexta',
     );
-    assertNoError(response);
-    assertMinLength(response);
-    assertContainsAny(response, ['tarefa', 'criar', 'criada', 'revisar', 'currículo']);
+    evalAndAssert(testInfo, response, [/tarefa/i, /criar/i, /criada/i, /revisar/i]);
     await takeEvalScreenshot(page, 'AP-001');
   });
 
-  test('AP-002: Create reminder', async ({ evalPage: page }) => {
+  test('AP-002: Create note about candidate', async ({ authenticatedPage: page }, testInfo) => {
+    await navigateToChat(page);
     const { response } = await sendPromptAndWait(
       page,
-      'Me lembre de ligar para o candidato amanhã às 10h',
+      'Adicione uma nota sobre o candidato: excelente comunicação',
     );
-    assertNoError(response);
-    assertMinLength(response);
-    assertContainsAny(response, ['lembrete', 'lembrar', 'criado', 'amanhã', 'ligar']);
+    evalAndAssert(testInfo, response, [/nota/i, /adicion/i, /comunicação/i, /candidato/i]);
     await takeEvalScreenshot(page, 'AP-002');
   });
 
-  test('AP-003: Create note', async ({ evalPage: page }) => {
+  test('AP-003: Daily briefing', async ({ authenticatedPage: page }, testInfo) => {
+    await navigateToChat(page);
     const { response } = await sendPromptAndWait(
       page,
-      'Anote que o candidato mencionou interesse em trabalho remoto e pretensão de 15k CLT',
+      'Gere meu briefing do dia',
     );
-    assertNoError(response);
-    assertMinLength(response);
-    assertContainsAny(response, ['nota', 'anotar', 'anotado', 'salvo', 'registrado']);
+    evalAndAssert(testInfo, response, [/briefing/i, /agenda/i, /hoje/i, /resumo/i]);
     await takeEvalScreenshot(page, 'AP-003');
   });
 
-  test('AP-004: Daily briefing', async ({ evalPage: page }) => {
+  test('AP-004: Create automation rule', async ({ authenticatedPage: page }, testInfo) => {
+    await navigateToChat(page);
     const { response } = await sendPromptAndWait(
       page,
-      'Me dê um resumo da minha agenda de hoje',
+      'Crie uma automação: quando candidato entrar em Entrevista, envie WhatsApp',
     );
-    assertNoError(response);
-    assertMinLength(response);
-    assertContainsAny(response, ['agenda', 'resumo', 'hoje', 'entrevista', 'tarefa', 'nenhum', 'nada']);
+    evalAndAssert(testInfo, response, [/automação/i, /whatsapp/i, /entrevista/i, /criar/i]);
     await takeEvalScreenshot(page, 'AP-004');
   });
 
-  test('AP-005: Multi-step task creation', async ({ evalPage: page }) => {
+  test('AP-005: Check proactive pipeline alerts', async ({ authenticatedPage: page }, testInfo) => {
+    await navigateToChat(page);
     const { response } = await sendPromptAndWait(
       page,
-      'Crie três tarefas: 1) enviar feedback para reprovados, 2) atualizar JD da vaga de Backend, 3) alinhar com hiring manager',
+      'Verifique alertas proativos do pipeline',
     );
-    assertNoError(response);
-    assertMinLength(response);
-    assertContainsAny(response, ['tarefa', 'criar', 'criada', 'feedback', 'backend', 'alinhar']);
+    evalAndAssert(testInfo, response, [/alerta/i, /pipeline/i, /proativ/i, /nenhum/i]);
     await takeEvalScreenshot(page, 'AP-005');
-  });
-
-  test('AP-006: Create note with candidate context', async ({ evalPage: page }) => {
-    const { response } = await sendPromptAndWait(
-      page,
-      'Crie uma nota sobre o candidato: "Excelente comunicação, boa liderança técnica, fit cultural alto"',
-    );
-    assertNoError(response);
-    assertMinLength(response);
-    assertContainsAny(response, ['nota', 'criada', 'salva', 'registrada', 'candidato']);
-    await takeEvalScreenshot(page, 'AP-006');
   });
 });

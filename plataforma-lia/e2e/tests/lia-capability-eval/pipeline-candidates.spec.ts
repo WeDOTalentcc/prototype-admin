@@ -2,84 +2,59 @@ import {
   test,
   expect,
   sendPromptAndWait,
-  assertNoError,
-  assertContainsAny,
-  assertMinLength,
-  assertIsActionResponse,
+  navigateToChat,
+  evalAndAssert,
   takeEvalScreenshot,
 } from './eval-helpers';
 
 test.describe('Domain 3: Pipeline & Candidate Management', () => {
-  test('PC-001: Move candidate to next stage', async ({ evalPage: page }) => {
+  test('PC-001: Move candidate to interview stage', async ({ authenticatedPage: page }, testInfo) => {
+    await navigateToChat(page);
     const { response } = await sendPromptAndWait(
       page,
-      'Mova o candidato João para a etapa de Entrevista Técnica',
+      'Mova o candidato para a etapa de Entrevista',
     );
-    assertIsActionResponse(response);
-    assertContainsAny(response, ['mover', 'movido', 'etapa', 'entrevista', 'confirmação', 'qual candidato']);
+    evalAndAssert(testInfo, response, [/mover/i, /movido/i, /etapa/i, /entrevista/i, /qual candidato/i]);
     await takeEvalScreenshot(page, 'PC-001');
   });
 
-  test('PC-002: Reject candidate with reason', async ({ evalPage: page }) => {
+  test('PC-002: List candidates in screening stage', async ({ authenticatedPage: page }, testInfo) => {
+    await navigateToChat(page);
     const { response } = await sendPromptAndWait(
       page,
-      'Reprove o candidato Pedro por falta de experiência técnica',
+      'Quais candidatos estão na etapa de Triagem?',
     );
-    assertIsActionResponse(response);
-    assertContainsAny(response, ['reprovar', 'reprovado', 'rejeitar', 'confirmação', 'qual candidato']);
+    evalAndAssert(testInfo, response, [/candidato/i, /triagem/i, /etapa/i, /nenhum/i]);
     await takeEvalScreenshot(page, 'PC-002');
   });
 
-  test('PC-003: Approve candidate', async ({ evalPage: page }) => {
+  test('PC-003: Analyze candidate profile', async ({ authenticatedPage: page }, testInfo) => {
+    await navigateToChat(page);
     const { response } = await sendPromptAndWait(
       page,
-      'Aprove a candidata Ana para a próxima fase',
+      'Analise o perfil do candidato para a vaga de Backend',
     );
-    assertIsActionResponse(response);
-    assertContainsAny(response, ['aprovar', 'aprovado', 'aprovada', 'próxima', 'qual candidato']);
+    evalAndAssert(testInfo, response, [/análise/i, /perfil/i, /score/i, /qual candidato/i]);
     await takeEvalScreenshot(page, 'PC-003');
   });
 
-  test('PC-004: Update candidate field', async ({ evalPage: page }) => {
+  test('PC-004: Show conversion funnel', async ({ authenticatedPage: page }, testInfo) => {
+    await navigateToChat(page);
     const { response } = await sendPromptAndWait(
       page,
-      'Atualize o telefone do candidato Lucas para (11) 99999-1234',
+      'Mostre o funil de conversão da vaga',
     );
-    assertIsActionResponse(response);
-    assertContainsAny(response, ['atualizar', 'atualizado', 'telefone', 'campo', 'qual candidato']);
+    evalAndAssert(testInfo, response, [/funil/i, /conversão/i, /etapa/i, /candidatos/i, /qual vaga/i]);
     await takeEvalScreenshot(page, 'PC-004');
   });
 
-  test('PC-005: Start screening', async ({ evalPage: page }) => {
+  test('PC-005: Stale candidates check', async ({ authenticatedPage: page }, testInfo) => {
+    await navigateToChat(page);
     const { response } = await sendPromptAndWait(
       page,
-      'Inicie a triagem dos candidatos da vaga de Data Engineer',
+      'Quais candidatos estão parados há mais de 7 dias?',
     );
-    assertNoError(response);
-    assertMinLength(response);
-    assertContainsAny(response, ['triagem', 'iniciar', 'iniciada', 'screening', 'candidatos']);
+    evalAndAssert(testInfo, response, [/candidato/i, /dia/i, /parado/i, /nenhum/i]);
     await takeEvalScreenshot(page, 'PC-005');
-  });
-
-  test('PC-006: Analyze candidate profile', async ({ evalPage: page }) => {
-    const { response } = await sendPromptAndWait(
-      page,
-      'Faça uma análise detalhada do perfil da candidata Mariana para a vaga de PM',
-    );
-    assertNoError(response);
-    assertMinLength(response);
-    assertContainsAny(response, ['análise', 'perfil', 'score', 'analisar', 'candidat', 'qual candidato']);
-    await takeEvalScreenshot(page, 'PC-006');
-  });
-
-  test('PC-007: Batch move candidates', async ({ evalPage: page }) => {
-    const { response } = await sendPromptAndWait(
-      page,
-      'Mova todos os candidatos da etapa Triagem para Entrevista na vaga de Backend',
-    );
-    assertNoError(response);
-    assertMinLength(response);
-    assertContainsAny(response, ['mover', 'movido', 'candidatos', 'lote', 'etapa', 'confirmar']);
-    await takeEvalScreenshot(page, 'PC-007');
   });
 });

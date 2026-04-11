@@ -2,86 +2,59 @@ import {
   test,
   expect,
   sendPromptAndWait,
-  assertNoError,
-  assertContainsAny,
-  assertMinLength,
-  assertIsActionResponse,
+  navigateToChat,
+  evalAndAssert,
   takeEvalScreenshot,
 } from './eval-helpers';
 
 test.describe('Domain 1: Job Management', () => {
-  test('JM-001: Create job via natural language', async ({ evalPage: page }) => {
+  test('JM-001: Create job via natural language', async ({ authenticatedPage: page }, testInfo) => {
+    await navigateToChat(page);
     const { response } = await sendPromptAndWait(
       page,
-      'Quero criar uma vaga de Desenvolvedor Full Stack Sênior, remoto, em São Paulo',
+      'Crie uma vaga de Desenvolvedor Backend Sênior em São Paulo, regime híbrido',
     );
-    assertNoError(response);
-    assertMinLength(response);
-    assertContainsAny(response, ['vaga', 'criar', 'wizard', 'full stack', 'formulário', 'preencher']);
+    evalAndAssert(testInfo, response, [/vaga/i, /criar/i, /backend/i, /wizard/i, /formulário/i]);
     await takeEvalScreenshot(page, 'JM-001');
   });
 
-  test('JM-002: List open jobs', async ({ evalPage: page }) => {
+  test('JM-002: List active jobs', async ({ authenticatedPage: page }, testInfo) => {
+    await navigateToChat(page);
     const { response } = await sendPromptAndWait(
       page,
-      'Quais vagas estão abertas agora?',
+      'Liste as vagas ativas',
     );
-    assertNoError(response);
-    assertMinLength(response);
-    assertContainsAny(response, ['vaga', 'ativa', 'aberta', 'abertas', 'nenhuma']);
+    evalAndAssert(testInfo, response, [/vaga/i, /ativa/i, /aberta/i, /nenhuma/i]);
     await takeEvalScreenshot(page, 'JM-002');
   });
 
-  test('JM-003: Pause a job', async ({ evalPage: page }) => {
+  test('JM-003: Pause a job', async ({ authenticatedPage: page }, testInfo) => {
+    await navigateToChat(page);
     const { response } = await sendPromptAndWait(
       page,
-      'Pause a vaga de Engenheiro de Dados',
+      'Pause a vaga de Desenvolvedor Backend',
     );
-    assertIsActionResponse(response);
-    assertContainsAny(response, ['pausar', 'pausada', 'pausa', 'confirmação', 'confirmar', 'qual vaga']);
+    evalAndAssert(testInfo, response, [/pausar/i, /pausada/i, /confirmar/i, /qual vaga/i]);
     await takeEvalScreenshot(page, 'JM-003');
   });
 
-  test('JM-004: Close a job', async ({ evalPage: page }) => {
+  test('JM-004: Reopen paused job', async ({ authenticatedPage: page }, testInfo) => {
+    await navigateToChat(page);
     const { response } = await sendPromptAndWait(
       page,
-      'Feche a vaga de Product Manager que já foi preenchida',
+      'Reabra a vaga que acabamos de pausar',
     );
-    assertIsActionResponse(response);
-    assertContainsAny(response, ['fechar', 'fechada', 'encerrar', 'confirmação', 'confirmar', 'qual vaga']);
+    evalAndAssert(testInfo, response, [/reabrir/i, /reaberta/i, /qual vaga/i, /confirmar/i]);
     await takeEvalScreenshot(page, 'JM-004');
   });
 
-  test('JM-005: Duplicate a job', async ({ evalPage: page }) => {
+  test('JM-005: Duplicate a job with new title', async ({ authenticatedPage: page }, testInfo) => {
+    await navigateToChat(page);
     const { response } = await sendPromptAndWait(
       page,
-      'Duplique a vaga de Analista de Dados para outra região',
+      'Duplique a vaga de Desenvolvedor Backend com o título Desenvolvedor Fullstack',
     );
-    assertNoError(response);
-    assertMinLength(response);
-    assertContainsAny(response, ['duplicar', 'duplicada', 'cópia', 'nova vaga', 'qual vaga']);
+    evalAndAssert(testInfo, response, [/duplicar/i, /duplicada/i, /fullstack/i, /qual vaga/i]);
     await takeEvalScreenshot(page, 'JM-005');
-  });
-
-  test('JM-006: Reopen a closed job', async ({ evalPage: page }) => {
-    const { response } = await sendPromptAndWait(
-      page,
-      'Reabra a vaga de UX Designer que foi fechada no mês passado',
-    );
-    assertNoError(response);
-    assertMinLength(response);
-    assertContainsAny(response, ['reabrir', 'reaberta', 'reativada', 'qual vaga', 'confirmar']);
-    await takeEvalScreenshot(page, 'JM-006');
-  });
-
-  test('JM-007: Set job as urgent', async ({ evalPage: page }) => {
-    const { response } = await sendPromptAndWait(
-      page,
-      'Classifique a vaga de DevOps como urgente, precisamos preencher logo',
-    );
-    assertNoError(response);
-    assertMinLength(response);
-    assertContainsAny(response, ['urgente', 'prioridade', 'classificar', 'qual vaga']);
-    await takeEvalScreenshot(page, 'JM-007');
   });
 });

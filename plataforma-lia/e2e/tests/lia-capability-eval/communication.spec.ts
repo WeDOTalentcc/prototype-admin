@@ -2,62 +2,59 @@ import {
   test,
   expect,
   sendPromptAndWait,
-  assertNoError,
-  assertContainsAny,
-  assertMinLength,
-  assertIsActionResponse,
+  navigateToChat,
+  evalAndAssert,
   takeEvalScreenshot,
 } from './eval-helpers';
 
 test.describe('Domain 4: Communication', () => {
-  test('CM-001: Send email to candidate', async ({ evalPage: page }) => {
+  test('CM-001: Send thank-you email to candidate', async ({ authenticatedPage: page }, testInfo) => {
+    await navigateToChat(page);
     const { response } = await sendPromptAndWait(
       page,
-      'Envie um email para o candidato informando que ele foi aprovado na primeira fase',
+      'Envie um e-mail para o candidato agradecendo pela entrevista',
     );
-    assertIsActionResponse(response);
-    assertContainsAny(response, ['email', 'enviar', 'mensagem', 'confirmação', 'qual candidato', 'assunto']);
+    evalAndAssert(testInfo, response, [/email/i, /enviar/i, /agradec/i, /qual candidato/i, /confirmação/i]);
     await takeEvalScreenshot(page, 'CM-001');
   });
 
-  test('CM-002: Send WhatsApp message', async ({ evalPage: page }) => {
+  test('CM-002: Send approval feedback', async ({ authenticatedPage: page }, testInfo) => {
+    await navigateToChat(page);
     const { response } = await sendPromptAndWait(
       page,
-      'Envie uma mensagem WhatsApp para a candidata pedindo documentos',
+      'Envie feedback de aprovação para o candidato',
     );
-    assertIsActionResponse(response);
-    assertContainsAny(response, ['whatsapp', 'mensagem', 'enviar', 'confirmação', 'qual candidato']);
+    evalAndAssert(testInfo, response, [/feedback/i, /aprovação/i, /enviar/i, /qual candidato/i]);
     await takeEvalScreenshot(page, 'CM-002');
   });
 
-  test('CM-003: Send feedback to candidate', async ({ evalPage: page }) => {
+  test('CM-003: Send screening invite', async ({ authenticatedPage: page }, testInfo) => {
+    await navigateToChat(page);
     const { response } = await sendPromptAndWait(
       page,
-      'Envie feedback de rejeição gentil para o candidato Marcos',
+      'Envie convite de triagem para os candidatos da etapa Novos',
     );
-    assertIsActionResponse(response);
-    assertContainsAny(response, ['feedback', 'enviar', 'rejeição', 'confirmação', 'qual candidato']);
+    evalAndAssert(testInfo, response, [/convite/i, /triagem/i, /enviar/i, /candidato/i, /confirmação/i]);
     await takeEvalScreenshot(page, 'CM-003');
   });
 
-  test('CM-004: Send screening invite', async ({ evalPage: page }) => {
+  test('CM-004: Share candidate profile with manager', async ({ authenticatedPage: page }, testInfo) => {
+    await navigateToChat(page);
     const { response } = await sendPromptAndWait(
       page,
-      'Envie convite de triagem para os novos candidatos da vaga de QA',
+      'Compartilhe o perfil do candidato com o gestor',
     );
-    assertIsActionResponse(response);
-    assertContainsAny(response, ['convite', 'triagem', 'enviar', 'confirmação', 'qual candidato']);
+    evalAndAssert(testInfo, response, [/compartilh/i, /perfil/i, /gestor/i, /qual candidato/i]);
     await takeEvalScreenshot(page, 'CM-004');
   });
 
-  test('CM-005: Draft professional email', async ({ evalPage: page }) => {
+  test('CM-005: Send job progress report', async ({ authenticatedPage: page }, testInfo) => {
+    await navigateToChat(page);
     const { response } = await sendPromptAndWait(
       page,
-      'Redija um email profissional convidando o candidato para entrevista presencial na próxima terça',
+      'Envie um relatório de progresso da vaga',
     );
-    assertNoError(response);
-    assertMinLength(response, 50);
-    assertContainsAny(response, ['email', 'entrevista', 'terça', 'convid', 'mensagem']);
+    evalAndAssert(testInfo, response, [/relatório/i, /progresso/i, /vaga/i, /enviar/i, /qual vaga/i]);
     await takeEvalScreenshot(page, 'CM-005');
   });
 });
