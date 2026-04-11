@@ -28,8 +28,8 @@ const CandidateTabs = memo(function CandidateTabs({ tabs, activeTab, onTabChange
             aria-selected={activeTab === tab.id}
             className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
               activeTab === tab.id
-                ? 'bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-btn-primary-hover'
-                : 'text-lia-text-secondary hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover'
+                ? 'bg-lia-bg-primary text-lia-text-primary shadow-sm dark:bg-lia-bg-primary'
+                : 'text-lia-text-secondary hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-tertiary'
             }`}
           >
             {tab.label}

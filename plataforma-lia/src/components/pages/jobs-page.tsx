@@ -191,8 +191,8 @@ export function JobsPage(props: JobsPageProps) {
                 aria-selected={activeFilter === filter.id}
                 className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
                   activeFilter === filter.id
-                    ? 'bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-btn-primary-hover shadow-sm'
-                    : 'text-lia-text-secondary hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover'
+                    ? 'bg-lia-bg-primary text-lia-text-primary shadow-sm dark:bg-lia-bg-primary shadow-sm'
+                    : 'text-lia-text-secondary hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-tertiary'
                 }`}
               >
                 <span>{filter.label}</span>

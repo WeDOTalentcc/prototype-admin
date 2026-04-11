@@ -197,7 +197,7 @@ export default function CandidateProfilePage() {
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <a href={candidate.linkedin_url || "#"} target="_blank" rel="noopener noreferrer"
-                          className={`p-1.5 rounded-md transition-colors motion-reduce:transition-none ${candidate.linkedin_url ? "hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover" : "opacity-30 cursor-default"}`}
+                          className={`p-1.5 rounded-md transition-colors motion-reduce:transition-none ${candidate.linkedin_url ? "hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-tertiary" : "opacity-30 cursor-default"}`}
                           onClick={(e) => !candidate.linkedin_url && e.preventDefault()}
                         >
                           <Linkedin className={`w-5 h-5 ${candidate.linkedin_url ? "text-brand-linkedin" : "text-lia-text-tertiary"}`} />
@@ -219,7 +219,7 @@ export default function CandidateProfilePage() {
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <a href={candidate.portfolio_url || "#"} target="_blank" rel="noopener noreferrer"
-                          className={`p-1.5 rounded-md transition-colors motion-reduce:transition-none ${candidate.portfolio_url ? "hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover" : "opacity-30 cursor-default"}`}
+                          className={`p-1.5 rounded-md transition-colors motion-reduce:transition-none ${candidate.portfolio_url ? "hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-tertiary" : "opacity-30 cursor-default"}`}
                           onClick={(e) => !candidate.portfolio_url && e.preventDefault()}
                         >
                           <Globe className={`w-5 h-5 ${candidate.portfolio_url ? "text-lia-btn-primary-bg" : "text-lia-text-tertiary"}`} />
