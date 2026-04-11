@@ -260,15 +260,190 @@ async def _update_candidate_field(params: dict[str, Any], context: dict[str, Any
 async def _start_screening(params: dict[str, Any], context: dict[str, Any]):
     from app.orchestrator.action_executor import ActionResult
     try:
+        from sqlalchemy import text
+
+        from app.core.database import AsyncSessionLocal
+        from app.domains.recruitment.services.triagem_session_service.service import (
+            TriagemSessionService,
+        )
+        from app.orchestrator.action_handlers._handler_hooks import (
+            log_action_audit,
+            resolve_candidate_by_name,
+            sync_to_rails,
+        )
+
         candidate_ids = params.get("candidate_ids", [])
-        logger.info(f"Screening queued for candidates: {candidate_ids}")
+        candidate_id = params.get("candidate_id", "")
+        candidate_name = params.get("candidate_name", "")
+        job_vacancy_id = (
+            params.get("job_vacancy_id")
+            or params.get("vacancy_id")
+            or params.get("job_id")
+            or (context or {}).get("job_vacancy_id")
+        )
+        company_id = (context or {}).get("company_id")
+
+        if candidate_id and not candidate_ids:
+            candidate_ids = [candidate_id]
+
+        if not candidate_ids and candidate_name:
+            resolved = await resolve_candidate_by_name(candidate_name, company_id)
+            if resolved:
+                candidate_ids = [resolved["id"]]
+                candidate_name = resolved["name"]
+
+        if not candidate_ids:
+            return ActionResult(
+                status="error",
+                message="Nenhum candidato identificado para iniciar a triagem.",
+                error_detail="No candidate_ids or candidate_name provided",
+                action_type="start_screening",
+            )
+
+        if not job_vacancy_id:
+            return ActionResult(
+                status="error",
+                message="Vaga não identificada. Informe a vaga para iniciar a triagem.",
+                error_detail="job_vacancy_id missing from params and context",
+                action_type="start_screening",
+            )
+
+        triagem_service = TriagemSessionService()
+        sessions_created = []
+        candidates_updated = 0
+
+        if not company_id:
+            return ActionResult(
+                status="error",
+                message="Contexto de empresa não disponível para iniciar a triagem.",
+                error_detail="company_id missing from context",
+                action_type="start_screening",
+            )
+
+        async with AsyncSessionLocal() as db:
+            job_row = await db.execute(
+                text("""
+                    SELECT title FROM job_vacancies
+                    WHERE id = CAST(:jid AS uuid) AND company_id = CAST(:co AS uuid)
+                    LIMIT 1
+                """),
+                {"jid": str(job_vacancy_id), "co": str(company_id)},
+            )
+            job_info = job_row.fetchone()
+            if not job_info:
+                return ActionResult(
+                    status="error",
+                    message="Vaga não encontrada ou não pertence à empresa.",
+                    error_detail="job_vacancy_id not found for company",
+                    action_type="start_screening",
+                )
+            job_title = job_info.title
+
+            company_row = await db.execute(
+                text("SELECT name FROM companies WHERE id = CAST(:cid AS uuid) LIMIT 1"),
+                {"cid": str(company_id)},
+            )
+            company_name_db = company_row.fetchone()
+            company_name_str = company_name_db.name if company_name_db else None
+
+            for cid in candidate_ids:
+                cid_str = str(cid)
+
+                authz_result = await db.execute(
+                    text("""
+                        SELECT c.id, c.name, c.email
+                        FROM candidates c
+                        JOIN vacancy_candidates vc ON vc.candidate_id = c.id
+                        WHERE c.id = CAST(:cid AS uuid)
+                          AND vc.company_id = CAST(:co AS uuid)
+                          AND vc.job_vacancy_id = CAST(:jid AS uuid)
+                        LIMIT 1
+                    """),
+                    {"cid": cid_str, "co": str(company_id), "jid": str(job_vacancy_id)},
+                )
+                candidate_row = authz_result.fetchone()
+
+                if not candidate_row:
+                    logger.warning(f"start_screening: candidate {cid_str} not found in pipeline for company/job")
+                    continue
+
+                update_result = await db.execute(
+                    text("""
+                        UPDATE vacancy_candidates
+                        SET stage = 'Triagem', status = 'screening', updated_at = NOW()
+                        WHERE candidate_id = CAST(:cid AS uuid)
+                          AND job_vacancy_id = CAST(:jid AS uuid)
+                          AND company_id = CAST(:co AS uuid)
+                    """),
+                    {"cid": cid_str, "jid": str(job_vacancy_id), "co": str(company_id)},
+                )
+                if update_result.rowcount > 0:
+                    candidates_updated += 1
+
+                try:
+                    session = await triagem_service.create_session(
+                        db=db,
+                        candidate_id=cid_str,
+                        job_id=str(job_vacancy_id),
+                        company_id=str(company_id) if company_id else "",
+                        candidate_name=candidate_row.name,
+                        candidate_email=candidate_row.email,
+                        job_title=job_title,
+                        company_name=company_name_str,
+                        invite_channel="chat",
+                        created_by=str((context or {}).get("user_id", "system")),
+                    )
+                    sessions_created.append({
+                        "session_id": str(session.id),
+                        "token": session.token,
+                        "candidate_id": cid_str,
+                        "candidate_name": candidate_row.name,
+                    })
+                except Exception as sess_err:
+                    logger.warning(f"start_screening: failed to create TriagemSession for {cid_str}: {sess_err}")
+
+            await db.commit()
+
+        if not candidates_updated and not sessions_created:
+            return ActionResult(
+                status="error",
+                message="Nenhum candidato válido encontrado para iniciar a triagem.",
+                error_detail="No candidates matched in pipeline for this job",
+                action_type="start_screening",
+            )
+
+        for s in sessions_created:
+            await log_action_audit(
+                "start_screening",
+                company_id,
+                candidate_id=s["candidate_id"],
+                job_vacancy_id=str(job_vacancy_id),
+                details={"session_id": s["session_id"]},
+            )
+            await sync_to_rails(
+                "screening_started", "candidate", s["candidate_id"],
+                {"job_id": str(job_vacancy_id), "session_token": s["token"]},
+            )
+
+        count = len(sessions_created)
+        if count == 1:
+            name = sessions_created[0]["candidate_name"]
+            msg = f"Triagem iniciada para **{name}**. Uma sessão de triagem WSI foi criada."
+        else:
+            msg = f"Triagem iniciada para **{count} candidatos**. Sessões de triagem WSI foram criadas."
+
         return ActionResult(
             status="executed",
-            message="Triagem iniciada para os candidatos da vaga.",
+            message=msg,
             data={
                 "action": "start_screening",
-                "candidate_ids": candidate_ids,
-                "queued_at": datetime.utcnow().isoformat(),
+                "candidates_updated": candidates_updated,
+                "sessions_created": [
+                    {"session_id": s["session_id"], "token": s["token"], "candidate_id": s["candidate_id"]}
+                    for s in sessions_created
+                ],
+                "job_vacancy_id": str(job_vacancy_id),
+                "started_at": datetime.utcnow().isoformat(),
                 "simulated": False,
             },
             action_type="start_screening",

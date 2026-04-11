@@ -21,7 +21,7 @@
 | **Backend Response Time (avg)** | ~10.5s | ~10.5s (streaming now available) |
 | **PII Exposure** | SAFE (0 leaks detected) | SAFE (0 leaks detected) |
 | **FairnessGuard Coverage** | PT: 36 terms, EN: 27 terms | PT: 36 terms, EN: 35 terms (+8 religious) |
-| **Action Handlers Simulated** | 10/10 (100%) | 1/10 (10%) — 9 now real |
+| **Action Handlers Simulated** | 10/10 (100%) | 0/10 (0%) — all real DB ops |
 | **YAML Prompt Files** | 0 | 25 |
 | **Alembic Migration Chain** | BROKEN | HEALTHY (63 migrations, head at 063) |
 | **SSE Streaming** | Not available | Available (`/chat/{id}/stream`) |
@@ -156,7 +156,7 @@
 | `move_candidate` | Simulated | ✅ **Real DB** | `UPDATE vacancy_candidates SET stage = :to_stage` + Rails sync |
 | `send_email` | Simulated | ✅ **Real/Hybrid** | Provider-based (`get_email_provider()`); dev fallback to log |
 | `schedule_interview` | Simulated | ✅ **Real DB** | `INSERT INTO interviews` + Rails sync + audit log |
-| `start_screening` | Simulated | ⚠️ **Still Stub** | Logs intent only, no real job queued |
+| `start_screening` | Simulated | ✅ **Real DB** | Creates `TriagemSession`, updates `vacancy_candidates` stage/status, audit + Rails sync |
 | `update_candidate_field` | Simulated | ✅ **Real DB** | SQLAlchemy update operations |
 | `create_task` | Simulated | ✅ **Real DB** | Insert via task service |
 | `create_note` | Simulated | ✅ **Real DB** | Insert via note service |
@@ -164,7 +164,7 @@
 | `pause_job` | Simulated | ✅ **Real DB** | Update job status |
 | `close_job` | Simulated | ✅ **Real DB** | Update job status |
 
-**Risk Level**: LOW (was MEDIUM) — Only `start_screening` remains as a stub. All critical-path actions now perform real DB writes with tenant isolation and audit logging.
+**Risk Level**: LOW (was MEDIUM) — All 10 action handlers now perform real DB writes with tenant isolation and audit logging. Zero simulated handlers remain.
 
 ### 2.3 FairnessGuard Coverage — ✅ IMPROVED
 
@@ -205,7 +205,7 @@
 | `/api/v1/recruitment-campaigns` | Stub — returns empty data | Still stub |
 | RAG embedding helper | Placeholder when API not configured | ✅ Functional with Gemini/OpenAI embeddings |
 | FairnessGuard in RAG pipeline | Stub implementation | ✅ Active with 2-layer checks |
-| `start_screening` action | Simulated | ⚠️ Still stub (logs only) |
+| `start_screening` action | Simulated | ✅ Real DB — creates TriagemSession + updates pipeline |
 
 ---
 
@@ -494,7 +494,7 @@ Located in `onboarding-patches/rails/`:
 | # | Item | Original Status | Current Status |
 |---|------|----------------|----------------|
 | 1 | Fix Alembic migration chain | BROKEN | ✅ **FIXED** — 63 migrations, chain intact, head at 063 |
-| 2 | Replace simulated action handlers | 10/10 simulated | ✅ **9/10 REAL** — only `start_screening` remains stub |
+| 2 | Replace simulated action handlers | 10/10 simulated | ✅ **10/10 REAL** — all handlers perform real DB operations |
 | 3 | Fix Communication domain (3/5 failures) | NOT READY | ⚠️ **PARTIAL** — Email provider architecture exists but needs configured provider in prod |
 
 ### P1 — Should Fix Soon
@@ -503,7 +503,7 @@ Located in `onboarding-patches/rails/`:
 | 4 | Reduce response latency (<5s target) | avg 10.5s | ⚠️ SSE streaming available but avg still ~10.5s |
 | 5 | Add English religious bias terms | Gap: 1 term | ✅ **FIXED** — 9 terms now |
 | 6 | Add explicit AI disclosure (EU AI Act) | Missing | ⚠️ **PARTIAL** — Frontend `ProgressiveDisclosure` exists, no backend injection |
-| 7 | Implement `start_screening` handler | Simulated | ⚠️ Still a stub |
+| 7 | Implement `start_screening` handler | Simulated | ✅ **FIXED** — Real DB: creates TriagemSession + updates pipeline |
 | 8 | Fix hardcoded colors in frontend | Not audited | ⚠️ `bg-white`, `border-gray-200` still present — migrate to DS tokens |
 | 9 | Separate liveness vs readiness health check | Missing | ⚠️ Still combined |
 
@@ -568,7 +568,7 @@ The 90% pass rate (37/41 non-FALHA) is based on classification annotations from 
 | 2026-04-11 (original) | Initial eval suite execution + report | Baseline: 78/100 |
 | 2026-04-11 (deep audit) | Codebase-wide audit across all layers | Score: 78→85/100 |
 | — | Alembic chain confirmed healthy (061 exists) | P0 #1 resolved |
-| — | 9/10 action handlers now real DB (not simulated) | P0 #2 resolved |
+| — | 10/10 action handlers now real DB (not simulated) | P0 #2 resolved |
 | — | 25 YAML prompt files identified (20 domain + 3 shared + 2 experiments) | P2 #7 resolved |
 | — | SSE streaming endpoint available | Latency mitigation available |
 | — | FairnessGuard EN religious terms added (+8) | P1 #5 resolved |

@@ -18,6 +18,7 @@ _TRIGGER_MAP = {
     "candidate_moved": "status_change",
     "candidate_tagged": "candidate_updated",
     "candidate_favorited": "candidate_updated",
+    "screening_started": "status_change",
     "interview_scheduled": "interview_scheduled",
     "interview_rescheduled": "interview_scheduled",
     "interview_cancelled": "interview_scheduled",
