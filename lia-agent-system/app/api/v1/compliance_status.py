@@ -104,8 +104,21 @@ def _check_pii_masking() -> dict:
 
 
 def _check_eu_ai_act() -> dict:
-    disclosure_enabled = True
-    disclosure_text = "Gerado por IA — EU AI Act Art. 52"
+    disclosure_verified = False
+    try:
+        import os
+        bubble_path = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)),
+            "..", "..", "..", "..",
+            "plataforma-lia", "src", "components", "chat", "chat-bubble-base.tsx",
+        )
+        bubble_path = os.path.normpath(bubble_path)
+        if os.path.exists(bubble_path):
+            with open(bubble_path, "r") as f:
+                content = f.read()
+            disclosure_verified = "EU AI Act" in content and "Gerado por IA" in content
+    except Exception:
+        pass
 
     hitl_available = False
     try:
@@ -115,10 +128,11 @@ def _check_eu_ai_act() -> dict:
         pass
 
     return {
-        "ai_disclosure_enabled": disclosure_enabled,
-        "disclosure_text": disclosure_text,
+        "ai_disclosure_enabled": disclosure_verified,
+        "disclosure_verified_in_source": disclosure_verified,
+        "disclosure_text": "Gerado por IA — EU AI Act Art. 52",
         "disclosure_location": "ChatBubbleBase (all LIA messages)",
-        "transparency_level": "high",
+        "transparency_level": "high" if disclosure_verified else "unverified",
         "human_oversight_available": hitl_available,
     }
 
