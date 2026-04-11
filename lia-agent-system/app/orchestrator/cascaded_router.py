@@ -23,7 +23,7 @@ from typing import Any
 from app.core.config import settings
 from app.orchestrator.fast_router import FastRouter
 from app.orchestrator.semantic_cache import SemanticCache
-from app.shared.tracing import trace_span
+from app.shared.tracing import get_tracer, trace_span
 
 logger = logging.getLogger(__name__)
 
@@ -169,251 +169,337 @@ class CascadedRouter:
         self._stats["total"] += 1
         _hit_counter, _latency_hist, _conf_hist = _get_metrics()
 
+        _tracer = get_tracer()
+
         # Tier 0 — Resolver pronomes/referências via WorkingMemory antes de rotear
         if session_id:
-            try:
-                from app.orchestrator.memory_resolver import memory_resolver
-                resolved_message, was_resolved = await memory_resolver.resolve(
-                    message=message,
-                    session_id=session_id,
-                    domain=(context or {}).get("domain"),
-                )
-                if was_resolved:
-                    logger.debug(
-                        "CascadedRouter: memory resolution applied for session=%s", session_id
+            async with _tracer.start_span("router.tier0_memory_resolve", attributes={
+                "tier_name": "tier0_memory_resolve", "service": "cascaded_router",
+            }) as _t0_span:
+                try:
+                    from app.orchestrator.memory_resolver import memory_resolver
+                    resolved_message, was_resolved = await memory_resolver.resolve(
+                        message=message,
+                        session_id=session_id,
+                        domain=(context or {}).get("domain"),
                     )
-                    message = resolved_message
-            except Exception as _mem_exc:
-                logger.debug("CascadedRouter: memory resolver skipped: %s", _mem_exc)
+                    if was_resolved:
+                        logger.debug(
+                            "CascadedRouter: memory resolution applied for session=%s", session_id
+                        )
+                        message = resolved_message
+                    _t0_span.set_attribute("was_resolved", str(was_resolved))
+                except Exception as _mem_exc:
+                    logger.debug("CascadedRouter: memory resolver skipped: %s", _mem_exc)
+                    _t0_span.set_attribute("skipped", str(_mem_exc))
 
         cache_key = self._cache_key(message)
 
         # Tier 1 — LRU in-process (hash MD5, O(1))
-        _t0 = time.perf_counter()
-        cached = self._memory_cache.get(cache_key)
-        if cached:
-            _elapsed_ms = (time.perf_counter() - _t0) * 1000
-            self._stats["memory_hits"] += 1
-            if _hit_counter:
-                _hit_counter.labels(tier="memory").inc()
-            if _latency_hist:
-                _latency_hist.labels(tier="memory").observe(_elapsed_ms)
-            logger.debug("CascadedRouter: memory hit for '%s...' → %s", message[:40], cached.domain_id)
-            return RouteResult(
-                domain_id=cached.domain_id,
-                confidence=cached.confidence,
-                source="memory",
-                matched_pattern=cached.matched_pattern,
-                cached=True,
-            )
+        async with _tracer.start_span("router.tier1_lru_cache", attributes={
+            "tier_name": "tier1_lru_cache", "service": "cascaded_router", "match_type": "exact_hash",
+        }) as _t1_span:
+            _t0 = time.perf_counter()
+            cached = self._memory_cache.get(cache_key)
+            if cached:
+                _elapsed_ms = (time.perf_counter() - _t0) * 1000
+                self._stats["memory_hits"] += 1
+                if _hit_counter:
+                    _hit_counter.labels(tier="memory").inc()
+                if _latency_hist:
+                    _latency_hist.labels(tier="memory").observe(_elapsed_ms)
+                _t1_span.set_attribute("hit", "true")
+                _t1_span.set_attribute("confidence_score", str(cached.confidence))
+                _t1_span.set_attribute("domain_id", cached.domain_id)
+                _t1_span.set_attribute("latency_ms", f"{_elapsed_ms:.2f}")
+                logger.debug("CascadedRouter: memory hit for '%s...' → %s", message[:40], cached.domain_id)
+                return RouteResult(
+                    domain_id=cached.domain_id,
+                    confidence=cached.confidence,
+                    source="memory",
+                    matched_pattern=cached.matched_pattern,
+                    cached=True,
+                )
+            _t1_span.set_attribute("hit", "false")
+            _t1_span.set_attribute("confidence_score", "0.0")
+            _t1_span.set_attribute("latency_ms", f"{(time.perf_counter() - _t0) * 1000:.2f}")
 
         # Tier 2 — Redis hash cache (distribuído, exato)
-        _t0 = time.perf_counter()
-        redis_hit = await self._redis_cache.get(message)
-        if redis_hit:
-            _elapsed_ms = (time.perf_counter() - _t0) * 1000
-            self._stats["redis_hits"] += 1
-            if _hit_counter:
-                _hit_counter.labels(tier="redis_hash").inc()
-            if _latency_hist:
-                _latency_hist.labels(tier="redis_hash").observe(_elapsed_ms)
-            logger.debug("CascadedRouter: redis hit for '%s...' → %s", message[:40], redis_hit.get("domain_id"))
-            return RouteResult(
-                domain_id=redis_hit.get("domain_id", "recruiter_assistant"),
-                confidence=redis_hit.get("confidence", 0.7),
-                source="redis_cache",
-                matched_pattern=redis_hit.get("matched_pattern"),
-                cached=True,
-            )
+        async with _tracer.start_span("router.tier2_redis_cache", attributes={
+            "tier_name": "tier2_redis_cache", "service": "cascaded_router", "match_type": "exact_hash",
+        }) as _t2_span:
+            _t0 = time.perf_counter()
+            redis_hit = await self._redis_cache.get(message)
+            if redis_hit:
+                _elapsed_ms = (time.perf_counter() - _t0) * 1000
+                self._stats["redis_hits"] += 1
+                if _hit_counter:
+                    _hit_counter.labels(tier="redis_hash").inc()
+                if _latency_hist:
+                    _latency_hist.labels(tier="redis_hash").observe(_elapsed_ms)
+                _t2_span.set_attribute("hit", "true")
+                _t2_span.set_attribute("confidence_score", str(redis_hit.get("confidence", 0.7)))
+                _t2_span.set_attribute("domain_id", redis_hit.get("domain_id", ""))
+                _t2_span.set_attribute("latency_ms", f"{_elapsed_ms:.2f}")
+                logger.debug("CascadedRouter: redis hit for '%s...' → %s", message[:40], redis_hit.get("domain_id"))
+                return RouteResult(
+                    domain_id=redis_hit.get("domain_id", "recruiter_assistant"),
+                    confidence=redis_hit.get("confidence", 0.7),
+                    source="redis_cache",
+                    matched_pattern=redis_hit.get("matched_pattern"),
+                    cached=True,
+                )
+            _t2_span.set_attribute("hit", "false")
+            _t2_span.set_attribute("confidence_score", "0.0")
+            _t2_span.set_attribute("latency_ms", f"{(time.perf_counter() - _t0) * 1000:.2f}")
 
         # Tier 3 — VectorSemanticCache (pgvector, cosine similarity)
         if self._vector_cache is not None:
-            try:
-                _t0 = time.perf_counter()
-                vector_hit = await self._vector_cache.get(message)
-                if vector_hit:
-                    _elapsed_ms = (time.perf_counter() - _t0) * 1000
-                    self._stats["vector_hits"] += 1
-                    _confidence = vector_hit.get("confidence", 0.7)
-                    if _hit_counter:
-                        _hit_counter.labels(tier="vector").inc()
-                    if _latency_hist:
-                        _latency_hist.labels(tier="vector").observe(_elapsed_ms)
-                    if _conf_hist:
-                        _conf_hist.labels(model="vector").observe(_confidence)
-                    logger.debug(
-                        "CascadedRouter: vector hit for '%s...' → %s (sim >= %.2f)",
-                        message[:40],
-                        vector_hit.get("domain_id"),
-                        self._vector_cache.threshold,
-                    )
-                    result = RouteResult(
-                        domain_id=vector_hit.get("domain_id", "recruiter_assistant"),
-                        confidence=_confidence,
-                        source="vector_cache",
-                        cached=True,
-                    )
-                    self._cache_store(cache_key, result)
-                    return result
-            except Exception as _vec_exc:
-                logger.debug("CascadedRouter: vector cache skipped: %s", _vec_exc)
+            async with _tracer.start_span("router.tier3_vector_cache", attributes={
+                "tier_name": "tier3_vector_cache", "service": "cascaded_router", "match_type": "cosine_similarity",
+            }) as _t3_span:
+                try:
+                    _t0 = time.perf_counter()
+                    vector_hit = await self._vector_cache.get(message)
+                    if vector_hit:
+                        _elapsed_ms = (time.perf_counter() - _t0) * 1000
+                        self._stats["vector_hits"] += 1
+                        _confidence = vector_hit.get("confidence", 0.7)
+                        if _hit_counter:
+                            _hit_counter.labels(tier="vector").inc()
+                        if _latency_hist:
+                            _latency_hist.labels(tier="vector").observe(_elapsed_ms)
+                        if _conf_hist:
+                            _conf_hist.labels(model="vector").observe(_confidence)
+                        _t3_span.set_attribute("hit", "true")
+                        _t3_span.set_attribute("confidence_score", str(_confidence))
+                        _t3_span.set_attribute("domain_id", vector_hit.get("domain_id", ""))
+                        _t3_span.set_attribute("latency_ms", f"{_elapsed_ms:.2f}")
+                        logger.debug(
+                            "CascadedRouter: vector hit for '%s...' → %s (sim >= %.2f)",
+                            message[:40],
+                            vector_hit.get("domain_id"),
+                            self._vector_cache.threshold,
+                        )
+                        result = RouteResult(
+                            domain_id=vector_hit.get("domain_id", "recruiter_assistant"),
+                            confidence=_confidence,
+                            source="vector_cache",
+                            cached=True,
+                        )
+                        self._cache_store(cache_key, result)
+                        return result
+                    _t3_span.set_attribute("hit", "false")
+                    _t3_span.set_attribute("confidence_score", "0.0")
+                    _t3_span.set_attribute("latency_ms", f"{(time.perf_counter() - _t0) * 1000:.2f}")
+                except Exception as _vec_exc:
+                    _t3_span.set_attribute("hit", "false")
+                    _t3_span.set_attribute("confidence_score", "0.0")
+                    _t3_span.set_attribute("latency_ms", f"{(time.perf_counter() - _t0) * 1000:.2f}")
+                    _t3_span.set_attribute("error_detail", str(_vec_exc))
+                    logger.debug("CascadedRouter: vector cache skipped: %s", _vec_exc)
 
         # Tier 4 — FastRouter (regex/keyword)
-        _t0 = time.perf_counter()
-        fast_result = self.fast.match(message)
-        if fast_result and fast_result.confidence >= settings.ROUTER_FAST_CONFIDENCE_THRESHOLD:
-            _elapsed_ms = (time.perf_counter() - _t0) * 1000
-            self._stats["fast_hits"] += 1
-            if _hit_counter:
-                _hit_counter.labels(tier="fast_router").inc()
-            if _latency_hist:
-                _latency_hist.labels(tier="fast_router").observe(_elapsed_ms)
-            if _conf_hist:
-                _conf_hist.labels(model="fast_router").observe(fast_result.confidence)
-            result = RouteResult(
-                domain_id=fast_result.domain_id,
-                confidence=fast_result.confidence,
-                source="fast_router",
-                matched_pattern=fast_result.matched_pattern,
-            )
-            # E9 — apply adaptive confidence adjustments before caching
-            result = await self._apply_adaptive_adjustments(result, (context or {}).get("company_id"))
-            self._cache_store(cache_key, result)
-            await self._redis_cache.set(
-                message,
-                {
-                    "domain_id": result.domain_id,
-                    "confidence": result.confidence,
-                    "matched_pattern": result.matched_pattern,
-                },
-            )
-            if self._vector_cache is not None:
-                try:
-                    await self._vector_cache.set(
-                        message,
-                        {"domain_id": result.domain_id, "confidence": result.confidence, "source": result.source},
-                    )
-                except Exception:
-                    pass
-            logger.debug("CascadedRouter: fast match for '%s...' → %s", message[:40], result.domain_id)
-            return result
+        async with _tracer.start_span("router.tier4_fast_router", attributes={
+            "tier_name": "tier4_fast_router", "service": "cascaded_router", "match_type": "regex_keyword",
+        }) as _t4_span:
+            _t0 = time.perf_counter()
+            fast_result = self.fast.match(message)
+            if fast_result and fast_result.confidence >= settings.ROUTER_FAST_CONFIDENCE_THRESHOLD:
+                _elapsed_ms = (time.perf_counter() - _t0) * 1000
+                self._stats["fast_hits"] += 1
+                if _hit_counter:
+                    _hit_counter.labels(tier="fast_router").inc()
+                if _latency_hist:
+                    _latency_hist.labels(tier="fast_router").observe(_elapsed_ms)
+                if _conf_hist:
+                    _conf_hist.labels(model="fast_router").observe(fast_result.confidence)
+                result = RouteResult(
+                    domain_id=fast_result.domain_id,
+                    confidence=fast_result.confidence,
+                    source="fast_router",
+                    matched_pattern=fast_result.matched_pattern,
+                )
+                result = await self._apply_adaptive_adjustments(result, (context or {}).get("company_id"))
+                _t4_span.set_attribute("hit", "true")
+                _t4_span.set_attribute("confidence_score", str(result.confidence))
+                _t4_span.set_attribute("domain_id", result.domain_id)
+                _t4_span.set_attribute("matched_pattern", result.matched_pattern or "")
+                _t4_span.set_attribute("latency_ms", f"{_elapsed_ms:.2f}")
+                self._cache_store(cache_key, result)
+                await self._redis_cache.set(
+                    message,
+                    {
+                        "domain_id": result.domain_id,
+                        "confidence": result.confidence,
+                        "matched_pattern": result.matched_pattern,
+                    },
+                )
+                if self._vector_cache is not None:
+                    try:
+                        await self._vector_cache.set(
+                            message,
+                            {"domain_id": result.domain_id, "confidence": result.confidence, "source": result.source},
+                        )
+                    except Exception:
+                        pass
+                logger.debug("CascadedRouter: fast match for '%s...' → %s", message[:40], result.domain_id)
+                return result
+            _t4_span.set_attribute("hit", "false")
+            _t4_span.set_attribute("confidence_score", "0.0")
+            _t4_span.set_attribute("latency_ms", f"{(time.perf_counter() - _t0) * 1000:.2f}")
 
         # Tier 5 — LLM Cascade (Haiku → Sonnet → Opus)
         # Threshold: only accept Tier 5 result when confidence is sufficient;
         # low-confidence Tier 5 falls through to Tier 6 (AutonomousReActAgent).
         import os as _os_t5
         _TIER5_MIN_CONFIDENCE = float(_os_t5.getenv("ROUTER_LLM_CASCADE_MIN_CONFIDENCE", "0.5"))
-        try:
-            company_id = (context or {}).get("company_id")
-            _t0 = time.perf_counter()
-            cascade_result = await self._route_via_llm_cascade(message, context, company_id)
-            if cascade_result:
-                _elapsed_ms = (time.perf_counter() - _t0) * 1000
-                # Determinar modelo usado a partir da source ("llm_cascade:haiku", etc.)
-                _tier_name = cascade_result.source.split(":")[-1] if ":" in cascade_result.source else "llm_cascade"
-                # E9 — apply adaptive confidence adjustments before caching
-                cascade_result = await self._apply_adaptive_adjustments(
-                    cascade_result, (context or {}).get("company_id")
-                )
-                if cascade_result.confidence < _TIER5_MIN_CONFIDENCE:
-                    logger.info(
-                        "CascadedRouter: Tier 5 confidence %.2f < %.2f for '%s...' — falling to Tier 6",
-                        cascade_result.confidence, _TIER5_MIN_CONFIDENCE, message[:40],
-                    )
-                else:
-                    self._cache_store(cache_key, cascade_result)
-                    await self._redis_cache.set(
-                        message,
-                        {"domain_id": cascade_result.domain_id, "confidence": cascade_result.confidence},
-                    )
-                    if self._vector_cache is not None:
-                        try:
-                            await self._vector_cache.set(
-                                message,
-                                {
-                                    "domain_id": cascade_result.domain_id,
-                                    "confidence": cascade_result.confidence,
-                                    "source": cascade_result.source,
-                                },
-                            )
-                        except Exception:
-                            pass
-                    self._stats["llm_hits"] += 1
-                    if _hit_counter:
-                        _hit_counter.labels(tier="llm_cascade").inc()
-                    if _latency_hist:
-                        _latency_hist.labels(tier="llm_cascade").observe(_elapsed_ms)
-                    if _conf_hist:
-                        _conf_hist.labels(model=_tier_name).observe(cascade_result.confidence)
-                    logger.debug("CascadedRouter: LLM cascade for '%s...' → %s", message[:40], cascade_result.domain_id)
-                    return cascade_result
-        except Exception as e:
-            logger.error("CascadedRouter: LLM cascade failed: %s", e)
-
-        # LLM fallback legado (IntentRouter) se cascade não disponível
-        # Apply the same confidence threshold as Tier 5 — low-confidence results fall to Tier 6.
-        if self.llm_fallback:
+        async with _tracer.start_span("router.tier5_llm_cascade", attributes={
+            "tier_name": "tier5_llm_cascade", "service": "cascaded_router", "match_type": "llm",
+        }) as _t5_span:
             try:
+                company_id = (context or {}).get("company_id")
                 _t0 = time.perf_counter()
-                intent_result = await self._route_via_llm(message, context)
-                if intent_result:
+                cascade_result = await self._route_via_llm_cascade(message, context, company_id)
+                if cascade_result:
                     _elapsed_ms = (time.perf_counter() - _t0) * 1000
-                    if intent_result.confidence < _TIER5_MIN_CONFIDENCE:
+                    _tier_name = cascade_result.source.split(":")[-1] if ":" in cascade_result.source else "llm_cascade"
+                    cascade_result = await self._apply_adaptive_adjustments(
+                        cascade_result, (context or {}).get("company_id")
+                    )
+                    _t5_span.set_attribute("confidence_score", str(cascade_result.confidence))
+                    _t5_span.set_attribute("domain_id", cascade_result.domain_id)
+                    _t5_span.set_attribute("model_tier", _tier_name)
+                    _t5_span.set_attribute("latency_ms", f"{_elapsed_ms:.2f}")
+                    if cascade_result.confidence < _TIER5_MIN_CONFIDENCE:
+                        _t5_span.set_attribute("hit", "false")
+                        _t5_span.set_attribute("below_threshold", "true")
                         logger.info(
-                            "CascadedRouter: legacy LLM fallback confidence %.2f < %.2f for '%s...' — falling to Tier 6",
-                            intent_result.confidence, _TIER5_MIN_CONFIDENCE, message[:40],
+                            "CascadedRouter: Tier 5 confidence %.2f < %.2f for '%s...' — falling to Tier 6",
+                            cascade_result.confidence, _TIER5_MIN_CONFIDENCE, message[:40],
                         )
                     else:
-                        self._cache_store(cache_key, intent_result)
+                        _t5_span.set_attribute("hit", "true")
+                        self._cache_store(cache_key, cascade_result)
+                        await self._redis_cache.set(
+                            message,
+                            {"domain_id": cascade_result.domain_id, "confidence": cascade_result.confidence},
+                        )
+                        if self._vector_cache is not None:
+                            try:
+                                await self._vector_cache.set(
+                                    message,
+                                    {
+                                        "domain_id": cascade_result.domain_id,
+                                        "confidence": cascade_result.confidence,
+                                        "source": cascade_result.source,
+                                    },
+                                )
+                            except Exception:
+                                pass
                         self._stats["llm_hits"] += 1
                         if _hit_counter:
                             _hit_counter.labels(tier="llm_cascade").inc()
                         if _latency_hist:
                             _latency_hist.labels(tier="llm_cascade").observe(_elapsed_ms)
                         if _conf_hist:
-                            _conf_hist.labels(model="llm_fallback").observe(intent_result.confidence)
-                        logger.debug("CascadedRouter: LLM fallback for '%s...' → %s", message[:40], intent_result.domain_id)
-                        return intent_result
+                            _conf_hist.labels(model=_tier_name).observe(cascade_result.confidence)
+                        logger.debug("CascadedRouter: LLM cascade for '%s...' → %s", message[:40], cascade_result.domain_id)
+                        return cascade_result
+                else:
+                    _t5_span.set_attribute("hit", "false")
+                    _t5_span.set_attribute("confidence_score", "0.0")
+                    _t5_span.set_attribute("latency_ms", f"{(time.perf_counter() - _t0) * 1000:.2f}")
             except Exception as e:
-                logger.error("CascadedRouter: LLM fallback failed: %s", e)
+                _t5_span.set_attribute("hit", "false")
+                _t5_span.set_attribute("confidence_score", "0.0")
+                _t5_span.set_attribute("latency_ms", f"{(time.perf_counter() - _t0) * 1000:.2f}")
+                _t5_span.set_attribute("error_detail", str(e))
+                logger.error("CascadedRouter: LLM cascade failed: %s", e)
+
+            # LLM fallback legado (IntentRouter) se cascade não disponível
+            if self.llm_fallback:
+                try:
+                    _t0 = time.perf_counter()
+                    intent_result = await self._route_via_llm(message, context)
+                    if intent_result:
+                        _elapsed_ms = (time.perf_counter() - _t0) * 1000
+                        if intent_result.confidence < _TIER5_MIN_CONFIDENCE:
+                            logger.info(
+                                "CascadedRouter: legacy LLM fallback confidence %.2f < %.2f for '%s...' — falling to Tier 6",
+                                intent_result.confidence, _TIER5_MIN_CONFIDENCE, message[:40],
+                            )
+                        else:
+                            _t5_span.set_attribute("hit", "true")
+                            _t5_span.set_attribute("fallback_used", "intent_router")
+                            _t5_span.set_attribute("confidence_score", str(intent_result.confidence))
+                            self._cache_store(cache_key, intent_result)
+                            self._stats["llm_hits"] += 1
+                            if _hit_counter:
+                                _hit_counter.labels(tier="llm_cascade").inc()
+                            if _latency_hist:
+                                _latency_hist.labels(tier="llm_cascade").observe(_elapsed_ms)
+                            if _conf_hist:
+                                _conf_hist.labels(model="llm_fallback").observe(intent_result.confidence)
+                            logger.debug("CascadedRouter: LLM fallback for '%s...' → %s", message[:40], intent_result.domain_id)
+                            return intent_result
+                except Exception as e:
+                    logger.error("CascadedRouter: LLM fallback failed: %s", e)
 
         # Tier 6 — AutonomousReActAgent (cross-domain fallback antes de clarification)
         import os as _os
         if _os.getenv("AUTONOMOUS_REACT_ENABLED", "false").lower() == "true":
-            try:
-                _t0 = time.perf_counter()
-                autonomous_result = await self._route_via_autonomous_agent(message, context, session_id)
-                if autonomous_result:
-                    _elapsed_ms = (time.perf_counter() - _t0) * 1000
-                    self._stats["autonomous_hits"] += 1
-                    if _hit_counter:
-                        _hit_counter.labels(tier="autonomous_react").inc()
-                    if _latency_hist:
-                        _latency_hist.labels(tier="autonomous_react").observe(_elapsed_ms)
-                    if _conf_hist:
-                        _conf_hist.labels(model="autonomous_react").observe(autonomous_result.confidence)
-                    logger.info(
-                        "CascadedRouter: Tier 6 (autonomous) resolved '%s...' in %.0fms",
-                        message[:40], _elapsed_ms,
-                    )
-                    return autonomous_result
-            except Exception as _auto_exc:
-                logger.error("CascadedRouter: Tier 6 (autonomous) failed: %s", _auto_exc)
+            async with _tracer.start_span("router.tier6_autonomous_react", attributes={
+                "tier_name": "tier6_autonomous_react", "service": "cascaded_router", "match_type": "autonomous_agent",
+            }) as _t6_span:
+                try:
+                    _t0 = time.perf_counter()
+                    autonomous_result = await self._route_via_autonomous_agent(message, context, session_id)
+                    if autonomous_result:
+                        _elapsed_ms = (time.perf_counter() - _t0) * 1000
+                        self._stats["autonomous_hits"] += 1
+                        if _hit_counter:
+                            _hit_counter.labels(tier="autonomous_react").inc()
+                        if _latency_hist:
+                            _latency_hist.labels(tier="autonomous_react").observe(_elapsed_ms)
+                        if _conf_hist:
+                            _conf_hist.labels(model="autonomous_react").observe(autonomous_result.confidence)
+                        _t6_span.set_attribute("hit", "true")
+                        _t6_span.set_attribute("confidence_score", str(autonomous_result.confidence))
+                        _t6_span.set_attribute("domain_id", autonomous_result.domain_id)
+                        _t6_span.set_attribute("latency_ms", f"{_elapsed_ms:.2f}")
+                        logger.info(
+                            "CascadedRouter: Tier 6 (autonomous) resolved '%s...' in %.0fms",
+                            message[:40], _elapsed_ms,
+                        )
+                        return autonomous_result
+                    _t6_span.set_attribute("hit", "false")
+                    _t6_span.set_attribute("confidence_score", "0.0")
+                    _t6_span.set_attribute("latency_ms", f"{(time.perf_counter() - _t0) * 1000:.2f}")
+                except Exception as _auto_exc:
+                    _t6_span.set_attribute("hit", "false")
+                    _t6_span.set_attribute("confidence_score", "0.0")
+                    _t6_span.set_attribute("latency_ms", f"{(time.perf_counter() - _t0) * 1000:.2f}")
+                    _t6_span.set_attribute("error_detail", str(_auto_exc))
+                    logger.error("CascadedRouter: Tier 6 (autonomous) failed: %s", _auto_exc)
 
         # Fallback final — clarification_needed (Gap #2)
-        # Não retorna silenciosamente recruiter_assistant: pergunta ao usuário.
-        logger.warning("CascadedRouter: nenhum tier resolveu '%s...', emitindo clarificação", message[:60])
-        self._stats["clarification_issued"] += 1
-        if _hit_counter:
-            _hit_counter.labels(tier="clarification_needed").inc()
-        return RouteResult(
-            domain_id="recruiter_assistant",
-            confidence=0.0,
-            source="clarification_needed",
-            needs_clarification=True,
-            clarification_question=_build_clarification_question(message),
-            clarification_options=_DEFAULT_CLARIFICATION_OPTIONS,
-        )
+        async with _tracer.start_span("router.fallback_clarification", attributes={
+            "tier_name": "fallback_clarification", "service": "cascaded_router", "match_type": "clarification",
+        }) as _fb_span:
+            logger.warning("CascadedRouter: nenhum tier resolveu '%s...', emitindo clarificação", message[:60])
+            self._stats["clarification_issued"] += 1
+            if _hit_counter:
+                _hit_counter.labels(tier="clarification_needed").inc()
+            _fb_span.set_attribute("confidence_score", "0.0")
+            return RouteResult(
+                domain_id="recruiter_assistant",
+                confidence=0.0,
+                source="clarification_needed",
+                needs_clarification=True,
+                clarification_question=_build_clarification_question(message),
+                clarification_options=_DEFAULT_CLARIFICATION_OPTIONS,
+            )
 
     async def _apply_adaptive_adjustments(
         self, route_result: "RouteResult", company_id: str | None

@@ -25,6 +25,8 @@ from typing import Any
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.shared.tracing import get_tracer
+
 logger = logging.getLogger(__name__)
 
 # Limiar mínimo de similaridade coseno para resultados semânticos
@@ -294,6 +296,7 @@ class RAGPipelineService:
         RAGSearchResult
         """
         t0 = time.perf_counter()
+        _tracer = get_tracer()
 
         # FAR-2: FairnessGuard — bloquear queries discriminatórias antes do retrieval
         try:
@@ -329,102 +332,137 @@ class RAGPipelineService:
         # Normalizar domínio se fornecido
         normalized_domain: str | None = normalize_domain(domain) if domain else None
 
-        # Se alpha não foi explicitamente personalizado (valor default 0.5),
-        # detecta automaticamente o tipo de query para alpha ideal
-        if alpha == 0.5:
-            alpha = self._detect_query_type(query)
+        # --- Query Analysis ---
+        async with _tracer.start_span("rag.query_analysis", attributes={
+            "service": "rag_pipeline", "tier_name": "rag_query_analysis",
+        }) as _qa_span:
+            if alpha == 0.5:
+                alpha = self._detect_query_type(query)
+            _qa_span.set_attribute("alpha", str(alpha))
+            _qa_span.set_attribute("domain", normalized_domain or "all")
 
         bm25_results: list[dict[str, Any]] = []
         semantic_results: list[dict[str, Any]] = []
         source = "bm25"
 
-        # --- Caminho BM25 (sempre executado a menos que alpha=1.0) ---
+        # --- BM25 Search ---
         if alpha < 1.0:
-            bm25_results = await self._bm25_search(query, company_id, db, limit, domain=normalized_domain)
+            async with _tracer.start_span("rag.bm25_search", attributes={
+                "service": "rag_pipeline", "tier_name": "rag_bm25_search",
+            }) as _bm25_span:
+                bm25_results = await self._bm25_search(query, company_id, db, limit, domain=normalized_domain)
+                _bm25_span.set_attribute("result_count", str(len(bm25_results)))
 
-        # --- Caminho semântico (executado quando alpha > 0) ---
+        # --- Semantic Search ---
         embedding: list[float] | None = None
         if alpha > 0.0:
-            embedding = await generate_embedding(query)
-            if embedding is not None:
-                semantic_results = await self._semantic_search(
-                    embedding, company_id, db, limit, domain=normalized_domain
-                )
-            else:
-                logger.info(
-                    "[RAGPipeline] Embedding indisponível — usando apenas BM25 (query=%r)",
-                    query[:60],
-                )
+            async with _tracer.start_span("rag.semantic_search", attributes={
+                "service": "rag_pipeline", "tier_name": "rag_semantic_search",
+            }) as _sem_span:
+                embedding = await generate_embedding(query)
+                if embedding is not None:
+                    semantic_results = await self._semantic_search(
+                        embedding, company_id, db, limit, domain=normalized_domain
+                    )
+                    _sem_span.set_attribute("result_count", str(len(semantic_results)))
+                    _sem_span.set_attribute("embedding_available", "true")
+                else:
+                    _sem_span.set_attribute("embedding_available", "false")
+                    logger.info(
+                        "[RAGPipeline] Embedding indisponível — usando apenas BM25 (query=%r)",
+                        query[:60],
+                    )
 
-        # --- Determinar source e fazer merge ---
+        # --- Hybrid Blending ---
         has_bm25 = bool(bm25_results)
         has_semantic = bool(semantic_results)
 
-        if alpha == 0.0 or not has_semantic:
-            # BM25 puro
-            merged = []
-            for r in bm25_results[:limit]:
-                r["hybrid_score"] = r.get("bm25_score", 0.0)
-                r["source"] = "bm25"
-                merged.append(r)
-            source = "bm25"
-        elif alpha == 1.0 or not has_bm25:
-            # Semântico puro
-            merged = []
-            for r in semantic_results[:limit]:
-                r["hybrid_score"] = r.get("semantic_score", 0.0)
-                r["source"] = "semantic"
-                merged.append(r)
-            source = "semantic"
-        else:
-            # Híbrido
-            merged = _merge_candidate_results(bm25_results, semantic_results, alpha)[:limit]
-            source = "hybrid"
+        async with _tracer.start_span("rag.hybrid_blending", attributes={
+            "service": "rag_pipeline", "tier_name": "rag_hybrid_blending",
+        }) as _blend_span:
+            if alpha == 0.0 or not has_semantic:
+                merged = []
+                for r in bm25_results[:limit]:
+                    r["hybrid_score"] = r.get("bm25_score", 0.0)
+                    r["source"] = "bm25"
+                    merged.append(r)
+                source = "bm25"
+            elif alpha == 1.0 or not has_bm25:
+                merged = []
+                for r in semantic_results[:limit]:
+                    r["hybrid_score"] = r.get("semantic_score", 0.0)
+                    r["source"] = "semantic"
+                    merged.append(r)
+                source = "semantic"
+            else:
+                merged = _merge_candidate_results(bm25_results, semantic_results, alpha)[:limit]
+                source = "hybrid"
+            _blend_span.set_attribute("source", source)
+            _blend_span.set_attribute("merged_count", str(len(merged)))
 
-        # --- WRF re-ranking (Weighted Rank Fusion) ---
-        try:
-            from app.services.wrf_dynamic_k_service import WRFDynamicKService
-            wrf_svc = WRFDynamicKService()
-            for idx, item in enumerate(merged):
-                if "es_rank" not in item:
-                    item["es_rank"] = idx + 1
-                if "pgv_rank" not in item:
-                    item["pgv_rank"] = idx + 1
-            es_scores = [float(r.get("bm25_score", 0)) for r in bm25_results] if bm25_results else None
-            pgv_scores = [float(r.get("semantic_score", 0)) for r in semantic_results] if semantic_results else None
-            merged = wrf_svc.rank_candidates(
-                merged,
-                es_scores=es_scores,
-                pgv_scores=pgv_scores,
-            )
-            logger.debug("[RAGPipeline] WRF re-ranking applied: %d results", len(merged))
-        except Exception as _wrf_exc:
-            logger.debug("[RAGPipeline] WRF re-ranking skipped: %s", _wrf_exc)
+        # --- Reranking (WRF) ---
+        async with _tracer.start_span("rag.reranking", attributes={
+            "service": "rag_pipeline", "tier_name": "rag_reranking",
+        }) as _rerank_span:
+            try:
+                from app.services.wrf_dynamic_k_service import WRFDynamicKService
+                wrf_svc = WRFDynamicKService()
+                for idx, item in enumerate(merged):
+                    if "es_rank" not in item:
+                        item["es_rank"] = idx + 1
+                    if "pgv_rank" not in item:
+                        item["pgv_rank"] = idx + 1
+                es_scores = [float(r.get("bm25_score", 0)) for r in bm25_results] if bm25_results else None
+                pgv_scores = [float(r.get("semantic_score", 0)) for r in semantic_results] if semantic_results else None
+                merged = wrf_svc.rank_candidates(
+                    merged,
+                    es_scores=es_scores,
+                    pgv_scores=pgv_scores,
+                )
+                _rerank_span.set_attribute("wrf_applied", "true")
+                _rerank_span.set_attribute("reranked_count", str(len(merged)))
+                logger.debug("[RAGPipeline] WRF re-ranking applied: %d results", len(merged))
+            except Exception as _wrf_exc:
+                _rerank_span.set_attribute("wrf_applied", "false")
+                logger.debug("[RAGPipeline] WRF re-ranking skipped: %s", _wrf_exc)
 
-        # --- LLM Job Classification filter (Fase 5 / G3) ---
+        # --- LLM Classification ---
         llm_classification_applied = False
-        try:
-            from app.domains.sourcing.services.llm_job_classification_service import llm_job_classification_service
-            if len(merged) > 3:
-                job_info = {
-                    "title": kwargs.get("job_title", ""),
-                    "area": kwargs.get("job_area", ""),
-                    "requirements": kwargs.get("job_requirements", query),
-                }
-                if job_info["title"]:
-                    classification_result = await llm_job_classification_service.filter_candidates(
-                        job_info=job_info,
-                        candidates=merged,
-                    )
-                    merged = classification_result["compatible_candidates"]
-                    llm_classification_applied = True
-                    logger.debug(
-                        "[RAGPipeline] LLM classification: %d/%d compatible",
-                        classification_result["total_compatible"],
-                        classification_result["total_input"],
-                    )
-        except Exception as _cls_exc:
-            logger.debug("[RAGPipeline] LLM classification skipped: %s", _cls_exc)
+        async with _tracer.start_span("rag.llm_classification", attributes={
+            "service": "rag_pipeline", "tier_name": "rag_llm_classification",
+        }) as _cls_span:
+            try:
+                from app.domains.sourcing.services.llm_job_classification_service import llm_job_classification_service
+                if len(merged) > 3:
+                    job_info = {
+                        "title": kwargs.get("job_title", ""),
+                        "area": kwargs.get("job_area", ""),
+                        "requirements": kwargs.get("job_requirements", query),
+                    }
+                    if job_info["title"]:
+                        classification_result = await llm_job_classification_service.filter_candidates(
+                            job_info=job_info,
+                            candidates=merged,
+                        )
+                        merged = classification_result["compatible_candidates"]
+                        llm_classification_applied = True
+                        _cls_span.set_attribute("applied", "true")
+                        _cls_span.set_attribute("compatible", str(classification_result["total_compatible"]))
+                        _cls_span.set_attribute("total_input", str(classification_result["total_input"]))
+                        logger.debug(
+                            "[RAGPipeline] LLM classification: %d/%d compatible",
+                            classification_result["total_compatible"],
+                            classification_result["total_input"],
+                        )
+                    else:
+                        _cls_span.set_attribute("applied", "false")
+                        _cls_span.set_attribute("reason", "no_job_title")
+                else:
+                    _cls_span.set_attribute("applied", "false")
+                    _cls_span.set_attribute("reason", "too_few_results")
+            except Exception as _cls_exc:
+                _cls_span.set_attribute("applied", "false")
+                logger.debug("[RAGPipeline] LLM classification skipped: %s", _cls_exc)
 
         # --- FairnessGuard (diversidade de gênero no top-10 + sector L3) ---
         fairness_ok = _check_fairness(merged, top_n=10)

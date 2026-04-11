@@ -20,8 +20,63 @@ from datetime import UTC
 
 from app.core.celery_app import celery_app
 from app.shared.pii_masking import get_masked_logger
+from app.shared.tracing import finish_span, get_tracer
 
 logger = get_masked_logger(__name__)
+
+
+def _celery_span(name: str, task_name: str):
+    """Helper: cria span sync para Celery task com OTel timing."""
+    tracer = get_tracer()
+    return tracer.create_span(name, attributes={
+        "service": "celery_tasks", "tier_name": f"celery_{task_name}",
+        "celery.task_name": task_name,
+    }, _start_otel=True)
+
+
+def _finish_celery_success(start_span, task_name: str):
+    """Finaliza start span e emite celery.task_success."""
+    finish_span(start_span, status="success")
+    tracer = get_tracer()
+    success_span = tracer.create_span("celery.task_success", attributes={
+        "service": "celery_tasks", "tier_name": f"celery_{task_name}",
+        "celery.task_name": task_name,
+    }, _start_otel=True)
+    finish_span(success_span, status="ok")
+
+
+def _finish_celery_failure(start_span, task_name: str, exc: Exception):
+    """Finaliza start span e emite celery.task_failure."""
+    finish_span(start_span, status="failure", error=exc)
+    tracer = get_tracer()
+    fail_span = tracer.create_span("celery.task_failure", attributes={
+        "service": "celery_tasks", "tier_name": f"celery_{task_name}",
+        "celery.task_name": task_name, "error.type": type(exc).__name__,
+    }, _start_otel=True)
+    finish_span(fail_span, status="error", error=exc)
+
+
+def _emit_celery_retry(task_name: str, exc: Exception, attempt: int, max_retries: int, countdown: int):
+    """Emite span celery.task_retry com metadados de tentativa."""
+    tracer = get_tracer()
+    retry_span = tracer.create_span("celery.task_retry", attributes={
+        "service": "celery_tasks", "tier_name": f"celery_{task_name}",
+        "celery.task_name": task_name, "error.type": type(exc).__name__,
+        "retry.attempt": str(attempt), "retry.max_retries": str(max_retries),
+        "retry.countdown_seconds": str(countdown),
+    }, _start_otel=True)
+    finish_span(retry_span, status="retry", error=exc)
+
+
+def _emit_dlq_push(task_name: str, exc: Exception):
+    """Emite span celery.dlq_push quando retries são esgotados."""
+    tracer = get_tracer()
+    dlq_span = tracer.create_span("celery.dlq_push", attributes={
+        "service": "celery_tasks", "tier_name": f"celery_{task_name}_dlq",
+        "celery.task_name": task_name, "error.type": type(exc).__name__,
+        "dlq.reason": "max_retries_exceeded",
+    }, _start_otel=True)
+    finish_span(dlq_span, status="error", error=exc)
 
 
 @celery_app.task(name="drift.run_batch", bind=True, max_retries=3)
@@ -44,14 +99,24 @@ def run_drift_batch_task(self, notify_user_id: str | None = None) -> dict:
     from app.core.database import AsyncSessionLocal
     from app.jobs.drift_job import run_drift_check_all_companies
 
+    span = _celery_span("celery.task_start", "drift.run_batch")
+
     async def _run() -> dict:
         async with AsyncSessionLocal() as db:
             return await run_drift_check_all_companies(db, notify_user_id)
 
     try:
-        return asyncio.run(_run())
+        result = asyncio.run(_run())
+        _finish_celery_success(span, "drift.run_batch")
+        return result
     except Exception as exc:
+        _finish_celery_failure(span, "drift.run_batch", exc)
         logger.error("drift.run_batch falhou: %s", exc)
+        _emit_celery_retry("drift.run_batch", exc, self.request.retries, self.max_retries, 60)
+
+        if self.request.retries >= self.max_retries:
+
+            _emit_dlq_push("drift.run_batch", exc)
         raise self.retry(exc=exc, countdown=60)
 
 
@@ -76,6 +141,9 @@ def start_wsi_interview_task(self, request_data: dict, company_id: str) -> dict:
     """
     from app.core.database import AsyncSessionLocal
 
+    span = _celery_span("celery.task_start", "agents.wsi_interview.start")
+    span.set_attribute("company_id", company_id)
+
     async def _run() -> dict:
         from app.domains.interview_scheduling.services import interview_service
         async with AsyncSessionLocal() as db:
@@ -89,9 +157,17 @@ def start_wsi_interview_task(self, request_data: dict, company_id: str) -> dict:
             )
 
     try:
-        return asyncio.run(_run())
+        result = asyncio.run(_run())
+        _finish_celery_success(span, "agents.wsi_interview.start")
+        return result
     except Exception as exc:
+        _finish_celery_failure(span, "agents.wsi_interview.start", exc)
         logger.error("agents.wsi_interview.start falhou company=%s: %s", company_id, exc)
+        _emit_celery_retry("agents.wsi_interview.start", exc, self.request.retries, self.max_retries, 30)
+
+        if self.request.retries >= self.max_retries:
+
+            _emit_dlq_push("agents.wsi_interview.start", exc)
         raise self.retry(exc=exc, countdown=30)
 
 
@@ -111,6 +187,10 @@ def run_triagem_task(self, candidate_ids: list, job_id: str, company_id: str) ->
     Returns:
         Dict com { processed, approved, rejected, review, ranking }
     """
+    span = _celery_span("celery.task_start", "agents.triagem.run")
+    span.set_attribute("company_id", company_id)
+    span.set_attribute("candidate_count", str(len(candidate_ids)))
+
     async def _run() -> dict:
         from app.domains.cv_screening.services.cv_screening_batch_service import run_batch
         return await run_batch(
@@ -120,9 +200,17 @@ def run_triagem_task(self, candidate_ids: list, job_id: str, company_id: str) ->
         )
 
     try:
-        return asyncio.run(_run())
+        result = asyncio.run(_run())
+        _finish_celery_success(span, "agents.triagem.run")
+        return result
     except Exception as exc:
+        _finish_celery_failure(span, "agents.triagem.run", exc)
         logger.error("agents.triagem.run falhou job=%s company=%s: %s", job_id, company_id, exc)
+        _emit_celery_retry("agents.triagem.run", exc, self.request.retries, self.max_retries, 60)
+
+        if self.request.retries >= self.max_retries:
+
+            _emit_dlq_push("agents.triagem.run", exc)
         raise self.retry(exc=exc, countdown=60)
 
 
@@ -144,6 +232,9 @@ def run_sourcing_task(self, criteria: dict, job_id: str, company_id: str) -> dic
     """
     from app.core.database import AsyncSessionLocal
 
+    span = _celery_span("celery.task_start", "agents.sourcing.search")
+    span.set_attribute("company_id", company_id)
+
     async def _run() -> dict:
         from app.domains.sourcing.agents.sourcing_react_agent import SourcingReActAgent
         agent = SourcingReActAgent()
@@ -156,9 +247,17 @@ def run_sourcing_task(self, criteria: dict, job_id: str, company_id: str) -> dic
             )
 
     try:
-        return asyncio.run(_run())
+        result = asyncio.run(_run())
+        _finish_celery_success(span, "agents.sourcing.search")
+        return result
     except Exception as exc:
+        _finish_celery_failure(span, "agents.sourcing.search", exc)
         logger.error("agents.sourcing.search falhou job=%s: %s", job_id, exc)
+        _emit_celery_retry("agents.sourcing.search", exc, self.request.retries, self.max_retries, 45)
+
+        if self.request.retries >= self.max_retries:
+
+            _emit_dlq_push("agents.sourcing.search", exc)
         raise self.retry(exc=exc, countdown=45)
 
 
@@ -182,6 +281,10 @@ def wizard_process_async_task(self, message: str, context: dict, session_id: str
     """
     from lia_agents_core.agent_interface import AgentInput
 
+    span = _celery_span("celery.task_start", "agents.wizard.process_async")
+    span.set_attribute("company_id", company_id)
+    span.set_attribute("session_id", session_id)
+
     async def _run() -> dict:
         from app.domains.job_management.agents.wizard_react_agent import WizardReActAgent
         agent = WizardReActAgent()
@@ -197,7 +300,6 @@ def wizard_process_async_task(self, message: str, context: dict, session_id: str
 
     try:
         result = asyncio.run(_run())
-        # Notificar via WS se sessão ainda conectada
         try:
             import asyncio as _asyncio
 
@@ -212,9 +314,16 @@ def wizard_process_async_task(self, message: str, context: dict, session_id: str
             loop.close()
         except Exception:
             pass
+        _finish_celery_success(span, "agents.wizard.process_async")
         return result
     except Exception as exc:
+        _finish_celery_failure(span, "agents.wizard.process_async", exc)
         logger.error("agents.wizard.process_async falhou session=%s: %s", session_id, exc)
+        _emit_celery_retry("agents.wizard.process_async", exc, self.request.retries, self.max_retries, 30)
+
+        if self.request.retries >= self.max_retries:
+
+            _emit_dlq_push("agents.wizard.process_async", exc)
         raise self.retry(exc=exc, countdown=30)
 
 
@@ -234,6 +343,10 @@ def pipeline_transition_async_task(self, transition_data: dict, session_id: str,
     """
     from lia_agents_core.agent_interface import AgentInput
 
+    span = _celery_span("celery.task_start", "agents.pipeline.transition_async")
+    span.set_attribute("company_id", company_id)
+    span.set_attribute("session_id", session_id)
+
     async def _run() -> dict:
         from app.domains.pipeline.agents.pipeline_transition_agent import PipelineTransitionAgent
         agent = PipelineTransitionAgent()
@@ -248,9 +361,17 @@ def pipeline_transition_async_task(self, transition_data: dict, session_id: str,
         return output.dict()
 
     try:
-        return asyncio.run(_run())
+        result = asyncio.run(_run())
+        _finish_celery_success(span, "agents.pipeline.transition_async")
+        return result
     except Exception as exc:
+        _finish_celery_failure(span, "agents.pipeline.transition_async", exc)
         logger.error("agents.pipeline.transition_async falhou session=%s: %s", session_id, exc)
+        _emit_celery_retry("agents.pipeline.transition_async", exc, self.request.retries, self.max_retries, 20)
+
+        if self.request.retries >= self.max_retries:
+
+            _emit_dlq_push("agents.pipeline.transition_async", exc)
         raise self.retry(exc=exc, countdown=20)
 
 
@@ -291,6 +412,10 @@ async def _publish_response(session_id: str, reply_to: str, output_dict: dict, d
 @celery_app.task(name="agents.wizard.execute", bind=True, max_retries=2, queue="vagas_normal")
 def execute_wizard_task(self, agent_input_dict: dict, session_id: str, company_id: str, domain: str = "wizard", reply_to: str = "") -> dict:
     """Executa WizardReActAgent em background (vaga, templates, JD)."""
+    span = _celery_span("celery.task_start", "agents.wizard.execute")
+    span.set_attribute("company_id", company_id)
+    span.set_attribute("domain", domain)
+
     async def _run() -> dict:
         from app.domains.job_management.agents.wizard_react_agent import WizardReActAgent
         agent = WizardReActAgent()
@@ -300,15 +425,27 @@ def execute_wizard_task(self, agent_input_dict: dict, session_id: str, company_i
         return result
 
     try:
-        return asyncio.run(_run())
+        result = asyncio.run(_run())
+        _finish_celery_success(span, "agents.wizard.execute")
+        return result
     except Exception as exc:
+        _finish_celery_failure(span, "agents.wizard.execute", exc)
         logger.error("agents.wizard.execute falhou session=%s: %s", session_id, exc)
+        _emit_celery_retry("agents.wizard.execute", exc, self.request.retries, self.max_retries, 30)
+
+        if self.request.retries >= self.max_retries:
+
+            _emit_dlq_push("agents.wizard.execute", exc)
         raise self.retry(exc=exc, countdown=30)
 
 
 @celery_app.task(name="agents.pipeline.execute", bind=True, max_retries=2, queue="evaluation_normal")
 def execute_pipeline_task(self, agent_input_dict: dict, session_id: str, company_id: str, domain: str = "pipeline", reply_to: str = "") -> dict:
     """Executa PipelineReActAgent em background (pipeline, kanban, triagem)."""
+    span = _celery_span("celery.task_start", "agents.pipeline.execute")
+    span.set_attribute("company_id", company_id)
+    span.set_attribute("domain", domain)
+
     async def _run() -> dict:
         from app.domains.cv_screening.agents.pipeline_react_agent import PipelineReActAgent
         agent = PipelineReActAgent()
@@ -318,15 +455,27 @@ def execute_pipeline_task(self, agent_input_dict: dict, session_id: str, company
         return result
 
     try:
-        return asyncio.run(_run())
+        result = asyncio.run(_run())
+        _finish_celery_success(span, "agents.pipeline.execute")
+        return result
     except Exception as exc:
+        _finish_celery_failure(span, "agents.pipeline.execute", exc)
         logger.error("agents.pipeline.execute falhou session=%s: %s", session_id, exc)
+        _emit_celery_retry("agents.pipeline.execute", exc, self.request.retries, self.max_retries, 30)
+
+        if self.request.retries >= self.max_retries:
+
+            _emit_dlq_push("agents.pipeline.execute", exc)
         raise self.retry(exc=exc, countdown=30)
 
 
 @celery_app.task(name="agents.sourcing.execute", bind=True, max_retries=2, queue="sourcing_high")
 def execute_sourcing_task(self, agent_input_dict: dict, session_id: str, company_id: str, domain: str = "sourcing", reply_to: str = "") -> dict:
     """Executa SourcingReActAgent em background (busca Pearch, 30-120s)."""
+    span = _celery_span("celery.task_start", "agents.sourcing.execute")
+    span.set_attribute("company_id", company_id)
+    span.set_attribute("domain", domain)
+
     async def _run() -> dict:
         from app.domains.sourcing.agents.sourcing_react_agent import SourcingReActAgent
         agent = SourcingReActAgent()
@@ -336,15 +485,27 @@ def execute_sourcing_task(self, agent_input_dict: dict, session_id: str, company
         return result
 
     try:
-        return asyncio.run(_run())
+        result = asyncio.run(_run())
+        _finish_celery_success(span, "agents.sourcing.execute")
+        return result
     except Exception as exc:
+        _finish_celery_failure(span, "agents.sourcing.execute", exc)
         logger.error("agents.sourcing.execute falhou session=%s: %s", session_id, exc)
+        _emit_celery_retry("agents.sourcing.execute", exc, self.request.retries, self.max_retries, 45)
+
+        if self.request.retries >= self.max_retries:
+
+            _emit_dlq_push("agents.sourcing.execute", exc)
         raise self.retry(exc=exc, countdown=45)
 
 
 @celery_app.task(name="agents.screening.execute", bind=True, max_retries=2, queue="evaluation_normal")
 def execute_screening_task(self, agent_input_dict: dict, session_id: str, company_id: str, domain: str = "cv_screening", reply_to: str = "") -> dict:
     """Executa triagem curricular / WSI em background."""
+    span = _celery_span("celery.task_start", "agents.screening.execute")
+    span.set_attribute("company_id", company_id)
+    span.set_attribute("domain", domain)
+
     async def _run() -> dict:
         from app.domains.cv_screening.agents.pipeline_react_agent import PipelineReActAgent
         agent = PipelineReActAgent()
@@ -354,15 +515,27 @@ def execute_screening_task(self, agent_input_dict: dict, session_id: str, compan
         return result
 
     try:
-        return asyncio.run(_run())
+        result = asyncio.run(_run())
+        _finish_celery_success(span, "agents.screening.execute")
+        return result
     except Exception as exc:
+        _finish_celery_failure(span, "agents.screening.execute", exc)
         logger.error("agents.screening.execute falhou session=%s: %s", session_id, exc)
+        _emit_celery_retry("agents.screening.execute", exc, self.request.retries, self.max_retries, 60)
+
+        if self.request.retries >= self.max_retries:
+
+            _emit_dlq_push("agents.screening.execute", exc)
         raise self.retry(exc=exc, countdown=60)
 
 
 @celery_app.task(name="agents.kanban.execute", bind=True, max_retries=2, queue="vagas_normal")
 def execute_kanban_task(self, agent_input_dict: dict, session_id: str, company_id: str, domain: str = "kanban", reply_to: str = "") -> dict:
     """Executa KanbanReActAgent / TalentReActAgent em background."""
+    span = _celery_span("celery.task_start", "agents.kanban.execute")
+    span.set_attribute("company_id", company_id)
+    span.set_attribute("domain", domain)
+
     async def _run() -> dict:
         from app.domains.recruiter_assistant.agents.kanban_react_agent import KanbanReActAgent
         agent = KanbanReActAgent()
@@ -372,15 +545,27 @@ def execute_kanban_task(self, agent_input_dict: dict, session_id: str, company_i
         return result
 
     try:
-        return asyncio.run(_run())
+        result = asyncio.run(_run())
+        _finish_celery_success(span, "agents.kanban.execute")
+        return result
     except Exception as exc:
+        _finish_celery_failure(span, "agents.kanban.execute", exc)
         logger.error("agents.kanban.execute falhou session=%s: %s", session_id, exc)
+        _emit_celery_retry("agents.kanban.execute", exc, self.request.retries, self.max_retries, 30)
+
+        if self.request.retries >= self.max_retries:
+
+            _emit_dlq_push("agents.kanban.execute", exc)
         raise self.retry(exc=exc, countdown=30)
 
 
 @celery_app.task(name="agents.policy.execute", bind=True, max_retries=2, queue="onboarding_low")
 def execute_policy_task(self, agent_input_dict: dict, session_id: str, company_id: str, domain: str = "policy", reply_to: str = "") -> dict:
     """Executa PolicyReActAgent em background (compliance, políticas)."""
+    span = _celery_span("celery.task_start", "agents.policy.execute")
+    span.set_attribute("company_id", company_id)
+    span.set_attribute("domain", domain)
+
     async def _run() -> dict:
         from app.domains.hiring_policy.agents.policy_react_agent import PolicyReActAgent
         agent = PolicyReActAgent()
@@ -390,15 +575,27 @@ def execute_policy_task(self, agent_input_dict: dict, session_id: str, company_i
         return result
 
     try:
-        return asyncio.run(_run())
+        result = asyncio.run(_run())
+        _finish_celery_success(span, "agents.policy.execute")
+        return result
     except Exception as exc:
+        _finish_celery_failure(span, "agents.policy.execute", exc)
         logger.error("agents.policy.execute falhou session=%s: %s", session_id, exc)
+        _emit_celery_retry("agents.policy.execute", exc, self.request.retries, self.max_retries, 30)
+
+        if self.request.retries >= self.max_retries:
+
+            _emit_dlq_push("agents.policy.execute", exc)
         raise self.retry(exc=exc, countdown=30)
 
 
 @celery_app.task(name="agents.automation.execute", bind=True, max_retries=2, queue="vagas_normal")
 def execute_automation_task(self, agent_input_dict: dict, session_id: str, company_id: str, domain: str = "automation", reply_to: str = "") -> dict:
     """Executa AutomationReActAgent em background (decomposição de tarefas)."""
+    span = _celery_span("celery.task_start", "agents.automation.execute")
+    span.set_attribute("company_id", company_id)
+    span.set_attribute("domain", domain)
+
     async def _run() -> dict:
         from app.domains.automation.agents.automation_react_agent import AutomationReActAgent
         agent = AutomationReActAgent()
@@ -408,9 +605,17 @@ def execute_automation_task(self, agent_input_dict: dict, session_id: str, compa
         return result
 
     try:
-        return asyncio.run(_run())
+        result = asyncio.run(_run())
+        _finish_celery_success(span, "agents.automation.execute")
+        return result
     except Exception as exc:
+        _finish_celery_failure(span, "agents.automation.execute", exc)
         logger.error("agents.automation.execute falhou session=%s: %s", session_id, exc)
+        _emit_celery_retry("agents.automation.execute", exc, self.request.retries, self.max_retries, 30)
+
+        if self.request.retries >= self.max_retries:
+
+            _emit_dlq_push("agents.automation.execute", exc)
         raise self.retry(exc=exc, countdown=30)
 
 
@@ -425,13 +630,22 @@ def apply_audit_lifecycle_policy(self) -> dict:
 
     from lia_audit.audit_storage import get_audit_storage
 
+    span = _celery_span("celery.task_start", "audit.apply_lifecycle_policy")
+
     try:
         storage = get_audit_storage()
         result = asyncio.run(storage.apply_lifecycle_policy())
+        _finish_celery_success(span, "audit.apply_lifecycle_policy")
         logger.info(f"[audit.lifecycle] Applied: {result}")
         return {"applied": result}
     except Exception as exc:
+        _finish_celery_failure(span, "audit.apply_lifecycle_policy", exc)
         logger.error(f"[audit.lifecycle] Error: {exc}")
+        _emit_celery_retry("audit.apply_lifecycle_policy", exc, self.request.retries, self.max_retries, 3600)
+
+        if self.request.retries >= self.max_retries:
+
+            _emit_dlq_push("audit.apply_lifecycle_policy", exc)
         raise self.retry(exc=exc, countdown=3600)
 
 
@@ -457,17 +671,27 @@ def run_lgpd_cleanup_task(self, dry_run: bool = False) -> dict:
                    chat_messages_deleted, interview_notes_deleted,
                    screening_logs_deleted, ai_decision_logs_deleted, errors }
     """
+    span = _celery_span("celery.task_start", "lgpd.run_cleanup_daily")
+    span.set_attribute("dry_run", str(dry_run))
+
     async def _run() -> dict:
         from app.services.lgpd_cleanup_service import run_cleanup
         return await run_cleanup(dry_run=dry_run)
 
     try:
         result = asyncio.run(_run())
+        _finish_celery_success(span, "lgpd.run_cleanup_daily")
         logger.info("lgpd.run_cleanup_daily concluído: %s", result)
         return result
     except Exception as exc:
+        _finish_celery_failure(span, "lgpd.run_cleanup_daily", exc)
         logger.error("lgpd.run_cleanup_daily falhou: %s", exc)
-        raise self.retry(exc=exc, countdown=300)  # retry em 5 min
+        _emit_celery_retry("lgpd.run_cleanup_daily", exc, self.request.retries, self.max_retries, 300)
+
+        if self.request.retries >= self.max_retries:
+
+            _emit_dlq_push("lgpd.run_cleanup_daily", exc)
+        raise self.retry(exc=exc, countdown=300)
 
 
 @celery_app.task(name="conversation.ttl_cleanup", bind=True, max_retries=3)
@@ -490,16 +714,26 @@ def conversation_ttl_cleanup_task(self, dry_run: bool = False) -> dict:
     Returns:
         Dict com { dry_run, ran_at, tables, total_deleted, errors }
     """
+    span = _celery_span("celery.task_start", "conversation.ttl_cleanup")
+    span.set_attribute("dry_run", str(dry_run))
+
     async def _run() -> dict:
         from app.services.lgpd_cleanup_service import run_conversation_ttl_cleanup
         return await run_conversation_ttl_cleanup(dry_run=dry_run)
 
     try:
         result = asyncio.run(_run())
+        _finish_celery_success(span, "conversation.ttl_cleanup")
         logger.info("conversation.ttl_cleanup concluído: %s", result)
         return result
     except Exception as exc:
+        _finish_celery_failure(span, "conversation.ttl_cleanup", exc)
         logger.error("conversation.ttl_cleanup falhou: %s", exc)
+        _emit_celery_retry("conversation.ttl_cleanup", exc, self.request.retries, self.max_retries, 300)
+
+        if self.request.retries >= self.max_retries:
+
+            _emit_dlq_push("conversation.ttl_cleanup", exc)
         raise self.retry(exc=exc, countdown=300)  # retry em 5 min
 
 
@@ -642,12 +876,23 @@ def pii_backfill_encrypt_existing_task(
 
         return summary
 
+    span = _celery_span("celery.task_start", "pii.backfill_encrypt_existing")
+    span.set_attribute("batch_size", str(batch_size))
+    span.set_attribute("dry_run", str(dry_run))
+
     try:
         result = asyncio.run(_run())
+        _finish_celery_success(span, "pii.backfill_encrypt_existing")
         logger.info("pii.backfill_encrypt_existing concluído: %s", result)
         return result
     except Exception as exc:
+        _finish_celery_failure(span, "pii.backfill_encrypt_existing", exc)
         logger.error("pii.backfill_encrypt_existing falhou: %s", exc)
+        _emit_celery_retry("pii.backfill_encrypt_existing", exc, self.request.retries, self.max_retries, 600)
+
+        if self.request.retries >= self.max_retries:
+
+            _emit_dlq_push("pii.backfill_encrypt_existing", exc)
         raise self.retry(exc=exc, countdown=600)  # retry em 10 min
 
 
@@ -681,13 +926,21 @@ def send_bulk_email_task(self, email_data: dict, company_id: str) -> dict:
                 db=db,
             )
 
+    span = _celery_span("celery.task_start", "communication.email.send_bulk")
+    span.set_attribute("company_id", company_id)
+
     try:
-        return asyncio.run(_run())
+        result = asyncio.run(_run())
+        _finish_celery_success(span, "communication.email.send_bulk")
+        return result
     except Exception as exc:
-        # Exponential backoff: 30s, 60s, 120s, 240s, 480s
+        _finish_celery_failure(span, "communication.email.send_bulk", exc)
         countdown = 30 * (2 ** self.request.retries)
         logger.error("communication.email.send_bulk falhou company=%s (retry %d): %s",
                      company_id, self.request.retries, exc)
+        _emit_celery_retry("communication.email.send_bulk", exc, self.request.retries, self.max_retries, countdown)
+        if self.request.retries >= self.max_retries:
+            _emit_dlq_push("communication.email.send_bulk", exc)
         raise self.retry(exc=exc, countdown=countdown)
 
 
@@ -781,10 +1034,20 @@ def send_daily_briefing_task(self) -> dict:
         )
         return {"sent": sent, "skipped": skipped, "errors": errors}
 
+    span = _celery_span("celery.task_start", "briefing.send_daily")
+
     try:
-        return asyncio.run(_run())
+        result = asyncio.run(_run())
+        _finish_celery_success(span, "briefing.send_daily")
+        return result
     except Exception as exc:
+        _finish_celery_failure(span, "briefing.send_daily", exc)
         logger.error("briefing.send_daily falhou: %s", exc)
+        _emit_celery_retry("briefing.send_daily", exc, self.request.retries, self.max_retries, 300)
+
+        if self.request.retries >= self.max_retries:
+
+            _emit_dlq_push("briefing.send_daily", exc)
         raise self.retry(exc=exc, countdown=300)
 
 
@@ -810,10 +1073,20 @@ def followup_process_pending_task(self) -> dict:
         async with AsyncSessionLocal() as db:
             return await process_email_followups(db)
 
+    span = _celery_span("celery.task_start", "followup.process_pending")
+
     try:
-        return asyncio.run(_run())
+        result = asyncio.run(_run())
+        _finish_celery_success(span, "followup.process_pending")
+        return result
     except Exception as exc:
+        _finish_celery_failure(span, "followup.process_pending", exc)
         logger.error("followup.process_pending falhou: %s", exc)
+        _emit_celery_retry("followup.process_pending", exc, self.request.retries, self.max_retries, 120)
+
+        if self.request.retries >= self.max_retries:
+
+            _emit_dlq_push("followup.process_pending", exc)
         raise self.retry(exc=exc, countdown=120)
 
 
@@ -840,10 +1113,20 @@ def wsi_check_abandoned_task(self) -> dict:
         async with AsyncSessionLocal() as db:
             return await check_abandoned_sessions(db)
 
+    span = _celery_span("celery.task_start", "wsi.check_abandoned")
+
     try:
-        return asyncio.run(_run())
+        result = asyncio.run(_run())
+        _finish_celery_success(span, "wsi.check_abandoned")
+        return result
     except Exception as exc:
+        _finish_celery_failure(span, "wsi.check_abandoned", exc)
         logger.error("wsi.check_abandoned falhou: %s", exc)
+        _emit_celery_retry("wsi.check_abandoned", exc, self.request.retries, self.max_retries, 300)
+
+        if self.request.retries >= self.max_retries:
+
+            _emit_dlq_push("wsi.check_abandoned", exc)
         raise self.retry(exc=exc, countdown=300)
 
 
@@ -921,10 +1204,22 @@ def feedback_generate_and_send_task(
                 "auto_sent": True,
             }
 
+    span = _celery_span("celery.task_start", "feedback.generate_and_send")
+    span.set_attribute("candidate_id", candidate_id)
+    span.set_attribute("job_id", job_id)
+
     try:
-        return asyncio.run(_run())
+        result = asyncio.run(_run())
+        _finish_celery_success(span, "feedback.generate_and_send")
+        return result
     except Exception as exc:
+        _finish_celery_failure(span, "feedback.generate_and_send", exc)
         logger.error("feedback.generate_and_send failed: %s", exc)
+        _emit_celery_retry("feedback.generate_and_send", exc, self.request.retries, self.max_retries, 60)
+
+        if self.request.retries >= self.max_retries:
+
+            _emit_dlq_push("feedback.generate_and_send", exc)
         raise self.retry(exc=exc, countdown=60)
 
 
@@ -1103,10 +1398,22 @@ def feedback_auto_send_task(self, feedback_id: str, company_id: str) -> dict:
                 "results": {k: {"success": v.get("success"), "message_id": v.get("message_id")} for k, v in send_result.items()},
             }
 
+    span = _celery_span("celery.task_start", "feedback.auto_send")
+    span.set_attribute("feedback_id", feedback_id)
+    span.set_attribute("company_id", company_id)
+
     try:
-        return asyncio.run(_run())
+        result = asyncio.run(_run())
+        _finish_celery_success(span, "feedback.auto_send")
+        return result
     except Exception as exc:
+        _finish_celery_failure(span, "feedback.auto_send", exc)
         logger.error("feedback.auto_send falhou id=%s: %s", feedback_id, exc)
+        _emit_celery_retry("feedback.auto_send", exc, self.request.retries, self.max_retries, 60)
+
+        if self.request.retries >= self.max_retries:
+
+            _emit_dlq_push("feedback.auto_send", exc)
         raise self.retry(exc=exc, countdown=60)
 
 
@@ -1162,10 +1469,20 @@ def feedback_process_pending_sends_task(self) -> dict:
         logger.info("feedback.process_pending_sends: dispatched=%d", dispatched)
         return {"dispatched": dispatched}
 
+    span = _celery_span("celery.task_start", "feedback.process_pending_sends")
+
     try:
-        return asyncio.run(_run())
+        result = asyncio.run(_run())
+        _finish_celery_success(span, "feedback.process_pending_sends")
+        return result
     except Exception as exc:
+        _finish_celery_failure(span, "feedback.process_pending_sends", exc)
         logger.error("feedback.process_pending_sends falhou: %s", exc)
+        _emit_celery_retry("feedback.process_pending_sends", exc, self.request.retries, self.max_retries, 120)
+
+        if self.request.retries >= self.max_retries:
+
+            _emit_dlq_push("feedback.process_pending_sends", exc)
         raise self.retry(exc=exc, countdown=120)
 
 
@@ -1244,10 +1561,21 @@ def run_ragas_evaluate_batch(self, domain: str = "all", days_back: int = 1) -> d
         )
         return {"evaluated": evaluated, "skipped": skipped, "errors": errors, "domain": domain}
 
+    span = _celery_span("celery.task_start", "ragas.evaluate_batch")
+    span.set_attribute("domain", domain)
+
     try:
-        return asyncio.run(_run())
+        result = asyncio.run(_run())
+        _finish_celery_success(span, "ragas.evaluate_batch")
+        return result
     except Exception as exc:
+        _finish_celery_failure(span, "ragas.evaluate_batch", exc)
         logger.error("ragas.evaluate_batch falhou: %s", exc)
+        _emit_celery_retry("ragas.evaluate_batch", exc, self.request.retries, self.max_retries, 300)
+
+        if self.request.retries >= self.max_retries:
+
+            _emit_dlq_push("ragas.evaluate_batch", exc)
         raise self.retry(exc=exc, countdown=300)
 
 
@@ -1262,14 +1590,21 @@ def rebuild_domain_index_task(domain: str, company_id: str):
 
     from app.services.domain_embedding_service import domain_embedding_service
 
+    span = _celery_span("celery.task_start", "rag.rebuild_domain_index")
+    span.set_attribute("domain", domain)
+    span.set_attribute("company_id", company_id)
+
     async def _run():
         from lia_config.database import AsyncSessionLocal
         async with AsyncSessionLocal() as db:
             return await domain_embedding_service.rebuild_domain_index(domain, company_id, db)
 
     try:
-        return asyncio.run(_run())
+        result = asyncio.run(_run())
+        _finish_celery_success(span, "rag.rebuild_domain_index")
+        return result
     except Exception as exc:
+        _finish_celery_failure(span, "rag.rebuild_domain_index", exc)
         logger.warning("[Celery] rag.rebuild_domain_index failed: %s", exc)
         return 0
 
@@ -1303,9 +1638,15 @@ def recompute_routing_adjustments(company_id: str) -> dict:
             await routing_learning_service.cache_adjustments(company_id, adj)
             return adj
 
+    span = _celery_span("celery.task_start", "routing.recompute_adjustments")
+    span.set_attribute("company_id", company_id)
+
     try:
-        return asyncio.run(_run())
+        result = asyncio.run(_run())
+        _finish_celery_success(span, "routing.recompute_adjustments")
+        return result
     except Exception as exc:
+        _finish_celery_failure(span, "routing.recompute_adjustments", exc)
         logger.warning("[Celery] routing.recompute_adjustments failed: %s", exc)
         return {}
 
@@ -1340,10 +1681,22 @@ def process_ml_feedback_weights_task(self, company_id: str, job_id: str) -> dict
             )
             return weights.to_dict()
 
+    span = _celery_span("celery.task_start", "ml.feedback.process_weights")
+    span.set_attribute("company_id", company_id)
+    span.set_attribute("job_id", job_id)
+
     try:
-        return asyncio.run(_run())
+        result = asyncio.run(_run())
+        _finish_celery_success(span, "ml.feedback.process_weights")
+        return result
     except Exception as exc:
+        _finish_celery_failure(span, "ml.feedback.process_weights", exc)
         logger.error("ml.feedback.process_weights falhou: %s", exc)
+        _emit_celery_retry("ml.feedback.process_weights", exc, self.request.retries, self.max_retries, 120)
+
+        if self.request.retries >= self.max_retries:
+
+            _emit_dlq_push("ml.feedback.process_weights", exc)
         raise self.retry(exc=exc, countdown=120)
 
 
@@ -1362,12 +1715,16 @@ def check_agent_registry_reload():
 
     from app.core.agent_registry_watcher import agent_registry_watcher
 
+    span = _celery_span("celery.task_start", "agents.registry.check_reload")
+
     try:
         reloaded = asyncio.run(agent_registry_watcher.check_and_reload())
         if reloaded:
             logger.info("[Celery] agents_registry.yaml reloaded: %s", reloaded)
+        _finish_celery_success(span, "agents.registry.check_reload")
         return {"reloaded": reloaded}
     except Exception as exc:
+        _finish_celery_failure(span, "agents.registry.check_reload", exc)
         logger.warning("[Celery] agents.registry.check_reload failed (fail-open): %s", exc)
         return {"reloaded": []}
 
@@ -1383,6 +1740,8 @@ def rebuild_all_domains_task():
     Wrapper que itera os 5 domínios fixos e despacha rebuild_domain_index_task
     para cada. Executado diariamente via beat schedule (04h UTC / 01h Brasília).
     """
+    span = _celery_span("celery.task_start", "rag.rebuild_all_domains")
+
     _DOMAINS = ["general", "jobs", "talent", "policy", "company"]
     dispatched = 0
     for domain in _DOMAINS:
@@ -1391,6 +1750,7 @@ def rebuild_all_domains_task():
             dispatched += 1
         except Exception as exc:
             logger.warning("[Celery] rag.rebuild_all_domains dispatch failed for %s: %s", domain, exc)
+    _finish_celery_success(span, "rag.rebuild_all_domains")
     logger.info("[Celery] rag.rebuild_all_domains dispatched %d/%d domains", dispatched, len(_DOMAINS))
     return {"dispatched": dispatched, "domains": _DOMAINS}
 
@@ -1448,8 +1808,13 @@ def compress_old_episodes_task(self, company_id: str, domain: str = None, age_da
 
         return {"company_id": company_id, "domain": domain, "compressed": compressed, "purged": purged}
 
+    span = _celery_span("celery.task_start", "memory.compress_old_episodes")
+    span.set_attribute("company_id", company_id)
+    span.set_attribute("age_days", str(age_days))
+
     try:
         result = asyncio.run(_run())
+        _finish_celery_success(span, "memory.compress_old_episodes")
         logger.info(
             "[memory.compress] company=%s compressed=%d purged=%d",
             company_id,
@@ -1458,7 +1823,13 @@ def compress_old_episodes_task(self, company_id: str, domain: str = None, age_da
         )
         return result
     except Exception as exc:
+        _finish_celery_failure(span, "memory.compress_old_episodes", exc)
         logger.error("memory.compress_old_episodes falhou company=%s: %s", company_id, exc)
+        _emit_celery_retry("memory.compress_old_episodes", exc, self.request.retries, self.max_retries, 300)
+
+        if self.request.retries >= self.max_retries:
+
+            _emit_dlq_push("memory.compress_old_episodes", exc)
         raise self.retry(exc=exc, countdown=300)
 
 
@@ -1488,6 +1859,8 @@ def recompute_active_ml_jobs_task():
             )
             return result.fetchall()
 
+    span = _celery_span("celery.task_start", "ml.feedback.recompute_active_jobs")
+
     try:
         rows = asyncio.run(_get_active_jobs())
         dispatched = 0
@@ -1497,9 +1870,11 @@ def recompute_active_ml_jobs_task():
                 dispatched += 1
             except Exception as exc:
                 logger.warning("[Celery] ml.feedback dispatch failed job=%s: %s", row.job_id, exc)
+        _finish_celery_success(span, "ml.feedback.recompute_active_jobs")
         logger.info("[Celery] ml.feedback.recompute_active_jobs dispatched %d jobs", dispatched)
         return {"dispatched": dispatched}
     except Exception as exc:
+        _finish_celery_failure(span, "ml.feedback.recompute_active_jobs", exc)
         logger.warning("[Celery] ml.feedback.recompute_active_jobs failed (fail-open): %s", exc)
         return {"dispatched": 0}
 
@@ -1526,8 +1901,11 @@ def send_weekly_digest_task(self) -> dict:
         async with AsyncSessionLocal() as db:
             return await svc.send_to_all_recruiters(db)
 
+    span = _celery_span("celery.task_start", "digest.send_weekly")
+
     try:
         result = asyncio.run(_run())
+        _finish_celery_success(span, "digest.send_weekly")
         logger.info(
             "[Celery] digest.send_weekly completed: sent=%s skipped=%s errors=%s",
             result.get("sent", 0),
@@ -1536,7 +1914,13 @@ def send_weekly_digest_task(self) -> dict:
         )
         return result
     except Exception as exc:
+        _finish_celery_failure(span, "digest.send_weekly", exc)
         logger.error("[Celery] digest.send_weekly failed: %s", exc)
+        _emit_celery_retry("digest.send_weekly", exc, self.request.retries, self.max_retries, 300)
+
+        if self.request.retries >= self.max_retries:
+
+            _emit_dlq_push("digest.send_weekly", exc)
         raise self.retry(exc=exc, countdown=300)
 
 
@@ -1561,7 +1945,17 @@ def run_retention_cleanup(self) -> dict:
         }
     """
     import asyncio
-    return asyncio.run(_run_retention_cleanup_async())
+    span = _celery_span("celery.task_start", "data.retention.run")
+    try:
+        result = asyncio.run(_run_retention_cleanup_async())
+        _finish_celery_success(span, "data.retention.run")
+        return result
+    except Exception as exc:
+        _finish_celery_failure(span, "data.retention.run", exc)
+        _emit_celery_retry("data.retention.run", exc, self.request.retries, self.max_retries, 60)
+        if self.request.retries >= self.max_retries:
+            _emit_dlq_push("data.retention.run", exc)
+        raise self.retry(exc=exc)
 
 
 async def _run_retention_cleanup_async() -> dict:
@@ -1679,13 +2073,25 @@ def run_openmic_wsi_pipeline_task(self, task_data: dict) -> dict:
     """
     from app.services.voice.wsi_pipeline import run_voice_wsi_pipeline
 
+    span = _celery_span("celery.task_start", "voice.openmic.wsi_pipeline")
+    span.set_attribute("call_id", task_data.get("call_id", "unknown"))
+    span.set_attribute("candidate_id", task_data.get("candidate_id", "unknown"))
+
     try:
-        return asyncio.run(run_voice_wsi_pipeline(task_data))
+        result = asyncio.run(run_voice_wsi_pipeline(task_data))
+        _finish_celery_success(span, "voice.openmic.wsi_pipeline")
+        return result
     except Exception as exc:
+        _finish_celery_failure(span, "voice.openmic.wsi_pipeline", exc)
         logger.error(
             "voice.openmic.wsi_pipeline falhou call_id=%s candidate_id=%s: %s",
             task_data.get("call_id", "unknown"),
             task_data.get("candidate_id", "unknown"),
             exc,
         )
+        _emit_celery_retry("voice.openmic.wsi_pipeline", exc, self.request.retries, self.max_retries, 60)
+
+        if self.request.retries >= self.max_retries:
+
+            _emit_dlq_push("voice.openmic.wsi_pipeline", exc)
         raise self.retry(exc=exc, countdown=60)

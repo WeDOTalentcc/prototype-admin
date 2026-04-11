@@ -22,6 +22,8 @@ import uuid
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
+from app.shared.tracing import get_tracer
+
 logger = logging.getLogger(__name__)
 
 # TTL 24 horas em segundos
@@ -204,6 +206,8 @@ class HITLService:
         Se o usuário configurou auto_confirm=True para este domain/action,
         aprova automaticamente sem interrupção (log de auditoria registrado).
         """
+        _tracer = get_tracer()
+
         # --- Verificação de auto_confirm (Sprint J3) ---
         if user_id:
             auto = await self._check_auto_confirm(
@@ -211,94 +215,99 @@ class HITLService:
                 domain=domain, action_type=action,
             )
             if auto:
-                pending_id = str(uuid.uuid4())
-                logger.info(
-                    "[HITL] Auto-confirmação ativada thread=%s pending=%s action=%s user=%s",
-                    thread_id, pending_id, action, user_id,
-                )
-                # Persiste como já aprovado para que is_approved() retorne True imediatamente
-                payload = {
-                    "pending_id": pending_id,
-                    "thread_id": thread_id,
-                    "domain": domain,
-                    "action": action,
-                    "description": description,
-                    "data": data,
-                    "ws_session_id": ws_session_id,
-                    "requested_at": datetime.now(UTC).isoformat(),
-                    "approved": True,
-                    "comment": "auto_confirm",
-                    "resolved_by": user_id,
-                    "resolved_at": datetime.now(UTC).isoformat(),
-                }
-                key = f"hitl:{thread_id}:{pending_id}"
-                self._store(key, payload)
-                # Audit trail (best-effort)
-                try:
-                    await _db_resolve(
-                        pending_id=pending_id, thread_id=thread_id,
-                        domain=domain, action=action, approved=True,
-                        comment="auto_confirm", resolved_by=user_id,
-                        company_id=company_id,
+                async with _tracer.start_span("hitl.auto_confirm", attributes={
+                    "service": "hitl_service", "tier_name": "hitl_auto_confirm",
+                    "thread_id": thread_id, "action_type": action, "domain": domain,
+                }) as _ac_span:
+                    pending_id = str(uuid.uuid4())
+                    _ac_span.set_attribute("pending_id", pending_id)
+                    logger.info(
+                        "[HITL] Auto-confirmação ativada thread=%s pending=%s action=%s user=%s",
+                        thread_id, pending_id, action, user_id,
                     )
-                except Exception:
-                    pass
-                return pending_id
+                    payload = {
+                        "pending_id": pending_id,
+                        "thread_id": thread_id,
+                        "domain": domain,
+                        "action": action,
+                        "description": description,
+                        "data": data,
+                        "ws_session_id": ws_session_id,
+                        "requested_at": datetime.now(UTC).isoformat(),
+                        "approved": True,
+                        "comment": "auto_confirm",
+                        "resolved_by": user_id,
+                        "resolved_at": datetime.now(UTC).isoformat(),
+                    }
+                    key = f"hitl:{thread_id}:{pending_id}"
+                    self._store(key, payload)
+                    try:
+                        await _db_resolve(
+                            pending_id=pending_id, thread_id=thread_id,
+                            domain=domain, action=action, approved=True,
+                            comment="auto_confirm", resolved_by=user_id,
+                            company_id=company_id,
+                        )
+                    except Exception:
+                        pass
+                    return pending_id
 
-        pending_id = str(uuid.uuid4())
-        payload = {
-            "pending_id": pending_id,
-            "thread_id": thread_id,
-            "domain": domain,
-            "company_id": company_id,
-            "action": action,
-            "description": description,
-            "data": data,
-            "ws_session_id": ws_session_id,
-            "requested_at": datetime.now(UTC).isoformat(),
-            "approved": None,  # None = pendente
-            "comment": None,
-        }
-
-        # Redis (ou in-memory)
-        key = f"hitl:{thread_id}:{pending_id}"
-        self._store(key, payload)
-
-        # DB — source of truth (best-effort, não bloqueia)
-        try:
-            await _db_save_pending(
-                pending_id=pending_id,
-                thread_id=thread_id,
-                domain=domain,
-                action=action,
-                description=description,
-                data=data,
-                agent_input=agent_input or {},
-                ws_session_id=ws_session_id,
-                company_id=company_id,
-            )
-        except Exception as exc:
-            logger.warning("[HITL] DB save pending falhou (best-effort): %s", exc)
-
-        # WS notification (best-effort)
-        try:
-            from app.shared.websocket.ws_manager import ws_manager
-            await ws_manager.send_to_session(ws_session_id, {
-                "type": "approval_required",
-                "thread_id": thread_id,
+        async with _tracer.start_span("hitl.request_approval", attributes={
+            "service": "hitl_service", "tier_name": "hitl_request_approval",
+            "thread_id": thread_id, "action_type": action, "domain": domain,
+        }) as _ra_span:
+            pending_id = str(uuid.uuid4())
+            _ra_span.set_attribute("pending_id", pending_id)
+            payload = {
                 "pending_id": pending_id,
+                "thread_id": thread_id,
+                "domain": domain,
+                "company_id": company_id,
                 "action": action,
                 "description": description,
                 "data": data,
-            })
-        except Exception as exc:
-            logger.warning("[HITL] Falha ao enviar WS approval_required: %s", exc)
+                "ws_session_id": ws_session_id,
+                "requested_at": datetime.now(UTC).isoformat(),
+                "approved": None,
+                "comment": None,
+            }
 
-        logger.info(
-            "[HITL] Aprovação solicitada thread=%s pending=%s action=%s",
-            thread_id, pending_id, action,
-        )
-        return pending_id
+            key = f"hitl:{thread_id}:{pending_id}"
+            self._store(key, payload)
+
+            try:
+                await _db_save_pending(
+                    pending_id=pending_id,
+                    thread_id=thread_id,
+                    domain=domain,
+                    action=action,
+                    description=description,
+                    data=data,
+                    agent_input=agent_input or {},
+                    ws_session_id=ws_session_id,
+                    company_id=company_id,
+                )
+            except Exception as exc:
+                logger.warning("[HITL] DB save pending falhou (best-effort): %s", exc)
+
+            try:
+                from app.shared.websocket.ws_manager import ws_manager
+                await ws_manager.send_to_session(ws_session_id, {
+                    "type": "approval_required",
+                    "thread_id": thread_id,
+                    "pending_id": pending_id,
+                    "action": action,
+                    "description": description,
+                    "data": data,
+                })
+            except Exception as exc:
+                logger.warning("[HITL] Falha ao enviar WS approval_required: %s", exc)
+
+            logger.info(
+                "[HITL] Aprovação solicitada thread=%s pending=%s action=%s",
+                thread_id, pending_id, action,
+            )
+            return pending_id
 
     async def receive_approval(
         self,
@@ -315,47 +324,53 @@ class HITLService:
         Recebe resposta do usuário.
         Atualiza Redis + insere no audit trail no DB.
         """
-        key = f"hitl:{thread_id}:{pending_id}"
-        existing = self._load(key)
-        if existing is None:
-            existing = {
-                "pending_id": pending_id,
-                "thread_id": thread_id,
-                "domain": domain,
-                "action": action,
-                "description": "",
-                "data": {},
-                "ws_session_id": "",
-                "requested_at": datetime.now(UTC).isoformat(),
-            }
+        _tracer = get_tracer()
+        async with _tracer.start_span("hitl.receive_approval", attributes={
+            "service": "hitl_service", "tier_name": "hitl_receive_approval",
+            "thread_id": thread_id, "action_type": action or "unknown",
+            "approved": str(approved),
+        }) as _recv_span:
+            key = f"hitl:{thread_id}:{pending_id}"
+            existing = self._load(key)
+            if existing is None:
+                existing = {
+                    "pending_id": pending_id,
+                    "thread_id": thread_id,
+                    "domain": domain,
+                    "action": action,
+                    "description": "",
+                    "data": {},
+                    "ws_session_id": "",
+                    "requested_at": datetime.now(UTC).isoformat(),
+                }
 
-        existing["approved"] = approved
-        existing["comment"] = comment
-        existing["resolved_at"] = datetime.now(UTC).isoformat()
-        existing["resolved_by"] = resolved_by
+            existing["approved"] = approved
+            existing["comment"] = comment
+            existing["resolved_at"] = datetime.now(UTC).isoformat()
+            existing["resolved_by"] = resolved_by
 
-        self._store(key, existing)
+            self._store(key, existing)
+            _recv_span.set_attribute("pending_id", pending_id)
 
-        # DB — atualiza pending + insere audit trail (best-effort)
-        try:
-            await _db_resolve(
-                pending_id=pending_id,
-                thread_id=thread_id,
-                domain=existing.get("domain", domain),
-                action=existing.get("action", action),
-                approved=approved,
-                comment=comment,
-                resolved_by=resolved_by,
-                company_id=company_id,
+            try:
+                await _db_resolve(
+                    pending_id=pending_id,
+                    thread_id=thread_id,
+                    domain=existing.get("domain", domain),
+                    action=existing.get("action", action),
+                    approved=approved,
+                    comment=comment,
+                    resolved_by=resolved_by,
+                    company_id=company_id,
+                )
+            except Exception as exc:
+                logger.warning("[HITL] DB resolve falhou (best-effort): %s", exc)
+
+            logger.info(
+                "[HITL] Aprovação recebida thread=%s pending=%s approved=%s",
+                thread_id, pending_id, approved,
             )
-        except Exception as exc:
-            logger.warning("[HITL] DB resolve falhou (best-effort): %s", exc)
-
-        logger.info(
-            "[HITL] Aprovação recebida thread=%s pending=%s approved=%s",
-            thread_id, pending_id, approved,
-        )
-        return existing
+            return existing
 
     async def get_all_pending_by_company(self, company_id: str) -> list[dict]:
         """

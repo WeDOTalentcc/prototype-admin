@@ -32,7 +32,11 @@ async def get_recent_traces(
 async def get_trace_stats(
     _: None = Depends(require_admin),
 ):
-    """Retorna estatísticas agregadas de latência e erros dos spans."""
+    """Retorna estatísticas agregadas de latência e erros dos spans.
+
+    Inclui breakdown por tier (tier_name/span_name) e por serviço.
+    Campos por tier/service: count, errors, error_rate, avg_ms, max_ms, total_ms.
+    """
     from app.shared.tracing import get_trace_stats
     return get_trace_stats()
 
