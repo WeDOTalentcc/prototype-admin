@@ -83,12 +83,14 @@ class TalentPoolCandidate(Base):
         index=True,
     )
     candidate_id = Column(BigInteger, nullable=False, index=True)
+    candidate_uuid = Column(UUID(as_uuid=True), nullable=True, index=True)
     stage = Column(String, nullable=False, default="discovered")  # discovered/contacted/screening/screened/ready
     origin = Column(String, nullable=False, default="manual")  # agent/manual/import/search
     fit_score = Column(Float, nullable=True)
     screening_data = Column(JSON, default=dict)
     match_criteria = Column(JSON, default=dict)
     moved_to_job_id = Column(BigInteger, nullable=True)
+    moved_to_job_uuid = Column(UUID(as_uuid=True), nullable=True, index=True)
     moved_at = Column(DateTime, nullable=True)
     moved_to_stage = Column(String, nullable=True)
     notes = Column(Text, nullable=True)
@@ -105,12 +107,14 @@ class TalentPoolCandidate(Base):
             "id": str(self.id),
             "talent_pool_id": str(self.talent_pool_id),
             "candidate_id": self.candidate_id,
+            "candidate_uuid": str(self.candidate_uuid) if self.candidate_uuid else None,
             "stage": self.stage,
             "origin": self.origin,
             "fit_score": self.fit_score,
             "screening_data": self.screening_data or {},
             "match_criteria": self.match_criteria or {},
             "moved_to_job_id": self.moved_to_job_id,
+            "moved_to_job_uuid": str(self.moved_to_job_uuid) if self.moved_to_job_uuid else None,
             "moved_at": self.moved_at.isoformat() if self.moved_at else None,
             "moved_to_stage": self.moved_to_stage,
             "notes": self.notes,

@@ -99,6 +99,22 @@ HIRING_POLICY_ACTIONS = [
     ),
 ]
 
+_ACTION_BLOCK_MAP: dict[str, str] = {
+    "configure_policy": "pipeline_rules",
+    "configure_pipeline": "pipeline_rules",
+    "configure_scheduling": "scheduling_rules",
+    "configure_communication": "communication_rules",
+    "configure_screening": "screening_rules",
+    "configure_automation": "automation_rules",
+}
+
+_VALID_BLOCKS = [
+    "pipeline_rules", "scheduling_rules", "communication_rules",
+    "screening_rules", "automation_rules", "pipeline_templates",
+]
+
+_TOTAL_SETUP_BLOCKS = 5
+
 
 @register_domain
 class HiringPolicyDomain(ComplianceDomainPrompt):
@@ -149,11 +165,193 @@ class HiringPolicyDomain(ComplianceDomainPrompt):
                 error=f"Ação '{action_id}' não encontrada no domínio de hiring_policy."
             )
 
-        logger.info(f"Routing hiring_policy action '{action_id}' (tenant={context.tenant_id})")
+        logger.info(f"Executing hiring_policy action '{action_id}' (tenant={context.tenant_id})")
+
+        handler_map = {
+            "configure_policy": self._handle_configure,
+            "configure_pipeline": self._handle_configure,
+            "configure_scheduling": self._handle_configure,
+            "configure_communication": self._handle_configure,
+            "configure_screening": self._handle_configure,
+            "configure_automation": self._handle_configure,
+            "validate_compliance": self._handle_validate_compliance,
+            "get_progress": self._handle_get_progress,
+        }
+
+        handler = handler_map.get(action_id)
+        if not handler:
+            return DomainResponse.error_response(error=f"No handler for '{action_id}'")
+
+        try:
+            return await handler(action_id, params, context)
+        except Exception as exc:
+            logger.error(f"Hiring policy action '{action_id}' failed: {exc}", exc_info=True)
+            return DomainResponse.error_response(
+                error=str(exc),
+                message=f"Erro ao executar '{action.name}': {exc}",
+                domain_id=self.domain_id,
+                action_id=action_id,
+            )
+
+    async def _get_or_create_policy(self, session, company_id: str, user_id: str | None):
+        from app.domains.hiring_policy.repositories.hiring_policy_repository import HiringPolicyRepository
+        repo = HiringPolicyRepository(session)
+        policy = await repo.get_by_company(company_id)
+        if not policy:
+            policy = await repo.create_if_missing(company_id, user_id)
+            await repo.flush()
+        return policy, repo
+
+    async def _handle_configure(
+        self, action_id: str, params: dict[str, Any], context: DomainContext
+    ) -> DomainResponse:
+        from lia_config.database import AsyncSessionLocal
+
+        block = _ACTION_BLOCK_MAP.get(action_id, "pipeline_rules")
+        update_data = {}
+
+        for key, value in params.items():
+            if key in ("raw_query", "company_id"):
+                continue
+            if not update_data.get(block):
+                update_data[block] = {}
+            update_data[block][key] = value
+
+        async with AsyncSessionLocal() as session:
+            policy, repo = await self._get_or_create_policy(
+                session, context.tenant_id, context.user_id
+            )
+
+            if update_data:
+                policy = await repo.upsert(
+                    company_id=context.tenant_id,
+                    update_data=update_data,
+                    valid_blocks=_VALID_BLOCKS,
+                    user_id=context.user_id,
+                )
+                await repo.update_answered_questions(policy, block)
+
+            answered = set(policy.answered_questions or [])
+            progress = int(len(answered.intersection(set(_ACTION_BLOCK_MAP.values()))) / _TOTAL_SETUP_BLOCKS * 100)
+            policy.setup_progress = progress
+
+            await session.commit()
+            policy_data = policy.to_dict()
+
+        block_label = block.replace("_", " ").title()
+        current_values = policy_data.get(block, {})
+
+        if update_data:
+            msg = f"Configuração de **{block_label}** atualizada com sucesso! Progresso: {progress}%."
+        else:
+            msg = f"Configuração atual de **{block_label}**:\n"
+            for k, v in current_values.items():
+                msg += f"• **{k}**: {v}\n"
+            msg += f"\nProgresso geral: {progress}%. Envie os valores que deseja alterar."
 
         return DomainResponse.success_response(
-            message=f"Ação '{action.name}' encaminhada para o agente de política de contratação.",
-            data={"action_id": action_id, "params": params},
+            message=msg,
+            data={
+                "action_id": action_id,
+                "block": block,
+                "current_values": current_values,
+                "progress": progress,
+                "policy": policy_data,
+            },
+            domain_id=self.domain_id,
+            action_id=action_id,
+        )
+
+    async def _handle_validate_compliance(
+        self, action_id: str, params: dict[str, Any], context: DomainContext
+    ) -> DomainResponse:
+        from lia_config.database import AsyncSessionLocal
+
+        async with AsyncSessionLocal() as session:
+            policy, repo = await self._get_or_create_policy(
+                session, context.tenant_id, context.user_id
+            )
+            policy_data = policy.to_dict()
+
+        issues: list[str] = []
+        warnings: list[str] = []
+
+        pipeline = policy_data.get("pipeline_rules", {})
+        if pipeline.get("min_interviews_before_offer", 0) < 1:
+            issues.append("Mínimo de entrevistas antes da oferta é 0 — recomendado pelo menos 1.")
+
+        comm = policy_data.get("communication_rules", {})
+        if not comm.get("auto_rejection_feedback", False):
+            warnings.append("Feedback automático de rejeição desativado — considere ativar para melhor experiência do candidato.")
+
+        automation = policy_data.get("automation_rules", {})
+        if automation.get("autonomy_level") == "high" and not pipeline.get("manager_approval_for_offer", True):
+            issues.append("Nível de autonomia 'high' sem aprovação do gestor para ofertas — risco de compliance.")
+
+        screening = policy_data.get("screening_rules", {})
+        if not screening.get("default_screening_questions"):
+            warnings.append("Nenhuma pergunta de triagem padrão configurada.")
+
+        if issues:
+            status_msg = f"**{len(issues)} problema(s) de compliance encontrado(s):**\n"
+            for i, issue in enumerate(issues, 1):
+                status_msg += f"{i}. ⚠ {issue}\n"
+        else:
+            status_msg = "**Nenhum problema crítico de compliance encontrado.**\n"
+
+        if warnings:
+            status_msg += f"\n**{len(warnings)} recomendação(ões):**\n"
+            for w in warnings:
+                status_msg += f"• {w}\n"
+
+        return DomainResponse.success_response(
+            message=status_msg,
+            data={
+                "action_id": action_id,
+                "issues": issues,
+                "warnings": warnings,
+                "compliant": len(issues) == 0,
+                "policy": policy_data,
+            },
+            domain_id=self.domain_id,
+            action_id=action_id,
+        )
+
+    async def _handle_get_progress(
+        self, action_id: str, params: dict[str, Any], context: DomainContext
+    ) -> DomainResponse:
+        from lia_config.database import AsyncSessionLocal
+
+        async with AsyncSessionLocal() as session:
+            policy, repo = await self._get_or_create_policy(
+                session, context.tenant_id, context.user_id
+            )
+            policy_data = policy.to_dict()
+
+        answered = set(policy_data.get("answered_questions", []))
+        all_blocks = set(_ACTION_BLOCK_MAP.values())
+        completed = answered.intersection(all_blocks)
+        pending = all_blocks - completed
+        progress = int(len(completed) / _TOTAL_SETUP_BLOCKS * 100)
+
+        msg = f"**Progresso da configuração: {progress}%**\n\n"
+        for blk in sorted(all_blocks):
+            label = blk.replace("_", " ").title()
+            status = "✅" if blk in completed else "⏳"
+            msg += f"{status} {label}\n"
+
+        if pending:
+            msg += f"\nFaltam **{len(pending)}** bloco(s) para completar a configuração."
+
+        return DomainResponse.success_response(
+            message=msg,
+            data={
+                "action_id": action_id,
+                "progress": progress,
+                "completed_blocks": sorted(completed),
+                "pending_blocks": sorted(pending),
+                "policy": policy_data,
+            },
             domain_id=self.domain_id,
             action_id=action_id,
         )
