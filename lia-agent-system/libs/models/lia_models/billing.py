@@ -444,6 +444,12 @@ AVAILABLE_MODULES = {
 
 
 class CompanyModule(Base):
+    """Tracks which monetizable modules are enabled per company.
+
+    company_id uses String(100) to match the CreditAccount pattern (billing domain
+    uses tenant string IDs, not UUID FKs to company_profiles). The credit_account
+    relationship provides the billing integration bridge for future paid-module flows.
+    """
     __tablename__ = "company_modules"
     __table_args__ = (
         Index("ix_company_modules_company", "company_id"),
@@ -451,7 +457,7 @@ class CompanyModule(Base):
     )
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    company_id = Column(String(100), nullable=False)
+    company_id = Column(String(100), ForeignKey("credit_accounts.company_id"), nullable=False)
     module_name = Column(String(100), nullable=False)
     status = Column(String(20), nullable=False, default=ModuleStatus.BETA.value)
     tier = Column(String(20), nullable=False, default=ModuleTier.FREE.value)
@@ -460,6 +466,15 @@ class CompanyModule(Base):
     metadata_json = Column("metadata", JSONB, nullable=True, default=dict)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    credit_account = relationship(
+        "CreditAccount",
+        primaryjoin="CompanyModule.company_id == CreditAccount.company_id",
+        foreign_keys=[company_id],
+        uselist=False,
+        viewonly=True,
+        lazy="noload",
+    )
 
     def to_dict(self) -> Dict[str, Any]:
         meta = self.metadata_json if isinstance(self.metadata_json, dict) else {}

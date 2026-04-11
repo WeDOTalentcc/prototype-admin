@@ -33,7 +33,7 @@ def upgrade() -> None:
     op.create_table(
         "company_modules",
         sa.Column("id", UUID(as_uuid=True), primary_key=True, server_default=sa.text("gen_random_uuid()")),
-        sa.Column("company_id", sa.String(100), nullable=False),
+        sa.Column("company_id", sa.String(100), sa.ForeignKey("credit_accounts.company_id"), nullable=False),
         sa.Column("module_name", sa.String(100), nullable=False),
         sa.Column("status", sa.String(20), nullable=False, server_default="beta"),
         sa.Column("tier", sa.String(20), nullable=False, server_default="free"),
