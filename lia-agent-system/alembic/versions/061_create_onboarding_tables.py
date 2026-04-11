@@ -1,7 +1,7 @@
 """Create onboarding agent state + WhatsApp sessions tables.
 
-Revision ID: 059
-Revises: 058
+Revision ID: 061_create_onboarding_tables
+Revises: 060
 Create Date: 2026-04-10
 """
 
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 import uuid
 
-revision = "061"
+revision = "061_create_onboarding_tables"
 down_revision = "060"
 branch_labels = None
 depends_on = None
