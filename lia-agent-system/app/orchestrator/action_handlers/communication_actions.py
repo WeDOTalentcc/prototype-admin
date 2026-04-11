@@ -77,8 +77,20 @@ async def _send_email(params: dict[str, Any], context: dict[str, Any]):
                         action_type="send_email",
                     )
     except Exception as e:
-        logger.warning(f"Direct email sending failed, falling back to domain: {e}")
-    return None
+        logger.warning(f"Direct email sending failed: {e}")
+        return ActionResult(
+            status="error",
+            message="Erro ao enviar email. Verifique as configurações do provedor.",
+            error_detail=str(e),
+            action_type="send_email",
+        )
+
+    return ActionResult(
+        status="error",
+        message="Provedor de email não configurado ou indisponível. Configure um provedor de email para enviar mensagens.",
+        error_detail="Email provider not configured or unhealthy",
+        action_type="send_email",
+    )
 
 
 async def _schedule_interview(params: dict[str, Any], context: dict[str, Any]):
@@ -124,12 +136,14 @@ async def _schedule_interview(params: dict[str, Any], context: dict[str, Any]):
                 action_type="schedule_interview",
             )
     except Exception as e:
-        try:
-            await db.rollback()
-        except Exception:
-            pass
-        logger.warning(f"Direct scheduling failed, falling back to domain: {e}")
-    return None
+        logger.warning(f"schedule_interview failed: {e}")
+        from app.orchestrator.action_executor import ActionResult
+        return ActionResult(
+            status="error",
+            message="Não foi possível agendar a entrevista. Tente novamente.",
+            error_detail=str(e),
+            action_type="schedule_interview",
+        )
 
 
 async def _create_generic_event(params: dict[str, Any], context: dict[str, Any]):

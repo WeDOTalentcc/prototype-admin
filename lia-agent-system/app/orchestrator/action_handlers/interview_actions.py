@@ -91,10 +91,6 @@ async def _reschedule_interview(params: dict[str, Any], context: dict[str, Any])
             action_type="reschedule_interview",
         )
     except Exception as e:
-        try:
-            await db.rollback()
-        except Exception:
-            pass
         logger.warning(f"reschedule_interview failed: {e}")
         from app.orchestrator.action_executor import ActionResult
         return ActionResult(
@@ -165,10 +161,6 @@ async def _cancel_interview(params: dict[str, Any], context: dict[str, Any]):
             action_type="cancel_interview",
         )
     except Exception as e:
-        try:
-            await db.rollback()
-        except Exception:
-            pass
         logger.warning(f"cancel_interview failed: {e}")
         from app.orchestrator.action_executor import ActionResult
         return ActionResult(
@@ -344,6 +336,8 @@ async def _generate_self_scheduling_link(params: dict[str, Any], context: dict[s
         job_id = params.get("job_id") or (context or {}).get("job_vacancy_id")
         duration = int(params.get("duration_minutes", 60))
 
+        company_id = context.get("company_id") if context else None
+
         if not candidate_id:
             return ActionResult(
                 status="error",
@@ -356,6 +350,18 @@ async def _generate_self_scheduling_link(params: dict[str, Any], context: dict[s
         link = f"/schedule/{token}"
 
         async with AsyncSessionLocal() as db:
+            if company_id:
+                authz = await db.execute(text(
+                    "SELECT 1 FROM vacancy_candidates WHERE candidate_id = CAST(:cid AS uuid) AND company_id = CAST(:co AS uuid) LIMIT 1"
+                ), {"cid": str(candidate_id), "co": str(company_id)})
+                if authz.fetchone() is None:
+                    return ActionResult(
+                        status="error",
+                        message="Sem permissão para gerar link para este candidato.",
+                        error_detail="Candidate does not belong to caller's company",
+                        action_type="generate_self_scheduling_link",
+                    )
+
             await db.execute(text("""
                 INSERT INTO scheduling_links (id, candidate_id, job_id, token, duration_minutes, expires_at, created_at)
                 VALUES (CAST(:id AS uuid), CAST(:cid AS uuid), CAST(:jid AS uuid), :token, :dur, NOW() + INTERVAL '7 days', NOW())
@@ -379,19 +385,11 @@ async def _generate_self_scheduling_link(params: dict[str, Any], context: dict[s
             action_type="generate_self_scheduling_link",
         )
     except Exception as e:
-        try:
-            await db.rollback()
-        except Exception:
-            pass
         logger.warning(f"generate_self_scheduling_link failed: {e}")
         from app.orchestrator.action_executor import ActionResult
         return ActionResult(
-            status="executed",
-            message=f"Link de auto-agendamento gerado para **{params.get('candidate_name', 'o candidato')}** (modo simplificado).",
-            data={
-                "candidate_id": params.get("candidate_id"),
-                "link": f"/schedule/{str(__import__('uuid').uuid4())[:12]}",
-                "simulated": True,
-            },
+            status="error",
+            message="Erro ao gerar link de auto-agendamento.",
+            error_detail=str(e),
             action_type="generate_self_scheduling_link",
         )

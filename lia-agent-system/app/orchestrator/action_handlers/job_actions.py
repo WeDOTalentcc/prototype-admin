@@ -65,12 +65,14 @@ async def _pause_job(params: dict[str, Any], context: dict[str, Any]):
                 action_type="pause_job",
             )
     except Exception as e:
-        try:
-            await db.rollback()
-        except Exception:
-            pass
-        logger.warning(f"Direct pause_job failed, falling back to domain: {e}")
-        return None
+        logger.warning(f"pause_job failed: {e}")
+        from app.orchestrator.action_executor import ActionResult
+        return ActionResult(
+            status="error",
+            message="Erro ao pausar a vaga.",
+            error_detail=str(e),
+            action_type="pause_job",
+        )
 
 
 async def _close_job(params: dict[str, Any], context: dict[str, Any]):
@@ -109,12 +111,14 @@ async def _close_job(params: dict[str, Any], context: dict[str, Any]):
                 action_type="close_job",
             )
     except Exception as e:
-        try:
-            await db.rollback()
-        except Exception:
-            pass
-        logger.warning(f"Direct close_job failed, falling back to domain: {e}")
-        return None
+        logger.warning(f"close_job failed: {e}")
+        from app.orchestrator.action_executor import ActionResult
+        return ActionResult(
+            status="error",
+            message="Erro ao fechar a vaga.",
+            error_detail=str(e),
+            action_type="close_job",
+        )
 
 
 async def _duplicate_job(params: dict[str, Any], context: dict[str, Any]):
@@ -192,12 +196,14 @@ async def _duplicate_job(params: dict[str, Any], context: dict[str, Any]):
                 action_type="duplicate_job",
             )
     except Exception as e:
-        try:
-            await db.rollback()
-        except Exception:
-            pass
-        logger.warning(f"Direct duplicate_job failed, falling back to domain: {e}")
-        return None
+        logger.warning(f"duplicate_job failed: {e}")
+        from app.orchestrator.action_executor import ActionResult
+        return ActionResult(
+            status="error",
+            message="Erro ao duplicar a vaga.",
+            error_detail=str(e),
+            action_type="duplicate_job",
+        )
 
 
 async def _reopen_job(params: dict[str, Any], context: dict[str, Any]):
@@ -236,12 +242,14 @@ async def _reopen_job(params: dict[str, Any], context: dict[str, Any]):
                 action_type="reopen_job",
             )
     except Exception as e:
-        try:
-            await db.rollback()
-        except Exception:
-            pass
-        logger.warning(f"Direct reopen_job failed, falling back to domain: {e}")
-        return None
+        logger.warning(f"reopen_job failed: {e}")
+        from app.orchestrator.action_executor import ActionResult
+        return ActionResult(
+            status="error",
+            message="Erro ao reabrir a vaga.",
+            error_detail=str(e),
+            action_type="reopen_job",
+        )
 
 
 async def _set_job_urgent(params: dict[str, Any], context: dict[str, Any]):
@@ -295,10 +303,6 @@ async def _set_job_urgent(params: dict[str, Any], context: dict[str, Any]):
             action_type="set_job_urgent",
         )
     except Exception as e:
-        try:
-            await db.rollback()
-        except Exception:
-            pass
         logger.warning(f"set_job_urgent failed: {e}")
         from app.orchestrator.action_executor import ActionResult
         return ActionResult(

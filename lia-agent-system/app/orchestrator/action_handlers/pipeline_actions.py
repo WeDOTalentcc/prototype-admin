@@ -230,11 +230,7 @@ async def _create_note(params: dict[str, Any], context: dict[str, Any]):
             action_type="create_note",
         )
     except Exception as e:
-        try:
-            await db.rollback()
-        except Exception:
-            pass
-        logger.warning(f"Direct create_note failed: {e}")
+        logger.warning(f"create_note failed: {e}")
         return ActionResult(
             status="error",
             message="Não foi possível salvar a nota. Tente novamente.",
@@ -360,19 +356,12 @@ async def _create_automation(params: dict[str, Any], context: dict[str, Any]):
             action_type="create_automation",
         )
     except Exception as e:
-        try:
-            await db.rollback()
-        except Exception:
-            pass
         logger.warning(f"create_automation failed: {e}")
         from app.orchestrator.action_executor import ActionResult
         return ActionResult(
-            status="executed",
-            message=f"Automação registrada: quando **{params.get('trigger', '?')}**, executar **{params.get('action', '?')}** (modo simplificado).",
-            data={
-                "trigger": params.get("trigger"), "action": params.get("action"),
-                "simulated": True,
-            },
+            status="error",
+            message="Erro ao criar automação. Tente novamente.",
+            error_detail=str(e),
             action_type="create_automation",
         )
 

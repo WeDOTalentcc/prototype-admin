@@ -109,12 +109,14 @@ async def _move_candidate(params: dict[str, Any], context: dict[str, Any]):
                 action_type="move_candidate",
             )
     except Exception as e:
-        try:
-            await db.rollback()
-        except Exception:
-            pass
-        logger.warning(f"Direct move_candidate failed, falling back to domain: {e}")
-        return None
+        logger.warning(f"move_candidate failed: {e}")
+        from app.orchestrator.action_executor import ActionResult
+        return ActionResult(
+            status="error",
+            message="Erro ao mover o candidato no pipeline.",
+            error_detail=str(e),
+            action_type="move_candidate",
+        )
 
 
 async def _update_candidate_field(params: dict[str, Any], context: dict[str, Any]):
@@ -197,11 +199,7 @@ async def _update_candidate_field(params: dict[str, Any], context: dict[str, Any
                 action_type="update_candidate_field",
             )
     except Exception as e:
-        try:
-            await db.rollback()
-        except Exception:
-            pass
-        logger.warning(f"Direct update_candidate_field failed: {e}")
+        logger.warning(f"update_candidate_field failed: {e}")
         from app.orchestrator.action_executor import ActionResult
         return ActionResult(
             status="error",
@@ -228,8 +226,14 @@ async def _start_screening(params: dict[str, Any], context: dict[str, Any]):
             action_type="start_screening",
         )
     except Exception as e:
-        logger.warning(f"Direct start_screening failed: {e}")
-        return None
+        logger.warning(f"start_screening failed: {e}")
+        from app.orchestrator.action_executor import ActionResult
+        return ActionResult(
+            status="error",
+            message="Erro ao iniciar a triagem.",
+            error_detail=str(e),
+            action_type="start_screening",
+        )
 
 
 async def _analyze_profile(params: dict[str, Any], context: dict[str, Any]):
@@ -422,10 +426,6 @@ async def _batch_move_candidates(params: dict[str, Any], context: dict[str, Any]
             action_type="batch_move_candidates",
         )
     except Exception as e:
-        try:
-            await db.rollback()
-        except Exception:
-            pass
         logger.warning(f"batch_move_candidates failed: {e}")
         from app.orchestrator.action_executor import ActionResult
         return ActionResult(
