@@ -94,6 +94,8 @@ class LLMCascadeRouter:
             from app.orchestrator.tenant_budget import generate_request_id
             request_id = generate_request_id()
 
+        preflight_tokens = 0
+
         # E5 — Multi-Model: tentar preferred_model antes da cascata padrão
         if preferred_model:
             try:
@@ -109,6 +111,7 @@ class LLMCascadeRouter:
                     result_pref["request_id"] = request_id
                     await self._record_tokens(company_id, tokens_pref, model=preferred_model, request_id=request_id)
                     return result_pref
+                preflight_tokens = tokens_pref
                 logger.debug(
                     "[LLMCascade] preferred_model=%s confidence=%.2f < %.2f, fallback para cascata padrão",
                     preferred_model,
@@ -127,6 +130,7 @@ class LLMCascadeRouter:
             model_name=settings.LLM_FAST_MODEL,
             system_prompt_override=system_prompt_override,
         )
+        tokens += preflight_tokens
         if result and result.get("confidence", 0) >= self._fast_threshold:
             result["model_used"] = settings.LLM_FAST_MODEL
             result["tier"] = "gemini-flash"
