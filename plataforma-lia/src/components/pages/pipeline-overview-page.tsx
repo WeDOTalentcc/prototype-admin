@@ -448,55 +448,66 @@ export function PipelineOverviewPage() {
                         }}
                       >
                         <div
-                          className="w-11 h-11 rounded-full flex items-center justify-center transition-all duration-200 border-2"
+                          className="w-10 h-10 rounded-full flex items-center justify-center transition-all duration-150 border-2"
                           style={{
                             backgroundColor: isSelected
                               ? stageColor
-                              : hexToRgba(stageColor, 0.10),
-                            borderColor: stageColor,
+                              : stage.count > 0
+                              ? hexToRgba(stageColor, 0.08)
+                              : "var(--lia-bg-tertiary)",
+                            borderColor: isSelected
+                              ? stageColor
+                              : stage.count > 0
+                              ? stageColor
+                              : "var(--lia-border-subtle)",
                             boxShadow: isSelected
-                              ? `0 0 0 3px ${hexToRgba(stageColor, 0.18)}`
+                              ? `0 0 0 3px ${hexToRgba(stageColor, 0.08)}`
                               : undefined,
                           }}
                         >
                           <StageIcon
-                            className="w-[18px] h-[18px] transition-colors"
+                            className="w-4 h-4 transition-colors"
                             style={{
                               color: isSelected
-                                ? "#fff"
-                                : stageColor,
+                                ? "var(--lia-text-on-accent, #fff)"
+                                : stage.count > 0
+                                ? stageColor
+                                : "var(--lia-text-disabled)",
                             }}
                           />
                         </div>
 
                         <span
-                          className={cn(
-                            "text-xs font-medium text-center leading-tight whitespace-nowrap transition-colors",
-                            isSelected
-                              ? "text-lia-text-primary"
-                              : "text-lia-text-secondary group-hover:text-lia-text-primary"
-                          )}
+                          className="text-micro font-medium transition-colors whitespace-nowrap"
+                          style={{
+                            color: isSelected
+                              ? stageColor
+                              : stage.count > 0
+                              ? "var(--lia-text-primary)"
+                              : "var(--lia-text-disabled)",
+                          }}
                         >
                           {stage.display_name}
                         </span>
 
                         {stage.count > 0 ? (
                           <span
-                            className="text-xs font-bold transition-colors"
-                            style={{ color: stageColor }}
+                            className="text-xs font-bold rounded-full px-1.5 py-0.5"
+                            style={{ backgroundColor: hexToRgba(stageColor, 0.08), color: stageColor }}
                           >
                             {stage.count}
                           </span>
                         ) : (
-                          <span className="text-xs font-bold text-lia-text-disabled">
-                            {stage.count}
-                          </span>
+                          <span
+                            className="w-1 h-1 rounded-full"
+                            style={{ backgroundColor: stageColor, opacity: 0.3 }}
+                          />
                         )}
                       </button>
 
                       {!isLast && (
                         <div
-                          className="h-px w-6 flex-shrink-0 self-center -mt-5"
+                          className="h-px w-6 flex-shrink-0 self-center -mt-6"
                           style={{ backgroundColor: "var(--lia-border-default)" }}
                         />
                       )}
