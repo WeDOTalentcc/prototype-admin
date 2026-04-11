@@ -37,6 +37,8 @@ export interface BackgroundTaskEvent {
   result?: Record<string, unknown>
 }
 
+import type { TransportMode } from './useChatTransport'
+
 export interface UseFloatStreamingResult {
   isConnected: boolean
   isStreaming: boolean
@@ -44,6 +46,7 @@ export interface UseFloatStreamingResult {
   reconnectAttempt: number
   streamingContent: string
   error: string | null
+  transportMode: TransportMode
   hitlPending: HITLPending | null
   thinkingSteps: string[]
   isThinking: boolean
@@ -215,11 +218,13 @@ export function useFloatStreaming(
     isReconnecting,
     reconnectAttempt,
     error,
+    transportMode,
     connect,
     disconnect,
     sendMessage: wsSend,
     sendRaw,
     clearTokens,
+    sendMessageViaSSE,
   } = useAgentStreaming(sessionId, { authToken: wsAuthToken }, handleEvent)
 
   useEffect(() => {
@@ -231,14 +236,18 @@ export function useFloatStreaming(
   }, [wsAuthToken])
 
   const sendMessage = useCallback(async (content: string, domain = '', scope?: string) => {
-    // E7: limpa etapas de thinking ao enviar nova mensagem
     setThinkingSteps([])
     setIsThinking(false)
     clearTokens()
     const context = scope ? { scope } : {}
 
-    if (isConnected) {
+    if (isConnected && transportMode === 'ws') {
       wsSend(content, context, domain)
+      return
+    }
+
+    if (isConnected && transportMode === 'sse') {
+      sendMessageViaSSE(sessionId, content, domain || 'recruiter_assistant', context, null)
       return
     }
 
@@ -256,7 +265,7 @@ export function useFloatStreaming(
     } catch {
       onCompleteRef.current('Erro ao conectar com a LIA. Tente novamente.')
     }
-  }, [wsSend, clearTokens, isConnected, sessionId])
+  }, [wsSend, clearTokens, isConnected, transportMode, sessionId, sendMessageViaSSE])
 
   const sendApproval = useCallback((approved: boolean) => {
     const pending = hitlRef.current
@@ -294,6 +303,7 @@ export function useFloatStreaming(
     reconnectAttempt,
     streamingContent: tokens,
     error,
+    transportMode,
     hitlPending,
     thinkingSteps,
     isThinking,

@@ -19,6 +19,7 @@ export type {
   BackgroundTaskEvent,
   UseLiaChatConnectionOptions,
   UseLiaChatConnectionResult,
+  TransportMode,
 } from "./lia-chat-connection-types"
 export { formatMessageTime } from "./lia-chat-connection-types"
 
@@ -41,9 +42,11 @@ export function useLiaChatConnection({
   const messaging = useChatMessages({
     sessionId,
     isConnected: socket.isConnected,
+    transportMode: socket.transportMode,
     wsSend: socket.wsSend,
     sendRaw: socket.sendRaw,
     clearTokens: socket.clearTokens,
+    sendMessageViaSSE: socket.sendMessageViaSSE,
     hitlRef: socket.hitlRef,
     setHitlPending: socket.setHitlPending,
     onMessageComplete,
@@ -70,6 +73,7 @@ export function useLiaChatConnection({
     reconnectAttempt: socket.reconnectAttempt,
     streamingContent: socket.tokens,
     error: socket.error,
+    transportMode: socket.transportMode,
     isCreating: messaging.isCreating,
     isFetchingHistory: messaging.isFetchingHistory,
     hitlPending: socket.hitlPending,

@@ -108,6 +108,8 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
     sendApproval,
     loadChatHistory,
     chatIsConnected,
+    chatTransportMode,
+    chatIsReconnecting,
     chatIsStreaming,
     chatStreamingContent,
     chatIsCreating,
@@ -264,6 +266,8 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
           onSwitchTask={() => setShowSwitchTask(true)}
           conversationTitle={conversationTitle}
           isConnected={chatIsConnected}
+          transportMode={chatTransportMode}
+          isReconnecting={chatIsReconnecting}
         />
 
         {/* Content area */}

@@ -15,16 +15,25 @@ import type {
 } from "./lia-chat-connection-types"
 import { maskPII, formatMessageTime } from "./lia-chat-connection-types"
 
+import type { TransportMode } from "./lia-chat-connection-types"
+
 export interface UseChatMessagesOptions {
   sessionId: string
   isConnected: boolean
+  transportMode: TransportMode
   wsSend: (content: string, context: Record<string, unknown>, domain: string) => void
   sendRaw: (data: Record<string, unknown>) => void
   clearTokens: () => void
+  sendMessageViaSSE: (
+    sessionId: string,
+    message: string,
+    domain?: string,
+    context?: Record<string, unknown>,
+    conversationId?: string | null,
+  ) => void
   hitlRef: React.MutableRefObject<HITLPending | null>
   setHitlPending: React.Dispatch<React.SetStateAction<HITLPending | null>>
   onMessageComplete?: (content: string, executionPlan?: Record<string, unknown>) => void
-  /** Conversation ID synced from WS message events */
   conversationIdFromWs: string | null
 }
 
@@ -42,9 +51,11 @@ export interface UseChatMessagesReturn {
 export function useChatMessages({
   sessionId,
   isConnected,
+  transportMode,
   wsSend,
   sendRaw,
   clearTokens,
+  sendMessageViaSSE,
   hitlRef,
   setHitlPending,
   onMessageComplete,
@@ -124,8 +135,13 @@ export function useChatMessages({
     const pageContext = getPageContext()
     Object.assign(context, pageContext)
 
-    if (isConnected) {
+    if (isConnected && transportMode === "ws") {
       wsSend(content, context, domain)
+      return
+    }
+
+    if (isConnected && transportMode === "sse") {
+      sendMessageViaSSE(sessionId, content, domain || "recruiter_assistant", context, conversationId)
       return
     }
 
@@ -180,7 +196,7 @@ export function useChatMessages({
       onCompleteRef.current?.("Erro ao conectar com a LIA. Tente novamente.")
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [wsSend, clearTokens, isConnected, sessionId, conversationId, getPageContext, hitlRef, setHitlPending])
+  }, [wsSend, clearTokens, isConnected, transportMode, sessionId, conversationId, getPageContext, hitlRef, setHitlPending, sendMessageViaSSE])
 
   const sendApproval = useCallback((approved: boolean) => {
     const pending = hitlRef.current

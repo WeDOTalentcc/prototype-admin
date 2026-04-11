@@ -41,6 +41,8 @@ export interface UseLiaChatConnectionOptions {
   onPanelUpdate?: (event: PanelUpdateEvent) => void
 }
 
+export type TransportMode = "ws" | "sse" | "disconnected"
+
 export interface UseLiaChatConnectionResult {
   conversationId: string | null
   setConversationId: (id: string | null) => void
@@ -50,6 +52,7 @@ export interface UseLiaChatConnectionResult {
   reconnectAttempt: number
   streamingContent: string
   error: string | null
+  transportMode: TransportMode
   isCreating: boolean
   isFetchingHistory: boolean
   hitlPending: HITLPending | null

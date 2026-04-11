@@ -59,6 +59,7 @@ The platform utilizes Next.js, React, and TypeScript for the frontend, styled wi
 - **Pipeline Pulse**: Real-time pipeline stage counts displayed as badges below Workflow Reels nodes.
 - **Voice Abstraction in LLM Factory**: Created `VoiceStreamProviderABC` abstraction with `NATIVE_MULTIMODAL` and `COMPOSITE_PIPELINE` strategies, supporting `GeminiLiveVoiceProvider`, `OpenAIRealtimeVoiceProvider`, and `CompositeVoiceProvider`.
 - **TipTap Rich Text Editor Integration**: Replaced raw HTML textareas with TipTap WYSIWYG editor for email templates and job description editing, including a custom `TemplateVariable` TipTap extension.
+- **SSE Fallback for Chat Streaming**: Added Server-Sent Events (SSE) as automatic fallback transport when WebSocket is unavailable (corporate proxies, firewalls). New `POST /api/v1/chat/{session_id}/stream` SSE endpoint. Frontend `useChatTransport` hook abstracts WS/SSE with automatic failover. Debug-only transport mode indicator (WS/SSE) in chat header. Shared `chat_event_serializer.py` ensures identical event format across both transports. `Last-Event-ID` header support for SSE reconnection.
 
 # External Dependencies
 - Anthropic (Claude API)

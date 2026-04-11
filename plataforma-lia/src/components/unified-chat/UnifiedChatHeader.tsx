@@ -7,6 +7,8 @@ import {
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { ChatMode } from "./unified-chat-types"
+import type { TransportMode } from "@/hooks/lia-chat-connection-types"
+import { TransportModeIndicator } from "./TransportModeIndicator"
 
 interface Props {
   mode: ChatMode
@@ -16,6 +18,8 @@ interface Props {
   onSwitchTask?: () => void
   conversationTitle?: string | null
   isConnected: boolean
+  transportMode?: TransportMode
+  isReconnecting?: boolean
   onRename?: (newTitle: string) => void
   onDelete?: () => void
 }
@@ -34,6 +38,8 @@ export function UnifiedChatHeader({
   onSwitchTask,
   conversationTitle,
   isConnected,
+  transportMode,
+  isReconnecting,
   onRename,
   onDelete,
 }: Props) {
@@ -144,9 +150,11 @@ export function UnifiedChatHeader({
           )
         )}
 
-        {/* Connection indicator */}
         {isConnected && (
           <span className="w-1.5 h-1.5 rounded-full bg-status-success flex-shrink-0" title="Conectado" />
+        )}
+        {transportMode && (
+          <TransportModeIndicator transportMode={transportMode} isReconnecting={isReconnecting} />
         )}
       </div>
 

@@ -13,8 +13,10 @@ let mockTokens = ''
 
 let capturedOnEvent: ((event: Record<string, unknown>) => void) | undefined
 
-vi.mock('../use-agent-streaming', () => ({
-  useAgentStreaming: (
+const mockSendMessageViaSSE = vi.fn()
+
+vi.mock('../useChatTransport', () => ({
+  useChatTransport: (
     _sessionId: string,
     _options: unknown,
     onEvent: (event: Record<string, unknown>) => void,
@@ -27,14 +29,21 @@ vi.mock('../use-agent-streaming', () => ({
       isReconnecting: false,
       reconnectAttempt: 0,
       error: null,
+      transportMode: mockIsConnected ? 'ws' : 'disconnected',
       connect: mockConnect,
       disconnect: mockDisconnect,
       sendMessage: mockSendMessage,
       sendRaw: mockSendRaw,
       clearTokens: mockClearTokens,
+      sendMessageViaSSE: mockSendMessageViaSSE,
     }
   },
 }))
+
+vi.mock('../use-agent-streaming', async () => {
+  const actual = await vi.importActual('../use-agent-streaming')
+  return actual
+})
 
 vi.mock('@/stores/recent-items-store', () => ({
   useRecentItemsStore: () => ({

@@ -18,6 +18,7 @@ import {
   type HITLPending,
   type PanelUpdateEvent,
   type BackgroundTaskEvent,
+  type TransportMode,
 } from "@/hooks/use-lia-chat-connection"
 
 export interface SplitViewState {
@@ -111,6 +112,8 @@ interface LiaFloatContextType extends LiaFloatState {
   loadChatHistory: (id: string) => Promise<LiaChatMessage[]>
   sendApproval: (approved: boolean) => void
   chatIsConnected: boolean
+  chatTransportMode: TransportMode
+  chatIsReconnecting: boolean
   chatIsStreaming: boolean
   chatStreamingContent: string
   chatHitlPending: HITLPending | null
@@ -414,6 +417,8 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
     loadChatHistory,
     sendApproval: connection.sendApproval,
     chatIsConnected: connection.isConnected,
+    chatTransportMode: connection.transportMode,
+    chatIsReconnecting: connection.isReconnecting,
     chatIsStreaming: connection.isStreaming,
     chatStreamingContent: connection.streamingContent,
     chatHitlPending: connection.hitlPending,
@@ -450,6 +455,8 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
     loadChatHistory,
     connection.sendApproval,
     connection.isConnected,
+    connection.transportMode,
+    connection.isReconnecting,
     connection.isStreaming,
     connection.streamingContent,
     connection.hitlPending,
@@ -501,6 +508,8 @@ export function useLiaChatContext() {
     loadChatHistory: ctx.loadChatHistory,
     sendApproval: ctx.sendApproval,
     chatIsConnected: ctx.chatIsConnected,
+    chatTransportMode: ctx.chatTransportMode,
+    chatIsReconnecting: ctx.chatIsReconnecting,
     chatIsStreaming: ctx.chatIsStreaming,
     chatStreamingContent: ctx.chatStreamingContent,
     chatHitlPending: ctx.chatHitlPending,

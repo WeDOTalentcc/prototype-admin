@@ -39,6 +39,13 @@ from app.services.token_budget_service import (
     get_plan_for_company,
     increment_usage,
 )
+from app.shared.chat_event_serializer import (
+    serialize_background_task_update,
+    serialize_error,
+    serialize_message,
+    serialize_panel_update,
+    serialize_thinking,
+)
 from app.shared.prompt_injection import PromptInjectionGuard
 from app.shared.tenant_session import create_session_id
 
@@ -95,13 +102,15 @@ async def send_panel_update(
     action: "open" | "update" | "close"
     """
     try:
-        await ws_manager.send_to_session(session_id, {
-            "type": "panel_update",
-            "panel_type": panel_type,
-            "panel_data": panel_data,
-            "panel_title": panel_title,
-            "action": action,
-        })
+        await ws_manager.send_to_session(
+            session_id,
+            serialize_panel_update(
+                panel_type=panel_type,
+                panel_data=panel_data,
+                panel_title=panel_title,
+                action=action,
+            ),
+        )
     except Exception as exc:
         logger.debug("[AgentChatWS] panel_update send failed: %s", exc)
 
@@ -122,20 +131,19 @@ async def send_background_task_update(
     status: "running" | "completed" | "failed"
     progress: 0-100 (optional, only for running tasks)
     """
-    payload: dict[str, Any] = {
-        "type": "background_task_update",
-        "task_id": task_id,
-        "task_type": task_type,
-        "label": label,
-        "status": status,
-        "message": message,
-    }
-    if progress is not None:
-        payload["progress"] = progress
-    if result is not None:
-        payload["result"] = result
     try:
-        await ws_manager.send_to_session(session_id, payload)
+        await ws_manager.send_to_session(
+            session_id,
+            serialize_background_task_update(
+                task_id=task_id,
+                task_type=task_type,
+                label=label,
+                status=status,
+                progress=progress,
+                message=message,
+                result=result,
+            ),
+        )
     except Exception as exc:
         logger.debug("[AgentChatWS] background_task_update send failed: %s", exc)
 
@@ -434,9 +442,7 @@ async def agent_chat_ws(
             try:
                 msg = json.loads(raw)
             except json.JSONDecodeError:
-                await ws_mgr.send_to_session(session_id, {
-                    "type": "error", "message": "JSON inválido"
-                })
+                await ws_mgr.send_to_session(session_id, serialize_error("JSON inválido"))
                 continue
 
             msg_type = msg.get("type", "message")
@@ -479,9 +485,8 @@ async def agent_chat_ws(
                             resume_context["hitl_approved"] = True
                             resume_input_dict["context"] = resume_context
 
-                            await ws_mgr.send_to_session(session_id, {"type": "thinking"})
+                            await ws_mgr.send_to_session(session_id, serialize_thinking())
                             try:
-                                # cv_screening (WSI) usa ainvoke(None) direto — grafo pausado
                                 if resume_domain == "cv_screening":
                                     from app.domains.cv_screening.agents.wsi_interview_graph import WSIInterviewGraph
                                     wsi_g = WSIInterviewGraph()
@@ -494,14 +499,12 @@ async def agent_chat_ws(
                                     )
                                     _wsi_data = _wsi_result.get("wsi_data", {}) if isinstance(_wsi_result, dict) else {}
                                     _wsi_msg = _wsi_data.get("feedback", _wsi_data.get("final_message", "Avaliação WSI concluída."))
-                                    await ws_mgr.send_to_session(session_id, {
-                                        "type": "message",
-                                        "content": _wsi_msg,
-                                        "confidence": 0.95,
-                                        "actions": [],
-                                        "domain": "cv_screening",
-                                        "source": "hitl_resume",
-                                    })
+                                    await ws_mgr.send_to_session(session_id, serialize_message(
+                                        content=_wsi_msg,
+                                        confidence=0.95,
+                                        domain="cv_screening",
+                                        source="hitl_resume",
+                                    ))
                                     conversation_history.append({"role": "assistant", "content": _wsi_msg})
                                 # wizard (JobWizardGraph) usa ainvoke(None) direto — grafo pausado
                                 elif resume_domain == "wizard":
@@ -520,14 +523,12 @@ async def agent_chat_ws(
                                         if isinstance(_wiz_result, dict) else "Vaga criada com sucesso."
                                     )
                                     _wiz_msg = _strip_react_json(_wiz_msg)
-                                    await ws_mgr.send_to_session(session_id, {
-                                        "type": "message",
-                                        "content": _wiz_msg,
-                                        "confidence": 0.95,
-                                        "actions": [],
-                                        "domain": "wizard",
-                                        "source": "hitl_resume",
-                                    })
+                                    await ws_mgr.send_to_session(session_id, serialize_message(
+                                        content=_wiz_msg,
+                                        confidence=0.95,
+                                        domain="wizard",
+                                        source="hitl_resume",
+                                    ))
                                     conversation_history.append({"role": "assistant", "content": _wiz_msg})
                                 else:
                                     resume_agent = _get_agent(resume_domain)
@@ -546,30 +547,26 @@ async def agent_chat_ws(
                                             timeout=_AGENT_TIMEOUT,
                                         )
                                         _resume_clean = _strip_react_json(resume_output.message or "")
-                                        await ws_mgr.send_to_session(session_id, {
-                                            "type": "message",
-                                            "content": _resume_clean,
-                                            "confidence": resume_output.confidence,
-                                            "actions": [a.dict() for a in (resume_output.actions or [])],
-                                            "domain": resume_domain,
-                                            "source": "hitl_resume",
-                                        })
+                                        await ws_mgr.send_to_session(session_id, serialize_message(
+                                            content=_resume_clean,
+                                            confidence=resume_output.confidence,
+                                            domain=resume_domain,
+                                            source="hitl_resume",
+                                            actions=[a.dict() for a in (resume_output.actions or [])],
+                                        ))
                                         conversation_history.append({"role": "user", "content": "[HITL aprovado]"})
                                         conversation_history.append({"role": "assistant", "content": _resume_clean})
                             except Exception as _resume_exc:
                                 logger.error("[AgentChatWS] HITL resume falhou: %s", _resume_exc)
-                                await ws_mgr.send_to_session(session_id, {
-                                    "type": "error",
-                                    "message": "Erro ao retomar execução após aprovação.",
-                                })
+                                await ws_mgr.send_to_session(session_id, serialize_error(
+                                    "Erro ao retomar execução após aprovação.",
+                                ))
                         elif not ws_approved:
-                            # Rejeitado — notificar usuário
-                            await ws_mgr.send_to_session(session_id, {
-                                "type": "message",
-                                "content": "Ação cancelada pelo aprovador. Nenhuma alteração foi feita.",
-                                "domain": resume_domain or domain,
-                                "source": "hitl_rejected",
-                            })
+                            await ws_mgr.send_to_session(session_id, serialize_message(
+                                content="Ação cancelada pelo aprovador. Nenhuma alteração foi feita.",
+                                domain=resume_domain or domain,
+                                source="hitl_rejected",
+                            ))
 
                             # SEG-5: AuditService — registrar rejeição HITL
                             try:
@@ -598,10 +595,9 @@ async def agent_chat_ws(
 
                 except Exception as _hitl_exc:
                     logger.warning("[AgentChatWS] HITL approval_response falhou: %s", _hitl_exc)
-                    await ws_mgr.send_to_session(session_id, {
-                        "type": "error",
-                        "message": "Erro ao processar resposta de aprovação.",
-                    })
+                    await ws_mgr.send_to_session(session_id, serialize_error(
+                        "Erro ao processar resposta de aprovação.",
+                    ))
                 continue
 
             if msg_type != "message":
@@ -619,11 +615,10 @@ async def agent_chat_ws(
                     "patterns=%s confidence=%.2f",
                     session_id, _inj_result.matched_patterns, _inj_result.confidence,
                 )
-                await ws_mgr.send_to_session(session_id, {
-                    "type": "error",
-                    "message": "Mensagem bloqueada por segurança. Por favor, reformule sua solicitação.",
-                    "error_code": "prompt_injection_blocked",
-                })
+                await ws_mgr.send_to_session(session_id, serialize_error(
+                    "Mensagem bloqueada por segurança. Por favor, reformule sua solicitação.",
+                    "prompt_injection_blocked",
+                ))
                 continue
             elif _inj_result.risk_level == "medium":
                 logger.info(
@@ -637,8 +632,7 @@ async def agent_chat_ws(
             context.setdefault("user_id", user_id)
             active_domain = msg.get("domain", domain)
 
-            # Indicar que está processando
-            await ws_mgr.send_to_session(session_id, {"type": "thinking"})
+            await ws_mgr.send_to_session(session_id, serialize_thinking())
 
             # ── Plan Detection (multi-step workflows) ─────────────────────
             _plan_handled = False
@@ -648,14 +642,11 @@ async def agent_chat_ws(
                     _plan_budget = await get_plan_for_company(company_id)
                     _budget_ok, _used, _limit = await check_budget(company_id, _plan_budget)
                     if not _budget_ok:
-                        await ws_mgr.send_to_session(session_id, {
-                            "type": "error",
-                            "message": (
-                                f"Limite diário de uso de IA atingido ({_used:,} / {_limit:,} tokens). "
-                                "O budget será renovado à meia-noite UTC."
-                            ),
-                            "error_code": "budget_exhausted",
-                        })
+                        await ws_mgr.send_to_session(session_id, serialize_error(
+                            f"Limite diário de uso de IA atingido ({_used:,} / {_limit:,} tokens). "
+                            "O budget será renovado à meia-noite UTC.",
+                            "budget_exhausted",
+                        ))
                         continue
                 except Exception as _budget_exc:
                     logger.warning("[AgentChatWS] Budget check falhou (plan path) — continuando: %s", _budget_exc)
@@ -734,14 +725,13 @@ async def agent_chat_ws(
                         except Exception as _inc_exc:
                             logger.warning("[AgentChatWS] plan increment_usage falhou: %s", _inc_exc)
 
-                    await ws_mgr.send_to_session(session_id, {
-                        "type": "message",
-                        "content": _plan_msg,
-                        "confidence": 0.9,
-                        "domain": "plan_executor",
-                        "source": "plan_executor",
-                        "execution_plan": _executed.get_summary(),
-                    })
+                    await ws_mgr.send_to_session(session_id, serialize_message(
+                        content=_plan_msg,
+                        confidence=0.9,
+                        domain="plan_executor",
+                        source="plan_executor",
+                        execution_plan=_executed.get_summary(),
+                    ))
                     await send_background_task_update(
                         session_id=session_id,
                         task_id=_plan_task_id,
@@ -801,21 +791,19 @@ async def agent_chat_ws(
 
             agent = _get_agent(active_domain)
             if agent is None:
-                await ws_mgr.send_to_session(session_id, {
-                    "type": "error",
-                    "message": f"Agente '{active_domain}' indisponível.",
-                })
+                await ws_mgr.send_to_session(session_id, serialize_error(
+                    f"Agente '{active_domain}' indisponível.", "agent_unavailable",
+                ))
                 continue
 
             # E7: injeta streaming_callback no context antes de construir agent_input
             async def _thinking_callback_pre(event: dict) -> None:
                 """Retransmite evento thinking do ReAct loop para o cliente WebSocket."""
                 try:
-                    await ws_mgr.send_to_session(session_id, {
-                        "type": "thinking",
-                        "content": event.get("thought", ""),
-                        "step": event.get("step", 0),
-                    })
+                    await ws_mgr.send_to_session(session_id, serialize_thinking(
+                        content=event.get("thought", ""),
+                        step=event.get("step", 0),
+                    ))
                 except Exception:
                     pass  # fail-silent
             context["streaming_callback"] = _thinking_callback_pre
@@ -859,11 +847,9 @@ async def agent_chat_ws(
                         progress=0,
                         message="Processando em background...",
                     )
-                    await ws_mgr.send_to_session(session_id, {
-                        "type": "thinking",
-                        "job_id": job_id,
-                        "message": "Processando em background...",
-                    })
+                    await ws_mgr.send_to_session(session_id, serialize_thinking(
+                        content="Processando em background...",
+                    ))
                     continue
             except Exception as _dispatch_exc:
                 logger.debug(
@@ -876,29 +862,23 @@ async def agent_chat_ws(
                 _plan = await get_plan_for_company(company_id)
                 _budget_ok, _used, _limit = await check_budget(company_id, _plan)
                 if not _budget_ok:
-                    await ws_mgr.send_to_session(session_id, {
-                        "type": "error",
-                        "message": (
-                            f"Limite diário de uso de IA atingido ({_used:,} / {_limit:,} tokens). "
-                            "O budget será renovado à meia-noite UTC."
-                        ),
-                        "error_code": "budget_exhausted",
-                    })
+                    await ws_mgr.send_to_session(session_id, serialize_error(
+                        f"Limite diário de uso de IA atingido ({_used:,} / {_limit:,} tokens). "
+                        "O budget será renovado à meia-noite UTC.",
+                        "budget_exhausted",
+                    ))
                     continue
             except Exception as _budget_exc:
                 logger.warning("[AgentChatWS] Budget check falhou — continuando: %s", _budget_exc)
 
-            # Execução síncrona (domínio sync ou RabbitMQ indisponível)
             try:
                 output = await asyncio.wait_for(
                     agent.process(agent_input),
                     timeout=_AGENT_TIMEOUT,
                 )
 
-                # ── Registrar consumo de tokens (André R6) ────────────────
                 _tokens_used = output.metadata.get("tokens_used", 0) if output.metadata else 0
                 if _tokens_used <= 0:
-                    # Estimativa conservadora: ~1.3 tokens por palavra (BPE avg)
                     _input_words = len(content.split())
                     _output_words = len((output.message or "").split())
                     _tokens_used = int((_input_words + _output_words) * 1.3)
@@ -922,33 +902,27 @@ async def agent_chat_ws(
                         action=_panel_meta.get("action", "open"),
                     )
 
-                # FAR-3: incluir soft_warnings de fairness na resposta ao cliente
                 _fairness_warnings = (output.metadata or {}).get("fairness_warnings", [])
-                _ws_payload: dict[str, Any] = {
-                    "type": "message",
-                    "content": clean_message,
-                    "confidence": output.confidence,
-                    "actions": [a.dict() for a in (output.actions or [])],
-                    "navigation": output.navigation.dict() if output.navigation else None,
-                    "state_updates": output.state_updates or {},
-                    "domain": active_domain,
-                    "source": "direct",
-                }
-                if _fairness_warnings:
-                    _ws_payload["fairness_warnings"] = _fairness_warnings
-                await ws_mgr.send_to_session(session_id, _ws_payload)
+                await ws_mgr.send_to_session(session_id, serialize_message(
+                    content=clean_message,
+                    confidence=output.confidence,
+                    domain=active_domain,
+                    source="direct",
+                    actions=[a.dict() for a in (output.actions or [])],
+                    navigation=output.navigation.dict() if output.navigation else None,
+                    state_updates=output.state_updates or None,
+                    fairness_warnings=_fairness_warnings or None,
+                ))
 
             except TimeoutError:
-                await ws_mgr.send_to_session(session_id, {
-                    "type": "error",
-                    "message": "Tempo limite de processamento excedido. Tente novamente.",
-                })
+                await ws_mgr.send_to_session(session_id, serialize_error(
+                    "Tempo limite de processamento excedido. Tente novamente.",
+                ))
             except Exception as exc:
                 logger.error("[AgentChatWS] Erro no agente session=%s: %s", session_id, exc, exc_info=True)
-                await ws_mgr.send_to_session(session_id, {
-                    "type": "error",
-                    "message": "Erro interno ao processar sua mensagem.",
-                })
+                await ws_mgr.send_to_session(session_id, serialize_error(
+                    "Erro interno ao processar sua mensagem.",
+                ))
 
     except WebSocketDisconnect:
         logger.info("[AgentChatWS] Desconectado session=%s", session_id)

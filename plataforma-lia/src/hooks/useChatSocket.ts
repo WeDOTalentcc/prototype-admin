@@ -9,6 +9,7 @@
 
 import { useState, useRef, useCallback, useEffect } from "react"
 import { useAgentStreaming, type StreamingEvent } from "./use-agent-streaming"
+import type { TransportMode } from "./useChatTransport"
 import type {
   HITLPending,
   PanelUpdateEvent,
@@ -22,20 +23,26 @@ export interface UseChatSocketOptions {
 }
 
 export interface UseChatSocketReturn {
-  /** Current WS streaming tokens (partial content) */
   tokens: string
   isStreaming: boolean
   isConnected: boolean
   isReconnecting: boolean
   reconnectAttempt: number
   error: string | null
+  transportMode: TransportMode
   connect: () => void
   disconnect: () => void
   wsSend: (content: string, context: Record<string, unknown>, domain: string) => void
   sendRaw: (data: Record<string, unknown>) => void
   clearTokens: () => void
+  sendMessageViaSSE: (
+    sessionId: string,
+    message: string,
+    domain?: string,
+    context?: Record<string, unknown>,
+    conversationId?: string | null,
+  ) => void
 
-  // Event-derived state
   hitlPending: HITLPending | null
   hitlRef: React.MutableRefObject<HITLPending | null>
   setHitlPending: React.Dispatch<React.SetStateAction<HITLPending | null>>
@@ -48,7 +55,6 @@ export interface UseChatSocketReturn {
   planProgressSteps: Array<{ task_id: string; action_id: string; domain_id: string; status: string }>
   activePlanId: string | null
 
-  // Conversation ID synced from WS events
   conversationIdFromWs: string | null
 }
 
@@ -212,11 +218,13 @@ export function useChatSocket({
     isReconnecting,
     reconnectAttempt,
     error,
+    transportMode,
     connect,
     disconnect,
     sendMessage: wsSend,
     sendRaw,
     clearTokens,
+    sendMessageViaSSE,
   } = useAgentStreaming(sessionId, { authToken: wsAuthToken }, handleEvent)
 
   useEffect(() => {
@@ -234,11 +242,13 @@ export function useChatSocket({
     isReconnecting,
     reconnectAttempt,
     error,
+    transportMode,
     connect,
     disconnect,
     wsSend,
     sendRaw,
     clearTokens,
+    sendMessageViaSSE,
     hitlPending,
     hitlRef,
     setHitlPending,

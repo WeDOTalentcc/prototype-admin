@@ -208,6 +208,7 @@ from app.api.v1.admin_circuit_breakers import router as admin_cb_router
 from app.api.v1.admin_dlq import router as admin_dlq_router
 from app.api.v1.admin_lgpd import router as admin_lgpd_router
 from app.api.v1.agent_chat_ws import router as agent_chat_ws_router
+from app.api.v1.agent_chat_sse import router as agent_chat_sse_router
 from app.api.v1.agent_memory import router as agent_memory_router
 from app.api.v1.agent_quality import router as agent_quality_router
 from app.api.v1.agent_templates import router as agent_templates_router
@@ -463,6 +464,7 @@ def register_all_routes(app: FastAPI) -> None:
     app.include_router(agent_explainability.router, prefix="/api/v1", tags=["agent-explainability"])
     app.include_router(agent_quality_router, prefix="/api/v1", tags=["agent-quality"])
     app.include_router(agent_chat_ws_router)
+    app.include_router(agent_chat_sse_router, prefix="/api/v1")
 
     # ── WebSocket ─────────────────────────────────────────────────────────────
     app.include_router(jobs_ws.router)
