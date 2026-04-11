@@ -14,6 +14,7 @@ import logging
 import os
 from typing import Optional
 
+from app.services.token_budget_service import check_request_budget_before_llm
 from app.shared.providers.llm_provider import LLMProviderABC
 
 logger = logging.getLogger(__name__)
@@ -106,6 +107,32 @@ class LLMProviderFactory:
             DeprecationWarning,
             stacklevel=2,
         )
+
+        plan_code = kwargs.pop("plan_code", None)
+        agent_type = kwargs.pop("agent_type", None)
+        company_id = kwargs.pop("company_id", None)
+        user_id = kwargs.pop("user_id", None)
+        expected_output_tokens = kwargs.pop("expected_output_tokens", None)
+
+        try:
+            if plan_code is None and company_id is not None:
+                from app.services.token_budget_service import get_plan_for_company
+                plan_code = await get_plan_for_company(str(company_id))
+        except Exception as exc:
+            logger.warning(
+                "[LLMFactory] Plan lookup failed (graceful): %s", exc
+            )
+
+        check_request_budget_before_llm(
+            prompt,
+            system,
+            plan_code=plan_code,
+            agent_type=agent_type,
+            company_id=company_id,
+            user_id=user_id,
+            expected_output_tokens=expected_output_tokens,
+        )
+
         from app.shared.resilience.circuit_breaker import CircuitBreakerError
 
         errors: list[str] = []
@@ -236,7 +263,37 @@ class ProviderContainer:
         self, prompt: str, system: str | None = None, **kwargs
     ) -> str:
         """Try providers in tenant fallback order with per-provider credential fallback.
-        For each provider: tenant key → system key → next provider."""
+        For each provider: tenant key → system key → next provider.
+
+        Before calling any provider, checks the per-request token ceiling
+        (Fase 3 guardrail). If the estimated tokens exceed the ceiling,
+        raises RequestBudgetExceededError immediately — no LLM call is made.
+        """
+        plan_code = kwargs.pop("plan_code", None)
+        agent_type = kwargs.pop("agent_type", None)
+        company_id = kwargs.pop("company_id", None) or self._tenant_id
+        user_id = kwargs.pop("user_id", None)
+        expected_output_tokens = kwargs.pop("expected_output_tokens", None)
+
+        try:
+            if plan_code is None and company_id is not None:
+                from app.services.token_budget_service import get_plan_for_company
+                plan_code = await get_plan_for_company(str(company_id))
+        except Exception as exc:
+            logger.warning(
+                "[ProviderContainer] Plan lookup failed (graceful): %s", exc
+            )
+
+        check_request_budget_before_llm(
+            prompt,
+            system,
+            plan_code=plan_code,
+            agent_type=agent_type,
+            company_id=company_id,
+            user_id=user_id,
+            expected_output_tokens=expected_output_tokens,
+        )
+
         from app.shared.resilience.circuit_breaker import CircuitBreakerError
 
         errors: list[str] = []

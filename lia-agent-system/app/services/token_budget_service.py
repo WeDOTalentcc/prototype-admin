@@ -10,16 +10,46 @@ Planos:
   business   → 500.000 tokens/dia
   enterprise → ilimitado (-1)
 
+Limites por request individual (Fase 3):
+  starter    → 2.000 tokens/request
+  pro        → 10.000 tokens/request
+  business   → 25.000 tokens/request
+  enterprise → 50.000 tokens/request
+
 Fluxo:
   1. check_budget(company_id, plan_code) → antes de chamar LLM
-  2. increment_usage(company_id, tokens_used) → após chamada LLM
-  3. get_budget_status(company_id, plan_code) → para dashboard admin
+  2. check_request_budget(...) → verifica ceiling por request individual
+  3. increment_usage(company_id, tokens_used) → após chamada LLM
+  4. get_budget_status(company_id, plan_code) → para dashboard admin
 """
 import logging
 from datetime import UTC, datetime
 
 
 logger = logging.getLogger(__name__)
+
+
+class RequestBudgetExceededError(Exception):
+    """Raised when a single request exceeds the per-request token ceiling."""
+
+    def __init__(
+        self,
+        estimated_tokens: int,
+        ceiling: int,
+        plan_code: str | None = None,
+        agent_type: str | None = None,
+        company_id: str | None = None,
+    ) -> None:
+        self.estimated_tokens = estimated_tokens
+        self.ceiling = ceiling
+        self.plan_code = plan_code
+        self.agent_type = agent_type
+        self.company_id = company_id
+        super().__init__(
+            f"Request excede ceiling de tokens: "
+            f"{estimated_tokens:,} estimados > {ceiling:,} permitidos "
+            f"(plan={plan_code}, agent_type={agent_type})"
+        )
 
 # Limites diários por plan_code (tokens totais = input + output)
 PLAN_DAILY_LIMITS: dict[str, int] = {
@@ -38,6 +68,28 @@ PLAN_DAILY_LIMITS: dict[str, int] = {
 # Fallback quando plan_code não reconhecido
 DEFAULT_DAILY_LIMIT = 10_000
 
+PLAN_REQUEST_LIMITS: dict[str, int] = {
+    "starter":     2_000,
+    "pro":        10_000,
+    "business":   25_000,
+    "enterprise": 50_000,
+    "trial":       2_000,
+    "free":        2_000,
+    "basic":       2_000,
+    "standard":   10_000,
+    "premium":    25_000,
+}
+
+DEFAULT_REQUEST_LIMIT = 2_000
+
+AGENT_TYPE_REQUEST_OVERRIDES: dict[str, float] = {
+    "AutonomousReActAgent": 2.0,
+    "DeepAnalysisAgent":    2.0,
+    "RAGAgent":             1.5,
+    "ReportGeneratorAgent": 2.0,
+    "ScreeningAgent":       1.5,
+}
+
 # TTL da chave Redis: 25h para cobrir edge case de meia-noite
 _REDIS_TTL = 25 * 3600
 
@@ -54,6 +106,129 @@ def get_plan_limit(plan_code: str | None) -> int:
         return DEFAULT_DAILY_LIMIT
     normalized = plan_code.lower().strip()
     return PLAN_DAILY_LIMITS.get(normalized, DEFAULT_DAILY_LIMIT)
+
+
+def get_request_limit(plan_code: str | None, agent_type: str | None = None) -> int:
+    """Retorna o ceiling de tokens por request individual.
+
+    Se ``agent_type`` possuir um override, o limite base é multiplicado
+    pelo fator correspondente (ex: AutonomousReActAgent → 2×).
+    """
+    if not plan_code:
+        base = DEFAULT_REQUEST_LIMIT
+    else:
+        normalized = plan_code.lower().strip()
+        base = PLAN_REQUEST_LIMITS.get(normalized, DEFAULT_REQUEST_LIMIT)
+
+    if agent_type:
+        multiplier = AGENT_TYPE_REQUEST_OVERRIDES.get(agent_type, 1.0)
+        base = int(base * multiplier)
+
+    return base
+
+
+def estimate_request_tokens(
+    prompt: str,
+    system: str | None = None,
+    expected_output_tokens: int | None = None,
+) -> int:
+    """Estimativa rápida de tokens de um request (input + output esperado).
+
+    Usa heurística de ~4 caracteres por token (média para texto misto PT/EN).
+    ``expected_output_tokens`` pode ser fornecido explicitamente; caso
+    contrário assume 25% do input como saída estimada.
+    """
+    input_chars = len(prompt or "")
+    if system:
+        input_chars += len(system)
+
+    estimated_input = max(input_chars // 4, 1)
+
+    if expected_output_tokens is not None and expected_output_tokens > 0:
+        estimated_output = expected_output_tokens
+    else:
+        estimated_output = max(estimated_input // 4, 50)
+
+    return estimated_input + estimated_output
+
+
+def check_request_budget(
+    plan_code: str | None,
+    estimated_tokens: int,
+    *,
+    agent_type: str | None = None,
+    company_id: str | None = None,
+    user_id: str | None = None,
+) -> tuple[bool, int, int]:
+    """Verifica se um request individual está dentro do ceiling do plano.
+
+    Args:
+        plan_code: Código do plano da assinatura ativa.
+        estimated_tokens: Estimativa de tokens totais (input + output).
+        agent_type: Tipo do agente (para override de ceiling).
+        company_id: ID da empresa (para logging).
+        user_id: ID do usuário (para logging).
+
+    Returns:
+        (allowed, estimated_tokens, ceiling)
+    """
+    ceiling = get_request_limit(plan_code, agent_type)
+    allowed = estimated_tokens <= ceiling
+
+    if not allowed:
+        logger.warning(
+            "[TokenBudget] Request bloqueado por ceiling individual: "
+            "company_id=%s user_id=%s agent_type=%s "
+            "estimated_tokens=%d ceiling=%d plan=%s",
+            company_id,
+            user_id,
+            agent_type,
+            estimated_tokens,
+            ceiling,
+            plan_code,
+        )
+
+    return allowed, estimated_tokens, ceiling
+
+
+def check_request_budget_before_llm(
+    prompt: str,
+    system: str | None = None,
+    *,
+    plan_code: str | None = None,
+    agent_type: str | None = None,
+    company_id: str | None = None,
+    user_id: str | None = None,
+    expected_output_tokens: int | None = None,
+) -> None:
+    """
+    Guardrail síncrono para ser chamado diretamente antes de qualquer
+    chamada LLM (ex: dentro de ProviderContainer.generate_with_fallback).
+
+    When ``plan_code`` is None (plan context unavailable), enforces a
+    conservative default ceiling (DEFAULT_REQUEST_LIMIT) to ensure
+    cost protection even under degraded conditions.
+
+    Raises:
+        RequestBudgetExceededError: se o request exceder o ceiling.
+    """
+    estimated = estimate_request_tokens(prompt, system, expected_output_tokens)
+    allowed, estimated_tokens, ceiling = check_request_budget(
+        plan_code,
+        estimated,
+        agent_type=agent_type,
+        company_id=company_id,
+        user_id=user_id,
+    )
+
+    if not allowed:
+        raise RequestBudgetExceededError(
+            estimated_tokens=estimated_tokens,
+            ceiling=ceiling,
+            plan_code=plan_code,
+            agent_type=agent_type,
+            company_id=company_id,
+        )
 
 
 async def check_budget(

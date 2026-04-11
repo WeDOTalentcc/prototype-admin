@@ -391,6 +391,36 @@ async def http_exception_handler(request: FastAPIRequest, exc: StarletteHTTPExce
     )
 
 
+from app.services.token_budget_service import RequestBudgetExceededError
+
+
+@app.exception_handler(RequestBudgetExceededError)
+async def request_budget_exceeded_handler(request: FastAPIRequest, exc: RequestBudgetExceededError):
+    request_id = getattr(request.state, "request_id", "unknown")
+    logger.warning(
+        "[RequestBudget] Request bloqueado por ceiling: "
+        "company_id=%s agent_type=%s estimated=%d ceiling=%d plan=%s request_id=%s",
+        exc.company_id, exc.agent_type, exc.estimated_tokens,
+        exc.ceiling, exc.plan_code, request_id,
+    )
+    return JSONResponse(
+        status_code=413,
+        content={
+            "error": "request_too_large",
+            "message": (
+                f"Request excede o limite de tokens por chamada "
+                f"({exc.estimated_tokens:,} estimados / {exc.ceiling:,} permitidos). "
+                "Reduza o tamanho do prompt ou contexto."
+            ),
+            "estimated_tokens": exc.estimated_tokens,
+            "ceiling": exc.ceiling,
+            "agent_type": exc.agent_type,
+            "plan_code": exc.plan_code,
+            "request_id": request_id,
+        },
+    )
+
+
 @app.exception_handler(Exception)
 async def unhandled_exception_handler(request: FastAPIRequest, exc: Exception):
     request_id = getattr(request.state, "request_id", "unknown")
