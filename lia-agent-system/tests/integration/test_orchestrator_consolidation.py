@@ -233,15 +233,16 @@ class TestActionExecutorPhase:
 # ---------------------------------------------------------------------------
 
 class TestIntentRouterRemoval:
-    def test_cascaded_router_has_no_intent_router_fallback(self):
+    def test_cascaded_router_has_no_intent_router_param(self):
         from app.orchestrator.cascaded_router import CascadedRouter
         from app.orchestrator.fast_router import FastRouter
+        import inspect
 
-        router = CascadedRouter(fast_router=FastRouter(), intent_router=None)
-        assert router.llm_fallback is None
+        sig = inspect.signature(CascadedRouter.__init__)
+        assert "intent_router" not in sig.parameters
 
-    def test_orchestrator_init_does_not_use_intent_router(self):
-        """Verify Orchestrator._init_cascaded_router passes intent_router=None."""
+    def test_orchestrator_init_does_not_pass_intent_router(self):
+        """Verify Orchestrator._init_cascaded_router does not pass intent_router."""
         from app.orchestrator.orchestrator import Orchestrator
 
         mock_llm = MagicMock()
@@ -263,8 +264,7 @@ class TestIntentRouterRemoval:
                                                 pass
                                             call_kwargs = MockCR.call_args
                                             if call_kwargs:
-                                                assert call_kwargs.kwargs.get("intent_router") is None or \
-                                                       (call_kwargs.args and len(call_kwargs.args) == 0)
+                                                assert "intent_router" not in (call_kwargs.kwargs or {})
 
 
 # ---------------------------------------------------------------------------

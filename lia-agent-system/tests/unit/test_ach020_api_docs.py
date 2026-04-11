@@ -116,61 +116,29 @@ class TestAPIReferenceDoc:
         assert len(src) >= 3000, f"API reference muito curto: {len(src)} chars"
 
 
-class TestIntentRouterFewShot:
-    """Verifica exemplos few-shot J2 no intent router (T3 RH sênior)."""
+class TestCascadedRouterDomainMapping:
+    """Verifica mapeamento de domínios no CascadedRouter (substitui IntentRouter)."""
 
-    def _get_prompt(self) -> str:
-        from app.orchestrator.intent_router import IntentRouter
+    def test_agent_type_to_domain_has_core_mappings(self):
+        """AGENT_TYPE_TO_DOMAIN deve mapear os tipos de agente fundamentais."""
+        from app.orchestrator.cascaded_router import AGENT_TYPE_TO_DOMAIN
+        assert "job_planner" in AGENT_TYPE_TO_DOMAIN
+        assert "sourcing" in AGENT_TYPE_TO_DOMAIN
+        assert "cv_screening" in AGENT_TYPE_TO_DOMAIN
+        assert "scheduling" in AGENT_TYPE_TO_DOMAIN
+        assert "analytics" in AGENT_TYPE_TO_DOMAIN
+
+    def test_fast_router_has_domain_patterns(self):
+        """FastRouter DOMAIN_PATTERNS deve cobrir domínios-chave."""
+        from app.orchestrator.fast_router import DOMAIN_PATTERNS
+        assert "job_management" in DOMAIN_PATTERNS
+        assert "sourcing" in DOMAIN_PATTERNS
+        assert "cv_screening" in DOMAIN_PATTERNS
+        assert "analytics" in DOMAIN_PATTERNS
+
+    def test_cascaded_router_no_intent_router_param(self):
+        """CascadedRouter não deve aceitar intent_router."""
+        from app.orchestrator.cascaded_router import CascadedRouter
         import inspect
-        return inspect.getsource(IntentRouter._create_intent_prompt)
-
-    def test_few_shot_section_exists(self):
-        """Intent router deve ter seção EXEMPLOS FEW-SHOT."""
-        from app.orchestrator.intent_router import IntentRouter
-        router = IntentRouter.__new__(IntentRouter)
-        # Verificar diretamente no source da função
-        import inspect
-        src = inspect.getsource(IntentRouter._create_intent_prompt)
-        assert "FEW-SHOT" in src or "few-shot" in src.lower()
-
-    def test_has_clear_examples(self):
-        """Intent router deve ter exemplos claros (alta confiança)."""
-        src = self._get_prompt()
-        assert "0.9" in src or "confidence" in src.lower()
-
-    def test_has_ambiguous_examples(self):
-        """Intent router deve ter exemplos ambíguos."""
-        src = self._get_prompt()
-        assert "Ambíg" in src or "ambíg" in src or "Ambiguous" in src
-
-    def test_has_minimum_20_examples(self):
-        """Intent router deve ter pelo menos 20 exemplos few-shot."""
-        src = self._get_prompt()
-        # Conta blocos Input/Output
-        input_count = src.count('Input: "')
-        assert input_count >= 20, f"Esperado >= 20 exemplos, encontrado {input_count}"
-
-    def test_hr_senior_context_present(self):
-        """Exemplos devem ter contexto de RH sênior."""
-        src = self._get_prompt()
-        assert "RH" in src or "recrutador" in src.lower() or "sênior" in src.lower()
-
-    def test_job_planner_example_present(self):
-        """Deve ter exemplo para job_planner."""
-        src = self._get_prompt()
-        assert '"job_planner"' in src
-
-    def test_sourcing_example_present(self):
-        """Deve ter exemplo para sourcing."""
-        src = self._get_prompt()
-        assert '"sourcing"' in src
-
-    def test_cv_screening_example_present(self):
-        """Deve ter exemplo para cv_screening."""
-        src = self._get_prompt()
-        assert '"cv_screening"' in src or '"rank_candidates"' in src
-
-    def test_analyst_example_present(self):
-        """Deve ter exemplo para analyst/funnel."""
-        src = self._get_prompt()
-        assert '"funnel_analysis"' in src or '"analyst_feedback"' in src
+        sig = inspect.signature(CascadedRouter.__init__)
+        assert "intent_router" not in sig.parameters

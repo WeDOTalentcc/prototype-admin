@@ -139,20 +139,20 @@ class AgentTestSuite:
         ]
         
         try:
-            from app.orchestrator.intent_router import IntentRouter
-            router = IntentRouter()
-            
+            from app.orchestrator.fast_router import FastRouter
+            router = FastRouter()
+
             for message, expected_intent, expected_agent in test_intents:
                 start = time.time()
                 try:
-                    result = router.route(message)
+                    result = router.match(message)
                     elapsed = (time.time() - start) * 1000
                     self.metrics.add_response(elapsed)
-                    
+
                     results["tests"].append({
                         "name": f"Route: '{message[:30]}...'",
                         "passed": True,
-                        "details": f"Intent: {result.get('intent', 'unknown')}, Time: {elapsed:.1f}ms"
+                        "details": f"Domain: {result.domain_id if result else 'none'}, Time: {elapsed:.1f}ms"
                     })
                 except Exception as e:
                     results["tests"].append({

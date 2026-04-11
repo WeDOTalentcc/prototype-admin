@@ -10,8 +10,6 @@ Hierarquia de resolução (custo crescente):
   Tier 5: LLM Cascade           — Haiku→Sonnet→Opus (caro)
   Tier 6: AutonomousReActAgent  — agente cross-domain, fallback final antes de clarification
   Fallback: clarification_needed — pergunta ao usuário quando tudo falha
-
-Coexiste com IntentRouter legado — usa como fallback do Tier 5 quando disponível.
 """
 import hashlib
 import logging
@@ -169,12 +167,10 @@ class CascadedRouter:
     def __init__(
         self,
         fast_router: FastRouter | None = None,
-        intent_router: Any | None = None,
         domain_registry: Any | None = None,
         cache_max_size: int = settings.ROUTER_CACHE_MAX_SIZE,
     ):
         self.fast = fast_router or FastRouter()
-        self.llm_fallback = intent_router
         self.registry = domain_registry
         self._memory_cache: dict[str, RouteResult] = {}
         self._cache_max_size = cache_max_size
@@ -496,35 +492,6 @@ class CascadedRouter:
                 _t5_span.set_attribute("error_detail", str(e))
                 logger.error("CascadedRouter: LLM cascade failed: %s", e)
 
-            # LLM fallback legado (IntentRouter) se cascade não disponível
-            if self.llm_fallback:
-                try:
-                    _t0 = time.perf_counter()
-                    intent_result = await self._route_via_llm(message, context)
-                    if intent_result:
-                        _elapsed_ms = (time.perf_counter() - _t0) * 1000
-                        if intent_result.confidence < _TIER5_MIN_CONFIDENCE:
-                            logger.info(
-                                "CascadedRouter: legacy LLM fallback confidence %.2f < %.2f for '%s...' — falling to Tier 6",
-                                intent_result.confidence, _TIER5_MIN_CONFIDENCE, message[:40],
-                            )
-                        else:
-                            _t5_span.set_attribute("hit", "true")
-                            _t5_span.set_attribute("fallback_used", "intent_router")
-                            _t5_span.set_attribute("confidence_score", str(intent_result.confidence))
-                            self._cache_store(cache_key, intent_result)
-                            self._stats["llm_hits"] += 1
-                            if _hit_counter:
-                                _hit_counter.labels(tier="llm_cascade").inc()
-                            if _latency_hist:
-                                _latency_hist.labels(tier="llm_cascade").observe(_elapsed_ms)
-                            if _conf_hist:
-                                _conf_hist.labels(model="llm_fallback").observe(intent_result.confidence)
-                            logger.debug("CascadedRouter: LLM fallback for '%s...' → %s", message[:40], intent_result.domain_id)
-                            return intent_result
-                except Exception as e:
-                    logger.error("CascadedRouter: LLM fallback failed: %s", e)
-
         # Tier 6 — AutonomousReActAgent (cross-domain fallback antes de clarification)
         import os as _os
         if _os.getenv("AUTONOMOUS_REACT_ENABLED", "false").lower() == "true":
@@ -710,46 +677,6 @@ class CascadedRouter:
             )
         except Exception as exc:
             logger.debug("[CascadedRouter] llm_cascade falhou: %s", exc)
-            return None
-
-    async def _route_via_llm(self, message: str, context: dict[str, Any] | None = None) -> RouteResult | None:
-        if not self.llm_fallback:
-            return None
-
-        try:
-            # IntentRouter.route() já usa cascade internamente (Haiku→Sonnet→Opus)
-            if hasattr(self.llm_fallback, 'route'):
-                result = await self.llm_fallback.route(message, context)
-            elif hasattr(self.llm_fallback, 'classify_intent'):
-                result = await self.llm_fallback.classify_intent(message)
-            elif hasattr(self.llm_fallback, 'classify'):
-                result = await self.llm_fallback.classify(message)
-            else:
-                logger.warning("LLM fallback has no compatible classify/route method")
-                return None
-
-            if isinstance(result, dict):
-                intent = result.get("intent", result.get("agent_type", ""))
-                confidence = result.get("confidence", 0.5)
-                model_used = result.get("model_used", "unknown")
-            elif hasattr(result, 'intent'):
-                intent = result.intent
-                confidence = getattr(result, 'confidence', 0.5)
-                model_used = "unknown"
-            else:
-                intent = str(result)
-                confidence = 0.5
-                model_used = "unknown"
-
-            domain_id = self._intent_to_domain(intent)
-            return RouteResult(
-                domain_id=domain_id,
-                confidence=confidence,
-                source="llm_fallback",
-                intent_details={"raw_intent": intent, "model_used": model_used},
-            )
-        except Exception as e:
-            logger.error("LLM routing failed: %s", e)
             return None
 
     def _intent_to_domain(self, intent: str) -> str:
