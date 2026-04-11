@@ -8,7 +8,7 @@
  */
 
 import { createContext, useContext, ReactNode } from "react"
-import { useTeamsSSO } from "@/hooks/use-teams-sso"
+import { useTeamsSSO } from "@/hooks/company/use-teams-sso"
 
 interface TeamsSSOContextType {
   isTeams: boolean

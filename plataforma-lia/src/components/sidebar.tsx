@@ -39,7 +39,7 @@ import {
   Check,
   Loader2,
 } from "lucide-react"
-import type { RecentItem } from "@/hooks/use-recent-items"
+import type { RecentItem } from "@/hooks/shared/use-recent-items"
 import { hasModuleAccess } from "@/utils/license-manager"
 import { Button } from "@/components/ui/button"
 import { ThemeToggle } from "@/components/theme-toggle"
@@ -65,10 +65,10 @@ import { Label } from "@/components/ui/label"
 import { NotificationSystem } from "@/components/notification-system"
 import { HitlPendingBadge } from "@/components/hitl-pending-badge"
 import { WeeklyDigestOverlay } from "@/components/notifications/weekly-digest-overlay"
-import { useWeeklyDigest } from "@/hooks/use-weekly-digest"
+import { useWeeklyDigest } from "@/hooks/ai/use-weekly-digest"
 import { ProfileModal } from "@/components/modals/profile-modal"
 import { useAuth } from "@/contexts/auth-context"
-import type { Notification as AppNotification } from "@/hooks/use-notifications"
+import type { Notification as AppNotification } from "@/hooks/shared/use-notifications"
 import Image from "next/image"
 
 interface MenuSection {
@@ -225,6 +225,7 @@ const MenuItem = React.memo(({
     <div>
       <button
         onClick={handleClick}
+        aria-current={isActive && canAccess ? "page" : undefined}
         className={cn(
  "w-full flex items-center gap-2 px-2 py-2 rounded-md text-left transition-colors duration-200 text-base-ui leading-tight min-h-10",
           isLocked
@@ -600,8 +601,9 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
   }, [onNavigate, handleCloseTipsModal])
 
   return (
-    <div
+    <nav
       data-sidebar="true"
+      aria-label="Menu principal"
       className={cn(
  "bg-lia-bg-primary min-h-screen flex flex-col border-r border-lia-border-subtle relative font-sans",
         isTemporaryExpanded && "z-50"
@@ -1028,6 +1030,6 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
           )}
         </DialogContent>
       </Dialog>
-    </div>
+    </nav>
   )
 }

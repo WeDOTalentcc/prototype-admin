@@ -29,7 +29,7 @@ import {
   Gift,
   type LucideIcon,
 } from"lucide-react"
-import type { Benefit } from"@/hooks/useCompanyBenefits"
+import type { Benefit } from"@/hooks/company/useCompanyBenefits"
 
 const BENEFIT_CATEGORIES: {
   id: string

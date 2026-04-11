@@ -3,7 +3,7 @@ import type { SendMessageHandlersContext } from './useSendMessageHandlers'
 import type { Message } from '../types'
 import type { VacancyFullDetails } from '@/components/job-creation/vacancy-full-summary'
 import type { VacancySearchCriteria } from '@/services/lia-api'
-import type { FastTrackSuggestion, FastTrackJobData } from '@/hooks/useFastTrack'
+import type { FastTrackSuggestion, FastTrackJobData } from '@/hooks/recruitment/useFastTrack'
 import {
   FROM_SCRATCH_ORIENTATION_MESSAGE,
 } from '../index'

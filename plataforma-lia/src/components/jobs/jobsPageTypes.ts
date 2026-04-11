@@ -186,7 +186,7 @@ export type JobApprovalStatus = "pendente" | "aprovada" | "rejeitada"
 
 export type JobWorkModel = "presencial" | "híbrido" | "remoto"
 
-import type { ScreeningConfig } from "@/hooks/useScreeningConfig"
+import type { ScreeningConfig } from "@/hooks/recruitment/useScreeningConfig"
 
 export interface Job {
   id: number

@@ -2,8 +2,8 @@
 
 import { useState, useCallback, useEffect, useMemo, useRef } from "react"
 import { useSearchParams } from "next/navigation"
-import { useChatLayout } from "@/hooks/useChatLayout"
-import { useUIActions } from "@/hooks/useUIActions"
+import { useChatLayout } from "@/hooks/chat/useChatLayout"
+import { useUIActions } from "@/hooks/ui/useUIActions"
 import { promoteCandidateToBase } from "@/lib/api/candidate-search"
 import { useLiaChatContext } from "@/contexts/lia-float-context"
 import { useChatPageHandlers } from "./useChatPageHandlers"

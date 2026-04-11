@@ -4,7 +4,7 @@ import React, { useState, useMemo, useRef, useCallback } from "react"
 import {
   MapPin, Briefcase, Clock, Building2, Code
 } from "lucide-react"
-import { useGlobalSearchSettings } from "@/hooks/useGlobalSearchSettings"
+import { useGlobalSearchSettings } from "@/hooks/search/useGlobalSearchSettings"
 import type { SearchFilters } from "@/components/search/advanced-filters-modal"
 import { useEAPCallbacks } from "./useEAPCallbacks"
 import { useEAPEffects } from "./useEAPEffects"

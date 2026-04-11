@@ -1,8 +1,8 @@
 "use client"
 
 import { useState, useEffect } from 'react'
-import { useInterpretContext, type ChatMessage } from '@/hooks/use-interpret-context'
-import { useTransitionContext, type CandidateContext, type JobContext } from '@/hooks/use-transition-context'
+import { useInterpretContext, type ChatMessage } from '@/hooks/shared/use-interpret-context'
+import { useTransitionContext, type CandidateContext, type JobContext } from '@/hooks/recruitment/use-transition-context'
 import { RECRUITMENT_STAGES } from '@/lib/recruitment-stages'
 import { isLiaAutoAllowed } from '../utils/action-matrix'
 import { getSubStatusOptionsForBehavior } from '../hooks/use-universal-transition'

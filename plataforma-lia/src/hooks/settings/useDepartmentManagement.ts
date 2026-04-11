@@ -9,7 +9,7 @@ import {
   DEFAULT_NEW_DEPARTMENT,
   DEFAULT_NEW_MEMBER,
 } from "@/components/settings/companyTeamHub.types";
-import { useCompanyId } from "@/hooks/useCompanyId";
+import { useCompanyId } from "@/hooks/company/useCompanyId";
 
 export interface UseDepartmentManagementState {
   departments: Department[];

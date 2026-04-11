@@ -4,7 +4,7 @@ import React from "react"
 import { cn } from "@/lib/utils"
 import { SCREENING_STATUS_LABELS, type ScreeningStatus } from "@/types/screening"
 import { Card, CardContent } from "@/components/ui/card"
-import { approvalPresetToLimit, type ScreeningChannelKey } from '@/hooks/useScreeningConfig'
+import { approvalPresetToLimit, type ScreeningChannelKey } from '@/hooks/recruitment/useScreeningConfig'
 import {
   AlertCircle, AlertTriangle, Calendar, CalendarCheck,
   CheckCircle, Clock, Globe, MessageSquare, Pause, Phone, Play, ShieldAlert,

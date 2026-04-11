@@ -127,7 +127,7 @@ export interface EmailSystemStatus {
   mode: string
   providers: {
     smtp: { configured: boolean; host?: string }
-    sendgrid: { configured: boolean }
+    mailgun: { configured: boolean }
     resend: { configured: boolean }
   }
   message: string

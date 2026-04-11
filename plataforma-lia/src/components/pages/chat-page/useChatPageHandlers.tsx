@@ -6,7 +6,7 @@ import type { ParsedEntities, SearchMode, SearchMetadata } from "@/components/se
 import type { SearchFilters } from "@/components/search/advanced-filters-modal"
 import type { SearchPreviewData } from "@/components/search/search-preview-card"
 import type { Message } from "./types"
-import { formatMessageTime, type LiaChatMessage } from "@/hooks/use-lia-chat-connection"
+import { formatMessageTime, type LiaChatMessage } from "@/hooks/chat/use-lia-chat-connection"
 
 interface ChatPageHandlersContext {
   input: string

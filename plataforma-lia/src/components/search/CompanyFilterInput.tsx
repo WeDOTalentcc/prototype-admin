@@ -3,7 +3,7 @@
 import { useState, useCallback } from"react"
 import { X, Brain, Loader2, Search, ChevronDown, Info, Save, List, RotateCcw, Zap } from"lucide-react"
 import { cn } from"@/lib/utils"
-import { useTagInputState } from"@/hooks/useTagInputState"
+import { useTagInputState } from"@/hooks/ui/useTagInputState"
 import { Badge } from"@/components/ui/badge"
 import { Button } from"@/components/ui/button"
 import { Input } from"@/components/ui/input"
@@ -13,7 +13,7 @@ import {
   PopoverTrigger,
 } from"@/components/ui/popover"
 import { CompanyPresetsModal, CompanyPreset } from"./CompanyPresetsModal"
-import { useSemanticSearch } from"@/hooks/useSemanticSearch"
+import { useSemanticSearch } from"@/hooks/search/useSemanticSearch"
 
 export interface CompanyItem {
   name: string

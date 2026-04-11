@@ -2,10 +2,10 @@
 
 import { useState, useRef } from "react"
 import { useAuth } from "@/contexts/auth-context"
-import { useCompanyId } from "@/hooks/useCompanyId"
-import { useCompanyEligibilityQuestions } from "@/hooks/use-company-eligibility-questions"
-import { useCompanyLiaInstructions } from "@/hooks/use-company-lia-instructions"
-import { useRecruitmentStages } from "@/hooks/use-recruitment-stages"
+import { useCompanyId } from "@/hooks/company/useCompanyId"
+import { useCompanyEligibilityQuestions } from "@/hooks/company/use-company-eligibility-questions"
+import { useCompanyLiaInstructions } from "@/hooks/company/use-company-lia-instructions"
+import { useRecruitmentStages } from "@/hooks/recruitment/use-recruitment-stages"
 import { type AnalysisResult, type AnalysisType } from "@/components/chat/multimodal-upload"
 import { type FieldOrigin } from "../../job-creation/field-origin-badge"
 import {

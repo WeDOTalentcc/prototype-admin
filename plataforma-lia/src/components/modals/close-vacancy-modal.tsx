@@ -37,10 +37,10 @@ import {
 import { toast } from"sonner"
 import { textStyles, cardStyles, badgeStyles } from"@/lib/design-tokens"
 import { cn } from"@/lib/utils"
-import { useCommunicationTemplates, type CommunicationTemplate, type TemplateSituation } from"@/hooks/use-communication-templates"
+import { useCommunicationTemplates, type CommunicationTemplate, type TemplateSituation } from"@/hooks/chat/use-communication-templates"
 import { liaApi } from"@/services/lia-api"
 import { useAuth } from"@/contexts/auth-context"
-import { useCompanyId } from"@/hooks/useCompanyId"
+import { useCompanyId } from"@/hooks/company/useCompanyId"
 
 export interface CloseVacancyPayload {
   hired_candidate_ids: string[]

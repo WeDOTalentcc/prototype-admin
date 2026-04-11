@@ -17,7 +17,7 @@
 
 import { renderHook, act } from "@testing-library/react"
 import { vi, describe, it, expect, beforeEach, afterEach } from "vitest"
-import { useAgentStreaming } from "../use-agent-streaming"
+import { useAgentStreaming } from "../ai/use-agent-streaming"
 
 // ── Mock WebSocket ─────────────────────────────────────────────────────────────
 

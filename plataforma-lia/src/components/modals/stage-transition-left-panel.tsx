@@ -20,7 +20,7 @@ import {
 } from"lucide-react"
 import { textStyles, badgeStyles } from"@/lib/design-tokens"
 import { cn } from"@/lib/utils"
-import type { CommunicationTemplate } from"@/hooks/use-communication-templates"
+import type { CommunicationTemplate } from"@/hooks/chat/use-communication-templates"
 import {
   COLOR_CLASSES,
   getStageDisplayName,

@@ -1,4 +1,4 @@
-import type { TemplateSituation } from "@/hooks/use-communication-templates"
+import type { TemplateSituation } from "@/hooks/chat/use-communication-templates"
 
 export interface PauseData {
   jobIds: string[]

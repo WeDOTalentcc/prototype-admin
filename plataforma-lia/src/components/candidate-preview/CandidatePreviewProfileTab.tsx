@@ -1,7 +1,7 @@
 "use client"
 
 import { ExperienceHighlightCard } from "@/components/experience-highlight-card"
-import { useCurrentCompany } from '@/hooks/use-current-company'
+import { useCurrentCompany } from '@/hooks/company/use-current-company'
 import { ProfileLiaOpinionCard } from './ProfileLiaOpinionCard'
 import { ProfileSkillsMapCard } from './ProfileSkillsMapCard'
 import { ProfileExperienceCards } from './ProfileExperienceCards'

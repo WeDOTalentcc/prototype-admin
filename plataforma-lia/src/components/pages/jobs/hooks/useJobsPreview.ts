@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { liaApi, type JobVacancyMetrics } from "@/services/lia-api"
-import { useScreeningConfig, limitToApprovalPreset } from "@/hooks/useScreeningConfig"
+import { useScreeningConfig, limitToApprovalPreset } from "@/hooks/recruitment/useScreeningConfig"
 import { toast } from "sonner"
 import type { Job, PreviewTab } from "@/components/jobs"
 

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { UserCheck, Loader2 } from 'lucide-react'
-import { useOverrideApprove } from '@/hooks/use-override-approve'
+import { useOverrideApprove } from '@/hooks/recruitment/use-override-approve'
 import { toast } from "sonner"
 interface OverrideApproveButtonProps {
   candidateId: string

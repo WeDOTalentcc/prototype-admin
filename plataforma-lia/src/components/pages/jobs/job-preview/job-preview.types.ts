@@ -1,5 +1,5 @@
 import { type Job } from "@/components/jobs"
-import { type ScreeningConfig } from "@/hooks/useScreeningConfig"
+import { type ScreeningConfig } from "@/hooks/recruitment/useScreeningConfig"
 import { type JobVacancyMetrics } from "@/services/lia-api"
 
 export type TechnicalRequirement = string | { technology?: string; name?: string; [key: string]: unknown }

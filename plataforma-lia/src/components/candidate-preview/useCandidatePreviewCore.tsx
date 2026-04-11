@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useRef } from "react"
 import { DataRequirement, validateCandidateDataForOpinion } from "@/components/modals/insufficient-data-modal"
 import type { ScreeningQuestion, TranscriptionSegment } from "@/components/modals/screening-media-modal"
 import { toast } from "sonner"
-import { useCurrentCompany } from '@/hooks/use-current-company'
+import { useCurrentCompany } from '@/hooks/company/use-current-company'
 
 interface LiaChatMessage {
   role: 'user' | 'lia'

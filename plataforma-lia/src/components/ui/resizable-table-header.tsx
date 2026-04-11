@@ -3,7 +3,7 @@
 import React from "react"
 import { ArrowUp, ArrowDown, GripVertical, ChevronsUpDown } from "lucide-react"
 import { cn } from "@/lib/utils"
-import type { UseTableFeaturesReturn, ColumnConfig } from "@/hooks/useTableFeatures"
+import type { UseTableFeaturesReturn, ColumnConfig } from "@/hooks/ui/useTableFeatures"
 
 interface ResizableTableHeaderProps {
   columnId: string

@@ -1,6 +1,6 @@
 'use client'
 
-import { useAiCredits, useAiConsumptionHistory } from '@/hooks/use-ai-credits'
+import { useAiCredits, useAiConsumptionHistory } from '@/hooks/ai/use-ai-credits'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import {

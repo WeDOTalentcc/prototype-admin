@@ -6,7 +6,7 @@ import { SearchFilters } from "@/components/search/advanced-filters-modal"
 import { SearchPreviewData } from "@/components/search/search-preview-card"
 import { ParsedEntities, SearchMode, SearchMetadata } from "@/components/search/smart-search-input"
 import { liaApi } from "@/services/lia-api"
-import { useSearchFlow } from "@/hooks/useSearchFlow"
+import { useSearchFlow } from "@/hooks/search/useSearchFlow"
 
 // ──────────────────────────────────────────────────────────────────────────────
 // Types

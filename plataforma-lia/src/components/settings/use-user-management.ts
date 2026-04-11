@@ -1,8 +1,8 @@
 "use client"
 
 import { useState, useMemo, useEffect, useCallback } from "react"
-import { useSCIMConfig } from '@/hooks/use-scim-config'
-import { useCurrentCompany } from '@/hooks/use-current-company'
+import { useSCIMConfig } from '@/hooks/company/use-scim-config'
+import { useCurrentCompany } from '@/hooks/company/use-current-company'
 import { badgeStyles } from '@/lib/design-tokens'
 import type { UserData } from './user-management-types'
 

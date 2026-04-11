@@ -19,8 +19,8 @@ import { mapCandidateToInternal as _mapCandidateToInternal } from "./useCandidat
 import type { Candidate } from "@/components/pages/candidates/types"
 import type { ChatMessage, PearchSearchOptions } from "./candidates-core"
 import type { SearchTab } from "./useCandidatesUIState"
-import type { TableFilters } from "@/hooks/use-candidate-filters"
-import { getDefaultTableFilters } from "@/hooks/use-candidate-filters"
+import type { TableFilters } from "@/hooks/candidates/use-candidate-filters"
+import { getDefaultTableFilters } from "@/hooks/candidates/use-candidate-filters"
 import {
   getActiveTableFiltersCount,
   getActiveAdvancedFiltersCount,
@@ -28,7 +28,7 @@ import {
   toggleTableFilterValue,
   type AdvancedFilters,
 } from "./candidates-core"
-import type { useTalentFunnel } from "@/hooks/use-talent-funnel"
+import type { useTalentFunnel } from "@/hooks/candidates/use-talent-funnel"
 
 export interface UseCandidatesViewCompositionParams {
   candidates: Candidate[]

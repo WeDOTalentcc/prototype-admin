@@ -9,7 +9,7 @@
 import { Settings, Check } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { FastTrackSuggestions } from "@/components/job-wizard/FastTrackSuggestions"
-import type { FastTrackSuggestion } from "@/hooks/useFastTrack"
+import type { FastTrackSuggestion } from "@/hooks/recruitment/useFastTrack"
 
 type CriteriaItem = {
   key: string

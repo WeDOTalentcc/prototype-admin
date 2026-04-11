@@ -8,7 +8,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from"@/components/ui/select"
 import { Shield, Bell, Clock, AlertCircle } from"lucide-react"
-import type { DataRequestConfig } from"@/hooks/use-data-request-config"
+import type { DataRequestConfig } from"@/hooks/company/use-data-request-config"
 
 function MessageField({ label, value, isEditing, onChange, rows }: {
   label: string

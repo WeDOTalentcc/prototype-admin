@@ -1,7 +1,7 @@
 "use client"
 
 import React from "react"
-import type { CompanyDefaults } from "@/hooks/use-company-defaults"
+import type { CompanyDefaults } from "@/hooks/company/use-company-defaults"
 
 export interface JobEditTabProps {
   jobEditForm: Record<string, unknown>

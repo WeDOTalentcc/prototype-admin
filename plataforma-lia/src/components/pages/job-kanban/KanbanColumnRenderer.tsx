@@ -66,7 +66,7 @@ import {
   X,
 } from "lucide-react"
 import { getStageByName, isApplicationSource } from "@/lib/recruitment-stages"
-import { getSuggestionForCandidate } from "@/hooks/useCandidateSuggestions"
+import { getSuggestionForCandidate } from "@/hooks/ai/useCandidateSuggestions"
 import { formatScorePercent } from "@/lib/design-tokens"
 import type { CandidateLocal } from "@/services/lia-api"
 import { KanbanCardActions } from "./KanbanCardActions"

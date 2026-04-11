@@ -3,7 +3,7 @@
 
 import { formatBRL } from"@/lib/pricing"
 import { useState } from"react"
-import { useModalA11y } from"@/hooks/use-modal-a11y"
+import { useModalA11y } from"@/hooks/ui/use-modal-a11y"
 import { Button } from"@/components/ui/button"
 import { Badge } from"@/components/ui/badge"
 import { Avatar, AvatarFallback } from"@/components/ui/avatar"

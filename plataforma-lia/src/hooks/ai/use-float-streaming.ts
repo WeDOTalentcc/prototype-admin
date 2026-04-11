@@ -37,7 +37,7 @@ export interface BackgroundTaskEvent {
   result?: Record<string, unknown>
 }
 
-import type { TransportMode } from './useChatTransport'
+import type { TransportMode } from '@/hooks/chat/useChatTransport'
 
 export interface UseFloatStreamingResult {
   isConnected: boolean

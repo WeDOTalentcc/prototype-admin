@@ -28,7 +28,7 @@ import {
   Loader2
 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
-import type { FastTrackSuggestion } from '@/hooks/useFastTrack'
+import type { FastTrackSuggestion } from '@/hooks/recruitment/useFastTrack'
 
 interface FastTrackSuggestionsProps {
   suggestions: FastTrackSuggestion[]

@@ -3,7 +3,7 @@ import { useEffect } from"react"
 import { formatBRL, CURRENCY_SYMBOL } from"@/lib/pricing"
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
 import { Badge } from"@/components/ui/badge"
-import { useMLPredictions } from"@/hooks/use-ml-predictions"
+import { useMLPredictions } from"@/hooks/ai/use-ml-predictions"
 import { useAuthStore } from"@/stores/auth-store"
 import type { RecruiterData } from"../indicators.types"
 import {

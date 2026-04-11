@@ -9,7 +9,7 @@ import {
   Layers, Info, Brain, Loader2, X, Archive, Gauge, GraduationCap, Target,
   Scale, ClipboardList, FileText, Edit, Calendar, Play, Pause, AlertCircle
 } from 'lucide-react'
-import { useScreeningConfig, limitToApprovalPreset, approvalPresetToLimit, type ScreeningChannelKey } from '@/hooks/useScreeningConfig'
+import { useScreeningConfig, limitToApprovalPreset, approvalPresetToLimit, type ScreeningChannelKey } from '@/hooks/recruitment/useScreeningConfig'
 import { CompanyBankQuestions } from '../CompanyBankQuestions'
 import { CustomQuestions } from '../CustomQuestions'
 import type { CustomQuestion } from '../CustomQuestions'

@@ -5,7 +5,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { ChevronDown, ChevronUp, Brain, Loader2, AlertCircle } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { useScoreBreakdown } from "@/hooks/use-score-breakdown"
+import { useScoreBreakdown } from "@/hooks/candidates/use-score-breakdown"
 
 interface ScoreDimension {
   label: string

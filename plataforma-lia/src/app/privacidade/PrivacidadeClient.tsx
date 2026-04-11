@@ -177,7 +177,7 @@ export default function PrivacidadePage() {
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-4 py-8">
+      <main id="main-content" className="max-w-4xl mx-auto px-4 py-8">
         <div className="text-center mb-8">
           <h2 className="text-2xl font-semibold text-lia-text-primary dark:text-lia-text-primary mb-2">
             Exercite seus Direitos de Privacidade

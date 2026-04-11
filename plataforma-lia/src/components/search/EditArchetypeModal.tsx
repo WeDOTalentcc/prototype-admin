@@ -3,7 +3,7 @@
 import {
   Check, X, Target, Loader2
 } from "lucide-react"
-import { useSemanticSearch } from "@/hooks/useSemanticSearch"
+import { useSemanticSearch } from "@/hooks/search/useSemanticSearch"
 import { EditArchetypeRequirements } from "./EditArchetypeRequirements"
 import { EditArchetypeSkillsSection } from "./EditArchetypeSkillsSection"
 import { EditArchetypeTagsSection } from "./EditArchetypeTagsSection"

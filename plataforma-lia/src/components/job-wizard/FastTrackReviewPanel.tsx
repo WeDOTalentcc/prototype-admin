@@ -34,7 +34,7 @@ import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
-import type { FastTrackJobData } from '@/hooks/useFastTrack'
+import type { FastTrackJobData } from '@/hooks/recruitment/useFastTrack'
 import type { 
   TechnicalSkill, 
   BehavioralCompetency, 

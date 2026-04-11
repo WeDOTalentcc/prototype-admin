@@ -3,7 +3,7 @@
 
 import { CURRENCY_SYMBOL } from"@/lib/pricing"
 import { useState } from"react"
-import { useModalA11y } from"@/hooks/use-modal-a11y"
+import { useModalA11y } from"@/hooks/ui/use-modal-a11y"
 import { textStyles, buttonStyles, cardStyles, badgeStyles } from '@/lib/design-tokens'
 import { Button } from"@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"

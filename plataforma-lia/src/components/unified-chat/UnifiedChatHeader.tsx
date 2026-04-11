@@ -7,7 +7,7 @@ import {
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { ChatMode } from "./unified-chat-types"
-import type { TransportMode } from "@/hooks/lia-chat-connection-types"
+import type { TransportMode } from "@/hooks/chat/lia-chat-connection-types"
 import { TransportModeIndicator } from "./TransportModeIndicator"
 
 interface Props {

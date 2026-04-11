@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useCallback, useRef } from "react"
-import type { SimilarProfile } from "@/hooks/usePromptState"
+import type { SimilarProfile } from "@/hooks/ui/usePromptState"
 
 const MAX_SIMILAR_URLS = 2
 const MAX_CV_FILES = 2

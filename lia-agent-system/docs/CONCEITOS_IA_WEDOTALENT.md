@@ -1613,7 +1613,7 @@ A LIA se comunica por 5 canais, todos gerenciados por uma abstração unificada:
 │       │                                                          │
 │       ├── ChannelRouter (decide o melhor canal)                  │
 │       │                                                          │
-│       ├── EmailAdapter       → SendGrid / SMTP                  │
+│       ├── EmailAdapter       → Mailgun / SMTP                  │
 │       ├── WhatsAppAdapter    → Twilio / Meta API                │
 │       ├── SMSAdapter         → Twilio                           │
 │       ├── TeamsAdapter       → Microsoft Graph                  │

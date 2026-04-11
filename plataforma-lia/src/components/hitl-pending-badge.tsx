@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useCallback } from "react"
-import { useHitlPending, type HitlPendingItem } from "@/hooks/use-hitl-pending"
+import { useHitlPending, type HitlPendingItem } from "@/hooks/recruitment/use-hitl-pending"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,

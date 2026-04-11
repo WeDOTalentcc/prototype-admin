@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useMemo, useCallback, useRef } from "react"
-import { useCreditEstimator } from "@/hooks/useCreditEstimator"
+import { useCreditEstimator } from "@/hooks/search/useCreditEstimator"
 import type { SearchFilters } from "@/components/search/advanced-filters-modal"
 import type { FileAnalysisResult } from "@/components/ui/file-upload-button"
 import {
@@ -22,7 +22,7 @@ import {
   usePromptAutocompleteState,
   usePromptSimilarProfileState,
   usePromptArchetypeState,
-} from "./prompt"
+} from "../prompt"
 
 export interface SearchAnalysis {
   completeness_score: number

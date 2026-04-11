@@ -11,8 +11,8 @@
  */
 
 import { useState, useEffect } from "react"
-import { useCreditEstimator } from "@/hooks/useCreditEstimator"
-import { useGlobalSearchSettings } from "@/hooks/useGlobalSearchSettings"
+import { useCreditEstimator } from "@/hooks/search/useCreditEstimator"
+import { useGlobalSearchSettings } from "@/hooks/search/useGlobalSearchSettings"
 import type { SearchSource } from "@/components/search/expandable-ai-prompt.types"
 
 export interface UseSearchSourceResult {

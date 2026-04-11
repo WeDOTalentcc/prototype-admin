@@ -12,7 +12,7 @@ import {
 } from"lucide-react"
 import { textStyles } from '@/lib/design-tokens'
 import type { JobFilters as JobFiltersType } from './jobsPageTypes'
-import type { SavedSearch } from '@/hooks/useJobFiltersPersistence'
+import type { SavedSearch } from '@/hooks/jobs/useJobFiltersPersistence'
 
 export interface JobFiltersProps {
   isOpen: boolean

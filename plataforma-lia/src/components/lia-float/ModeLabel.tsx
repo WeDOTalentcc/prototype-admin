@@ -7,7 +7,7 @@ import {
   type LucideIcon,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
-import type { ActionType } from "@/hooks/use-action-intent"
+import type { ActionType } from "@/hooks/shared/use-action-intent"
 
 interface ModeLabelConfig {
   icon: LucideIcon

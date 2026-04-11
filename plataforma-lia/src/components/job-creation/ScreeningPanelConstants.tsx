@@ -4,7 +4,7 @@ import React from "react"
 import {
   Brain, MessageCircle, FileText, Building2, Zap, Users
 } from "lucide-react"
-import type { BigFiveProfile } from "@/hooks/use-screening-questions"
+import type { BigFiveProfile } from "@/hooks/recruitment/use-screening-questions"
 
 export interface ScreeningQuestionsPanelProps {
   jobTitle: string

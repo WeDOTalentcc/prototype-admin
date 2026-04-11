@@ -8,7 +8,7 @@ import {
   type LucideIcon
 } from "lucide-react"
 import { cn } from "@/lib/utils"
-import type { ActionType } from "@/hooks/use-action-intent"
+import type { ActionType } from "@/hooks/shared/use-action-intent"
 import type { EntityContext } from "@/contexts/lia-float-context"
 
 const CONTEXT_PAGE_ICONS: Record<string, LucideIcon> = {

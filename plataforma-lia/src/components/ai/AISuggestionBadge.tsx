@@ -10,7 +10,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from"@/components/ui/popover"
-import type { AISuggestion } from"@/hooks/useCandidateSuggestions"
+import type { AISuggestion } from"@/hooks/ai/useCandidateSuggestions"
 
 interface AISuggestionBadgeProps {
   suggestion: AISuggestion

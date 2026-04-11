@@ -28,7 +28,7 @@ import {
   CATEGORY_LABELS,
   type Notification,
   type NotificationCategory,
-} from "@/hooks/use-notifications"
+} from "@/hooks/shared/use-notifications"
 import { cn } from "@/lib/utils"
 
 const CATEGORY_ICONS: Record<NotificationCategory, React.ElementType> = {

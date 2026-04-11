@@ -8,7 +8,7 @@ import { TypingIndicator } from "@/components/chat/typing-indicator"
 import FlowStepMessage from "@/components/workflow-rail/FlowStepMessage"
 import { renderMarkdown } from "@/lib/render-markdown"
 import { submitThumbsFeedback } from "@/services/lia-api/feedback-api"
-import type { LiaChatMessage } from "@/hooks/use-lia-chat-connection"
+import type { LiaChatMessage } from "@/hooks/chat/use-lia-chat-connection"
 import { NavigationHintCard } from "./NavigationHintCard"
 import type { ChatMode } from "./unified-chat-types"
 

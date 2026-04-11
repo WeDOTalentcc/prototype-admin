@@ -226,7 +226,7 @@ export function KanbanPageModalsCore(state: KanbanPageCoreState) {
           currentJob.screening_config &&
           typeof currentJob.screening_config === 'object' &&
           (currentJob.screening_config as Record<string, unknown>).screening_channels
-            ? (currentJob.screening_config as Record<string, unknown>).screening_channels as import('@/hooks/useScreeningConfig').ScreeningChannelConfig
+            ? (currentJob.screening_config as Record<string, unknown>).screening_channels as import('@/hooks/recruitment/useScreeningConfig').ScreeningChannelConfig
             : undefined
         }
       />

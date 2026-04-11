@@ -1,8 +1,8 @@
 "use client"
 
 import { useState, useEffect, useMemo, useRef } from "react"
-import { useWSIScreeningPipeline, type UnifiedScreeningQuestion, type WSIScreeningPipelineRequest } from "@/hooks/use-screening-questions"
-import { useCompanyEligibilityQuestions } from "@/hooks/use-company-eligibility-questions"
+import { useWSIScreeningPipeline, type UnifiedScreeningQuestion, type WSIScreeningPipelineRequest } from "@/hooks/recruitment/use-screening-questions"
+import { useCompanyEligibilityQuestions } from "@/hooks/company/use-company-eligibility-questions"
 import type { ScreeningQuestionsPanelProps } from "./ScreeningPanelConstants"
 
 export function useScreeningQuestionsPanel({

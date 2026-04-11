@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/select"
 import { CalendarCheck, Target, Calendar, Clock, Timer, Loader2 } from "lucide-react"
 import { toast } from "sonner"
-import type { ScreeningConfig } from "@/hooks/useScreeningConfig"
+import type { ScreeningConfig } from "@/hooks/recruitment/useScreeningConfig"
 
 interface ScreeningSchedulingModalProps {
   isOpen: boolean

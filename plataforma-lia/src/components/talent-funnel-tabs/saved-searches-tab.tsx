@@ -39,7 +39,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from"@/components/ui/alert-dialog"
-import type { SavedSearch, SearchMode, SearchSource } from"@/hooks/use-talent-funnel"
+import type { SavedSearch, SearchMode, SearchSource } from"@/hooks/candidates/use-talent-funnel"
 import { textStyles, buttonStyles, cardStyles, badgeStyles } from '@/lib/design-tokens'
 
 interface SavedSearchesTabProps {

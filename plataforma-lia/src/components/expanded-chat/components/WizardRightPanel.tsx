@@ -29,7 +29,7 @@ import {
 import type { SalaryBenchmark } from "../stages/SalaryStage"
 import type { WSIQuestionCandidate, CompanyDefaultQuestion } from "../stages/WSIQuestionsStage"
 import type { ReviewPublishStageProps } from "../stages/ReviewPublishStage"
-import type { FastTrackSuggestion } from "@/hooks/useFastTrack"
+import type { FastTrackSuggestion } from "@/hooks/recruitment/useFastTrack"
 import type {
   BasicInfoFields,
   DetectedCriteria,

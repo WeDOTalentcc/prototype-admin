@@ -40,7 +40,7 @@ Usuário clica botão → Aí sim executa
 | `generate_with_tools()` (tool calling nativo) | ✅ Existe | Claude + Gemini suportados, mas NÃO conectado ao fluxo |
 | **Banco de dados provisionado** | ❌ FALTA | PostgreSQL não ativo — operações DB falham |
 | **Modelo Claude com nome correto** | ❌ ERRADO | Usa `claude-sonnet-4-5` (não existe), correto: `claude-sonnet-4-6` |
-| **API keys de email** | ❌ FALTA | SendGrid/Resend sem API keys nos secrets |
+| **API keys de email** | ❌ FALTA | Mailgun/Resend sem API keys nos secrets |
 | **Conexão LLM → Tool Execution** | ❌ FALTA | Orquestrador não conecta intent a execução real |
 | **Ciclo fechado (execute → retorne resultado)** | ❌ FALTA | Endpoint retorna ui_action ao invés de executar |
 | **Conversa multi-turno com clarificação** | ❌ FALTA | Não pede parâmetros faltantes antes de executar |
@@ -111,7 +111,7 @@ LIA: "Vou enviar o email para Maria Santos (maria@email.com):
     ↓
 Usuário: "sim"
     ↓
-CommunicationDomain.execute_action("send_email", params) → Provider real (SendGrid/Resend)
+CommunicationDomain.execute_action("send_email", params) → Provider real (Mailgun/Resend)
     ↓
 LIA: "✅ Email enviado para Maria Santos com sucesso!"
 ```
@@ -202,7 +202,7 @@ LIA: "✅ Email enviado para Maria Santos com sucesso!"
 │                    INFRAESTRUTURA                           │
 │                                                             │
 │  ┌──────────┐  ┌──────────────┐  ┌──────────────────────┐  │
-│  │PostgreSQL│  │SendGrid/     │  │ Calendar API         │  │
+│  │PostgreSQL│  │Mailgun/     │  │ Calendar API         │  │
 │  │ (Neon)   │  │Resend        │  │ (futuro)             │  │
 │  │          │  │              │  │                      │  │
 │  │Candidates│  │Email sending │  │ Scheduling           │  │
@@ -237,9 +237,9 @@ Sem esta fase, NADA funciona. É a fundação.
 - **Critério de sucesso:** Chamada à API Claude retorna resposta válida
 
 #### F0.3 — Configurar API Keys de Email
-- **O que:** Adicionar API key do SendGrid ou Resend nos secrets
+- **O que:** Adicionar API key do Mailgun ou Resend nos secrets
 - **Por que:** Sem API key, o envio de email é simulado (mock)
-- **Decisão:** SendGrid (mais popular) ou Resend (mais moderno, melhor DX)
+- **Decisão:** Mailgun (mais popular) ou Resend (mais moderno, melhor DX)
 - **Critério de sucesso:** Email de teste enviado e recebido
 
 #### F0.4 — Validar Conexão LLM
@@ -549,14 +549,14 @@ if (response.action_executed === false && response.action_type) {
 Fluxo completo:
 1. `send_email` tool recebe `candidate_id`, `subject`, `body`
 2. Busca candidato no banco → pega email
-3. Chama provider (SendGrid/Resend) com email real
+3. Chama provider (Mailgun/Resend) com email real
 4. Registra envio no banco (histórico de comunicação)
 5. Retorna resultado para LIA mostrar no chat
 
 **Arquivos:**
 - `app/domains/communication/tools/communication_tools.py` — já tem `send_email()`
 - `app/domains/communication/services/email_service.py` — já tem providers
-- `app/services/email_providers/sendgrid_provider.py` — implementação SendGrid
+- `app/services/email_providers/mailgun_provider.py` — implementação Mailgun
 
 #### F5.2 — Agendamento Real
 
@@ -632,7 +632,7 @@ FASE 4 (Frontend)           ← EXPERIÊNCIA DO USUÁRIO
   └── F4.3 Fallback modais
 
 FASE 5 (Ações Reais)        ← PRODUÇÃO
-  ├── F5.1 Email real (SendGrid/Resend)
+  ├── F5.1 Email real (Mailgun/Resend)
   ├── F5.2 Agendamento real
   └── F5.3 Move candidate real (DB)
 ```

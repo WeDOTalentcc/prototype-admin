@@ -1,6 +1,6 @@
 import React from "react"
 import type { Job } from "@/components/jobs"
-import type { ScreeningConfig } from "@/hooks/useScreeningConfig"
+import type { ScreeningConfig } from "@/hooks/recruitment/useScreeningConfig"
 
 export interface JobsModalsSectionProps {
   allJobs: Job[]

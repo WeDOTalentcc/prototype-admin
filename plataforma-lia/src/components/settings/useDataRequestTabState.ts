@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { useDataRequestConfig } from "@/hooks/use-data-request-config"
+import { useDataRequestConfig } from "@/hooks/company/use-data-request-config"
 
 export function useDataRequestTabState(companyId: string) {
   const configHook = useDataRequestConfig(companyId)

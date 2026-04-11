@@ -7,7 +7,7 @@ import {
   ClipboardList,
 } from "lucide-react"
 import { RECRUITMENT_STAGES } from "@/lib/recruitment-stages"
-import type { TemplateSituation } from "@/hooks/use-communication-templates"
+import type { TemplateSituation } from "@/hooks/chat/use-communication-templates"
 
 export type TransitionActionType = 'email' | 'whatsapp' | 'triagem_wsi' | 'agendar_entrevista' | 'apenas_mover'
 

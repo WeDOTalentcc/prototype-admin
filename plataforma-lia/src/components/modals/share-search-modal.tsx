@@ -42,7 +42,7 @@ import {
 } from"lucide-react"
 import { cn } from"@/lib/utils"
 import { textStyles, cardStyles } from '@/lib/design-tokens'
-import { useCommunicationTemplates, type CommunicationTemplate } from '@/hooks/use-communication-templates'
+import { useCommunicationTemplates, type CommunicationTemplate } from '@/hooks/chat/use-communication-templates'
 import { toast } from"sonner"
 
 interface Recipient {

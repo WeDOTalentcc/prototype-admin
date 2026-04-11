@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useEffect } from "react"
-import { useModalA11y } from "@/hooks/use-modal-a11y"
+import { useModalA11y } from "@/hooks/ui/use-modal-a11y"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {

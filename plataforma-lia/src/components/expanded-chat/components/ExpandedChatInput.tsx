@@ -6,8 +6,8 @@ import { Button } from "@/components/ui/button"
 import { VoiceChatButton } from "@/components/chat/voice-chat-button"
 import { LiaVacancyQueriesGuide } from "@/components/ui/lia-vacancy-queries-guide"
 import { cn } from "@/lib/utils"
-import { useVoiceStream } from "@/hooks/use-voice-stream"
-import useCompanyId from "@/hooks/useCompanyId"
+import { useVoiceStream } from "@/hooks/ai/use-voice-stream"
+import useCompanyId from "@/hooks/company/useCompanyId"
 import { DRAFT_DETECTED_MESSAGE, INITIAL_JOB_CREATION_MESSAGE } from '../config'
 import type { Message, WizardDraftData } from '../types'
 

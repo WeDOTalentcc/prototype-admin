@@ -3,7 +3,7 @@
 import { formatBRL, CURRENCY_SYMBOL } from"@/lib/pricing"
 
 import React, { useState, useCallback, useEffect } from"react"
-import { useCompanyId } from"@/hooks/useCompanyId"
+import { useCompanyId } from"@/hooks/company/useCompanyId"
 import { textStyles, cardStyles, badgeStyles, actionButtonStyles } from '@/lib/design-tokens'
 import { Button } from"@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
@@ -38,7 +38,7 @@ import {
 } from"lucide-react"
 
 import { LiaFieldToggle, defaultLiaFieldExamples } from"./LiaFieldToggle"
-import { useCompanyLiaInstructions } from"@/hooks/use-company-lia-instructions"
+import { useCompanyLiaInstructions } from"@/hooks/company/use-company-lia-instructions"
 import { BenefitItemCard } from"./benefits/BenefitItemCard"
 import { BenefitFormModal } from"./benefits/BenefitFormModal"
 import { BenefitTemplateModal } from"./benefits/BenefitTemplateModal"

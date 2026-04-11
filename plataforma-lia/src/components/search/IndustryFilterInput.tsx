@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from"react"
 import { X, Search, ChevronDown, Brain, Loader2, AlertCircle, Zap } from"lucide-react"
 import { cn } from"@/lib/utils"
-import { useTagInputState } from"@/hooks/useTagInputState"
+import { useTagInputState } from"@/hooks/ui/useTagInputState"
 import { Badge } from"@/components/ui/badge"
 import { Input } from"@/components/ui/input"
 import {
@@ -17,7 +17,7 @@ import {
   getCanonicalKey,
   type Industry
 } from"@/lib/industry-constants"
-import { useSemanticSearch } from"@/hooks/useSemanticSearch"
+import { useSemanticSearch } from"@/hooks/search/useSemanticSearch"
 
 export type IndustryTimeFilter = 'current_past' | 'current_only'
 

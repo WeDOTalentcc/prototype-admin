@@ -18,7 +18,7 @@ import {
   TooltipTrigger,
 } from"@/components/ui/tooltip"
 import { CompanyPresetsModal } from"./CompanyPresetsModal"
-import { useTagInputState } from"@/hooks/useTagInputState"
+import { useTagInputState } from"@/hooks/ui/useTagInputState"
 import { useUIPreferencesStore } from"@/stores/ui-preferences-store"
 
 export interface ExcludedCompanyItem {

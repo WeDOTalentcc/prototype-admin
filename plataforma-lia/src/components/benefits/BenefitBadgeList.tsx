@@ -25,7 +25,7 @@ import {
   Clock,
   type LucideIcon,
 } from"lucide-react"
-import type { Benefit } from"@/hooks/useCompanyBenefits"
+import type { Benefit } from"@/hooks/company/useCompanyBenefits"
 import { BenefitDetailsSheet } from"./BenefitDetailsSheet"
 
 export const BENEFIT_CATEGORIES: {

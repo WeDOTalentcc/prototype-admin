@@ -3,7 +3,7 @@
 import React from "react"
 import { Switch } from "@/components/ui/switch"
 import { ChevronDown, ChevronRight, Star, Loader2 } from "lucide-react"
-import { useSubStatusPanel } from "@/hooks/use-sub-status-panel"
+import { useSubStatusPanel } from "@/hooks/recruitment/use-sub-status-panel"
 import { isRealId } from "./StageCardHelpers"
 import type { RecruitmentStage } from "./recruitment-journey.types"
 

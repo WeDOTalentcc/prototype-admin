@@ -18,7 +18,7 @@ import { renderHook, act } from "@testing-library/react"
 import { vi, describe, it, expect, beforeEach, afterEach } from "vitest"
 
 // Mock dos hooks de dependência
-vi.mock("@/hooks/useCreditEstimator", () => ({
+vi.mock("@/hooks/search/useCreditEstimator", () => ({
   useCreditEstimator: () => ({
     balance: null,
     fetchBalance: vi.fn().mockResolvedValue(undefined),
@@ -29,14 +29,14 @@ vi.mock("@/hooks/useCreditEstimator", () => ({
 const mockGlobalSettings = { globalSearchEnabled: true }
 let mockLoading = false
 
-vi.mock("@/hooks/useGlobalSearchSettings", () => ({
+vi.mock("@/hooks/search/useGlobalSearchSettings", () => ({
   useGlobalSearchSettings: () => ({
     settings: mockGlobalSettings,
     loading: mockLoading,
   }),
 }))
 
-import { useSearchSource } from "../use-search-source"
+import { useSearchSource } from "../search/use-search-source"
 
 beforeEach(() => {
   mockGlobalSettings.globalSearchEnabled = true

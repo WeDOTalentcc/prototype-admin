@@ -734,7 +734,7 @@ Candidato aplica
       v
 [6] OFERTA: IA personaliza comunicacao
     -> Templates personalizados por canal
-    -> CommunicationDispatcher envia via SendGrid/Twilio
+    -> CommunicationDispatcher envia via Mailgun/Twilio
       |
       v
 [7] CONTRATACAO: IA sugere acoes e move pipeline
@@ -986,7 +986,7 @@ Recrutador solicita envio de email
 |     |                |                                      |
 |     v                v                                      |
 |  +----------+  +------------+                               |
-|  | SendGrid |  | Mock       |                               |
+|  | Mailgun |  | Mock       |                               |
 |  | Provider |  | Email      |                               |
 |  | (prod)   |  | Provider   |                               |
 |  |          |  | (dev)      |                               |
@@ -1023,10 +1023,10 @@ Recrutador solicita envio de email
 +------------------------------------------------------------+
 | CommunicationDispatcher (baixo nivel)                       |
 |                                                             |
-|  - SendGrid API: mail.send()                                |
-|  - From: SENDGRID_FROM_EMAIL (noreply@...)                  |
+|  - Mailgun API: mail.send()                                |
+|  - From: MAILGUN_FROM_EMAIL (noreply@...)                  |
 |  - Reply-To: configuravel                                   |
-|  - Mock success quando SendGrid nao configurado             |
+|  - Mock success quando Mailgun nao configurado             |
 |  - Retorna message_id para tracking                         |
 +------------------------------------------------------------+
 ```
@@ -1045,7 +1045,7 @@ Recrutador solicita envio de email
 | Tracking | `communication` | `CommunicationService` (CommunicationLog) | `communication_get_history` | — | — (determinístico) |
 | Processamento assíncrono | `communication` | `CommunicationService` (process_queued_messages) | — | — | — (fila com retry) |
 
-**Integrações externas:** SendGrid API
+**Integrações externas:** Mailgun API
 
 ---
 
@@ -1801,7 +1801,7 @@ A plataforma migrou de um modelo agent-first para um modelo **domain-first**, on
 │                      INTEGRACOES EXTERNAS                                    │
 │                                                                             │
 │  IA: Anthropic (Claude) | OpenAI (GPT-4) | Google (Gemini)                 │
-│  Comunicacao: SendGrid | Twilio | Microsoft Graph | Deepgram               │
+│  Comunicacao: Mailgun | Twilio | Microsoft Graph | Deepgram               │
 │  Sourcing: Pearch AI | OpenMic.ai                                          │
 │  ATS: Merge.dev | Gupy | Pandape                                           │
 │  Negocio: WorkOS (auth) | Stripe (pagamentos) | HubSpot (CRM)             │
@@ -2223,7 +2223,7 @@ class EdgeCondition:
 │   │                                                           │             │
 │   │  Task 2: mass_communication_task                          │             │
 │   │    -> Envia emails/WhatsApp em lote                       │             │
-│   │    -> Rate limiting por provider (Twilio, SendGrid)       │             │
+│   │    -> Rate limiting por provider (Twilio, Mailgun)       │             │
 │   │                                                           │             │
 │   │  Task 3: ats_sync_task                                    │             │
 │   │    -> Sincroniza com Gupy/Pandapé/Merge                   │             │
@@ -5710,7 +5710,7 @@ As seções 7.1–7.10 documentam as **tools legacy** (109 tools) usadas pela ar
 | `email_providers` | Abstrações de provedores |
 | `email_providers/base` | Interface base de email |
 | `email_providers/resend_provider` | Provider Resend |
-| `email_providers/sendgrid_provider` | Provider SendGrid |
+| `email_providers/mailgun_provider` | Provider Mailgun |
 | `email_templates_data` | Dados de templates de email |
 | `whatsapp_service` | Serviço WhatsApp |
 | `whatsapp_provider` | Provider WhatsApp |
@@ -6582,7 +6582,7 @@ Controle granular de funcionalidades:
 
 | Serviço | Função |
 |---------|--------|
-| **SendGrid** | Envio de emails transacionais |
+| **Mailgun** | Envio de emails transacionais |
 | **Twilio/Meta** | WhatsApp messaging |
 | **Microsoft Graph** | Teams, calendários Outlook |
 | **Deepgram** | Transcrição de áudio (Nova-2) |
@@ -6891,7 +6891,7 @@ Engine Config:
 | Latência LLM | ALTA | Chamadas Claude/GPT levam 2-10s cada | Cache semântico, cascaded router |
 | Concurrent DB | MÉDIA | Pool pode saturar com muitos agents | pool_pre_ping, pool_recycle |
 | Embedding generation | MÉDIA | Gerar embeddings para cada CV/vaga | Batch processing, cache |
-| External API limits | MÉDIA | Pearch, Deepgram, SendGrid têm limits | Rate limiting, PolicyEngine |
+| External API limits | MÉDIA | Pearch, Deepgram, Mailgun têm limits | Rate limiting, PolicyEngine |
 | Token consumption | ALTA | Custo cresce com volume | Token tracking, billing alerts |
 
 ### 15.3 Horizontal Scalability
@@ -7296,7 +7296,7 @@ Consent Management:
 |---|---------|---------|---------|--------|
 | 1 | **~~A/B testing para prompts~~** — Medir impacto de mudanças em prompts | ALTO | Médio | ✅ IMPLEMENTADO — `ABTestingManager` em `app/shared/ab_testing.py` |
 | 2 | **~~Distributed tracing~~** — OpenTelemetry para rastrear requests cross-service | ALTO | Médio | ✅ IMPLEMENTADO — `@trace_span` decorator em `app/shared/tracing.py` |
-| 3 | **~~Circuit breakers~~** para APIs externas — Pearch, Deepgram, SendGrid | MÉDIO | Baixo | ✅ IMPLEMENTADO — `CircuitBreaker` em `app/shared/resilience/circuit_breaker.py` |
+| 3 | **~~Circuit breakers~~** para APIs externas — Pearch, Deepgram, Mailgun | MÉDIO | Baixo | ✅ IMPLEMENTADO — `CircuitBreaker` em `app/shared/resilience/circuit_breaker.py` |
 | 4 | **~~Testes automatizados para compliance~~** — FairnessGuard, FactChecker | MÉDIO | Baixo | ✅ IMPLEMENTADO — 44 testes em `tests/test_compliance_*.py` |
 | 5 | **~~Cache invalidation strategy~~** — Documentar e padronizar | MÉDIO | Baixo | ✅ IMPLEMENTADO — `CacheStrategy` em `app/shared/cache_strategy.py` |
 | 6 | **~~PII masking em logs~~** — Garantir que dados pessoais não vazem em logs | ALTO | Médio | ✅ IMPLEMENTADO — `PIIMasker` em `app/shared/pii_masking.py` |

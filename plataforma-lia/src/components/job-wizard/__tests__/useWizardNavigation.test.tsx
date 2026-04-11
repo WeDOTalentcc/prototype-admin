@@ -15,7 +15,7 @@ vi.mock('@/stores/wizard-store', () => ({
   })),
 }))
 
-vi.mock('@/hooks/useCompanyBenefits', () => ({
+vi.mock('@/hooks/company/useCompanyBenefits', () => ({
   useCompanyBenefits: () => ({
     benefits: [],
     isLoading: false,

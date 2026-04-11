@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/dialog"
 import { Loader2, Trophy, AlertCircle, Users } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { useCandidateCompare } from "@/hooks/use-candidate-compare"
+import { useCandidateCompare } from "@/hooks/candidates/use-candidate-compare"
 
 interface CandidateInfo {
   id: string

@@ -1,8 +1,8 @@
 "use client"
 
 import { useState, useMemo, useEffect, useCallback } from "react"
-import { useCompanyLiaInstructions } from "@/hooks/use-company-lia-instructions"
-import { useCompanyId } from "@/hooks/useCompanyId"
+import { useCompanyLiaInstructions } from "@/hooks/company/use-company-lia-instructions"
+import { useCompanyId } from "@/hooks/company/useCompanyId"
 import { DEFAULT_ALERTS, MOCK_WORKFORCE, INITIAL_DEPARTMENTS, AlertConfig, WorkforceEntry, MonthlyPlanning, Position, DepartmentData } from "./goalsPlanningConstants"
 
 const defaultAlerts = DEFAULT_ALERTS

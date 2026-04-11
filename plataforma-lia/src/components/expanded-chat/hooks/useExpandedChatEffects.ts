@@ -14,12 +14,12 @@ import {
 } from '..'
 import { liaApi } from "@/services/lia-api"
 import { useWSIQualityGates } from '.'
-import { useWizardAutoSave } from "@/hooks/use-wizard-auto-save"
+import { useWizardAutoSave } from "@/hooks/jobs/use-wizard-auto-save"
 import { Plus, Brain } from "lucide-react"
 
 import { useExpandedChatProactiveHandlers } from "./useExpandedChatProactiveHandlers"
 import { useCompanyConfigLoader } from "./useCompanyConfigLoader"
-import { useCompanyId } from "@/hooks/useCompanyId"
+import { useCompanyId } from "@/hooks/company/useCompanyId"
 export function useExpandedChatEffects(ctx) {
   const {
     INITIAL_STAGES, PROACTIVE_MESSAGE_DELAY, analytics, approvedCandidates,

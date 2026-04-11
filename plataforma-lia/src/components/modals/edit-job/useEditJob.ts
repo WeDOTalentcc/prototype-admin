@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from "react"
 import { toast } from "sonner"
-import { useRecruitmentStages } from "@/hooks/use-recruitment-stages"
-import { useCompanyLiaInstructions } from "@/hooks/use-company-lia-instructions"
+import { useRecruitmentStages } from "@/hooks/recruitment/use-recruitment-stages"
+import { useCompanyLiaInstructions } from "@/hooks/company/use-company-lia-instructions"
 import { liaApi, type JobVacancy } from "@/services/lia-api"
 import type { CompanyBenefit } from "@/types/benefits"
 import { toCompanyBenefit } from "@/types/benefits"

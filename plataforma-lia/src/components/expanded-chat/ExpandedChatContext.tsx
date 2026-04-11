@@ -4,7 +4,7 @@
 import { CURRENCY_SYMBOL } from "@/lib/pricing"
 import { createContext, useContext, ReactNode } from 'react'
 import { type WizardStage } from './config'
-import type { FastTrackJobData } from '@/hooks/useFastTrack'
+import type { FastTrackJobData } from '@/hooks/recruitment/useFastTrack'
 
 export interface TechnicalSkill {
   id: string

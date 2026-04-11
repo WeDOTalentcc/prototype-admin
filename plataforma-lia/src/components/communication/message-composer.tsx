@@ -9,7 +9,7 @@ import {
   Brain, Wand2, Loader2, Check, X, AlertCircle,
   Mail, MessageSquare, ChevronDown, RefreshCw
 } from"lucide-react"
-import { useCommunicationTemplates, CommunicationTemplate, TemplateSituation } from"@/hooks/use-communication-templates"
+import { useCommunicationTemplates, CommunicationTemplate, TemplateSituation } from"@/hooks/chat/use-communication-templates"
 import { ThinkingDots } from"@/components/ui/thinking-dots"
 
 export type MessageChannel = 'email' | 'whatsapp'

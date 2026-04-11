@@ -1151,7 +1151,7 @@ app/domains/communication/
 │   ├── email_providers/
 │   │   ├── base.py                   ← Interface base de email
 │   │   ├── resend_provider.py        ← Provider Resend
-│   │   └── sendgrid_provider.py      ← Provider SendGrid
+│   │   └── mailgun_provider.py      ← Provider Mailgun
 │   ├── email_templates_data.py       ← Dados de templates de email
 │   ├── whatsapp_service.py           ← Servico WhatsApp
 │   ├── whatsapp_provider.py          ← Provider WhatsApp
@@ -2104,7 +2104,7 @@ Todo dev que cria tools ou agentes DEVE garantir que:
 | email_providers | Abstracoes de provedores |
 | email_providers/base | Interface base de email |
 | email_providers/resend_provider | Provider Resend |
-| email_providers/sendgrid_provider | Provider SendGrid |
+| email_providers/mailgun_provider | Provider Mailgun |
 | email_templates_data | Dados de templates de email |
 | whatsapp_service | Servico WhatsApp |
 | whatsapp_provider | Provider WhatsApp |
@@ -4214,7 +4214,7 @@ A LIA se comunica por 5 canais, todos gerenciados por uma abstração unificada:
 │       │                                                          │
 │       ├── ChannelRouter (decide o melhor canal)                  │
 │       │                                                          │
-│       ├── EmailAdapter       → SendGrid / SMTP                  │
+│       ├── EmailAdapter       → Mailgun / SMTP                  │
 │       ├── WhatsAppAdapter    → Twilio / Meta API                │
 │       ├── SMSAdapter         → Twilio                           │
 │       ├── TeamsAdapter       → Microsoft Graph                  │

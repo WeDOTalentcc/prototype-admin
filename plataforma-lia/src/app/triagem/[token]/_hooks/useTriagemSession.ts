@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useCallback, useState } from "react"
 import { useParams } from "next/navigation"
-import { useTriagemChat } from "@/hooks/use-triagem-chat"
+import { useTriagemChat } from "@/hooks/chat/use-triagem-chat"
 
 const VOICE_AUTOPLAY_KEY = "lia-triagem-voice-autoplay"
 

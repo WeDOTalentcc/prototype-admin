@@ -5,8 +5,8 @@ import { Code, Laptop, Database, Wrench, Brain, Plus, Check, Trash2, Edit2, Star
 import { cn } from '@/lib/utils'
 import { textStyles } from '@/lib/design-tokens'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
-import { useCompanySkillsCatalog } from '@/hooks/useCompanySkillsCatalog'
-import { useCompanyTechStack, TechCategory } from '@/hooks/use-company-tech-stack'
+import { useCompanySkillsCatalog } from '@/hooks/company/useCompanySkillsCatalog'
+import { useCompanyTechStack, TechCategory } from '@/hooks/company/use-company-tech-stack'
 
 export interface TechnicalSkill {
   id: string

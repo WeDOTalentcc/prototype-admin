@@ -134,7 +134,7 @@ export function SharedContent({ hook }: SharedContentProps) {
         </div>
       </header>
 
-      <main className="max-w-6xl mx-auto px-4 py-8">
+      <main id="main-content" className="max-w-6xl mx-auto px-4 py-8">
         <section className="mb-8">
           <h1 className="text-3xl font-semibold text-lia-text-on-inverse mb-2">
             Candidatos para sua avaliação

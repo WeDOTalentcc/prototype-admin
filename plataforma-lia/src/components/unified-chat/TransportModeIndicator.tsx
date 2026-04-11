@@ -1,6 +1,6 @@
 "use client"
 
-import type { TransportMode } from "@/hooks/lia-chat-connection-types"
+import type { TransportMode } from "@/hooks/chat/lia-chat-connection-types"
 
 interface Props {
   transportMode: TransportMode
@@ -22,7 +22,7 @@ export function TransportModeIndicator({ transportMode, isReconnecting }: Props)
       ? "bg-emerald-500"
       : transportMode === "sse"
         ? "bg-amber-500"
-        : "bg-zinc-400"
+        : "bg-lia-text-disabled"
 
   return (
     <span

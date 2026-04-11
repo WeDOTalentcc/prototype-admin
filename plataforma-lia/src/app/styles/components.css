@@ -76,7 +76,7 @@
 
 /* Refined Components with animations */
 .wedo-card {
-  @apply bg-white dark:bg-gray-800;
+  @apply bg-lia-bg-primary dark:bg-lia-bg-secondary;
   border: 1px solid hsl(var(--wedo-gray-200));
   border-radius: 12px;
   box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.02);
@@ -89,8 +89,7 @@
 }
 
 .wedo-card-elevated {
-  /* @apply wedo-card - inline expansion below */
-  @apply bg-white dark:bg-gray-800;
+  @apply bg-lia-bg-primary dark:bg-lia-bg-secondary;
   border: 1px solid hsl(var(--wedo-gray-200));
   border-radius: 12px;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
@@ -118,17 +117,17 @@
 }
 
 .wedo-button-secondary {
-  @apply bg-gray-50 hover:bg-gray-100 text-gray-700 font-medium;
+  @apply bg-lia-bg-secondary hover:bg-lia-bg-tertiary text-lia-text-secondary font-medium;
   @apply px-4 py-2.5 rounded-lg;
-  @apply border border-gray-200 hover:border-gray-300;
-  @apply focus:ring-2 focus:ring-gray-500 focus:ring-offset-2;
+  @apply border border-lia-border-subtle hover:border-lia-border-default;
+  @apply focus:ring-2 focus:ring-lia-border-default focus:ring-offset-2;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .wedo-button-ghost {
-  @apply hover:bg-gray-50 text-gray-600 hover:text-gray-900 font-medium;
+  @apply hover:bg-lia-bg-secondary text-lia-text-secondary hover:text-lia-text-primary font-medium;
   @apply px-4 py-2.5 rounded-lg;
-  @apply focus:ring-2 focus:ring-gray-500 focus:ring-offset-2;
+  @apply focus:ring-2 focus:ring-lia-border-default focus:ring-offset-2;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -167,7 +166,7 @@
 /* Navigation items with animations */
 .wedo-nav-item {
   @apply flex items-center gap-3 px-3 py-2.5 font-medium rounded-lg;
-  @apply text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800;
+  @apply text-lia-text-secondary hover:bg-lia-bg-secondary;
   @apply cursor-pointer;
   font-family: var(--font-open-sans);
   font-size: 0.8125rem; /* 13px */
@@ -601,22 +600,28 @@
 }
 
 .focus-ring:focus {
-  @apply outline-none ring-2 ring-gray-900/20;
+  @apply outline-none ring-2 ring-lia-border-default;
 }
 
 .card {
-  @apply bg-white border border-gray-200 rounded-md shadow-sm;
-  @apply dark:bg-gray-800 dark:border-gray-700;
+  @apply bg-lia-bg-primary border border-lia-border-subtle rounded-md shadow-sm;
+  @apply dark:bg-lia-bg-secondary dark:border-lia-border-default;
 }
 
 .card-interactive {
-  @apply bg-white border border-gray-200 rounded-md shadow-sm transition-all duration-150 hover:shadow-md hover:-translate-y-0.5 cursor-pointer;
-  @apply dark:bg-gray-800 dark:border-gray-700;
+  @apply bg-lia-bg-primary border border-lia-border-subtle rounded-md shadow-sm transition-all duration-150 hover:shadow-md hover:-translate-y-0.5 cursor-pointer;
+  @apply dark:bg-lia-bg-secondary dark:border-lia-border-default;
 }
 
 .glass-card {
-  @apply bg-white/70 backdrop-blur-lg border border-gray-200/50 rounded-md shadow-sm;
-  @apply dark:bg-gray-800/70 dark:border-gray-700/50;
+  background-color: color-mix(in srgb, var(--lia-bg-primary) 70%, transparent);
+  @apply backdrop-blur-lg border rounded-md shadow-sm;
+  border-color: color-mix(in srgb, var(--lia-border-subtle) 50%, transparent);
+}
+
+.dark .glass-card {
+  background-color: color-mix(in srgb, var(--lia-bg-secondary) 70%, transparent);
+  border-color: color-mix(in srgb, var(--lia-border-default) 50%, transparent);
 }
 
 @media (prefers-reduced-motion: reduce) {

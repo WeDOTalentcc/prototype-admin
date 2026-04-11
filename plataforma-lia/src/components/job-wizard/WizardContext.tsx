@@ -27,7 +27,7 @@ import {
   INITIAL_PUBLISHING_PLATFORMS,
   AUTO_ADVANCE_CONFIDENCE_THRESHOLDS
 } from './constants'
-import { useCompanyBenefits } from '@/hooks/useCompanyBenefits'
+import { useCompanyBenefits } from '@/hooks/company/useCompanyBenefits'
 import type { JobBenefit } from '@/types/benefits'
 
 interface WizardContextValue {

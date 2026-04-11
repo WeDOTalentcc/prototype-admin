@@ -26,6 +26,7 @@
     "test:coverage": "vitest run --project=unit --project=unit-colocated --project=hooks --project=components --coverage",
     "test:ui": "vitest --ui --project=unit --project=unit-colocated --project=hooks --project=components",
     "test:all": "vitest run",
+    "generate:api-types": "curl -s http://localhost:8001/openapi.json > /tmp/lia-openapi.json && npx openapi-typescript /tmp/lia-openapi.json -o src/types/api.generated.ts",
     "analyze": "ANALYZE=true npm run build",
     "prepare": "husky"
   },

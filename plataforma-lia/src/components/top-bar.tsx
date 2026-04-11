@@ -35,9 +35,9 @@ import {
 import { NotificationSystem } from "@/components/notification-system"
 import { HitlPendingBadge } from "@/components/hitl-pending-badge"
 import { WeeklyDigestOverlay } from "@/components/notifications/weekly-digest-overlay"
-import { useWeeklyDigest } from "@/hooks/use-weekly-digest"
+import { useWeeklyDigest } from "@/hooks/ai/use-weekly-digest"
 import { ProfileModal } from "@/components/modals/profile-modal"
-import type { Notification as AppNotification } from "@/hooks/use-notifications"
+import type { Notification as AppNotification } from "@/hooks/shared/use-notifications"
 
 interface TopBarProps {
   onNavigate?: (page: string) => void

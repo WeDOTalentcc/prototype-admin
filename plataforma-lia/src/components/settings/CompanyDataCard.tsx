@@ -12,7 +12,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
 import { cn } from '@/lib/utils'
 import { textStyles } from '@/lib/design-tokens'
-import { LiaFieldKey } from '@/hooks/use-company-lia-instructions'
+import { LiaFieldKey } from '@/hooks/company/use-company-lia-instructions'
 import { defaultLiaFieldExamples } from './LiaFieldToggle'
 
 interface CompanyDataCardProps {

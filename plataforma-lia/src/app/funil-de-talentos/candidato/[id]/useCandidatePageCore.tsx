@@ -7,7 +7,7 @@ import { formatRelativeTime, formatFileSize } from "@/lib/format-utils"
 import { liaApi, type CandidateLocal } from "@/services/lia-api"
 import { type CommunicationType } from "@/components/modals/unified-communication-modal"
 import { toast } from "sonner"
-import { useCurrentCompany } from '@/hooks/use-current-company'
+import { useCurrentCompany } from '@/hooks/company/use-current-company'
 type ActiveTab = 'profile' | 'activities' | 'files' | 'opinions'
 type ActivityCategory = 'all' | 'interview' | 'screening' | 'general'
 

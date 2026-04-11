@@ -7,9 +7,9 @@ import { isClearChatCommand } from "@/lib/chat-commands"
 import { type KanbanCandidate } from "@/components/kanban"
 import { type CommunicationType } from "@/components/modals/unified-communication-modal"
 import { toast } from "sonner"
-import { useCompanyId } from "@/hooks/useCompanyId"
+import { useCompanyId } from "@/hooks/company/useCompanyId"
 import { useLiaChatContext } from "@/contexts/lia-float-context"
-import { formatMessageTime } from "@/hooks/use-lia-chat-connection"
+import { formatMessageTime } from "@/hooks/chat/use-lia-chat-connection"
 
 interface KanbanJob {
   id?: string | number

@@ -55,7 +55,7 @@ vi.mock('@/stores/recent-items-store', () => ({
 const mockFetch = vi.fn()
 global.fetch = mockFetch
 
-vi.mock('@/hooks/use-navigation-intent', () => ({
+vi.mock('@/hooks/shared/use-navigation-intent', () => ({
   useNavigationIntent: () => ({ detect: vi.fn(), result: null, clear: vi.fn() }),
 }))
 

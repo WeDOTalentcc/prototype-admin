@@ -1,9 +1,9 @@
 "use client"
 
 import { useState, useCallback, useEffect } from "react"
-import { useGlobalSearchSettings } from "@/hooks/useGlobalSearchSettings"
+import { useGlobalSearchSettings } from "@/hooks/search/useGlobalSearchSettings"
 import type { SearchFilters } from "@/components/search/advanced-filters-modal"
-import type { SearchTab, SearchSource } from "@/hooks/usePromptState"
+import type { SearchTab, SearchSource } from "@/hooks/ui/usePromptState"
 
 export interface UsePromptSearchStateReturn {
   showGlobalSearchOptions: boolean

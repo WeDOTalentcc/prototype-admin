@@ -6,9 +6,9 @@ import { isConversationalMessage, isGenericQuestion } from "./liaMessageUtils"
 import type { Candidate } from "../types"
 import type { LIAChatMessage, CandidatesLIAHandlersContext } from "./useCandidatesLIAHandlers"
 import type { SearchFilters } from "@/components/search/advanced-filters-modal"
-import { useCompanyId } from "@/hooks/useCompanyId"
+import { useCompanyId } from "@/hooks/company/useCompanyId"
 import { useLiaChatContext } from "@/contexts/lia-float-context"
-import { formatMessageTime } from "@/hooks/use-lia-chat-connection"
+import { formatMessageTime } from "@/hooks/chat/use-lia-chat-connection"
 
 type SearchTab = 'ia-natural' | 'similar' | 'job-description' | 'boolean' | 'arquetipos' | 'filtros'
 

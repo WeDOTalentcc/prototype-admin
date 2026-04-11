@@ -3,11 +3,11 @@
 import { useState, useRef, useEffect, useCallback } from"react"
 import { X, Brain, Loader2, Search, ChevronDown, Info, Zap } from"lucide-react"
 import { cn } from"@/lib/utils"
-import { useTagInputState } from"@/hooks/useTagInputState"
+import { useTagInputState } from"@/hooks/ui/useTagInputState"
 import { Badge } from"@/components/ui/badge"
 import { Input } from"@/components/ui/input"
 import { Popover, PopoverContent, PopoverTrigger } from"@/components/ui/popover"
-import { useSemanticSearch } from"@/hooks/useSemanticSearch"
+import { useSemanticSearch } from"@/hooks/search/useSemanticSearch"
 
 interface FieldsOfStudyInputProps {
   mode: 'regular' | 'nested'

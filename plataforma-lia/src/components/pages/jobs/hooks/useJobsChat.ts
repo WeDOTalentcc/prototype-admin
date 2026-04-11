@@ -2,8 +2,8 @@
 
 import { useState, useRef, useEffect, useCallback } from "react"
 import { callOrchestratedJobsManagement } from "@/lib/api/kanban-assistant"
-import { useLiaSuggestions, useJobInsights, useLiaExpandedPrompt } from "@/hooks/use-lia-suggestions"
-import { useCompanyId } from "@/hooks/useCompanyId"
+import { useLiaSuggestions, useJobInsights, useLiaExpandedPrompt } from "@/hooks/ai/use-lia-suggestions"
+import { useCompanyId } from "@/hooks/company/useCompanyId"
 import { useLiaFloat } from "@/contexts/lia-float-context"
 import type { Job } from "@/components/jobs"
 

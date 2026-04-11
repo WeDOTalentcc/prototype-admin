@@ -6,7 +6,7 @@
  */
 
 import { renderHook, act, waitFor } from "@testing-library/react"
-import { useNavigationIntent } from "../use-navigation-intent"
+import { useNavigationIntent } from "../shared/use-navigation-intent"
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 

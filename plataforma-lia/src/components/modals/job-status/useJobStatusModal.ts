@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo, useCallback, useRef } from "react"
 import { toast } from "sonner"
-import { useCommunicationTemplates } from "@/hooks/use-communication-templates"
+import { useCommunicationTemplates } from "@/hooks/chat/use-communication-templates"
 import { replaceTemplateVariables } from "./job-status-utils"
 import { useJobUIStore } from "@/stores/job-ui-store"
 import type {

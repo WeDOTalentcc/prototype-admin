@@ -13,7 +13,7 @@ import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 import { MessageSquare, Globe, Phone, Loader2 } from "lucide-react"
 import { toast } from "sonner"
-import type { ScreeningConfig } from "@/hooks/useScreeningConfig"
+import type { ScreeningConfig } from "@/hooks/recruitment/useScreeningConfig"
 
 interface ScreeningChannelsModalProps {
   isOpen: boolean

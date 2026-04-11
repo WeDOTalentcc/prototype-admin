@@ -30,9 +30,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from"@/components/ui/alert-dialog"
-import { useGlobalSearchSettings } from"@/hooks/useGlobalSearchSettings"
+import { useGlobalSearchSettings } from"@/hooks/search/useGlobalSearchSettings"
 import { INDUSTRIES, INDUSTRY_CATEGORIES, type Industry } from"@/lib/industry-constants"
-import { useSemanticSearch } from"@/hooks/useSemanticSearch"
+import { useSemanticSearch } from"@/hooks/search/useSemanticSearch"
 import { AudioRecordButton } from"@/components/ui/audio-record-button"
 import { EditArchetypeModal } from"./EditArchetypeModal"
 import { SearchModeArchetypes } from"./SearchModeArchetypes"

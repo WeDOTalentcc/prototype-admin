@@ -1,9 +1,9 @@
 "use client"
 
 import React, { useEffect, useCallback } from "react"
-import { useTemplateSuggestions } from "@/hooks/use-template-suggestions"
+import { useTemplateSuggestions } from "@/hooks/ai/use-template-suggestions"
 import { useTemplateSuggestionQueue } from "@/components/template-suggestion-toast"
-import { useCreditEstimator } from "@/hooks/useCreditEstimator"
+import { useCreditEstimator } from "@/hooks/search/useCreditEstimator"
 import { useChatStateStore } from "@/stores/chat-state-store"
 
 interface UseEAPEffectsParams {

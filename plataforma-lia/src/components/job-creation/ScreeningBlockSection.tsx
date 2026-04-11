@@ -5,7 +5,7 @@ import { Badge } from"@/components/ui/badge"
 import { Checkbox } from"@/components/ui/checkbox"
 import { Button } from"@/components/ui/button"
 import { ChevronDown, ChevronUp, Lock, Plus, Trash2 } from"lucide-react"
-import type { UnifiedScreeningQuestion } from"@/hooks/use-screening-questions"
+import type { UnifiedScreeningQuestion } from"@/hooks/recruitment/use-screening-questions"
 import { cn } from"@/lib/utils"
 import { WSI_AUTOMATIC_MESSAGES, WSI_BLOCKS, formatMessageWithVariables } from"./ScreeningPanelConstants"
 

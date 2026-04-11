@@ -22,7 +22,7 @@ import dynamic from"next/dynamic"
 import { LoadingModal } from"@/components/ui/loading"
 const UnifiedCommunicationModal = dynamic(() => import("@/components/modals/unified-communication-modal").then(m => ({ default: m.UnifiedCommunicationModal })), { ssr: false, loading: () => <LoadingModal /> })
 
-import { useCurrentCompany } from '@/hooks/use-current-company'
+import { useCurrentCompany } from '@/hooks/company/use-current-company'
 import { useCandidatePageCore } from"./useCandidatePageCore"
 import { CandidateProfileTab } from"./CandidateProfileTab"
 import { CandidatoActivitiesTab } from"./components/CandidatoActivitiesTab"

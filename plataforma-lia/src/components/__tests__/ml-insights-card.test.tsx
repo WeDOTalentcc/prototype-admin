@@ -12,9 +12,9 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { render, screen, fireEvent, waitFor } from "@testing-library/react"
 import { MLInsightsCard } from "../ml-insights-card"
-import { useMLPredictions } from "@/hooks/use-ml-predictions"
+import { useMLPredictions } from "@/hooks/ai/use-ml-predictions"
 
-vi.mock("@/hooks/use-ml-predictions")
+vi.mock("@/hooks/ai/use-ml-predictions")
 
 const mockFetchTimeToFill = vi.fn()
 const mockFetchSalary = vi.fn()

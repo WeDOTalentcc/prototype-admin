@@ -6,7 +6,7 @@ import { Copy } from "lucide-react"
 import { LoadingModal } from "@/components/ui/loading"
 import { toast } from "sonner"
 import type { KanbanPageCoreState } from "./hooks/useKanbanPageCore"
-import { useCompanyId } from "@/hooks/useCompanyId"
+import { useCompanyId } from "@/hooks/company/useCompanyId"
 
 const GeneralScoreModal = dynamic(() => import("@/components/modals/general-score-modal").then(m => ({ default: m.GeneralScoreModal })), { ssr: false, loading: () => <LoadingModal /> })
 const TechnicalTestModal = dynamic(() => import("@/components/modals/technical-test-modal").then(m => ({ default: m.TechnicalTestModal })), { ssr: false, loading: () => <LoadingModal /> })

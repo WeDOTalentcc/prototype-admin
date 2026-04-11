@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react"
 import { toast } from "sonner"
-import { useCommunicationTemplates, type CommunicationTemplate, type TemplateSituation } from "@/hooks/use-communication-templates"
+import { useCommunicationTemplates, type CommunicationTemplate, type TemplateSituation } from "@/hooks/chat/use-communication-templates"
 import {
   type TransitionActionType,
   type Candidate,

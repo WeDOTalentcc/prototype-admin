@@ -4,7 +4,7 @@ import { useState, useMemo, useCallback, useEffect } from "react"
 import type { ActiveTab, ViewMode, TeamMetrics, RecruiterData } from "./indicators.types"
 import { recruitersData } from "./indicators.constants"
 import { useAuth } from "@/contexts/auth-context"
-import { useCompanyId } from "@/hooks/useCompanyId"
+import { useCompanyId } from "@/hooks/company/useCompanyId"
 
 const API_BASE = "/api/backend-proxy"
 

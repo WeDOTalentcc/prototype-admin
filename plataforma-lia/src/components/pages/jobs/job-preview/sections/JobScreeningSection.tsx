@@ -12,7 +12,7 @@ import {
   ChevronDown, ChevronUp
 } from"lucide-react"
 import { type Job } from"@/components/jobs"
-import { type ScreeningConfig } from"@/hooks/useScreeningConfig"
+import { type ScreeningConfig } from"@/hooks/recruitment/useScreeningConfig"
 import { WSI_BLOCKS, WSI_AUTOMATIC_MESSAGES, formatMessageWithVariables } from"@/components/jobs/jobsPageConstants"
 import {
   type TechnicalRequirement,

@@ -15,7 +15,7 @@ import { JobsCompactTableView } from"@/components/pages/jobs/JobsCompactTableVie
 import { ColumnConfigPanel } from"@/components/pages/jobs/ColumnConfigPanel"
 import { toast } from"sonner"
 import type { Job } from"@/components/jobs"
-import type { ScreeningConfig } from"@/hooks/useScreeningConfig"
+import type { ScreeningConfig } from"@/hooks/recruitment/useScreeningConfig"
 import type { JobVacancyMetrics } from"@/services/lia-api"
 
 interface JobFiltersLocal {

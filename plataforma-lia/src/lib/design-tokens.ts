@@ -280,7 +280,7 @@ export const buttonStyles = {
   ghost: 'bg-transparent hover:bg-lia-bg-tertiary text-lia-text-secondary font-medium rounded-md px-4 py-2 transition-colors focus:ring-2 focus:ring-lia-border-medium/20 focus:outline-none dark:text-lia-text-secondary dark:hover:bg-lia-btn-primary-hover dark:hover:text-lia-text-inverse',
   
   // v4.1: Destructive
-  destructive: 'bg-status-error hover:bg-status-error active:bg-status-error text-white font-semibold rounded-md px-4 py-2 transition-colors focus:ring-2 focus:ring-red-600/20 focus:outline-none',
+  destructive: 'bg-status-error hover:bg-status-error active:bg-status-error text-white font-semibold rounded-md px-4 py-2 transition-colors focus:ring-2 focus:ring-status-error/20 focus:outline-none',
   
   // v4.1: Link style
   link: 'bg-transparent text-lia-text-secondary hover:text-lia-text-primary font-medium rounded-md px-2 py-1 transition-colors underline-offset-4 hover:underline dark:text-lia-text-secondary dark:hover:text-lia-text-inverse',

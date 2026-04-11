@@ -1929,7 +1929,7 @@ LIA: "Perfeito!
 **Status:** 🟡 Parcialmente Implementado
 
 **Pendências:**
-- [ ] Integração com serviço de email (SendGrid, AWS SES)
+- [ ] Integração com serviço de email (Mailgun, AWS SES)
 - [ ] Tracking de abertura/cliques
 - [ ] Detecção de respostas automáticas
 
@@ -2644,7 +2644,7 @@ Score LIA = (
 | F2-3 | ML para calibração de scoring | Média | Muito Alta |
 | F2-4 | Integração real Pearch AI API | Alta | Alta |
 | F2-5 | Sistema de gestão de créditos | Alta | Média |
-| F3-1 | Integração SendGrid/AWS SES | Alta | Média |
+| F3-1 | Integração Mailgun/AWS SES | Alta | Média |
 | F3-2 | Tracking de emails | Média | Média |
 | F3-3 | Integração WhatsApp Business API | Alta | Alta |
 | F4-1 | Timer 24h com reminder | Média | Baixa |
@@ -2676,7 +2676,7 @@ Score LIA = (
 | INT-5 | Microsoft Graph Calendar | Alta | Alta |
 | INT-6 | WhatsApp Business | Alta | Alta |
 | INT-7 | Pearch AI | Alta | Alta |
-| INT-8 | SendGrid/AWS SES | Alta | Média |
+| INT-8 | Mailgun/AWS SES | Alta | Média |
 | INT-9 | Workforce Planning (TBD) | Baixa | Alta |
 
 ---

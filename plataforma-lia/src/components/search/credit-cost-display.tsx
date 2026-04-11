@@ -13,7 +13,7 @@ import {
   getCostColor,
   getCostBgColor,
   describeCostBreakdown
-} from"@/hooks/useCreditEstimator"
+} from"@/hooks/search/useCreditEstimator"
 
 interface PearchOptions {
   searchType?:"fast" |"pro"

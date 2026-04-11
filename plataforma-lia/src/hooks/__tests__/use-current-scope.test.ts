@@ -17,7 +17,7 @@
  * 12. Hook retorna global quando pathname é null
  */
 
-import { resolveScopeFromPathname } from "../use-current-scope"
+import { resolveScopeFromPathname } from "../company/use-current-scope"
 
 describe("resolveScopeFromPathname — mapeamento de URL para PromptScope", () => {
 
@@ -85,7 +85,7 @@ describe("resolveScopeFromPathname — mapeamento de URL para PromptScope", () =
 // ── Testes do hook useCurrentScope via mock de usePathname ──────────────────
 
 import { renderHook } from "@testing-library/react"
-import { useCurrentScope } from "../use-current-scope"
+import { useCurrentScope } from "../company/use-current-scope"
 
 // Mocka next/navigation
 vi.mock("next/navigation", () => ({

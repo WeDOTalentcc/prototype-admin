@@ -15,7 +15,7 @@ import { Brain, X, ExternalLink, Loader2, Send } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useLiaFloat, useLiaChatContext } from "@/contexts/lia-float-context"
 import { ThinkingDots } from "@/components/ui/thinking-dots"
-import { formatMessageTime, type LiaChatMessage } from "@/hooks/use-lia-chat-connection"
+import { formatMessageTime, type LiaChatMessage } from "@/hooks/chat/use-lia-chat-connection"
 import { ChatBubbleBase } from "@/components/chat/chat-bubble-base"
 
 

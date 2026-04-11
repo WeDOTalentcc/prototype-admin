@@ -28,7 +28,7 @@ import {
   DollarSign,
 } from "lucide-react"
 import { isApplicationSource } from "@/lib/recruitment-stages"
-import { getSuggestionForCandidate } from "@/hooks/useCandidateSuggestions"
+import { getSuggestionForCandidate } from "@/hooks/ai/useCandidateSuggestions"
 
 type AISuggestion = {
   id: string
@@ -95,7 +95,7 @@ export function KanbanCardStatusBadges({
 <div className="mt-2 flex flex-wrap gap-1">
   {/* AI Suggestion Badge */}
   {(() => {
-    const suggestion = getSuggestionForCandidate(aiSuggestions as unknown as import("@/hooks/useCandidateSuggestions").AISuggestion[], String(candidate.id))
+    const suggestion = getSuggestionForCandidate(aiSuggestions as unknown as import("@/hooks/ai/useCandidateSuggestions").AISuggestion[], String(candidate.id))
     if (suggestion) {
       return (
         <div onClick={(e) => e.stopPropagation()}>

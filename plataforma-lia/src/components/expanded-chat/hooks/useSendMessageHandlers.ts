@@ -39,7 +39,7 @@ import type { JobConfig } from "./usePublishingState"
 import type { FieldChange } from "./useChatSync"
 import type { VacancySummary } from "@/components/job-creation/vacancy-search-results"
 import type { VacancyFullDetails } from "@/components/job-creation/vacancy-full-summary"
-import type { EvaluationStepResponse } from "@/hooks/use-job-wizard-backend"
+import type { EvaluationStepResponse } from "@/hooks/jobs/use-job-wizard-backend"
 import { useSendMessageInterceptors } from './useSendMessageInterceptors'
 import { useSendMessageAPIDispatchers } from './useSendMessageAPIDispatchers'
 
@@ -97,7 +97,7 @@ export interface SendMessageHandlersContext {
   setIsPanelOpen: (val: boolean) => void
   localCandidateCount: number
   setShowCalibrationModal: (val: boolean) => void
-  fastTrack: ReturnType<typeof import("@/hooks/useFastTrack").useFastTrack>
+  fastTrack: ReturnType<typeof import("@/hooks/recruitment/useFastTrack").useFastTrack>
   fastTrackState: FastTrackState
   setFastTrackState: (state: FastTrackState) => void
   fastTrackSearchResults: VacancySummary[]

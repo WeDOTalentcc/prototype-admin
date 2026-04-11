@@ -2,11 +2,11 @@
 
 import React, { useState, useEffect, useRef, useCallback } from "react"
 import { useLiaFloat, useLiaChatContext } from "@/contexts/lia-float-context"
-import { useNavigationIntent } from "@/hooks/use-navigation-intent"
-import { useActionIntent, actionTypeToDomain, type ActionType } from "@/hooks/use-action-intent"
-import { formatMessageTime, type LiaChatMessage } from "@/hooks/use-lia-chat-connection"
-import { resolveScopeFromPathname } from "@/hooks/use-current-scope"
-import { useCvScreening } from "@/hooks/use-cv-screening"
+import { useNavigationIntent } from "@/hooks/shared/use-navigation-intent"
+import { useActionIntent, actionTypeToDomain, type ActionType } from "@/hooks/shared/use-action-intent"
+import { formatMessageTime, type LiaChatMessage } from "@/hooks/chat/use-lia-chat-connection"
+import { resolveScopeFromPathname } from "@/hooks/company/use-current-scope"
+import { useCvScreening } from "@/hooks/recruitment/use-cv-screening"
 import { useUIPreferencesStore, type LiaRecentItem } from "@/stores/ui-preferences-store"
 
 export type FloatMessage = LiaChatMessage

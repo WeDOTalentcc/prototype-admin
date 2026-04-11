@@ -6,7 +6,7 @@ import { useState, useEffect, useCallback } from "react"
 import type { TechnicalSkill, BasicInfoFields, SalaryInfo, DetectedCriteria, Benefit } from '../ExpandedChatContext'
 import type { FieldOrigin } from '../../job-creation/field-origin-badge'
 import type { JobConfig } from './usePublishingState'
-import { useCompanyId } from '@/hooks/useCompanyId'
+import { useCompanyId } from '@/hooks/company/useCompanyId'
 
 export interface CompanyConfig {
   workModel?: string

@@ -3,8 +3,8 @@
 import { formatBRL, CURRENCY_SYMBOL } from"@/lib/pricing"
 
 import React, { useState, useRef, useEffect, useCallback } from"react"
-import { useJobReport } from"@/hooks/use-job-report"
-import { useMLPredictions } from"@/hooks/use-ml-predictions"
+import { useJobReport } from"@/hooks/jobs/use-job-report"
+import { useMLPredictions } from"@/hooks/ai/use-ml-predictions"
 import { useAuthStore } from"@/stores/auth-store"
 import { Button } from"@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"

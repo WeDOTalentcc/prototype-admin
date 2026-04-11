@@ -6,7 +6,7 @@ import {
   ChevronDown, ChevronUp, Brain, Pencil, Check,
   GitBranch, Calendar, MessageSquare, Filter, Zap, Loader2, X, Maximize2
 } from "lucide-react"
-import { useHiringPolicies } from "@/hooks/use-hiring-policies"
+import { useHiringPolicies } from "@/hooks/company/use-hiring-policies"
 import { FIELD_LABELS, POLICY_BLOCKS, FIELD_CONFIGS, formatFieldValue } from "@/lib/hiring-policy-utils"
 import { LiaChatMessage, LiaChatInput, LiaLoadingIndicator } from "@/components/ui/lia-expanded-panel"
 import { textStyles } from "@/lib/design-tokens"

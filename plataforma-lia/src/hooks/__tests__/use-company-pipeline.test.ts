@@ -13,7 +13,7 @@
  */
 import { renderHook, waitFor } from "@testing-library/react"
 import { vi, describe, it, expect, beforeEach, afterEach } from "vitest"
-import { useCompanyPipeline } from "../use-company-pipeline"
+import { useCompanyPipeline } from "../company/use-company-pipeline"
 
 // Mock dos módulos de constantes
 vi.mock("@/lib/recruitment-stages", () => ({

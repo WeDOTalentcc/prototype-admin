@@ -1,1 +1,1 @@
-export { useCurrentCompany } from './use-current-company'
+export { useCurrentCompany } from './company/use-current-company'

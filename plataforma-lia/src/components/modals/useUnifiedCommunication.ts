@@ -5,9 +5,9 @@ import {
   Mail, MessageSquare, FileText, Calendar, CheckCircle
 } from "lucide-react"
 import { liaApi } from "@/services/lia-api"
-import { CommunicationTemplate, TemplateSituation } from '@/hooks/use-communication-templates'
+import { CommunicationTemplate, TemplateSituation } from '@/hooks/chat/use-communication-templates'
 import { toast } from "sonner"
-import { useModalA11y } from "@/hooks/use-modal-a11y"
+import { useModalA11y } from "@/hooks/ui/use-modal-a11y"
 import type {
   CommunicationType,
   CommunicationChannel,

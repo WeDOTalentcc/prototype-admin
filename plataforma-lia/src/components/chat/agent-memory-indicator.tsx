@@ -2,7 +2,7 @@
 
 import React, { useState, useCallback } from "react";
 import { Brain, ChevronDown, ChevronUp, Trash2 } from "lucide-react";
-import { useAgentMemory } from "@/hooks/useAgentMemory";
+import { useAgentMemory } from "@/hooks/chat/useAgentMemory";
 import { formatRelativeTime } from "@/lib/format-utils";
 import { cn } from "@/lib/utils";
 

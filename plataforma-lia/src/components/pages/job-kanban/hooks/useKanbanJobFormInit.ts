@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useCompanyDefaults } from "@/hooks/use-company-defaults"
+import { useCompanyDefaults } from "@/hooks/company/use-company-defaults"
 import { getCompanyPipelineStages } from "@/lib/recruitment-stages"
 
 export function useKanbanJobFormInit(currentJob: Record<string, unknown> | null) {

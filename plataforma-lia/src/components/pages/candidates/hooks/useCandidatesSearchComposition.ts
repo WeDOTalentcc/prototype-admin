@@ -12,8 +12,8 @@ import { useRevealContact } from "./useRevealContact"
 import { useCandidatesExecuteSearch } from "./useCandidatesExecuteSearch"
 import { useCandidatesCVHandlers } from "./useCandidatesCVHandlers"
 import { useCandidatesSearch } from "./useCandidatesSearch"
-import type { useTalentFunnel } from "@/hooks/use-talent-funnel"
-import type { useHideViewedCandidates } from "@/hooks/useHideViewedCandidates"
+import type { useTalentFunnel } from "@/hooks/candidates/use-talent-funnel"
+import type { useHideViewedCandidates } from "@/hooks/candidates/useHideViewedCandidates"
 
 type SearchSource = 'local' | 'global' | 'hybrid'
 

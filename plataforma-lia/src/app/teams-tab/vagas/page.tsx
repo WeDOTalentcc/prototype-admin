@@ -3,7 +3,7 @@
 import { useCallback } from "react"
 import { JobsPage } from "@/components/pages/jobs-page"
 import { useTeamsSSOContext } from "@/contexts/teams-sso-context"
-import { useTeamsTabTracker } from "@/hooks/use-teams-tab-tracker"
+import { useTeamsTabTracker } from "@/hooks/shared/use-teams-tab-tracker"
 
 export default function TeamsTabVagas() {
   const { teamsUserId, platformUserId } = useTeamsSSOContext()

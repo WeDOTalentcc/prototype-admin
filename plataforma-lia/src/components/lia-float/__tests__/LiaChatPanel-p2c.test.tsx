@@ -48,7 +48,7 @@ const mockWsConnect = vi.fn()
 const mockSendApproval = vi.fn()
 const mockWsSend = vi.fn()
 
-vi.mock("@/hooks/use-float-streaming", () => ({
+vi.mock("@/hooks/ai/use-float-streaming", () => ({
   useFloatStreaming: () => ({
     isConnected: false,
     isStreaming: false,
@@ -74,7 +74,7 @@ const mockInitConversation = vi.fn().mockResolvedValue("conv-123")
 
 const _msgStore = vi.hoisted(() => ({ messages: [] as { id: string; sender: string; content: string; timestamp: string }[] }))
 
-vi.mock("@/hooks/use-float-conversation", () => ({
+vi.mock("@/hooks/chat/use-float-conversation", () => ({
   useFloatConversation: () => ({
     conversationId: null,
     messages: _msgStore.messages,
@@ -89,7 +89,7 @@ vi.mock("@/hooks/use-float-conversation", () => ({
   formatMessageTime: () => "10:00",
 }))
 
-vi.mock("@/hooks/use-navigation-intent", () => ({
+vi.mock("@/hooks/shared/use-navigation-intent", () => ({
   useNavigationIntent: () => ({
     result: null,
     detect: vi.fn().mockResolvedValue(null),
@@ -97,14 +97,14 @@ vi.mock("@/hooks/use-navigation-intent", () => ({
   }),
 }))
 
-vi.mock("@/hooks/use-action-intent", () => ({
+vi.mock("@/hooks/shared/use-action-intent", () => ({
   useActionIntent: () => ({
     detect: vi.fn().mockReturnValue({ actionType: null, label: null }),
   }),
   actionTypeToDomain: () => "",
 }))
 
-vi.mock("@/hooks/use-current-scope", () => ({
+vi.mock("@/hooks/company/use-current-scope", () => ({
   useCurrentScope: () => ({ scope: "global", scopeName: "Global" }),
   resolveScopeFromPathname: vi.fn().mockReturnValue("global"),
 }))

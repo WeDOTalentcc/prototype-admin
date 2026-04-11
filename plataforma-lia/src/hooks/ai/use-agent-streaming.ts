@@ -16,7 +16,7 @@
  * mapeia diretamente para composable `useAgentStreaming()`.
  */
 
-import { useChatTransport, type TransportEvent, type TransportMode } from './useChatTransport'
+import { useChatTransport, type TransportEvent, type TransportMode } from '@/hooks/chat/useChatTransport'
 
 export type StreamingEventType =
   | 'token'

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo, useCallback, useRef } from "react"
 import { toast } from "sonner"
-import { useCommunicationTemplates, type TemplateSituation } from "@/hooks/use-communication-templates"
+import { useCommunicationTemplates, type TemplateSituation } from "@/hooks/chat/use-communication-templates"
 import { useJobUIStore } from "@/stores/job-ui-store"
 import type { JobUnpublishModalProps, UnpublishData } from "./job-unpublish-modal"
 

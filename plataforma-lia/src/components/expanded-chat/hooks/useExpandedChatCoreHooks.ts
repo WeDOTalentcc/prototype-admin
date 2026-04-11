@@ -17,15 +17,15 @@ import type { DetectedCriteria } from '../ExpandedChatContext'
 import { useChatSync, useToolCalling, useFieldHighlight } from '.'
 import { useConversationMemory } from './useConversationMemory'
 import { useLearning } from './useLearning'
-import { useFastTrack } from '@/hooks/useFastTrack'
-import { useJobWizard } from "@/hooks/use-lia-suggestions"
-import { useJobWizardBackend } from "@/hooks/use-job-wizard-backend"
+import { useFastTrack } from '@/hooks/recruitment/useFastTrack'
+import { useJobWizard } from "@/hooks/ai/use-lia-suggestions"
+import { useJobWizardBackend } from "@/hooks/jobs/use-job-wizard-backend"
 import { useProactiveHandlers, useGroupedPanelChangeHandler } from "./useExpandedChatCallbacks"
 import { useWizardAnalytics } from './useWizardAnalytics'
 import { useContextSwitching, type WizardSnapshot, type GeneralChatSnapshot } from './useContextSwitching'
 import { useAnalyticsSession } from './useAnalyticsSession'
 import { useConversationMemoryInit } from './useConversationMemoryInit'
-import { useCompanyId } from '@/hooks/useCompanyId'
+import { useCompanyId } from '@/hooks/company/useCompanyId'
 import type { Message, ExpandedChatModalProps } from '../types'
 
 interface AuthUser {

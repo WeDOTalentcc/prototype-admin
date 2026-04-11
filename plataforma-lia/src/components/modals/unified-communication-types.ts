@@ -1,5 +1,5 @@
 import React from "react"
-import { TemplateSituation } from '@/hooks/use-communication-templates'
+import { TemplateSituation } from '@/hooks/chat/use-communication-templates'
 import { Briefcase, FileText, Users, Building, Video } from "lucide-react"
 
 export type CommunicationType = 'email' | 'whatsapp' | 'triagem' | 'agendamento' | 'feedback'

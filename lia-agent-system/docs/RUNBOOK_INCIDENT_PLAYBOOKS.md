@@ -340,20 +340,20 @@ for name, info in open_circuits.items():
 
 # Passo 2.2 — Mapear impacto por circuit
 # ANTHROPIC_CIRCUIT aberto → ver PB-01
-# SENDGRID_CIRCUIT / RESEND_CIRCUIT aberto → emails não são enviados
+# MAILGUN_CIRCUIT / RESEND_CIRCUIT aberto → emails não são enviados
 # GUPY_CIRCUIT / PANDAPE_CIRCUIT aberto → sincronização ATS parada
 # WORKOS_CIRCUIT aberto → novos logins bloqueados (crítico!)
 ```
 
 ### 3. Contenção por tipo de circuit
 
-**Circuits de email (SENDGRID_CIRCUIT / RESEND_CIRCUIT)**
+**Circuits de email (MAILGUN_CIRCUIT / RESEND_CIRCUIT)**
 
 ```bash
-# Verificar status SendGrid: https://status.sendgrid.com
+# Verificar status Mailgun: https://status.mailgun.com
 # Verificar status Resend: https://status.resend.com
 
-# Se apenas SendGrid aberto: Resend será usado como fallback automático
+# Se apenas Mailgun aberto: Resend será usado como fallback automático
 # Se ambos abertos: emails não estão sendo enviados — usuários não recebem notificações
 
 # Comunicar internamente sobre impacto em notificações
@@ -586,7 +586,7 @@ print(f'drift_detected: {d[\"drift_detected\"]}')
 |---------|------------|
 | Anthropic | https://status.anthropic.com |
 | WorkOS | https://status.workos.com |
-| SendGrid | https://status.sendgrid.com |
+| Mailgun | https://status.mailgun.com |
 | Neon | https://neonstatus.com |
 | Gupy | https://status.gupy.io |
 

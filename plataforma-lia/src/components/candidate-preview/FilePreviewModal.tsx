@@ -3,7 +3,7 @@
 
 import { CURRENCY_SYMBOL } from"@/lib/pricing"
 import { useState } from"react"
-import { useModalA11y } from"@/hooks/use-modal-a11y"
+import { useModalA11y } from"@/hooks/ui/use-modal-a11y"
 import {
   FileText,
   FileVideo,

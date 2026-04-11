@@ -1,4 +1,4 @@
-import type { SearchCriterion } from "@/hooks/usePromptState"
+import type { SearchCriterion } from "@/hooks/ui/usePromptState"
 
 const KNOWN_LOCATIONS = [
   "são paulo", "rio de janeiro", "belo horizonte", "curitiba",
@@ -132,8 +132,8 @@ export function getTagColors(key: string, filled: boolean) {
   }
 }
 
-import type { BackendEntities } from "@/hooks/usePromptState"
-import { ENTITY_LABELS } from "@/hooks/usePromptState"
+import type { BackendEntities } from "@/hooks/ui/usePromptState"
+import { ENTITY_LABELS } from "@/hooks/ui/usePromptState"
 
 /**
  * Maps parsed backend entities to SearchCriterion array.

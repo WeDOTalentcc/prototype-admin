@@ -12,7 +12,7 @@
  */
 import { useState, useCallback } from "react"
 import { TrendingUp, Clock, DollarSign, ChevronDown, ChevronUp, Loader2, AlertCircle, RefreshCw } from "lucide-react"
-import { useMLPredictions } from "@/hooks/use-ml-predictions"
+import { useMLPredictions } from "@/hooks/ai/use-ml-predictions"
 
 // ── Types ──────────────────────────────────────────────────────────────────
 

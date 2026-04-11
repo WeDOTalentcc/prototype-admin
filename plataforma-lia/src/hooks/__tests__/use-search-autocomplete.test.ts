@@ -18,7 +18,7 @@
 
 import { renderHook, act } from "@testing-library/react"
 import { vi, describe, it, expect, beforeEach, afterEach } from "vitest"
-import { useSearchAutocomplete } from "../use-search-autocomplete"
+import { useSearchAutocomplete } from "../search/use-search-autocomplete"
 
 const mockSuggestions = [
   { text: "React Developer", category: "job_title", insert_text: "React Developer" },

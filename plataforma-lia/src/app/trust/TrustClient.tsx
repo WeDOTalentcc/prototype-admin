@@ -51,7 +51,7 @@ const subprocessors = [
   { id: 4, name: 'OpenMic.ai', service: 'Voice Screening', country: 'EUA', region: 'Global', purpose: 'Plataforma de entrevistas assíncronas por voz', category: 'voice', certifications: 'Em verificação' },
   { id: 5, name: 'WorkOS', service: 'Autenticação Enterprise', country: 'EUA', region: 'Global', purpose: 'SSO (SAML/OIDC), SCIM Directory Sync, MFA e Audit Logs', category: 'security', certifications: 'SOC 2 Type II, GDPR' },
   { id: 6, name: 'Pearch AI', service: 'Banco de Candidatos', country: 'EUA', region: 'Global', purpose: 'Busca semântica em 800M+ perfis profissionais', category: 'sourcing', certifications: 'Em verificação' },
-  { id: 7, name: 'SendGrid (Twilio)', service: 'Email Transacional', country: 'EUA', region: 'Global', purpose: 'Notificações, convites e comunicação por email', category: 'communication', certifications: 'ISO 27001, SOC 2' },
+  { id: 7, name: 'Mailgun (Sinch)', service: 'Email Transacional', country: 'EUA', region: 'Global', purpose: 'Notificações, convites e comunicação por email', category: 'communication', certifications: 'ISO 27001, SOC 2, GDPR' },
   { id: 8, name: 'Meta (WhatsApp Business)', service: 'Mensagens WhatsApp', country: 'EUA', region: 'Brasil', purpose: 'Comunicação com candidatos via WhatsApp Business API', category: 'communication', certifications: 'ISO 27001' },
   { id: 9, name: 'Microsoft', service: 'Graph API (Calendar)', country: 'EUA', region: 'Brasil (Azure)', purpose: 'Integração de calendário e agendamento de entrevistas', category: 'communication', certifications: 'ISO 27001, SOC 2, LGPD' },
   { id: 10, name: 'Merge.dev', service: 'Unified ATS API', country: 'EUA', region: 'Global', purpose: 'Integração unificada com 40+ sistemas ATS/HRIS', category: 'integration', certifications: 'SOC 2 Type II, SOC 2 Type I' },
@@ -157,7 +157,7 @@ export default function PublicTrustCenterPage() {
         </div>
       </header>
 
-      <main className="max-w-6xl mx-auto px-6 py-12">
+      <main id="main-content" className="max-w-6xl mx-auto px-6 py-12">
         <div className="text-center mb-12">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full  text-sm font-medium mb-4">
             <Shield className="w-4 h-4" />

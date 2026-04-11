@@ -14,8 +14,8 @@
  */
 import { renderHook, act, waitFor } from "@testing-library/react"
 import { vi, describe, it, expect, beforeEach, afterEach } from "vitest"
-import { useCandidatesList } from "../use-candidates-list"
-import { useCandidatesListMapped } from "../use-candidates-list-mapped"
+import { useCandidatesList } from "../candidates/use-candidates-list"
+import { useCandidatesListMapped } from "../candidates/use-candidates-list-mapped"
 
 // ── Mock do liaApi ──────────────────────────────────────────────────────────
 const mockGetCandidates = vi.fn()

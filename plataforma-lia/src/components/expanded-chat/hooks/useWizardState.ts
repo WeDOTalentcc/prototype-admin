@@ -19,7 +19,7 @@ import {
   INITIAL_SALARY_INFO,
   DEFAULT_BEHAVIORAL_COMPETENCIES,
 } from '../ExpandedChatContext'
-import type { FastTrackJobData } from '@/hooks/useFastTrack'
+import type { FastTrackJobData } from '@/hooks/recruitment/useFastTrack'
 import { type WizardStage, WIZARD_STAGES } from '../config'
 import { useWSIQualityGates } from './useWSIQualityGates'
 

@@ -7,10 +7,10 @@ import type { Message, ContextPanelData, SelectedCandidateForScheduling, Pending
 import type { SearchFilters } from "@/components/search/advanced-filters-modal"
 import type { SearchPreviewData } from "@/components/search/search-preview-card"
 import type { CandidateResult } from "@/components/search/search-results-card"
-import { useGlobalSearchSettings } from "@/hooks/useGlobalSearchSettings"
-import { useEmptyFieldNotifications, type FieldValueSuggestion } from "@/hooks/use-empty-field-notifications"
-import { useSearchFlow } from "@/hooks/useSearchFlow"
-import { useCurrentCompany } from "@/hooks/use-current-company"
+import { useGlobalSearchSettings } from "@/hooks/search/useGlobalSearchSettings"
+import { useEmptyFieldNotifications, type FieldValueSuggestion } from "@/hooks/candidates/use-empty-field-notifications"
+import { useSearchFlow } from "@/hooks/search/useSearchFlow"
+import { useCurrentCompany } from "@/hooks/company/use-current-company"
 
 interface UseChatSessionOptions {
   initialConversation: Message[]

@@ -11,7 +11,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from"@/components/ui/popover"
-import { useSemanticSearch } from"@/hooks/useSemanticSearch"
+import { useSemanticSearch } from"@/hooks/search/useSemanticSearch"
 import type { SearchFilters } from '../hooks/useAdvancedFiltersCore'
 import { experienceLevels, jobRoles } from '../advancedFiltersTypes'
 

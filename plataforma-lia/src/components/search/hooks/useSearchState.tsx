@@ -2,8 +2,8 @@
 
 import { useState, useRef } from "react"
 import { Brain, Users, FileText, Binary, Target, MapPin, Briefcase, Clock, Building2, Code } from "lucide-react"
-import { useGlobalSearchSettings } from "@/hooks/useGlobalSearchSettings"
-import { useSemanticSearch } from "@/hooks/useSemanticSearch"
+import { useGlobalSearchSettings } from "@/hooks/search/useGlobalSearchSettings"
+import { useSemanticSearch } from "@/hooks/search/useSemanticSearch"
 import { useSmartSearchArchetypes } from "./useSmartSearchArchetypes"
 import { useSmartSearchSimilar } from "./useSmartSearchSimilar"
 import {

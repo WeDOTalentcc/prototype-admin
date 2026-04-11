@@ -11,7 +11,7 @@
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { renderHook, act, waitFor } from "@testing-library/react"
-import { useShortList } from "../use-short-list"
+import { useShortList } from "../candidates/use-short-list"
 
 const mockShortListRaw = {
   id: "sl-001",

@@ -7,7 +7,7 @@
  */
 
 import { renderHook } from "@testing-library/react"
-import { useActionIntent, actionTypeToDomain } from "../use-action-intent"
+import { useActionIntent, actionTypeToDomain } from "../shared/use-action-intent"
 
 describe("useActionIntent — detect()", () => {
   const setup = () => renderHook(() => useActionIntent()).result.current

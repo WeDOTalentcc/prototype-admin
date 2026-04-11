@@ -42,7 +42,7 @@ const FairnessComplianceHub = dynamic(() => import("@/components/settings/Fairne
 
 import { textStyles, cardStyles, badgeStyles } from '@/lib/design-tokens'
 import { ErrorBoundarySection } from"@/components/ui/error-boundary-section"
-import { useCompanyId } from"@/hooks/useCompanyId"
+import { useCompanyId } from"@/hooks/company/useCompanyId"
 
 interface SettingsSubsection {
   id: string

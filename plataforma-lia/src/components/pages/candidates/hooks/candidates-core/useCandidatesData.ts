@@ -5,8 +5,8 @@
 
 import { useState, useEffect, useRef } from "react"
 import { liaApi, CandidateLocal } from "@/services/lia-api"
-import { useCandidatesListMapped } from "@/hooks/use-candidates-list-mapped"
-import { useBulkCandidateDataRequests } from "@/hooks/use-candidate-data-requests"
+import { useCandidatesListMapped } from "@/hooks/candidates/use-candidates-list-mapped"
+import { useBulkCandidateDataRequests } from "@/hooks/candidates/use-candidate-data-requests"
 import { mapCandidateToInternal as _mapCandidateToInternal } from "@/components/pages/candidates/hooks/useCandidatesExecuteSearch"
 import type { Candidate } from "@/components/pages/candidates/types"
 import type { JobVacancy, EmailTemplate } from "@/services/lia-api"

@@ -7,7 +7,7 @@ import { LIAIcon } from"@/components/ui/lia-icon"
 import { ContextPill } from"@/components/ui/context-pill"
 import { QuickActionChips, type QuickAction } from"@/components/ui/quick-action-chips"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from"@/components/ui/tooltip"
-import { getCostLevel, getCostColor } from"@/hooks/useCreditEstimator"
+import { getCostLevel, getCostColor } from"@/hooks/search/useCreditEstimator"
 import {
   Brain, Users, Filter, Zap,
   FileText, Code, Lightbulb, Globe, Home, Coins, AlertCircle, Table2,

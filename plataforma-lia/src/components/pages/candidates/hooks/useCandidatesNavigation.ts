@@ -9,7 +9,7 @@ import { useSearchParams } from "next/navigation"
 import { useNavigationStore } from "@/stores/navigation-store"
 import type { Candidate } from "@/components/pages/candidates/types"
 import type { ParsedEntities } from "@/components/search/smart-search-input"
-import type { TableFilters } from "@/hooks/use-candidate-filters"
+import type { TableFilters } from "@/hooks/candidates/use-candidate-filters"
 
 interface UseCandidatesNavigationParams {
   // View state setters

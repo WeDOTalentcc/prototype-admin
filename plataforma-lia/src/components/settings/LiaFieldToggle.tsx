@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
 import { cn } from '@/lib/utils'
-import { LIA_FIELD_DEFINITIONS, LiaFieldKey } from '@/hooks/use-company-lia-instructions'
+import { LIA_FIELD_DEFINITIONS, LiaFieldKey } from '@/hooks/company/use-company-lia-instructions'
 
 interface LiaFieldToggleProps {
   fieldKey: LiaFieldKey

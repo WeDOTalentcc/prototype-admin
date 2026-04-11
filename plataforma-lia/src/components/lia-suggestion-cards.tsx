@@ -5,7 +5,7 @@ import { Card } from"@/components/ui/card"
 import { Button } from"@/components/ui/button"
 import { Badge } from"@/components/ui/badge"
 import { Loader2, AlertTriangle, Clock, TrendingUp, Users, FileText, Search, Plus, Briefcase, RefreshCw } from"lucide-react"
-import type { SuggestionCard } from"@/hooks/use-lia-suggestions"
+import type { SuggestionCard } from"@/hooks/ai/use-lia-suggestions"
 
 interface LiaSuggestionCardsProps {
   suggestions: SuggestionCard[]

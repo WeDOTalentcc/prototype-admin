@@ -3,7 +3,7 @@
 import { useEffect, useCallback } from "react"
 import { useState } from "react"
 import { useKanbanStore } from "@/stores/kanban-store"
-import type { ShortList } from "@/hooks/use-short-list"
+import type { ShortList } from "@/hooks/candidates/use-short-list"
 
 interface TalentFunnelLike {
   getFavoriteIds: () => Set<string>

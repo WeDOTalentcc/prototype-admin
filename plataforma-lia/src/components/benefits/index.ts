@@ -1,8 +1,8 @@
 export { BenefitBadgeList, BENEFIT_CATEGORIES } from './BenefitBadgeList'
 export { BenefitDetailsSheet } from './BenefitDetailsSheet'
-export type { Benefit } from '@/hooks/useCompanyBenefits'
+export type { Benefit } from '@/hooks/company/useCompanyBenefits'
 export { 
   useCompanyBenefits, 
   clearBenefitsCache, 
   invalidateBenefitsCache 
-} from '@/hooks/useCompanyBenefits'
+} from '@/hooks/company/useCompanyBenefits'

@@ -13,7 +13,7 @@ import {
   Loader2, Stethoscope, Car, GraduationCap, Wallet, Home, Baby,
   Shield as ShieldIcon, Utensils, Heart, Clock, DollarSign
 } from "lucide-react"
-import { useCompanyBenefits } from '@/hooks/useCompanyBenefits'
+import { useCompanyBenefits } from '@/hooks/company/useCompanyBenefits'
 import type { JobBenefit, BenefitCategory } from '@/types/benefits'
 import { BENEFIT_CATEGORY_META } from '@/types/benefits'
 import { BENEFITS_CATALOG, CompensationData } from "../types"

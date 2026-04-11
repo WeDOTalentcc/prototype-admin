@@ -11,7 +11,7 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useWizardContext } from '../WizardContext'
-import { useCompanyBenefits } from '@/hooks/useCompanyBenefits'
+import { useCompanyBenefits } from '@/hooks/company/useCompanyBenefits'
 import type { JobBenefit, BenefitCategory } from '@/types/benefits'
 import { BENEFIT_CATEGORY_META } from '@/types/benefits'
 

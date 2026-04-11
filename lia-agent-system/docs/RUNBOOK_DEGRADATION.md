@@ -57,7 +57,7 @@ curl -X POST -H "Authorization: Bearer $ADMIN_TOKEN" \
 | `GUPY_CIRCUIT` | Gupy ATS | 3 falhas/60s | 60s |
 | `PANDAPE_CIRCUIT` | Pandapé ATS | 3 falhas/60s | 60s |
 | `MERGE_CIRCUIT` | Merge.dev | 3 falhas/60s | 60s |
-| `SENDGRID_CIRCUIT` | SendGrid email | 5 falhas/60s | 60s |
+| `MAILGUN_CIRCUIT` | Mailgun email | 5 falhas/60s | 60s |
 | `RESEND_CIRCUIT` | Resend email | 5 falhas/60s | 60s |
 | `WORKOS_CIRCUIT` | WorkOS SSO | 3 falhas/30s | 120s |
 
@@ -223,7 +223,7 @@ curl -X POST -H "Authorization: Bearer $ADMIN_TOKEN" \
 
 ### Checklist antes de resetar um circuit
 
-- [ ] Verificar status page do serviço externo (Anthropic, SendGrid, etc.)
+- [ ] Verificar status page do serviço externo (Anthropic, Mailgun, etc.)
 - [ ] Confirmar que o problema de infraestrutura foi resolvido
 - [ ] Ter alguém monitorando logs por 5 min após o reset
 - [ ] Registrar a ação no canal #incidents (hora, circuit, responsável)

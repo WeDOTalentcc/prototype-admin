@@ -23,7 +23,7 @@ import {
   Plus, Trash2, Upload, Bot, Info, Database, User, File, Brain
 } from"lucide-react"
 import { cn } from"@/lib/utils"
-import type { DataField } from"@/hooks/use-data-request-config"
+import type { DataField } from"@/hooks/company/use-data-request-config"
 
 const FieldBadges = ({ field }: { field: DataField }) => (
   <div className="flex items-center gap-1 flex-wrap">

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useCallback, useEffect, useRef } from "react"
-import type { AutocompleteSuggestion } from "@/hooks/usePromptState"
+import type { AutocompleteSuggestion } from "@/hooks/ui/usePromptState"
 
 export interface UsePromptAutocompleteStateParams {
   naturalSearchValue: string

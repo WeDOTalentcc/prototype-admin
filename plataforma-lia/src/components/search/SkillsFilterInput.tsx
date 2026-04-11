@@ -6,8 +6,8 @@ import { cn } from"@/lib/utils"
 import { Badge } from"@/components/ui/badge"
 import { Button } from"@/components/ui/button"
 import { Input } from"@/components/ui/input"
-import { useSemanticSearch, type SemanticSuggestion } from"@/hooks/useSemanticSearch"
-import { useTagInputState } from"@/hooks/useTagInputState"
+import { useSemanticSearch, type SemanticSuggestion } from"@/hooks/search/useSemanticSearch"
+import { useTagInputState } from"@/hooks/ui/useTagInputState"
 
 export interface SkillItem {
   name: string

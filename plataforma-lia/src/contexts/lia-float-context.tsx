@@ -10,7 +10,7 @@ import React, {
   useRef,
   ReactNode,
 } from "react"
-import type { FloatMessage } from "@/hooks/use-float-conversation"
+import type { FloatMessage } from "@/hooks/chat/use-float-conversation"
 import {
   useLiaChatConnection,
   formatMessageTime,
@@ -19,7 +19,7 @@ import {
   type PanelUpdateEvent,
   type BackgroundTaskEvent,
   type TransportMode,
-} from "@/hooks/use-lia-chat-connection"
+} from "@/hooks/chat/use-lia-chat-connection"
 
 export interface SplitViewState {
   active: boolean

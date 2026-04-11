@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback, useRef, useMemo } from "react"
-import { useCurrentCompany } from "@/hooks/use-current-company"
+import { useCurrentCompany } from "@/hooks/company/use-current-company"
 import { Brain, RefreshCw, AlertCircle } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"

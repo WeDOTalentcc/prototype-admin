@@ -13,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from"@/components/ui/select"
-import { useSemanticSearch } from"@/hooks/useSemanticSearch"
+import { useSemanticSearch } from"@/hooks/search/useSemanticSearch"
 import type { SearchFilters } from '../hooks/useAdvancedFiltersCore'
 import { titleScopeOptions } from '../advancedFiltersTypes'
 import { globalJobPresets } from '../advancedFiltersTypes'

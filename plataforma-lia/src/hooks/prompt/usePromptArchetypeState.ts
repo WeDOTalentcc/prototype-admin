@@ -2,8 +2,8 @@
 
 import { useState, useCallback, useEffect } from "react"
 import { toast } from "sonner"
-import type { ArchetypeData, BackendEntities } from "@/hooks/usePromptState"
-import { extractTagsFromArchetypeCriteria } from "@/hooks/promptStateCriteriaUtils"
+import type { ArchetypeData, BackendEntities } from "@/hooks/ui/usePromptState"
+import { extractTagsFromArchetypeCriteria } from "@/hooks/ui/promptStateCriteriaUtils"
 
 export interface UsePromptArchetypeStateParams {
   naturalSearchValue: string

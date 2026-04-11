@@ -3,8 +3,8 @@
 import { useState, useRef } from "react"
 import { toast } from "sonner"
 import { getCompanyPipelineStages, LIA_ASSISTED_STAGES, LIA_ASSISTED_STAGE_NAMES } from "@/lib/recruitment-stages"
-import { useCompanyPipeline } from "@/hooks/use-company-pipeline"
-import { useScreeningConfig } from "@/hooks/useScreeningConfig"
+import { useCompanyPipeline } from "@/hooks/company/use-company-pipeline"
+import { useScreeningConfig } from "@/hooks/recruitment/useScreeningConfig"
 import { SECTIONS, SWITCH_FIELDS, countFilledFields } from "./job-edit-tab.constants"
 import type { JobEditTabProps, StageItem, StatusChangeConfirm } from "./job-edit-tab.types"
 

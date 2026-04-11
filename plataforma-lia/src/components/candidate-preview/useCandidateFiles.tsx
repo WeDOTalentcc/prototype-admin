@@ -6,7 +6,7 @@ import { FileText, FileVideo, Award, File, Image } from "lucide-react"
 import { formatRelativeTime } from "@/lib/format-utils"
 import type { FileItem } from "@/components/candidate-preview/FilePreviewModal"
 import { toast } from "sonner"
-import { useCurrentCompany } from '@/hooks/use-current-company'
+import { useCurrentCompany } from '@/hooks/company/use-current-company'
 
 export { formatFileSize, formatRelativeTime } from "@/lib/format-utils"
 

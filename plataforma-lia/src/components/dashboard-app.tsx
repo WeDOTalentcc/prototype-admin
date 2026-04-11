@@ -3,7 +3,7 @@
 import { useState, Suspense, useEffect } from "react"
 import React from "react"
 import { useRouter } from "next/navigation"
-import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts"
+import { useKeyboardShortcuts } from "@/hooks/shared/use-keyboard-shortcuts"
 
 import { Sidebar } from "@/components/sidebar"
 import { CandidatesPage } from "@/components/pages/candidates-page"
@@ -20,7 +20,7 @@ import CalibrationCardModal from "@/components/pages-agent-studio/CalibrationCar
 import { ModuleUpsell } from "@/components/module-access/module-upsell"
 import { hasModuleAccess } from "@/utils/license-manager"
 import { useAuth } from "@/contexts/auth-context"
-import { useRecentItems, type RecentItem } from "@/hooks/use-recent-items"
+import { useRecentItems, type RecentItem } from "@/hooks/shared/use-recent-items"
 import { useLiaFloat } from "@/contexts/lia-float-context"
 import { LiaSplitPanel } from "@/components/lia-float/LiaSplitPanel"
 import { DashboardChatPanel } from "@/components/unified-chat"
@@ -223,6 +223,9 @@ export function DashboardApp({ initialPage = "Chat LIA" }: DashboardAppProps) {
 
   return (
     <div data-dashboard-shell className="h-screen bg-lia-bg-primary dark:bg-lia-bg-primary flex overflow-hidden">
+      <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
+        {currentPage}
+      </div>
       <Sidebar
         currentPage={currentPage}
         onNavigate={handleNavigate}
@@ -233,7 +236,7 @@ export function DashboardApp({ initialPage = "Chat LIA" }: DashboardAppProps) {
         onShowSearch={() => setShowGlobalSearch(true)}
       />
 
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <main id="main-content" className="flex-1 flex flex-col overflow-hidden" aria-label={currentPage}>
         <div className="flex-1 min-h-0 overflow-hidden flex">
           <div className="flex-1 min-w-0 overflow-hidden">
             {renderCurrentPage()}
@@ -246,7 +249,7 @@ export function DashboardApp({ initialPage = "Chat LIA" }: DashboardAppProps) {
           {/* UnifiedChat sidebar — inline flex child, pushes content (Replit-style) */}
           <DashboardChatPanel />
         </div>
-      </div>
+      </main>
 
       <GlobalSearchModal
         isOpen={showGlobalSearch}

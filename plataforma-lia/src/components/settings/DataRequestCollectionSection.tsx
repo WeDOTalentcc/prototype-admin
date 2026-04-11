@@ -13,7 +13,7 @@ import {
   FileText, MessageSquare, Send, CheckCircle, Info
 } from"lucide-react"
 import { cn } from"@/lib/utils"
-import type { CollectionMode } from"@/hooks/use-data-request-config"
+import type { CollectionMode } from"@/hooks/company/use-data-request-config"
 
 interface DataRequestCollectionSectionProps {
   isEditing: boolean

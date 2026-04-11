@@ -4,7 +4,7 @@
 import { CURRENCY_SYMBOL } from "@/lib/pricing"
 import { useState, useEffect } from "react"
 import { toast } from "sonner"
-import { useCurrentCompany } from '@/hooks/use-current-company'
+import { useCurrentCompany } from '@/hooks/company/use-current-company'
 import {
   Brain, FileText, Code, Bot, Video, UserCircle,
   UserCheck, Activity

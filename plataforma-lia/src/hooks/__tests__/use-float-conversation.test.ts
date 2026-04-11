@@ -13,7 +13,7 @@
  */
 import { renderHook, act, waitFor } from "@testing-library/react"
 import { vi, describe, it, expect, beforeEach, afterEach } from "vitest"
-import { useFloatConversation } from "../use-float-conversation"
+import { useFloatConversation } from "../chat/use-float-conversation"
 
 // ── Mocks globais ────────────────────────────────────────────────────────────
 

@@ -1,6 +1,6 @@
 import React from "react"
 import type { Candidate } from "../types"
-import type { TableFilters } from "@/hooks/use-candidate-filters"
+import type { TableFilters } from "@/hooks/candidates/use-candidate-filters"
 
 export interface UseCandidatesFilterSortParams {
   candidates: Candidate[]

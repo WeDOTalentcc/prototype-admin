@@ -3,7 +3,7 @@
 import { formatBRL } from "@/lib/pricing"
 
 import { useEffect } from "react"
-import { useCompanyId } from '@/hooks/useCompanyId'
+import { useCompanyId } from '@/hooks/company/useCompanyId'
 import type { TechnicalSkill } from '..'
 import type { Benefit } from '../stages/SalaryStage'
 

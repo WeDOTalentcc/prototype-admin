@@ -17,7 +17,7 @@ import { textStyles, cardStyles, badgeStyles } from"@/lib/design-tokens"
 import { MessageComposer } from"@/components/communication"
 import { sanitizeHtml } from"@/lib/sanitize"
 import { toast } from"sonner"
-import type { ScreeningChannelConfig, ScreeningChannelKey } from"@/hooks/useScreeningConfig"
+import type { ScreeningChannelConfig, ScreeningChannelKey } from"@/hooks/recruitment/useScreeningConfig"
 
 type ContactChannel = 'email' | 'whatsapp' | 'telefone' | 'both'
 

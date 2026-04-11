@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useCallback, useMemo } from 'react'
-import { useRecruitmentStages } from '@/hooks/use-recruitment-stages'
+import { useRecruitmentStages } from '@/hooks/recruitment/use-recruitment-stages'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'

@@ -9,7 +9,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Send, Mail, MessageSquare, FileText, User, Clock, Loader2, ChevronDown, ChevronUp } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { DEFAULT_DATA_FIELDS, DataField } from '@/hooks/use-data-request-config'
+import { DEFAULT_DATA_FIELDS, DataField } from '@/hooks/company/use-data-request-config'
 
 export interface DataRequestCandidate {
   id: string

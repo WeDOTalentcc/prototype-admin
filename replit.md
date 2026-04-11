@@ -48,6 +48,8 @@ The platform utilizes Next.js, React, and TypeScript for the frontend, styled wi
 - **Zustand State Management**: Introduced zustand for centralized state management, covering auth, kanban, and candidate data.
 - **Performance Improvements**: Implemented lazy loading for modals and error boundaries for major pages.
 - **Unified LIA Chat System**: Replaced fragmented chat systems with a single `LiaChatContext` for shared message store, persistent `conversation_id`, and a single backend communication channel, with HTTP Chat Fallback for WebSocket unavailability.
+- **Hooks Organization**: 120 hooks organized into 9 domain folders under `src/hooks/`: `ai/`, `candidates/`, `chat/`, `company/`, `jobs/`, `recruitment/`, `search/`, `shared/`, `ui/`. Each domain has a barrel `index.ts`. Pre-existing `prompt/` and `settings/` subdirectories remain. Import pattern: `@/hooks/domain/hookName`.
+- **OpenAPI TypeScript Types**: Auto-generated from backend OpenAPI spec via `npm run generate:api-types` → `src/types/api.generated.ts`.
 - **Multi-Tenancy `company_id` Isolation**: Implemented `client_account_id` FK in `CompanyProfile`, tenant resolution endpoint, `useCompanyId` React hook, and `useCurrentCompany` hook. User management uses `tenantId`.
 - **Reports & Predictions Real Data**: Frontend reports/predictions pages now fetch real data from backend endpoints.
 - **ATS Integration**: Full ATS integration with Gupy, Pandapé, and Merge.dev.
@@ -77,8 +79,7 @@ The platform utilizes Next.js, React, and TypeScript for the frontend, styled wi
 - HubSpot
 - Stripe
 - Apify
-- SendGrid
-- Mailgun
+- Mailgun (primary email)
 - Resend (email fallback)
 - PostgreSQL
 - Redis

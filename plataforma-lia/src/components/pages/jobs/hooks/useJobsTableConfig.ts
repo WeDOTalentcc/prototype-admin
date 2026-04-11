@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useEffect } from "react"
-import { useJobColumnConfig } from "@/hooks/useJobColumnConfig"
+import { useJobColumnConfig } from "@/hooks/jobs/useJobColumnConfig"
 import { useUIPreferencesStore } from "@/stores/ui-preferences-store"
 
 // ---------------------------------------------------------------------------

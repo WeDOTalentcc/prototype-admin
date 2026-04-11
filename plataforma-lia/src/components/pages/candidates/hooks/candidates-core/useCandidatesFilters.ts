@@ -3,8 +3,8 @@
 // TableFilters, quickFilters and advancedFilters shapes.
 // Pure logic — no UI components, no Next.js deps.
 
-import type { TableFilters } from "@/hooks/use-candidate-filters"
-import { getDefaultTableFilters } from "@/hooks/use-candidate-filters"
+import type { TableFilters } from "@/hooks/candidates/use-candidate-filters"
+import { getDefaultTableFilters } from "@/hooks/candidates/use-candidate-filters"
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 

@@ -8,7 +8,7 @@
  */
 
 import { useState, useRef, useCallback, useEffect } from "react"
-import { useAgentStreaming, type StreamingEvent } from "./use-agent-streaming"
+import { useAgentStreaming, type StreamingEvent } from "@/hooks/ai/use-agent-streaming"
 import type { TransportMode } from "./useChatTransport"
 import type {
   HITLPending,

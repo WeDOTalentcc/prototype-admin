@@ -13,7 +13,7 @@
  * @sprint F2-6
  */
 
-import type { RecentItem } from "@/hooks/use-recent-items"
+import type { RecentItem } from "@/hooks/shared/use-recent-items"
 
 // ─── Menu Item ─────────────────────────────────────────────────────────────
 

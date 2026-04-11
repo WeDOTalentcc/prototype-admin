@@ -214,24 +214,19 @@ async def sse_chat_stream(
 
         yield format_sse_event(serialize_thinking(), next_id())
 
-        try:
-            plan = await get_plan_for_company(company_id)
-            budget_ok, used, limit = await check_budget(company_id, plan)
-            if not budget_ok:
-                yield format_sse_event(
-                    serialize_error(
-                        f"Limite diário de uso de IA atingido ({used:,} / {limit:,} tokens). "
-                        "O budget será renovado à meia-noite UTC.",
-                        "budget_exhausted",
-                    ),
-                    next_id(),
-                )
-                return
-        except Exception as exc:
-            logger.warning("[SSEChat] Budget check failed — continuing: %s", exc)
+        import asyncio
 
-        resolved_domain = active_domain
-        if resolved_domain in ("auto", "recruiter_assistant", ""):
+        async def _check_budget_async():
+            try:
+                plan = await get_plan_for_company(company_id)
+                return await check_budget(company_id, plan)
+            except Exception as exc:
+                logger.warning("[SSEChat] Budget check failed — continuing: %s", exc)
+                return True, 0, 0
+
+        async def _route_domain_async():
+            if active_domain not in ("auto", "recruiter_assistant", ""):
+                return active_domain
             try:
                 from app.orchestrator.cascaded_router import CascadedRouter
                 _router = CascadedRouter()
@@ -239,9 +234,25 @@ async def sse_chat_stream(
                     message=content, context=context, session_id=session_id,
                 )
                 if not route.needs_clarification:
-                    resolved_domain = route.domain_id
+                    return route.domain_id
             except Exception:
                 pass
+            return active_domain
+
+        budget_result, resolved_domain = await asyncio.gather(
+            _check_budget_async(), _route_domain_async()
+        )
+        budget_ok, used, limit = budget_result
+        if not budget_ok:
+            yield format_sse_event(
+                serialize_error(
+                    f"Limite diário de uso de IA atingido ({used:,} / {limit:,} tokens). "
+                    "O budget será renovado à meia-noite UTC.",
+                    "budget_exhausted",
+                ),
+                next_id(),
+            )
+            return
 
         if resolved_domain == "kanban":
             from app.api.v1.agent_chat_ws import _subagent_for_kanban

@@ -7,7 +7,7 @@ import {
   ArrowRight, Video, RotateCcw, Send, DollarSign, UserPlus
 } from "lucide-react"
 import { toast } from "sonner"
-import { useCurrentCompany } from "@/hooks/use-current-company"
+import { useCurrentCompany } from "@/hooks/company/use-current-company"
 import { AUTHORITATIVE_ACTION_MATRIX } from "@/components/kanban/utils/action-matrix"
 import type { CandidateData } from "./ProfileTabTypes"
 
