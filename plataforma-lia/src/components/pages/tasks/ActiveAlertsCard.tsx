@@ -34,7 +34,7 @@ export const ActiveAlertsCard = React.memo(function ActiveAlertsCard({
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Bell className="w-3.5 h-3.5 text-lia-text-primary" />
+            <Bell className="w-3.5 h-3.5 text-amber-500" />
             <CardTitle className={`${textStyles.label} font-semibold text-lia-text-primary`}>Alertas Ativos</CardTitle>
             <Badge variant="outline" className="text-xs font-inter">
               {activeAlerts.length}

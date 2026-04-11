@@ -140,7 +140,15 @@ export default function FunilDeTalentosPage() {
   }
 
   // Filtros rápidos
-  const STATUS_OPTIONS = ["Novo", "Em triagem", "Aprovado", "Reprovado"]
+  
+const STATUS_COLORS: Record<string, { active: string; inactive: string }> = {
+  "Novo": { active: "bg-cyan-50 dark:bg-cyan-950/30 text-cyan-700 dark:text-cyan-400 border-cyan-200 dark:border-cyan-800", inactive: "bg-lia-bg-primary dark:bg-lia-bg-primary text-lia-text-secondary dark:text-lia-text-tertiary border-lia-border-subtle dark:border-lia-border-subtle hover:border-cyan-300" },
+  "Em triagem": { active: "bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800", inactive: "bg-lia-bg-primary dark:bg-lia-bg-primary text-lia-text-secondary dark:text-lia-text-tertiary border-lia-border-subtle dark:border-lia-border-subtle hover:border-amber-300" },
+  "Aprovado": { active: "bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800", inactive: "bg-lia-bg-primary dark:bg-lia-bg-primary text-lia-text-secondary dark:text-lia-text-tertiary border-lia-border-subtle dark:border-lia-border-subtle hover:border-emerald-300" },
+  "Reprovado": { active: "bg-rose-50 dark:bg-rose-950/30 text-rose-700 dark:text-rose-400 border-rose-200 dark:border-rose-800", inactive: "bg-lia-bg-primary dark:bg-lia-bg-primary text-lia-text-secondary dark:text-lia-text-tertiary border-lia-border-subtle dark:border-lia-border-subtle hover:border-rose-300" },
+}
+
+const STATUS_OPTIONS = ["Novo", "Em triagem", "Aprovado", "Reprovado"]
   const SENIORITY_OPTIONS = ["Júnior", "Pleno", "Sênior", "Especialista"]
 
   if (!mounted) {
@@ -267,8 +275,8 @@ export default function FunilDeTalentosPage() {
                     className={cn(
                       "px-2.5 py-1 text-xs rounded-md border transition-colors",
                       filters.status === s
-                        ? "bg-lia-btn-primary-bg dark:bg-lia-bg-secondary text-white dark:text-lia-text-primary border-lia-btn-primary-bg dark:border-lia-border-subtle"
-                        : "bg-lia-bg-primary dark:bg-lia-bg-primary text-lia-text-secondary dark:text-lia-text-tertiary border-lia-border-subtle dark:border-lia-border-subtle hover:border-lia-border-medium"
+                        ? (STATUS_COLORS[s]?.active || "bg-lia-btn-primary-bg dark:bg-lia-bg-secondary text-white dark:text-lia-text-primary border-lia-btn-primary-bg dark:border-lia-border-subtle")
+                        : (STATUS_COLORS[s]?.inactive || "bg-lia-bg-primary dark:bg-lia-bg-primary text-lia-text-secondary dark:text-lia-text-tertiary border-lia-border-subtle dark:border-lia-border-subtle hover:border-lia-border-medium")
                     )}
                   >
                     {s}
