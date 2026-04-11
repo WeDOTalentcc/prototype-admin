@@ -40,13 +40,19 @@ async def _pause_job(params: dict[str, Any], context: dict[str, Any]):
 
         job_id = params.get("job_id", "")
         job_title = params.get("job_title", "a vaga")
+        company_id = context.get("company_id") if context else None
 
         async with AsyncSessionLocal() as db:
-            result = await db.execute(text("""
+            sql = """
                 UPDATE job_vacancies
                 SET status = 'Pausada', updated_at = NOW()
                 WHERE id = CAST(:job_id AS uuid)
-            """), {"job_id": job_id})
+            """
+            bind: dict[str, Any] = {"job_id": job_id}
+            if company_id:
+                sql += " AND company_id = CAST(:co AS uuid)"
+                bind["co"] = str(company_id)
+            result = await db.execute(text(sql), bind)
             if result.rowcount == 0:
                 return ActionResult(
                     status="error",
@@ -56,7 +62,7 @@ async def _pause_job(params: dict[str, Any], context: dict[str, Any]):
                 )
             await db.commit()
 
-        await log_action_audit("pause_job", None, job_vacancy_id=str(job_id))
+        await log_action_audit("pause_job", company_id, job_vacancy_id=str(job_id))
         await sync_to_rails("job_paused", "job", str(job_id))
 
         return ActionResult(
@@ -90,13 +96,19 @@ async def _close_job(params: dict[str, Any], context: dict[str, Any]):
 
         job_id = params.get("job_id", "")
         job_title = params.get("job_title", "a vaga")
+        company_id = context.get("company_id") if context else None
 
         async with AsyncSessionLocal() as db:
-            result = await db.execute(text("""
+            sql = """
                 UPDATE job_vacancies
                 SET status = 'Fechada', closed_at = NOW(), updated_at = NOW()
                 WHERE id = CAST(:job_id AS uuid)
-            """), {"job_id": job_id})
+            """
+            bind: dict[str, Any] = {"job_id": job_id}
+            if company_id:
+                sql += " AND company_id = CAST(:co AS uuid)"
+                bind["co"] = str(company_id)
+            result = await db.execute(text(sql), bind)
             if result.rowcount == 0:
                 return ActionResult(
                     status="error",
@@ -106,7 +118,7 @@ async def _close_job(params: dict[str, Any], context: dict[str, Any]):
                 )
             await db.commit()
 
-        await log_action_audit("close_job", None, job_vacancy_id=str(job_id))
+        await log_action_audit("close_job", company_id, job_vacancy_id=str(job_id))
         await sync_to_rails("job_closed", "job", str(job_id))
 
         return ActionResult(
@@ -143,16 +155,22 @@ async def _duplicate_job(params: dict[str, Any], context: dict[str, Any]):
         job_id = params.get("job_id", "")
         new_title = params.get("new_title", "")
         job_title = params.get("job_title", "a vaga")
+        company_id = context.get("company_id") if context else None
 
         async with AsyncSessionLocal() as db:
-            original = await db.execute(text("""
+            select_sql = """
                 SELECT title, company_id, department, location, work_model,
                        employment_type, seniority_level, description, requirements,
                        salary, salary_range, benefits, priority, recruiter,
                        recruiter_email, manager, manager_email, tags
                 FROM job_vacancies
                 WHERE id = CAST(:job_id AS uuid)
-            """), {"job_id": job_id})
+            """
+            select_bind: dict[str, Any] = {"job_id": job_id}
+            if company_id:
+                select_sql += " AND company_id = CAST(:co AS uuid)"
+                select_bind["co"] = str(company_id)
+            original = await db.execute(text(select_sql), select_bind)
             row = original.fetchone()
             if not row:
                 return ActionResult(
@@ -193,7 +211,7 @@ async def _duplicate_job(params: dict[str, Any], context: dict[str, Any]):
             })
             await db.commit()
 
-        await log_action_audit("duplicate_job", None, job_vacancy_id=new_id)
+        await log_action_audit("duplicate_job", company_id, job_vacancy_id=new_id)
         await sync_to_rails("job_created", "job", new_id)
 
         return ActionResult(
@@ -229,13 +247,19 @@ async def _reopen_job(params: dict[str, Any], context: dict[str, Any]):
 
         job_id = params.get("job_id", "")
         job_title = params.get("job_title", "a vaga")
+        company_id = context.get("company_id") if context else None
 
         async with AsyncSessionLocal() as db:
-            result = await db.execute(text("""
+            sql = """
                 UPDATE job_vacancies
                 SET status = 'Ativa', closed_at = NULL, updated_at = NOW()
                 WHERE id = CAST(:job_id AS uuid)
-            """), {"job_id": job_id})
+            """
+            bind: dict[str, Any] = {"job_id": job_id}
+            if company_id:
+                sql += " AND company_id = CAST(:co AS uuid)"
+                bind["co"] = str(company_id)
+            result = await db.execute(text(sql), bind)
             if result.rowcount == 0:
                 return ActionResult(
                     status="error",
@@ -245,7 +269,7 @@ async def _reopen_job(params: dict[str, Any], context: dict[str, Any]):
                 )
             await db.commit()
 
-        await log_action_audit("reopen_job", None, job_vacancy_id=str(job_id))
+        await log_action_audit("reopen_job", company_id, job_vacancy_id=str(job_id))
         await sync_to_rails("job_reopened", "job", str(job_id))
 
         return ActionResult(
