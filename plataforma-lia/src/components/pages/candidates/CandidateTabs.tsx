@@ -18,7 +18,7 @@ interface CandidateTabsProps {
 const CandidateTabs = memo(function CandidateTabs({ tabs, activeTab, onTabChange }: CandidateTabsProps) {
   return (
     <div data-testid="candidate-tabs" className="mb-0">
-      <nav data-testid="candidate-tabs-nav" className="flex items-center gap-1 nav-tabs" aria-label="Tabs" role="tablist">
+      <nav data-testid="candidate-tabs-nav" className="flex gap-1 p-1 bg-lia-bg-secondary rounded-lg w-fit" aria-label="Tabs" role="tablist">
         {tabs.map((tab) => (
           <button
             key={tab.id}
