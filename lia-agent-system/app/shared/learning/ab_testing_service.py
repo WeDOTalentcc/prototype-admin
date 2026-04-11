@@ -95,6 +95,8 @@ class ABTestingService:
     def _compute_p_value(self, z: float) -> float:
         return 1.0 - 0.5 * (1.0 + math.erf(abs(z) / math.sqrt(2.0)))
 
+    N_MIN_PER_VARIANT = 30
+
     async def get_test_results(
         self,
         test_name: str,
@@ -113,8 +115,10 @@ class ABTestingService:
                     "test_name": test_name,
                     "variants": {},
                     "statistical_significance": None,
+                    "recommendation": "insufficient_data",
                     "winner": None,
                     "total_observations": 0,
+                    "n_min": self.N_MIN_PER_VARIANT,
                 }
 
             metrics_by_name: dict[str, dict[str, list[float]]] = {}
@@ -183,13 +187,22 @@ class ABTestingService:
 
                     improvement_pct = ((mean_b - mean_a) / abs(mean_a) * 100) if mean_a != 0 else 0
 
-                    is_significant = p_value < 0.05 and abs(improvement_pct) > 5
+                    below_n_min = n_a < self.N_MIN_PER_VARIANT or n_b < self.N_MIN_PER_VARIANT
+                    is_significant = (
+                        not below_n_min
+                        and p_value < 0.05
+                        and abs(improvement_pct) > 5
+                    )
 
                     sig_key = f"{metric_name}:{control_name}_vs_{vname}"
                     significance_results[sig_key] = {
                         "control": control_name,
                         "variant": vname,
                         "metric": metric_name,
+                        "n_control": n_a,
+                        "n_variant": n_b,
+                        "n_min": self.N_MIN_PER_VARIANT,
+                        "below_n_min": below_n_min,
                         "z_score": round(z_score, 4),
                         "p_value": round(p_value, 6),
                         "improvement_pct": round(improvement_pct, 2),
@@ -204,12 +217,26 @@ class ABTestingService:
                             "p_value": round(p_value, 6),
                         }
 
+            has_sufficient_data = all(
+                not sig.get("below_n_min", True)
+                for sig in significance_results.values()
+            ) if significance_results else False
+
+            if winner:
+                recommendation = "winner"
+            elif has_sufficient_data:
+                recommendation = "no_significant_difference"
+            else:
+                recommendation = "insufficient_data"
+
             return {
                 "test_name": test_name,
                 "variants": variants_summary,
                 "statistical_significance": significance_results,
+                "recommendation": recommendation,
                 "winner": winner,
                 "total_observations": len(all_results),
+                "n_min": self.N_MIN_PER_VARIANT,
             }
 
         except Exception as e:

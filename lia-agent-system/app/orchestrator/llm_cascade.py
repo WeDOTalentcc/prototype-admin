@@ -70,6 +70,7 @@ class LLMCascadeRouter:
         context: dict[str, Any] | None = None,
         company_id: str | None = None,
         preferred_model: str | None = None,
+        system_prompt_override: str | None = None,
     ) -> dict[str, Any]:
         """
         Rota a mensagem usando a escada de custo.
@@ -81,6 +82,7 @@ class LLMCascadeRouter:
             preferred_model: Modelo preferido (E5 — Multi-Model). Se fornecido e
                              disponível, usado no tier primário em vez do FAST_MODEL.
                              Fail-safe: se o modelo falhar, a cascata padrão é usada.
+            system_prompt_override: A/B testing — override the default routing prompt.
 
         Returns dict com: domain, confidence, model_used, latency_ms, tokens_est
         """
@@ -116,6 +118,7 @@ class LLMCascadeRouter:
         result, tokens = await self._call_model(
             message=message,
             model_name=settings.LLM_FAST_MODEL,
+            system_prompt_override=system_prompt_override,
         )
         if result and result.get("confidence", 0) >= self._fast_threshold:
             result["model_used"] = settings.LLM_FAST_MODEL
@@ -134,6 +137,7 @@ class LLMCascadeRouter:
         result_sonnet, tokens_s = await self._call_model(
             message=message,
             model_name=settings.LLM_PRIMARY_MODEL,
+            system_prompt_override=system_prompt_override,
         )
         tokens += tokens_s
         if result_sonnet and result_sonnet.get("confidence", 0) >= self._mid_threshold:
@@ -153,6 +157,7 @@ class LLMCascadeRouter:
         result_opus, tokens_o = await self._call_model(
             message=message,
             model_name=settings.LLM_POWERFUL_MODEL,
+            system_prompt_override=system_prompt_override,
         )
         tokens += tokens_o
         best = result_opus or result_sonnet or result or {
@@ -184,7 +189,10 @@ class LLMCascadeRouter:
         return "claude"
 
     async def _call_model(
-        self, message: str, model_name: str
+        self,
+        message: str,
+        model_name: str,
+        system_prompt_override: str | None = None,
     ) -> tuple[dict[str, Any] | None, int]:
         """Chama um modelo específico e retorna (resultado_parseado, tokens_estimados).
 
@@ -193,7 +201,8 @@ class LLMCascadeRouter:
           gpt-* / openai-* → provider="openai"
           qualquer outro → provider="claude"
         """
-        prompt = _ROUTING_PROMPT.format(message=message[:500])
+        base_prompt = system_prompt_override or _ROUTING_PROMPT
+        prompt = base_prompt.replace("{message}", message[:500])
         tokens_est = len(prompt) // 4
         provider: LLMProvider = self._provider_for_model(model_name)
 

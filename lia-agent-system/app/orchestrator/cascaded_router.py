@@ -18,6 +18,7 @@ import logging
 import time
 from dataclasses import dataclass, field
 from datetime import datetime
+from pathlib import Path
 from typing import Any
 
 from app.core.config import settings
@@ -26,6 +27,9 @@ from app.orchestrator.semantic_cache import SemanticCache
 from app.shared.tracing import get_tracer, trace_span
 
 logger = logging.getLogger(__name__)
+
+AB_EXPERIMENT_ID = "cascade_router_system_prompt"
+_ab_experiment_initialized = False
 
 
 def _get_metrics():
@@ -111,6 +115,56 @@ def _build_clarification_question(message: str) -> str:
     return "Não entendi sua solicitação. O que você gostaria de fazer?"
 
 
+def _init_ab_experiment() -> None:
+    global _ab_experiment_initialized
+    if _ab_experiment_initialized:
+        return
+    _ab_experiment_initialized = True
+    try:
+        from app.shared.prompt_experiment import (
+            PromptExperiment,
+            PromptVariant as PEVariant,
+            register_experiment,
+        )
+        yaml_path = (
+            Path(__file__).parent.parent / "prompts" / "experiments" / "cascade_router_system_prompt.yaml"
+        )
+        if yaml_path.exists():
+            import yaml
+            with open(yaml_path, encoding="utf-8") as f:
+                data = yaml.safe_load(f)
+            variants = [
+                PEVariant(
+                    variant_id=v["variant_id"],
+                    prompt_text=v["prompt_text"],
+                    weight=float(v.get("weight", 0.5)),
+                )
+                for v in data.get("variants", [])
+            ]
+            if variants:
+                exp = PromptExperiment(
+                    experiment_id=AB_EXPERIMENT_ID,
+                    variants=variants,
+                    metrics_ttl_seconds=int(data.get("metrics_ttl_seconds", 604800)),
+                )
+                register_experiment(exp)
+                try:
+                    from app.domains.ai.services.prompt_version_registry import prompt_version_registry
+                    for v in variants:
+                        prompt_version_registry.register(
+                            name=f"{AB_EXPERIMENT_ID}:{v.variant_id}",
+                            version="1.0.0",
+                            template=v.prompt_text,
+                        )
+                except Exception:
+                    pass
+                logger.info("[A/B] CascadeRouter experiment '%s' registered with %d variants", AB_EXPERIMENT_ID, len(variants))
+        else:
+            logger.debug("[A/B] CascadeRouter experiment YAML not found at %s", yaml_path)
+    except Exception as exc:
+        logger.warning("[A/B] Failed to init CascadeRouter experiment: %s", exc)
+
+
 class CascadedRouter:
     def __init__(
         self,
@@ -136,6 +190,7 @@ class CascadedRouter:
             "clarification_issued": 0,
             "total": 0,
         }
+        _init_ab_experiment()
 
     def _init_vector_cache(self):
         """Inicializa VectorSemanticCache (gracioso — nunca falha na init).
@@ -350,6 +405,24 @@ class CascadedRouter:
             _t4_span.set_attribute("latency_ms", f"{(time.perf_counter() - _t0) * 1000:.2f}")
 
         # Tier 5 — LLM Cascade (Haiku → Sonnet → Opus)
+        # A/B testing: select system prompt variant based on user_id hash
+        _ab_variant_id: str | None = None
+        _ab_prompt_hash: str | None = None
+        try:
+            from app.shared.prompt_experiment import get_experiment
+            _exp = get_experiment(AB_EXPERIMENT_ID)
+            if _exp:
+                _user_id_ab = (context or {}).get("user_id") or session_id or "anonymous"
+                _selected_variant = _exp.select_variant(_user_id_ab)
+                _ab_variant_id = _selected_variant.variant_id
+                _ab_prompt_hash = hashlib.sha256(_selected_variant.prompt_text.encode("utf-8")).hexdigest()[:12]
+                logger.debug(
+                    "[A/B] CascadeRouter user=%s → variant=%s hash=%s",
+                    _user_id_ab, _ab_variant_id, _ab_prompt_hash,
+                )
+        except Exception as _ab_exc:
+            logger.debug("[A/B] CascadeRouter variant selection skipped: %s", _ab_exc)
+
         # Threshold: only accept Tier 5 result when confidence is sufficient;
         # low-confidence Tier 5 falls through to Tier 6 (AutonomousReActAgent).
         import os as _os_t5
@@ -360,7 +433,7 @@ class CascadedRouter:
             try:
                 company_id = (context or {}).get("company_id")
                 _t0 = time.perf_counter()
-                cascade_result = await self._route_via_llm_cascade(message, context, company_id)
+                cascade_result = await self._route_via_llm_cascade(message, context, company_id, ab_variant_id=_ab_variant_id)
                 if cascade_result:
                     _elapsed_ms = (time.perf_counter() - _t0) * 1000
                     _tier_name = cascade_result.source.split(":")[-1] if ":" in cascade_result.source else "llm_cascade"
@@ -397,6 +470,12 @@ class CascadedRouter:
                                 )
                             except Exception:
                                 pass
+                        if _ab_variant_id:
+                            if cascade_result.intent_details is None:
+                                cascade_result.intent_details = {}
+                            cascade_result.intent_details["ab_variant"] = _ab_variant_id
+                            cascade_result.intent_details["ab_prompt_hash"] = _ab_prompt_hash
+                            _t5_span.set_attribute("ab_variant", _ab_variant_id)
                         self._stats["llm_hits"] += 1
                         if _hit_counter:
                             _hit_counter.labels(tier="llm_cascade").inc()
@@ -585,11 +664,37 @@ class CascadedRouter:
         message: str,
         context: dict[str, Any] | None = None,
         company_id: str | None = None,
+        ab_variant_id: str | None = None,
     ) -> RouteResult | None:
-        """Usa LLMCascadeRouter (Haiku→Sonnet→Opus) para roteamento de intent."""
+        """Usa LLMCascadeRouter (Haiku→Sonnet→Opus) para roteamento de intent.
+
+        When an A/B variant is active, injects the selected prompt variant into
+        the cascade router call so that different users see different system prompts.
+        """
         try:
             from app.orchestrator.llm_cascade import llm_cascade_router
-            result = await llm_cascade_router.route(message, context, company_id)
+
+            ab_system_prompt: str | None = None
+            if ab_variant_id:
+                try:
+                    from app.shared.prompt_experiment import get_experiment
+                    _exp = get_experiment(AB_EXPERIMENT_ID)
+                    if _exp:
+                        for v in _exp.variants:
+                            if v.variant_id == ab_variant_id:
+                                ab_system_prompt = v.prompt_text
+                                break
+                except Exception:
+                    pass
+
+            if ab_system_prompt:
+                result = await llm_cascade_router.route(
+                    message, context, company_id,
+                    system_prompt_override=ab_system_prompt,
+                )
+            else:
+                result = await llm_cascade_router.route(message, context, company_id)
+
             domain_id = result.get("domain", "recruiter_assistant")
             confidence = result.get("confidence", 0.5)
             return RouteResult(

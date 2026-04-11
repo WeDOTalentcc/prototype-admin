@@ -107,12 +107,14 @@ class ChatRepository:
         conversation_id: Any,
         content: str,
         message_metadata: dict[str, Any] | None = None,
+        prompt_version: str | None = None,
     ) -> Message:
         msg = Message(
             conversation_id=conversation_id,
             role="ai",
             content=content,
             message_metadata=message_metadata or {},
+            prompt_version=prompt_version,
         )
         self.db.add(msg)
         return msg

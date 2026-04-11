@@ -95,6 +95,7 @@ class Message(Base):
     role = Column(String(20), nullable=False)
     content = Column(Text, nullable=False)
     intent = Column(String(100), nullable=True)
+    prompt_version = Column(String(16), nullable=True)
     
     tool_calls = Column(JSON, nullable=True)
     message_metadata = Column(JSON, default=dict)
@@ -114,6 +115,7 @@ class Message(Base):
             "role": self.role,
             "content": self.content,
             "intent": self.intent,
+            "prompt_version": self.prompt_version,
             "tool_calls": self.tool_calls,
             "metadata": self.message_metadata,
             "created_at": self.created_at.isoformat() if self.created_at else None,

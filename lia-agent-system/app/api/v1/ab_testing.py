@@ -31,6 +31,16 @@ class MetricRecord(BaseModel):
     context: dict[str, Any] | None = None
 
 
+class BusinessMetricRecord(BaseModel):
+    variant_name: str
+    session_id: str
+    company_id: str
+    satisfaction_score: float | None = None
+    response_edited: bool | None = None
+    time_to_decision_ms: float | None = None
+    context: dict[str, Any] | None = None
+
+
 @router.get("", response_model=None)
 async def list_active_tests(
     db: AsyncSession = Depends(get_db),
@@ -77,6 +87,61 @@ async def record_metric(
     if record:
         return {"status": "recorded", "id": str(record.id)}
     return {"status": "error", "message": "Failed to record metric"}
+
+
+@router.post("/{test_name}/record-business-metrics", response_model=None)
+async def record_business_metrics(
+    test_name: str,
+    body: BusinessMetricRecord,
+    db: AsyncSession = Depends(get_db),
+):
+    recorded_ids: list[str] = []
+
+    if body.satisfaction_score is not None:
+        rec = await _service.record_metric(
+            test_name=test_name,
+            variant_name=body.variant_name,
+            session_id=body.session_id,
+            company_id=body.company_id,
+            metric_name="satisfaction_score",
+            metric_value=body.satisfaction_score,
+            db=db,
+            context=body.context,
+        )
+        if rec:
+            recorded_ids.append(str(rec.id))
+
+    if body.response_edited is not None:
+        rec = await _service.record_metric(
+            test_name=test_name,
+            variant_name=body.variant_name,
+            session_id=body.session_id,
+            company_id=body.company_id,
+            metric_name="response_edited",
+            metric_value=1.0 if body.response_edited else 0.0,
+            db=db,
+            context=body.context,
+        )
+        if rec:
+            recorded_ids.append(str(rec.id))
+
+    if body.time_to_decision_ms is not None:
+        rec = await _service.record_metric(
+            test_name=test_name,
+            variant_name=body.variant_name,
+            session_id=body.session_id,
+            company_id=body.company_id,
+            metric_name="time_to_decision_ms",
+            metric_value=body.time_to_decision_ms,
+            db=db,
+            context=body.context,
+        )
+        if rec:
+            recorded_ids.append(str(rec.id))
+
+    if recorded_ids:
+        return {"status": "recorded", "ids": recorded_ids, "metrics_count": len(recorded_ids)}
+    return {"status": "error", "message": "No metrics were recorded"}
 
 
 @router.get("/{test_name}/variant", response_model=None)

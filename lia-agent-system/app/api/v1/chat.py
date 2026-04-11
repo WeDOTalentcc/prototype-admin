@@ -644,11 +644,20 @@ async def _invoke_orchestrator(
     if "response_plan" in entities:
         workflow_data["response_plan"] = entities["response_plan"]
 
+    prompt_version = result.get("prompt_version") or result.get("metadata", {}).get("prompt_version")
+    if not prompt_version:
+        try:
+            from app.domains.ai.services.prompt_version_registry import prompt_version_registry
+            prompt_version = prompt_version_registry.get_current_hash(intent) if intent else None
+        except Exception:
+            pass
+
     return {
         "response": response_text,
         "intent": intent,
         "entities": entities,
         "workflow_data": workflow_data,
+        "prompt_version": prompt_version,
     }
 
 
@@ -732,6 +741,7 @@ async def send_message(
             conversation.id,
             final_response,
             msg_metadata,
+            prompt_version=orch_result.get("prompt_version"),
         )
 
         await repo.update_conversation_intent(conversation, detected_intent, orch_result["workflow_data"])

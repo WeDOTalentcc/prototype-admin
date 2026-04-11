@@ -567,6 +567,10 @@ Classifique a intenção."""
         
         Uses LLM to identify and extract structured fields from
         the user's natural language input.
+
+        A/B testing: when experiment 'job_wizard_field_extraction' is active,
+        selects a prompt variant based on session_id hash and records
+        the variant info in state for downstream metric recording.
         """
         state["current_node"] = "field_extractor"
         start_time = datetime.utcnow()
@@ -576,8 +580,63 @@ Classifique a intenção."""
         existing_draft = state["job_draft"]
         
         self.logger.info(f"Extracting fields for stage {current_stage}")
+
+        ab_variant_id: str | None = None
+        ab_prompt_hash: str | None = None
+        ab_system_prompt: str | None = None
+        try:
+            from app.shared.prompt_experiment import (
+                PromptExperiment as _PE,
+                PromptVariant as _PEV,
+                get_experiment,
+                register_experiment,
+            )
+            _AB_ID = "job_wizard_field_extraction"
+            _exp = get_experiment(_AB_ID)
+            if _exp is None:
+                import yaml as _yaml
+                from pathlib import Path as _Path
+                _yaml_path = (
+                    _Path(__file__).resolve().parent.parent.parent.parent
+                    / "app" / "prompts" / "experiments" / "job_wizard_field_extraction.yaml"
+                )
+                if _yaml_path.exists():
+                    with open(_yaml_path, encoding="utf-8") as _f:
+                        _data = _yaml.safe_load(_f)
+                    _variants = [
+                        _PEV(
+                            variant_id=v["variant_id"],
+                            prompt_text=v["prompt_text"],
+                            weight=float(v.get("weight", 0.5)),
+                        )
+                        for v in _data.get("variants", [])
+                    ]
+                    if _variants:
+                        _exp = _PE(
+                            experiment_id=_AB_ID,
+                            variants=_variants,
+                            metrics_ttl_seconds=int(_data.get("metrics_ttl_seconds", 604800)),
+                        )
+                        register_experiment(_exp)
+                        self.logger.info("[A/B] JobWizard experiment '%s' registered", _AB_ID)
+
+            if _exp:
+                _session_id_ab = state.get("session_id", "anonymous")
+                _selected = _exp.select_variant(_session_id_ab)
+                ab_variant_id = _selected.variant_id
+                import hashlib as _hl
+                ab_prompt_hash = _hl.sha256(_selected.prompt_text.encode("utf-8")).hexdigest()[:12]
+                ab_system_prompt = _selected.prompt_text
+                state["ab_variant"] = ab_variant_id
+                state["ab_prompt_hash"] = ab_prompt_hash
+                self.logger.debug(
+                    "[A/B] JobWizard session=%s → variant=%s hash=%s",
+                    _session_id_ab, ab_variant_id, ab_prompt_hash,
+                )
+        except Exception as _ab_exc:
+            self.logger.debug("[A/B] JobWizard variant selection skipped: %s", _ab_exc)
         
-        system_prompt = """Você é um extrator de informações de vagas de emprego.
+        system_prompt = ab_system_prompt or """Você é um extrator de informações de vagas de emprego.
 Extraia TODOS os campos estruturados da mensagem do usuário.
 
 ## Campos a Extrair (COMPLETOS):
@@ -646,21 +705,21 @@ Retorne um JSON com os campos extraídos:
 - Normalize valores: "15k" = 15000, "20 mil" = 20000
 - Idiomas: extraia nível se mencionado (básico, intermediário, avançado, fluente)"""
         
-        messages = [
-            {
-                "role": "user",
-                "content": f"""Estágio atual: {current_stage}
-Campos já existentes: {json.dumps(existing_draft, ensure_ascii=False, default=str)}
+        user_content = (
+            f"Estágio atual: {current_stage}\n"
+            f"Campos já existentes: {json.dumps(existing_draft, ensure_ascii=False, default=str)}\n\n"
+            f"Nova mensagem: {last_message}\n\n"
+            f"Extraia os campos mencionados na mensagem."
+        )
 
-Nova mensagem: {last_message}
+        if ab_system_prompt and "{user_message}" in ab_system_prompt:
+            full_prompt = ab_system_prompt.replace("{user_message}", user_content)
+        else:
+            full_prompt = f"{system_prompt}\n\n{user_content}"
 
-Extraia os campos mencionados na mensagem."""
-            }
-        ]
-        
         try:
             response = await self.llm.generate(
-                prompt=f"{system_prompt}\n\n{messages[0]['content']}",
+                prompt=full_prompt,
                 provider="gemini"
             )
             
@@ -691,9 +750,12 @@ Extraia os campos mencionados na mensagem."""
             
             duration = (datetime.utcnow() - start_time).total_seconds() * 1000
             extracted_count = len([v for v in extracted.values() if v is not None])
+            ab_info = f" [ab={ab_variant_id} hash={ab_prompt_hash}]" if ab_variant_id else ""
             state["reasoning_steps"].append(
-                f"[field_extractor] Extracted {extracted_count} fields with confidence {overall_confidence:.2f} ({duration:.1f}ms)"
+                f"[field_extractor] Extracted {extracted_count} fields with confidence {overall_confidence:.2f} ({duration:.1f}ms){ab_info}"
             )
+            if ab_prompt_hash:
+                state["prompt_version"] = ab_prompt_hash
             
             self.logger.info(f"Extracted {extracted_count} fields")
             
