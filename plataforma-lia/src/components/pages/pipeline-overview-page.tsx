@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback, useMemo } from "react"
+import React, { useState, useEffect, useCallback, useMemo, useRef } from "react"
 import { cn } from "@/lib/utils"
 import {
   GitBranch,
@@ -152,6 +152,71 @@ function hexToRgba(hex: string, alpha: number): string {
   return `rgba(${r}, ${g}, ${b}, ${alpha})`
 }
 
+const DOCK_MAX_SCALE = 1.4
+const DOCK_NEIGHBOR_1_SCALE = 1.2
+const DOCK_NEIGHBOR_2_SCALE = 1.1
+const DOCK_INFLUENCE_RADIUS = 120
+
+function usePipelineMagnifier(containerRef: React.RefObject<HTMLDivElement | null>) {
+  const mouseXRef = useRef<number | null>(null)
+  const [mouseX, setMouseX] = useState<number | null>(null)
+  const rafId = useRef<number>(0)
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false)
+
+  useEffect(() => {
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)")
+    setPrefersReducedMotion(mq.matches)
+    const handler = (e: MediaQueryListEvent) => setPrefersReducedMotion(e.matches)
+    mq.addEventListener("change", handler)
+    return () => mq.removeEventListener("change", handler)
+  }, [])
+
+  const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    if (prefersReducedMotion) return
+    const rect = containerRef.current?.getBoundingClientRect()
+    if (!rect) return
+    const x = e.clientX - rect.left + (containerRef.current?.scrollLeft ?? 0)
+    mouseXRef.current = x
+    if (!rafId.current) {
+      rafId.current = requestAnimationFrame(() => {
+        setMouseX(mouseXRef.current)
+        rafId.current = 0
+      })
+    }
+  }, [containerRef, prefersReducedMotion])
+
+  const handleMouseLeave = useCallback(() => {
+    mouseXRef.current = null
+    if (rafId.current) {
+      cancelAnimationFrame(rafId.current)
+      rafId.current = 0
+    }
+    setMouseX(null)
+  }, [])
+
+  const getScale = useCallback((nodeIndex: number, nodeRefs: React.RefObject<(HTMLElement | null)[]>) => {
+    if (mouseX === null || prefersReducedMotion) return 1
+    const nodeEl = nodeRefs.current?.[nodeIndex]
+    if (!nodeEl) return 1
+    const nodeCenter = nodeEl.offsetLeft + nodeEl.offsetWidth / 2
+    const distance = Math.abs(mouseX - nodeCenter)
+    if (distance > DOCK_INFLUENCE_RADIUS) return 1
+
+    const ratio = 1 - distance / DOCK_INFLUENCE_RADIUS
+    const eased = Math.cos((1 - ratio) * Math.PI / 2)
+
+    if (distance < DOCK_INFLUENCE_RADIUS * 0.33) {
+      return 1 + (DOCK_MAX_SCALE - 1) * eased
+    } else if (distance < DOCK_INFLUENCE_RADIUS * 0.66) {
+      return 1 + (DOCK_NEIGHBOR_1_SCALE - 1) * eased
+    } else {
+      return 1 + (DOCK_NEIGHBOR_2_SCALE - 1) * eased
+    }
+  }, [mouseX, prefersReducedMotion])
+
+  return { handleMouseMove, handleMouseLeave, getScale }
+}
+
 function calculateGeneralScore(candidate: CandidateItem): number | null {
   const scores: number[] = []
   if (candidate.lia_score != null) scores.push(candidate.lia_score)
@@ -178,6 +243,10 @@ export function PipelineOverviewPage() {
 
   const [activeModal, setActiveModal] = useState<ModalType>(null)
   const [modalCandidate, setModalCandidate] = useState<CandidateItem | null>(null)
+
+  const stagesScrollRef = useRef<HTMLDivElement>(null)
+  const stageNodeRefs = useRef<(HTMLElement | null)[]>([])
+  const { handleMouseMove, handleMouseLeave, getScale } = usePipelineMagnifier(stagesScrollRef)
 
   const fetchPipelineOverview = useCallback(async () => {
     setLoading(true)
@@ -312,7 +381,7 @@ export function PipelineOverviewPage() {
             </div>
           </div>
 
-          <div className="flex-shrink-0 px-6 py-6 overflow-x-auto">
+          <div className="flex-shrink-0 px-6 py-6 relative" style={{ overflow: "visible" }}>
             {stages.length === 0 ? (
               <div className="flex items-center gap-2 text-lia-text-disabled text-sm">
                 <AlertCircle className="w-4 h-4" />
@@ -322,18 +391,36 @@ export function PipelineOverviewPage() {
                 </span>
               </div>
             ) : (
-              <div className="flex items-end gap-0 min-w-max px-1 pb-2">
+              <div
+                ref={stagesScrollRef}
+                className="overflow-x-auto scrollbar-none"
+                style={{
+                  scrollbarWidth: "none",
+                  msOverflowStyle: "none",
+                  clipPath: "inset(-30px 0 0 0)",
+                }}
+                onMouseMove={handleMouseMove}
+                onMouseLeave={handleMouseLeave}
+              >
+              <div className="flex items-end gap-0 min-w-max px-1 pt-8 pb-2">
                 {stages.map((stage, index) => {
                   const isSelected = selectedStage === stage.name
                   const isLast = index === stages.length - 1
                   const stageColor = stage.color || "#2D2D2D"
                   const StageIcon = STAGE_ICON_MAP[stage.name] || GitBranch
+                  const scale = getScale(index, stageNodeRefs)
 
                   return (
                     <div key={stage.name} className="flex items-center">
                       <button
+                        ref={(el) => { stageNodeRefs.current[index] = el }}
                         onClick={() => handleStageClick(stage.name)}
-                        className="group flex flex-col items-center gap-1.5 px-3 cursor-pointer"
+                        className="group flex flex-col items-center gap-1.5 px-3 cursor-pointer origin-bottom motion-reduce:!transition-none"
+                        style={{
+                          transform: scale !== 1 ? `scale(${scale})` : undefined,
+                          transition: "transform 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+                          willChange: scale !== 1 ? "transform" : "auto",
+                        }}
                       >
                         <div
                           className="w-11 h-11 rounded-full flex items-center justify-center transition-all duration-200 border-2"
@@ -394,6 +481,7 @@ export function PipelineOverviewPage() {
                     </div>
                   )
                 })}
+              </div>
               </div>
             )}
           </div>
