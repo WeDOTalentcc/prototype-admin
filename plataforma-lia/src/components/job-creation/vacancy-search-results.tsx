@@ -119,7 +119,7 @@ function VacancyCard({
             </Badge>
           </div>
           
-          <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
+          <div className="grid grid-cols-2 gap-2 text-xs text-lia-text-tertiary">
             <div className="flex items-center gap-1.5">
               <Building2 className="h-3 w-3 text-lia-text-secondary" />
               <span className="truncate">{vacancy.department}</span>
@@ -175,7 +175,7 @@ export function VacancySearchResults({
         <div className="rounded-xl rounded-tl-sm bg-lia-bg-primary border border-lia-border-subtle p-4" role="status" aria-live="polite" aria-label="Carregando...">
           <div className="flex items-center gap-2" role="status" aria-live="polite" aria-label="Carregando...">
             <Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none text-lia-text-secondary" />
-            <span className="text-sm text-muted-foreground" aria-live="polite" aria-atomic="true">Buscando vagas anteriores...</span>
+            <span className="text-sm text-lia-text-tertiary" aria-live="polite" aria-atomic="true">Buscando vagas anteriores...</span>
           </div>
         </div>
       </div>
@@ -192,7 +192,7 @@ export function VacancySearchResults({
           </AvatarFallback>
         </Avatar>
         <div className="rounded-xl rounded-tl-sm bg-lia-bg-primary border border-lia-border-subtle p-4">
-          <p className="text-sm text-muted-foreground" aria-live="polite" aria-atomic="true">
+          <p className="text-sm text-lia-text-tertiary" aria-live="polite" aria-atomic="true">
             Não encontrei vagas anteriores com esses critérios. Podemos criar uma vaga do zero! Me diga o cargo e vou te ajudar.
           </p>
         </div>
@@ -211,7 +211,7 @@ export function VacancySearchResults({
 
       <div className="flex-1 space-y-3">
         <div className="rounded-xl rounded-tl-sm bg-lia-bg-primary border border-lia-border-subtle p-4 space-y-4">
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-lia-text-tertiary">
             Encontrei <span className="font-semibold text-lia-text-primary">{vacancies.length}</span> vaga{vacancies.length > 1 ? 's' : ''} que pode{vacancies.length > 1 ? 'm' : ''} servir como base:
           </p>
 
@@ -227,7 +227,7 @@ export function VacancySearchResults({
           </div>
 
           <div className="pt-3 border-t border-lia-border-subtle">
-            <p className="text-xs text-muted-foreground italic" aria-live="polite" aria-atomic="true">
+            <p className="text-xs text-lia-text-tertiary italic" aria-live="polite" aria-atomic="true">
               Digite o número (ex: "1" ou "2") ou parte do título para selecionar uma vaga. 
               Se preferir criar do zero, digite "criar nova".
             </p>

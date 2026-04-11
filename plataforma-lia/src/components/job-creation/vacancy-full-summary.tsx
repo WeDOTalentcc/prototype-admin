@@ -157,7 +157,7 @@ export function VacancyFullSummary({
         <div className="rounded-xl rounded-tl-sm bg-lia-bg-primary border border-lia-border-subtle p-4" role="status" aria-live="polite" aria-label="Carregando...">
           <div className="flex items-center gap-2" role="status" aria-live="polite" aria-label="Carregando...">
             <Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none text-lia-text-secondary" />
-            <span className="text-sm text-muted-foreground" aria-live="polite" aria-atomic="true">Carregando detalhes da vaga...</span>
+            <span className="text-sm text-lia-text-tertiary" aria-live="polite" aria-atomic="true">Carregando detalhes da vaga...</span>
           </div>
         </div>
       </div>
@@ -182,7 +182,7 @@ export function VacancyFullSummary({
         <div className="rounded-xl rounded-tl-sm bg-lia-bg-primary border border-lia-border-subtle p-4 space-y-4">
           <div className="pb-2">
             <h3 className="text-sm font-bold text-lia-text-primary dark:text-white">{vacancy.title}</h3>
-            <p className="text-xs text-muted-foreground mt-0.5" aria-live="polite" aria-atomic="true">
+            <p className="text-xs text-lia-text-tertiary mt-0.5" aria-live="polite" aria-atomic="true">
               Resumo completo da vaga baseada em processo anterior
             </p>
           </div>
@@ -192,30 +192,30 @@ export function VacancyFullSummary({
               <SectionHeader icon={Tag} title="🏷️ Informações Básicas" isLocked={isFieldLocked('basic_info')} />
               <div className="grid grid-cols-2 gap-2 text-xs">
                 <div className="flex items-center gap-1.5 p-2 rounded-xl bg-lia-bg-secondary">
-                  <Building2 className="h-3 w-3 text-muted-foreground" />
-                  <span className="text-muted-foreground">Área:</span>
+                  <Building2 className="h-3 w-3 text-lia-text-tertiary" />
+                  <span className="text-lia-text-tertiary">Área:</span>
                   <span className="font-medium">{vacancy.department}</span>
                 </div>
                 <div className="flex items-center gap-1.5 p-2 rounded-xl bg-lia-bg-secondary">
-                  <MapPin className="h-3 w-3 text-muted-foreground" />
-                  <span className="text-muted-foreground">Local:</span>
+                  <MapPin className="h-3 w-3 text-lia-text-tertiary" />
+                  <span className="text-lia-text-tertiary">Local:</span>
                   <span className="font-medium">{vacancy.location}</span>
                 </div>
                 <div className="flex items-center gap-1.5 p-2 rounded-xl bg-lia-bg-secondary">
-                  <Briefcase className="h-3 w-3 text-muted-foreground" />
-                  <span className="text-muted-foreground">Modelo:</span>
+                  <Briefcase className="h-3 w-3 text-lia-text-tertiary" />
+                  <span className="text-lia-text-tertiary">Modelo:</span>
                   <span className="font-medium">{WORK_MODEL_LABELS[vacancy.work_model.toLowerCase()] || vacancy.work_model}</span>
                 </div>
                 <div className="flex items-center gap-1.5 p-2 rounded-xl bg-lia-bg-secondary">
-                  <Briefcase className="h-3 w-3 text-muted-foreground" />
-                  <span className="text-muted-foreground">Contrato:</span>
+                  <Briefcase className="h-3 w-3 text-lia-text-tertiary" />
+                  <span className="text-lia-text-tertiary">Contrato:</span>
                   <span className="font-medium">{EMPLOYMENT_TYPE_LABELS[vacancy.employment_type.toLowerCase()] || vacancy.employment_type}</span>
                 </div>
                 <div className="flex items-center gap-1.5 p-2 rounded-xl bg-lia-bg-secondary col-span-2">
-                  <User className="h-3 w-3 text-muted-foreground" />
-                  <span className="text-muted-foreground">Gestor:</span>
+                  <User className="h-3 w-3 text-lia-text-tertiary" />
+                  <span className="text-lia-text-tertiary">Gestor:</span>
                   <span className="font-medium">{vacancy.manager}</span>
-                  <span className="text-muted-foreground">({vacancy.manager_email})</span>
+                  <span className="text-lia-text-tertiary">({vacancy.manager_email})</span>
                 </div>
               </div>
             </div>
@@ -226,7 +226,7 @@ export function VacancyFullSummary({
                 <div className="flex items-center gap-2 p-2 rounded-xl bg-status-success/10 dark:bg-status-success/30 border border-status-success/30 dark:border-status-success/30">
                   <DollarSign className="h-4 w-4 text-status-success" />
                   <div className="flex-1">
-                    <p className="text-micro text-muted-foreground">Faixa Salarial</p>
+                    <p className="text-micro text-lia-text-tertiary">Faixa Salarial</p>
                     <p className="text-xs font-semibold text-status-success">
                       {formatCurrency(vacancy.salary_range.min)} - {formatCurrency(vacancy.salary_range.max)}
                     </p>
@@ -236,7 +236,7 @@ export function VacancyFullSummary({
                   <div className="flex items-center gap-2 p-2 rounded-xl bg-wedo-cyan/10 border border-wedo-cyan/30 dark:border-wedo-cyan/30">
                     <DollarSign className="h-4 w-4 text-wedo-cyan-dark" />
                     <div className="flex-1">
-                      <p className="text-micro text-muted-foreground">Bônus</p>
+                      <p className="text-micro text-lia-text-tertiary">Bônus</p>
                       <p className="text-xs font-semibold text-wedo-cyan-dark">
                         {vacancy.salary_range.bonus_min ? formatCurrency(vacancy.salary_range.bonus_min) : 'N/A'} - {vacancy.salary_range.bonus_max ? formatCurrency(vacancy.salary_range.bonus_max) : 'N/A'}
                       </p>
@@ -319,7 +319,7 @@ export function VacancyFullSummary({
             <div>
               <SectionHeader icon={FileText} title="📝 Job Description" isLocked={isFieldLocked('job_description')} iconColor="lia-text-secondary" />
               <div className="p-2 rounded-xl bg-lia-bg-secondary border border-lia-border-subtle max-h-[100px] overflow-y-auto">
-                <p className="text-xs text-muted-foreground whitespace-pre-wrap">
+                <p className="text-xs text-lia-text-tertiary whitespace-pre-wrap">
                   {vacancy.job_description}
                 </p>
               </div>
@@ -331,11 +331,11 @@ export function VacancyFullSummary({
               <p className="text-xs text-lia-text-primary dark:text-white leading-relaxed">
                 <span className="font-semibold">📌 O que você pode fazer:</span>
               </p>
-              <ul className="text-xs text-muted-foreground mt-1.5 space-y-1">
+              <ul className="text-xs text-lia-text-tertiary mt-1.5 space-y-1">
                 <li>• Se quiser <span className="font-medium text-lia-text-secondary">confirmar e publicar</span>, digite <span className="font-mono bg-lia-interactive-active px-1 rounded-md">'confirmar'</span></li>
                 <li>• Se quiser <span className="font-medium text-lia-text-secondary">fazer ajustes</span>, me diga o que quer mudar</li>
               </ul>
-              <p className="text-micro text-muted-foreground mt-2 italic">
+              <p className="text-micro text-lia-text-tertiary mt-2 italic">
                 Exemplos: "salário para 18 a 23k", "modelo híbrido", "adicionar benefício vale alimentação"
               </p>
             </div>

@@ -115,6 +115,31 @@ const STAGE_ICON_MAP: Record<string, LucideIcon> = {
   contratado: Award,
 }
 
+const STAGE_VIBRANT_COLORS: Record<string, string> = {
+  sourcing: "#5DA47A",
+  screening: "#5DA47A",
+  long_list: "#60BED1",
+  short_list: "#60BED1",
+  interview_hr: "#D19960",
+  technical_test: "#D17060",
+  english_test: "#D1A960",
+  interview_technical: "#9860D1",
+  interview_manager: "#9860D1",
+  interview_final: "#9860D1",
+  reference_check: "#D19960",
+  offer: "#6078D1",
+  proposal: "#6078D1",
+  proposta: "#6078D1",
+  hired: "#5DA47A",
+  contratado: "#5DA47A",
+  rejected: "#8A8F98",
+  recusado: "#8A8F98",
+}
+
+function getVibrantColor(stageName: string, fallbackHex: string): string {
+  return STAGE_VIBRANT_COLORS[stageName] || fallbackHex
+}
+
 const PAGE_SIZE = 20
 
 function getInitials(name: string): string {
@@ -406,7 +431,7 @@ export function PipelineOverviewPage() {
                 {stages.map((stage, index) => {
                   const isSelected = selectedStage === stage.name
                   const isLast = index === stages.length - 1
-                  const stageColor = stage.color || "#2D2D2D"
+                  const stageColor = getVibrantColor(stage.name, stage.color || "#2D2D2D")
                   const StageIcon = STAGE_ICON_MAP[stage.name] || GitBranch
                   const scale = getScale(index, stageNodeRefs)
 
@@ -427,12 +452,10 @@ export function PipelineOverviewPage() {
                           style={{
                             backgroundColor: isSelected
                               ? stageColor
-                              : hexToRgba(stageColor, 0.08),
-                            borderColor: isSelected
-                              ? stageColor
-                              : hexToRgba(stageColor, 0.5),
+                              : hexToRgba(stageColor, 0.10),
+                            borderColor: stageColor,
                             boxShadow: isSelected
-                              ? `0 0 0 3px ${hexToRgba(stageColor, 0.15)}`
+                              ? `0 0 0 3px ${hexToRgba(stageColor, 0.18)}`
                               : undefined,
                           }}
                         >
@@ -457,19 +480,18 @@ export function PipelineOverviewPage() {
                           {stage.display_name}
                         </span>
 
-                        <span
-                          className={cn(
-                            "text-xs font-bold transition-colors",
-                            isSelected
-                              ? ""
-                              : stage.count > 0
-                              ? "text-lia-text-primary"
-                              : "text-lia-text-disabled"
-                          )}
-                          style={isSelected ? { color: stageColor } : undefined}
-                        >
-                          {stage.count}
-                        </span>
+                        {stage.count > 0 ? (
+                          <span
+                            className="text-xs font-bold transition-colors"
+                            style={{ color: stageColor }}
+                          >
+                            {stage.count}
+                          </span>
+                        ) : (
+                          <span className="text-xs font-bold text-lia-text-disabled">
+                            {stage.count}
+                          </span>
+                        )}
                       </button>
 
                       {!isLast && (
@@ -495,6 +517,7 @@ export function PipelineOverviewPage() {
                   .slice(0, 6)
                   .map((s) => {
                     const isActive = selectedStage === s.name
+                    const pillColor = getVibrantColor(s.name, s.color || "#2D2D2D")
                     return (
                       <button
                         key={s.name}
@@ -506,13 +529,13 @@ export function PipelineOverviewPage() {
                             : "bg-lia-bg-primary text-lia-text-secondary border-lia-border-subtle hover:border-lia-border-medium hover:text-lia-text-primary"
                         )}
                         style={isActive ? {
-                          backgroundColor: hexToRgba(s.color || "#2D2D2D", 0.08),
-                          borderColor: s.color || "#2D2D2D",
+                          backgroundColor: hexToRgba(pillColor, 0.08),
+                          borderColor: pillColor,
                         } : undefined}
                       >
                         <div
                           className="w-2 h-2 rounded-full flex-shrink-0"
-                          style={{ backgroundColor: s.color || "#2D2D2D" }}
+                          style={{ backgroundColor: pillColor }}
                         />
                         {s.display_name}
                         <span className="font-semibold">{s.count}</span>

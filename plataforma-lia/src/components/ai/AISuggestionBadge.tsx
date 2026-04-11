@@ -92,9 +92,9 @@ export function AISuggestionBadge({
               <Brain className="h-4 w-4 text-wedo-cyan" />
               <span className="font-medium text-sm">Sugestão da LIA</span>
             </div>
-            <p className="text-sm text-muted-foreground">{actionLabel}</p>
+            <p className="text-sm text-lia-text-tertiary">{actionLabel}</p>
             <div className="flex items-center justify-between text-xs">
-              <span className="text-muted-foreground">Confiança:</span>
+              <span className="text-lia-text-tertiary">Confiança:</span>
               <span className={cn("font-medium", confidenceColor)}>
                 {confidencePercent}%
               </span>

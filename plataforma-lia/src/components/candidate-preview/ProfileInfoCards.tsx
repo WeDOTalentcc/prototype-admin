@@ -32,7 +32,7 @@ function ProfileEducationCard({ candidate }: { candidate: Record<string, unknown
       <CardContent className="p-2.5 space-y-2">
         {candidate.education && (candidate.education as Record<string, unknown>[]).length > 0 ? (
           (candidate.education as Record<string, unknown>[]).map((edu: Record<string, unknown>, index: number) => (
-            <div key={`edu-${index}-${String(edu.institution || edu.school || index)}`} className={`flex items-start justify-between gap-2 ${index < (candidate.education as Record<string, unknown>[]).length - 1 ? 'pb-2 border-b border-lia-border-subtle' : ''}`}>
+            <div key={`edu-${index}-${String(edu.institution || edu.school || index)}`} className={`flex items-start justify-between gap-2 ${index < (candidate.education as Record<string, unknown>[]).length - 1 ? 'pb-2' : ''}`}>
               <div className="min-w-0 flex-1">
                 <h5 className={textStyles.label}>
                   {(edu.degree || edu.title || 'Formação') as string}{(edu.field_of_study || edu.fieldOfStudy) ? ` em ${(edu.field_of_study || edu.fieldOfStudy) as string}` : ''}

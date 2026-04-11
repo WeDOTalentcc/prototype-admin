@@ -131,7 +131,7 @@ function TechnicalSkillCard({ skill }: { skill: TechnicalSkillSuggestion }) {
       
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-1.5">
-          <span className="text-micro text-muted-foreground">Peso:</span>
+          <span className="text-micro text-lia-text-tertiary">Peso:</span>
           <WeightStars weight={skill.weight} />
         </div>
         <span className={cn("text-micro", sourceConfig.className)}>
@@ -140,7 +140,7 @@ function TechnicalSkillCard({ skill }: { skill: TechnicalSkillSuggestion }) {
       </div>
       
       {skill.weightJustification && (
-        <p className="text-micro text-muted-foreground italic pl-1 border-l-2 border-lia-border-default">
+        <p className="text-micro text-lia-text-tertiary italic pl-1 border-l-2 border-lia-border-default">
           {skill.weightJustification}
         </p>
       )}
@@ -159,20 +159,20 @@ function BehavioralCompetencyCard({ competency }: { competency: BehavioralCompet
           <span className="text-xs font-medium truncate">{competency.name}</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="text-micro text-muted-foreground">Peso:</span>
+          <span className="text-micro text-lia-text-tertiary">Peso:</span>
           <WeightStars weight={competency.weight} />
         </div>
       </div>
       
       {competency.justification && (
-        <p className="text-micro text-muted-foreground">
+        <p className="text-micro text-lia-text-tertiary">
           {competency.justification}
         </p>
       )}
       
       <div className="flex items-center justify-between gap-2">
         {competency.weightJustification && (
-          <p className="text-micro text-muted-foreground italic pl-1 border-l-2 border-wedo-purple/30/50 flex-1">
+          <p className="text-micro text-lia-text-tertiary italic pl-1 border-l-2 border-wedo-purple/30/50 flex-1">
             {competency.weightJustification}
           </p>
         )}
@@ -203,7 +203,7 @@ export function CompetenciesChatMessage({
         <div className="rounded-xl rounded-tl-sm bg-lia-bg-primary border border-lia-border-subtle p-4" role="status" aria-live="polite" aria-label="Carregando...">
           <div className="flex items-center gap-2" role="status" aria-live="polite" aria-label="Carregando...">
             <Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none text-lia-text-secondary" />
-            <span className="text-sm text-muted-foreground">Analisando competências...</span>
+            <span className="text-sm text-lia-text-tertiary">Analisando competências...</span>
           </div>
         </div>
       </div>
@@ -225,7 +225,7 @@ export function CompetenciesChatMessage({
 
       <div className="flex-1 space-y-3">
         <div className="rounded-xl rounded-tl-sm bg-lia-bg-primary border border-lia-border-subtle p-4 space-y-4">
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-lia-text-tertiary">
             Com base em benchmark de mercado, histórico da empresa e configurações de competências, sugiro as seguintes competências com pesos atribuídos:
           </p>
 

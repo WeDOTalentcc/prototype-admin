@@ -88,8 +88,8 @@ export function WSIScorecard({
     return (
       <Card className="border-dashed">
         <CardContent className="py-6 flex items-center justify-center">
-          <Loader2 className="w-5 h-5 animate-spin motion-reduce:animate-none text-muted-foreground" />
-          <span className="ml-2 text-sm text-muted-foreground">Carregando WSI...</span>
+          <Loader2 className="w-5 h-5 animate-spin motion-reduce:animate-none text-lia-text-tertiary" />
+          <span className="ml-2 text-sm text-lia-text-tertiary">Carregando WSI...</span>
         </CardContent>
       </Card>
     )
@@ -111,7 +111,7 @@ export function WSIScorecard({
       <Card className="border-dashed">
         <CardContent className="py-6 text-center">
           <Brain className="w-8 h-8 text-wedo-cyan mx-auto mb-2" />
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-lia-text-tertiary">
             Nenhuma triagem WSI realizada
           </p>
         </CardContent>
@@ -126,7 +126,7 @@ export function WSIScorecard({
   if (compact && !expanded) {
     return (
       <Card 
-        className="cursor-pointer hover:bg-muted/50 transition-colors motion-reduce:transition-none"
+        className="cursor-pointer hover:bg-lia-bg-tertiary/50 transition-colors motion-reduce:transition-none"
         onClick={() => setExpanded(true)}
       >
         <CardContent className="py-3 px-4">
@@ -144,12 +144,12 @@ export function WSIScorecard({
                     {latestResult.classification}
                   </Badge>
                 </div>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-lia-text-tertiary">
                   {latestResult.screening_type === 'voice' ? 'Triagem por Voz' : 'Triagem por Texto'}
                 </p>
               </div>
             </div>
-            <ChevronDown className="w-4 h-4 text-muted-foreground" />
+            <ChevronDown className="w-4 h-4 text-lia-text-tertiary" />
           </div>
         </CardContent>
       </Card>
@@ -164,7 +164,7 @@ export function WSIScorecard({
             <Brain className="w-4 h-4 text-wedo-cyan" />
             Score WSI
             {candidateName && (
-              <span className="text-muted-foreground font-normal">• {candidateName}</span>
+              <span className="text-lia-text-tertiary font-normal">• {candidateName}</span>
             )}
           </CardTitle>
           {compact && (
@@ -185,12 +185,12 @@ export function WSIScorecard({
             <span className={`text-2xl font-bold ${scoreDisplay.color}`}>
               {latestResult.overall_wsi.toFixed(1)}
             </span>
-            <span className="text-xs text-muted-foreground">de 5.0</span>
+            <span className="text-xs text-lia-text-tertiary">de 5.0</span>
           </div>
 
           <div className="flex-1 space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground flex items-center gap-1">
+              <span className="text-sm text-lia-text-tertiary flex items-center gap-1">
                 <Target className="w-3 h-3" />
                 Técnico
               </span>
@@ -202,7 +202,7 @@ export function WSIScorecard({
             />
 
             <div className="flex items-center justify-between mt-2">
-              <span className="text-sm text-muted-foreground flex items-center gap-1">
+              <span className="text-sm text-lia-text-tertiary flex items-center gap-1">
                 <MessageSquare className="w-3 h-3" />
                 Comportamental
               </span>
@@ -221,7 +221,7 @@ export function WSIScorecard({
             {getClassificationConfig(latestResult.classification).label}
           </Badge>
 
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <div className="flex items-center gap-2 text-xs text-lia-text-tertiary">
             {latestResult.screening_type === 'voice' ? (
               <Badge variant="outline" className="text-xs">
                 🎤 Voz
@@ -242,21 +242,21 @@ export function WSIScorecard({
 
         {showHistory && results.total_screenings > 1 && (
           <div className="pt-2 border-t">
-            <p className="text-xs text-muted-foreground mb-2">
+            <p className="text-xs text-lia-text-tertiary mb-2">
               Histórico ({results.total_screenings} triagens)
             </p>
             <div className="space-y-2">
               {results.results.slice(1, 4).map((result, idx) => (
                 <div 
                   key={result.result_id}
-                  className="flex items-center justify-between text-sm p-2 bg-muted/50 rounded-md cursor-pointer hover:bg-muted transition-colors motion-reduce:transition-none"
+                  className="flex items-center justify-between text-sm p-2 bg-lia-bg-tertiary/50 rounded-md cursor-pointer hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none"
                   onClick={() => onViewDetails?.(result.result_id)}
                 >
                   <div className="flex items-center gap-2">
                     <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium ${getScoreDisplay(result.overall_wsi).bgColor} ${getScoreDisplay(result.overall_wsi).color}`}>
                       {result.overall_wsi.toFixed(1)}
                     </div>
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-xs text-lia-text-tertiary">
                       {new Date(result.created_at).toLocaleDateString('pt-BR')}
                     </span>
                   </div>

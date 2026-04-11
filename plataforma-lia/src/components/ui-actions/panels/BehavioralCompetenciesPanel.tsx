@@ -163,19 +163,19 @@ function CompetencyCard({
     <div className="border rounded-xl overflow-hidden dark:border-lia-border-subtle dark:bg-lia-bg-secondary">
       <button
         type="button"
-        className="w-full text-left p-3 hover:bg-muted/50 dark:hover:bg-lia-bg-inverse/50 transition-colors motion-reduce:transition-none"
+        className="w-full text-left p-3 hover:bg-lia-bg-tertiary/50 dark:hover:bg-lia-bg-inverse/50 transition-colors motion-reduce:transition-none"
         onClick={onToggleExpand}
       >
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-start gap-2 flex-1 min-w-0">
             {isExpanded ? (
-              <ChevronDown className="h-4 w-4 mt-0.5 text-muted-foreground shrink-0" />
+              <ChevronDown className="h-4 w-4 mt-0.5 text-lia-text-tertiary shrink-0" />
             ) : (
-              <ChevronRight className="h-4 w-4 mt-0.5 text-muted-foreground shrink-0" />
+              <ChevronRight className="h-4 w-4 mt-0.5 text-lia-text-tertiary shrink-0" />
             )}
             <div className="min-w-0">
               <div className="font-medium text-sm">{competency.name}</div>
-              <div className="text-xs text-muted-foreground line-clamp-1">
+              <div className="text-xs text-lia-text-tertiary line-clamp-1">
                 {competency.description}
               </div>
             </div>
@@ -191,7 +191,7 @@ function CompetencyCard({
 
       <div className="px-3 pb-3">
         <div className="flex items-center gap-2">
-          <Label className="text-xs text-muted-foreground shrink-0">Nível:</Label>
+          <Label className="text-xs text-lia-text-tertiary shrink-0">Nível:</Label>
           <div className="flex gap-1 flex-1">
             {[1, 2, 3, 4, 5].map((level) => (
               <button
@@ -218,10 +218,10 @@ function CompetencyCard({
       </div>
 
       {isExpanded && (
-        <div className="px-3 pb-3 pt-2 border-t border-lia-border-subtle dark:border-lia-border-subtle bg-muted/30 dark:bg-lia-bg-primary/30 space-y-3">
+        <div className="px-3 pb-3 pt-2 border-t border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-tertiary/30 dark:bg-lia-bg-primary/30 space-y-3">
           {competency.behaviors && competency.behaviors.length > 0 && (
             <div>
-              <div className="flex items-center gap-1 text-xs font-medium text-muted-foreground mb-2">
+              <div className="flex items-center gap-1 text-xs font-medium text-lia-text-tertiary mb-2">
                 <Target className="h-3 w-3" />
                 Comportamentos Esperados
               </div>
@@ -238,7 +238,7 @@ function CompetencyCard({
 
           {competency.questions && competency.questions.length > 0 && (
             <div>
-              <div className="flex items-center gap-1 text-xs font-medium text-muted-foreground mb-2">
+              <div className="flex items-center gap-1 text-xs font-medium text-lia-text-tertiary mb-2">
                 <MessageCircle className="h-3 w-3" />
                 Perguntas de Exemplo
               </div>

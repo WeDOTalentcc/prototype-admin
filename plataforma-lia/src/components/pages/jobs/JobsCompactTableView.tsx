@@ -418,41 +418,41 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                                       <div className="font-semibold mb-2">Funil de Candidatos</div>
                                       <div className="space-y-1.5 mb-2">
                                         <div className="flex items-center justify-between gap-4">
-                                          <span className="text-popover-foreground/60">Total</span>
+                                          <span className="text-lia-text-primary/60">Total</span>
                                           <span className="font-semibold">{job.funnel.total}</span>
                                         </div>
                                         <div className="flex items-center justify-between gap-4">
-                                          <span className="text-popover-foreground/60">Triagem</span>
+                                          <span className="text-lia-text-primary/60">Triagem</span>
                                           <span className="font-semibold">
                                             {job.funnel.screening} ({job.funnel.total > 0 ? Math.round((job.funnel.screening / job.funnel.total) * 100) : 0}%)
                                           </span>
                                         </div>
                                         <div className="flex items-center justify-between gap-4">
-                                          <span className="text-popover-foreground/60">Entrevistas</span>
+                                          <span className="text-lia-text-primary/60">Entrevistas</span>
                                           <span className="font-semibold">
                                             {job.funnel.interview} ({job.funnel.total > 0 ? Math.round((job.funnel.interview / job.funnel.total) * 100) : 0}%)
                                           </span>
                                         </div>
                                         <div className="flex items-center justify-between gap-4">
-                                          <span className="text-popover-foreground/60">Finalistas</span>
+                                          <span className="text-lia-text-primary/60">Finalistas</span>
                                           <span className="font-semibold">
                                             {job.funnel.final} ({job.funnel.total > 0 ? Math.round((job.funnel.final / job.funnel.total) * 100) : 0}%)
                                           </span>
                                         </div>
-                                        <div className="flex items-center justify-between gap-4 pt-1 border-t border-border">
-                                          <span className="text-popover-foreground/60">✓ Contratados</span>
+                                        <div className="flex items-center justify-between gap-4 pt-1 border-t border-lia-border-default">
+                                          <span className="text-lia-text-primary/60">✓ Contratados</span>
                                           <span className="font-bold">
                                             {job.funnel.hired} ({job.funnel.total > 0 ? Math.round((job.funnel.hired / job.funnel.total) * 100) : 0}%)
                                           </span>
                                         </div>
                                       </div>
-                                      <div className="pt-1.5 border-t border-border">
+                                      <div className="pt-1.5 border-t border-lia-border-default">
                                         <div className="flex items-center justify-between gap-4">
-                                          <span className="text-popover-foreground/60">Taxa conversão</span>
+                                          <span className="text-lia-text-primary/60">Taxa conversão</span>
                                           <span className={`${
                                             job.funnel.total > 0 && (job.funnel.hired / job.funnel.total) * 100 >= 10 ? 'font-bold' :
                                             job.funnel.total > 0 && (job.funnel.hired / job.funnel.total) * 100 >= 5 ? 'font-semibold' :
-                                            'font-medium text-popover-foreground/60'
+                                            'font-medium text-lia-text-primary/60'
                                           }`}>
                                             {job.funnel.total > 0 ? ((job.funnel.hired / job.funnel.total) * 100).toFixed(1) : 0}%
                                           </span>

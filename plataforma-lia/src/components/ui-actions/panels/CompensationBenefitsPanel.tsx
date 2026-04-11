@@ -256,7 +256,7 @@ export function CompensationBenefitsPanel({
           {isLoadingBenefits && benefits.length === 0 ? (
             <div className="flex items-center gap-2 py-4" role="status" aria-live="polite" aria-label="Carregando...">
               <Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none text-lia-text-secondary" />
-              <span className="text-sm text-muted-foreground">Carregando benefícios...</span>
+              <span className="text-sm text-lia-text-tertiary">Carregando benefícios...</span>
             </div>
           ) : (
             Object.entries(categorizedBenefits).map(([categoryId, categoryBenefits]) => {
@@ -266,7 +266,7 @@ export function CompensationBenefitsPanel({
 
               return (
                 <div key={categoryId} className="space-y-3">
-                  <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-1.5">
+                  <Label className="text-xs font-semibold text-lia-text-tertiary uppercase tracking-wide flex items-center gap-1.5">
                     <CategoryIcon className="w-3.5 h-3.5" />
                     {meta.name}
                   </Label>
@@ -362,7 +362,7 @@ function BenefitRow({
       {benefit.enabled && (
         <div className="flex items-center gap-2">
           {valueDisplay ? (
-            <span className="text-xs text-muted-foreground whitespace-nowrap">
+            <span className="text-xs text-lia-text-tertiary whitespace-nowrap">
               {valueDisplay}
             </span>
           ) : (
@@ -374,7 +374,7 @@ function BenefitRow({
             />
           )}
           {benefit.provider && (
-            <span className="text-micro text-muted-foreground whitespace-nowrap">
+            <span className="text-micro text-lia-text-tertiary whitespace-nowrap">
               {benefit.provider}
             </span>
           )}

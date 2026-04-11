@@ -31,7 +31,7 @@ export const EAPTabBoolean = React.memo(function EAPTabBoolean(props: EAPTabBool
           value={booleanSearchValue}
           onChange={(e) => setBooleanSearchValue(e.target.value)}
           placeholder='(Python OR Java) AND "São Paulo" NOT junior'
-          className="border border-input bg-background rounded-lg text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring w-full pl-10 pr-44 py-2.5 text-sm font-mono"
+          className="border border-input bg-lia-bg-primary rounded-lg text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring w-full pl-10 pr-44 py-2.5 text-sm font-mono"
         />
 
         {/* Ícones de Fonte e Contato dentro do input */}

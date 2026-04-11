@@ -40,7 +40,7 @@ function MetadataRow({ data }: { data: JobDescriptionFinalData }) {
     : workModelLabel;
 
   return (
-    <div className="flex flex-wrap gap-3 text-sm text-muted-foreground">
+    <div className="flex flex-wrap gap-3 text-sm text-lia-text-tertiary">
       {data.department && (
         <div className="flex items-center gap-1">
           <Building2 className="w-4 h-4" />
@@ -87,7 +87,7 @@ export function JobDescriptionFinal({
             <CardTitle className="text-2xl font-bold">
               {data.title}
               {data.num_positions > 1 && (
-                <span className="text-muted-foreground ml-2">
+                <span className="text-lia-text-tertiary ml-2">
                   ({data.num_positions} vagas)
                 </span>
               )}
@@ -130,14 +130,14 @@ export function JobDescriptionFinal({
         {data.company && (
           <section>
             <h3 className="text-lg font-semibold mb-2">{SECTION_TITLES.about}</h3>
-            <p className="text-muted-foreground">{data.company.about || "[Descrição da empresa]"}</p>
+            <p className="text-lia-text-tertiary">{data.company.about || "[Descrição da empresa]"}</p>
           </section>
         )}
 
         {data.description && (
           <section>
             <h3 className="text-lg font-semibold mb-2">{SECTION_TITLES.the_role}</h3>
-            <p className="text-muted-foreground">{data.description}</p>
+            <p className="text-lia-text-tertiary">{data.description}</p>
           </section>
         )}
 
@@ -164,7 +164,7 @@ export function JobDescriptionFinal({
           
           {(data.required_technical.length > 0 || data.required_behavioral.length > 0) && (
             <div className="mb-4">
-              <h4 className="font-medium text-sm text-muted-foreground mb-2">
+              <h4 className="font-medium text-sm text-lia-text-tertiary mb-2">
                 {SECTION_TITLES.required}
               </h4>
               <ul className="space-y-1">
@@ -186,7 +186,7 @@ export function JobDescriptionFinal({
 
           {data.nice_to_have.length > 0 && (
             <div>
-              <h4 className="font-medium text-sm text-muted-foreground mb-2">
+              <h4 className="font-medium text-sm text-lia-text-tertiary mb-2">
                 {SECTION_TITLES.nice_to_have}
               </h4>
               <ul className="space-y-1">
@@ -283,13 +283,13 @@ export function JobDescriptionFinal({
                     <div className="flex items-center gap-2">
                       <strong>{stage.name}</strong>
                       {stage.format && stage.duration && (
-                        <span className="text-xs text-muted-foreground">
+                        <span className="text-xs text-lia-text-tertiary">
                           ({stage.format}, {stage.duration})
                         </span>
                       )}
                     </div>
                     {stage.description && (
-                      <p className="text-sm text-muted-foreground mt-1">{stage.description}</p>
+                      <p className="text-sm text-lia-text-tertiary mt-1">{stage.description}</p>
                     )}
                   </div>
                 </li>
@@ -307,7 +307,7 @@ export function JobDescriptionFinal({
         {data.company?.diversity_statement && (
           <section>
             <h3 className="text-lg font-semibold mb-3">{SECTION_TITLES.diversity}</h3>
-            <p className="text-sm text-muted-foreground">{data.company.diversity_statement}</p>
+            <p className="text-sm text-lia-text-tertiary">{data.company.diversity_statement}</p>
           </section>
         )}
 

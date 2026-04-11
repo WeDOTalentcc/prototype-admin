@@ -433,7 +433,7 @@ export function SmartImportZone({
                         {previewData.headers.map((header, idx) => (
                           <th 
                             key={idx} 
-                            className="px-2 py-1.5 text-left text-micro font-medium text-lia-text-secondary border-b border-lia-border-subtle dark:border-lia-border-subtle font-['Open_Sans',sans-serif]"
+                            className="px-2 py-1.5 text-left text-micro font-medium text-lia-text-secondary dark:border-lia-border-subtle font-['Open_Sans',sans-serif]"
                           >
                             {header}
                           </th>

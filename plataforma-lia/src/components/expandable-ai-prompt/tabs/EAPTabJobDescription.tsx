@@ -21,7 +21,7 @@ export const EAPTabJobDescription = React.memo(function EAPTabJobDescription(pro
         value={jobDescriptionText}
         onChange={(e) => setJobDescriptionText(e.target.value)}
         placeholder="Cole aqui a descrição completa da vaga..."
-        className="border border-input bg-background rounded-lg text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring w-full px-4 py-2.5 text-sm resize-none"
+        className="border border-input bg-lia-bg-primary rounded-lg text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring w-full px-4 py-2.5 text-sm resize-none"
         rows={3}
       />
       {/* Dica contextual */}

@@ -82,7 +82,7 @@ export const EAPTabNatural = React.memo(function EAPTabNatural(props: EAPTabNatu
             setShowPremiumAutocomplete(false)
           }, 200)}
           placeholder="Descreva o candidato ideal em linguagem natural..."
-          className="border border-input bg-background rounded-lg text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring w-full px-4 py-2.5 text-sm pr-44"
+          className="border border-input bg-lia-bg-primary rounded-lg text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring w-full px-4 py-2.5 text-sm pr-44"
         />
 
         {/* Ícones de Fonte e Contato dentro do input */}

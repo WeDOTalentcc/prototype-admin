@@ -132,7 +132,7 @@ export const EAPTabArquetipos = React.memo(function EAPTabArquetipos(props: EAPT
             value={newArchetypeDescription}
             onChange={(e) => setNewArchetypeDescription(e.target.value)}
             placeholder="Descreva o perfil ideal: cargo, habilidades, experiência..."
-            className="border border-input bg-background rounded-lg text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring w-full px-3 py-2.5 text-sm resize-none"
+            className="border border-input bg-lia-bg-primary rounded-lg text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring w-full px-3 py-2.5 text-sm resize-none"
             rows={2}
           />
         </div>

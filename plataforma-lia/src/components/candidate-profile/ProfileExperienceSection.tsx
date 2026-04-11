@@ -56,7 +56,7 @@ export function ProfileExperienceSection({ experiences, formatDateShort }: Profi
             return (
               <div
                 key={index}
-                className="pb-3 border-b border-lia-border-subtle last:border-0 last:pb-0"
+                className="pb-3 last:border-0 last:pb-0"
               >
                 <div className="flex items-start justify-between gap-2 mb-1">
                   <div>

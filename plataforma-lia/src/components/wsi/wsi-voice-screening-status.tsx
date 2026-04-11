@@ -304,12 +304,12 @@ export function WSIVoiceScreeningStatus({
                   
                   {status === 'in_progress' && (
                     <div className="mt-2 space-y-2">
-                      <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+                      <div className="flex items-center justify-center gap-2 text-sm text-lia-text-tertiary">
                         <Clock className="w-4 h-4" />
                         <span>{formatTime(elapsedTime)}</span>
                       </div>
                       {questionsCount > 0 && (
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-xs text-lia-text-tertiary">
                           {questionsCount} perguntas preparadas
                         </p>
                       )}
@@ -317,13 +317,13 @@ export function WSIVoiceScreeningStatus({
                   )}
 
                   {status === 'calling' && !isVoipMode && (
-                    <p className="text-sm text-muted-foreground mt-2">
+                    <p className="text-sm text-lia-text-tertiary mt-2">
                       Ligando para {candidate.phone}...
                     </p>
                   )}
 
                   {isVoipMode && status === 'in_progress' && (
-                    <p className="text-sm text-muted-foreground mt-2">
+                    <p className="text-sm text-lia-text-tertiary mt-2">
                       Candidato conectado via navegador (VoIP)
                     </p>
                   )}
@@ -331,7 +331,7 @@ export function WSIVoiceScreeningStatus({
                   {status === 'processing' && (
                     <div className="mt-3 w-48">
                       <Progress value={75} className="h-1.5" />
-                      <p className="text-xs text-muted-foreground mt-1">
+                      <p className="text-xs text-lia-text-tertiary mt-1">
                         Analisando respostas com IA
                       </p>
                     </div>
@@ -368,11 +368,11 @@ export function WSIVoiceScreeningStatus({
                     <div className="grid grid-cols-2 gap-3">
                       <div className="p-2 bg-lia-bg-primary rounded-xl text-center">
                         <div className="text-lg font-semibold">{result.technical_wsi.toFixed(1)}</div>
-                        <div className="text-xs text-muted-foreground">Técnico</div>
+                        <div className="text-xs text-lia-text-tertiary">Técnico</div>
                       </div>
                       <div className="p-2 bg-lia-bg-primary rounded-xl text-center">
                         <div className="text-lg font-semibold">{result.behavioral_wsi.toFixed(1)}</div>
-                        <div className="text-xs text-muted-foreground">Comportamental</div>
+                        <div className="text-xs text-lia-text-tertiary">Comportamental</div>
                       </div>
                     </div>
                   </div>

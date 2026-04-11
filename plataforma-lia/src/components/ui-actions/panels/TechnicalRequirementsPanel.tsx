@@ -118,7 +118,7 @@ export function TechnicalRequirementsPanel({
                 />
 
                 {getRequirementsByCategory(category).length === 0 ? (
-                  <div className="text-center py-8 text-muted-foreground text-sm">
+                  <div className="text-center py-8 text-lia-text-tertiary text-sm">
                     Nenhuma tecnologia adicionada.
                     <br />
                     Use o campo acima para adicionar.
@@ -126,7 +126,7 @@ export function TechnicalRequirementsPanel({
                 ) : (
                   <div className="border rounded-xl overflow-hidden dark:border-lia-border-subtle">
                     <table className="w-full">
-                      <thead className="bg-muted/50 dark:bg-lia-bg-primary/50">
+                      <thead className="bg-lia-bg-tertiary/50 dark:bg-lia-bg-primary/50">
                         <tr>
                           <th className="text-left px-3 py-2 text-xs font-medium">
                             Tecnologia
@@ -142,7 +142,7 @@ export function TechnicalRequirementsPanel({
                       </thead>
                       <tbody className="divide-y dark:divide-lia-border-strong">
                         {getRequirementsByCategory(category).map((req) => (
-                          <tr key={req.id} className="hover:bg-muted/30 dark:hover:bg-lia-bg-inverse/30">
+                          <tr key={req.id} className="hover:bg-lia-bg-tertiary/30 dark:hover:bg-lia-bg-inverse/30">
                             <td className="px-3 py-2">
                               <div className="flex items-center gap-2">
                                 <span className="text-sm font-medium">{req.name}</span>
@@ -207,7 +207,7 @@ export function TechnicalRequirementsPanel({
         <CardContent>
           <div className="flex flex-wrap gap-2">
             {requirements.length === 0 ? (
-              <span className="text-sm text-muted-foreground">
+              <span className="text-sm text-lia-text-tertiary">
                 Nenhum requisito técnico adicionado ainda.
               </span>
             ) : (
@@ -222,7 +222,7 @@ export function TechnicalRequirementsPanel({
               ))
             )}
           </div>
-          <div className="mt-3 text-xs text-muted-foreground">
+          <div className="mt-3 text-xs text-lia-text-tertiary">
             {requirements.filter((r) => r.required).length} obrigatórias,{" "}
             {requirements.filter((r) => !r.required).length} desejáveis
           </div>
@@ -318,7 +318,7 @@ function TechAutocomplete({
     <div className="relative">
       <div className="flex gap-2">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-lia-text-tertiary" />
           <Input
             ref={inputRef}
             value={search}
@@ -359,8 +359,8 @@ function TechAutocomplete({
               <button
                 key={tech}
                 type="button"
-                className={`w-full text-left px-3 py-2 text-sm hover:bg-muted/50 dark:hover:bg-lia-bg-inverse ${
- index === selectedIndex ? "bg-muted dark:bg-lia-bg-elevated" : ""
+                className={`w-full text-left px-3 py-2 text-sm hover:bg-lia-bg-tertiary/50 dark:hover:bg-lia-bg-inverse ${
+ index === selectedIndex ? "bg-lia-bg-tertiary dark:bg-lia-bg-elevated" : ""
                 }`}
                 onClick={() => handleAdd(tech)}
                 onMouseEnter={() => setSelectedIndex(index)}
@@ -371,7 +371,7 @@ function TechAutocomplete({
           ) : search.trim() ? (
             <button
               type="button"
-              className="w-full text-left px-3 py-2 text-sm hover:bg-muted/50 bg-muted dark:bg-lia-bg-elevated dark:hover:bg-lia-border-medium"
+              className="w-full text-left px-3 py-2 text-sm hover:bg-lia-bg-tertiary/50 bg-lia-bg-tertiary dark:bg-lia-bg-elevated dark:hover:bg-lia-border-medium"
               onClick={() => handleAdd(search.trim())}
             >
               Adicionar "{search.trim()}"

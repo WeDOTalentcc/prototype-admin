@@ -85,13 +85,13 @@ export function EmptyFieldNotificationMessage({
                     </Badge>
                   )}
                 </div>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-lia-text-tertiary">
                   {notification.impact_description}
                 </p>
               </div>
 
               {notification.has_fallback && (
-                <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                <div className="flex items-center gap-1 text-xs text-lia-text-tertiary">
                   <Info className="w-3 h-3" />
                   <span>
                     Posso usar dados alternativos: {notification.fallback_strategies.join(', ')}
@@ -137,7 +137,7 @@ export function EmptyFieldNotificationMessage({
                       variant="ghost"
                       onClick={() => handleActionClick('dont_remind')}
                       disabled={isProcessing !== null}
-                      className="text-muted-foreground"
+                      className="text-lia-text-tertiary"
                     >
                       {isProcessing === 'dont_remind' ? (
                         <Loader2 className="w-4 h-4 mr-1 animate-spin motion-reduce:animate-none" />
@@ -152,7 +152,7 @@ export function EmptyFieldNotificationMessage({
                     className="space-y-3 animate-in fade-in slide-in-from-bottom-2 duration-150"
                   >
                     {isLoadingSuggestion ? (
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground" role="status" aria-live="polite" aria-label="Carregando...">
+                      <div className="flex items-center gap-2 text-sm text-lia-text-tertiary" role="status" aria-live="polite" aria-label="Carregando...">
                         <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none" />
                         <span>Buscando sugestão...</span>
                       </div>
@@ -167,11 +167,11 @@ export function EmptyFieldNotificationMessage({
                             </Badge>
                           </div>
                           
-                          <div className="p-2 bg-background rounded-md border">
+                          <div className="p-2 bg-lia-bg-primary rounded-md border">
                             <p className="font-mono text-sm">{suggestion.formatted_value}</p>
                           </div>
                           
-                          <p className="text-xs text-muted-foreground">
+                          <p className="text-xs text-lia-text-tertiary">
                             {suggestion.source_explanation}
                           </p>
                           
@@ -196,7 +196,7 @@ export function EmptyFieldNotificationMessage({
                       </Card>
                     ) : (
                       <div className="space-y-2">
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-sm text-lia-text-tertiary">
                           Não foi possível gerar uma sugestão para este campo.
                         </p>
                         <Button

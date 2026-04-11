@@ -222,26 +222,26 @@ function SalaryComparisonBar({
           width: `${getPosition(proposed.max) - getPosition(proposed.min)}%`}}
       />
 
-      <div className="absolute top-11 left-0 text-micro text-muted-foreground">
+      <div className="absolute top-11 left-0 text-micro text-lia-text-tertiary">
         {formatCurrency(minValue)}
       </div>
-      <div className="absolute top-11 right-0 text-micro text-muted-foreground">
+      <div className="absolute top-11 right-0 text-micro text-lia-text-tertiary">
         {formatCurrency(maxValue)}
       </div>
 
       <div className="flex justify-center gap-4 absolute top-0 inset-x-0">
         <div className="flex items-center gap-1">
           <div className="w-2 h-2 rounded-full bg-status-success" />
-          <span className="text-micro text-muted-foreground">Proposto</span>
+          <span className="text-micro text-lia-text-tertiary">Proposto</span>
         </div>
         <div className="flex items-center gap-1">
           <div className="w-2 h-2 rounded-full bg-wedo-purple/10" />
-          <span className="text-micro text-muted-foreground">Mercado</span>
+          <span className="text-micro text-lia-text-tertiary">Mercado</span>
         </div>
         {policy && (
           <div className="flex items-center gap-1">
             <div className="w-2 h-2 rounded-full bg-wedo-cyan/10" />
-            <span className="text-micro text-muted-foreground">Política</span>
+            <span className="text-micro text-lia-text-tertiary">Política</span>
           </div>
         )}
       </div>
@@ -279,7 +279,7 @@ function CompensationBreakdownChart({
         {segments.map((segment) => (
           <div key={segment.label} className="flex items-center gap-1">
             <div className={cn('w-2 h-2 rounded-full', segment.color)} />
-            <span className="text-muted-foreground">{segment.label}</span>
+            <span className="text-lia-text-tertiary">{segment.label}</span>
             <span className="font-medium">{segment.percentage.toFixed(0)}%</span>
           </div>
         ))}
@@ -299,8 +299,8 @@ export function CompensationAnalysisPanel({
     return (
       <Card className="border-dashed rounded-md">
         <CardContent className="flex flex-col items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin motion-reduce:animate-none text-muted-foreground mb-3" />
-          <p className="text-sm text-muted-foreground">Analisando remuneração...</p>
+          <Loader2 className="h-8 w-8 animate-spin motion-reduce:animate-none text-lia-text-tertiary mb-3" />
+          <p className="text-sm text-lia-text-tertiary">Analisando remuneração...</p>
         </CardContent>
       </Card>
     )
@@ -354,7 +354,7 @@ export function CompensationAnalysisPanel({
             <X className="h-4 w-4" />
           </Button>
         </div>
-        <p className="text-xs text-muted-foreground mt-2">
+        <p className="text-xs text-lia-text-tertiary mt-2">
           {analysis.executiveSummary}
         </p>
       </CardHeader>
@@ -363,7 +363,7 @@ export function CompensationAnalysisPanel({
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
+              <DollarSign className="h-4 w-4 text-lia-text-tertiary" />
               <h4 className="text-xs font-medium">Salário</h4>
             </div>
             <DataSourceBadge source={analysis.salary.source} />
@@ -371,20 +371,20 @@ export function CompensationAnalysisPanel({
 
           <div className="grid grid-cols-3 gap-2 text-center">
             <div className="p-2 rounded-xl bg-status-success/10 dark:bg-status-success/30 border border-status-success/30 dark:border-status-success/30">
-              <p className="text-micro text-muted-foreground mb-1">Proposto</p>
+              <p className="text-micro text-lia-text-tertiary mb-1">Proposto</p>
               <p className="text-xs font-semibold text-status-success">
                 {formatCurrency(analysis.salary.proposed.min)} - {formatCurrency(analysis.salary.proposed.max)}
               </p>
             </div>
             <div className="p-2 rounded-xl bg-wedo-purple/10 border border-wedo-purple/30 dark:border-wedo-purple/30">
-              <p className="text-micro text-muted-foreground mb-1">Mercado</p>
+              <p className="text-micro text-lia-text-tertiary mb-1">Mercado</p>
               <p className="text-xs font-semibold text-wedo-purple dark:text-wedo-purple">
                 {formatCurrency(analysis.salary.market.min)} - {formatCurrency(analysis.salary.market.max)}
               </p>
             </div>
             {analysis.salary.policy && (
               <div className="p-2 rounded-xl bg-wedo-cyan/10 border border-wedo-cyan/30 dark:border-wedo-cyan/30">
-                <p className="text-micro text-muted-foreground mb-1">Política</p>
+                <p className="text-micro text-lia-text-tertiary mb-1">Política</p>
                 <p className="text-xs font-semibold text-wedo-cyan-dark">
                   {formatCurrency(analysis.salary.policy.min)} - {formatCurrency(analysis.salary.policy.max)}
                 </p>
@@ -399,7 +399,7 @@ export function CompensationAnalysisPanel({
           />
 
           <div className="flex items-center justify-between text-xs">
-            <span className="text-muted-foreground">Posição vs. Mercado:</span>
+            <span className="text-lia-text-tertiary">Posição vs. Mercado:</span>
             <span className={cn(
  'font-medium',
               analysis.salary.percentileVsMarket >= 50 ? 'text-status-success' : 'text-status-warning'
@@ -421,7 +421,7 @@ export function CompensationAnalysisPanel({
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Target className="h-4 w-4 text-muted-foreground" />
+              <Target className="h-4 w-4 text-lia-text-tertiary" />
               <h4 className="text-xs font-medium">Bônus</h4>
             </div>
             <DataSourceBadge source={analysis.bonus.source} />
@@ -429,12 +429,12 @@ export function CompensationAnalysisPanel({
 
           <div className="grid grid-cols-2 gap-2">
             <div className="p-2 rounded-xl bg-lia-bg-secondary border">
-              <p className="text-micro text-muted-foreground mb-1">Proposto</p>
+              <p className="text-micro text-lia-text-tertiary mb-1">Proposto</p>
               <p className="text-sm font-semibold">{analysis.bonus.proposedPercentage}%</p>
             </div>
             {analysis.bonus.policyPercentage !== undefined && (
               <div className="p-2 rounded-xl bg-wedo-cyan/10 border border-wedo-cyan/30 dark:border-wedo-cyan/30">
-                <p className="text-micro text-muted-foreground mb-1">Política da Empresa</p>
+                <p className="text-micro text-lia-text-tertiary mb-1">Política da Empresa</p>
                 <p className="text-sm font-semibold text-wedo-cyan-dark">
                   {analysis.bonus.policyPercentage}%
                 </p>
@@ -443,7 +443,7 @@ export function CompensationAnalysisPanel({
           </div>
 
           {analysis.bonus.criteria && (
-            <p className="text-micro text-muted-foreground">
+            <p className="text-micro text-lia-text-tertiary">
               <span className="font-medium">Critérios:</span> {analysis.bonus.criteria}
             </p>
           )}
@@ -461,14 +461,14 @@ export function CompensationAnalysisPanel({
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Gift className="h-4 w-4 text-muted-foreground" />
+              <Gift className="h-4 w-4 text-lia-text-tertiary" />
               <h4 className="text-xs font-medium">Benefícios</h4>
             </div>
             <DataSourceBadge source={analysis.benefits.source} />
           </div>
 
           <div className="space-y-2">
-            <p className="text-micro text-muted-foreground font-medium">Benefícios Incluídos:</p>
+            <p className="text-micro text-lia-text-tertiary font-medium">Benefícios Incluídos:</p>
             <div className="flex flex-wrap gap-1">
               {analysis.benefits.proposed.filter(b => b.included).map((benefit) => (
                 <TooltipProvider key={benefit.id}>
@@ -516,7 +516,7 @@ export function CompensationAnalysisPanel({
 
           <div className="p-2 rounded-xl bg-lia-bg-secondary border">
             <div className="flex items-center justify-between">
-              <span className="text-micro text-muted-foreground">Valor Monetizável Anual:</span>
+              <span className="text-micro text-lia-text-tertiary">Valor Monetizável Anual:</span>
               <span className="text-xs font-semibold">
                 {formatCurrency(analysis.benefits.totalAnnualValue)}
               </span>
@@ -526,20 +526,20 @@ export function CompensationAnalysisPanel({
 
         <div className="space-y-3">
           <div className="flex items-center gap-2">
-            <PieChart className="h-4 w-4 text-muted-foreground" />
+            <PieChart className="h-4 w-4 text-lia-text-tertiary" />
             <h4 className="text-xs font-medium">Total Compensation</h4>
           </div>
 
           <div className="grid grid-cols-3 gap-2 text-center">
             <div className="p-2 rounded-xl bg-lia-bg-secondary border">
-              <p className="text-micro text-muted-foreground mb-1">Proposto Anual</p>
+              <p className="text-micro text-lia-text-tertiary mb-1">Proposto Anual</p>
               <p className="text-xs font-semibold">
                 {formatCurrency(analysis.totalCompensation.proposedAnnual)}
               </p>
             </div>
             {analysis.totalCompensation.marketAnnual && (
               <div className="p-2 rounded-xl bg-wedo-purple/10 border border-wedo-purple/30 dark:border-wedo-purple/30">
-                <p className="text-micro text-muted-foreground mb-1">Mercado</p>
+                <p className="text-micro text-lia-text-tertiary mb-1">Mercado</p>
                 <p className="text-xs font-semibold text-wedo-purple dark:text-wedo-purple">
                   {formatCurrency(analysis.totalCompensation.marketAnnual)}
                 </p>
@@ -547,7 +547,7 @@ export function CompensationAnalysisPanel({
             )}
             {analysis.totalCompensation.policyAnnual && (
               <div className="p-2 rounded-xl bg-wedo-cyan/10 border border-wedo-cyan/30 dark:border-wedo-cyan/30">
-                <p className="text-micro text-muted-foreground mb-1">Política</p>
+                <p className="text-micro text-lia-text-tertiary mb-1">Política</p>
                 <p className="text-xs font-semibold text-wedo-cyan-dark">
                   {formatCurrency(analysis.totalCompensation.policyAnnual)}
                 </p>

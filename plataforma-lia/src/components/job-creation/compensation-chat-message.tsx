@@ -123,7 +123,7 @@ function MiniSalaryBar({
         </div>
       </div>
       
-      <div className="flex justify-between text-micro text-muted-foreground">
+      <div className="flex justify-between text-micro text-lia-text-tertiary">
         <div className="flex items-center gap-1">
           <div className="w-1.5 h-1.5 rounded-full bg-status-success" />
           <span>Proposto</span>
@@ -174,7 +174,7 @@ export function CompensationChatMessage({
         <div className="rounded-xl rounded-tl-sm bg-lia-bg-primary border border-lia-border-subtle p-4" role="status" aria-live="polite" aria-label="Carregando...">
           <div className="flex items-center gap-2" role="status" aria-live="polite" aria-label="Carregando...">
             <Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none text-lia-text-secondary" />
-            <span className="text-sm text-muted-foreground">Analisando remuneração...</span>
+            <span className="text-sm text-lia-text-tertiary">Analisando remuneração...</span>
           </div>
         </div>
       </div>
@@ -207,27 +207,27 @@ export function CompensationChatMessage({
               <p className={cn("text-xs font-medium", statusConfig.className)}>
                 {statusConfig.label}
               </p>
-              <p className="text-micro text-muted-foreground truncate">
+              <p className="text-micro text-lia-text-tertiary truncate">
                 {statusConfig.description}
               </p>
             </div>
           </div>
 
           <div className="space-y-3">
-            <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+            <div className="flex items-center gap-1.5 text-xs font-medium text-lia-text-tertiary">
               <DollarSign className="h-3.5 w-3.5" />
               <span>Comparação Salarial</span>
             </div>
 
             <div className="grid grid-cols-2 gap-2">
               <div className="p-2.5 rounded-xl bg-status-success/10 dark:bg-status-success/30 border border-status-success/30 dark:border-status-success/30">
-                <p className="text-micro text-muted-foreground mb-0.5">Proposto</p>
+                <p className="text-micro text-lia-text-tertiary mb-0.5">Proposto</p>
                 <p className="text-xs font-semibold text-status-success">
                   {formatCurrency(analysis.salary.proposed.min)} - {formatCurrency(analysis.salary.proposed.max)}
                 </p>
               </div>
               <div className="p-2.5 rounded-xl bg-lia-bg-secondary border border-lia-border-subtle">
-                <p className="text-micro text-muted-foreground mb-0.5">Mercado</p>
+                <p className="text-micro text-lia-text-tertiary mb-0.5">Mercado</p>
                 <p className="text-xs font-semibold text-lia-text-secondary">
                   {formatCurrency(analysis.salary.market.min)} - {formatCurrency(analysis.salary.market.max)}
                 </p>
@@ -241,7 +241,7 @@ export function CompensationChatMessage({
             />
 
             <div className="flex items-center justify-between text-xs px-1">
-              <span className="text-muted-foreground">Posição no mercado:</span>
+              <span className="text-lia-text-tertiary">Posição no mercado:</span>
               <Badge 
                 variant="outline" 
                 className={cn(
@@ -265,7 +265,7 @@ export function CompensationChatMessage({
             )}
           </div>
 
-          <p className="text-xs text-muted-foreground border-t pt-3">
+          <p className="text-xs text-lia-text-tertiary border-t pt-3">
             {analysis.executiveSummary}
           </p>
 

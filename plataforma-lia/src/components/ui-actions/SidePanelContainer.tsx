@@ -141,7 +141,7 @@ export function SidePanelContainer({
         )
       default:
         return (
-          <div className="flex flex-col items-center justify-center h-64 text-muted-foreground">
+          <div className="flex flex-col items-center justify-center h-64 text-lia-text-tertiary">
             <p>Painel "{panelType}" em desenvolvimento</p>
           </div>
         )
@@ -167,7 +167,7 @@ export function SidePanelContainer({
             </div>
           </div>
           {isLoading && (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground mt-2" role="status" aria-live="polite" aria-label="Carregando...">
+            <div className="flex items-center gap-2 text-sm text-lia-text-tertiary mt-2" role="status" aria-live="polite" aria-label="Carregando...">
               <Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none" />
               Salvando...
             </div>

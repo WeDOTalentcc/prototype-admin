@@ -249,7 +249,7 @@ function FilledFieldCard({
   value: unknown
 }) {
   return (
-    <div className="flex items-center justify-between py-2 border-b border-lia-border-subtle last:border-0">
+    <div className="flex items-center justify-between py-2 last:border-0">
       <span className="text-sm text-lia-text-secondary">{label}</span>
       <span className="text-sm font-medium text-lia-text-primary max-w-[60%] truncate text-right">
         {formatFieldValue(fieldKey, value)}

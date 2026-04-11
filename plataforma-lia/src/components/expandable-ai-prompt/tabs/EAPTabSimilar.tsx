@@ -41,7 +41,7 @@ export const EAPTabSimilar = React.memo(function EAPTabSimilar(props: EAPTabSimi
             value={url}
             onChange={(e) => updateSimilarUrl(index, e.target.value)}
             placeholder={index === 0 ? "Cole a URL do LinkedIn ou ID do candidato..." : "Cole outra URL para combinar perfis..."}
-            className="border border-input bg-background rounded-lg text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring w-full pl-10 pr-20 py-2.5 text-sm"
+            className="border border-input bg-lia-bg-primary rounded-lg text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring w-full pl-10 pr-20 py-2.5 text-sm"
           />
           <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
             {index > 0 && (
