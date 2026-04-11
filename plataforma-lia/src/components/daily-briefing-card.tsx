@@ -354,7 +354,7 @@ export function DailyBriefingCard({
             {/* Card Urgentes */}
             <div 
               data-testid="briefing-urgent-count"
-              className="p-2 rounded-md border border-lia-border-subtle bg-lia-bg-secondary cursor-pointer transition-colors motion-reduce:transition-none"
+              className="p-2 rounded-md border border-lia-border-subtle bg-lia-bg-secondary cursor-pointer transition-colors motion-reduce:transition-none hover:bg-lia-interactive-hover"
               onClick={() => handleActionClick('view_urgent')}
             >
               <div className="flex items-center gap-2 mb-1">
@@ -369,7 +369,7 @@ export function DailyBriefingCard({
             {/* Card Tarefas Hoje */}
             <div 
               data-testid="briefing-tasks-today"
-              className="p-2 rounded-md border border-lia-border-subtle bg-lia-bg-secondary cursor-pointer transition-colors motion-reduce:transition-none"
+              className="p-2 rounded-md border border-lia-border-subtle bg-lia-bg-secondary cursor-pointer transition-colors motion-reduce:transition-none hover:bg-lia-interactive-hover"
               onClick={() => handleActionClick('view_tasks')}
             >
               <div className="flex items-center gap-2 mb-1">
@@ -384,7 +384,7 @@ export function DailyBriefingCard({
             {/* Card Entrevistas */}
             <div 
               data-testid="briefing-interviews-today"
-              className="p-2 rounded-md border border-lia-border-subtle bg-lia-bg-secondary cursor-pointer transition-colors motion-reduce:transition-none"
+              className="p-2 rounded-md border border-lia-border-subtle bg-lia-bg-secondary cursor-pointer transition-colors motion-reduce:transition-none hover:bg-lia-interactive-hover"
               onClick={() => handleActionClick('view_interviews')}
             >
               <div className="flex items-center gap-2 mb-1">
@@ -399,7 +399,7 @@ export function DailyBriefingCard({
             {/* Card Alertas */}
             <div 
               data-testid="briefing-alerts-active"
-              className="p-2 rounded-md border border-lia-border-subtle bg-lia-bg-secondary cursor-pointer transition-colors motion-reduce:transition-none"
+              className="p-2 rounded-md border border-lia-border-subtle bg-lia-bg-secondary cursor-pointer transition-colors motion-reduce:transition-none hover:bg-lia-interactive-hover"
               onClick={() => handleActionClick('view_alerts')}
             >
               <div className="flex items-center gap-2 mb-1">
@@ -459,7 +459,7 @@ export function DailyBriefingCard({
                   <div
                     key={item.id}
                     data-testid={`schedule-item-${item.id}`}
-                    className="flex items-center gap-2 p-2 rounded-md border border-lia-border-subtle bg-lia-bg-secondary shrink-0 cursor-pointer transition-colors motion-reduce:transition-none"
+                    className="flex items-center gap-2 p-2 rounded-md border border-lia-border-subtle bg-lia-bg-secondary shrink-0 cursor-pointer transition-colors motion-reduce:transition-none hover:bg-lia-interactive-hover"
                     onClick={() => handleActionClick('view_interview', item as unknown as Record<string, unknown>)}
                   >
                     <div className="w-8 h-8 rounded-md flex items-center justify-center shrink-0 bg-lia-bg-tertiary">

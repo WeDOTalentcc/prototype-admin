@@ -92,7 +92,7 @@ export function CandidatoOpinionsTab({
               onClick={() => setOpinionsSubTab("pareceres")}
               className={`flex items-center gap-2 pb-2 text-sm font-medium transition-colors motion-reduce:transition-none ${
                 opinionsSubTab === "pareceres"
-                  ? "text-lia-text-secondary border-b-2 border-lia-btn-primary-bg dark:border-lia-border-subtle"
+                  ? "text-lia-text-secondary rounded-lg bg-lia-bg-tertiary dark:border-lia-border-subtle"
                   : "text-lia-text-secondary hover:text-lia-text-primary"
               }`}
             >
@@ -106,7 +106,7 @@ export function CandidatoOpinionsTab({
               onClick={() => setOpinionsSubTab("analises")}
               className={`flex items-center gap-2 pb-2 text-sm font-medium transition-colors motion-reduce:transition-none ${
                 opinionsSubTab === "analises"
-                  ? "text-wedo-purple border-b-2 border-wedo-purple/30"
+                  ? "text-wedo-purple rounded-lg bg-wedo-purple/10"
                   : "text-lia-text-secondary hover:text-lia-text-primary"
               }`}
             >

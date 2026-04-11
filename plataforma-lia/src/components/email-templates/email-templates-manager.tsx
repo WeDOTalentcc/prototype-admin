@@ -46,16 +46,16 @@ const DEFAULT_TEMPLATES: EmailTemplate[] = [
   <div style="text-align: center; padding: 24px; background: linear-gradient(135deg, #111827 0%, #1F2937 100%); border-radius: 8px 8px 0 0;">
     <h1 style="color: white; margin: 0; font-size: 24px;">Proposta de Trabalho</h1>
   </div>
-  <div style="padding: 24px; background: white; border: 1px solid #E5E7EB; border-top: none;">
+  <div style="padding: 24px; background: white; border: 1px solid #D4D4D4; border-top: none;">
     <p>Prezado(a) <strong>{{candidate_name}}</strong>,</p>
     <p>É com grande satisfação que formalizamos nossa proposta para a posição de <strong>{{job_title}}</strong> na <strong>{{company_name}}</strong>.</p>
-    <div style="background: #F0F9FA; border: 2px solid #D1D5DB; border-radius: 8px; padding: 20px; margin: 24px 0; text-align: center;">
-      <p style="margin: 0 0 8px 0; font-size: 14px; color: #6B7280;">Remuneração Mensal</p>
+    <div style="background: #F0F9FA; border: 2px solid #999999; border-radius: 8px; padding: 20px; margin: 24px 0; text-align: center;">
+      <p style="margin: 0 0 8px 0; font-size: 14px; color: #2D2D2D;">Remuneração Mensal</p>
       <p style="margin: 0; font-size: 32px; font-weight: 700; color: #1F2937;">{{salary}}</p>
     </div>
     <table style="width: 100%; border-collapse: collapse;">
-      <tr><td style="padding: 12px; background: #F9FAFB; border-bottom: 1px solid #E5E7EB;"><strong>Data de Início</strong></td><td style="padding: 12px; border-bottom: 1px solid #E5E7EB;">{{start_date}}</td></tr>
-      <tr><td style="padding: 12px; background: #F9FAFB; border-bottom: 1px solid #E5E7EB;"><strong>Tipo de Contrato</strong></td><td style="padding: 12px; border-bottom: 1px solid #E5E7EB;">{{contract_type}}</td></tr>
+      <tr><td style="padding: 12px; background: #F9FAFB; border-bottom: 1px solid #D4D4D4;"><strong>Data de Início</strong></td><td style="padding: 12px; border-bottom: 1px solid #D4D4D4;">{{start_date}}</td></tr>
+      <tr><td style="padding: 12px; background: #F9FAFB; border-bottom: 1px solid #D4D4D4;"><strong>Tipo de Contrato</strong></td><td style="padding: 12px; border-bottom: 1px solid #D4D4D4;">{{contract_type}}</td></tr>
       <tr><td style="padding: 12px; background: #F9FAFB;"><strong>Modelo de Trabalho</strong></td><td style="padding: 12px;">{{work_model}}</td></tr>
     </table>
     <div style="background: #FEF3C7; border-left: 4px solid #F59E0B; padding: 16px; margin: 24px 0;">
@@ -77,7 +77,7 @@ const DEFAULT_TEMPLATES: EmailTemplate[] = [
     body_html: `<div style="font-family: 'Open Sans', sans-serif; color: #374151; line-height: 1.6;">
   <p>Olá <strong>{{candidate_name}}</strong>,</p>
   <p>Sua proposta para a posição de <strong>{{job_title}}</strong> ainda aguarda resposta.</p>
-  <div style="background: #F0F9FA; border: 1px solid #D1D5DB; border-radius: 8px; padding: 20px; margin: 20px 0; text-align: center;">
+  <div style="background: #F0F9FA; border: 1px solid #999999; border-radius: 8px; padding: 20px; margin: 20px 0; text-align: center;">
     <p style="font-size: 24px; font-weight: 700; color: #1F2937;">{{salary}}</p>
     <p style="color: #374151;">Início: {{start_date}}</p>
   </div>
@@ -102,7 +102,7 @@ const DEFAULT_TEMPLATES: EmailTemplate[] = [
   <p>Prezado(a) <strong>{{candidate_name}}</strong>,</p>
   <p>Confirmamos sua aceitação da proposta para <strong>{{job_title}}</strong>!</p>
   <p>Sua jornada na <strong>{{company_name}}</strong> começa em <strong>{{start_date}}</strong>.</p>
-  <div style="background: #F0F9FA; border-left: 4px solid #D1D5DB; padding: 16px; margin: 20px 0;">
+  <div style="background: #F0F9FA; border-left: 4px solid #999999; padding: 16px; margin: 20px 0;">
     <strong>Próximos Passos:</strong>
     <ol><li>Contrato formal em até 2 dias úteis</li><li>Contato do RH para onboarding</li><li>Documentação necessária</li></ol>
   </div>
@@ -122,7 +122,7 @@ const DEFAULT_TEMPLATES: EmailTemplate[] = [
   <p>Olá <strong>{{candidate_name}}</strong>,</p>
   <p>Parabéns por avançar no processo seletivo para <strong>{{job_title}}</strong> na <strong>{{company_name}}</strong>!</p>
   <p>O próximo passo é uma triagem por voz rápida (5-7 minutos).</p>
-  <div style="background: #F0F9FA; border-left: 4px solid #D1D5DB; padding: 16px; margin: 20px 0;">
+  <div style="background: #F0F9FA; border-left: 4px solid #999999; padding: 16px; margin: 20px 0;">
     <strong style="color: #374151;">Para iniciar sua triagem:</strong>
     <ol><li>Acesse o link: <a href="{{screening_link}}" style="color: #374151;">{{screening_link}}</a></li><li>Ambiente silencioso</li><li>Responda às perguntas com calma</li></ol>
   </div>
@@ -141,8 +141,8 @@ const DEFAULT_TEMPLATES: EmailTemplate[] = [
     body_html: `<div style="font-family: 'Open Sans', sans-serif; color: #374151; line-height: 1.6;">
   <p>Olá <strong>{{candidate_name}}</strong>,</p>
   <p>Sua entrevista em vídeo para <strong>{{job_title}}</strong> foi confirmada!</p>
-  <div style="background: #F0F9FA; border: 2px solid #D1D5DB; border-radius: 8px; padding: 20px; margin: 20px 0; text-align: center;">
-    <p style="font-size: 14px; color: #6B7280;">Data e Horário</p>
+  <div style="background: #F0F9FA; border: 2px solid #999999; border-radius: 8px; padding: 20px; margin: 20px 0; text-align: center;">
+    <p style="font-size: 14px; color: #2D2D2D;">Data e Horário</p>
     <p style="font-size: 20px; font-weight: 700; color: #1F2937;">{{interview_date}} às {{interview_time}}</p>
     <a href="{{interview_link}}" style="display: inline-block; background: #111827; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; margin-top: 12px;">Acessar Entrevista</a>
   </div>

@@ -111,7 +111,7 @@ export function CandidatePageOpinionsTab({
             onClick={() => setOpinionsSubTab("pareceres")}
             className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-t transition-colors motion-reduce:transition-none ${
               opinionsSubTab === "pareceres"
-                ? "bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-primary border-b-2 border-lia-btn-primary-bg dark:border-lia-border-subtle"
+                ? "bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-primary rounded-lg bg-lia-bg-tertiary dark:border-lia-border-subtle"
                 : "text-lia-text-tertiary hover:text-lia-text-secondary hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover"
             }`}
           >
@@ -127,7 +127,7 @@ export function CandidatePageOpinionsTab({
             onClick={() => setOpinionsSubTab("analises")}
             className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-t transition-colors motion-reduce:transition-none ${
               opinionsSubTab === "analises"
-                ? "bg-wedo-purple/10 dark:bg-wedo-purple/20 text-wedo-purple dark:text-wedo-purple border-b-2 border-wedo-purple/30"
+                ? "bg-wedo-purple/10 dark:bg-wedo-purple/20 text-wedo-purple dark:text-wedo-purple rounded-lg bg-wedo-purple/10"
                 : "text-lia-text-tertiary hover:text-lia-text-secondary hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover"
             }`}
           >

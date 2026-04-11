@@ -201,7 +201,7 @@ export function CandidatePreview({
               onClick={() => setActiveTab(tab.id as 'activities' | 'profile' | 'files' | 'opinions')}
               className={`flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium whitespace-nowrap transition-colors motion-reduce:transition-none ${
  activeTab === tab.id
-                  ? 'border-b-2 border-lia-border-strong text-lia-text-primary font-semibold'
+                  ? 'rounded-lg bg-lia-bg-tertiary text-lia-text-primary font-semibold'
                   : 'text-lia-text-secondary hover:text-lia-text-primary'
               }`}
             >

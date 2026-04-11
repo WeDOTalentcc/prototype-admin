@@ -136,7 +136,7 @@ export default function MultiStrategySearchPanel({
               value={jobTitle}
               onChange={e => setJobTitle(e.target.value)}
               placeholder="Título da vaga (ex: Senior Backend Engineer)"
-              className="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
+              className="flex-1 border border-lia-border-default rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
               onKeyDown={e => e.key === "Enter" && handleSearch()}
             />
             <input
@@ -144,14 +144,14 @@ export default function MultiStrategySearchPanel({
               value={skills}
               onChange={e => setSkills(e.target.value)}
               placeholder="Skills (Python, Go, Kafka)"
-              className="w-48 border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
+              className="w-48 border border-lia-border-default rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
             />
             <input
               type="text"
               value={location}
               onChange={e => setLocation(e.target.value)}
               placeholder="Local"
-              className="w-36 border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
+              className="w-36 border border-lia-border-default rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
             />
             <Button className={buttonStyles.primary} onClick={handleSearch} disabled={isSearching || !jobTitle.trim()}>
               <Search className="w-4 h-4 mr-1" />
@@ -175,7 +175,7 @@ export default function MultiStrategySearchPanel({
                   <div className="flex items-center gap-2 mb-1">
                     <span>{cfg.icon}</span>
                     {inProgress ? (
-                      <Loader2 className="w-3.5 h-3.5 animate-spin text-gray-400" />
+                      <Loader2 className="w-3.5 h-3.5 animate-spin text-lia-text-tertiary" />
                     ) : sr?.error ? (
                       <AlertCircle className="w-3.5 h-3.5 text-red-400" />
                     ) : sr ? (
@@ -190,7 +190,7 @@ export default function MultiStrategySearchPanel({
                     <p className="text-xs text-red-500">Erro</p>
                   )}
                   {sr && (
-                    <p className="text-[10px] text-gray-400">{sr.elapsed_ms}ms</p>
+                    <p className="text-[10px] text-lia-text-tertiary">{sr.elapsed_ms}ms</p>
                   )}
                 </CardContent>
               </Card>
@@ -232,7 +232,7 @@ export default function MultiStrategySearchPanel({
         <div className="overflow-auto max-h-[500px]">
           <table className="w-full">
             <thead className="sticky top-0 bg-white">
-              <tr className="border-b border-gray-200">
+              <tr className="border-b border-lia-border-subtle">
                 <th className="py-2 px-3 text-left w-8">
                   <input
                     type="checkbox"
@@ -241,7 +241,7 @@ export default function MultiStrategySearchPanel({
                       if (selectedIds.size === result.candidates.length) setSelectedIds(new Set())
                       else setSelectedIds(new Set(result.candidates.map(c => c.id)))
                     }}
-                    className="rounded border-gray-300"
+                    className="rounded border-lia-border-default"
                   />
                 </th>
                 <th className={`py-2 px-3 text-left ${textStyles.labelSmall}`}>Candidato</th>
@@ -254,13 +254,13 @@ export default function MultiStrategySearchPanel({
               {result.candidates.map(c => {
                 const strategies = c.found_via_strategies || [c.found_via]
                 return (
-                  <tr key={c.id} className="border-b border-gray-100 hover:bg-gray-50">
+                  <tr key={c.id} className="border-b border-lia-border-subtle hover:bg-lia-bg-secondary">
                     <td className="py-2 px-3">
                       <input
                         type="checkbox"
                         checked={selectedIds.has(c.id)}
                         onChange={() => toggleSelect(c.id)}
-                        className="rounded border-gray-300"
+                        className="rounded border-lia-border-default"
                       />
                     </td>
                     <td className="py-2 px-3">
@@ -297,7 +297,7 @@ export default function MultiStrategySearchPanel({
                     <td className="py-2 px-3">
                       <div className="flex gap-1 flex-wrap">
                         {c.skills?.slice(0, 4).map(sk => (
-                          <Badge key={sk} className="bg-gray-100 text-gray-600 text-xs">{sk}</Badge>
+                          <Badge key={sk} className="bg-lia-bg-tertiary text-lia-text-secondary text-xs">{sk}</Badge>
                         ))}
                       </div>
                     </td>

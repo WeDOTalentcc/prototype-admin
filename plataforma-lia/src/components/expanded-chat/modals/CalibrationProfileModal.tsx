@@ -136,7 +136,7 @@ export function CalibrationProfileModal({
                     key={tab}
                     onClick={() => onSetProfileTab(tab)}
                     className={cn(
- "px-3 py-1.5 text-sm font-medium transition-colors border-b-2",
+ "px-3 py-1.5 text-sm font-medium transition-colors rounded-lg",
                       profileTab === tab
                         ? "text-lia-text-primary border-lia-btn-primary-bg"
                         : "lia-text-secondary border-transparent hover:text-lia-text-primary"

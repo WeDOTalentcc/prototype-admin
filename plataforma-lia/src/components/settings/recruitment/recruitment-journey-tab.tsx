@@ -123,7 +123,7 @@ export function RecruitmentJourneyTab({ onSettingsChange }: { onSettingsChange: 
                 key={tab.id}
                 onClick={() => setActiveSubTab(tab.id)}
                 className={cn(
-                  "flex items-center gap-2 px-4 py-2.5 text-sm font-medium transition-colors border-b-2 -mb-px",
+                  "flex items-center gap-2 px-4 py-2.5 text-sm font-medium transition-colors rounded-lg -mb-px",
                   activeSubTab === tab.id
                     ? "border-lia-btn-primary-bg dark:border-lia-border-subtle text-lia-text-primary"
                     : "border-transparent text-lia-text-secondary hover:text-lia-text-primary"

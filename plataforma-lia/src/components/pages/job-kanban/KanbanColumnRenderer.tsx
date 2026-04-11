@@ -459,7 +459,7 @@ export function KanbanColumnRenderer({
                 <input
                   type="checkbox"
                   checked={selectedCandidates.has(candidate.id)}
-                  className="w-3 h-3 rounded-md cursor-pointer flex-shrink-0 border border-lia-border-subtle"
+                  className="w-3 h-3 rounded-md cursor-pointer flex-shrink-0 border border-lia-border-subtle hover:bg-lia-interactive-hover transition-colors"
                   aria-label={`Selecionar candidato ${candidate.name}`}
                   onClick={(e) => {
                     e.stopPropagation()

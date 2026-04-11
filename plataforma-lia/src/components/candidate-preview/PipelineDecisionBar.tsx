@@ -582,7 +582,7 @@ export function PipelineDecisionBar({
   }
 
   return (
-    <div className="border-b-2 px-3 py-2 bg-lia-bg-primary dark:bg-lia-bg-primary space-y-2" style={{ borderBottomColor: stageColor }}>
+    <div className="rounded-lg px-3 py-2 bg-lia-bg-primary dark:bg-lia-bg-primary space-y-2" style={{ borderBottomColor: stageColor }}>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 flex-wrap">
           <div className="flex items-center gap-1.5">

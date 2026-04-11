@@ -33,8 +33,8 @@ const ORIGIN_CONFIG = {
   direct: {
     icon: User,
     label: "Direto",
-    bgColor: "bg-gray-50",
-    textColor: "text-gray-700",
+    bgColor: "bg-lia-bg-secondary",
+    textColor: "text-lia-text-secondary",
     buildTooltip: (_detail?: string, date?: string) =>
       `Aplicou diretamente${date ? ` em ${formatDate(date)}` : ""}`,
   },
@@ -65,8 +65,8 @@ const ORIGIN_CONFIG = {
   manual: {
     icon: User,
     label: "Manual",
-    bgColor: "bg-gray-50",
-    textColor: "text-gray-700",
+    bgColor: "bg-lia-bg-secondary",
+    textColor: "text-lia-text-secondary",
     buildTooltip: (_detail?: string, date?: string) =>
       `Adicionado manualmente${date ? ` em ${formatDate(date)}` : ""}`,
   },

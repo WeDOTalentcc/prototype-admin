@@ -182,8 +182,8 @@ export default function CalibrationCardModal({
         <DialogTitle className="sr-only">Calibração de candidatos</DialogTitle>
         <DialogDescription className="sr-only">Avalie candidatos para calibrar o agente de sourcing</DialogDescription>
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-3 border-b border-gray-200">
-          <button onClick={onClose} className="flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900">
+        <div className="flex items-center justify-between px-6 py-3 border-b border-lia-border-subtle">
+          <button onClick={onClose} className="flex items-center gap-1 text-sm text-lia-text-secondary hover:text-lia-text-primary">
             <ChevronLeft className="w-4 h-4" /> Voltar
           </button>
           <span className={textStyles.caption}>
@@ -191,13 +191,13 @@ export default function CalibrationCardModal({
           </span>
           <div className="flex items-center gap-3">
             {currentIdx > 0 && (
-              <button onClick={() => setCurrentIdx(prev => prev - 1)} className="text-gray-400 hover:text-gray-600">
+              <button onClick={() => setCurrentIdx(prev => prev - 1)} className="text-lia-text-tertiary hover:text-lia-text-secondary">
                 <ChevronLeft className="w-5 h-5" />
               </button>
             )}
             <button
               onClick={() => currentIdx < candidates.length - 1 && setCurrentIdx(prev => prev + 1)}
-              className={currentIdx < candidates.length - 1 ? "text-gray-400 hover:text-gray-600" : "text-gray-200"}
+              className={currentIdx < candidates.length - 1 ? "text-lia-text-tertiary hover:text-lia-text-secondary" : "text-lia-text-disabled"}
             >
               <ChevronRight className="w-5 h-5" />
             </button>
@@ -211,7 +211,7 @@ export default function CalibrationCardModal({
         ) : (
           <div className="flex h-[70vh]">
             {/* Left panel — Candidate Profile */}
-            <div className="w-1/2 overflow-y-auto border-r border-gray-200 p-6">
+            <div className="w-1/2 overflow-y-auto border-r border-lia-border-subtle p-6">
               {/* Candidate header */}
               <div className="flex items-center gap-3 mb-4">
                 <Avatar className="w-12 h-12">
@@ -235,13 +235,13 @@ export default function CalibrationCardModal({
               {candidate.skills?.length > 0 && (
                 <div className="flex flex-wrap gap-1.5 mb-4">
                   {candidate.skills.slice(0, 8).map(skill => (
-                    <Badge key={skill} className="bg-gray-100 text-gray-700 text-xs">{skill}</Badge>
+                    <Badge key={skill} className="bg-lia-bg-tertiary text-lia-text-secondary text-xs">{skill}</Badge>
                   ))}
                 </div>
               )}
 
               {/* Experience stats */}
-              <div className="flex gap-6 mb-4 py-3 border-y border-gray-100">
+              <div className="flex gap-6 mb-4 py-3 border-y border-lia-border-subtle">
                 <div>
                   <p className={textStyles.caption}>Total experiência</p>
                   <p className={textStyles.subtitle}>{candidate.total_experience_years}a</p>
@@ -253,14 +253,14 @@ export default function CalibrationCardModal({
                 <h4 className={`${textStyles.label} mb-2`}>Experiências</h4>
                 <div className="space-y-3">
                   {candidate.experiences?.slice(0, 4).map((exp, i) => (
-                    <div key={i} className="border-l-2 border-gray-200 pl-3">
+                    <div key={i} className="border-l-2 border-lia-border-subtle pl-3">
                       <p className={textStyles.subtitle}>{exp.title}</p>
                       <p className={textStyles.caption}>
                         {exp.company} · {exp.start_date} – {exp.end_date || "Atual"}
                         {exp.duration_years > 0 && ` · ${exp.duration_years}a`}
                       </p>
                       {exp.description && (
-                        <p className={`${textStyles.bodySmall} mt-1 text-gray-600`}>
+                        <p className={`${textStyles.bodySmall} mt-1 text-lia-text-secondary`}>
                           {exp.description.slice(0, 150)}...
                         </p>
                       )}
@@ -288,7 +288,7 @@ export default function CalibrationCardModal({
               <div className="flex-1 overflow-y-auto p-6">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className={textStyles.h4}>Por que combinamos este perfil</h3>
-                  <button className="text-sm text-gray-500 hover:text-gray-700 flex items-center gap-1">
+                  <button className="text-sm text-lia-text-tertiary hover:text-lia-text-secondary flex items-center gap-1">
                     <Edit3 className="w-3.5 h-3.5" /> Editar Critérios
                   </button>
                 </div>
@@ -310,7 +310,7 @@ export default function CalibrationCardModal({
               </div>
 
               {/* Action buttons */}
-              <div className="flex-shrink-0 p-6 border-t border-gray-200 space-y-3">
+              <div className="flex-shrink-0 p-6 border-t border-lia-border-subtle space-y-3">
                 <Button
                   className={`w-full ${buttonStyles.primary} bg-green-600 hover:bg-green-700`}
                   onClick={handleApprove}
@@ -326,7 +326,7 @@ export default function CalibrationCardModal({
                 {!showCommentInput ? (
                   <button
                     onClick={() => setShowCommentInput(true)}
-                    className="w-full flex items-center justify-center gap-1 text-sm text-gray-500 hover:text-gray-700 py-1"
+                    className="w-full flex items-center justify-center gap-1 text-sm text-lia-text-tertiary hover:text-lia-text-secondary py-1"
                   >
                     <MessageSquare className="w-3.5 h-3.5" /> Adicionar comentário
                   </button>
@@ -337,7 +337,7 @@ export default function CalibrationCardModal({
                       onChange={e => setComment(e.target.value)}
                       placeholder="Comentário para o agente aprender..."
                       rows={2}
-                      className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm resize-none"
+                      className="w-full border border-lia-border-default rounded-md px-3 py-2 text-sm resize-none"
                     />
                   </div>
                 )}
@@ -347,7 +347,7 @@ export default function CalibrationCardModal({
         )}
 
         {/* Footer — calibration progress */}
-        <div className="flex items-center justify-between px-6 py-3 border-t border-gray-200 bg-gray-50">
+        <div className="flex items-center justify-between px-6 py-3 border-t border-lia-border-subtle bg-lia-bg-secondary">
           <div className="flex items-center gap-4">
             <span className={textStyles.caption}>
               Aprovados: <strong>{approvedCount}/{MIN_APPROVALS} mín.</strong>
@@ -359,7 +359,7 @@ export default function CalibrationCardModal({
           <div className="flex items-center gap-2">
             <button
               onClick={onClose}
-              className="text-sm text-gray-500 hover:text-gray-700"
+              className="text-sm text-lia-text-tertiary hover:text-lia-text-secondary"
             >
               Pular calibração
             </button>
@@ -409,7 +409,7 @@ function RejectReasonModal({
             <button
               key={reason}
               onClick={() => onSelect(reason)}
-              className="w-full text-left px-3 py-2 rounded-md text-sm hover:bg-gray-100 border border-gray-200 transition-colors"
+              className="w-full text-left px-3 py-2 rounded-md text-sm hover:bg-lia-bg-tertiary border border-lia-border-subtle transition-colors"
             >
               {reason}
             </button>
@@ -420,13 +420,13 @@ function RejectReasonModal({
               value={customReason}
               onChange={e => setCustomReason(e.target.value)}
               placeholder="Outro motivo..."
-              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+              className="w-full border border-lia-border-default rounded-md px-3 py-2 text-sm"
               onKeyDown={e => e.key === "Enter" && customReason.trim() && onSelect(customReason.trim())}
             />
           </div>
         </div>
         <div className="flex justify-end mt-3">
-          <button onClick={onClose} className="text-sm text-gray-500 hover:text-gray-700">
+          <button onClick={onClose} className="text-sm text-lia-text-tertiary hover:text-lia-text-secondary">
             Cancelar
           </button>
         </div>

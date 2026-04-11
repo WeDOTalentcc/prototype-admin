@@ -59,7 +59,7 @@ export default function WizardAgentStep({ jobTitle, onActivate, onSkip }: Wizard
     return (
       <div className="space-y-6">
         <div className="text-center">
-          <Bot className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+          <Bot className="w-12 h-12 text-lia-text-tertiary mx-auto mb-3" />
           <h3 className={textStyles.h3}>Sourcing Automático</h3>
           <p className={`${textStyles.body} mt-2 max-w-md mx-auto`}>
             Quer que um agente busque candidatos automaticamente para esta vaga?
@@ -98,8 +98,8 @@ export default function WizardAgentStep({ jobTitle, onActivate, onSkip }: Wizard
               onClick={() => setSectorTemplate(s.id === sectorTemplate ? null : s.id)}
               className={`p-3 rounded-md border text-center text-sm transition-colors ${
                 sectorTemplate === s.id
-                  ? "border-gray-900 bg-gray-50 text-gray-900"
-                  : "border-gray-200 text-gray-600 hover:bg-gray-50"
+                  ? "border-lia-text-primary bg-lia-bg-secondary text-lia-text-primary"
+                  : "border-lia-border-subtle text-lia-text-secondary hover:bg-lia-bg-secondary"
               }`}
             >
               <span className="text-lg">{s.icon}</span>
@@ -110,8 +110,8 @@ export default function WizardAgentStep({ jobTitle, onActivate, onSkip }: Wizard
             onClick={() => setSectorTemplate(null)}
             className={`p-3 rounded-md border text-center text-sm transition-colors ${
               sectorTemplate === null
-                ? "border-gray-900 bg-gray-50 text-gray-900"
-                : "border-gray-200 text-gray-600 hover:bg-gray-50"
+                ? "border-lia-text-primary bg-lia-bg-secondary text-lia-text-primary"
+                : "border-lia-border-subtle text-lia-text-secondary hover:bg-lia-bg-secondary"
             }`}
           >
             <span className="text-lg">✨</span>
@@ -130,8 +130,8 @@ export default function WizardAgentStep({ jobTitle, onActivate, onSkip }: Wizard
               onClick={() => setCandidatesPerDay(n)}
               className={`px-4 py-2 rounded-md text-sm border transition-colors ${
                 candidatesPerDay === n
-                  ? "border-gray-900 bg-gray-50 text-gray-900"
-                  : "border-gray-200 text-gray-600 hover:bg-gray-50"
+                  ? "border-lia-text-primary bg-lia-bg-secondary text-lia-text-primary"
+                  : "border-lia-border-subtle text-lia-text-secondary hover:bg-lia-bg-secondary"
               }`}
             >
               {n}
@@ -154,8 +154,8 @@ export default function WizardAgentStep({ jobTitle, onActivate, onSkip }: Wizard
               onClick={() => setNotifyFrequency(opt.id)}
               className={`px-4 py-2 rounded-md text-sm border transition-colors ${
                 notifyFrequency === opt.id
-                  ? "border-gray-900 bg-gray-50 text-gray-900"
-                  : "border-gray-200 text-gray-600 hover:bg-gray-50"
+                  ? "border-lia-text-primary bg-lia-bg-secondary text-lia-text-primary"
+                  : "border-lia-border-subtle text-lia-text-secondary hover:bg-lia-bg-secondary"
               }`}
             >
               {opt.label}
@@ -165,7 +165,7 @@ export default function WizardAgentStep({ jobTitle, onActivate, onSkip }: Wizard
       </div>
 
       {/* Actions */}
-      <div className="flex justify-between pt-4 border-t border-gray-200">
+      <div className="flex justify-between pt-4 border-t border-lia-border-subtle">
         <Button className={buttonStyles.secondary} onClick={() => setWantsAgent(null)}>
           Voltar
         </Button>

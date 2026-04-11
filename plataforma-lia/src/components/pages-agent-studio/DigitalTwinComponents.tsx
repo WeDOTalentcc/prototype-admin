@@ -80,7 +80,7 @@ export function TwinCard({ twin, onEvaluate, onManageTwin }: TwinCardProps) {
         </div>
 
         {/* Stats */}
-        <div className="flex items-center gap-4 mt-3 text-sm text-gray-600">
+        <div className="flex items-center gap-4 mt-3 text-sm text-lia-text-secondary">
           <span title="Decisões indexadas">
             <Brain className="w-3.5 h-3.5 inline mr-1" />{twin.decision_count}
           </span>
@@ -92,7 +92,7 @@ export function TwinCard({ twin, onEvaluate, onManageTwin }: TwinCardProps) {
         </div>
 
         {/* Actions */}
-        <div className="flex gap-2 mt-3 pt-3 border-t border-gray-100">
+        <div className="flex gap-2 mt-3 pt-3 border-t border-lia-border-subtle">
           {onEvaluate && (
             <Button className={buttonStyles.primary} onClick={() => onEvaluate(twin.id)}>
               Avaliar candidato
@@ -225,7 +225,7 @@ export function EvaluateWithTwinModal({
             {/* Reasoning (in first person, SME style) */}
             <div>
               <p className={textStyles.label}>Raciocínio</p>
-              <blockquote className="mt-1 border-l-2 border-purple-300 pl-3 italic text-gray-700">
+              <blockquote className="mt-1 border-l-2 border-purple-300 pl-3 italic text-lia-text-secondary">
                 "{evaluation.reasoning}"
               </blockquote>
             </div>
@@ -298,7 +298,7 @@ export function TwinsList({ onEvaluate }: TwinsListProps) {
     return (
       <Card className={cardStyles.flat}>
         <CardContent className="flex flex-col items-center py-8">
-          <Brain className="w-10 h-10 text-gray-300 mb-2" />
+          <Brain className="w-10 h-10 text-lia-text-disabled mb-2" />
           <p className={textStyles.body}>Nenhum Digital Twin criado</p>
           <p className={textStyles.caption}>Capture o raciocínio de um especialista para criar um twin.</p>
         </CardContent>

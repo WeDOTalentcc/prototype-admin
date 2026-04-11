@@ -160,7 +160,7 @@ export function SystemConfigurationModal({ system, onClose }: SystemConfiguratio
             <button
               key={tab.id}
               onClick={() => setSelectedTab(tab.id)}
-              className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors motion-reduce:transition-none ${
+              className={`flex items-center gap-2 px-4 py-3 text-sm font-medium rounded-lg transition-colors motion-reduce:transition-none ${
                 selectedTab === tab.id
                   ? 'border-lia-border-strong text-lia-text-primary bg-lia-bg-primary'
                   : 'border-transparent text-lia-text-secondary hover:text-lia-text-primary'

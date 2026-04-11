@@ -199,7 +199,7 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id as 'activity' | 'health' | 'settings')}
-                  className={`flex-1 flex items-center justify-center gap-1.5 py-3 text-xs font-medium transition-colors motion-reduce:transition-none ${activeTab === tab.id ? 'text-lia-btn-primary-bg bg-lia-bg-tertiary border-b-2 border-lia-border-default' : 'text-lia-text-tertiary border-b-2 border-transparent'}`}
+                  className={`flex-1 flex items-center justify-center gap-1.5 py-3 text-xs font-medium transition-colors motion-reduce:transition-none ${activeTab === tab.id ? 'text-lia-btn-primary-bg bg-lia-bg-tertiary rounded-lg bg-lia-bg-tertiary' : 'text-lia-text-tertiary rounded-lg'}`}
                 >
                   <tab.icon className="w-3.5 h-3.5" />
                   {tab.label}

@@ -268,7 +268,7 @@ export function CandidatePreviewPanel({ candidate, onClose }: { candidate: Candi
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex-1 py-2 px-3 text-xs font-medium text-center border-b-2 ${
+                className={`flex-1 py-2 px-3 text-xs font-medium text-center rounded-lg ${
                   activeTab === tab.id
                     ? 'border-lia-btn-primary-bg text-lia-text-primary dark:border-lia-border-medium'
                     : 'border-transparent text-lia-text-primary hover:text-lia-text-primary hover:border-lia-border-default'

@@ -79,7 +79,7 @@ export function AgentMemoryIndicator({
         onClick={handleExpand}
         onKeyDown={(e) => e.key === "Enter" && handleExpand()}
         // [OPT-023] py-1.5 px arbitrário — sem canônico Tailwind
-        className="flex items-center gap-2.5 px-2.5 py-1.5 rounded-md border border-lia-border-subtle bg-lia-bg-secondary cursor-pointer text-xs text-lia-text-secondary select-none transition-colors motion-reduce:transition-none"
+        className="flex items-center gap-2.5 px-2.5 py-1.5 rounded-md border border-lia-border-subtle bg-lia-bg-secondary cursor-pointer text-xs text-lia-text-secondary select-none transition-colors motion-reduce:transition-none hover:bg-lia-interactive-hover"
       >
         <Brain
           className="text-wedo-cyan flex-shrink-0 w-3.5 h-3.5"

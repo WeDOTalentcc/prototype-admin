@@ -315,7 +315,7 @@ export function PipelineOverviewPage() {
                   const isSelected = selectedStage === stage.name
                   const emoji = STAGE_EMOJI_MAP[stage.name] || stage.icon || "🔷"
                   const isLast = index === stages.length - 1
-                  const stageColor = stage.color || "#6B7280"
+                  const stageColor = stage.color || "#2D2D2D"
 
                   return (
                     <div key={stage.name} className="flex items-center">
@@ -409,13 +409,13 @@ export function PipelineOverviewPage() {
                             : "bg-lia-bg-primary text-lia-text-secondary border-lia-border-subtle hover:border-lia-border-medium hover:text-lia-text-primary"
                         )}
                         style={isActive ? {
-                          backgroundColor: hexToRgba(s.color || "#6B7280", 0.08),
-                          borderColor: s.color || "#6B7280",
+                          backgroundColor: hexToRgba(s.color || "#2D2D2D", 0.08),
+                          borderColor: s.color || "#2D2D2D",
                         } : undefined}
                       >
                         <div
                           className="w-2 h-2 rounded-full flex-shrink-0"
-                          style={{ backgroundColor: s.color || "#6B7280" }}
+                          style={{ backgroundColor: s.color || "#2D2D2D" }}
                         />
                         {s.display_name}
                         <span className="font-semibold">{s.count}</span>
@@ -442,7 +442,7 @@ export function PipelineOverviewPage() {
                       <div
                         className="w-2.5 h-2.5 rounded-full"
                         style={{
-                          backgroundColor: selectedStageData.color || "#6B7280",
+                          backgroundColor: selectedStageData.color || "#2D2D2D",
                         }}
                       />
                     )}
@@ -475,7 +475,7 @@ export function PipelineOverviewPage() {
                           <PipelineCandidateCard
                             key={`${candidate.vc_id}-${idx}`}
                             candidate={candidate}
-                            stageColor={selectedStageData?.color || "#6B7280"}
+                            stageColor={selectedStageData?.color || "#2D2D2D"}
                             onOpenPreview={handleOpenPreview}
                             onOpenKanban={handleOpenKanban}
                             onOpenScoreModal={handleOpenScoreModal}

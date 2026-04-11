@@ -55,7 +55,7 @@ export default function TalentPoolsTab({ onSelectPool }: TalentPoolsTabProps) {
       {activePools.length === 0 ? (
         <Card className={cardStyles.flat}>
           <CardContent className="flex flex-col items-center justify-center py-12">
-            <Database className="w-12 h-12 text-gray-300 mb-3" />
+            <Database className="w-12 h-12 text-lia-text-disabled mb-3" />
             <p className={textStyles.body}>Nenhum banco de talentos criado</p>
             <p className={textStyles.caption}>
               Crie um banco para captar candidatos de forma contínua.
@@ -119,7 +119,7 @@ function PoolCard({ pool, onClick }: { pool: TalentPoolSummary; onClick: () => v
         {/* Stats row */}
         <div className="flex items-center gap-4 mt-3">
           <div className="flex items-center gap-1" title="Total de candidatos">
-            <Users className="w-3.5 h-3.5 text-gray-400" />
+            <Users className="w-3.5 h-3.5 text-lia-text-tertiary" />
             <span className={textStyles.bodySmall}>{pool.candidates_count}</span>
           </div>
           <div className="flex items-center gap-1" title="Candidatos triados">
@@ -136,8 +136,8 @@ function PoolCard({ pool, onClick }: { pool: TalentPoolSummary; onClick: () => v
         </div>
 
         {/* Action */}
-        <div className="mt-3 pt-3 border-t border-gray-100">
-          <button className="flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900 transition-colors">
+        <div className="mt-3 pt-3 border-t border-lia-border-subtle">
+          <button className="flex items-center gap-1 text-sm text-lia-text-secondary hover:text-lia-text-primary transition-colors">
             Ver candidatos <ArrowRight className="w-3.5 h-3.5" />
           </button>
         </div>

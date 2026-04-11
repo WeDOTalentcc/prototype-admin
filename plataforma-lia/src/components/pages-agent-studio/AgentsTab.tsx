@@ -112,7 +112,7 @@ export default function AgentsTab({
   if (agents.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-48">
-        <Bot className="w-10 h-10 text-gray-300 mb-3" />
+        <Bot className="w-10 h-10 text-lia-text-disabled mb-3" />
         <p className={textStyles.body}>Nenhum agente configurado</p>
         <p className={textStyles.caption}>Crie um agente para buscar candidatos automaticamente.</p>
         <Button className={`${buttonStyles.primary} mt-4`} onClick={onCreateAgent}>
@@ -156,7 +156,7 @@ function AgentPanel({
         {/* Header */}
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
-            <Bot className="w-5 h-5 text-gray-600" />
+            <Bot className="w-5 h-5 text-lia-text-secondary" />
             <span className={textStyles.subtitle}>{agent.agent_name}</span>
             <Badge className={status.style}>{status.label}</Badge>
             <span className={textStyles.caption}>v{agent.calibration_v}</span>
@@ -180,11 +180,11 @@ function AgentPanel({
             <Badge key={e} className="bg-red-50 text-red-700 text-xs">❌ {e}</Badge>
           ))}
           {strategy.seniority && <Badge className="bg-blue-50 text-blue-700 text-xs">{strategy.seniority}</Badge>}
-          {strategy.location && <Badge className="bg-gray-100 text-gray-700 text-xs">{strategy.location}</Badge>}
+          {strategy.location && <Badge className="bg-lia-bg-tertiary text-lia-text-secondary text-xs">{strategy.location}</Badge>}
         </div>
 
         {/* Stats */}
-        <div className="flex items-center gap-6 text-sm text-gray-600 mb-3 py-2 border-y border-gray-100">
+        <div className="flex items-center gap-6 text-sm text-lia-text-secondary mb-3 py-2 border-y border-lia-border-subtle">
           <span title="Perfis analisados"><SearchIcon className="w-3.5 h-3.5 inline mr-1" />{agent.profiles_viewed}</span>
           <span title="Aprovados"><ThumbsUp className="w-3.5 h-3.5 inline mr-1" />{agent.profiles_approved}</span>
           <span title="Rejeitados"><ThumbsDown className="w-3.5 h-3.5 inline mr-1" />{agent.profiles_rejected}</span>

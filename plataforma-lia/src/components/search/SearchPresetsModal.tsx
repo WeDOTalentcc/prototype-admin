@@ -128,7 +128,7 @@ export function SearchPresetsModal<T>({
     cn(
       "flex-1 px-4 py-2.5 text-sm font-medium transition-colors",
       isActive
-        ? "text-lia-text-primary border-b-2 border-lia-btn-primary-bg dark:border-lia-border-subtle"
+        ? "text-lia-text-primary rounded-lg bg-lia-bg-tertiary dark:border-lia-border-subtle"
         : "text-lia-text-secondary hover:text-lia-text-primary"
     )
 

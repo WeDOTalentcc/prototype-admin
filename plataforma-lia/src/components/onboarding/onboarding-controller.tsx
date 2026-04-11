@@ -205,7 +205,7 @@ export function OnboardingController({ children, forceOnboarding = false }: Onbo
   if (authIsLoading || (authIsAuthenticated && !userData)) {
     return (
       <div className="min-h-screen bg-lia-bg-primary flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-600" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-lia-border-strong" />
       </div>
     )
   }

@@ -22,7 +22,7 @@ export default function Image() {
     >
       <div style={{ fontSize: 72, fontWeight: 'bold', color: '#60BED1' }}>LIA</div>
       <div style={{ fontSize: 32, marginTop: 16 }}>Plataforma WeDoTalent</div>
-      <div style={{ fontSize: 20, marginTop: 8, color: '#9CA3AF' }}>
+      <div style={{ fontSize: 20, marginTop: 8, color: '#5C5C5C' }}>
         Recrutamento inteligente com IA
       </div>
     </div>

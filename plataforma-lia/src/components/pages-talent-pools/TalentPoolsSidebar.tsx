@@ -39,7 +39,7 @@ export default function TalentPoolsSidebar({
   if (isCollapsed) {
     return (
       <div className="py-2 px-3" title="Bancos de Talentos">
-        <Database className="w-5 h-5 text-gray-500 mx-auto" />
+        <Database className="w-5 h-5 text-lia-text-tertiary mx-auto" />
       </div>
     )
   }
@@ -49,10 +49,10 @@ export default function TalentPoolsSidebar({
       {/* Section header */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full flex items-center justify-between px-3 py-2 hover:bg-gray-100 rounded-md transition-colors"
+        className="w-full flex items-center justify-between px-3 py-2 hover:bg-lia-bg-tertiary rounded-md transition-colors"
       >
         <div className="flex items-center gap-2">
-          <Database className="w-4 h-4 text-gray-500" />
+          <Database className="w-4 h-4 text-lia-text-tertiary" />
           <span className={textStyles.sidebarTitle}>Bancos de Talentos</span>
         </div>
         <div className="flex items-center gap-1">
@@ -60,9 +60,9 @@ export default function TalentPoolsSidebar({
             <Badge className={badgeStyles.success}>{activePools.length}</Badge>
           )}
           {isExpanded ? (
-            <ChevronDown className="w-3.5 h-3.5 text-gray-400" />
+            <ChevronDown className="w-3.5 h-3.5 text-lia-text-tertiary" />
           ) : (
-            <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
+            <ChevronRight className="w-3.5 h-3.5 text-lia-text-tertiary" />
           )}
         </div>
       </button>
@@ -88,7 +88,7 @@ export default function TalentPoolsSidebar({
           {/* Create new */}
           <button
             onClick={onCreatePool}
-            className="w-full flex items-center gap-2 px-3 py-1.5 text-gray-500 hover:bg-gray-100 hover:text-gray-700 rounded-md transition-colors"
+            className="w-full flex items-center gap-2 px-3 py-1.5 text-lia-text-tertiary hover:bg-lia-bg-tertiary hover:text-lia-text-secondary rounded-md transition-colors"
           >
             <Plus className="w-3.5 h-3.5" />
             <span className={textStyles.sidebarItem}>Novo banco</span>
@@ -112,12 +112,12 @@ function PoolItem({
     <button
       onClick={onClick}
       className={`w-full flex items-center justify-between px-3 py-1.5 rounded-md transition-colors ${
-        isActive ? "bg-gray-100 text-gray-900" : "text-gray-600 hover:bg-gray-50"
+        isActive ? "bg-lia-bg-tertiary text-lia-text-primary" : "text-lia-text-secondary hover:bg-lia-bg-secondary"
       }`}
     >
       <div className="flex items-center gap-2 min-w-0">
         {pool.agent_sourcing_enabled && (
-          <Bot className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" title="Agente ativo" />
+          <Bot className="w-3.5 h-3.5 text-lia-text-tertiary flex-shrink-0" title="Agente ativo" />
         )}
         <span className={`${textStyles.sidebarItem} truncate`}>{pool.name}</span>
       </div>

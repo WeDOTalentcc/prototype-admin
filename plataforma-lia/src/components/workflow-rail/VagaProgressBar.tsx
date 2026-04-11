@@ -59,7 +59,7 @@ export default function VagaProgressBar({ jobId, onNavigateToStage }: VagaProgre
   const currentStage = stages.find(s => s.status === "in_progress")
 
   return (
-    <div className="px-4 py-2 bg-gray-50 border-b border-gray-200">
+    <div className="px-4 py-2 bg-lia-bg-secondary border-b border-lia-border-subtle">
       {/* Stage dots */}
       <div className="flex items-center gap-1">
         {stages.map((stage, i) => {
@@ -71,9 +71,9 @@ export default function VagaProgressBar({ jobId, onNavigateToStage }: VagaProgre
               <button
                 onClick={() => onNavigateToStage?.(stage.stage)}
                 className={`flex items-center gap-1 px-2 py-0.5 rounded text-xs transition-colors ${
-                  isCompleted ? "bg-gray-900 text-white"
+                  isCompleted ? "bg-lia-bg-inverse text-white"
                   : isCurrent ? "bg-yellow-100 text-yellow-800 ring-1 ring-yellow-300"
-                  : "bg-gray-100 text-gray-400"
+                  : "bg-lia-bg-tertiary text-lia-text-tertiary"
                 }`}
                 title={`${stage.label}${stage.candidates_count > 0 ? ` (${stage.candidates_count})` : ""}`}
               >
@@ -83,7 +83,7 @@ export default function VagaProgressBar({ jobId, onNavigateToStage }: VagaProgre
                 )}
               </button>
               {i < stages.length - 1 && (
-                <div className={`h-px w-2 ${isCompleted ? "bg-gray-700" : "bg-gray-200"}`} />
+                <div className={`h-px w-2 ${isCompleted ? "bg-lia-bg-inverse" : "bg-lia-interactive-active"}`} />
               )}
             </React.Fragment>
           )

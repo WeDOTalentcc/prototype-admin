@@ -72,12 +72,12 @@ export function CalibrationCandidateCard({
   return (
     <div className={cn("flex h-full", className)}>
       {/* ---- Left Panel: Candidate Profile ---- */}
-      <div className="w-1/2 overflow-y-auto border-r border-gray-200 p-6">
+      <div className="w-1/2 overflow-y-auto border-r border-lia-border-subtle p-6">
         {/* Header */}
         <div className="flex items-center gap-3 mb-4">
           <Avatar className="w-12 h-12">
             <AvatarImage src={candidate.avatarUrl} />
-            <AvatarFallback className="bg-gray-900 text-white text-sm font-semibold">
+            <AvatarFallback className="bg-lia-bg-inverse text-white text-sm font-semibold">
               {candidate.name
                 .split(" ")
                 .map((n) => n[0])
@@ -86,16 +86,16 @@ export function CalibrationCandidateCard({
             </AvatarFallback>
           </Avatar>
           <div>
-            <h3 className="text-base font-semibold text-gray-900 font-[Open_Sans]">
+            <h3 className="text-base font-semibold text-lia-text-primary font-[Open_Sans]">
               {candidate.name}
             </h3>
-            <p className="text-xs text-gray-500">{candidate.location}</p>
+            <p className="text-xs text-lia-text-tertiary">{candidate.location}</p>
           </div>
         </div>
 
         {/* Current role */}
         <div className="mb-4">
-          <p className="text-sm font-medium text-gray-800">
+          <p className="text-sm font-medium text-lia-text-primary">
             {candidate.currentTitle} at {candidate.currentCompany}
           </p>
         </div>
@@ -107,7 +107,7 @@ export function CalibrationCandidateCard({
               <Badge
                 key={skill}
                 variant="secondary"
-                className="bg-gray-100 text-gray-700 text-xs rounded-md border-none"
+                className="bg-lia-bg-tertiary text-lia-text-secondary text-xs rounded-md border-none"
               >
                 {skill}
               </Badge>
@@ -116,12 +116,12 @@ export function CalibrationCandidateCard({
         )}
 
         {/* Experience stat */}
-        <div className="flex gap-6 mb-4 py-3 border-y border-gray-100">
+        <div className="flex gap-6 mb-4 py-3 border-y border-lia-border-subtle">
           <div>
-            <p className="text-xs text-gray-500 uppercase tracking-wide">
+            <p className="text-xs text-lia-text-tertiary uppercase tracking-wide">
               Total experiência
             </p>
-            <p className="text-sm font-semibold text-gray-900">
+            <p className="text-sm font-semibold text-lia-text-primary">
               {candidate.totalExperience}
             </p>
           </div>
@@ -130,18 +130,18 @@ export function CalibrationCandidateCard({
         {/* Experiences */}
         {candidate.experiences.length > 0 && (
           <div>
-            <h4 className="text-xs font-semibold text-gray-700 uppercase tracking-wide mb-2">
+            <h4 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-2">
               Experiências
             </h4>
             <div className="space-y-3">
               {candidate.experiences.slice(0, 4).map((exp) => (
                 <div key={exp.id} className="flex gap-3">
-                  <div className="w-8 h-8 rounded-md bg-gray-100 flex items-center justify-center flex-shrink-0">
-                    <Building2 className="w-4 h-4 text-gray-400" />
+                  <div className="w-8 h-8 rounded-md bg-lia-bg-tertiary flex items-center justify-center flex-shrink-0">
+                    <Building2 className="w-4 h-4 text-lia-text-tertiary" />
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
-                      <p className="text-sm font-semibold text-gray-900">
+                      <p className="text-sm font-semibold text-lia-text-primary">
                         {exp.title}
                       </p>
                       {exp.isPromotion && (
@@ -150,17 +150,17 @@ export function CalibrationCandidateCard({
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-lia-text-tertiary">
                       {exp.company} · {exp.period}
                       {exp.durationLabel ? ` · ${exp.durationLabel}` : ""}
                     </p>
                     {exp.description && (
-                      <p className="text-xs text-gray-500 mt-1">
+                      <p className="text-xs text-lia-text-tertiary mt-1">
                         {exp.description}
                       </p>
                     )}
                     {exp.skills && exp.skills.length > 0 && (
-                      <p className="text-xs text-gray-400 mt-1">
+                      <p className="text-xs text-lia-text-tertiary mt-1">
                         Skills: {exp.skills.slice(0, 6).join(" · ")}
                       </p>
                     )}
@@ -174,20 +174,20 @@ export function CalibrationCandidateCard({
         {/* Education */}
         {candidate.education.length > 0 && (
           <div className="mt-4">
-            <h4 className="text-xs font-semibold text-gray-700 uppercase tracking-wide mb-2">
+            <h4 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-2">
               Educação
             </h4>
             <div className="space-y-2">
               {candidate.education.slice(0, 3).map((edu) => (
                 <div key={edu.id} className="flex gap-3">
-                  <div className="w-8 h-8 rounded-md bg-gray-100 flex items-center justify-center flex-shrink-0">
-                    <GraduationCap className="w-4 h-4 text-gray-400" />
+                  <div className="w-8 h-8 rounded-md bg-lia-bg-tertiary flex items-center justify-center flex-shrink-0">
+                    <GraduationCap className="w-4 h-4 text-lia-text-tertiary" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-900">
+                    <p className="text-sm font-medium text-lia-text-primary">
                       {edu.degree} — {edu.field}
                     </p>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-lia-text-tertiary">
                       {edu.institution}
                       {edu.period ? ` · ${edu.period}` : ""}
                     </p>
@@ -205,7 +205,7 @@ export function CalibrationCandidateCard({
           {/* Optional header (edit criteria, etc.) */}
           {criteriaHeader ?? (
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-semibold text-gray-900 font-[Open_Sans]">
+              <h3 className="text-sm font-semibold text-lia-text-primary font-[Open_Sans]">
                 Por que combinamos este perfil
               </h3>
             </div>
@@ -223,10 +223,10 @@ export function CalibrationCandidateCard({
                   >
                     {badge.label}
                   </Badge>
-                  <p className="text-sm font-medium text-gray-900">
+                  <p className="text-sm font-medium text-lia-text-primary">
                     {mc.criterion}
                   </p>
-                  <p className="text-xs text-gray-500 leading-relaxed">
+                  <p className="text-xs text-lia-text-tertiary leading-relaxed">
                     {mc.explanation}
                   </p>
                 </div>
@@ -236,11 +236,11 @@ export function CalibrationCandidateCard({
         </div>
 
         {/* Action buttons */}
-        <div className="flex-shrink-0 p-6 border-t border-gray-200 space-y-3">
+        <div className="flex-shrink-0 p-6 border-t border-lia-border-subtle space-y-3">
           <div className="flex gap-2">
             <button
               onClick={onApprove}
-              className="flex-1 py-2.5 px-3 bg-gray-900 text-white rounded-md font-medium text-sm hover:bg-gray-800 transition-colors flex items-center justify-center gap-1.5"
+              className="flex-1 py-2.5 px-3 bg-lia-bg-inverse text-white rounded-md font-medium text-sm hover:bg-lia-bg-inverse transition-colors flex items-center justify-center gap-1.5"
             >
               <CheckCircle2 className="w-4 h-4" />
               Aprovar

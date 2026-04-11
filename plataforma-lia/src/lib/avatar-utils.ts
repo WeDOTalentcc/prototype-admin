@@ -6,7 +6,7 @@ export function getInitials(name: string): string {
 }
 
 const AVATAR_COLORS = [
-  "6B7280", "4B5563", "374151", "1F2937",
+  "2D2D2D", "4B5563", "374151", "1F2937",
   "7C3AED", "2563EB", "0891B2", "059669",
   "D97706", "DC2626", "DB2777", "7C3AED",
 ]

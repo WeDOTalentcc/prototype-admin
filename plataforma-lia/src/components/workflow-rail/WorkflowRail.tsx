@@ -46,14 +46,14 @@ export default function WorkflowRail({ userId, onNavigate }: WorkflowRailProps) 
       {/* Collapsed bar */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full flex items-center justify-between px-4 py-2 bg-gray-900 text-white hover:bg-gray-800 transition-colors"
+        className="w-full flex items-center justify-between px-4 py-2 bg-lia-bg-inverse text-white hover:bg-lia-bg-inverse transition-colors"
       >
         <div className="flex items-center gap-3 overflow-x-auto">
           {entries.slice(0, 3).map(entry => (
             <CollapsedEntry key={entry.id} entry={entry} />
           ))}
           {entries.length > 3 && (
-            <span className="text-xs text-gray-400">+{entries.length - 3} mais</span>
+            <span className="text-xs text-lia-text-tertiary">+{entries.length - 3} mais</span>
           )}
         </div>
         <div className="flex items-center gap-2 flex-shrink-0 ml-3">
@@ -66,14 +66,14 @@ export default function WorkflowRail({ userId, onNavigate }: WorkflowRailProps) 
 
       {/* Expanded panel */}
       {isExpanded && (
-        <div className="bg-white border-t border-gray-200 shadow-2xl max-h-80 overflow-y-auto">
-          <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
+        <div className="bg-white border-t border-lia-border-subtle shadow-2xl max-h-80 overflow-y-auto">
+          <div className="px-4 py-3 border-b border-lia-border-subtle flex items-center justify-between">
             <h3 className={textStyles.subtitle}>Fluxos Ativos</h3>
             <div className="flex items-center gap-2">
               {!isConnected && (
                 <span className="text-xs text-red-500">Desconectado</span>
               )}
-              <button onClick={() => setIsExpanded(false)} className="text-gray-400 hover:text-gray-600">
+              <button onClick={() => setIsExpanded(false)} className="text-lia-text-tertiary hover:text-lia-text-secondary">
                 <ChevronDown className="w-4 h-4" />
               </button>
             </div>
@@ -106,7 +106,7 @@ function CollapsedEntry({ entry }: { entry: WorkflowEntry }) {
       <span>{icon}</span>
       <span className="font-medium truncate max-w-32">{entry.name}</span>
       {currentStage && (
-        <span className="text-gray-400">{currentStage.label}</span>
+        <span className="text-lia-text-tertiary">{currentStage.label}</span>
       )}
       {entry.pendingAction && (
         <span className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse" />
@@ -137,12 +137,12 @@ function ExpandedEntry({
       {/* Header */}
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
-          <Icon className="w-4 h-4 text-gray-500" />
+          <Icon className="w-4 h-4 text-lia-text-tertiary" />
           <span className={textStyles.subtitle}>{entry.name}</span>
-          <span className={`${textStyles.caption} text-gray-400`}>— {config.label}</span>
+          <span className={`${textStyles.caption} text-lia-text-tertiary`}>— {config.label}</span>
         </div>
         {entry.type === "search" && (
-          <button onClick={onDismiss} className="text-gray-300 hover:text-gray-500">
+          <button onClick={onDismiss} className="text-lia-text-disabled hover:text-lia-text-tertiary">
             <X className="w-3.5 h-3.5" />
           </button>
         )}
@@ -155,7 +155,7 @@ function ExpandedEntry({
             <React.Fragment key={stage.stage}>
               <StageIndicator stage={stage} />
               {i < entry.stages!.length - 1 && (
-                <div className={`h-px w-3 ${stage.status === "completed" ? "bg-gray-900" : "bg-gray-200"}`} />
+                <div className={`h-px w-3 ${stage.status === "completed" ? "bg-lia-bg-inverse" : "bg-lia-interactive-active"}`} />
               )}
             </React.Fragment>
           ))}
@@ -186,13 +186,13 @@ function ExpandedEntry({
       {entry.type === "search" && entry.searchResults && (
         <div className="flex items-center gap-2 mt-2">
           <span className={textStyles.caption}>{entry.searchResults.count} encontrados</span>
-          <button className="flex items-center gap-1 text-xs text-gray-600 hover:text-gray-900 border border-gray-200 rounded px-2 py-1">
+          <button className="flex items-center gap-1 text-xs text-lia-text-secondary hover:text-lia-text-primary border border-lia-border-subtle rounded px-2 py-1">
             <Plus className="w-3 h-3" /> Vaga
           </button>
-          <button className="flex items-center gap-1 text-xs text-gray-600 hover:text-gray-900 border border-gray-200 rounded px-2 py-1">
+          <button className="flex items-center gap-1 text-xs text-lia-text-secondary hover:text-lia-text-primary border border-lia-border-subtle rounded px-2 py-1">
             <Plus className="w-3 h-3" /> Pool
           </button>
-          <button className="flex items-center gap-1 text-xs text-gray-600 hover:text-gray-900 border border-gray-200 rounded px-2 py-1">
+          <button className="flex items-center gap-1 text-xs text-lia-text-secondary hover:text-lia-text-primary border border-lia-border-subtle rounded px-2 py-1">
             <Plus className="w-3 h-3" /> Lista
           </button>
         </div>
@@ -205,9 +205,9 @@ function ExpandedEntry({
 
 function StageIndicator({ stage }: { stage: WorkflowStage }) {
   const statusStyles = {
-    completed: "bg-gray-900 text-white",
+    completed: "bg-lia-bg-inverse text-white",
     in_progress: "bg-yellow-100 text-yellow-800 ring-1 ring-yellow-300",
-    pending: "bg-gray-100 text-gray-400",
+    pending: "bg-lia-bg-tertiary text-lia-text-tertiary",
   }
 
   return (
@@ -215,9 +215,9 @@ function StageIndicator({ stage }: { stage: WorkflowStage }) {
       <div className={`w-5 h-5 rounded-full flex items-center justify-center text-xs ${statusStyles[stage.status]}`}>
         {stage.status === "completed" ? "✓" : stage.status === "in_progress" ? "●" : "○"}
       </div>
-      <span className="text-[10px] text-gray-500 mt-0.5 whitespace-nowrap">{stage.label}</span>
+      <span className="text-[10px] text-lia-text-tertiary mt-0.5 whitespace-nowrap">{stage.label}</span>
       {stage.candidatesCount > 0 && (
-        <span className="text-[9px] text-gray-400">({stage.candidatesCount})</span>
+        <span className="text-[9px] text-lia-text-tertiary">({stage.candidatesCount})</span>
       )}
     </div>
   )

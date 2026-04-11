@@ -59,7 +59,7 @@ export function CandidateOnboardingModal({ candidate, onClose }: CandidateOnboar
               onClick={() => setActiveTab(tab.id as Parameters<typeof setActiveTab>[0])}
               className={`flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors motion-reduce:transition-none ${
                 activeTab === tab.id
-                  ? "text-lia-text-secondary border-b-2 border-lia-btn-primary-bg dark:border-lia-border-medium"
+                  ? "text-lia-text-secondary rounded-lg bg-lia-bg-tertiary dark:border-lia-border-medium"
                   : "text-lia-text-secondary hover:text-lia-text-primary"
               }`}
             >

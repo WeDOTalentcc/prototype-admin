@@ -37,7 +37,7 @@ export default function FlowStepMessage({
   steps, question, onSelectScope, compact = false,
 }: FlowStepMessageProps) {
   return (
-    <div className={`${compact ? "" : "bg-gray-50 rounded-lg p-4 my-2"}`}>
+    <div className={`${compact ? "" : "bg-lia-bg-secondary rounded-lg p-4 my-2"}`}>
       {/* Flow steps */}
       <div className="flex items-center gap-1 flex-wrap">
         {steps.map((step, i) => (
@@ -45,7 +45,7 @@ export default function FlowStepMessage({
             <FlowStepChip step={step} />
             {i < steps.length - 1 && (
               <ArrowRight className={`w-3 h-3 flex-shrink-0 ${
-                step.status === "completed" ? "text-gray-700" : "text-gray-300"
+                step.status === "completed" ? "text-lia-text-secondary" : "text-lia-text-disabled"
               }`} />
             )}
           </React.Fragment>
@@ -54,19 +54,19 @@ export default function FlowStepMessage({
 
       {/* Active step detail */}
       {steps.filter(s => s.status === "in_progress" && s.detail).map(s => (
-        <p key={s.id} className={`${textStyles.caption} mt-2 text-gray-600`}>
+        <p key={s.id} className={`${textStyles.caption} mt-2 text-lia-text-secondary`}>
           {s.detail}
         </p>
       ))}
 
       {/* Scope question */}
       {question && onSelectScope && (
-        <div className="mt-3 pt-2 border-t border-gray-200">
+        <div className="mt-3 pt-2 border-t border-lia-border-subtle">
           <p className={`${textStyles.bodySmall} mb-2`}>{question}</p>
           <div className="flex gap-2">
             <button
               onClick={() => onSelectScope("all")}
-              className="px-3 py-1.5 text-xs rounded-md bg-gray-900 text-white hover:bg-gray-800 transition-colors"
+              className="px-3 py-1.5 text-xs rounded-md bg-lia-bg-inverse text-white hover:bg-lia-bg-inverse transition-colors"
             >
               Fluxo completo
             </button>
@@ -74,7 +74,7 @@ export default function FlowStepMessage({
               <button
                 key={s.id}
                 onClick={() => onSelectScope(s.id)}
-                className="px-3 py-1.5 text-xs rounded-md border border-gray-300 text-gray-600 hover:bg-gray-100 transition-colors"
+                className="px-3 py-1.5 text-xs rounded-md border border-lia-border-default text-lia-text-secondary hover:bg-lia-bg-tertiary transition-colors"
               >
                 Até {s.label}
               </button>
@@ -91,7 +91,7 @@ export default function FlowStepMessage({
 function FlowStepChip({ step }: { step: FlowStep }) {
   const statusConfig = {
     completed: {
-      bg: "bg-gray-900",
+      bg: "bg-lia-bg-inverse",
       text: "text-white",
       icon: <CheckCircle className="w-3 h-3" />,
     },
@@ -101,8 +101,8 @@ function FlowStepChip({ step }: { step: FlowStep }) {
       icon: <Loader2 className="w-3 h-3 animate-spin" />,
     },
     pending: {
-      bg: "bg-gray-100",
-      text: "text-gray-400",
+      bg: "bg-lia-bg-tertiary",
+      text: "text-lia-text-tertiary",
       icon: <Circle className="w-3 h-3" />,
     },
   }

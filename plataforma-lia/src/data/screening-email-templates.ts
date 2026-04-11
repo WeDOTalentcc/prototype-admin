@@ -67,7 +67,7 @@ export const screeningDefaultTemplates: ScreeningDefaultTemplate[] = [
     </ol>
   </div>
   
-  <p style="font-size: 13px; color: #6B7280;">Lembrando que suas respostas serão analisadas pela nossa IA para garantir um processo justo e eficiente.</p>
+  <p style="font-size: 13px; color: #2D2D2D;">Lembrando que suas respostas serão analisadas pela nossa IA para garantir um processo justo e eficiente.</p>
   
   <p>Caso tenha dúvidas, entre em contato conosco.</p>
   
@@ -102,7 +102,7 @@ export const screeningDefaultTemplates: ScreeningDefaultTemplate[] = [
     <a href="{{screening_link}}" style="display: inline-block; background: #60BED1; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 600;">Completar Triagem</a>
   </div>
   
-  <p style="font-size: 13px; color: #6B7280;">Se você tiver qualquer dificuldade técnica ou precisar de mais tempo, por favor nos avise.</p>
+  <p style="font-size: 13px; color: #2D2D2D;">Se você tiver qualquer dificuldade técnica ou precisar de mais tempo, por favor nos avise.</p>
   
   <p>Atenciosamente,<br/>
   <strong>{{recruiter_name}}</strong><br/>
@@ -135,16 +135,16 @@ export const screeningDefaultTemplates: ScreeningDefaultTemplate[] = [
     <div style="display: flex; justify-content: space-around; text-align: center;">
       <div>
         <div style="font-size: 20px; font-weight: 600; color: #60BED1;">{{screening_duration}}</div>
-        <div style="font-size: 12px; color: #6B7280;">Duração</div>
+        <div style="font-size: 12px; color: #2D2D2D;">Duração</div>
       </div>
       <div>
         <div style="font-size: 20px; font-weight: 600; color: #10B981;">{{questions_answered}}/{{total_questions}}</div>
-        <div style="font-size: 12px; color: #6B7280;">Perguntas</div>
+        <div style="font-size: 12px; color: #2D2D2D;">Perguntas</div>
       </div>
     </div>
   </div>
   
-  <p style="font-size: 13px; color: #6B7280;">Fique atento ao seu email para atualizações.</p>
+  <p style="font-size: 13px; color: #2D2D2D;">Fique atento ao seu email para atualizações.</p>
   
   <p>Atenciosamente,<br/>
   <strong>{{recruiter_name}}</strong><br/>
@@ -175,15 +175,15 @@ export const screeningDefaultTemplates: ScreeningDefaultTemplate[] = [
   
   <div style="background: #F3F4F6; padding: 20px; border-radius: 8px; margin: 20px 0;">
     <div style="margin-bottom: 12px;">
-      <span style="color: #6B7280; font-size: 12px;">📅 Data</span><br/>
+      <span style="color: #2D2D2D; font-size: 12px;">📅 Data</span><br/>
       <strong>{{interview_date}}</strong>
     </div>
     <div style="margin-bottom: 12px;">
-      <span style="color: #6B7280; font-size: 12px;">🕐 Horário</span><br/>
+      <span style="color: #2D2D2D; font-size: 12px;">🕐 Horário</span><br/>
       <strong>{{interview_time}}</strong>
     </div>
     <div style="margin-bottom: 12px;">
-      <span style="color: #6B7280; font-size: 12px;">⏱️ Duração</span><br/>
+      <span style="color: #2D2D2D; font-size: 12px;">⏱️ Duração</span><br/>
       <strong>{{interview_duration}}</strong>
     </div>
   </div>
@@ -389,7 +389,7 @@ Obrigado! 🙏`,
     <h1 style="color: white; margin: 0; font-size: 24px;">Proposta de Trabalho</h1>
   </div>
   
-  <div style="padding: 24px; background: white; border: 1px solid #E5E7EB; border-top: none;">
+  <div style="padding: 24px; background: white; border: 1px solid #D4D4D4; border-top: none;">
     <p>Prezado(a) <strong>{{candidate_name}}</strong>,</p>
     
     <p>É com grande satisfação que formalizamos nossa proposta para a posição de <strong>{{job_title}}</strong> na <strong>{{company_name}}</strong>.</p>
@@ -397,51 +397,51 @@ Obrigado! 🙏`,
     <p>Após cuidadosa avaliação de seu perfil profissional, temos a certeza de que você será uma adição valiosa à nossa equipe.</p>
     
     <div style="background: #F0F9FA; border: 2px solid #60BED1; border-radius: 8px; padding: 20px; margin: 24px 0; text-align: center;">
-      <p style="margin: 0 0 8px 0; font-size: 14px; color: #6B7280;">Remuneração Mensal</p>
+      <p style="margin: 0 0 8px 0; font-size: 14px; color: #2D2D2D;">Remuneração Mensal</p>
       <p style="margin: 0; font-size: 32px; font-weight: 700; color: #1F2937;">{{salary}}</p>
       {{#if bonus}}
       <p style="margin: 8px 0 0 0; font-size: 14px; color: #60BED1;">+ Bônus: {{bonus}}</p>
       {{/if}}
     </div>
     
-    <h3 style="color: #1F2937; font-size: 16px; margin: 24px 0 12px 0; border-bottom: 2px solid #E5E7EB; padding-bottom: 8px;">Detalhes da Proposta</h3>
+    <h3 style="color: #1F2937; font-size: 16px; margin: 24px 0 12px 0; border-bottom: 2px solid #D4D4D4; padding-bottom: 8px;">Detalhes da Proposta</h3>
     
     <table style="width: 100%; border-collapse: collapse;">
       <tr>
-        <td style="padding: 12px; background: #F9FAFB; border-bottom: 1px solid #E5E7EB; width: 40%;">
-          <strong style="color: #6B7280;">Data de Início</strong>
+        <td style="padding: 12px; background: #F9FAFB; border-bottom: 1px solid #D4D4D4; width: 40%;">
+          <strong style="color: #2D2D2D;">Data de Início</strong>
         </td>
-        <td style="padding: 12px; border-bottom: 1px solid #E5E7EB;">
+        <td style="padding: 12px; border-bottom: 1px solid #D4D4D4;">
           {{start_date}}
         </td>
       </tr>
       <tr>
-        <td style="padding: 12px; background: #F9FAFB; border-bottom: 1px solid #E5E7EB;">
-          <strong style="color: #6B7280;">Tipo de Contrato</strong>
+        <td style="padding: 12px; background: #F9FAFB; border-bottom: 1px solid #D4D4D4;">
+          <strong style="color: #2D2D2D;">Tipo de Contrato</strong>
         </td>
-        <td style="padding: 12px; border-bottom: 1px solid #E5E7EB;">
+        <td style="padding: 12px; border-bottom: 1px solid #D4D4D4;">
           {{contract_type}}
         </td>
       </tr>
       <tr>
-        <td style="padding: 12px; background: #F9FAFB; border-bottom: 1px solid #E5E7EB;">
-          <strong style="color: #6B7280;">Modelo de Trabalho</strong>
+        <td style="padding: 12px; background: #F9FAFB; border-bottom: 1px solid #D4D4D4;">
+          <strong style="color: #2D2D2D;">Modelo de Trabalho</strong>
         </td>
-        <td style="padding: 12px; border-bottom: 1px solid #E5E7EB;">
+        <td style="padding: 12px; border-bottom: 1px solid #D4D4D4;">
           {{work_model}}
         </td>
       </tr>
       <tr>
-        <td style="padding: 12px; background: #F9FAFB; border-bottom: 1px solid #E5E7EB;">
-          <strong style="color: #6B7280;">Departamento</strong>
+        <td style="padding: 12px; background: #F9FAFB; border-bottom: 1px solid #D4D4D4;">
+          <strong style="color: #2D2D2D;">Departamento</strong>
         </td>
-        <td style="padding: 12px; border-bottom: 1px solid #E5E7EB;">
+        <td style="padding: 12px; border-bottom: 1px solid #D4D4D4;">
           {{department}}
         </td>
       </tr>
       <tr>
         <td style="padding: 12px; background: #F9FAFB;">
-          <strong style="color: #6B7280;">Gestor Direto</strong>
+          <strong style="color: #2D2D2D;">Gestor Direto</strong>
         </td>
         <td style="padding: 12px;">
           {{manager_name}}
@@ -449,7 +449,7 @@ Obrigado! 🙏`,
       </tr>
     </table>
     
-    <h3 style="color: #1F2937; font-size: 16px; margin: 24px 0 12px 0; border-bottom: 2px solid #E5E7EB; padding-bottom: 8px;">Pacote de Benefícios</h3>
+    <h3 style="color: #1F2937; font-size: 16px; margin: 24px 0 12px 0; border-bottom: 2px solid #D4D4D4; padding-bottom: 8px;">Pacote de Benefícios</h3>
     
     <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px;">
       {{benefits_list}}
@@ -464,10 +464,10 @@ Obrigado! 🙏`,
     
     <div style="text-align: center; margin: 24px 0;">
       <a href="{{accept_link}}" style="display: inline-block; background: #60BED1; color: white; padding: 14px 32px; text-decoration: none; border-radius: 6px; font-weight: 600; margin-right: 12px;">Aceitar Proposta</a>
-      <a href="{{contact_link}}" style="display: inline-block; background: white; color: #374151; padding: 14px 32px; text-decoration: none; border-radius: 6px; font-weight: 600; border: 1px solid #D1D5DB;">Tenho Dúvidas</a>
+      <a href="{{contact_link}}" style="display: inline-block; background: white; color: #374151; padding: 14px 32px; text-decoration: none; border-radius: 6px; font-weight: 600; border: 1px solid #999999;">Tenho Dúvidas</a>
     </div>
     
-    <p style="font-size: 13px; color: #6B7280; margin-top: 24px;">
+    <p style="font-size: 13px; color: #2D2D2D; margin-top: 24px;">
       Esta proposta é confidencial e destinada exclusivamente ao destinatário. Os termos aqui apresentados estão sujeitos à aprovação final e formalização contratual.
     </p>
     
@@ -480,7 +480,7 @@ Obrigado! 🙏`,
   </div>
   
   <div style="padding: 16px; background: #F3F4F6; border-radius: 0 0 8px 8px; text-align: center;">
-    <p style="margin: 0; font-size: 12px; color: #6B7280;">
+    <p style="margin: 0; font-size: 12px; color: #2D2D2D;">
       {{company_name}} | {{company_address}}<br/>
       Em caso de dúvidas: {{recruiter_email}} | {{recruiter_phone}}
     </p>
@@ -508,7 +508,7 @@ Obrigado! 🙏`,
   <p>Esperamos que esteja bem! Estamos entrando em contato para lembrar que sua proposta para a posição de <strong>{{job_title}}</strong> ainda aguarda resposta.</p>
   
   <div style="background: #F0F9FA; border: 1px solid #60BED1; border-radius: 8px; padding: 20px; margin: 20px 0; text-align: center;">
-    <p style="margin: 0 0 8px 0; font-size: 14px; color: #6B7280;">Proposta</p>
+    <p style="margin: 0 0 8px 0; font-size: 14px; color: #2D2D2D;">Proposta</p>
     <p style="margin: 0; font-size: 24px; font-weight: 700; color: #1F2937;">{{salary}}</p>
     <p style="margin: 8px 0 0 0; font-size: 14px; color: #60BED1;">Início: {{start_date}}</p>
   </div>

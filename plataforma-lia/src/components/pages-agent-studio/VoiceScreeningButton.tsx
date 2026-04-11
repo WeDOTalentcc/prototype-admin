@@ -102,7 +102,7 @@ export default function VoiceScreeningButton({
       <button
         onClick={() => setShowDialog(true)}
         className={size === "sm"
-          ? "p-1.5 rounded hover:bg-gray-100 text-gray-500 hover:text-gray-700 transition-colors"
+          ? "p-1.5 rounded hover:bg-lia-bg-tertiary text-lia-text-tertiary hover:text-lia-text-secondary transition-colors"
           : `${buttonStyles.outline} text-sm`
         }
         title="Iniciar triagem por voz"
@@ -135,7 +135,7 @@ export default function VoiceScreeningButton({
                     <label
                       key={opt.id}
                       className={`flex items-center gap-3 p-3 rounded-md border cursor-pointer transition-colors ${
-                        channel === opt.id ? "border-gray-900 bg-gray-50" : "border-gray-200 hover:bg-gray-50"
+                        channel === opt.id ? "border-lia-text-primary bg-lia-bg-secondary" : "border-lia-border-subtle hover:bg-lia-bg-secondary"
                       }`}
                     >
                       <input
@@ -143,9 +143,9 @@ export default function VoiceScreeningButton({
                         name="channel"
                         checked={channel === opt.id}
                         onChange={() => setChannel(opt.id)}
-                        className="rounded-full border-gray-300"
+                        className="rounded-full border-lia-border-default"
                       />
-                      <opt.icon className="w-4 h-4 text-gray-500" />
+                      <opt.icon className="w-4 h-4 text-lia-text-tertiary" />
                       <div>
                         <p className={textStyles.body}>{opt.label}</p>
                         <p className={textStyles.caption}>{opt.desc}</p>
@@ -190,15 +190,15 @@ export default function VoiceScreeningButton({
                 </div>
 
                 {/* Progress bar */}
-                <div className="w-full bg-gray-200 rounded-full h-1.5">
+                <div className="w-full bg-lia-interactive-active rounded-full h-1.5">
                   <div
-                    className="bg-gray-900 h-1.5 rounded-full transition-all"
+                    className="bg-lia-bg-inverse h-1.5 rounded-full transition-all"
                     style={{ width: `${progress * 100}%` }}
                   />
                 </div>
 
                 {/* Agent text */}
-                <div className="bg-gray-50 rounded-lg p-3">
+                <div className="bg-lia-bg-secondary rounded-lg p-3">
                   <p className={textStyles.body}>{agentText}</p>
                 </div>
 
@@ -241,7 +241,7 @@ function TextResponseInput({ onSubmit }: { onSubmit: (text: string) => void }) {
         value={text}
         onChange={e => setText(e.target.value)}
         placeholder="Resposta do candidato..."
-        className="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
+        className="flex-1 border border-lia-border-default rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
         onKeyDown={e => e.key === "Enter" && handleSubmit()}
       />
       <Button className={buttonStyles.primary} onClick={handleSubmit} disabled={isSending || !text.trim()}>

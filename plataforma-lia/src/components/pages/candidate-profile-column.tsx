@@ -74,7 +74,7 @@ export const CandidateProfileColumn: React.FC<CandidateProfileColumnProps> = ({ 
             <button
               key={tab}
               onClick={() => setActiveProfileTab(tab.toLowerCase().replace(' ', '-'))}
-              className={`px-4 py-3 text-sm font-medium transition-colors motion-reduce:transition-none border-b-2 ${
+              className={`px-4 py-3 text-sm font-medium transition-colors motion-reduce:transition-none rounded-lg ${
                 activeProfileTab === tab.toLowerCase().replace(' ', '-')
                   ? 'text-lia-text-primary border-lia-btn-primary-bg dark:border-lia-border-medium'
                   : 'text-lia-text-secondary border-transparent hover:text-lia-text-primary dark:hover:text-lia-text-inverse'

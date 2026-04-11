@@ -64,7 +64,7 @@ interface PoolCandidate {
 // ---------- Constants ----------
 
 const STAGES = [
-  { id: "discovered", label: "Descoberto", icon: "🔍", color: "bg-gray-100 text-gray-700" },
+  { id: "discovered", label: "Descoberto", icon: "🔍", color: "bg-lia-bg-tertiary text-lia-text-secondary" },
   { id: "contacted", label: "Contatado", icon: "📧", color: "bg-blue-100 text-blue-700" },
   { id: "screening", label: "Em triagem", icon: "🔄", color: "bg-yellow-100 text-yellow-700" },
   { id: "screened", label: "Triado", icon: "✅", color: "bg-green-100 text-green-700" },
@@ -96,7 +96,7 @@ function StageProgress({ stage }: { stage: string }) {
         <div
           key={s.id}
           className={`w-2 h-2 rounded-full ${
-            i <= stageIdx ? "bg-gray-900" : "bg-gray-200"
+            i <= stageIdx ? "bg-lia-bg-inverse" : "bg-lia-interactive-active"
           }`}
           title={s.label}
         />
@@ -208,7 +208,7 @@ export default function TalentPoolPage({
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="flex-shrink-0 px-6 py-4 border-b border-gray-200">
+      <div className="flex-shrink-0 px-6 py-4 border-b border-lia-border-subtle">
         <div className="flex items-center justify-between">
           <div>
             <h1 className={textStyles.titleLarge}>{pool.name}</h1>
@@ -350,10 +350,10 @@ function CandidatesTab({
       {/* Toolbar */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <Filter className="w-4 h-4 text-gray-500" />
+          <Filter className="w-4 h-4 text-lia-text-tertiary" />
           <button
             onClick={() => setStageFilter(null)}
-            className={`text-sm px-2 py-1 rounded ${!stageFilter ? "bg-gray-900 text-white" : "text-gray-600 hover:bg-gray-100"}`}
+            className={`text-sm px-2 py-1 rounded ${!stageFilter ? "bg-lia-bg-inverse text-white" : "text-lia-text-secondary hover:bg-lia-bg-tertiary"}`}
           >
             Todos
           </button>
@@ -361,7 +361,7 @@ function CandidatesTab({
             <button
               key={s.id}
               onClick={() => setStageFilter(s.id)}
-              className={`text-sm px-2 py-1 rounded ${stageFilter === s.id ? "bg-gray-900 text-white" : "text-gray-600 hover:bg-gray-100"}`}
+              className={`text-sm px-2 py-1 rounded ${stageFilter === s.id ? "bg-lia-bg-inverse text-white" : "text-lia-text-secondary hover:bg-lia-bg-tertiary"}`}
             >
               {s.icon} {s.label}
             </button>
@@ -383,13 +383,13 @@ function CandidatesTab({
       <div className="flex-1 overflow-auto">
         <table className="w-full">
           <thead>
-            <tr className="border-b border-gray-200">
+            <tr className="border-b border-lia-border-subtle">
               <th className="py-2 px-3 text-left w-8">
                 <input
                   type="checkbox"
                   checked={selectedIds.size === candidates.length && candidates.length > 0}
                   onChange={selectAll}
-                  className="rounded border-gray-300"
+                  className="rounded border-lia-border-default"
                 />
               </th>
               <th className={`py-2 px-3 text-left ${textStyles.labelSmall}`}>Candidato</th>
@@ -402,9 +402,9 @@ function CandidatesTab({
           </thead>
           <tbody>
             {isLoading ? (
-              <tr><td colSpan={7} className="py-8 text-center text-gray-400">Carregando...</td></tr>
+              <tr><td colSpan={7} className="py-8 text-center text-lia-text-tertiary">Carregando...</td></tr>
             ) : candidates.length === 0 ? (
-              <tr><td colSpan={7} className="py-8 text-center text-gray-400">Nenhum candidato neste banco</td></tr>
+              <tr><td colSpan={7} className="py-8 text-center text-lia-text-tertiary">Nenhum candidato neste banco</td></tr>
             ) : (
               candidates.map(tpc => {
                 const c = tpc.candidate
@@ -414,14 +414,14 @@ function CandidatesTab({
                 return (
                   <tr
                     key={tpc.id}
-                    className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
+                    className="border-b border-lia-border-subtle hover:bg-lia-bg-secondary transition-colors"
                   >
                     <td className="py-3 px-3">
                       <input
                         type="checkbox"
                         checked={selectedIds.has(tpc.id)}
                         onChange={() => toggleSelect(tpc.id)}
-                        className="rounded border-gray-300"
+                        className="rounded border-lia-border-default"
                       />
                     </td>
                     <td className="py-3 px-3">
@@ -447,7 +447,7 @@ function CandidatesTab({
                       {tpc.fit_score != null ? (
                         <span className={textStyles.body}>{tpc.fit_score}%</span>
                       ) : (
-                        <span className="text-gray-300">—</span>
+                        <span className="text-lia-text-disabled">—</span>
                       )}
                     </td>
                     <td className="py-3 px-3">
@@ -644,7 +644,7 @@ export function CreatePoolModal({ onClose, onCreated }: CreatePoolModalProps) {
               value={name}
               onChange={e => setName(e.target.value)}
               placeholder="Ex: Backend Sênior SP, Motoristas RJ..."
-              className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
+              className="mt-1 w-full border border-lia-border-default rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
             />
           </div>
 
@@ -655,7 +655,7 @@ export function CreatePoolModal({ onClose, onCreated }: CreatePoolModalProps) {
               onChange={e => setDescription(e.target.value)}
               placeholder="Objetivo deste banco de talentos..."
               rows={2}
-              className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 text-sm resize-none focus:outline-none focus:ring-1 focus:ring-gray-400"
+              className="mt-1 w-full border border-lia-border-default rounded-md px-3 py-2 text-sm resize-none focus:outline-none focus:ring-1 focus:ring-gray-400"
             />
           </div>
 
@@ -670,27 +670,27 @@ export function CreatePoolModal({ onClose, onCreated }: CreatePoolModalProps) {
               <p className={textStyles.caption}>Nenhum arquétipo cadastrado. Você pode vincular depois.</p>
             ) : (
               <div className="space-y-2 max-h-48 overflow-y-auto">
-                <label className="flex items-center gap-2 cursor-pointer p-2 rounded hover:bg-gray-50">
+                <label className="flex items-center gap-2 cursor-pointer p-2 rounded hover:bg-lia-bg-secondary">
                   <input
                     type="radio"
                     name="archetype"
                     checked={selectedArchetypeId === null}
                     onChange={() => setSelectedArchetypeId(null)}
-                    className="rounded-full border-gray-300"
+                    className="rounded-full border-lia-border-default"
                   />
                   <span className={textStyles.body}>Sem arquétipo (configurar depois)</span>
                 </label>
                 {archetypes.map(a => (
                   <label
                     key={a.id}
-                    className="flex items-center gap-2 cursor-pointer p-2 rounded hover:bg-gray-50"
+                    className="flex items-center gap-2 cursor-pointer p-2 rounded hover:bg-lia-bg-secondary"
                   >
                     <input
                       type="radio"
                       name="archetype"
                       checked={selectedArchetypeId === a.id}
                       onChange={() => setSelectedArchetypeId(a.id)}
-                      className="rounded-full border-gray-300"
+                      className="rounded-full border-lia-border-default"
                     />
                     <span className={textStyles.body}>{a.name}</span>
                     {a.seniority_level && (
@@ -783,7 +783,7 @@ function MoveToJobModal({ poolId, selectedIds, candidates, onClose, onMoved }: M
             <select
               value={selectedJobId || ""}
               onChange={e => setSelectedJobId(Number(e.target.value))}
-              className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+              className="mt-1 w-full border border-lia-border-default rounded-md px-3 py-2 text-sm"
             >
               <option value="">Selecione uma vaga...</option>
               {jobs.map(j => (
@@ -808,7 +808,7 @@ function MoveToJobModal({ poolId, selectedIds, candidates, onClose, onMoved }: M
                     checked={targetStage === s.id}
                     onChange={() => !s.disabled && setTargetStage(s.id)}
                     disabled={s.disabled}
-                    className="rounded-full border-gray-300"
+                    className="rounded-full border-lia-border-default"
                   />
                   <span className={textStyles.body}>{s.label}</span>
                   {s.disabled && (

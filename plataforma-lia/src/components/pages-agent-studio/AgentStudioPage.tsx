@@ -130,7 +130,7 @@ export default function AgentStudioPage({
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden bg-lia-bg-primary">
       {/* Header */}
-      <div className="px-6 py-5 border-b border-lia-border-subtle flex-shrink-0">
+      <div className="px-6 py-5 flex-shrink-0">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-lg font-semibold text-lia-text-primary">
@@ -160,7 +160,7 @@ export default function AgentStudioPage({
 
       {/* Stats Bar */}
       {agents.length > 0 && (
-        <div className="px-6 py-3 border-b border-lia-border-subtle flex-shrink-0">
+        <div className="px-6 py-3 flex-shrink-0">
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
