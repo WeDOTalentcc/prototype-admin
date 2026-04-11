@@ -30,7 +30,7 @@ export function ActivityFilters({
   onShowLiaModal,
 }: ActivityFiltersProps) {
   return (
-    <div className="p-3 border-b border-lia-border-subtle bg-lia-bg-primary" data-testid="activity-filters">
+    <div className="p-3 bg-lia-bg-primary" data-testid="activity-filters">
       <div className="flex items-center justify-between mb-2">
         <h4 className="text-xs font-medium text-lia-text-primary flex items-center gap-1.5">
           <Activity className="w-3.5 h-3.5 text-lia-text-primary" />
@@ -41,14 +41,14 @@ export function ActivityFilters({
           <select
             value={periodFilter}
             onChange={(e) => onPeriodFilterChange((e.target as HTMLSelectElement).value as PeriodFilterType)}
-            className="text-xs px-2 py-1 bg-lia-bg-primary border border-lia-border-subtle rounded-md focus:outline-none focus:ring-1 focus:ring-lia-border-default"
+            className="text-xs px-2 py-1 bg-lia-bg-primary border border-lia-border-subtle rounded-xl focus:outline-none focus:ring-1 focus:ring-lia-border-default"
           >
             <option value="7days">Últimos 7 dias</option>
             <option value="30days">Últimos 30 dias</option>
             <option value="3months">Últimos 3 meses</option>
             <option value="all">Todo período</option>
           </select>
-          <div className="flex items-center bg-lia-bg-primary rounded-md p-0.5 border border-lia-border-subtle">
+          <div className="flex items-center bg-lia-bg-primary rounded-xl p-0.5 border border-lia-border-subtle">
             <button
               onClick={() => onActivityViewChange('timeline')}
               className={`p-1 rounded-md transition-colors motion-reduce:transition-none ${activityView === 'timeline' ? 'bg-lia-interactive-active text-lia-text-primary' : 'text-lia-text-secondary hover:text-lia-text-primary'}`}

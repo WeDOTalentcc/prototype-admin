@@ -315,7 +315,7 @@ export function createKanbanCellRenderer(props: KanbanTableCellRendererProps) {
               <PopoverTrigger asChild>
                 <button
                   onClick={(e) => e.stopPropagation()}
-                  className="p-1.5 rounded-md hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover transition-colors motion-reduce:transition-none"
+                  className="p-1.5 rounded-xl hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover transition-colors motion-reduce:transition-none"
                   title="Mais ações"
                 >
                   <MoreVertical className="w-4 h-4 text-lia-text-tertiary" />
@@ -327,7 +327,7 @@ export function createKanbanCellRenderer(props: KanbanTableCellRendererProps) {
                     e.stopPropagation()
                     onOpenAnalysis(candidate)
                   }}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-sm text-lia-text-primary hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover rounded-md"
+                  className="w-full flex items-center gap-2 px-3 py-2 text-sm text-lia-text-primary hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover rounded-xl"
                 >
                   <Eye className="w-4 h-4" />
                   Ver perfil completo
@@ -337,7 +337,7 @@ export function createKanbanCellRenderer(props: KanbanTableCellRendererProps) {
                     e.stopPropagation()
                     onOpenTriagem(candidate)
                   }}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-sm text-lia-text-primary hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover rounded-md"
+                  className="w-full flex items-center gap-2 px-3 py-2 text-sm text-lia-text-primary hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover rounded-xl"
                 >
                   <Brain className="w-4 h-4 text-wedo-cyan" />
                   Ver triagem LIA
@@ -348,7 +348,7 @@ export function createKanbanCellRenderer(props: KanbanTableCellRendererProps) {
                     onSetScoreModalCandidate(candidate)
                     onSetShowBigFiveModal(true)
                   }}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-sm text-lia-text-primary hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover rounded-md"
+                  className="w-full flex items-center gap-2 px-3 py-2 text-sm text-lia-text-primary hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover rounded-xl"
                 >
                   <Fingerprint className="w-4 h-4 text-lia-text-secondary" />
                   Ver BigFive
@@ -364,7 +364,7 @@ export function createKanbanCellRenderer(props: KanbanTableCellRendererProps) {
                       openDecisionFlowModal(candidate, 'approve')
                     }
                   }}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-sm text-lia-text-primary hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover rounded-md"
+                  className="w-full flex items-center gap-2 px-3 py-2 text-sm text-lia-text-primary hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover rounded-xl"
                 >
                   <ThumbsUp className="w-4 h-4" />
                   Aprovar

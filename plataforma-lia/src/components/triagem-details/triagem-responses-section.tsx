@@ -26,7 +26,7 @@ export function TriagemResponsesSection({
 
   return (
     <div className="border border-lia-border-subtle bg-lia-bg-secondary rounded-lg overflow-hidden">
-      <div className={cn("cursor-pointer p-3 flex items-center justify-between hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none", expandedSections.has('responses') && "border-b border-lia-border-subtle")} onClick={() => toggleSection('responses')}>
+      <div className={cn("cursor-pointer p-3 flex items-center justify-between hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none", expandedSections.has('responses') && "")} onClick={() => toggleSection('responses')}>
         <h3 className="text-xs font-semibold flex items-center gap-2 text-lia-text-primary">
           <MessageSquare className="w-4 h-4 text-lia-text-secondary" />
           Respostas por Competência ({responses.length})

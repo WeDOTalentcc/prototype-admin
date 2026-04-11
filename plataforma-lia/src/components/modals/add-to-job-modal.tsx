@@ -324,7 +324,7 @@ const [jobs, setJobs] = useState<JobDisplay[]>([])
         ref={modalRef}
         className={`relative ${cardStyles.default} w-full max-w-lg mx-4 max-h-[90vh] overflow-hidden flex flex-col`}
       >
-        <div className="border-b border-lia-border-subtle p-5">
+        <div className=" p-5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Briefcase className="w-5 h-5 text-lia-text-secondary" />
@@ -345,7 +345,7 @@ const [jobs, setJobs] = useState<JobDisplay[]>([])
 
         <div className="p-4 space-y-4 flex-1 overflow-hidden flex flex-col">
           {isOverLimit && (
-            <div className="flex items-start gap-2 p-3 bg-status-warning/10 dark:bg-status-warning/20 border border-status-warning/30 dark:border-status-warning/30 rounded-md">
+            <div className="flex items-start gap-2 p-3 bg-status-warning/10 dark:bg-status-warning/20 border border-status-warning/30 dark:border-status-warning/30 rounded-xl">
               <AlertTriangle className="w-4 h-4 text-status-warning mt-0.5 flex-shrink-0" />
               <div>
                 <p className="text-xs font-medium text-status-warning" aria-live="polite" aria-atomic="true">
@@ -400,7 +400,7 @@ const [jobs, setJobs] = useState<JobDisplay[]>([])
             />
           </div>
 
-          <ScrollArea className="flex-1 border border-lia-border-subtle rounded-md min-h-card-lg max-h-[220px]">
+          <ScrollArea className="flex-1 border border-lia-border-subtle rounded-xl min-h-card-lg max-h-[220px]">
             {isLoading ? (
               <div className="flex flex-col items-center justify-center h-card-lg text-lia-text-secondary" role="status" aria-live="polite" aria-label="Carregando...">
                 <Loader2 className="w-6 h-6 animate-spin motion-reduce:animate-none text-lia-text-tertiary mb-2" />
@@ -468,7 +468,7 @@ const [jobs, setJobs] = useState<JobDisplay[]>([])
           </ScrollArea>
 
           {duplicateIds.length > 0 && selectedJobId && (
-            <div className="flex items-start gap-2 p-3 bg-status-warning/10 dark:bg-status-warning/20 border border-status-warning/30 dark:border-status-warning/30 rounded-md">
+            <div className="flex items-start gap-2 p-3 bg-status-warning/10 dark:bg-status-warning/20 border border-status-warning/30 dark:border-status-warning/30 rounded-xl">
               <AlertTriangle className="w-4 h-4 text-status-warning mt-0.5 flex-shrink-0" />
               <div className="flex-1">
                 <p className="text-xs font-medium text-status-warning" aria-live="polite" aria-atomic="true">

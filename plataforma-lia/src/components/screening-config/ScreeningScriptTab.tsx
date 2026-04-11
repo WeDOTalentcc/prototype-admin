@@ -204,7 +204,7 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
       </div>
 
       {/* 1. Card Performance da Triagem */}
-      <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-md">
+      <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-xl">
         <h5 className="text-xs font-semibold text-lia-text-primary flex items-center gap-1.5 mb-3">
           <BarChart3 className="w-3.5 h-3.5 text-lia-text-secondary" />
           Performance da Triagem
@@ -274,7 +274,7 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
       </div>
 
       {/* 2. Skills WSI Utilizadas */}
-      <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-md">
+      <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-xl">
         <h5 className="text-xs font-semibold text-lia-text-primary flex items-center gap-1.5 mb-2">
           <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
           Skills WSI Avaliadas
@@ -419,7 +419,7 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
                     {/* Non-editable blocks show automatic WSI messages */}
                     {!block.editable ? (
                       WSI_AUTOMATIC_MESSAGES[block.id] ? (
-                        <div className="rounded-md border border-lia-border-default bg-lia-bg-secondary/50 overflow-hidden">
+                        <div className="rounded-xl border border-lia-border-default bg-lia-bg-secondary/50 overflow-hidden">
                           <div className="px-2.5 py-1.5 border-b border-lia-btn-primary-bg/10 bg-lia-bg-tertiary">
                             <p className="text-xs font-medium text-lia-text-primary">
                               {WSI_AUTOMATIC_MESSAGES[block.id].title}
@@ -437,7 +437,7 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
                           </div>
                         </div>
                       ) : (
-                        <div className="p-2.5 bg-lia-bg-primary/60 border border-lia-border-subtle rounded-md">
+                        <div className="p-2.5 bg-lia-bg-primary/60 border border-lia-border-subtle rounded-xl">
                           <p className="text-micro text-lia-text-secondary italic">
                             {block.description}
                           </p>
@@ -450,7 +450,7 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
                       <>
                         {/* Questions in this block */}
                         {blockQuestions.length === 0 ? (
-                          <div className="p-3 bg-lia-bg-secondary border border-lia-border-subtle border-dashed rounded-md text-center">
+                          <div className="p-3 bg-lia-bg-secondary border border-lia-border-subtle border-dashed rounded-xl text-center">
                             <p className="text-micro text-lia-text-secondary">
                               Nenhuma pergunta neste bloco
                             </p>
@@ -459,7 +459,7 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
                           blockQuestions.map((item: ScreeningQuestion, idx: number) => (
                             <div 
                               key={item.id || idx} 
-                              className="p-2 bg-lia-bg-primary border border-lia-border-subtle rounded-md transition-colors motion-reduce:transition-none"
+                              className="p-2 bg-lia-bg-primary border border-lia-border-subtle rounded-xl transition-colors motion-reduce:transition-none"
                             >
                               <div className="flex items-start gap-2">
                                 <div className="flex-1 min-w-0">
@@ -501,14 +501,14 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
       </div>
 
       {/* 4. Canais + Configurações Agrupados */}
-      <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-md">
+      <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-xl">
         <h5 className="text-xs font-semibold text-lia-text-primary flex items-center gap-1.5 mb-3">
           <Settings className="w-3.5 h-3.5 text-lia-text-secondary" />
           Canais e Configurações
         </h5>
 
         {/* Canais em linha */}
-        <div className="flex items-center gap-3 mb-3 pb-3 border-b border-lia-border-subtle">
+        <div className="flex items-center gap-3 mb-3 pb-3">
           <span className="text-micro text-lia-text-secondary">Canais:</span>
           <div className="flex items-center gap-2">
             <div className={`flex items-center gap-1 px-2 py-1 rounded-md ${(previewJob.screeningConfig?.channels?.whatsapp?.enabled ?? true) ? 'bg-status-success/10 text-status-success' : 'bg-lia-bg-tertiary text-lia-text-secondary'}`}>
@@ -564,7 +564,7 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
       </div>
 
       {/* 5. Agendamento Automático */}
-      <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-md">
+      <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-xl">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
             <CalendarCheck className="w-3.5 h-3.5 text-lia-text-secondary" />
@@ -577,19 +577,19 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
         <p className="text-micro text-lia-text-secondary mb-2">Aprovados na triagem são agendados automaticamente para entrevista</p>
 
         <div className="grid grid-cols-2 gap-2">
-          <div className="flex items-center justify-between p-1.5 bg-lia-bg-secondary rounded-md">
+          <div className="flex items-center justify-between p-1.5 bg-lia-bg-secondary rounded-xl">
             <span className="text-micro text-lia-text-secondary">Score Mínimo</span>
             <span className="text-micro font-medium text-lia-text-primary">{previewJob.screeningConfig?.scheduling?.min_score_for_auto ?? 75}%</span>
           </div>
-          <div className="flex items-center justify-between p-1.5 bg-lia-bg-secondary rounded-md">
+          <div className="flex items-center justify-between p-1.5 bg-lia-bg-secondary rounded-xl">
             <span className="text-micro text-lia-text-secondary">Calendário</span>
             <span className="text-micro font-medium text-lia-text-primary">{previewJob.screeningConfig?.scheduling?.calendar_provider || 'Microsoft'}</span>
           </div>
-          <div className="flex items-center justify-between p-1.5 bg-lia-bg-secondary rounded-md">
+          <div className="flex items-center justify-between p-1.5 bg-lia-bg-secondary rounded-xl">
             <span className="text-micro text-lia-text-secondary">Horários</span>
             <span className="text-micro font-medium text-lia-text-primary">{previewJob.screeningConfig?.scheduling?.available_hours || '9h-18h'}</span>
           </div>
-          <div className="flex items-center justify-between p-1.5 bg-lia-bg-secondary rounded-md">
+          <div className="flex items-center justify-between p-1.5 bg-lia-bg-secondary rounded-xl">
             <span className="text-micro text-lia-text-secondary">Duração</span>
             <span className="text-micro font-medium text-lia-text-primary">{previewJob.screeningConfig?.scheduling?.interview_duration_min ?? 45}min</span>
           </div>
@@ -597,7 +597,7 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
       </div>
 
       {/* 6. Insights LIA */}
-      <div className="p-2.5 bg-lia-bg-secondary rounded-md border border-lia-border-subtle">
+      <div className="p-2.5 bg-lia-bg-secondary rounded-xl border border-lia-border-subtle">
         <div className="flex items-start gap-2">
           <Lightbulb className="w-3.5 h-3.5 text-lia-text-secondary mt-0.5 flex-shrink-0" />
           <div className="flex-1">

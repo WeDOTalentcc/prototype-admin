@@ -67,10 +67,10 @@ export function ScreeningChannelsModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-md rounded-md bg-lia-bg-primary border border-lia-border-subtle">
-        <DialogHeader className="pb-4 border-b border-lia-border-subtle">
+      <DialogContent className="max-w-md rounded-xl bg-lia-bg-primary border border-lia-border-subtle">
+        <DialogHeader className="pb-4">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-md flex items-center justify-center bg-lia-bg-tertiary">
+            <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-lia-bg-tertiary">
               <MessageSquare className="w-4 h-4 text-lia-text-secondary" />
             </div>
             <div>
@@ -85,7 +85,7 @@ export function ScreeningChannelsModal({
         </DialogHeader>
 
         <div className="space-y-4 py-4">
-          <div className="flex items-center justify-between p-3 rounded-md bg-lia-bg-secondary border border-lia-border-subtle">
+          <div className="flex items-center justify-between p-3 rounded-xl bg-lia-bg-secondary border border-lia-border-subtle">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-md bg-status-success/10 flex items-center justify-center">
                 <MessageSquare className="w-4 h-4 text-status-success" />
@@ -101,7 +101,7 @@ export function ScreeningChannelsModal({
             />
           </div>
 
-          <div className="flex items-center justify-between p-3 rounded-md bg-lia-bg-secondary border border-lia-border-subtle">
+          <div className="flex items-center justify-between p-3 rounded-xl bg-lia-bg-secondary border border-lia-border-subtle">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-md bg-wedo-cyan/10 flex items-center justify-center">
                 <Globe className="w-4 h-4 text-wedo-cyan-dark" />
@@ -117,7 +117,7 @@ export function ScreeningChannelsModal({
             />
           </div>
 
-          <div className="flex items-center justify-between p-3 rounded-md bg-lia-bg-secondary border border-lia-border-subtle">
+          <div className="flex items-center justify-between p-3 rounded-xl bg-lia-bg-secondary border border-lia-border-subtle">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-md bg-wedo-orange/10 flex items-center justify-center">
                 <Phone className="w-4 h-4 text-wedo-orange" />

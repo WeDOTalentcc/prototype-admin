@@ -58,7 +58,7 @@ export function SkipCompetenciesWarningModal({
           <Button
             variant="outline"
             onClick={onClose}
-            className="flex-1 h-10 rounded-md border-lia-btn-primary-bg text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors cursor-pointer"
+            className="flex-1 h-10 rounded-xl border-lia-btn-primary-bg text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors cursor-pointer"
           >
             Voltar e completar
           </Button>

@@ -366,11 +366,11 @@ export function WSIVoiceScreeningStatus({
                     </div>
 
                     <div className="grid grid-cols-2 gap-3">
-                      <div className="p-2 bg-lia-bg-primary rounded-md text-center">
+                      <div className="p-2 bg-lia-bg-primary rounded-xl text-center">
                         <div className="text-lg font-semibold">{result.technical_wsi.toFixed(1)}</div>
                         <div className="text-xs text-muted-foreground">Técnico</div>
                       </div>
-                      <div className="p-2 bg-lia-bg-primary rounded-md text-center">
+                      <div className="p-2 bg-lia-bg-primary rounded-xl text-center">
                         <div className="text-lg font-semibold">{result.behavioral_wsi.toFixed(1)}</div>
                         <div className="text-xs text-muted-foreground">Comportamental</div>
                       </div>

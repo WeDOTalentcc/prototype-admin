@@ -159,7 +159,7 @@ export function IntegrationDetailDrawer({
         side="right"
         className="w-full sm:max-w-md overflow-y-auto bg-lia-bg-primary dark:bg-lia-bg-secondary border-l border-lia-border-subtle dark:border-lia-border-subtle"
       >
-        <SheetHeader className="pb-4 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+        <SheetHeader className="pb-4 dark:border-lia-border-subtle">
           <div className="flex items-start gap-3">
             <div
               className={cn(
@@ -238,7 +238,7 @@ export function IntegrationDetailDrawer({
                   <Badge variant="default" className="text-[10px] px-2.5 py-1 cursor-default">
                     {cap.name}
                   </Badge>
-                  <div className="invisible group-hover:visible absolute bottom-full left-0 mb-1 px-2 py-1 bg-lia-bg-inverse dark:bg-lia-bg-primary text-lia-text-inverse dark:text-lia-text-primary text-[10px] rounded-md whitespace-nowrap z-10 shadow-md">
+                  <div className="invisible group-hover:visible absolute bottom-full left-0 mb-1 px-2 py-1 bg-lia-bg-inverse dark:bg-lia-bg-primary text-lia-text-inverse dark:text-lia-text-primary text-[10px] rounded-xl whitespace-nowrap z-10 shadow-md">
                     {cap.description}
                   </div>
                 </div>
@@ -288,7 +288,7 @@ export function IntegrationDetailDrawer({
           {integration.id === "google-calendar" && (
             <div className="space-y-3">
               {errorMsg && (
-                <div className="flex items-center gap-2 p-2 rounded-md bg-status-error/10 border border-status-error/30 dark:border-status-error/30">
+                <div className="flex items-center gap-2 p-2 rounded-xl bg-status-error/10 border border-status-error/30 dark:border-status-error/30">
                   <AlertCircle className="w-3.5 h-3.5 text-status-error flex-shrink-0" />
                   <p className={cn(textStyles.body, "text-status-error dark:text-status-error")}>
                     {errorMsg}

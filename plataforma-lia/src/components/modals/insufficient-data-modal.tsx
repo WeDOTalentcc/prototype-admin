@@ -84,7 +84,7 @@ export function InsufficientDataModal({
               </p>
               
               {requiredMissing.length > 0 && (
-                <div className="p-3 rounded-md bg-status-error/10 border border-status-error/30">
+                <div className="p-3 rounded-xl bg-status-error/10 border border-status-error/30">
                   <h4 className="text-xs font-semibold text-status-error mb-2 flex items-center gap-1.5">
                     <XCircle className="w-4 h-4" />
                     Informações obrigatórias faltando
@@ -106,7 +106,7 @@ export function InsufficientDataModal({
               )}
               
               {optionalMissing.length > 0 && (
-                <div className="p-3 rounded-md bg-status-warning/10 border border-status-warning/30">
+                <div className="p-3 rounded-xl bg-status-warning/10 border border-status-warning/30">
                   <h4 className="text-xs font-semibold text-status-warning mb-2 flex items-center gap-1.5">
                     <AlertTriangle className="w-4 h-4" />
                     Informações recomendadas para melhor análise
@@ -128,7 +128,7 @@ export function InsufficientDataModal({
               )}
               
               {requirements.filter(r => r.hasData).length > 0 && (
-                <div className="p-3 rounded-md bg-status-success/10 border border-status-success/30">
+                <div className="p-3 rounded-xl bg-status-success/10 border border-status-success/30">
                   <h4 className="text-xs font-semibold text-status-success mb-2 flex items-center gap-1.5">
                     <CheckCircle2 className="w-4 h-4" />
                     Informações disponíveis

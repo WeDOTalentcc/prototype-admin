@@ -108,7 +108,7 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
               placeholder="Buscar por título, ID, departamento..."
               value={searchTerm}
               onChange={(e) => onSearchTermChange(e.target.value)}
-              className="w-full pl-9 pr-8 py-2 text-xs rounded-md border focus:outline-none focus:border-lia-text-primary transition-colors motion-reduce:transition-none border border-lia-border-subtle bg-lia-bg-secondary"
+              className="w-full pl-9 pr-8 py-2 text-xs rounded-xl border focus:outline-none focus:border-lia-text-primary transition-colors motion-reduce:transition-none border border-lia-border-subtle bg-lia-bg-secondary"
             />
             {searchTerm && (
               <button
@@ -389,7 +389,7 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
               Métricas
             </h4>
             <div className="space-y-2">
-              <label className="flex items-center gap-2 cursor-pointer text-xs p-2 hover:bg-lia-interactive-hover rounded-md bg-lia-bg-secondary">
+              <label className="flex items-center gap-2 cursor-pointer text-xs p-2 hover:bg-lia-interactive-hover rounded-xl bg-lia-bg-secondary">
                 <input
                   type="checkbox"
                   className="w-3 h-3"
@@ -398,7 +398,7 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
                 />
                 <span className="text-lia-text-secondary">Pipeline vazio (sem candidatos)</span>
               </label>
-              <label className="flex items-center gap-2 cursor-pointer text-xs p-2 hover:bg-lia-interactive-hover rounded-md bg-lia-bg-secondary">
+              <label className="flex items-center gap-2 cursor-pointer text-xs p-2 hover:bg-lia-interactive-hover rounded-xl bg-lia-bg-secondary">
                 <input
                   type="checkbox"
                   className="w-3 h-3"
@@ -437,7 +437,7 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
                 {savedSearches.map((search) => (
                   <div
                     key={search.id}
-                    className="group flex items-center justify-between p-2 bg-lia-bg-secondary rounded-md hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none cursor-pointer"
+                    className="group flex items-center justify-between p-2 bg-lia-bg-secondary rounded-xl hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none cursor-pointer"
                     onClick={() => onApplySavedSearch(search.id)}
                   >
                     <div className="flex-1 min-w-0">
@@ -483,7 +483,7 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
                 ))}
               </div>
             ) : (
-              <div className="text-center py-3 bg-lia-bg-secondary rounded-md">
+              <div className="text-center py-3 bg-lia-bg-secondary rounded-xl">
                 <Bookmark className="w-5 h-5 text-lia-text-secondary mx-auto mb-1" />
                 <p className="text-xs text-lia-text-tertiary">Nenhuma busca salva</p>
                 <p className="text-micro text-lia-text-secondary mt-0.5">Aplique filtros e clique em "Salvar Busca"</p>

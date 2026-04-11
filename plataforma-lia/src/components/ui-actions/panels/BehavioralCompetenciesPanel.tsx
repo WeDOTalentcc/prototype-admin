@@ -79,8 +79,8 @@ export function BehavioralCompetenciesPanel({
 
   return (
     <div className="space-y-6">
-      <Card className="rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
-        <CardHeader className="pb-3 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+      <Card className="rounded-xl dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
+        <CardHeader className="pb-3 dark:border-lia-border-subtle">
           <CardTitle className="text-sm flex items-center justify-between font-sans">
             <span className="flex items-center gap-2">
               🧠 Competências Comportamentais
@@ -103,8 +103,8 @@ export function BehavioralCompetenciesPanel({
         </CardContent>
       </Card>
 
-      <Card className="rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
-        <CardHeader className="pb-3 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+      <Card className="rounded-xl dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
+        <CardHeader className="pb-3 dark:border-lia-border-subtle">
           <CardTitle className="text-sm font-sans">📊 Perfil de Competências</CardTitle>
         </CardHeader>
         <CardContent>
@@ -160,7 +160,7 @@ function CompetencyCard({
   onLevelChange: (level: number) => void
 }) {
   return (
-    <div className="border rounded-md overflow-hidden dark:border-lia-border-subtle dark:bg-lia-bg-secondary">
+    <div className="border rounded-xl overflow-hidden dark:border-lia-border-subtle dark:bg-lia-bg-secondary">
       <button
         type="button"
         className="w-full text-left p-3 hover:bg-muted/50 dark:hover:bg-lia-bg-inverse/50 transition-colors motion-reduce:transition-none"
@@ -246,7 +246,7 @@ function CompetencyCard({
                 {competency.questions.map((question, index) => (
                   <li
                     key={`question-${index}`}
-                    className="text-xs p-2 rounded-md border italic dark:border-lia-border-subtle dark:bg-lia-bg-secondary bg-lia-bg-primary border-lia-border-subtle"
+                    className="text-xs p-2 rounded-xl border italic dark:border-lia-border-subtle dark:bg-lia-bg-secondary bg-lia-bg-primary border-lia-border-subtle"
                   >
                     "{question}"
                   </li>

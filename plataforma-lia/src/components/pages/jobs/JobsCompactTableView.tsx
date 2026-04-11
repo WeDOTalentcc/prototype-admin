@@ -313,7 +313,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                   <React.Fragment key={job.id}>
                     <tr
                       data-testid={`job-row-${job.id}`}
-                      className="border-b border-lia-border-subtle hover:bg-lia-interactive-hover text-xs cursor-pointer transition-colors motion-reduce:transition-none"
+                      className=" hover:bg-lia-interactive-hover text-xs cursor-pointer transition-colors motion-reduce:transition-none"
                       onClick={() => onJobPreview(job)}
                     >
                       {jobsColumnOrder.filter((columnId) => {

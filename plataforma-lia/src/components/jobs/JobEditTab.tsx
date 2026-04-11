@@ -81,7 +81,7 @@ export function JobEditTab({
     <div className="space-y-4">
       {isCreationMode && (
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3 flex-1 bg-status-warning/10 dark:bg-status-warning/20 border border-status-warning/30 dark:border-status-warning/30 rounded-md px-4 py-3">
+          <div className="flex items-center gap-3 flex-1 bg-status-warning/10 dark:bg-status-warning/20 border border-status-warning/30 dark:border-status-warning/30 rounded-xl px-4 py-3">
             <Info className="w-4 h-4 text-status-warning flex-shrink-0" />
             <p className="text-sm text-status-warning font-['Open_Sans',sans-serif]">
               Vaga em rascunho — preencha os dados e publique quando estiver pronta
@@ -90,7 +90,7 @@ export function JobEditTab({
           <Button
             onClick={onPublish}
             disabled={isPublishing}
-            className="ml-3 gap-2 px-5 py-2.5 text-sm font-medium rounded-md bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover dark:hover:bg-lia-interactive-active flex-shrink-0"
+            className="ml-3 gap-2 px-5 py-2.5 text-sm font-medium rounded-xl bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover dark:hover:bg-lia-interactive-active flex-shrink-0"
           >
             {isPublishing ? (
               <>
@@ -109,7 +109,7 @@ export function JobEditTab({
 
       <div className="flex gap-6">
         <div className="flex-shrink-0 w-[220px]">
-          <Card className="border border-lia-border-subtle bg-lia-bg-primary rounded-md overflow-hidden">
+          <Card className="border border-lia-border-subtle bg-lia-bg-primary rounded-xl overflow-hidden">
             <nav className="p-3 h-full overflow-y-auto">
               <div className="mb-2">
                 <span className="text-micro font-semibold text-lia-text-tertiary uppercase tracking-wider px-3 font-['Open_Sans',sans-serif]">

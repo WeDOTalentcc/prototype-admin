@@ -291,9 +291,9 @@ function AceitarConviteContent() {
 
           {invitationInfo && (
             <div className="space-y-4 mb-6">
-              <div className="p-4 bg-lia-bg-secondary rounded-md border border-lia-border-subtle">
+              <div className="p-4 bg-lia-bg-secondary rounded-xl border border-lia-border-subtle">
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-md flex items-center justify-center">
+                  <div className="w-10 h-10 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-xl flex items-center justify-center">
                     <Building2 className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
                   </div>
                   <div>
@@ -334,7 +334,7 @@ function AceitarConviteContent() {
           )}
 
           {error && (
-            <div className="mb-4 p-3 bg-status-error/10 border border-status-error/30 rounded-md flex items-start gap-2">
+            <div className="mb-4 p-3 bg-status-error/10 border border-status-error/30 rounded-xl flex items-start gap-2">
               <AlertCircle className="h-4 w-4 text-status-error mt-0.5 flex-shrink-0" />
               <p className="text-xs text-status-error">{error}</p>
             </div>

@@ -134,7 +134,7 @@ function ResetPasswordContent() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Mínimo 8 caracteres"
-                  className="w-full px-4 py-3 pr-12 border border-lia-border-subtle rounded-md focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg focus:border-lia-btn-primary-bg transition-colors motion-reduce:transition-none"
+                  className="w-full px-4 py-3 pr-12 border border-lia-border-subtle rounded-xl focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg focus:border-lia-btn-primary-bg transition-colors motion-reduce:transition-none"
                   required
                   aria-required="true"
                   aria-describedby={error ? "reset-error" : undefined}
@@ -161,7 +161,7 @@ function ResetPasswordContent() {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="Digite a senha novamente"
-                  className="w-full px-4 py-3 pr-12 border border-lia-border-subtle rounded-md focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg focus:border-lia-btn-primary-bg transition-colors motion-reduce:transition-none"
+                  className="w-full px-4 py-3 pr-12 border border-lia-border-subtle rounded-xl focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg focus:border-lia-btn-primary-bg transition-colors motion-reduce:transition-none"
                   required
                   aria-required="true"
                   aria-describedby={error ? "reset-error" : undefined}
@@ -178,7 +178,7 @@ function ResetPasswordContent() {
             </div>
 
             {error && (
-              <div id="reset-error" role="alert" className="p-3 rounded-md bg-status-error/10 border border-status-error/30">
+              <div id="reset-error" role="alert" className="p-3 rounded-xl bg-status-error/10 border border-status-error/30">
                 <p className="text-status-error text-sm font-medium">
                   <span aria-hidden="true">⚠ </span>
                   {error}

@@ -212,7 +212,7 @@ export function OnboardingController({ children, forceOnboarding = false }: Onbo
 
   return (
     <div className="min-h-screen bg-lia-bg-primary flex items-center justify-center p-4">
-      <div className="bg-lia-bg-primary rounded-md p-8 max-w-md w-full text-center">
+      <div className="bg-lia-bg-primary rounded-xl p-8 max-w-md w-full text-center">
         <h2 className="text-2xl font-bold text-lia-text-primary mb-4">
           Acesso Restrito
         </h2>
@@ -222,7 +222,7 @@ export function OnboardingController({ children, forceOnboarding = false }: Onbo
         <div className="space-y-3">
           <button
             onClick={() => window.location.href = '/login'}
-            className="w-full text-white px-6 py-2 rounded-md hover:opacity-90 transition-colors motion-reduce:transition-none bg-lia-btn-primary-bg"
+            className="w-full text-white px-6 py-2 rounded-xl hover:opacity-90 transition-colors motion-reduce:transition-none bg-lia-btn-primary-bg"
           >
             Fazer Login
           </button>
@@ -293,7 +293,7 @@ function SetupIntroModal({ onStartSetup, onSkip }: { onStartSetup: () => void, o
             </ul>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
-              <div className="flex items-center gap-3 bg-lia-bg-secondary rounded-md p-4">
+              <div className="flex items-center gap-3 bg-lia-bg-secondary rounded-xl p-4">
                 <Clock className="w-5 h-5 text-lia-text-secondary" />
                 <div>
                   <p className="lia-text-bold text-sm">Tempo estimado</p>
@@ -301,7 +301,7 @@ function SetupIntroModal({ onStartSetup, onSkip }: { onStartSetup: () => void, o
                 </div>
               </div>
               
-              <div className="flex items-center gap-3 bg-lia-bg-secondary rounded-md p-4">
+              <div className="flex items-center gap-3 bg-lia-bg-secondary rounded-xl p-4">
                 <Lightbulb className="w-5 h-5 text-lia-text-secondary" />
                 <div>
                   <p className="lia-text-bold text-sm">Pode continuar depois</p>
@@ -310,7 +310,7 @@ function SetupIntroModal({ onStartSetup, onSkip }: { onStartSetup: () => void, o
               </div>
             </div>
 
-            <div className="flex items-start gap-3 bg-status-warning/10 border border-status-warning/30 rounded-md p-4">
+            <div className="flex items-start gap-3 bg-status-warning/10 border border-status-warning/30 rounded-xl p-4">
               <AlertTriangle className="w-5 h-5 text-status-warning flex-shrink-0 mt-0.5" />
               <p className="text-sm text-status-warning">
                 Preencher essas informações é extremamente importante para que a plataforma seja configurada e customizada de forma adequada.

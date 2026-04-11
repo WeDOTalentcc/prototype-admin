@@ -593,7 +593,7 @@ export function InteractiveStageCell({
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-md" onClick={(e) => e.stopPropagation()}>
-          <DialogHeader className="px-6 py-4 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+          <DialogHeader className="px-6 py-4 dark:border-lia-border-subtle">
             <DialogTitle className="flex items-center gap-3 font-['Open_Sans',sans-serif] text-base font-semibold text-lia-text-primary">
               <div className="w-10 h-10 rounded-full bg-lia-bg-tertiary dark:bg-lia-bg-secondary flex items-center justify-center">
                 <ArrowRight className="w-5 h-5 text-lia-text-secondary" />
@@ -604,7 +604,7 @@ export function InteractiveStageCell({
           
           <div className="space-y-5 py-3">
             {candidateName && (
-              <div className="flex items-center gap-3 p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 rounded-md border border-lia-border-subtle">
+              <div className="flex items-center gap-3 p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 rounded-xl border border-lia-border-subtle">
                 {candidateAvatar && (
                   <NextImage src={candidateAvatar} alt={candidateName} width={40} height={40} className="w-10 h-10 rounded-full" />
                 )}
@@ -658,7 +658,7 @@ export function InteractiveStageCell({
             <div className="flex gap-2 pt-3 border-t border-lia-border-subtle dark:border-lia-border-subtle">
               <Button 
                 variant="outline" 
-                className="flex-1 text-xs font-semibold rounded-md transition-colors motion-reduce:transition-none duration-150 font-['Open_Sans'] bg-lia-bg-primary text-lia-text-primary border border-lia-border-default hover:bg-lia-bg-secondary hover:border-lia-border-medium dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-lia-bg-inverse"
+                className="flex-1 text-xs font-semibold rounded-xl transition-colors motion-reduce:transition-none duration-150 font-['Open_Sans'] bg-lia-bg-primary text-lia-text-primary border border-lia-border-default hover:bg-lia-bg-secondary hover:border-lia-border-medium dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-lia-bg-inverse"
                 onClick={() => {
                   setOpen(false)
                   setSelectedStage('')
@@ -667,7 +667,7 @@ export function InteractiveStageCell({
                 Cancelar
               </Button>
               <Button 
-                className="flex-1 text-xs font-semibold rounded-md transition-colors motion-reduce:transition-none duration-150 font-['Open_Sans'] bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover active:bg-lia-bg-inverse dark:hover:bg-lia-interactive-active"
+                className="flex-1 text-xs font-semibold rounded-xl transition-colors motion-reduce:transition-none duration-150 font-['Open_Sans'] bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover active:bg-lia-bg-inverse dark:hover:bg-lia-interactive-active"
                 disabled={!selectedStage}
                 onClick={handleConfirm}
               >

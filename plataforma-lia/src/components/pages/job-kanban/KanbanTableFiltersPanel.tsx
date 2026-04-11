@@ -27,9 +27,9 @@ export const KanbanTableFiltersPanel = React.memo(function KanbanTableFiltersPan
 }: KanbanTableFiltersPanelProps) {
   return (
     <div className="flex-shrink-0 w-72 transition-colors motion-reduce:transition-none duration-300">
-      <Card className="h-[calc(100vh-12rem)] flex flex-col overflow-hidden border border-lia-border-subtle dark:border-lia-border-subtle rounded-md">
+      <Card className="h-[calc(100vh-12rem)] flex flex-col overflow-hidden border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl">
         {/* Header do Painel de Filtros */}
-        <div className="flex-shrink-0 p-4 border-b border-lia-border-subtle">
+        <div className="flex-shrink-0 p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Filter className="w-4 h-4 text-lia-text-secondary" />
@@ -71,7 +71,7 @@ export const KanbanTableFiltersPanel = React.memo(function KanbanTableFiltersPan
                         onTableStageFilterChange(tableStageFilter.filter(s => s !== stage.id))
                       }
                     }}
-                    className="w-3.5 h-3.5 rounded-md border-lia-border-default text-lia-text-primary focus:ring-lia-btn-primary-bg/20"
+                    className="w-3.5 h-3.5 rounded-xl border-lia-border-default text-lia-text-primary focus:ring-lia-btn-primary-bg/20"
                   />
                   <span className="text-xs text-lia-text-secondary">
                     {stage.displayName}
@@ -108,7 +108,7 @@ export const KanbanTableFiltersPanel = React.memo(function KanbanTableFiltersPan
                 <label key={status} className="flex items-center gap-2 cursor-pointer">
                   <input
                     type="checkbox"
-                    className="w-3.5 h-3.5 rounded-md border-lia-border-default text-lia-text-primary focus:ring-lia-btn-primary-bg/20"
+                    className="w-3.5 h-3.5 rounded-xl border-lia-border-default text-lia-text-primary focus:ring-lia-btn-primary-bg/20"
                   />
                   <span className="text-xs text-lia-text-secondary">
                     {status}
@@ -128,7 +128,7 @@ export const KanbanTableFiltersPanel = React.memo(function KanbanTableFiltersPan
                 <label key={modelo} className="flex items-center gap-2 cursor-pointer">
                   <input
                     type="checkbox"
-                    className="w-3.5 h-3.5 rounded-md border-lia-border-default text-lia-text-primary focus:ring-lia-btn-primary-bg/20"
+                    className="w-3.5 h-3.5 rounded-xl border-lia-border-default text-lia-text-primary focus:ring-lia-btn-primary-bg/20"
                   />
                   <span className="text-xs text-lia-text-secondary">
                     {modelo}
@@ -146,7 +146,7 @@ export const KanbanTableFiltersPanel = React.memo(function KanbanTableFiltersPan
               onClick={() => {
                 onTableStageFilterChange([])
               }}
-              className="flex-1 px-3 py-2 text-xs font-medium text-lia-text-secondary bg-lia-bg-primary border border-lia-border-subtle rounded-md hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none"
+              className="flex-1 px-3 py-2 text-xs font-medium text-lia-text-secondary bg-lia-bg-primary border border-lia-border-subtle rounded-xl hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none"
             >
               Limpar
             </button>

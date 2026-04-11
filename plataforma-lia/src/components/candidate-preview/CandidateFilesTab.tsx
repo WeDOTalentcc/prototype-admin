@@ -31,7 +31,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
   return (
     <div className="flex flex-col h-full">
       {/* Header com botão de adicionar */}
-      <div className="p-3 border-b border-lia-border-subtle bg-lia-bg-primary">
+      <div className="p-3 bg-lia-bg-primary">
         <div className="flex items-center justify-between mb-2">
           <h4 className="text-xs font-medium text-lia-text-primary flex items-center gap-1.5">
             <FileText className="w-3.5 h-3.5 text-lia-text-primary" />
@@ -159,7 +159,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
           .map((file) => {
             const colors = getCategoryColor(file.file_type)
             return (
-              <div key={file.id} className="border border-lia-border-subtle rounded-md transition-colors motion-reduce:transition-none">
+              <div key={file.id} className="border border-lia-border-subtle rounded-xl transition-colors motion-reduce:transition-none">
                 <div className="p-2.5">
                   <div className="flex items-start gap-2">
                     <div className="w-7 h-7 rounded-full bg-lia-bg-tertiary flex items-center justify-center flex-shrink-0">
@@ -237,7 +237,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
         )}
 
         {/* Currículo com Preview PDF */}
-        <div className="border border-lia-border-subtle rounded-md transition-colors motion-reduce:transition-none">
+        <div className="border border-lia-border-subtle rounded-xl transition-colors motion-reduce:transition-none">
           <div
             className="p-2.5 cursor-pointer hover:bg-lia-bg-primary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none"
             onClick={() => setExpandedActivity(expandedActivity === 'cv' ? null : 'cv')}
@@ -302,9 +302,9 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
             <div className="px-3 pb-3 border-t border-lia-border-subtle bg-lia-bg-primary/50/50">
               <div className="mt-2 space-y-2">
                 {/* Mini Preview do PDF */}
-                <div className="bg-lia-bg-primary p-2 rounded-md">
+                <div className="bg-lia-bg-primary p-2 rounded-xl">
                   <p className="text-xs text-lia-text-primary mb-2">Preview do documento</p>
-                  <div className="bg-lia-bg-tertiary rounded-md h-32 flex items-center justify-center">
+                  <div className="bg-lia-bg-tertiary rounded-xl h-32 flex items-center justify-center">
                     <div className="text-center">
                       <FileText className="w-8 h-8 text-lia-text-secondary mx-auto mb-1" />
                       <p className={textStyles.bodySmall}>PDF • 5 páginas</p>
@@ -324,7 +324,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
                   </div>
                 </div>
 
-                <div className="bg-lia-bg-primary p-2 rounded-md">
+                <div className="bg-lia-bg-primary p-2 rounded-xl">
                   <p className={`${textStyles.bodySmall} mb-1`}>Análise da LIA</p>
                   <p className={textStyles.bodySmall}>
                     ✓ CV bem estruturado • Match 92% com a vaga • Experiência relevante
@@ -336,7 +336,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
         </div>
 
         {/* Foto do Candidato com Preview de Imagem */}
-        <div className="border border-lia-border-subtle rounded-md transition-colors motion-reduce:transition-none">
+        <div className="border border-lia-border-subtle rounded-xl transition-colors motion-reduce:transition-none">
           <div className="p-2.5">
             <div className="flex items-start gap-2">
               <div className="w-7 h-7 rounded-full bg-lia-bg-tertiary flex items-center justify-center flex-shrink-0">
@@ -403,7 +403,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
         </div>
 
         {/* Vídeo de Apresentação */}
-        <div className="border border-lia-border-subtle rounded-md transition-colors motion-reduce:transition-none">
+        <div className="border border-lia-border-subtle rounded-xl transition-colors motion-reduce:transition-none">
           <div
             className="p-2.5 cursor-pointer hover:bg-lia-bg-primary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none"
             onClick={() => setExpandedActivity(expandedActivity === 'video1' ? null : 'video1')}
@@ -470,7 +470,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
             <div className="px-3 pb-3 border-t border-lia-border-subtle bg-lia-bg-primary/50/50">
               <div className="mt-2 space-y-2">
                 {/* Preview do vídeo com thumbnail */}
-                <div className="bg-lia-bg-primary p-2 rounded-md">
+                <div className="bg-lia-bg-primary p-2 rounded-xl">
                   <p className="text-xs text-lia-text-primary mb-2">Preview do vídeo de triagem</p>
                   <div className="relative bg-lia-btn-primary-bg rounded-md h-24 flex items-center justify-center group cursor-pointer"
                        onClick={() => {
@@ -496,7 +496,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
                 </div>
 
                 {/* Análise de IA do vídeo */}
-                <div className="bg-lia-bg-primary p-2 rounded-md">
+                <div className="bg-lia-bg-primary p-2 rounded-xl">
                   <p className={`${textStyles.bodySmall} mb-1`}>Análise da LIA</p>
                   <div className="grid grid-cols-2 gap-1 text-xs">
                     <div className="flex justify-between">
@@ -530,7 +530,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
         </div>
 
         {/* Vídeo de Case Técnico */}
-        <div className="border border-lia-border-subtle rounded-md transition-colors motion-reduce:transition-none">
+        <div className="border border-lia-border-subtle rounded-xl transition-colors motion-reduce:transition-none">
           <div className="p-2.5">
             <div className="flex items-start gap-2">
               <div className="w-7 h-7 rounded-full bg-lia-bg-tertiary flex items-center justify-center flex-shrink-0">
@@ -586,7 +586,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
         </div>
 
         {/* Vídeo de Entrevista com Gestor - Novo */}
-        <div className="border border-lia-border-subtle rounded-md transition-colors motion-reduce:transition-none">
+        <div className="border border-lia-border-subtle rounded-xl transition-colors motion-reduce:transition-none">
           <div className="p-2.5">
             <div className="flex items-start gap-2">
               <div className="w-7 h-7 rounded-full bg-lia-bg-tertiary flex items-center justify-center flex-shrink-0">
@@ -642,7 +642,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
         </div>
 
         {/* Áudio de Triagem por Voz - Card Compacto */}
-        <div className="border border-lia-border-subtle rounded-md transition-colors motion-reduce:transition-none">
+        <div className="border border-lia-border-subtle rounded-xl transition-colors motion-reduce:transition-none">
           <div className="p-2.5">
             <div className="flex items-start gap-2">
               <div className="w-7 h-7 rounded-full bg-wedo-purple/15 flex items-center justify-center flex-shrink-0">
@@ -698,7 +698,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
         </div>
 
         {/* Áudio de Entrevista Gravada - Card Compacto */}
-        <div className="border border-lia-border-subtle rounded-md transition-colors motion-reduce:transition-none">
+        <div className="border border-lia-border-subtle rounded-xl transition-colors motion-reduce:transition-none">
           <div className="p-2.5">
             <div className="flex items-start gap-2">
               <div className="w-7 h-7 rounded-full bg-wedo-purple/15 flex items-center justify-center flex-shrink-0">

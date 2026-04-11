@@ -139,7 +139,7 @@ export function DataBlockingModal({
         </DialogHeader>
 
         <div className="space-y-4 py-4">
-          <div className="bg-status-warning/10 dark:bg-status-warning/30 border border-status-warning/30 dark:border-status-warning/30 rounded-md p-3">
+          <div className="bg-status-warning/10 dark:bg-status-warning/30 border border-status-warning/30 dark:border-status-warning/30 rounded-xl p-3">
             <p className="text-sm text-status-warning" aria-live="polite" aria-atomic="true">
               Esta etapa requer informações adicionais do candidato. 
               Você pode solicitar os dados ou avançar mesmo assim.
@@ -151,7 +151,7 @@ export function DataBlockingModal({
               <span className="text-sm font-medium text-lia-text-secondary">Campos Pendentes</span>
               <span className="text-xs text-lia-text-tertiary">{pendingFields.length} campos</span>
             </div>
-            <div className="border border-lia-border-subtle rounded-md divide-y divide-lia-border-subtle max-h-chart-sm overflow-y-auto">
+            <div className="border border-lia-border-subtle rounded-xl divide-y divide-lia-border-subtle max-h-chart-sm overflow-y-auto">
               {pendingFields.map((field) => (
                 <div
                   key={field.id}
@@ -176,7 +176,7 @@ export function DataBlockingModal({
             </div>
           </div>
 
-          <div className="flex items-center gap-3 p-3 bg-lia-bg-secondary rounded-md">
+          <div className="flex items-center gap-3 p-3 bg-lia-bg-secondary rounded-xl">
             <div className="w-10 h-10 bg-lia-interactive-active rounded-full flex items-center justify-center">
               {candidate.avatar ? (
                 <NextImage src={candidate.avatar} alt="" width={40} height={40} className="w-10 h-10 rounded-full" />

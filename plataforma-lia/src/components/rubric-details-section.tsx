@@ -119,7 +119,7 @@ export function RubricDetailsSection({
             const statusIcon = flag.status === 'ok' ? CheckCircle : flag.status === 'warning' ? AlertTriangle : XCircle
             const statusColor = flag.status === 'ok' ? 'var(--lia-btn-primary-bg)' : flag.status === 'warning' ? 'var(--status-warning)' : 'var(--status-error)'
             return (
-              <div key={`rf-${idx}`} className="flex items-center justify-between p-2 rounded-md bg-lia-bg-secondary">
+              <div key={`rf-${idx}`} className="flex items-center justify-between p-2 rounded-xl bg-lia-bg-secondary">
                 <span className="text-xs text-lia-text-primary">{flag.type}</span>
                 <div className="flex items-center gap-1.5">
                   {flag.detail && (
@@ -152,23 +152,23 @@ export function RubricDetailsSection({
         {showAudit && (
           <div className="mt-3 pt-3 border-t border-t-lia-border-subtle">
             <div className="grid grid-cols-2 gap-2 mb-3">
-              <div className="p-2 rounded-md bg-lia-bg-secondary">
+              <div className="p-2 rounded-xl bg-lia-bg-secondary">
                 <div className="text-micro text-lia-text-secondary">Total Requisitos</div>
                 <div className="text-sm font-bold text-lia-text-primary">{requirements.length}</div>
               </div>
-              <div className="p-2 rounded-md bg-lia-bg-secondary">
+              <div className="p-2 rounded-xl bg-lia-bg-secondary">
                 <div className="text-micro text-lia-text-secondary">Red Flags</div>
                 <div className={`text-sm font-bold ${mockRedFlags.filter(f => f.status !== 'ok').length > 0 ? 'text-status-warning' : 'text-lia-text-secondary'}`}>
                   {mockRedFlags.filter(f => f.status !== 'ok').length}
                 </div>
               </div>
-              <div className="p-2 rounded-md bg-lia-bg-secondary">
+              <div className="p-2 rounded-xl bg-lia-bg-secondary">
                 <div className="text-micro text-lia-text-secondary">Taxa Essenciais</div>
                 <div className={`text-sm font-bold ${essentialMet === essentialReqsLength ? 'text-lia-btn-primary-bg' : 'text-status-warning'}`}>
                   {essentialReqsLength > 0 ? Math.round((essentialMet / essentialReqsLength) * 100) : 100}%
                 </div>
               </div>
-              <div className="p-2 rounded-md bg-lia-bg-secondary">
+              <div className="p-2 rounded-xl bg-lia-bg-secondary">
                 <div className="text-micro text-lia-text-secondary">Tempo Análise</div>
                 <div className="text-sm font-bold text-lia-text-primary">
                   {evaluation.audit_metrics?.analysis_time || '2.3'}s
@@ -184,7 +184,7 @@ export function RubricDetailsSection({
                 { code: 'P', label: 'Parcial', color: 'var(--status-warning)', bgColor: 'var(--status-warning-bg-15)' },
                 { code: 'X', label: 'Ausente', color: 'var(--status-error)', bgColor: 'var(--status-error-bg-15)' },
               ].map((item, idx) => (
-                <div key={`detail-${idx}`} className="flex items-center gap-1 p-1.5 rounded-md bg-lia-bg-secondary">
+                <div key={`detail-${idx}`} className="flex items-center gap-1 p-1.5 rounded-xl bg-lia-bg-secondary">
                   <span
                     className="text-micro font-bold w-5 h-5 flex items-center justify-center rounded-md"
                     style={{backgroundColor: item.bgColor, color: item.color}}

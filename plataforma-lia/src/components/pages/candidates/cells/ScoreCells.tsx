@@ -76,7 +76,7 @@ export function renderLiaScoreCell(candidate: Candidate): React.ReactNode {
       <div className="relative group cursor-help">
         <span className="text-xs text-lia-text-primary">—</span>
         <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-50">
-          <div className="bg-lia-btn-primary-bg dark:bg-lia-bg-elevated text-white px-3 py-2 rounded-md text-xs min-w-[180px]">
+          <div className="bg-lia-btn-primary-bg dark:bg-lia-bg-elevated text-white px-3 py-2 rounded-xl text-xs min-w-[180px]">
             <div className="font-semibold mb-1.5 flex items-center gap-1.5">
               <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
               Sem avaliação

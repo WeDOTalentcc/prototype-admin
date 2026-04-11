@@ -171,7 +171,7 @@ export function CultureProfilePreview({
       </div>
       
       {isLowConfidence && (
-        <div className="rounded-md border border-status-warning/30 dark:border-status-warning/30/50 bg-status-warning/10 dark:bg-status-warning/20 p-3">
+        <div className="rounded-xl border border-status-warning/30 dark:border-status-warning/30/50 bg-status-warning/10 dark:bg-status-warning/20 p-3">
           <div className="flex items-start gap-2">
             <HelpCircle className="w-4 h-4 text-status-warning dark:text-status-warning mt-0.5 flex-shrink-0" />
             <div className="text-sm">
@@ -198,7 +198,7 @@ export function CultureProfilePreview({
                 value={editedProfile.mission || ""}
                 onChange={(e) => updateField("mission", e.target.value)}
                 rows={3}
-                className="w-full px-3 py-2 text-sm rounded-md border border-lia-border-default dark:border-lia-border-default bg-lia-bg-primary dark:bg-lia-bg-primary focus:ring-2 focus:ring-lia-btn-primary-bg/10 focus:border-lia-btn-primary-bg resize-none"
+                className="w-full px-3 py-2 text-sm rounded-xl border border-lia-border-default dark:border-lia-border-default bg-lia-bg-primary dark:bg-lia-bg-primary focus:ring-2 focus:ring-lia-btn-primary-bg/10 focus:border-lia-btn-primary-bg resize-none"
                 placeholder="Descreva a missão da empresa..."
               />
             ) : (
@@ -222,7 +222,7 @@ export function CultureProfilePreview({
                 value={editedProfile.vision || ""}
                 onChange={(e) => updateField("vision", e.target.value)}
                 rows={3}
-                className="w-full px-3 py-2 text-sm rounded-md border border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-primary focus:ring-2 focus:ring-lia-border-medium/20 focus:border-lia-border-medium resize-none"
+                className="w-full px-3 py-2 text-sm rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-primary focus:ring-2 focus:ring-lia-border-medium/20 focus:border-lia-border-medium resize-none"
                 placeholder="Descreva a visão da empresa..."
               />
             ) : (
@@ -276,7 +276,7 @@ export function CultureProfilePreview({
                   onChange={(e) => setNewValue(e.target.value)}
                   onKeyPress={(e) => e.key === "Enter" && addValue()}
                   placeholder="Novo valor..."
-                  className="flex-1 px-3 py-1.5 text-xs rounded-md border border-status-success/30 dark:border-status-success/30 bg-lia-bg-primary dark:bg-lia-bg-primary"
+                  className="flex-1 px-3 py-1.5 text-xs rounded-xl border border-status-success/30 dark:border-status-success/30 bg-lia-bg-primary dark:bg-lia-bg-primary"
                 />
                 <Button size="sm" variant="ghost" onClick={addValue} className="h-8 px-2">
                   <Plus className="w-4 h-4" />
@@ -324,7 +324,7 @@ export function CultureProfilePreview({
                   onChange={(e) => setNewEvp(e.target.value)}
                   onKeyPress={(e) => e.key === "Enter" && addEvp()}
                   placeholder="Novo diferencial..."
-                  className="flex-1 px-3 py-1.5 text-xs rounded-md border border-status-warning/30 dark:border-status-warning/30 bg-lia-bg-primary dark:bg-lia-bg-primary"
+                  className="flex-1 px-3 py-1.5 text-xs rounded-xl border border-status-warning/30 dark:border-status-warning/30 bg-lia-bg-primary dark:bg-lia-bg-primary"
                 />
                 <Button size="sm" variant="ghost" onClick={addEvp} className="h-8 px-2">
                   <Plus className="w-4 h-4" />
@@ -376,7 +376,7 @@ export function CultureProfilePreview({
                 onChange={(e) => setNewCompetency(e.target.value)}
                 onKeyPress={(e) => e.key === "Enter" && addCompetency()}
                 placeholder="Nova competência... Ex: Liderança, Comunicação"
-                className="flex-1 px-3 py-1.5 text-xs rounded-md border border-wedo-purple/30 dark:border-wedo-purple/30 bg-lia-bg-primary dark:bg-lia-bg-primary"
+                className="flex-1 px-3 py-1.5 text-xs rounded-xl border border-wedo-purple/30 dark:border-wedo-purple/30 bg-lia-bg-primary dark:bg-lia-bg-primary"
               />
               <Button size="sm" variant="ghost" onClick={addCompetency} className="h-8 px-2">
                 <Plus className="w-4 h-4" />
@@ -416,7 +416,7 @@ export function CultureProfilePreview({
                     </ul>
                   </div>
                   
-                  <div className="bg-status-warning/10 dark:bg-status-warning/30 border border-status-warning/30 dark:border-status-warning/30 rounded-md p-2.5 mt-2">
+                  <div className="bg-status-warning/10 dark:bg-status-warning/30 border border-status-warning/30 dark:border-status-warning/30 rounded-xl p-2.5 mt-2">
                     <p className="text-status-warning dark:text-status-warning leading-relaxed">
                       <strong>Nota:</strong> Este perfil é gerado por <strong>inferência</strong> a partir da análise do site da empresa 
                       e <strong>não garante acuracidade</strong>. Para maior precisão, recomendamos que a empresa aplique um 

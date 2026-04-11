@@ -156,7 +156,7 @@ const PlanProgressCardComponent = memo(function PlanProgressCard({
       )}
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-3 py-2 border-b border-lia-border-subtle bg-lia-bg-primary/40">
+      <div className="flex items-center justify-between px-3 py-2 bg-lia-bg-primary/40">
         <div className="flex items-center gap-2">
           <Zap className="w-3.5 h-3.5 text-wedo-cyan" />
           <span className="text-xs font-semibold text-lia-text-primary">

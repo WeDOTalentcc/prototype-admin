@@ -177,7 +177,7 @@ export function CandidatePage({
       />
 
       {/* Tabs exatamente como no preview */}
-      <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary border-b border-lia-border-subtle dark:border-lia-border-subtle px-6">
+      <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary dark:border-lia-border-subtle px-6">
         <div className="flex">
           {tabs.map(tab => (
             <button
@@ -280,8 +280,8 @@ export function CandidatePage({
       {/* Modal de Vídeo */}
       {showVideoModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-          <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md max-w-4xl w-full max-h-[90vh] overflow-hidden">
-            <div className="p-4 border-b border-lia-border-subtle dark:border-lia-border-subtle flex items-center justify-between">
+          <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+            <div className="p-4 dark:border-lia-border-subtle flex items-center justify-between">
               <h3 className="text-sm font-semibold">{showVideoModal.title as string}</h3>
               <Button variant="ghost" size="sm" onClick={() => setShowVideoModal(null)} className="h-7 w-7 p-0">
                 <X className="w-3.5 h-3.5" />
@@ -300,7 +300,7 @@ export function CandidatePage({
       {/* LIA Modal exatamente como no preview */}
       {showLiaModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-          <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md max-w-2xl w-full">
+          <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-xl max-w-2xl w-full">
             <div className="p-4">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm font-semibold flex items-center gap-2">
@@ -316,7 +316,7 @@ export function CandidatePage({
                 value={liaCommand}
                 onChange={(e) => setLiaCommand(e.target.value)}
                 placeholder="Digite seu comando para a LIA..."
-                className="w-full p-3 border rounded-md h-20 text-xs resize-none"
+                className="w-full p-3 border rounded-xl h-20 text-xs resize-none"
               />
 
               <div className="flex gap-2 mt-4">

@@ -102,7 +102,7 @@ const CandidateTableRowComponent = memo(function CandidateTableRow({
   return (
     <tr
       data-testid={`candidate-row-${candidate.id}`}
-      className={`border-b border-lia-border-subtle dark:border-lia-border-subtle hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover cursor-pointer transition-colors motion-reduce:transition-none ${
+      className={` dark:border-lia-border-subtle hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover cursor-pointer transition-colors motion-reduce:transition-none ${
         isSelected ? 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary/10' : ''
       }`}
       onMouseEnter={() => setShowActions(true)}
@@ -255,7 +255,7 @@ const CandidateTableRowComponent = memo(function CandidateTableRow({
             <PopoverTrigger asChild>
               <button 
                 data-testid={`candidate-alerts-${candidate.id}`}
-                className="relative flex items-center justify-center w-8 h-8 hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover rounded-md transition-colors motion-reduce:transition-none group"
+                className="relative flex items-center justify-center w-8 h-8 hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover rounded-xl transition-colors motion-reduce:transition-none group"
                 aria-label={`${alerts.length} alerta${alerts.length > 1 ? 's' : ''} da LIA`}
               >
                 <Bell className="w-4 h-4 text-lia-text-secondary group-hover:text-lia-text-primary dark:group-hover:text-lia-text-disabled" />

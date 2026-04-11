@@ -37,7 +37,7 @@ export function StatusChangeConfirmModal({
             <p className="text-xs text-lia-text-secondary">{jobTitle}</p>
           </div>
         </div>
-        <div className="rounded-md p-3 mb-4 border border-lia-border-subtle bg-lia-bg-secondary/50">
+        <div className="rounded-xl p-3 mb-4 border border-lia-border-subtle bg-lia-bg-secondary/50">
           <div className="flex items-start gap-2.5">
             <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${
               screeningImpact === "pause"
@@ -69,7 +69,7 @@ export function StatusChangeConfirmModal({
           <Button
             variant="outline"
             size="sm"
-            className="text-xs rounded-md px-4 border-lia-border-subtle"
+            className="text-xs rounded-xl px-4 border-lia-border-subtle"
             onClick={onCancel}
           >
             Cancelar
@@ -79,7 +79,7 @@ export function StatusChangeConfirmModal({
               <Button
                 variant="outline"
                 size="sm"
-                className="text-xs rounded-md px-4 border-lia-border-default"
+                className="text-xs rounded-xl px-4 border-lia-border-default"
                 onClick={() => onChange(newStatus, false)}
               >
                 Manter Pausada

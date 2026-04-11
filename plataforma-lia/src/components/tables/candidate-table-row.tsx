@@ -191,7 +191,7 @@ export function CandidateTableRow({
 
   return (
     <tr
-      className={`group cursor-pointer transition-colors motion-reduce:transition-none relative border-b border-lia-border-subtle dark:border-lia-border-subtle ${
+      className={`group cursor-pointer transition-colors motion-reduce:transition-none relative dark:border-lia-border-subtle ${
  isSelected 
           ? 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary hover:bg-lia-interactive-active/70 dark:hover:bg-lia-bg-inverse/70' 
           : 'hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover/50'

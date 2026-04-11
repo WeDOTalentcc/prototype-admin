@@ -29,7 +29,7 @@ export function ApplyAllModal({
 }: ApplyAllModalProps) {
   return (
     <div className="fixed inset-0 bg-lia-overlay flex items-center justify-center z-50">
-      <div className="bg-lia-bg-primary rounded-md p-6 w-full max-w-md">
+      <div className="bg-lia-bg-primary rounded-xl p-6 w-full max-w-md">
         <div className="flex items-center justify-between mb-4">
           <h3 className={textStyles.h4}>
             Aplicar Valor para Todos
@@ -48,7 +48,7 @@ export function ApplyAllModal({
               type="number"
               value={applyAllValue}
               onChange={(e) => setApplyAllValue(parseFloat(e.target.value) || 0)}
-              className="w-full px-3 py-2 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary text-sm font-['Open_Sans',sans-serif]"
+              className="w-full px-3 py-2 border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary text-sm font-['Open_Sans',sans-serif]"
             />
           </div>
 
@@ -58,7 +58,7 @@ export function ApplyAllModal({
                 type="checkbox"
                 checked={applyAllMonths}
                 onChange={(e) => setApplyAllMonths(e.target.checked)}
-                className="w-4 h-4 rounded-md border-lia-border-default accent-lia-btn-primary-bg"
+                className="w-4 h-4 rounded-xl border-lia-border-default accent-lia-btn-primary-bg"
               />
               <span className={textStyles.bodySmall}>
                 Aplicar mesmo valor a todos os meses
@@ -70,7 +70,7 @@ export function ApplyAllModal({
                 type="checkbox"
                 checked={applyAllUsers}
                 onChange={(e) => setApplyAllUsers(e.target.checked)}
-                className="w-4 h-4 rounded-md border-lia-border-default accent-lia-btn-primary-bg"
+                className="w-4 h-4 rounded-xl border-lia-border-default accent-lia-btn-primary-bg"
               />
               <span className={textStyles.bodySmall}>
                 Aplicar a todos os usuários

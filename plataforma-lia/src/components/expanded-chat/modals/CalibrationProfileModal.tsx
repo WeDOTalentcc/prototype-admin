@@ -63,7 +63,7 @@ export function CalibrationProfileModal({
     <div className="fixed inset-0 z-overlay flex items-center justify-center bg-lia-overlay">
       <div className="bg-lia-bg-primary rounded-xl w-[95vw] max-w-[1200px] h-[90vh] flex flex-col overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-lia-border-subtle">
+        <div className="flex items-center justify-between px-6 py-4">
           <div className="flex items-center gap-3">
             <button
               onClick={onClose}
@@ -113,7 +113,7 @@ export function CalibrationProfileModal({
                         </svg>
                       </a>
                     )}
-                    <button className="px-3 py-1 text-xs font-medium bg-lia-bg-primary border border-lia-border-default hover:bg-lia-bg-secondary hover:bg-lia-interactive-hover text-lia-text-primary rounded-md transition-colors motion-reduce:transition-none">
+                    <button className="px-3 py-1 text-xs font-medium bg-lia-bg-primary border border-lia-border-default hover:bg-lia-bg-secondary hover:bg-lia-interactive-hover text-lia-text-primary rounded-xl transition-colors motion-reduce:transition-none">
                       Full Profile ↗
                     </button>
                   </div>
@@ -130,7 +130,7 @@ export function CalibrationProfileModal({
               </div>
 
               {/* Tabs */}
-              <div className="flex gap-1 border-b border-lia-border-subtle">
+              <div className="flex gap-1">
                 {(['experience', 'education', 'skillmap'] as const).map((tab) => (
                   <button
                     key={tab}
@@ -152,15 +152,15 @@ export function CalibrationProfileModal({
               {profileTab === 'experience' && (
                 <div className="space-y-4">
                   {/* Highlights */}
-                  <div className="p-3 bg-lia-bg-secondary rounded-md border border-lia-border-subtle">
+                  <div className="p-3 bg-lia-bg-secondary rounded-xl border border-lia-border-subtle">
                     <h4 className="text-sm font-semibold text-lia-text-primary mb-3">
                       Highlights{' '}
                       <span className="lia-text-secondary font-normal">Show more ({candidate.highlights.length})</span>
                     </h4>
                     <div className="flex flex-wrap gap-3">
                       {candidate.highlights.map((highlight, idx) => (
-                        <div key={`hl-${idx}`} className="flex items-center gap-2 px-2 py-1.5 bg-lia-bg-primary rounded-md border border-lia-border-subtle">
-                          <div className="w-6 h-6 rounded-md bg-lia-bg-secondary flex items-center justify-center">
+                        <div key={`hl-${idx}`} className="flex items-center gap-2 px-2 py-1.5 bg-lia-bg-primary rounded-xl border border-lia-border-subtle">
+                          <div className="w-6 h-6 rounded-xl bg-lia-bg-secondary flex items-center justify-center">
                             {highlight.icon === 'trophy' && <Star className="w-3.5 h-3.5 text-status-warning" />}
                             {highlight.icon === 'clock' && <Clock className="w-3.5 h-3.5 text-lia-text-secondary" />}
                             {highlight.icon === 'building' && <Building2 className="w-3.5 h-3.5 text-wedo-purple" />}
@@ -177,7 +177,7 @@ export function CalibrationProfileModal({
                   </div>
 
                   {/* Experience Stats */}
-                  <div className="flex gap-6 py-3 border-b border-lia-border-subtle">
+                  <div className="flex gap-6 py-3">
                     <div>
                       <p className="text-xs text-lia-text-secondary uppercase tracking-wide">Average Tenure</p>
                       <p className="text-sm font-semibold text-lia-text-primary">{candidate.averageTenure}</p>
@@ -199,7 +199,7 @@ export function CalibrationProfileModal({
                     </h4>
                     {candidate.experiences.map((exp) => (
                       <div key={exp.id} className="flex gap-3">
-                        <div className="w-8 h-8 rounded-md bg-lia-bg-secondary flex items-center justify-center flex-shrink-0">
+                        <div className="w-8 h-8 rounded-xl bg-lia-bg-secondary flex items-center justify-center flex-shrink-0">
                           <Building2 className="w-4 h-4 text-lia-text-secondary" />
                         </div>
                         <div className="flex-1">
@@ -234,8 +234,8 @@ export function CalibrationProfileModal({
               {profileTab === 'education' && (
                 <div className="space-y-4">
                   {candidate.educationHistory.map((edu) => (
-                    <div key={edu.id} className="flex gap-4 p-3 bg-lia-bg-secondary rounded-md">
-                      <div className="w-8 h-8 rounded-md bg-lia-bg-primary flex items-center justify-center flex-shrink-0">
+                    <div key={edu.id} className="flex gap-4 p-3 bg-lia-bg-secondary rounded-xl">
+                      <div className="w-8 h-8 rounded-xl bg-lia-bg-primary flex items-center justify-center flex-shrink-0">
                         <GraduationCap className="w-4 h-4 text-lia-text-secondary" />
                       </div>
                       <div>
@@ -267,7 +267,7 @@ export function CalibrationProfileModal({
                     <h5 className="text-sm font-semibold text-lia-text-primary mb-2">Additional Skills</h5>
                     <div className="flex flex-wrap gap-2">
                       {candidate.additionalSkills.slice(0, 10).map((skill) => (
-                        <span key={skill} className="px-3 py-1.5 text-xs text-lia-text-secondary bg-lia-bg-secondary rounded-md">
+                        <span key={skill} className="px-3 py-1.5 text-xs text-lia-text-secondary bg-lia-bg-secondary rounded-xl">
                           {skill}
                         </span>
                       ))}
@@ -316,7 +316,7 @@ export function CalibrationProfileModal({
 
             {/* LIA Insights Box */}
             <div className="shrink-0 px-4 max-h-card-lg overflow-y-auto">
-              <div className="p-3 bg-lia-bg-primary rounded-md border border-lia-border-subtle space-y-3">
+              <div className="p-3 bg-lia-bg-primary rounded-xl border border-lia-border-subtle space-y-3">
                 {candidate.matchCriteria.map((match) => (
                   <div key={match.id} className="space-y-1">
                     <div className="flex items-start gap-2">
@@ -350,7 +350,7 @@ export function CalibrationProfileModal({
                 value={comment}
                 onChange={(e) => onSetComment(e.target.value)}
                 placeholder="Ex: Gostei do perfil mas prefiro candidatos com mais experiência em startups..."
-                className="w-full px-3 py-2 border border-lia-border-subtle rounded-md text-xs focus:outline-none focus:border-lia-border-medium resize-none bg-lia-bg-primary"
+                className="w-full px-3 py-2 border border-lia-border-subtle rounded-xl text-xs focus:outline-none focus:border-lia-border-medium resize-none bg-lia-bg-primary"
                
                 rows={2}
               />
@@ -358,7 +358,7 @@ export function CalibrationProfileModal({
 
             {/* Edit criteria note */}
             <div className="shrink-0 px-4 pb-3">
-              <div className="p-2 bg-lia-bg-secondary rounded-md border border-lia-border-subtle">
+              <div className="p-2 bg-lia-bg-secondary rounded-xl border border-lia-border-subtle">
                 <p className="text-micro text-lia-text-secondary">
                   Você pode{' '}
                   <button onClick={onOpenEditCriteria} className="font-medium">fixar critérios</button>
@@ -410,7 +410,7 @@ export function CalibrationProfileModal({
                 </button>
                 <button
                   onClick={onReject}
-                  className="flex-1 py-2.5 px-3 bg-lia-bg-primary text-status-error border border-status-error rounded-md font-medium text-xs hover:bg-status-error/5 transition-colors motion-reduce:transition-none flex items-center justify-center gap-1.5"
+                  className="flex-1 py-2.5 px-3 bg-lia-bg-primary text-status-error border border-status-error rounded-xl font-medium text-xs hover:bg-status-error/5 transition-colors motion-reduce:transition-none flex items-center justify-center gap-1.5"
                 >
                   <X className="w-3.5 h-3.5" />
                   Reprovar

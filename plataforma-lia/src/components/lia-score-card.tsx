@@ -93,7 +93,7 @@ export function LIAScoreCard({
           {hasBreakdown && (
             <button
               onClick={() => setExpanded((v) => !v)}
-              className="p-0.5 rounded-md hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none"
+              className="p-0.5 rounded-xl hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none"
               aria-expanded={expanded}
               aria-label={expanded ? "Recolher detalhes do score" : "Ver detalhes do score"}
             >

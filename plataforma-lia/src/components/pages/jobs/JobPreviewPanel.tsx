@@ -76,7 +76,7 @@ export function JobPreviewPanel({
         onJobClick={onJobClick}
       />
 
-      <div className="border-b border-lia-border-subtle">
+      <div className="">
         <div className="flex items-center px-3">
           <button
             onClick={() => onTabChange('screening')}

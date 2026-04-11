@@ -80,9 +80,9 @@ export function ColumnConfigSidebar({
 
   return (
     <div data-testid="column-config-sidebar" className="flex-shrink-0 w-80 transition-colors motion-reduce:transition-none duration-300">
-      <div className="bg-lia-bg-primary rounded-md h-[calc(100vh-6rem)] overflow-hidden">
+      <div className="bg-lia-bg-primary rounded-xl h-[calc(100vh-6rem)] overflow-hidden">
         {/* Header */}
-        <div className="p-4 flex items-center justify-between border-b border-lia-border-subtle">
+        <div className="p-4 flex items-center justify-between">
           <div>
             <h3 className="text-sm font-semibold text-lia-text-primary">
               Configurar Colunas
@@ -101,7 +101,7 @@ export function ColumnConfigSidebar({
         </div>
 
         {/* Search and Actions */}
-        <div className="p-3 space-y-3 border-b border-lia-border-subtle">
+        <div className="p-3 space-y-3">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-lia-text-primary" />
             <input
@@ -114,7 +114,7 @@ export function ColumnConfigSidebar({
           </div>
           <div className="flex gap-2">
             <button
-              className="flex-1 text-xs h-8 rounded-md bg-lia-bg-secondary hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none text-lia-text-secondary"
+              className="flex-1 text-xs h-8 rounded-xl bg-lia-bg-secondary hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none text-lia-text-secondary"
               onClick={() => {
                 setTableColumns((prev) =>
                   prev.map((col, idx) => ({
@@ -128,7 +128,7 @@ export function ColumnConfigSidebar({
               Restaurar Padrão
             </button>
             <button
-              className="text-xs h-8 px-4 rounded-md bg-lia-bg-secondary hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none text-lia-text-secondary"
+              className="text-xs h-8 px-4 rounded-xl bg-lia-bg-secondary hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none text-lia-text-secondary"
               onClick={() => {
                 setTableColumns((prev) => prev.map((col) => ({ ...col, visible: true })))
               }}

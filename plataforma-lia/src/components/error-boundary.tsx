@@ -84,7 +84,7 @@ function ErrorFallbackScreen({ error, onReset }: ErrorFallbackProps) {
         </p>
 
         {process.env.NODE_ENV === "development" && error && (
-          <pre className="text-left text-xs bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-md p-3 mb-4 overflow-auto max-h-32 text-status-error dark:text-status-error">
+          <pre className="text-left text-xs bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-xl p-3 mb-4 overflow-auto max-h-32 text-status-error dark:text-status-error">
             {error.message}
           </pre>
         )}
@@ -93,14 +93,14 @@ function ErrorFallbackScreen({ error, onReset }: ErrorFallbackProps) {
           {onReset && (
             <button
               onClick={onReset}
-              className="px-4 py-2 text-sm font-medium bg-lia-btn-primary-bg text-lia-btn-primary-text rounded-md hover:bg-lia-bg-inverse transition-colors motion-reduce:transition-none"
+              className="px-4 py-2 text-sm font-medium bg-lia-btn-primary-bg text-lia-btn-primary-text rounded-xl hover:bg-lia-bg-inverse transition-colors motion-reduce:transition-none"
             >
               Tentar novamente
             </button>
           )}
           <button
             onClick={() => window.location.reload()}
-            className="px-4 py-2 text-sm font-medium border border-lia-border-default dark:border-lia-border-default text-lia-text-secondary rounded-md hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover transition-colors motion-reduce:transition-none"
+            className="px-4 py-2 text-sm font-medium border border-lia-border-default dark:border-lia-border-default text-lia-text-secondary rounded-xl hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover transition-colors motion-reduce:transition-none"
           >
             Recarregar página
           </button>

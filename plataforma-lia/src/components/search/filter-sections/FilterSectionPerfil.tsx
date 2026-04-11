@@ -64,7 +64,7 @@ export const FilterSectionPerfil = React.memo(function FilterSectionPerfil({
   return (
     <div className="space-y-3">
       {isLocalSearch && (
-        <div className="flex items-center gap-2 p-2.5 rounded-md bg-status-warning/10 border border-status-warning/30 mb-3">
+        <div className="flex items-center gap-2 p-2.5 rounded-xl bg-status-warning/10 border border-status-warning/30 mb-3">
           <Info className="w-4 h-4 text-status-warning flex-shrink-0" />
           <p className="text-xs text-status-warning">
             Estes filtros estão disponíveis apenas em busca Híbrida ou Global

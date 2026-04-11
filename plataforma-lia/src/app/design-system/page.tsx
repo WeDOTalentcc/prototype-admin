@@ -86,12 +86,12 @@ export default function DesignSystemPage() {
               </tr>
             </thead>
             <tbody className="space-y-1">
-              <tr className="border-b border-lia-border-subtle">
+              <tr className="">
                 <td className="py-1 font-mono text-xs">z-overlay</td>
                 <td className="py-1 text-lia-text-secondary dark:text-lia-text-tertiary">60</td>
                 <td className="py-1 text-lia-text-secondary dark:text-lia-text-tertiary">sub-modais</td>
               </tr>
-              <tr className="border-b border-lia-border-subtle">
+              <tr className="">
                 <td className="py-1 font-mono text-xs">z-modal</td>
                 <td className="py-1 text-lia-text-secondary dark:text-lia-text-tertiary">9999</td>
                 <td className="py-1 text-lia-text-secondary dark:text-lia-text-tertiary">Dialog principal</td>

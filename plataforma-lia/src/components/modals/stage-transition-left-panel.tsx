@@ -70,7 +70,7 @@ export function StageTransitionLeftPanel({
   return (
     <div className="w-1/2 border-r border-lia-border-subtle overflow-y-auto">
       <div className="p-5 space-y-5">
-        <div className="flex items-center justify-between p-3 bg-lia-bg-secondary rounded-md border border-lia-border-subtle">
+        <div className="flex items-center justify-between p-3 bg-lia-bg-secondary rounded-xl border border-lia-border-subtle">
           <div className="flex items-center gap-3">
             <Avatar className="h-10 w-10">
               <AvatarImage src={candidate.avatar} />
@@ -248,7 +248,7 @@ export function StageTransitionLeftPanel({
         )}
 
         {needsMessageComposition && (
-          <div className="flex items-center gap-2 p-2 bg-status-warning/10 rounded-md border border-status-warning/30">
+          <div className="flex items-center gap-2 p-2 bg-status-warning/10 rounded-xl border border-status-warning/30">
             <AlertCircle className="h-4 w-4 text-status-warning shrink-0" />
             <p className="text-xs text-status-warning" aria-live="polite" aria-atomic="true">
               {channel === 'both' && candidate.email && candidate.phone

@@ -158,7 +158,7 @@ export function LIATaskStepItem({
 
       {hasDetails && step.isExpanded && (
         <div className="px-3 pb-3 pl-12">
-          <div className="text-xs text-lia-text-secondary bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md p-2.5 font-mono">
+          <div className="text-xs text-lia-text-secondary bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl p-2.5 font-mono">
             {step.details}
           </div>
         </div>
@@ -374,7 +374,7 @@ export function LIAFileBadge({
     )}
     onClick={onDownload}
     >
-      <div className="w-8 h-8 rounded-md bg-lia-bg-tertiary dark:bg-lia-bg-secondary flex items-center justify-center">
+      <div className="w-8 h-8 rounded-xl bg-lia-bg-tertiary dark:bg-lia-bg-secondary flex items-center justify-center">
         <Icon className="w-4 h-4 text-lia-text-secondary" />
       </div>
       <div className="flex-1 min-w-0">
@@ -414,7 +414,7 @@ export function LIASimpleProcessing({
       config.bgColor,
       className
     )}>
-      <div className="w-7 h-7 rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary flex items-center justify-center flex-shrink-0" role="status" aria-live="polite" aria-label="Carregando...">
+      <div className="w-7 h-7 rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary flex items-center justify-center flex-shrink-0" role="status" aria-live="polite" aria-label="Carregando...">
         <Loader2 className={cn("w-4 h-4 animate-spin motion-reduce:animate-none", config.color)} />
       </div>
       <span className="text-sm text-lia-text-secondary">

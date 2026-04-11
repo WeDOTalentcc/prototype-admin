@@ -279,7 +279,7 @@ export function BulkActionModal({
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
       <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto rounded-md" data-testid="bulk-action-modal">
-        <DialogHeader className="border-b border-lia-border-subtle pb-3">
+        <DialogHeader className=" pb-3">
           <DialogTitle className="flex items-center gap-2 text-sm font-semibold text-lia-text-primary">
             {config.icon}
             {config.title}
@@ -302,7 +302,7 @@ export function BulkActionModal({
               </Badge>
             </div>
             
-            <ScrollArea className="border rounded-md p-2 max-h-card-lg">
+            <ScrollArea className="border rounded-xl p-2 max-h-card-lg">
               <div className="space-y-1.5">
                 {displayedCandidates.map((candidate) => {
                   const result = progress.results.find(r => r.candidateId === candidate.id)
@@ -413,7 +413,7 @@ export function BulkActionModal({
           )}
 
           {(isExecuting || isComplete) && (
-            <div className="space-y-3 p-4 bg-lia-bg-secondary/50 rounded-md">
+            <div className="space-y-3 p-4 bg-lia-bg-secondary/50 rounded-xl">
               <div className="flex items-center justify-between text-xs">
                 <span className="font-medium">Progresso</span>
                 <span className="text-lia-text-secondary">

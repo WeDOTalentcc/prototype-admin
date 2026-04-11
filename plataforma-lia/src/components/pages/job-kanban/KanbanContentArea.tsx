@@ -240,7 +240,7 @@ export function KanbanContentArea({ state }: KanbanContentAreaProps) {
           </div>
 
           <div className="flex-shrink-0 w-12 transition-colors motion-reduce:transition-none duration-300 py-4 pr-2">
-            <div className="h-[calc(100vh-12rem)] flex flex-col items-center bg-lia-bg-primary border border-lia-border-subtle rounded-md py-3 gap-2">
+            <div className="h-[calc(100vh-12rem)] flex flex-col items-center bg-lia-bg-primary border border-lia-border-subtle rounded-xl py-3 gap-2">
               <Button
                 variant="ghost"
                 size="sm"

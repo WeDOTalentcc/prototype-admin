@@ -134,8 +134,8 @@ export const JobFiltersSection = ({
       {showPresetsModal && (
         <div className="fixed inset-0 z-overlay flex items-center justify-center">
           <div className="absolute inset-0 bg-lia-overlay backdrop-blur-[1px]" onClick={() => { setShowPresetsModal(false); setSelectedPreset(null) }} />
-          <div className="relative bg-lia-bg-primary rounded-md w-full max-w-lg max-h-[70vh] overflow-hidden dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
-            <div className="flex items-center justify-between p-4 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+          <div className="relative bg-lia-bg-primary rounded-xl w-full max-w-lg max-h-[70vh] overflow-hidden dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
+            <div className="flex items-center justify-between p-4 dark:border-lia-border-subtle">
               <div className="flex items-center gap-2">
                 {selectedPreset && (
                   <button
@@ -192,7 +192,7 @@ export const JobFiltersSection = ({
                           <button
                             key={preset.id}
                             onClick={() => setSelectedPreset(preset)}
-                            className="w-full text-left p-3 rounded-md border border-wedo-purple/30 hover:border-wedo-purple/30 hover:bg-wedo-purple/10/50 transition-colors motion-reduce:transition-none"
+                            className="w-full text-left p-3 rounded-xl border border-wedo-purple/30 hover:border-wedo-purple/30 hover:bg-wedo-purple/10/50 transition-colors motion-reduce:transition-none"
                           >
                             <div className="flex items-center justify-between">
                               <div>
@@ -232,7 +232,7 @@ export const JobFiltersSection = ({
                         <button
                           key={preset.id}
                           onClick={() => setSelectedPreset(preset)}
-                          className="w-full text-left p-3 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle hover:border-lia-border-subtle hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none"
+                          className="w-full text-left p-3 rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle hover:border-lia-border-subtle hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none"
                         >
                           <div className="flex items-center justify-between">
                             <div>
@@ -262,7 +262,7 @@ export const JobFiltersSection = ({
               ) : (
                 <div className="flex flex-wrap gap-2">
                   {selectedPreset.titles.map(title => (
-                    <span key={title} className="px-3 py-1.5 bg-lia-bg-tertiary rounded-md text-xs text-lia-text-primary">
+                    <span key={title} className="px-3 py-1.5 bg-lia-bg-tertiary rounded-xl text-xs text-lia-text-primary">
                       {title}
                     </span>
                   ))}
@@ -277,7 +277,7 @@ export const JobFiltersSection = ({
       {showSavePresetModal && (
         <div className="fixed inset-0 z-overlay flex items-center justify-center">
           <div className="absolute inset-0 bg-lia-overlay backdrop-blur-[1px]" onClick={() => setShowSavePresetModal(false)} />
-          <div className="relative bg-lia-bg-primary rounded-md w-full max-w-md p-4 dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
+          <div className="relative bg-lia-bg-primary rounded-xl w-full max-w-md p-4 dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
             <h3 className="font-medium text-lia-text-primary mb-4">Salvar como Preset</h3>
 
             <div className="space-y-4">
@@ -301,7 +301,7 @@ export const JobFiltersSection = ({
                 />
               </div>
 
-              <div className="p-3 rounded-md bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle">
+              <div className="p-3 rounded-xl bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle">
                 <div className="text-xs text-lia-text-secondary mb-2">
                   {(presetTarget === "titles" ? filters.job?.titles?.length : filters.job?.pastTitles?.length) || 0} cargos {presetTarget === "pastTitles" ? "anteriores " : ""}serão salvos:
                 </div>

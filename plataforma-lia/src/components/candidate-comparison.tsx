@@ -277,9 +277,9 @@ export function CandidateComparison({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md w-full max-w-7xl max-h-[95vh] overflow-y-auto">
+      <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-xl w-full max-w-7xl max-h-[95vh] overflow-y-auto">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+        <div className="flex items-center justify-between p-6 dark:border-lia-border-subtle">
           <div>
             <h3 className="text-xl font-semibold text-lia-text-primary flex items-center gap-2">
               <Users className="w-5 h-5 text-lia-text-secondary" />
@@ -296,7 +296,7 @@ export function CandidateComparison({
 
         <div className="p-6">
           {/* LIA Analysis Section */}
-          <div className="mb-6 border border-status-success/30 dark:border-status-success/30 rounded-md p-6 bg-status-success/10 dark:bg-status-success/10">
+          <div className="mb-6 border border-status-success/30 dark:border-status-success/30 rounded-xl p-6 bg-status-success/10 dark:bg-status-success/10">
             <div className="flex items-center gap-3 mb-4">
               <Brain className="w-5 h-5 text-status-success" />
               <h4 className="text-lg font-semibold text-status-success dark:text-status-success">
@@ -326,7 +326,7 @@ export function CandidateComparison({
             ) : liaAnalysis && (
               <div className="space-y-6">
                 {/* Executive Summary */}
-                <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md p-4 border border-status-success/30">
+                <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-xl p-4 border border-status-success/30">
                   <h5 className="font-semibold text-status-success dark:text-status-success mb-2 flex items-center gap-2">
                     <Brain className="w-4 h-4 text-wedo-cyan" />
                     Recomendação Final da LIA
@@ -348,7 +348,7 @@ export function CandidateComparison({
                 </div>
 
                 {/* Scenario Analysis */}
-                <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md p-4 border border-status-success/30">
+                <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-xl p-4 border border-status-success/30">
                   <h5 className="font-semibold text-status-success dark:text-status-success mb-4 flex items-center gap-2">
                     <Target className="w-4 h-4" />
                     Análise por Cenário
@@ -393,7 +393,7 @@ export function CandidateComparison({
                 </div>
 
                 {/* Action Plan */}
-                <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md p-4 border border-status-success/30">
+                <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-xl p-4 border border-status-success/30">
                   <h5 className="font-semibold text-status-success dark:text-status-success mb-3 flex items-center gap-2">
                     <Rocket className="w-4 h-4" />
                     Plano de Ação Recomendado

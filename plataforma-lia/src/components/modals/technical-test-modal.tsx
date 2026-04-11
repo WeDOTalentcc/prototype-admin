@@ -99,7 +99,7 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
       data-testid="technical-test-modal"
     >
       <div
-        className="w-full max-w-lg max-h-[85vh] overflow-hidden flex flex-col border border-lia-border-subtle bg-lia-bg-secondary rounded-md"
+        className="w-full max-w-lg max-h-[85vh] overflow-hidden flex flex-col border border-lia-border-subtle bg-lia-bg-secondary rounded-xl"
       >
         <div 
           className="flex items-center justify-between px-4 py-3 border-b border-b-lia-border-subtle"
@@ -162,7 +162,7 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
           {status === 'completed' && (
             <>
               <div className="grid grid-cols-2 gap-3 mb-4">
-                <div className="p-3 rounded-md border border-lia-border-subtle">
+                <div className="p-3 rounded-xl border border-lia-border-subtle">
                   <div className="flex items-center gap-2 mb-1">
                     <Trophy className="w-3.5 h-3.5 text-lia-text-secondary" />
                     <span className="text-micro text-lia-text-secondary">
@@ -180,7 +180,7 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
                   </span>
                 </div>
 
-                <div className="p-3 rounded-md border border-lia-border-subtle">
+                <div className="p-3 rounded-xl border border-lia-border-subtle">
                   <div className="flex items-center gap-2 mb-1">
                     <Clock className="w-3.5 h-3.5 text-lia-text-secondary" />
                     <span className="text-micro text-lia-text-secondary">
@@ -196,7 +196,7 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
                 </div>
               </div>
 
-              <div className="flex items-center gap-2 p-3 rounded-md mb-4 bg-wedo-cyan/[.08] border border-wedo-cyan/20">
+              <div className="flex items-center gap-2 p-3 rounded-xl mb-4 bg-wedo-cyan/[.08] border border-wedo-cyan/20">
                 <Users className="w-4 h-4 text-lia-text-secondary" />
                 <span 
                   className="text-xs text-lia-text-secondary"
@@ -219,7 +219,7 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
                   {testData.categories?.map((category: TestCategory, index: number) => (
                     <div 
                       key={index}
-                      className="p-3 rounded-md border border-lia-border-subtle"
+                      className="p-3 rounded-xl border border-lia-border-subtle"
                     >
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-xs font-medium text-lia-text-primary">

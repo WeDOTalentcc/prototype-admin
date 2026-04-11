@@ -59,7 +59,7 @@ export function KanbanCardActions({
   <DropdownMenu>
     <DropdownMenuTrigger asChild>
       <button
-        className="p-1 hover:bg-lia-bg-tertiary rounded-md transition-opacity motion-reduce:transition-none bg-lia-bg-primary/80"
+        className="p-1 hover:bg-lia-bg-tertiary rounded-xl transition-opacity motion-reduce:transition-none bg-lia-bg-primary/80"
         onClick={(e) => e.stopPropagation()}
         title="Mais opções"
         aria-label="Mais opções do candidato"
@@ -160,7 +160,7 @@ export function KanbanCardActions({
 
   {/* Botão de Preview */}
   <button
-    className="p-1 hover:bg-lia-bg-tertiary rounded-md transition-colors motion-reduce:transition-none bg-lia-bg-primary/80"
+    className="p-1 hover:bg-lia-bg-tertiary rounded-xl transition-colors motion-reduce:transition-none bg-lia-bg-primary/80"
     onClick={(e) => {
       e.stopPropagation()
       onOpenPreview(candidate)

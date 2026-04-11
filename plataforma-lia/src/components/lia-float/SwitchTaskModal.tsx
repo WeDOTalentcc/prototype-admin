@@ -121,7 +121,7 @@ export function SwitchTaskModal({
         className="relative w-full max-w-md bg-lia-bg-primary border border-lia-border-subtle rounded-xl shadow-lia-lg overflow-hidden animate-in fade-in zoom-in-95 duration-150"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center gap-2 px-4 py-3 border-b border-lia-border-subtle">
+        <div className="flex items-center gap-2 px-4 py-3">
           <Search className="w-4 h-4 text-lia-text-tertiary flex-shrink-0" />
           <input
             ref={inputRef}

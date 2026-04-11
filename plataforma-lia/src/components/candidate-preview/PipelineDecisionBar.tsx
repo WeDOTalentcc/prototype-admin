@@ -566,7 +566,7 @@ export function PipelineDecisionBar({
     if (highlight && (highlight.summary || highlight.strengths.length > 0)) {
       return (
         <div className="border-b px-3 py-2 bg-lia-bg-primary dark:bg-lia-bg-primary">
-          <div className="flex items-start gap-1.5 px-2 py-1.5 rounded-md bg-lia-bg-secondary border border-lia-border-subtle">
+          <div className="flex items-start gap-1.5 px-2 py-1.5 rounded-xl bg-lia-bg-secondary border border-lia-border-subtle">
             <Sparkles className="w-3 h-3 text-wedo-cyan mt-0.5 flex-shrink-0" />
             <p className="text-micro text-lia-text-secondary leading-relaxed">
               {highlight.summary}
@@ -601,7 +601,7 @@ export function PipelineDecisionBar({
                   <ChevronDown className="w-2.5 h-2.5" />
                 </button>
                 {showSubStatusDropdown && subStatuses.length > 0 && (
-                  <div className="absolute top-full left-0 mt-1 bg-lia-bg-primary border border-lia-border-subtle rounded-md shadow-md z-50 min-w-[160px] py-1">
+                  <div className="absolute top-full left-0 mt-1 bg-lia-bg-primary border border-lia-border-subtle rounded-xl shadow-md z-50 min-w-[160px] py-1">
                     {subStatuses.map((sub) => (
                       <button
                         key={typeof sub === 'string' ? sub : sub.name}
@@ -630,7 +630,7 @@ export function PipelineDecisionBar({
             Mover para
           </Button>
           {showMoveDropdown && pipeline.length > 0 && (
-            <div className="absolute top-full right-0 mt-1 bg-lia-bg-primary border border-lia-border-subtle rounded-md shadow-md z-50 min-w-[180px] py-1">
+            <div className="absolute top-full right-0 mt-1 bg-lia-bg-primary border border-lia-border-subtle rounded-xl shadow-md z-50 min-w-[180px] py-1">
               {pipeline
                 .filter(s => s.name !== canonicalStage)
                 .map((stage) => (
@@ -651,7 +651,7 @@ export function PipelineDecisionBar({
       {renderContextualButtons()}
 
       {highlight && (highlight.summary || highlight.strengths.length > 0) && (
-        <div className="flex items-start gap-1.5 px-2 py-1.5 rounded-md bg-lia-bg-secondary border border-lia-border-subtle">
+        <div className="flex items-start gap-1.5 px-2 py-1.5 rounded-xl bg-lia-bg-secondary border border-lia-border-subtle">
           <Sparkles className="w-3 h-3 text-wedo-cyan mt-0.5 flex-shrink-0" />
           <p className="text-micro text-lia-text-secondary leading-relaxed">
             {highlight.summary}

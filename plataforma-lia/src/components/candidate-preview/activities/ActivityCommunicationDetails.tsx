@@ -16,8 +16,8 @@ export function ActivityCommunicationDetails({ activity }: ActivityCommunication
     <>
       {activity.type === 'email-sent' && (
         <div className="mt-3 space-y-3">
-          <div className="bg-lia-bg-primary border border-lia-border-subtle rounded-md overflow-hidden">
-            <div className="bg-lia-bg-secondary px-4 py-3 border-b border-lia-border-subtle">
+          <div className="bg-lia-bg-primary border border-lia-border-subtle rounded-xl overflow-hidden">
+            <div className="bg-lia-bg-secondary px-4 py-3">
               <div className="space-y-1.5">
                 <div className="flex items-center gap-2 text-xs">
                   <span className="text-lia-text-tertiary w-12">De:</span>
@@ -77,7 +77,7 @@ export function ActivityCommunicationDetails({ activity }: ActivityCommunication
 
       {activity.type === 'interview-scheduled' && (
         <div className="mt-3 space-y-3">
-          <div className="bg-lia-bg-primary p-3 rounded-md border border-lia-border-subtle">
+          <div className="bg-lia-bg-primary p-3 rounded-xl border border-lia-border-subtle">
             <h5 className="text-xs font-semibold text-lia-text-primary mb-2 flex items-center gap-1">
               <Calendar className="w-3 h-3 text-wedo-purple" />
               {activity.details.interviewType}
@@ -86,16 +86,16 @@ export function ActivityCommunicationDetails({ activity }: ActivityCommunication
               )}
             </h5>
             <div className="grid grid-cols-2 gap-2 mb-3">
-              <div className="bg-lia-bg-secondary p-2 rounded-md">
+              <div className="bg-lia-bg-secondary p-2 rounded-xl">
                 <p className={textStyles.bodySmall}>Data e Hora</p>
                 <p className="text-xs font-semibold text-lia-text-primary">{activity.details.dateTime}</p>
               </div>
-              <div className="bg-lia-bg-secondary p-2 rounded-md">
+              <div className="bg-lia-bg-secondary p-2 rounded-xl">
                 <p className={textStyles.bodySmall}>Duração</p>
                 <p className="text-xs font-semibold text-lia-text-primary">{activity.details.duration}</p>
               </div>
             </div>
-            <div className="bg-lia-bg-secondary p-2 rounded-md mb-3">
+            <div className="bg-lia-bg-secondary p-2 rounded-xl mb-3">
               <p className={`${textStyles.bodySmall} mb-1`}>📍 Local</p>
               <p className="text-xs font-medium text-lia-text-primary">{activity.details.location}</p>
               {activity.details.meetLink && (
@@ -110,7 +110,7 @@ export function ActivityCommunicationDetails({ activity }: ActivityCommunication
                 <p className="text-xs font-semibold text-lia-text-primary mb-1">👥 Entrevistadores</p>
                 <div className="space-y-1">
                   {activity.details.interviewers.map((int: Record<string, unknown> | string, i: number) => (
-                    <div key={`int-${i}`} className="flex items-center gap-2 text-xs bg-lia-bg-secondary p-1.5 rounded-md">
+                    <div key={`int-${i}`} className="flex items-center gap-2 text-xs bg-lia-bg-secondary p-1.5 rounded-xl">
                       <div className="w-5 h-5 rounded-full bg-lia-interactive-active flex items-center justify-center text-micro font-medium text-lia-text-secondary">
                         {typeof int === 'string' ? int.charAt(0) : String(int.name ?? '').charAt(0)}
                       </div>
@@ -127,7 +127,7 @@ export function ActivityCommunicationDetails({ activity }: ActivityCommunication
 
       {activity.type === 'lia-screening' && activity.details.conversation && (
         <div className="mt-2 space-y-2">
-          <div className="bg-lia-bg-primary p-2 rounded-md max-h-48 overflow-y-auto">
+          <div className="bg-lia-bg-primary p-2 rounded-xl max-h-48 overflow-y-auto">
             <p className="text-xs text-lia-text-primary mb-2">{activity.platform}</p>
             <div className="space-y-2">
               {activity.details.conversation.map((msg: Record<string, unknown>, i: number) => (
@@ -141,7 +141,7 @@ export function ActivityCommunicationDetails({ activity }: ActivityCommunication
             </div>
           </div>
           {activity.details.keyPoints && (
-            <div className="bg-lia-bg-primary p-2 rounded-md">
+            <div className="bg-lia-bg-primary p-2 rounded-xl">
               <p className={`${textStyles.bodySmall} mb-1`}>Pontos-Chave</p>
               <div className="space-y-0.5">
                 <div className="flex justify-between text-xs">
@@ -164,7 +164,7 @@ export function ActivityCommunicationDetails({ activity }: ActivityCommunication
 
       {(activity.type === 'email-sent' || activity.type === 'email-received') && activity.details.subject && !activity.details.from?.includes('@') && (
         <div className="mt-3 space-y-3">
-          <div className="bg-lia-bg-primary p-3 rounded-md">
+          <div className="bg-lia-bg-primary p-3 rounded-xl">
             <div className="flex items-center justify-between mb-2">
               <h5 className="text-xs font-semibold text-lia-text-primary flex items-center gap-1">
                 <Mail className="w-3 h-3 text-lia-text-primary" />
@@ -176,7 +176,7 @@ export function ActivityCommunicationDetails({ activity }: ActivityCommunication
                 </Badge>
               )}
             </div>
-            <div className="bg-lia-bg-primary p-2 rounded-md mb-2 text-xs space-y-1">
+            <div className="bg-lia-bg-primary p-2 rounded-xl mb-2 text-xs space-y-1">
               <div className="flex items-center gap-2">
                 <span className="text-lia-text-primary font-medium">De:</span>
                 <span className="text-lia-text-primary">

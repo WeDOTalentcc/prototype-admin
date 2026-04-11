@@ -175,8 +175,8 @@ export function CompensationBenefitsPanel({
 
   return (
     <div className="space-y-6">
-      <Card className="rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
-        <CardHeader className="pb-3 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+      <Card className="rounded-xl dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
+        <CardHeader className="pb-3 dark:border-lia-border-subtle">
           <CardTitle className="text-sm flex items-center gap-2 font-sans">
             💵 Salário Base (CLT)
           </CardTitle>
@@ -205,8 +205,8 @@ export function CompensationBenefitsPanel({
         </CardContent>
       </Card>
 
-      <Card className="rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
-        <CardHeader className="pb-3 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+      <Card className="rounded-xl dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
+        <CardHeader className="pb-3 dark:border-lia-border-subtle">
           <CardTitle className="text-sm flex items-center gap-2 font-sans">
             🎯 Bônus / Variável
           </CardTitle>
@@ -246,8 +246,8 @@ export function CompensationBenefitsPanel({
         </CardContent>
       </Card>
 
-      <Card className="rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
-        <CardHeader className="pb-3 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+      <Card className="rounded-xl dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
+        <CardHeader className="pb-3 dark:border-lia-border-subtle">
           <CardTitle className="text-sm flex items-center gap-2 font-sans">
             🎁 Benefícios
           </CardTitle>
@@ -289,8 +289,8 @@ export function CompensationBenefitsPanel({
         </CardContent>
       </Card>
 
-      <Card className="rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
-        <CardHeader className="pb-3 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+      <Card className="rounded-xl dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
+        <CardHeader className="pb-3 dark:border-lia-border-subtle">
           <CardTitle className="text-sm flex items-center gap-2 font-sans">
             📝 Observações
           </CardTitle>

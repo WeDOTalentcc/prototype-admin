@@ -66,7 +66,7 @@ export default function FlowStepMessage({
           <div className="flex gap-2">
             <button
               onClick={() => onSelectScope("all")}
-              className="px-3 py-1.5 text-xs rounded-md bg-lia-bg-inverse text-white hover:bg-lia-bg-inverse transition-colors"
+              className="px-3 py-1.5 text-xs rounded-xl bg-lia-bg-inverse text-white hover:bg-lia-bg-inverse transition-colors"
             >
               Fluxo completo
             </button>
@@ -74,7 +74,7 @@ export default function FlowStepMessage({
               <button
                 key={s.id}
                 onClick={() => onSelectScope(s.id)}
-                className="px-3 py-1.5 text-xs rounded-md border border-lia-border-default text-lia-text-secondary hover:bg-lia-bg-tertiary transition-colors"
+                className="px-3 py-1.5 text-xs rounded-xl border border-lia-border-default text-lia-text-secondary hover:bg-lia-bg-tertiary transition-colors"
               >
                 Até {s.label}
               </button>

@@ -18,7 +18,7 @@ export function CompanyDefaultQuestions({
   const activeCount = questions.filter(q => !disabledIds.has(q.id)).length
 
   return (
-    <div className="border border-lia-border-subtle rounded-md bg-lia-bg-primary overflow-hidden">
+    <div className="border border-lia-border-subtle rounded-xl bg-lia-bg-primary overflow-hidden">
       <button
         onClick={() => setIsExpanded(!isExpanded)}
         className="w-full flex items-center justify-between px-4 py-3 hover:bg-lia-interactive-hover dark:hover:bg-lia-btn-primary-hover transition-colors motion-reduce:transition-none"
@@ -64,7 +64,7 @@ export function CompanyDefaultQuestions({
                     checked={enabled}
                     disabled={!isEditing}
                     onChange={e => onToggle(q.id, e.target.checked)}
-                    className="w-3.5 h-3.5 rounded-md border-lia-border-default accent-lia-btn-primary-bg cursor-pointer disabled:cursor-default"
+                    className="w-3.5 h-3.5 rounded-xl border-lia-border-default accent-lia-btn-primary-bg cursor-pointer disabled:cursor-default"
                   />
                   <span className="font-['Open_Sans',sans-serif] text-xs text-lia-text-secondary flex-1">
                     {q.question}

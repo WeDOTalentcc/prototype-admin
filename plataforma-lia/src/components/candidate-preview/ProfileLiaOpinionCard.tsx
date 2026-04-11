@@ -30,7 +30,7 @@ export function ProfileLiaOpinionCard({
 
   if (isLoadingOpinions && !opinionsData) {
     return (
-      <div className="bg-lia-bg-primary border border-lia-border-subtle rounded-md p-3 animate-pulse motion-reduce:animate-none">
+      <div className="bg-lia-bg-primary border border-lia-border-subtle rounded-xl p-3 animate-pulse motion-reduce:animate-none">
         <div className="flex items-center gap-2 mb-2">
           <div className="w-4 h-4 bg-lia-interactive-active rounded-md"></div>
           <div className="w-24 h-4 bg-lia-interactive-active rounded-md"></div>
@@ -63,10 +63,10 @@ export function ProfileLiaOpinionCard({
 
   return (
     <Card className="bg-lia-bg-primary border border-lia-border-subtle">
-      <CardHeader className="py-1.5 px-2.5 bg-lia-bg-primary border-b border-lia-border-subtle">
+      <CardHeader className="py-1.5 px-2.5 bg-lia-bg-primary">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5">
-            <div className="p-0.5 rounded-md bg-lia-bg-tertiary">
+            <div className="p-0.5 rounded-xl bg-lia-bg-tertiary">
               <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
             </div>
             <CardTitle className={`${textStyles.label} text-lia-text-secondary`}>Parecer LIA</CardTitle>

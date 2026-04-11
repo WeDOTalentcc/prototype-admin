@@ -141,7 +141,7 @@ export function SendEmailModal({ isOpen, onClose, candidate, onSuccess }: SendEm
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent 
         data-testid="send-email-modal"
-        className="max-w-4xl h-[80vh] p-0 gap-0 overflow-hidden bg-lia-bg-primary border border-lia-border-subtle rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle"
+        className="max-w-4xl h-[80vh] p-0 gap-0 overflow-hidden bg-lia-bg-primary border border-lia-border-subtle rounded-xl dark:bg-lia-bg-secondary dark:border-lia-border-subtle"
        
       >
         <VisuallyHidden>
@@ -164,9 +164,9 @@ export function SendEmailModal({ isOpen, onClose, candidate, onSuccess }: SendEm
           </div>
         ) : (
           <>
-            <div className="flex items-center justify-between px-5 py-3 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+            <div className="flex items-center justify-between px-5 py-3 dark:border-lia-border-subtle">
               <div className="flex items-center gap-2.5">
-                <div className="w-7 h-7 rounded-md bg-lia-bg-tertiary flex items-center justify-center">
+                <div className="w-7 h-7 rounded-xl bg-lia-bg-tertiary flex items-center justify-center">
                   <Mail className="w-3.5 h-3.5 text-lia-text-secondary" />
                 </div>
                 <div>
@@ -229,21 +229,21 @@ export function SendEmailModal({ isOpen, onClose, candidate, onSuccess }: SendEm
               </div>
 
               <div className="w-[45%] flex flex-col bg-lia-bg-primary">
-                <div className="px-4 py-3 border-b border-lia-border-subtle">
+                <div className="px-4 py-3">
                   <p className="text-xs font-medium text-lia-text-secondary uppercase tracking-wider mb-2">
                     Preview
                   </p>
                   
-                  <div className="bg-lia-bg-primary rounded-md border border-lia-border-subtle p-2.5">
+                  <div className="bg-lia-bg-primary rounded-xl border border-lia-border-subtle p-2.5">
                     <div className="flex items-center justify-between">
                       <p className="text-xs text-lia-text-secondary">
                         Para:
                       </p>
                       <div className="flex items-center gap-0.5">
-                        <button className="p-0.5 hover:bg-lia-bg-secondary rounded-md">
+                        <button className="p-0.5 hover:bg-lia-bg-secondary rounded-xl">
                           <ChevronLeft className="w-3.5 h-3.5 text-lia-text-secondary" />
                         </button>
-                        <button className="p-0.5 hover:bg-lia-bg-secondary rounded-md">
+                        <button className="p-0.5 hover:bg-lia-bg-secondary rounded-xl">
                           <ChevronRight className="w-3.5 h-3.5 text-lia-text-secondary" />
                         </button>
                       </div>
@@ -294,7 +294,7 @@ export function SendEmailModal({ isOpen, onClose, candidate, onSuccess }: SendEm
 
                 {!recipientEmail && candidate && !candidate.email && (
                   <div className="px-4 py-2 border-t border-lia-border-subtle">
-                    <div className="flex items-start gap-1.5 p-2 rounded-md bg-wedo-orange/10 border border-wedo-orange/20">
+                    <div className="flex items-start gap-1.5 p-2 rounded-xl bg-wedo-orange/10 border border-wedo-orange/20">
                       <AlertCircle className="w-3.5 h-3.5 text-wedo-orange flex-shrink-0 mt-0.5" />
                       <div>
                         <p className="text-xs font-medium text-wedo-orange">

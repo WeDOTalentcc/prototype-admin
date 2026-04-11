@@ -578,7 +578,7 @@ export function BenefitsTab() {
             size="sm"
             onClick={() => setShowTemplateModal(true)}
             disabled={!isEditingBenefits}
-            className="gap-1.5 rounded-md text-xs border-lia-border-default text-lia-text-primary dark:border-lia-border-default hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover"
+            className="gap-1.5 rounded-xl text-xs border-lia-border-default text-lia-text-primary dark:border-lia-border-default hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover"
           >
             <Library className="w-3.5 h-3.5" />
             Adicionar da Lista

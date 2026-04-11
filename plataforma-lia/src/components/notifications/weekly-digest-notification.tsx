@@ -51,7 +51,7 @@ export function WeeklyDigestNotification({
   return (
     <div className="w-full max-w-[400px]">
       <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-xl shadow-lia-lg border border-lia-border-subtle overflow-hidden">
-        <div className="px-4 py-3 border-b border-lia-border-subtle flex items-center justify-between">
+        <div className="px-4 py-3 flex items-center justify-between">
           <h3 className="text-sm font-semibold text-lia-text-primary">Notificações</h3>
           <button
             className="text-xs text-wedo-cyan hover:text-wedo-cyan-dark font-medium transition-colors"
@@ -86,7 +86,7 @@ export function WeeklyDigestNotification({
                   )}
                   {onDismiss && (
                     <button
-                      className="text-[10px] text-lia-text-tertiary px-2.5 py-1 rounded-md hover:bg-lia-bg-secondary transition-colors border border-lia-border-subtle"
+                      className="text-[10px] text-lia-text-tertiary px-2.5 py-1 rounded-xl hover:bg-lia-bg-secondary transition-colors border border-lia-border-subtle"
                       onClick={onDismiss}
                     >
                       Dispensar

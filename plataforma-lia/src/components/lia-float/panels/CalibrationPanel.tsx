@@ -131,12 +131,12 @@ export function CalibrationPanel({ data, onUpdateData }: CalibrationPanelProps) 
 
   return (
     <div className="flex flex-col h-full">
-      <div className="px-4 py-3 border-b border-lia-border-subtle flex items-center gap-2">
+      <div className="px-4 py-3 flex items-center gap-2">
         <Settings2 className="w-4 h-4 text-wedo-cyan" />
         <span className="text-sm font-semibold text-lia-text-primary">Calibração de Vaga</span>
       </div>
 
-      <div className="px-4 py-3 border-b border-lia-border-subtle">
+      <div className="px-4 py-3">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
             <Users className="w-3.5 h-3.5 text-lia-text-secondary" />

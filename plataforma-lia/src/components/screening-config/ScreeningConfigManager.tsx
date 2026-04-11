@@ -87,7 +87,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
     <div className={_hideOwnSidebar ? "" : "flex gap-6"}>
       {!_hideOwnSidebar && (
       <div className="flex-shrink-0">
-        <Card className="border border-lia-border-subtle bg-lia-bg-primary rounded-md overflow-hidden">
+        <Card className="border border-lia-border-subtle bg-lia-bg-primary rounded-xl overflow-hidden">
           <nav className="space-y-1 p-3 h-full overflow-y-auto">
             {SCREENING_SECTIONS.map((section) => {
               const sectionDone = section.id === 'configuracoes' ? configDone : section.id === 'descricao' ? jdDone : questionsDone
@@ -120,7 +120,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
 
       <div className="flex-1 min-w-0">
         <div className="space-y-4">
-          <div className="flex items-center justify-between bg-lia-bg-primary rounded-md p-4">
+          <div className="flex items-center justify-between bg-lia-bg-primary rounded-xl p-4">
             <div className="flex items-center gap-3">
               <currentSection.icon className="w-5 h-5 text-lia-text-secondary" />
               <div>
@@ -334,7 +334,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                     </p>
                   </div>
                 </div>
-                <div className="rounded-md p-3 mb-4 border border-lia-border-subtle bg-lia-bg-secondary/50">
+                <div className="rounded-xl p-3 mb-4 border border-lia-border-subtle bg-lia-bg-secondary/50">
                   <div className="flex items-start gap-2.5">
                     <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${
  showScreeningToggleConfirm === 'activate' ? 'bg-status-success/15 dark:bg-status-success/30' : 'bg-status-warning/15 dark:bg-status-warning/30'
@@ -356,7 +356,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                   <Button
                     variant="outline"
                     size="sm"
-                    className="text-xs rounded-md px-4 border-lia-border-subtle"
+                    className="text-xs rounded-xl px-4 border-lia-border-subtle"
                     onClick={() => setShowScreeningToggleConfirm(null)}
                   >
                     Cancelar

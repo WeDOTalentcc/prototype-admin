@@ -43,7 +43,7 @@ export function TriagemDetailsModal({
   if (state.loading) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-lia-overlay" role="status" aria-live="polite" aria-label="Carregando...">
-        <div className="w-full max-w-3xl p-8 flex flex-col items-center gap-3 rounded-md bg-lia-bg-primary" role="status" aria-live="polite" aria-label="Carregando...">
+        <div className="w-full max-w-3xl p-8 flex flex-col items-center gap-3 rounded-xl bg-lia-bg-primary" role="status" aria-live="polite" aria-label="Carregando...">
           <Loader2 className="w-8 h-8 animate-spin motion-reduce:animate-none text-wedo-cyan" />
           <p className="text-sm text-lia-text-secondary">Carregando dados da triagem...</p>
         </div>
@@ -54,10 +54,10 @@ export function TriagemDetailsModal({
   if (state.error || !state.details) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-lia-overlay">
-        <div className="w-full max-w-3xl p-8 flex flex-col items-center gap-3 rounded-md bg-lia-bg-primary">
+        <div className="w-full max-w-3xl p-8 flex flex-col items-center gap-3 rounded-xl bg-lia-bg-primary">
           <AlertCircle className="w-8 h-8 text-lia-text-secondary" />
           <p className="text-sm text-lia-text-secondary">{state.error || 'Dados não disponíveis.'}</p>
-          <button onClick={onClose} className="mt-2 px-4 py-2 text-sm rounded-md bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover">Fechar</button>
+          <button onClick={onClose} className="mt-2 px-4 py-2 text-sm rounded-xl bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover">Fechar</button>
         </div>
       </div>
     )
@@ -69,7 +69,7 @@ export function TriagemDetailsModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-lia-overlay">
-      <div className="w-full max-w-3xl max-h-[85vh] overflow-hidden flex flex-col rounded-md border border-lia-border-subtle bg-lia-bg-secondary">
+      <div className="w-full max-w-3xl max-h-[85vh] overflow-hidden flex flex-col rounded-xl border border-lia-border-subtle bg-lia-bg-secondary">
         <TriagemDetailsHeader
           candidate={candidate}
           details={state.details}

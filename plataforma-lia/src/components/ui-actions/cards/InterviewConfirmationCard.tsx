@@ -120,7 +120,7 @@ export function InterviewConfirmationCard({
 
         <div className="grid grid-cols-2 gap-3 mb-4">
           <div
-            className="p-3 rounded-md border bg-lia-bg-primary border-lia-border-subtle"
+            className="p-3 rounded-xl border bg-lia-bg-primary border-lia-border-subtle"
           >
             <div className="flex items-center gap-2 mb-1 text-lia-text-tertiary">
               <Calendar className="h-4 w-4" />
@@ -132,7 +132,7 @@ export function InterviewConfirmationCard({
           </div>
 
           <div
-            className="p-3 rounded-md border bg-lia-bg-primary border-lia-border-subtle"
+            className="p-3 rounded-xl border bg-lia-bg-primary border-lia-border-subtle"
           >
             <div className="flex items-center gap-2 mb-1 text-lia-text-tertiary">
               <Clock className="h-4 w-4 text-lia-text-secondary" />
@@ -148,7 +148,7 @@ export function InterviewConfirmationCard({
         </div>
 
         <div
-          className="p-3 rounded-md border mb-4 bg-lia-bg-primary border-lia-border-subtle"
+          className="p-3 rounded-xl border mb-4 bg-lia-bg-primary border-lia-border-subtle"
         >
           <div className="flex items-center gap-2 mb-2">
             <span className="text-lia-text-secondary">{getTypeIcon(data.type)}</span>
@@ -217,7 +217,7 @@ export function InterviewConfirmationCard({
 
         {data.notes && (
           <div
-            className="p-3 rounded-md border mb-4 bg-lia-bg-tertiary border-lia-border-subtle"
+            className="p-3 rounded-xl border mb-4 bg-lia-bg-tertiary border-lia-border-subtle"
           >
             <div className="text-xs mb-1 text-lia-text-secondary">Notas para o candidato</div>
             <p className="text-sm text-lia-text-secondary">{data.notes}</p>

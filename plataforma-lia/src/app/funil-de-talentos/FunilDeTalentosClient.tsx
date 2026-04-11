@@ -201,7 +201,7 @@ export default function FunilDeTalentosPage() {
           <Button
             variant="outline"
             size="sm"
-            className="rounded-md border-lia-border-default dark:border-lia-border-subtle self-start sm:self-auto"
+            className="rounded-xl border-lia-border-default dark:border-lia-border-subtle self-start sm:self-auto"
             onClick={() => setShareModalOpen(true)}
             disabled={candidates.length === 0}
           >
@@ -239,7 +239,7 @@ export default function FunilDeTalentosPage() {
                   placeholder="Buscar por nome, cargo, empresa ou habilidade..."
                   value={filters.search ?? ""}
                   onChange={e => updateFilter("search", e.target.value)}
-                  className="pl-9 text-xs rounded-md border-lia-border-subtle dark:border-lia-border-subtle bg-transparent"
+                  className="pl-9 text-xs rounded-xl border-lia-border-subtle dark:border-lia-border-subtle bg-transparent"
                 />
               </div>
               <div className="flex flex-wrap gap-2">
@@ -277,7 +277,7 @@ export default function FunilDeTalentosPage() {
 
             {/* Error state */}
             {error && (
-              <div className="flex items-center gap-2 p-3 bg-status-error/10 dark:bg-status-error/10 border border-status-error/30 dark:border-status-error/30 rounded-md text-xs text-status-error dark:text-status-error">
+              <div className="flex items-center gap-2 p-3 bg-status-error/10 dark:bg-status-error/10 border border-status-error/30 dark:border-status-error/30 rounded-xl text-xs text-status-error dark:text-status-error">
                 <AlertCircle className="h-4 w-4 flex-shrink-0" />
                 {error}
               </div>
@@ -321,7 +321,7 @@ export default function FunilDeTalentosPage() {
                     onClick={() => goToPage(currentPage - 1)}
                     disabled={currentPage <= 1}
                     aria-label="Página anterior"
-                    className="h-7 w-7 p-0 rounded-md border-lia-border-subtle dark:border-lia-border-subtle"
+                    className="h-7 w-7 p-0 rounded-xl border-lia-border-subtle dark:border-lia-border-subtle"
                   >
                     <ChevronLeft className="h-4 w-4" />
                   </Button>
@@ -352,7 +352,7 @@ export default function FunilDeTalentosPage() {
                     onClick={() => goToPage(currentPage + 1)}
                     disabled={currentPage >= totalPages}
                     aria-label="Próxima página"
-                    className="h-7 w-7 p-0 rounded-md border-lia-border-subtle dark:border-lia-border-subtle"
+                    className="h-7 w-7 p-0 rounded-xl border-lia-border-subtle dark:border-lia-border-subtle"
                   >
                     <ChevronRight className="h-4 w-4" />
                   </Button>

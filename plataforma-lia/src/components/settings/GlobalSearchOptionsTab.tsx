@@ -78,7 +78,7 @@ export function GlobalSearchOptionsTab({
           {editHeader}
         </CardHeader>
         <CardContent className="pt-3 space-y-2">
-          <div className={`flex items-center justify-between gap-4 py-1.5 border-b border-lia-border-subtle dark:border-lia-border-strong ${!isEditingOptions ? 'opacity-75' : ''}`}>
+          <div className={`flex items-center justify-between gap-4 py-1.5 dark:border-lia-border-strong ${!isEditingOptions ? 'opacity-75' : ''}`}>
             <div>
               <div className="text-xs font-medium text-lia-text-primary">
                 Revelar emails automaticamente
@@ -94,7 +94,7 @@ export function GlobalSearchOptionsTab({
             />
           </div>
 
-          <div className={`flex items-center justify-between gap-4 py-1.5 border-b border-lia-border-subtle dark:border-lia-border-strong ${!isEditingOptions ? 'opacity-75' : ''}`}>
+          <div className={`flex items-center justify-between gap-4 py-1.5 dark:border-lia-border-strong ${!isEditingOptions ? 'opacity-75' : ''}`}>
             <div>
               <div className="text-xs font-medium text-lia-text-primary">
                 Revelar telefones automaticamente
@@ -110,7 +110,7 @@ export function GlobalSearchOptionsTab({
             />
           </div>
 
-          <div className={`flex items-center justify-between gap-4 py-1.5 border-b border-lia-border-subtle dark:border-lia-border-strong ${!isEditingOptions ? 'opacity-75' : ''}`}>
+          <div className={`flex items-center justify-between gap-4 py-1.5 dark:border-lia-border-strong ${!isEditingOptions ? 'opacity-75' : ''}`}>
             <div>
               <div className="text-xs font-medium text-lia-text-primary">
                 Priorizar perfis atualizados recentemente
@@ -136,7 +136,7 @@ export function GlobalSearchOptionsTab({
           </CardTitle>
         </CardHeader>
         <CardContent className="pt-3 space-y-2">
-          <div className={`flex items-center justify-between gap-4 py-1.5 border-b border-lia-border-subtle dark:border-lia-border-strong ${!isEditingOptions ? 'opacity-75' : ''}`}>
+          <div className={`flex items-center justify-between gap-4 py-1.5 dark:border-lia-border-strong ${!isEditingOptions ? 'opacity-75' : ''}`}>
             <div>
               <div className="text-xs font-medium text-lia-text-primary">
                 Confirmar antes de cada busca global

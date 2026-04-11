@@ -33,13 +33,13 @@ export function ScheduleTab({
   return (
     <div className="space-y-4">
       {successMessage && (
-        <div className="px-2 py-1.5 rounded-md flex items-center gap-2 bg-status-success/15 border border-status-success/30 text-status-success dark:bg-status-success dark:border-status-success/30 dark:text-status-success">
+        <div className="px-2 py-1.5 rounded-xl flex items-center gap-2 bg-status-success/15 border border-status-success/30 text-status-success dark:bg-status-success dark:border-status-success/30 dark:text-status-success">
           <CheckCircle className="w-3.5 h-3.5 text-status-success dark:text-status-success" />
           <span className="text-xs">{successMessage}</span>
         </div>
       )}
       {error && (
-        <div className="bg-status-error/10 border border-status-error/30 text-status-error px-2 py-1.5 rounded-md flex items-center gap-2">
+        <div className="bg-status-error/10 border border-status-error/30 text-status-error px-2 py-1.5 rounded-xl flex items-center gap-2">
           <AlertCircle className="w-3.5 h-3.5" />
           <span className="text-xs">{error}</span>
         </div>
@@ -74,7 +74,7 @@ export function ScheduleTab({
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="bg-status-warning/10 dark:bg-status-warning/20 rounded-md p-3 border border-status-warning/30 dark:border-status-warning/30">
+          <div className="bg-status-warning/10 dark:bg-status-warning/20 rounded-xl p-3 border border-status-warning/30 dark:border-status-warning/30">
             <div className="flex items-start gap-2">
               <Shield className="w-4 h-4 text-status-warning flex-shrink-0 mt-0.5" />
               <div>
@@ -124,7 +124,7 @@ export function ScheduleTab({
             </div>
           </div>
 
-          <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 rounded-md p-3">
+          <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 rounded-xl p-3">
             <div className="flex items-center justify-between mb-2">
               <span className="text-micro font-medium text-lia-text-secondary">Janela de Envio</span>
               <Badge variant="outline" className="text-micro rounded-full border-lia-border-default text-lia-text-primary dark:border-lia-border-default">

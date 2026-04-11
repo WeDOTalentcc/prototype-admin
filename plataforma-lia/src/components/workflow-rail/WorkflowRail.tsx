@@ -67,7 +67,7 @@ export default function WorkflowRail({ userId, onNavigate }: WorkflowRailProps) 
       {/* Expanded panel */}
       {isExpanded && (
         <div className="bg-white border-t border-lia-border-subtle shadow-2xl max-h-80 overflow-y-auto">
-          <div className="px-4 py-3 border-b border-lia-border-subtle flex items-center justify-between">
+          <div className="px-4 py-3 flex items-center justify-between">
             <h3 className={textStyles.subtitle}>Fluxos Ativos</h3>
             <div className="flex items-center gap-2">
               {!isConnected && (

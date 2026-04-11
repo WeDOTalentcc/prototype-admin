@@ -70,9 +70,9 @@ export function JobInsightsModal({
         aria-describedby="insights-modal-description"
       >
         {/* ── Header ──────────────────────────────────────────────────── */}
-        <DialogHeader className="pb-3 border-b border-lia-border-subtle flex-shrink-0">
+        <DialogHeader className="pb-3 flex-shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-md bg-lia-bg-tertiary flex items-center justify-center">
+            <div className="w-8 h-8 rounded-xl bg-lia-bg-tertiary flex items-center justify-center">
               <BarChart3 className="w-4 h-4 text-lia-text-secondary" />
             </div>
             <div>

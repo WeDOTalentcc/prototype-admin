@@ -49,7 +49,7 @@ export default function TalentPoolsSidebar({
       {/* Section header */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full flex items-center justify-between px-3 py-2 hover:bg-lia-bg-tertiary rounded-md transition-colors"
+        className="w-full flex items-center justify-between px-3 py-2 hover:bg-lia-bg-tertiary rounded-xl transition-colors"
       >
         <div className="flex items-center gap-2">
           <Database className="w-4 h-4 text-lia-text-tertiary" />
@@ -88,7 +88,7 @@ export default function TalentPoolsSidebar({
           {/* Create new */}
           <button
             onClick={onCreatePool}
-            className="w-full flex items-center gap-2 px-3 py-1.5 text-lia-text-tertiary hover:bg-lia-bg-tertiary hover:text-lia-text-secondary rounded-md transition-colors"
+            className="w-full flex items-center gap-2 px-3 py-1.5 text-lia-text-tertiary hover:bg-lia-bg-tertiary hover:text-lia-text-secondary rounded-xl transition-colors"
           >
             <Plus className="w-3.5 h-3.5" />
             <span className={textStyles.sidebarItem}>Novo banco</span>

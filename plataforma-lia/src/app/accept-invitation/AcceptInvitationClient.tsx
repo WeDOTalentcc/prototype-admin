@@ -162,7 +162,7 @@ function AcceptInvitationContent() {
               Você foi convidado(a) para participar da plataforma LIA.
             </p>
             {invitationInfo && (
-              <div className="mt-4 p-4 bg-lia-bg-secondary rounded-md border border-lia-border-subtle">
+              <div className="mt-4 p-4 bg-lia-bg-secondary rounded-xl border border-lia-border-subtle">
                 <p className="text-sm text-lia-text-secondary">
                   <span className="font-medium text-lia-text-primary dark:text-lia-text-primary">{invitationInfo.name}</span>
                 </p>
@@ -185,7 +185,7 @@ function AcceptInvitationContent() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Mínimo 8 caracteres"
-                  className="w-full px-4 py-3 pr-12 border border-lia-border-subtle rounded-md focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg focus:border-lia-btn-primary-bg transition-colors motion-reduce:transition-none"
+                  className="w-full px-4 py-3 pr-12 border border-lia-border-subtle rounded-xl focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg focus:border-lia-btn-primary-bg transition-colors motion-reduce:transition-none"
                   required
                 />
                 <button
@@ -208,7 +208,7 @@ function AcceptInvitationContent() {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="Digite a senha novamente"
-                  className="w-full px-4 py-3 pr-12 border border-lia-border-subtle rounded-md focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg focus:border-lia-btn-primary-bg transition-colors motion-reduce:transition-none"
+                  className="w-full px-4 py-3 pr-12 border border-lia-border-subtle rounded-xl focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg focus:border-lia-btn-primary-bg transition-colors motion-reduce:transition-none"
                   required
                 />
                 <button
@@ -222,7 +222,7 @@ function AcceptInvitationContent() {
             </div>
 
             {error && (
-              <div className="p-3 rounded-md bg-status-error/10 border border-status-error/30">
+              <div className="p-3 rounded-xl bg-status-error/10 border border-status-error/30">
                 <p className="text-status-error text-sm font-medium">{error}</p>
               </div>
             )}

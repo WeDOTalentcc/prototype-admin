@@ -249,7 +249,7 @@ const [sharedSearch, setSharedSearch] = useState<SharedSearchDetail | null>(null
         className="max-w-3xl bg-lia-bg-overlay border-lia-border-default text-white p-0 gap-0 max-h-[90vh] flex flex-col"
        
       >
-        <DialogHeader className="px-5 py-4 border-b border-lia-border-default flex-shrink-0">
+        <DialogHeader className="px-5 py-4 flex-shrink-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <DialogTitle className="text-base font-semibold text-white flex items-center gap-2">
@@ -288,7 +288,7 @@ const [sharedSearch, setSharedSearch] = useState<SharedSearchDetail | null>(null
           <>
             <div className="flex-1 overflow-y-auto">
               <div className="p-5 space-y-5">
-                <div className="bg-lia-bg-tertiary dark:bg-lia-btn-primary-bg rounded-md p-4 border border-lia-border-default">
+                <div className="bg-lia-bg-tertiary dark:bg-lia-btn-primary-bg rounded-xl p-4 border border-lia-border-default">
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                     <div>
                       <p className="text-lia-text-tertiary text-xs mb-1">Compartilhado com</p>
@@ -332,22 +332,22 @@ const [sharedSearch, setSharedSearch] = useState<SharedSearchDetail | null>(null
                 </div>
 
                 <div className="grid grid-cols-4 gap-3">
-                  <div className="bg-lia-bg-tertiary dark:bg-lia-btn-primary-bg rounded-md p-4 border border-lia-border-default text-center">
+                  <div className="bg-lia-bg-tertiary dark:bg-lia-btn-primary-bg rounded-xl p-4 border border-lia-border-default text-center">
                     <div className="text-2xl mb-1">👍</div>
                     <p className="text-2xl font-bold text-status-success">{feedbackCounts.approved}</p>
                     <p className="text-xs text-lia-text-tertiary">Interessados</p>
                   </div>
-                  <div className="bg-lia-bg-tertiary dark:bg-lia-btn-primary-bg rounded-md p-4 border border-lia-border-default text-center">
+                  <div className="bg-lia-bg-tertiary dark:bg-lia-btn-primary-bg rounded-xl p-4 border border-lia-border-default text-center">
                     <div className="text-2xl mb-1">🤔</div>
                     <p className="text-2xl font-bold text-status-warning">{feedbackCounts.maybe}</p>
                     <p className="text-xs text-lia-text-tertiary">Talvez</p>
                   </div>
-                  <div className="bg-lia-bg-tertiary dark:bg-lia-btn-primary-bg rounded-md p-4 border border-lia-border-default text-center">
+                  <div className="bg-lia-bg-tertiary dark:bg-lia-btn-primary-bg rounded-xl p-4 border border-lia-border-default text-center">
                     <div className="text-2xl mb-1">👎</div>
                     <p className="text-2xl font-bold text-status-error">{feedbackCounts.rejected}</p>
                     <p className="text-xs text-lia-text-tertiary">Não Interessados</p>
                   </div>
-                  <div className="bg-lia-bg-tertiary dark:bg-lia-btn-primary-bg rounded-md p-4 border border-lia-border-default text-center">
+                  <div className="bg-lia-bg-tertiary dark:bg-lia-btn-primary-bg rounded-xl p-4 border border-lia-border-default text-center">
                     <div className="text-2xl mb-1">⏳</div>
                     <p className="text-2xl font-bold text-lia-text-tertiary">{feedbackCounts.pending}</p>
                     <p className="text-xs text-lia-text-tertiary">Pendentes</p>
@@ -406,7 +406,7 @@ const [sharedSearch, setSharedSearch] = useState<SharedSearchDetail | null>(null
 
                 <div className="space-y-2">
                   {approvedIds.length > 0 && (
-                    <div className="flex items-center gap-2 px-1 py-2 border-b border-lia-border-default">
+                    <div className="flex items-center gap-2 px-1 py-2">
                       <Checkbox
                         id="select-all-approved"
                         checked={allApprovedSelected}

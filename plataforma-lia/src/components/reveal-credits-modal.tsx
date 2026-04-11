@@ -48,12 +48,12 @@ export function RevealCreditsModal({
   return (
     <AlertDialog open={isOpen} onOpenChange={(open: boolean) => !open && onClose()}>
       <AlertDialogContent 
-        className="max-w-md bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle"
+        className="max-w-md bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle"
        
       >
         <AlertDialogHeader>
           <div className="flex items-center gap-3 mb-2">
-            <div className="p-2.5 rounded-md bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary">
+            <div className="p-2.5 rounded-xl bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary">
               <Icon className="w-5 h-5" />
             </div>
             <AlertDialogTitle className="text-base-ui font-semibold text-lia-text-primary">
@@ -66,7 +66,7 @@ export function RevealCreditsModal({
                 Deseja revelar o {typeLabel} de <strong className="text-lia-text-primary">{candidateName}</strong>?
               </p>
               
-              <div className="p-4 rounded-md bg-status-warning/10 border border-status-warning/30">
+              <div className="p-4 rounded-xl bg-status-warning/10 border border-status-warning/30">
                 <div className="flex items-start gap-3">
                   <CreditCard className="w-5 h-5 text-status-warning mt-0.5 flex-shrink-0" />
                   <div>

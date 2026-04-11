@@ -19,26 +19,26 @@ export function ActivityMiscDetails({ activity }: ActivityMiscDetailsProps) {
     <>
       {activity.type === 'job-application' && (
         <div className="mt-3 space-y-3">
-          <div className="bg-lia-bg-primary p-3 rounded-md border border-lia-border-subtle">
+          <div className="bg-lia-bg-primary p-3 rounded-xl border border-lia-border-subtle">
             <h5 className="text-xs font-semibold text-lia-text-primary mb-2 flex items-center gap-1">
               <FileText className="w-3 h-3 text-status-success" />
               Candidatura Recebida
               <Badge className="ml-2 text-micro px-1.5 py-0 bg-status-success/10 text-status-success">{activity.details.source}</Badge>
             </h5>
             <div className="grid grid-cols-2 gap-2 mb-3">
-              <div className="bg-lia-bg-secondary p-2 rounded-md">
+              <div className="bg-lia-bg-secondary p-2 rounded-xl">
                 <p className={textStyles.bodySmall}>ID da Aplicação</p>
                 <p className="text-xs font-mono font-medium text-lia-text-primary">{activity.details.applicationId}</p>
               </div>
-              <div className="bg-lia-bg-secondary p-2 rounded-md">
+              <div className="bg-lia-bg-secondary p-2 rounded-xl">
                 <p className={textStyles.bodySmall}>Método</p>
                 <p className="text-xs font-medium text-lia-text-primary">{activity.details.applicationMethod}</p>
               </div>
-              <div className="bg-lia-bg-secondary p-2 rounded-md">
+              <div className="bg-lia-bg-secondary p-2 rounded-xl">
                 <p className={textStyles.bodySmall}>Recebido em</p>
                 <p className="text-xs font-medium text-lia-text-primary">{activity.details.receivedAt}</p>
               </div>
-              <div className="bg-lia-bg-secondary p-2 rounded-md">
+              <div className="bg-lia-bg-secondary p-2 rounded-xl">
                 <p className={textStyles.bodySmall}>Dispositivo</p>
                 <p className="text-xs font-medium text-lia-text-primary">{activity.details.device}</p>
               </div>
@@ -68,11 +68,11 @@ export function ActivityMiscDetails({ activity }: ActivityMiscDetailsProps) {
               </Badge>
             </h5>
             <div className="grid grid-cols-3 gap-2 mb-3">
-              <div className="text-center p-2 bg-lia-bg-secondary rounded-md border border-lia-border-subtle">
+              <div className="text-center p-2 bg-lia-bg-secondary rounded-xl border border-lia-border-subtle">
                 <p className="text-base font-bold text-lia-text-primary">{activity.details.correctAnswers}/{activity.details.totalQuestions}</p>
                 <p className={textStyles.caption}>Acertos</p>
               </div>
-              <div className="text-center p-2 bg-lia-bg-secondary rounded-md border border-lia-border-subtle">
+              <div className="text-center p-2 bg-lia-bg-secondary rounded-xl border border-lia-border-subtle">
                 <p className="text-base font-bold text-lia-text-primary">{activity.details.timeSpent}</p>
                 <p className={textStyles.caption}>Tempo</p>
               </div>
@@ -117,18 +117,18 @@ export function ActivityMiscDetails({ activity }: ActivityMiscDetailsProps) {
                 {activity.statusLabel || 'Enviada'}
               </Badge>
             </h5>
-            <div className="text-center p-3 bg-gradient-to-r from-lia-bg-secondary to-lia-bg-tertiary rounded-md border border-lia-border-subtle mb-3">
+            <div className="text-center p-3 bg-gradient-to-r from-lia-bg-secondary to-lia-bg-tertiary rounded-xl border border-lia-border-subtle mb-3">
               <p className="text-2xl font-bold text-lia-text-primary">{activity.details.salary}</p>
               {activity.details.annualBonus && (
                 <p className="text-xs text-lia-text-secondary">+ Bônus: {activity.details.annualBonus}</p>
               )}
             </div>
             <div className="grid grid-cols-2 gap-2 mb-3">
-              <div className="bg-lia-bg-secondary p-2 rounded-md">
+              <div className="bg-lia-bg-secondary p-2 rounded-xl">
                 <p className={textStyles.bodySmall}>Data de Início</p>
                 <p className="text-xs font-semibold text-lia-text-primary">{activity.details.startDate}</p>
               </div>
-              <div className="bg-lia-bg-secondary p-2 rounded-md">
+              <div className="bg-lia-bg-secondary p-2 rounded-xl">
                 <p className={textStyles.bodySmall}>Contrato</p>
                 <p className="text-xs font-semibold text-lia-text-primary">{activity.details.contractType}</p>
               </div>
@@ -148,7 +148,7 @@ export function ActivityMiscDetails({ activity }: ActivityMiscDetailsProps) {
 
       {activity.type === 'technical-test' && (
         <div className="mt-2 space-y-2">
-          <div className="bg-lia-bg-primary p-2 rounded-md">
+          <div className="bg-lia-bg-primary p-2 rounded-xl">
             <p className={`${textStyles.bodySmall} mb-1`}>Teste Técnico</p>
             <div className="grid grid-cols-2 gap-1">
               <div>
@@ -174,7 +174,7 @@ export function ActivityMiscDetails({ activity }: ActivityMiscDetailsProps) {
 
       {activity.type === 'english-test' && (
         <div className="mt-2 space-y-2">
-          <div className="bg-lia-bg-primary p-2 rounded-md">
+          <div className="bg-lia-bg-primary p-2 rounded-xl">
             <p className={`${textStyles.bodySmall} mb-1`}>Teste de Inglês</p>
             <div className="grid grid-cols-2 gap-1">
               <div>
@@ -200,7 +200,7 @@ export function ActivityMiscDetails({ activity }: ActivityMiscDetailsProps) {
 
       {activity.type === 'data-collection' && (
         <div className="mt-2 space-y-2">
-          <div className="bg-lia-bg-primary p-2 rounded-md">
+          <div className="bg-lia-bg-primary p-2 rounded-xl">
             <p className={`${textStyles.bodySmall} mb-1`}>Coleta de Dados</p>
             <div className="grid grid-cols-2 gap-1">
               <div>
@@ -232,7 +232,7 @@ export function ActivityMiscDetails({ activity }: ActivityMiscDetailsProps) {
 
       {activity.type === 'onboarding' && (
         <div className="mt-3 space-y-3">
-          <div className="bg-lia-bg-primary p-3 rounded-md">
+          <div className="bg-lia-bg-primary p-3 rounded-xl">
             <h5 className="text-xs font-semibold text-lia-text-primary mb-2 flex items-center gap-1">
               <UserCheck className="w-3 h-3 text-lia-text-primary" />
               Processo de Onboarding
@@ -263,34 +263,34 @@ export function ActivityMiscDetails({ activity }: ActivityMiscDetailsProps) {
               </div>
             </div>
             <div className="grid grid-cols-2 gap-2 mb-3">
-              <div className="bg-lia-bg-primary p-2 rounded-md">
+              <div className="bg-lia-bg-primary p-2 rounded-xl">
                 <p className={`${textStyles.bodySmall} mb-1`}>Data de Início</p>
                 <p className="text-xs font-semibold text-lia-text-primary">{activity.details.startDate}</p>
                 <p className={textStyles.bodySmall}>Segunda-feira</p>
               </div>
-              <div className="bg-lia-bg-primary p-2 rounded-md">
+              <div className="bg-lia-bg-primary p-2 rounded-xl">
                 <p className={`${textStyles.bodySmall} mb-1`}>Gestor Responsável</p>
                 <p className="text-xs font-semibold text-lia-text-primary">{activity.details.onboardingManager}</p>
                 <p className={textStyles.bodySmall}>People & Culture</p>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-2">
-              <div className="text-center p-2 bg-lia-bg-primary rounded-md">
+              <div className="text-center p-2 bg-lia-bg-primary rounded-xl">
                 <FileText className="w-4 h-4 mx-auto text-lia-text-primary mb-1" />
                 <p className={textStyles.bodySmall}>Documentos</p>
                 <p className="text-xs font-semibold text-lia-text-primary">{activity.details.documentsStatus}</p>
               </div>
-              <div className="text-center p-2 bg-lia-bg-primary rounded-md">
+              <div className="text-center p-2 bg-lia-bg-primary rounded-xl">
                 <Building className="w-4 h-4 mx-auto text-lia-text-secondary mb-1" />
                 <p className={textStyles.bodySmall}>Equipamentos</p>
                 <p className="text-xs font-semibold text-lia-text-primary">{activity.details.equipmentStatus}</p>
               </div>
-              <div className="text-center p-2 bg-lia-bg-primary rounded-md">
+              <div className="text-center p-2 bg-lia-bg-primary rounded-xl">
                 <Shield className="w-4 h-4 mx-auto text-lia-text-primary mb-1" />
                 <p className={textStyles.bodySmall}>Acessos</p>
                 <p className="text-xs font-semibold text-lia-text-primary">{activity.details.accessesStatus}</p>
               </div>
-              <div className="text-center p-2 bg-lia-bg-primary rounded-md">
+              <div className="text-center p-2 bg-lia-bg-primary rounded-xl">
                 <Users className="w-4 h-4 mx-auto text-lia-text-primary mb-1" />
                 <p className={textStyles.bodySmall}>Buddy</p>
                 <p className="text-xs font-semibold text-lia-text-primary">A definir</p>
@@ -303,7 +303,7 @@ export function ActivityMiscDetails({ activity }: ActivityMiscDetailsProps) {
       {activity.type === 'interview-note' && (
         <div className="mt-2 space-y-2">
           {activity.details.technicalQuestions && (
-            <div className="bg-lia-bg-primary p-2 rounded-md">
+            <div className="bg-lia-bg-primary p-2 rounded-xl">
               <p className={`${textStyles.bodySmall} mb-1`}>Questões Técnicas</p>
               <div className="space-y-1">
                 {activity.details.technicalQuestions.map((q: Record<string, unknown>, i: number) => (
@@ -316,7 +316,7 @@ export function ActivityMiscDetails({ activity }: ActivityMiscDetailsProps) {
             </div>
           )}
           {activity.details.overallScore && (
-            <div className="bg-lia-bg-primary p-2 rounded-md">
+            <div className="bg-lia-bg-primary p-2 rounded-xl">
               <div className="flex items-center justify-between">
                 <span className={textStyles.bodySmall}>Score Geral</span>
                 <span className="text-xs font-bold text-lia-text-primary">{activity.details.overallScore}/10</span>

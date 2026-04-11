@@ -220,13 +220,13 @@ export function CompensationChatMessage({
             </div>
 
             <div className="grid grid-cols-2 gap-2">
-              <div className="p-2.5 rounded-md bg-status-success/10 dark:bg-status-success/30 border border-status-success/30 dark:border-status-success/30">
+              <div className="p-2.5 rounded-xl bg-status-success/10 dark:bg-status-success/30 border border-status-success/30 dark:border-status-success/30">
                 <p className="text-micro text-muted-foreground mb-0.5">Proposto</p>
                 <p className="text-xs font-semibold text-status-success">
                   {formatCurrency(analysis.salary.proposed.min)} - {formatCurrency(analysis.salary.proposed.max)}
                 </p>
               </div>
-              <div className="p-2.5 rounded-md bg-lia-bg-secondary border border-lia-border-subtle">
+              <div className="p-2.5 rounded-xl bg-lia-bg-secondary border border-lia-border-subtle">
                 <p className="text-micro text-muted-foreground mb-0.5">Mercado</p>
                 <p className="text-xs font-semibold text-lia-text-secondary">
                   {formatCurrency(analysis.salary.market.min)} - {formatCurrency(analysis.salary.market.max)}
@@ -256,7 +256,7 @@ export function CompensationChatMessage({
             </div>
 
             {analysis.salary.suggestion && (
-              <div className="p-2 rounded-md bg-status-warning/10 dark:bg-status-warning/30 border border-status-warning/30 dark:border-status-warning/30 flex items-start gap-2">
+              <div className="p-2 rounded-xl bg-status-warning/10 dark:bg-status-warning/30 border border-status-warning/30 dark:border-status-warning/30 flex items-start gap-2">
                 <AlertTriangle className="h-3.5 w-3.5 text-status-warning flex-shrink-0 mt-0.5" />
                 <p className="text-micro text-status-warning">
                   <span className="font-medium">Sugestão:</span> Considere ajustar para {formatCurrency(analysis.salary.suggestion.min)} - {formatCurrency(analysis.salary.suggestion.max)} para melhor competitividade.

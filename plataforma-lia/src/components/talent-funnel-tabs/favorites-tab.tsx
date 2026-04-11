@@ -258,9 +258,9 @@ export function FavoritesTab({
                 align="start"
                 sideOffset={8}
               >
-                <div className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary p-4 rounded-md">
+                <div className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary p-4 rounded-xl">
                   <div className="flex items-center gap-2 mb-3">
-                    <div className="w-7 h-7 rounded-md bg-lia-bg-inverse flex items-center justify-center">
+                    <div className="w-7 h-7 rounded-xl bg-lia-bg-inverse flex items-center justify-center">
                       <BarChart3 className="w-4 h-4 text-white" />
                     </div>
                     <span className="text-sm font-semibold text-lia-text-secondary">
@@ -269,7 +269,7 @@ export function FavoritesTab({
                   </div>
 
                   <div className="space-y-3">
-                    <div className="flex items-center justify-between p-2 bg-lia-bg-primary/60 dark:bg-lia-bg-elevated/60 rounded-md">
+                    <div className="flex items-center justify-between p-2 bg-lia-bg-primary/60 dark:bg-lia-bg-elevated/60 rounded-xl">
                       <span className="text-xs text-lia-text-primary">Score médio</span>
                       <span className="text-sm font-bold text-lia-text-secondary">
                         {filteredCandidates.length > 0 
@@ -278,7 +278,7 @@ export function FavoritesTab({
                       </span>
                     </div>
 
-                    <div className="p-2 bg-lia-bg-primary/60 dark:bg-lia-bg-elevated/60 rounded-md">
+                    <div className="p-2 bg-lia-bg-primary/60 dark:bg-lia-bg-elevated/60 rounded-xl">
                       <span className="text-xs text-lia-text-primary block mb-1.5">Top skills</span>
                       <div className="flex flex-wrap gap-1">
                         {Array.from(new Set(filteredCandidates.flatMap(c => ((c.skills || c.technical_skills || []) as string[]).slice(0, 2)))).slice(0, 4).map((skill, idx) => (
@@ -289,7 +289,7 @@ export function FavoritesTab({
                       </div>
                     </div>
 
-                    <div className="p-2 bg-lia-bg-primary/60 dark:bg-lia-bg-elevated/60 rounded-md">
+                    <div className="p-2 bg-lia-bg-primary/60 dark:bg-lia-bg-elevated/60 rounded-xl">
                       <span className="text-xs text-lia-text-primary block mb-1.5">Localizações</span>
                       <div className="flex flex-wrap gap-1">
                         {Array.from(new Set(filteredCandidates.map(c => ((c.location || '') as string).split(',')[0]).filter(Boolean))).slice(0, 3).map((loc, idx) => (
@@ -318,7 +318,7 @@ export function FavoritesTab({
             />
           </div>
 
-          <div className="flex items-center gap-1 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-md p-1">
+          <div className="flex items-center gap-1 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-xl p-1">
             <Button
               variant={filterType === 'all' ? 'primary' : 'ghost'}
               size="sm"
@@ -385,17 +385,17 @@ export function FavoritesTab({
               ? 'Use o ícone de estrela para salvar candidatos de interesse.'
               : 'Salve ou fixe candidatos nos resultados de busca para acompanhá-los aqui.'
           }
-          className="border border-lia-border-subtle rounded-md bg-lia-bg-secondary dark:bg-lia-bg-primary/50"
+          className="border border-lia-border-subtle rounded-xl bg-lia-bg-secondary dark:bg-lia-bg-primary/50"
         />
       )}
 
       {showNoteModal && selectedCandidateForNote && (
         <div className="fixed inset-0 bg-black/30 backdrop-blur-[1px] flex items-center justify-center z-50" onClick={() => setShowNoteModal(false)}>
           <div 
-            className="bg-lia-bg-primary dark:bg-lia-bg-primary rounded-md border border-lia-border-subtle w-full max-w-md mx-4 overflow-hidden"
+            className="bg-lia-bg-primary dark:bg-lia-bg-primary rounded-xl border border-lia-border-subtle w-full max-w-md mx-4 overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="p-4 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+            <div className="p-4 dark:border-lia-border-subtle">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-full bg-wedo-orange/15 flex items-center justify-center">
@@ -417,7 +417,7 @@ export function FavoritesTab({
             </div>
 
             <div className="p-4">
-              <div className="flex items-center gap-3 mb-4 p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
+              <div className="flex items-center gap-3 mb-4 p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl">
                 <Avatar className="w-10 h-10">
                   <AvatarImage src={selectedCandidateForNote.avatar || selectedCandidateForNote.avatar_url} />
                   <AvatarFallback className="text-sm font-medium bg-lia-interactive-active text-lia-text-secondary">
@@ -473,10 +473,10 @@ export function FavoritesTab({
       {viewingNote && (
         <div className="fixed inset-0 bg-black/30 backdrop-blur-[1px] flex items-center justify-center z-50" onClick={() => setViewingNote(null)}>
           <div 
-            className="bg-lia-bg-primary dark:bg-lia-bg-primary rounded-md border border-lia-border-subtle w-full max-w-md mx-4 overflow-hidden"
+            className="bg-lia-bg-primary dark:bg-lia-bg-primary rounded-xl border border-lia-border-subtle w-full max-w-md mx-4 overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="p-4 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+            <div className="p-4 dark:border-lia-border-subtle">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-full bg-status-warning/15 flex items-center justify-center">
@@ -498,7 +498,7 @@ export function FavoritesTab({
             </div>
 
             <div className="p-4">
-              <div className="flex items-center gap-3 mb-4 p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
+              <div className="flex items-center gap-3 mb-4 p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl">
                 <Avatar className="w-10 h-10">
                   <AvatarImage src={viewingNote.candidate.avatar || viewingNote.candidate.avatar_url} />
                   <AvatarFallback className="text-sm font-medium bg-lia-interactive-active text-lia-text-secondary">

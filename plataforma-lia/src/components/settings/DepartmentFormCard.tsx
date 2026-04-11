@@ -59,7 +59,7 @@ export function DepartmentFormCard({
   handleDeleteMember,
 }: DepartmentFormCardProps) {
   return (
-    <Card className="border border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 rounded-md">
+    <Card className="border border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 rounded-xl">
       <CardContent className="p-3 space-y-2">
         <div className="flex items-center justify-between mb-2">
           <h4 className="text-xs font-semibold text-lia-text-primary">
@@ -85,7 +85,7 @@ export function DepartmentFormCard({
               onChange={(e) =>
                 setNewDepartment((prev) => ({ ...prev, name: e.target.value }))
               }
-              className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-lia-border-subtle focus:border-lia-border-medium dark:focus:ring-lia-border-strong dark:focus:border-lia-border-medium transition-colors motion-reduce:transition-none"
+              className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-xl bg-lia-bg-primary focus:ring-2 focus:ring-lia-border-subtle focus:border-lia-border-medium dark:focus:ring-lia-border-strong dark:focus:border-lia-border-medium transition-colors motion-reduce:transition-none"
               placeholder="Ex: Engenharia"
             />
           </div>
@@ -99,7 +99,7 @@ export function DepartmentFormCard({
               onChange={(e) =>
                 setNewDepartment((prev) => ({ ...prev, manager: e.target.value }))
               }
-              className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-lia-border-subtle focus:border-lia-border-medium dark:focus:ring-lia-border-strong dark:focus:border-lia-border-medium transition-colors motion-reduce:transition-none"
+              className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-xl bg-lia-bg-primary focus:ring-2 focus:ring-lia-border-subtle focus:border-lia-border-medium dark:focus:ring-lia-border-strong dark:focus:border-lia-border-medium transition-colors motion-reduce:transition-none"
               placeholder="Nome do gestor"
             />
           </div>
@@ -115,7 +115,7 @@ export function DepartmentFormCard({
               onChange={(e) =>
                 setNewDepartment((prev) => ({ ...prev, manager_title: e.target.value }))
               }
-              className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-lia-border-subtle focus:border-lia-border-medium dark:focus:ring-lia-border-strong dark:focus:border-lia-border-medium transition-colors motion-reduce:transition-none"
+              className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-xl bg-lia-bg-primary focus:ring-2 focus:ring-lia-border-subtle focus:border-lia-border-medium dark:focus:ring-lia-border-strong dark:focus:border-lia-border-medium transition-colors motion-reduce:transition-none"
               placeholder="Ex: Diretor de Engenharia"
             />
           </div>
@@ -129,7 +129,7 @@ export function DepartmentFormCard({
               onChange={(e) =>
                 setNewDepartment((prev) => ({ ...prev, manager_email: e.target.value }))
               }
-              className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-lia-border-subtle focus:border-lia-border-medium dark:focus:ring-lia-border-strong dark:focus:border-lia-border-medium transition-colors motion-reduce:transition-none"
+              className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-xl bg-lia-bg-primary focus:ring-2 focus:ring-lia-border-subtle focus:border-lia-border-medium dark:focus:ring-lia-border-strong dark:focus:border-lia-border-medium transition-colors motion-reduce:transition-none"
               placeholder="gestor@empresa.com"
             />
           </div>
@@ -143,7 +143,7 @@ export function DepartmentFormCard({
               onChange={(e) =>
                 setNewDepartment((prev) => ({ ...prev, manager_phone: e.target.value }))
               }
-              className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-lia-border-subtle focus:border-lia-border-medium dark:focus:ring-lia-border-strong dark:focus:border-lia-border-medium transition-colors motion-reduce:transition-none"
+              className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-xl bg-lia-bg-primary focus:ring-2 focus:ring-lia-border-subtle focus:border-lia-border-medium dark:focus:ring-lia-border-strong dark:focus:border-lia-border-medium transition-colors motion-reduce:transition-none"
               placeholder="+55 11 99999-0000"
             />
           </div>
@@ -157,7 +157,7 @@ export function DepartmentFormCard({
             onChange={(e) =>
               setNewDepartment((prev) => ({ ...prev, description: e.target.value }))
             }
-            className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-lia-border-subtle focus:border-lia-border-medium dark:focus:ring-lia-border-strong dark:focus:border-lia-border-medium transition-colors motion-reduce:transition-none"
+            className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-xl bg-lia-bg-primary focus:ring-2 focus:ring-lia-border-subtle focus:border-lia-border-medium dark:focus:ring-lia-border-strong dark:focus:border-lia-border-medium transition-colors motion-reduce:transition-none"
             rows={2}
             placeholder="Descrição do departamento"
           />

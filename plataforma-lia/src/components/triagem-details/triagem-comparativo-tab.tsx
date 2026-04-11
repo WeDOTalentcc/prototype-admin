@@ -36,7 +36,7 @@ export function TriagemComparativoTab({ vacancyRanking, ranking, candidate }: Tr
           { label: 'Média Técnica', value: vacancyRanking.averages.technical, icon: Target },
           { label: 'Média Comportamental', value: vacancyRanking.averages.behavioral, icon: Brain },
         ].map(({ label, value, icon: Icon }) => (
-          <div key={label} className="border border-lia-border-subtle rounded-md p-3">
+          <div key={label} className="border border-lia-border-subtle rounded-xl p-3">
             <div className="flex items-center gap-1.5 mb-1">
               <Icon className="w-3.5 h-3.5 text-lia-text-secondary" />
               <span className="text-micro text-lia-text-secondary uppercase tracking-wide">{label}</span>
@@ -49,7 +49,7 @@ export function TriagemComparativoTab({ vacancyRanking, ranking, candidate }: Tr
       </div>
 
       {/* Ranking table */}
-      <div className="border border-lia-border-subtle rounded-md overflow-hidden">
+      <div className="border border-lia-border-subtle rounded-xl overflow-hidden">
         <div className="bg-lia-bg-secondary px-3 py-2 flex items-center justify-between">
           <div className="flex items-center gap-1.5">
             <Trophy className="w-3.5 h-3.5 text-lia-text-secondary" />

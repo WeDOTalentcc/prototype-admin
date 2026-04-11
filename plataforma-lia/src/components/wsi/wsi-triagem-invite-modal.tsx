@@ -333,7 +333,7 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
        
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-lia-border-subtle bg-lia-bg-secondary/50">
+        <div className="flex items-center justify-between px-6 py-4 bg-lia-bg-secondary/50">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-lia-bg-tertiary rounded-full flex items-center justify-center">
               <ClipboardList className="w-5 h-5 text-lia-text-secondary" />
@@ -467,7 +467,7 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
             )}
 
             {/* Vincular à Vaga */}
-            <div className="border border-lia-border-subtle rounded-md overflow-hidden">
+            <div className="border border-lia-border-subtle rounded-xl overflow-hidden">
               <div className="flex items-center justify-between p-3 bg-lia-bg-secondary">
                 <div className="flex items-center gap-2">
                   <Briefcase className="w-4 h-4 text-lia-text-secondary" />
@@ -501,7 +501,7 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
                       <select
                         value={selectedVacancyId || ''}
                         onChange={(e) => setSelectedVacancyId(e.target.value || null)}
-                        className="w-full text-xs border border-lia-border-subtle rounded-md px-3 py-2 bg-lia-bg-primary focus:ring-1 focus:ring-lia-btn-primary-bg/20 focus:border-lia-border-medium"
+                        className="w-full text-xs border border-lia-border-subtle rounded-xl px-3 py-2 bg-lia-bg-primary focus:ring-1 focus:ring-lia-btn-primary-bg/20 focus:border-lia-border-medium"
                       >
                         <option value="">Selecione uma vaga...</option>
                         {vacancies.map((vacancy) => (
@@ -522,7 +522,7 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
                     <select
                       value={selectedStage}
                       onChange={(e) => setSelectedStage(e.target.value)}
-                      className="w-full text-xs border border-lia-border-subtle rounded-md px-3 py-2 bg-lia-bg-primary focus:ring-1 focus:ring-lia-btn-primary-bg/20 focus:border-lia-border-medium"
+                      className="w-full text-xs border border-lia-border-subtle rounded-xl px-3 py-2 bg-lia-bg-primary focus:ring-1 focus:ring-lia-btn-primary-bg/20 focus:border-lia-border-medium"
                     >
                       {PIPELINE_STAGES.map((stage) => (
                         <option key={stage.value} value={stage.value}>
@@ -533,7 +533,7 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
                   </div>
                   
                   {selectedVacancyId && (
-                    <div className="p-2 bg-lia-bg-secondary/50 rounded-md border border-lia-border-default">
+                    <div className="p-2 bg-lia-bg-secondary/50 rounded-xl border border-lia-border-default">
                       <p className="text-xs text-lia-text-secondary">
                         Ao enviar, o candidato será automaticamente adicionado à vaga selecionada na etapa <strong className="text-lia-text-secondary">{PIPELINE_STAGES.find(s => s.value === selectedStage)?.label}</strong>
                       </p>
@@ -544,7 +544,7 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
             </div>
 
             {/* Perguntas de Triagem */}
-            <div className="border border-lia-border-subtle rounded-md overflow-hidden">
+            <div className="border border-lia-border-subtle rounded-xl overflow-hidden">
               <button
                 onClick={() => setShowQuestions(!showQuestions)}
                 className="w-full flex items-center justify-between p-3 bg-lia-bg-secondary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none"
@@ -609,7 +609,7 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
               {(channel === 'email' || channel === 'both') ? (
                 <>
                   {/* Email Preview Header */}
-                  <div className="p-4 border-b border-lia-border-subtle bg-lia-bg-secondary/50">
+                  <div className="p-4 bg-lia-bg-secondary/50">
                     <div className="flex items-center gap-3">
                       <Avatar className="w-8 h-8">
                         <AvatarFallback className="text-micro bg-lia-btn-primary-bg text-lia-btn-primary-text">
@@ -627,7 +627,7 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
                   </div>
                   {/* Email Subject */}
                   {subject && (
-                    <div className="px-4 py-2 border-b border-lia-border-subtle">
+                    <div className="px-4 py-2">
                       <div className={textStyles.subtitle}>
                         {subject}
                       </div>
@@ -665,7 +665,7 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
               ) : (
                 <>
                   {/* Telefone/Script Preview */}
-                  <div className="p-4 border-b border-lia-border-subtle bg-status-warning/10/50">
+                  <div className="p-4 bg-status-warning/10/50">
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 bg-status-warning/15 rounded-full flex items-center justify-center">
                         <Phone className="w-4 h-4 text-status-warning" />
@@ -679,7 +679,7 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
                   {/* Script Content */}
                   <div className="p-4">
                     <div 
-                      className="text-xs text-lia-text-primary leading-relaxed font-mono bg-lia-bg-secondary p-3 rounded-md border border-lia-border-subtle"
+                      className="text-xs text-lia-text-primary leading-relaxed font-mono bg-lia-bg-secondary p-3 rounded-xl border border-lia-border-subtle"
                       dangerouslySetInnerHTML={{ __html: sanitizeHtml(formatPreviewMessage(message) || '<span class="lia-text-secondary">O script aparecerá aqui...</span>') }}
                     />
                   </div>

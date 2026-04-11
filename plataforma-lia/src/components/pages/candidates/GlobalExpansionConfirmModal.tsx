@@ -46,7 +46,7 @@ export function GlobalExpansionConfirmModal({
               A Busca Global encontra candidatos além da sua base local em um pool de mais de 800 milhões de perfis profissionais.
             </p>
 
-            <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 rounded-md p-4 space-y-3">
+            <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 rounded-xl p-4 space-y-3">
               <div className="flex justify-between items-center text-sm">
                 <span className="text-lia-text-primary">Busca atual:</span>
                 <span className="font-medium text-xs max-w-sidebar-content truncate">{lastSuccessfulQuery || lastSearchQuery || 'N/A'}</span>

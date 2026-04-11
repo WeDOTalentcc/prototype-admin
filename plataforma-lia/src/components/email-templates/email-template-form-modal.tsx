@@ -202,7 +202,7 @@ export function EmailTemplateFormModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent data-testid="email-template-form-modal" className="max-w-5xl max-h-[90vh] overflow-hidden flex flex-col rounded-md">
+      <DialogContent data-testid="email-template-form-modal" className="max-w-5xl max-h-[90vh] overflow-hidden flex flex-col rounded-xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Mail className="w-5 h-5 text-lia-text-primary" />
@@ -299,11 +299,11 @@ export function EmailTemplateFormModal({
                 <Card className="h-full">
                   <CardContent className="pt-4">
                     <div className="space-y-4">
-                      <div className="p-3 bg-lia-bg-secondary rounded-md">
+                      <div className="p-3 bg-lia-bg-secondary rounded-xl">
                         <span className="text-sm font-medium text-lia-text-secondary">Assunto:</span>
                         <p className="text-lia-text-primary">{renderPreview(formData.subject)}</p>
                       </div>
-                      <div className="border rounded-md overflow-hidden">
+                      <div className="border rounded-xl overflow-hidden">
                         <div className="bg-lia-bg-tertiary px-4 py-2 text-sm font-medium text-lia-text-secondary border-b flex items-center gap-2">
                           <Eye className="w-4 h-4" />
                           Preview com dados de exemplo
@@ -349,7 +349,7 @@ export function EmailTemplateFormModal({
                           <button
                             key={variable.name}
                             onClick={() => insertVariable(variable.name)}
-                            className="flex items-center justify-between p-2 rounded-md border hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none text-left"
+                            className="flex items-center justify-between p-2 rounded-xl border hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none text-left"
                           >
                             <div>
                               <code className="text-sm font-mono text-lia-text-primary">

@@ -198,7 +198,7 @@ const CandidateCard = memo(function CandidateCard({
             <DropdownMenuTrigger asChild>
               <button
                 data-testid={`candidate-actions-menu-${candidate.id}`}
-                className="p-1 hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover rounded-md transition-opacity motion-reduce:transition-none bg-lia-bg-primary/80 dark:bg-lia-bg-primary/80"
+                className="p-1 hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover rounded-xl transition-opacity motion-reduce:transition-none bg-lia-bg-primary/80 dark:bg-lia-bg-primary/80"
                 onClick={(e) => e.stopPropagation()}
                 title="Mais opções"
               >
@@ -268,7 +268,7 @@ const CandidateCard = memo(function CandidateCard({
 
           <button
             data-testid={`candidate-view-details-${candidate.id}`}
-            className="p-1 hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover rounded-md transition-colors motion-reduce:transition-none bg-lia-bg-primary/80 dark:bg-lia-bg-primary/80"
+            className="p-1 hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover rounded-xl transition-colors motion-reduce:transition-none bg-lia-bg-primary/80 dark:bg-lia-bg-primary/80"
             onClick={handleQuickAction('view_details')}
             title="Ver detalhes do candidato"
           >
@@ -280,7 +280,7 @@ const CandidateCard = memo(function CandidateCard({
           <input
             type="checkbox"
             checked={isSelected}
-            className="w-3 h-3 rounded-md cursor-pointer flex-shrink-0 border border-lia-border-subtle"
+            className="w-3 h-3 rounded-xl cursor-pointer flex-shrink-0 border border-lia-border-subtle"
             onClick={handleCheckboxClick}
             onChange={() => {}}
           />

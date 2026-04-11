@@ -50,7 +50,7 @@ export function ActivateOptionsStep({
 }: ActivateOptionsStepProps) {
   return (
     <div data-testid="activate-options-step" className="space-y-4">
-      <div className="p-2.5 rounded-md border bg-lia-bg-secondary border-lia-border-subtle">
+      <div className="p-2.5 rounded-xl border bg-lia-bg-secondary border-lia-border-subtle">
         <div className="flex items-center gap-2">
           <CheckCircle className="w-4 h-4 text-status-success flex-shrink-0" />
           <span className="text-xs text-lia-text-primary leading-relaxed" aria-live="polite" aria-atomic="true">
@@ -62,9 +62,9 @@ export function ActivateOptionsStep({
       <div>
         <h4 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-2">Vagas Selecionadas</h4>
         <ScrollArea className="max-h-[120px]">
-          <div className="space-y-1 bg-lia-bg-secondary rounded-md p-2 border border-lia-border-subtle">
+          <div className="space-y-1 bg-lia-bg-secondary rounded-xl p-2 border border-lia-border-subtle">
             {jobs.map((job) => (
-              <div key={job.id} className="flex items-center justify-between py-1.5 px-2 bg-lia-bg-primary rounded-md border border-lia-border-subtle">
+              <div key={job.id} className="flex items-center justify-between py-1.5 px-2 bg-lia-bg-primary rounded-xl border border-lia-border-subtle">
                 <div className="flex items-center gap-2 min-w-0 flex-1">
                   <Briefcase className="w-3.5 h-3.5 text-lia-text-secondary flex-shrink-0" />
                   <span className="text-xs font-medium text-lia-text-primary truncate">{job.title}</span>
@@ -79,7 +79,7 @@ export function ActivateOptionsStep({
         </ScrollArea>
       </div>
 
-      <div className="space-y-3 bg-lia-bg-secondary rounded-md p-3 border border-lia-border-subtle">
+      <div className="space-y-3 bg-lia-bg-secondary rounded-xl p-3 border border-lia-border-subtle">
         <h4 className="text-xs font-semibold text-lia-text-primary">Ações ao Ativar</h4>
         <div className="space-y-2">
           <div className="flex items-center space-x-2">
@@ -103,7 +103,7 @@ export function ActivateOptionsStep({
         </div>
       </div>
 
-      <div className="space-y-2 bg-lia-bg-secondary rounded-md p-3 border border-lia-border-subtle">
+      <div className="space-y-2 bg-lia-bg-secondary rounded-xl p-3 border border-lia-border-subtle">
         <h4 className="text-xs font-semibold text-lia-text-primary">Notificações</h4>
         <div className="flex items-center space-x-2">
           <Checkbox id="notifyRecruitersActivate" checked={notifyRecruiters} onCheckedChange={(c) => onNotifyRecruitersChange(c === true)} className="border-lia-border-default data-[state=checked]:bg-lia-btn-primary-bg data-[state=checked]:border-lia-btn-primary-bg" />

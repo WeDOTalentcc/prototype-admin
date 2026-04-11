@@ -82,7 +82,7 @@ function InlineFieldEditor({
         </button>
         <button
           onClick={onCancel}
-          className="p-0.5 rounded-md hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse"
+          className="p-0.5 rounded-xl hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse"
         >
           <X className="w-3 h-3 text-lia-text-tertiary" />
         </button>
@@ -110,13 +110,13 @@ function InlineFieldEditor({
         <button
           onClick={handleSave}
           disabled={isSaving}
-          className="p-0.5 rounded-md hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse"
+          className="p-0.5 rounded-xl hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse"
         >
           <Check className="w-3 h-3 text-status-success" />
         </button>
         <button
           onClick={onCancel}
-          className="p-0.5 rounded-md hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse"
+          className="p-0.5 rounded-xl hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse"
         >
           <X className="w-3 h-3 text-lia-text-tertiary" />
         </button>
@@ -145,7 +145,7 @@ function InlineFieldEditor({
       <button
         onClick={handleSave}
         disabled={isSaving}
-        className="p-0.5 rounded-md hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse"
+        className="p-0.5 rounded-xl hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse"
       >
         {isSaving ? (
           <Loader2 className="w-3 h-3 animate-spin motion-reduce:animate-none text-lia-text-tertiary" />
@@ -155,7 +155,7 @@ function InlineFieldEditor({
       </button>
       <button
         onClick={onCancel}
-        className="p-0.5 rounded-md hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse"
+        className="p-0.5 rounded-xl hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse"
       >
         <X className="w-3 h-3 text-lia-text-tertiary" />
       </button>
@@ -222,7 +222,7 @@ export function HiringPoliciesHub() {
 
       <div className="flex gap-4 flex-1 min-h-0">
         <div
-          className="w-[60%] flex flex-col bg-lia-bg-primary dark:bg-lia-bg-primary rounded-md overflow-hidden"
+          className="w-[60%] flex flex-col bg-lia-bg-primary dark:bg-lia-bg-primary rounded-xl overflow-hidden"
          
         >
           <div
@@ -310,7 +310,7 @@ export function HiringPoliciesHub() {
             return (
               <Card
                 key={block.key}
-                className="bg-lia-bg-primary dark:bg-lia-bg-secondary overflow-hidden rounded-md"
+                className="bg-lia-bg-primary dark:bg-lia-bg-secondary overflow-hidden rounded-xl"
                
               >
                 <button

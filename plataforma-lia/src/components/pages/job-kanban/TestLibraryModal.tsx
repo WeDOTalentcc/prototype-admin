@@ -40,12 +40,12 @@ export function TestLibraryModal({ open, onClose, onTestPreview, onTestHistoryOp
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-lia-overlay backdrop-blur-sm">
-      <div className="bg-lia-bg-primary rounded-md w-full max-w-6xl max-h-[90vh] overflow-hidden animate-fadeIn">
+      <div className="bg-lia-bg-primary rounded-xl w-full max-w-6xl max-h-[90vh] overflow-hidden animate-fadeIn">
         {/* Header */}
         <div className="bg-wedo-purple p-5 text-white">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-lia-bg-primary/20 rounded-md">
+              <div className="p-2 bg-lia-bg-primary/20 rounded-xl">
                 <Library className="w-5 h-5" />
               </div>
               <div>
@@ -55,7 +55,7 @@ export function TestLibraryModal({ open, onClose, onTestPreview, onTestHistoryOp
             </div>
             <button
               onClick={onClose}
-              className="p-2 hover:bg-lia-bg-primary/20 rounded-md transition-colors motion-reduce:transition-none"
+              className="p-2 hover:bg-lia-bg-primary/20 rounded-xl transition-colors motion-reduce:transition-none"
             >
               <X className="w-5 h-5" />
             </button>
@@ -102,7 +102,7 @@ export function TestLibraryModal({ open, onClose, onTestPreview, onTestHistoryOp
               <div className="space-y-3">
                 <div>
                   <label className="text-xs text-lia-text-secondary">Nível</label>
-                  <select className="w-full mt-1 p-2 text-sm border border-lia-border-subtle rounded-md bg-lia-bg-primary">
+                  <select className="w-full mt-1 p-2 text-sm border border-lia-border-subtle rounded-xl bg-lia-bg-primary">
                     <option>Todos</option>
                     <option>Júnior</option>
                     <option>Pleno</option>
@@ -111,7 +111,7 @@ export function TestLibraryModal({ open, onClose, onTestPreview, onTestHistoryOp
                 </div>
                 <div>
                   <label className="text-xs text-lia-text-secondary">Duração</label>
-                  <select className="w-full mt-1 p-2 text-sm border border-lia-border-subtle rounded-md bg-lia-bg-primary">
+                  <select className="w-full mt-1 p-2 text-sm border border-lia-border-subtle rounded-xl bg-lia-bg-primary">
                     <option>Qualquer</option>
                     <option>5-10 min</option>
                     <option>10-20 min</option>
@@ -136,7 +136,7 @@ export function TestLibraryModal({ open, onClose, onTestPreview, onTestHistoryOp
 
             <div className="grid grid-cols-2 gap-4">
               {/* Teste 1 */}
-              <div className="bg-lia-bg-secondary rounded-md border border-lia-border-subtle hover:border-lia-border-medium transition-colors motion-reduce:transition-none">
+              <div className="bg-lia-bg-secondary rounded-xl border border-lia-border-subtle hover:border-lia-border-medium transition-colors motion-reduce:transition-none">
                 <div className="p-4">
                   <div className="flex items-start justify-between mb-3">
                     <div>
@@ -151,9 +151,9 @@ export function TestLibraryModal({ open, onClose, onTestPreview, onTestHistoryOp
                   </div>
 
                   {/* Mini Dashboard de Indicadores */}
-                  <div className="bg-lia-bg-secondary rounded-md p-3 mb-3">
+                  <div className="bg-lia-bg-secondary rounded-xl p-3 mb-3">
                     {/* Nota Média em Destaque */}
-                    <div className="flex items-center justify-between mb-3 pb-3 border-b border-lia-border-subtle">
+                    <div className="flex items-center justify-between mb-3 pb-3">
                       <div className="flex items-center gap-3">
                         <div className="p-2 bg-wedo-purple/15 dark:bg-wedo-purple/30 rounded-md">
                           <Trophy className="w-5 h-5 text-lia-text-primary" />
@@ -294,7 +294,7 @@ export function TestLibraryModal({ open, onClose, onTestPreview, onTestHistoryOp
               </div>
 
               {/* Teste 2 */}
-              <div className="bg-lia-bg-secondary rounded-md border border-lia-border-subtle hover:border-lia-border-medium transition-colors motion-reduce:transition-none">
+              <div className="bg-lia-bg-secondary rounded-xl border border-lia-border-subtle hover:border-lia-border-medium transition-colors motion-reduce:transition-none">
                 <div className="p-4">
                   <div className="flex items-start justify-between mb-3">
                     <div>
@@ -362,7 +362,7 @@ export function TestLibraryModal({ open, onClose, onTestPreview, onTestHistoryOp
               </div>
 
               {/* Teste 3 */}
-              <div className="bg-lia-bg-secondary rounded-md border border-lia-border-subtle hover:border-lia-border-medium transition-colors motion-reduce:transition-none">
+              <div className="bg-lia-bg-secondary rounded-xl border border-lia-border-subtle hover:border-lia-border-medium transition-colors motion-reduce:transition-none">
                 <div className="p-4">
                   <div className="flex items-start justify-between mb-3">
                     <div>
@@ -430,7 +430,7 @@ export function TestLibraryModal({ open, onClose, onTestPreview, onTestHistoryOp
               </div>
 
               {/* Teste 4 */}
-              <div className="bg-lia-bg-secondary rounded-md border border-lia-border-subtle hover:border-lia-border-medium transition-colors motion-reduce:transition-none">
+              <div className="bg-lia-bg-secondary rounded-xl border border-lia-border-subtle hover:border-lia-border-medium transition-colors motion-reduce:transition-none">
                 <div className="p-4">
                   <div className="flex items-start justify-between mb-3">
                     <div>

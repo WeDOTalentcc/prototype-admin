@@ -58,11 +58,11 @@ export function SharedSearchesSection({
           {sharedSearches.map((shared) => (
             <div
               key={shared.id}
-              className="group relative p-4 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none"
+              className="group relative p-4 rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none"
             >
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center gap-3">
-                  <div className="flex-shrink-0 w-10 h-10 rounded-md flex items-center justify-center bg-lia-bg-tertiary dark:bg-lia-bg-secondary">
+                  <div className="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center bg-lia-bg-tertiary dark:bg-lia-bg-secondary">
                     <Link2 className="w-5 h-5 text-lia-text-secondary" />
                   </div>
                   <div>
@@ -164,7 +164,7 @@ export function SharedSearchesSection({
           ))}
         </div>
       ) : (
-        <div className="flex flex-col items-center justify-center py-10 px-4 bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 rounded-md border border-dashed border-lia-border-subtle dark:border-lia-border-subtle">
+        <div className="flex flex-col items-center justify-center py-10 px-4 bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 rounded-xl border border-dashed border-lia-border-subtle dark:border-lia-border-subtle">
           <div className="w-12 h-12 rounded-full flex items-center justify-center mb-3 bg-lia-bg-tertiary dark:bg-lia-bg-secondary">
             <Link2 className="w-6 h-6 text-lia-text-disabled" />
           </div>

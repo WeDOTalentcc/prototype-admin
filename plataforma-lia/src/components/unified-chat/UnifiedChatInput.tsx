@@ -107,7 +107,7 @@ export function UnifiedChatInput({
       )}
       {/* Attached file indicator */}
       {attachedFile && (
-        <div className="flex items-center gap-2 mb-2 px-3 py-1.5 rounded-md bg-lia-bg-secondary border border-lia-border-subtle">
+        <div className="flex items-center gap-2 mb-2 px-3 py-1.5 rounded-xl bg-lia-bg-secondary border border-lia-border-subtle">
           <FileText className="w-3.5 h-3.5 text-wedo-cyan flex-shrink-0" />
           <span className="text-xs text-lia-text-primary truncate flex-1 font-['Open_Sans',sans-serif]">
             {attachedFile.name}
@@ -175,7 +175,7 @@ export function UnifiedChatInput({
               {showPlusMenu && (
                 <>
                   <div className="fixed inset-0 z-40" onClick={() => setShowPlusMenu(false)} />
-                  <div className="absolute left-0 bottom-full mb-1 z-50 w-56 rounded-md border border-lia-border-subtle bg-lia-bg-primary py-1">
+                  <div className="absolute left-0 bottom-full mb-1 z-50 w-56 rounded-xl border border-lia-border-subtle bg-lia-bg-primary py-1">
                     <button
                       onClick={() => {
                         onFileButtonClick()

@@ -101,7 +101,7 @@ export function ProactiveInsightCard({
       <CardHeader className="pb-2 pt-3 px-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-md bg-lia-bg-tertiary dark:bg-lia-bg-secondary flex items-center justify-center">
+            <div className="w-7 h-7 rounded-xl bg-lia-bg-tertiary dark:bg-lia-bg-secondary flex items-center justify-center">
               <TrendingUp className="w-4 h-4 text-lia-text-secondary" />
             </div>
             <div>

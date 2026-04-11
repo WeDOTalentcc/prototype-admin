@@ -351,7 +351,7 @@ export function FilterSectionsAdvanced({
 
       <div className="pt-4 border-t border-lia-border-subtle space-y-2">
         <button
-          className="w-full h-9 text-xs rounded-md transition-colors motion-reduce:transition-none border border-lia-border-subtle hover:bg-lia-interactive-hover transition-colors cursor-pointer"
+          className="w-full h-9 text-xs rounded-xl transition-colors motion-reduce:transition-none border border-lia-border-subtle hover:bg-lia-interactive-hover transition-colors cursor-pointer"
           onClick={onClearAll}
         >
           Limpar Todos os Filtros

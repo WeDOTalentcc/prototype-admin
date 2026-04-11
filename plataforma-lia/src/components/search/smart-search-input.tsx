@@ -212,7 +212,7 @@ export function SmartSearchInput(props: SmartSearchInputProps) {
       >
         {/* Mode tabs - Estilo pill/tag elegante */}
         <div 
-          className="flex items-center gap-2 px-4 py-3 overflow-x-auto border-b border-lia-border-subtle bg-[var(--lia-bg-primary)]"
+          className="flex items-center gap-2 px-4 py-3 overflow-x-auto bg-[var(--lia-bg-primary)]"
         >
           {modes.map((m) => (
             <button
@@ -354,7 +354,7 @@ export function SmartSearchInput(props: SmartSearchInputProps) {
       {/* Modal de Confirmação para Mudança de Fonte (Híbrido/Global) */}
       <AlertDialog open={showSourceChangeModal} onOpenChange={setShowSourceChangeModal}>
         <AlertDialogContent 
-          className="sm:max-w-[320px] w-[85vw] p-4 rounded-md border" 
+          className="sm:max-w-[320px] w-[85vw] p-4 rounded-xl border" 
          
         >
           <AlertDialogTitle className="sr-only">
@@ -383,7 +383,7 @@ export function SmartSearchInput(props: SmartSearchInputProps) {
               </div>
             </div>
             
-            <div className="bg-lia-bg-secondary rounded-md p-3 space-y-2 border border-lia-border-subtle">
+            <div className="bg-lia-bg-secondary rounded-xl p-3 space-y-2 border border-lia-border-subtle">
               {pendingSourceChange === 'hybrid' && (
                 <div className="flex justify-between text-xs">
                   <span className="text-lia-text-secondary">Local:</span>
@@ -406,7 +406,7 @@ export function SmartSearchInput(props: SmartSearchInputProps) {
                   setShowSourceChangeModal(false)
                   setPendingSourceChange(null)
                 }}
-                className="flex-1 h-8 text-xs px-3 rounded-md bg-lia-bg-primary border border-lia-border-subtle text-lia-text-secondary hover:bg-lia-bg-secondary font-medium transition-colors motion-reduce:transition-none"
+                className="flex-1 h-8 text-xs px-3 rounded-xl bg-lia-bg-primary border border-lia-border-subtle text-lia-text-secondary hover:bg-lia-bg-secondary font-medium transition-colors motion-reduce:transition-none"
               >
                 Cancelar
               </button>

@@ -176,7 +176,7 @@ export function RubricEvaluationCard({
 
   return (
     <div className={`space-y-3 ${className}`} data-testid="rubric-evaluation-card">
-      <div className="flex items-center justify-between border-b border-lia-border-subtle/50 pb-2">
+      <div className="flex items-center justify-between/50 pb-2">
         <div className="flex items-center gap-2">
           <Target className="w-4 h-4" style={{color: ACCENT_COLOR}} />
           <span className={`${textStyles.subtitle} text-lia-text-primary`}>
@@ -279,7 +279,7 @@ export function RubricEvaluationCard({
       )}
 
       {displaySummary && (
-        <div className="flex items-start gap-2 pt-1 bg-lia-bg-secondary/50 p-2 rounded-md">
+        <div className="flex items-start gap-2 pt-1 bg-lia-bg-secondary/50 p-2 rounded-xl">
           <FileText className="w-3.5 h-3.5 text-lia-text-secondary mt-0.5 flex-shrink-0" />
           <div>
             <span className={`${textStyles.caption} text-lia-text-secondary font-medium block mb-0.5`}>

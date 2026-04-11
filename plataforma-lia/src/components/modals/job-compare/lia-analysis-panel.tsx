@@ -79,10 +79,10 @@ interface LiaAnalysisPanelProps {
 
 export function LiaAnalysisPanel({ liaAnalysis }: LiaAnalysisPanelProps) {
   return (
-    <div data-testid="lia-analysis-panel" className="border border-lia-border-subtle rounded-md overflow-hidden">
-      <div className="bg-lia-bg-secondary border-b border-lia-border-subtle px-4 py-2.5">
+    <div data-testid="lia-analysis-panel" className="border border-lia-border-subtle rounded-xl overflow-hidden">
+      <div className="bg-lia-bg-secondary px-4 py-2.5">
         <div className="flex items-center gap-2">
-          <div className="w-6 h-6 bg-lia-bg-tertiary rounded-md flex items-center justify-center">
+          <div className="w-6 h-6 bg-lia-bg-tertiary rounded-xl flex items-center justify-center">
             <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
           </div>
           <h3 className="text-base-ui font-semibold text-lia-text-primary">Análise LIA</h3>

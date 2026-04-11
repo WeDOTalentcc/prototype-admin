@@ -154,7 +154,7 @@ function OnboardingProgressBar({
   ]
 
   return (
-    <div className="flex-shrink-0 px-6 py-3 bg-lia-bg-secondary border-b border-lia-border-subtle">
+    <div className="flex-shrink-0 px-6 py-3 bg-lia-bg-secondary">
       <div className="flex items-center gap-2 max-w-2xl mx-auto">
         {STEPS.map((step, i) => {
           const completed = completedSteps.includes(step.id) || i < completedSteps.length

@@ -138,7 +138,7 @@ export function InsightsOverviewSection({
   return (
     <div className="space-y-4">
       {/* ── Resumo Agregado ─────────────────────────────────────────────── */}
-      <div className="bg-lia-bg-secondary/50 rounded-md p-4 border border-lia-border-subtle">
+      <div className="bg-lia-bg-secondary/50 rounded-xl p-4 border border-lia-border-subtle">
         <h3 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-3 flex items-center gap-1.5">
           <Target className="w-3.5 h-3.5 text-lia-text-tertiary" />
           Resumo Agregado
@@ -152,7 +152,7 @@ export function InsightsOverviewSection({
             { Icon: Clock, label: "Tempo/Etapa", value: `${aggregateMetrics.avgTimePerStage}d`, color: "text-lia-text-primary" },
             { Icon: TrendingUp, label: "Conversão", value: `${aggregateMetrics.conversionRate}%`, color: "text-lia-text-primary" },
           ].map(({ Icon, label, value, color }) => (
-            <div key={label} className="bg-lia-bg-primary rounded-md p-3 border border-lia-border-subtle">
+            <div key={label} className="bg-lia-bg-primary rounded-xl p-3 border border-lia-border-subtle">
               <div className="flex items-center gap-1.5 mb-1">
                 <Icon className="w-3.5 h-3.5 text-lia-text-tertiary" />
                 <span className="text-xs text-lia-text-secondary">{label}</span>
@@ -164,7 +164,7 @@ export function InsightsOverviewSection({
       </div>
 
       {/* ── Análise LIA Textual ─────────────────────────────────────────── */}
-      <div className="bg-lia-bg-secondary/50 rounded-md p-4 border border-lia-border-default">
+      <div className="bg-lia-bg-secondary/50 rounded-xl p-4 border border-lia-border-default">
         <div className="flex items-start gap-3">
           <div className="w-8 h-8 rounded-full bg-lia-bg-tertiary flex items-center justify-center flex-shrink-0">
             <Brain className="w-4 h-4 text-wedo-cyan" />
@@ -185,7 +185,7 @@ export function InsightsOverviewSection({
       </div>
 
       {/* ── Taxa de Conversão por Etapa ─────────────────────────────────── */}
-      <div className="bg-lia-bg-secondary/50 rounded-md p-4 border border-lia-border-subtle">
+      <div className="bg-lia-bg-secondary/50 rounded-xl p-4 border border-lia-border-subtle">
         <h3 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-3 flex items-center gap-1.5">
           <ArrowDownRight className="w-3.5 h-3.5 text-lia-text-tertiary" />
           Taxa de Conversão por Etapa
@@ -221,14 +221,14 @@ export function InsightsOverviewSection({
       </div>
 
       {/* ── Tendência Temporal ──────────────────────────────────────────── */}
-      <div className="bg-lia-bg-secondary/50 rounded-md p-4 border border-lia-border-subtle">
+      <div className="bg-lia-bg-secondary/50 rounded-xl p-4 border border-lia-border-subtle">
         <h3 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-3 flex items-center gap-1.5">
           <TrendingUp className="w-3.5 h-3.5 text-lia-text-tertiary" />
           Tendência Temporal
           <span className="text-xs text-lia-text-disabled font-normal ml-1">(estimativa)</span>
         </h3>
         <div className="grid grid-cols-2 gap-4">
-          <div className="bg-lia-bg-primary rounded-md p-3 border border-lia-border-subtle">
+          <div className="bg-lia-bg-primary rounded-xl p-3 border border-lia-border-subtle">
             <h4 className="text-xs font-medium text-lia-text-tertiary mb-3">Candidatos Acumulados</h4>
             <div className="flex items-end justify-between h-20 gap-1">
               {trendData.candidatesTrend.map((val, i) => (
@@ -243,7 +243,7 @@ export function InsightsOverviewSection({
               ))}
             </div>
           </div>
-          <div className="bg-lia-bg-primary rounded-md p-3 border border-lia-border-subtle">
+          <div className="bg-lia-bg-primary rounded-xl p-3 border border-lia-border-subtle">
             <h4 className="text-xs font-medium text-lia-text-tertiary mb-3">Taxa de Conversão (%)</h4>
             <div className="flex items-end justify-between h-20 gap-1">
               {trendData.conversionTrend.map((val, i) => (
@@ -262,7 +262,7 @@ export function InsightsOverviewSection({
       </div>
 
       {/* ── Funil de Recrutamento ───────────────────────────────────────── */}
-      <div className="bg-lia-bg-secondary/50 rounded-md p-4 border border-lia-border-subtle">
+      <div className="bg-lia-bg-secondary/50 rounded-xl p-4 border border-lia-border-subtle">
         <h3 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-3 flex items-center gap-1.5">
           <BarChart3 className="w-3.5 h-3.5 text-lia-text-tertiary" />
           Funil de Recrutamento
@@ -271,7 +271,7 @@ export function InsightsOverviewSection({
           {funnelData.map((stage, index) => (
             <div key={stage.name} className="flex items-center gap-3">
               <div className="w-24 text-xs font-medium text-lia-text-secondary text-right">{stage.name}</div>
-              <div className="flex-1 h-7 bg-lia-bg-tertiary rounded-md overflow-hidden relative">
+              <div className="flex-1 h-7 bg-lia-bg-tertiary rounded-xl overflow-hidden relative">
                 <div
                   className={`h-full ${stage.color} transition-[width] duration-500`}
                   style={{ width: `${stage.percentage}%` }}
@@ -289,7 +289,7 @@ export function InsightsOverviewSection({
 
       {/* ── Salary + Quality ────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 gap-4">
-        <div className="bg-lia-bg-secondary/50 rounded-md p-4 border border-lia-border-subtle">
+        <div className="bg-lia-bg-secondary/50 rounded-xl p-4 border border-lia-border-subtle">
           <h3 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-3 flex items-center gap-1.5">
             <DollarSign className="w-3.5 h-3.5 text-lia-text-tertiary" />
             Análise Salarial
@@ -300,7 +300,7 @@ export function InsightsOverviewSection({
               { label: "Média Pretensão Candidatos", value: `${formatBRL(salaryData.mediaInscritos)}` },
               { label: "Candidatos Dentro da Faixa", value: `${salaryData.dentroFaixa} (${salaryData.percentualDentro}%)` },
             ].map(({ label, value }) => (
-              <div key={label} className="flex items-center justify-between bg-lia-bg-primary rounded-md p-2.5 border border-lia-border-subtle">
+              <div key={label} className="flex items-center justify-between bg-lia-bg-primary rounded-xl p-2.5 border border-lia-border-subtle">
                 <span className="text-xs text-lia-text-secondary">{label}</span>
                 <span className="text-xs font-semibold text-lia-text-primary">{value}</span>
               </div>
@@ -308,7 +308,7 @@ export function InsightsOverviewSection({
           </div>
         </div>
 
-        <div className="bg-lia-bg-secondary/50 rounded-md p-4 border border-lia-border-subtle">
+        <div className="bg-lia-bg-secondary/50 rounded-xl p-4 border border-lia-border-subtle">
           <h3 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-3 flex items-center gap-1.5">
             <Star className="w-3.5 h-3.5 text-lia-text-tertiary" />
             Indicadores de Qualidade
@@ -319,7 +319,7 @@ export function InsightsOverviewSection({
               { label: "Score Médio (Triados)", value: `${qualityMetrics.avgScoreTriados}%`, score: qualityMetrics.avgScoreTriados },
               { label: "Taxa Triagem → Aprovação", value: `${qualityMetrics.taxaAprovacao}%`, score: undefined },
             ].map(({ label, value, score }) => (
-              <div key={label} className="flex items-center justify-between bg-lia-bg-primary rounded-md p-2.5 border border-lia-border-subtle">
+              <div key={label} className="flex items-center justify-between bg-lia-bg-primary rounded-xl p-2.5 border border-lia-border-subtle">
                 <span className="text-xs text-lia-text-secondary">{label}</span>
                 <span className={`text-xs font-semibold ${score !== undefined ? getScoreColor(score) : "text-lia-text-primary"}`}>{value}</span>
               </div>
@@ -329,7 +329,7 @@ export function InsightsOverviewSection({
       </div>
 
       {/* ── WSI Metrics ─────────────────────────────────────────────────── */}
-      <div className="bg-lia-bg-secondary/50 rounded-md p-4 border border-lia-border-subtle">
+      <div className="bg-lia-bg-secondary/50 rounded-xl p-4 border border-lia-border-subtle">
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide flex items-center gap-1.5">
             <Target className="w-3.5 h-3.5 text-lia-text-tertiary" />
@@ -363,7 +363,7 @@ export function InsightsOverviewSection({
       </div>
 
       {/* ── Insights Categorizados ──────────────────────────────────────── */}
-      <div className="bg-lia-bg-secondary/50 rounded-md p-4 border border-lia-border-subtle">
+      <div className="bg-lia-bg-secondary/50 rounded-xl p-4 border border-lia-border-subtle">
         <h3 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-3 flex items-center gap-1.5">
           <Lightbulb className="w-3.5 h-3.5 text-lia-text-tertiary" />
           Insights Categorizados
@@ -396,14 +396,14 @@ export function InsightsOverviewSection({
 
       {/* ── Gargalos ────────────────────────────────────────────────────── */}
       {bottlenecks && bottlenecks.length > 0 && (
-        <div className="bg-status-warning/10 rounded-md p-4 border border-status-warning/30" aria-live="polite">
+        <div className="bg-status-warning/10 rounded-xl p-4 border border-status-warning/30" aria-live="polite">
           <h3 className="text-xs font-semibold text-status-warning uppercase tracking-wide mb-3 flex items-center gap-1.5">
             <AlertOctagon className="w-3.5 h-3.5" />
             Gargalos Identificados
           </h3>
           <div className="space-y-2">
             {bottlenecks.map((b) => (
-              <div key={b.stage || (b as unknown as Record<string, unknown>).title as string} className="bg-lia-bg-primary rounded-md p-3 border border-status-warning/30">
+              <div key={b.stage || (b as unknown as Record<string, unknown>).title as string} className="bg-lia-bg-primary rounded-xl p-3 border border-status-warning/30">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-xs font-semibold text-lia-text-primary">{b.stage}</span>
                   {b.stuckCount > 0 && (
@@ -434,7 +434,7 @@ export function InsightsOverviewSection({
 
       {/* ── Vagas Sem Aprovação ─────────────────────────────────────────── */}
       {jobs.some((job) => (job.days_open || 0) > 30 && (job.approved_count || 0) === 0) && (
-        <div className="bg-status-error/10 rounded-md p-4 border border-status-error/30" aria-live="polite">
+        <div className="bg-status-error/10 rounded-xl p-4 border border-status-error/30" aria-live="polite">
           <h3 className="text-xs font-semibold text-status-error uppercase tracking-wide mb-3 flex items-center gap-1.5">
             <AlertCircle className="w-3.5 h-3.5" />
             Vagas Sem Aprovação
@@ -443,7 +443,7 @@ export function InsightsOverviewSection({
             {jobs
               .filter((job) => (job.days_open || 0) > 30 && (job.approved_count || 0) === 0)
               .map((job) => (
-                <div key={job.id} className="bg-lia-bg-primary rounded-md p-3 border border-status-error/30">
+                <div key={job.id} className="bg-lia-bg-primary rounded-xl p-3 border border-status-error/30">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       {job.code && (
@@ -469,7 +469,7 @@ export function InsightsOverviewSection({
 
       {/* ── Detalhamento por Vaga ───────────────────────────────────────── */}
       {jobs.length > 0 && (
-        <div className="bg-lia-bg-secondary/50 rounded-md p-4 border border-lia-border-subtle">
+        <div className="bg-lia-bg-secondary/50 rounded-xl p-4 border border-lia-border-subtle">
           <h3 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-3 flex items-center gap-1.5">
             <Calendar className="w-3.5 h-3.5 text-lia-text-tertiary" />
             Detalhamento por Vaga
@@ -478,7 +478,7 @@ export function InsightsOverviewSection({
             {jobs.map((job) => {
               const daysRemaining = getDaysRemaining(job.deadline)
               return (
-                <div key={job.id} className="bg-lia-bg-primary border border-lia-border-subtle rounded-md p-3">
+                <div key={job.id} className="bg-lia-bg-primary border border-lia-border-subtle rounded-xl p-3">
                   <div className="flex items-center justify-between">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">

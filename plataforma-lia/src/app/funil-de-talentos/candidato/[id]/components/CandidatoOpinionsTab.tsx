@@ -47,17 +47,17 @@ function OpinionSkeleton() {
   return (
     <div className="space-y-3">
       {[1, 2].map((i) => (
-        <div key={i} className="bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-subtle rounded-md p-4 animate-pulse motion-reduce:animate-none">
+        <div key={i} className="bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-subtle rounded-xl p-4 animate-pulse motion-reduce:animate-none">
           <div className="flex items-center gap-3 mb-3">
             <div className="w-8 h-8 bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-full" />
             <div className="flex-1">
-              <div className="w-32 h-4 bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-md mb-1" />
-              <div className="w-24 h-3 bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-md" />
+              <div className="w-32 h-4 bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-xl mb-1" />
+              <div className="w-24 h-3 bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-xl" />
             </div>
           </div>
           <div className="space-y-2">
-            <div className="w-full h-3 bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-md" />
-            <div className="w-3/4 h-3 bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-md" />
+            <div className="w-full h-3 bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-xl" />
+            <div className="w-3/4 h-3 bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-xl" />
           </div>
         </div>
       ))}
@@ -87,7 +87,7 @@ export function CandidatoOpinionsTab({
       <Card className="border-lia-border-subtle">
         <CardContent className="p-4 space-y-4">
           {/* SubTabs */}
-          <div className="flex items-center gap-4 border-b border-lia-border-subtle pb-3">
+          <div className="flex items-center gap-4 pb-3">
             <button
               onClick={() => setOpinionsSubTab("pareceres")}
               className={`flex items-center gap-2 pb-2 text-sm font-medium transition-colors motion-reduce:transition-none ${
@@ -124,7 +124,7 @@ export function CandidatoOpinionsTab({
               {isLoadingOpinions && <OpinionSkeleton />}
 
               {!isLoadingOpinions && opinionsHistory.length === 0 && (
-                <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-subtle rounded-md p-8 text-center">
+                <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-subtle rounded-xl p-8 text-center">
                   <div className="w-14 h-14 rounded-full bg-lia-bg-tertiary dark:bg-lia-bg-elevated flex items-center justify-center mx-auto mb-4">
                     <FileText className="w-7 h-7 text-lia-text-secondary" />
                   </div>
@@ -152,7 +152,7 @@ export function CandidatoOpinionsTab({
                             v{opinion.version as number} - Histórico
                           </Badge>
                         )}
-                        <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-subtle rounded-md overflow-hidden">
+                        <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-subtle rounded-xl overflow-hidden">
                           <button
                             onClick={() => setExpandedOpinionId(isExpanded ? null : opinion.id as string)}
                             className="w-full p-4 flex items-center justify-between hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none"
@@ -203,7 +203,7 @@ export function CandidatoOpinionsTab({
                                       ].filter(Boolean).join("\n\n")
                                       void copyToClipboard(text, "Parecer")
                                     }}
-                                    className="p-1.5 rounded-md hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none"
+                                    className="p-1.5 rounded-xl hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none"
                                   >
                                     <Copy className="w-4 h-4 text-lia-text-secondary" />
                                   </button>
@@ -231,7 +231,7 @@ export function CandidatoOpinionsTab({
                                   <div className="grid grid-cols-2 gap-2">
                                     {Object.entries(scoreBreakdown).map(([key, value]) =>
                                       value !== null && value !== undefined ? (
-                                        <div key={key} className="flex items-center justify-between text-xs bg-lia-bg-secondary dark:bg-lia-bg-elevated rounded-md px-3 py-2">
+                                        <div key={key} className="flex items-center justify-between text-xs bg-lia-bg-secondary dark:bg-lia-bg-elevated rounded-xl px-3 py-2">
                                           <span className="text-lia-text-secondary capitalize">{key.replace(/_/g, " ")}</span>
                                           <span className="font-semibold text-lia-text-primary">{typeof value === "number" ? `${Math.round(value)}%` : String(value)}</span>
                                         </div>
@@ -293,7 +293,7 @@ export function CandidatoOpinionsTab({
               {isLoadingAnalyses && <OpinionSkeleton />}
 
               {!isLoadingAnalyses && analyses.length === 0 && (
-                <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-subtle rounded-md p-8 text-center">
+                <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-subtle rounded-xl p-8 text-center">
                   <div className="w-14 h-14 rounded-full bg-wedo-purple/10 flex items-center justify-center mx-auto mb-4">
                     <Brain className="w-7 h-7 text-wedo-purple" />
                   </div>
@@ -307,7 +307,7 @@ export function CandidatoOpinionsTab({
                   {analyses.map((analysis) => {
                     const isExpanded = expandedAnalysisId === analysis.id
                     return (
-                      <div key={analysis.id as string} className="bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-subtle rounded-md overflow-hidden">
+                      <div key={analysis.id as string} className="bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-subtle rounded-xl overflow-hidden">
                         <button
                           onClick={() => setExpandedAnalysisId(isExpanded ? null : analysis.id as string)}
                           className="w-full p-4 flex items-center justify-between hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none"
@@ -337,7 +337,7 @@ export function CandidatoOpinionsTab({
                               <TooltipTrigger asChild>
                                 <button
                                   onClick={(e) => { e.stopPropagation(); void copyToClipboard(String(analysis.content ?? ""), "Análise") }}
-                                  className="p-1.5 rounded-md hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none"
+                                  className="p-1.5 rounded-xl hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none"
                                 >
                                   <Copy className="w-4 h-4 text-lia-text-secondary" />
                                 </button>

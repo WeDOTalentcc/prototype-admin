@@ -148,7 +148,7 @@ export function CreditCostDisplay({
       )}
 
       {estimate.warnings.length > 0 && (
-        <div className="mt-3 p-2 bg-status-warning/10 rounded-md border border-status-warning/30">
+        <div className="mt-3 p-2 bg-status-warning/10 rounded-xl border border-status-warning/30">
           {estimate.warnings.map((warning, idx) => (
             <div key={idx} className="flex items-start gap-2 text-xs text-status-warning">
               <AlertCircle className="w-3 h-3 mt-0.5 flex-shrink-0" />

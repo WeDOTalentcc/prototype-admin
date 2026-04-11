@@ -18,7 +18,7 @@ interface CandidateDetailModalProps {
 export function CandidateDetailModal({ candidate, onClose }: CandidateDetailModalProps) {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <div className="bg-lia-bg-primary rounded-md w-full max-w-4xl h-[90vh] flex flex-col">
+      <div className="bg-lia-bg-primary rounded-xl w-full max-w-4xl h-[90vh] flex flex-col">
         <div className="flex items-center justify-between p-6 border-b">
           <div className="flex items-center gap-4">
             <Avatar className="w-16 h-16">
@@ -98,7 +98,7 @@ export function CandidateDetailModal({ candidate, onClose }: CandidateDetailModa
                 <CardContent>
                   <div className="space-y-3">
                     {onboardingTemplates[0].tasks.map((task) => (
-                      <div key={task.id} className="flex items-start gap-3 p-3 border border-lia-border-subtle rounded-md">
+                      <div key={task.id} className="flex items-start gap-3 p-3 border border-lia-border-subtle rounded-xl">
                         <CheckCircle className={`w-5 h-5 mt-0.5 ${task.isCompleted ? 'text-status-success' : 'text-lia-text-secondary'}`} />
                         <div className="flex-1">
                           <div className="flex items-center justify-between mb-1">

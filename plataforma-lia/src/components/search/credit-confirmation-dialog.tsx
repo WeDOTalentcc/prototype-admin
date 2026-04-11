@@ -67,7 +67,7 @@ export function CreditConfirmationDialog({
           </div>
 
           <div 
-            className="rounded-md p-3 border border-lia-border-subtle bg-lia-bg-secondary"
+            className="rounded-xl p-3 border border-lia-border-subtle bg-lia-bg-secondary"
           >
             <div
               className="text-xs mb-2.5 font-medium text-lia-text-secondary"

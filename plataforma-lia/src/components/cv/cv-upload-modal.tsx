@@ -296,8 +296,8 @@ export function CVUploadModal({ isOpen, onClose, onParsed }: CVUploadModalProps)
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-xl rounded-md bg-lia-bg-primary dark:bg-lia-bg-primary border-lia-border-subtle dark:border-lia-border-subtle">
-        <DialogHeader className="border-b border-lia-border-subtle dark:border-lia-border-subtle pb-4">
+      <DialogContent className="max-w-xl rounded-xl bg-lia-bg-primary dark:bg-lia-bg-primary border-lia-border-subtle dark:border-lia-border-subtle">
+        <DialogHeader className=" dark:border-lia-border-subtle pb-4">
           <DialogTitle className="flex items-center gap-2 text-lia-text-primary">
             <FileUp className="w-5 h-5 text-lia-text-secondary" />
             Upload de CV
@@ -352,7 +352,7 @@ export function CVUploadModal({ isOpen, onClose, onParsed }: CVUploadModalProps)
                 </p>
               </div>
             ) : (
-              <div className="border rounded-md p-4">
+              <div className="border rounded-xl p-4">
                 <div className="flex items-center gap-3">
                   {getFileIcon(selectedFile.name)}
                   <div className="flex-1 min-w-0">
@@ -419,7 +419,7 @@ export function CVUploadModal({ isOpen, onClose, onParsed }: CVUploadModalProps)
         </Tabs>
 
         {error && (
-          <div className="flex items-center gap-2 p-3 bg-status-error/10 border border-status-error/30 rounded-md">
+          <div className="flex items-center gap-2 p-3 bg-status-error/10 border border-status-error/30 rounded-xl">
             <AlertCircle className="w-4 h-4 text-status-error flex-shrink-0" />
             <p className="text-sm text-status-error">{error}</p>
           </div>

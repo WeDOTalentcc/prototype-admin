@@ -182,7 +182,7 @@ export function DataRequestModal({
               <Label className="text-xs font-medium text-lia-text-primary">Campos a Solicitar</Label>
               <span className="text-xs text-lia-text-secondary">{selectedFields.size} selecionados</span>
             </div>
-            <div className="border border-lia-border-subtle rounded-md p-2 space-y-1 max-h-chart-sm overflow-y-auto">
+            <div className="border border-lia-border-subtle rounded-xl p-2 space-y-1 max-h-chart-sm overflow-y-auto">
               {displayedFields.map((field) => (
                 <label
                   key={field.id}
@@ -288,7 +288,7 @@ export function DataRequestModal({
                 <User className="w-3 h-3" />
                 Candidatos ({candidates.length})
               </Label>
-              <div className="border border-lia-border-subtle rounded-md p-2 max-h-[100px] overflow-y-auto">
+              <div className="border border-lia-border-subtle rounded-xl p-2 max-h-[100px] overflow-y-auto">
                 <div className="flex flex-wrap gap-1.5">
                   {candidates.slice(0, 10).map((candidate) => (
                     <span

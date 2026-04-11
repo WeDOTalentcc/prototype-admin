@@ -57,7 +57,7 @@ function DemoCard({
   items: DemographicDistribution[]
 }) {
   return (
-    <div data-testid="insights-pipeline-section" className="bg-lia-bg-secondary/50 rounded-md p-4 border border-lia-border-subtle">
+    <div data-testid="insights-pipeline-section" className="bg-lia-bg-secondary/50 rounded-xl p-4 border border-lia-border-subtle">
       <h3 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-3 flex items-center gap-1.5">
         <Icon className="w-3.5 h-3.5 text-lia-text-tertiary" />
         {title}
@@ -99,7 +99,7 @@ export function InsightsPipelineSection({
   return (
     <div className="space-y-4">
       {/* ── Funil de Triagem LIA ────────────────────────────────────────── */}
-      <div className="bg-lia-bg-secondary/50 rounded-md p-4 border border-lia-border-subtle">
+      <div className="bg-lia-bg-secondary/50 rounded-xl p-4 border border-lia-border-subtle">
         <h3 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-3 flex items-center gap-1.5">
           <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
           Funil de Triagem LIA
@@ -115,7 +115,7 @@ export function InsightsPipelineSection({
             { Icon: MessageCircleX, label: "Sem Resposta", value: liaFunnelMetrics.sem_resposta, color: "text-lia-text-secondary" },
             { Icon: Calendar, label: "Entrevistas Agendadas", value: liaFunnelMetrics.entrevistas_agendadas, color: "text-lia-text-primary" },
           ].map(({ Icon, label, value, color }) => (
-            <div key={label} className="bg-lia-bg-primary rounded-md p-3 border border-lia-border-subtle">
+            <div key={label} className="bg-lia-bg-primary rounded-xl p-3 border border-lia-border-subtle">
               <div className="flex items-center gap-1.5 mb-1">
                 <Icon className={`w-3.5 h-3.5 ${color === "text-status-success" ? "text-status-success" : "text-lia-text-tertiary"}`} />
                 <span className="text-xs text-lia-text-secondary">{label}</span>
@@ -143,7 +143,7 @@ export function InsightsPipelineSection({
           )}
         </div>
       ) : (
-        <div className="bg-lia-bg-secondary/50 rounded-md p-4 border border-lia-border-subtle">
+        <div className="bg-lia-bg-secondary/50 rounded-xl p-4 border border-lia-border-subtle">
           <h3 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-3 flex items-center gap-1.5">
             <Users className="w-3.5 h-3.5 text-lia-text-tertiary" />
             Dados Demográficos
@@ -156,7 +156,7 @@ export function InsightsPipelineSection({
 
       {/* ── Competências Requeridas ─────────────────────────────────────── */}
       {jobs.some((job) => job.behavioral_competencies && job.behavioral_competencies.length > 0) && (
-        <div className="bg-lia-bg-secondary/50 rounded-md p-4 border border-lia-border-subtle">
+        <div className="bg-lia-bg-secondary/50 rounded-xl p-4 border border-lia-border-subtle">
           <h3 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-3 flex items-center gap-1.5">
             <Lightbulb className="w-3.5 h-3.5 text-lia-text-tertiary" />
             Competências Requeridas
@@ -165,7 +165,7 @@ export function InsightsPipelineSection({
             {jobs
               .filter((job) => job.behavioral_competencies && job.behavioral_competencies.length > 0)
               .map((job) => (
-                <div key={job.id} className="bg-lia-bg-primary rounded-md p-2.5 border border-lia-border-subtle">
+                <div key={job.id} className="bg-lia-bg-primary rounded-xl p-2.5 border border-lia-border-subtle">
                   <span className="text-xs font-medium text-lia-text-tertiary">{job.title}</span>
                   <div className="flex flex-wrap gap-1 mt-1.5">
                     {job.behavioral_competencies?.map((comp, i) => (
@@ -182,7 +182,7 @@ export function InsightsPipelineSection({
 
       {/* ── Benefícios Oferecidos ───────────────────────────────────────── */}
       {jobs.some((job) => job.benefits && job.benefits.length > 0) && (
-        <div className="bg-lia-bg-secondary/50 rounded-md p-4 border border-lia-border-subtle">
+        <div className="bg-lia-bg-secondary/50 rounded-xl p-4 border border-lia-border-subtle">
           <h3 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-3 flex items-center gap-1.5">
             <Award className="w-3.5 h-3.5 text-lia-text-tertiary" />
             Benefícios Oferecidos
@@ -191,7 +191,7 @@ export function InsightsPipelineSection({
             {jobs
               .filter((job) => job.benefits && job.benefits.length > 0)
               .map((job) => (
-                <div key={job.id} className="bg-lia-bg-primary rounded-md p-2.5 border border-lia-border-subtle">
+                <div key={job.id} className="bg-lia-bg-primary rounded-xl p-2.5 border border-lia-border-subtle">
                   <span className="text-xs font-medium text-lia-text-tertiary">{job.title}</span>
                   <div className="flex flex-wrap gap-1 mt-1.5">
                     {job.benefits?.map((benefit, i) => (

@@ -291,7 +291,7 @@ export function BenefitFormModal({
                 Configurações
               </h4>
               <div className="grid grid-cols-2 gap-3">
-                <div className="flex items-center justify-between p-2.5 rounded-md bg-lia-bg-secondary dark:bg-lia-bg-secondary">
+                <div className="flex items-center justify-between p-2.5 rounded-xl bg-lia-bg-secondary dark:bg-lia-bg-secondary">
                   <div>
                     <Label className={textStyles.label}>Ativo</Label>
                     <p className={textStyles.caption}>Disponível para colaboradores</p>
@@ -302,7 +302,7 @@ export function BenefitFormModal({
                   />
                 </div>
 
-                <div className="flex items-center justify-between p-2.5 rounded-md bg-lia-bg-secondary dark:bg-lia-bg-secondary">
+                <div className="flex items-center justify-between p-2.5 rounded-xl bg-lia-bg-secondary dark:bg-lia-bg-secondary">
                   <div>
                     <Label className={textStyles.label}>Destaque</Label>
                     <p className={textStyles.caption}>Exibir com destaque</p>
@@ -313,7 +313,7 @@ export function BenefitFormModal({
                   />
                 </div>
 
-                <div className="flex items-center justify-between p-2.5 rounded-md bg-lia-bg-secondary dark:bg-lia-bg-secondary">
+                <div className="flex items-center justify-between p-2.5 rounded-xl bg-lia-bg-secondary dark:bg-lia-bg-secondary">
                   <div>
                     <Label className={textStyles.label}>Obrigatório</Label>
                     <p className={textStyles.caption}>Adesão obrigatória</p>
@@ -324,7 +324,7 @@ export function BenefitFormModal({
                   />
                 </div>
 
-                <div className="flex items-center justify-between p-2.5 rounded-md bg-lia-bg-secondary dark:bg-lia-bg-secondary">
+                <div className="flex items-center justify-between p-2.5 rounded-xl bg-lia-bg-secondary dark:bg-lia-bg-secondary">
                   <div>
                     <Label className={textStyles.label}>Desconto em Folha</Label>
                     <p className={textStyles.caption}>Valor descontado do salário</p>

@@ -92,7 +92,7 @@ export function AdvancedSearch({ filters, onFiltersChange, suggestions = [], cla
     <div className={cn("space-y-4", className)}>
       {/* Search Input Principal */}
       <div className="relative">
-        <div className="relative rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle transition-shadow duration-200 focus-within:shadow-lia-focus">
+        <div className="relative rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle transition-shadow duration-200 focus-within:shadow-lia-focus">
           <div className="flex items-center">
             <Search className="absolute left-3 w-4 h-4 text-lia-text-secondary" />
             <input
@@ -130,7 +130,7 @@ export function AdvancedSearch({ filters, onFiltersChange, suggestions = [], cla
         {/* Search Suggestions */}
         {searchFocused && suggestions.length > 0 && (
           <div
-            className="absolute top-full left-0 right-0 mt-1 bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md z-10"
+            className="absolute top-full left-0 right-0 mt-1 bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl z-10"
            
           >
             <div className="p-2">
@@ -143,7 +143,7 @@ export function AdvancedSearch({ filters, onFiltersChange, suggestions = [], cla
                       updateFilter('query', suggestion)
                       setSearchFocused(false)
                     }}
-                    className="w-full text-left px-2 py-1 text-sm hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse rounded-md"
+                    className="w-full text-left px-2 py-1 text-sm hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse rounded-xl"
                     style={{animation: `fadeInRight 0.2s ease-out ${index * 0.05}s backwards`}}
                   >
                     {suggestion}
@@ -205,7 +205,7 @@ export function AdvancedSearch({ filters, onFiltersChange, suggestions = [], cla
           className="overflow-hidden"
          
         >
-          <div className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-4 bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 space-y-4">
+          <div className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl p-4 bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 space-y-4">
             {/* Categorias */}
             <div>
               <h4 className="text-sm font-medium text-lia-text-primary mb-2 flex items-center gap-2">

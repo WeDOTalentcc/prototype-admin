@@ -148,10 +148,10 @@ const [isSaving, setIsSaving] = useState(false)
 
   return (
     <div className="fixed inset-0 bg-lia-overlay flex items-center justify-center z-50 p-4">
-      <Card className="w-full max-w-xl max-h-[90vh] bg-lia-bg-primary overflow-y-auto rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
-        <CardHeader className="flex flex-row items-center justify-between pb-4 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+      <Card className="w-full max-w-xl max-h-[90vh] bg-lia-bg-primary overflow-y-auto rounded-xl dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
+        <CardHeader className="flex flex-row items-center justify-between pb-4 dark:border-lia-border-subtle">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-md flex items-center justify-center">
+            <div className="w-10 h-10 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-xl flex items-center justify-center">
               <Target className="w-5 h-5 text-lia-text-secondary" />
             </div>
             <div>

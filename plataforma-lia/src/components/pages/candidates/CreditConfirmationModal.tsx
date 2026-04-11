@@ -49,7 +49,7 @@ export function CreditConfirmationModal({
             </p>
 
             {creditEstimate && (
-              <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 rounded-md p-4 space-y-3">
+              <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 rounded-xl p-4 space-y-3">
                 <div className="flex justify-between items-center text-sm">
                   <span className="text-lia-text-primary">Tipo de busca:</span>
                   <span className="font-medium capitalize">{pearchSearchOptions.searchType ?? 'standard'}</span>

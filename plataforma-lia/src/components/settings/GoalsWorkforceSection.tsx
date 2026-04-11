@@ -173,7 +173,7 @@ export function GoalsWorkforceSection({
 
           <div className="space-y-3">
             {departments.map((dept) => (
-              <div key={dept.id} className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md overflow-hidden">
+              <div key={dept.id} className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl overflow-hidden">
                 <div 
                   className="flex items-center justify-between p-3 cursor-pointer hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover bg-lia-bg-secondary/50 dark:bg-lia-bg-secondary/50"
                   onClick={() => toggleDepartmentExpand(dept.id)}
@@ -217,7 +217,7 @@ export function GoalsWorkforceSection({
                         </thead>
                         <tbody>
                           {dept.positions.map((pos) => (
-                            <tr key={pos.id} className="border-b border-lia-border-subtle dark:border-lia-border-subtle hover:bg-lia-bg-primary dark:hover:bg-lia-bg-inverse/50">
+                            <tr key={pos.id} className=" dark:border-lia-border-subtle hover:bg-lia-bg-primary dark:hover:bg-lia-bg-inverse/50">
                               <td className="p-2 sticky left-0 bg-lia-bg-secondary dark:bg-lia-bg-secondary">
                                 <input
                                   type="text"

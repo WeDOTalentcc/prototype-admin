@@ -48,7 +48,7 @@ export function ContactFilterConfirmModal({
                 : 'Ao ativar este filtro, a busca retornará apenas candidatos com telefone disponível.'}
             </p>
 
-            <div className="bg-lia-bg-secondary dark:bg-lia-bg-primary rounded-md p-4 space-y-3">
+            <div className="bg-lia-bg-secondary dark:bg-lia-bg-primary rounded-xl p-4 space-y-3">
               <div className="flex justify-between items-center text-sm">
                 <span className="text-lia-text-primary">Filtro:</span>
                 <span className="font-medium">{pendingContactFilter === 'email' ? 'Apenas com Email' : 'Apenas com Telefone'}</span>

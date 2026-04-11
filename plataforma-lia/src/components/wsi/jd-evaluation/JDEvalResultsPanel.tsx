@@ -26,7 +26,7 @@ export const JDEvalResultsPanel = React.memo(function JDEvalResultsPanel({
     <div className="grid grid-cols-2 gap-4 pt-2">
       <div className="space-y-3">
         <span className="text-xs font-semibold text-lia-text-primary uppercase tracking-wide block">DESCRIÇÃO DO CLIENTE</span>
-        <div className="border border-lia-border-subtle rounded-md p-3 bg-lia-bg-secondary/30/30 space-y-3">
+        <div className="border border-lia-border-subtle rounded-xl p-3 bg-lia-bg-secondary/30/30 space-y-3">
 
         {description && (
           <div>
@@ -96,7 +96,7 @@ export const JDEvalResultsPanel = React.memo(function JDEvalResultsPanel({
         <span className="text-xs font-semibold uppercase tracking-wide block">DESCRIÇÃO ENRIQUECIDA (LIA)</span>
 
         {enrichedJd && (enrichedJd.generated_jd_text || enrichedJd.description) ? (
-          <div className="border rounded-md p-3 space-y-3/30 border-wedo-cyan/20 bg-wedo-cyan/[.02]">
+          <div className="border rounded-xl p-3 space-y-3/30 border-wedo-cyan/20 bg-wedo-cyan/[.02]">
             <p className="text-xs text-lia-text-secondary leading-relaxed whitespace-pre-wrap">
               {enrichedJd.generated_jd_text || enrichedJd.description}
             </p>
@@ -148,7 +148,7 @@ export const JDEvalResultsPanel = React.memo(function JDEvalResultsPanel({
             )}
           </div>
         ) : (
-          <div className="border rounded-md p-3/30 border-wedo-cyan/15 bg-wedo-cyan/[.02]">
+          <div className="border rounded-xl p-3/30 border-wedo-cyan/15 bg-wedo-cyan/[.02]">
             <div className="flex flex-col items-center justify-center py-6">
               <Brain className="h-8 w-8 mb-2 text-wedo-cyan opacity-40" />
               <p className="text-xs text-lia-text-disabled text-center leading-relaxed">

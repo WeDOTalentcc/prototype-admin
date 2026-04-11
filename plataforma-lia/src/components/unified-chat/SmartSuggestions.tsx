@@ -114,7 +114,7 @@ export function SmartSuggestions({ contextPage, mode, onSuggestionClick }: Props
             <button
               key={i}
               onClick={() => onSuggestionClick(s.prompt)}
-              className="flex items-start gap-2.5 px-3 py-2.5 rounded-md border border-lia-border-subtle bg-lia-bg-primary text-left hover:border-wedo-cyan/40 hover:bg-wedo-cyan/5 transition-colors motion-reduce:transition-none group"
+              className="flex items-start gap-2.5 px-3 py-2.5 rounded-xl border border-lia-border-subtle bg-lia-bg-primary text-left hover:border-wedo-cyan/40 hover:bg-wedo-cyan/5 transition-colors motion-reduce:transition-none group"
             >
               <Icon className="w-4 h-4 text-lia-text-disabled group-hover:text-wedo-cyan flex-shrink-0 mt-0.5 transition-colors" />
               <div className="flex-1 min-w-0">

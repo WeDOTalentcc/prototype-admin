@@ -61,7 +61,7 @@ export function WsiQuestionsPanel({ data, requiresApproval, onApprove, onReject 
   return (
     <div className="flex flex-col">
       {/* Summary header */}
-      <div className="px-4 py-3 border-b border-lia-border-subtle">
+      <div className="px-4 py-3">
         <div className="flex items-center gap-3 text-xs font-['Open_Sans',sans-serif]">
           <span className="text-lia-text-secondary">
             {questions.length} perguntas {isAtMinimum && `(min: ${minQuestions})`}
@@ -99,7 +99,7 @@ export function WsiQuestionsPanel({ data, requiresApproval, onApprove, onReject 
         <div className="flex-shrink-0 px-4 py-3 border-t border-lia-border-subtle bg-lia-bg-primary flex items-center gap-2">
           <button
             onClick={onReject}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-md border border-lia-border-subtle text-sm font-medium text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none font-['Open_Sans',sans-serif]"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-lia-border-subtle text-sm font-medium text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none font-['Open_Sans',sans-serif]"
           >
             <RefreshCw className="w-3.5 h-3.5" />
             Regenerar
@@ -137,7 +137,7 @@ function QuestionCard({
   const frameworkColor = FRAMEWORK_COLORS[question.framework] || FRAMEWORK_COLORS.CBI
 
   return (
-    <div className="rounded-md border border-lia-border-subtle overflow-hidden">
+    <div className="rounded-xl border border-lia-border-subtle overflow-hidden">
       {/* Card header */}
       <button
         onClick={onToggle}

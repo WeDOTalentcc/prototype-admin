@@ -49,7 +49,7 @@ const JobsHeader = memo(function JobsHeader({
         </div>
         
         <div className="flex items-center gap-2">
-          <div className="flex items-center border border-lia-border-default dark:border-lia-border-default rounded-md p-0.5">
+          <div className="flex items-center border border-lia-border-default dark:border-lia-border-default rounded-xl p-0.5">
             <Button
               variant="ghost"
               size="icon"

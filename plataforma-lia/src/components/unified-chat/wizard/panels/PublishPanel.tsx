@@ -99,7 +99,7 @@ export function PublishPanel({ data, onUpdate }: Props) {
       {/* Auto-screen toggle */}
       <button
         onClick={toggleAutoScreen}
-        className="w-full flex items-center justify-between p-2.5 rounded-md bg-lia-bg-secondary border border-lia-border-subtle hover:bg-lia-interactive-hover transition-colors"
+        className="w-full flex items-center justify-between p-2.5 rounded-xl bg-lia-bg-secondary border border-lia-border-subtle hover:bg-lia-interactive-hover transition-colors"
       >
         <span className="text-xs text-lia-text-primary font-['Open_Sans',sans-serif]">Auto-screening</span>
         <span className={cn(
@@ -112,7 +112,7 @@ export function PublishPanel({ data, onUpdate }: Props) {
 
       {/* Share link */}
       {d.share_link && (
-        <div className="p-2.5 rounded-md bg-wedo-cyan/5 border border-wedo-cyan/20">
+        <div className="p-2.5 rounded-xl bg-wedo-cyan/5 border border-wedo-cyan/20">
           <p className="text-xs text-wedo-cyan font-medium font-['Open_Sans',sans-serif] mb-1">Link de compartilhamento</p>
           <p className="text-xs text-lia-text-primary font-['Open_Sans',sans-serif] break-all">{d.share_link}</p>
         </div>

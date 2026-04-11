@@ -38,7 +38,7 @@ export function RubricEvaluationModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-lia-overlay" data-testid="rubric-evaluation-modal">
-      <div className="w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle border border-lia-border-subtle bg-[var(--lia-bg-secondary)]">
+      <div className="w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col rounded-xl dark:bg-lia-bg-secondary dark:border-lia-border-subtle border border-lia-border-subtle bg-[var(--lia-bg-secondary)]">
         <div className="flex items-center justify-between px-4 py-3 border-b border-b-lia-border-subtle">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-md flex items-center justify-center flex-shrink-0 bg-wedo-cyan/[.12]">
@@ -130,7 +130,7 @@ export function RubricEvaluationModal({
             <button
               onClick={hook.handleReject}
               disabled={hook.isLoading || !onReject}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-colors motion-reduce:transition-none hover:bg-status-error/10 disabled:opacity-50 disabled:cursor-not-allowed bg-lia-bg-primary border border-lia-border-default text-status-error dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-lia-bg-inverse dark:text-status-error"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-xl transition-colors motion-reduce:transition-none hover:bg-status-error/10 disabled:opacity-50 disabled:cursor-not-allowed bg-lia-bg-primary border border-lia-border-default text-status-error dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-lia-bg-inverse dark:text-status-error"
             >
               {hook.isRejecting ? (
                 <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none" />
@@ -142,7 +142,7 @@ export function RubricEvaluationModal({
             <button
               onClick={hook.handleApprove}
               disabled={hook.isLoading || !onApprove}
-              className="flex items-center gap-1.5 px-4 py-1.5 text-xs font-medium rounded-md transition-colors motion-reduce:transition-none hover:bg-lia-btn-primary-hover disabled:opacity-50 disabled:cursor-not-allowed bg-lia-btn-primary-bg text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
+              className="flex items-center gap-1.5 px-4 py-1.5 text-xs font-medium rounded-xl transition-colors motion-reduce:transition-none hover:bg-lia-btn-primary-hover disabled:opacity-50 disabled:cursor-not-allowed bg-lia-btn-primary-bg text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
             >
               {hook.isApproving ? (
                 <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none" />

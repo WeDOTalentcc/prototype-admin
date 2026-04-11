@@ -38,7 +38,7 @@ export function GeneralInfoSection({
       <div className="grid grid-cols-1 gap-3">
         {/* Logo */}
         <div className="inline-flex items-center gap-3 bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md px-4 py-3 w-fit">
-          <div className="relative w-14 h-14 rounded-md bg-lia-bg-tertiary dark:bg-lia-bg-secondary border-2 border-dashed border-lia-border-default flex items-center justify-center cursor-pointer hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none hover:border-lia-btn-primary-bg dark:hover:border-lia-border-subtle flex-shrink-0 overflow-hidden">
+          <div className="relative w-14 h-14 rounded-xl bg-lia-bg-tertiary dark:bg-lia-bg-secondary border-2 border-dashed border-lia-border-default flex items-center justify-center cursor-pointer hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none hover:border-lia-btn-primary-bg dark:hover:border-lia-border-subtle flex-shrink-0 overflow-hidden">
             {companyData.logo ? (
               <NextImage src={companyData.logo} alt="Logo" fill className="object-cover rounded-md" />
             ) : (

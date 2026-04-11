@@ -101,10 +101,10 @@ export function LIASearchSidebarInput({
   }
 
   return (
-    <div className="flex-shrink-0 p-3 bg-lia-bg-primary rounded-md">
+    <div className="flex-shrink-0 p-3 bg-lia-bg-primary rounded-xl">
       {/* Banner de criação de arquétipo */}
       {isCreatingArchetype && (
-        <div className="mb-2 p-2 rounded-md bg-lia-bg-tertiary dark:bg-lia-bg-secondary border border-lia-border-default dark:border-lia-border-default flex items-center justify-between">
+        <div className="mb-2 p-2 rounded-xl bg-lia-bg-tertiary dark:bg-lia-bg-secondary border border-lia-border-default dark:border-lia-border-default flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Target className="w-4 h-4 text-lia-text-secondary" />
             <span className="text-xs font-medium text-lia-text-secondary">
@@ -116,7 +116,7 @@ export function LIASearchSidebarInput({
               setIsCreatingArchetype(false)
               setArchetypeCreationStep('initial')
             }}
-            className="p-1 hover:bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-md"
+            className="p-1 hover:bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-xl"
             aria-label="Cancelar criação de arquétipo"
           >
             <X className="w-3 h-3 text-lia-text-secondary" aria-hidden="true" />
@@ -124,7 +124,7 @@ export function LIASearchSidebarInput({
         </div>
       )}
       {/* Input Inline Padronizado - Design Specs v3.1 */}
-      <div data-testid="lia-sidebar-input-area" className="flex items-center gap-2 p-2 rounded-md bg-lia-bg-primary border border-lia-border-subtle">
+      <div data-testid="lia-sidebar-input-area" className="flex items-center gap-2 p-2 rounded-xl bg-lia-bg-primary border border-lia-border-subtle">
         <input
           type="text"
           placeholder={isCreatingArchetype

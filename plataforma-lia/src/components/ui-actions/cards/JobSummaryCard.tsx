@@ -148,7 +148,7 @@ export function JobSummaryCard({
           </div>
           {data.candidates_count !== undefined && (
             <div
-              className="text-center px-3 py-1 rounded-md bg-lia-bg-tertiary"
+              className="text-center px-3 py-1 rounded-xl bg-lia-bg-tertiary"
             >
               <div className="text-lg font-bold text-wedo-purple">{data.candidates_count}</div>
               <div className="text-xs text-lia-text-tertiary">candidatos</div>

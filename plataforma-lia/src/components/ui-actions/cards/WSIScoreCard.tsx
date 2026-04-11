@@ -207,7 +207,7 @@ export function WSIScoreCard({
               {data.strengths.slice(0, 2).map((strength, index) => (
                 <div
                   key={`strength-${index}`}
-                  className="flex items-start gap-2 text-xs px-2 py-1 rounded-md bg-lia-bg-tertiary text-lia-text-secondary"
+                  className="flex items-start gap-2 text-xs px-2 py-1 rounded-xl bg-lia-bg-tertiary text-lia-text-secondary"
                 >
                   <Star className="h-3 w-3 mt-0.5 shrink-0 text-wedo-green" />
                   <span>{strength}</span>
@@ -226,7 +226,7 @@ export function WSIScoreCard({
               {data.development_areas.slice(0, 2).map((area, index) => (
                 <div
                   key={`area-${index}`}
-                  className="flex items-start gap-2 text-xs px-2 py-1 rounded-md bg-lia-bg-tertiary text-lia-text-secondary"
+                  className="flex items-start gap-2 text-xs px-2 py-1 rounded-xl bg-lia-bg-tertiary text-lia-text-secondary"
                 >
                   <TrendingUp className="h-3 w-3 mt-0.5 shrink-0 text-lia-text-secondary" />
                   <span>{area}</span>
@@ -238,7 +238,7 @@ export function WSIScoreCard({
 
         {data.summary && !compact && (
           <div
-            className="mt-4 p-3 rounded-md bg-lia-bg-tertiary"
+            className="mt-4 p-3 rounded-xl bg-lia-bg-tertiary"
           >
             <div className="text-xs mb-1 text-lia-text-tertiary">
               Resumo da Avaliação

@@ -106,7 +106,7 @@ export function CandidatePageOpinionsTab({
     <TooltipProvider delayDuration={200}>
       <div className="space-y-4">
         {/* Subtabs Header */}
-        <div className="flex items-center gap-1 border-b border-lia-border-subtle dark:border-lia-border-subtle pb-2">
+        <div className="flex items-center gap-1 dark:border-lia-border-subtle pb-2">
           <button
             onClick={() => setOpinionsSubTab("pareceres")}
             className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-t transition-colors motion-reduce:transition-none ${
@@ -250,7 +250,7 @@ export function CandidatePageOpinionsTab({
                                   e.stopPropagation()
                                   handleCopyOpinion(opinion, (opinion.opinion_type as string | undefined) || "general")
                                 }}
-                                className="p-1 hover:bg-lia-bg-tertiary rounded-md transition-colors motion-reduce:transition-none"
+                                className="p-1 hover:bg-lia-bg-tertiary rounded-xl transition-colors motion-reduce:transition-none"
                               >
                                 {copiedItemId === `opinion-${opinion.id as string}` ? (
                                   <Check className="w-3.5 h-3.5 text-status-success" />
@@ -428,7 +428,7 @@ export function CandidatePageOpinionsTab({
                                   e.stopPropagation()
                                   handleCopyAnalysis(analysis)
                                 }}
-                                className="p-1 hover:bg-lia-bg-tertiary rounded-md transition-colors motion-reduce:transition-none"
+                                className="p-1 hover:bg-lia-bg-tertiary rounded-xl transition-colors motion-reduce:transition-none"
                               >
                                 {copiedItemId === `analysis-${analysis.id}` ? (
                                   <Check className="w-3.5 h-3.5 text-status-success" />

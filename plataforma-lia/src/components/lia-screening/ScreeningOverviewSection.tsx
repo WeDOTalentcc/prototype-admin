@@ -95,7 +95,7 @@ export function ScreeningOverviewSection({ requirements }: ScreeningOverviewSect
         <h5 className="font-medium font-sans text-lia-text-primary mb-3">Checklist de Requisitos Essenciais</h5>
         <div className="space-y-2">
           {requirements.length > 0 ? requirements.map((requirement: string) => (
-            <div key={requirement} className="flex items-center gap-3 p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
+            <div key={requirement} className="flex items-center gap-3 p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl">
               <input type="checkbox" className="rounded-md" />
               <span className="text-sm text-lia-text-primary">{requirement}</span>
             </div>

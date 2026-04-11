@@ -232,7 +232,7 @@ export function IndustrySingleSelect({
       {isOpen && dropdownItems.length > 0 && (
         <div
           ref={dropdownRef}
-          className="absolute z-50 w-full mt-1 py-1 bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md max-h-64 overflow-y-auto"
+          className="absolute z-50 w-full mt-1 py-1 bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl max-h-64 overflow-y-auto"
         >
           {dropdownItems.map((item, idx) => (
             <button

@@ -26,7 +26,7 @@ export function WizardProgressBar({ currentStage, completeness, stageHistory }: 
   const currentIdx = STAGE_ORDER.indexOf(currentStage)
 
   return (
-    <div className="px-4 py-2.5 border-b border-lia-border-subtle bg-lia-bg-primary">
+    <div className="px-4 py-2.5 bg-lia-bg-primary">
       {/* Progress bar */}
       <div className="h-1 rounded-full bg-lia-bg-secondary mb-2.5 overflow-hidden">
         <div

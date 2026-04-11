@@ -57,7 +57,7 @@ export default function ProactiveChatMessage({
         <button
           onClick={onReject}
           disabled={processing}
-          className="px-3 py-1 text-xs rounded-md text-lia-text-secondary hover:text-lia-text-tertiary hover:bg-lia-bg-primary/5 transition-colors motion-reduce:transition-none disabled:opacity-50"
+          className="px-3 py-1 text-xs rounded-xl text-lia-text-secondary hover:text-lia-text-tertiary hover:bg-lia-bg-primary/5 transition-colors motion-reduce:transition-none disabled:opacity-50"
          
         >
           Ignorar

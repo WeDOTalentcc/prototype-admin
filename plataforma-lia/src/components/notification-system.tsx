@@ -233,7 +233,7 @@ export function NotificationSystem({
     >
       <Card className="w-[340px] max-h-[480px] overflow-hidden border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl shadow-lg">
         <CardContent className="p-0">
-          <div className="px-4 py-3 border-b border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-primary">
+          <div className="px-4 py-3 dark:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-primary">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-semibold text-lia-text-primary">
                 Notificações

@@ -29,7 +29,7 @@ export function EditCriteriaModal({ open, criteria, onClose, onAddCriterion, onR
       {open && (
         <div className="fixed inset-0 z-[70] flex items-center justify-center bg-lia-overlay">
           <div className="bg-lia-bg-primary rounded-xl w-panel-xl max-h-[80vh] flex flex-col">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-lia-border-subtle">
+            <div className="flex items-center justify-between px-6 py-4">
               <h3 className="text-lg font-semibold text-lia-text-primary">
                 Editar Critérios
               </h3>
@@ -45,7 +45,7 @@ export function EditCriteriaModal({ open, criteria, onClose, onAddCriterion, onR
               {criteria.map((criterion) => (
                 <div
                   key={criterion.id}
-                  className="flex items-center gap-3 p-3 bg-lia-bg-secondary rounded-md group"
+                  className="flex items-center gap-3 p-3 bg-lia-bg-secondary rounded-xl group"
                 >
                   <div className="cursor-move text-lia-text-tertiary hover:text-lia-text-secondary">
                     <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -87,7 +87,7 @@ export function EditCriteriaModal({ open, criteria, onClose, onAddCriterion, onR
                     const text = prompt('Digite o novo critério:')
                     if (text) onAddCriterion(text)
                   }}
-                  className="flex-1 py-2.5 px-4 border border-lia-border-subtle rounded-md text-sm font-medium text-lia-text-secondary hover:border-lia-btn-primary-bg hover:text-lia-text-primary transition-colors motion-reduce:transition-none flex items-center justify-center gap-2"
+                  className="flex-1 py-2.5 px-4 border border-lia-border-subtle rounded-xl text-sm font-medium text-lia-text-secondary hover:border-lia-btn-primary-bg hover:text-lia-text-primary transition-colors motion-reduce:transition-none flex items-center justify-center gap-2"
                 >
                   <Plus className="w-4 h-4" />
                   Adicionar Critério

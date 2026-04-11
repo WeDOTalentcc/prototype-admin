@@ -159,7 +159,7 @@ export function LiaSplitPanel({ onNavigate }: LiaSplitPanelProps) {
       aria-label="LIA — painel lateral"
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-lia-border-subtle flex-shrink-0">
+      <div className="flex items-center justify-between px-4 py-3 flex-shrink-0">
         <div className="flex items-center gap-2">
           <Brain className="w-4 h-4 text-wedo-cyan" />
           <div>
@@ -205,7 +205,7 @@ export function LiaSplitPanel({ onNavigate }: LiaSplitPanelProps) {
 
       {/* Page hint banner */}
       {splitView.page && (
-        <div className="px-4 py-2 bg-lia-bg-secondary border-b border-lia-border-subtle flex-shrink-0">
+        <div className="px-4 py-2 bg-lia-bg-secondary flex-shrink-0">
           <p className="text-xs text-lia-text-tertiary">
             Contexto atual:{" "}
             <span className="font-medium text-lia-text-secondary">
@@ -238,7 +238,7 @@ export function LiaSplitPanel({ onNavigate }: LiaSplitPanelProps) {
 
       {/* Input */}
       <div className="px-4 pb-4 pt-2 flex-shrink-0 border-t border-lia-border-subtle">
-        <div className="flex items-end gap-2 rounded-md border border-lia-border-subtle bg-lia-bg-primary p-2">
+        <div className="flex items-end gap-2 rounded-xl border border-lia-border-subtle bg-lia-bg-primary p-2">
           <textarea
             ref={textareaRef}
             value={inputText}

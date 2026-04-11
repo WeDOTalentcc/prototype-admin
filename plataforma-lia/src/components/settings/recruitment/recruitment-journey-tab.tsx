@@ -117,7 +117,7 @@ export function RecruitmentJourneyTab({ onSettingsChange }: { onSettingsChange: 
             </div>
           </div>
 
-          <div className="flex items-center gap-1 mt-4 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+          <div className="flex items-center gap-1 mt-4 dark:border-lia-border-subtle">
             {subTabs.map(tab => (
               <button
                 key={tab.id}

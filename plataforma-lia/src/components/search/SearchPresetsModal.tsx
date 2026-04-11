@@ -180,7 +180,7 @@ export function SearchPresetsModal<T>({
   const savePlaceholder = `My ${title.replace(" Presets", "")} Preset`
 
   const renderInlineSaveForm = () => (
-    <div className="mt-4 p-4 border border-lia-border-subtle rounded-md bg-lia-bg-secondary dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
+    <div className="mt-4 p-4 border border-lia-border-subtle rounded-xl bg-lia-bg-secondary dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
       <h3 className="text-sm font-medium text-lia-text-primary mb-3">Save as Preset</h3>
       <div className="space-y-3">
         <div>
@@ -261,20 +261,20 @@ export function SearchPresetsModal<T>({
 
   return (
     <div className="fixed inset-0 bg-lia-overlay backdrop-blur-[1px] z-overlay flex items-center justify-center p-4">
-      <div className="bg-lia-bg-primary rounded-md w-full max-w-2xl max-h-[80vh] flex flex-col dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
-        <div className="flex items-center justify-between px-4 py-3 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+      <div className="bg-lia-bg-primary rounded-xl w-full max-w-2xl max-h-[80vh] flex flex-col dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
+        <div className="flex items-center justify-between px-4 py-3 dark:border-lia-border-subtle">
           <h2 className="text-base font-semibold text-lia-text-primary">
             {title}
           </h2>
           <button
             onClick={onClose}
-            className="p-1 hover:bg-lia-bg-tertiary rounded-md transition-colors motion-reduce:transition-none"
+            className="p-1 hover:bg-lia-bg-tertiary rounded-xl transition-colors motion-reduce:transition-none"
           >
             <X className="w-5 h-5 text-lia-text-secondary" />
           </button>
         </div>
 
-        <div className="px-4 py-3 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+        <div className="px-4 py-3 dark:border-lia-border-subtle">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-lia-text-tertiary" />
             <Input
@@ -286,7 +286,7 @@ export function SearchPresetsModal<T>({
           </div>
         </div>
 
-        <div className="flex border-b border-lia-border-subtle dark:border-lia-border-subtle">
+        <div className="flex dark:border-lia-border-subtle">
           {hasCustomTab && customPresets.length > 0 && (
             <button
               onClick={() => setActiveTab("custom")}

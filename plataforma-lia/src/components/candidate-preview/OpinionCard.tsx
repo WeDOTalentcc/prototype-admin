@@ -276,7 +276,7 @@ export function OpinionCard({ opinion, isExpanded, onToggle, type, copiedItemId,
           )}
 
           {!!opinion.recruiter_notes && (
-            <div className="bg-status-warning/10 rounded-md p-2 border border-status-warning/30">
+            <div className="bg-status-warning/10 rounded-xl p-2 border border-status-warning/30">
               <h5 className={`${textStyles.label} text-status-warning mb-1 flex items-center gap-1`}>
                 <Edit className="w-3 h-3" />
                 Notas do Recrutador
@@ -286,7 +286,7 @@ export function OpinionCard({ opinion, isExpanded, onToggle, type, copiedItemId,
           )}
 
           {!!opinion.recruiter_override && (
-            <div className="bg-wedo-purple/10 rounded-md p-2 border border-wedo-purple/30">
+            <div className="bg-wedo-purple/10 rounded-xl p-2 border border-wedo-purple/30">
               <div className="flex items-center gap-2 mb-1">
                 <h5 className={`${textStyles.label} text-wedo-purple`}>Override do Recrutador</h5>
                 {getRecommendationBadge(opinion.recruiter_override as string)}

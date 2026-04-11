@@ -166,14 +166,14 @@ export function UserManagement(_props: UserManagementProps) {
             placeholder="Buscar usuários..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-8 pr-3 py-1.5 text-xs border border-lia-border-default rounded-md focus:ring-1 focus:ring-lia-btn-primary-bg/10 focus:border-lia-btn-primary-bg dark:bg-lia-bg-elevated dark:border-lia-border-default"
+            className="w-full pl-8 pr-3 py-1.5 text-xs border border-lia-border-default rounded-xl focus:ring-1 focus:ring-lia-btn-primary-bg/10 focus:border-lia-btn-primary-bg dark:bg-lia-bg-elevated dark:border-lia-border-default"
           />
         </div>
 
         <select
           value={departmentFilter}
           onChange={(e) => setDepartmentFilter(e.target.value)}
-          className="px-2 py-1.5 text-xs border border-lia-border-default rounded-md focus:ring-1 focus:ring-lia-btn-primary-bg/10 focus:border-lia-btn-primary-bg dark:bg-lia-bg-elevated dark:border-lia-border-default"
+          className="px-2 py-1.5 text-xs border border-lia-border-default rounded-xl focus:ring-1 focus:ring-lia-btn-primary-bg/10 focus:border-lia-btn-primary-bg dark:bg-lia-bg-elevated dark:border-lia-border-default"
         >
           <option value="all">Todos os Departamentos</option>
           {departments.map(dept => (
@@ -184,7 +184,7 @@ export function UserManagement(_props: UserManagementProps) {
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="px-2 py-1.5 text-xs border border-lia-border-default rounded-md focus:ring-1 focus:ring-lia-btn-primary-bg/10 focus:border-lia-btn-primary-bg dark:bg-lia-bg-elevated dark:border-lia-border-default"
+          className="px-2 py-1.5 text-xs border border-lia-border-default rounded-xl focus:ring-1 focus:ring-lia-btn-primary-bg/10 focus:border-lia-btn-primary-bg dark:bg-lia-bg-elevated dark:border-lia-border-default"
         >
           <option value="all">Todos os Status</option>
           <option value="ativo">Ativo</option>
@@ -192,7 +192,7 @@ export function UserManagement(_props: UserManagementProps) {
           <option value="pendente">Pendente</option>
         </select>
 
-        <div className="flex bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-md p-0.5">
+        <div className="flex bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-xl p-0.5">
           <button
             onClick={() => setViewMode('cards')}
             className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors motion-reduce:transition-none ${

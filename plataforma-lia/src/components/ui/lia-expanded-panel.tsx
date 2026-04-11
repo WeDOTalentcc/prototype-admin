@@ -134,7 +134,7 @@ export function LiaExpandedPanel({
         {/* Context Pills (quando há itens selecionados) */}
         {contextPills && (
           <div 
-            className="flex-shrink-0 px-4 py-3 bg-wedo-cyan/[0.04] border-b border-lia-border-subtle"
+            className="flex-shrink-0 px-4 py-3 bg-wedo-cyan/[0.04]"
           >
             {contextPills}
           </div>
@@ -322,7 +322,7 @@ const handleKeyDown = (e: React.KeyboardEvent) => {
           onChange={(e) => onChange(e.target.value)}
           onKeyDown={handleKeyDown}
           data-testid="chat-input"
-          className="w-full h-32 p-4 text-sm rounded-md border border-lia-border-subtle bg-lia-bg-secondary focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20 transition-colors motion-reduce:transition-none resize-none text-lia-text-primary"
+          className="w-full h-32 p-4 text-sm rounded-xl border border-lia-border-subtle bg-lia-bg-secondary focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20 transition-colors motion-reduce:transition-none resize-none text-lia-text-primary"
         />
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1">

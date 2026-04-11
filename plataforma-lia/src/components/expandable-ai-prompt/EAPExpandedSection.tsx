@@ -162,7 +162,7 @@ creditEstimate.isLocal
                   ) : (
                     <div className="space-y-1.5">
                       {creditEstimate.availableCredits !== undefined && (
-                        <div className="flex justify-between pb-1.5 border-b border-lia-border-strong">
+                        <div className="flex justify-between pb-1.5">
                           <span className="lia-text-muted">Saldo disponível:</span>
                           <span className={`font-medium ${
 creditEstimate.canAfford ? 'text-status-success' : 'text-status-error'
@@ -256,7 +256,7 @@ activeSearchTab === 'filtros' ? 'lia-pill-active' : 'lia-pill'
               <TooltipTrigger asChild>
                 <Link
                   href="/funil?expandedSearch=true"
-                  className="ml-1 p-1.5 rounded-md hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none border border-lia-border-subtle"
+                  className="ml-1 p-1.5 rounded-xl hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none border border-lia-border-subtle"
                 >
                   <Table2 className="w-3.5 h-3.5 text-lia-text-secondary" />
                 </Link>
@@ -273,7 +273,7 @@ activeSearchTab === 'filtros' ? 'lia-pill-active' : 'lia-pill'
           <EAPTabContent {...(core as Parameters<typeof EAPTabContent>[0])} />
         </div>
 
-        <div className="p-2.5 bg-white rounded-md mb-3 border border-lia-border-subtle">
+        <div className="p-2.5 bg-white rounded-xl mb-3 border border-lia-border-subtle">
           <div className="flex items-start gap-2">
             <Lightbulb className="w-3.5 h-3.5 text-lia-text-secondary mt-0.5 flex-shrink-0" />
             <p className="text-xs text-lia-text-secondary" aria-live="polite" aria-atomic="true">
@@ -309,7 +309,7 @@ activeSearchTab === 'filtros' ? 'lia-pill-active' : 'lia-pill'
         </div>
 
         {showHistory && commandHistory.length > 0 && (
-          <div className="mb-4 p-3 bg-lia-bg-secondary rounded-md border">
+          <div className="mb-4 p-3 bg-lia-bg-secondary rounded-xl border">
             <h4 className="text-xs font-medium text-lia-text-primary mb-2">Comandos Recentes</h4>
             <div className="space-y-1">
               {commandHistory.map((command, index) => (
@@ -368,7 +368,7 @@ isProcessing
         )}
 
         {isProcessing && (
-          <div className="flex items-center gap-2 text-xs text-lia-text-secondary bg-lia-bg-secondary p-2 rounded-md mb-3 border border-lia-border-subtle">
+          <div className="flex items-center gap-2 text-xs text-lia-text-secondary bg-lia-bg-secondary p-2 rounded-xl mb-3 border border-lia-border-subtle">
             <div className="w-2 h-2 bg-lia-btn-primary-bg rounded-full animate-pulse motion-reduce:animate-none"></div>
             <span>🧠 LIA processando: "{lastCommand}"</span>
           </div>

@@ -253,7 +253,7 @@ export function DailyBriefingCard({
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
               {[1, 2, 3, 4].map(i => (
-                <div key={i} className="p-2 rounded-md bg-lia-bg-secondary h-14" />
+                <div key={i} className="p-2 rounded-xl bg-lia-bg-secondary h-14" />
               ))}
             </div>
           </div>
@@ -334,7 +334,7 @@ export function DailyBriefingCard({
       {expanded && (
         <CardContent className="px-5 pb-5 pt-0 space-y-4">
           {fetchError && (
-            <div className="p-3 rounded-md border border-status-warning/30 bg-status-warning/5 flex items-center gap-2">
+            <div className="p-3 rounded-xl border border-status-warning/30 bg-status-warning/5 flex items-center gap-2">
               <AlertCircle className="w-4 h-4 text-status-warning shrink-0" />
               <p className="text-xs text-lia-text-secondary">
                 Não foi possível carregar o briefing do servidor. Exibindo dados parciais.
@@ -354,7 +354,7 @@ export function DailyBriefingCard({
             {/* Card Urgentes */}
             <div 
               data-testid="briefing-urgent-count"
-              className="p-2 rounded-md border border-lia-border-subtle bg-lia-bg-secondary cursor-pointer transition-colors motion-reduce:transition-none hover:bg-lia-interactive-hover"
+              className="p-2 rounded-xl border border-lia-border-subtle bg-lia-bg-secondary cursor-pointer transition-colors motion-reduce:transition-none hover:bg-lia-interactive-hover"
               onClick={() => handleActionClick('view_urgent')}
             >
               <div className="flex items-center gap-2 mb-1">
@@ -369,7 +369,7 @@ export function DailyBriefingCard({
             {/* Card Tarefas Hoje */}
             <div 
               data-testid="briefing-tasks-today"
-              className="p-2 rounded-md border border-lia-border-subtle bg-lia-bg-secondary cursor-pointer transition-colors motion-reduce:transition-none hover:bg-lia-interactive-hover"
+              className="p-2 rounded-xl border border-lia-border-subtle bg-lia-bg-secondary cursor-pointer transition-colors motion-reduce:transition-none hover:bg-lia-interactive-hover"
               onClick={() => handleActionClick('view_tasks')}
             >
               <div className="flex items-center gap-2 mb-1">
@@ -384,7 +384,7 @@ export function DailyBriefingCard({
             {/* Card Entrevistas */}
             <div 
               data-testid="briefing-interviews-today"
-              className="p-2 rounded-md border border-lia-border-subtle bg-lia-bg-secondary cursor-pointer transition-colors motion-reduce:transition-none hover:bg-lia-interactive-hover"
+              className="p-2 rounded-xl border border-lia-border-subtle bg-lia-bg-secondary cursor-pointer transition-colors motion-reduce:transition-none hover:bg-lia-interactive-hover"
               onClick={() => handleActionClick('view_interviews')}
             >
               <div className="flex items-center gap-2 mb-1">
@@ -399,7 +399,7 @@ export function DailyBriefingCard({
             {/* Card Alertas */}
             <div 
               data-testid="briefing-alerts-active"
-              className="p-2 rounded-md border border-lia-border-subtle bg-lia-bg-secondary cursor-pointer transition-colors motion-reduce:transition-none hover:bg-lia-interactive-hover"
+              className="p-2 rounded-xl border border-lia-border-subtle bg-lia-bg-secondary cursor-pointer transition-colors motion-reduce:transition-none hover:bg-lia-interactive-hover"
               onClick={() => handleActionClick('view_alerts')}
             >
               <div className="flex items-center gap-2 mb-1">
@@ -423,7 +423,7 @@ export function DailyBriefingCard({
                   <div
                     key={action.id}
                     data-testid={`urgent-action-${action.id}`}
-                    className="flex items-center justify-between p-2 rounded-md border border-lia-border-subtle bg-lia-bg-secondary"
+                    className="flex items-center justify-between p-2 rounded-xl border border-lia-border-subtle bg-lia-bg-secondary"
                   >
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-medium truncate text-wedo-cyan-dark">
@@ -459,10 +459,10 @@ export function DailyBriefingCard({
                   <div
                     key={item.id}
                     data-testid={`schedule-item-${item.id}`}
-                    className="flex items-center gap-2 p-2 rounded-md border border-lia-border-subtle bg-lia-bg-secondary shrink-0 cursor-pointer transition-colors motion-reduce:transition-none hover:bg-lia-interactive-hover"
+                    className="flex items-center gap-2 p-2 rounded-xl border border-lia-border-subtle bg-lia-bg-secondary shrink-0 cursor-pointer transition-colors motion-reduce:transition-none hover:bg-lia-interactive-hover"
                     onClick={() => handleActionClick('view_interview', item as unknown as Record<string, unknown>)}
                   >
-                    <div className="w-8 h-8 rounded-md flex items-center justify-center shrink-0 bg-lia-bg-tertiary">
+                    <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 bg-lia-bg-tertiary">
                       <Clock className="w-4 h-4 text-lia-text-secondary" />
                     </div>
                     <div className="min-w-0">
@@ -522,7 +522,7 @@ export function DailyBriefingCard({
           )}
 
           {briefing.recruiter_benchmark?.benchmark_available && (
-            <div className="p-3 rounded-md border bg-lia-bg-secondary">
+            <div className="p-3 rounded-xl border bg-lia-bg-secondary">
               <h4 className="text-xs font-medium flex items-center gap-2 mb-2 text-wedo-cyan-dark">
                 <TrendingUp className="w-4 h-4 text-wedo-cyan" />
                 Benchmark do Recrutador
@@ -560,7 +560,7 @@ export function DailyBriefingCard({
           )}
 
           {briefing.pipeline_prediction?.available && (briefing.pipeline_prediction.at_risk_count ?? 0) > 0 && (
-            <div className="p-3 rounded-md border bg-lia-bg-secondary">
+            <div className="p-3 rounded-xl border bg-lia-bg-secondary">
               <h4 className="text-xs font-medium flex items-center gap-2 mb-2 text-wedo-cyan-dark">
                 <Target className="w-4 h-4 text-wedo-cyan" />
                 Predição de Pipeline
@@ -594,11 +594,11 @@ export function DailyBriefingCard({
           {/* Card Pipeline - Paleta Monocromática */}
           <div 
             data-testid="briefing-pipeline-card"
-            className="p-3 rounded-md border bg-lia-bg-secondary"
+            className="p-3 rounded-xl border bg-lia-bg-secondary"
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-md flex items-center justify-center bg-lia-bg-tertiary">
+                <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-lia-bg-tertiary">
                   <BarChart3 className="w-4 h-4 text-lia-text-secondary" />
                 </div>
                 <div>

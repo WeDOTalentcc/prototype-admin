@@ -76,7 +76,7 @@ export function JobDescriptionStage() {
           value={basicInfoFields.cargo}
           onChange={(e) => handleFieldChange('cargo', e.target.value)}
           placeholder="Ex: Desenvolvedor Python Sr"
-          className="w-full px-3 py-1.5 border border-lia-border-subtle rounded-md text-xs focus:outline-none focus:border-lia-border-medium transition-colors motion-reduce:transition-none"
+          className="w-full px-3 py-1.5 border border-lia-border-subtle rounded-xl text-xs focus:outline-none focus:border-lia-border-medium transition-colors motion-reduce:transition-none"
          
           aria-label="Título do cargo"
           aria-required="true"
@@ -98,7 +98,7 @@ export function JobDescriptionStage() {
         <select
           value={basicInfoFields.area}
           onChange={(e) => handleFieldChange('area', e.target.value)}
-          className="w-full px-3 py-1.5 border border-lia-border-subtle rounded-md text-xs focus:outline-none focus:border-lia-border-medium transition-colors motion-reduce:transition-none bg-lia-bg-primary"
+          className="w-full px-3 py-1.5 border border-lia-border-subtle rounded-xl text-xs focus:outline-none focus:border-lia-border-medium transition-colors motion-reduce:transition-none bg-lia-bg-primary"
          
           aria-label="Área ou departamento"
           aria-required="true"
@@ -120,7 +120,7 @@ export function JobDescriptionStage() {
           value={basicInfoFields.gestor}
           onChange={(e) => setBasicInfoFields(prev => ({ ...prev, gestor: e.target.value }))}
           placeholder="Ex: João Silva"
-          className="w-full px-3 py-1.5 border border-lia-border-subtle rounded-md text-xs focus:outline-none focus:border-lia-border-medium transition-colors motion-reduce:transition-none"
+          className="w-full px-3 py-1.5 border border-lia-border-subtle rounded-xl text-xs focus:outline-none focus:border-lia-border-medium transition-colors motion-reduce:transition-none"
          
           aria-label="Nome do gestor responsável"
         />
@@ -145,7 +145,7 @@ export function JobDescriptionStage() {
             value={basicInfoFields.localidade}
             onChange={(e) => handleFieldChange('localidade', e.target.value)}
             placeholder="Ex: São Paulo, SP"
-            className="w-full pl-9 pr-3 py-1.5 border border-lia-border-subtle rounded-md text-xs focus:outline-none focus:border-lia-border-medium transition-colors motion-reduce:transition-none"
+            className="w-full pl-9 pr-3 py-1.5 border border-lia-border-subtle rounded-xl text-xs focus:outline-none focus:border-lia-border-medium transition-colors motion-reduce:transition-none"
            
             aria-label="Localidade ou cidade"
           />

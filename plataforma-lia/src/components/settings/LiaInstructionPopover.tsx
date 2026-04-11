@@ -77,7 +77,7 @@ export function LiaInstructionPopover({
         </button>
       </PopoverTrigger>
       <PopoverContent 
-        className="w-80 bg-lia-bg-primary dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-subtle p-0 rounded-md"
+        className="w-80 bg-lia-bg-primary dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-subtle p-0 rounded-xl"
         side="right"
         align="start"
       >
@@ -107,7 +107,7 @@ export function LiaInstructionPopover({
           />
 
           {examples.length > 0 && (
-            <div className="space-y-2 p-3 bg-lia-bg-secondary dark:bg-lia-bg-primary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
+            <div className="space-y-2 p-3 bg-lia-bg-secondary dark:bg-lia-bg-primary rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle">
               <div className="flex items-center gap-1 text-xs font-medium uppercase text-lia-text-secondary">
                 <Info className="w-3 h-3" />
                 <span>Exemplos de instruções</span>
@@ -117,7 +117,7 @@ export function LiaInstructionPopover({
                   <button
                     key={idx}
                     onClick={() => setInstruction(example)}
-                    className="block w-full text-left text-xs text-lia-text-secondary hover:text-lia-text-primary p-1.5 rounded-md hover:bg-lia-bg-primary transition-colors motion-reduce:transition-none"
+                    className="block w-full text-left text-xs text-lia-text-secondary hover:text-lia-text-primary p-1.5 rounded-xl hover:bg-lia-bg-primary transition-colors motion-reduce:transition-none"
                   >
                     "{example}"
                   </button>

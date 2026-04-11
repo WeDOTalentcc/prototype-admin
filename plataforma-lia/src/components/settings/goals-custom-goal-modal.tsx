@@ -43,7 +43,7 @@ export function GoalsCustomGoalModal({
 }: GoalsCustomGoalModalProps) {
   return (
     <div className="fixed inset-0 bg-lia-overlay flex items-center justify-center z-50">
-      <div className="bg-lia-bg-primary rounded-md p-6 w-full max-w-lg">
+      <div className="bg-lia-bg-primary rounded-xl p-6 w-full max-w-lg">
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-lg font-semibold">Nova Meta Customizada</h3>
           <Button variant="ghost" onClick={() => {
@@ -103,7 +103,7 @@ export function GoalsCustomGoalModal({
               type="text"
               value={customGoalForm.name}
               onChange={(e) => setCustomGoalForm(prev => ({ ...prev, name: e.target.value }))}
-              className="w-full px-3 py-2 border border-lia-border-default rounded-md text-sm"
+              className="w-full px-3 py-2 border border-lia-border-default rounded-xl text-sm"
               placeholder="Ex: Aumentar taxa de conversão"
             />
           </div>
@@ -115,7 +115,7 @@ export function GoalsCustomGoalModal({
             <textarea
               value={customGoalForm.description}
               onChange={(e) => setCustomGoalForm(prev => ({ ...prev, description: e.target.value }))}
-              className="w-full px-3 py-2 border border-lia-border-default rounded-md text-sm"
+              className="w-full px-3 py-2 border border-lia-border-default rounded-xl text-sm"
               rows={2}
               placeholder="Descreva a meta..."
             />
@@ -130,7 +130,7 @@ export function GoalsCustomGoalModal({
                 type="number"
                 value={customGoalForm.target}
                 onChange={(e) => setCustomGoalForm(prev => ({ ...prev, target: parseFloat(e.target.value) || 0 }))}
-                className="w-full px-3 py-2 border border-lia-border-default rounded-md text-sm"
+                className="w-full px-3 py-2 border border-lia-border-default rounded-xl text-sm"
                 min="0"
                 step="0.1"
               />
@@ -143,7 +143,7 @@ export function GoalsCustomGoalModal({
                 type="text"
                 value={customGoalForm.unit}
                 onChange={(e) => setCustomGoalForm(prev => ({ ...prev, unit: e.target.value }))}
-                className="w-full px-3 py-2 border border-lia-border-default rounded-md text-sm"
+                className="w-full px-3 py-2 border border-lia-border-default rounded-xl text-sm"
                 placeholder="Ex: %, dias, contratações"
               />
             </div>
@@ -157,7 +157,7 @@ export function GoalsCustomGoalModal({
               <select
                 value={customGoalForm.period}
                 onChange={(e) => setCustomGoalForm(prev => ({ ...prev, period: e.target.value as CustomGoalForm['period'] }))}
-                className="w-full px-3 py-2 border border-lia-border-default rounded-md text-sm"
+                className="w-full px-3 py-2 border border-lia-border-default rounded-xl text-sm"
               >
                 <option value="monthly">Mensal</option>
                 <option value="quarterly">Trimestral</option>
@@ -171,7 +171,7 @@ export function GoalsCustomGoalModal({
               <select
                 value={customGoalForm.category}
                 onChange={(e) => setCustomGoalForm(prev => ({ ...prev, category: e.target.value as CustomGoalForm['category'] }))}
-                className="w-full px-3 py-2 border border-lia-border-default rounded-md text-sm"
+                className="w-full px-3 py-2 border border-lia-border-default rounded-xl text-sm"
               >
                 <option value="recruitment">Recrutamento</option>
                 <option value="quality">Qualidade</option>
@@ -190,7 +190,7 @@ export function GoalsCustomGoalModal({
                 type="date"
                 value={customGoalForm.startDate}
                 onChange={(e) => setCustomGoalForm(prev => ({ ...prev, startDate: e.target.value }))}
-                className="w-full px-3 py-2 border border-lia-border-default rounded-md text-sm"
+                className="w-full px-3 py-2 border border-lia-border-default rounded-xl text-sm"
               />
             </div>
             <div>
@@ -201,7 +201,7 @@ export function GoalsCustomGoalModal({
                 type="date"
                 value={customGoalForm.endDate}
                 onChange={(e) => setCustomGoalForm(prev => ({ ...prev, endDate: e.target.value }))}
-                className="w-full px-3 py-2 border border-lia-border-default rounded-md text-sm"
+                className="w-full px-3 py-2 border border-lia-border-default rounded-xl text-sm"
               />
             </div>
           </div>

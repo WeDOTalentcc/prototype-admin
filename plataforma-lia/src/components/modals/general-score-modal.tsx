@@ -83,10 +83,10 @@ export function GeneralScoreModal({ isOpen, onClose, candidate }: GeneralScoreMo
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
       <div
-        className="w-full max-w-2xl overflow-hidden flex flex-col bg-lia-bg-primary border border-lia-border-subtle rounded-md"
+        className="w-full max-w-2xl overflow-hidden flex flex-col bg-lia-bg-primary border border-lia-border-subtle rounded-xl"
       >
         <div 
-          className="flex items-center justify-between px-4 py-3 bg-lia-bg-secondary border-b border-lia-border-subtle rounded-t-xl"
+          className="flex items-center justify-between px-4 py-3 bg-lia-bg-secondary rounded-t-xl"
         >
           <div className="flex items-center gap-2">
             <div
@@ -119,7 +119,7 @@ export function GeneralScoreModal({ isOpen, onClose, candidate }: GeneralScoreMo
 
         <div className="px-4 py-4 bg-lia-bg-primary">
           <div 
-            className="flex items-center justify-between p-4 rounded-md mb-4 border border-lia-border-subtle"
+            className="flex items-center justify-between p-4 rounded-xl mb-4 border border-lia-border-subtle"
           >
             <div>
               <p 
@@ -171,7 +171,7 @@ export function GeneralScoreModal({ isOpen, onClose, candidate }: GeneralScoreMo
                 return (
                   <div 
                     key={component.id}
-                    className="p-3 rounded-md border border-lia-border-subtle"
+                    className="p-3 rounded-xl border border-lia-border-subtle"
                   >
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-2">
@@ -212,7 +212,7 @@ export function GeneralScoreModal({ isOpen, onClose, candidate }: GeneralScoreMo
           </div>
 
           <div
-            className="p-3 rounded-md bg-wedo-cyan/8 border border-wedo-cyan/20"
+            className="p-3 rounded-xl bg-wedo-cyan/8 border border-wedo-cyan/20"
           >
             <p 
               className="text-micro font-medium mb-1 text-lia-text-secondary"

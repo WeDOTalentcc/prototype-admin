@@ -107,9 +107,9 @@ export function PauseOptionsStep({
       <div>
         <h4 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-2">Vagas Selecionadas</h4>
         <ScrollArea className="max-h-[100px]">
-          <div className="space-y-1 bg-lia-bg-secondary rounded-md p-2 border border-lia-border-subtle">
+          <div className="space-y-1 bg-lia-bg-secondary rounded-xl p-2 border border-lia-border-subtle">
             {jobs.map((job) => (
-              <div key={job.id} className="flex items-center justify-between py-1.5 px-2 bg-lia-bg-primary rounded-md border border-lia-border-subtle">
+              <div key={job.id} className="flex items-center justify-between py-1.5 px-2 bg-lia-bg-primary rounded-xl border border-lia-border-subtle">
                 <div className="flex items-center gap-2 min-w-0 flex-1">
                   <Briefcase className="w-3.5 h-3.5 text-lia-text-secondary flex-shrink-0" />
                   <div className="flex items-center gap-1.5 min-w-0 flex-1">
@@ -129,7 +129,7 @@ export function PauseOptionsStep({
       </div>
 
       {hasProposalBlock && (
-        <div className="p-3 rounded-md bg-status-error/10 border border-status-error/30">
+        <div className="p-3 rounded-xl bg-status-error/10 border border-status-error/30">
           <div className="flex items-start gap-2">
             <AlertTriangle className="w-4 h-4 text-status-error mt-0.5 flex-shrink-0" />
             <div>
@@ -176,7 +176,7 @@ export function PauseOptionsStep({
         </div>
         <div>
           <h4 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-2">Impacto</h4>
-          <div className="space-y-1.5 p-3 rounded-md bg-lia-bg-secondary border border-lia-border-subtle">
+          <div className="space-y-1.5 p-3 rounded-xl bg-lia-bg-secondary border border-lia-border-subtle">
             <div className="flex items-start gap-2 text-xs text-lia-text-primary"><span className="flex-shrink-0">⏸️</span><span>Triagens em andamento serão pausadas</span></div>
             <div className="flex items-start gap-2 text-xs text-lia-text-primary"><span className="flex-shrink-0">📅</span><span>{totalInterviews} entrevista(s) agendada(s)</span></div>
             <div className="flex items-start gap-2 text-xs text-lia-text-primary"><span className="flex-shrink-0">📢</span><span>Publicações serão desativadas</span></div>
@@ -185,7 +185,7 @@ export function PauseOptionsStep({
         </div>
       </div>
 
-      <div className="space-y-3 bg-lia-bg-secondary rounded-md p-3 border border-lia-border-subtle">
+      <div className="space-y-3 bg-lia-bg-secondary rounded-xl p-3 border border-lia-border-subtle">
         <h4 className="text-xs font-semibold text-lia-text-primary flex items-center gap-2">
           <CalendarOff className="w-3.5 h-3.5 text-lia-text-secondary" />
           Ações ao Pausar
@@ -212,7 +212,7 @@ export function PauseOptionsStep({
         </div>
       </div>
 
-      <div className="space-y-3 bg-lia-bg-secondary rounded-md p-3 border border-lia-border-subtle">
+      <div className="space-y-3 bg-lia-bg-secondary rounded-xl p-3 border border-lia-border-subtle">
         <h4 className="text-xs font-semibold text-lia-text-primary flex items-center gap-2">
           <Megaphone className="w-3.5 h-3.5 text-lia-text-secondary" />
           Notificações

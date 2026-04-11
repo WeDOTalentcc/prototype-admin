@@ -43,7 +43,7 @@ export function LiaScreeningDialogue({ isOpen, onClose, jobData, onComplete }: L
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md w-full max-w-7xl h-[90vh] flex flex-col">
+      <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-xl w-full max-w-7xl h-[90vh] flex flex-col">
         <div className="flex items-center justify-between p-4 bg-status-success/10 dark:bg-status-success/20">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-status-success rounded-md flex items-center justify-center">
@@ -89,7 +89,7 @@ export function LiaScreeningDialogue({ isOpen, onClose, jobData, onComplete }: L
                           <button
                             key={`opt-${index}`}
                             onClick={() => handleOptionSelect(option)}
-                            className="block w-full text-left p-2 bg-lia-bg-primary bg-opacity-20 hover:bg-opacity-30 rounded-md text-sm transition-colors motion-reduce:transition-none"
+                            className="block w-full text-left p-2 bg-lia-bg-primary bg-opacity-20 hover:bg-opacity-30 rounded-xl text-sm transition-colors motion-reduce:transition-none"
                           >
                             {option}
                           </button>
@@ -123,7 +123,7 @@ export function LiaScreeningDialogue({ isOpen, onClose, jobData, onComplete }: L
                     onChange={(e) => setCurrentInput(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
                     placeholder="Digite sua resposta..."
-                    className="w-full p-3 pr-12 rounded-md focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20 bg-lia-bg-primary dark:bg-lia-bg-elevated text-lia-text-primary"
+                    className="w-full p-3 pr-12 rounded-xl focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20 bg-lia-bg-primary dark:bg-lia-bg-elevated text-lia-text-primary"
                   />
                   <Button
                     onClick={handleSendMessage}
@@ -163,7 +163,7 @@ export function LiaScreeningDialogue({ isOpen, onClose, jobData, onComplete }: L
 
       {showCompanySettings && (
         <div className="fixed inset-0 bg-black bg-opacity-75 z-60 flex items-center justify-center p-4">
-          <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+          <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-xl max-w-2xl w-full max-h-[80vh] overflow-y-auto">
             <div className="p-4 border-b">
               <div className="flex items-center justify-between">
                 <h4 className="font-medium">Configurações da Empresa</h4>
@@ -174,15 +174,15 @@ export function LiaScreeningDialogue({ isOpen, onClose, jobData, onComplete }: L
             </div>
             <div className="p-4">
               <div className="space-y-4 text-sm">
-                <div className="p-3 border rounded-md">
+                <div className="p-3 border rounded-xl">
                   <div className="font-medium">Template Padrão</div>
                   <div className="text-xs text-lia-text-secondary mt-1">Duração: 25-30 min • Foco: Técnico + Cultural</div>
                 </div>
-                <div className="p-3 border rounded-md">
+                <div className="p-3 border rounded-xl">
                   <div className="font-medium">Abordagem</div>
                   <div className="text-xs text-lia-text-secondary mt-1">Tom: Profissional, mas acolhedor</div>
                 </div>
-                <div className="p-3 border rounded-md">
+                <div className="p-3 border rounded-xl">
                   <div className="font-medium">Feedback</div>
                   <div className="text-xs text-lia-text-secondary mt-1">Aprovados: 24h • Reprovados: 48h</div>
                 </div>

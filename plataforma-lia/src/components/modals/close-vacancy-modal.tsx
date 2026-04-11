@@ -490,7 +490,7 @@ export function CloseVacancyModal({
           </Button>
         </div>
         
-        <ScrollArea className="h-40 border rounded-md">
+        <ScrollArea className="h-40 border rounded-xl">
           <div className="p-2 space-y-1">
             {otherCandidates.length === 0 ? (
               <div className="flex items-center justify-center h-32 text-lia-text-tertiary">
@@ -594,7 +594,7 @@ export function CloseVacancyModal({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-lg rounded-md">
-        <DialogHeader className="border-b border-lia-border-subtle pb-4">
+        <DialogHeader className=" pb-4">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-full bg-lia-bg-tertiary flex items-center justify-center">
               <PartyPopper className="w-4 h-4 text-lia-text-secondary" />

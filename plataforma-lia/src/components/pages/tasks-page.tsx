@@ -117,7 +117,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
             <TasksMetricsBar metrics={metrics} />
 
             {error && (
-              <div className="flex items-center gap-2 p-3 rounded-md bg-status-warning/10 border border-status-warning/30 text-sm text-status-warning">
+              <div className="flex items-center gap-2 p-3 rounded-xl bg-status-warning/10 border border-status-warning/30 text-sm text-status-warning">
                 <AlertCircle className="w-4 h-4 shrink-0" />
                 <span className="flex-1">{error}</span>
                 <Button variant="ghost" size="sm" className="h-7 px-2 text-xs hover:bg-lia-interactive-hover transition-colors cursor-pointer" onClick={() => refetch()}>

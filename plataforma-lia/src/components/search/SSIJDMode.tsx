@@ -39,7 +39,7 @@ export function SSIJDMode(props: SSIJDModeProps) {
 
       {selectedVacancy ? (
         <div 
-          className="flex items-center justify-between p-2.5 rounded-md border bg-wedo-cyan/[0.08]"
+          className="flex items-center justify-between p-2.5 rounded-xl border bg-wedo-cyan/[0.08]"
         >
           <div className="flex items-center gap-2">
             <div 
@@ -56,7 +56,7 @@ export function SSIJDMode(props: SSIJDModeProps) {
           </div>
           <button
             onClick={clearSelectedVacancy}
-            className="p-1 rounded-md hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none"
+            className="p-1 rounded-xl hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none"
           >
             <X className="w-3.5 h-3.5 text-lia-text-tertiary" />
           </button>
@@ -75,7 +75,7 @@ export function SSIJDMode(props: SSIJDModeProps) {
             value={jdVacancySearch}
             onChange={(e) => setJdVacancySearch(e.target.value)}
             placeholder="Digite o nome ou ID da vaga..."
-            className="w-full pl-9 pr-4 py-2.5 text-base-ui rounded-md border focus:outline-none transition-colors motion-reduce:transition-none bg-lia-bg-secondary text-lia-text-primary"
+            className="w-full pl-9 pr-4 py-2.5 text-base-ui rounded-xl border focus:outline-none transition-colors motion-reduce:transition-none bg-lia-bg-secondary text-lia-text-primary"
             onFocus={(e) => {
               e.currentTarget.style.borderColor = "var(--lia-border-default)"
               e.currentTarget.style.boxShadow = "0 0 0 2px var(--wedo-cyan-bg-12)"
@@ -88,7 +88,7 @@ export function SSIJDMode(props: SSIJDModeProps) {
 
           {showVacancyResults && jdVacancyResults.length > 0 && (
             <div 
-              className="absolute z-50 top-full left-0 right-0 mt-1 rounded-md border overflow-hidden"
+              className="absolute z-50 top-full left-0 right-0 mt-1 rounded-xl border overflow-hidden"
              
             >
               {jdVacancyResults.map((vacancy) => (
@@ -129,7 +129,7 @@ export function SSIJDMode(props: SSIJDModeProps) {
 
           {showVacancyResults && jdVacancySearch.length >= 2 && jdVacancyResults.length === 0 && !isSearchingVacancies && (
             <div 
-              className="absolute z-50 top-full left-0 right-0 mt-1 p-2.5 rounded-md border text-center"
+              className="absolute z-50 top-full left-0 right-0 mt-1 p-2.5 rounded-xl border text-center"
              
             >
               <p className="text-base-ui text-lia-text-secondary" aria-live="polite" aria-atomic="true">Nenhuma vaga encontrada</p>
@@ -181,7 +181,7 @@ export function SSIJDMode(props: SSIJDModeProps) {
           }
         }}
         placeholder={getPlaceholder()}
-        className="w-full resize-none rounded-md px-4 py-3 pr-28 text-base-ui focus:outline-none min-h-[100px] transition-colors motion-reduce:transition-none border bg-lia-bg-primary"
+        className="w-full resize-none rounded-xl px-4 py-3 pr-28 text-base-ui focus:outline-none min-h-[100px] transition-colors motion-reduce:transition-none border bg-lia-bg-primary"
        
         onFocus={(e) => {
           e.currentTarget.style.borderColor = "var(--lia-border-default)"
@@ -371,13 +371,13 @@ export function SSIJDMode(props: SSIJDModeProps) {
           value={jdSearchPrompt}
           onChange={(e) => setJdSearchPrompt(e.target.value)}
           placeholder="O prompt será gerado a partir da descrição da vaga..."
-          className="w-full resize-none rounded-md px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20 min-h-[60px] border border-lia-border-default bg-lia-bg-secondary text-lia-text-primary"
+          className="w-full resize-none rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20 min-h-[60px] border border-lia-border-default bg-lia-bg-secondary text-lia-text-primary"
           rows={2}
         />
       </div>
     )}
 
-    <div className="p-2.5 rounded-md bg-white border border-lia-border-subtle">
+    <div className="p-2.5 rounded-xl bg-white border border-lia-border-subtle">
       <div className="flex items-start gap-2">
         <Lightbulb className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-lia-text-secondary" />
         <p className="text-xs text-lia-text-secondary">

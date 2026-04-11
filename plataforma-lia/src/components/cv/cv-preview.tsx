@@ -250,7 +250,7 @@ export function CVPreview({
         </DialogHeader>
 
         {parsedData.duplicate_warning && (
-          <div className="flex items-start gap-3 p-3 bg-status-warning/10 border border-status-warning/30 rounded-md">
+          <div className="flex items-start gap-3 p-3 bg-status-warning/10 border border-status-warning/30 rounded-xl">
             <AlertTriangle className="w-5 h-5 text-status-warning flex-shrink-0 mt-0.5" />
             <div className="flex-1">
               <p className="text-sm font-medium text-status-warning" aria-live="polite" aria-atomic="true">
@@ -279,7 +279,7 @@ export function CVPreview({
         )}
 
         {editedCV.extraction_notes.length > 0 && (
-          <div className="flex items-start gap-3 p-3 bg-lia-bg-tertiary dark:bg-lia-bg-secondary border border-lia-border-default dark:border-lia-border-default rounded-md">
+          <div className="flex items-start gap-3 p-3 bg-lia-bg-tertiary dark:bg-lia-bg-secondary border border-lia-border-default dark:border-lia-border-default rounded-xl">
             <AlertCircle className="w-5 h-5 text-lia-text-secondary flex-shrink-0 mt-0.5" />
             <div>
               <p className="text-sm font-medium text-lia-text-secondary">
@@ -596,7 +596,7 @@ export function CVPreview({
               )}
 
               {editedCV.file_name && (
-                <div className="flex items-center gap-2 p-3 bg-lia-bg-secondary rounded-md text-xs text-lia-text-secondary mt-4">
+                <div className="flex items-center gap-2 p-3 bg-lia-bg-secondary rounded-xl text-xs text-lia-text-secondary mt-4">
                   <FileText className="w-4 h-4" />
                   <span>Arquivo: {editedCV.file_name}</span>
                   {editedCV.file_type && <Badge variant="outline">{editedCV.file_type.toUpperCase()}</Badge>}
@@ -607,7 +607,7 @@ export function CVPreview({
         </Tabs>
 
         {error && (
-          <div className="flex items-center gap-2 p-3 bg-status-error/10 border border-status-error/30 rounded-md">
+          <div className="flex items-center gap-2 p-3 bg-status-error/10 border border-status-error/30 rounded-xl">
             <AlertCircle className="w-4 h-4 text-status-error flex-shrink-0" />
             <p className="text-sm text-status-error">{error}</p>
           </div>

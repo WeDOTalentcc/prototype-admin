@@ -147,9 +147,9 @@ export function CandidateQueriesGuide({
         align="start" 
         sideOffset={8}
       >
-        <div className="px-5 py-4 border-b">
+        <div className="px-5 py-4">
           <div 
-            className="flex items-center gap-3 px-4 py-3 rounded-md bg-lia-bg-tertiary border border-lia-border-subtle"
+            className="flex items-center gap-3 px-4 py-3 rounded-xl bg-lia-bg-tertiary border border-lia-border-subtle"
           >
             <Search className="w-4 h-4 text-lia-text-secondary flex-shrink-0" />
             <input
@@ -210,7 +210,7 @@ export function CandidateQueriesGuide({
               <button
                 key={query.id}
                 onClick={() => handleSelectQuery(query.question)}
-                className="w-full px-4 py-3 text-left transition-colors motion-reduce:transition-none rounded-md group flex items-start gap-3 bg-lia-bg-secondary border border-lia-bg-tertiary hover:border-lia-border-subtle"
+                className="w-full px-4 py-3 text-left transition-colors motion-reduce:transition-none rounded-xl group flex items-start gap-3 bg-lia-bg-secondary border border-lia-bg-tertiary hover:border-lia-border-subtle"
               >
                 <div className="p-2 rounded-md flex-shrink-0 bg-lia-btn-primary-bg/[0.08]">
                   <query.icon className="w-4 h-4 text-lia-text-secondary" />

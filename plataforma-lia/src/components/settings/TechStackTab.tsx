@@ -70,7 +70,7 @@ export function TechStackTab({
           return (
             <div
               key={category.key}
-              className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md overflow-hidden"
+              className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl overflow-hidden"
             >
               <button
                 type="button"
@@ -165,7 +165,7 @@ export function TechStackTab({
         })}
 
         {techStackByCategory["outros"] && techStackByCategory["outros"].length > 0 && (
-          <div className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md overflow-hidden">
+          <div className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl overflow-hidden">
             <button
               type="button"
               onClick={() =>

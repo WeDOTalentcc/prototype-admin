@@ -344,7 +344,7 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
   return (
     <div className="fixed inset-0 bg-lia-overlay/70 backdrop-blur-[1px] z-50 flex items-center justify-center p-4" onClick={onClose}>
       <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="schedule-modal-title" className={`${cardStyles.default} dark:bg-lia-bg-primary dark:border-lia-border-subtle rounded-md w-full max-w-3xl max-h-[90vh] overflow-y-auto`} onClick={e => e.stopPropagation()}>
-        <div className="flex items-center justify-between p-5 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+        <div className="flex items-center justify-between p-5 dark:border-lia-border-subtle">
           <div className="flex items-center gap-3">
             <Avatar className="h-12 w-12">
               <AvatarImage src={candidate.avatar} />
@@ -359,7 +359,7 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
               </p>
             </div>
           </div>
-          <button onClick={onClose} className="p-1 rounded-md text-lia-text-secondary hover:text-lia-text-secondary dark:hover:text-lia-text-tertiary hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wedo-cyan" aria-label="Fechar agendamento" data-dismiss="true">
+          <button onClick={onClose} className="p-1 rounded-xl text-lia-text-secondary hover:text-lia-text-secondary dark:hover:text-lia-text-tertiary hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wedo-cyan" aria-label="Fechar agendamento" data-dismiss="true">
             <X className="w-4 h-4" aria-hidden="true" />
           </button>
         </div>
@@ -386,7 +386,7 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
                 <button
                   onClick={generateLiaRecommendations}
                   disabled={isLiaAnalyzing}
-                  className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-md border border-lia-border-subtle text-lia-text-primary hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none disabled:opacity-50"
+                  className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-xl border border-lia-border-subtle text-lia-text-primary hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none disabled:opacity-50"
                 >
                   {isLiaAnalyzing ? (
                     <>
@@ -417,7 +417,7 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
                   <div className="space-y-4">
                     {/* Quick Recommendations */}
                     <div className="grid grid-cols-3 gap-3">
-                      <div className="text-center p-3 bg-lia-bg-primary rounded-md border border-lia-border-subtle">
+                      <div className="text-center p-3 bg-lia-bg-primary rounded-xl border border-lia-border-subtle">
                         <div className="text-lg font-semibold text-lia-text-primary">{String((liaRecommendations as Record<string, unknown>).recommendedDuration ?? '')}min</div>
                         <div className="text-micro text-lia-text-secondary">Duração sugerida</div>
                         <button
@@ -427,7 +427,7 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
                           Aplicar
                         </button>
                       </div>
-                      <div className="text-center p-3 bg-lia-bg-primary rounded-md border border-lia-border-subtle">
+                      <div className="text-center p-3 bg-lia-bg-primary rounded-xl border border-lia-border-subtle">
                         <div className="text-lg font-semibold text-lia-text-primary capitalize">{String((liaRecommendations as Record<string, unknown>).recommendedType ?? '')}</div>
                         <div className="text-micro text-lia-text-secondary">Tipo recomendado</div>
                         <button
@@ -437,7 +437,7 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
                           Aplicar
                         </button>
                       </div>
-                      <div className="text-center p-3 bg-lia-bg-primary rounded-md border border-lia-border-subtle">
+                      <div className="text-center p-3 bg-lia-bg-primary rounded-xl border border-lia-border-subtle">
                         <div className="text-lg font-semibold text-lia-text-primary capitalize">{String((liaRecommendations as Record<string, unknown>).recommendedPlatform ?? '')}</div>
                         <div className="text-micro text-lia-text-secondary">Plataforma sugerida</div>
                         <button
@@ -454,7 +454,7 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
                       <h5 className="text-xs font-medium text-lia-text-primary mb-2">Horários Recomendados:</h5>
                       <div className="space-y-2">
                         {liaRecommendations.suggestedTimes.map((timeRec, idx: number) => (
-                          <div key={idx} className="flex items-center justify-between p-2 bg-lia-bg-primary rounded-md border border-lia-border-subtle">
+                          <div key={idx} className="flex items-center justify-between p-2 bg-lia-bg-primary rounded-xl border border-lia-border-subtle">
                             <div>
                               <span className="font-medium text-lia-text-primary text-xs">{timeRec.time}</span>
                               <span className="text-micro text-lia-text-secondary ml-2">{timeRec.reason}</span>
@@ -480,7 +480,7 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
                           .map(([key, value]: [string, unknown]) => {
                             const v = value as { weight?: number; approach?: string }
                             return (
-                          <div key={key} className="p-2 bg-lia-bg-primary rounded-md border border-lia-border-subtle">
+                          <div key={key} className="p-2 bg-lia-bg-primary rounded-xl border border-lia-border-subtle">
                             <div className="flex items-center justify-between mb-1">
                               <span className="text-micro font-medium text-lia-text-primary capitalize">{key}</span>
                               <span className="text-micro text-lia-text-secondary">{v.weight}%</span>
@@ -563,7 +563,7 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
                 min={new Date().toISOString().split('T')[0]}
-                className="w-full px-3 py-2 text-xs border border-lia-border-subtle rounded-md focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg"
+                className="w-full px-3 py-2 text-xs border border-lia-border-subtle rounded-xl focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg"
               />
             </div>
             <div>
@@ -574,7 +574,7 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
                 type="time"
                 value={time}
                 onChange={(e) => setTime(e.target.value)}
-                className="w-full px-3 py-2 text-xs border border-lia-border-subtle rounded-md focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg"
+                className="w-full px-3 py-2 text-xs border border-lia-border-subtle rounded-xl focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg"
               />
             </div>
             <div>
@@ -584,7 +584,7 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
               <select
                 value={duration}
                 onChange={(e) => setDuration(e.target.value)}
-                className="w-full px-3 py-2 text-xs border border-lia-border-subtle rounded-md focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg"
+                className="w-full px-3 py-2 text-xs border border-lia-border-subtle rounded-xl focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg"
               >
                 <option value="30">30 minutos</option>
                 <option value="45">45 minutos</option>
@@ -643,7 +643,7 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
             <select
               value={interviewer}
               onChange={(e) => setInterviewer(e.target.value)}
-              className="w-full px-3 py-2 text-xs border border-lia-border-subtle rounded-md focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg"
+              className="w-full px-3 py-2 text-xs border border-lia-border-subtle rounded-xl focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg"
             >
               <option value="">Selecione o entrevistador</option>
               {interviewers.map((person) => (
@@ -667,7 +667,7 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
           </div>
 
           {/* Status Info */}
-          <div className="bg-status-warning/10 border border-status-warning/30 rounded-md p-3">
+          <div className="bg-status-warning/10 border border-status-warning/30 rounded-xl p-3">
             <div className="flex items-center gap-2 text-status-warning">
               <Info className="w-4 h-4" />
               <span className="text-xs font-medium">Funcional - Aguardando Configuração Calendar</span>
@@ -681,14 +681,14 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
           <div className="flex justify-end gap-3 pt-5 border-t border-lia-border-subtle">
             <button
               onClick={onClose}
-              className="px-3 py-1.5 text-xs font-medium rounded-md border border-lia-border-subtle bg-lia-bg-primary text-lia-text-primary hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none"
+              className="px-3 py-1.5 text-xs font-medium rounded-xl border border-lia-border-subtle bg-lia-bg-primary text-lia-text-primary hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none"
             >
               Cancelar
             </button>
             {createdInterviewId && (
               <button
                 onClick={handleDownloadIcs}
-                className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-md border border-lia-border-subtle bg-lia-bg-primary text-lia-text-primary hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none"
+                className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-xl border border-lia-border-subtle bg-lia-bg-primary text-lia-text-primary hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none"
               >
                 <Download className="w-4 h-4" />
                 Baixar .ICS

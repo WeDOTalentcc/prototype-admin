@@ -243,7 +243,7 @@ export function WSIQuestionsStage() {
 
       {/* Company Default Questions Section */}
       {companyDefaultQuestions.length > 0 && (
-        <div className="mb-4 p-3 bg-lia-bg-secondary rounded-md border border-lia-border-subtle">
+        <div className="mb-4 p-3 bg-lia-bg-secondary rounded-xl border border-lia-border-subtle">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <Settings className="w-3.5 h-3.5 text-lia-text-secondary" />
@@ -262,14 +262,14 @@ export function WSIQuestionsStage() {
             </button>
           </div>
           {/* Business Rule Note: These questions are ADDITIONAL to the 5-question limit */}
-          <div className="mb-2 p-2 bg-wedo-cyan/10 rounded-md border border-wedo-cyan/30">
+          <div className="mb-2 p-2 bg-wedo-cyan/10 rounded-xl border border-wedo-cyan/30">
             <p className="text-micro text-wedo-cyan-dark">
               💡 <strong>Nota:</strong> Estas perguntas são <strong>adicionais</strong> às 5 perguntas WSI. Elas não contam no limite.
             </p>
           </div>
           <div className="space-y-2">
             {companyDefaultQuestions.map(q => (
-              <div key={q.id} className="flex items-center justify-between p-2 bg-lia-bg-primary rounded-md border border-lia-border-subtle">
+              <div key={q.id} className="flex items-center justify-between p-2 bg-lia-bg-primary rounded-xl border border-lia-border-subtle">
                 <div className="flex items-center gap-2 flex-1">
                   <button
                     onClick={() => toggleCompanyQuestion(q.id)}
@@ -300,7 +300,7 @@ export function WSIQuestionsStage() {
 
       {/* Loading indicator */}
       {isGeneratingWSI && (
-        <div className="p-4 bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 rounded-md border border-lia-border-default dark:border-lia-border-default flex items-center justify-center gap-2" role="status" aria-live="polite" aria-label="Carregando...">
+        <div className="p-4 bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 rounded-xl border border-lia-border-default dark:border-lia-border-default flex items-center justify-center gap-2" role="status" aria-live="polite" aria-label="Carregando...">
           <Loader2 className="w-4 h-4 text-lia-text-secondary animate-spin motion-reduce:animate-none" />
           <span className="text-xs text-lia-text-secondary" aria-live="polite" aria-atomic="true">
             Gerando perguntas personalizadas para esta vaga...
@@ -324,7 +324,7 @@ export function WSIQuestionsStage() {
       {/* Add Custom Question Button */}
       <button
         onClick={() => setShowCustomQuestionForm(true)}
-        className="w-full py-2 px-3 rounded-md border border-dashed border-lia-btn-primary-bg text-lia-text-secondary text-xs font-medium hover:bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 transition-colors motion-reduce:transition-none flex items-center justify-center gap-1.5"
+        className="w-full py-2 px-3 rounded-xl border border-dashed border-lia-btn-primary-bg text-lia-text-secondary text-xs font-medium hover:bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 transition-colors motion-reduce:transition-none flex items-center justify-center gap-1.5"
       >
         <Plus className="w-3.5 h-3.5" />
         Adicionar Pergunta Personalizada
@@ -332,12 +332,12 @@ export function WSIQuestionsStage() {
 
       {/* Custom Question Form */}
       {showCustomQuestionForm && (
-        <div className="p-3 bg-lia-bg-secondary rounded-md border border-lia-border-subtle space-y-2">
+        <div className="p-3 bg-lia-bg-secondary rounded-xl border border-lia-border-subtle space-y-2">
           <textarea
             value={customQuestionText}
             onChange={(e) => setCustomQuestionText(e.target.value)}
             placeholder="Digite sua pergunta personalizada..."
-            className="w-full px-3 py-2 border border-lia-border-subtle rounded-md text-xs resize-none"
+            className="w-full px-3 py-2 border border-lia-border-subtle rounded-xl text-xs resize-none"
             rows={2}
             autoFocus
           />
@@ -345,7 +345,7 @@ export function WSIQuestionsStage() {
             <select
               value={customQuestionType}
               onChange={(e) => setCustomQuestionType(e.target.value as WSIQuestionCandidate['type'])}
-              className="flex-1 px-3 py-1.5 border border-lia-border-subtle rounded-md text-xs bg-lia-bg-primary"
+              className="flex-1 px-3 py-1.5 border border-lia-border-subtle rounded-xl text-xs bg-lia-bg-primary"
             >
               <option value="open">Aberta</option>
               <option value="yes-no">Sim/Não</option>
@@ -355,7 +355,7 @@ export function WSIQuestionsStage() {
             <select
               value={customQuestionCategory}
               onChange={(e) => setCustomQuestionCategory(e.target.value)}
-              className="flex-1 px-3 py-1.5 border border-lia-border-subtle rounded-md text-xs bg-lia-bg-primary"
+              className="flex-1 px-3 py-1.5 border border-lia-border-subtle rounded-xl text-xs bg-lia-bg-primary"
             >
               {QUESTION_CATEGORIES.map(cat => (
                 <option key={cat.id} value={cat.id}>{cat.label}</option>
@@ -368,7 +368,7 @@ export function WSIQuestionsStage() {
                 setShowCustomQuestionForm(false)
                 setCustomQuestionText('')
               }}
-              className="flex-1 py-1.5 px-3 rounded-md border border-lia-border-subtle text-xs text-lia-text-secondary"
+              className="flex-1 py-1.5 px-3 rounded-xl border border-lia-border-subtle text-xs text-lia-text-secondary"
             >
               Cancelar
             </button>
@@ -385,7 +385,7 @@ export function WSIQuestionsStage() {
 
       {/* Instructions */}
       {wsiCandidates.length === 0 && !isGeneratingWSI && (
-        <div className="p-4 bg-status-warning/10 rounded-md border border-status-warning/30 text-center">
+        <div className="p-4 bg-status-warning/10 rounded-xl border border-status-warning/30 text-center">
           <p className="text-xs text-status-warning" aria-live="polite" aria-atomic="true">
             Complete as etapas anteriores para que a LIA gere perguntas de triagem personalizadas para esta vaga.
           </p>

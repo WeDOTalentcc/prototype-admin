@@ -52,7 +52,7 @@ export function RecruiterCardView({ filteredRecruiters, getStatusColor }: Recrui
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
-              <div className="text-center p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
+              <div className="text-center p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl">
                 <div className="text-lg font-bold text-lia-text-primary">
                   {recruiter.totalHires}
                 </div>
@@ -60,7 +60,7 @@ export function RecruiterCardView({ filteredRecruiters, getStatusColor }: Recrui
                   Contratações
                 </div>
               </div>
-              <div className="text-center p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
+              <div className="text-center p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl">
                 <div className="text-lg font-bold text-lia-text-primary">
                   {recruiter.avgTimeToFill}d
                 </div>
@@ -68,7 +68,7 @@ export function RecruiterCardView({ filteredRecruiters, getStatusColor }: Recrui
                   Time to Fill
                 </div>
               </div>
-              <div className="text-center p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
+              <div className="text-center p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl">
                 <div className="text-lg font-bold text-lia-text-primary">
                   {recruiter.npsScore}%
                 </div>
@@ -76,7 +76,7 @@ export function RecruiterCardView({ filteredRecruiters, getStatusColor }: Recrui
                   NPS Score
                 </div>
               </div>
-              <div className="text-center p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
+              <div className="text-center p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl">
                 <div className="text-lg font-bold text-lia-text-primary">
                   {recruiter.conversionRate}%
                 </div>

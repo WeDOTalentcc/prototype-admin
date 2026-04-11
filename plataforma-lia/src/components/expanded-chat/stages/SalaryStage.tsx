@@ -139,7 +139,7 @@ export function SalaryStage({
   return (
     <div data-testid="salary-stage" className="space-y-3">
       {!isFieldRequired && (
-        <div className="p-3 bg-gradient-to-r from-green-500/10 to-lia-bg-tertiary dark:to-lia-bg-primary rounded-md border border-status-success/30/30">
+        <div className="p-3 bg-gradient-to-r from-green-500/10 to-lia-bg-tertiary dark:to-lia-bg-primary rounded-xl border border-status-success/30/30">
           <div className="flex items-center gap-2">
             <div className="w-6 h-6 rounded-full bg-status-success/20 flex items-center justify-center flex-shrink-0">
               <Brain className="w-3.5 h-3.5 text-status-success" />
@@ -160,7 +160,7 @@ export function SalaryStage({
             </div>
             <button
               onClick={handleToggleExpand}
-              className="p-1.5 hover:bg-lia-bg-primary/50 rounded-md transition-colors motion-reduce:transition-none"
+              className="p-1.5 hover:bg-lia-bg-primary/50 rounded-xl transition-colors motion-reduce:transition-none"
               aria-label={isExpanded ? 'Recolher painel de salário' : 'Expandir painel de salário'}
             >
               <ChevronDown className={cn(
@@ -175,7 +175,7 @@ export function SalaryStage({
       {(isFieldRequired || isExpanded) && (
         <>
           {salaryBenchmark && (salaryBenchmark.market || salaryBenchmark.internal) && (
-            <div className="p-3 bg-gradient-to-r from-lia-bg-secondary dark:from-lia-bg-primary to-green-500/5 rounded-md border border-lia-border-default">
+            <div className="p-3 bg-gradient-to-r from-lia-bg-secondary dark:from-lia-bg-primary to-green-500/5 rounded-xl border border-lia-border-default">
               <div className="flex items-center gap-2 mb-2">
                 <TrendingUp className="w-4 h-4 text-lia-text-secondary" />
                 <span className="text-xs font-medium text-lia-text-primary">
@@ -189,7 +189,7 @@ export function SalaryStage({
               </div>
 
               {salaryBenchmark.internal && salaryBenchmark.internal.sample_size > 0 && (
-                <div className="mb-2 p-2 bg-lia-bg-primary/50 rounded-md">
+                <div className="mb-2 p-2 bg-lia-bg-primary/50 rounded-xl">
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-micro text-lia-text-secondary" aria-live="polite" aria-atomic="true">Dados internos ({salaryBenchmark.internal.sample_size} vagas)</span>
                     {salaryBenchmark.internal.trend && salaryBenchmark.internal.trend !== 'stable' && (
@@ -205,7 +205,7 @@ export function SalaryStage({
               )}
 
               {salaryBenchmark.market && salaryBenchmark.market.min > 0 && (
-                <div className="mb-2 p-2 bg-lia-bg-primary/50 rounded-md">
+                <div className="mb-2 p-2 bg-lia-bg-primary/50 rounded-xl">
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-micro text-lia-text-secondary">
                       Dados de mercado ({salaryBenchmark.market.sources?.slice(0, 2).join(', ')})
@@ -247,7 +247,7 @@ export function SalaryStage({
           )}
 
           {isLoadingBenchmark && (
-            <div className="p-3 bg-lia-bg-secondary rounded-md border border-lia-border-subtle flex items-center gap-2" role="status" aria-live="polite" aria-label="Carregando...">
+            <div className="p-3 bg-lia-bg-secondary rounded-xl border border-lia-border-subtle flex items-center gap-2" role="status" aria-live="polite" aria-label="Carregando...">
               <Loader2 className="w-4 h-4 text-lia-text-secondary animate-spin motion-reduce:animate-none" />
               <span className="text-xs text-lia-text-secondary">Buscando benchmark de mercado...</span>
             </div>
@@ -274,7 +274,7 @@ export function SalaryStage({
                     value={salaryInfo.minSalary}
                     onChange={(e) => onSalaryChange({ minSalary: e.target.value })}
                     placeholder="12.000"
-                    className="w-full pl-9 pr-3 py-1.5 border border-lia-border-subtle rounded-md text-xs focus:outline-none focus:border-lia-border-medium transition-colors motion-reduce:transition-none"
+                    className="w-full pl-9 pr-3 py-1.5 border border-lia-border-subtle rounded-xl text-xs focus:outline-none focus:border-lia-border-medium transition-colors motion-reduce:transition-none"
                    
                     aria-label="Salário mínimo base"
                   />
@@ -292,7 +292,7 @@ export function SalaryStage({
                     value={salaryInfo.maxSalary}
                     onChange={(e) => onSalaryChange({ maxSalary: e.target.value })}
                     placeholder="18.000"
-                    className="w-full pl-9 pr-3 py-1.5 border border-lia-border-subtle rounded-md text-xs focus:outline-none focus:border-lia-border-medium transition-colors motion-reduce:transition-none"
+                    className="w-full pl-9 pr-3 py-1.5 border border-lia-border-subtle rounded-xl text-xs focus:outline-none focus:border-lia-border-medium transition-colors motion-reduce:transition-none"
                    
                     aria-label="Salário máximo base"
                   />
@@ -319,7 +319,7 @@ export function SalaryStage({
                     value={salaryInfo.minBonus}
                     onChange={(e) => onSalaryChange({ minBonus: e.target.value })}
                     placeholder="10.000"
-                    className="w-full pl-9 pr-3 py-1.5 border border-lia-border-subtle rounded-md text-xs focus:outline-none focus:border-lia-border-medium transition-colors motion-reduce:transition-none"
+                    className="w-full pl-9 pr-3 py-1.5 border border-lia-border-subtle rounded-xl text-xs focus:outline-none focus:border-lia-border-medium transition-colors motion-reduce:transition-none"
                    
                     aria-label="Bônus mínimo anual"
                   />
@@ -334,7 +334,7 @@ export function SalaryStage({
                     value={salaryInfo.maxBonus}
                     onChange={(e) => onSalaryChange({ maxBonus: e.target.value })}
                     placeholder="20.000"
-                    className="w-full pl-9 pr-3 py-1.5 border border-lia-border-subtle rounded-md text-xs focus:outline-none focus:border-lia-border-medium transition-colors motion-reduce:transition-none"
+                    className="w-full pl-9 pr-3 py-1.5 border border-lia-border-subtle rounded-xl text-xs focus:outline-none focus:border-lia-border-medium transition-colors motion-reduce:transition-none"
                    
                     aria-label="Bônus máximo anual"
                   />
@@ -346,7 +346,7 @@ export function SalaryStage({
               value={salaryInfo.bonusCriteria}
               onChange={(e) => onSalaryChange({ bonusCriteria: e.target.value })}
               placeholder="Critérios: Desempenho individual + metas da empresa"
-              className="w-full px-3 py-1.5 border border-lia-border-subtle rounded-md text-xs focus:outline-none focus:border-lia-border-medium transition-colors motion-reduce:transition-none"
+              className="w-full px-3 py-1.5 border border-lia-border-subtle rounded-xl text-xs focus:outline-none focus:border-lia-border-medium transition-colors motion-reduce:transition-none"
              
             />
           </div>
@@ -427,14 +427,14 @@ export function SalaryStage({
             </div>
             <button
               onClick={onShowAddBenefitModal}
-              className="w-full mt-1.5 py-1.5 border border-dashed border-lia-border-subtle rounded-md text-xs text-lia-text-secondary hover:border-lia-btn-primary-bg hover:bg-lia-bg-secondary/50 transition-colors motion-reduce:transition-none flex items-center justify-center gap-2"
+              className="w-full mt-1.5 py-1.5 border border-dashed border-lia-border-subtle rounded-xl text-xs text-lia-text-secondary hover:border-lia-btn-primary-bg hover:bg-lia-bg-secondary/50 transition-colors motion-reduce:transition-none flex items-center justify-center gap-2"
               aria-label="Adicionar benefício para a vaga"
             >
               <Plus className="w-3.5 h-3.5" /> Adicionar benefício
             </button>
           </div>
 
-          <div className="p-2 bg-lia-bg-secondary rounded-md border border-lia-border-default">
+          <div className="p-2 bg-lia-bg-secondary rounded-xl border border-lia-border-default">
             <div className="flex items-center justify-between text-xs">
               <span className="lia-text-secondary">Benefícios selecionados:</span>
               <span className="font-semibold text-lia-text-primary">{salaryInfo.benefits.filter(b => b.enabled).length}</span>

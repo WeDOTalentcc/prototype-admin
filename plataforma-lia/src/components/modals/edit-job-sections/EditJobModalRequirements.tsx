@@ -266,7 +266,7 @@ export function EditJobModalRequirements({
         
         <div className="space-y-2 mb-4">
           {(formData.interviewStages || []).map((stage: InterviewStage, idx: number) => (
-            <div key={idx} className="flex items-center gap-3 p-3 bg-lia-bg-secondary rounded-md border border-lia-border-subtle">
+            <div key={idx} className="flex items-center gap-3 p-3 bg-lia-bg-secondary rounded-xl border border-lia-border-subtle">
               <div className="flex items-center justify-center w-7 h-7 rounded-full bg-lia-bg-tertiary text-lia-text-secondary text-sm font-semibold shrink-0">
                 {stage.order || idx + 1}
               </div>

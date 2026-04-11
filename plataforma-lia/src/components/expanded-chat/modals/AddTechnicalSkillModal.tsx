@@ -58,7 +58,7 @@ export function AddTechnicalSkillModal({
           value={skillName}
           onChange={(e) => onSkillNameChange(e.target.value)}
           placeholder={`Nome da ${CATEGORY_PLACEHOLDERS[skillCategory]}...`}
-          className="w-full px-4 py-3 border border-lia-border-subtle rounded-md text-sm focus:outline-none focus:border-lia-border-medium"
+          className="w-full px-4 py-3 border border-lia-border-subtle rounded-xl text-sm focus:outline-none focus:border-lia-border-medium"
          
           autoFocus
           onKeyDown={(e) => e.key === 'Enter' && onAdd(skillName)}
@@ -67,7 +67,7 @@ export function AddTechnicalSkillModal({
           <Button
             variant="outline"
             onClick={onCancel}
-            className="flex-1 h-10 rounded-md border-lia-border-subtle hover:bg-lia-interactive-hover transition-colors cursor-pointer"
+            className="flex-1 h-10 rounded-xl border-lia-border-subtle hover:bg-lia-interactive-hover transition-colors cursor-pointer"
           >
             Cancelar
           </Button>

@@ -157,7 +157,7 @@ export function CompanyDataCard({
               />
 
               {examples.length > 0 && (
-                <div className="space-y-2 p-3 bg-lia-bg-secondary dark:bg-lia-bg-primary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
+                <div className="space-y-2 p-3 bg-lia-bg-secondary dark:bg-lia-bg-primary rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle">
                   <div className="flex items-center gap-1 text-xs font-medium uppercase text-lia-text-secondary">
                     <Info className="w-3 h-3" />
                     <span>Exemplos</span>
@@ -167,7 +167,7 @@ export function CompanyDataCard({
                       <button
                         key={idx}
                         onClick={() => setInstruction(example)}
-                        className="block w-full text-left text-xs text-lia-text-secondary hover:text-lia-text-primary p-1.5 rounded-md hover:bg-lia-bg-primary dark:hover:bg-lia-btn-primary-hover transition-colors motion-reduce:transition-none"
+                        className="block w-full text-left text-xs text-lia-text-secondary hover:text-lia-text-primary p-1.5 rounded-xl hover:bg-lia-bg-primary dark:hover:bg-lia-btn-primary-hover transition-colors motion-reduce:transition-none"
                       >
                         "{example}"
                       </button>
@@ -212,7 +212,7 @@ export function CompanyDataCard({
       </div>
 
       {hasInstruction && (
-        <div className="mt-2 p-2 bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 border border-lia-border-default dark:border-lia-border-default rounded-md">
+        <div className="mt-2 p-2 bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 border border-lia-border-default dark:border-lia-border-default rounded-xl">
           <div className="flex items-start gap-2">
             <Bot className="w-3 h-3 text-lia-text-secondary mt-0.5 flex-shrink-0" />
             <p className={cn(textStyles.caption, "leading-relaxed")}>

@@ -46,7 +46,7 @@ export function CandidateReviewPanel({ data, onUpdateData }: CandidateReviewPane
 
   return (
     <div className="flex flex-col h-full">
-      <div className="px-4 py-3 border-b border-lia-border-subtle flex items-center justify-between">
+      <div className="px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Users className="w-4 h-4 text-wedo-cyan" />
           <span className="text-sm font-semibold text-lia-text-primary">Review de Candidatos</span>
@@ -56,7 +56,7 @@ export function CandidateReviewPanel({ data, onUpdateData }: CandidateReviewPane
         </span>
       </div>
 
-      <div className="px-4 py-2 border-b border-lia-border-subtle bg-lia-bg-secondary">
+      <div className="px-4 py-2 bg-lia-bg-secondary">
         <p className="text-xs text-lia-text-secondary">{jobTitle}</p>
       </div>
 
@@ -124,7 +124,7 @@ export function CandidateReviewPanel({ data, onUpdateData }: CandidateReviewPane
                   </button>
                   <button
                     onClick={() => handleAction(c.id, "saved")}
-                    className="flex items-center justify-center p-1.5 rounded-md text-lia-text-secondary hover:bg-lia-bg-tertiary transition-colors"
+                    className="flex items-center justify-center p-1.5 rounded-xl text-lia-text-secondary hover:bg-lia-bg-tertiary transition-colors"
                     title="Salvar para depois"
                   >
                     <Bookmark className="w-3.5 h-3.5" />

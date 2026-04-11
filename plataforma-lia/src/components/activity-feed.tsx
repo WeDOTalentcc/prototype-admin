@@ -303,7 +303,7 @@ export function ActivityFeed({ candidateId, limit = 20, className = "", actorFil
       {activities.map((activity, index) => (
         <div
           key={activity.id}
-          className="rounded-md p-2 border border-lia-border-subtle dark:border-lia-border-subtle transition-colors motion-reduce:transition-none cursor-pointer"
+          className="rounded-xl p-2 border border-lia-border-subtle dark:border-lia-border-subtle transition-colors motion-reduce:transition-none cursor-pointer"
           style={{backgroundColor: getActivityCardBackground(activity.activity_type)}}
         >
           <div className="flex items-start gap-2">

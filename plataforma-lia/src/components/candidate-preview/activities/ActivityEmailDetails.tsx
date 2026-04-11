@@ -13,8 +13,8 @@ interface ActivityEmailDetailsProps {
 export function ActivityEmailSentDetails({ activity }: ActivityEmailDetailsProps) {
   return (
     <div className="mt-3 space-y-3">
-      <div className="bg-lia-bg-primary border border-lia-border-subtle rounded-md overflow-hidden">
-        <div className="bg-lia-bg-secondary px-4 py-3 border-b border-lia-border-subtle">
+      <div className="bg-lia-bg-primary border border-lia-border-subtle rounded-xl overflow-hidden">
+        <div className="bg-lia-bg-secondary px-4 py-3">
           <div className="space-y-1.5">
             <div className="flex items-center gap-2 text-xs">
               <span className="text-lia-text-tertiary w-12">De:</span>
@@ -76,7 +76,7 @@ export function ActivityEmailSentDetails({ activity }: ActivityEmailDetailsProps
 export function ActivityGenericEmailDetails({ activity }: ActivityEmailDetailsProps) {
   return (
     <div className="mt-3 space-y-3">
-      <div className="bg-lia-bg-primary p-3 rounded-md">
+      <div className="bg-lia-bg-primary p-3 rounded-xl">
         <div className="flex items-center justify-between mb-2">
           <h5 className="text-xs font-semibold text-lia-text-primary flex items-center gap-1">
             <Mail className="w-3 h-3 text-lia-text-primary" />
@@ -88,7 +88,7 @@ export function ActivityGenericEmailDetails({ activity }: ActivityEmailDetailsPr
             </Badge>
           )}
         </div>
-        <div className="bg-lia-bg-primary p-2 rounded-md mb-2 text-xs space-y-1">
+        <div className="bg-lia-bg-primary p-2 rounded-xl mb-2 text-xs space-y-1">
           <div className="flex items-center gap-2">
             <span className="text-lia-text-primary font-medium">De:</span>
             <span className="text-lia-text-primary">

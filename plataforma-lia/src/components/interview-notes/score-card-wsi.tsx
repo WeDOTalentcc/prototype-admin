@@ -147,7 +147,7 @@ function BlockSection({
   const progressValue = (score / 5) * 100
 
   return (
-    <div className="border border-lia-border-subtle rounded-md p-4 space-y-3">
+    <div className="border border-lia-border-subtle rounded-xl p-4 space-y-3">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium text-lia-text-primary">
@@ -245,7 +245,7 @@ export function ScoreCardWSI({
 
   return (
     <Card className="w-full border-lia-border-subtle">
-      <CardHeader className="pb-4 border-b border-lia-border-subtle">
+      <CardHeader className="pb-4">
         <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
           <div className="space-y-2">
             <h2 className="text-lg font-semibold text-lia-text-primary">
@@ -296,7 +296,7 @@ export function ScoreCardWSI({
           ))}
         </div>
 
-        <div className="border border-lia-border-subtle rounded-md p-4 bg-lia-bg-secondary">
+        <div className="border border-lia-border-subtle rounded-xl p-4 bg-lia-bg-secondary">
           <div className="flex items-center gap-2 mb-4">
             <Calculator className="h-4 w-4 text-lia-text-secondary" />
             <h3 className="text-sm font-semibold text-lia-text-primary">
@@ -305,11 +305,11 @@ export function ScoreCardWSI({
           </div>
 
           <div className="space-y-3">
-            <div className="text-xs text-lia-text-secondary font-mono bg-lia-bg-primary p-3 rounded-md border border-lia-border-subtle">
+            <div className="text-xs text-lia-text-secondary font-mono bg-lia-bg-primary p-3 rounded-xl border border-lia-border-subtle">
               WSI = (Téc × 50%) + (Comp × 20%) + (Gap × 15%) + (Ctx × 15%)
             </div>
 
-            <div className="text-xs text-lia-text-secondary font-mono bg-lia-bg-primary p-3 rounded-md border border-lia-border-subtle">
+            <div className="text-xs text-lia-text-secondary font-mono bg-lia-bg-primary p-3 rounded-xl border border-lia-border-subtle">
               WSI = ({wsiScore.technicalScore.toFixed(2)} × 0.50) + (
               {wsiScore.behavioralScore.toFixed(2)} × 0.20) + (
               {wsiScore.gapAnalysisScore.toFixed(2)} × 0.15) + (
@@ -341,7 +341,7 @@ export function ScoreCardWSI({
         </div>
 
         {liaParecer && (
-          <div className="border border-lia-border-subtle rounded-md p-4">
+          <div className="border border-lia-border-subtle rounded-xl p-4">
             <div className="flex items-center gap-2 mb-3">
               <Bot className="h-4 w-4 text-wedo-cyan" />
               <h3 className="text-sm font-semibold text-lia-text-primary">

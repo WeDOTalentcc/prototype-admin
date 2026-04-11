@@ -123,10 +123,10 @@ export function LiaChatModal({
 
   return (
     <div className="fixed inset-0 bg-lia-overlay backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={onClose}>
-      <div ref={dialogRef} role="dialog" aria-modal="true" aria-label="Chat com LIA" className="bg-lia-bg-primary rounded-md max-w-2xl w-full max-h-[85vh] overflow-hidden" onClick={e => e.stopPropagation()}>
+      <div ref={dialogRef} role="dialog" aria-modal="true" aria-label="Chat com LIA" className="bg-lia-bg-primary rounded-xl max-w-2xl w-full max-h-[85vh] overflow-hidden" onClick={e => e.stopPropagation()}>
 
         {/* Header */}
-        <div className="bg-lia-bg-primary border-b border-lia-border-subtle">
+        <div className="bg-lia-bg-primary">
           <div className="p-3">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
@@ -160,7 +160,7 @@ export function LiaChatModal({
               </div>
             )}
             {/* Candidate info */}
-            <div className="flex items-center gap-2 bg-lia-bg-primary rounded-md px-3 py-2">
+            <div className="flex items-center gap-2 bg-lia-bg-primary rounded-xl px-3 py-2">
               <Avatar className="w-6 h-6">
                 <AvatarFallback className="bg-lia-bg-tertiary text-lia-text-primary text-xs">
                   {candidate.name?.split(' ').map((n: string) => n[0]).join('')}
@@ -182,7 +182,7 @@ export function LiaChatModal({
         </div>
 
         {/* Ações rápidas */}
-        <div className="px-4 py-2 border-b border-lia-border-subtle bg-lia-bg-primary/50/50">
+        <div className="px-4 py-2 bg-lia-bg-primary/50/50">
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs font-medium text-lia-text-secondary">Ações rápidas sugeridas</span>
             <Badge className="bg-status-success/15 text-lia-text-primary dark:bg-status-success text-xs px-1.5 py-0.5">
@@ -192,21 +192,21 @@ export function LiaChatModal({
           <div className="flex gap-1">
             <button
               onClick={handleContact}
-              className="flex-1 flex items-center justify-center gap-1 py-2 bg-lia-bg-primary rounded-md text-xs hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none border border-lia-border-subtle"
+              className="flex-1 flex items-center justify-center gap-1 py-2 bg-lia-bg-primary rounded-xl text-xs hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none border border-lia-border-subtle"
             >
               <MessageSquare className="w-3 h-3 text-lia-text-primary" />
               Contatar
             </button>
             <button
               onClick={handleSchedule}
-              className="flex-1 flex items-center justify-center gap-1 py-2 bg-lia-bg-primary rounded-md text-xs hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none border border-lia-border-subtle"
+              className="flex-1 flex items-center justify-center gap-1 py-2 bg-lia-bg-primary rounded-xl text-xs hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none border border-lia-border-subtle"
             >
               <CalendarIcon className="w-3 h-3 text-lia-text-primary" />
               Agendar
             </button>
             <button
               onClick={handleAddTo}
-              className="flex-1 flex items-center justify-center gap-1 py-2 bg-lia-bg-primary rounded-md text-xs hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none border border-lia-border-subtle"
+              className="flex-1 flex items-center justify-center gap-1 py-2 bg-lia-bg-primary rounded-xl text-xs hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none border border-lia-border-subtle"
             >
               <UserPlus className="w-3 h-3 text-lia-text-primary" />
               Adicionar
@@ -220,7 +220,7 @@ export function LiaChatModal({
             {liaActions.slice(0, 4).map((action) => (
               <div
                 key={action.id}
-                className="flex items-center gap-2 p-2 bg-lia-bg-primary rounded-md hover:bg-lia-interactive-hover dark:hover:bg-lia-btn-primary-bg transition-colors motion-reduce:transition-none duration-200 cursor-pointer group"
+                className="flex items-center gap-2 p-2 bg-lia-bg-primary rounded-xl hover:bg-lia-interactive-hover dark:hover:bg-lia-btn-primary-bg transition-colors motion-reduce:transition-none duration-200 cursor-pointer group"
                 onClick={() => onConversationChange(action.title)}
               >
                 <span className="text-base flex-shrink-0">{action.icon}</span>
@@ -262,7 +262,7 @@ export function LiaChatModal({
                     <Avatar className="w-6 h-6 flex-shrink-0">
                       <AvatarFallback className="bg-lia-btn-primary-bg text-lia-btn-primary-text text-micro font-medium">LIA</AvatarFallback>
                     </Avatar>
-                    <div className="bg-lia-bg-tertiary rounded-md px-3 py-2">
+                    <div className="bg-lia-bg-tertiary rounded-xl px-3 py-2">
                       <div className="flex items-center gap-1">
                         <ThinkingDots dotClassName="bg-lia-border-medium" size="lg" />
                       </div>
@@ -275,7 +275,7 @@ export function LiaChatModal({
 
           {/* Prompt Input */}
           <div className="p-4 border-t border-lia-border-subtle">
-            <div className="bg-lia-bg-primary rounded-md border border-lia-border-subtle p-3">
+            <div className="bg-lia-bg-primary rounded-xl border border-lia-border-subtle p-3">
               <form onSubmit={handleSubmit} className="flex items-center gap-2">
                 <Avatar className="w-8 h-8 flex-shrink-0">
                   <AvatarFallback className="bg-lia-btn-primary-bg text-lia-btn-primary-text text-xs font-bold">

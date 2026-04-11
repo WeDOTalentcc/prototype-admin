@@ -288,7 +288,7 @@ export function InterviewNoteCard({
           </div>
           <div className="flex items-center gap-2 self-start md:self-center">
             {blocks && blocks.length > 0 && (
-              <div className="flex items-center border rounded-md overflow-hidden">
+              <div className="flex items-center border rounded-xl overflow-hidden">
                 <button
                   type="button"
                   onClick={() => setShowScoreCard(false)}
@@ -399,7 +399,7 @@ export function InterviewNoteCard({
               )}
             </button>
             {isTranscriptionOpen && (
-              <div className="bg-lia-bg-secondary rounded-md p-4 max-h-content-md overflow-y-auto">
+              <div className="bg-lia-bg-secondary rounded-xl p-4 max-h-content-md overflow-y-auto">
                 <p className="text-sm text-lia-text-primary whitespace-pre-wrap">
                   {note.transcription}
                 </p>
@@ -424,7 +424,7 @@ export function InterviewNoteCard({
               className="min-h-[120px]"
             />
           ) : (
-            <div className="bg-lia-bg-secondary border border-lia-border-subtle rounded-md p-6 text-center">
+            <div className="bg-lia-bg-secondary border border-lia-border-subtle rounded-xl p-6 text-center">
               <Bot className="h-8 w-8 text-lia-text-secondary mx-auto mb-2" />
               <p className="text-sm text-lia-text-secondary">
                 Clique em &quot;Gerar Parecer com LIA&quot; para obter uma

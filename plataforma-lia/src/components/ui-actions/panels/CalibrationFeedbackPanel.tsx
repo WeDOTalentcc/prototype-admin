@@ -138,8 +138,8 @@ export function CalibrationFeedbackPanel({
 
   return (
     <div className="space-y-6">
-      <Card className="rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
-        <CardHeader className="pb-3 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+      <Card className="rounded-xl dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
+        <CardHeader className="pb-3 dark:border-lia-border-subtle">
           <CardTitle className="text-sm flex items-center gap-2 font-sans text-lia-text-primary">
             🎯 Calibração de Busca
           </CardTitle>
@@ -182,8 +182,8 @@ export function CalibrationFeedbackPanel({
         ))}
       </div>
 
-      <Card className="rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
-        <CardHeader className="pb-3 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+      <Card className="rounded-xl dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
+        <CardHeader className="pb-3 dark:border-lia-border-subtle">
           <CardTitle className="text-sm flex items-center gap-2 font-sans text-lia-text-primary">
             💬 Feedback Geral
           </CardTitle>
@@ -259,7 +259,7 @@ function CandidateCard({
 
   return (
     <Card
-      className="transition-colors motion-reduce:transition-none rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle"
+      className="transition-colors motion-reduce:transition-none rounded-xl dark:bg-lia-bg-secondary dark:border-lia-border-subtle"
       style={{borderColor: borderStyle.borderColor,
         backgroundColor: borderStyle.backgroundColor,
         borderWidth: '1px'}}

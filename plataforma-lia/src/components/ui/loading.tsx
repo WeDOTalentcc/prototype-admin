@@ -159,7 +159,7 @@ LoadingFallback.displayName = 'LoadingFallback'
 export const LoadingModal = React.memo(function LoadingModal() {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-lia-overlay">
-      <div className="w-full max-w-md p-8 flex flex-col items-center gap-3 rounded-md bg-lia-bg-primary border border-lia-border-subtle">
+      <div className="w-full max-w-md p-8 flex flex-col items-center gap-3 rounded-xl bg-lia-bg-primary border border-lia-border-subtle">
         <div className="w-8 h-8 rounded-full border-2 border-lia-border-subtle border-t-wedo-cyan animate-spin motion-reduce:animate-none" />
         <span className="text-sm text-lia-text-secondary">Carregando...</span>
       </div>

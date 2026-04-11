@@ -160,7 +160,7 @@ export function AddCandidateModal({ isOpen, onClose, onAdd }: AddCandidateModalP
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[85vh] overflow-hidden flex flex-col bg-lia-bg-primary border-lia-border-subtle rounded-md" data-testid="add-candidate-modal">
+      <DialogContent className="max-w-4xl max-h-[85vh] overflow-hidden flex flex-col bg-lia-bg-primary border-lia-border-subtle rounded-xl" data-testid="add-candidate-modal">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <User className="w-5 h-5 text-lia-text-secondary" />
@@ -411,7 +411,7 @@ export function AddCandidateModal({ isOpen, onClose, onAdd }: AddCandidateModalP
 
               <div className="space-y-2">
                 <Label htmlFor="resume">Upload do Currículo</Label>
-                <div className="rounded-md p-4 text-center bg-lia-bg-secondary hover:bg-lia-interactive-hover dark:hover:bg-lia-btn-primary-bg transition-colors motion-reduce:transition-none cursor-pointer border border-lia-border-subtle">
+                <div className="rounded-xl p-4 text-center bg-lia-bg-secondary hover:bg-lia-interactive-hover dark:hover:bg-lia-btn-primary-bg transition-colors motion-reduce:transition-none cursor-pointer border border-lia-border-subtle">
                   <Upload className="w-8 h-8 text-lia-text-secondary mx-auto mb-2" />
                   <p className="text-sm text-lia-text-primary">Clique para fazer upload ou arraste o arquivo</p>
                   <p className="text-xs text-lia-text-secondary mt-1">PDF, DOC ou DOCX (máx. 10MB)</p>
@@ -453,7 +453,7 @@ export function AddCandidateModal({ isOpen, onClose, onAdd }: AddCandidateModalP
                   ))}
                 </div>
                 {liaAnalysis?.suggestedSkills && (
-                  <div className="mt-3 p-3 bg-lia-bg-tertiary rounded-md">
+                  <div className="mt-3 p-3 bg-lia-bg-tertiary rounded-xl">
                     <p className="text-xs text-wedo-cyan-dark mb-2 flex items-center gap-1">
                       <Brain className="w-3 h-3 text-wedo-cyan" />
                       Sugestões da LIA baseadas no perfil:

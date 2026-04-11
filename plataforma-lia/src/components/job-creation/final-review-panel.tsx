@@ -171,7 +171,7 @@ function MissingFieldCard({
   const SourceIcon = sourceInfo?.icon || Brain
 
   return (
-    <div className="border rounded-md p-3 bg-lia-bg-primary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none">
+    <div className="border rounded-xl p-3 bg-lia-bg-primary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none">
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1">
           <div className="font-medium text-sm text-lia-text-primary">{label}</div>
@@ -184,7 +184,7 @@ function MissingFieldCard({
                 <ConfidenceIndicator confidence={suggestion.confidence} size="sm" showPercentage />
               </div>
               
-              <div className="bg-lia-bg-secondary rounded-md p-2 text-sm text-lia-text-secondary">
+              <div className="bg-lia-bg-secondary rounded-xl p-2 text-sm text-lia-text-secondary">
                 <div className="font-medium">{formatFieldValue(fieldKey, suggestion.value)}</div>
                 <div className="text-xs text-lia-text-tertiary mt-1">{suggestion.explanation}</div>
               </div>
@@ -307,7 +307,7 @@ export function FinalReviewPanel({
 
   return (
     <Card className="border-0 rounded-md">
-      <CardHeader className="pb-3 border-b border-lia-border-subtle">
+      <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg font-semibold font-sans">Revisão Final</CardTitle>
           <Badge
@@ -420,7 +420,7 @@ export function FinalReviewPanel({
                 )}
               </CollapsibleTrigger>
               <CollapsibleContent className="mt-2">
-                <div className="bg-lia-bg-primary rounded-md border p-3">
+                <div className="bg-lia-bg-primary rounded-xl border p-3">
                   {filled_fields.map((fieldKey) => (
                     <FilledFieldCard
                       key={fieldKey}
@@ -440,7 +440,7 @@ export function FinalReviewPanel({
               onOpenChange={() => toggleSection("toggled_off")}
               className="mb-4"
             >
-              <CollapsibleTrigger className="flex items-center justify-between w-full p-2 rounded-md bg-lia-bg-secondary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none">
+              <CollapsibleTrigger className="flex items-center justify-between w-full p-2 rounded-xl bg-lia-bg-secondary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none">
                 <div className="flex items-center gap-2">
                   <Info className="h-4 w-4 text-lia-text-tertiary" />
                   <span className="font-medium text-lia-text-secondary">
@@ -454,7 +454,7 @@ export function FinalReviewPanel({
                 )}
               </CollapsibleTrigger>
               <CollapsibleContent className="mt-2">
-                <div className="bg-lia-bg-primary rounded-md border p-3 text-sm text-lia-text-tertiary">
+                <div className="bg-lia-bg-primary rounded-xl border p-3 text-sm text-lia-text-tertiary">
                   <p className="mb-2">
                     Estes campos foram desativados nas configurações da empresa:
                   </p>

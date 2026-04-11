@@ -21,7 +21,7 @@ export function NPSTab({ onSettingsChange }: { onSettingsChange: (changed: boole
               </label>
               <select
                 onChange={() => onSettingsChange(true)}
-                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary text-sm"
+                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary text-sm"
               >
                 <option>0-10 (Padrão NPS)</option>
                 <option>1-5 (Simplificado)</option>
@@ -34,7 +34,7 @@ export function NPSTab({ onSettingsChange }: { onSettingsChange: (changed: boole
               </label>
               <select
                 onChange={() => onSettingsChange(true)}
-                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary text-sm"
+                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary text-sm"
               >
                 <option>Após cada processo seletivo</option>
                 <option>Semanal</option>
@@ -52,7 +52,7 @@ export function NPSTab({ onSettingsChange }: { onSettingsChange: (changed: boole
               rows={3}
               defaultValue="De 0 a 10, o quanto você recomendaria nossa empresa como um lugar para trabalhar?"
               onChange={() => onSettingsChange(true)}
-              className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary text-sm"
+              className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary text-sm"
             />
           </div>
         </CardContent>

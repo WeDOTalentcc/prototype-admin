@@ -135,10 +135,10 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
         onClick={onClose}
       />
       
-      <div className="relative bg-lia-bg-primary rounded-md w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-lia-border-subtle bg-lia-bg-primary shrink-0">
+      <div className="relative bg-lia-bg-primary rounded-xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
+        <div className="flex items-center justify-between px-6 py-4 bg-lia-bg-primary shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-md bg-lia-bg-tertiary flex items-center justify-center">
+            <div className="w-8 h-8 rounded-xl bg-lia-bg-tertiary flex items-center justify-center">
               <Briefcase className="w-4 h-4 text-lia-text-secondary" />
             </div>
             <div>
@@ -267,7 +267,7 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                       </Select>
                     </div>
 
-                    <div className="p-4 bg-lia-bg-secondary rounded-md border border-lia-border-subtle space-y-3">
+                    <div className="p-4 bg-lia-bg-secondary rounded-xl border border-lia-border-subtle space-y-3">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <Shield className="w-4 h-4 text-wedo-orange" />
@@ -289,7 +289,7 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                         />
                       </div>
                       {formData.isAffirmative && (
-                        <div className="space-y-3 mt-3 p-4 bg-wedo-purple/10 rounded-md border border-wedo-purple/30">
+                        <div className="space-y-3 mt-3 p-4 bg-wedo-purple/10 rounded-xl border border-wedo-purple/30">
                           <div>
                             <Label className="text-xs font-medium text-lia-text-primary mb-2 block">Tipo de Ação Afirmativa</Label>
                             <div className="grid grid-cols-2 gap-2">
@@ -322,7 +322,7 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                     </div>
 
                     {formData.isConfidential && (
-                      <div className="space-y-4 mt-4 p-4 bg-wedo-orange/10 rounded-md border border-wedo-orange/30">
+                      <div className="space-y-4 mt-4 p-4 bg-wedo-orange/10 rounded-xl border border-wedo-orange/30">
                         <div>
                           <Label className="text-xs font-medium text-lia-text-primary mb-1 block">Nome Mascarado da Empresa</Label>
                           <Input
@@ -382,7 +382,7 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                     <h3 className="text-base-ui font-semibold text-lia-text-primary">Publicação</h3>
                   </div>
                   
-                  <div className="p-4 bg-lia-bg-secondary rounded-md border border-lia-border-subtle space-y-3">
+                  <div className="p-4 bg-lia-bg-secondary rounded-xl border border-lia-border-subtle space-y-3">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <Linkedin className="w-4 h-4 text-lia-text-secondary" />
@@ -429,7 +429,7 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                       </Badge>
                     </div>
                     
-                    <div className="p-4 bg-lia-bg-secondary rounded-md border border-lia-border-subtle">
+                    <div className="p-4 bg-lia-bg-secondary rounded-xl border border-lia-border-subtle">
                       <div className="grid grid-cols-2 gap-4">
                         {job?.createdBy && (
                           <div>
@@ -588,8 +588,8 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
 
       {showImportQuestionsModal && (
         <div className="fixed inset-0 bg-lia-overlay/70 flex items-center justify-center z-overlay p-4">
-          <div className="bg-lia-bg-primary rounded-md max-w-lg w-full max-h-[80vh] flex flex-col">
-            <div className="flex items-center justify-between px-5 py-4 border-b border-lia-border-subtle">
+          <div className="bg-lia-bg-primary rounded-xl max-w-lg w-full max-h-[80vh] flex flex-col">
+            <div className="flex items-center justify-between px-5 py-4">
               <div className="flex items-center gap-2">
                 <Download className="w-4 h-4 text-status-warning" />
                 <h3 className="text-base-ui font-semibold text-lia-text-primary">Importar Perguntas Padrão</h3>

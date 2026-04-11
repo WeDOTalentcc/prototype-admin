@@ -99,7 +99,7 @@ export function LiaPerformanceIndicators({ candidate }: LiaPerformanceIndicators
         {/* Contato Realizado */}
         {candidate.contactStatus !== 'não contatado' && (
           <div
- className="w-6 h-6 rounded-md bg-lia-bg-tertiary flex items-center justify-center"
+ className="w-6 h-6 rounded-xl bg-lia-bg-tertiary flex items-center justify-center"
             title="Contato realizado pela LIA"
           >
  <Phone className="w-3 h-3 text-lia-text-secondary" />

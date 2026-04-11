@@ -209,7 +209,7 @@ export function SearchResultsCard({
 
       <CardContent className="pt-0">
         {selectedIds.size > 0 && (
-          <div className="flex items-center gap-2 mb-3 p-2 bg-lia-bg-secondary rounded-md border border-lia-border-subtle">
+          <div className="flex items-center gap-2 mb-3 p-2 bg-lia-bg-secondary rounded-xl border border-lia-border-subtle">
             <span className="text-sm text-lia-text-secondary">
               {selectedIds.size} selecionado(s)
             </span>
@@ -482,7 +482,7 @@ export function SearchResultsCard({
         )}
 
         {selectedIds.size > 0 && (
-          <div className="mt-3 p-2 bg-lia-bg-secondary rounded-md text-center">
+          <div className="mt-3 p-2 bg-lia-bg-secondary rounded-xl text-center">
             <p className="text-sm text-lia-text-secondary">
               Dica: Diga "adicione os selecionados à vaga X" ou "compare os candidatos selecionados"
             </p>

@@ -98,7 +98,7 @@ export default function AjudaPage() {
               </p>
               <div className="space-y-3">
                 {seniorityLevels.map((item) => (
-                  <div key={item.level} className="flex items-start gap-3 p-3 rounded-md bg-lia-bg-secondary dark:bg-lia-bg-secondary">
+                  <div key={item.level} className="flex items-start gap-3 p-3 rounded-xl bg-lia-bg-secondary dark:bg-lia-bg-secondary">
                     <Badge 
                       className="mt-0.5 text-white font-medium px-3 py-1"
                       style={{backgroundColor: item.color}}
@@ -219,7 +219,7 @@ export default function AjudaPage() {
               <p>
                 O cálculo de anos de experiência é realizado a partir das <strong>datas reais de início e término</strong> de cada experiência profissional registrada no currículo.
               </p>
-              <div className="p-4 rounded-md bg-status-warning/10 dark:bg-status-warning/20 border border-status-warning/30 dark:border-status-warning/30">
+              <div className="p-4 rounded-xl bg-status-warning/10 dark:bg-status-warning/20 border border-status-warning/30 dark:border-status-warning/30">
                 <p className="text-status-warning dark:text-status-warning flex items-start gap-2">
                   <HelpCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
                   <span>
@@ -229,7 +229,7 @@ export default function AjudaPage() {
               </div>
               <div className="mt-4">
                 <h4 className="font-semibold text-lia-text-primary mb-2">Exemplo de cálculo:</h4>
-                <div className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary p-3 rounded-md text-sm">
+                <div className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary p-3 rounded-xl text-sm">
                   <p className="mb-1">Experiência 1: Jan/2018 - Dez/2020 (3 anos)</p>
                   <p className="mb-1">Experiência 2: Jun/2020 - Atual (4.5 anos)</p>
                   <p className="font-semibold mt-2 text-lia-text-primary">
@@ -265,7 +265,7 @@ export default function AjudaPage() {
               </p>
               <div className="space-y-3">
                 {bigFiveDimensions.map((dim) => (
-                  <div key={dim.trait} className="p-3 rounded-md bg-lia-bg-secondary dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle">
+                  <div key={dim.trait} className="p-3 rounded-xl bg-lia-bg-secondary dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle">
                     <div className="flex items-start gap-3">
                       <Badge 
                         className="mt-0.5 text-white font-bold px-2.5 py-1 text-sm bg-lia-btn-primary-bg"
@@ -299,7 +299,7 @@ export default function AjudaPage() {
               </p>
               
               <div className="grid gap-3">
-                <div className="flex items-start gap-3 p-3 rounded-md bg-lia-bg-secondary dark:bg-lia-bg-secondary">
+                <div className="flex items-start gap-3 p-3 rounded-xl bg-lia-bg-secondary dark:bg-lia-bg-secondary">
                   <FileText className="w-5 h-5 mt-0.5 flex-shrink-0 text-lia-text-primary" />
                   <div>
                     <h4 className="font-semibold text-lia-text-primary dark:text-lia-text-primary">Texto e Estrutura do CV</h4>
@@ -309,7 +309,7 @@ export default function AjudaPage() {
                   </div>
                 </div>
 
-                <div className="flex items-start gap-3 p-3 rounded-md bg-lia-bg-secondary dark:bg-lia-bg-secondary">
+                <div className="flex items-start gap-3 p-3 rounded-xl bg-lia-bg-secondary dark:bg-lia-bg-secondary">
                   <Target className="w-5 h-5 mt-0.5 flex-shrink-0 text-lia-text-primary" />
                   <div>
                     <h4 className="font-semibold text-lia-text-primary dark:text-lia-text-primary">Padrões de Progressão de Carreira</h4>
@@ -319,7 +319,7 @@ export default function AjudaPage() {
                   </div>
                 </div>
 
-                <div className="flex items-start gap-3 p-3 rounded-md bg-lia-bg-secondary dark:bg-lia-bg-secondary">
+                <div className="flex items-start gap-3 p-3 rounded-xl bg-lia-bg-secondary dark:bg-lia-bg-secondary">
                   <Users className="w-5 h-5 mt-0.5 flex-shrink-0 text-lia-text-primary" />
                   <div>
                     <h4 className="font-semibold text-lia-text-primary dark:text-lia-text-primary">Escolhas de Empresas e Cargos</h4>
@@ -329,7 +329,7 @@ export default function AjudaPage() {
                   </div>
                 </div>
 
-                <div className="flex items-start gap-3 p-3 rounded-md bg-lia-bg-secondary dark:bg-lia-bg-secondary">
+                <div className="flex items-start gap-3 p-3 rounded-xl bg-lia-bg-secondary dark:bg-lia-bg-secondary">
                   <MessageSquare className="w-5 h-5 mt-0.5 flex-shrink-0 text-lia-text-primary" />
                   <div>
                     <h4 className="font-semibold text-lia-text-primary dark:text-lia-text-primary">Estilo de Comunicação</h4>
@@ -358,7 +358,7 @@ export default function AjudaPage() {
                 {archetypes.map((archetype) => (
                   <div 
                     key={archetype.name} 
-                    className="p-3 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle"
+                    className="p-3 rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle"
                     style={{backgroundColor: `${archetype.color}10`}}
                   >
                     <div className="flex items-start gap-2 mb-2">
@@ -388,7 +388,7 @@ export default function AjudaPage() {
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="p-4 rounded-md bg-status-warning/10 dark:bg-status-warning/20 border border-status-warning/30 dark:border-status-warning/30">
+              <div className="p-4 rounded-xl bg-status-warning/10 dark:bg-status-warning/20 border border-status-warning/30 dark:border-status-warning/30">
                 <p className="text-status-warning dark:text-status-warning text-sm">
                   <strong>Esta é uma inferência probabilística, não uma avaliação clínica.</strong> Os perfis gerados pela LIA são estimativas baseadas em padrões observáveis, não diagnósticos psicológicos formais.
                 </p>
@@ -428,13 +428,13 @@ export default function AjudaPage() {
               </p>
               
               <div className="grid gap-3 sm:grid-cols-2">
-                <div className="p-3 rounded-md bg-status-success/10 dark:bg-status-success/20 border border-status-success/30 dark:border-status-success/30">
+                <div className="p-3 rounded-xl bg-status-success/10 dark:bg-status-success/20 border border-status-success/30 dark:border-status-success/30">
                   <h4 className="font-semibold text-status-success dark:text-status-success text-sm mb-1">Antes do WSI</h4>
                   <p className="text-xs text-status-success dark:text-status-success">
                     Inferências baseadas apenas em dados estáticos do CV (precisão ~65%)
                   </p>
                 </div>
-                <div className="p-3 rounded-md bg-status-success/10 dark:bg-status-success/20 border border-status-success/30 dark:border-status-success/30">
+                <div className="p-3 rounded-xl bg-status-success/10 dark:bg-status-success/20 border border-status-success/30 dark:border-status-success/30">
                   <h4 className="font-semibold text-status-success dark:text-status-success text-sm mb-1">Após o WSI</h4>
                   <p className="text-xs text-status-success dark:text-status-success">
                     Validação com comportamento real em situações simuladas (precisão ~85%)

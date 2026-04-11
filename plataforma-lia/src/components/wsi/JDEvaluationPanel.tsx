@@ -68,7 +68,7 @@ export function JDEvaluationPanel({
   if (!isExpanded) {
     return (
       <div className={cn("mx-5 mt-4", className)}>
-        <div className="border border-lia-border-subtle rounded-md overflow-hidden">
+        <div className="border border-lia-border-subtle rounded-xl overflow-hidden">
           <JDEvaluationHeader
             jobTitle={jobTitle}
             hasQuestions={hasQuestions}
@@ -114,7 +114,7 @@ export function JDEvaluationPanel({
 
   return (
     <div className={cn("mx-5 mt-4", className)}>
-      <div className="border border-lia-border-subtle rounded-md overflow-hidden">
+      <div className="border border-lia-border-subtle rounded-xl overflow-hidden">
         <JDEvaluationHeader
           jobTitle={jobTitle}
           hasQuestions={hasQuestions}
@@ -157,11 +157,11 @@ export function JDEvaluationPanel({
                     <div className="space-y-4">
                       <div>
                         <label className="text-xs font-semibold text-lia-text-primary uppercase tracking-wide mb-2 block">Descrição / Sumário</label>
-                        <div className="bg-lia-bg-primary rounded-md border border-lia-border-subtle p-3">
+                        <div className="bg-lia-bg-primary rounded-xl border border-lia-border-subtle p-3">
                           <textarea
                             value={editDescription}
                             onChange={(e) => setEditDescription(e.target.value)}
-                            className="w-full h-40 text-xs text-lia-text-primary border border-lia-border-subtle rounded-md p-2.5 resize-none focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg/20 focus:border-lia-border-medium bg-lia-bg-secondary"
+                            className="w-full h-40 text-xs text-lia-text-primary border border-lia-border-subtle rounded-xl p-2.5 resize-none focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg/20 focus:border-lia-border-medium bg-lia-bg-secondary"
                             placeholder="Forneça uma visão geral da vaga, incluindo propósito e como contribui para a organização..."
                           />
                         </div>

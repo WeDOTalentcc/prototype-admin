@@ -41,7 +41,7 @@ export function ScreeningApproachSection({
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="text-center p-3 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-md">
+              <div className="text-center p-3 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-xl">
                 <div className="text-sm font-medium text-lia-text-secondary">Tom</div>
                 <div className="text-xs text-lia-text-secondary">{approachStrategy.tone}</div>
               </div>
@@ -68,7 +68,7 @@ export function ScreeningApproachSection({
             <CardContent>
               <div className="space-y-3">
                 {approachStrategy.structure.map((step, index) => (
-                  <div key={`step-${index}`} className="flex items-center gap-3 p-2 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
+                  <div key={`step-${index}`} className="flex items-center gap-3 p-2 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl">
                     <div className="w-6 h-6 bg-status-success/15 dark:bg-status-success/20 rounded-full flex items-center justify-center text-status-success text-xs font-bold">
                       {index + 1}
                     </div>
@@ -120,7 +120,7 @@ export function ScreeningApproachSection({
           </Button>
         </CardHeader>
         <CardContent>
-          <div className="p-4 bg-status-success/10 dark:bg-status-success/20 rounded-md">
+          <div className="p-4 bg-status-success/10 dark:bg-status-success/20 rounded-xl">
             <p className="text-sm text-lia-text-primary leading-relaxed">
               &quot;Olá <strong>{candidateName}</strong>! Como está? Muito obrigado pelo interesse na nossa vaga de <strong>{jobTitle}</strong>.
               <br /><br />

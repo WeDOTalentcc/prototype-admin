@@ -459,7 +459,7 @@ export function KanbanColumnRenderer({
                 <input
                   type="checkbox"
                   checked={selectedCandidates.has(candidate.id)}
-                  className="w-3 h-3 rounded-md cursor-pointer flex-shrink-0 border border-lia-border-subtle hover:bg-lia-interactive-hover transition-colors"
+                  className="w-3 h-3 rounded-xl cursor-pointer flex-shrink-0 border border-lia-border-subtle hover:bg-lia-interactive-hover transition-colors"
                   aria-label={`Selecionar candidato ${candidate.name}`}
                   onClick={(e) => {
                     e.stopPropagation()
@@ -477,7 +477,7 @@ export function KanbanColumnRenderer({
                 {/* D9 — Checkbox para comparação de candidatos */}
                 <input
                   type="checkbox"
-                  className="w-3 h-3 rounded-md cursor-pointer flex-shrink-0 border border-lia-border-default accent-lia-btn-primary-bg"
+                  className="w-3 h-3 rounded-xl cursor-pointer flex-shrink-0 border border-lia-border-default accent-lia-btn-primary-bg"
                   checked={selectedForCompare.has(candidate.id)}
                   onChange={(e) => {
                     setSelectedForCompare((prev: Set<string>) => {

@@ -126,7 +126,7 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
           }}
         >
           <div
-            className={`px-4 py-3 flex items-center justify-between border-b border-lia-border-subtle rounded-t-xl bg-lia-bg-secondary ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
+            className={`px-4 py-3 flex items-center justify-between rounded-t-xl bg-lia-bg-secondary ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
             onMouseDown={handleMouseDown}
           >
             <div className="flex items-center gap-2">

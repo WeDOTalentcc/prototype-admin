@@ -239,7 +239,7 @@ export function CompetenciesStage() {
     const showInferenceIndicator = skill.isWeightInferred || skill.weight === inference.weight
     
     return (
-      <div key={skill.id} className="flex flex-col gap-1.5 p-2 bg-lia-bg-primary rounded-md border border-lia-border-subtle">
+      <div key={skill.id} className="flex flex-col gap-1.5 p-2 bg-lia-bg-primary rounded-xl border border-lia-border-subtle">
         <div className="flex items-center gap-2">
           <span className="flex-1 text-xs font-medium text-lia-text-primary flex items-center gap-1.5">
             {skill.name}
@@ -348,7 +348,7 @@ export function CompetenciesStage() {
   return (
     <div className="space-y-4">
       {/* Progress Indicator */}
-      <div className="p-2.5 bg-lia-bg-secondary rounded-md border border-lia-border-subtle mb-3">
+      <div className="p-2.5 bg-lia-bg-secondary rounded-xl border border-lia-border-subtle mb-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1.5">
@@ -404,7 +404,7 @@ export function CompetenciesStage() {
           {/* Add Skill Button */}
           <button
             onClick={() => setShowAddSkillModal(true)}
-            className="w-full py-2 px-3 rounded-md border border-dashed border-lia-btn-primary-bg text-lia-text-secondary text-xs font-medium hover:bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 transition-colors motion-reduce:transition-none flex items-center justify-center gap-1.5"
+            className="w-full py-2 px-3 rounded-xl border border-dashed border-lia-btn-primary-bg text-lia-text-secondary text-xs font-medium hover:bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 transition-colors motion-reduce:transition-none flex items-center justify-center gap-1.5"
           >
             <Plus className="w-3.5 h-3.5" />
             Adicionar Competência Técnica
@@ -412,19 +412,19 @@ export function CompetenciesStage() {
           
           {/* Add Skill Modal */}
           {showAddSkillModal && (
-            <div className="p-3 bg-lia-bg-secondary rounded-md border border-lia-border-subtle space-y-2">
+            <div className="p-3 bg-lia-bg-secondary rounded-xl border border-lia-border-subtle space-y-2">
               <input
                 type="text"
                 value={newSkillName}
                 onChange={(e) => setNewSkillName(e.target.value)}
                 placeholder="Nome da competência..."
-                className="w-full px-3 py-1.5 border border-lia-border-subtle rounded-md text-xs"
+                className="w-full px-3 py-1.5 border border-lia-border-subtle rounded-xl text-xs"
                 autoFocus
               />
               <select
                 value={newSkillCategory}
                 onChange={(e) => setNewSkillCategory(e.target.value as Parameters<typeof setNewSkillCategory>[0])}
-                className="w-full px-3 py-1.5 border border-lia-border-subtle rounded-md text-xs bg-lia-bg-primary"
+                className="w-full px-3 py-1.5 border border-lia-border-subtle rounded-xl text-xs bg-lia-bg-primary"
               >
                 <option value="language">Linguagem</option>
                 <option value="framework">Framework</option>
@@ -434,7 +434,7 @@ export function CompetenciesStage() {
               <div className="flex gap-2">
                 <button
                   onClick={() => setShowAddSkillModal(false)}
-                  className="flex-1 py-1.5 px-3 rounded-md border border-lia-border-subtle text-xs text-lia-text-secondary"
+                  className="flex-1 py-1.5 px-3 rounded-xl border border-lia-border-subtle text-xs text-lia-text-secondary"
                 >
                   Cancelar
                 </button>

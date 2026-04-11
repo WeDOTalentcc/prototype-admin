@@ -510,7 +510,7 @@ export function CandidateProfileTab({
                   <Brain className="w-3 h-3 text-wedo-cyan" />
                   Apresentação Profissional
                 </h5>
-                <p className="text-sm text-lia-text-secondary bg-lia-bg-secondary p-3 rounded-md leading-relaxed">
+                <p className="text-sm text-lia-text-secondary bg-lia-bg-secondary p-3 rounded-xl leading-relaxed">
                   {candidate.self_introduction.length > 300 
                     ? `${candidate.self_introduction.slice(0, 300)}...` 
                     : candidate.self_introduction}
@@ -524,7 +524,7 @@ export function CandidateProfileTab({
                   <Mail className="w-3 h-3" />
                   Carta de Apresentação
                 </h5>
-                <p className="text-sm text-lia-text-secondary bg-lia-bg-secondary p-3 rounded-md leading-relaxed">
+                <p className="text-sm text-lia-text-secondary bg-lia-bg-secondary p-3 rounded-xl leading-relaxed">
                   {candidate.cover_letter.length > 300 
                     ? `${candidate.cover_letter.slice(0, 300)}...` 
                     : candidate.cover_letter}

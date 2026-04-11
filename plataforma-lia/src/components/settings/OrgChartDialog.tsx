@@ -42,7 +42,7 @@ export function OrgChartDialog({
       open={!!orgChartDepartment}
       onOpenChange={() => setOrgChartDepartment(null)}
     >
-      <DialogContent className="rounded-md max-w-4xl max-h-[85vh] overflow-hidden">
+      <DialogContent className="rounded-xl max-w-4xl max-h-[85vh] overflow-hidden">
         <DialogHeader>
           <div className="flex items-center gap-3">
             <div
@@ -112,7 +112,7 @@ export function OrgChartDialog({
                       {members.map((member) => (
                         <div
                           key={member.id}
-                          className="flex items-center gap-3 p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-md hover:transition-shadow"
+                          className="flex items-center gap-3 p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-xl hover:transition-shadow"
                         >
                           <Avatar className="w-10 h-10">
                             {member.avatar_url ? (

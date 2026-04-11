@@ -134,10 +134,10 @@ export function ScreeningStatusModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-md rounded-md bg-lia-bg-primary border border-lia-border-subtle">
-        <DialogHeader className="pb-4 border-b border-lia-border-subtle">
+      <DialogContent className="max-w-md rounded-xl bg-lia-bg-primary border border-lia-border-subtle">
+        <DialogHeader className="pb-4">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-md flex items-center justify-center bg-lia-bg-tertiary">
+            <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-lia-bg-tertiary">
               <BrainCircuit className="w-4 h-4 text-lia-text-secondary" />
             </div>
             <div className="flex-1 min-w-0">
@@ -170,7 +170,7 @@ export function ScreeningStatusModal({
 
           {screeningStatus === 'not_started' && !showPauseForm && (
             <div className="space-y-4">
-              <div className="bg-lia-bg-secondary rounded-md p-4">
+              <div className="bg-lia-bg-secondary rounded-xl p-4">
                 <p className="text-xs text-lia-text-secondary mb-3" aria-live="polite" aria-atomic="true">
                   A triagem está configurada mas ainda não foi iniciada. Ao ativar, candidatos poderão ser triados automaticamente.
                 </p>
@@ -211,17 +211,17 @@ export function ScreeningStatusModal({
             <div className="space-y-4">
               {metrics && (metrics.screened_count || 0) > 0 && (
                 <div className="grid grid-cols-3 gap-3">
-                  <div className="bg-lia-bg-secondary rounded-md p-3 text-center">
+                  <div className="bg-lia-bg-secondary rounded-xl p-3 text-center">
                     <Users className="w-4 h-4 text-lia-text-secondary mx-auto mb-1" />
                     <p className="text-base font-semibold text-lia-text-primary">{metrics.screened_count || 0}</p>
                     <p className="text-micro text-lia-text-secondary">Triados</p>
                   </div>
-                  <div className="bg-lia-bg-secondary rounded-md p-3 text-center">
+                  <div className="bg-lia-bg-secondary rounded-xl p-3 text-center">
                     <BarChart3 className="w-4 h-4 text-lia-text-secondary mx-auto mb-1" />
                     <p className="text-base font-semibold text-lia-text-primary">{metrics.completion_rate || 0}%</p>
                     <p className="text-micro text-lia-text-secondary">Conclusão</p>
                   </div>
-                  <div className="bg-lia-bg-secondary rounded-md p-3 text-center">
+                  <div className="bg-lia-bg-secondary rounded-xl p-3 text-center">
                     <CheckCircle2 className="w-4 h-4 text-lia-text-secondary mx-auto mb-1" />
                     <p className="text-base font-semibold text-lia-text-primary">{metrics.average_rating?.toFixed(1) || '—'}</p>
                     <p className="text-micro text-lia-text-secondary">Nota Média</p>
@@ -247,7 +247,7 @@ export function ScreeningStatusModal({
 
           {screeningStatus === 'paused' && !showPauseForm && (
             <div className="space-y-4">
-              <div className="bg-status-warning/10 dark:bg-status-warning/20 border border-status-warning/30 dark:border-status-warning/30 rounded-md p-4">
+              <div className="bg-status-warning/10 dark:bg-status-warning/20 border border-status-warning/30 dark:border-status-warning/30 rounded-xl p-4">
                 <div className="flex items-start gap-2">
                   <Pause className="w-4 h-4 text-status-warning mt-0.5" />
                   <div>
@@ -270,7 +270,7 @@ export function ScreeningStatusModal({
 
           {screeningStatus === 'completed' && (
             <div className="space-y-4">
-              <div className="bg-wedo-cyan/10 border border-wedo-cyan/30 dark:border-wedo-cyan/30 rounded-md p-4">
+              <div className="bg-wedo-cyan/10 border border-wedo-cyan/30 dark:border-wedo-cyan/30 rounded-xl p-4">
                 <div className="flex items-start gap-2">
                   <CheckCircle2 className="w-4 h-4 text-wedo-cyan-dark mt-0.5" />
                   <div>
@@ -286,15 +286,15 @@ export function ScreeningStatusModal({
 
               {metrics && (metrics.screened_count || 0) > 0 && (
                 <div className="grid grid-cols-3 gap-3">
-                  <div className="bg-lia-bg-secondary rounded-md p-3 text-center">
+                  <div className="bg-lia-bg-secondary rounded-xl p-3 text-center">
                     <p className="text-base font-semibold text-lia-text-primary">{metrics.screened_count || 0}</p>
                     <p className="text-micro text-lia-text-secondary">Triados</p>
                   </div>
-                  <div className="bg-lia-bg-secondary rounded-md p-3 text-center">
+                  <div className="bg-lia-bg-secondary rounded-xl p-3 text-center">
                     <p className="text-base font-semibold text-lia-text-primary">{metrics.completion_rate || 0}%</p>
                     <p className="text-micro text-lia-text-secondary">Conclusão</p>
                   </div>
-                  <div className="bg-lia-bg-secondary rounded-md p-3 text-center">
+                  <div className="bg-lia-bg-secondary rounded-xl p-3 text-center">
                     <p className="text-base font-semibold text-lia-text-primary">{metrics.average_rating?.toFixed(1) || '—'}</p>
                     <p className="text-micro text-lia-text-secondary">Nota Média</p>
                   </div>
@@ -304,7 +304,7 @@ export function ScreeningStatusModal({
           )}
 
           {showPauseForm && (
-            <div className="space-y-3 bg-lia-bg-secondary rounded-md p-4">
+            <div className="space-y-3 bg-lia-bg-secondary rounded-xl p-4">
               <p className="text-xs font-medium text-lia-text-secondary">Pausar Triagem</p>
               <div className="space-y-2">
                 <Label className="text-xs text-lia-text-secondary">Motivo (opcional)</Label>

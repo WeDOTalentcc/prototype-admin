@@ -62,13 +62,13 @@ export class ErrorBoundarySection extends React.Component<ErrorBoundarySectionPr
               Ocorreu um erro ao carregar esta seção.
             </p>
             {process.env.NODE_ENV === "development" && this.state.error && (
-              <pre className="text-left text-xs bg-lia-bg-tertiary rounded-md p-2 mb-3 overflow-auto max-h-24 text-status-error">
+              <pre className="text-left text-xs bg-lia-bg-tertiary rounded-xl p-2 mb-3 overflow-auto max-h-24 text-status-error">
                 {this.state.error.message}
               </pre>
             )}
             <button
               onClick={this.handleReset}
-              className="px-4 py-2 text-xs font-medium bg-lia-btn-primary-bg text-lia-btn-primary-text rounded-md hover:bg-lia-bg-inverse transition-colors motion-reduce:transition-none"
+              className="px-4 py-2 text-xs font-medium bg-lia-btn-primary-bg text-lia-btn-primary-text rounded-xl hover:bg-lia-bg-inverse transition-colors motion-reduce:transition-none"
             >
               Tentar novamente
             </button>

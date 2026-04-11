@@ -60,8 +60,8 @@ export function MoveConfirmationModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="bg-lia-bg-primary dark:bg-lia-bg-primary border-lia-border-subtle dark:border-lia-border-subtle max-w-md rounded-md">
-        <DialogHeader className="border-b border-lia-border-subtle dark:border-lia-border-subtle pb-4">
+      <DialogContent className="bg-lia-bg-primary dark:bg-lia-bg-primary border-lia-border-subtle dark:border-lia-border-subtle max-w-md rounded-xl">
+        <DialogHeader className=" dark:border-lia-border-subtle pb-4">
           <DialogTitle className="text-lia-text-primary flex items-center gap-2">
             Confirmar Movimentação
           </DialogTitle>
@@ -107,7 +107,7 @@ export function MoveConfirmationModal({
                 {substatusSuggestions.map((suggestion, index) => (
                   <div 
                     key={`substatus-${index}`}
- className="flex items-center space-x-2 p-2 rounded-md border border-lia-border-subtle hover:border-lia-border-default dark:hover:border-lia-border-default transition-colors motion-reduce:transition-none bg-lia-bg-primary dark:bg-lia-bg-secondary"
+ className="flex items-center space-x-2 p-2 rounded-xl border border-lia-border-subtle hover:border-lia-border-default dark:hover:border-lia-border-default transition-colors motion-reduce:transition-none bg-lia-bg-primary dark:bg-lia-bg-secondary"
                   >
                     <RadioGroupItem 
                       value={suggestion.content} 
@@ -143,7 +143,7 @@ export function MoveConfirmationModal({
                 {toStage.substatuses.map((substatus) => (
                   <div 
                     key={substatus.id}
-                    className="flex items-center space-x-2 p-2 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary"
+                    className="flex items-center space-x-2 p-2 rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary"
                   >
                     <RadioGroupItem 
                       value={substatus.label} 

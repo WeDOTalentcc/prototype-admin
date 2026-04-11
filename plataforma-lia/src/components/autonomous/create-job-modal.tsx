@@ -218,7 +218,7 @@ export function CreateJobModal({ open, onOpenChange, onJobCreated }: CreateJobMo
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-md rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
+      <DialogContent className="max-w-md rounded-xl dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Brain className="h-5 w-5 text-wedo-cyan" />

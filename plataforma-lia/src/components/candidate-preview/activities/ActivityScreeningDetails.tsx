@@ -22,7 +22,7 @@ interface ActivityScreeningDetailsProps {
 export function ActivityVoiceScreeningDetails({ activity, candidate, onOpenTriagemDetails, onSetScreeningModalData, onSetScreeningModalOpen }: ActivityScreeningDetailsProps) {
   return (
     <div className="mt-3 space-y-3">
-      <div className="bg-lia-bg-primary p-3 rounded-md border border-lia-border-subtle">
+      <div className="bg-lia-bg-primary p-3 rounded-xl border border-lia-border-subtle">
         <h5 className="text-xs font-semibold text-lia-text-primary mb-2 flex items-center gap-1">
           <Mic className="w-3 h-3 text-status-error" />
           Triagem por Voz
@@ -31,21 +31,21 @@ export function ActivityVoiceScreeningDetails({ activity, candidate, onOpenTriag
           </Badge>
         </h5>
         <div className="grid grid-cols-3 gap-2 mb-3">
-          <div className="text-center p-2 bg-lia-bg-secondary rounded-md">
+          <div className="text-center p-2 bg-lia-bg-secondary rounded-xl">
             <p className="text-base font-bold text-lia-text-primary">{activity.details.duration}</p>
             <p className={textStyles.bodySmall}>Duração</p>
           </div>
-          <div className="text-center p-2 bg-lia-bg-secondary rounded-md">
+          <div className="text-center p-2 bg-lia-bg-secondary rounded-xl">
             <p className="text-base font-bold text-lia-text-primary">{activity.details.completionRate}%</p>
             <p className={textStyles.bodySmall}>Completude</p>
           </div>
-          <div className="text-center p-2 bg-lia-bg-secondary rounded-md">
+          <div className="text-center p-2 bg-lia-bg-secondary rounded-xl">
             <p className="text-base font-bold text-lia-text-primary">{Math.round(activity.details.transcriptionConfidence * 100)}%</p>
             <p className={textStyles.bodySmall}>Confiança</p>
           </div>
         </div>
         {activity.details.highlights && (
-          <div className="bg-status-success/10 border border-status-success/30 p-2 rounded-md mb-3">
+          <div className="bg-status-success/10 border border-status-success/30 p-2 rounded-xl mb-3">
             <p className="text-xs font-semibold text-status-success mb-1">✨ Destaques</p>
             <ul className="space-y-0.5">
               {activity.details.highlights.map((h: string, i: number) => (
@@ -54,7 +54,7 @@ export function ActivityVoiceScreeningDetails({ activity, candidate, onOpenTriag
             </ul>
           </div>
         )}
-        <div className="bg-lia-bg-secondary p-2 rounded-md mb-3">
+        <div className="bg-lia-bg-secondary p-2 rounded-xl mb-3">
           <p className="text-xs font-semibold text-lia-text-primary mb-1">Impressão Geral</p>
           <p className="text-xs text-lia-text-secondary">{activity.details.overallImpression}</p>
         </div>
@@ -102,21 +102,21 @@ export function ActivityVideoInterviewDetails({ activity, onSetScreeningModalDat
           </Badge>
         </h5>
         <div className="grid grid-cols-3 gap-2 mb-3">
-          <div className="text-center p-2 bg-lia-bg-secondary rounded-md border border-lia-border-subtle">
+          <div className="text-center p-2 bg-lia-bg-secondary rounded-xl border border-lia-border-subtle">
             <p className="text-sm font-bold text-lia-text-primary">{activity.details.duration}</p>
             <p className={textStyles.caption}>Duração</p>
           </div>
-          <div className="text-center p-2 bg-lia-bg-secondary rounded-md border border-lia-border-subtle">
+          <div className="text-center p-2 bg-lia-bg-secondary rounded-xl border border-lia-border-subtle">
             <p className="text-sm font-bold text-lia-text-primary">{activity.details.completionRate || 100}%</p>
             <p className={textStyles.caption}>Completude</p>
           </div>
-          <div className="text-center p-2 bg-lia-bg-secondary rounded-md border border-lia-border-subtle">
+          <div className="text-center p-2 bg-lia-bg-secondary rounded-xl border border-lia-border-subtle">
             <p className="text-sm font-bold text-lia-text-primary">{Math.round((activity.details.transcriptionConfidence || 0.95) * 100)}%</p>
             <p className={textStyles.caption}>Confiança</p>
           </div>
         </div>
         {activity.details.overallImpression && (
-          <div className="bg-lia-bg-secondary p-2 rounded-md border border-lia-border-subtle mb-3">
+          <div className="bg-lia-bg-secondary p-2 rounded-xl border border-lia-border-subtle mb-3">
             <p className={`${textStyles.labelSmall} mb-1`}>Impressão Geral</p>
             <p className={`${textStyles.caption} text-lia-text-secondary`}>{activity.details.overallImpression}</p>
           </div>

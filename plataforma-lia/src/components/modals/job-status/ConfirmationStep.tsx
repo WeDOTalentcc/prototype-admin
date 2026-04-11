@@ -40,14 +40,14 @@ export function ConfirmationStep({
 }: ConfirmationStepProps) {
   return (
     <div data-testid="confirmation-step" className="space-y-4">
-      <div className="flex items-center gap-2 p-2.5 rounded-md bg-status-success/10 border border-status-success/30">
+      <div className="flex items-center gap-2 p-2.5 rounded-xl bg-status-success/10 border border-status-success/30">
         <CheckCircle className="w-4 h-4 text-status-success" />
         <span className="text-xs text-status-success font-medium">
           Confirme as ações abaixo
         </span>
       </div>
 
-      <div className="space-y-2 p-3 rounded-md bg-lia-bg-secondary border border-lia-border-subtle">
+      <div className="space-y-2 p-3 rounded-xl bg-lia-bg-secondary border border-lia-border-subtle">
         <h4 className="text-xs font-semibold text-lia-text-primary mb-2">Resumo das Ações</h4>
 
         <div className="space-y-1.5">
@@ -98,7 +98,7 @@ export function ConfirmationStep({
       </div>
 
       {pauseReason && (
-        <div className="p-3 rounded-md bg-lia-bg-secondary border border-lia-border-subtle">
+        <div className="p-3 rounded-xl bg-lia-bg-secondary border border-lia-border-subtle">
           <h4 className="text-xs font-semibold text-lia-text-secondary mb-1">Motivo</h4>
           <p className="text-xs text-lia-text-primary">
             {pauseReason === 'other' ? customReason : PAUSE_REASONS.find(r => r.value === pauseReason)?.label}

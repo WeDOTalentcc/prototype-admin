@@ -25,7 +25,7 @@ export interface TenureSectionProps {
 export const TenureSection = ({ filters, updateFilter }: TenureSectionProps) => {
   return (
     <div className="grid grid-cols-2 gap-4">
-      <div className="p-3 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
+      <div className="p-3 rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle">
         <div className="flex items-center gap-1.5 mb-2">
           <Clock className="w-4 h-4 text-lia-text-secondary" />
           <Label className="text-xs font-medium">Tempo na Função Atual</Label>
@@ -76,7 +76,7 @@ export const TenureSection = ({ filters, updateFilter }: TenureSectionProps) => 
         </div>
       </div>
 
-      <div className="p-3 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
+      <div className="p-3 rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle">
         <div className="flex items-center gap-1.5 mb-2">
           <TrendingUp className="w-4 h-4 text-lia-text-secondary" />
           <Label className="text-xs font-medium">Tempo Médio nas Empresas</Label>

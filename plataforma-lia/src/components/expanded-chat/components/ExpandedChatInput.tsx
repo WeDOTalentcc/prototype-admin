@@ -356,7 +356,7 @@ export function ExpandedChatInput({
 
           {/* Conteúdo da aba Job Description */}
           {activeInputTab === 'job-description' && (
-            <div className="mt-3 p-3 rounded-md border border-lia-border-subtle bg-lia-bg-primary">
+            <div className="mt-3 p-3 rounded-xl border border-lia-border-subtle bg-lia-bg-primary">
               <p className="text-xs text-lia-text-secondary mb-2" aria-live="polite" aria-atomic="true">
                 Cole ou anexe uma descrição de vaga e eu vou criar a vaga automaticamente para você, configurando todos os detalhes.
               </p>
@@ -364,7 +364,7 @@ export function ExpandedChatInput({
                 value={inputValue}
                 onChange={(e) => onSetInputValue(e.target.value)}
                 placeholder="Cole aqui o job description completo (requisitos, responsabilidades, benefícios...)."
-                className="w-full px-3 py-2.5 text-xs rounded-md border border-lia-border-subtle focus:border-lia-border-medium focus:outline-none resize-none transition-colors motion-reduce:transition-none bg-lia-bg-secondary text-lia-text-primary min-h-20"
+                className="w-full px-3 py-2.5 text-xs rounded-xl border border-lia-border-subtle focus:border-lia-border-medium focus:outline-none resize-none transition-colors motion-reduce:transition-none bg-lia-bg-secondary text-lia-text-primary min-h-20"
                 rows={4}
               />
               <div className="flex items-center justify-between mt-2">
@@ -398,7 +398,7 @@ export function ExpandedChatInput({
 
           {/* Conteúdo da aba Templates */}
           {activeInputTab === 'templates' && (
-            <div className="mt-3 p-3 rounded-md border border-lia-border-subtle bg-lia-bg-primary space-y-3">
+            <div className="mt-3 p-3 rounded-xl border border-lia-border-subtle bg-lia-bg-primary space-y-3">
               {/* Seção 1: Criar a partir de Template */}
               <div>
                 <h4 className="text-xs font-medium mb-1 text-lia-text-primary">
@@ -416,7 +416,7 @@ export function ExpandedChatInput({
                   ].map((template) => (
                     <div
                       key={template.title}
-                      className="cursor-pointer transition-colors motion-reduce:transition-none rounded-md p-2 hover:border border-lia-border-subtle bg-lia-bg-primary hover:border-lia-btn-primary-bg"
+                      className="cursor-pointer transition-colors motion-reduce:transition-none rounded-xl p-2 hover:border border-lia-border-subtle bg-lia-bg-primary hover:border-lia-btn-primary-bg"
                       onClick={() => {
                         onSetInternalJobCreationMode(true)
                         const dynamicGreeting = wizardGreeting?.greeting_message || INITIAL_JOB_CREATION_MESSAGE
@@ -457,7 +457,7 @@ export function ExpandedChatInput({
                   <input
                     type="text"
                     placeholder="Buscar vaga por título ou ID..."
-                    className="w-full pl-8 pr-3 py-2 text-xs rounded-md border border-lia-border-subtle focus:border-lia-border-medium focus:outline-none transition-colors motion-reduce:transition-none bg-lia-bg-secondary text-lia-text-primary"
+                    className="w-full pl-8 pr-3 py-2 text-xs rounded-xl border border-lia-border-subtle focus:border-lia-border-medium focus:outline-none transition-colors motion-reduce:transition-none bg-lia-bg-secondary text-lia-text-primary"
                   />
                 </div>
               </div>

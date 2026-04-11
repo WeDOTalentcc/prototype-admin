@@ -139,7 +139,7 @@ export function LiaMetricsDetails({
           <div className="space-y-2">
             {sourceMetrics.map((source) => (
               <div key={source.source} className="flex items-center gap-2">
-                <div className="w-6 h-6 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-md flex items-center justify-center">
+                <div className="w-6 h-6 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-xl flex items-center justify-center">
                   <Users className="w-3 h-3 text-lia-text-secondary" />
                 </div>
                 <div className="flex-1">

@@ -220,7 +220,7 @@ export function GoalsAlertsSection({
             </button>
           </div>
 
-          <div className="rounded-md p-2.5 bg-lia-bg-tertiary dark:bg-lia-bg-secondary dark:bg-lia-bg-secondary border border-lia-border-default dark:border-lia-border-default">
+          <div className="rounded-xl p-2.5 bg-lia-bg-tertiary dark:bg-lia-bg-secondary dark:bg-lia-bg-secondary border border-lia-border-default dark:border-lia-border-default">
             <div className="flex items-start gap-2">
               <Brain className="w-3.5 h-3.5 flex-shrink-0 mt-0.5 text-wedo-cyan" />
               <div>

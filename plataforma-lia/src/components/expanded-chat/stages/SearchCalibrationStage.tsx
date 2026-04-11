@@ -72,7 +72,7 @@ export function SearchCalibrationStage({
       {searchPhase !== 'local-complete' && calibrationCandidates.length === 0 && (
         <div className="space-y-2.5">
           {/* Published Job Card */}
-          <div className="p-3 bg-wedo-green/10 rounded-md border border-wedo-green/20">
+          <div className="p-3 bg-wedo-green/10 rounded-xl border border-wedo-green/20">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 bg-wedo-green/20 rounded-full flex items-center justify-center">
                 <CheckCircle2 className="w-4 h-4 text-wedo-green" />
@@ -89,7 +89,7 @@ export function SearchCalibrationStage({
           </div>
 
           {/* Preferred Candidate Count Selector */}
-          <div className="p-3 bg-lia-bg-primary/50 rounded-md border border-lia-border-subtle">
+          <div className="p-3 bg-lia-bg-primary/50 rounded-xl border border-lia-border-subtle">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Users className="w-4 h-4 text-lia-text-secondary" />
@@ -116,7 +116,7 @@ export function SearchCalibrationStage({
           </div>
 
           {/* Local Search Status */}
-          <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-md">
+          <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-xl">
             <div className="flex items-center gap-2 mb-2">
               <Database className="w-3.5 h-3.5 text-lia-text-secondary" />
               <span className="text-xs font-medium text-lia-text-primary">
@@ -132,7 +132,7 @@ export function SearchCalibrationStage({
                 </p>
               </div>
             ) : (
-              <div className="flex items-center justify-between p-2 bg-lia-bg-secondary rounded-md border border-lia-border-subtle">
+              <div className="flex items-center justify-between p-2 bg-lia-bg-secondary rounded-xl border border-lia-border-subtle">
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-wedo-green" />
                   <span className="text-xs text-lia-text-primary">
@@ -146,7 +146,7 @@ export function SearchCalibrationStage({
 
           {/* Global Search Prompt */}
           {(searchPhase as string) === 'local-complete' && !globalSearchAuthorized && (
-            <div className="p-3 bg-wedo-cyan/10 rounded-md border border-lia-border-default">
+            <div className="p-3 bg-wedo-cyan/10 rounded-xl border border-lia-border-default">
               <div className="flex items-start gap-2">
                 <div className="w-8 h-8 bg-lia-bg-tertiary rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                   <Globe className="w-4 h-4 text-lia-text-secondary" />
@@ -171,7 +171,7 @@ export function SearchCalibrationStage({
                     </button>
                     <button
                       onClick={() => onSetSearchPhase('global-complete')}
-                      className="px-3 py-1.5 bg-lia-bg-secondary text-lia-text-secondary text-micro font-medium rounded-md hover:bg-lia-interactive-active transition-colors motion-reduce:transition-none"
+                      className="px-3 py-1.5 bg-lia-bg-secondary text-lia-text-secondary text-micro font-medium rounded-xl hover:bg-lia-interactive-active transition-colors motion-reduce:transition-none"
                     >
                       Não, usar só base local
                     </button>
@@ -183,7 +183,7 @@ export function SearchCalibrationStage({
 
           {/* Global Search Loading */}
           {searchPhase === 'global-searching' && (
-            <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-md">
+            <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-xl">
               <div className="flex items-center gap-2 mb-2">
                 <Globe className="w-3.5 h-3.5 text-lia-text-secondary" />
                 <span className="text-xs font-medium text-lia-text-primary">
@@ -201,7 +201,7 @@ export function SearchCalibrationStage({
 
           {/* Global Search Results */}
           {searchPhase === 'global-complete' && globalSearchAuthorized && globalCandidateCount > 0 && (
-            <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-md">
+            <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-xl">
               <div className="flex items-center gap-2 mb-2">
                 <Globe className="w-3.5 h-3.5 text-lia-text-secondary" />
                 <span className="text-xs font-medium text-lia-text-primary">
@@ -222,7 +222,7 @@ export function SearchCalibrationStage({
 
           {/* Search Analysis */}
           {searchPhase === 'global-complete' && (
-            <div className="p-3 bg-lia-bg-secondary rounded-md border border-lia-border-subtle">
+            <div className="p-3 bg-lia-bg-secondary rounded-xl border border-lia-border-subtle">
               <div className="flex items-center gap-2 mb-2">
                 <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
                 <span className="text-xs font-medium text-lia-text-primary">
@@ -259,7 +259,7 @@ export function SearchCalibrationStage({
 
           {/* Advance to Calibration Button */}
           {searchPhase === 'global-complete' && (
-            <div className="p-3 bg-lia-bg-secondary rounded-md border border-lia-border-subtle">
+            <div className="p-3 bg-lia-bg-secondary rounded-xl border border-lia-border-subtle">
               <div className="flex items-center gap-2 mb-2">
                 <div className="w-8 h-8 bg-wedo-green/10 rounded-full flex items-center justify-center">
                   <Target className="w-4 h-4 text-wedo-green" />
@@ -290,7 +290,7 @@ export function SearchCalibrationStage({
         <div className="space-y-2.5" role="status" aria-live="polite" aria-label="Carregando...">
           {/* Loading state */}
           {isLoadingCalibration && (
-            <div className="p-4 bg-lia-bg-secondary rounded-md border border-lia-border-subtle" role="status" aria-live="polite" aria-label="Carregando...">
+            <div className="p-4 bg-lia-bg-secondary rounded-xl border border-lia-border-subtle" role="status" aria-live="polite" aria-label="Carregando...">
               <div className="flex items-center gap-3" role="status" aria-live="polite" aria-label="Carregando...">
                 <Loader2 className="w-5 h-5 text-lia-text-secondary animate-spin motion-reduce:animate-none" />
                 <div>
@@ -307,7 +307,7 @@ export function SearchCalibrationStage({
 
           {/* No candidates found - fallback UI */}
           {!isLoadingCalibration && calibrationCandidates.length === 0 && hasAttemptedCalibrationGeneration && (
-            <div className="p-4 bg-lia-bg-secondary rounded-md border border-status-warning/30">
+            <div className="p-4 bg-lia-bg-secondary rounded-xl border border-status-warning/30">
               <div className="flex items-start gap-3">
                 <div className="w-8 h-8 bg-status-warning/20 rounded-full flex items-center justify-center flex-shrink-0">
                   <AlertTriangle className="w-4 h-4 text-status-warning" />
@@ -325,7 +325,7 @@ export function SearchCalibrationStage({
                         onSetHasAttemptedCalibrationGeneration(false)
                         onGenerateCalibrationCandidates()
                       }}
-                      className="flex-1 py-2 bg-lia-bg-primary text-lia-text-primary text-xs font-medium rounded-md border border-lia-border-default hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none flex items-center justify-center gap-1.5"
+                      className="flex-1 py-2 bg-lia-bg-primary text-lia-text-primary text-xs font-medium rounded-xl border border-lia-border-default hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none flex items-center justify-center gap-1.5"
                     >
                       <RefreshCw className="w-3.5 h-3.5" />
                       Tentar Novamente
@@ -346,7 +346,7 @@ export function SearchCalibrationStage({
           {/* Calibration Info Card - only show when candidates exist */}
           {!isLoadingCalibration && calibrationCandidates.length > 0 && (
             <>
-              <div className="p-3 bg-lia-bg-secondary rounded-md border border-lia-border-subtle">
+              <div className="p-3 bg-lia-bg-secondary rounded-xl border border-lia-border-subtle">
                 <div className="flex items-center gap-2">
                   <div className="w-8 h-8 bg-lia-bg-tertiary rounded-full flex items-center justify-center">
                     <Target className="w-4 h-4 text-lia-text-secondary" />
@@ -363,7 +363,7 @@ export function SearchCalibrationStage({
               </div>
 
               {/* Calibration Progress */}
-              <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-md">
+              <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-xl">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-xs font-medium text-lia-text-primary">Progresso</span>
                   <span className="text-xs text-lia-text-secondary font-semibold">{approvedCandidates.length}/3 aprovados</span>
@@ -395,7 +395,7 @@ export function SearchCalibrationStage({
       {calibrationComplete && (
         <div className="space-y-2.5">
           {/* Success Header */}
-          <div className="p-3 bg-wedo-green/10 rounded-md border border-wedo-green/20">
+          <div className="p-3 bg-wedo-green/10 rounded-xl border border-wedo-green/20">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-full bg-wedo-green flex items-center justify-center">
                 <CheckCircle2 className="w-4 h-4 text-white" />
@@ -412,7 +412,7 @@ export function SearchCalibrationStage({
           </div>
 
           {/* O que acontece agora */}
-          <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-md">
+          <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-xl">
             <h4 className="text-xs font-semibold text-lia-text-primary mb-3">
               O que acontece agora:
             </h4>
@@ -438,7 +438,7 @@ export function SearchCalibrationStage({
           </div>
 
           {/* Nota final */}
-          <div className="p-2.5 bg-lia-bg-secondary rounded-md">
+          <div className="p-2.5 bg-lia-bg-secondary rounded-xl">
             <p className="text-micro text-lia-text-secondary text-center italic" aria-live="polite" aria-atomic="true">
               *Todos estes detalhes serão enviados por e-mail junto com a confirmação de abertura da vaga.
             </p>

@@ -190,7 +190,7 @@ export function UnifiedChatHeader({
           {showModeMenu && (
             <>
               <div className="fixed inset-0 z-40" onClick={() => setShowModeMenu(false)} />
-              <div className="absolute right-0 top-full mt-1 z-50 w-40 rounded-md border border-lia-border-subtle bg-lia-bg-primary py-1">
+              <div className="absolute right-0 top-full mt-1 z-50 w-40 rounded-xl border border-lia-border-subtle bg-lia-bg-primary py-1">
                 {MODE_OPTIONS.map((opt) => (
                   <button
                     key={opt.mode}
@@ -244,7 +244,7 @@ export function UnifiedChatHeader({
           {showOptionsMenu && (
             <>
               <div className="fixed inset-0 z-40" onClick={() => setShowOptionsMenu(false)} />
-              <div className="absolute right-0 top-full mt-1 z-50 w-44 rounded-md border border-lia-border-subtle bg-lia-bg-primary py-1">
+              <div className="absolute right-0 top-full mt-1 z-50 w-44 rounded-xl border border-lia-border-subtle bg-lia-bg-primary py-1">
                 <button
                   onClick={handleStartRename}
                   className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-lia-text-secondary hover:bg-lia-bg-secondary font-['Open_Sans',sans-serif]"

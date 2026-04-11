@@ -19,7 +19,7 @@ export function SettingsAPIKeysTab({ onSettingsChange }: SettingsAPIKeysTabProps
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center justify-between p-4 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md">
+          <div className="flex items-center justify-between p-4 border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl">
             <div>
               <div className="text-sm font-medium text-lia-text-primary">Chave de Produção</div>
               <div className="text-xs text-lia-text-primary font-mono mt-1">sk-prod-****************************</div>
@@ -34,7 +34,7 @@ export function SettingsAPIKeysTab({ onSettingsChange }: SettingsAPIKeysTabProps
             </div>
           </div>
 
-          <div className="flex items-center justify-between p-4 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md">
+          <div className="flex items-center justify-between p-4 border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl">
             <div>
               <div className="text-sm font-medium text-lia-text-primary">Chave de Teste</div>
               <div className="text-xs text-lia-text-primary font-mono mt-1">sk-test-****************************</div>

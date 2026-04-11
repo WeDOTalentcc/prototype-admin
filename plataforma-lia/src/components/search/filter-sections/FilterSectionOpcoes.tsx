@@ -23,7 +23,7 @@ export const FilterSectionOpcoes = React.memo(function FilterSectionOpcoes({
   return (
     <div className="space-y-6">
       {(searchSource === "global" || searchSource === "hybrid") && (
-        <div className="p-4 rounded-md border bg-lia-bg-secondary border-lia-border-subtle">
+        <div className="p-4 rounded-xl border bg-lia-bg-secondary border-lia-border-subtle">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
               <Zap className="w-3.5 h-3.5 text-lia-text-secondary" />
@@ -89,7 +89,7 @@ export const FilterSectionOpcoes = React.memo(function FilterSectionOpcoes({
           </div>
 
           {creditEstimate.warnings.length > 0 && (
-            <div className="mt-3 p-2 bg-status-warning/10 rounded-md border border-status-warning/30">
+            <div className="mt-3 p-2 bg-status-warning/10 rounded-xl border border-status-warning/30">
               {creditEstimate.warnings.map((warning, idx) => (
                 <div key={idx} className="flex items-start gap-2 text-xs text-status-warning">
                   <AlertCircle className="w-3 h-3 mt-0.5 flex-shrink-0" />
@@ -104,7 +104,7 @@ export const FilterSectionOpcoes = React.memo(function FilterSectionOpcoes({
       <div className="space-y-3">
         <Label className="text-xs font-medium block">Informações de Contato</Label>
 
-        <div className="flex items-center justify-between p-2.5 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
+        <div className="flex items-center justify-between p-2.5 rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle">
           <div className="flex items-center gap-2">
             <Mail className="w-3.5 h-3.5 text-lia-text-secondary" />
             <div>
@@ -118,7 +118,7 @@ export const FilterSectionOpcoes = React.memo(function FilterSectionOpcoes({
           />
         </div>
 
-        <div className="flex items-center justify-between p-2.5 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
+        <div className="flex items-center justify-between p-2.5 rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle">
           <div className="flex items-center gap-2">
             <Mail className="w-3.5 h-3.5 text-lia-text-secondary" />
             <div>
@@ -132,7 +132,7 @@ export const FilterSectionOpcoes = React.memo(function FilterSectionOpcoes({
           />
         </div>
 
-        <div className="flex items-center justify-between p-3 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
+        <div className="flex items-center justify-between p-3 rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle">
           <div className="flex items-center gap-3">
             <Phone className="w-4 h-4 text-lia-text-secondary" />
             <div>
@@ -146,7 +146,7 @@ export const FilterSectionOpcoes = React.memo(function FilterSectionOpcoes({
           />
         </div>
 
-        <div className="flex items-center justify-between p-3 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
+        <div className="flex items-center justify-between p-3 rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle">
           <div className="flex items-center gap-3">
             <Phone className="w-4 h-4 text-lia-text-secondary" />
             <div>
@@ -160,7 +160,7 @@ export const FilterSectionOpcoes = React.memo(function FilterSectionOpcoes({
           />
         </div>
 
-        <div className="flex items-center justify-between p-3 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
+        <div className="flex items-center justify-between p-3 rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle">
           <div className="flex items-center gap-3">
             <Mail className="w-4 h-4 text-lia-text-secondary" />
             <Phone className="w-4 h-4 -ml-2 text-lia-text-secondary" />

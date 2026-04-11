@@ -43,7 +43,7 @@ export const KanbanCard = React.memo(function KanbanCard({
 
   return (
     <Card
-      className="bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle hover:border-lia-border-default dark:hover:border-lia-border-medium cursor-pointer transition-colors motion-reduce:transition-none hover:group rounded-md"
+      className="bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle hover:border-lia-border-default dark:hover:border-lia-border-medium cursor-pointer transition-colors motion-reduce:transition-none hover:group rounded-xl"
       onClick={onClick}
       data-testid="candidate-card"
       data-candidate-id={candidate.id}

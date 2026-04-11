@@ -248,7 +248,7 @@ export function PromptSuggestionsPopover({
         align="start"
         sideOffset={8}
       >
-        <div className="p-3 border-b border-lia-border-subtle">
+        <div className="p-3">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
               <Brain className="w-4 h-4 text-wedo-cyan" />
@@ -307,10 +307,10 @@ export function PromptSuggestionsPopover({
                 <button
                   key={suggestion.id}
                   onClick={() => handleSelect(suggestion.command)}
-                  className="w-full p-2 rounded-md text-left transition-colors motion-reduce:transition-none group hover:bg-lia-interactive-hover border border-transparent hover:border-lia-border-default"
+                  className="w-full p-2 rounded-xl text-left transition-colors motion-reduce:transition-none group hover:bg-lia-interactive-hover border border-transparent hover:border-lia-border-default"
                 >
                   <div className="flex items-start gap-2.5">
-                    <div className="w-7 h-7 rounded-md bg-lia-bg-tertiary flex items-center justify-center flex-shrink-0 group-hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none">
+                    <div className="w-7 h-7 rounded-xl bg-lia-bg-tertiary flex items-center justify-center flex-shrink-0 group-hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none">
                       <Icon className="w-3.5 h-3.5 text-lia-text-secondary group-hover:text-lia-text-primary dark:group-hover:text-lia-text-tertiary" />
                     </div>
                     <div className="flex-1 min-w-0">

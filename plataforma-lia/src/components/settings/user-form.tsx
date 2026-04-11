@@ -161,7 +161,7 @@ export function UserForm({ isCreating, formData, setFormData, onSave, onCancel }
                     type="checkbox"
                     checked={formData.isManager || false}
                     onChange={(e) => setFormData(prev => ({ ...prev, isManager: e.target.checked }))}
-                    className="w-3.5 h-3.5 rounded-md border-lia-border-default"
+                    className="w-3.5 h-3.5 rounded-xl border-lia-border-default"
                   />
                   <span className={textStyles.label}>É Gestor</span>
                 </label>
@@ -197,7 +197,7 @@ export function UserForm({ isCreating, formData, setFormData, onSave, onCancel }
                         setFormData(prev => ({ ...prev, permissions: permissions.filter(p => p !== permission.id) }))
                       }
                     }}
-                    className="w-3.5 h-3.5 rounded-md border-lia-border-default"
+                    className="w-3.5 h-3.5 rounded-xl border-lia-border-default"
                   />
                   <span className={textStyles.label}>{permission.label}</span>
                 </label>

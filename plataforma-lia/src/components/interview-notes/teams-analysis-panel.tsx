@@ -167,7 +167,7 @@ export function TeamsAnalysisPanel({
 
   if (isLoading) {
     return (
-      <Card className="w-full rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
+      <Card className="w-full rounded-xl dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
         <CardContent className="flex items-center justify-center py-8">
           <Loader2 className="h-6 w-6 animate-spin motion-reduce:animate-none text-lia-text-secondary" />
           <span className="ml-2 text-sm text-lia-text-tertiary">Carregando status...</span>
@@ -180,8 +180,8 @@ export function TeamsAnalysisPanel({
   const StatusIcon = statusInfo?.icon || Clock
 
   return (
-    <Card className="w-full rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
-      <CardHeader className="pb-3 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+    <Card className="w-full rounded-xl dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
+      <CardHeader className="pb-3 dark:border-lia-border-subtle">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Bot className="h-5 w-5 text-wedo-cyan" />
@@ -211,7 +211,7 @@ export function TeamsAnalysisPanel({
 
       <CardContent className="space-y-4">
         {!status && (
-          <div className="text-center py-6 bg-lia-bg-secondary rounded-md">
+          <div className="text-center py-6 bg-lia-bg-secondary rounded-xl">
             <Video className="h-8 w-8 text-lia-text-secondary mx-auto mb-2" />
             <p className="text-sm text-lia-text-tertiary">
               Nenhuma análise disponível para esta entrevista.
@@ -220,14 +220,14 @@ export function TeamsAnalysisPanel({
         )}
 
         {status?.error && (
-          <div className="flex items-start gap-2 p-3 bg-status-error/10 border border-status-error/30 rounded-md">
+          <div className="flex items-start gap-2 p-3 bg-status-error/10 border border-status-error/30 rounded-xl">
             <XCircle className="h-4 w-4 text-status-error mt-0.5" />
             <p className="text-sm text-status-error">{status.error}</p>
           </div>
         )}
 
         {status?.status === "awaiting_transcript" && (
-          <div className="text-center py-6 bg-lia-bg-secondary rounded-md">
+          <div className="text-center py-6 bg-lia-bg-secondary rounded-xl">
             <Clock className="h-8 w-8 text-lia-text-secondary mx-auto mb-2" />
             <p className="text-sm text-lia-text-secondary mb-1">
               Aguardando transcrição da entrevista Teams
@@ -239,7 +239,7 @@ export function TeamsAnalysisPanel({
         )}
 
         {status?.status === "transcript_ready" && (
-          <div className="text-center py-6 bg-wedo-cyan/10 rounded-md space-y-3">
+          <div className="text-center py-6 bg-wedo-cyan/10 rounded-xl space-y-3">
             <Video className="h-8 w-8 text-wedo-cyan-dark mx-auto" />
             <p className="text-sm text-lia-text-secondary">
               Transcrição disponível! Clique para iniciar a análise.

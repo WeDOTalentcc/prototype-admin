@@ -51,7 +51,7 @@ export function IntegrationsList({
       <CardContent>
         <div className="space-y-4">
           {integrations.map((integration) => (
-            <div key={integration.id} className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-4">
+            <div key={integration.id} className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl p-4">
               <div className="flex items-start justify-between">
                 <div className="flex items-start gap-4">
                   <div className={`w-12 h-12 rounded-md flex items-center justify-center ${integration.color}`}>

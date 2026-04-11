@@ -134,7 +134,7 @@ function CreateFromJob({
             onSearchJobsForArchetype(e.target.value)
           }}
           placeholder="Buscar vaga por nome ou ID..."
-          className="w-full pl-8 pr-3 py-2 rounded-md text-xs focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20 border border-lia-border-subtle"
+          className="w-full pl-8 pr-3 py-2 rounded-xl text-xs focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20 border border-lia-border-subtle"
         />
         {isSearchingJobs && (
           <Loader2 className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 animate-spin motion-reduce:animate-none text-lia-text-primary" />
@@ -142,7 +142,7 @@ function CreateFromJob({
       </div>
 
       {jobSearchQuery.trim() && (
-        <div className="max-h-chart-sm overflow-y-auto space-y-1.5 rounded-md border border-lia-border-subtle" role="status" aria-live="polite" aria-label="Carregando...">
+        <div className="max-h-chart-sm overflow-y-auto space-y-1.5 rounded-xl border border-lia-border-subtle" role="status" aria-live="polite" aria-label="Carregando...">
           {isSearchingJobs ? (
             <div className="flex items-center justify-center py-4" role="status" aria-live="polite" aria-label="Carregando...">
               <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none text-lia-text-primary" />
@@ -234,7 +234,7 @@ function CreateFromJob({
       )}
 
       {!jobSearchQuery.trim() && (
-        <div className="text-center py-4 px-3 rounded-md border border-dashed border-lia-border-subtle">
+        <div className="text-center py-4 px-3 rounded-xl border border-dashed border-lia-border-subtle">
           <Search className="w-5 h-5 mx-auto mb-1.5" />
           <p className="text-xs text-lia-text-tertiary" aria-live="polite" aria-atomic="true">
             Digite o nome ou ID da vaga para buscar
@@ -242,7 +242,7 @@ function CreateFromJob({
         </div>
       )}
 
-      <div className="p-2.5 rounded-md bg-lia-bg-secondary border border-lia-border-subtle">
+      <div className="p-2.5 rounded-xl bg-lia-bg-secondary border border-lia-border-subtle">
         <div className="flex items-start gap-2">
           <Lightbulb className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-lia-text-primary" />
           <p className="text-xs text-lia-text-primary">
@@ -278,7 +278,7 @@ function CreateFromDescription({
         onChange={(e) => onArchetypeDescriptionChange(e.target.value)}
         placeholder="Ex: Desenvolvedor Python sênior com experiência em machine learning e cloud AWS, preferencialmente com background em fintechs..."
         rows={3}
-        className="w-full rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 resize-none border border-lia-border-default bg-lia-bg-secondary text-lia-text-primary"
+        className="w-full rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 resize-none border border-lia-border-default bg-lia-bg-secondary text-lia-text-primary"
       />
       <Button
         onClick={() => onCreateArchetypeFromDescription(archetypeDescription)}
@@ -299,7 +299,7 @@ function CreateFromDescription({
         )}
       </Button>
 
-      <div className="p-2.5 rounded-md bg-lia-bg-secondary border border-lia-border-subtle">
+      <div className="p-2.5 rounded-xl bg-lia-bg-secondary border border-lia-border-subtle">
         <div className="flex items-start gap-2">
           <Lightbulb className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-lia-text-primary" />
           <p className="text-xs text-lia-text-primary">

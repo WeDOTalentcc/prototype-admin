@@ -47,7 +47,7 @@ export function AddBenefitModal({
             value={benefitName}
             onChange={(e) => onBenefitNameChange(e.target.value)}
             placeholder="Nome do benefício (ex: Auxílio Creche)"
-            className="w-full px-4 py-3 border border-lia-border-subtle rounded-md text-sm focus:outline-none focus:border-lia-border-medium"
+            className="w-full px-4 py-3 border border-lia-border-subtle rounded-xl text-sm focus:outline-none focus:border-lia-border-medium"
            
             autoFocus
           />
@@ -56,7 +56,7 @@ export function AddBenefitModal({
             value={benefitValue}
             onChange={(e) => onBenefitValueChange(e.target.value)}
             placeholder={`Valor (opcional, ex: ${CURRENCY_SYMBOL} 500/mês)`}
-            className="w-full px-4 py-3 border border-lia-border-subtle rounded-md text-sm focus:outline-none focus:border-lia-border-medium"
+            className="w-full px-4 py-3 border border-lia-border-subtle rounded-xl text-sm focus:outline-none focus:border-lia-border-medium"
            
           />
         </div>
@@ -64,7 +64,7 @@ export function AddBenefitModal({
           <Button
             variant="outline"
             onClick={onCancel}
-            className="flex-1 h-10 rounded-md border-lia-border-subtle hover:bg-lia-interactive-hover transition-colors cursor-pointer"
+            className="flex-1 h-10 rounded-xl border-lia-border-subtle hover:bg-lia-interactive-hover transition-colors cursor-pointer"
           >
             Cancelar
           </Button>

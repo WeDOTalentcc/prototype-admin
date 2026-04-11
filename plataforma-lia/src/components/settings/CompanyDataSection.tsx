@@ -63,7 +63,7 @@ export function CompanyDataSection({
     return (
       <div className="space-y-4 animate-pulse motion-reduce:animate-none">
         {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="h-24 bg-lia-bg-tertiary rounded-md" />
+          <div key={i} className="h-24 bg-lia-bg-tertiary rounded-xl" />
         ))}
       </div>
     )
@@ -72,19 +72,19 @@ export function CompanyDataSection({
   return (
     <div className="space-y-4">
       {successMessage && (
-        <div className="bg-status-success/10 border border-status-success/30 text-status-success dark:bg-status-success/20 dark:border-status-success/30 dark:text-status-success px-3 py-2 rounded-md flex items-center gap-2 text-xs font-['Open_Sans',sans-serif]">
+        <div className="bg-status-success/10 border border-status-success/30 text-status-success dark:bg-status-success/20 dark:border-status-success/30 dark:text-status-success px-3 py-2 rounded-xl flex items-center gap-2 text-xs font-['Open_Sans',sans-serif]">
           <CheckCircle className="w-3.5 h-3.5" />
           {successMessage}
         </div>
       )}
       {error && (
-        <div className="bg-status-error/10 border border-status-error/30 text-status-error dark:bg-status-error/20 dark:border-status-error/30 dark:text-status-error px-3 py-2 rounded-md flex items-center gap-2 text-xs font-['Open_Sans',sans-serif]">
+        <div className="bg-status-error/10 border border-status-error/30 text-status-error dark:bg-status-error/20 dark:border-status-error/30 dark:text-status-error px-3 py-2 rounded-xl flex items-center gap-2 text-xs font-['Open_Sans',sans-serif]">
           <AlertCircle className="w-3.5 h-3.5" />
           {error}
         </div>
       )}
 
-      <div className="flex items-center justify-between bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-4">
+      <div className="flex items-center justify-between bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl p-4">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-md flex items-center justify-center bg-lia-btn-primary-bg">
             <Building className="w-5 h-5 text-white" />

@@ -211,14 +211,14 @@ export function MessageComposer({
   return (
     <div className={className}>
       {successMessage && (
-        <div className="mb-3 px-3 py-2 rounded-md flex items-center gap-2 bg-lia-interactive-active/30 border border-wedo-cyan/30 text-wedo-cyan-dark">
+        <div className="mb-3 px-3 py-2 rounded-xl flex items-center gap-2 bg-lia-interactive-active/30 border border-wedo-cyan/30 text-wedo-cyan-dark">
           <Check className="w-4 h-4 text-lia-text-secondary" />
           <span className="text-xs">{successMessage}</span>
         </div>
       )}
       
       {errorMessage && (
-        <div className="mb-3 bg-status-error/10 border border-status-error/30 text-status-error px-3 py-2 rounded-md flex items-center gap-2">
+        <div className="mb-3 bg-status-error/10 border border-status-error/30 text-status-error px-3 py-2 rounded-xl flex items-center gap-2">
           <AlertCircle className="w-4 h-4" />
           <span className="text-xs">{errorMessage}</span>
         </div>
@@ -298,7 +298,7 @@ export function MessageComposer({
               value={subject}
               onChange={(e) => handleSubjectChange(e.target.value)}
               onFocus={() => setFocusedField('subject')}
-              className="w-full px-3 py-2 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-lia-border-subtle focus:border-lia-border-medium focus:outline-none"
+              className="w-full px-3 py-2 text-xs border border-lia-border-subtle rounded-xl bg-lia-bg-primary focus:ring-2 focus:ring-lia-border-subtle focus:border-lia-border-medium focus:outline-none"
              
               placeholder="Assunto do email..."
             />
@@ -330,7 +330,7 @@ export function MessageComposer({
             onChange={(e) => handleMessageChange(e.target.value)}
             onFocus={() => setFocusedField('message')}
             rows={8}
-            className="w-full px-3 py-2 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-lia-border-subtle focus:border-lia-border-medium focus:outline-none resize-none"
+            className="w-full px-3 py-2 text-xs border border-lia-border-subtle rounded-xl bg-lia-bg-primary focus:ring-2 focus:ring-lia-border-subtle focus:border-lia-border-medium focus:outline-none resize-none"
            
             placeholder={channel === 'email' ? 'Escreva sua mensagem...' : 'Escreva sua mensagem WhatsApp...'}
           />
@@ -338,7 +338,7 @@ export function MessageComposer({
       </div>
 
       {showLiaAdjust && (
-        <Card className="mt-4 rounded-md border border-lia-border-subtle bg-lia-bg-primary">
+        <Card className="mt-4 rounded-xl border border-lia-border-subtle bg-lia-bg-primary">
           <CardContent className="p-4 space-y-3">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-md flex items-center justify-center bg-lia-interactive-active/30">
@@ -372,7 +372,7 @@ export function MessageComposer({
                 onKeyDown={(e) => e.key === 'Enter' && !isGenerating && handleAdjustWithLIA()}
                 placeholder="Ex: Torne mais formal e adicione urgência..."
                 disabled={isGenerating}
-                className="flex-1 px-3 py-2 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-lia-border-subtle focus:border-lia-border-medium focus:outline-none disabled:bg-lia-bg-secondary disabled:lia-text-secondary"
+                className="flex-1 px-3 py-2 text-xs border border-lia-border-subtle rounded-xl bg-lia-bg-primary focus:ring-2 focus:ring-lia-border-subtle focus:border-lia-border-medium focus:outline-none disabled:bg-lia-bg-secondary disabled:lia-text-secondary"
                
               />
               <Button
@@ -410,8 +410,8 @@ export function MessageComposer({
 
       {aiResultModal?.show && (
         <div className="fixed inset-0 bg-lia-overlay flex items-center justify-center z-50 p-4">
-          <Card className="w-full max-w-2xl max-h-[90vh] overflow-hidden rounded-md bg-lia-bg-primary">
-            <div className="border-b border-lia-border-subtle p-4">
+          <Card className="w-full max-w-2xl max-h-[90vh] overflow-hidden rounded-xl bg-lia-bg-primary">
+            <div className=" p-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-md flex items-center justify-center bg-lia-interactive-active/30">
@@ -451,7 +451,7 @@ export function MessageComposer({
                   <label className="block text-xs font-medium text-lia-text-secondary uppercase tracking-wide mb-2">
                     Novo Assunto
                   </label>
-                  <div className="p-3 bg-lia-bg-secondary rounded-md text-xs text-lia-text-primary">
+                  <div className="p-3 bg-lia-bg-secondary rounded-xl text-xs text-lia-text-primary">
                     {aiResultModal.newSubject}
                   </div>
                 </div>
@@ -461,12 +461,12 @@ export function MessageComposer({
                 <label className="block text-xs font-medium text-lia-text-secondary uppercase tracking-wide mb-2">
                   Nova Mensagem
                 </label>
-                <div className="p-3 bg-lia-bg-secondary rounded-md text-xs text-lia-text-primary whitespace-pre-wrap max-h-content-md overflow-y-auto">
+                <div className="p-3 bg-lia-bg-secondary rounded-xl text-xs text-lia-text-primary whitespace-pre-wrap max-h-content-md overflow-y-auto">
                   {aiResultModal.newBody}
                 </div>
               </div>
 
-              <div className="p-3 rounded-md border border-status-warning/30 bg-status-warning/10">
+              <div className="p-3 rounded-xl border border-status-warning/30 bg-status-warning/10">
                 <div className="flex items-start gap-2">
                   <AlertCircle className="w-4 h-4 text-status-warning mt-0.5 flex-shrink-0" />
                   <p className="text-xs text-status-warning">
@@ -476,12 +476,12 @@ export function MessageComposer({
               </div>
             </CardContent>
             <div className="border-t border-lia-border-subtle p-4 flex items-center justify-end gap-3">
-              <Button variant="outline" onClick={handleCancelAIAdjustment} className="rounded-md px-4 py-2 text-xs">
+              <Button variant="outline" onClick={handleCancelAIAdjustment} className="rounded-xl px-4 py-2 text-xs">
                 Cancelar
               </Button>
               <Button 
                 onClick={handleConfirmAIAdjustment}
-                className="rounded-md px-4 py-2 text-xs gap-1.5 bg-lia-btn-primary-bg text-lia-btn-primary-text"
+                className="rounded-xl px-4 py-2 text-xs gap-1.5 bg-lia-btn-primary-bg text-lia-btn-primary-text"
               >
                 <Check className="w-3.5 h-3.5" />
                 Aplicar Ajustes

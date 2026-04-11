@@ -37,7 +37,7 @@ const CollapsibleSection = ({
   isExpanded: boolean
   onToggle: () => void
 }) => (
-  <div className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md overflow-hidden">
+  <div className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl overflow-hidden">
     <button
       onClick={onToggle}
       className="w-full flex items-center justify-between p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse transition-colors motion-reduce:transition-none"
@@ -83,7 +83,7 @@ export function DataRequestTab({ companyId = '' }: DataRequestTabProps) {
   return (
     <div className="space-y-4">
       {state.error && (
-        <div className="flex items-center gap-2 p-3 bg-status-warning/10 dark:bg-status-warning/20 border border-status-warning/30 dark:border-status-warning/30 rounded-md">
+        <div className="flex items-center gap-2 p-3 bg-status-warning/10 dark:bg-status-warning/20 border border-status-warning/30 dark:border-status-warning/30 rounded-xl">
           <AlertCircle className="w-4 h-4 text-status-warning flex-shrink-0" />
           <p className="text-xs text-status-warning dark:text-status-warning">
             {state.error} - Usando configurações padrão.
@@ -140,7 +140,7 @@ export function DataRequestTab({ companyId = '' }: DataRequestTabProps) {
           </div>
         </CardHeader>
         <CardContent className="space-y-4 px-4 pb-4">
-          <div className="flex items-start gap-2 p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
+          <div className="flex items-start gap-2 p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle">
             <Lightbulb className="w-4 h-4 text-lia-text-primary mt-0.5 flex-shrink-0" />
             <div className={textStyles.description}>
               <p className={`mb-0.5 ${textStyles.subtitle}`}>

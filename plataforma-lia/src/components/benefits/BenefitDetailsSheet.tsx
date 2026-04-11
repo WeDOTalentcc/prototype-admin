@@ -130,7 +130,7 @@ export function BenefitDetailsSheet({
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="right" className="w-full sm:max-w-md p-0 flex flex-col">
-        <SheetHeader className="px-6 pt-6 pb-4 border-b border-lia-border-subtle">
+        <SheetHeader className="px-6 pt-6 pb-4">
           <div className="flex items-center gap-3">
             <div 
               className="p-2.5 rounded-md bg-lia-interactive-active/30"

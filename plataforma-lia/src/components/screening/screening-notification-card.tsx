@@ -112,7 +112,7 @@ export function ScreeningNotificationCard({
                 {wsiBlocks.map((block, index) => (
                   <div
                     key={block.name}
-                    className="p-2 rounded-md bg-lia-bg-secondary dark:bg-lia-bg-elevated/50"
+                    className="p-2 rounded-xl bg-lia-bg-secondary dark:bg-lia-bg-elevated/50"
                   >
                     <p className="text-micro text-lia-text-secondary">
                       {block.name}

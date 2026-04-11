@@ -39,7 +39,7 @@ export function ChatContextPanelPart3({ contextData, onPipelineAction, onClose }
             </CardHeader>
             <CardContent className="p-6">
               <div className="space-y-6 font-open-sans">
-                <div className="p-4 rounded-md bg-status-error/10 dark:bg-status-error/20">
+                <div className="p-4 rounded-xl bg-status-error/10 dark:bg-status-error/20">
                   <h4 className="font-medium mb-2 text-lia-text-primary">Base de Análise</h4>
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div><span className="text-wedo-cyan-dark">Processos Históricos:</span><p className="font-semibold">{data.analysis_base.historical_processes}</p></div>
@@ -50,7 +50,7 @@ export function ChatContextPanelPart3({ contextData, onPipelineAction, onClose }
                   <h4 className="text-sm font-medium text-lia-text-secondary mb-3">Predições de Melhoria</h4>
                   <div className="space-y-4 font-open-sans">
                     {(data.predictions as { category: string; confidence: number; current_performance: string; predicted_improvement: string; actions: string[] }[]).map((prediction) => (
-                      <div key={prediction.category} className="p-4 rounded-md">
+                      <div key={prediction.category} className="p-4 rounded-xl">
                         <div className="flex items-center justify-between mb-3">
                           <h5 className="font-medium text-lia-text-primary">{prediction.category}</h5>
                           <Badge variant="outline" className="text-xs">{prediction.confidence}% confiança</Badge>
@@ -75,7 +75,7 @@ export function ChatContextPanelPart3({ contextData, onPipelineAction, onClose }
                   <h4 className="text-sm font-medium text-lia-text-secondary mb-3">Roadmap de Implementação</h4>
                   <div className="space-y-2">
                     {Object.entries(data.implementation_roadmap).map(([phase, description]: [string, any], index) => (
-                      <div key={phase} className="flex items-center space-x-3 p-3 rounded-md bg-lia-bg-tertiary">
+                      <div key={phase} className="flex items-center space-x-3 p-3 rounded-xl bg-lia-bg-tertiary">
                         <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold bg-wedo-cyan/15 dark:bg-wedo-cyan/20 text-lia-text-primary">{index + 1}</div>
                         <span className="text-sm">{description}</span>
                       </div>
@@ -101,7 +101,7 @@ export function ChatContextPanelPart3({ contextData, onPipelineAction, onClose }
             </CardHeader>
             <CardContent className="p-6">
               <div className="space-y-6 font-open-sans">
-                <div className="p-4 rounded-md bg-stone-50 dark:bg-stone-900/20">
+                <div className="p-4 rounded-xl bg-stone-50 dark:bg-stone-900/20">
                   <h4 className="font-medium mb-3 text-lia-text-primary">Candidato</h4>
                   <div className="grid grid-cols-2 gap-3 text-sm">
                     <div><span className="text-lia-text-secondary">Nome:</span><p className="font-medium text-lia-text-primary">{data.candidate_info.name}</p></div>
@@ -110,7 +110,7 @@ export function ChatContextPanelPart3({ contextData, onPipelineAction, onClose }
                     <div><span className="text-lia-text-secondary">Empresa Atual:</span><p className="font-medium text-lia-text-primary">{data.candidate_info.current_company}</p></div>
                   </div>
                 </div>
-                <div className="p-6 rounded-md border bg-lia-bg-primary bg-lia-bg-primary border-lia-border-subtle">
+                <div className="p-6 rounded-xl border bg-lia-bg-primary bg-lia-bg-primary border-lia-border-subtle">
                   <div className="prose prose-sm max-w-none">
                     <pre className="whitespace-pre-wrap font-open-sans text-sm text-lia-text-primary">{data.letter_template}</pre>
                   </div>
@@ -140,14 +140,14 @@ export function ChatContextPanelPart3({ contextData, onPipelineAction, onClose }
                   <h4 className="text-sm font-medium text-lia-text-secondary mb-3">Candidatos Selecionados</h4>
                   <div className="space-y-3">
                     {(data.candidates_to_schedule as { name: string; score: number; interview_type: string; preferred_times: string[] }[]).map((candidate) => (
-                      <div key={candidate.name} className="p-4 rounded-md border bg-lia-bg-tertiary border-lia-border-subtle">
+                      <div key={candidate.name} className="p-4 rounded-xl border bg-lia-bg-tertiary border-lia-border-subtle">
                         <div className="flex justify-between items-start mb-2">
                           <div><h5 className="font-medium text-lia-text-primary">{candidate.name}</h5><p className="text-sm text-lia-text-secondary">Score: {candidate.score}/100</p></div>
                           <Badge className="bg-wedo-cyan/15 dark:bg-wedo-cyan/20 text-lia-text-primary">{candidate.interview_type}</Badge>
                         </div>
                         <div className="flex gap-2 text-xs text-lia-text-secondary">
                           <span>Preferências:</span>
-                          {candidate.preferred_times.map((time: string, i: number) => (<span key={`ptime-${i}`} className="px-2 py-1 rounded-md bg-lia-bg-primary bg-lia-bg-primary">{time}</span>))}
+                          {candidate.preferred_times.map((time: string, i: number) => (<span key={`ptime-${i}`} className="px-2 py-1 rounded-xl bg-lia-bg-primary bg-lia-bg-primary">{time}</span>))}
                         </div>
                       </div>
                     ))}
@@ -172,7 +172,7 @@ export function ChatContextPanelPart3({ contextData, onPipelineAction, onClose }
                     ))}
                   </div>
                 </div>
-                <div className="p-4 rounded-md bg-stone-50 dark:bg-stone-900/20">
+                <div className="p-4 rounded-xl bg-stone-50 dark:bg-stone-900/20">
                   <div className="grid grid-cols-2 gap-3 text-sm">
                     <div><span className="text-lia-text-secondary">Entrevistador:</span><p className="font-medium text-lia-text-primary">{data.interviewer}</p></div>
                     <div><span className="text-lia-text-secondary">Integração:</span><p className="font-medium text-lia-text-primary">{data.calendar_integration}</p></div>
@@ -200,7 +200,7 @@ export function ChatContextPanelPart3({ contextData, onPipelineAction, onClose }
             <CardContent className="p-6">
               <div className="space-y-4">
                 <div className="prose prose-sm max-w-none">
-                  <pre className="whitespace-pre-wrap font-mono text-sm p-4 rounded-md bg-lia-bg-tertiary text-lia-text-primary">{typeof data === "string" ? data : JSON.stringify(data, null, 2)}</pre>
+                  <pre className="whitespace-pre-wrap font-mono text-sm p-4 rounded-xl bg-lia-bg-tertiary text-lia-text-primary">{typeof data === "string" ? data : JSON.stringify(data, null, 2)}</pre>
                 </div>
               </div>
             </CardContent>
@@ -220,7 +220,7 @@ export function ChatContextPanelPart3({ contextData, onPipelineAction, onClose }
             <CardContent className="p-6">
               <div className="space-y-4">
                 <div className="prose prose-sm max-w-none">
-                  <pre className="whitespace-pre-wrap font-mono text-sm p-4 rounded-md bg-lia-bg-tertiary text-lia-text-primary">{typeof data === "string" ? data : JSON.stringify(data, null, 2)}</pre>
+                  <pre className="whitespace-pre-wrap font-mono text-sm p-4 rounded-xl bg-lia-bg-tertiary text-lia-text-primary">{typeof data === "string" ? data : JSON.stringify(data, null, 2)}</pre>
                 </div>
               </div>
             </CardContent>
@@ -239,7 +239,7 @@ export function ChatContextPanelPart3({ contextData, onPipelineAction, onClose }
             <CardContent className="p-6">
               <div className="space-y-4">
                 <div className="prose prose-sm max-w-none">
-                  <pre className="whitespace-pre-wrap font-mono text-sm p-4 rounded-md bg-lia-bg-tertiary text-lia-text-primary">{typeof data === "string" ? data : JSON.stringify(data, null, 2)}</pre>
+                  <pre className="whitespace-pre-wrap font-mono text-sm p-4 rounded-xl bg-lia-bg-tertiary text-lia-text-primary">{typeof data === "string" ? data : JSON.stringify(data, null, 2)}</pre>
                 </div>
               </div>
             </CardContent>
@@ -259,7 +259,7 @@ export function ChatContextPanelPart3({ contextData, onPipelineAction, onClose }
             <CardContent className="p-6">
               <div className="space-y-4">
                 <div className="prose prose-sm max-w-none">
-                  <pre className="whitespace-pre-wrap font-mono text-sm p-4 rounded-md bg-lia-bg-tertiary text-lia-text-primary">{typeof data === "string" ? data : JSON.stringify(data, null, 2)}</pre>
+                  <pre className="whitespace-pre-wrap font-mono text-sm p-4 rounded-xl bg-lia-bg-tertiary text-lia-text-primary">{typeof data === "string" ? data : JSON.stringify(data, null, 2)}</pre>
                 </div>
               </div>
             </CardContent>
@@ -277,7 +277,7 @@ export function ChatContextPanelPart3({ contextData, onPipelineAction, onClose }
             </CardHeader>
             <CardContent className="p-6">
               <div className="space-y-6">
-                <div className="p-4 rounded-md bg-stone-50 dark:bg-stone-900/20">
+                <div className="p-4 rounded-xl bg-stone-50 dark:bg-stone-900/20">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm font-medium text-lia-text-primary">Progresso da Criação</span>
                     <span className="text-sm font-bold text-lia-text-primary">{data.completion_percentage}%</span>
@@ -296,7 +296,7 @@ export function ChatContextPanelPart3({ contextData, onPipelineAction, onClose }
                       </div>
                     ))}
                     {data.pending_fields?.map((field: string) => (
-                      <div key={`pending-${field}`} className="flex items-center gap-2 p-2 rounded-md bg-lia-bg-tertiary">
+                      <div key={`pending-${field}`} className="flex items-center gap-2 p-2 rounded-xl bg-lia-bg-tertiary">
                         <Clock className="w-4 h-4 text-lia-text-secondary" />
                         <span className="text-sm text-lia-text-secondary">{field}</span>
                       </div>
@@ -304,7 +304,7 @@ export function ChatContextPanelPart3({ contextData, onPipelineAction, onClose }
                   </div>
                 </div>
                 {data.next_panel && (
-                  <div className="p-4 rounded-md border border-lia-border-medium bg-lia-bg-primary bg-lia-bg-primary">
+                  <div className="p-4 rounded-xl border border-lia-border-medium bg-lia-bg-primary bg-lia-bg-primary">
                     <div className="flex items-start gap-3">
                       <ArrowUpDown className="w-5 h-5 text-lia-text-secondary mt-0.5" />
                       <div>

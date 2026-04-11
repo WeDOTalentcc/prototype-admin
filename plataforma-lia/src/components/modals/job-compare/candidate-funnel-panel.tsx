@@ -24,10 +24,10 @@ interface CandidateFunnelPanelProps {
 
 export function CandidateFunnelPanel({ jobs }: CandidateFunnelPanelProps) {
   return (
-    <div data-testid="candidate-funnel-panel" className="border border-lia-border-subtle rounded-md overflow-hidden">
-      <div className="bg-lia-bg-secondary border-b border-lia-border-subtle px-4 py-2.5">
+    <div data-testid="candidate-funnel-panel" className="border border-lia-border-subtle rounded-xl overflow-hidden">
+      <div className="bg-lia-bg-secondary px-4 py-2.5">
         <div className="flex items-center gap-2">
-          <div className="w-6 h-6 bg-lia-bg-tertiary rounded-md flex items-center justify-center">
+          <div className="w-6 h-6 bg-lia-bg-tertiary rounded-xl flex items-center justify-center">
             <Filter className="w-3.5 h-3.5 text-lia-text-secondary" />
           </div>
           <h3 className="text-base-ui font-semibold text-lia-text-primary">Funil de Candidatos</h3>
@@ -56,7 +56,7 @@ export function CandidateFunnelPanel({ jobs }: CandidateFunnelPanelProps) {
               <div className="space-y-1.5 pl-4">
                 <div className="flex items-center gap-3">
                   <span className="text-micro text-lia-text-secondary w-[70px]">Candidatos</span>
-                  <div className="flex-1 h-4 bg-lia-bg-tertiary rounded-md overflow-hidden">
+                  <div className="flex-1 h-4 bg-lia-bg-tertiary rounded-xl overflow-hidden">
                     <div
                       className={`h-full ${jobColor.bar} transition-[width,height] duration-300`}
                      
@@ -69,7 +69,7 @@ export function CandidateFunnelPanel({ jobs }: CandidateFunnelPanelProps) {
 
                 <div className="flex items-center gap-3">
                   <span className="text-micro text-lia-text-secondary w-[70px]">Em Triagem</span>
-                  <div className="flex-1 h-4 bg-lia-bg-tertiary rounded-md overflow-hidden">
+                  <div className="flex-1 h-4 bg-lia-bg-tertiary rounded-xl overflow-hidden">
                     <div
                       className={`h-full ${jobColor.bar} opacity-70 transition-[width,height] duration-300`}
                       style={{ width: `${Math.max(screeningPct, 0)}%` }}
@@ -82,7 +82,7 @@ export function CandidateFunnelPanel({ jobs }: CandidateFunnelPanelProps) {
 
                 <div className="flex items-center gap-3">
                   <span className="text-micro text-lia-text-secondary w-[70px]">Aprovados</span>
-                  <div className="flex-1 h-4 bg-lia-bg-tertiary rounded-md overflow-hidden">
+                  <div className="flex-1 h-4 bg-lia-bg-tertiary rounded-xl overflow-hidden">
                     <div
                       className={`h-full ${jobColor.bar} opacity-50 transition-[width,height] duration-300`}
                       style={{ width: `${Math.max(approvedPct, 0)}%` }}

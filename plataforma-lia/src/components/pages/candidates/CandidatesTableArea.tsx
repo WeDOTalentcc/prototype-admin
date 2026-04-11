@@ -89,7 +89,7 @@ export function CandidatesTableArea({
             variant="ghost"
             size="sm"
             onClick={() => setIsLiaSuperChat(false)}
-            className="h-10 w-10 p-0 rounded-md hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse"
+            className="h-10 w-10 p-0 rounded-xl hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse"
             title="Expandir tabela de candidatos"
           >
             <ChevronRight className="w-5 h-5 text-lia-text-primary" />
@@ -184,7 +184,7 @@ export function CandidatesTableArea({
             )}
 
             {!isLoading && !showSearchResults && getPaginatedCandidates().totalPages > 1 && (
-              <div className="bg-lia-bg-primary dark:bg-lia-bg-primary rounded-md p-3 mt-2">
+              <div className="bg-lia-bg-primary dark:bg-lia-bg-primary rounded-xl p-3 mt-2">
                 <div className="flex items-center justify-between">
                   <div className="text-sm text-lia-text-primary">
                     Mostrando {((currentPage - 1) * itemsPerPage) + 1} -{' '}
@@ -254,7 +254,7 @@ export function CandidatesTableArea({
             )}
 
             {!isLoading && sortedCandidates.length === 0 && (
-              <div className="bg-lia-bg-primary dark:bg-lia-bg-primary rounded-md p-8 text-center">
+              <div className="bg-lia-bg-primary dark:bg-lia-bg-primary rounded-xl p-8 text-center">
                 <Users className="w-12 h-12 text-lia-text-primary mx-auto mb-4" />
                 <h3 className="text-lg font-medium text-lia-text-primary mb-2">
                   Nenhum candidato encontrado

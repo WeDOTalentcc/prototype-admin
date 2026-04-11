@@ -26,10 +26,10 @@ export function ListCard({
   return (
     <div
       onClick={() => onSelect(list.id)}
-      className="group relative flex items-center gap-4 p-4 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none cursor-pointer"
+      className="group relative flex items-center gap-4 p-4 rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none cursor-pointer"
     >
       <div
-        className="flex-shrink-0 w-10 h-10 rounded-md flex items-center justify-center relative bg-lia-bg-tertiary"
+        className="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center relative bg-lia-bg-tertiary"
       >
         <List className="w-5 h-5 text-lia-text-secondary" />
         <div

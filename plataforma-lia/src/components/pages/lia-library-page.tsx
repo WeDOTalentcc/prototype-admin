@@ -219,7 +219,7 @@ export default function LiaLibraryPage({ onNavigate }: LiaLibraryPageProps) {
         </div>
 
         {/* Prompt AI-First */}
-        <div className="bg-lia-bg-primary dark:bg-lia-bg-primary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle p-5 mb-5">
+        <div className="bg-lia-bg-primary dark:bg-lia-bg-primary rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle p-5 mb-5">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-8 h-8 rounded-full flex items-center justify-center bg-lia-btn-primary-bg">
               <Brain className="w-4 h-4 text-white" />
@@ -296,7 +296,7 @@ export default function LiaLibraryPage({ onNavigate }: LiaLibraryPageProps) {
               return (
                 <div
                   key={command.id}
-                  className="group bg-lia-bg-primary dark:bg-lia-bg-primary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle p-4 hover:border-lia-border-default dark:hover:border-lia-border-strong transition-colors motion-reduce:transition-none"
+                  className="group bg-lia-bg-primary dark:bg-lia-bg-primary rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle p-4 hover:border-lia-border-default dark:hover:border-lia-border-strong transition-colors motion-reduce:transition-none"
                   style={{borderLeftWidth: '3px', borderLeftColor: categoryInfo.color}}
                 >
                   {/* Header do Card */}
@@ -306,7 +306,7 @@ export default function LiaLibraryPage({ onNavigate }: LiaLibraryPageProps) {
                     </h3>
                     <button
                       onClick={() => toggleFavorite(command.id)}
-                      className="shrink-0 p-1 -m-1 rounded-md hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover transition-colors motion-reduce:transition-none"
+                      className="shrink-0 p-1 -m-1 rounded-xl hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover transition-colors motion-reduce:transition-none"
                     >
                       <Star 
                         className={`w-4 h-4 ${isFavorite ? 'fill-current text-wedo-orange' : 'text-lia-text-tertiary'}`}
@@ -339,7 +339,7 @@ export default function LiaLibraryPage({ onNavigate }: LiaLibraryPageProps) {
                     <div className="flex items-center gap-1">
                       <button
                         onClick={() => copyCommand(command.id, command.command)}
-                        className="p-1.5 rounded-md hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover transition-colors motion-reduce:transition-none opacity-0 group-hover:opacity-100"
+                        className="p-1.5 rounded-xl hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover transition-colors motion-reduce:transition-none opacity-0 group-hover:opacity-100"
                         title="Copiar comando"
                       >
                         <Copy className={`w-3.5 h-3.5 ${isCopied ? 'text-status-success' : 'text-lia-text-primary'}`} />
@@ -360,7 +360,7 @@ export default function LiaLibraryPage({ onNavigate }: LiaLibraryPageProps) {
             })}
           </div>
         ) : (
-          <div className="bg-lia-bg-primary dark:bg-lia-bg-primary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle p-12">
+          <div className="bg-lia-bg-primary dark:bg-lia-bg-primary rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle p-12">
             <div className="text-center">
               <div className="mx-auto w-16 h-16 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-full flex items-center justify-center mb-4">
                 <Search className="w-6 h-6 text-lia-text-primary" />

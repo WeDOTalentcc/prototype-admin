@@ -202,9 +202,9 @@ export function WSIQuestionsPanel({
   return (
     <div className="space-y-6">
       <Card 
-        className="border-2 border-dashed rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle border-lia-border-medium bg-lia-interactive-active/20"
+        className="border-2 border-dashed rounded-xl dark:bg-lia-bg-secondary dark:border-lia-border-subtle border-lia-border-medium bg-lia-interactive-active/20"
       >
-        <CardHeader className="pb-3 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+        <CardHeader className="pb-3 dark:border-lia-border-subtle">
           <div className="flex items-center gap-3">
             <div 
               className="p-2 rounded-md bg-lia-border-default"
@@ -288,7 +288,7 @@ export function WSIQuestionsPanel({
           </Button>
 
           <div 
-            className="flex items-start gap-2 p-3 rounded-md dark:bg-lia-bg-primary/50 bg-[var(--lia-bg-tertiary)]"
+            className="flex items-start gap-2 p-3 rounded-xl dark:bg-lia-bg-primary/50 bg-[var(--lia-bg-tertiary)]"
           >
             <Brain className="h-4 w-4 shrink-0 mt-0.5 text-wedo-cyan" />
             <p className="text-xs text-lia-text-secondary" aria-live="polite" aria-atomic="true">
@@ -300,8 +300,8 @@ export function WSIQuestionsPanel({
         </CardContent>
       </Card>
 
-      <Card className="rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle bg-[var(--lia-bg-secondary)]">
-        <CardHeader className="pb-3 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+      <Card className="rounded-xl dark:bg-lia-bg-secondary dark:border-lia-border-subtle bg-[var(--lia-bg-secondary)]">
+        <CardHeader className="pb-3 dark:border-lia-border-subtle">
           <div className="flex items-center justify-between">
             <CardTitle 
               className="text-sm flex items-center gap-2 font-sans text-lia-text-primary"
@@ -345,7 +345,7 @@ export function WSIQuestionsPanel({
       </Card>
 
       <div 
-        className="border rounded-md overflow-hidden dark:border-lia-border-subtle border-[var(--lia-border-subtle)]"
+        className="border rounded-xl overflow-hidden dark:border-lia-border-subtle border-[var(--lia-border-subtle)]"
       >
         <button
           type="button"
@@ -397,7 +397,7 @@ export function WSIQuestionsPanel({
                   {WSI_TEMPLATES[area].map((template, index) => (
                     <div
                       key={`template-${index}`}
-                      className="border rounded-md p-3 transition-colors motion-reduce:transition-none dark:border-lia-border-subtle border-[var(--lia-border-subtle)]"
+                      className="border rounded-xl p-3 transition-colors motion-reduce:transition-none dark:border-lia-border-subtle border-[var(--lia-border-subtle)]"
                       style={{backgroundColor: isTemplateAdded(template) 
                           ? 'var(--lia-bg-tertiary)' 
                           : 'var(--lia-bg-primary)',
@@ -458,7 +458,7 @@ export function WSIQuestionsPanel({
       </div>
 
       <div 
-        className="border rounded-md overflow-hidden dark:border-lia-border-subtle border-[var(--lia-border-subtle)]"
+        className="border rounded-xl overflow-hidden dark:border-lia-border-subtle border-[var(--lia-border-subtle)]"
       >
         <div 
           className="p-4 bg-[var(--lia-bg-secondary)]"
@@ -598,7 +598,7 @@ function QuestionCard({
 }) {
   return (
     <div 
-      className="border rounded-md overflow-hidden dark:border-lia-border-subtle border-[var(--lia-border-subtle)]"
+      className="border rounded-xl overflow-hidden dark:border-lia-border-subtle border-[var(--lia-border-subtle)]"
     >
       <button
         type="button"

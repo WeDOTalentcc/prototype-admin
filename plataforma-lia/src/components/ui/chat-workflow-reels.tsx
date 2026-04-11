@@ -811,7 +811,7 @@ function CompactReels({
             <button
               key={suggestion.id}
               onClick={() => onSelect(suggestion.command)}
-              className="w-full flex items-center gap-2.5 p-2.5 rounded-md text-left border transition-colors"
+              className="w-full flex items-center gap-2.5 p-2.5 rounded-xl text-left border transition-colors"
               style={{
                 borderColor: activeStage.color.cardBorder,
                 backgroundColor: "var(--lia-bg-primary)",

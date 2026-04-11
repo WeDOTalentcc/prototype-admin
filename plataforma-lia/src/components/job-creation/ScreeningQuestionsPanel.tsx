@@ -168,7 +168,7 @@ export function ScreeningQuestionsPanel({
         {qualityWarnings && qualityWarnings.length > 0 && (
           <div className="mb-3 space-y-1.5">
             {qualityWarnings.map((warning, idx) => (
-              <div key={idx} className="flex items-start gap-2 p-2 bg-status-warning/10 border border-status-warning/30 rounded-md">
+              <div key={idx} className="flex items-start gap-2 p-2 bg-status-warning/10 border border-status-warning/30 rounded-xl">
                 <AlertTriangle className="h-3.5 w-3.5 text-status-warning mt-0.5 flex-shrink-0" />
                 <p className="text-micro text-status-warning">{warning}</p>
               </div>
@@ -176,7 +176,7 @@ export function ScreeningQuestionsPanel({
           </div>
         )}
 
-        <div className="grid grid-cols-6 gap-2 mb-4 p-3 bg-lia-bg-secondary rounded-md border border-lia-border-subtle">
+        <div className="grid grid-cols-6 gap-2 mb-4 p-3 bg-lia-bg-secondary rounded-xl border border-lia-border-subtle">
           {configItems.map((item, idx) => (
             <div key={idx} className="flex flex-col items-center text-center">
               <item.icon className="h-4 w-4 text-lia-text-secondary mb-1" />
@@ -212,14 +212,14 @@ export function ScreeningQuestionsPanel({
               <input
                 type="text"
                 placeholder="Peça para a LIA gerar mais perguntas..."
-                className="w-full h-10 pl-3 pr-10 text-xs border border-lia-border-default rounded-md focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 focus:border-lia-btn-primary-bg"
+                className="w-full h-10 pl-3 pr-10 text-xs border border-lia-border-default rounded-xl focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 focus:border-lia-btn-primary-bg"
               />
               <Button variant="ghost" size="sm" className="absolute right-1 top-1 h-8 w-8 p-0 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover dark:hover:bg-lia-interactive-active rounded-md">
                 <ArrowRight className="h-4 w-4 text-white" />
               </Button>
             </div>
 
-            <div className="p-3 rounded-md border bg-wedo-cyan/10 border-wedo-cyan/20">
+            <div className="p-3 rounded-xl border bg-wedo-cyan/10 border-wedo-cyan/20">
               <div className="flex items-start gap-2">
                 <Brain className="h-4 w-4 mt-0.5 flex-shrink-0 text-wedo-cyan" />
                 <div>

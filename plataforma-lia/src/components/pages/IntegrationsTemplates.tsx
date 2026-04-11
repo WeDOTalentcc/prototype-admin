@@ -36,7 +36,7 @@ export function IntegrationsTemplates({ templates, onNewTemplate, onEditTemplate
       <CardContent>
         <div className="space-y-4">
           {templates.map((template) => (
-            <div key={template.id} className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-4">
+            <div key={template.id} className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl p-4">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">

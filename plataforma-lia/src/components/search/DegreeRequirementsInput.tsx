@@ -59,7 +59,7 @@ export function DegreeRequirementsInput({
         </button>
 
         {isDropdownOpen && (
-          <div className="absolute z-50 mt-1 w-72 bg-lia-bg-primary border border-lia-border-subtle rounded-md">
+          <div className="absolute z-50 mt-1 w-72 bg-lia-bg-primary border border-lia-border-subtle rounded-xl">
             <button
               onClick={() => {
                 onModeChange('regular')

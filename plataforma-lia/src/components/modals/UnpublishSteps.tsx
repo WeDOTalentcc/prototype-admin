@@ -49,9 +49,9 @@ export function OptionsStep({ hook }: StepProps) {
         <h4 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-2">
           Vagas Selecionadas
         </h4>
-        <div className="max-h-[100px] overflow-y-auto space-y-1 bg-lia-bg-secondary rounded-md p-2 border border-lia-border-subtle">
+        <div className="max-h-[100px] overflow-y-auto space-y-1 bg-lia-bg-secondary rounded-xl p-2 border border-lia-border-subtle">
           {jobs.map((job) => (
-            <div key={job.id} className="flex items-center justify-between py-1.5 px-2 bg-lia-bg-primary rounded-md border border-lia-border-subtle">
+            <div key={job.id} className="flex items-center justify-between py-1.5 px-2 bg-lia-bg-primary rounded-xl border border-lia-border-subtle">
               <div className="flex items-center gap-2 min-w-0 flex-1">
                 <Briefcase className="w-3.5 h-3.5 text-lia-text-secondary flex-shrink-0" />
                 <div className="flex items-center gap-1.5 min-w-0 flex-1">
@@ -64,7 +64,7 @@ export function OptionsStep({ hook }: StepProps) {
         </div>
       </div>
 
-      <div className="space-y-3 bg-lia-bg-secondary rounded-md p-3 border border-lia-border-subtle">
+      <div className="space-y-3 bg-lia-bg-secondary rounded-xl p-3 border border-lia-border-subtle">
         <div className="flex items-center gap-2 text-lia-text-primary mb-2">
           <AlertTriangle className="w-3.5 h-3.5 text-lia-text-secondary" />
           <span className="text-xs font-semibold text-lia-text-primary">Opções ao despublicar</span>
@@ -160,7 +160,7 @@ export function OptionsStep({ hook }: StepProps) {
         </div>
 
         {hasProposalBlock && (
-          <div className="mt-3 p-2.5 bg-status-warning/10 border border-status-warning/30 rounded-md">
+          <div className="mt-3 p-2.5 bg-status-warning/10 border border-status-warning/30 rounded-xl">
             <div className="flex items-start gap-2">
               <AlertCircle className="w-4 h-4 text-status-warning flex-shrink-0 mt-0.5" />
               <div>
@@ -200,7 +200,7 @@ export function ConfirmationStep({ hook }: StepProps) {
 
   return (
     <div className="space-y-4">
-      <div className="p-4 bg-status-warning/10 border border-status-warning/30 rounded-md">
+      <div className="p-4 bg-status-warning/10 border border-status-warning/30 rounded-xl">
         <div className="flex items-start gap-3">
           <AlertCircle className="w-5 h-5 text-status-warning flex-shrink-0 mt-0.5" />
           <div className="flex-1">
@@ -234,7 +234,7 @@ export function ConfirmationStep({ hook }: StepProps) {
         </div>
       </div>
 
-      <div className="flex items-start gap-2 p-3 bg-lia-bg-secondary rounded-md border border-lia-border-subtle">
+      <div className="flex items-start gap-2 p-3 bg-lia-bg-secondary rounded-xl border border-lia-border-subtle">
         <Checkbox
           id="acknowledgeWarning"
           checked={acknowledgedWarning}
@@ -261,7 +261,7 @@ export function CompleteStep({ hook }: StepProps) {
       <p className="text-xs text-lia-text-secondary mb-4" aria-live="polite" aria-atomic="true">
         A vaga foi despublicada e congelada com sucesso.
       </p>
-      <div className="bg-lia-bg-secondary rounded-md p-3 border border-lia-border-subtle text-left space-y-2">
+      <div className="bg-lia-bg-secondary rounded-xl p-3 border border-lia-border-subtle text-left space-y-2">
         <div className="flex items-center gap-2 text-xs text-lia-text-secondary">
           <Check className="w-3.5 h-3.5 text-status-success" />
           <span aria-live="polite" aria-atomic="true">Vaga despublicada dos job boards</span>

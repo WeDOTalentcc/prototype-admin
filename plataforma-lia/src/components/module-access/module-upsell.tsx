@@ -55,7 +55,7 @@ export function ModuleUpsell({ moduleId, title, description, onUpgrade }: Module
             {/* Header with solid color */}
             <div className={`${getCategoryColor(moduleInfo.category)} p-8 text-white rounded-t-lg`}>
               <div className="flex items-center gap-4 mb-4">
-                <div className="w-16 h-16 bg-lia-bg-primary/20 rounded-md flex items-center justify-center">
+                <div className="w-16 h-16 bg-lia-bg-primary/20 rounded-xl flex items-center justify-center">
                   {getModuleIcon(moduleId)}
                 </div>
                 <div>
@@ -96,7 +96,7 @@ export function ModuleUpsell({ moduleId, title, description, onUpgrade }: Module
 
                   {/* Additional Info for Onboarding */}
                   {moduleId === 'onboarding_automation' && (
-                    <div className="mt-6 p-4 bg-wedo-cyan/10 dark:bg-wedo-cyan/15 rounded-md">
+                    <div className="mt-6 p-4 bg-wedo-cyan/10 dark:bg-wedo-cyan/15 rounded-xl">
                       <h4 className="font-medium text-lia-text-primary mb-2">
                         🚀 Onboarding Automatizado Premium
                       </h4>
@@ -115,7 +115,7 @@ export function ModuleUpsell({ moduleId, title, description, onUpgrade }: Module
 
                 {/* Pricing and CTA */}
                 <div>
-                  <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md p-6 mb-6">
+                  <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl p-6 mb-6">
                     <div className="text-center mb-4">
                       <div className="text-3xl font-bold text-lia-text-primary">
                         {moduleInfo.price}
@@ -155,7 +155,7 @@ export function ModuleUpsell({ moduleId, title, description, onUpgrade }: Module
                   </div>
 
                   {/* Enterprise Benefits */}
-                  <div className="rounded-md p-4 bg-lia-bg-secondary dark:bg-lia-bg-secondary">
+                  <div className="rounded-xl p-4 bg-lia-bg-secondary dark:bg-lia-bg-secondary">
                     <h4 className="font-medium text-lia-text-primary mb-3">
                       ✨ Benefícios Enterprise
                     </h4>
@@ -226,7 +226,7 @@ export function ModuleUpsell({ moduleId, title, description, onUpgrade }: Module
 // Componente para mostrar aviso de módulo desabilitado
 export function ModuleLockedBanner({ moduleName, onUpgrade }: { moduleName: string, onUpgrade?: () => void }) {
   return (
-    <div className="bg-lia-btn-primary-bg text-lia-btn-primary-text p-4 rounded-md mb-6">
+    <div className="bg-lia-btn-primary-bg text-lia-btn-primary-text p-4 rounded-xl mb-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Lock className="w-6 h-6" />

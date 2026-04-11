@@ -214,7 +214,7 @@ export function SavedSearchesTab({
                 </p>
               )}
 
-              <div className="p-2 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md mb-3">
+              <div className="p-2 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl mb-3">
                 <code className="text-xs text-lia-text-secondary line-clamp-2">
                   {search.query}
                 </code>
@@ -319,7 +319,7 @@ export function SavedSearchesTab({
         <div className="grid grid-cols-3 gap-4">
           <Card>
             <CardContent className="p-4 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-md flex items-center justify-center bg-lia-bg-tertiary dark:bg-lia-bg-secondary">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-lia-bg-tertiary dark:bg-lia-bg-secondary">
                 <Bookmark className="w-5 h-5 text-lia-text-secondary" />
               </div>
               <div>
@@ -390,7 +390,7 @@ export function SavedSearchesTab({
       )}
 
       {savedSearches.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-12 text-center bg-[var(--lia-bg-secondary)] dark:bg-lia-bg-primary/50 rounded-md border border-[var(--lia-border-subtle)]">
+        <div className="flex flex-col items-center justify-center py-12 text-center bg-[var(--lia-bg-secondary)] dark:bg-lia-bg-primary/50 rounded-xl border border-[var(--lia-border-subtle)]">
           <div className="w-12 h-12 rounded-full flex items-center justify-center mb-3 bg-[var(--lia-bg-tertiary)] dark:bg-lia-bg-secondary">
             <Bookmark className="w-5 h-5 text-lia-text-tertiary" />
           </div>

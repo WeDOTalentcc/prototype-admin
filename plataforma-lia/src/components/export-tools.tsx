@@ -234,7 +234,7 @@ export function ExportTools({ data, className }: ExportToolsProps) {
                           ...prev,
                           [option.key]: e.target.checked
                         }))}
-                        className="w-3 h-3 rounded-md border-lia-border-default"
+                        className="w-3 h-3 rounded-xl border-lia-border-default"
                       />
                       <span className="text-xs text-lia-text-secondary">
                         {option.label}
@@ -296,7 +296,7 @@ export function ExportTools({ data, className }: ExportToolsProps) {
 
           {/* Informações adicionais */}
           <div className="border-t border-lia-border-subtle dark:border-lia-border-subtle pt-6">
- <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md p-4">
+ <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl p-4">
               <div className="flex items-start gap-3">
                 <AlertCircle className="w-5 h-5 text-lia-text-secondary mt-0.5" />
                 <div>

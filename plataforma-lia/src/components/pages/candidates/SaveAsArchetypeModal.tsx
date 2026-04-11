@@ -120,7 +120,7 @@ export function SaveAsArchetypeModal({
               </p>
 
               {/* Query atual */}
-              <div className="p-3 rounded-md bg-lia-bg-secondary dark:bg-lia-bg-secondary">
+              <div className="p-3 rounded-xl bg-lia-bg-secondary dark:bg-lia-bg-secondary">
                 <p className="text-xs font-medium text-lia-text-primary mb-1">
                   {isCreatingArchetype ? 'Descrição do perfil:' : 'Busca atual:'}
                 </p>

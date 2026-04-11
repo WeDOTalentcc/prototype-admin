@@ -307,7 +307,7 @@ const [vacancies, setVacancies] = useState<VacancyDisplay[]>([])
         ref={modalRef}
         className={`relative ${cardStyles.default} w-full max-w-md mx-4 max-h-[90vh] overflow-hidden flex flex-col`}
       >
-        <div className="border-b border-lia-border-subtle p-5">
+        <div className=" p-5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Briefcase className="w-5 h-5 text-lia-text-secondary" />
@@ -350,7 +350,7 @@ const [vacancies, setVacancies] = useState<VacancyDisplay[]>([])
             />
           </div>
 
-          <ScrollArea className="flex-1 border border-lia-border-subtle rounded-md min-h-[250px]">
+          <ScrollArea className="flex-1 border border-lia-border-subtle rounded-xl min-h-[250px]">
             {isLoading ? (
               <div className="flex flex-col items-center justify-center h-[250px] text-lia-text-secondary" role="status" aria-live="polite" aria-label="Carregando...">
                 <Loader2 className="w-6 h-6 animate-spin motion-reduce:animate-none text-lia-text-tertiary mb-2" />

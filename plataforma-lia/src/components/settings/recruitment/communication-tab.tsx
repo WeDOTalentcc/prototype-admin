@@ -76,7 +76,7 @@ export function CommunicationTab({ onSettingsChange }: { onSettingsChange: (chan
         <CardContent>
           <div className="space-y-4">
             {templates.map((template) => (
-              <div key={template.id} className="flex items-center justify-between p-4 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md">
+              <div key={template.id} className="flex items-center justify-between p-4 border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl">
                 <div className="flex items-center gap-4">
                   <div className="w-10 h-10 bg-wedo-cyan/15 dark:bg-wedo-cyan/20 rounded-md flex items-center justify-center">
                     <Mail className="w-5 h-5 text-lia-text-secondary" />
@@ -123,7 +123,7 @@ export function CommunicationTab({ onSettingsChange }: { onSettingsChange: (chan
                 type="text"
                 defaultValue="Equipe de Recrutamento - Sodexo"
                 onChange={() => onSettingsChange(true)}
-                className="w-full p-2 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary text-sm"
+                className="w-full p-2 border border-lia-border-default dark:border-lia-border-default rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary text-sm"
               />
             </div>
             <div>
@@ -134,7 +134,7 @@ export function CommunicationTab({ onSettingsChange }: { onSettingsChange: (chan
                 type="email"
                 defaultValue="recrutamento@sodexo.com.br"
                 onChange={() => onSettingsChange(true)}
-                className="w-full p-2 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary text-sm"
+                className="w-full p-2 border border-lia-border-default dark:border-lia-border-default rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary text-sm"
               />
             </div>
           </div>
@@ -146,7 +146,7 @@ export function CommunicationTab({ onSettingsChange }: { onSettingsChange: (chan
               rows={4}
               defaultValue="Atenciosamente,&#10;Equipe de Recrutamento&#10;Sodexo Brasil&#10;www.sodexo.com.br"
               onChange={() => onSettingsChange(true)}
-              className="w-full p-2 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary text-sm"
+              className="w-full p-2 border border-lia-border-default dark:border-lia-border-default rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary text-sm"
             />
           </div>
         </CardContent>
@@ -172,7 +172,7 @@ export function CommunicationTab({ onSettingsChange }: { onSettingsChange: (chan
             { key: "candidateReply", label: "Resposta do candidato", desc: "Quando candidato responde emails" },
             { key: "processDeadline", label: "Prazo do processo", desc: "Alertar sobre prazos de processos seletivos" }
           ].map((notification) => (
-            <div key={notification.key} className="flex items-center justify-between p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
+            <div key={notification.key} className="flex items-center justify-between p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl">
               <div>
                 <div className="text-sm font-medium text-lia-text-primary">{notification.label}</div>
                 <div className="text-xs text-lia-text-primary">{notification.desc}</div>
@@ -208,7 +208,7 @@ export function CommunicationTab({ onSettingsChange }: { onSettingsChange: (chan
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="p-4 bg-status-success/10 dark:bg-status-success/20 border border-status-success/30 dark:border-status-success/30 rounded-md">
+          <div className="p-4 bg-status-success/10 dark:bg-status-success/20 border border-status-success/30 dark:border-status-success/30 rounded-xl">
             <div className="flex items-center gap-2 mb-2">
               <CheckCircle className="w-5 h-5 text-status-success" />
               <span className="font-medium text-status-success dark:text-status-success">WhatsApp Business Conectado</span>
@@ -227,7 +227,7 @@ export function CommunicationTab({ onSettingsChange }: { onSettingsChange: (chan
                 rows={3}
                 defaultValue="Olá! 👋 Obrigado pelo interesse em nossa vaga. Em breve entraremos em contato."
                 onChange={() => onSettingsChange(true)}
-                className="w-full p-2 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary text-sm"
+                className="w-full p-2 border border-lia-border-default dark:border-lia-border-default rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary text-sm"
               />
             </div>
             <div>
@@ -259,7 +259,7 @@ export function CommunicationTab({ onSettingsChange }: { onSettingsChange: (chan
                 { name: "Lembrete de entrevista", message: "Olá! Lembrando que sua entrevista está agendada para amanhã às {horario}. 📅" },
                 { name: "Solicitação de documentos", message: "Para prosseguir com seu processo, precisamos que envie os seguintes documentos: {documentos}" }
               ].map((template) => (
-                <div key={template.name} className="p-3 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md">
+                <div key={template.name} className="p-3 border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl">
                   <div className="flex items-center justify-between mb-2">
                     <span className="font-medium text-sm">{template.name}</span>
                     <Button variant="outline" size="sm">Editar</Button>
@@ -336,7 +336,7 @@ export function CommunicationTab({ onSettingsChange }: { onSettingsChange: (chan
                 trigger: "30 dias de inatividade"
               }
             ].map((automation, index) => (
-              <div key={`auto-${index}`} className="flex items-center justify-between p-4 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md">
+              <div key={`auto-${index}`} className="flex items-center justify-between p-4 border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl">
                 <div className="flex items-center gap-3">
                   <div className={`w-10 h-10 rounded-md flex items-center justify-center ${
                     automation.status === 'ativo' ? 'bg-status-success/15 dark:bg-status-success/20' : 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary'

@@ -25,7 +25,7 @@ export function MentionDropdown({ items, selectedIndex, onSelect }: Props) {
   let flatIndex = 0
 
   return (
-    <div className="absolute left-0 bottom-full mb-1 z-50 w-72 max-h-64 overflow-y-auto rounded-md border border-lia-border-subtle bg-lia-bg-primary py-1 shadow-lg">
+    <div className="absolute left-0 bottom-full mb-1 z-50 w-72 max-h-64 overflow-y-auto rounded-xl border border-lia-border-subtle bg-lia-bg-primary py-1 shadow-lg">
       {Object.entries(grouped).map(([category, categoryItems]) => {
         const CategoryIcon = category === "Candidatos" ? Users : Briefcase
         return (

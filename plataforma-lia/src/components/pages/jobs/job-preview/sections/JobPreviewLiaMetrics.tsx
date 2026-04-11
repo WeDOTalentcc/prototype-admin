@@ -19,7 +19,7 @@ const textStyles = {
 export function JobPreviewLiaMetrics({ previewJob }: JobPreviewLiaMetricsProps) {
   return (
     <div data-testid="job-preview-lia-metrics" className="space-y-4">
-      <div className="bg-lia-bg-secondary rounded-md p-3">
+      <div className="bg-lia-bg-secondary rounded-xl p-3">
         <div className="flex items-start gap-2">
           <Brain className="w-4 h-4 text-wedo-cyan mt-0.5" />
           <div className="flex-1">
@@ -34,7 +34,7 @@ export function JobPreviewLiaMetrics({ previewJob }: JobPreviewLiaMetricsProps) 
       </div>
 
       <div className="grid grid-cols-2 gap-3">
-        <div className="bg-lia-bg-secondary rounded-md p-3">
+        <div className="bg-lia-bg-secondary rounded-xl p-3">
           <div className="flex items-center justify-between mb-1">
             <span className="text-xs font-medium text-lia-text-primary">Triagens Realizadas</span>
             <Clock className="w-3 h-3 text-lia-text-primary" />
@@ -47,7 +47,7 @@ export function JobPreviewLiaMetrics({ previewJob }: JobPreviewLiaMetricsProps) 
           </div>
         </div>
 
-        <div className="bg-lia-bg-tertiary rounded-md p-3 border border-lia-border-default">
+        <div className="bg-lia-bg-tertiary rounded-xl p-3 border border-lia-border-default">
           <div className="flex items-center justify-between mb-1">
             <span className="text-xs font-medium text-lia-text-primary">Pipeline LIA</span>
             <TrendingUp className="w-3 h-3 text-lia-text-primary" />
@@ -60,7 +60,7 @@ export function JobPreviewLiaMetrics({ previewJob }: JobPreviewLiaMetricsProps) 
           </div>
         </div>
 
-        <div className="bg-lia-bg-secondary rounded-md p-3">
+        <div className="bg-lia-bg-secondary rounded-xl p-3">
           <div className="flex items-center justify-between mb-1">
             <span className="text-xs font-medium text-lia-text-primary">Sem Resposta</span>
             <Zap className="w-3 h-3 text-lia-text-primary" />
@@ -73,7 +73,7 @@ export function JobPreviewLiaMetrics({ previewJob }: JobPreviewLiaMetricsProps) 
           </div>
         </div>
 
-        <div className="bg-lia-bg-tertiary rounded-md p-3 border border-lia-border-default">
+        <div className="bg-lia-bg-tertiary rounded-xl p-3 border border-lia-border-default">
           <div className="flex items-center justify-between mb-1">
             <span className="text-xs font-medium text-lia-text-primary">Taxa de Conclusão</span>
             <CheckCircle className="w-3 h-3 text-lia-text-primary" />
@@ -91,7 +91,7 @@ export function JobPreviewLiaMetrics({ previewJob }: JobPreviewLiaMetricsProps) 
         </div>
       </div>
 
-      <div className="bg-lia-bg-secondary rounded-md p-3">
+      <div className="bg-lia-bg-secondary rounded-xl p-3">
         <h4 className={`${textStyles.title} mb-3 flex items-center gap-1`}>
           <BarChart3 className="w-3.5 h-3.5 text-lia-text-primary" />
           Funil de Triagem LIA
@@ -190,7 +190,7 @@ export function JobPreviewLiaMetrics({ previewJob }: JobPreviewLiaMetricsProps) 
         </div>
       </div>
 
-      <div className="bg-lia-bg-secondary rounded-md p-3">
+      <div className="bg-lia-bg-secondary rounded-xl p-3">
         <h4 className={`${textStyles.title} mb-3 flex items-center gap-1`}>
           <Star className="w-3.5 h-3.5 text-lia-text-primary" />
           Média de Notas por Critério
@@ -206,14 +206,14 @@ export function JobPreviewLiaMetrics({ previewJob }: JobPreviewLiaMetricsProps) 
         </div>
       </div>
 
-      <div className="bg-wedo-purple/10 dark:bg-wedo-purple/20 rounded-md p-3 border border-wedo-purple/30 dark:border-wedo-purple/30">
+      <div className="bg-wedo-purple/10 dark:bg-wedo-purple/20 rounded-xl p-3 border border-wedo-purple/30 dark:border-wedo-purple/30">
         <h4 className={`${textStyles.title} mb-3 flex items-center gap-1`}>
           <BarChart3 className="w-3.5 h-3.5 text-lia-text-primary" />
           Resumo do Funil
         </h4>
 
         <div className="grid grid-cols-3 gap-2">
-          <div className="text-center p-2 bg-lia-bg-secondary rounded-md">
+          <div className="text-center p-2 bg-lia-bg-secondary rounded-xl">
             <p className="text-xs text-lia-text-primary mb-1">Total no Funil</p>
             <p className="text-base-ui font-semibold text-lia-text-primary">
               {previewJob.funnel.total}
@@ -221,7 +221,7 @@ export function JobPreviewLiaMetrics({ previewJob }: JobPreviewLiaMetricsProps) 
             <p className="text-micro text-lia-text-tertiary mt-1">candidatos</p>
           </div>
 
-          <div className="text-center p-2 bg-lia-bg-secondary rounded-md">
+          <div className="text-center p-2 bg-lia-bg-secondary rounded-xl">
             <p className="text-xs text-lia-text-primary mb-1">Em Triagem</p>
             <p className="text-base-ui font-semibold text-lia-text-primary">
               {previewJob.funnel.screening}
@@ -229,7 +229,7 @@ export function JobPreviewLiaMetrics({ previewJob }: JobPreviewLiaMetricsProps) 
             <p className="text-micro text-lia-text-tertiary mt-1">candidatos</p>
           </div>
 
-          <div className="text-center p-2 bg-lia-bg-secondary rounded-md">
+          <div className="text-center p-2 bg-lia-bg-secondary rounded-xl">
             <p className="text-xs text-lia-text-primary mb-1">Em Entrevista</p>
             <p className="text-base-ui font-semibold text-lia-text-primary">
               {previewJob.funnel.interview}
@@ -239,7 +239,7 @@ export function JobPreviewLiaMetrics({ previewJob }: JobPreviewLiaMetricsProps) 
         </div>
       </div>
 
-      <div className="bg-status-warning/10 dark:bg-status-warning/20 rounded-md p-3 border border-status-warning/30 dark:border-status-warning/30">
+      <div className="bg-status-warning/10 dark:bg-status-warning/20 rounded-xl p-3 border border-status-warning/30 dark:border-status-warning/30">
         <h4 className={`${textStyles.title} mb-2 flex items-center gap-1`}>
           <AlertCircle className="w-3.5 h-3.5 text-status-warning" />
           Candidatos Sem Resposta
@@ -294,7 +294,7 @@ export function JobPreviewLiaMetrics({ previewJob }: JobPreviewLiaMetricsProps) 
         </div>
       </div>
 
-      <div className="bg-lia-bg-secondary rounded-md p-3 border border-lia-border-subtle">
+      <div className="bg-lia-bg-secondary rounded-xl p-3 border border-lia-border-subtle">
         <div className="flex items-start gap-2">
           <Lightbulb className="w-3.5 h-3.5 text-lia-text-primary mt-0.5" />
           <div className="flex-1">

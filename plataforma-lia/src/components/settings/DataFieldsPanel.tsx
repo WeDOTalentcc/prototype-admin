@@ -89,7 +89,7 @@ export function DataFieldsPanel({ stage, isEditMode, onUpdate }: DataFieldsPanel
                           type="checkbox"
                           checked={active}
                           onChange={() => toggleField(catalog)}
-                          className="h-3.5 w-3.5 rounded-md border-lia-border-default text-lia-text-primary cursor-pointer"
+                          className="h-3.5 w-3.5 rounded-xl border-lia-border-default text-lia-text-primary cursor-pointer"
                           aria-label={`Ativar campo ${catalog.displayName}`}
                         />
                       ) : (
@@ -107,7 +107,7 @@ export function DataFieldsPanel({ stage, isEditMode, onUpdate }: DataFieldsPanel
                               type="checkbox"
                               checked={field?.required ?? false}
                               onChange={() => toggleRequired(catalog.id)}
-                              className="h-3 w-3 rounded-md border-lia-border-default text-lia-text-primary cursor-pointer"
+                              className="h-3 w-3 rounded-xl border-lia-border-default text-lia-text-primary cursor-pointer"
                             />
                             <span className="text-micro text-lia-text-secondary">Obrigatório</span>
                           </label>
@@ -116,7 +116,7 @@ export function DataFieldsPanel({ stage, isEditMode, onUpdate }: DataFieldsPanel
                               type="checkbox"
                               checked={field?.auto_collect ?? false}
                               onChange={() => toggleAutoCollect(catalog.id)}
-                              className="h-3 w-3 rounded-md border-lia-border-default text-lia-text-primary cursor-pointer"
+                              className="h-3 w-3 rounded-xl border-lia-border-default text-lia-text-primary cursor-pointer"
                             />
                             <span className="text-micro text-lia-text-secondary">LIA coleta</span>
                           </label>

@@ -558,7 +558,7 @@ export function AdvancedInteractiveChart({
 
         {/* Drill-down Details */}
         {selectedDataPoint && (
-          <div className="mt-4 p-4 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-md border border-lia-border-default dark:border-lia-border-default">
+          <div className="mt-4 p-4 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-xl border border-lia-border-default dark:border-lia-border-default">
             <h4 className="font-medium text-lia-text-primary mb-3">
               📊 Detalhes - {String(selectedDataPoint[dataKeys[0]] ?? '')}
             </h4>

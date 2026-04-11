@@ -16,7 +16,7 @@ export const CandidateProfileColumn: React.FC<CandidateProfileColumnProps> = ({ 
 
   return (
     <div className="w-[420px] border-r border-lia-border-subtle dark:border-lia-border-subtle flex flex-col overflow-hidden">
-      <div className="p-6 border-b border-lia-border-subtle">
+      <div className="p-6">
         <div className="flex items-start justify-between mb-3">
           <div className="flex items-center gap-2">
             <h2 className="text-xl font-semibold text-lia-text-primary">
@@ -68,7 +68,7 @@ export const CandidateProfileColumn: React.FC<CandidateProfileColumnProps> = ({ 
         )}
       </div>
 
-      <div className="border-b border-lia-border-subtle">
+      <div className="">
         <div className="flex px-6">
           {['Experience', 'Education', 'Skill Map'].map((tab) => (
             <button
@@ -100,7 +100,7 @@ export const CandidateProfileColumn: React.FC<CandidateProfileColumnProps> = ({ 
                 {candidate.highlights.slice(0, 3).map((highlight, idx) => (
                   <div
                     key={`hl-${idx}`}
-                    className="p-3 bg-lia-bg-secondary rounded-md border border-lia-border-subtle"
+                    className="p-3 bg-lia-bg-secondary rounded-xl border border-lia-border-subtle"
                   >
                     <div className="flex items-center gap-2 mb-1">
                       <span className="text-lg">{highlight.icon}</span>
@@ -138,7 +138,7 @@ export const CandidateProfileColumn: React.FC<CandidateProfileColumnProps> = ({ 
                     {exp.companyLogo ? (
                       <NextImage src={exp.companyLogo} alt={exp.company} width={40} height={40} className="w-10 h-10 rounded-md" />
                     ) : (
-                      <div className="w-10 h-10 rounded-md bg-lia-bg-tertiary flex items-center justify-center">
+                      <div className="w-10 h-10 rounded-xl bg-lia-bg-tertiary flex items-center justify-center">
                         <Building2 className="w-5 h-5 text-lia-text-secondary" />
                       </div>
                     )}
@@ -185,7 +185,7 @@ export const CandidateProfileColumn: React.FC<CandidateProfileColumnProps> = ({ 
         {activeProfileTab === 'education' && (
           <div className="space-y-4">
             {candidate.education_list?.map((edu, idx) => (
-              <div key={`edu-${idx}`} className="p-4 bg-lia-bg-secondary rounded-md">
+              <div key={`edu-${idx}`} className="p-4 bg-lia-bg-secondary rounded-xl">
                 <h5 className="text-sm font-semibold text-lia-text-primary">{edu.institution}</h5>
                 <p className="text-sm text-lia-text-secondary">{edu.degree}</p>
                 <p className="text-xs text-lia-text-secondary mt-1">{edu.period}</p>

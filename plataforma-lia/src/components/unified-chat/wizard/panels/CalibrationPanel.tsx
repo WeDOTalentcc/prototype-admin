@@ -37,7 +37,7 @@ export function CalibrationPanel({ data, onApprove, onReject }: Props) {
   return (
     <div className="flex flex-col">
       {/* Progress header */}
-      <div className="px-4 py-2.5 border-b border-lia-border-subtle">
+      <div className="px-4 py-2.5">
         <div className="flex items-center justify-between">
           <span className="text-xs text-lia-text-secondary font-['Open_Sans',sans-serif]">
             Calibracao: {approvedCount}/{threshold} perfis

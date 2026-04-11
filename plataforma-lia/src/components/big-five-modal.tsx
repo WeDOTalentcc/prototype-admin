@@ -193,8 +193,8 @@ export function BigFiveModal({ isOpen, onClose, candidate }: BigFiveModalProps) 
   if (!hasData) {
     return (
       <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-        <DialogContent className="max-w-lg bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md">
-          <DialogHeader className="pb-3 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+        <DialogContent className="max-w-lg bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl">
+          <DialogHeader className="pb-3 dark:border-lia-border-subtle">
             <div className="flex items-center gap-3">
               <Avatar className="w-10 h-10 ring-2 ring-white">
                 <AvatarImage src={candidate?.avatar as string | undefined} />
@@ -240,8 +240,8 @@ export function BigFiveModal({ isOpen, onClose, candidate }: BigFiveModalProps) 
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-4xl bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle max-h-[90vh] overflow-hidden flex flex-col p-0 rounded-md">
-        <DialogHeader className="px-6 py-4 border-b border-lia-border-subtle dark:border-lia-border-subtle flex-shrink-0">
+      <DialogContent className="max-w-4xl bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle max-h-[90vh] overflow-hidden flex flex-col p-0 rounded-xl">
+        <DialogHeader className="px-6 py-4 dark:border-lia-border-subtle flex-shrink-0">
           <div className="flex items-center gap-3">
             <Avatar className="w-10 h-10 ring-2 ring-white">
               <AvatarImage src={candidate.avatar as string | undefined} />
@@ -260,7 +260,7 @@ export function BigFiveModal({ isOpen, onClose, candidate }: BigFiveModalProps) 
           </div>
 
           <div className="mt-4 grid grid-cols-4 gap-3">
-            <div className="bg-lia-bg-secondary dark:bg-lia-bg-elevated rounded-md p-3 border border-lia-border-subtle dark:border-lia-border-subtle">
+            <div className="bg-lia-bg-secondary dark:bg-lia-bg-elevated rounded-xl p-3 border border-lia-border-subtle dark:border-lia-border-subtle">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <BrainCircuit className="w-4 h-4 text-lia-text-secondary" />
@@ -273,7 +273,7 @@ export function BigFiveModal({ isOpen, onClose, candidate }: BigFiveModalProps) 
                 </div>
               </div>
             </div>
-            <div className="bg-lia-bg-secondary dark:bg-lia-bg-elevated rounded-md p-3 border border-lia-border-subtle dark:border-lia-border-subtle">
+            <div className="bg-lia-bg-secondary dark:bg-lia-bg-elevated rounded-xl p-3 border border-lia-border-subtle dark:border-lia-border-subtle">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <TrendingUp className="w-4 h-4 text-lia-text-secondary" />
@@ -288,7 +288,7 @@ export function BigFiveModal({ isOpen, onClose, candidate }: BigFiveModalProps) 
                 </div>
               </div>
             </div>
-            <div className="col-span-2 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-md p-3 border border-wedo-purple/30">
+            <div className="col-span-2 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl p-3 border border-wedo-purple/30">
               <div className="flex items-center gap-3">
                 <span className="text-xl">{archetype.icon}</span>
                 <div>
@@ -307,7 +307,7 @@ export function BigFiveModal({ isOpen, onClose, candidate }: BigFiveModalProps) 
         <div className="flex-1 overflow-y-auto px-6 py-4">
           <div className="grid grid-cols-2 gap-6">
             <div className="col-span-2 lg:col-span-1">
-              <div className="bg-lia-bg-secondary dark:bg-lia-bg-elevated rounded-md p-4 h-full border border-lia-border-subtle dark:border-lia-border-subtle">
+              <div className="bg-lia-bg-secondary dark:bg-lia-bg-elevated rounded-xl p-4 h-full border border-lia-border-subtle dark:border-lia-border-subtle">
                 <h3 className="text-xs font-medium uppercase tracking-wide text-lia-text-primary mb-4 flex items-center gap-2 font-['Open_Sans',sans-serif]">
                   <div className="w-2 h-2 bg-wedo-purple rounded-full"></div>
                   Perfil de Personalidade
@@ -479,7 +479,7 @@ export function BigFiveModal({ isOpen, onClose, candidate }: BigFiveModalProps) 
                 return (
                   <div
                     key={trait}
-                    className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md p-4 border border-lia-border-subtle dark:border-lia-border-subtle"
+                    className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-xl p-4 border border-lia-border-subtle dark:border-lia-border-subtle"
                   >
                     <div className="flex items-start gap-3">
                       <div className={`w-10 h-10 rounded-md ${info.color} flex items-center justify-center text-lg flex-shrink-0`}>

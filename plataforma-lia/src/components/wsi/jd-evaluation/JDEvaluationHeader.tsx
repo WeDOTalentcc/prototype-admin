@@ -180,7 +180,7 @@ export const JDEvaluationHeader = React.memo(function JDEvaluationHeader({
               critico: 'bg-status-error/10 text-status-error border-status-error/30',
             }
             return (
-              <div className="flex items-center gap-3 pb-2 border-b border-lia-border-subtle px-3 pt-3">
+              <div className="flex items-center gap-3 pb-2 px-3 pt-3">
                 <div className="flex items-center gap-1.5">
                   <span className="text-xs font-semibold text-lia-text-primary">{evaluation.score}</span>
                   <span className="text-micro text-lia-text-secondary">/100</span>
@@ -200,7 +200,7 @@ export const JDEvaluationHeader = React.memo(function JDEvaluationHeader({
 
           {/* 9-dimension grid */}
           {evaluation.indicators.some(i => i.dimension) && (
-            <div className="grid grid-cols-3 gap-1.5 pb-2 border-b border-lia-border-subtle px-3 pt-2">
+            <div className="grid grid-cols-3 gap-1.5 pb-2 px-3 pt-2">
               {evaluation.indicators.map((indicator) => (
                 <div key={indicator.label} className={cn(
                   "flex items-center gap-1.5 px-2 py-1.5 rounded-md border text-micro",
@@ -234,7 +234,7 @@ export const JDEvaluationHeader = React.memo(function JDEvaluationHeader({
 
           {/* Compact row fallback */}
           {!evaluation.indicators.some(i => i.dimension) && (
-            <div className="flex items-center gap-3 pb-2 border-b border-lia-border-subtle flex-wrap px-3 pt-2">
+            <div className="flex items-center gap-3 pb-2 flex-wrap px-3 pt-2">
               {evaluation.indicators.map((indicator) => (
                 <div key={indicator.label} className="flex items-center gap-1.5">
                   {getIndicatorIcon(indicator.label)}

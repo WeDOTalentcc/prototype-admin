@@ -121,7 +121,7 @@ export function SearchModeArchetypes({
         </button>
         <button
           onClick={() => onArchetypeTabChange("create")}
-          className="flex items-center gap-1 h-7 px-3 rounded-md text-xs font-medium transition-colors motion-reduce:transition-none ring-1 ring-lia-border-default hover:ring-lia-border-medium hover:bg-lia-bg-secondary bg-lia-bg-primary"
+          className="flex items-center gap-1 h-7 px-3 rounded-xl text-xs font-medium transition-colors motion-reduce:transition-none ring-1 ring-lia-border-default hover:ring-lia-border-medium hover:bg-lia-bg-secondary bg-lia-bg-primary"
         >
           <Plus className="w-3 h-3" />
           Criar Novo
@@ -141,7 +141,7 @@ export function SearchModeArchetypes({
               value={archetypeSearch}
               onChange={(e) => onArchetypeSearchChange(e.target.value)}
               placeholder="Buscar arquétipos..."
-              className="w-full rounded-md pl-8 pr-3 py-2 text-xs focus:outline-none focus:ring-2 border border-lia-border-default bg-lia-bg-secondary text-lia-text-primary"
+              className="w-full rounded-xl pl-8 pr-3 py-2 text-xs focus:outline-none focus:ring-2 border border-lia-border-default bg-lia-bg-secondary text-lia-text-primary"
             />
           </div>
 
@@ -204,7 +204,7 @@ export function SearchModeArchetypes({
                   value={archetypeSearchPrompt}
                   onChange={(e) => onArchetypeSearchPromptChange(e.target.value)}
                   placeholder="Descreva o perfil do arquétipo..."
-                  className="w-full resize-none rounded-md px-4 py-3 pr-28 text-base-ui focus:outline-none min-h-[60px] transition-colors motion-reduce:transition-none border bg-[var(--lia-bg-primary)] text-lia-text-primary"
+                  className="w-full resize-none rounded-xl px-4 py-3 pr-28 text-base-ui focus:outline-none min-h-[60px] transition-colors motion-reduce:transition-none border bg-[var(--lia-bg-primary)] text-lia-text-primary"
                   rows={2}
                 />
                 {onSearchSourceChange && (
@@ -240,7 +240,7 @@ export function SearchModeArchetypes({
                     ? `Buscar perfis similares a "${selectedArchetype.title}"...`
                     : "Selecione um arquétipo acima para buscar..."
                 }
-                className="w-full resize-none rounded-md px-4 py-3 pr-28 text-base-ui focus:outline-none min-h-14 transition-colors motion-reduce:transition-none border bg-[var(--lia-bg-primary)] text-lia-text-primary"
+                className="w-full resize-none rounded-xl px-4 py-3 pr-28 text-base-ui focus:outline-none min-h-14 transition-colors motion-reduce:transition-none border bg-[var(--lia-bg-primary)] text-lia-text-primary"
                 rows={2}
                 disabled={!selectedArchetype}
               />
@@ -266,7 +266,7 @@ export function SearchModeArchetypes({
             </div>
           )}
 
-          <div className="p-2.5 rounded-md bg-white border border-lia-border-subtle">
+          <div className="p-2.5 rounded-xl bg-white border border-lia-border-subtle">
             <div className="flex items-start gap-2">
               <Lightbulb className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-lia-text-secondary" />
               <p className="text-xs text-lia-text-secondary">

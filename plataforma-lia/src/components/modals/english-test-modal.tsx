@@ -93,11 +93,11 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
       data-testid="english-test-modal"
     >
       <div 
-        className="w-full max-w-lg max-h-[85vh] overflow-hidden flex flex-col bg-lia-bg-primary border border-lia-border-subtle rounded-md"
+        className="w-full max-w-lg max-h-[85vh] overflow-hidden flex flex-col bg-lia-bg-primary border border-lia-border-subtle rounded-xl"
         
       >
         <div 
-          className="flex items-center justify-between px-4 py-3 bg-lia-bg-secondary border-b border-lia-border-subtle rounded-t-xl"
+          className="flex items-center justify-between px-4 py-3 bg-lia-bg-secondary rounded-t-xl"
         >
           <div className="flex items-center gap-2">
             <div 
@@ -158,7 +158,7 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
             <>
               <div className="grid grid-cols-2 gap-3 mb-4">
                 <div 
-                  className="p-3 rounded-md border border-lia-border-subtle"
+                  className="p-3 rounded-xl border border-lia-border-subtle"
                 >
                   <div className="flex items-center gap-2 mb-1">
                     <Globe className="w-3.5 h-3.5 text-lia-text-secondary" />
@@ -227,7 +227,7 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
                     return (
                       <div 
                         key={skill.id}
-                        className="p-3 rounded-md border border-lia-border-subtle"
+                        className="p-3 rounded-xl border border-lia-border-subtle"
                       >
                         <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center gap-2">
@@ -265,7 +265,7 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
                 </div>
               </div>
 
-              <div className="p-3 rounded-md bg-wedo-cyan/[.08] border border-wedo-cyan/20">
+              <div className="p-3 rounded-xl bg-wedo-cyan/[.08] border border-wedo-cyan/20">
                 <p 
                   className="text-micro font-medium mb-1 text-lia-text-secondary"
                  

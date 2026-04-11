@@ -182,7 +182,7 @@ export default function CalibrationCardModal({
         <DialogTitle className="sr-only">Calibração de candidatos</DialogTitle>
         <DialogDescription className="sr-only">Avalie candidatos para calibrar o agente de sourcing</DialogDescription>
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-3 border-b border-lia-border-subtle">
+        <div className="flex items-center justify-between px-6 py-3">
           <button onClick={onClose} className="flex items-center gap-1 text-sm text-lia-text-secondary hover:text-lia-text-primary">
             <ChevronLeft className="w-4 h-4" /> Voltar
           </button>
@@ -337,7 +337,7 @@ export default function CalibrationCardModal({
                       onChange={e => setComment(e.target.value)}
                       placeholder="Comentário para o agente aprender..."
                       rows={2}
-                      className="w-full border border-lia-border-default rounded-md px-3 py-2 text-sm resize-none"
+                      className="w-full border border-lia-border-default rounded-xl px-3 py-2 text-sm resize-none"
                     />
                   </div>
                 )}
@@ -409,7 +409,7 @@ function RejectReasonModal({
             <button
               key={reason}
               onClick={() => onSelect(reason)}
-              className="w-full text-left px-3 py-2 rounded-md text-sm hover:bg-lia-bg-tertiary border border-lia-border-subtle transition-colors"
+              className="w-full text-left px-3 py-2 rounded-xl text-sm hover:bg-lia-bg-tertiary border border-lia-border-subtle transition-colors"
             >
               {reason}
             </button>
@@ -420,7 +420,7 @@ function RejectReasonModal({
               value={customReason}
               onChange={e => setCustomReason(e.target.value)}
               placeholder="Outro motivo..."
-              className="w-full border border-lia-border-default rounded-md px-3 py-2 text-sm"
+              className="w-full border border-lia-border-default rounded-xl px-3 py-2 text-sm"
               onKeyDown={e => e.key === "Enter" && customReason.trim() && onSelect(customReason.trim())}
             />
           </div>

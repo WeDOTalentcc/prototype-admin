@@ -95,7 +95,7 @@ export function UniversalTransitionModal(props: UniversalTransitionModalProps) {
             : "max-w-lg bg-lia-bg-primary dark:bg-lia-bg-secondary"
         )}
       >
-        <DialogHeader className="px-5 py-3 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+        <DialogHeader className="px-5 py-3 dark:border-lia-border-subtle">
           <DialogTitle className={`flex items-center gap-2 ${textStyles.h3}`}>
             <ArrowRight className="w-4 h-4 text-lia-text-secondary" />
             Mover para: {selectedToStageDisplayName}
@@ -103,7 +103,7 @@ export function UniversalTransitionModal(props: UniversalTransitionModalProps) {
         </DialogHeader>
 
         {policyWarnings.length > 0 && (
-          <div className="mx-6 mt-3 p-3 bg-status-warning/10 border border-status-warning/30 rounded-md text-sm dark:bg-status-warning/20 dark:border-status-warning/30">
+          <div className="mx-6 mt-3 p-3 bg-status-warning/10 border border-status-warning/30 rounded-xl text-sm dark:bg-status-warning/20 dark:border-status-warning/30">
             <div className="flex items-start gap-2">
               <AlertTriangle className="w-4 h-4 text-status-warning mt-0.5 flex-shrink-0 dark:text-status-warning" />
               <div>
@@ -197,7 +197,7 @@ export function UniversalTransitionModal(props: UniversalTransitionModalProps) {
                     {stageSelectable && <ChevronDown className="w-3 h-3" />}
                   </button>
                   {showStageSelector && stageSelectable && (
-                    <div className="absolute top-full left-0 mt-1 z-50 bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md shadow-lia-md max-h-48 overflow-y-auto min-w-[160px]">
+                    <div className="absolute top-full left-0 mt-1 z-50 bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl shadow-lia-md max-h-48 overflow-y-auto min-w-[160px]">
                       {filteredAvailableStages.map((stage) => (
                         <button
                           key={stage.id}
@@ -266,7 +266,7 @@ export function UniversalTransitionModal(props: UniversalTransitionModalProps) {
               {isRejectedBatch ? 'Motivo padrão:' : isRejectedStage ? 'Motivo:' : 'Sub-status da etapa:'}
             </span>
             <Select value={subStatus} onValueChange={handleGlobalSubStatusChange}>
-              <SelectTrigger className="w-[220px] h-8 rounded-md text-xs bg-lia-bg-primary dark:bg-lia-bg-secondary">
+              <SelectTrigger className="w-[220px] h-8 rounded-xl text-xs bg-lia-bg-primary dark:bg-lia-bg-secondary">
                 <SelectValue placeholder="Selecione..." />
               </SelectTrigger>
               <SelectContent className="z-modal" position="popper" sideOffset={4} side="top">
@@ -292,7 +292,7 @@ export function UniversalTransitionModal(props: UniversalTransitionModalProps) {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="h-9 px-3 text-xs font-medium rounded-md border-lia-border-default text-lia-text-secondary hover:bg-lia-bg-secondary focus:ring-2 focus:ring-lia-btn-primary-bg/20 focus:outline-none dark:border-lia-border-default"
+                  className="h-9 px-3 text-xs font-medium rounded-xl border-lia-border-default text-lia-text-secondary hover:bg-lia-bg-secondary focus:ring-2 focus:ring-lia-btn-primary-bg/20 focus:outline-none dark:border-lia-border-default"
                   onClick={() => onOpenSpecializedModal('rejection-feedback', { candidates, toStage: selectedToStage })}
                 >
                   <MessageSquare className="w-3.5 h-3.5 mr-1.5" />
@@ -306,7 +306,7 @@ export function UniversalTransitionModal(props: UniversalTransitionModalProps) {
                 variant="outline"
                 onClick={onClose}
                 disabled={isSubmitting}
-                className="h-9 px-4 text-xs font-semibold rounded-md transition-colors motion-reduce:transition-none duration-150 font-['Open_Sans'] bg-lia-bg-primary text-lia-text-primary border border-lia-border-default hover:bg-lia-bg-secondary hover:border-lia-border-medium focus:ring-2 focus:ring-lia-btn-primary-bg/20 focus:outline-none dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-lia-bg-inverse"
+                className="h-9 px-4 text-xs font-semibold rounded-xl transition-colors motion-reduce:transition-none duration-150 font-['Open_Sans'] bg-lia-bg-primary text-lia-text-primary border border-lia-border-default hover:bg-lia-bg-secondary hover:border-lia-border-medium focus:ring-2 focus:ring-lia-btn-primary-bg/20 focus:outline-none dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-lia-bg-inverse"
               >
                 Cancelar
               </Button>
@@ -314,7 +314,7 @@ export function UniversalTransitionModal(props: UniversalTransitionModalProps) {
               <Button
                 onClick={handleConfirm}
                 disabled={isSubmitting || (isRejectedStage && !subStatus)}
-                className="h-9 px-4 text-xs font-semibold rounded-md transition-colors motion-reduce:transition-none duration-150 font-['Open_Sans'] bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover active:bg-lia-bg-inverse focus:ring-2 focus:ring-lia-btn-primary-bg/20 focus:outline-none dark:hover:bg-lia-interactive-active"
+                className="h-9 px-4 text-xs font-semibold rounded-xl transition-colors motion-reduce:transition-none duration-150 font-['Open_Sans'] bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover active:bg-lia-bg-inverse focus:ring-2 focus:ring-lia-btn-primary-bg/20 focus:outline-none dark:hover:bg-lia-interactive-active"
               >
                 {isSubmitting ? (
                   <>

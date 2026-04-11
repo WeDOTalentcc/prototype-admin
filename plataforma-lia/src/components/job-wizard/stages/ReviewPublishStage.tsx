@@ -133,7 +133,7 @@ ${salaryInfo.minSalary && salaryInfo.maxSalary
     children: React.ReactNode
     count?: number
   }) => (
-    <div className="rounded-md border border-lia-border-subtle overflow-hidden">
+    <div className="rounded-xl border border-lia-border-subtle overflow-hidden">
       <button
         onClick={() => setActiveSection(activeSection === id ? null : id)}
         className="w-full px-3 py-2 bg-lia-bg-secondary flex items-center justify-between hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none"
@@ -162,7 +162,7 @@ ${salaryInfo.minSalary && salaryInfo.maxSalary
   return (
     <div className="space-y-3">
       {/* Job Description Section */}
-      <div className="rounded-md border border-lia-border-subtle overflow-hidden">
+      <div className="rounded-xl border border-lia-border-subtle overflow-hidden">
         <div className="px-3 py-2 bg-lia-bg-secondary flex items-center justify-between">
           <div className="flex items-center gap-2">
             <FileText className="w-4 h-4 text-lia-text-secondary" />
@@ -198,7 +198,7 @@ ${salaryInfo.minSalary && salaryInfo.maxSalary
           ) : (
             <button
               onClick={generateDescription}
-              className="w-full py-6 border-2 border-dashed border-lia-border-subtle rounded-md text-lia-text-secondary hover:border-lia-btn-primary-bg dark:hover:border-lia-border-subtle hover:bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 transition-colors motion-reduce:transition-none flex flex-col items-center gap-2"
+              className="w-full py-6 border-2 border-dashed border-lia-border-subtle rounded-xl text-lia-text-secondary hover:border-lia-btn-primary-bg dark:hover:border-lia-border-subtle hover:bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 transition-colors motion-reduce:transition-none flex flex-col items-center gap-2"
             >
               <FileText className="w-6 h-6" />
               <span className="text-xs font-medium" aria-live="polite" aria-atomic="true">Clique para gerar a descrição da vaga</span>
@@ -315,7 +315,7 @@ ${salaryInfo.minSalary && salaryInfo.maxSalary
       </SectionCard>
 
       {/* Publishing Platforms */}
-      <div className="rounded-md border border-lia-border-subtle overflow-hidden">
+      <div className="rounded-xl border border-lia-border-subtle overflow-hidden">
         <div className="px-3 py-2 bg-lia-bg-secondary flex items-center gap-2">
           <Rocket className="w-4 h-4 text-lia-text-secondary" />
           <span className="text-xs font-semibold text-lia-text-primary">

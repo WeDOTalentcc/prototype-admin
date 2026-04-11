@@ -150,7 +150,7 @@ export function LIASearchSidebarChat({
             </div>
             <div className="flex-1 space-y-3">
               {/* Resumo dos resultados */}
-              <div className="p-3 rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary">
+              <div className="p-3 rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary">
                 <p className="text-xs font-medium text-lia-text-primary mb-2">
                   Encontrei <span className="text-lia-text-secondary" aria-live="polite" aria-atomic="true">{searchResults.localCount + (searchResults.showGlobalResults ? searchResults.globalCount : 0)} candidato{(searchResults.localCount + (searchResults.showGlobalResults ? searchResults.globalCount : 0)) > 1 ? 's' : ''}</span> para sua busca:
                 </p>
@@ -187,7 +187,7 @@ export function LIASearchSidebarChat({
 
               {/* Candidatos locais na tabela */}
               {searchResults.localCount > 0 && (
-                <div className="p-2.5 rounded-md bg-lia-bg-secondary dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle">
+                <div className="p-2.5 rounded-xl bg-lia-bg-secondary dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle">
                   <div className="flex items-center gap-2">
                     <Home className="w-3.5 h-3.5 text-lia-text-secondary" />
                     <p className="text-xs text-lia-text-primary">
@@ -199,7 +199,7 @@ export function LIASearchSidebarChat({
 
               {/* Botão para expandir busca para global - OPT-IN: só mostra após busca local */}
               {currentSearchSource === 'local' && !searchResults.showGlobalResults && !searchResults.globalDismissed && searchResults.query && (
-                <div className="p-3 rounded-md border border-lia-btn-primary-bg dark:border-lia-border-subtle bg-lia-bg-secondary dark:bg-lia-bg-secondary">
+                <div className="p-3 rounded-xl border border-lia-btn-primary-bg dark:border-lia-border-subtle bg-lia-bg-secondary dark:bg-lia-bg-secondary">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <Globe className="w-4 h-4 text-lia-text-secondary" />
@@ -239,7 +239,7 @@ export function LIASearchSidebarChat({
 
               {/* Mensagem quando usuário descartou busca global */}
               {currentSearchSource === 'local' && searchResults.globalDismissed && !searchResults.showGlobalResults && searchResults.query && (
-                <div className="p-2.5 rounded-md bg-lia-bg-secondary dark:bg-lia-bg-secondary/50">
+                <div className="p-2.5 rounded-xl bg-lia-bg-secondary dark:bg-lia-bg-secondary/50">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <Globe className="w-3.5 h-3.5 text-lia-text-primary" />
@@ -259,7 +259,7 @@ export function LIASearchSidebarChat({
 
               {/* Confirmação de candidatos globais adicionados */}
               {searchResults.showGlobalResults && searchResults.globalCount > 0 && (
-                <div className="p-2.5 rounded-md bg-lia-bg-secondary dark:bg-lia-bg-secondary border border-lia-btn-primary-bg dark:border-lia-border-subtle">
+                <div className="p-2.5 rounded-xl bg-lia-bg-secondary dark:bg-lia-bg-secondary border border-lia-btn-primary-bg dark:border-lia-border-subtle">
                   <div className="flex items-center gap-2">
                     <Globe className="w-3.5 h-3.5 text-lia-text-secondary" />
                     <p className="text-xs text-wedo-cyan-dark">
@@ -292,7 +292,7 @@ export function LIASearchSidebarChat({
             </div>
             <div className="flex-1 space-y-2">
               {/* Card de status */}
-              <div className="p-4 rounded-md bg-lia-bg-secondary dark:bg-lia-bg-secondary/50">
+              <div className="p-4 rounded-xl bg-lia-bg-secondary dark:bg-lia-bg-secondary/50">
                 <div className="flex items-center gap-3 mb-3">
                   <div className="relative">
                     <div className="w-8 h-8 rounded-full bg-lia-bg-tertiary dark:bg-lia-bg-secondary flex items-center justify-center">
@@ -354,7 +354,7 @@ export function LIASearchSidebarChat({
                 {userInitials}
               </div>
               <div
-                className="px-2.5 py-2 rounded-md bg-lia-bg-tertiary"
+                className="px-2.5 py-2 rounded-xl bg-lia-bg-tertiary"
               >
                 <div className="flex items-center gap-1.5 mb-0.5">
                   <span className="text-micro font-bold text-lia-text-primary">{userDisplayName}</span>

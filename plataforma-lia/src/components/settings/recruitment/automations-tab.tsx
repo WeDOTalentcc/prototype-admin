@@ -138,7 +138,7 @@ export function AutomationsTab({ onSettingsChange }: { onSettingsChange: (change
         <CardContent>
           <div className="space-y-4">
             {workflows.map((workflow) => (
-              <div key={workflow.id} className="flex items-center justify-between p-4 border border-lia-border-subtle rounded-md hover:transition-shadow">
+              <div key={workflow.id} className="flex items-center justify-between p-4 border border-lia-border-subtle rounded-xl hover:transition-shadow">
                 <div className="flex items-center gap-4">
                   <div className={`w-10 h-10 rounded-md flex items-center justify-center ${
                     workflow.status === 'active' ? 'bg-status-success/15' : 'bg-lia-bg-tertiary'
@@ -263,7 +263,7 @@ export function AutomationsTab({ onSettingsChange }: { onSettingsChange: (change
         </div>
       </div>
 
-      <div className="flex space-x-1 bg-lia-bg-tertiary p-1 rounded-md w-fit">
+      <div className="flex space-x-1 bg-lia-bg-tertiary p-1 rounded-xl w-fit">
         {[
           { id: 'overview', label: 'Visão Geral', icon: BarChart3 },
           { id: 'builder', label: 'Builder', icon: Workflow },

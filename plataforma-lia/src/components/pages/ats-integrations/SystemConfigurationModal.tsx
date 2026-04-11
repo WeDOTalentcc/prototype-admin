@@ -64,7 +64,7 @@ function SyncTab({ systemType }: { systemType: string }) {
       <div>
         <h4 className="text-xs font-medium text-lia-text-primary mb-4">Sincronizar Dados</h4>
         {connections.map((conn) => (
-          <div key={conn.id} className="border border-lia-border-subtle rounded-md p-4 mb-4">
+          <div key={conn.id} className="border border-lia-border-subtle rounded-xl p-4 mb-4">
             <div className="flex items-center justify-between mb-3">
               <div>
                 <p className="font-medium text-lia-text-primary">{conn.provider_name}</p>
@@ -140,7 +140,7 @@ export function SystemConfigurationModal({ system, onClose }: SystemConfiguratio
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <div className="bg-lia-bg-primary rounded-md w-full max-w-4xl max-h-[90vh] flex flex-col">
+      <div className="bg-lia-bg-primary rounded-xl w-full max-w-4xl max-h-[90vh] flex flex-col">
         <div className="flex items-center justify-between p-6 border-b">
           <div>
             <h2 className="text-xl font-semibold text-lia-text-primary">{system.name}</h2>
@@ -188,17 +188,17 @@ export function SystemConfigurationModal({ system, onClose }: SystemConfiguratio
                       ].map(field => (
                         <div key={field.label}>
                           <label className="block text-sm font-medium text-lia-text-primary mb-2">{field.label}</label>
-                          <input type={field.type} placeholder={field.placeholder} className="w-full p-3 border border-lia-border-default rounded-md focus:ring-2 focus:ring-lia-border-strong/20 focus:border-lia-border-strong" />
+                          <input type={field.type} placeholder={field.placeholder} className="w-full p-3 border border-lia-border-default rounded-xl focus:ring-2 focus:ring-lia-border-strong/20 focus:border-lia-border-strong" />
                         </div>
                       ))}
                     </div>
                   </div>
-                  <div className="border border-lia-border-subtle rounded-md p-4">
+                  <div className="border border-lia-border-subtle rounded-xl p-4">
                     <h5 className="font-medium text-lia-text-primary mb-3">Módulos para Sincronização</h5>
                     <div className="grid grid-cols-2 gap-2">
                       {['Recruiting', 'Candidate Profile', 'Job Requisition', 'Interview', 'Offer Letter'].map(mod => (
                         <label key={mod} className="flex items-center gap-2">
-                          <input type="checkbox" defaultChecked className="rounded-md border-lia-border-default" />
+                          <input type="checkbox" defaultChecked className="rounded-xl border-lia-border-default" />
                           <span className="text-sm text-lia-text-primary">{mod}</span>
                         </label>
                       ))}
@@ -217,7 +217,7 @@ export function SystemConfigurationModal({ system, onClose }: SystemConfiguratio
                     ].map(f => (
                       <div key={f.label} className={f.span ? 'md:col-span-2' : ''}>
                         <label className="block text-sm font-medium text-lia-text-primary mb-2">{f.label}</label>
-                        <input type={f.type} placeholder={f.placeholder} className="w-full p-3 border border-lia-border-default rounded-md focus:ring-2 focus:ring-lia-border-strong/20 focus:border-lia-border-strong" />
+                        <input type={f.type} placeholder={f.placeholder} className="w-full p-3 border border-lia-border-default rounded-xl focus:ring-2 focus:ring-lia-border-strong/20 focus:border-lia-border-strong" />
                       </div>
                     ))}
                   </div>
@@ -233,7 +233,7 @@ export function SystemConfigurationModal({ system, onClose }: SystemConfiguratio
                     ].map(f => (
                       <div key={f.label}>
                         <label className="block text-sm font-medium text-lia-text-primary mb-2">{f.label}</label>
-                        <input type={f.type} placeholder={f.placeholder} className="w-full p-3 border border-lia-border-default rounded-md focus:ring-2 focus:ring-lia-border-strong/20 focus:border-lia-border-strong" />
+                        <input type={f.type} placeholder={f.placeholder} className="w-full p-3 border border-lia-border-default rounded-xl focus:ring-2 focus:ring-lia-border-strong/20 focus:border-lia-border-strong" />
                       </div>
                     ))}
                   </div>
@@ -252,7 +252,7 @@ export function SystemConfigurationModal({ system, onClose }: SystemConfiguratio
                         placeholder="Cole sua API Key aqui"
                         value={credentials.apiKey}
                         onChange={(e) => setCredentials({ ...credentials, apiKey: e.target.value })}
-                        className="w-full p-3 border border-lia-border-default rounded-md focus:ring-2 focus:ring-lia-border-strong/20 focus:border-lia-border-strong bg-lia-bg-primary text-lia-text-primary"
+                        className="w-full p-3 border border-lia-border-default rounded-xl focus:ring-2 focus:ring-lia-border-strong/20 focus:border-lia-border-strong bg-lia-bg-primary text-lia-text-primary"
                       />
                     </div>
                     {system.type === 'pandape' && (
@@ -263,14 +263,14 @@ export function SystemConfigurationModal({ system, onClose }: SystemConfiguratio
                           placeholder="https://api-ats.pandape.com"
                           value={credentials.apiEndpoint}
                           onChange={(e) => setCredentials({ ...credentials, apiEndpoint: e.target.value })}
-                          className="w-full p-3 border border-lia-border-default rounded-md focus:ring-2 focus:ring-lia-border-strong/20 focus:border-lia-border-strong bg-lia-bg-primary text-lia-text-primary"
+                          className="w-full p-3 border border-lia-border-default rounded-xl focus:ring-2 focus:ring-lia-border-strong/20 focus:border-lia-border-strong bg-lia-bg-primary text-lia-text-primary"
                         />
                       </div>
                     )}
                   </div>
                 </div>
               )}
-              <div className="flex items-center justify-between p-4 bg-lia-bg-secondary rounded-md" role="status" aria-live="polite" aria-label="Status da conexão">
+              <div className="flex items-center justify-between p-4 bg-lia-bg-secondary rounded-xl" role="status" aria-live="polite" aria-label="Status da conexão">
                 <div className="flex items-center gap-3">
                   {connectionStatus === 'idle' && <Wifi className="w-5 h-5 text-lia-text-secondary" />}
                   {connectionStatus === 'testing' && <RefreshCw className="w-5 h-5 text-lia-text-tertiary animate-spin motion-reduce:animate-none" />}
@@ -339,7 +339,7 @@ export function SystemConfigurationModal({ system, onClose }: SystemConfiguratio
                     <h5 className="font-medium text-lia-text-primary mb-3 flex items-center gap-2">
                       <Server className="w-4 h-4" />{system.name} (Origem)
                     </h5>
-                    <div className="space-y-2 max-h-96 overflow-y-auto border border-lia-border-subtle rounded-md p-3">
+                    <div className="space-y-2 max-h-96 overflow-y-auto border border-lia-border-subtle rounded-xl p-3">
                       {systemFields.map(field => {
                         const isMapped = mappings.some(m => m.sourceField === field.id)
                         return (
@@ -373,7 +373,7 @@ export function SystemConfigurationModal({ system, onClose }: SystemConfiguratio
                     <h5 className="font-medium text-lia-text-primary mb-3 flex items-center gap-2">
                       <Database className="w-4 h-4" />Plataforma LIA (Destino)
                     </h5>
-                    <div className="space-y-2 max-h-96 overflow-y-auto border border-lia-border-subtle rounded-md p-3">
+                    <div className="space-y-2 max-h-96 overflow-y-auto border border-lia-border-subtle rounded-xl p-3">
                       {liaFields.map(field => {
                         const mapping = mappings.find(m => m.targetField === field.id)
                         return (
@@ -417,7 +417,7 @@ export function SystemConfigurationModal({ system, onClose }: SystemConfiguratio
               </div>
 
               {mappings.length > 0 && (
-                <div className="border border-lia-border-subtle rounded-md p-4">
+                <div className="border border-lia-border-subtle rounded-xl p-4">
                   <h5 className="font-medium text-lia-text-primary mb-3">Resumo do Mapeamento</h5>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                     <div className="text-center">
@@ -435,7 +435,7 @@ export function SystemConfigurationModal({ system, onClose }: SystemConfiguratio
                   </div>
                   <div className="space-y-2">
                     {mappings.map(mapping => (
-                      <div key={mapping.id} className="flex items-center justify-between p-2 bg-lia-bg-secondary rounded-md">
+                      <div key={mapping.id} className="flex items-center justify-between p-2 bg-lia-bg-secondary rounded-xl">
                         <span className="text-sm">
                           <span className="font-medium">{mapping.sourceFieldName}</span>
                           <ArrowRight className="w-4 h-4 inline mx-2" />
@@ -453,7 +453,7 @@ export function SystemConfigurationModal({ system, onClose }: SystemConfiguratio
                 </div>
               )}
 
-              <div className="bg-lia-bg-secondary border border-lia-border-default rounded-md p-4">
+              <div className="bg-lia-bg-secondary border border-lia-border-default rounded-xl p-4">
                 <h5 className="font-medium text-lia-text-secondary mb-2">Como usar o mapeamento:</h5>
                 <ul className="text-sm text-lia-text-secondary space-y-1">
                   <li>• Arraste campos da origem para os campos de destino correspondentes</li>

@@ -58,12 +58,12 @@ export function ScreeningQuestionsSection({ screeningQuestions, copiedSection, o
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                <div className="p-2 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-md text-xs text-lia-text-secondary">
+                <div className="p-2 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-xl text-xs text-lia-text-secondary">
                   <strong>Objetivo:</strong> {section.purpose}
                 </div>
                 <div className="space-y-2">
                   {section.questions.map((question: unknown, questionIndex: number) => (
-                    <div key={questionIndex} className="flex items-start gap-3 p-3 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md">
+                    <div key={questionIndex} className="flex items-start gap-3 p-3 border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl">
                       <div className="w-6 h-6 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-full flex items-center justify-center text-lia-text-secondary text-xs font-bold flex-shrink-0">
                         {questionIndex + 1}
                       </div>
@@ -71,7 +71,7 @@ export function ScreeningQuestionsSection({ screeningQuestions, copiedSection, o
                         <p className="text-sm text-lia-text-primary">{String(question)}</p>
                         <textarea
                           placeholder="Anotações da resposta..."
-                          className="w-full mt-2 p-2 border border-lia-border-subtle dark:border-lia-border-default rounded-md text-xs bg-lia-bg-secondary dark:bg-lia-bg-secondary"
+                          className="w-full mt-2 p-2 border border-lia-border-subtle dark:border-lia-border-default rounded-xl text-xs bg-lia-bg-secondary dark:bg-lia-bg-secondary"
                           rows={2}
                         />
                       </div>
@@ -97,7 +97,7 @@ export function ScreeningQuestionsSection({ screeningQuestions, copiedSection, o
               <label className="text-sm font-medium text-lia-text-primary mb-2 block">
                 Recomendação Geral
               </label>
-              <select className="w-full p-2 border border-lia-border-default dark:border-lia-border-default rounded-md text-sm">
+              <select className="w-full p-2 border border-lia-border-default dark:border-lia-border-default rounded-xl text-sm">
                 <option value="">Selecione...</option>
                 <option value="aprovado">✅ Aprovado - Prosseguir</option>
                 <option value="condicional">⚠️ Aprovado com ressalvas</option>
@@ -108,7 +108,7 @@ export function ScreeningQuestionsSection({ screeningQuestions, copiedSection, o
               <label className="text-sm font-medium text-lia-text-primary mb-2 block">
                 Nível de Confiança
               </label>
-              <select className="w-full p-2 border border-lia-border-default dark:border-lia-border-default rounded-md text-sm">
+              <select className="w-full p-2 border border-lia-border-default dark:border-lia-border-default rounded-xl text-sm">
                 <option value="">Selecione...</option>
                 <option value="alta">🔥 Alta confiança</option>
                 <option value="media">🎯 Média confiança</option>
@@ -122,7 +122,7 @@ export function ScreeningQuestionsSection({ screeningQuestions, copiedSection, o
             </label>
             <textarea
               placeholder="Resumo da conversa, pontos de atenção, recomendações para próximas etapas..."
-              className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md text-sm"
+              className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-xl text-sm"
               rows={4}
             />
           </div>

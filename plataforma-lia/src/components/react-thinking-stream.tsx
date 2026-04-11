@@ -19,9 +19,9 @@ export function ReactThinkingStream({ steps, isThinking }: ReactThinkingStreamPr
   if (!isThinking && steps.length === 0) return null;
 
   return (
-    <div className="bg-lia-bg-secondary border border-lia-border-subtle rounded-md text-xs text-lia-text-secondary my-2">
+    <div className="bg-lia-bg-secondary border border-lia-border-subtle rounded-xl text-xs text-lia-text-secondary my-2">
       <button
-        className="flex items-center gap-2 w-full px-3 py-2 hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none rounded-md"
+        className="flex items-center gap-2 w-full px-3 py-2 hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none rounded-xl"
         onClick={() => setExpanded(!expanded)}
         aria-expanded={expanded}
       >

@@ -232,7 +232,7 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
 
         {/* Proactive Alerts */}
         {proactiveAlerts.length > 0 && (
-          <div className="mb-6 p-4 rounded-md border bg-status-warning/5 border-status-warning/30">
+          <div className="mb-6 p-4 rounded-xl border bg-status-warning/5 border-status-warning/30">
             <div className="flex items-center gap-2 mb-3">
               <AlertTriangle className="w-4 h-4 text-status-warning" />
               <span className="text-sm font-medium text-lia-text-primary">
@@ -243,7 +243,7 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
               {proactiveAlerts.map(alert => (
                 <div
                   key={alert.id}
-                  className="flex items-center justify-between p-3 rounded-md bg-lia-bg-primary"
+                  className="flex items-center justify-between p-3 rounded-xl bg-lia-bg-primary"
                 >
                   <div className="flex items-center gap-3">
                     <Badge
@@ -307,7 +307,7 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
 
                 {/* Metrics Row */}
                 <div className="grid grid-cols-2 gap-2 mb-3">
-                  <div className="p-2 rounded-md bg-lia-bg-tertiary dark:bg-lia-bg-secondary">
+                  <div className="p-2 rounded-xl bg-lia-bg-tertiary dark:bg-lia-bg-secondary">
                     <div className="flex items-center justify-between">
                       <span className="text-xs text-lia-text-disabled">
                         Ações 24h
@@ -327,7 +327,7 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
                       />
                     </div>
                   </div>
-                  <div className="p-2 rounded-md bg-lia-bg-tertiary dark:bg-lia-bg-secondary">
+                  <div className="p-2 rounded-xl bg-lia-bg-tertiary dark:bg-lia-bg-secondary">
                     <span className="text-xs block text-lia-text-disabled">
                       Progresso
                     </span>
@@ -366,9 +366,9 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
         </div>
 
         {/* Activity Feed Section */}
-        <div className="rounded-md border bg-lia-bg-primary border-lia-border-subtle dark:border-lia-border-subtle">
+        <div className="rounded-xl border bg-lia-bg-primary border-lia-border-subtle dark:border-lia-border-subtle">
           {/* Feed Header with Filters */}
-          <div className="p-4 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+          <div className="p-4 dark:border-lia-border-subtle">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
                 <Activity className="w-5 h-5 text-lia-text-secondary" />

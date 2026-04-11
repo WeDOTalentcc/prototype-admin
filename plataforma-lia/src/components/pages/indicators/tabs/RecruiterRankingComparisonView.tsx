@@ -202,7 +202,7 @@ export function RecruiterComparisonView({ filteredRecruiters }: RecruiterCompari
             <h4 className="font-medium text-lia-text-primary mb-4">
               Tendências de Performance (Últimos 6 Meses)
             </h4>
-            <div className="bg-lia-bg-secondary p-6 rounded-md text-center">
+            <div className="bg-lia-bg-secondary p-6 rounded-xl text-center">
               <LineChart className="w-12 h-12 text-lia-text-secondary mx-auto mb-2" />
               <p className="text-lia-text-secondary text-sm">
                 Gráfico interativo de tendências seria exibido aqui

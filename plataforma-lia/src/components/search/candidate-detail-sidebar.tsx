@@ -106,7 +106,7 @@ export function CandidateDetailSidebar({
   return (
     <Sheet open={open} onOpenChange={() => onClose()}>
       <SheetContent className="w-[450px] sm:w-panel-xl p-0 bg-lia-bg-primary dark:bg-lia-bg-primary border-lia-border-subtle dark:border-lia-border-subtle">
-        <SheetHeader className="p-6 pb-4 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+        <SheetHeader className="p-6 pb-4 dark:border-lia-border-subtle">
           <div className="flex items-start gap-4">
             <Avatar className="h-16 w-16">
               {candidate.picture_url ? (

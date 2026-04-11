@@ -77,7 +77,7 @@ export function SalaryPanel({ data, onUpdate }: Props) {
 
       {/* Benchmark */}
       {d.benchmark && (
-        <div className="p-2.5 rounded-md bg-wedo-cyan/5 border border-wedo-cyan/20">
+        <div className="p-2.5 rounded-xl bg-wedo-cyan/5 border border-wedo-cyan/20">
           <p className="text-[10px] font-medium text-wedo-cyan font-['Open_Sans',sans-serif]">Benchmark de mercado</p>
           <div className="mt-1 space-y-0.5">
             {Object.entries(d.benchmark).map(([key, val]) => (

@@ -183,17 +183,17 @@ export function RecruitersTab({
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="text-center p-4 bg-status-error/10 rounded-md">
+            <div className="text-center p-4 bg-status-error/10 rounded-xl">
               <div className="text-2xl font-bold text-status-error">2</div>
               <div className="text-sm text-status-error">Alertas Críticos</div>
               <div className="text-xs text-status-error mt-1">Time to Fill &gt; 45 dias</div>
             </div>
-            <div className="text-center p-4 bg-status-warning/10 rounded-md">
+            <div className="text-center p-4 bg-status-warning/10 rounded-xl">
               <div className="text-2xl font-bold text-status-warning">5</div>
               <div className="text-sm text-status-warning">Avisos</div>
               <div className="text-xs text-status-warning mt-1">NPS abaixo da meta</div>
             </div>
-            <div className="text-center p-4 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-md">
+            <div className="text-center p-4 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-xl">
               <div className="text-2xl font-bold text-lia-text-primary">
                 12
               </div>

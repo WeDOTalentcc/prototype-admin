@@ -95,7 +95,7 @@ export function CompanyBankQuestions({ isEditing, selectedQuestions, questionOve
   }
 
   return (
-    <div className="border border-lia-border-subtle rounded-md bg-lia-bg-primary overflow-hidden">
+    <div className="border border-lia-border-subtle rounded-xl bg-lia-bg-primary overflow-hidden">
       <button
         onClick={() => setIsExpanded(!isExpanded)}
         className="w-full flex items-center justify-between px-4 py-3 hover:bg-lia-interactive-hover dark:hover:bg-lia-btn-primary-hover transition-colors motion-reduce:transition-none"
@@ -229,7 +229,7 @@ export function CompanyBankQuestions({ isEditing, selectedQuestions, questionOve
                               <select
                                 value={question.character}
                                 onChange={(e) => onUpdateSelectedQuestion?.(question.id, { character: e.target.value as 'eliminatoria' | 'classificatoria' })}
-                                className="font-['Open_Sans',sans-serif] text-xs rounded-md border border-lia-border-subtle bg-lia-bg-primary text-lia-text-secondary px-2 py-1 focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg/10 cursor-pointer"
+                                className="font-['Open_Sans',sans-serif] text-xs rounded-xl border border-lia-border-subtle bg-lia-bg-primary text-lia-text-secondary px-2 py-1 focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg/10 cursor-pointer"
                               >
                                 <option value="classificatoria">Classificatória</option>
                                 <option value="eliminatoria">Eliminatória</option>

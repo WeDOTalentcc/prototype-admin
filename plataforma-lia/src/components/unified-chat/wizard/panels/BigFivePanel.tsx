@@ -89,7 +89,7 @@ export function BigFivePanel({ data }: Props) {
 
       {/* Ranked summary */}
       {rankings.length > 0 && (
-        <div className="rounded-md bg-lia-bg-secondary p-2.5">
+        <div className="rounded-xl bg-lia-bg-secondary p-2.5">
           <p className="text-[11px] text-lia-text-secondary">
             Traits prioritarios para esta vaga:{" "}
             <span className="text-lia-text-primary font-medium">

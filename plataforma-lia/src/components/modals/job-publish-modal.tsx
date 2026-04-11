@@ -260,9 +260,9 @@ export function JobPublishModal({
     <>
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent data-testid="job-publish-modal" className="max-w-2xl bg-lia-bg-primary border border-lia-border-subtle">
-        <DialogHeader className="pb-3 border-b border-lia-border-subtle">
+        <DialogHeader className="pb-3">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-md bg-lia-bg-tertiary flex items-center justify-center">
+            <div className="w-8 h-8 rounded-xl bg-lia-bg-tertiary flex items-center justify-center">
               <Share2 className="w-4 h-4 text-lia-text-secondary" />
             </div>
             <div>
@@ -293,7 +293,7 @@ export function JobPublishModal({
                   {jobs.map((job) => (
                     <div
                       key={job.id}
-                      className="flex items-center justify-between py-1.5 px-2 bg-lia-bg-primary rounded-md border border-lia-border-subtle"
+                      className="flex items-center justify-between py-1.5 px-2 bg-lia-bg-primary rounded-xl border border-lia-border-subtle"
                     >
                       <div className="flex items-center gap-2 min-w-0 flex-1">
                         <Briefcase className="w-3.5 h-3.5 text-lia-text-secondary flex-shrink-0" />
@@ -326,7 +326,7 @@ export function JobPublishModal({
                     onValueChange={(value) => setScheduleType(value as 'now' | 'scheduled')}
                     className="space-y-1.5"
                   >
-                    <div className="flex items-center gap-2 p-2 rounded-md border border-lia-border-subtle bg-lia-bg-primary">
+                    <div className="flex items-center gap-2 p-2 rounded-xl border border-lia-border-subtle bg-lia-bg-primary">
                       <RadioGroupItem
                         value="now"
                         id="schedule-now"
@@ -337,7 +337,7 @@ export function JobPublishModal({
                       </Label>
                     </div>
                     
-                    <div className="space-y-2 p-2 rounded-md border border-lia-border-subtle bg-lia-bg-primary">
+                    <div className="space-y-2 p-2 rounded-xl border border-lia-border-subtle bg-lia-bg-primary">
                       <div className="flex items-center gap-2">
                         <RadioGroupItem
                           value="scheduled"
@@ -371,7 +371,7 @@ export function JobPublishModal({
               )}
 
               {(mode === 'unpublish' || mode === 'mixed') && (
-                <div className="space-y-3 bg-lia-bg-secondary rounded-md p-3 border border-lia-border-subtle">
+                <div className="space-y-3 bg-lia-bg-secondary rounded-xl p-3 border border-lia-border-subtle">
                   <div className="flex items-center gap-2 text-lia-text-primary mb-2">
                     <AlertTriangle className="w-3.5 h-3.5 text-status-warning" />
                     <span className="text-xs font-semibold text-lia-text-primary">Opções ao despublicar</span>
@@ -401,7 +401,7 @@ export function JobPublishModal({
                           <select
                             value={freezeReason}
                             onChange={(e) => setFreezeReason(e.target.value)}
-                            className="w-full h-8 px-2 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary text-lia-text-primary focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg/20"
+                            className="w-full h-8 px-2 text-xs border border-lia-border-subtle rounded-xl bg-lia-bg-primary text-lia-text-primary focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg/20"
                           >
                             <option value="">Selecione um motivo...</option>
                             <option value="budget_review">Revisão orçamentária</option>
@@ -461,7 +461,7 @@ export function JobPublishModal({
 
             <div className="space-y-3">
               {(mode === 'publish' || mode === 'mixed') && (
-                <div className="rounded-md border border-lia-border-subtle bg-lia-bg-secondary p-3 space-y-2">
+                <div className="rounded-xl border border-lia-border-subtle bg-lia-bg-secondary p-3 space-y-2">
                   <h4 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide font-['Open_Sans',sans-serif]">
                     Checklist de Publicação
                   </h4>
@@ -541,7 +541,7 @@ export function JobPublishModal({
                             className="data-[state=checked]:bg-lia-btn-primary-bg data-[state=checked]:border-lia-btn-primary-bg"
                           />
                           <div className="flex items-center gap-1.5 min-w-0 flex-1">
-                            <div className="w-5 h-5 rounded-md bg-lia-bg-tertiary flex items-center justify-center text-lia-text-secondary flex-shrink-0">
+                            <div className="w-5 h-5 rounded-xl bg-lia-bg-tertiary flex items-center justify-center text-lia-text-secondary flex-shrink-0">
                               {channel.icon}
                             </div>
                             <span className="text-xs font-medium text-lia-text-primary truncate">{channel.name}</span>
@@ -570,7 +570,7 @@ export function JobPublishModal({
                       <Search className="w-3 h-3" />
                       Busca Automática
                     </h4>
-                    <div className="space-y-2 bg-lia-bg-secondary rounded-md p-3 border border-lia-border-subtle">
+                    <div className="space-y-2 bg-lia-bg-secondary rounded-xl p-3 border border-lia-border-subtle">
                       <div className="flex items-start gap-2">
                         <Checkbox
                           id="autoSearchInternal"
@@ -668,7 +668,7 @@ export function JobPublishModal({
       <DialogContent className="max-w-md bg-lia-bg-primary border border-lia-border-subtle">
         <DialogHeader>
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-md bg-lia-bg-tertiary flex items-center justify-center">
+            <div className="w-7 h-7 rounded-xl bg-lia-bg-tertiary flex items-center justify-center">
               <Info className="w-4 h-4 text-lia-text-secondary" />
             </div>
             <DialogTitle className="text-sm font-semibold text-lia-text-primary font-['Open_Sans',sans-serif]">
@@ -680,7 +680,7 @@ export function JobPublishModal({
           </DialogDescription>
         </DialogHeader>
         <div className="py-2">
-          <div className="flex items-start gap-2 p-3 rounded-md bg-lia-bg-secondary border border-lia-border-subtle">
+          <div className="flex items-start gap-2 p-3 rounded-xl bg-lia-bg-secondary border border-lia-border-subtle">
             <AlertTriangle className="w-4 h-4 text-status-warning flex-shrink-0 mt-0.5" />
             <p className="text-xs text-lia-text-primary leading-relaxed">
               {channelInfoModal?.message}

@@ -214,7 +214,7 @@ export function JobProcessSection({
           <button
             type="button"
             onClick={addStage}
-            className="flex items-center gap-2 text-xs text-lia-text-secondary hover:text-lia-text-primary py-2.5 px-3 rounded-md border border-dashed border-lia-border-default hover:border-lia-border-medium w-full justify-center mt-3"
+            className="flex items-center gap-2 text-xs text-lia-text-secondary hover:text-lia-text-primary py-2.5 px-3 rounded-xl border border-dashed border-lia-border-default hover:border-lia-border-medium w-full justify-center mt-3"
           >
             <Plus className="w-4 h-4" />Adicionar Etapa Customizada
           </button>

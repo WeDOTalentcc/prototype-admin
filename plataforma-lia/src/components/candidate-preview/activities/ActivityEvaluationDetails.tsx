@@ -44,25 +44,25 @@ export function ActivityEvaluationDetails({
     <>
       {activity.type === 'lia-evaluation' && (
         <div className="mt-3 space-y-3">
-          <div className="bg-lia-bg-primary p-3 rounded-md border border-lia-border-subtle">
+          <div className="bg-lia-bg-primary p-3 rounded-xl border border-lia-border-subtle">
             <h5 className="text-xs font-semibold text-lia-text-primary mb-2 flex items-center gap-1">
               <Brain className="w-3 h-3 text-wedo-cyan" />
               Avaliação Automática da LIA
             </h5>
             <div className="grid grid-cols-4 gap-2 mb-3">
-              <div className="text-center p-2 bg-lia-bg-secondary rounded-md">
+              <div className="text-center p-2 bg-lia-bg-secondary rounded-xl">
                 <p className="text-base font-bold text-lia-text-primary">{formatScorePercent(activity.details.technicalScore)}</p>
                 <p className={textStyles.bodySmall}>Técnico</p>
               </div>
-              <div className="text-center p-2 bg-lia-bg-secondary rounded-md">
+              <div className="text-center p-2 bg-lia-bg-secondary rounded-xl">
                 <p className="text-base font-bold text-lia-text-primary">{formatScorePercent(activity.details.culturalFit)}</p>
                 <p className={textStyles.bodySmall}>Fit Cultural</p>
               </div>
-              <div className="text-center p-2 bg-lia-bg-secondary rounded-md">
+              <div className="text-center p-2 bg-lia-bg-secondary rounded-xl">
                 <p className="text-base font-bold text-lia-text-primary">{formatScorePercent(activity.details.experience)}</p>
                 <p className={textStyles.bodySmall}>Experiência</p>
               </div>
-              <div className="text-center p-2 bg-lia-bg-secondary rounded-md">
+              <div className="text-center p-2 bg-lia-bg-secondary rounded-xl">
                 <p className="text-base font-bold text-lia-text-primary">{formatScorePercent(activity.details.softSkills)}</p>
                 <p className={textStyles.bodySmall}>Soft Skills</p>
               </div>
@@ -79,7 +79,7 @@ export function ActivityEvaluationDetails({
                 </div>
               </div>
             )}
-            <div className="bg-lia-bg-secondary p-2 rounded-md">
+            <div className="bg-lia-bg-secondary p-2 rounded-xl">
               <p className="text-xs font-semibold text-lia-text-primary mb-1">Recomendação</p>
               <p className="text-xs text-lia-text-secondary">{activity.details.recommendation}</p>
             </div>
@@ -89,7 +89,7 @@ export function ActivityEvaluationDetails({
 
       {activity.type === 'voice-screening' && (
         <div className="mt-3 space-y-3">
-          <div className="bg-lia-bg-primary p-3 rounded-md border border-lia-border-subtle">
+          <div className="bg-lia-bg-primary p-3 rounded-xl border border-lia-border-subtle">
             <h5 className="text-xs font-semibold text-lia-text-primary mb-2 flex items-center gap-1">
               <Mic className="w-3 h-3 text-status-error" />
               Triagem por Voz
@@ -98,21 +98,21 @@ export function ActivityEvaluationDetails({
               </Badge>
             </h5>
             <div className="grid grid-cols-3 gap-2 mb-3">
-              <div className="text-center p-2 bg-lia-bg-secondary rounded-md">
+              <div className="text-center p-2 bg-lia-bg-secondary rounded-xl">
                 <p className="text-base font-bold text-lia-text-primary">{activity.details.duration}</p>
                 <p className={textStyles.bodySmall}>Duração</p>
               </div>
-              <div className="text-center p-2 bg-lia-bg-secondary rounded-md">
+              <div className="text-center p-2 bg-lia-bg-secondary rounded-xl">
                 <p className="text-base font-bold text-lia-text-primary">{activity.details.completionRate}%</p>
                 <p className={textStyles.bodySmall}>Completude</p>
               </div>
-              <div className="text-center p-2 bg-lia-bg-secondary rounded-md">
+              <div className="text-center p-2 bg-lia-bg-secondary rounded-xl">
                 <p className="text-base font-bold text-lia-text-primary">{Math.round(activity.details.transcriptionConfidence * 100)}%</p>
                 <p className={textStyles.bodySmall}>Confiança</p>
               </div>
             </div>
             {activity.details.highlights && (
-              <div className="bg-status-success/10 border border-status-success/30 p-2 rounded-md mb-3">
+              <div className="bg-status-success/10 border border-status-success/30 p-2 rounded-xl mb-3">
                 <p className="text-xs font-semibold text-status-success mb-1">✨ Destaques</p>
                 <ul className="space-y-0.5">
                   {activity.details.highlights.map((h: string, i: number) => (
@@ -123,7 +123,7 @@ export function ActivityEvaluationDetails({
                 </ul>
               </div>
             )}
-            <div className="bg-lia-bg-secondary p-2 rounded-md mb-3">
+            <div className="bg-lia-bg-secondary p-2 rounded-xl mb-3">
               <p className="text-xs font-semibold text-lia-text-primary mb-1">Impressão Geral</p>
               <p className="text-xs text-lia-text-secondary">{activity.details.overallImpression}</p>
             </div>
@@ -186,7 +186,7 @@ export function ActivityEvaluationDetails({
                 {activity.details.overallFit}% fit
               </Badge>
             </h5>
-            <div className="text-center p-3 bg-gradient-to-r from-lia-bg-secondary to-lia-bg-tertiary rounded-md border border-lia-border-subtle mb-3">
+            <div className="text-center p-3 bg-gradient-to-r from-lia-bg-secondary to-lia-bg-tertiary rounded-xl border border-lia-border-subtle mb-3">
               <p className="text-3xl font-bold text-lia-text-primary">{activity.details.overallFit}%</p>
               <p className={textStyles.caption}>Fit Geral</p>
             </div>
@@ -195,7 +195,7 @@ export function ActivityEvaluationDetails({
                 {activity.details.criteriaScores.slice(0, 4).map((c: Record<string, unknown>, i: number) => {
                   const cScore = Number(c.score ?? 0)
                   return (
-                  <div key={i} className="flex justify-between text-xs bg-lia-bg-secondary p-1.5 rounded-md border border-lia-border-subtle">
+                  <div key={i} className="flex justify-between text-xs bg-lia-bg-secondary p-1.5 rounded-xl border border-lia-border-subtle">
                     <span className="text-lia-text-primary">{String(c.criteria ?? '')}</span>
                     <Badge className={`text-micro px-1.5 ${cScore >= 80 ? badgeStyles.success : cScore >= 60 ? badgeStyles.warning : badgeStyles.error}`}>
                       {cScore}%
@@ -205,7 +205,7 @@ export function ActivityEvaluationDetails({
                 })}
               </div>
             )}
-            <div className="bg-lia-bg-secondary p-2 rounded-md border border-lia-border-subtle">
+            <div className="bg-lia-bg-secondary p-2 rounded-xl border border-lia-border-subtle">
               <p className={`${textStyles.labelSmall} mb-1`}>💡 Recomendação</p>
               <p className={`${textStyles.caption} text-lia-text-secondary`}>{activity.details.recommendation}</p>
             </div>
@@ -223,22 +223,22 @@ export function ActivityEvaluationDetails({
                 {activity.details.profile}
               </Badge>
             </h5>
-            <div className="text-center p-3 bg-gradient-to-r from-lia-bg-tertiary to-lia-bg-secondary rounded-md border border-lia-border-default mb-3">
+            <div className="text-center p-3 bg-gradient-to-r from-lia-bg-tertiary to-lia-bg-secondary rounded-xl border border-lia-border-default mb-3">
               <p className="text-xl font-bold text-lia-text-primary">{activity.details.profile}</p>
               <p className={textStyles.caption}>{activity.details.profileDescription}</p>
             </div>
             <div className="grid grid-cols-2 gap-2 mb-3">
-              <div className="bg-lia-bg-secondary p-2 rounded-md border border-lia-border-subtle text-center">
+              <div className="bg-lia-bg-secondary p-2 rounded-xl border border-lia-border-subtle text-center">
                 <p className="text-sm font-bold text-lia-text-primary">{activity.details.culturalFit || activity.details.culturalFitScore}%</p>
                 <p className={textStyles.caption}>Fit Cultural</p>
               </div>
-              <div className="bg-lia-bg-secondary p-2 rounded-md border border-lia-border-subtle text-center">
+              <div className="bg-lia-bg-secondary p-2 rounded-xl border border-lia-border-subtle text-center">
                 <p className="text-sm font-bold text-lia-text-primary">{activity.details.teamworkScore}%</p>
                 <p className={textStyles.caption}>Trabalho em Equipe</p>
               </div>
             </div>
             {activity.details.developmentAreas && activity.details.developmentAreas.length > 0 && (
-              <div className="bg-lia-bg-secondary p-2 rounded-md border border-lia-border-subtle">
+              <div className="bg-lia-bg-secondary p-2 rounded-xl border border-lia-border-subtle">
                 <p className={`${textStyles.labelSmall} text-lia-text-primary mb-1`}>⚠️ Áreas de Desenvolvimento</p>
                 <div className="flex flex-wrap gap-1">
                   {activity.details.developmentAreas.map((a: string, i: number) => (
@@ -284,21 +284,21 @@ export function ActivityEvaluationDetails({
               </Badge>
             </h5>
             <div className="grid grid-cols-3 gap-2 mb-3">
-              <div className="text-center p-2 bg-lia-bg-secondary rounded-md border border-lia-border-subtle">
+              <div className="text-center p-2 bg-lia-bg-secondary rounded-xl border border-lia-border-subtle">
                 <p className="text-sm font-bold text-lia-text-primary">{activity.details.duration}</p>
                 <p className={textStyles.caption}>Duração</p>
               </div>
-              <div className="text-center p-2 bg-lia-bg-secondary rounded-md border border-lia-border-subtle">
+              <div className="text-center p-2 bg-lia-bg-secondary rounded-xl border border-lia-border-subtle">
                 <p className="text-sm font-bold text-lia-text-primary">{activity.details.completionRate || 100}%</p>
                 <p className={textStyles.caption}>Completude</p>
               </div>
-              <div className="text-center p-2 bg-lia-bg-secondary rounded-md border border-lia-border-subtle">
+              <div className="text-center p-2 bg-lia-bg-secondary rounded-xl border border-lia-border-subtle">
                 <p className="text-sm font-bold text-lia-text-primary">{Math.round((activity.details.transcriptionConfidence || 0.95) * 100)}%</p>
                 <p className={textStyles.caption}>Confiança</p>
               </div>
             </div>
             {activity.details.overallImpression && (
-              <div className="bg-lia-bg-secondary p-2 rounded-md border border-lia-border-subtle mb-3">
+              <div className="bg-lia-bg-secondary p-2 rounded-xl border border-lia-border-subtle mb-3">
                 <p className={`${textStyles.labelSmall} mb-1`}>Impressão Geral</p>
                 <p className={`${textStyles.caption} text-lia-text-secondary`}>{activity.details.overallImpression}</p>
               </div>

@@ -65,7 +65,7 @@ export const FilterSectionGeral = React.memo(function FilterSectionGeral({
         </div>
       </div>
 
-      <div className="space-y-4 p-4 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-secondary/50">
+      <div className="space-y-4 p-4 rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-secondary/50">
         <div className="flex items-center gap-2 mb-3">
           <Eye className="w-4 h-4 text-lia-text-secondary" />
           <span className={textStyles.subtitle}>Ocultar Perfis Visualizados ou Shortlistados</span>

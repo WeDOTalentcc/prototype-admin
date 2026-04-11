@@ -110,7 +110,7 @@ export function TimezoneDropdown({
             <ChevronDown className="w-4 h-4 text-lia-text-tertiary flex-shrink-0" />
           </button>
         </PopoverTrigger>
-        <PopoverContent className="w-72 p-0 rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle" align="start">
+        <PopoverContent className="w-72 p-0 rounded-xl dark:bg-lia-bg-secondary dark:border-lia-border-subtle" align="start">
           <div className="py-1 max-h-80 overflow-y-auto">
             {value && (
               <button
@@ -118,7 +118,7 @@ export function TimezoneDropdown({
                   onChange(null)
                   setIsOpen(false)
                 }}
-                className="w-full text-left px-3 py-2 text-xs text-lia-text-secondary hover:bg-lia-bg-secondary dark:hover:bg-lia-bg-inverse border-b border-lia-border-subtle dark:border-lia-border-subtle"
+                className="w-full text-left px-3 py-2 text-xs text-lia-text-secondary hover:bg-lia-bg-secondary dark:hover:bg-lia-bg-inverse dark:border-lia-border-subtle"
               >
                 Limpar seleção
               </button>

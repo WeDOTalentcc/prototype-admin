@@ -144,7 +144,7 @@ export function CandidateCard({
   }
 
   return (
-    <Card className="border border-lia-border-subtle hover:transition-shadow rounded-md bg-lia-bg-primary dark:bg-lia-bg-primary">
+    <Card className="border border-lia-border-subtle hover:transition-shadow rounded-xl bg-lia-bg-primary dark:bg-lia-bg-primary">
       <CardContent className="p-4">
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
@@ -280,7 +280,7 @@ export function CandidateCard({
                         {communications.map((comm) => (
                           <div
                             key={comm.id}
-                            className="flex items-start gap-2 p-2 rounded-md bg-lia-bg-secondary"
+                            className="flex items-start gap-2 p-2 rounded-xl bg-lia-bg-secondary"
                           >
                             <div className="shrink-0 mt-0.5">
                               {getChannelIcon(comm.channel)}

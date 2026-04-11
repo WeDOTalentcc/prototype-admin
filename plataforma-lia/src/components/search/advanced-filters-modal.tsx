@@ -71,11 +71,11 @@ export function AdvancedFiltersModal(props: AdvancedFiltersModalProps) {
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-lia-overlay backdrop-blur-[1px]" onClick={onClose} />
 
-      <div className="relative w-full max-w-4xl max-h-[85vh] rounded-md overflow-hidden border border-lia-border-subtle flex flex-col bg-lia-bg-primary dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
+      <div className="relative w-full max-w-4xl max-h-[85vh] rounded-xl overflow-hidden border border-lia-border-subtle flex flex-col bg-lia-bg-primary dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
         <div className="flex flex-col overflow-hidden flex-1">
 
           {/* Header */}
-          <div className="flex items-center justify-between px-6 py-4 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+          <div className="flex items-center justify-between px-6 py-4 dark:border-lia-border-subtle">
             <div>
               <h2 className={textStyles.title}>Filtros Avan&ccedil;ados</h2>
               <p className={`${textStyles.description} mt-0.5`}>Refine sua busca com filtros compat&iacute;veis com a Base Global</p>
@@ -111,7 +111,7 @@ export function AdvancedFiltersModal(props: AdvancedFiltersModalProps) {
                   </PopoverContent>
                 </Popover>
               )}
-              <button onClick={onClose} className="p-1.5 rounded-md hover:bg-lia-bg-tertiary text-lia-text-tertiary hover:text-lia-text-secondary transition-colors motion-reduce:transition-none">
+              <button onClick={onClose} className="p-1.5 rounded-xl hover:bg-lia-bg-tertiary text-lia-text-tertiary hover:text-lia-text-secondary transition-colors motion-reduce:transition-none">
                 <X className="w-5 h-5" />
               </button>
             </div>

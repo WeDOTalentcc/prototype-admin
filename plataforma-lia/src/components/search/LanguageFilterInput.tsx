@@ -270,7 +270,7 @@ export function LanguageFilterInput({
         {isDropdownOpen && filteredLanguages.length > 0 && (
           <div 
             ref={dropdownRef}
-            className="absolute z-50 w-full mt-1 bg-lia-bg-primary border border-lia-border-subtle rounded-md max-h-64 overflow-y-auto"
+            className="absolute z-50 w-full mt-1 bg-lia-bg-primary border border-lia-border-subtle rounded-xl max-h-64 overflow-y-auto"
           >
             {filteredLanguages.slice(0, 20).map((language, index) => (
               <button
@@ -295,7 +295,7 @@ export function LanguageFilterInput({
         {isDropdownOpen && inputValue && filteredLanguages.length === 0 && (
           <div 
             ref={dropdownRef}
-            className="absolute z-50 w-full mt-1 bg-lia-bg-primary border border-lia-border-subtle rounded-md"
+            className="absolute z-50 w-full mt-1 bg-lia-bg-primary border border-lia-border-subtle rounded-xl"
           >
             <button
               onClick={() => addLanguage(inputValue.trim())}
@@ -315,7 +315,7 @@ export function LanguageFilterInput({
           {value.map(language => (
             <div
               key={language}
-              className="flex items-center gap-1.5 px-2.5 py-1 bg-lia-bg-tertiary rounded-md text-sm"
+              className="flex items-center gap-1.5 px-2.5 py-1 bg-lia-bg-tertiary rounded-xl text-sm"
             >
               <span className="text-lia-text-primary">{language}</span>
               <button

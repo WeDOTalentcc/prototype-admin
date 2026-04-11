@@ -82,7 +82,7 @@ function EditorToolbar({ editor, variant }: { editor: Editor; variant: "full" | 
   }, [editor])
 
   return (
-    <div className="flex items-center gap-0.5 px-2 py-1.5 border-b border-lia-border-subtle bg-lia-bg-secondary dark:bg-lia-bg-elevated flex-wrap">
+    <div className="flex items-center gap-0.5 px-2 py-1.5 bg-lia-bg-secondary dark:bg-lia-bg-elevated flex-wrap">
       <ToolbarButton
         onClick={() => editor.chain().focus().toggleBold().run()}
         isActive={editor.isActive("bold")}

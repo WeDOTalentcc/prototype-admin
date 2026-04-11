@@ -78,13 +78,13 @@ export function JobCompareModal({ isOpen, onClose, jobs }: JobCompareModalProps)
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent
-        className="max-w-4xl max-h-[90vh] overflow-y-auto bg-lia-bg-primary border border-lia-border-subtle rounded-md"
+        className="max-w-4xl max-h-[90vh] overflow-y-auto bg-lia-bg-primary border border-lia-border-subtle rounded-xl"
         data-testid="job-compare-modal"
       >
-        <DialogHeader className="border-b border-lia-border-subtle pb-3">
+        <DialogHeader className=" pb-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-lia-bg-tertiary rounded-md flex items-center justify-center">
+              <div className="w-8 h-8 bg-lia-bg-tertiary rounded-xl flex items-center justify-center">
                 <Scale className="w-4 h-4 text-lia-text-secondary" />
               </div>
               <div>
@@ -131,10 +131,10 @@ export function JobCompareModal({ isOpen, onClose, jobs }: JobCompareModalProps)
                   {jobs.map((job) => (
                     <div
                       key={job.id}
-                      className="p-2 rounded-md bg-lia-bg-secondary border border-lia-border-subtle"
+                      className="p-2 rounded-xl bg-lia-bg-secondary border border-lia-border-subtle"
                     >
                       <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 rounded-md bg-lia-bg-primary border border-lia-border-subtle flex items-center justify-center flex-shrink-0">
+                        <div className="w-6 h-6 rounded-xl bg-lia-bg-primary border border-lia-border-subtle flex items-center justify-center flex-shrink-0">
                           <Briefcase className="w-3 h-3 text-lia-text-secondary" />
                         </div>
                         <div className="flex-1 min-w-0">
@@ -159,7 +159,7 @@ export function JobCompareModal({ isOpen, onClose, jobs }: JobCompareModalProps)
                 <h4 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-2">
                   Dimensões
                 </h4>
-                <div className="space-y-1.5 p-2.5 rounded-md bg-lia-bg-secondary border border-lia-border-subtle">
+                <div className="space-y-1.5 p-2.5 rounded-xl bg-lia-bg-secondary border border-lia-border-subtle">
                   {COMPARISON_DIMENSIONS.map((dim) => (
                     <label
                       key={dim.id}

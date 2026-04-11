@@ -126,7 +126,7 @@ export function CandidateSummaryCard({
                 {data.highlights.slice(0, 2).map((highlight, index) => (
                   <div
                     key={`highlight-${index}`}
-                    className="flex items-start gap-2 text-xs px-2 py-1 rounded-md bg-lia-bg-tertiary text-lia-text-secondary"
+                    className="flex items-start gap-2 text-xs px-2 py-1 rounded-xl bg-lia-bg-tertiary text-lia-text-secondary"
                   >
                     <ThumbsUp className="h-3 w-3 mt-0.5 shrink-0 text-wedo-green" />
                     <span>{highlight}</span>
@@ -140,7 +140,7 @@ export function CandidateSummaryCard({
                 {data.concerns.slice(0, 1).map((concern, index) => (
                   <div
                     key={`concern-${index}`}
-                    className="flex items-start gap-2 text-xs px-2 py-1 rounded-md bg-lia-bg-tertiary text-lia-text-secondary"
+                    className="flex items-start gap-2 text-xs px-2 py-1 rounded-xl bg-lia-bg-tertiary text-lia-text-secondary"
                   >
                     <ThumbsDown className="h-3 w-3 mt-0.5 shrink-0 text-lia-text-secondary" />
                     <span>{concern}</span>

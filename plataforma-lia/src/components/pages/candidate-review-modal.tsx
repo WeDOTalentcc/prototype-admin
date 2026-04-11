@@ -67,10 +67,10 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
         <div className="absolute inset-0 bg-lia-overlay" onClick={onClose} />
         
         <div 
-          className="relative flex-1 bg-lia-bg-primary dark:bg-lia-bg-primary m-4 rounded-md overflow-hidden flex flex-col"
+          className="relative flex-1 bg-lia-bg-primary dark:bg-lia-bg-primary m-4 rounded-xl overflow-hidden flex flex-col"
          
         >
-          <div className="flex items-center justify-between px-6 py-4 border-b border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-primary">
+          <div className="flex items-center justify-between px-6 py-4 dark:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-primary">
             <div className="flex items-center gap-3">
               <button
                 onClick={onClose}
@@ -91,7 +91,7 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
             <CandidateProfileColumn candidate={currentCandidate} />
 
             <div className="flex-1 flex flex-col overflow-hidden bg-lia-bg-secondary dark:bg-lia-bg-secondary">
-              <div className="p-6 border-b border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-primary">
+              <div className="p-6 dark:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-primary">
                 <div className="flex items-center justify-between">
                   <h3 className="text-lg font-semibold text-lia-text-primary">
                     Why we matched this profile
@@ -152,12 +152,12 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
             </div>
 
             <div className="w-[220px] border-l border-lia-border-subtle dark:border-lia-border-subtle flex flex-col bg-lia-bg-primary dark:bg-lia-bg-primary">
-              <div className="p-4 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+              <div className="p-4 dark:border-lia-border-subtle">
                 <div className="flex items-center justify-between">
                   <button
                     onClick={() => onIndexChange(Math.max(0, currentIndex - 1))}
                     disabled={currentIndex === 0}
-                    className="p-2 rounded-md hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover transition-colors motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="p-2 rounded-xl hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover transition-colors motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <ChevronLeft className="w-5 h-5 text-lia-text-secondary" />
                   </button>
@@ -167,7 +167,7 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
                   <button
                     onClick={() => onIndexChange(Math.min(candidates.length - 1, currentIndex + 1))}
                     disabled={currentIndex === candidates.length - 1}
-                    className="p-2 rounded-md hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover transition-colors motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="p-2 rounded-xl hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover transition-colors motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <ChevronRight className="w-5 h-5 text-lia-text-secondary" />
                   </button>

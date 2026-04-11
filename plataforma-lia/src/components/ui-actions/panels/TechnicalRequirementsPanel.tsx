@@ -104,8 +104,8 @@ export function TechnicalRequirementsPanel({
 
         {(Object.keys(CATEGORY_LABELS) as TechCategory[]).map((category) => (
           <TabsContent key={category} value={category} className="mt-4">
-            <Card className="rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
-              <CardHeader className="pb-3 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+            <Card className="rounded-xl dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
+              <CardHeader className="pb-3 dark:border-lia-border-subtle">
                 <CardTitle className="text-sm flex items-center gap-2 font-sans">
                   {CATEGORY_LABELS[category].icon} {CATEGORY_LABELS[category].label}
                 </CardTitle>
@@ -124,7 +124,7 @@ export function TechnicalRequirementsPanel({
                     Use o campo acima para adicionar.
                   </div>
                 ) : (
-                  <div className="border rounded-md overflow-hidden dark:border-lia-border-subtle">
+                  <div className="border rounded-xl overflow-hidden dark:border-lia-border-subtle">
                     <table className="w-full">
                       <thead className="bg-muted/50 dark:bg-lia-bg-primary/50">
                         <tr>
@@ -200,8 +200,8 @@ export function TechnicalRequirementsPanel({
         ))}
       </Tabs>
 
-      <Card className="rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
-        <CardHeader className="pb-3 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+      <Card className="rounded-xl dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
+        <CardHeader className="pb-3 dark:border-lia-border-subtle">
           <CardTitle className="text-sm font-sans">📊 Resumo</CardTitle>
         </CardHeader>
         <CardContent>
@@ -352,7 +352,7 @@ function TechAutocomplete({
       {showSuggestions && (search || availableTechs.length > 0) && (
         <div
           ref={suggestionsRef}
-          className="absolute z-50 top-full left-0 right-0 mt-1 border rounded-md max-h-48 overflow-auto dark:bg-lia-bg-secondary dark:border-lia-border-subtle bg-lia-bg-primary border-lia-border-default"
+          className="absolute z-50 top-full left-0 right-0 mt-1 border rounded-xl max-h-48 overflow-auto dark:bg-lia-bg-secondary dark:border-lia-border-subtle bg-lia-bg-primary border-lia-border-default"
         >
           {availableTechs.length > 0 ? (
             availableTechs.slice(0, 10).map((tech, index) => (

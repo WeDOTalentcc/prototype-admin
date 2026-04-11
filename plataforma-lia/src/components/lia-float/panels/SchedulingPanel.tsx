@@ -74,12 +74,12 @@ export function SchedulingPanel({ data, onUpdateData }: SchedulingPanelProps) {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="px-4 py-3 border-b border-lia-border-subtle flex items-center gap-2">
+      <div className="px-4 py-3 flex items-center gap-2">
         <Calendar className="w-4 h-4 text-wedo-cyan" />
         <span className="text-sm font-semibold text-lia-text-primary">Agendamento</span>
       </div>
 
-      <div className="px-4 py-3 border-b border-lia-border-subtle bg-lia-bg-secondary">
+      <div className="px-4 py-3 bg-lia-bg-secondary">
         <div className="flex items-center gap-2 mb-1">
           <User className="w-3.5 h-3.5 text-lia-text-secondary" />
           <span className="text-xs font-medium text-lia-text-primary">{candidateName}</span>

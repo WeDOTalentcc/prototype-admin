@@ -166,7 +166,7 @@ export function CalibrationStage() {
         "border-lia-border-subtle"
       )}>
         {/* Header */}
-        <div className="p-3 bg-lia-bg-primary border-b border-lia-border-subtle flex items-center gap-3">
+        <div className="p-3 bg-lia-bg-primary flex items-center gap-3">
           <div className="w-12 h-12 rounded-full bg-gradient-to-br from-lia-bg-tertiary dark:from-lia-btn-primary-hover to-wedo-cyan-dark flex items-center justify-center text-white font-semibold text-lg">
             {currentCandidate.name?.charAt(0) || 'C'}
           </div>
@@ -199,7 +199,7 @@ export function CalibrationStage() {
           {currentCandidate.highlights && currentCandidate.highlights.length > 0 && (
             <div className="flex flex-wrap gap-2">
               {currentCandidate.highlights.map((h, i) => (
-                <div key={i} className="flex items-center gap-1 px-2 py-1 bg-lia-bg-secondary rounded-md">
+                <div key={i} className="flex items-center gap-1 px-2 py-1 bg-lia-bg-secondary rounded-xl">
                   <span className="text-micro">{h.icon}</span>
                   <span className="text-micro text-lia-text-secondary">{h.label}:</span>
                   <span className="text-micro font-medium text-lia-text-primary">{h.value}</span>

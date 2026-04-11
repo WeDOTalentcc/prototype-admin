@@ -212,7 +212,7 @@ export function LiaSuperPrompt() {
           >
             {/* Header */}
             <div
-              className="flex items-center justify-between px-6 py-4 border-b border-lia-border-subtle flex-shrink-0"
+              className="flex items-center justify-between px-6 py-4 flex-shrink-0"
              
             >
               <div className="flex items-center gap-4">
@@ -397,7 +397,7 @@ export function LiaSuperPrompt() {
                                         {suggestion.description}
                                       </p>
                                       {suggestion.actionType === "redirect" && (
-                                        <span className="inline-block mt-1 text-micro px-1.5 py-0.5 rounded-md bg-lia-bg-tertiary text-lia-text-secondary">
+                                        <span className="inline-block mt-1 text-micro px-1.5 py-0.5 rounded-xl bg-lia-bg-tertiary text-lia-text-secondary">
                                           Abre em nova tela
                                         </span>
                                       )}

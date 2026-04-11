@@ -54,7 +54,7 @@ export function GoalsTemplatesModal({
 }: GoalsTemplatesModalProps) {
   return (
     <div className="fixed inset-0 bg-lia-overlay flex items-center justify-center z-50">
-      <div className="bg-lia-bg-primary rounded-md p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+      <div className="bg-lia-bg-primary rounded-xl p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-3">
           <div>
             <h3 className={textStyles.h4}>Templates de Metas</h3>
@@ -115,7 +115,7 @@ export function GoalsTemplatesModal({
                 placeholder="Buscar templates..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-7 pr-2.5 py-1 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary text-micro font-['Open_Sans',sans-serif]"
+                className="w-full pl-7 pr-2.5 py-1 border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary text-micro font-['Open_Sans',sans-serif]"
               />
             </div>
           </div>
@@ -143,7 +143,7 @@ export function GoalsTemplatesModal({
         </div>
 
         {hiddenTemplates.size > 0 && (
-          <div className="bg-status-warning/10 border border-status-warning/30 rounded-md px-3 py-1.5 mb-4 flex items-center justify-between">
+          <div className="bg-status-warning/10 border border-status-warning/30 rounded-xl px-3 py-1.5 mb-4 flex items-center justify-between">
             <span className={`${textStyles.bodySmall} !text-status-warning`}>
               {hiddenTemplates.size} template(s) oculto(s)
             </span>

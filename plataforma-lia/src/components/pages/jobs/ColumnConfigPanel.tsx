@@ -73,8 +73,8 @@ export function ColumnConfigPanel({
 
   return (
     <div className="flex-shrink-0 w-80 transition-colors motion-reduce:transition-none duration-300" data-testid="column-config-panel">
-      <Card className="h-full flex flex-col overflow-hidden bg-lia-bg-primary dark:bg-lia-bg-primary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
-        <div className="flex-shrink-0 p-4 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+      <Card className="h-full flex flex-col overflow-hidden bg-lia-bg-primary dark:bg-lia-bg-primary rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle">
+        <div className="flex-shrink-0 p-4 dark:border-lia-border-subtle">
           <div className="flex items-center justify-between">
             <h3 className="font-semibold text-sm text-lia-text-primary">Configurar Colunas</h3>
             <Button
@@ -93,13 +93,13 @@ export function ColumnConfigPanel({
 
         <div className="flex-1 overflow-y-auto p-4">
           {savedColumnViews.length > 0 && (
-            <div className="mb-4 pb-3 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+            <div className="mb-4 pb-3 dark:border-lia-border-subtle">
               <h4 className="text-xs font-semibold text-lia-text-primary mb-2">
                 Visualizações Salvas
               </h4>
               <div className="space-y-1">
                 {savedColumnViews.map(view => (
-                  <div key={view.id} className="flex items-center justify-between p-2 hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover rounded-md">
+                  <div key={view.id} className="flex items-center justify-between p-2 hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover rounded-xl">
                     <button
                       onClick={() => applyColumnView(view.id)}
                       className="text-xs text-lia-text-primary hover:text-lia-text-primary"
@@ -131,7 +131,7 @@ export function ColumnConfigPanel({
                   </h4>
                   <div className="space-y-1">
                     {categoryColumns.map(col => (
-                      <label key={col.id} className="flex items-center gap-2 p-2 hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover rounded-md cursor-pointer">
+                      <label key={col.id} className="flex items-center gap-2 p-2 hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover rounded-xl cursor-pointer">
                         <input
                           type="checkbox"
                           className="w-3 h-3 accent-lia-btn-primary-bg"

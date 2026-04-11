@@ -70,7 +70,7 @@ export function ArchetypesList({
 
         {/* Contexto de busca atual */}
         {naturalSearchValue && (
-          <div className="p-3 rounded-md border border-wedo-cyan/30 bg-wedo-cyan/5">
+          <div className="p-3 rounded-xl border border-wedo-cyan/30 bg-wedo-cyan/5">
             <div className="flex items-start gap-2 mb-2">
               <Brain className="w-3.5 h-3.5 text-wedo-cyan mt-0.5" />
               <span className="text-xs text-lia-text-secondary">Contexto da busca atual:</span>
@@ -132,7 +132,7 @@ export function ArchetypesList({
             ) : (
               <button
                 onClick={() => onUseAsBase(naturalSearchValue)}
-                className="mt-3 w-full px-3 py-1.5 bg-lia-bg-tertiary text-lia-text-primary text-xs rounded-md hover:bg-lia-interactive-active transition-colors motion-reduce:transition-none flex items-center justify-center gap-1.5"
+                className="mt-3 w-full px-3 py-1.5 bg-lia-bg-tertiary text-lia-text-primary text-xs rounded-xl hover:bg-lia-interactive-active transition-colors motion-reduce:transition-none flex items-center justify-center gap-1.5"
               >
                 <Plus className="w-3 h-3" />
                 Usar como base para novo arquétipo
@@ -205,7 +205,7 @@ export function ArchetypesList({
               value={archetypeSearchFilter}
               onChange={(e) => onArchetypeSearchFilterChange(e.target.value)}
               placeholder="Buscar arquétipos..."
-              className="w-full pl-8 pr-3 py-1.5 text-xs rounded-md border border-lia-border-subtle focus:outline-none focus:ring-2 focus:ring-lia-border-medium focus:border-transparent"
+              className="w-full pl-8 pr-3 py-1.5 text-xs rounded-xl border border-lia-border-subtle focus:outline-none focus:ring-2 focus:ring-lia-border-medium focus:border-transparent"
             />
           </div>
         )}
@@ -225,14 +225,14 @@ export function ArchetypesList({
               return (
                 <div
                   key={arch.id}
-                  className="group relative p-3 rounded-md border border-lia-border-subtle bg-lia-bg-primary hover:border-lia-border-medium transition-colors motion-reduce:transition-none cursor-pointer"
+                  className="group relative p-3 rounded-xl border border-lia-border-subtle bg-lia-bg-primary hover:border-lia-border-medium transition-colors motion-reduce:transition-none cursor-pointer"
                   onClick={() => onSelectArchetype(arch.id, query)}
                 >
                   {/* Edit/Delete */}
                   <div className="absolute top-2 right-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none">
                     <button
                       onClick={(e) => onEditArchetype(arch, e)}
-                      className="p-1 rounded-md hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none"
+                      className="p-1 rounded-xl hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none"
                       title="Editar arquétipo"
                     >
                       <Pencil className="w-3.5 h-3.5 text-lia-text-tertiary hover:text-lia-text-secondary" />

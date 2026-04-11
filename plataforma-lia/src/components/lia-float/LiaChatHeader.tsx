@@ -55,7 +55,7 @@ export function LiaChatHeader({
 
   return (
     <>
-      <div className="flex items-center justify-between px-4 py-3 border-b border-lia-border-subtle flex-shrink-0">
+      <div className="flex items-center justify-between px-4 py-3 flex-shrink-0">
         <div className="flex items-center gap-2">
           <div className="w-7 h-7 rounded-full flex items-center justify-center">
             <Brain className="w-4 h-4 text-wedo-cyan" strokeWidth={2.5} />

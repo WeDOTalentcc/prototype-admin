@@ -113,9 +113,9 @@ export function JobDuplicateModal({
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent data-testid="job-duplicate-modal" className="max-w-2xl bg-lia-bg-primary border border-lia-border-subtle">
-        <DialogHeader className="pb-3 border-b border-lia-border-subtle">
+        <DialogHeader className="pb-3">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-md bg-lia-bg-tertiary flex items-center justify-center">
+            <div className="w-8 h-8 rounded-xl bg-lia-bg-tertiary flex items-center justify-center">
               <Copy className="w-4 h-4 text-lia-text-secondary" />
             </div>
             <div>
@@ -132,12 +132,12 @@ export function JobDuplicateModal({
         <div className="py-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-3">
-              <div className="p-3 rounded-md bg-lia-bg-secondary border border-lia-border-subtle">
+              <div className="p-3 rounded-xl bg-lia-bg-secondary border border-lia-border-subtle">
                 <h4 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-2 font-['Open_Sans',sans-serif]">
                   Vaga Original
                 </h4>
                 <div className="flex items-start gap-2">
-                  <div className="w-8 h-8 rounded-md bg-lia-bg-primary border border-lia-border-subtle flex items-center justify-center flex-shrink-0">
+                  <div className="w-8 h-8 rounded-xl bg-lia-bg-primary border border-lia-border-subtle flex items-center justify-center flex-shrink-0">
                     <Briefcase className="w-4 h-4 text-lia-text-secondary" />
                   </div>
                   <div className="flex-1 min-w-0">
@@ -177,7 +177,7 @@ export function JobDuplicateModal({
                 <h4 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-2 font-['Open_Sans',sans-serif]">
                   O que será mantido
                 </h4>
-                <div className="grid grid-cols-2 gap-x-3 gap-y-1 p-3 rounded-md bg-lia-bg-secondary border border-lia-border-subtle">
+                <div className="grid grid-cols-2 gap-x-3 gap-y-1 p-3 rounded-xl bg-lia-bg-secondary border border-lia-border-subtle">
                   {KEPT_ITEMS.map((item) => (
                     <div key={item} className="flex items-center gap-1.5 text-xs text-lia-text-primary">
                       <Check className="w-3 h-3 text-status-success flex-shrink-0" />
@@ -196,21 +196,21 @@ export function JobDuplicateModal({
                   onValueChange={(val) => setCandidateOption(val as 'all' | 'approved' | 'none')}
                   className="space-y-1"
                 >
-                  <div className="flex items-center space-x-2 p-2 rounded-md bg-lia-bg-secondary border border-lia-border-subtle">
+                  <div className="flex items-center space-x-2 p-2 rounded-xl bg-lia-bg-secondary border border-lia-border-subtle">
                     <RadioGroupItem value="all" id="all" className="border-lia-border-medium text-lia-text-primary" />
                     <Label htmlFor="all" className="text-xs text-lia-text-primary cursor-pointer flex items-center gap-1">
                       <Users className="w-2.5 h-2.5 text-lia-text-disabled" />
                       Todos ({job.candidates_count || 0})
                     </Label>
                   </div>
-                  <div className="flex items-center space-x-2 p-2 rounded-md bg-lia-bg-secondary border border-lia-border-subtle">
+                  <div className="flex items-center space-x-2 p-2 rounded-xl bg-lia-bg-secondary border border-lia-border-subtle">
                     <RadioGroupItem value="approved" id="approved" className="border-lia-border-medium text-lia-text-primary" />
                     <Label htmlFor="approved" className="text-xs text-lia-text-primary cursor-pointer flex items-center gap-1">
                       <Check className="w-2.5 h-2.5 text-lia-text-disabled" />
                       Apenas aprovados ({job.approved_count || 0})
                     </Label>
                   </div>
-                  <div className="flex items-center space-x-2 p-2 rounded-md bg-lia-bg-secondary border border-lia-border-subtle">
+                  <div className="flex items-center space-x-2 p-2 rounded-xl bg-lia-bg-secondary border border-lia-border-subtle">
                     <RadioGroupItem value="none" id="none" className="border-lia-border-medium text-lia-text-primary" />
                     <Label htmlFor="none" className="text-xs text-lia-text-primary cursor-pointer">
                       Começar com base vazia

@@ -110,7 +110,7 @@ export function CandidateActivitiesTab({
             className="absolute -left-6 w-3 h-3 rounded-full border-2 border-white z-10"
             style={{backgroundColor: activity.iconColor, marginTop: '14px'}}
           ></div>
-          <div className="flex-1 border border-lia-border-subtle rounded-md transition-colors motion-reduce:transition-none">
+          <div className="flex-1 border border-lia-border-subtle rounded-xl transition-colors motion-reduce:transition-none">
             <div
               className="p-3 cursor-pointer hover:bg-lia-bg-primary dark:hover:bg-lia-btn-primary-hover transition-colors motion-reduce:transition-none"
               onClick={() => setExpandedActivity(isExpanded ? null : activity.id)}
@@ -180,7 +180,7 @@ export function CandidateActivitiesTab({
     }
 
     return (
-      <div key={activity.id} className="border border-lia-border-subtle rounded-md transition-colors motion-reduce:transition-none">
+      <div key={activity.id} className="border border-lia-border-subtle rounded-xl transition-colors motion-reduce:transition-none">
         <div
           className="p-2.5 cursor-pointer hover:bg-lia-bg-primary dark:hover:bg-lia-btn-primary-hover transition-colors motion-reduce:transition-none"
           onClick={() => setExpandedActivity(isExpanded ? null : activity.id)}

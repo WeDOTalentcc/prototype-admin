@@ -313,7 +313,7 @@ export function IndustryFilterInput({
       <div className="flex items-center gap-2">
         <Popover open={isTimeFilterOpen} onOpenChange={setIsTimeFilterOpen}>
           <PopoverTrigger asChild>
-            <button className="flex items-center gap-2 px-2.5 py-1 rounded-md border border-lia-border-subtle text-xs hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none">
+            <button className="flex items-center gap-2 px-2.5 py-1 rounded-xl border border-lia-border-subtle text-xs hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none">
               <span className="text-lia-text-primary">{currentTimeOption?.label}</span>
               <ChevronDown className="w-3.5 h-3.5 text-lia-text-tertiary" />
             </button>
@@ -386,10 +386,10 @@ export function IndustryFilterInput({
         {isDropdownOpen && (dropdownItems.length > 0 || aiError) && (
           <div 
             ref={dropdownRef}
-            className="absolute z-50 w-full mt-1 bg-lia-bg-primary border border-lia-border-subtle rounded-md max-h-64 overflow-y-auto"
+            className="absolute z-50 w-full mt-1 bg-lia-bg-primary border border-lia-border-subtle rounded-xl max-h-64 overflow-y-auto"
           >
             {aiError && (
-              <div className="px-3 py-2 text-sm text-status-warning flex items-center gap-2 border-b border-lia-border-subtle">
+              <div className="px-3 py-2 text-sm text-status-warning flex items-center gap-2">
                 <AlertCircle className="w-4 h-4" />
                 <span>{aiError}</span>
               </div>
@@ -407,7 +407,7 @@ export function IndustryFilterInput({
                 className={cn(
                   "w-full text-left px-3 py-2 text-sm transition-colors",
                   focusedIndex === index ? "bg-lia-bg-tertiary" : "hover:bg-lia-bg-secondary",
-                  item.type === 'ai' && "border-b border-lia-border-subtle"
+                  item.type === 'ai' && ""
                 )}
               >
                 {item.type === 'ai' ? (

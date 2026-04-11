@@ -174,7 +174,7 @@ export function PredictionsTab({ recruiters }: PredictionsTabProps) {
                 insights!.top_successful_skills.map((item) => (
                   <div
                     key={item.skill}
-                    className="flex items-center justify-between p-3 bg-lia-bg-secondary rounded-md"
+                    className="flex items-center justify-between p-3 bg-lia-bg-secondary rounded-xl"
                   >
                     <div>
                       <div className="font-medium text-lia-text-primary">

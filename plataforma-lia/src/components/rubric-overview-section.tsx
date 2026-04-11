@@ -115,7 +115,7 @@ export function RubricOverviewSection({
             </div>
             <div className="space-y-1.5 pl-5">
               {mockParecer.pontos_fortes_impacto.map((pf, idx) => (
-                <div key={`pf-${idx}`} className="p-2 rounded-md bg-lia-bg-secondary">
+                <div key={`pf-${idx}`} className="p-2 rounded-xl bg-lia-bg-secondary">
                   <div className="flex items-start gap-2">
                     <CheckCircle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-lia-text-secondary" />
                     <div>
@@ -180,7 +180,7 @@ export function RubricOverviewSection({
               <span className="w-4 h-4 rounded-full flex items-center justify-center text-micro font-bold" style={{backgroundColor: decisionBadge ? decisionBadge.bg : 'var(--wedo-cyan-bg-12)', color: decisionBadge ? decisionBadge.color : 'var(--lia-text-secondary)'}}>4</span>
               Recomendação Final
             </div>
-            <div className="pl-5 p-2.5 rounded-md border border-lia-border-subtle" style={{backgroundColor: decisionBadge ? decisionBadge.bg : 'var(--lia-bg-secondary)'}}>
+            <div className="pl-5 p-2.5 rounded-xl border border-lia-border-subtle" style={{backgroundColor: decisionBadge ? decisionBadge.bg : 'var(--lia-bg-secondary)'}}>
               <p className="text-xs leading-relaxed mb-2 text-lia-text-primary">
                 {mockParecer.recomendacao_final.justificativa}
               </p>
@@ -209,7 +209,7 @@ export function RubricOverviewSection({
         </h3>
         <div className="space-y-1.5">
           {mockWhyCandidate.map((reason, idx) => (
-            <div key={`why-${idx}`} className="flex items-start gap-2 p-2 rounded-md bg-lia-bg-secondary">
+            <div key={`why-${idx}`} className="flex items-start gap-2 p-2 rounded-xl bg-lia-bg-secondary">
               <CheckCircle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-lia-text-secondary" />
               <span className="text-xs text-lia-text-primary">{reason}</span>
             </div>

@@ -310,7 +310,7 @@ Equipe de Recrutamento`
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[480px] p-0 overflow-hidden">
-        <DialogHeader className="px-5 pt-5 pb-3 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+        <DialogHeader className="px-5 pt-5 pb-3 dark:border-lia-border-subtle">
           <DialogTitle className="flex items-center gap-2 text-sm font-semibold">
             {config.icon}
             {config.title}
@@ -341,7 +341,7 @@ Equipe de Recrutamento`
           )}
 
           {(flowType === 'approve_to_triage' || flowType === 'approve_to_interview') && (
-            <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 rounded-md p-3 mb-4">
+            <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 rounded-xl p-3 mb-4">
               <div className="flex items-start gap-3">
                 <div className="w-7 h-7 rounded-full bg-lia-bg-tertiary dark:bg-lia-bg-secondary flex items-center justify-center flex-shrink-0">
                   <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
@@ -363,7 +363,7 @@ Equipe de Recrutamento`
           )}
 
           {flowType === 'confirm_hire' && (
-            <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 rounded-md p-3 mb-4">
+            <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 rounded-xl p-3 mb-4">
               <div className="flex items-start gap-3">
                 <div className="w-7 h-7 rounded-full bg-lia-bg-tertiary dark:bg-lia-bg-secondary flex items-center justify-center flex-shrink-0">
                   <CheckCircle className="w-3.5 h-3.5 text-lia-text-secondary" />
@@ -435,7 +435,7 @@ Equipe de Recrutamento`
           )}
 
           {flowType === 'reschedule_interview' && (
-            <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 rounded-md p-3 mb-4">
+            <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 rounded-xl p-3 mb-4">
               <div className="flex items-start gap-3">
                 <div className="w-7 h-7 rounded-full bg-lia-bg-tertiary dark:bg-lia-bg-elevated flex items-center justify-center flex-shrink-0">
                   <Calendar className="w-3.5 h-3.5 text-lia-text-secondary" />

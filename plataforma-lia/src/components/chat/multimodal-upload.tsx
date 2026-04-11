@@ -199,7 +199,7 @@ export function MultimodalUpload({
           )}
         </Button>
         {file && (
-          <div className="flex items-center gap-2 px-2 py-1 bg-lia-bg-tertiary rounded-md text-xs">
+          <div className="flex items-center gap-2 px-2 py-1 bg-lia-bg-tertiary rounded-xl text-xs">
             <span className="max-w-[100px] truncate">{file.name}</span>
             <button
               onClick={clearFile}
@@ -258,7 +258,7 @@ export function MultimodalUpload({
                 className="w-16 h-16 object-cover rounded-md border"
               />
             ) : (
-              <div className="w-16 h-16 bg-lia-bg-tertiary rounded-md flex items-center justify-center">
+              <div className="w-16 h-16 bg-lia-bg-tertiary rounded-xl flex items-center justify-center">
                 {getFileIcon(file.type)}
               </div>
             )}

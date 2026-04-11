@@ -198,7 +198,7 @@ export function PromptSuggestionsPanel({
       </div>
 
       {showHistory && commandHistory.length > 0 && (
-        <div className="mb-4 p-3 bg-lia-bg-secondary rounded-md border">
+        <div className="mb-4 p-3 bg-lia-bg-secondary rounded-xl border">
           <h4 className="text-xs font-medium text-lia-text-primary mb-2">Comandos Recentes</h4>
           <div className="space-y-1">
             {commandHistory.map((command, index) => (

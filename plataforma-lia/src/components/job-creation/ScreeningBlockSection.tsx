@@ -171,8 +171,8 @@ export function ScreeningBlockSection({
         <div className="space-y-2 pl-3 pr-1">
           {!block.editable ? (
             WSI_AUTOMATIC_MESSAGES[block.id] ? (
-              <div className="rounded-md border border-lia-border-subtle bg-lia-bg-secondary overflow-hidden">
-                <div className="px-3 py-2 border-b border-lia-border-subtle bg-lia-bg-tertiary">
+              <div className="rounded-xl border border-lia-border-subtle bg-lia-bg-secondary overflow-hidden">
+                <div className="px-3 py-2 bg-lia-bg-tertiary">
                   <p className="text-xs font-medium text-lia-text-primary">
                     {WSI_AUTOMATIC_MESSAGES[block.id].title}
                   </p>
@@ -189,14 +189,14 @@ export function ScreeningBlockSection({
                 </div>
               </div>
             ) : (
-              <div className="p-3 rounded-md bg-lia-bg-secondary/50 border border-lia-border-subtle">
+              <div className="p-3 rounded-xl bg-lia-bg-secondary/50 border border-lia-border-subtle">
                 <p className="text-xs text-lia-text-secondary italic">
                   {block.description}
                 </p>
               </div>
             )
           ) : questions.length === 0 ? (
-            <div className="p-3 rounded-md bg-lia-bg-secondary/50 border border-lia-border-subtle border-dashed">
+            <div className="p-3 rounded-xl bg-lia-bg-secondary/50 border border-lia-border-subtle border-dashed">
               <p className="text-xs text-lia-text-secondary italic text-center">
                 Nenhuma pergunta neste bloco
               </p>
@@ -248,7 +248,7 @@ export function SuggestionCard({ question, onAdd }: { question: UnifiedScreening
   return (
     <div
       key={question.id}
-      className="p-3 rounded-md border border-lia-border-subtle bg-lia-bg-primary transition-colors motion-reduce:transition-none cursor-pointer group"
+      className="p-3 rounded-xl border border-lia-border-subtle bg-lia-bg-primary transition-colors motion-reduce:transition-none cursor-pointer group"
       onClick={() => onAdd(question)}
     >
       <div className="flex items-start gap-3">

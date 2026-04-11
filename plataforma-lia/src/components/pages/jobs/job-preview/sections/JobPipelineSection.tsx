@@ -28,7 +28,7 @@ export function JobPipelineSection({
                       {/* Cards de Métricas Preditivas Principais */}
                       <div className="grid grid-cols-2 gap-2">
                         {/* Score de Sucesso */}
-                        <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md p-2.5">
+                        <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl p-2.5">
                           <div className="flex items-center justify-between mb-1">
                             <span className="text-xs font-medium text-lia-text-primary">Sucesso de Fechamento</span>
                             <Target className="w-3 h-3 text-lia-text-primary" />
@@ -42,7 +42,7 @@ export function JobPipelineSection({
                         </div>
 
                         {/* Time to Fill */}
-                        <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md p-2.5">
+                        <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl p-2.5">
                           <div className="flex items-center justify-between mb-1">
                             <span className="text-xs font-medium text-lia-text-primary">Time to Fill</span>
                             <Clock className="w-3 h-3 text-lia-text-primary" />
@@ -56,7 +56,7 @@ export function JobPipelineSection({
                         </div>
 
                         {/* Qualidade Pipeline */}
-                        <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md p-2.5">
+                        <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl p-2.5">
                           <div className="flex items-center justify-between mb-1">
                             <span className="text-xs font-medium text-lia-text-primary">Qualidade Pipeline</span>
                             <Brain className="w-3 h-3 text-wedo-cyan" />
@@ -85,7 +85,7 @@ export function JobPipelineSection({
                       </div>
 
                       {/* Funil de Recrutamento Visual */}
-                      <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md p-3">
+                      <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl p-3">
                         <h4 className={`${textStyles.title} mb-3 flex items-center gap-1`}>
                           <BarChart3 className="w-3.5 h-3.5 text-lia-text-primary" />
                           Funil de Recrutamento
@@ -178,25 +178,25 @@ export function JobPipelineSection({
 
                       {/* Métricas de Conversão */}
                       <div className="grid grid-cols-2 gap-2">
-                        <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md p-2">
+                        <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-xl p-2">
                           <p className={`${textStyles.bodySmall}`}>CV → Triagem</p>
                           <p className="text-sm font-bold text-lia-text-primary">
                             {Math.round((previewJob.funnel.screening / previewJob.funnel.total) * 100)}%
                           </p>
                         </div>
-                        <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md p-2">
+                        <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-xl p-2">
                           <p className={`${textStyles.bodySmall}`}>Triagem → Entrevista</p>
                           <p className="text-sm font-bold text-lia-text-primary">
                             {previewJob.funnel.screening > 0 ? Math.round((previewJob.funnel.interview / previewJob.funnel.screening) * 100) : 0}%
                           </p>
                         </div>
-                        <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md p-2">
+                        <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-xl p-2">
                           <p className={`${textStyles.bodySmall}`}>Entrevista → Final</p>
                           <p className="text-sm font-bold text-lia-text-primary">
                             {previewJob.funnel.interview > 0 ? Math.round((previewJob.funnel.final / previewJob.funnel.interview) * 100) : 0}%
                           </p>
                         </div>
-                        <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md p-2">
+                        <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-xl p-2">
                           <p className={`${textStyles.bodySmall}`}>Final → Contratação</p>
                           <p className="text-sm font-bold text-lia-text-primary">
                             {previewJob.funnel.final > 0 ? Math.round((previewJob.funnel.hired / previewJob.funnel.final) * 100) : 0}%
@@ -205,7 +205,7 @@ export function JobPipelineSection({
                       </div>
 
                       {/* Insights e Recomendações da LIA */}
-                      <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md p-3">
+                      <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl p-3">
                         <div className="flex items-start gap-2">
                           <Lightbulb className="w-3.5 h-3.5 text-lia-text-primary mt-0.5" />
                           <div className="flex-1">
@@ -231,27 +231,27 @@ export function JobPipelineSection({
                       </div>
 
                       {/* Análise Comparativa */}
-                      <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md p-3">
+                      <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-xl p-3">
                         <h4 className={`${textStyles.title} mb-2 flex items-center gap-1`}>
                           <BarChart3 className="w-3.5 h-3.5 text-lia-text-primary" />
                           Comparativo com Mercado
                         </h4>
                         <div className="grid grid-cols-3 gap-2">
-                          <div className="text-center p-2 bg-lia-bg-secondary dark:bg-lia-bg-elevated/50 rounded-md">
+                          <div className="text-center p-2 bg-lia-bg-secondary dark:bg-lia-bg-elevated/50 rounded-xl">
                             <p className={`${textStyles.bodySmall}`}>Salário</p>
                             <p className="text-sm font-bold text-lia-text-primary">
                               {previewJob.salary > `${CURRENCY_SYMBOL} 10.000` ? '+15%' : '-5%'}
                             </p>
                             <p className={textStyles.bodySmall}>vs. mercado</p>
                           </div>
-                          <div className="text-center p-2 bg-lia-bg-secondary dark:bg-lia-bg-elevated/50 rounded-md">
+                          <div className="text-center p-2 bg-lia-bg-secondary dark:bg-lia-bg-elevated/50 rounded-xl">
                             <p className={`${textStyles.bodySmall}`}>Candidatos</p>
                             <p className="text-sm font-bold text-lia-text-primary">
                               {previewJob.funnel.total > 30 ? '+45%' : '-20%'}
                             </p>
                             <p className={textStyles.bodySmall}>vs. média</p>
                           </div>
-                          <div className="text-center p-2 bg-lia-bg-secondary dark:bg-lia-bg-elevated/50 rounded-md">
+                          <div className="text-center p-2 bg-lia-bg-secondary dark:bg-lia-bg-elevated/50 rounded-xl">
                             <p className={`${textStyles.bodySmall}`}>Atratividade</p>
                             <p className="text-sm font-bold text-lia-text-primary">
                               #—
@@ -262,7 +262,7 @@ export function JobPipelineSection({
                       </div>
 
                       {/* KPIs da Vaga com Budget */}
-                      <div className="bg-lia-bg-secondary dark:bg-lia-bg-elevated/30 rounded-md p-3">
+                      <div className="bg-lia-bg-secondary dark:bg-lia-bg-elevated/30 rounded-xl p-3">
                         <h4 className={`${textStyles.title} mb-2 flex items-center gap-1`}>
                           <TrendingUp className="w-3.5 h-3.5 text-lia-text-primary" />
                           KPIs e Orçamento
@@ -350,7 +350,7 @@ export function JobPipelineSection({
                       </div>
 
                       {/* Canais de Divulgação */}
-                      <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md p-3">
+                      <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl p-3">
                         <h4 className={`${textStyles.title} mb-2 flex items-center gap-1`}>
                           <Share2 className="w-3.5 h-3.5 text-lia-text-primary" />
                           Canais de Divulgação

@@ -116,7 +116,7 @@ export function ScreeningPresentationSection({
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="text-center p-3 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-md">
+            <div className="text-center p-3 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-xl">
               <MapPin className="w-5 h-5 text-lia-text-secondary mx-auto mb-1" />
               <div className="text-sm font-medium text-lia-text-secondary">Local</div>
               <div className="text-xs text-lia-text-secondary">{jobLocation}</div>
@@ -150,7 +150,7 @@ export function ScreeningPresentationSection({
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {jobPresentation.benefits.map((benefit: string) => (
-              <div key={benefit} className="flex items-center gap-2 p-2 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
+              <div key={benefit} className="flex items-center gap-2 p-2 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl">
                 <CheckCircle className="w-4 h-4 text-status-success" />
                 <span className="text-sm text-lia-text-primary">{benefit}</span>
               </div>
@@ -179,7 +179,7 @@ export function ScreeningPresentationSection({
           </Button>
         </CardHeader>
         <CardContent>
-          <div className="p-4 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-md border border-lia-border-default dark:border-lia-border-default">
+          <div className="p-4 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-xl border border-lia-border-default dark:border-lia-border-default">
             <p className="text-sm text-lia-text-primary leading-relaxed">
               "Deixe eu te contar um pouco sobre nós e sobre esta oportunidade.
               <br /><br />

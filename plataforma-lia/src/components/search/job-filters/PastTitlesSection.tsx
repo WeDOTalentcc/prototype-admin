@@ -196,8 +196,8 @@ export const PastTitlesSection = ({
 
         {/* Semantic Suggestions Dropdown for Past Titles */}
         {showPastTitleSuggestions && titleSuggestions.length > 0 && (
-          <div className="absolute z-50 mt-1 w-full bg-lia-bg-primary border border-lia-border-subtle rounded-md max-h-48 overflow-y-auto">
-            <div className="p-1.5 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+          <div className="absolute z-50 mt-1 w-full bg-lia-bg-primary border border-lia-border-subtle rounded-xl max-h-48 overflow-y-auto">
+            <div className="p-1.5 dark:border-lia-border-subtle">
               <div className="flex items-center gap-1.5 text-micro text-lia-text-secondary">
                 <Zap className="w-3 h-3" />
                 <span>Sugestões semânticas</span>
@@ -269,7 +269,7 @@ export const PastTitlesSection = ({
       )}
 
       {aiSuggestedPastTitles.length > 0 && (
-        <div className="p-3 rounded-md border border-wedo-purple/30 bg-wedo-purple/10/50">
+        <div className="p-3 rounded-xl border border-wedo-purple/30 bg-wedo-purple/10/50">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
               <Brain className="w-4 h-4 text-wedo-purple" />

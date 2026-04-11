@@ -20,7 +20,7 @@ export function TypingIndicator({ className }: TypingIndicatorProps) {
         <LIAIcon size="sm" className="bg-wedo-cyan/10 dark:bg-wedo-cyan-dark/20" />
       </div>
 
-      <div className="flex items-center gap-3 rounded-md bg-lia-bg-tertiary border border-lia-border-subtle px-4 py-3">
+      <div className="flex items-center gap-3 rounded-xl bg-lia-bg-tertiary border border-lia-border-subtle px-4 py-3">
         <div className="flex items-center gap-1">
           {[0, 1, 2].map((i) => (
             <span

@@ -100,7 +100,7 @@ function VacancyCard({
 
   return (
     <div 
-      className="p-3 rounded-md bg-lia-bg-secondary border border-lia-border-subtle hover:border-lia-btn-primary-bg hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none cursor-pointer group"
+      className="p-3 rounded-xl bg-lia-bg-secondary border border-lia-border-subtle hover:border-lia-btn-primary-bg hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none cursor-pointer group"
       onClick={onClick}
     >
       <div className="flex items-start gap-3">

@@ -147,7 +147,7 @@ export function KanbanToolbar({
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery("")}
-                className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-lia-bg-tertiary rounded-md"
+                className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-lia-bg-tertiary rounded-xl"
                 aria-label="Limpar busca"
               >
                 <X className="w-3 h-3 text-lia-text-primary" aria-hidden="true" />
@@ -156,7 +156,7 @@ export function KanbanToolbar({
           </div>
 
           {/* Botões de Alternância de Visualização */}
-          <div className="bg-lia-bg-tertiary dark:bg-lia-bg-elevated rounded-md p-0.5 flex">
+          <div className="bg-lia-bg-tertiary dark:bg-lia-bg-elevated rounded-xl p-0.5 flex">
             <button
               onClick={() => setViewMode("kanban")}
               className={`px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors motion-reduce:transition-none ${

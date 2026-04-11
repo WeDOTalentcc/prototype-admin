@@ -84,7 +84,7 @@ export function CultureTab({ onSettingsChange }: { onSettingsChange: (changed: b
               rows={3}
               defaultValue="Melhorar a qualidade de vida diária de todos os que servimos por meio de serviços de alimentação e facilities únicos e inovadores."
               onChange={() => onSettingsChange(true)}
-              className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary text-sm"
+              className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary text-sm"
             />
           </div>
           <div>
@@ -95,7 +95,7 @@ export function CultureTab({ onSettingsChange }: { onSettingsChange: (changed: b
               rows={3}
               defaultValue="Ser a empresa líder mundial em serviços de qualidade de vida, criando valor para todas as partes interessadas."
               onChange={() => onSettingsChange(true)}
-              className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary text-sm"
+              className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary text-sm"
             />
           </div>
           <div>
@@ -106,7 +106,7 @@ export function CultureTab({ onSettingsChange }: { onSettingsChange: (changed: b
               rows={3}
               defaultValue="Conectar pessoas, lugares e experiências para criar um mundo melhor através de serviços essenciais que melhoram a vida diária."
               onChange={() => onSettingsChange(true)}
-              className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary text-sm"
+              className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary text-sm"
             />
           </div>
         </CardContent>
@@ -124,7 +124,7 @@ export function CultureTab({ onSettingsChange }: { onSettingsChange: (changed: b
               { value: 'Espírito de Progresso', description: 'Inovamos e nos adaptamos para um mundo em mudança' },
               { value: 'Sustentabilidade', description: 'Comprometidos com um planeta mais sustentável' }
             ].map((item) => (
-              <div key={item.value} className="p-4 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md">
+              <div key={item.value} className="p-4 border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl">
                 <div className="flex items-center justify-between mb-2">
                   <h4 className="text-sm font-medium text-lia-text-primary">
                     {item.value}
@@ -165,7 +165,7 @@ export function StructureTab({ onSettingsChange }: { onSettingsChange: (changed:
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="rounded-md p-8 text-center bg-lia-bg-secondary dark:bg-lia-bg-secondary">
+          <div className="rounded-xl p-8 text-center bg-lia-bg-secondary dark:bg-lia-bg-secondary">
             <Upload className="w-12 h-12 mx-auto mb-4 text-lia-text-primary" />
             <h4 className="text-sm font-medium text-lia-text-primary mb-2">
               Faça upload do organograma da empresa
@@ -185,7 +185,7 @@ export function StructureTab({ onSettingsChange }: { onSettingsChange: (changed:
           <CardTitle>Estrutura de Cargos</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="rounded-md p-6 text-center mb-4 bg-lia-bg-secondary dark:bg-lia-bg-secondary">
+          <div className="rounded-xl p-6 text-center mb-4 bg-lia-bg-secondary dark:bg-lia-bg-secondary">
             <FileText className="w-8 h-8 mx-auto mb-2 text-lia-text-primary" />
             <p className="text-sm text-lia-text-primary mb-2">
               Upload da planilha de cargos e descrições

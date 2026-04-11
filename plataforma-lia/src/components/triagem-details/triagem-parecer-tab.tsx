@@ -376,7 +376,7 @@ export function TriagemParecerTab({
                 setCopiedFeedback(true)
                 setTimeout(() => setCopiedFeedback(false), 2000)
               }}
-              className="flex items-center gap-1 px-2 py-1 text-micro font-medium text-lia-text-secondary hover:text-lia-text-secondary border border-lia-border-subtle rounded-md hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none"
+              className="flex items-center gap-1 px-2 py-1 text-micro font-medium text-lia-text-secondary hover:text-lia-text-secondary border border-lia-border-subtle rounded-xl hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none"
             >
               {copiedFeedback ? <CheckCircle className="w-3 h-3 text-status-success" /> : <Copy className="w-3 h-3" />}
               {copiedFeedback ? "Copiado!" : "Copiar feedback"}

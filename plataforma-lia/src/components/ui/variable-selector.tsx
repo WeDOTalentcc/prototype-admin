@@ -120,14 +120,14 @@ export function VariableSelector({
         )}
       </PopoverTrigger>
       <PopoverContent 
-        className="w-80 p-0 border rounded-md overflow-hidden z-max bg-lia-bg-primary border-lia-border-subtle" 
+        className="w-80 p-0 border rounded-xl overflow-hidden z-max bg-lia-bg-primary border-lia-border-subtle" 
         side={side} 
         align={align}
       >
-        <div className="p-3 border-b border-lia-border-subtle">
+        <div className="p-3">
           <div className="flex items-center justify-between mb-2.5">
             <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-md flex items-center justify-center bg-lia-bg-tertiary dark:bg-lia-bg-secondary">
+              <div className="w-7 h-7 rounded-xl flex items-center justify-center bg-lia-bg-tertiary dark:bg-lia-bg-secondary">
                 <Variable className="w-3.5 h-3.5 text-lia-text-secondary" />
               </div>
               <h3 className="text-xs font-semibold text-lia-text-primary">
@@ -146,7 +146,7 @@ export function VariableSelector({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Buscar variável..."
-              className="w-full pl-8 pr-3 py-1.5 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-lia-btn-primary-bg/20 focus:border-lia-border-medium focus:outline-none"
+              className="w-full pl-8 pr-3 py-1.5 text-xs border border-lia-border-subtle rounded-xl bg-lia-bg-primary focus:ring-2 focus:ring-lia-btn-primary-bg/20 focus:border-lia-border-medium focus:outline-none"
              
             />
           </div>
@@ -230,17 +230,17 @@ function VariableGroupComponent({ group, onSelect }: VariableGroupComponentProps
           <button
             key={variable.key}
             onClick={() => onSelect(variable)}
-            className="w-full p-2 rounded-md text-left transition-colors motion-reduce:transition-none group hover:bg-lia-interactive-hover border border-transparent hover:border-lia-border-subtle"
+            className="w-full p-2 rounded-xl text-left transition-colors motion-reduce:transition-none group hover:bg-lia-interactive-hover border border-transparent hover:border-lia-border-subtle"
           >
             <div className="flex items-start gap-2.5">
-              <div className="w-7 h-7 rounded-md bg-lia-bg-tertiary flex items-center justify-center flex-shrink-0 group-hover:bg-lia-interactive-active transition-colors motion-reduce:transition-none">
+              <div className="w-7 h-7 rounded-xl bg-lia-bg-tertiary flex items-center justify-center flex-shrink-0 group-hover:bg-lia-interactive-active transition-colors motion-reduce:transition-none">
                 <code className="text-micro font-mono text-lia-text-secondary">
                   {"{{}}"}
                 </code>
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1.5 mb-0.5">
-                  <code className="text-micro font-mono px-1.5 py-0.5 rounded-md bg-lia-bg-tertiary group-hover:bg-lia-interactive-active text-lia-text-secondary">
+                  <code className="text-micro font-mono px-1.5 py-0.5 rounded-xl bg-lia-bg-tertiary group-hover:bg-lia-interactive-active text-lia-text-secondary">
                     {`{{${variable.key}}}`}
                   </code>
                   <span className="text-xs font-medium text-lia-text-primary truncate">

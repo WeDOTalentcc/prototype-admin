@@ -343,7 +343,7 @@ const roleOrJob = jobTitle || candidate?.role || 'a vaga'
   return (
     <div className="fixed inset-0 bg-lia-overlay/70 backdrop-blur-[1px] z-50 flex items-center justify-center p-4" onClick={onClose}>
       <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="contact-modal-title" className={`${cardStyles.default} dark:bg-lia-bg-primary dark:border-lia-border-subtle rounded-md w-full max-w-4xl max-h-[90vh] overflow-y-auto`} onClick={e => e.stopPropagation()}>
-        <div className="flex items-center justify-between p-5 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+        <div className="flex items-center justify-between p-5 dark:border-lia-border-subtle">
           <div className="flex items-center gap-3">
             <Avatar className="h-12 w-12">
               <AvatarImage src={candidate.avatar} />
@@ -358,7 +358,7 @@ const roleOrJob = jobTitle || candidate?.role || 'a vaga'
               </p>
             </div>
           </div>
-          <button onClick={onClose} className="p-1 rounded-md text-lia-text-secondary hover:text-lia-text-secondary dark:hover:text-lia-text-tertiary hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wedo-cyan" aria-label="Fechar contato" data-dismiss="true">
+          <button onClick={onClose} className="p-1 rounded-xl text-lia-text-secondary hover:text-lia-text-secondary dark:hover:text-lia-text-tertiary hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wedo-cyan" aria-label="Fechar contato" data-dismiss="true">
             <X className="w-4 h-4" aria-hidden="true" />
           </button>
         </div>
@@ -472,7 +472,7 @@ const roleOrJob = jobTitle || candidate?.role || 'a vaga'
                 <button
                   onClick={() => generateLiaSuggestions(liaContext)}
                   disabled={isLiaGenerating}
-                  className="flex-1 flex items-center justify-center gap-2 px-3 py-1.5 text-xs font-medium rounded-md border border-lia-border-subtle bg-lia-bg-primary text-lia-text-primary hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none disabled:opacity-50"
+                  className="flex-1 flex items-center justify-center gap-2 px-3 py-1.5 text-xs font-medium rounded-xl border border-lia-border-subtle bg-lia-bg-primary text-lia-text-primary hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none disabled:opacity-50"
                 >
                   {isLiaGenerating ? (
                     <>
@@ -488,7 +488,7 @@ const roleOrJob = jobTitle || candidate?.role || 'a vaga'
                 </button>
                 <button
                   onClick={() => setShowLiaSuggestions(!showLiaSuggestions)}
-                  className="px-3 py-1.5 rounded-md text-lia-text-secondary hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none"
+                  className="px-3 py-1.5 rounded-xl text-lia-text-secondary hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none"
                   title="Ver/Ocultar sugestões"
                 >
                   <Eye className="w-4 h-4" />
@@ -507,7 +507,7 @@ const roleOrJob = jobTitle || candidate?.role || 'a vaga'
                     </div>
                   ) : (
                     liaSuggestions.map((suggestion) => (
-                      <div key={suggestion.id} className="border border-lia-border-subtle rounded-md p-4 bg-lia-bg-secondary">
+                      <div key={suggestion.id} className="border border-lia-border-subtle rounded-xl p-4 bg-lia-bg-secondary">
                         <div className="flex items-start justify-between mb-2">
                           <div className="flex items-center gap-2">
                             <Brain className="w-4 h-4 text-wedo-cyan" />
@@ -526,7 +526,7 @@ const roleOrJob = jobTitle || candidate?.role || 'a vaga'
                         {activeTab === 'email' && suggestion.content.subject && (
                           <div className="mb-2">
                             <span className="text-micro font-medium text-lia-text-secondary">Assunto:</span>
-                            <p className="text-micro text-lia-text-primary bg-lia-bg-primary p-2 rounded-md border border-lia-border-subtle mt-1">
+                            <p className="text-micro text-lia-text-primary bg-lia-bg-primary p-2 rounded-xl border border-lia-border-subtle mt-1">
                               {suggestion.content.subject}
                             </p>
                           </div>
@@ -534,7 +534,7 @@ const roleOrJob = jobTitle || candidate?.role || 'a vaga'
 
                         <div className="mb-3">
                           <span className="text-micro font-medium text-lia-text-secondary">Mensagem:</span>
-                          <p className="text-micro text-lia-text-primary bg-lia-bg-primary p-2 rounded-md border border-lia-border-subtle mt-1 whitespace-pre-line">
+                          <p className="text-micro text-lia-text-primary bg-lia-bg-primary p-2 rounded-xl border border-lia-border-subtle mt-1 whitespace-pre-line">
                             {suggestion.content.message}
                           </p>
                         </div>
@@ -588,7 +588,7 @@ const roleOrJob = jobTitle || candidate?.role || 'a vaga'
               </div>
 
               {activeTab === 'phone' && (
-                <div className="bg-lia-bg-secondary p-4 rounded-md border border-lia-border-subtle">
+                <div className="bg-lia-bg-secondary p-4 rounded-xl border border-lia-border-subtle">
                   <div className="flex items-center gap-2 mb-2">
                     <Phone className="w-4 h-4 text-lia-text-secondary" />
                     <span className="text-xs font-medium text-lia-text-primary">
@@ -605,7 +605,7 @@ const roleOrJob = jobTitle || candidate?.role || 'a vaga'
             <div className="flex justify-end gap-3 mt-6 pt-5 border-t border-lia-border-subtle">
               <button
                 onClick={onClose}
-                className="px-3 py-1.5 text-xs font-medium rounded-md border border-lia-border-subtle bg-lia-bg-primary text-lia-text-primary hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none"
+                className="px-3 py-1.5 text-xs font-medium rounded-xl border border-lia-border-subtle bg-lia-bg-primary text-lia-text-primary hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none"
               >
                 Cancelar
               </button>

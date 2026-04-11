@@ -97,8 +97,8 @@ export function LanguagesPanel({
 
   return (
     <div className="space-y-6">
-      <Card className="rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
-        <CardHeader className="pb-3 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+      <Card className="rounded-xl dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
+        <CardHeader className="pb-3 dark:border-lia-border-subtle">
           <CardTitle className="text-sm flex items-center gap-2 font-sans text-lia-text-primary">
             🌍 Idiomas Requeridos
           </CardTitle>
@@ -116,7 +116,7 @@ export function LanguagesPanel({
               Use o campo acima para adicionar.
             </div>
           ) : (
-            <div className="rounded-md overflow-hidden dark:border-lia-border-subtle border border-lia-border-subtle">
+            <div className="rounded-xl overflow-hidden dark:border-lia-border-subtle border border-lia-border-subtle">
               <table className="w-full">
                 <thead className="bg-lia-bg-secondary">
                   <tr>
@@ -208,8 +208,8 @@ export function LanguagesPanel({
         </CardContent>
       </Card>
 
-      <Card className="rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
-        <CardHeader className="pb-3 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+      <Card className="rounded-xl dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
+        <CardHeader className="pb-3 dark:border-lia-border-subtle">
           <CardTitle className="text-sm font-sans text-lia-text-primary">📊 Resumo</CardTitle>
         </CardHeader>
         <CardContent>
@@ -358,7 +358,7 @@ function LanguageAutocomplete({
       {showSuggestions && availableLanguages.length > 0 && (
         <div
           ref={suggestionsRef}
-          className="absolute z-50 top-full left-0 right-0 mt-1 rounded-md max-h-48 overflow-auto dark:bg-lia-bg-secondary dark:border-lia-border-subtle bg-lia-bg-primary border border-lia-border-subtle"
+          className="absolute z-50 top-full left-0 right-0 mt-1 rounded-xl max-h-48 overflow-auto dark:bg-lia-bg-secondary dark:border-lia-border-subtle bg-lia-bg-primary border border-lia-border-subtle"
         >
           {availableLanguages.slice(0, 10).map((lang, index) => (
             <button

@@ -319,8 +319,8 @@ export function DISCAssessmentModal({ isOpen, onClose, candidate, assessmentData
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-lia-overlay backdrop-blur-sm p-4">
-      <div className="bg-lia-bg-primary dark:bg-lia-bg-primary rounded-md max-w-4xl w-full max-h-[95vh] overflow-hidden flex flex-col">
-        <div className="p-6 bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+      <div className="bg-lia-bg-primary dark:bg-lia-bg-primary rounded-xl max-w-4xl w-full max-h-[95vh] overflow-hidden flex flex-col">
+        <div className="p-6 bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 dark:border-lia-border-subtle">
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-4">
               <Avatar className="w-14 h-14 ring-4 ring-white dark:ring-lia-border-strong">
@@ -353,7 +353,7 @@ export function DISCAssessmentModal({ isOpen, onClose, candidate, assessmentData
           </div>
 
           <div className="mt-4 grid grid-cols-4 gap-3">
-            <div className="col-span-2 bg-gradient-to-r from-lia-bg-tertiary dark:from-lia-btn-primary-hover to-lia-bg-secondary rounded-md p-4 border border-lia-border-default dark:border-lia-border-default">
+            <div className="col-span-2 bg-gradient-to-r from-lia-bg-tertiary dark:from-lia-btn-primary-hover to-lia-bg-secondary rounded-xl p-4 border border-lia-border-default dark:border-lia-border-default">
               <div className="flex items-center gap-3">
                 <span className="text-3xl">{profileInfo.icon}</span>
                 <div>
@@ -367,7 +367,7 @@ export function DISCAssessmentModal({ isOpen, onClose, candidate, assessmentData
               </div>
             </div>
             {data.comparisonToRole && (
-              <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md p-3 border border-lia-border-subtle dark:border-lia-border-subtle">
+              <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-xl p-3 border border-lia-border-subtle dark:border-lia-border-subtle">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <TrendingUp className="w-4 h-4 text-lia-text-secondary" />
@@ -380,7 +380,7 @@ export function DISCAssessmentModal({ isOpen, onClose, candidate, assessmentData
               </div>
             )}
             {data.culturalFitScore && (
-              <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md p-3 border border-lia-border-subtle dark:border-lia-border-subtle">
+              <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-xl p-3 border border-lia-border-subtle dark:border-lia-border-subtle">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Users className="w-4 h-4 text-lia-text-secondary" />
@@ -448,7 +448,7 @@ export function DISCAssessmentModal({ isOpen, onClose, candidate, assessmentData
             </div>
 
             <div className="space-y-4">
-              <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 rounded-md p-4 border border-lia-border-subtle dark:border-lia-border-subtle">
+              <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 rounded-xl p-4 border border-lia-border-subtle dark:border-lia-border-subtle">
                 <h3 className="text-sm font-semibold text-lia-text-primary mb-3 flex items-center gap-2">
                   <span className="text-lg">{profileInfo.icon}</span>
                   Perfil: {profileInfo.title}
@@ -474,7 +474,7 @@ export function DISCAssessmentModal({ isOpen, onClose, candidate, assessmentData
               </div>
 
               {data.leadershipStyle && (
-                <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md p-4 border border-lia-border-subtle dark:border-lia-border-subtle">
+                <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-xl p-4 border border-lia-border-subtle dark:border-lia-border-subtle">
                   <h3 className="text-sm font-semibold text-lia-text-primary mb-3">Estilo de Liderança</h3>
                   <div className="flex items-center gap-3 mb-3">
                     <Badge className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary border-lia-border-default dark:border-lia-border-default">
@@ -497,7 +497,7 @@ export function DISCAssessmentModal({ isOpen, onClose, candidate, assessmentData
               )}
 
               {data.developmentAreas && data.developmentAreas.length > 0 && (
-                <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 rounded-md p-4 border border-lia-border-subtle dark:border-lia-border-subtle">
+                <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 rounded-xl p-4 border border-lia-border-subtle dark:border-lia-border-subtle">
                   <h3 className="text-sm font-semibold text-lia-text-primary mb-3">Áreas de Desenvolvimento</h3>
                   <ul className="space-y-1">
                     {data.developmentAreas.map((a: string, i: number) => (
@@ -510,7 +510,7 @@ export function DISCAssessmentModal({ isOpen, onClose, candidate, assessmentData
               )}
 
               {data.recommendation && (
-                <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 rounded-md p-4 border border-lia-border-default dark:border-lia-border-default">
+                <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 rounded-xl p-4 border border-lia-border-default dark:border-lia-border-default">
                   <h3 className="text-sm font-semibold text-lia-text-primary mb-2">Recomendação</h3>
                   <p className="text-xs text-lia-text-secondary">{data.recommendation}</p>
                 </div>
@@ -518,19 +518,19 @@ export function DISCAssessmentModal({ isOpen, onClose, candidate, assessmentData
 
               <div className="grid grid-cols-3 gap-2">
                 {data.teamworkScore && (
-                  <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md p-3 border border-lia-border-subtle dark:border-lia-border-subtle text-center">
+                  <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-xl p-3 border border-lia-border-subtle dark:border-lia-border-subtle text-center">
                     <p className="text-lg font-bold text-lia-text-primary">{data.teamworkScore}%</p>
                     <p className="text-micro text-lia-text-secondary">Trabalho em Equipe</p>
                   </div>
                 )}
                 {data.adaptabilityScore && (
-                  <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md p-3 border border-lia-border-subtle dark:border-lia-border-subtle text-center">
+                  <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-xl p-3 border border-lia-border-subtle dark:border-lia-border-subtle text-center">
                     <p className="text-lg font-bold text-lia-text-primary">{data.adaptabilityScore}%</p>
                     <p className="text-micro text-lia-text-secondary">Adaptabilidade</p>
                   </div>
                 )}
                 {data.stressResilienceScore && (
-                  <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md p-3 border border-lia-border-subtle dark:border-lia-border-subtle text-center">
+                  <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-xl p-3 border border-lia-border-subtle dark:border-lia-border-subtle text-center">
                     <p className="text-lg font-bold text-lia-text-primary">{data.stressResilienceScore}%</p>
                     <p className="text-micro text-lia-text-secondary">Resiliência</p>
                   </div>

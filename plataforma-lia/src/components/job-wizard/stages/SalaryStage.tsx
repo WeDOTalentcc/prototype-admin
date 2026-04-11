@@ -121,7 +121,7 @@ export function SalaryStage() {
     <div className="space-y-3">
       {/* Market Benchmark Card */}
       {salaryBenchmark && (salaryBenchmark.market || salaryBenchmark.internal) && (
-        <div className="p-3 bg-gradient-to-r from-lia-bg-secondary dark:from-lia-bg-primary to-wedo-green-bright/5 rounded-md border border-lia-border-default dark:border-lia-border-default">
+        <div className="p-3 bg-gradient-to-r from-lia-bg-secondary dark:from-lia-bg-primary to-wedo-green-bright/5 rounded-xl border border-lia-border-default dark:border-lia-border-default">
           <div className="flex items-center gap-2 mb-2">
             <TrendingUp className="w-4 h-4 text-lia-text-secondary" />
             <span className="text-xs font-medium text-lia-text-primary">
@@ -136,7 +136,7 @@ export function SalaryStage() {
           
           {/* Internal Data */}
           {salaryBenchmark.internal && salaryBenchmark.internal.sample_size > 0 && (
-            <div className="mb-2 p-2 bg-lia-bg-primary/50 rounded-md">
+            <div className="mb-2 p-2 bg-lia-bg-primary/50 rounded-xl">
               <div className="flex items-center justify-between mb-1">
                 <span className="text-micro text-lia-text-secondary" aria-live="polite" aria-atomic="true">
                   Dados internos ({salaryBenchmark.internal.sample_size} vagas)
@@ -155,7 +155,7 @@ export function SalaryStage() {
           
           {/* Market Data */}
           {salaryBenchmark.market && salaryBenchmark.market.min > 0 && (
-            <div className="mb-2 p-2 bg-lia-bg-primary/50 rounded-md">
+            <div className="mb-2 p-2 bg-lia-bg-primary/50 rounded-xl">
               <div className="flex items-center justify-between mb-1">
                 <span className="text-micro text-lia-text-secondary">
                   Dados de mercado ({salaryBenchmark.market.sources?.slice(0, 2).join(', ')})
@@ -194,7 +194,7 @@ export function SalaryStage() {
       
       {/* Loading Benchmark */}
       {isLoadingBenchmark && (
-        <div className="p-3 bg-lia-bg-secondary rounded-md border border-lia-border-subtle flex items-center gap-2" role="status" aria-live="polite" aria-label="Carregando...">
+        <div className="p-3 bg-lia-bg-secondary rounded-xl border border-lia-border-subtle flex items-center gap-2" role="status" aria-live="polite" aria-label="Carregando...">
           <Loader2 className="w-4 h-4 text-lia-text-secondary animate-spin motion-reduce:animate-none" />
           <span className="text-xs text-lia-text-secondary">Buscando benchmark de mercado...</span>
         </div>
@@ -216,7 +216,7 @@ export function SalaryStage() {
                 value={salaryInfo.minSalary}
                 onChange={(e) => setSalaryInfo(prev => ({ ...prev, minSalary: e.target.value }))}
                 placeholder="12.000"
-                className="w-full pl-9 pr-3 py-1.5 border border-lia-border-subtle rounded-md text-xs focus:outline-none focus:border-lia-border-medium transition-colors motion-reduce:transition-none"
+                className="w-full pl-9 pr-3 py-1.5 border border-lia-border-subtle rounded-xl text-xs focus:outline-none focus:border-lia-border-medium transition-colors motion-reduce:transition-none"
                
               />
             </div>
@@ -230,7 +230,7 @@ export function SalaryStage() {
                 value={salaryInfo.maxSalary}
                 onChange={(e) => setSalaryInfo(prev => ({ ...prev, maxSalary: e.target.value }))}
                 placeholder="18.000"
-                className="w-full pl-9 pr-3 py-1.5 border border-lia-border-subtle rounded-md text-xs focus:outline-none focus:border-lia-border-medium transition-colors motion-reduce:transition-none"
+                className="w-full pl-9 pr-3 py-1.5 border border-lia-border-subtle rounded-xl text-xs focus:outline-none focus:border-lia-border-medium transition-colors motion-reduce:transition-none"
                
               />
             </div>
@@ -254,7 +254,7 @@ export function SalaryStage() {
                 value={salaryInfo.minBonus}
                 onChange={(e) => setSalaryInfo(prev => ({ ...prev, minBonus: e.target.value }))}
                 placeholder="10.000"
-                className="w-full pl-9 pr-3 py-1.5 border border-lia-border-subtle rounded-md text-xs focus:outline-none focus:border-lia-border-medium transition-colors motion-reduce:transition-none"
+                className="w-full pl-9 pr-3 py-1.5 border border-lia-border-subtle rounded-xl text-xs focus:outline-none focus:border-lia-border-medium transition-colors motion-reduce:transition-none"
                
               />
             </div>
@@ -268,7 +268,7 @@ export function SalaryStage() {
                 value={salaryInfo.maxBonus}
                 onChange={(e) => setSalaryInfo(prev => ({ ...prev, maxBonus: e.target.value }))}
                 placeholder="20.000"
-                className="w-full pl-9 pr-3 py-1.5 border border-lia-border-subtle rounded-md text-xs focus:outline-none focus:border-lia-border-medium transition-colors motion-reduce:transition-none"
+                className="w-full pl-9 pr-3 py-1.5 border border-lia-border-subtle rounded-xl text-xs focus:outline-none focus:border-lia-border-medium transition-colors motion-reduce:transition-none"
                
               />
             </div>
@@ -279,7 +279,7 @@ export function SalaryStage() {
           value={salaryInfo.bonusCriteria}
           onChange={(e) => setSalaryInfo(prev => ({ ...prev, bonusCriteria: e.target.value }))}
           placeholder="Critérios: Desempenho individual + metas da empresa"
-          className="w-full px-3 py-1.5 border border-lia-border-subtle rounded-md text-xs focus:outline-none focus:border-lia-border-medium transition-colors motion-reduce:transition-none"
+          className="w-full px-3 py-1.5 border border-lia-border-subtle rounded-xl text-xs focus:outline-none focus:border-lia-border-medium transition-colors motion-reduce:transition-none"
          
         />
       </div>
@@ -359,27 +359,27 @@ export function SalaryStage() {
         {/* Add Benefit Button */}
         <button 
           onClick={() => setShowAddBenefitModal(true)}
-          className="w-full mt-1.5 py-1.5 border border-dashed border-lia-border-subtle rounded-md text-xs text-lia-text-secondary hover:border-lia-btn-primary-bg dark:hover:border-lia-border-subtle hover:bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 transition-colors motion-reduce:transition-none flex items-center justify-center gap-2"
+          className="w-full mt-1.5 py-1.5 border border-dashed border-lia-border-subtle rounded-xl text-xs text-lia-text-secondary hover:border-lia-btn-primary-bg dark:hover:border-lia-border-subtle hover:bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 transition-colors motion-reduce:transition-none flex items-center justify-center gap-2"
         >
           <Plus className="w-3.5 h-3.5" /> Adicionar benefício
         </button>
         
         {/* Add Benefit Modal */}
         {showAddBenefitModal && (
-          <div className="mt-2 p-3 bg-lia-bg-secondary rounded-md border border-lia-border-subtle space-y-2">
+          <div className="mt-2 p-3 bg-lia-bg-secondary rounded-xl border border-lia-border-subtle space-y-2">
             <input
               type="text"
               value={newBenefitName}
               onChange={(e) => setNewBenefitName(e.target.value)}
               placeholder="Nome do benefício..."
-              className="w-full px-3 py-1.5 border border-lia-border-subtle rounded-md text-xs"
+              className="w-full px-3 py-1.5 border border-lia-border-subtle rounded-xl text-xs"
               autoFocus
             />
             <div className="flex gap-2">
               <select
                 value={newBenefitCategory}
                 onChange={(e) => setNewBenefitCategory(e.target.value as BenefitCategory)}
-                className="flex-1 px-3 py-1.5 border border-lia-border-subtle rounded-md text-xs bg-lia-bg-primary"
+                className="flex-1 px-3 py-1.5 border border-lia-border-subtle rounded-xl text-xs bg-lia-bg-primary"
               >
                 {Object.entries(BENEFIT_CATEGORY_META).map(([key, meta]) => (
                   <option key={key} value={key}>{meta.name}</option>
@@ -391,19 +391,19 @@ export function SalaryStage() {
               value={newBenefitValue}
               onChange={(e) => setNewBenefitValue(e.target.value)}
               placeholder={`Valor (opcional, ex: ${CURRENCY_SYMBOL} 500/mês)...`}
-              className="w-full px-3 py-1.5 border border-lia-border-subtle rounded-md text-xs"
+              className="w-full px-3 py-1.5 border border-lia-border-subtle rounded-xl text-xs"
             />
             <input
               type="text"
               value={newBenefitProvider}
               onChange={(e) => setNewBenefitProvider(e.target.value)}
               placeholder="Fornecedor (opcional, ex: Unimed)..."
-              className="w-full px-3 py-1.5 border border-lia-border-subtle rounded-md text-xs"
+              className="w-full px-3 py-1.5 border border-lia-border-subtle rounded-xl text-xs"
             />
             <div className="flex gap-2">
               <button
                 onClick={() => setShowAddBenefitModal(false)}
-                className="flex-1 py-1.5 px-3 rounded-md border border-lia-border-subtle text-xs text-lia-text-secondary"
+                className="flex-1 py-1.5 px-3 rounded-xl border border-lia-border-subtle text-xs text-lia-text-secondary"
               >
                 Cancelar
               </button>
@@ -420,7 +420,7 @@ export function SalaryStage() {
       </div>
 
       {/* Summary */}
-      <div className="p-2 bg-lia-bg-secondary rounded-md border border-lia-border-default dark:border-lia-border-default">
+      <div className="p-2 bg-lia-bg-secondary rounded-xl border border-lia-border-default dark:border-lia-border-default">
         <div className="flex items-center justify-between text-xs">
           <span className="lia-text-secondary">
             Benefícios selecionados:

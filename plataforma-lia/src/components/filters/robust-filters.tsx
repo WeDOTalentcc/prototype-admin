@@ -130,7 +130,7 @@ export function RobustFilters({
     <div data-testid="robust-filters" className={cn("space-y-4", className)}>
       {/* Search Bar */}
       <div className="relative">
-        <div className="relative rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle transition-shadow duration-200 focus-within:shadow-lia-focus">
+        <div className="relative rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle transition-shadow duration-200 focus-within:shadow-lia-focus">
           <div className="flex items-center">
             <Search className="absolute left-3 w-4 h-4 text-lia-text-secondary" />
             <input
@@ -205,7 +205,7 @@ export function RobustFilters({
           className="overflow-hidden"
          
         >
-          <div className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-4 bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 space-y-6">
+          <div className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl p-4 bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 space-y-6">
 
             {/* Grid Layout */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -305,7 +305,7 @@ export function RobustFilters({
                       ...filters.salary,
                       min: e.target.value ? Number(e.target.value) : null
                     })}
-                    className="w-full px-3 py-2 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20 focus:border-lia-border-medium"
+                    className="w-full px-3 py-2 border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20 focus:border-lia-border-medium"
                   />
                 </div>
                 <div>
@@ -320,7 +320,7 @@ export function RobustFilters({
                       ...filters.salary,
                       max: e.target.value ? Number(e.target.value) : null
                     })}
-                    className="w-full px-3 py-2 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20 focus:border-lia-border-medium"
+                    className="w-full px-3 py-2 border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20 focus:border-lia-border-medium"
                   />
                 </div>
               </div>
@@ -383,7 +383,7 @@ export function RobustFilters({
       {/* Active Filters Summary */}
       {activeFiltersCount > 0 && (
         <div
-          className="flex flex-wrap items-center gap-2 p-3 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-md"
+          className="flex flex-wrap items-center gap-2 p-3 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-xl"
          
         >
           <span className="text-sm font-medium text-lia-text-primary">

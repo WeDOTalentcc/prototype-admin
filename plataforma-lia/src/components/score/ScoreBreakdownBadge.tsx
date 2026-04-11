@@ -127,7 +127,7 @@ export function ScoreBreakdownBadgeLazy({
       </PopoverTrigger>
       <PopoverContent className="w-72 p-3" side="left" align="start">
         <div className="space-y-2">
-          <div className="flex items-center gap-1.5 pb-2 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+          <div className="flex items-center gap-1.5 pb-2 dark:border-lia-border-subtle">
             <Brain className="h-3.5 w-3.5 text-wedo-cyan-dark" />
             <span className="text-xs font-semibold text-lia-text-primary">
               Score LIA: {Math.round(score)}

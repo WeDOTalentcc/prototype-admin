@@ -702,7 +702,7 @@ export function JobScreeningSection({
 
                         {!collapsedPreviewSections.includes('canais') && (<>
                         {/* Canais em linha */}
-                        <div className="flex items-center gap-3 mb-3 mt-3 pb-3 border-b border-lia-border-subtle">
+                        <div className="flex items-center gap-3 mb-3 mt-3 pb-3">
                           <span className="text-[0.625rem] text-lia-text-tertiary">Canais:</span>
                           <div className="flex items-center gap-2">
                             <div className={`flex items-center gap-1 px-1.5 py-0.5 rounded-md ${(screeningConfig?.channels?.whatsapp?.enabled ?? true) ? 'bg-status-success/10 text-status-success' : 'bg-lia-bg-tertiary text-lia-text-secondary'}`}>

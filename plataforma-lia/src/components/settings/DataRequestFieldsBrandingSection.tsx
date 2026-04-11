@@ -92,7 +92,7 @@ export function DataRequestFieldsSection({
       {isEditing && (
         <>
           {showAddField ? (
-            <div className="p-3 border border-lia-border-default dark:border-lia-border-default bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
+            <div className="p-3 border border-lia-border-default dark:border-lia-border-default bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl">
               <h4 className="text-xs font-medium mb-2 text-lia-text-primary">Novo Campo Customizado</h4>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
                 <div>
@@ -102,7 +102,7 @@ export function DataRequestFieldsSection({
                     value={newFieldName}
                     onChange={(e) => setNewFieldName(e.target.value)}
                     placeholder="Ex: Número do Passaporte"
-                    className="w-full mt-1 px-2 py-1.5 text-xs border border-lia-border-default dark:border-lia-border-default rounded-md focus:outline-none focus:border-lia-btn-primary-bg dark:focus:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary"
+                    className="w-full mt-1 px-2 py-1.5 text-xs border border-lia-border-default dark:border-lia-border-default rounded-xl focus:outline-none focus:border-lia-btn-primary-bg dark:focus:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary"
                   />
                 </div>
                 <div>
@@ -273,15 +273,15 @@ export function DataRequestBrandingSection({
   return (
     <div className="space-y-3">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        <div className="p-3 border border-dashed border-lia-border-default dark:border-lia-border-default rounded-md">
+        <div className="p-3 border border-dashed border-lia-border-default dark:border-lia-border-default rounded-xl">
           <Label className="text-xs font-medium mb-2 block text-lia-text-primary">Logo da Empresa</Label>
           <div className="flex items-center gap-3">
             {branding.logoUrl ? (
-              <div className="relative w-12 h-12 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-md overflow-hidden">
+              <div className="relative w-12 h-12 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-xl overflow-hidden">
                 <NextImage src={branding.logoUrl} alt="Logo" fill className="object-contain" />
               </div>
             ) : (
-              <div className="w-12 h-12 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-md flex items-center justify-center">
+              <div className="w-12 h-12 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-xl flex items-center justify-center">
                 <Upload className="w-4 h-4 text-lia-text-tertiary" />
               </div>
             )}
@@ -294,7 +294,7 @@ export function DataRequestBrandingSection({
           </div>
         </div>
 
-        <div className="p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
+        <div className="p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl">
           <Label className="text-xs font-medium mb-2 block text-lia-text-primary">Cor Primária</Label>
           <div className="flex items-center gap-2">
             {isEditing ? (
@@ -315,7 +315,7 @@ export function DataRequestBrandingSection({
             ) : (
               <div className="flex items-center gap-2">
                 <div 
-                  className="w-6 h-6 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle" 
+                  className="w-6 h-6 rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle" 
                   style={{backgroundColor: branding.primaryColor}}
                 />
                 <span className="text-xs font-mono text-lia-text-primary">{branding.primaryColor}</span>
@@ -345,11 +345,11 @@ export function DataRequestBrandingSection({
             value={branding.welcomeMessage}
             onChange={(e) => updateBranding({ welcomeMessage: e.target.value })}
             rows={2}
-            className="w-full px-2 py-1.5 text-xs border border-lia-border-default dark:border-lia-border-default rounded-md focus:outline-none focus:border-lia-btn-primary-bg dark:focus:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary"
+            className="w-full px-2 py-1.5 text-xs border border-lia-border-default dark:border-lia-border-default rounded-xl focus:outline-none focus:border-lia-btn-primary-bg dark:focus:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary"
             placeholder="Mensagem exibida no início do formulário..."
           />
         ) : (
-          <p className="text-xs text-lia-text-secondary bg-lia-bg-secondary dark:bg-lia-bg-secondary p-2 rounded-md">
+          <p className="text-xs text-lia-text-secondary bg-lia-bg-secondary dark:bg-lia-bg-secondary p-2 rounded-xl">
             {branding.welcomeMessage}
           </p>
         )}
@@ -375,11 +375,11 @@ export function DataRequestBrandingSection({
             value={branding.thankYouMessage}
             onChange={(e) => updateBranding({ thankYouMessage: e.target.value })}
             rows={2}
-            className="w-full px-2 py-1.5 text-xs border border-lia-border-default dark:border-lia-border-default rounded-md focus:outline-none focus:border-lia-btn-primary-bg dark:focus:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary"
+            className="w-full px-2 py-1.5 text-xs border border-lia-border-default dark:border-lia-border-default rounded-xl focus:outline-none focus:border-lia-btn-primary-bg dark:focus:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary"
             placeholder="Mensagem exibida após envio do formulário..."
           />
         ) : (
-          <p className="text-xs text-lia-text-secondary bg-lia-bg-secondary dark:bg-lia-bg-secondary p-2 rounded-md">
+          <p className="text-xs text-lia-text-secondary bg-lia-bg-secondary dark:bg-lia-bg-secondary p-2 rounded-xl">
             {branding.thankYouMessage}
           </p>
         )}

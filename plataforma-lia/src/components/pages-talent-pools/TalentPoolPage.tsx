@@ -208,7 +208,7 @@ export default function TalentPoolPage({
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="flex-shrink-0 px-6 py-4 border-b border-lia-border-subtle">
+      <div className="flex-shrink-0 px-6 py-4">
         <div className="flex items-center justify-between">
           <div>
             <h1 className={textStyles.titleLarge}>{pool.name}</h1>
@@ -414,7 +414,7 @@ function CandidatesTab({
                 return (
                   <tr
                     key={tpc.id}
-                    className="border-b border-lia-border-subtle hover:bg-lia-bg-secondary transition-colors"
+                    className=" hover:bg-lia-bg-secondary transition-colors"
                   >
                     <td className="py-3 px-3">
                       <input
@@ -644,7 +644,7 @@ export function CreatePoolModal({ onClose, onCreated }: CreatePoolModalProps) {
               value={name}
               onChange={e => setName(e.target.value)}
               placeholder="Ex: Backend Sênior SP, Motoristas RJ..."
-              className="mt-1 w-full border border-lia-border-default rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
+              className="mt-1 w-full border border-lia-border-default rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
             />
           </div>
 
@@ -655,7 +655,7 @@ export function CreatePoolModal({ onClose, onCreated }: CreatePoolModalProps) {
               onChange={e => setDescription(e.target.value)}
               placeholder="Objetivo deste banco de talentos..."
               rows={2}
-              className="mt-1 w-full border border-lia-border-default rounded-md px-3 py-2 text-sm resize-none focus:outline-none focus:ring-1 focus:ring-gray-400"
+              className="mt-1 w-full border border-lia-border-default rounded-xl px-3 py-2 text-sm resize-none focus:outline-none focus:ring-1 focus:ring-gray-400"
             />
           </div>
 
@@ -783,7 +783,7 @@ function MoveToJobModal({ poolId, selectedIds, candidates, onClose, onMoved }: M
             <select
               value={selectedJobId || ""}
               onChange={e => setSelectedJobId(Number(e.target.value))}
-              className="mt-1 w-full border border-lia-border-default rounded-md px-3 py-2 text-sm"
+              className="mt-1 w-full border border-lia-border-default rounded-xl px-3 py-2 text-sm"
             >
               <option value="">Selecione uma vaga...</option>
               {jobs.map(j => (

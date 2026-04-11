@@ -263,7 +263,7 @@ export function CreateJobModal({ isOpen, onClose, onCreateWithWizard, onJobCreat
                   id="job-department"
                   value={formData.department}
                   onChange={e => updateField("department", e.target.value)}
-                  className="w-full px-3 py-2 text-sm text-lia-text-primary bg-lia-bg-primary border border-lia-border-default rounded-md transition-colors motion-reduce:transition-none duration-150 hover:border-lia-border-medium focus:border-lia-btn-primary-bg focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 cursor-pointer font-['Open_Sans',sans-serif]"
+                  className="w-full px-3 py-2 text-sm text-lia-text-primary bg-lia-bg-primary border border-lia-border-default rounded-xl transition-colors motion-reduce:transition-none duration-150 hover:border-lia-border-medium focus:border-lia-btn-primary-bg focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 cursor-pointer font-['Open_Sans',sans-serif]"
                 >
                   <option value="">Selecione...</option>
                   {DEPARTMENT_OPTIONS.map(dept => (
@@ -284,7 +284,7 @@ export function CreateJobModal({ isOpen, onClose, onCreateWithWizard, onJobCreat
                     id="job-work-model"
                     value={formData.workModel}
                     onChange={e => updateField("workModel", e.target.value)}
-                    className="w-full px-3 py-2 text-sm text-lia-text-primary bg-lia-bg-primary border border-lia-border-default rounded-md transition-colors motion-reduce:transition-none duration-150 hover:border-lia-border-medium focus:border-lia-btn-primary-bg focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 cursor-pointer font-['Open_Sans',sans-serif]"
+                    className="w-full px-3 py-2 text-sm text-lia-text-primary bg-lia-bg-primary border border-lia-border-default rounded-xl transition-colors motion-reduce:transition-none duration-150 hover:border-lia-border-medium focus:border-lia-btn-primary-bg focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 cursor-pointer font-['Open_Sans',sans-serif]"
                   >
                     <option value="">Selecione...</option>
                     {WORK_MODEL_OPTIONS.map(opt => (
@@ -304,7 +304,7 @@ export function CreateJobModal({ isOpen, onClose, onCreateWithWizard, onJobCreat
                     id="job-employment-type"
                     value={formData.employmentType}
                     onChange={e => updateField("employmentType", e.target.value)}
-                    className="w-full px-3 py-2 text-sm text-lia-text-primary bg-lia-bg-primary border border-lia-border-default rounded-md transition-colors motion-reduce:transition-none duration-150 hover:border-lia-border-medium focus:border-lia-btn-primary-bg focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 cursor-pointer font-['Open_Sans',sans-serif]"
+                    className="w-full px-3 py-2 text-sm text-lia-text-primary bg-lia-bg-primary border border-lia-border-default rounded-xl transition-colors motion-reduce:transition-none duration-150 hover:border-lia-border-medium focus:border-lia-btn-primary-bg focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 cursor-pointer font-['Open_Sans',sans-serif]"
                   >
                     <option value="">Selecione...</option>
                     {EMPLOYMENT_TYPE_OPTIONS.map(opt => (
@@ -387,7 +387,7 @@ export function CreateJobModal({ isOpen, onClose, onCreateWithWizard, onJobCreat
             <button
               onClick={handleSubmit}
               disabled={isSubmitting}
-              className="px-4 py-2 text-sm font-medium rounded-md bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover active:bg-lia-btn-primary-bg dark:hover:bg-lia-interactive-active transition-colors motion-reduce:transition-none duration-150 focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 disabled:bg-lia-border-default disabled:text-lia-text-tertiary disabled:cursor-not-allowed font-['Open_Sans',sans-serif] flex items-center gap-2"
+              className="px-4 py-2 text-sm font-medium rounded-xl bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover active:bg-lia-btn-primary-bg dark:hover:bg-lia-interactive-active transition-colors motion-reduce:transition-none duration-150 focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 disabled:bg-lia-border-default disabled:text-lia-text-tertiary disabled:cursor-not-allowed font-['Open_Sans',sans-serif] flex items-center gap-2"
             >
               {isSubmitting ? (
                 <>

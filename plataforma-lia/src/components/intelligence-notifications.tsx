@@ -232,8 +232,8 @@ export function IntelligenceNotifications({
       </Button>
 
       {isOpen && (
-        <div className="absolute right-0 top-12 w-96 bg-lia-bg-primary dark:bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md z-50 max-h-96 overflow-hidden">
-          <div className="p-4 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+        <div className="absolute right-0 top-12 w-96 bg-lia-bg-primary dark:bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl z-50 max-h-96 overflow-hidden">
+          <div className="p-4 dark:border-lia-border-subtle">
             <div className="flex items-center justify-between">
               <h3 className="font-medium text-lia-text-primary">
                 🧠 Inteligência Competitiva
@@ -306,7 +306,7 @@ export function IntelligenceNotifications({
               notifications.map((notification) => (
                 <div
                   key={notification.id}
-                  className={`p-4 border-b border-lia-border-subtle transition-colors motion-reduce:transition-none ${
+                  className={`p-4 transition-colors motion-reduce:transition-none ${
  !notification.read ? 'bg-wedo-cyan/10 dark:bg-wedo-cyan/15' : 'hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover'
                   }`}
                 >

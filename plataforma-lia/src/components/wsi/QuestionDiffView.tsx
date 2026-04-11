@@ -60,9 +60,9 @@ export function QuestionDiffView({
           return (
             <div
               key={diff.question_id || idx}
-              className="rounded-md border border-lia-border-subtle overflow-hidden"
+              className="rounded-xl border border-lia-border-subtle overflow-hidden"
             >
-              <div className="px-3 py-1.5 bg-lia-bg-secondary border-b border-lia-border-subtle flex items-center gap-2">
+              <div className="px-3 py-1.5 bg-lia-bg-secondary flex items-center gap-2">
                 <Badge variant="outline" className={badge.className} style={badge.style}>
                   {badge.label}
                 </Badge>
@@ -72,7 +72,7 @@ export function QuestionDiffView({
               </div>
 
               {diff.before && (
-                <div className="px-3 py-2 border-b border-lia-border-subtle">
+                <div className="px-3 py-2">
                   <div className="flex items-start gap-2">
                     <span className="text-micro font-medium text-lia-text-secondary mt-0.5 shrink-0">ANTES</span>
                     <p className="text-xs text-lia-text-secondary line-through leading-relaxed">

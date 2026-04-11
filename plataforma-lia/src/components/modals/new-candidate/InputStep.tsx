@@ -93,7 +93,7 @@ export function InputStep({
 
   return (
     <div data-testid="new-candidate-input-step" className="space-y-4">
-      <div className="flex border-b border-lia-border-subtle">
+      <div className="flex">
         <button
           onClick={() => { setActiveTab('cv'); setError(null) }}
           className={cn(
@@ -183,7 +183,7 @@ export function InputStep({
               </p>
             </div>
           ) : (
-            <div className="border border-lia-border-subtle rounded-md p-3">
+            <div className="border border-lia-border-subtle rounded-xl p-3">
               <div className="flex items-center gap-2">
                 {getFileIcon(selectedFile.name)}
                 <div className="flex-1 min-w-0">
@@ -279,7 +279,7 @@ export function InputStep({
             </p>
           </div>
 
-          <div className="flex items-center gap-2 p-2.5 bg-lia-bg-secondary/50 border border-lia-border-default rounded-md">
+          <div className="flex items-center gap-2 p-2.5 bg-lia-bg-secondary/50 border border-lia-border-default rounded-xl">
             <Brain className="w-4 h-4 text-wedo-cyan" />
             <p className="text-xs text-lia-text-secondary font-sans" aria-live="polite" aria-atomic="true">
               A LIA irá buscar os dados do candidato
@@ -398,7 +398,7 @@ export function InputStep({
       )}
 
       {error && (
-        <div className="flex items-center gap-2 p-2.5 bg-status-error/10 border border-status-error/30 rounded-md">
+        <div className="flex items-center gap-2 p-2.5 bg-status-error/10 border border-status-error/30 rounded-xl">
           <AlertCircle className="w-4 h-4 text-status-error flex-shrink-0" />
           <p className="text-xs text-status-error">{error}</p>
         </div>

@@ -124,7 +124,7 @@ export function CandidatePageActivitiesTab({
               <select
                 value={periodFilter}
                 onChange={(e) => setPeriodFilter(e.target.value)}
-                className="text-xs px-2 py-1 bg-lia-bg-primary dark:bg-lia-bg-elevated border border-lia-border-subtle dark:border-lia-border-default rounded-md focus:outline-none focus:ring-1 focus:ring-lia-border-medium/20"
+                className="text-xs px-2 py-1 bg-lia-bg-primary dark:bg-lia-bg-elevated border border-lia-border-subtle dark:border-lia-border-default rounded-xl focus:outline-none focus:ring-1 focus:ring-lia-border-medium/20"
               >
                 <option value="7days">Últimos 7 dias</option>
                 <option value="30days">Últimos 30 dias</option>
@@ -132,7 +132,7 @@ export function CandidatePageActivitiesTab({
                 <option value="all">Todo período</option>
               </select>
 
-              <div className="flex items-center bg-lia-bg-primary dark:bg-lia-bg-elevated rounded-md p-0.5 border border-lia-border-subtle dark:border-lia-border-default">
+              <div className="flex items-center bg-lia-bg-primary dark:bg-lia-bg-elevated rounded-xl p-0.5 border border-lia-border-subtle dark:border-lia-border-default">
                 <button
                   onClick={() => setViewMode('timeline')}
                   className={`p-1.5 rounded-md transition-colors motion-reduce:transition-none ${
@@ -258,7 +258,7 @@ export function CandidatePageActivitiesTab({
           <CardContent className="pt-0">
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
               {aiPredictions.map((prediction) => (
-                <div key={prediction.id} className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md p-3">
+                <div key={prediction.id} className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-xl p-3">
                   <div className="flex items-start gap-2">
                     <span className="text-xl">{prediction.icon}</span>
                     <div className="flex-1">
@@ -353,11 +353,11 @@ export function CandidatePageActivitiesTab({
                             {activity.type === 'lia-evaluation' && (
                               <div className="mt-2 space-y-2">
                                 <div className="grid grid-cols-2 gap-2">
-                                  <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary p-2 rounded-md">
+                                  <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary p-2 rounded-xl">
                                     <span className="text-xs text-lia-text-primary">Score Técnico</span>
                                     <p className="text-sm font-semibold">{activity.details.technicalScore}%</p>
                                   </div>
-                                  <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary p-2 rounded-md">
+                                  <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary p-2 rounded-xl">
                                     <span className="text-xs text-lia-text-primary">Fit Cultural</span>
                                     <p className="text-sm font-semibold">{activity.details.culturalFit}%</p>
                                   </div>
@@ -367,7 +367,7 @@ export function CandidatePageActivitiesTab({
 
                             {activity.type === 'whatsapp-screening' && activity.details.conversation && (
                               <div className="mt-2 space-y-2">
-                                <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary p-2 rounded-md max-h-48 overflow-y-auto">
+                                <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary p-2 rounded-xl max-h-48 overflow-y-auto">
                                   <p className="text-xs text-lia-text-primary mb-2">Conversa via {activity.platform}</p>
                                   <div className="space-y-2">
                                     {activity.details.conversation.map((msg, i: number) => (

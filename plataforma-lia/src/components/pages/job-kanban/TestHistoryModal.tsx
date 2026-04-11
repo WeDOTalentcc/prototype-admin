@@ -33,12 +33,12 @@ export function TestHistoryModal({ open, onClose, testName }: TestHistoryModalPr
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-lia-overlay backdrop-blur-sm">
-      <div className="bg-lia-bg-primary dark:bg-lia-bg-primary rounded-md w-full max-w-5xl max-h-[90vh] overflow-hidden animate-fadeIn">
+      <div className="bg-lia-bg-primary dark:bg-lia-bg-primary rounded-xl w-full max-w-5xl max-h-[90vh] overflow-hidden animate-fadeIn">
         {/* Header */}
         <div className="bg-lia-btn-primary-bg dark:bg-lia-bg-secondary p-5 text-white">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-lia-bg-primary/20 rounded-md">
+              <div className="p-2 bg-lia-bg-primary/20 rounded-xl">
                 <History className="w-5 h-5" />
               </div>
               <div>
@@ -48,7 +48,7 @@ export function TestHistoryModal({ open, onClose, testName }: TestHistoryModalPr
             </div>
             <button
               onClick={onClose}
-              className="p-2 hover:bg-lia-bg-primary/20 rounded-md transition-colors motion-reduce:transition-none"
+              className="p-2 hover:bg-lia-bg-primary/20 rounded-xl transition-colors motion-reduce:transition-none"
             >
               <X className="w-5 h-5" />
             </button>
@@ -56,12 +56,12 @@ export function TestHistoryModal({ open, onClose, testName }: TestHistoryModalPr
         </div>
 
         {/* Estatísticas Gerais */}
-        <div className="p-6 border-b border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-secondary dark:bg-lia-bg-secondary">
+        <div className="p-6 dark:border-lia-border-subtle bg-lia-bg-secondary dark:bg-lia-bg-secondary">
           {/* Nota Média Destacada */}
-          <div className="bg-wedo-purple rounded-md p-4 mb-4 text-white">
+          <div className="bg-wedo-purple rounded-xl p-4 mb-4 text-white">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <div className="p-3 bg-lia-bg-primary/20 rounded-md">
+                <div className="p-3 bg-lia-bg-primary/20 rounded-xl">
                   <Trophy className="w-6 h-6" />
                 </div>
                 <div>
@@ -80,7 +80,7 @@ export function TestHistoryModal({ open, onClose, testName }: TestHistoryModalPr
               </div>
 
               {/* Mini gráfico de evolução */}
-              <div className="bg-lia-bg-primary/10 rounded-md p-3">
+              <div className="bg-lia-bg-primary/10 rounded-xl p-3">
                 <p className="text-xs opacity-80 mb-2">Evolução (6 meses)</p>
                 <div className="flex items-end gap-1 h-10">
                   {[6.8, 7.0, 7.1, 7.2, 7.1, 7.4].map((value, i) => (
@@ -100,7 +100,7 @@ export function TestHistoryModal({ open, onClose, testName }: TestHistoryModalPr
           </div>
 
           <div className="grid grid-cols-5 gap-4">
-            <div className="bg-lia-bg-primary dark:bg-lia-bg-primary rounded-md p-4">
+            <div className="bg-lia-bg-primary dark:bg-lia-bg-primary rounded-xl p-4">
               <div className="flex items-center gap-2 mb-2">
                 <BarChart3 className="w-4 h-4 text-lia-text-primary" />
                 <span className="text-xs text-lia-text-primary">Total de Aplicações</span>
@@ -109,7 +109,7 @@ export function TestHistoryModal({ open, onClose, testName }: TestHistoryModalPr
               <p className="text-xs text-lia-text-primary mt-1">↑ 12% este mês</p>
             </div>
 
-            <div className="bg-lia-bg-primary dark:bg-lia-bg-primary rounded-md p-4">
+            <div className="bg-lia-bg-primary dark:bg-lia-bg-primary rounded-xl p-4">
               <div className="flex items-center gap-2 mb-2">
                 <Target className="w-4 h-4 text-lia-text-primary" />
                 <span className="text-xs text-lia-text-primary">Taxa de Sucesso</span>
@@ -118,7 +118,7 @@ export function TestHistoryModal({ open, onClose, testName }: TestHistoryModalPr
               <p className="text-xs text-lia-text-primary mt-1">Nota ≥ 7.0</p>
             </div>
 
-            <div className="bg-lia-bg-primary dark:bg-lia-bg-primary rounded-md p-4">
+            <div className="bg-lia-bg-primary dark:bg-lia-bg-primary rounded-xl p-4">
               <div className="flex items-center gap-2 mb-2">
                 <UserCheck className="w-4 h-4 text-lia-text-primary" />
                 <span className="text-xs text-lia-text-primary">Taxa de Conclusão</span>
@@ -127,7 +127,7 @@ export function TestHistoryModal({ open, onClose, testName }: TestHistoryModalPr
               <p className="text-xs text-lia-text-primary mt-1">Candidatos finalizam</p>
             </div>
 
-            <div className="bg-lia-bg-primary dark:bg-lia-bg-primary rounded-md p-4">
+            <div className="bg-lia-bg-primary dark:bg-lia-bg-primary rounded-xl p-4">
               <div className="flex items-center gap-2 mb-2">
                 <Timer className="w-4 h-4 text-lia-text-primary" />
                 <span className="text-xs text-lia-text-primary">Tempo Médio</span>
@@ -136,7 +136,7 @@ export function TestHistoryModal({ open, onClose, testName }: TestHistoryModalPr
               <p className="text-xs text-lia-text-primary mt-1">De 15min esperados</p>
             </div>
 
-            <div className="bg-lia-bg-primary dark:bg-lia-bg-primary rounded-md p-4">
+            <div className="bg-lia-bg-primary dark:bg-lia-bg-primary rounded-xl p-4">
               <div className="flex items-center gap-2 mb-2">
                 <Gauge className="w-4 h-4 text-status-error" />
                 <span className="text-xs text-lia-text-primary">Dificuldade Percebida</span>
@@ -155,7 +155,7 @@ export function TestHistoryModal({ open, onClose, testName }: TestHistoryModalPr
 
           <div className="space-y-3">
             {/* Vaga 1 */}
-            <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md p-4 border border-lia-border-subtle dark:border-lia-border-subtle">
+            <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl p-4 border border-lia-border-subtle dark:border-lia-border-subtle">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
@@ -211,7 +211,7 @@ export function TestHistoryModal({ open, onClose, testName }: TestHistoryModalPr
             </div>
 
             {/* Vaga 2 */}
-            <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md p-4 border border-lia-border-subtle dark:border-lia-border-subtle">
+            <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl p-4 border border-lia-border-subtle dark:border-lia-border-subtle">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
@@ -267,7 +267,7 @@ export function TestHistoryModal({ open, onClose, testName }: TestHistoryModalPr
             </div>
 
             {/* Vaga 3 */}
-            <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md p-4 border border-lia-border-subtle dark:border-lia-border-subtle">
+            <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl p-4 border border-lia-border-subtle dark:border-lia-border-subtle">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
@@ -324,7 +324,7 @@ export function TestHistoryModal({ open, onClose, testName }: TestHistoryModalPr
           </div>
 
           {/* Insights e Recomendações */}
-          <div className="mt-6 bg-lia-bg-tertiary dark:bg-lia-bg-secondary/20 rounded-md p-4 border border-lia-border-default dark:border-lia-border-subtle">
+          <div className="mt-6 bg-lia-bg-tertiary dark:bg-lia-bg-secondary/20 rounded-xl p-4 border border-lia-border-default dark:border-lia-border-subtle">
             <div className="flex items-start gap-3">
               <Brain className="w-5 h-5 text-wedo-cyan mt-0.5" />
               <div>

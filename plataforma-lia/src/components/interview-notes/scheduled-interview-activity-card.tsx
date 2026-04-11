@@ -143,7 +143,7 @@ export function ScheduledInterviewActivityCard({
   })
 
   return (
-    <Card className="bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md hover:transition-shadow">
+    <Card className="bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl hover:transition-shadow">
       <div className="p-3 space-y-2.5">
         {/* Urgency Badge */}
         <div className="flex items-center justify-between">
@@ -166,7 +166,7 @@ export function ScheduledInterviewActivityCard({
         </div>
 
         {/* Date, Time, and Platform Info */}
-        <div className="space-y-1.5 bg-lia-bg-secondary dark:bg-lia-bg-primary/30 rounded-md p-2.5">
+        <div className="space-y-1.5 bg-lia-bg-secondary dark:bg-lia-bg-primary/30 rounded-xl p-2.5">
           {/* Date and Time */}
           <div className="flex items-center gap-2">
             <Calendar className="w-3.5 h-3.5 text-lia-text-secondary flex-shrink-0" />
@@ -211,7 +211,7 @@ export function ScheduledInterviewActivityCard({
           <Button
             onClick={() => onViewSuggestedQuestions(interview.id)}
             variant="outline"
-            className="flex-1 border border-lia-border-subtle hover:bg-lia-bg-secondary dark:border-lia-border-subtle dark:hover:bg-lia-btn-primary-bg/50 text-lia-text-primary font-medium rounded-md px-3 py-1.5 transition-colors motion-reduce:transition-none text-xs h-auto"
+            className="flex-1 border border-lia-border-subtle hover:bg-lia-bg-secondary dark:border-lia-border-subtle dark:hover:bg-lia-btn-primary-bg/50 text-lia-text-primary font-medium rounded-xl px-3 py-1.5 transition-colors motion-reduce:transition-none text-xs h-auto"
           >
             <MessageSquare className="w-3.5 h-3.5 mr-1.5" />
             Perguntas

@@ -64,7 +64,7 @@ export function SCMSectionPerguntasEdit({
       {/* WSI Generation Controls */}
       <div className="px-5 py-3 border-t border-lia-border-subtle bg-lia-bg-secondary/30">
         {(showTechWarning || showBehavWarning) && (
-          <div className="mb-3 rounded-md border border-status-warning/30 bg-status-warning/10 dark:bg-status-warning/30 dark:border-status-warning/30 px-3 py-2.5">
+          <div className="mb-3 rounded-xl border border-status-warning/30 bg-status-warning/10 dark:bg-status-warning/30 dark:border-status-warning/30 px-3 py-2.5">
             <div className="flex items-start gap-2">
               <AlertTriangle className="w-3.5 h-3.5 text-status-warning mt-0.5 shrink-0" />
               <div className="space-y-1">
@@ -136,7 +136,7 @@ export function SCMSectionPerguntasEdit({
 
         {/* WSI Generation Progress */}
         {(isGeneratingWSI || wsiGenerationCompleted) && wsiGenerationStep > 0 && (
-          <div className="mt-3 rounded-md border border-lia-border-subtle bg-lia-bg-primary overflow-hidden" role="status" aria-live="polite" aria-label="Carregando...">
+          <div className="mt-3 rounded-xl border border-lia-border-subtle bg-lia-bg-primary overflow-hidden" role="status" aria-live="polite" aria-label="Carregando...">
             <div className="flex items-center gap-3 px-5 py-3 cursor-pointer" onClick={() => setWsiProgressCollapsed(!wsiProgressCollapsed)}>
               <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0">
                 {wsiGenerationStep < 4 ? (
@@ -421,8 +421,8 @@ export function SCMSectionPerguntasEdit({
                   <div className={`p-3 space-y-2 ${!block.editable ? 'bg-lia-bg-secondary/30' : ''}`}>
                     {!block.editable ? (
                       WSI_AUTOMATIC_MESSAGES[block.id] ? (
-                        <div className="rounded-md border border-lia-border-default bg-lia-bg-secondary/50 overflow-hidden">
-                          <div className="px-3 py-2 border-b border-lia-border-subtle bg-lia-bg-tertiary">
+                        <div className="rounded-xl border border-lia-border-default bg-lia-bg-secondary/50 overflow-hidden">
+                          <div className="px-3 py-2 bg-lia-bg-tertiary">
                             <p className="text-xs font-medium text-lia-text-primary">{WSI_AUTOMATIC_MESSAGES[block.id].title}</p>
                           </div>
                           <div className="p-3">
@@ -433,7 +433,7 @@ export function SCMSectionPerguntasEdit({
                           </div>
                         </div>
                       ) : (
-                        <div className="p-3 bg-lia-bg-primary/60 border border-lia-border-subtle rounded-md">
+                        <div className="p-3 bg-lia-bg-primary/60 border border-lia-border-subtle rounded-xl">
                           <p className="text-xs text-lia-text-primary italic">{block.description}</p>
                           <p className="text-micro text-lia-text-secondary mt-1">Este bloco é gerenciado automaticamente pela LIA</p>
                         </div>
@@ -450,7 +450,7 @@ export function SCMSectionPerguntasEdit({
                           </div>
                         )}
                         {blockQuestions.length === 0 && blockGenerated.length === 0 && block.id !== 2 ? (
-                          <div className="p-4 bg-lia-bg-secondary/50 border border-lia-border-subtle border-dashed rounded-md text-center">
+                          <div className="p-4 bg-lia-bg-secondary/50 border border-lia-border-subtle border-dashed rounded-xl text-center">
                             <p className="text-xs text-lia-text-secondary">Nenhuma pergunta neste bloco</p>
                           </div>
                         ) : block.id !== 2 || blockQuestions.length > 0 || blockGenerated.length > 0 ? (

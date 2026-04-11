@@ -201,7 +201,7 @@ export function StrategicTab() {
               <h4 className="font-medium text-lia-text-primary mb-3">
                 Inclusão PCD
               </h4>
-              <div className="text-center p-4 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-md">
+              <div className="text-center p-4 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-xl">
                 <div className="text-2xl font-bold text-lia-text-primary">
                   8.2%
                 </div>

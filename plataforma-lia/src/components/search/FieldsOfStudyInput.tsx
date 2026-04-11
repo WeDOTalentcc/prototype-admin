@@ -421,7 +421,7 @@ export function FieldsOfStudyInput({
           </button>
 
           {isModeDropdownOpen && (
-            <div className="absolute z-50 mt-1 w-72 bg-lia-bg-primary border border-lia-border-subtle rounded-md">
+            <div className="absolute z-50 mt-1 w-72 bg-lia-bg-primary border border-lia-border-subtle rounded-xl">
               <button
                 onClick={() => {
                   onModeChange('regular')
@@ -530,7 +530,7 @@ export function FieldsOfStudyInput({
         {isDropdownOpen && dropdownItems.length > 0 && (
           <div 
             ref={dropdownRef}
-            className="absolute z-50 w-full mt-1 bg-lia-bg-primary border border-lia-border-subtle rounded-md max-h-64 overflow-y-auto"
+            className="absolute z-50 w-full mt-1 bg-lia-bg-primary border border-lia-border-subtle rounded-xl max-h-64 overflow-y-auto"
           >
             {dropdownItems.map((item, index) => (
               <button
@@ -545,7 +545,7 @@ export function FieldsOfStudyInput({
                 className={cn(
                   "w-full text-left px-3 py-2 text-sm transition-colors",
                   focusedIndex === index ? "bg-lia-bg-tertiary" : "hover:bg-lia-bg-secondary",
-                  item.type === 'ai' && "border-b border-lia-border-subtle"
+                  item.type === 'ai' && ""
                 )}
               >
                 {item.type === 'ai' ? (

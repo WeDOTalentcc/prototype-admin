@@ -22,7 +22,7 @@ export function TestPreviewModal({ open, onClose }: TestPreviewModalProps) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-lia-overlay backdrop-blur-sm">
-      <div className="bg-lia-bg-primary dark:bg-lia-bg-primary rounded-md w-full max-w-4xl max-h-[90vh] overflow-hidden animate-fadeIn">
+      <div className="bg-lia-bg-primary dark:bg-lia-bg-primary rounded-xl w-full max-w-4xl max-h-[90vh] overflow-hidden animate-fadeIn">
         {/* Header do Modal */}
         <div className="bg-wedo-purple p-6 text-white">
           <div className="flex items-center justify-between">
@@ -32,7 +32,7 @@ export function TestPreviewModal({ open, onClose }: TestPreviewModalProps) {
             </div>
             <button
               onClick={onClose}
-              className="p-2 hover:bg-lia-bg-primary/20 rounded-md transition-colors motion-reduce:transition-none"
+              className="p-2 hover:bg-lia-bg-primary/20 rounded-xl transition-colors motion-reduce:transition-none"
             >
               <X className="w-5 h-5" />
             </button>
@@ -42,7 +42,7 @@ export function TestPreviewModal({ open, onClose }: TestPreviewModalProps) {
         {/* Conteúdo do Modal */}
         <div className="overflow-y-auto max-h-[calc(90vh-120px)]">
           {/* Informações do Teste */}
-          <div className="p-6 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+          <div className="p-6 dark:border-lia-border-subtle">
             <div className="grid grid-cols-3 gap-4 mb-4">
               <div className="flex items-center gap-2">
                 <Clock className="w-4 h-4 text-lia-text-primary" />
@@ -68,7 +68,7 @@ export function TestPreviewModal({ open, onClose }: TestPreviewModalProps) {
             </div>
 
             {/* Instruções */}
-            <div className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary/20 rounded-md p-4">
+            <div className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary/20 rounded-xl p-4">
               <h3 className="text-sm font-semibold text-lia-text-primary mb-2 flex items-center gap-2">
                 <AlertCircle className="w-4 h-4" />
                 Instruções Importantes
@@ -86,7 +86,7 @@ export function TestPreviewModal({ open, onClose }: TestPreviewModalProps) {
           {/* Questões do Teste - Visão do Candidato */}
           <div className="p-6 space-y-6">
             {/* Questão 1 */}
-            <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md p-5">
+            <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl p-5">
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-start gap-3">
                   <div className="bg-lia-interactive-active dark:bg-lia-bg-elevated text-lia-text-primary rounded-full w-8 h-8 flex items-center justify-center font-semibold text-sm">
@@ -116,7 +116,7 @@ export function TestPreviewModal({ open, onClose }: TestPreviewModalProps) {
                   'Visibilidade do status do sistema',
                   'Consistência e padrões'
                 ].map((option, idx) => (
-                  <label key={idx} className="flex items-center gap-3 p-3 bg-lia-bg-primary dark:bg-lia-bg-primary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle hover:border-lia-border-medium dark:hover:border-lia-border-medium cursor-pointer transition-colors motion-reduce:transition-none group">
+                  <label key={idx} className="flex items-center gap-3 p-3 bg-lia-bg-primary dark:bg-lia-bg-primary rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle hover:border-lia-border-medium dark:hover:border-lia-border-medium cursor-pointer transition-colors motion-reduce:transition-none group">
                     <input
                       type="radio"
                       name="candidate-q1"
@@ -131,7 +131,7 @@ export function TestPreviewModal({ open, onClose }: TestPreviewModalProps) {
             </div>
 
             {/* Questão 2 */}
-            <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md p-5">
+            <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl p-5">
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-start gap-3">
                   <div className="bg-lia-interactive-active dark:bg-lia-bg-elevated text-lia-text-primary rounded-full w-8 h-8 flex items-center justify-center font-semibold text-sm">
@@ -158,7 +158,7 @@ export function TestPreviewModal({ open, onClose }: TestPreviewModalProps) {
                   'Prototipar',
                   'Testar'
                 ].map((option, idx) => (
-                  <label key={idx} className="flex items-center gap-3 p-3 bg-lia-bg-primary dark:bg-lia-bg-primary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle hover:border-lia-border-medium dark:hover:border-lia-border-medium cursor-pointer transition-colors motion-reduce:transition-none group">
+                  <label key={idx} className="flex items-center gap-3 p-3 bg-lia-bg-primary dark:bg-lia-bg-primary rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle hover:border-lia-border-medium dark:hover:border-lia-border-medium cursor-pointer transition-colors motion-reduce:transition-none group">
                     <input
                       type="radio"
                       name="candidate-q2"
@@ -173,7 +173,7 @@ export function TestPreviewModal({ open, onClose }: TestPreviewModalProps) {
             </div>
 
             {/* Questão 3 */}
-            <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md p-5">
+            <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl p-5">
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-start gap-3">
                   <div className="bg-lia-interactive-active dark:bg-lia-bg-elevated text-lia-text-primary rounded-full w-8 h-8 flex items-center justify-center font-semibold text-sm">
@@ -200,7 +200,7 @@ export function TestPreviewModal({ open, onClose }: TestPreviewModalProps) {
                   'System Usability Scale (SUS)',
                   'Net Promoter Score (NPS)'
                 ].map((option, idx) => (
-                  <label key={idx} className="flex items-center gap-3 p-3 bg-lia-bg-primary dark:bg-lia-bg-primary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle hover:border-lia-border-medium dark:hover:border-lia-border-medium cursor-pointer transition-colors motion-reduce:transition-none group">
+                  <label key={idx} className="flex items-center gap-3 p-3 bg-lia-bg-primary dark:bg-lia-bg-primary rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle hover:border-lia-border-medium dark:hover:border-lia-border-medium cursor-pointer transition-colors motion-reduce:transition-none group">
                     <input
                       type="radio"
                       name="candidate-q3"
@@ -238,7 +238,7 @@ export function TestPreviewModal({ open, onClose }: TestPreviewModalProps) {
         <div className="border-t border-lia-border-subtle dark:border-lia-border-subtle p-4 bg-lia-bg-secondary dark:bg-lia-bg-secondary">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="flex items-center gap-3 bg-lia-bg-tertiary dark:bg-lia-bg-secondary/20 px-3 py-1.5 rounded-md">
+              <div className="flex items-center gap-3 bg-lia-bg-tertiary dark:bg-lia-bg-secondary/20 px-3 py-1.5 rounded-xl">
                 <Clock className="w-4 h-4 text-lia-text-primary" />
                 <div>
                   <span className="text-xs text-lia-text-secondary">Tempo total:</span>

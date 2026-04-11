@@ -33,14 +33,14 @@ export function PromptContextViewer({
   return (
     <>
       {candidateContext && (
-        <div className="bg-wedo-green-light/5 rounded-md p-3 border border-wedo-green-light/20">
+        <div className="bg-wedo-green-light/5 rounded-xl p-3 border border-wedo-green-light/20">
           <div className="flex items-center gap-2 mb-2">
             <LIAIcon size="sm" />
             <span className="text-base-ui font-semibold text-lia-text-primary">
               Análise LIA para candidato específico
             </span>
           </div>
-          <div className="flex items-center gap-3 bg-lia-bg-primary rounded-md px-3 py-2 border border-lia-border-subtle">
+          <div className="flex items-center gap-3 bg-lia-bg-primary rounded-xl px-3 py-2 border border-lia-border-subtle">
             <Avatar className="w-8 h-8">
               <AvatarFallback className="bg-wedo-green-light/10 text-wedo-green-light text-sm">
                 {ctx.name?.split(' ').map((n: string) => n[0]).join('') || 'C'}
@@ -62,7 +62,7 @@ export function PromptContextViewer({
       )}
 
       {!candidateContext && selectedCandidates.length > 0 && (
-        <div className="bg-lia-bg-secondary rounded-md p-3 border border-lia-border-subtle">
+        <div className="bg-lia-bg-secondary rounded-xl p-3 border border-lia-border-subtle">
           <div className="flex items-center gap-2 mb-2">
             <Users className="w-4 h-4 text-lia-text-secondary" />
             <span className="text-base-ui font-semibold text-lia-text-primary">

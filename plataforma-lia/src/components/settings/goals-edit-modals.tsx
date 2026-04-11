@@ -22,7 +22,7 @@ export function GoalsEditGoalModal({
 }: GoalsEditGoalModalProps) {
   return (
     <div className="fixed inset-0 bg-lia-overlay flex items-center justify-center z-50">
-      <div className="bg-lia-bg-primary rounded-md p-6 w-full max-w-lg">
+      <div className="bg-lia-bg-primary rounded-xl p-6 w-full max-w-lg">
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-lg font-semibold">Editar Meta</h3>
           <Button variant="ghost" onClick={() => setEditingGoal(null)}>
@@ -39,7 +39,7 @@ export function GoalsEditGoalModal({
               type="text"
               value={editingGoal.name}
               onChange={(e) => setEditingGoal(prev => prev ? { ...prev, name: e.target.value } : null)}
-              className="w-full px-3 py-2 border border-lia-border-default rounded-md text-sm"
+              className="w-full px-3 py-2 border border-lia-border-default rounded-xl text-sm"
             />
           </div>
 
@@ -52,7 +52,7 @@ export function GoalsEditGoalModal({
                 type="number"
                 value={editingGoal.target}
                 onChange={(e) => setEditingGoal(prev => prev ? { ...prev, target: parseFloat(e.target.value) || 0 } : null)}
-                className="w-full px-3 py-2 border border-lia-border-default rounded-md text-sm"
+                className="w-full px-3 py-2 border border-lia-border-default rounded-xl text-sm"
                 min="0"
                 step="0.1"
               />
@@ -65,7 +65,7 @@ export function GoalsEditGoalModal({
                 type="number"
                 value={editingGoal.current}
                 onChange={(e) => setEditingGoal(prev => prev ? { ...prev, current: parseFloat(e.target.value) || 0 } : null)}
-                className="w-full px-3 py-2 border border-lia-border-default rounded-md text-sm"
+                className="w-full px-3 py-2 border border-lia-border-default rounded-xl text-sm"
                 min="0"
                 step="0.1"
               />
@@ -79,7 +79,7 @@ export function GoalsEditGoalModal({
             <select
               value={editingGoal.status}
               onChange={(e) => setEditingGoal(prev => prev ? { ...prev, status: e.target.value as UserGoal['status'] } : null)}
-              className="w-full px-3 py-2 border border-lia-border-default rounded-md text-sm"
+              className="w-full px-3 py-2 border border-lia-border-default rounded-xl text-sm"
             >
               <option value="pending">Pendente</option>
               <option value="in_progress">Em Progresso</option>
@@ -128,8 +128,8 @@ export function GoalsEditTemplateModal({
 }: GoalsEditTemplateModalProps) {
   return (
     <div className="fixed inset-0 bg-lia-overlay flex items-center justify-center z-50">
-      <div className="bg-lia-bg-primary rounded-md w-full max-w-md mx-4 overflow-hidden">
-        <div className="bg-lia-bg-secondary px-5 py-3 border-b border-lia-border-subtle">
+      <div className="bg-lia-bg-primary rounded-xl w-full max-w-md mx-4 overflow-hidden">
+        <div className="bg-lia-bg-secondary px-5 py-3">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-full flex items-center justify-center bg-lia-interactive-active">
               <Settings className="w-4 h-4 text-lia-text-primary" />
@@ -148,7 +148,7 @@ export function GoalsEditTemplateModal({
               type="text"
               value={editingTemplate.name}
               onChange={(e) => setEditingTemplate(prev => prev ? { ...prev, name: e.target.value } : null)}
-              className="w-full px-2.5 py-1.5 border border-lia-border-subtle rounded-md text-xs font-['Open_Sans',sans-serif]"
+              className="w-full px-2.5 py-1.5 border border-lia-border-subtle rounded-xl text-xs font-['Open_Sans',sans-serif]"
             />
           </div>
 
@@ -158,7 +158,7 @@ export function GoalsEditTemplateModal({
               type="text"
               value={editingTemplate.description}
               onChange={(e) => setEditingTemplate(prev => prev ? { ...prev, description: e.target.value } : null)}
-              className="w-full px-2.5 py-1.5 border border-lia-border-subtle rounded-md text-xs font-['Open_Sans',sans-serif]"
+              className="w-full px-2.5 py-1.5 border border-lia-border-subtle rounded-xl text-xs font-['Open_Sans',sans-serif]"
             />
           </div>
 
@@ -169,7 +169,7 @@ export function GoalsEditTemplateModal({
                 type="number"
                 value={editingTemplate.defaultTarget}
                 onChange={(e) => setEditingTemplate(prev => prev ? { ...prev, defaultTarget: parseFloat(e.target.value) || 0 } : null)}
-                className="w-full px-2.5 py-1.5 border border-lia-border-subtle rounded-md text-xs font-['Open_Sans',sans-serif]"
+                className="w-full px-2.5 py-1.5 border border-lia-border-subtle rounded-xl text-xs font-['Open_Sans',sans-serif]"
               />
             </div>
             <div>
@@ -178,7 +178,7 @@ export function GoalsEditTemplateModal({
                 type="text"
                 value={editingTemplate.unit}
                 onChange={(e) => setEditingTemplate(prev => prev ? { ...prev, unit: e.target.value } : null)}
-                className="w-full px-2.5 py-1.5 border border-lia-border-subtle rounded-md text-xs font-['Open_Sans',sans-serif]"
+                className="w-full px-2.5 py-1.5 border border-lia-border-subtle rounded-xl text-xs font-['Open_Sans',sans-serif]"
               />
             </div>
           </div>
@@ -189,7 +189,7 @@ export function GoalsEditTemplateModal({
               <select
                 value={editingTemplate.period}
                 onChange={(e) => setEditingTemplate(prev => prev ? { ...prev, period: e.target.value as GoalTemplate['period'] } : null)}
-                className="w-full px-2.5 py-1.5 border border-lia-border-subtle rounded-md text-xs font-['Open_Sans',sans-serif]"
+                className="w-full px-2.5 py-1.5 border border-lia-border-subtle rounded-xl text-xs font-['Open_Sans',sans-serif]"
               >
                 <option value="monthly">Mensal</option>
                 <option value="quarterly">Trimestral</option>
@@ -201,7 +201,7 @@ export function GoalsEditTemplateModal({
               <select
                 value={editingTemplate.category}
                 onChange={(e) => setEditingTemplate(prev => prev ? { ...prev, category: e.target.value as GoalTemplate['category'] } : null)}
-                className="w-full px-2.5 py-1.5 border border-lia-border-subtle rounded-md text-xs font-['Open_Sans',sans-serif]"
+                className="w-full px-2.5 py-1.5 border border-lia-border-subtle rounded-xl text-xs font-['Open_Sans',sans-serif]"
               >
                 <option value="recruitment">Recrutamento</option>
                 <option value="quality">Qualidade</option>

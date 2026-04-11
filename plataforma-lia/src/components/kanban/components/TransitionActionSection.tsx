@@ -97,7 +97,7 @@ export function BatchRejectionSection({
             return (
               <div
                 key={c.id}
-                className="p-2.5 bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:bg-lia-bg-secondary dark:border-lia-border-subtle"
+                className="p-2.5 bg-lia-bg-secondary rounded-xl border border-lia-border-subtle dark:bg-lia-bg-secondary dark:border-lia-border-subtle"
               >
                 <div className="flex items-center gap-2.5">
                   <div className="w-7 h-7 rounded-full bg-lia-interactive-active dark:bg-lia-bg-elevated flex items-center justify-center flex-shrink-0">

@@ -746,7 +746,7 @@ function PipelineCandidateCard({
                 e.stopPropagation()
                 onOpenPreview(candidate)
               }}
-              className="p-1.5 rounded-md hover:bg-lia-bg-primary transition-colors text-lia-text-secondary hover:text-lia-text-primary"
+              className="p-1.5 rounded-xl hover:bg-lia-bg-primary transition-colors text-lia-text-secondary hover:text-lia-text-primary"
               aria-label="Visualizar candidato"
             >
               <Eye className="w-4 h-4" />
@@ -762,7 +762,7 @@ function PipelineCandidateCard({
                 e.stopPropagation()
                 onOpenKanban(candidate)
               }}
-              className="p-1.5 rounded-md hover:bg-lia-bg-primary transition-colors text-lia-text-secondary hover:text-lia-text-primary"
+              className="p-1.5 rounded-xl hover:bg-lia-bg-primary transition-colors text-lia-text-secondary hover:text-lia-text-primary"
               aria-label="Abrir no Kanban"
             >
               <ExternalLink className="w-4 h-4" />

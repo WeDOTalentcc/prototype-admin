@@ -168,7 +168,7 @@ export function EAPModals({
           onClick={closeEditArchetype}
         >
           <div
-            className="bg-lia-bg-primary rounded-md p-5 w-full max-w-md mx-4 border border-lia-border-subtle"
+            className="bg-lia-bg-primary rounded-xl p-5 w-full max-w-md mx-4 border border-lia-border-subtle"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-4">
@@ -177,7 +177,7 @@ export function EAPModals({
               </h3>
               <button
                 onClick={closeEditArchetype}
-                className="p-1.5 rounded-md hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none"
+                className="p-1.5 rounded-xl hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -202,7 +202,7 @@ export function EAPModals({
                     value={editArchetypeName}
                     onChange={(e) => setEditArchetypeName(e.target.value)}
                     placeholder="Nome do arquétipo"
-                    className="w-full rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-lia-border-medium border border-lia-border-subtle"
+                    className="w-full rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-lia-border-medium border border-lia-border-subtle"
                   />
                 </div>
               </div>
@@ -214,7 +214,7 @@ export function EAPModals({
                   onChange={(e) => setEditArchetypeQuery(e.target.value)}
                   placeholder="Ex: Desenvolvedor Python Sênior São Paulo"
                   rows={2}
-                  className="w-full rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-lia-border-medium resize-none border border-lia-border-subtle"
+                  className="w-full rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-lia-border-medium resize-none border border-lia-border-subtle"
                 />
               </div>
 
@@ -225,7 +225,7 @@ export function EAPModals({
                   onChange={(e) => setEditArchetypeDescription(e.target.value)}
                   placeholder="Breve descrição do perfil ideal..."
                   rows={2}
-                  className="w-full rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-lia-border-medium resize-none border border-lia-border-subtle"
+                  className="w-full rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-lia-border-medium resize-none border border-lia-border-subtle"
                 />
               </div>
 
@@ -266,7 +266,7 @@ export function EAPModals({
                       }
                     }}
                     placeholder="Digite e pressione Enter para adicionar..."
-                    className="w-full rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-lia-border-medium border border-lia-border-subtle"
+                    className="w-full rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-lia-border-medium border border-lia-border-subtle"
                   />
                   <span className="absolute right-3 top-1/2 -translate-y-1/2 text-micro text-lia-text-secondary">
                     Enter ↵
@@ -313,7 +313,7 @@ export function EAPModals({
       {/* Modal de Confirmação para Exclusão de Arquétipo */}
       <AlertDialog open={showDeleteArchetypeDialog} onOpenChange={setShowDeleteArchetypeDialog}>
         <AlertDialogContent
-          className="sm:max-w-[320px] w-[85vw] fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 p-4 rounded-md border"
+          className="sm:max-w-[320px] w-[85vw] fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 p-4 rounded-xl border"
          
         >
           <AlertDialogHeader>
@@ -336,7 +336,7 @@ export function EAPModals({
                 setShowDeleteArchetypeDialog(false)
                 setArchetypeToDelete(null)
               }}
-              className="flex-1 h-9 text-sm px-3 rounded-md bg-lia-bg-primary border border-lia-border-subtle text-lia-text-secondary hover:bg-lia-bg-secondary"
+              className="flex-1 h-9 text-sm px-3 rounded-xl bg-lia-bg-primary border border-lia-border-subtle text-lia-text-secondary hover:bg-lia-bg-secondary"
             >
               Cancelar
             </AlertDialogCancel>
@@ -376,7 +376,7 @@ export function EAPModals({
                 : 'Acessa 800M+ perfis profissionais.'}
             </p>
 
-            <div className="bg-lia-bg-primary rounded-md p-2 space-y-1 border border-lia-border-subtle">
+            <div className="bg-lia-bg-primary rounded-xl p-2 space-y-1 border border-lia-border-subtle">
               {pendingSourceChange === 'hybrid' && (
                 <div className="flex justify-between text-micro">
                   <span className="text-lia-text-secondary">Local:</span>

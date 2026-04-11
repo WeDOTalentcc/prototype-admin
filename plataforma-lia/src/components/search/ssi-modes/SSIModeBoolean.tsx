@@ -234,7 +234,7 @@ export const SSIModeBoolean = React.memo(function SSIModeBoolean(props: SSIModeB
           <button
             key={op}
             onClick={() => onChange(value + (value ? " " : "") + op + " ")}
-            className="px-2 py-0.5 rounded-md text-xs font-mono hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none bg-lia-bg-tertiary text-lia-text-secondary"
+            className="px-2 py-0.5 rounded-xl text-xs font-mono hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none bg-lia-bg-tertiary text-lia-text-secondary"
           >
             {op}
           </button>
@@ -242,7 +242,7 @@ export const SSIModeBoolean = React.memo(function SSIModeBoolean(props: SSIModeB
       </div>
 
       {/* Dica contextual padronizada */}
-      <div className="p-2.5 rounded-md bg-white border border-lia-border-subtle">
+      <div className="p-2.5 rounded-xl bg-white border border-lia-border-subtle">
         <div className="flex items-start gap-2">
           <Lightbulb className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-lia-text-secondary" />
           <p className="text-xs text-lia-text-secondary">

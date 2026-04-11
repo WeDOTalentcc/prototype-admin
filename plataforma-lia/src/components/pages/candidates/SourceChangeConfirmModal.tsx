@@ -43,7 +43,7 @@ export function SourceChangeConfirmModal({
             </div>
           </div>
 
-          <div className="bg-lia-bg-secondary dark:bg-lia-bg-primary rounded-md p-3 space-y-2 border border-lia-border-subtle dark:border-lia-border-subtle">
+          <div className="bg-lia-bg-secondary dark:bg-lia-bg-primary rounded-xl p-3 space-y-2 border border-lia-border-subtle dark:border-lia-border-subtle">
             <div className="flex justify-between items-center text-xs">
               <span className={textStyles.bodySmall}>Tipo de busca:</span>
               <span className={`${textStyles.label} text-lia-text-primary`}>{pendingSourceChange === 'hybrid' ? 'Híbrido' : 'Global'}</span>
@@ -67,7 +67,7 @@ export function SourceChangeConfirmModal({
         <div className="flex gap-2.5 pt-3">
           <button
             onClick={onCancel}
-            className="flex-1 h-8 text-xs px-3 rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle text-lia-text-primary hover:bg-lia-bg-secondary dark:hover:bg-lia-bg-inverse font-medium transition-colors motion-reduce:transition-none"
+            className="flex-1 h-8 text-xs px-3 rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle text-lia-text-primary hover:bg-lia-bg-secondary dark:hover:bg-lia-bg-inverse font-medium transition-colors motion-reduce:transition-none"
           >
             Cancelar
           </button>

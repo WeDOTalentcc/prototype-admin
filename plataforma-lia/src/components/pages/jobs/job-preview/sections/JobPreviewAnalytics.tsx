@@ -24,7 +24,7 @@ export function JobPreviewAnalytics({ previewJob, jobMetrics, isLoadingJobMetric
   return (
     <div data-testid="job-preview-analytics" className="space-y-4">
       <div className="grid grid-cols-2 gap-3">
-        <div className="bg-lia-bg-secondary rounded-md p-3">
+        <div className="bg-lia-bg-secondary rounded-xl p-3">
           <div className="flex items-center justify-between mb-1">
             <span className="text-xs font-medium text-lia-text-primary">Sucesso de Fechamento</span>
             <Target className="w-3 h-3 text-lia-text-primary" />
@@ -41,7 +41,7 @@ export function JobPreviewAnalytics({ previewJob, jobMetrics, isLoadingJobMetric
           </div>
         </div>
 
-        <div className="bg-lia-bg-tertiary rounded-md p-3">
+        <div className="bg-lia-bg-tertiary rounded-xl p-3">
           <div className="flex items-center justify-between mb-1">
             <span className="text-xs font-medium text-lia-text-primary">Atividade 7d</span>
             <TrendingUp className="w-3 h-3 text-lia-text-secondary" />
@@ -54,7 +54,7 @@ export function JobPreviewAnalytics({ previewJob, jobMetrics, isLoadingJobMetric
           </div>
         </div>
 
-        <div className="bg-lia-bg-secondary rounded-md p-3">
+        <div className="bg-lia-bg-secondary rounded-xl p-3">
           <div className="flex items-center justify-between mb-1">
             <span className="text-xs font-medium text-lia-text-primary">Time to Fill</span>
             <Clock className="w-3 h-3 text-lia-text-primary" />
@@ -81,7 +81,7 @@ export function JobPreviewAnalytics({ previewJob, jobMetrics, isLoadingJobMetric
         </div>
       </div>
 
-      <div className="bg-lia-bg-secondary rounded-md p-3">
+      <div className="bg-lia-bg-secondary rounded-xl p-3">
         <div className="flex items-start gap-2">
           <Lightbulb className="w-3.5 h-3.5 text-lia-text-primary mt-0.5" />
           <div className="flex-1">
@@ -106,27 +106,27 @@ export function JobPreviewAnalytics({ previewJob, jobMetrics, isLoadingJobMetric
         </div>
       </div>
 
-      <div className="bg-lia-bg-secondary rounded-md p-3">
+      <div className="bg-lia-bg-secondary rounded-xl p-3">
         <h4 className={`${textStyles.title} mb-2 flex items-center gap-1`}>
           <BarChart3 className="w-3.5 h-3.5 text-lia-text-primary" />
           Comparativo com Mercado
         </h4>
         <div className="grid grid-cols-3 gap-2">
-          <div className="text-center p-2 bg-lia-bg-secondary rounded-md">
+          <div className="text-center p-2 bg-lia-bg-secondary rounded-xl">
             <p className={`${textStyles.bodySmall}`}>Salário</p>
             <p className="text-sm font-bold text-lia-text-primary">
               {previewJob.salary > `${CURRENCY_SYMBOL} 10.000` ? '+15%' : '-5%'}
             </p>
             <p className={textStyles.bodySmall}>vs. mercado</p>
           </div>
-          <div className="text-center p-2 bg-lia-bg-secondary rounded-md">
+          <div className="text-center p-2 bg-lia-bg-secondary rounded-xl">
             <p className={`${textStyles.bodySmall}`}>Candidatos</p>
             <p className="text-sm font-bold text-lia-text-primary">
               {previewJob.funnel.total > 30 ? '+45%' : '-20%'}
             </p>
             <p className={textStyles.bodySmall}>vs. média</p>
           </div>
-          <div className="text-center p-2 bg-lia-bg-secondary rounded-md">
+          <div className="text-center p-2 bg-lia-bg-secondary rounded-xl">
             <p className={`${textStyles.bodySmall}`}>Atratividade</p>
             <p className="text-sm font-bold text-lia-text-primary">
               #—

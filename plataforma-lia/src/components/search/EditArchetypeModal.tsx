@@ -114,8 +114,8 @@ export function EditArchetypeModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-lia-overlay" onClick={onClose}>
-      <div className="bg-lia-bg-primary rounded-md w-full max-w-[700px] mx-3 max-h-[85vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center gap-3 px-5 py-4 border-b border border-lia-border-subtle">
+      <div className="bg-lia-bg-primary rounded-xl w-full max-w-[700px] mx-3 max-h-[85vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center gap-3 px-5 py-4 border border-lia-border-subtle">
           <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 bg-wedo-cyan/15">
             <Target className="w-5 h-5 text-lia-text-primary" />
           </div>
@@ -127,7 +127,7 @@ export function EditArchetypeModal({
               {editArchetypeName || "Novo perfil de candidato ideal"}
             </p>
           </div>
-          <button onClick={onClose} className="p-1.5 rounded-md hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none">
+          <button onClick={onClose} className="p-1.5 rounded-xl hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none">
             <X className="w-4 h-4 text-lia-text-secondary" />
           </button>
         </div>
@@ -204,7 +204,7 @@ export function EditArchetypeModal({
         <div className="flex items-center justify-between px-5 py-4 border-t bg-lia-bg-secondary">
           <p className="text-xs text-lia-text-secondary">Campos obrigatórios: Nome e Query</p>
           <div className="flex gap-2">
-            <button onClick={onClose} className="px-4 py-2 rounded-md text-xs font-medium transition-colors motion-reduce:transition-none hover:bg-lia-interactive-active border border-lia-border-subtle bg-transparent">Cancelar</button>
+            <button onClick={onClose} className="px-4 py-2 rounded-xl text-xs font-medium transition-colors motion-reduce:transition-none hover:bg-lia-interactive-active border border-lia-border-subtle bg-transparent">Cancelar</button>
             <button
               onClick={onSave}
               disabled={isSavingArchetype || !editArchetypeName || !editArchetypeQuery}

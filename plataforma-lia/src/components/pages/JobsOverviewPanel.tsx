@@ -30,7 +30,7 @@ export function JobsOverviewPanel({
       <div className="w-full max-w-[780px] mx-auto px-4 flex flex-col">
         <LiaPromptHeader title="Posso te ajudar com análises de vagas?" />
         <div className="rounded-xl overflow-hidden bg-lia-bg-primary border border-lia-border-subtle">
-          <div className="px-4 pt-4 pb-4 border-b border-b-lia-border-subtle">
+          <div className="px-4 pt-4 pb-4-lia-border-subtle">
             <div className="flex flex-wrap items-center gap-2">
               <button
                 onClick={() => {
@@ -76,7 +76,7 @@ export function JobsOverviewPanel({
           </div>
 
           <div className="px-4 pt-4 pb-4">
-            <div className="flex items-center gap-3 px-4 py-3 bg-lia-bg-primary rounded-md border border-lia-border-subtle transition-colors motion-reduce:transition-none focus-within:border-lia-border-medium focus-within:ring-1 focus-within:ring-lia-btn-primary-bg/20">
+            <div className="flex items-center gap-3 px-4 py-3 bg-lia-bg-primary rounded-xl border border-lia-border-subtle transition-colors motion-reduce:transition-none focus-within:border-lia-border-medium focus-within:ring-1 focus-within:ring-lia-btn-primary-bg/20">
               <input
                 type="text"
                 placeholder="Como posso te ajudar com suas vagas hoje?"
@@ -96,7 +96,7 @@ export function JobsOverviewPanel({
               <div className="flex items-center gap-1">
                 <AudioRecordButton
                   onTranscription={(text: string) => setLiaPromptValue((prev: string) => prev ? `${prev} ${text}` : text)}
-                  className="w-7 h-7 rounded-md flex items-center justify-center hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none"
+                  className="w-7 h-7 rounded-xl flex items-center justify-center hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none"
                 />
               </div>
               <button

@@ -35,7 +35,7 @@ export function UnpublishStepIndicator({ notifyApplicants, currentStep }: Unpubl
   ]
 
   return (
-    <div className="flex items-center justify-center gap-1 mb-4 pb-3 border-b border-lia-border-subtle">
+    <div className="flex items-center justify-center gap-1 mb-4 pb-3">
       {steps.map((step, index) => (
         <React.Fragment key={step.id}>
           <div className="flex items-center gap-1.5">
@@ -79,7 +79,7 @@ export interface ConfirmationStepProps {
 export function ConfirmationStep({ selectedCandidateIds, notificationChannel, acknowledgedWarning, setAcknowledgedWarning }: ConfirmationStepProps) {
   return (
     <div className="space-y-4">
-      <div className="p-4 bg-status-warning/10 border border-status-warning/30 rounded-md">
+      <div className="p-4 bg-status-warning/10 border border-status-warning/30 rounded-xl">
         <div className="flex items-start gap-3">
           <AlertCircle className="w-5 h-5 text-status-warning flex-shrink-0 mt-0.5" />
           <div className="flex-1">
@@ -113,7 +113,7 @@ export function ConfirmationStep({ selectedCandidateIds, notificationChannel, ac
         </div>
       </div>
 
-      <div className="flex items-start gap-2 p-3 bg-lia-bg-secondary rounded-md border border-lia-border-subtle">
+      <div className="flex items-start gap-2 p-3 bg-lia-bg-secondary rounded-xl border border-lia-border-subtle">
         <Checkbox
           id="acknowledgeWarning"
           checked={acknowledgedWarning}
@@ -142,7 +142,7 @@ export function CompleteStep({ selectedCandidateIds }: CompleteStepProps) {
       <p className="text-xs text-lia-text-secondary mb-4" aria-live="polite" aria-atomic="true">
         A vaga foi despublicada e congelada com sucesso.
       </p>
-      <div className="bg-lia-bg-secondary rounded-md p-3 border border-lia-border-subtle text-left space-y-2">
+      <div className="bg-lia-bg-secondary rounded-xl p-3 border border-lia-border-subtle text-left space-y-2">
         <div className="flex items-center gap-2 text-xs text-lia-text-secondary">
           <Check className="w-3.5 h-3.5 text-status-success" />
           <span aria-live="polite" aria-atomic="true">Vaga despublicada dos job boards</span>

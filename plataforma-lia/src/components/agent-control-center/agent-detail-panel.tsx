@@ -119,7 +119,7 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
             className="fixed right-0 top-0 h-full w-full max-w-md z-50 overflow-hidden flex flex-col bg-lia-bg-primary animate-in slide-in-from-right duration-300"
           >
             {/* Header */}
-            <div className="flex items-center justify-between p-4 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+            <div className="flex items-center justify-between p-4 dark:border-lia-border-subtle">
               <div className="flex items-center gap-3">
                 <span className="text-2xl">{agent.icon}</span>
                 <div>
@@ -190,7 +190,7 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
             </div>
 
             {/* Tabs */}
-            <div className="flex border-b border-lia-border-subtle dark:border-lia-border-subtle">
+            <div className="flex dark:border-lia-border-subtle">
               {[
                 { id: 'activity', label: 'Atividades', icon: Activity },
                 { id: 'health', label: 'Saúde', icon: Target },
@@ -225,7 +225,7 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
                     activities.map(activity => (
                       <div
                         key={activity.id}
-                        className="flex items-start gap-3 p-3 rounded-md bg-lia-bg-tertiary dark:bg-lia-bg-secondary"
+                        className="flex items-start gap-3 p-3 rounded-xl bg-lia-bg-tertiary dark:bg-lia-bg-secondary"
                       >
                         <div className="flex-shrink-0 mt-0.5">
                           {activity.status === 'success' && <CheckCircle className="w-4 h-4 text-status-success" />}
@@ -345,7 +345,7 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
               {/* Settings Tab */}
               {activeTab === 'settings' && (
                 <div className="p-4 space-y-4">
-                  <div className="p-4 rounded-md bg-lia-bg-tertiary dark:bg-lia-bg-secondary">
+                  <div className="p-4 rounded-xl bg-lia-bg-tertiary dark:bg-lia-bg-secondary">
                     <h4 className="text-xs font-medium mb-2 text-lia-text-primary">
                       Configurações do Agente
                     </h4>
@@ -353,7 +353,7 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
                       Em breve: Configure prioridades, limites de ações, e preferências de automação.
                     </p>
                   </div>
-                  <div className="p-4 rounded-md bg-lia-bg-tertiary dark:bg-lia-bg-secondary">
+                  <div className="p-4 rounded-xl bg-lia-bg-tertiary dark:bg-lia-bg-secondary">
                     <h4 className="text-xs font-medium mb-2 text-lia-text-primary">
                       Integrações
                     </h4>

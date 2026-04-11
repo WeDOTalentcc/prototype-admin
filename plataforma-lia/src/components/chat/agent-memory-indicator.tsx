@@ -133,7 +133,7 @@ export function AgentMemoryIndicator({
             className="overflow-hidden animate-in fade-in slide-in-from-top-1 duration-200"
           >
             <div
-              className="mt-1 px-3.5 py-3 rounded-md border border-lia-border-subtle bg-lia-bg-secondary max-h-[280px] overflow-y-auto text-xs text-lia-text-primary"
+              className="mt-1 px-3.5 py-3 rounded-xl border border-lia-border-subtle bg-lia-bg-secondary max-h-[280px] overflow-y-auto text-xs text-lia-text-primary"
             >
               <div
                 className="font-semibold text-sm mb-2"

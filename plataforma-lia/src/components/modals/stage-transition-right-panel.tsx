@@ -51,7 +51,7 @@ export function StageTransitionRightPanel({
       <div className="p-5 space-y-4">
         {needsMessageComposition ? (
           <>
-            <div className="flex items-start gap-2 p-3 bg-lia-bg-secondary/50 rounded-md border border-lia-border-default">
+            <div className="flex items-start gap-2 p-3 bg-lia-bg-secondary/50 rounded-xl border border-lia-border-default">
               <Brain className="w-4 h-4 text-wedo-cyan mt-0.5 shrink-0" />
               <div>
                 <p className="text-xs text-lia-text-primary font-medium">
@@ -98,7 +98,7 @@ export function StageTransitionRightPanel({
             ) : (
               <div className="relative" role="status" aria-live="polite" aria-label="Carregando...">
                 {isRegenerating && (
-                  <div className="absolute inset-0 bg-lia-bg-primary/80 rounded-md flex items-center justify-center z-10" role="status" aria-live="polite" aria-label="Carregando...">
+                  <div className="absolute inset-0 bg-lia-bg-primary/80 rounded-xl flex items-center justify-center z-10" role="status" aria-live="polite" aria-label="Carregando...">
                     <div className="flex items-center gap-2" role="status" aria-live="polite" aria-label="Carregando...">
                       <Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none text-lia-text-secondary" />
                       <span className="text-xs text-lia-text-secondary font-medium">LIA regenerando mensagem...</span>

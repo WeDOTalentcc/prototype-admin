@@ -114,7 +114,7 @@ export function KPIAlertSystem({ recruiterData, onAlertAction }: KPIAlertSystemP
               <select
                 value={filterType}
                 onChange={(e) => setFilterType(e.target.value)}
-                className="w-full p-2 border border-lia-border-default rounded-md text-sm"
+                className="w-full p-2 border border-lia-border-default rounded-xl text-sm"
               >
                 <option value="all">Todos</option>
                 <option value="critical">Crítico</option>
@@ -129,7 +129,7 @@ export function KPIAlertSystem({ recruiterData, onAlertAction }: KPIAlertSystemP
               <select
                 value={filterCategory}
                 onChange={(e) => setFilterCategory(e.target.value)}
-                className="w-full p-2 border border-lia-border-default rounded-md text-sm"
+                className="w-full p-2 border border-lia-border-default rounded-xl text-sm"
               >
                 <option value="all">Todas</option>
                 <option value="performance">Performance</option>
@@ -145,7 +145,7 @@ export function KPIAlertSystem({ recruiterData, onAlertAction }: KPIAlertSystemP
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
-                className="w-full p-2 border border-lia-border-default rounded-md text-sm"
+                className="w-full p-2 border border-lia-border-default rounded-xl text-sm"
               >
                 <option value="date">Data</option>
                 <option value="priority">Prioridade</option>
@@ -203,7 +203,7 @@ export function KPIAlertSystem({ recruiterData, onAlertAction }: KPIAlertSystemP
 
       {selectedAlert && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-          <div className="bg-lia-bg-primary rounded-md w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+          <div className="bg-lia-bg-primary rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold">Detalhes do Alerta</h3>
@@ -221,7 +221,7 @@ export function KPIAlertSystem({ recruiterData, onAlertAction }: KPIAlertSystemP
                   <h4 className="font-medium mb-2">Todas as Ações Sugeridas:</h4>
                   <ul className="space-y-2">
                     {selectedAlert.suggestedActions.map((action, index) => (
-                      <li key={`sel-action-${index}`} className="text-sm text-lia-text-secondary flex items-start gap-2 p-2 bg-lia-bg-secondary rounded-md">
+                      <li key={`sel-action-${index}`} className="text-sm text-lia-text-secondary flex items-start gap-2 p-2 bg-lia-bg-secondary rounded-xl">
                         <span className="text-lia-text-secondary mt-1">•</span>
                         {action}
                       </li>

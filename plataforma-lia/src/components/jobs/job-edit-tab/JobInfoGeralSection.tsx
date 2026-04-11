@@ -287,7 +287,7 @@ export function JobInfoGeralSection({
                     <p className="text-xs text-lia-text-tertiary font-['Open_Sans',sans-serif] italic">Nenhum idioma adicionado</p>
                   )}
                   {langs.map((lang, idx) => (
-                    <div key={idx} className="flex items-center gap-3 p-3 bg-lia-bg-secondary/50 rounded-md">
+                    <div key={idx} className="flex items-center gap-3 p-3 bg-lia-bg-secondary/50 rounded-xl">
                       <Languages className="w-4 h-4 text-lia-text-tertiary flex-shrink-0" />
                       <div className="flex-1 grid grid-cols-3 gap-3">
                         <div>
@@ -425,7 +425,7 @@ export function JobInfoGeralSection({
         <Card className="border border-lia-border-subtle">
           <CardContent className="p-4">
             <div className="space-y-0">
-              <div className="flex items-center justify-between py-2.5 border-b border-lia-border-subtle dark:border-lia-border-strong">
+              <div className="flex items-center justify-between py-2.5 dark:border-lia-border-strong">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-lg bg-wedo-cyan/10 flex items-center justify-center"><Linkedin className="w-4 h-4 text-wedo-cyan-dark" /></div>
                   <div>
@@ -435,7 +435,7 @@ export function JobInfoGeralSection({
                 </div>
                 <Switch checked={!!jobEditForm.publishedLinkedIn} onCheckedChange={(val: boolean) => updateField("publishedLinkedIn", val)} disabled={!isEditing} />
               </div>
-              <div className="flex items-center justify-between py-2.5 border-b border-lia-border-subtle dark:border-lia-border-strong">
+              <div className="flex items-center justify-between py-2.5 dark:border-lia-border-strong">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-lg bg-status-success/10 dark:bg-status-success/20 flex items-center justify-center"><Globe className="w-4 h-4 text-status-success" /></div>
                   <div>
@@ -497,11 +497,11 @@ export function JobInfoGeralSection({
               <div className="space-y-2">
                 <p className="text-xs text-lia-text-secondary font-['Open_Sans',sans-serif]">Link público para candidatos se candidatarem:</p>
                 <div className="flex items-center gap-2">
-                  <input type="text" readOnly value={publicLink || (jobEditForm.public_url as string) || ""} className="flex-1 px-3 py-2 text-xs text-lia-text-primary bg-lia-bg-secondary border border-lia-border-subtle rounded-md font-['Open_Sans',sans-serif]" onClick={(e) => (e.target as HTMLInputElement).select()} />
+                  <input type="text" readOnly value={publicLink || (jobEditForm.public_url as string) || ""} className="flex-1 px-3 py-2 text-xs text-lia-text-primary bg-lia-bg-secondary border border-lia-border-subtle rounded-xl font-['Open_Sans',sans-serif]" onClick={(e) => (e.target as HTMLInputElement).select()} />
                   <button onClick={() => { navigator.clipboard.writeText(publicLink || (jobEditForm.public_url as string) || ""); toast.success("Link copiado!") }} className="p-2 rounded-md bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover dark:hover:bg-lia-interactive-active transition-colors flex-shrink-0" title="Copiar link">
                     <Copy className="w-3.5 h-3.5" />
                   </button>
-                  <a href={publicLink || (jobEditForm.public_url as string) || "#"} target="_blank" rel="noopener noreferrer" className="p-2 rounded-md border border-lia-border-subtle text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors flex-shrink-0" title="Abrir link">
+                  <a href={publicLink || (jobEditForm.public_url as string) || "#"} target="_blank" rel="noopener noreferrer" className="p-2 rounded-xl border border-lia-border-subtle text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors flex-shrink-0" title="Abrir link">
                     <ExternalLink className="w-3.5 h-3.5" />
                   </a>
                 </div>

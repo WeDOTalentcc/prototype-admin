@@ -33,7 +33,7 @@ export function CompactLIAPrompt({
       />
 
       {isLIAThinking && (
-        <div className="flex items-center gap-2 text-xs px-3 py-1.5 rounded-md animate-fade-in bg-lia-interactive-active/30 border border-wedo-cyan/20">
+        <div className="flex items-center gap-2 text-xs px-3 py-1.5 rounded-xl animate-fade-in bg-lia-interactive-active/30 border border-wedo-cyan/20">
           <Brain className="w-3 h-3 animate-pulse motion-reduce:animate-none text-wedo-cyan" />
           <span className="font-medium text-lia-text-primary">LIA está pensando</span>
           <div className="flex gap-0.5">

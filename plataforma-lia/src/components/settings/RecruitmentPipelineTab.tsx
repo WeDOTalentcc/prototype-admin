@@ -55,13 +55,13 @@ export function RecruitmentPipelineTab({
   return (
     <div className="space-y-6">
       {error && (
-        <div className="px-2 py-1.5 rounded-md flex items-center gap-2 bg-status-error/10 border border-status-error/30 text-status-error">
+        <div className="px-2 py-1.5 rounded-xl flex items-center gap-2 bg-status-error/10 border border-status-error/30 text-status-error">
           <AlertCircle className="w-4 h-4" />
           <span className={textStyles.body}>{error}</span>
         </div>
       )}
       {successMessage && (
-        <div className="px-2 py-1.5 rounded-md flex items-center gap-2 bg-status-success/10 border border-status-success/30 text-status-success dark:bg-status-success/20 dark:border-status-success/30 dark:text-status-success">
+        <div className="px-2 py-1.5 rounded-xl flex items-center gap-2 bg-status-success/10 border border-status-success/30 text-status-success dark:bg-status-success/20 dark:border-status-success/30 dark:text-status-success">
           <CheckCircle className="w-4 h-4" />
           <span className={textStyles.body}>{successMessage}</span>
         </div>
@@ -115,7 +115,7 @@ export function RecruitmentPipelineTab({
         </div>
       </div>
 
-      <Card className="border border-lia-border-subtle/50 dark:border-lia-border-subtle/50 bg-lia-bg-primary/80 dark:bg-lia-bg-secondary/80 backdrop-blur-sm rounded-md">
+      <Card className="border border-lia-border-subtle/50 dark:border-lia-border-subtle/50 bg-lia-bg-primary/80 dark:bg-lia-bg-secondary/80 backdrop-blur-sm rounded-xl">
         <CardContent className="p-6">
           <RecruitmentJourneyConfig
             stages={recruitmentStages}

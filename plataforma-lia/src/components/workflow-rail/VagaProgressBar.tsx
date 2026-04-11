@@ -59,7 +59,7 @@ export default function VagaProgressBar({ jobId, onNavigateToStage }: VagaProgre
   const currentStage = stages.find(s => s.status === "in_progress")
 
   return (
-    <div className="px-4 py-2 bg-lia-bg-secondary border-b border-lia-border-subtle">
+    <div className="px-4 py-2 bg-lia-bg-secondary">
       {/* Stage dots */}
       <div className="flex items-center gap-1">
         {stages.map((stage, i) => {

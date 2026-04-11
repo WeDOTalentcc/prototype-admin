@@ -317,7 +317,7 @@ export function EventsSection() {
           {/* Sessão Manhã */}
           <div>
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-8 h-8 bg-lia-bg-tertiary dark:bg-lia-bg-elevated rounded-md flex items-center justify-center">
+              <div className="w-8 h-8 bg-lia-bg-tertiary dark:bg-lia-bg-elevated rounded-xl flex items-center justify-center">
                 <span className="text-sm">🌅</span>
               </div>
               <div>
@@ -335,7 +335,7 @@ export function EventsSection() {
           {/* Sessão Tarde */}
           <div>
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-8 h-8 bg-lia-bg-tertiary dark:bg-lia-bg-elevated rounded-md flex items-center justify-center">
+              <div className="w-8 h-8 bg-lia-bg-tertiary dark:bg-lia-bg-elevated rounded-xl flex items-center justify-center">
                 <span className="text-sm">☀️</span>
               </div>
               <div>
@@ -361,7 +361,7 @@ export function EventsSection() {
                   if (!event) return null
 
                   return (
-                    <div className="bg-lia-bg-secondary dark:bg-lia-bg-elevated rounded-md p-4 border border-lia-border-subtle dark:border-lia-border-default">
+                    <div className="bg-lia-bg-secondary dark:bg-lia-bg-elevated rounded-xl p-4 border border-lia-border-subtle dark:border-lia-border-default">
                       <div className="flex items-start gap-3 mb-3">
                         <div className={`w-10 h-10 rounded-md flex items-center justify-center border ${
  event.isSuggested
@@ -396,7 +396,7 @@ export function EventsSection() {
                       </div>
 
                       {event.candidateInfo && (
-                        <div className="bg-lia-bg-primary rounded-md p-3 mb-3 border border-lia-border-subtle dark:border-lia-border-medium">
+                        <div className="bg-lia-bg-primary rounded-xl p-3 mb-3 border border-lia-border-subtle dark:border-lia-border-medium">
                           <h4 className="font-medium text-lia-text-primary mb-2 flex items-center gap-2">
                             <User className="w-4 h-4" />
                             Candidato

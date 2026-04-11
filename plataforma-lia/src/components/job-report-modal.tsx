@@ -235,9 +235,9 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
 
   return (
     <div className="fixed inset-0 z-50 bg-lia-overlay backdrop-blur-sm flex items-start justify-center pt-4 pb-4 overflow-y-auto print:bg-lia-bg-primary print:backdrop-blur-none print:pt-0 print:pb-0">
-      <div className="w-full max-w-[830px] bg-lia-bg-primary dark:bg-lia-bg-primary rounded-md overflow-hidden flex flex-col my-auto print:max-w-none print:rounded-none print:shadow-none print:my-0">
+      <div className="w-full max-w-[830px] bg-lia-bg-primary dark:bg-lia-bg-primary rounded-xl overflow-hidden flex flex-col my-auto print:max-w-none print:rounded-none print:shadow-none print:my-0">
         {/* Header - Alinhado com conteúdo A4 */}
-        <div className="bg-lia-btn-primary-bg dark:bg-lia-bg-secondary text-white px-4 py-2 print:py-2 print:px-3 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+        <div className="bg-lia-btn-primary-bg dark:bg-lia-bg-secondary text-white px-4 py-2 print:py-2 print:px-3 dark:border-lia-border-subtle">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <FileText className="w-4 h-4 print:w-4 print:h-4" />
@@ -303,7 +303,7 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
            
           >
             {/* Cabeçalho do Relatório */}
-            <div className="flex items-center justify-between pb-2 border-b border-lia-border-subtle">
+            <div className="flex items-center justify-between pb-2">
               <div>
                 <h1 className="text-base font-semibold text-lia-text-primary">
                   {(job.title as React.ReactNode)}
@@ -338,28 +338,28 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
                   Resumo Executivo
                 </h3>
                 <div className="grid grid-cols-4 gap-2">
-                  <div className="text-center p-2 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-md border border-lia-border-default dark:border-lia-border-default">
+                  <div className="text-center p-2 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-xl border border-lia-border-default dark:border-lia-border-default">
                     <Users className="w-4 h-4 text-lia-text-secondary mx-auto mb-0.5" />
                     <p className="text-lg font-bold text-lia-text-primary">{reportData.funnelMetrics.totalCandidates}</p>
                     <p className="text-micro text-lia-text-secondary">Total Candidatos</p>
                   </div>
-                  <div className="text-center p-2 bg-status-success/10 rounded-md border border-status-success/30">
+                  <div className="text-center p-2 bg-status-success/10 rounded-xl border border-status-success/30">
                     <Target className="w-4 h-4 text-status-success mx-auto mb-0.5" />
                     <p className="text-lg font-bold text-status-success">{reportData.funnelMetrics.hired}</p>
                     <p className="text-micro text-lia-text-secondary">Contratados</p>
                   </div>
-                  <div className="text-center p-2 bg-wedo-purple/10 rounded-md border border-wedo-purple/30">
+                  <div className="text-center p-2 bg-wedo-purple/10 rounded-xl border border-wedo-purple/30">
                     <Clock className="w-4 h-4 text-wedo-purple mx-auto mb-0.5" />
                     <p className="text-lg font-bold text-wedo-purple">{reportData.funnelMetrics.averageTimeToHire}</p>
                     <p className="text-micro text-lia-text-secondary">Dias p/ Contratar</p>
                   </div>
-                  <div className="text-center p-2 bg-wedo-orange/10 rounded-md border border-wedo-orange/30">
+                  <div className="text-center p-2 bg-wedo-orange/10 rounded-xl border border-wedo-orange/30">
                     <DollarSign className="w-4 h-4 text-wedo-orange mx-auto mb-0.5" />
                     <p className="text-lg font-bold text-wedo-orange">{formatBRL(reportData.funnelMetrics.costPerHire)}</p>
                     <p className="text-micro text-lia-text-secondary">Custo/Contratação</p>
                   </div>
                 </div>
-                <div className="p-2 bg-status-warning/10 rounded-md border border-status-warning/30 flex items-start gap-2">
+                <div className="p-2 bg-status-warning/10 rounded-xl border border-status-warning/30 flex items-start gap-2">
                   <AlertCircle className="w-3 h-3 text-status-warning mt-0.5 flex-shrink-0" />
 
                   <p className="text-micro text-lia-text-primary">
@@ -379,7 +379,7 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
                     <Filter className="w-3 h-3 text-lia-text-secondary" />
                     Análise do Funil
                   </h3>
-                  <div className="space-y-1.5 p-2 bg-lia-bg-secondary rounded-md border border-lia-border-subtle">
+                  <div className="space-y-1.5 p-2 bg-lia-bg-secondary rounded-xl border border-lia-border-subtle">
                     {[
                       { stage: "Candidatos", value: reportData.funnelMetrics.totalCandidates, percentage: 100, color: "bg-lia-bg-inverse" },
                       { stage: "Triagem", value: reportData.funnelMetrics.screening, percentage: 57, color: "bg-status-warning" },
@@ -398,11 +398,11 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
                     ))}
                   </div>
                   <div className="flex gap-2">
-                    <div className="flex-1 p-1.5 bg-status-success/10 rounded-md border border-status-success/30 text-center">
+                    <div className="flex-1 p-1.5 bg-status-success/10 rounded-xl border border-status-success/30 text-center">
                       <p className="text-micro text-lia-text-secondary">Conversão</p>
                       <p className="text-sm font-bold text-status-success">{reportData.funnelMetrics.conversionRate}%</p>
                     </div>
-                    <div className="flex-1 p-1.5 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-md border border-lia-border-default dark:border-lia-border-default text-center">
+                    <div className="flex-1 p-1.5 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-xl border border-lia-border-default dark:border-lia-border-default text-center">
                       <p className="text-micro text-lia-text-secondary">Qualidade</p>
                       <div className="flex items-center justify-center gap-0.5 mt-0.5">
                         {[1,2,3,4].map((star) => (
@@ -422,7 +422,7 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
                     <Globe className="w-3 h-3 text-lia-text-secondary" />
                     Performance por Canal
                   </h3>
-                  <div className="overflow-hidden rounded-md border border-lia-border-subtle">
+                  <div className="overflow-hidden rounded-xl border border-lia-border-subtle">
                     <table className="w-full text-micro">
                       <thead className="bg-lia-bg-secondary">
                         <tr>
@@ -479,7 +479,7 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
                   </h3>
                   <div className="space-y-1">
                     {reportData.topCandidates.map((candidate, index) => (
-                      <div key={candidate.name} className="flex items-center justify-between p-1.5 bg-lia-bg-secondary rounded-md border border-lia-border-subtle">
+                      <div key={candidate.name} className="flex items-center justify-between p-1.5 bg-lia-bg-secondary rounded-xl border border-lia-border-subtle">
                         <div className="flex items-center gap-1.5">
                           <div className={`w-5 h-5 rounded-full flex items-center justify-center text-micro font-bold text-white
  ${index === 0 ? 'bg-status-warning' : index === 1 ? 'bg-lia-border-medium' : index === 2 ? 'bg-wedo-orange/10' : 'bg-lia-bg-secondary0'}`}>
@@ -542,7 +542,7 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
                 </h3>
                 <div className="grid grid-cols-2 gap-2">
                   {reportData.predictions.timeToFill && (
-                    <div className="p-2 bg-wedo-purple/10 rounded-md border border-wedo-purple/30">
+                    <div className="p-2 bg-wedo-purple/10 rounded-xl border border-wedo-purple/30">
                       <div className="flex items-center justify-between mb-1">
                         <span className="text-micro font-medium text-wedo-purple">Previsão Time-to-Fill</span>
                         <Badge className="bg-wedo-purple/20 text-wedo-purple text-micro px-1 py-0">
@@ -572,7 +572,7 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
                     </div>
                   )}
                   {reportData.predictions.salary && (
-                    <div className="p-2 bg-status-success/10 rounded-md border border-status-success/30">
+                    <div className="p-2 bg-status-success/10 rounded-xl border border-status-success/30">
                       <div className="flex items-center justify-between mb-1">
                         <span className="text-micro font-medium text-status-success">Faixa Salarial Ótima</span>
                         <Badge className="bg-status-success/20 text-status-success text-micro px-1 py-0">
@@ -608,23 +608,23 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
                   Métricas de Qualidade
                 </h3>
                 <div className="grid grid-cols-5 gap-2">
-                  <div className="p-2 bg-lia-bg-secondary rounded-md border border-lia-border-subtle text-center">
+                  <div className="p-2 bg-lia-bg-secondary rounded-xl border border-lia-border-subtle text-center">
                     <p className="text-micro text-lia-text-secondary">NPS</p>
                     <p className="text-sm font-bold text-lia-text-primary">{reportData.qualityMetrics.nps}</p>
                   </div>
-                  <div className="p-2 bg-lia-bg-secondary rounded-md border border-lia-border-subtle text-center">
+                  <div className="p-2 bg-lia-bg-secondary rounded-xl border border-lia-border-subtle text-center">
                     <p className="text-micro text-lia-text-secondary">Satisfação Cand.</p>
                     <p className="text-sm font-bold text-lia-text-primary">{reportData.qualityMetrics.candidateSatisfaction}/5</p>
                   </div>
-                  <div className="p-2 bg-lia-bg-secondary rounded-md border border-lia-border-subtle text-center">
+                  <div className="p-2 bg-lia-bg-secondary rounded-xl border border-lia-border-subtle text-center">
                     <p className="text-micro text-lia-text-secondary">Satisfação Gestor</p>
                     <p className="text-sm font-bold text-lia-text-primary">{reportData.qualityMetrics.hiringManagerSatisfaction}/5</p>
                   </div>
-                  <div className="p-2 bg-wedo-purple/10 rounded-md border border-wedo-purple/30 text-center">
+                  <div className="p-2 bg-wedo-purple/10 rounded-xl border border-wedo-purple/30 text-center">
                     <p className="text-micro text-lia-text-secondary">Benchmark TTF</p>
                     <p className="text-micro font-medium text-wedo-purple">{reportData.qualityMetrics.timeToFillBenchmark}</p>
                   </div>
-                  <div className="p-2 bg-status-success/10 rounded-md border border-status-success/30 text-center">
+                  <div className="p-2 bg-status-success/10 rounded-xl border border-status-success/30 text-center">
                     <p className="text-micro text-lia-text-secondary">Salário vs Mercado</p>
                     <p className="text-sm font-bold text-status-success">{reportData.qualityMetrics.marketPercentile}</p>
                     <p className="text-micro font-medium text-status-success">{reportData.qualityMetrics.qualityOfHireBenchmark}</p>
@@ -641,22 +641,22 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
                   Análise de Custos
                 </h3>
                 <div className="grid grid-cols-6 gap-2">
-                  <div className="col-span-2 p-2 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-md border border-lia-border-default dark:border-lia-border-default">
+                  <div className="col-span-2 p-2 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-xl border border-lia-border-default dark:border-lia-border-default">
                     <p className="text-micro text-lia-text-secondary">Orçamento Total</p>
                     <p className="text-sm font-bold text-lia-text-primary">{formatBRL(reportData.budget.total)}</p>
                   </div>
-                  <div className="col-span-2 p-2 bg-wedo-orange/10 rounded-md border border-wedo-orange/30">
+                  <div className="col-span-2 p-2 bg-wedo-orange/10 rounded-xl border border-wedo-orange/30">
                     <p className="text-micro text-lia-text-secondary">Gasto ({Math.round((reportData.budget.spent / reportData.budget.total) * 100)}%)</p>
                     <p className="text-sm font-bold text-wedo-orange">{formatBRL(reportData.budget.spent)}</p>
                   </div>
-                  <div className="col-span-2 p-2 bg-status-success/10 rounded-md border border-status-success/30">
+                  <div className="col-span-2 p-2 bg-status-success/10 rounded-xl border border-status-success/30">
                     <p className="text-micro text-lia-text-secondary">Disponível ({Math.round((reportData.budget.remaining / reportData.budget.total) * 100)}%)</p>
                     <p className="text-sm font-bold text-status-success">{formatBRL(reportData.budget.remaining)}</p>
                   </div>
                 </div>
                 <div className="grid grid-cols-5 gap-1.5">
                   {reportData.budget.breakdown.map((item) => (
-                    <div key={item.category} className="p-1.5 bg-lia-bg-secondary rounded-md border border-lia-border-subtle text-center">
+                    <div key={item.category} className="p-1.5 bg-lia-bg-secondary rounded-xl border border-lia-border-subtle text-center">
                       <p className="text-micro text-lia-text-secondary truncate">{item.category}</p>
                       <p className="text-micro font-semibold text-lia-text-primary">{formatBRL(item.amount)}</p>
                       <p className="text-micro text-lia-text-secondary">{Math.round((item.amount / reportData.budget.spent) * 100)}%</p>
@@ -691,7 +691,7 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
                     </div>
                   ))}
                 </div>
-                <div className="p-2 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-md border border-lia-border-default dark:border-lia-border-default flex items-start gap-2">
+                <div className="p-2 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-xl border border-lia-border-default dark:border-lia-border-default flex items-start gap-2">
                   <Zap className="w-4 h-4 text-lia-text-secondary flex-shrink-0" />
                   <div>
                     <h4 className="text-micro font-semibold text-lia-text-primary">Ação Prioritária</h4>

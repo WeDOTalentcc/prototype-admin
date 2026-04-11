@@ -41,7 +41,7 @@ export function LIASuggestionsPanel({ open, onClose, selectedTriagemQuestion }: 
         <div className="bg-wedo-purple p-4 text-white">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-lia-bg-primary/20 rounded-md">
+              <div className="p-2 bg-lia-bg-primary/20 rounded-xl">
                 <Wand2 className="w-5 h-5" />
               </div>
               <div>
@@ -51,7 +51,7 @@ export function LIASuggestionsPanel({ open, onClose, selectedTriagemQuestion }: 
             </div>
             <button
               onClick={onClose}
-              className="p-1.5 hover:bg-lia-bg-primary/20 rounded-md transition-colors motion-reduce:transition-none"
+              className="p-1.5 hover:bg-lia-bg-primary/20 rounded-xl transition-colors motion-reduce:transition-none"
             >
               <X className="w-5 h-5" />
             </button>
@@ -74,7 +74,7 @@ export function LIASuggestionsPanel({ open, onClose, selectedTriagemQuestion }: 
 
           <div className="space-y-3">
             {suggestions.map((pergunta, index) => (
-              <div key={`suggestion-${index}`} className="bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md p-4 border border-lia-border-subtle dark:border-lia-border-subtle hover:border-lia-border-medium dark:hover:border-lia-border-medium cursor-pointer transition-colors motion-reduce:transition-none group">
+              <div key={`suggestion-${index}`} className="bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl p-4 border border-lia-border-subtle dark:border-lia-border-subtle hover:border-lia-border-medium dark:hover:border-lia-border-medium cursor-pointer transition-colors motion-reduce:transition-none group">
                 <div className="flex items-start justify-between mb-2">
                   <h4 className="text-sm font-medium text-lia-text-primary group-hover:text-lia-text-primary">
                     {pergunta}

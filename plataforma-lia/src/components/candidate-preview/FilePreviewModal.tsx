@@ -61,9 +61,9 @@ export function FilePreviewModal({ showPreview, selectedFile, previewType, onClo
 
   return (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-overlay flex items-center justify-center p-4" onClick={onClose}>
-      <div ref={dialogRef} role="dialog" aria-modal="true" aria-label={`Preview: ${selectedFile.name}`} className="bg-lia-bg-primary rounded-md max-w-4xl w-full max-h-[90vh] overflow-hidden" onClick={e => e.stopPropagation()}>
+      <div ref={dialogRef} role="dialog" aria-modal="true" aria-label={`Preview: ${selectedFile.name}`} className="bg-lia-bg-primary rounded-xl max-w-4xl w-full max-h-[90vh] overflow-hidden" onClick={e => e.stopPropagation()}>
         {/* Header do Preview */}
-        <div className="flex items-center justify-between p-3 border-b border-lia-border-subtle bg-lia-bg-primary">
+        <div className="flex items-center justify-between p-3 bg-lia-bg-primary">
           <div className="flex items-center gap-2">
             {previewType === 'pdf' && <FileText className="w-4 h-4 text-lia-text-primary" />}
             {previewType === 'image' && <Image className="w-4 h-4 text-lia-text-primary" />}
@@ -152,7 +152,7 @@ export function FilePreviewModal({ showPreview, selectedFile, previewType, onClo
         {/* Conteúdo do Preview com Transcrição para Vídeos */}
         <div className="p-4 overflow-auto">
           {previewType === 'pdf' && (
-            <div className="bg-lia-bg-tertiary rounded-md p-6 min-h-[600px] flex items-center justify-center">
+            <div className="bg-lia-bg-tertiary rounded-xl p-6 min-h-[600px] flex items-center justify-center">
               <div className="text-center">
                 <FileText className="w-16 h-16 text-lia-text-secondary mx-auto mb-3" />
                 <p className="text-lia-text-secondary mb-2">
@@ -194,7 +194,7 @@ export function FilePreviewModal({ showPreview, selectedFile, previewType, onClo
 
                 {/* Perguntas de Triagem (se for vídeo de prescreening) */}
                 {selectedFile.videoType === 'prescreening' && (
-                  <div className="mt-4 bg-lia-bg-primary rounded-md p-3">
+                  <div className="mt-4 bg-lia-bg-primary rounded-xl p-3">
                     <h4 className="text-xs font-medium text-lia-text-primary mb-2 flex items-center gap-1">
                       <MessageSquareText className="w-3.5 h-3.5 text-lia-text-primary" />
                       Perguntas de Triagem
@@ -229,7 +229,7 @@ export function FilePreviewModal({ showPreview, selectedFile, previewType, onClo
                 )}
 
                 {/* Análise de IA com Parecer da LIA */}
-                <div className="mt-4 bg-lia-bg-primary rounded-md p-3">
+                <div className="mt-4 bg-lia-bg-primary rounded-xl p-3">
                   <h4 className="text-xs font-medium text-lia-text-primary mb-2 flex items-center gap-1">
                     <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
                     Análise da LIA
@@ -286,13 +286,13 @@ export function FilePreviewModal({ showPreview, selectedFile, previewType, onClo
 
               {/* Feed de Transcrição - Melhorado */}
               <div className="col-span-1">
-                <div className="bg-lia-bg-primary rounded-md p-3 h-full overflow-y-auto">
+                <div className="bg-lia-bg-primary rounded-xl p-3 h-full overflow-y-auto">
                   <h4 className="text-xs font-medium text-lia-text-primary mb-3 sticky top-0 bg-lia-bg-primary pb-2 border-b border-lia-border-subtle">
                     📝 Transcrição
                   </h4>
 
                   {/* Indicador do tipo de vídeo */}
-                  <div className="mb-3 p-2 bg-lia-bg-secondary border border-lia-border-subtle rounded-md">
+                  <div className="mb-3 p-2 bg-lia-bg-secondary border border-lia-border-subtle rounded-xl">
                     <div className="flex items-center gap-2">
                       <Badge className="text-xs px-1.5 py-0.5">
                         {selectedFile.videoType === 'interview' ? 'Entrevista Gravada' : 'Vídeo de Triagem'}
@@ -323,7 +323,7 @@ export function FilePreviewModal({ showPreview, selectedFile, previewType, onClo
 
                     {/* Highlights identificados pela LIA - only show if data available */}
                     {selectedFile.highlights && selectedFile.highlights.length > 0 && (
-                      <div className="mt-4 p-2 bg-lia-bg-primary rounded-md">
+                      <div className="mt-4 p-2 bg-lia-bg-primary rounded-xl">
                         <p className="text-xs font-semibold text-lia-text-primary mb-1">
                           🎯 Highlights da LIA
                         </p>
@@ -346,7 +346,7 @@ export function FilePreviewModal({ showPreview, selectedFile, previewType, onClo
               {/* Áudio Player e Conteúdo Principal */}
               <div className="col-span-2">
                 {/* Player de Áudio */}
-                <div className="bg-lia-bg-tertiary rounded-md p-4 flex items-center justify-center">
+                <div className="bg-lia-bg-tertiary rounded-xl p-4 flex items-center justify-center">
                   <div className="text-center w-full">
                     <div className="flex items-center justify-center mb-3">
                       <div className="w-16 h-16 rounded-full bg-lia-interactive-active flex items-center justify-center">
@@ -383,7 +383,7 @@ export function FilePreviewModal({ showPreview, selectedFile, previewType, onClo
 
                 {/* Perguntas de Triagem (se for áudio de prescreening) */}
                 {selectedFile.audioType === 'prescreening' && (
-                  <div className="mt-4 bg-lia-bg-primary rounded-md p-3">
+                  <div className="mt-4 bg-lia-bg-primary rounded-xl p-3">
                     <h4 className="text-xs font-medium text-lia-text-primary mb-2 flex items-center gap-1">
                       <MessageSquareText className="w-3.5 h-3.5 text-lia-text-primary" />
                       Perguntas de Triagem
@@ -418,7 +418,7 @@ export function FilePreviewModal({ showPreview, selectedFile, previewType, onClo
                 )}
 
                 {/* Análise de IA com Parecer da LIA */}
-                <div className="mt-4 bg-lia-bg-primary rounded-md p-3">
+                <div className="mt-4 bg-lia-bg-primary rounded-xl p-3">
                   <h4 className="text-xs font-medium text-lia-text-primary mb-2 flex items-center gap-1">
                     <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
                     Análise da LIA
@@ -474,13 +474,13 @@ export function FilePreviewModal({ showPreview, selectedFile, previewType, onClo
 
               {/* Feed de Transcrição - Deepgram */}
               <div className="col-span-1">
-                <div className="bg-lia-bg-primary rounded-md p-3 h-full overflow-y-auto">
+                <div className="bg-lia-bg-primary rounded-xl p-3 h-full overflow-y-auto">
                   <h4 className="text-xs font-medium text-lia-text-primary mb-3 sticky top-0 bg-lia-bg-primary pb-2 border-b border-lia-border-subtle">
                     📝 Transcrição
                   </h4>
 
                   {/* Indicador do tipo de áudio */}
-                  <div className="mb-3 p-2 bg-lia-bg-secondary border border-lia-border-subtle rounded-md">
+                  <div className="mb-3 p-2 bg-lia-bg-secondary border border-lia-border-subtle rounded-xl">
                     <div className="flex items-center gap-2">
                       <Badge className="text-xs px-1.5 py-0.5 bg-lia-btn-primary-bg text-lia-btn-primary-text border-0">
                         {selectedFile.audioType === 'interview' ? 'Entrevista Gravada' : 'Áudio de Triagem'}
@@ -528,7 +528,7 @@ export function FilePreviewModal({ showPreview, selectedFile, previewType, onClo
                     </div>
 
                     {/* Highlights identificados pela LIA */}
-                    <div className="mt-4 p-2 bg-lia-bg-tertiary rounded-md">
+                    <div className="mt-4 p-2 bg-lia-bg-tertiary rounded-xl">
                       <p className="text-xs font-semibold text-lia-text-primary mb-1">
                         🎯 Highlights da LIA
                       </p>

@@ -97,7 +97,7 @@ export function EditArchetypeRequirements({
             <ChevronDown className="w-3 h-3" />
           </button>
           {isIndustryDropdownOpen && (
-            <div className="absolute z-10 mt-1 w-full bg-lia-bg-primary rounded-md border border-lia-border-subtle max-h-chart-sm overflow-hidden">
+            <div className="absolute z-10 mt-1 w-full bg-lia-bg-primary rounded-xl border border-lia-border-subtle max-h-chart-sm overflow-hidden">
               <div className="p-2 border-b border-lia-border-subtle sticky top-0 bg-lia-bg-primary">
                 <input
                   type="text"
@@ -182,7 +182,7 @@ export function EditArchetypeRequirements({
             <Globe className="w-3 h-3 text-lia-text-primary" />
             Idiomas
           </label>
-          <div className="flex flex-wrap gap-1.5 mb-1.5 min-h-[28px] p-2 rounded-md border border-lia-border-subtle">
+          <div className="flex flex-wrap gap-1.5 mb-1.5 min-h-[28px] p-2 rounded-xl border border-lia-border-subtle">
             {editArchetypeLanguages.map((lang, idx) => (
               <span key={`lang-${idx}`} className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-wedo-cyan/15">
                 {lang}

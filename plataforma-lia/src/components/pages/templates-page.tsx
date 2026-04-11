@@ -261,7 +261,7 @@ export function TemplatesPage() {
           <select
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value)}
-            className="px-3 py-2 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-elevated text-lia-text-primary"
+            className="px-3 py-2 border border-lia-border-default dark:border-lia-border-default rounded-xl bg-lia-bg-primary dark:bg-lia-bg-elevated text-lia-text-primary"
           >
             <option value="all">Todas Categorias</option>
             <option value="search">🔍 Busca</option>
@@ -273,7 +273,7 @@ export function TemplatesPage() {
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value as 'usage' | 'recent' | 'success')}
-            className="px-3 py-2 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-elevated text-lia-text-primary"
+            className="px-3 py-2 border border-lia-border-default dark:border-lia-border-default rounded-xl bg-lia-bg-primary dark:bg-lia-bg-elevated text-lia-text-primary"
           >
             <option value="usage">Mais Usados</option>
             <option value="recent">Mais Recentes</option>

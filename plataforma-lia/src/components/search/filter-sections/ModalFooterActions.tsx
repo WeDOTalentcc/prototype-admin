@@ -35,7 +35,7 @@ export const ModalFooterActions = React.memo(function ModalFooterActions({
           Limpar filtros
         </Button>
         {onSave && (
-          <div className="flex items-center gap-1.5 px-2 py-1 rounded-md text-xs bg-lia-bg-tertiary dark:bg-lia-bg-elevated text-lia-text-primary">
+          <div className="flex items-center gap-1.5 px-2 py-1 rounded-xl text-xs bg-lia-bg-tertiary dark:bg-lia-bg-elevated text-lia-text-primary">
             {(() => {
               const dest = saveDestinations.find(d => d.key === saveDestination)
               const Icon = dest?.icon || Bookmark

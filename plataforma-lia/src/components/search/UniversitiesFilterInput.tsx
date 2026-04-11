@@ -353,7 +353,7 @@ export function UniversitiesFilterInput({
         {isDropdownOpen && dropdownItems.length > 0 && (
           <div 
             ref={dropdownRef}
-            className="absolute z-50 w-full mt-1 bg-lia-bg-primary border border-lia-border-subtle rounded-md max-h-64 overflow-y-auto"
+            className="absolute z-50 w-full mt-1 bg-lia-bg-primary border border-lia-border-subtle rounded-xl max-h-64 overflow-y-auto"
           >
             {dropdownItems.map((item, index) => (
               <button
@@ -368,7 +368,7 @@ export function UniversitiesFilterInput({
                 className={cn(
                   "w-full text-left px-3 py-2 text-sm transition-colors",
                   focusedIndex === index ? "bg-lia-bg-tertiary" : "hover:bg-lia-bg-secondary",
-                  item.type === 'ai' && "border-b border-lia-border-subtle"
+                  item.type === 'ai' && ""
                 )}
               >
                 {item.type === 'ai' ? (
@@ -430,7 +430,7 @@ export function UniversitiesFilterInput({
 
       {showSavePresetModal && (
         <div className="fixed inset-0 bg-lia-overlay flex items-center justify-center z-50" onClick={() => setShowSavePresetModal(false)}>
-          <div className="bg-lia-bg-primary rounded-md p-4 w-80" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-lia-bg-primary rounded-xl p-4 w-80" onClick={(e) => e.stopPropagation()}>
             <h3 className="font-medium text-sm mb-3">Salvar Preset</h3>
             <Input
               value={savePresetName}

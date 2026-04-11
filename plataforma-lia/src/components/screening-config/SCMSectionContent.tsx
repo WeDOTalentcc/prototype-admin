@@ -184,7 +184,7 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
       )}
 
       {((job.liaMetrics as { triagens_realizadas?: number } | undefined)?.triagens_realizadas ?? 0) > 0 && (
-        <div className="flex items-center gap-2 px-3 py-1.5 bg-status-warning/10 border border-status-warning/30 rounded-md dark:bg-status-warning/10 dark:border-status-warning/30">
+        <div className="flex items-center gap-2 px-3 py-1.5 bg-status-warning/10 border border-status-warning/30 rounded-xl dark:bg-status-warning/10 dark:border-status-warning/30">
           <AlertTriangle className="w-3.5 h-3.5 text-status-warning shrink-0" />
           <p className="text-xs text-status-warning">
             <span className="font-bold">Triagem em andamento</span> — <span className="font-semibold" aria-live="polite" aria-atomic="true">{(job.liaMetrics as { triagens_realizadas?: number } | undefined)?.triagens_realizadas} candidatos</span> já triados. Alterar perguntas pode afetar a comparabilidade entre candidatos.

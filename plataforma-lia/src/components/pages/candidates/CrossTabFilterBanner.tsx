@@ -22,7 +22,7 @@ export function CrossTabFilterBanner({
     <Card data-testid="cross-tab-filter-banner" className="bg-lia-bg-secondary dark:bg-lia-bg-secondary">
       <CardContent className="p-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-lia-btn-primary-bg dark:bg-lia-bg-tertiary rounded-md flex items-center justify-center">
+          <div className="w-10 h-10 bg-lia-btn-primary-bg dark:bg-lia-bg-tertiary rounded-xl flex items-center justify-center">
             {cf.type === 'company' ? (
               <Building className="w-5 h-5 text-white" />
             ) : (

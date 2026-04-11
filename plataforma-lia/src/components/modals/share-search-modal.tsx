@@ -295,7 +295,7 @@ const [currentShareType, setCurrentShareType] = useState<'search' | 'list'>(shar
         className={`max-w-4xl h-[80vh] flex flex-col p-0 gap-0 ${cardStyles.default}`} 
         data-testid="share-search-modal"
       >
-        <DialogHeader className="px-6 pt-5 pb-3 border-b border-lia-border-subtle flex-shrink-0">
+        <DialogHeader className="px-6 pt-5 pb-3 flex-shrink-0">
           <DialogTitle className={`${textStyles.title} flex items-center gap-2`}>
             <Share2 className="w-5 h-5 text-lia-text-secondary" />
             Compartilhar com Gestor
@@ -311,7 +311,7 @@ const [currentShareType, setCurrentShareType] = useState<'search' | 'list'>(shar
               <div className="p-5 space-y-5">
                 <div className={`p-3 rounded-md ${cardStyles.flat}`}>
                   <div className="flex items-start gap-3">
-                    <div className="flex-shrink-0 w-9 h-9 rounded-md flex items-center justify-center bg-lia-bg-primary border border-lia-border-subtle">
+                    <div className="flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center bg-lia-bg-primary border border-lia-border-subtle">
                       {currentShareType === 'search' ? (
                         <Search className="w-4 h-4 text-lia-text-secondary" />
                       ) : (
@@ -429,7 +429,7 @@ const [currentShareType, setCurrentShareType] = useState<'search' | 'list'>(shar
                       {recipients.map((recipient) => (
                         <div 
                           key={recipient.id} 
-                          className="flex items-center gap-2 px-2.5 py-1.5 rounded-md bg-lia-bg-secondary border border-lia-border-subtle"
+                          className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl bg-lia-bg-secondary border border-lia-border-subtle"
                         >
                           <Mail className="w-3 h-3 text-lia-text-disabled flex-shrink-0" />
                           <span className="text-xs text-lia-text-secondary truncate flex-1">
@@ -456,7 +456,7 @@ const [currentShareType, setCurrentShareType] = useState<'search' | 'list'>(shar
                       ))}
                     </div>
                   ) : (
-                    <p className="text-micro text-status-warning bg-status-warning/10 dark:bg-status-warning/20 border border-status-warning/30 dark:border-status-warning/30 rounded-md p-2">
+                    <p className="text-micro text-status-warning bg-status-warning/10 dark:bg-status-warning/20 border border-status-warning/30 dark:border-status-warning/30 rounded-xl p-2">
                       Adicione pelo menos um email de gestor para compartilhar
                     </p>
                   )}
@@ -509,7 +509,7 @@ const [currentShareType, setCurrentShareType] = useState<'search' | 'list'>(shar
                   />
                 </div>
 
-                <div className="space-y-3 p-3 rounded-md bg-lia-bg-secondary/50 border border-lia-border-subtle">
+                <div className="space-y-3 p-3 rounded-xl bg-lia-bg-secondary/50 border border-lia-border-subtle">
                   <Label className={`${textStyles.label} text-xs`}>Configurações de acesso</Label>
                   
                   <div className="space-y-1.5">
@@ -593,10 +593,10 @@ const [currentShareType, setCurrentShareType] = useState<'search' | 'list'>(shar
             <ScrollArea className="flex-1 px-5 pb-4">
               {(channel === 'email' || channel === 'both') ? (
                 <div className="space-y-3">
-                <div className="rounded-md border border-lia-border-subtle bg-lia-bg-primary overflow-hidden">
+                <div className="rounded-xl border border-lia-border-subtle bg-lia-bg-primary overflow-hidden">
                   <div className="bg-gradient-to-r from-lia-bg-tertiary to-lia-bg-primary px-5 py-4">
                     <div className="flex items-center gap-2 mb-2">
-                      <div className="w-8 h-8 rounded-md bg-lia-bg-primary/10 flex items-center justify-center">
+                      <div className="w-8 h-8 rounded-xl bg-lia-bg-primary/10 flex items-center justify-center">
                         <Users className="w-4 h-4 text-white" />
                       </div>
                       <div>
@@ -607,7 +607,7 @@ const [currentShareType, setCurrentShareType] = useState<'search' | 'list'>(shar
                   </div>
 
                   <div className="px-5 py-4 space-y-3">
-                    <div className="border-b border-lia-border-subtle pb-2">
+                    <div className=" pb-2">
                       <p className="text-micro text-lia-text-tertiary">Assunto</p>
                       <p className="text-xs font-medium text-lia-text-primary" aria-live="polite" aria-atomic="true">
                         {renderPreview(subject) || 'Candidatos para sua avaliação'}
@@ -625,7 +625,7 @@ const [currentShareType, setCurrentShareType] = useState<'search' | 'list'>(shar
                       )}
                     </div>
 
-                    <div className="bg-lia-bg-secondary/30 rounded-md p-3 space-y-2">
+                    <div className="bg-lia-bg-secondary/30 rounded-xl p-3 space-y-2">
                       <div className="flex items-center gap-2">
                         <Users className="w-3.5 h-3.5 text-lia-text-tertiary" />
                         <span className="text-xs font-medium text-lia-text-secondary" aria-live="polite" aria-atomic="true">
@@ -649,7 +649,7 @@ const [currentShareType, setCurrentShareType] = useState<'search' | 'list'>(shar
                     </div>
 
                     <div className="pt-1">
-                      <div className="bg-lia-bg-tertiary rounded-md p-2.5 text-center">
+                      <div className="bg-lia-bg-tertiary rounded-xl p-2.5 text-center">
                         <p className="text-micro text-lia-text-tertiary mb-1">Código de acesso</p>
                         <p className="text-sm font-mono font-bold tracking-widest text-lia-text-primary">
                           A1B2C3
@@ -658,7 +658,7 @@ const [currentShareType, setCurrentShareType] = useState<'search' | 'list'>(shar
                     </div>
 
                     <div className="flex justify-center pt-1">
-                      <div className="bg-lia-btn-primary-bg dark:bg-lia-btn-primary-bg text-lia-btn-primary-text rounded-md px-6 py-2 text-xs font-medium flex items-center gap-2">
+                      <div className="bg-lia-btn-primary-bg dark:bg-lia-btn-primary-bg text-lia-btn-primary-text rounded-xl px-6 py-2 text-xs font-medium flex items-center gap-2">
                         <ExternalLink className="w-3.5 h-3.5" />
                         Acessar Candidatos
                       </div>

@@ -79,7 +79,7 @@ export function AddCompetencyModal({
             value={competencyName}
             onChange={(e) => onCompetencyNameChange(e.target.value)}
             placeholder="Nome da competência (ex: Liderança)"
-            className="w-full px-4 py-3 border border-lia-border-subtle rounded-md text-sm focus:outline-none focus:border-lia-border-medium"
+            className="w-full px-4 py-3 border border-lia-border-subtle rounded-xl text-sm focus:outline-none focus:border-lia-border-medium"
            
             autoFocus
           />
@@ -87,7 +87,7 @@ export function AddCompetencyModal({
             value={competencyJustification}
             onChange={(e) => onCompetencyJustificationChange(e.target.value)}
             placeholder="Justificativa (ex: Necessário para gestão de equipe)"
-            className="w-full px-4 py-3 border border-lia-border-subtle rounded-md text-sm focus:outline-none focus:border-lia-border-medium resize-none"
+            className="w-full px-4 py-3 border border-lia-border-subtle rounded-xl text-sm focus:outline-none focus:border-lia-border-medium resize-none"
            
             rows={3}
           />
@@ -97,7 +97,7 @@ export function AddCompetencyModal({
           <Button
             variant="outline"
             onClick={onCancel}
-            className="flex-1 h-10 rounded-md border-lia-border-subtle"
+            className="flex-1 h-10 rounded-xl border-lia-border-subtle"
           >
             Cancelar
           </Button>

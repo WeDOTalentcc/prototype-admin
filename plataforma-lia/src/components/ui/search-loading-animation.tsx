@@ -12,7 +12,7 @@ export const SearchLoadingAnimation = React.memo(function SearchLoadingAnimation
 
   return (
     <div 
-      className="mb-6 p-4 rounded-md bg-lia-bg-primary max-w-md border-l-[3px] border-l-lia-border-default"
+      className="mb-6 p-4 rounded-xl bg-lia-bg-primary max-w-md border-l-[3px] border-l-lia-border-default"
     >
       <style jsx>{`
         @keyframes ping-custom {

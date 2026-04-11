@@ -76,14 +76,14 @@ export function BatchApprovalSelectionStep({
               placeholder="Buscar candidatos..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 pr-4 py-2 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-elevated text-lia-text-primary text-sm focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20"
+              className="pl-10 pr-4 py-2 border border-lia-border-default dark:border-lia-border-default rounded-xl bg-lia-bg-primary dark:bg-lia-bg-elevated text-lia-text-primary text-sm focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20"
             />
           </div>
 
           <select
             value={filterCriteria.stage}
             onChange={(e) => setFilterCriteria({...filterCriteria, stage: e.target.value})}
-            className="px-3 py-2 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-elevated text-lia-text-primary text-sm"
+            className="px-3 py-2 border border-lia-border-default dark:border-lia-border-default rounded-xl bg-lia-bg-primary dark:bg-lia-bg-elevated text-lia-text-primary text-sm"
           >
             <option value="all">Todas as etapas</option>
             {availableStages.map(stage => (
@@ -94,7 +94,7 @@ export function BatchApprovalSelectionStep({
           <select
             value={filterCriteria.score}
             onChange={(e) => setFilterCriteria({...filterCriteria, score: e.target.value})}
-            className="px-3 py-2 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-elevated text-lia-text-primary text-sm"
+            className="px-3 py-2 border border-lia-border-default dark:border-lia-border-default rounded-xl bg-lia-bg-primary dark:bg-lia-bg-elevated text-lia-text-primary text-sm"
           >
             <option value="all">Todos os scores</option>
             <option value="high">Alto (85+)</option>

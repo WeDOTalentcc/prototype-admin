@@ -164,7 +164,7 @@ export function CommunicationStep({ hook }: StepProps) {
             </button>
           </div>
         </div>
-        <ScrollArea className="h-[120px] border border-lia-border-subtle rounded-md p-2">
+        <ScrollArea className="h-[120px] border border-lia-border-subtle rounded-xl p-2">
           {loadingCandidates ? (
             <div className="flex items-center justify-center h-full py-8" role="status" aria-live="polite" aria-label="Carregando...">
               <Loader2 className="w-5 h-5 animate-spin motion-reduce:animate-none text-lia-text-secondary" />
@@ -327,7 +327,7 @@ export function UnpublishCommunicationStep({
             </button>
           </div>
         </div>
-        <ScrollArea className="h-[120px] border border-lia-border-subtle rounded-md p-2">
+        <ScrollArea className="h-[120px] border border-lia-border-subtle rounded-xl p-2">
           {loadingCandidates ? (
             <div className="flex items-center justify-center h-full py-8" role="status" aria-live="polite" aria-label="Carregando...">
               <Loader2 className="w-5 h-5 animate-spin motion-reduce:animate-none text-lia-text-secondary" />

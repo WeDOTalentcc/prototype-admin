@@ -40,7 +40,7 @@ export function CompetencyPanel({ data, onUpdate }: Props) {
   return (
     <div className="flex flex-col">
       {/* Seniority resolved */}
-      <div className="px-4 py-3 border-b border-lia-border-subtle">
+      <div className="px-4 py-3">
         <div className="flex items-center gap-2">
           <Target className="w-4 h-4 text-wedo-cyan" />
           <span className="text-sm font-semibold text-lia-text-primary font-['Open_Sans',sans-serif]">
@@ -67,7 +67,7 @@ export function CompetencyPanel({ data, onUpdate }: Props) {
       </div>
 
       {/* Screening mode selector */}
-      <div className="px-4 py-3 border-b border-lia-border-subtle">
+      <div className="px-4 py-3">
         <p className="text-xs font-medium text-lia-text-secondary font-['Open_Sans',sans-serif] mb-2">
           Modo de triagem
         </p>

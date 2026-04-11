@@ -523,12 +523,12 @@ function AgentCard({
         {strategy.required_skills?.length ? (
           <div className="flex flex-wrap gap-1 mb-3">
             {strategy.required_skills.slice(0, 4).map((skill, i) => (
-              <span key={i} className="px-2 py-0.5 rounded-md bg-lia-bg-tertiary text-[10px] font-medium text-lia-text-secondary">
+              <span key={i} className="px-2 py-0.5 rounded-xl bg-lia-bg-tertiary text-[10px] font-medium text-lia-text-secondary">
                 {skill}
               </span>
             ))}
             {(strategy.required_skills.length > 4) && (
-              <span className="px-2 py-0.5 rounded-md bg-lia-bg-tertiary text-[10px] text-lia-text-disabled">
+              <span className="px-2 py-0.5 rounded-xl bg-lia-bg-tertiary text-[10px] text-lia-text-disabled">
                 +{strategy.required_skills.length - 4}
               </span>
             )}

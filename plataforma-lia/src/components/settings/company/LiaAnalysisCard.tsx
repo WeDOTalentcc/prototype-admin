@@ -22,7 +22,7 @@ export function LiaAnalysisCard({
   handleLiaAnalysis,
 }: LiaAnalysisCardProps) {
   return (
-    <div className="rounded-md border border-lia-border-default dark:border-lia-border-default bg-gradient-to-r from-lia-bg-secondary dark:from-lia-bg-primary to-transparent p-5">
+    <div className="rounded-xl border border-lia-border-default dark:border-lia-border-default bg-gradient-to-r from-lia-bg-secondary dark:from-lia-bg-primary to-transparent p-5">
       <div className="flex items-start gap-4">
         <div
           className="w-12 h-12 rounded-md flex items-center justify-center flex-shrink-0 bg-lia-btn-primary-bg"

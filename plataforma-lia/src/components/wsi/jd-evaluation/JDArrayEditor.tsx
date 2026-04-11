@@ -110,7 +110,7 @@ export const JDArrayEditor = React.memo(function JDArrayEditor({
         )}
       </div>
 
-      <div className="bg-lia-bg-primary rounded-md border border-lia-border-subtle p-3">
+      <div className="bg-lia-bg-primary rounded-xl border border-lia-border-subtle p-3">
         {/* Items */}
         {variant === "list" && (
           <div className="space-y-0.5">

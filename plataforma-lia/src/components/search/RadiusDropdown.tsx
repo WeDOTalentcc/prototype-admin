@@ -69,7 +69,7 @@ export function RadiusDropdown({
           <ChevronDown className="w-3.5 h-3.5 text-lia-text-tertiary" />
         </button>
       </PopoverTrigger>
-      <PopoverContent className="w-64 p-0 rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle" align="start">
+      <PopoverContent className="w-64 p-0 rounded-xl dark:bg-lia-bg-secondary dark:border-lia-border-subtle" align="start">
         <div className="py-1 max-h-80 overflow-y-auto">
           {RADIUS_OPTIONS.map((option, index) => (
             <div key={option.value}>

@@ -47,7 +47,7 @@ export function CommunicationStep({
 }: CommunicationStepProps) {
   return (
     <div data-testid="communication-step" className="space-y-4">
-      <div className="flex items-center gap-2 p-2.5 rounded-md bg-lia-bg-tertiary border border-lia-border-subtle">
+      <div className="flex items-center gap-2 p-2.5 rounded-xl bg-lia-bg-tertiary border border-lia-border-subtle">
         <Mail className="w-4 h-4 text-lia-text-secondary" />
         <span className="text-xs text-lia-text-primary" aria-live="polite" aria-atomic="true">
           Configure a mensagem para {jobCandidatesCount - candidatesInProposalCount} candidato(s)
@@ -87,7 +87,7 @@ export function CommunicationStep({
           Template
         </Label>
         {templatesLoading ? (
-          <div className="flex items-center gap-2 p-3 bg-lia-bg-secondary rounded-md" role="status" aria-live="polite" aria-label="Carregando...">
+          <div className="flex items-center gap-2 p-3 bg-lia-bg-secondary rounded-xl" role="status" aria-live="polite" aria-label="Carregando...">
             <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none text-lia-text-disabled" />
             <span className="text-xs text-lia-text-tertiary">Carregando templates...</span>
           </div>

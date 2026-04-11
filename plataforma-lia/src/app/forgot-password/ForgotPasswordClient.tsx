@@ -88,7 +88,7 @@ export default function ForgotPasswordPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="Digite seu email"
-                    className="w-full px-4 py-3 border border-lia-border-subtle rounded-md focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg focus:border-lia-btn-primary-bg transition-colors motion-reduce:transition-none"
+                    className="w-full px-4 py-3 border border-lia-border-subtle rounded-xl focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg focus:border-lia-btn-primary-bg transition-colors motion-reduce:transition-none"
                     required
                     aria-required="true"
                     aria-describedby={error ? "forgot-error" : undefined}
@@ -96,7 +96,7 @@ export default function ForgotPasswordPage() {
                 </div>
 
                 {error && (
-                  <div id="forgot-error" role="alert" className="p-3 rounded-md bg-status-error/10 border border-status-error/30">
+                  <div id="forgot-error" role="alert" className="p-3 rounded-xl bg-status-error/10 border border-status-error/30">
                     <p className="text-status-error text-sm font-medium">
                       <span aria-hidden="true">⚠ </span>
                       {error}

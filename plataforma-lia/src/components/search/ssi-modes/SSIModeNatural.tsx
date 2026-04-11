@@ -79,7 +79,7 @@ export const SSIModeNatural = React.memo(function SSIModeNatural(props: SSIModeN
         {ghostTextSuffix && !showAutocomplete && (
           <div
             ref={ghostOverlayRef}
-            className="absolute inset-0 pointer-events-none rounded-md px-4 py-3 pr-28 text-xs min-h-14 overflow-hidden whitespace-pre-wrap break-words z-[1]"
+            className="absolute inset-0 pointer-events-none rounded-xl px-4 py-3 pr-28 text-xs min-h-14 overflow-hidden whitespace-pre-wrap break-words z-[1]"
             aria-hidden="true"
           >
             <span className="text-transparent">{value}</span>
@@ -248,7 +248,7 @@ export const SSIModeNatural = React.memo(function SSIModeNatural(props: SSIModeN
             {/* Botão Microfone */}
             <AudioRecordButton
               onTranscription={(text) => onChange(value ? `${value} ${text}` : text)}
-              className="p-1.5 rounded-md hover:bg-lia-bg-tertiary"
+              className="p-1.5 rounded-xl hover:bg-lia-bg-tertiary"
             />
           </div>
         )}
@@ -258,7 +258,7 @@ export const SSIModeNatural = React.memo(function SSIModeNatural(props: SSIModeN
           <div className="absolute right-12 bottom-2.5 flex items-center z-10">
             <AudioRecordButton
               onTranscription={(text) => onChange(value ? `${value} ${text}` : text)}
-              className="p-1.5 rounded-md hover:bg-lia-bg-tertiary"
+              className="p-1.5 rounded-xl hover:bg-lia-bg-tertiary"
             />
           </div>
         )}
@@ -287,7 +287,7 @@ export const SSIModeNatural = React.memo(function SSIModeNatural(props: SSIModeN
       {/* Fallback Suggestion Card - shown BELOW the textarea container when enhanced query doesn't start with user text */}
       {ghostTextInfo.showFallbackCard && ghostTextInfo.fullEnhancement && !showAutocomplete && (
         <div
-          className="rounded-md border px-3 py-2 flex items-center gap-2 bg-lia-interactive-active/20"
+          className="rounded-xl border px-3 py-2 flex items-center gap-2 bg-lia-interactive-active/20"
         >
           <Wand2 className="w-3.5 h-3.5 flex-shrink-0 text-lia-text-primary" />
           <div className="flex-1 min-w-0">
@@ -304,7 +304,7 @@ export const SSIModeNatural = React.memo(function SSIModeNatural(props: SSIModeN
             </button>
             <button
               onClick={handleDismissEnhancement}
-              className="flex items-center justify-center w-5 h-5 rounded-md hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none text-lia-text-tertiary"
+              className="flex items-center justify-center w-5 h-5 rounded-xl hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none text-lia-text-tertiary"
             >
               <X className="w-3 h-3" />
             </button>
@@ -314,10 +314,10 @@ export const SSIModeNatural = React.memo(function SSIModeNatural(props: SSIModeN
 
       {showAutocomplete && autocompleteItems.length > 0 && (
         <div
-          className="rounded-md border border-lia-border-subtle flex flex-col gap-0 max-h-52 overflow-hidden bg-[var(--lia-bg-primary)] shadow-md"
+          className="rounded-xl border border-lia-border-subtle flex flex-col gap-0 max-h-52 overflow-hidden bg-[var(--lia-bg-primary)] shadow-md"
           data-testid="autocomplete-dropdown"
         >
-          <div className="flex items-center justify-between px-3 py-1.5 border-b border-lia-border-subtle">
+          <div className="flex items-center justify-between px-3 py-1.5">
             <div className="flex items-center gap-2">
               <Brain className="w-3 h-3 text-wedo-cyan" />
               <span className="text-micro font-medium text-lia-text-secondary">Sugestões</span>
@@ -335,7 +335,7 @@ export const SSIModeNatural = React.memo(function SSIModeNatural(props: SSIModeN
                   setShowAutocomplete(false)
                   setAutocompleteItems([])
                 }}
-                className="p-0.5 rounded-md hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none"
+                className="p-0.5 rounded-xl hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none"
                 title="Fechar lista"
               >
                 <X className="w-3 h-3 text-lia-text-tertiary" />

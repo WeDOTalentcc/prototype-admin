@@ -111,7 +111,7 @@ export default function CandidateProfilePage() {
                   {/* Name row */}
                   <div className="flex items-center gap-3 mb-1.5 flex-wrap">
                     <h1 className="text-xl font-semibold text-lia-text-primary">{candidate.name}</h1>
-                    <span className="text-xs font-mono text-lia-text-secondary bg-lia-bg-tertiary px-2 py-0.5 rounded-md">
+                    <span className="text-xs font-mono text-lia-text-secondary bg-lia-bg-tertiary px-2 py-0.5 rounded-xl">
                       {getShortId(candidate.id)}
                     </span>
                     {!!candidate.seniority_level && <Badge className={badgeStyles.primary}>{candidate.seniority_level}</Badge>}

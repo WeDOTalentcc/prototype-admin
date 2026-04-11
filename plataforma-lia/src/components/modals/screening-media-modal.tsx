@@ -138,7 +138,7 @@ export function ScreeningMediaModal({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] p-0 gap-0 overflow-hidden flex flex-col" data-testid="screening-media-modal">
-        <DialogHeader className="px-6 py-4 border-b border-lia-border-subtle flex flex-row items-center justify-between">
+        <DialogHeader className="px-6 py-4 flex flex-row items-center justify-between">
           <div className="flex items-center gap-3">
             {type === 'audio' ? (
               <Mic className="w-5 h-5 text-lia-text-secondary" />
@@ -172,7 +172,7 @@ export function ScreeningMediaModal({
 
         <div className="flex flex-1 min-h-0 overflow-hidden">
           <div className="flex-1 p-6 space-y-6 overflow-y-auto border-r border-lia-border-subtle">
-            <div className="flex flex-col items-center justify-center py-8 bg-gradient-to-b from-lia-bg-secondary to-white rounded-md border border-lia-border-subtle">
+            <div className="flex flex-col items-center justify-center py-8 bg-gradient-to-b from-lia-bg-secondary to-white rounded-xl border border-lia-border-subtle">
               <div className="w-20 h-20 rounded-full bg-lia-bg-tertiary flex items-center justify-center mb-4">
                 {type === 'audio' ? (
                   <Mic className="w-10 h-10 text-lia-text-secondary" />
@@ -296,7 +296,7 @@ export function ScreeningMediaModal({
               <div className="space-y-3 pr-2">
                 {transcription && transcription.length > 0 ? (
                   transcription.map((segment, idx) => (
-                    <div key={idx} className="bg-lia-bg-primary p-3 rounded-md border border-lia-border-subtle">
+                    <div key={idx} className="bg-lia-bg-primary p-3 rounded-xl border border-lia-border-subtle">
                       <div className="flex items-center gap-2 mb-1">
                         <span className="text-micro font-medium text-lia-text-secondary">{segment.timestamp}</span>
                         <span className="text-micro text-lia-text-tertiary">•</span>
@@ -307,7 +307,7 @@ export function ScreeningMediaModal({
                   ))
                 ) : questions.length > 0 ? (
                   questions.map((q, idx) => (
-                    <div key={q.id} className="bg-lia-bg-primary p-3 rounded-md border border-lia-border-subtle">
+                    <div key={q.id} className="bg-lia-bg-primary p-3 rounded-xl border border-lia-border-subtle">
                       <div className="flex items-center gap-2 mb-1">
                         <span className="text-micro font-medium text-lia-text-secondary">{q.timestamp || `${idx}:00`}</span>
                         <span className="text-micro text-lia-text-tertiary">•</span>

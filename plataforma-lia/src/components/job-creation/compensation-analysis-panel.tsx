@@ -338,8 +338,8 @@ export function CompensationAnalysisPanel({
   }
 
   return (
-    <Card className="overflow-hidden rounded-md">
-      <CardHeader className={cn('border-b border-lia-border-subtle', statusConfig.bgClassName)}>
+    <Card className="overflow-hidden rounded-xl">
+      <CardHeader className={cn('', statusConfig.bgClassName)}>
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-2">
             <StatusIcon className={cn('h-5 w-5', statusConfig.className)} />
@@ -370,20 +370,20 @@ export function CompensationAnalysisPanel({
           </div>
 
           <div className="grid grid-cols-3 gap-2 text-center">
-            <div className="p-2 rounded-md bg-status-success/10 dark:bg-status-success/30 border border-status-success/30 dark:border-status-success/30">
+            <div className="p-2 rounded-xl bg-status-success/10 dark:bg-status-success/30 border border-status-success/30 dark:border-status-success/30">
               <p className="text-micro text-muted-foreground mb-1">Proposto</p>
               <p className="text-xs font-semibold text-status-success">
                 {formatCurrency(analysis.salary.proposed.min)} - {formatCurrency(analysis.salary.proposed.max)}
               </p>
             </div>
-            <div className="p-2 rounded-md bg-wedo-purple/10 border border-wedo-purple/30 dark:border-wedo-purple/30">
+            <div className="p-2 rounded-xl bg-wedo-purple/10 border border-wedo-purple/30 dark:border-wedo-purple/30">
               <p className="text-micro text-muted-foreground mb-1">Mercado</p>
               <p className="text-xs font-semibold text-wedo-purple dark:text-wedo-purple">
                 {formatCurrency(analysis.salary.market.min)} - {formatCurrency(analysis.salary.market.max)}
               </p>
             </div>
             {analysis.salary.policy && (
-              <div className="p-2 rounded-md bg-wedo-cyan/10 border border-wedo-cyan/30 dark:border-wedo-cyan/30">
+              <div className="p-2 rounded-xl bg-wedo-cyan/10 border border-wedo-cyan/30 dark:border-wedo-cyan/30">
                 <p className="text-micro text-muted-foreground mb-1">Política</p>
                 <p className="text-xs font-semibold text-wedo-cyan-dark">
                   {formatCurrency(analysis.salary.policy.min)} - {formatCurrency(analysis.salary.policy.max)}
@@ -409,7 +409,7 @@ export function CompensationAnalysisPanel({
           </div>
 
           {analysis.salary.suggestion && (
-            <div className="p-2 rounded-md bg-status-warning/10 dark:bg-status-warning/30 border border-status-warning/30 dark:border-status-warning/30 flex items-center gap-2">
+            <div className="p-2 rounded-xl bg-status-warning/10 dark:bg-status-warning/30 border border-status-warning/30 dark:border-status-warning/30 flex items-center gap-2">
               <AlertTriangle className="h-3.5 w-3.5 text-status-warning flex-shrink-0" />
               <p className="text-micro text-status-warning">
                 Sugestão: Ajustar para {formatCurrency(analysis.salary.suggestion.min)} - {formatCurrency(analysis.salary.suggestion.max)}
@@ -428,12 +428,12 @@ export function CompensationAnalysisPanel({
           </div>
 
           <div className="grid grid-cols-2 gap-2">
-            <div className="p-2 rounded-md bg-lia-bg-secondary border">
+            <div className="p-2 rounded-xl bg-lia-bg-secondary border">
               <p className="text-micro text-muted-foreground mb-1">Proposto</p>
               <p className="text-sm font-semibold">{analysis.bonus.proposedPercentage}%</p>
             </div>
             {analysis.bonus.policyPercentage !== undefined && (
-              <div className="p-2 rounded-md bg-wedo-cyan/10 border border-wedo-cyan/30 dark:border-wedo-cyan/30">
+              <div className="p-2 rounded-xl bg-wedo-cyan/10 border border-wedo-cyan/30 dark:border-wedo-cyan/30">
                 <p className="text-micro text-muted-foreground mb-1">Política da Empresa</p>
                 <p className="text-sm font-semibold text-wedo-cyan-dark">
                   {analysis.bonus.policyPercentage}%
@@ -449,7 +449,7 @@ export function CompensationAnalysisPanel({
           )}
 
           {analysis.bonus.suggestion !== undefined && analysis.bonus.suggestion !== analysis.bonus.proposedPercentage && (
-            <div className="p-2 rounded-md bg-status-warning/10 dark:bg-status-warning/30 border border-status-warning/30 dark:border-status-warning/30 flex items-center gap-2">
+            <div className="p-2 rounded-xl bg-status-warning/10 dark:bg-status-warning/30 border border-status-warning/30 dark:border-status-warning/30 flex items-center gap-2">
               <AlertTriangle className="h-3.5 w-3.5 text-status-warning flex-shrink-0" />
               <p className="text-micro text-status-warning">
                 Sugestão: Ajustar bônus para {analysis.bonus.suggestion}%
@@ -514,7 +514,7 @@ export function CompensationAnalysisPanel({
             </div>
           )}
 
-          <div className="p-2 rounded-md bg-lia-bg-secondary border">
+          <div className="p-2 rounded-xl bg-lia-bg-secondary border">
             <div className="flex items-center justify-between">
               <span className="text-micro text-muted-foreground">Valor Monetizável Anual:</span>
               <span className="text-xs font-semibold">
@@ -531,14 +531,14 @@ export function CompensationAnalysisPanel({
           </div>
 
           <div className="grid grid-cols-3 gap-2 text-center">
-            <div className="p-2 rounded-md bg-lia-bg-secondary border">
+            <div className="p-2 rounded-xl bg-lia-bg-secondary border">
               <p className="text-micro text-muted-foreground mb-1">Proposto Anual</p>
               <p className="text-xs font-semibold">
                 {formatCurrency(analysis.totalCompensation.proposedAnnual)}
               </p>
             </div>
             {analysis.totalCompensation.marketAnnual && (
-              <div className="p-2 rounded-md bg-wedo-purple/10 border border-wedo-purple/30 dark:border-wedo-purple/30">
+              <div className="p-2 rounded-xl bg-wedo-purple/10 border border-wedo-purple/30 dark:border-wedo-purple/30">
                 <p className="text-micro text-muted-foreground mb-1">Mercado</p>
                 <p className="text-xs font-semibold text-wedo-purple dark:text-wedo-purple">
                   {formatCurrency(analysis.totalCompensation.marketAnnual)}
@@ -546,7 +546,7 @@ export function CompensationAnalysisPanel({
               </div>
             )}
             {analysis.totalCompensation.policyAnnual && (
-              <div className="p-2 rounded-md bg-wedo-cyan/10 border border-wedo-cyan/30 dark:border-wedo-cyan/30">
+              <div className="p-2 rounded-xl bg-wedo-cyan/10 border border-wedo-cyan/30 dark:border-wedo-cyan/30">
                 <p className="text-micro text-muted-foreground mb-1">Política</p>
                 <p className="text-xs font-semibold text-wedo-cyan-dark">
                   {formatCurrency(analysis.totalCompensation.policyAnnual)}

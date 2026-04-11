@@ -205,7 +205,7 @@ export function InterviewSchedulingPanel({
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="rounded-md p-3 dark:border-lia-border-subtle border border-lia-border-subtle">
+          <div className="rounded-xl p-3 dark:border-lia-border-subtle border border-lia-border-subtle">
             <div className="flex items-center justify-between mb-4">
               <Button variant="ghost" size="icon" className="dark:text-lia-text-secondary dark:hover:bg-lia-bg-inverse" onClick={handlePrevMonth}>
                 <ChevronLeft className="h-4 w-4" />
@@ -400,7 +400,7 @@ export function InterviewSchedulingPanel({
           {MOCK_INTERVIEWERS.map((interviewer) => (
             <div
               key={interviewer.id}
-              className="flex items-center gap-3 p-2 rounded-md cursor-pointer transition-colors motion-reduce:transition-none dark:hover:bg-lia-bg-inverse"
+              className="flex items-center gap-3 p-2 rounded-xl cursor-pointer transition-colors motion-reduce:transition-none dark:hover:bg-lia-bg-inverse"
               onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--lia-interactive-hover)'}
               onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
             >

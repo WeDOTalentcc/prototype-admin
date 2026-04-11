@@ -81,7 +81,7 @@ export function SharedContent({ hook }: SharedContentProps) {
   if (error) {
     return (
       <div className="min-h-screen bg-lia-bg-primary flex items-center justify-center font-['Open_Sans']">
-        <div className="bg-lia-btn-primary-bg rounded-md p-8 max-w-md text-center border border-lia-border-strong">
+        <div className="bg-lia-btn-primary-bg rounded-xl p-8 max-w-md text-center border border-lia-border-strong">
           <div className="text-status-error text-lg mb-4">{error}</div>
           <Button
             onClick={() => fetchSharedData()}
@@ -97,7 +97,7 @@ export function SharedContent({ hook }: SharedContentProps) {
   if (isExpired) {
     return (
       <div className="min-h-screen bg-lia-bg-primary flex items-center justify-center font-['Open_Sans']">
-        <div className="bg-lia-btn-primary-bg rounded-md p-8 max-w-md text-center border border-lia-border-strong">
+        <div className="bg-lia-btn-primary-bg rounded-xl p-8 max-w-md text-center border border-lia-border-strong">
           <Clock className="w-12 h-12 text-lia-text-secondary mx-auto mb-4" />
           <h2 className="text-xl text-lia-text-on-inverse mb-2">Link Expirado</h2>
           <p className="text-lia-text-tertiary">
@@ -161,7 +161,7 @@ export function SharedContent({ hook }: SharedContentProps) {
             )}
           </div>
           {sharedData?.message && (
-            <div className="mt-4 bg-lia-btn-primary-bg rounded-md p-4 border border-lia-border-strong">
+            <div className="mt-4 bg-lia-btn-primary-bg rounded-xl p-4 border border-lia-border-strong">
               <p className="text-lia-text-disabled italic">&quot;{sharedData.message}&quot;</p>
             </div>
           )}
@@ -169,7 +169,7 @@ export function SharedContent({ hook }: SharedContentProps) {
 
         {needsAuth && (
           <section className="mb-8">
-            <div className="bg-lia-btn-primary-bg rounded-md p-6 border border-lia-border-strong max-w-md mx-auto">
+            <div className="bg-lia-btn-primary-bg rounded-xl p-6 border border-lia-border-strong max-w-md mx-auto">
               <div className="flex items-center gap-3 mb-4">
                 <Mail className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
                 <h3 className="text-lg font-medium text-lia-text-on-inverse">Acesso Necessário</h3>
@@ -250,7 +250,7 @@ export function SharedContent({ hook }: SharedContentProps) {
         {(!sharedData?.requires_auth || sessionToken) && sharedData?.candidates && (
           <>
             <section className="mb-6">
-              <div className="bg-lia-btn-primary-bg rounded-md p-4 border border-lia-border-strong">
+              <div className="bg-lia-btn-primary-bg rounded-xl p-4 border border-lia-border-strong">
                 <div className="flex items-center justify-between mb-3">
                   <span className="text-lia-text-disabled text-sm">
                     {evaluatedCount}/{totalCount} avaliados
@@ -308,7 +308,7 @@ export function SharedContent({ hook }: SharedContentProps) {
 
             <section className="space-y-4">
               {filteredCandidates.length === 0 ? (
-                <div className="bg-lia-btn-primary-bg rounded-md p-8 text-center border border-lia-border-strong">
+                <div className="bg-lia-btn-primary-bg rounded-xl p-8 text-center border border-lia-border-strong">
                   <p className="text-lia-text-tertiary" aria-live="polite" aria-atomic="true">Nenhum candidato encontrado para este filtro.</p>
                 </div>
               ) : (
@@ -321,7 +321,7 @@ export function SharedContent({ hook }: SharedContentProps) {
                   return (
                     <div
                       key={candidate.id}
-                      className="bg-lia-btn-primary-bg rounded-md border border-lia-border-strong overflow-hidden"
+                      className="bg-lia-btn-primary-bg rounded-xl border border-lia-border-strong overflow-hidden"
                     >
                       <div className="p-4">
                         <div className="flex items-start gap-4">

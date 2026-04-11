@@ -47,7 +47,7 @@ export function EditArchetypeSkillsSection({
           (habilidades técnicas: Python, React, AWS...)
         </span>
       </label>
-      <div className="flex flex-wrap gap-1.5 mb-1.5 min-h-[28px] p-2 rounded-md border border-lia-border-subtle">
+      <div className="flex flex-wrap gap-1.5 mb-1.5 min-h-[28px] p-2 rounded-xl border border-lia-border-subtle">
         {editArchetypeSkills.map((skill, idx) => (
           <span key={`skill-${idx}`} className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-wedo-cyan/15">
             {skill}
@@ -135,7 +135,7 @@ export function EditArchetypeSkillsSection({
           </button>
         </div>
         {showSkillSuggestions && semanticSkillSuggestions.length > 0 && (
-          <div className="absolute z-50 w-full mt-1 bg-lia-bg-primary border border-lia-border-subtle rounded-md max-h-[150px] overflow-y-auto" role="status" aria-live="polite" aria-label="Carregando...">
+          <div className="absolute z-50 w-full mt-1 bg-lia-bg-primary border border-lia-border-subtle rounded-xl max-h-[150px] overflow-y-auto" role="status" aria-live="polite" aria-label="Carregando...">
             {isLoadingSemanticSkills && (
               <div className="flex items-center justify-center py-2" role="status" aria-live="polite" aria-label="Carregando...">
                 <Loader2 className="w-3 h-3 animate-spin motion-reduce:animate-none text-lia-text-tertiary" />
@@ -170,11 +170,11 @@ export function EditArchetypeSkillsSection({
         )}
       </div>
       {aiSuggestedSkills.length > 0 && (
-        <div className="mt-2 p-2 rounded-md bg-wedo-cyan/8 border border-wedo-cyan/30">
+        <div className="mt-2 p-2 rounded-xl bg-wedo-cyan/8 border border-wedo-cyan/30">
           <div className="flex items-center gap-1.5 mb-1.5">
             <Brain className="w-3 h-3 text-wedo-cyan" />
             <span className="text-micro font-medium text-lia-text-primary">Sugestões de IA</span>
-            <button type="button" onClick={() => { onAiSuggestedSkillsChange([]); onSelectedAiSkillsChange([]) }} className="ml-auto p-0.5 hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover rounded-md">
+            <button type="button" onClick={() => { onAiSuggestedSkillsChange([]); onSelectedAiSkillsChange([]) }} className="ml-auto p-0.5 hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover rounded-xl">
               <X className="w-3 h-3 text-lia-text-primary" />
             </button>
           </div>

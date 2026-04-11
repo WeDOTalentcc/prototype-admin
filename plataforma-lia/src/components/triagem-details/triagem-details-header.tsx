@@ -14,7 +14,7 @@ interface TriagemDetailsHeaderProps {
 
 export function TriagemDetailsHeader({ candidate, details, ranking, onClose }: TriagemDetailsHeaderProps) {
   return (
-    <div className="flex items-center justify-between px-4 py-3 border-b border-lia-border-subtle bg-lia-bg-secondary">
+    <div className="flex items-center justify-between px-4 py-3 bg-lia-bg-secondary">
       <div className="flex items-center gap-3">
         <div className="w-8 h-8 rounded-md flex items-center justify-center flex-shrink-0 bg-wedo-cyan/[0.12]">
           <Brain className="w-4 h-4 text-wedo-cyan" />
@@ -69,7 +69,7 @@ export function TriagemDetailsHeader({ candidate, details, ranking, onClose }: T
             printWindow.document.close()
             printWindow.print()
           }}
-          className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium transition-colors motion-reduce:transition-none hover:bg-lia-bg-tertiary text-lia-text-primary border border-lia-border-subtle bg-lia-bg-secondary rounded-md"
+          className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium transition-colors motion-reduce:transition-none hover:bg-lia-bg-tertiary text-lia-text-primary border border-lia-border-subtle bg-lia-bg-secondary rounded-xl"
         >
           <Download className="w-3 h-3" />
           Exportar

@@ -27,7 +27,7 @@ export function GlobalSearchCostsTab({
           </CardTitle>
         </CardHeader>
         <CardContent className="pt-3">
-          <div className="overflow-hidden rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
+          <div className="overflow-hidden rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle">
             <table className="w-full text-xs">
               <thead className="bg-lia-bg-secondary dark:bg-lia-bg-secondary">
                 <tr>
@@ -82,7 +82,7 @@ export function GlobalSearchCostsTab({
           </CardTitle>
         </CardHeader>
         <CardContent className="pt-3">
-          <div className="p-4 rounded-md border bg-lia-bg-secondary border-lia-border-subtle dark:bg-lia-bg-secondary dark:border-lia-border-subtle mb-4">
+          <div className="p-4 rounded-xl border bg-lia-bg-secondary border-lia-border-subtle dark:bg-lia-bg-secondary dark:border-lia-border-subtle mb-4">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
                 <Zap className="w-3.5 h-3.5 text-lia-text-secondary" />
@@ -117,7 +117,7 @@ export function GlobalSearchCostsTab({
             </div>
           </div>
 
-          <div className="overflow-hidden rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
+          <div className="overflow-hidden rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle">
             <table className="w-full text-xs">
               <thead className="bg-lia-bg-secondary dark:bg-lia-bg-secondary">
                 <tr>
@@ -166,23 +166,23 @@ export function GlobalSearchCostsTab({
             </table>
           </div>
 
-          <div className="mt-4 p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
+          <div className="mt-4 p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl">
             <div className="flex items-center gap-2 mb-2">
               <Info className="w-3.5 h-3.5 text-lia-text-secondary" />
               <span className="text-xs font-medium text-lia-text-primary">Resumo de Custos</span>
             </div>
             <div className="grid grid-cols-3 gap-3 text-center">
-              <div className="p-2 bg-lia-bg-primary dark:bg-lia-bg-primary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
+              <div className="p-2 bg-lia-bg-primary dark:bg-lia-bg-primary rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle">
                 <div className="text-micro text-lia-text-secondary">Custo Mínimo</div>
                 <div className="text-sm font-bold text-status-success">1 crédito</div>
                 <div className="text-micro text-lia-text-tertiary">por candidato</div>
               </div>
-              <div className="p-2 bg-lia-bg-primary dark:bg-lia-bg-primary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
+              <div className="p-2 bg-lia-bg-primary dark:bg-lia-bg-primary rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle">
                 <div className="text-micro text-lia-text-secondary">Custo Típico</div>
                 <div className="text-sm font-bold text-lia-text-primary">3-5 créditos</div>
                 <div className="text-micro text-lia-text-tertiary">por candidato</div>
               </div>
-              <div className="p-2 bg-lia-bg-primary dark:bg-lia-bg-primary rounded-md border border-status-warning/30 dark:border-status-warning/30">
+              <div className="p-2 bg-lia-bg-primary dark:bg-lia-bg-primary rounded-xl border border-status-warning/30 dark:border-status-warning/30">
                 <div className="text-micro text-lia-text-secondary">Custo Máximo</div>
                 <div className="text-sm font-bold text-status-warning">19 créditos</div>
                 <div className="text-micro text-lia-text-tertiary">por candidato</div>
@@ -214,12 +214,12 @@ export function GlobalSearchCostsTab({
         </CardHeader>
         <CardContent className="pt-3">
           <div className="grid grid-cols-2 gap-3">
-            <div className="p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md col-span-2">
+            <div className="p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl col-span-2">
               <div className="text-micro text-lia-text-primary mb-0.5">Limite por busca</div>
               <div className="text-lg font-bold text-lia-text-primary">{settings.defaultLimit}</div>
               <div className="text-micro text-lia-text-primary">candidatos (~1 crédito/cand)</div>
             </div>
-            <div className="p-3 bg-lia-bg-tertiary dark:bg-lia-bg-secondary/50 rounded-md col-span-2">
+            <div className="p-3 bg-lia-bg-tertiary dark:bg-lia-bg-secondary/50 rounded-xl col-span-2">
               <div className="text-micro text-lia-text-primary mb-0.5">Custo estimado por busca</div>
               <div className="text-xl font-bold text-lia-text-primary">~{estimatedCreditsPerSearch} créditos</div>
               <div className="text-micro text-lia-text-secondary mt-0.5">

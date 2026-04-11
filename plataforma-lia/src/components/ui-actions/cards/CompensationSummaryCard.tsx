@@ -82,7 +82,7 @@ export function CompensationSummaryCard({
 
         <div className="space-y-4">
           <div
-            className="p-3 rounded-md border bg-lia-bg-primary border-lia-border-subtle"
+            className="p-3 rounded-xl border bg-lia-bg-primary border-lia-border-subtle"
           >
             <div className="flex items-center gap-2 text-sm mb-1 text-lia-text-tertiary">
               <DollarSign className="h-4 w-4 text-lia-text-secondary" />
@@ -95,7 +95,7 @@ export function CompensationSummaryCard({
 
           {hasBonus && (
             <div
-              className="p-3 rounded-md border bg-lia-bg-primary border-lia-border-subtle"
+              className="p-3 rounded-xl border bg-lia-bg-primary border-lia-border-subtle"
             >
               <div className="flex items-center gap-2 text-sm mb-1 text-lia-text-tertiary">
                 <TrendingUp className="h-4 w-4 text-wedo-green" />
@@ -118,7 +118,7 @@ export function CompensationSummaryCard({
 
           {data.benefits && data.benefits.length > 0 && (
             <div
-              className="p-3 rounded-md border bg-lia-bg-primary border-lia-border-subtle"
+              className="p-3 rounded-xl border bg-lia-bg-primary border-lia-border-subtle"
             >
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2 text-sm text-lia-text-tertiary">
@@ -137,7 +137,7 @@ export function CompensationSummaryCard({
                 {data.benefits.slice(0, compact ? 4 : 8).map((benefit, index) => (
                   <div
                     key={benefit}
-                    className="flex items-center gap-1 text-xs px-2 py-1 rounded-md bg-lia-bg-tertiary text-lia-text-secondary"
+                    className="flex items-center gap-1 text-xs px-2 py-1 rounded-xl bg-lia-bg-tertiary text-lia-text-secondary"
                   >
                     <CheckCircle2 className="h-3 w-3 text-wedo-green" />
                     {benefit}
@@ -157,7 +157,7 @@ export function CompensationSummaryCard({
 
           {data.total_benefits_value !== undefined && !compact && (
             <div
-              className="flex items-center justify-between p-3 rounded-md bg-lia-bg-tertiary"
+              className="flex items-center justify-between p-3 rounded-xl bg-lia-bg-tertiary"
             >
               <span className="text-sm text-lia-text-secondary">
                 Valor Estimado Total (Benefícios)

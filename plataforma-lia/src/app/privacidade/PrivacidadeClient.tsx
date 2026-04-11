@@ -160,7 +160,7 @@ export default function PrivacidadePage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-lia-bg-secondary to-white">
-      <header className="border-b bg-lia-bg-primary">
+      <header className=" bg-lia-bg-primary">
         <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-md flex items-center justify-center bg-lia-interactive-active/30">
@@ -222,7 +222,7 @@ export default function PrivacidadePage() {
                     <p className="text-status-success mb-4">
                       Sua solicitação foi registrada e será analisada em até 15 dias úteis.
                     </p>
-                    <div className="bg-lia-bg-primary rounded-md p-4 inline-block mb-4">
+                    <div className="bg-lia-bg-primary rounded-xl p-4 inline-block mb-4">
                       <p className="text-sm text-lia-text-secondary mb-1">Código de Acompanhamento:</p>
                       <p className="text-2xl font-mono font-bold text-lia-text-primary dark:text-lia-text-primary">{submittedId}</p>
                     </div>
@@ -366,7 +366,7 @@ export default function PrivacidadePage() {
                     </div>
 
                     {error && (
-                      <div className="p-4 rounded-md bg-status-error/10 border border-status-error/30 flex items-start gap-3">
+                      <div className="p-4 rounded-xl bg-status-error/10 border border-status-error/30 flex items-start gap-3">
                         <AlertCircle className="w-5 h-5 text-status-error flex-shrink-0 mt-0.5" />
                         <p className="text-sm text-status-error">{error}</p>
                       </div>
@@ -507,13 +507,13 @@ export default function PrivacidadePage() {
                     </div>
 
                     {trackingResult.response && (
-                      <div className="mt-4 p-4 bg-status-success/10 rounded-md border border-status-success/30">
+                      <div className="mt-4 p-4 bg-status-success/10 rounded-xl border border-status-success/30">
                         <p className="text-xs text-status-success mb-2 font-medium">Resposta:</p>
                         <p className="text-sm text-status-success">{trackingResult.response}</p>
                       </div>
                     )}
 
-                    <div className="mt-4 p-4 bg-lia-bg-secondary rounded-md">
+                    <div className="mt-4 p-4 bg-lia-bg-secondary rounded-xl">
                       <div className="flex items-start gap-3">
                         <Clock className="w-5 h-5 text-lia-text-tertiary flex-shrink-0 mt-0.5" />
                         <div>
@@ -536,7 +536,7 @@ export default function PrivacidadePage() {
           <Card className="bg-lia-bg-secondary">
             <CardContent className="pt-6">
               <div className="flex items-start gap-3">
-                <div className="w-10 h-10 rounded-md flex items-center justify-center bg-lia-bg-tertiary dark:bg-lia-bg-secondary">
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-lia-bg-tertiary dark:bg-lia-bg-secondary">
                   <Shield className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
                 </div>
                 <div>
@@ -551,7 +551,7 @@ export default function PrivacidadePage() {
           <Card className="bg-lia-bg-secondary">
             <CardContent className="pt-6">
               <div className="flex items-start gap-3">
-                <div className="w-10 h-10 rounded-md flex items-center justify-center bg-lia-bg-tertiary dark:bg-lia-bg-secondary">
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-lia-bg-tertiary dark:bg-lia-bg-secondary">
                   <Clock className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
                 </div>
                 <div>
@@ -566,7 +566,7 @@ export default function PrivacidadePage() {
           <Card className="bg-lia-bg-secondary">
             <CardContent className="pt-6">
               <div className="flex items-start gap-3">
-                <div className="w-10 h-10 rounded-md flex items-center justify-center bg-lia-bg-tertiary dark:bg-lia-bg-secondary">
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-lia-bg-tertiary dark:bg-lia-bg-secondary">
                   <FileSearch className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
                 </div>
                 <div>

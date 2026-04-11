@@ -65,7 +65,7 @@ export const BulkActionsBar = React.memo(function BulkActionsBar({
   const visibleActions = actions.filter(a => !a.hidden)
 
   const containerClass = isFixed
-    ? "fixed top-0 left-0 right-0 z-50 bg-lia-btn-primary-bg border-b border-lia-border-strong animate-in slide-in-from-top duration-200"
+    ? "fixed top-0 left-0 right-0 z-50 bg-lia-btn-primary-bg animate-in slide-in-from-top duration-200"
     : "p-3 rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-subtle"
 
   return (

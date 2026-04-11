@@ -296,7 +296,7 @@ export function ProactiveActionsBell({
         align="end"
         sideOffset={8}
       >
-        <div className="p-3 border-b border-lia-border-subtle">
+        <div className="p-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Brain className="h-4 w-4 text-wedo-cyan-dark" />
@@ -340,7 +340,7 @@ export function ProactiveActionsBell({
             <div>
               {groupedByVacancy.map((group) => (
                 <div key={group.vacancyId}>
-                  <div className="px-3 py-1.5 bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 border-b border-lia-border-subtle">
+                  <div className="px-3 py-1.5 bg-lia-bg-secondary dark:bg-lia-bg-secondary/50">
                     <span className="text-micro font-semibold text-lia-text-secondary uppercase tracking-wide">
                       {group.vacancyTitle}
                     </span>

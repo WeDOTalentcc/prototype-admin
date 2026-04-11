@@ -38,7 +38,7 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md w-full max-w-6xl max-h-[95vh] overflow-y-auto">
+      <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-xl w-full max-w-6xl max-h-[95vh] overflow-y-auto">
         <div className="flex items-center justify-between p-6 bg-status-success/10 dark:bg-status-success/20">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 bg-status-success/15 dark:bg-status-success/20 rounded-md flex items-center justify-center">
@@ -88,7 +88,7 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
               ))}
             </div>
 
-            <div className="mt-6 p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
+            <div className="mt-6 p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl">
               <h4 className="text-sm font-medium font-sans text-lia-text-primary mb-2">Informações da Vaga</h4>
               <div className="space-y-2 text-sm">
                 <div className="flex items-center justify-between">

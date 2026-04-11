@@ -71,7 +71,7 @@ export function CustomQuestions({ isEditing, questions, onAddQuestion, onRemoveQ
   }
 
   return (
-    <div className="border border-lia-border-subtle rounded-md bg-lia-bg-primary overflow-hidden">
+    <div className="border border-lia-border-subtle rounded-xl bg-lia-bg-primary overflow-hidden">
       <button
         onClick={() => setIsExpanded(!isExpanded)}
         className="w-full flex items-center justify-between px-4 py-3 hover:bg-lia-interactive-hover dark:hover:bg-lia-btn-primary-hover transition-colors motion-reduce:transition-none"
@@ -120,7 +120,7 @@ export function CustomQuestions({ isEditing, questions, onAddQuestion, onRemoveQ
                     <select
                       value={editCharacter}
                       onChange={(e) => setEditCharacter(e.target.value as 'eliminatoria' | 'classificatoria')}
-                      className="text-xs font-['Open_Sans',sans-serif] rounded-md border border-lia-border-subtle bg-lia-bg-primary px-2.5 py-1.5 text-lia-text-primary focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/10"
+                      className="text-xs font-['Open_Sans',sans-serif] rounded-xl border border-lia-border-subtle bg-lia-bg-primary px-2.5 py-1.5 text-lia-text-primary focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/10"
                     >
                       <option value="classificatoria">Classificatória</option>
                       <option value="eliminatoria">Eliminatória</option>
@@ -214,7 +214,7 @@ export function CustomQuestions({ isEditing, questions, onAddQuestion, onRemoveQ
                 <select
                   value={newQuestionCharacter}
                   onChange={(e) => setNewQuestionCharacter(e.target.value as 'eliminatoria' | 'classificatoria')}
-                  className="text-xs font-['Open_Sans',sans-serif] rounded-md border border-lia-border-subtle bg-lia-bg-primary px-2.5 py-1.5 text-lia-text-primary focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/10"
+                  className="text-xs font-['Open_Sans',sans-serif] rounded-xl border border-lia-border-subtle bg-lia-bg-primary px-2.5 py-1.5 text-lia-text-primary focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/10"
                 >
                   <option value="classificatoria">Classificatória</option>
                   <option value="eliminatoria">Eliminatória</option>
@@ -262,7 +262,7 @@ export function CustomQuestions({ isEditing, questions, onAddQuestion, onRemoveQ
           {isEditing && !isAdding && (
             <button
               onClick={() => setIsAdding(true)}
-              className="w-full flex items-center justify-center gap-2 py-2.5 border-2 border-dashed border-lia-border-default rounded-md text-lia-text-tertiary hover:border-lia-border-medium dark:hover:border-lia-border-medium hover:text-lia-text-secondary transition-colors motion-reduce:transition-none font-['Open_Sans',sans-serif] text-xs font-medium"
+              className="w-full flex items-center justify-center gap-2 py-2.5 border-2 border-dashed border-lia-border-default rounded-xl text-lia-text-tertiary hover:border-lia-border-medium dark:hover:border-lia-border-medium hover:text-lia-text-secondary transition-colors motion-reduce:transition-none font-['Open_Sans',sans-serif] text-xs font-medium"
             >
               <Plus className="w-3.5 h-3.5" />
               Adicionar Pergunta

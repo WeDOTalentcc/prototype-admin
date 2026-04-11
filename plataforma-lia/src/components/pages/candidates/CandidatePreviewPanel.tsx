@@ -29,15 +29,15 @@ export function CandidatePreviewPanel({ candidate, onClose }: { candidate: Candi
               <div>
                 <h4 className="text-xs font-semibold text-lia-text-primary mb-2">Informações Básicas</h4>
                 <div className="space-y-2">
-                  <div className="flex justify-between items-center p-2 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
+                  <div className="flex justify-between items-center p-2 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl">
                     <span className={`${textStyles.bodySmall}`}>Cargo:</span>
                     <span className={`${textStyles.label} text-lia-text-primary`}>{candidate.position}</span>
                   </div>
-                  <div className="flex justify-between items-center p-2 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
+                  <div className="flex justify-between items-center p-2 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl">
                     <span className={`${textStyles.bodySmall}`}>Localização:</span>
                     <span className={`${textStyles.label} text-lia-text-primary`}>{candidate.location}</span>
                   </div>
-                  <div className="flex justify-between items-center p-2 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
+                  <div className="flex justify-between items-center p-2 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl">
                     <span className={`${textStyles.bodySmall}`}>Status:</span>
                     <Badge className={`${
                       candidate.status === 'active' ? badgeStyles.success :
@@ -55,7 +55,7 @@ export function CandidatePreviewPanel({ candidate, onClose }: { candidate: Candi
 
               <div>
                 <h4 className="text-xs font-semibold text-lia-text-primary mb-2">Score LIA</h4>
-                <div className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary p-3 rounded-md">
+                <div className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary p-3 rounded-xl">
                   <div className="flex items-center justify-between mb-2">
                     <span className={`${textStyles.label}`}>Compatibilidade</span>
                     <span className="text-base font-bold text-lia-text-primary">{formatScorePercent(candidate.score)}</span>
@@ -163,21 +163,21 @@ export function CandidatePreviewPanel({ candidate, onClose }: { candidate: Candi
               <div>
                 <h4 className="text-sm font-semibold text-lia-text-primary mb-3">Informações de Contato</h4>
                 <div className="space-y-3">
-                  <div className="flex items-center gap-3 p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
+                  <div className="flex items-center gap-3 p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl">
                     <Mail className="w-4 h-4 text-lia-text-primary" />
                     <div>
                       <div className="text-sm font-medium text-lia-text-primary">{candidate.email}</div>
                       <div className="text-xs text-lia-text-primary">Email principal</div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3 p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
+                  <div className="flex items-center gap-3 p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl">
                     <Phone className="w-4 h-4 text-lia-text-primary" />
                     <div>
                       <div className="text-sm font-medium text-lia-text-primary">{candidate.phone}</div>
                       <div className="text-xs text-lia-text-primary">Telefone/WhatsApp</div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3 p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
+                  <div className="flex items-center gap-3 p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl">
                     <Linkedin className="w-4 h-4 text-lia-text-secondary" />
                     <div>
                       <div className="text-sm font-medium text-lia-text-primary">Ver perfil LinkedIn</div>
@@ -190,7 +190,7 @@ export function CandidatePreviewPanel({ candidate, onClose }: { candidate: Candi
               <div>
                 <h4 className="text-sm font-semibold text-lia-text-primary mb-3">Histórico de Interações</h4>
                 <div className="space-y-2">
-                  <div className="text-xs text-lia-text-primary p-2 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-md">
+                  <div className="text-xs text-lia-text-primary p-2 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-xl">
                     📧 Email enviado há 2 dias
                   </div>
                   <div className="text-xs text-lia-text-primary p-2 bg-status-success/10 dark:bg-status-success/20 rounded-md">
@@ -208,7 +208,7 @@ export function CandidatePreviewPanel({ candidate, onClose }: { candidate: Candi
 
     return (
       <div className="w-96 bg-lia-bg-primary dark:bg-lia-bg-secondary border-l border-lia-border-subtle dark:border-lia-border-subtle flex flex-col h-full">
-        <div className="p-4 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+        <div className="p-4 dark:border-lia-border-subtle">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-3">
               <Avatar className="w-10 h-10">
@@ -236,18 +236,18 @@ export function CandidatePreviewPanel({ candidate, onClose }: { candidate: Candi
           </div>
 
           <div className="grid grid-cols-3 gap-2 text-xs">
-            <div className="text-center p-2 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
+            <div className="text-center p-2 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl">
               <div className="font-semibold text-lia-text-primary">{formatScorePercent(candidate.score)}</div>
               <div className="text-lia-text-primary">Score LIA</div>
             </div>
-            <div className="text-center p-2 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
+            <div className="text-center p-2 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl">
               <div className="font-semibold text-lia-text-primary flex items-center justify-center gap-1">
                 <Star className="w-3 h-3 text-status-warning" />
                 4.8
               </div>
               <div className="text-lia-text-primary">Avaliação</div>
             </div>
-            <div className="text-center p-2 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
+            <div className="text-center p-2 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl">
               <Badge className={`text-xs ${
                 candidate.status === 'active' ? 'bg-status-success/15 dark:bg-status-success/30 text-status-success dark:text-status-success' :
                 candidate.status === 'prospect' ? 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary' :
@@ -262,7 +262,7 @@ export function CandidatePreviewPanel({ candidate, onClose }: { candidate: Candi
           </div>
         </div>
 
-        <div className="border-b border-lia-border-subtle dark:border-lia-border-subtle">
+        <div className=" dark:border-lia-border-subtle">
           <nav className="flex space-x-0" aria-label="Tabs">
             {tabs.map((tab) => (
               <button

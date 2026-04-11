@@ -49,7 +49,7 @@ export function FastTrackSuggestions({
   
   if (isLoading) {
     return (
-      <div className="p-4 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-tertiary dark:bg-lia-bg-secondary" role="status" aria-live="polite" aria-label="Carregando...">
+      <div className="p-4 border border-lia-border-default dark:border-lia-border-default rounded-xl bg-lia-bg-tertiary dark:bg-lia-bg-secondary" role="status" aria-live="polite" aria-label="Carregando...">
         <div className="flex items-center gap-2 text-lia-text-secondary" role="status" aria-live="polite" aria-label="Carregando...">
           <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none" />
           <span className="text-sm" aria-live="polite" aria-atomic="true">Buscando vagas similares...</span>

@@ -22,7 +22,7 @@ export function CandidateOnboardingModal({ candidate, onClose }: CandidateOnboar
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <div className="bg-lia-bg-primary rounded-md w-full max-w-5xl h-[90vh] flex flex-col">
+      <div className="bg-lia-bg-primary rounded-xl w-full max-w-5xl h-[90vh] flex flex-col">
         <div className="flex items-center justify-between p-6 border-b">
           <div className="flex items-center gap-4">
             <Avatar className="w-16 h-16">
@@ -179,7 +179,7 @@ export function CandidateOnboardingModal({ candidate, onClose }: CandidateOnboar
                           <p className="text-xs text-lia-text-secondary">Vence hoje</p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-3 p-2 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-md">
+                      <div className="flex items-center gap-3 p-2 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-xl">
                         <Calendar className="w-4 h-4 text-lia-text-secondary" />
                         <div className="flex-1">
                           <p className="text-sm font-medium">Agendar exame admissional</p>

@@ -219,13 +219,13 @@ const generateAnalysis = useCallback(async (type: AnalysisType) => {
         {children}
       </PopoverTrigger>
       <PopoverContent 
-        className="w-[420px] p-0 border border-lia-border-subtle rounded-md"
+        className="w-[420px] p-0 border border-lia-border-subtle rounded-xl"
         side="left"
         align="start"
         sideOffset={8}
       >
         <div className="flex flex-col">
-          <div className="flex items-center justify-between px-3 py-2.5 border-b border-lia-border-subtle bg-lia-bg-secondary/50 rounded-t-lg">
+          <div className="flex items-center justify-between px-3 py-2.5 bg-lia-bg-secondary/50 rounded-t-lg">
             <div className="flex items-center gap-1.5">
               <Brain className="w-4 h-4 text-wedo-cyan" />
               <span className="text-xs font-semibold text-lia-text-primary">Resumo do Perfil</span>
@@ -238,7 +238,7 @@ const generateAnalysis = useCallback(async (type: AnalysisType) => {
             </button>
           </div>
 
-          <div className="flex gap-1 px-3 py-2 border-b border-lia-border-subtle bg-lia-bg-primary">
+          <div className="flex gap-1 px-3 py-2 bg-lia-bg-primary">
             {ANALYSIS_TABS.map(tab => (
               <button
                 key={tab.id}

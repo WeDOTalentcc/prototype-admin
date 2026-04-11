@@ -119,7 +119,7 @@ export function ResumeAnalysisResult({
       </CardHeader>
 
       <CardContent className="pt-4 space-y-6">
-        <div className="bg-lia-bg-secondary rounded-md p-4">
+        <div className="bg-lia-bg-secondary rounded-xl p-4">
           <div className="flex items-center justify-between mb-3">
             <span className="text-sm font-medium text-lia-text-primary flex items-center gap-2">
               <Star className="h-4 w-4 text-status-warning" />
@@ -160,7 +160,7 @@ export function ResumeAnalysisResult({
               {result.improvement_suggestions.map((suggestion, index) => (
                 <li 
                   key={`suggestion-${index}`}
-                  className="flex items-start gap-3 p-3 bg-status-warning/10 rounded-md border border-status-warning/30"
+                  className="flex items-start gap-3 p-3 bg-status-warning/10 rounded-xl border border-status-warning/30"
                 >
                   <AlertTriangle className="h-4 w-4 text-status-warning flex-shrink-0 mt-0.5" />
                   <span className="text-sm text-lia-text-primary">{suggestion}</span>
@@ -171,7 +171,7 @@ export function ResumeAnalysisResult({
         )}
 
         {result.improvement_suggestions.length === 0 && result.layout_score >= 80 && (
-          <div className="flex items-center gap-3 p-4 bg-status-success/10 rounded-md border border-status-success/30">
+          <div className="flex items-center gap-3 p-4 bg-status-success/10 rounded-xl border border-status-success/30">
             <CheckCircle2 className="h-5 w-5 text-status-success flex-shrink-0" />
             <div>
               <p className="text-sm font-medium text-status-success">Currículo bem estruturado!</p>

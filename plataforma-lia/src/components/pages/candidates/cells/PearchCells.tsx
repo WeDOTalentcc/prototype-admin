@@ -73,7 +73,7 @@ export function renderPearchInsightCell(
               e.stopPropagation()
               navigator.clipboard.writeText(candidate.outreach_message!)
             }}
-            className="p-0.5 hover:bg-lia-bg-tertiary rounded-md"
+            className="p-0.5 hover:bg-lia-bg-tertiary rounded-xl"
             title="Copiar mensagem"
           >
             <Copy className="w-3 h-3 text-lia-text-tertiary" />

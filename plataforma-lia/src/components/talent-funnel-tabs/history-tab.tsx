@@ -151,7 +151,7 @@ export function HistoryTab({
 
   if (history.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-12 text-center bg-[var(--lia-bg-secondary)] dark:bg-lia-bg-primary/50 rounded-md border border-[var(--lia-border-subtle)]">
+      <div className="flex flex-col items-center justify-center py-12 text-center bg-[var(--lia-bg-secondary)] dark:bg-lia-bg-primary/50 rounded-xl border border-[var(--lia-border-subtle)]">
         <div className="w-12 h-12 rounded-full flex items-center justify-center mb-3 bg-[var(--lia-bg-tertiary)] dark:bg-lia-bg-secondary">
           <Clock className="w-5 h-5 text-lia-text-tertiary" />
         </div>
@@ -207,7 +207,7 @@ export function HistoryTab({
                 return (
                   <div
                     key={item.id}
-                    className="group relative flex items-center gap-4 p-4 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none cursor-pointer"
+                    className="group relative flex items-center gap-4 p-4 rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none cursor-pointer"
                     onClick={() => onReExecuteSearch(item)}
                   >
                     <div 
@@ -318,7 +318,7 @@ export function HistoryTab({
             </div>
 
             {selectedItem && (
-              <div className="p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
+              <div className="p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl">
                 <p className="text-xs text-lia-text-primary mb-1">Query:</p>
                 <code className="text-xs text-lia-text-primary">
                   {selectedItem.query}

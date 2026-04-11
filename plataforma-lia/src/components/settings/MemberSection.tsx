@@ -83,7 +83,7 @@ export function MemberSection({
           departmentMembers.map((member) => (
             <div
               key={member.id}
-              className="flex items-center justify-between p-2 bg-lia-bg-secondary rounded-md"
+              className="flex items-center justify-between p-2 bg-lia-bg-secondary rounded-xl"
             >
               <div className="flex items-center gap-2">
                 <Avatar className="w-7 h-7">
@@ -126,7 +126,7 @@ export function MemberSection({
       </div>
 
       {showMemberForm && (
-        <div className="mt-2 p-2 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary">
+        <div className="mt-2 p-2 border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary">
           <h6 className="text-micro font-medium text-lia-text-secondary mb-2">
             {editingMember ? "Editar Colaborador" : "Novo Colaborador"}
           </h6>
@@ -138,7 +138,7 @@ export function MemberSection({
               onChange={(e) =>
                 setNewMember((prev) => ({ ...prev, name: e.target.value }))
               }
-              className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-lia-border-subtle focus:border-lia-border-medium dark:focus:ring-lia-border-strong dark:focus:border-lia-border-medium transition-colors motion-reduce:transition-none"
+              className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-xl bg-lia-bg-primary focus:ring-2 focus:ring-lia-border-subtle focus:border-lia-border-medium dark:focus:ring-lia-border-strong dark:focus:border-lia-border-medium transition-colors motion-reduce:transition-none"
             />
             <input
               type="text"
@@ -147,7 +147,7 @@ export function MemberSection({
               onChange={(e) =>
                 setNewMember((prev) => ({ ...prev, title: e.target.value }))
               }
-              className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-lia-border-subtle focus:border-lia-border-medium dark:focus:ring-lia-border-strong dark:focus:border-lia-border-medium transition-colors motion-reduce:transition-none"
+              className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-xl bg-lia-bg-primary focus:ring-2 focus:ring-lia-border-subtle focus:border-lia-border-medium dark:focus:ring-lia-border-strong dark:focus:border-lia-border-medium transition-colors motion-reduce:transition-none"
             />
             <input
               type="email"
@@ -156,7 +156,7 @@ export function MemberSection({
               onChange={(e) =>
                 setNewMember((prev) => ({ ...prev, email: e.target.value }))
               }
-              className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-lia-border-subtle focus:border-lia-border-medium dark:focus:ring-lia-border-strong dark:focus:border-lia-border-medium transition-colors motion-reduce:transition-none"
+              className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-xl bg-lia-bg-primary focus:ring-2 focus:ring-lia-border-subtle focus:border-lia-border-medium dark:focus:ring-lia-border-strong dark:focus:border-lia-border-medium transition-colors motion-reduce:transition-none"
             />
             <input
               type="text"
@@ -165,7 +165,7 @@ export function MemberSection({
               onChange={(e) =>
                 setNewMember((prev) => ({ ...prev, phone: e.target.value }))
               }
-              className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-lia-border-subtle focus:border-lia-border-medium dark:focus:ring-lia-border-strong dark:focus:border-lia-border-medium transition-colors motion-reduce:transition-none"
+              className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-xl bg-lia-bg-primary focus:ring-2 focus:ring-lia-border-subtle focus:border-lia-border-medium dark:focus:ring-lia-border-strong dark:focus:border-lia-border-medium transition-colors motion-reduce:transition-none"
             />
             <input
               type="url"
@@ -174,14 +174,14 @@ export function MemberSection({
               onChange={(e) =>
                 setNewMember((prev) => ({ ...prev, linkedin_url: e.target.value }))
               }
-              className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-lia-border-subtle focus:border-lia-border-medium dark:focus:ring-lia-border-strong dark:focus:border-lia-border-medium col-span-2"
+              className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-xl bg-lia-bg-primary focus:ring-2 focus:ring-lia-border-subtle focus:border-lia-border-medium dark:focus:ring-lia-border-strong dark:focus:border-lia-border-medium col-span-2"
             />
             <select
               value={newMember.level}
               onChange={(e) =>
                 setNewMember((prev) => ({ ...prev, level: e.target.value }))
               }
-              className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-lia-border-subtle focus:border-lia-border-medium dark:focus:ring-lia-border-strong dark:focus:border-lia-border-medium transition-colors motion-reduce:transition-none col-span-2"
+              className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-xl bg-lia-bg-primary focus:ring-2 focus:ring-lia-border-subtle focus:border-lia-border-medium dark:focus:ring-lia-border-strong dark:focus:border-lia-border-medium transition-colors motion-reduce:transition-none col-span-2"
             >
               <option value="ceo">CEO</option>
               <option value="vp">VP</option>
@@ -197,13 +197,13 @@ export function MemberSection({
             </select>
           </div>
           {memberError && (
-            <div className="bg-status-error/10 border border-status-error/30 rounded-md p-2 flex items-center gap-2 text-status-error text-micro">
+            <div className="bg-status-error/10 border border-status-error/30 rounded-xl p-2 flex items-center gap-2 text-status-error text-micro">
               <AlertCircle className="w-3 h-3" />
               {memberError}
             </div>
           )}
           {memberSuccess && (
-            <div className="bg-status-success/10 border border-status-success/30 rounded-md p-2 flex items-center gap-2 text-status-success text-micro">
+            <div className="bg-status-success/10 border border-status-success/30 rounded-xl p-2 flex items-center gap-2 text-status-success text-micro">
               <CheckCircle className="w-3 h-3" />
               {memberSuccess}
             </div>

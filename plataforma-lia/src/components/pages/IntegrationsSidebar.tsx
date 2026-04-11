@@ -41,7 +41,7 @@ export function IntegrationsSidebar({
           <CardContent>
             <div className="space-y-3 max-h-96 overflow-y-auto">
               {filteredEvents.map((event) => (
-                <div key={event.id} className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-3">
+                <div key={event.id} className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl p-3">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
                       {event.status === 'success' && <CheckCircle className="w-4 h-4 text-status-success" />}
@@ -88,7 +88,7 @@ export function IntegrationsSidebar({
         <CardContent>
           <div className="space-y-2">
             {AVAILABLE_EVENTS.map((event) => (
-              <div key={event.id} className="flex items-start gap-3 p-2 rounded-md hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover">
+              <div key={event.id} className="flex items-start gap-3 p-2 rounded-xl hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover">
                 <event.icon className="w-4 h-4 text-lia-text-secondary mt-0.5" />
                 <div>
                   <h5 className="text-sm font-medium text-lia-text-primary">

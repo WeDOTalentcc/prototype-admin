@@ -96,7 +96,7 @@ batchAction.type === template.type
                 <select
                   value={batchAction.targetStage || ''}
                   onChange={(e) => setBatchAction({...batchAction, targetStage: e.target.value})}
-                  className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-elevated text-lia-text-primary"
+                  className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-xl bg-lia-bg-primary dark:bg-lia-bg-elevated text-lia-text-primary"
                 >
                   <option value="">Selecione uma etapa</option>
                   {availableStages.map(stage => (
@@ -114,50 +114,50 @@ batchAction.type === template.type
                 value={batchAction.comment}
                 onChange={(e) => setBatchAction({...batchAction, comment: e.target.value})}
                 placeholder="Adicione um comentário sobre esta ação em lote..."
-                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-elevated text-lia-text-primary h-24 resize-none"
+                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-xl bg-lia-bg-primary dark:bg-lia-bg-elevated text-lia-text-primary h-24 resize-none"
               />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <label className="flex items-center gap-2 p-3 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md cursor-pointer hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover">
+              <label className="flex items-center gap-2 p-3 border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl cursor-pointer hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover">
                 <input
                   type="checkbox"
                   checked={batchAction.notifyTeam}
                   onChange={(e) => setBatchAction({...batchAction, notifyTeam: e.target.checked})}
-                  className="rounded-md border-lia-border-default"
+                  className="rounded-xl border-lia-border-default"
                 />
                 <Bell className="w-4 h-4 text-lia-text-secondary" />
                 <span className="text-sm text-lia-text-primary">Notificar equipe</span>
               </label>
 
-              <label className="flex items-center gap-2 p-3 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md cursor-pointer hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover">
+              <label className="flex items-center gap-2 p-3 border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl cursor-pointer hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover">
                 <input
                   type="checkbox"
                   checked={batchAction.sendEmail}
                   onChange={(e) => setBatchAction({...batchAction, sendEmail: e.target.checked})}
-                  className="rounded-md border-lia-border-default"
+                  className="rounded-xl border-lia-border-default"
                 />
                 <Mail className="w-4 h-4 text-status-success" />
                 <span className="text-sm text-lia-text-primary">Enviar email aos candidatos</span>
               </label>
 
-              <label className="flex items-center gap-2 p-3 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md cursor-pointer hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover">
+              <label className="flex items-center gap-2 p-3 border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl cursor-pointer hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover">
                 <input
                   type="checkbox"
                   checked={batchAction.scheduleInterview}
                   onChange={(e) => setBatchAction({...batchAction, scheduleInterview: e.target.checked})}
-                  className="rounded-md border-lia-border-default"
+                  className="rounded-xl border-lia-border-default"
                 />
                 <Calendar className="w-4 h-4 text-wedo-purple" />
                 <span className="text-sm text-lia-text-primary">Agendar entrevistas automaticamente</span>
               </label>
 
-              <label className="flex items-center gap-2 p-3 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md cursor-pointer hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover">
+              <label className="flex items-center gap-2 p-3 border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl cursor-pointer hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover">
                 <input
                   type="checkbox"
                   checked={batchAction.addToTalentPool}
                   onChange={(e) => setBatchAction({...batchAction, addToTalentPool: e.target.checked})}
-                  className="rounded-md border-lia-border-default"
+                  className="rounded-xl border-lia-border-default"
                 />
                 <Star className="w-4 h-4 text-wedo-orange" />
                 <span className="text-sm text-lia-text-primary">Adicionar ao banco de talentos</span>
@@ -295,7 +295,7 @@ export function BatchReviewStep({
                 if (!candidate) return null
 
                 return (
-                  <div key={candidateId} className="flex items-center justify-between p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
+                  <div key={candidateId} className="flex items-center justify-between p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl">
                     <div className="flex items-center gap-3">
                       <Avatar className="w-8 h-8">
                         <AvatarImage src={candidate.avatar} alt={candidate.name} />

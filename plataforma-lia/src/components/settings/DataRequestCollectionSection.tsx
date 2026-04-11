@@ -40,7 +40,7 @@ export function DataRequestCollectionSection({
 }: DataRequestCollectionSectionProps) {
   return (
     <div className="space-y-4">
-      <div className="p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
+      <div className="p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl">
         <Label className="text-xs font-medium text-lia-text-primary mb-2 block">
           Como o candidato responde?
         </Label>
@@ -121,10 +121,10 @@ export function DataRequestCollectionSection({
                 value={config.collectionMessages.initialRequest}
                 onChange={(e) => updateCollectionMessages({ initialRequest: e.target.value })}
                 rows={2}
-                className="w-full px-2 py-1.5 text-xs border border-lia-border-default dark:border-lia-border-default rounded-md focus:outline-none focus:border-lia-btn-primary-bg dark:focus:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary"
+                className="w-full px-2 py-1.5 text-xs border border-lia-border-default dark:border-lia-border-default rounded-xl focus:outline-none focus:border-lia-btn-primary-bg dark:focus:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary"
               />
             ) : (
-              <p className="text-xs text-lia-text-secondary bg-lia-bg-secondary dark:bg-lia-bg-secondary p-2 rounded-md whitespace-pre-wrap">
+              <p className="text-xs text-lia-text-secondary bg-lia-bg-secondary dark:bg-lia-bg-secondary p-2 rounded-xl whitespace-pre-wrap">
                 {config.collectionMessages.initialRequest}
               </p>
             )}
@@ -138,10 +138,10 @@ export function DataRequestCollectionSection({
                   value={config.collectionMessages.choicePrompt}
                   onChange={(e) => updateCollectionMessages({ choicePrompt: e.target.value })}
                   rows={3}
-                  className="w-full px-2 py-1.5 text-xs border border-lia-border-default dark:border-lia-border-default rounded-md focus:outline-none focus:border-lia-btn-primary-bg dark:focus:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary"
+                  className="w-full px-2 py-1.5 text-xs border border-lia-border-default dark:border-lia-border-default rounded-xl focus:outline-none focus:border-lia-btn-primary-bg dark:focus:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary"
                 />
               ) : (
-                <p className="text-xs text-lia-text-secondary bg-lia-bg-secondary dark:bg-lia-bg-secondary p-2 rounded-md whitespace-pre-wrap">
+                <p className="text-xs text-lia-text-secondary bg-lia-bg-secondary dark:bg-lia-bg-secondary p-2 rounded-xl whitespace-pre-wrap">
                   {config.collectionMessages.choicePrompt}
                 </p>
               )}
@@ -157,10 +157,10 @@ export function DataRequestCollectionSection({
                     value={config.collectionMessages.chatStartMessage}
                     onChange={(e) => updateCollectionMessages({ chatStartMessage: e.target.value })}
                     rows={2}
-                    className="w-full px-2 py-1.5 text-xs border border-lia-border-default dark:border-lia-border-default rounded-md focus:outline-none focus:border-lia-btn-primary-bg dark:focus:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary"
+                    className="w-full px-2 py-1.5 text-xs border border-lia-border-default dark:border-lia-border-default rounded-xl focus:outline-none focus:border-lia-btn-primary-bg dark:focus:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary"
                   />
                 ) : (
-                  <p className="text-xs text-lia-text-secondary bg-lia-bg-secondary dark:bg-lia-bg-secondary p-2 rounded-md whitespace-pre-wrap">
+                  <p className="text-xs text-lia-text-secondary bg-lia-bg-secondary dark:bg-lia-bg-secondary p-2 rounded-xl whitespace-pre-wrap">
                     {config.collectionMessages.chatStartMessage}
                   </p>
                 )}
@@ -173,10 +173,10 @@ export function DataRequestCollectionSection({
                     value={config.collectionMessages.documentReceived}
                     onChange={(e) => updateCollectionMessages({ documentReceived: e.target.value })}
                     rows={1}
-                    className="w-full px-2 py-1.5 text-xs border border-lia-border-default dark:border-lia-border-default rounded-md focus:outline-none focus:border-lia-btn-primary-bg dark:focus:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary"
+                    className="w-full px-2 py-1.5 text-xs border border-lia-border-default dark:border-lia-border-default rounded-xl focus:outline-none focus:border-lia-btn-primary-bg dark:focus:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary"
                   />
                 ) : (
-                  <p className="text-xs text-lia-text-secondary bg-lia-bg-secondary dark:bg-lia-bg-secondary p-2 rounded-md whitespace-pre-wrap">
+                  <p className="text-xs text-lia-text-secondary bg-lia-bg-secondary dark:bg-lia-bg-secondary p-2 rounded-xl whitespace-pre-wrap">
                     {config.collectionMessages.documentReceived}
                   </p>
                 )}
@@ -191,10 +191,10 @@ export function DataRequestCollectionSection({
                 value={config.collectionMessages.pendingReminder}
                 onChange={(e) => updateCollectionMessages({ pendingReminder: e.target.value })}
                 rows={2}
-                className="w-full px-2 py-1.5 text-xs border border-lia-border-default dark:border-lia-border-default rounded-md focus:outline-none focus:border-lia-btn-primary-bg dark:focus:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary"
+                className="w-full px-2 py-1.5 text-xs border border-lia-border-default dark:border-lia-border-default rounded-xl focus:outline-none focus:border-lia-btn-primary-bg dark:focus:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary"
               />
             ) : (
-              <p className="text-xs text-lia-text-secondary bg-lia-bg-secondary dark:bg-lia-bg-secondary p-2 rounded-md whitespace-pre-wrap">
+              <p className="text-xs text-lia-text-secondary bg-lia-bg-secondary dark:bg-lia-bg-secondary p-2 rounded-xl whitespace-pre-wrap">
                 {config.collectionMessages.pendingReminder}
               </p>
             )}
@@ -207,10 +207,10 @@ export function DataRequestCollectionSection({
                 value={config.collectionMessages.allComplete}
                 onChange={(e) => updateCollectionMessages({ allComplete: e.target.value })}
                 rows={1}
-                className="w-full px-2 py-1.5 text-xs border border-lia-border-default dark:border-lia-border-default rounded-md focus:outline-none focus:border-lia-btn-primary-bg dark:focus:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary"
+                className="w-full px-2 py-1.5 text-xs border border-lia-border-default dark:border-lia-border-default rounded-xl focus:outline-none focus:border-lia-btn-primary-bg dark:focus:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary"
               />
             ) : (
-              <p className="text-xs text-lia-text-secondary bg-lia-bg-secondary dark:bg-lia-bg-secondary p-2 rounded-md whitespace-pre-wrap">
+              <p className="text-xs text-lia-text-secondary bg-lia-bg-secondary dark:bg-lia-bg-secondary p-2 rounded-xl whitespace-pre-wrap">
                 {config.collectionMessages.allComplete}
               </p>
             )}

@@ -183,7 +183,7 @@ const JobGroup = ({
   const [isExpanded, setIsExpanded] = useState(defaultExpanded)
   
   return (
-    <div className="border rounded-md overflow-hidden border-lia-border-subtle">
+    <div className="border rounded-xl overflow-hidden border-lia-border-subtle">
       <button
         onClick={() => setIsExpanded(!isExpanded)}
         className="w-full flex items-center justify-between p-4 hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none bg-lia-bg-tertiary dark:bg-lia-bg-secondary"

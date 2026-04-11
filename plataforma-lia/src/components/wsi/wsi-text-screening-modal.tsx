@@ -277,7 +277,7 @@ export function WSITextScreeningModal({
     const dreyfusLevel = result.proficiency_level.level
     
     return (
-      <div className="bg-lia-bg-primary rounded-md p-4 border border-lia-border-subtle">
+      <div className="bg-lia-bg-primary rounded-xl p-4 border border-lia-border-subtle">
         <h4 className="text-sm font-medium mb-3 flex items-center gap-2">
           <BarChart3 className="w-4 h-4 text-lia-text-secondary" />
           Matriz Bloom × Dreyfus
@@ -328,7 +328,7 @@ export function WSITextScreeningModal({
     const traitEntries = Object.entries(traits).filter(([key]) => key in BIG_FIVE_LABELS)
     
     return (
-      <div className="bg-lia-bg-primary rounded-md p-4 border border-lia-border-subtle">
+      <div className="bg-lia-bg-primary rounded-xl p-4 border border-lia-border-subtle">
         <h4 className="text-sm font-medium mb-3 flex items-center gap-2">
           <User className="w-4 h-4 text-lia-text-secondary" />
           Perfil Big Five
@@ -360,14 +360,14 @@ export function WSITextScreeningModal({
     if (!result?.archetype_indicators?.length) return null
     
     return (
-      <div className="bg-lia-bg-primary rounded-md p-4 border border-lia-border-subtle">
+      <div className="bg-lia-bg-primary rounded-xl p-4 border border-lia-border-subtle">
         <h4 className="text-sm font-medium mb-3 flex items-center gap-2">
           <Award className="w-4 h-4 text-lia-text-secondary" />
           Arquétipos Identificados
         </h4>
         <div className="space-y-2">
           {result.archetype_indicators.slice(0, 3).map((arch, idx) => (
-            <div key={idx} className="flex items-center justify-between p-2 bg-lia-bg-secondary rounded-md">
+            <div key={idx} className="flex items-center justify-between p-2 bg-lia-bg-secondary rounded-xl">
               <div>
                 <div className="text-sm font-medium">{arch.archetype}</div>
                 <div className="text-xs text-lia-text-secondary">{arch.description}</div>
@@ -385,10 +385,10 @@ export function WSITextScreeningModal({
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent 
-        className="max-w-2xl max-h-[90vh] overflow-hidden flex flex-col bg-lia-bg-primary rounded-md border border-lia-border-subtle"
+        className="max-w-2xl max-h-[90vh] overflow-hidden flex flex-col bg-lia-bg-primary rounded-xl border border-lia-border-subtle"
        
       >
-        <DialogHeader className="flex-shrink-0 border-b border-lia-border-subtle p-5">
+        <DialogHeader className="flex-shrink-0 p-5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-lia-btn-primary-bg rounded-full flex items-center justify-center">
@@ -541,12 +541,12 @@ export function WSITextScreeningModal({
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">
-                    <div className="text-center p-3 bg-lia-bg-primary rounded-md border border-lia-border-subtle">
+                    <div className="text-center p-3 bg-lia-bg-primary rounded-xl border border-lia-border-subtle">
                       <Target className="w-5 h-5 text-lia-text-secondary mx-auto mb-1" />
                       <div className="text-lg font-semibold text-lia-text-primary">{BLOOM_NAMES[result.cognitive_level.level]}</div>
                       <div className="text-xs text-lia-text-primary">Nível Cognitivo (B{result.cognitive_level.level})</div>
                     </div>
-                    <div className="text-center p-3 bg-lia-bg-primary rounded-md border border-lia-border-subtle">
+                    <div className="text-center p-3 bg-lia-bg-primary rounded-xl border border-lia-border-subtle">
                       <TrendingUp className="w-5 h-5 text-lia-text-secondary mx-auto mb-1" />
                       <div className="text-lg font-semibold text-lia-text-primary">{DREYFUS_NAMES[result.proficiency_level.level]}</div>
                       <div className="text-xs text-lia-text-primary">Proficiência (D{result.proficiency_level.level})</div>

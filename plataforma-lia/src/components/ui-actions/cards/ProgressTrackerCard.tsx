@@ -140,14 +140,14 @@ export function ProgressTrackerCard({
 
         <div className="grid grid-cols-3 gap-2">
           <div
-            className="text-center p-2 rounded-md border bg-lia-bg-primary border-lia-border-subtle"
+            className="text-center p-2 rounded-xl border bg-lia-bg-primary border-lia-border-subtle"
           >
             <div className="text-lg font-bold text-lia-text-secondary">{data.days_open}</div>
             <div className="text-xs text-lia-text-tertiary">Dias Aberta</div>
           </div>
           {data.avg_time_to_hire !== undefined && (
             <div
-              className="text-center p-2 rounded-md border bg-lia-bg-primary border-lia-border-subtle"
+              className="text-center p-2 rounded-xl border bg-lia-bg-primary border-lia-border-subtle"
             >
               <div className="text-lg font-bold text-lia-text-primary">
                 {data.avg_time_to_hire}d
@@ -157,7 +157,7 @@ export function ProgressTrackerCard({
           )}
           {data.conversion_rate !== undefined && (
             <div
-              className="text-center p-2 rounded-md border bg-lia-bg-primary border-lia-border-subtle"
+              className="text-center p-2 rounded-xl border bg-lia-bg-primary border-lia-border-subtle"
             >
               <div className="text-lg font-bold text-wedo-green">{data.conversion_rate}%</div>
               <div className="text-xs text-lia-text-tertiary">Conversão</div>
@@ -170,7 +170,7 @@ export function ProgressTrackerCard({
             {data.alerts.slice(0, 2).map((alert, index) => (
               <div
                 key={`alert-${index}`}
-                className="flex items-start gap-2 text-xs px-2 py-1.5 rounded-md bg-lia-bg-tertiary text-lia-text-secondary"
+                className="flex items-start gap-2 text-xs px-2 py-1.5 rounded-xl bg-lia-bg-tertiary text-lia-text-secondary"
               >
                 <AlertTriangle className="h-3 w-3 mt-0.5 shrink-0 text-lia-text-secondary" />
                 <span>{alert}</span>

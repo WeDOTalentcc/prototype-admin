@@ -40,7 +40,7 @@ export const EAPTabFiltros = React.memo(function EAPTabFiltros(props: EAPTabFilt
 
       {/* Resumo de filtros ativos */}
       {activeCount > 0 && (
-        <div className="p-2.5 rounded-md bg-lia-bg-secondary border border-lia-border-subtle">
+        <div className="p-2.5 rounded-xl bg-lia-bg-secondary border border-lia-border-subtle">
           <div className="flex items-center justify-between">
             <span className="text-xs font-medium text-lia-text-secondary">
               {activeCount} filtro{activeCount > 1 ? 's' : ''} ativo{activeCount > 1 ? 's' : ''}
@@ -65,7 +65,7 @@ export const EAPTabFiltros = React.memo(function EAPTabFiltros(props: EAPTabFilt
 
       {/* Botão para abrir modal completo */}
       <button
-        className="w-full px-4 py-3 bg-lia-bg-primary border-2 border-dashed border-lia-border-subtle rounded-md hover:border-lia-border-default hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none flex items-center justify-center gap-2"
+        className="w-full px-4 py-3 bg-lia-bg-primary border-2 border-dashed border-lia-border-subtle rounded-xl hover:border-lia-border-default hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none flex items-center justify-center gap-2"
         onClick={() => setShowAdvancedFiltersModal(true)}
       >
         <Filter className="w-4 h-4 text-lia-text-primary" />

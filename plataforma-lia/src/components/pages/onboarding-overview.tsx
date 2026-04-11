@@ -20,7 +20,7 @@ export function OnboardingOverview() {
                 <p className="text-2xl font-bold text-lia-text-primary">{onboardingCandidates.length}</p>
                 <p className="text-xs text-lia-text-primary">este mês</p>
               </div>
-              <div className="w-12 h-12 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-md flex items-center justify-center">
+              <div className="w-12 h-12 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-xl flex items-center justify-center">
                 <UserPlus className="w-6 h-6 text-lia-text-secondary" />
               </div>
             </div>
@@ -84,7 +84,7 @@ export function OnboardingOverview() {
         <CardContent>
           <div className="space-y-4">
             {onboardingCandidates.filter(c => c.status === 'in_progress' || c.status === 'delayed').map(candidate => (
-              <div key={candidate.id} className="p-4 border border-lia-border-subtle rounded-md hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none">
+              <div key={candidate.id} className="p-4 border border-lia-border-subtle rounded-xl hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
                     <Avatar className="w-12 h-12">
@@ -136,7 +136,7 @@ export function OnboardingOverview() {
               { task: 'Treinamento de segurança', candidate: 'Carlos Santos', dueDate: '2 dias', priority: 'medium' },
               { task: 'Entrega de equipamentos', candidate: 'Ana Pereira', dueDate: '3 dias', priority: 'high' }
             ].map((item, index) => (
-              <div key={`${item.task}-${index}`} className="flex items-center justify-between p-3 bg-lia-bg-secondary rounded-md">
+              <div key={`${item.task}-${index}`} className="flex items-center justify-between p-3 bg-lia-bg-secondary rounded-xl">
                 <div className="flex items-center gap-3">
                   <div className={`w-3 h-3 rounded-full ${
                     item.priority === 'high' ? 'bg-status-error' :

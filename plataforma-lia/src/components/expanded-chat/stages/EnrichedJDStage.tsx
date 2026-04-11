@@ -180,7 +180,7 @@ export function EnrichedJDStage({
 
   if (!enrichedData) {
     return (
-      <div className="p-4 bg-lia-bg-secondary/50 rounded-md border border-lia-border-subtle">
+      <div className="p-4 bg-lia-bg-secondary/50 rounded-xl border border-lia-border-subtle">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-full bg-lia-interactive-active flex items-center justify-center">
             <FileText className="w-4 h-4 text-lia-text-secondary" />
@@ -196,7 +196,7 @@ export function EnrichedJDStage({
         </div>
         
         {detectedCriteria?.cargo && (
-          <div className="mt-4 p-3 bg-lia-bg-primary rounded-md border border-lia-border-subtle">
+          <div className="mt-4 p-3 bg-lia-bg-primary rounded-xl border border-lia-border-subtle">
             <h4 className={cn(textStyles.label, "text-lia-text-secondary mb-2")}>
               Dados Detectados
             </h4>
@@ -220,7 +220,7 @@ export function EnrichedJDStage({
 
   return (
     <div data-testid="enriched-jd-stage" className="space-y-4">
-      <div className="flex items-center justify-between p-3 bg-gradient-to-r from-lia-bg-tertiary dark:from-lia-bg-tertiary to-green-500/10 rounded-md border border-lia-border-default">
+      <div className="flex items-center justify-between p-3 bg-gradient-to-r from-lia-bg-tertiary dark:from-lia-bg-tertiary to-green-500/10 rounded-xl border border-lia-border-default">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-full bg-lia-bg-tertiary flex items-center justify-center">
             <Brain className="w-4 h-4 text-wedo-cyan" />
@@ -246,7 +246,7 @@ export function EnrichedJDStage({
       </div>
 
       {enrichedData.wsiQualityScore < 70 && (
-        <div className="p-3 bg-status-warning/10 dark:bg-status-warning/20 rounded-md border border-status-warning/30 dark:border-status-warning/30">
+        <div className="p-3 bg-status-warning/10 dark:bg-status-warning/20 rounded-xl border border-status-warning/30 dark:border-status-warning/30">
           <div className="flex items-start gap-2">
             <AlertCircle className="w-4 h-4 text-status-warning mt-0.5" />
             <div>
@@ -270,7 +270,7 @@ export function EnrichedJDStage({
         return (
           <div 
             key={section.sectionName}
-            className="bg-lia-bg-primary rounded-md border border-lia-border-subtle overflow-hidden"
+            className="bg-lia-bg-primary rounded-xl border border-lia-border-subtle overflow-hidden"
           >
             <button
               onClick={() => toggleSection(sectionKey)}
@@ -303,7 +303,7 @@ export function EnrichedJDStage({
             {isExpanded && (
               <div className="border-t border-lia-border-subtle">
                 {section.detectedItems.length > 0 && (
-                  <div className="p-3 bg-lia-bg-secondary/50 border-b border-lia-border-subtle">
+                  <div className="p-3 bg-lia-bg-secondary/50">
                     <p className={cn(textStyles.caption, "text-lia-text-tertiary mb-2")}>
                       Já detectados:
                     </p>
@@ -390,7 +390,7 @@ export function EnrichedJDStage({
                                 </button>
                                 <button
                                   onClick={() => handleReject(suggestion.id)}
-                                  className="w-7 h-7 rounded-md bg-lia-bg-tertiary hover:bg-lia-interactive-active dark:hover:bg-lia-btn-primary-bg flex items-center justify-center transition-colors motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-lia-border-default"
+                                  className="w-7 h-7 rounded-xl bg-lia-bg-tertiary hover:bg-lia-interactive-active dark:hover:bg-lia-btn-primary-bg flex items-center justify-center transition-colors motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-lia-border-default"
                                   title="Rejeitar sugestão"
                                   aria-label="Rejeitar sugestão"
                                 >
@@ -418,7 +418,7 @@ export function EnrichedJDStage({
                 )}
 
                 {section.wsiQualityNote && (
-                  <div className="p-2 mx-3 mb-3 bg-lia-bg-tertiary rounded-md border border-lia-border-default">
+                  <div className="p-2 mx-3 mb-3 bg-lia-bg-tertiary rounded-xl border border-lia-border-default">
                     <div className="flex items-center gap-2">
                       <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
                       <span className={cn(textStyles.caption, "text-lia-text-secondary font-medium")}>
@@ -434,7 +434,7 @@ export function EnrichedJDStage({
       })}
 
       {enrichedData.compensation && (
-        <div className="bg-lia-bg-primary rounded-md border border-lia-border-subtle p-3">
+        <div className="bg-lia-bg-primary rounded-xl border border-lia-border-subtle p-3">
           <div className="flex items-center gap-2 mb-3">
             <DollarSign className="w-4 h-4 text-lia-text-secondary" />
             <span className={cn(textStyles.label, "text-lia-text-primary")}>
@@ -444,13 +444,13 @@ export function EnrichedJDStage({
           
           {enrichedData.compensation.marketRange && enrichedData.compensation.currentRange && (
             <div className="space-y-2">
-              <div className="flex justify-between items-center p-2 bg-lia-bg-secondary/50 rounded-md">
+              <div className="flex justify-between items-center p-2 bg-lia-bg-secondary/50 rounded-xl">
                 <span className="text-sm text-lia-text-secondary">Sua proposta:</span>
                 <span className="text-sm font-medium text-lia-text-primary">
                   {formatBRL(enrichedData.compensation.currentRange.min)} - {formatBRL(enrichedData.compensation.currentRange.max)}
                 </span>
               </div>
-              <div className="flex justify-between items-center p-2 bg-lia-bg-tertiary rounded-md">
+              <div className="flex justify-between items-center p-2 bg-lia-bg-tertiary rounded-xl">
                 <span className="text-sm text-lia-text-secondary">Benchmark:</span>
                 <span className="text-sm font-medium text-lia-text-secondary">
                   {formatBRL(enrichedData.compensation.marketRange.min)} - {formatBRL(enrichedData.compensation.marketRange.max)}

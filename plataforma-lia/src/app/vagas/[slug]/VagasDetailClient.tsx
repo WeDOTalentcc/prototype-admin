@@ -323,10 +323,10 @@ export default function PublicVacancyPage() {
  alt={vacancy.company_name || "Logo"} 
  width={56}
  height={56}
- className="w-14 h-14 rounded-md object-contain border border-lia-border-subtle dark:border-lia-border-strong"
+ className="w-14 h-14 rounded-xl object-contain border border-lia-border-subtle dark:border-lia-border-strong"
  />
  ) : (
- <div className="w-14 h-14 rounded-md bg-lia-bg-tertiary dark:bg-lia-bg-elevated flex items-center justify-center">
+ <div className="w-14 h-14 rounded-xl bg-lia-bg-tertiary dark:bg-lia-bg-elevated flex items-center justify-center">
  <Building2 className="w-7 h-7 text-lia-text-tertiary dark:text-lia-text-secondary" />
  </div>
  )}
@@ -567,7 +567,7 @@ export default function PublicVacancyPage() {
  </div>
  </div>
  
- <div className="mt-8 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md p-4 border border-lia-border-subtle dark:border-lia-border-subtle">
+ <div className="mt-8 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl p-4 border border-lia-border-subtle dark:border-lia-border-subtle">
  <div className="flex items-start gap-3">
  <Bot className="w-5 h-5 text-lia-text-tertiary dark:text-lia-text-secondary mt-0.5" />
  <div>
@@ -582,7 +582,7 @@ export default function PublicVacancyPage() {
  </section>
 
  <section className="mb-12">
- <div className="bg-lia-btn-primary-bg dark:bg-lia-btn-primary-hover rounded-md p-6 sm:p-8 text-center">
+ <div className="bg-lia-btn-primary-bg dark:bg-lia-btn-primary-hover rounded-xl p-6 sm:p-8 text-center">
  <h3 className="text-xl font-semibold text-white mb-2">
  Interessado na vaga?
  </h3>
@@ -616,7 +616,7 @@ export default function PublicVacancyPage() {
  {showForm && (
  <section className="mb-12" ref={formRef}>
  {applicationResult && applicationResult.status !== "error" ? (
- <div className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-6 sm:p-8 text-center dark:bg-lia-bg-secondary">
+ <div className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl p-6 sm:p-8 text-center dark:bg-lia-bg-secondary">
  <div className="w-16 h-16 rounded-full bg-status-success/10 flex items-center justify-center mx-auto mb-4">
  <CheckCircle className="w-8 h-8 text-status-success" />
  </div>
@@ -631,7 +631,7 @@ export default function PublicVacancyPage() {
  </p>
  </div>
  ) : (
- <div className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-6 sm:p-8 dark:bg-lia-bg-secondary">
+ <div className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl p-6 sm:p-8 dark:bg-lia-bg-secondary">
  <div className="flex items-center justify-between mb-6">
  <h3 className="text-lg font-semibold text-lia-text-primary dark:text-lia-text-primary">
  Candidatura Online
@@ -645,7 +645,7 @@ export default function PublicVacancyPage() {
  </div>
 
  {applicationResult?.status === "error" && (
- <div className="mb-4 p-3 bg-status-error/10 border border-status-error/30 rounded-md">
+ <div className="mb-4 p-3 bg-status-error/10 border border-status-error/30 rounded-xl">
  <p className="text-sm text-status-error">{applicationResult.message}</p>
  </div>
  )}
@@ -801,7 +801,7 @@ export default function PublicVacancyPage() {
  )}
 
  <section className="text-center">
- <div className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-6 bg-lia-bg-secondary/50 dark:bg-lia-bg-secondary">
+ <div className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl p-6 bg-lia-bg-secondary/50 dark:bg-lia-bg-secondary">
  <div className="flex items-center justify-center gap-2 mb-3">
  <Shield className="w-4 h-4 text-lia-text-tertiary dark:text-lia-text-secondary" />
  <h4 className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">

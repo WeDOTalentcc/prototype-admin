@@ -148,7 +148,7 @@ export function ProactiveActions({
           return (
             <div
               key={action.id}
- className="flex items-start gap-3 p-3 rounded-md border border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-primary hover:border-lia-border-default dark:border-lia-border-default transition-colors motion-reduce:transition-none"
+ className="flex items-start gap-3 p-3 rounded-xl border border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-primary hover:border-lia-border-default dark:border-lia-border-default transition-colors motion-reduce:transition-none"
             >
               <div className={cn(
  "w-8 h-8 rounded-full flex items-center justify-center shrink-0",
@@ -254,7 +254,7 @@ export function ProactiveActions({
                       {action.description}
                     </p>
 
-                    <div className="flex items-center gap-2 p-2 rounded-md bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 border border-lia-border-default dark:border-lia-border-default">
+                    <div className="flex items-center gap-2 p-2 rounded-xl bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 border border-lia-border-default dark:border-lia-border-default">
                       <ArrowRight className="h-4 w-4 text-lia-text-secondary shrink-0" />
 
                       <span className="text-xs text-lia-text-secondary font-medium">

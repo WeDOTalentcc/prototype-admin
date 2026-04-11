@@ -156,9 +156,9 @@ export function QuickViewModal({ isOpen, onClose, candidate, onNavigateToFull }:
 
   return (
     <div className="fixed inset-0 bg-lia-overlay/70 backdrop-blur-[1px] z-50 flex items-center justify-center p-4" onClick={onClose}>
-      <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="quick-view-modal-title" className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle w-full max-w-4xl max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+      <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="quick-view-modal-title" className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle w-full max-w-4xl max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+        <div className="flex items-center justify-between p-6 dark:border-lia-border-subtle">
           <div className="flex items-center gap-4">
             <Avatar className="h-16 w-16">
               <AvatarImage src={candidate.avatar} />
@@ -200,7 +200,7 @@ export function QuickViewModal({ isOpen, onClose, candidate, onNavigateToFull }:
         {/* Content */}
         <div className="p-6">
           {/* LIA Insights Section */}
-          <div className="mb-6 border border-status-success/30 rounded-md p-4 bg-status-success/10">
+          <div className="mb-6 border border-status-success/30 rounded-xl p-4 bg-status-success/10">
             <div className="flex items-center justify-between mb-3">
               <h4 className="text-sm font-medium text-status-success flex items-center gap-2">
                 <Brain className="w-4 h-4 text-status-success" />
@@ -228,14 +228,14 @@ export function QuickViewModal({ isOpen, onClose, candidate, onNavigateToFull }:
                 ) : liaInsights && (
                   <div className="space-y-4">
                     {/* Executive Summary */}
-                    <div className="bg-lia-bg-primary rounded-md p-3 border border-status-success/30">
+                    <div className="bg-lia-bg-primary rounded-xl p-3 border border-status-success/30">
                       <h5 className="text-xs font-medium text-status-success mb-2">Resumo Executivo:</h5>
                       <p className="text-xs text-status-success">{liaInsights.executiveSummary}</p>
                     </div>
 
                     {/* Status and Next Steps */}
                     <div className="grid grid-cols-2 gap-3">
-                      <div className="bg-lia-bg-primary rounded-md p-3 border border-status-success/30">
+                      <div className="bg-lia-bg-primary rounded-xl p-3 border border-status-success/30">
                         <h5 className="text-xs font-medium text-status-success mb-2">Status:</h5>
                         <div className="space-y-1">
                           <div className="flex items-center justify-between text-xs">
@@ -252,7 +252,7 @@ export function QuickViewModal({ isOpen, onClose, candidate, onNavigateToFull }:
                         </div>
                       </div>
 
-                      <div className="bg-lia-bg-primary rounded-md p-3 border border-status-success/30">
+                      <div className="bg-lia-bg-primary rounded-xl p-3 border border-status-success/30">
                         <h5 className="text-xs font-medium text-status-success mb-2">Estratégia:</h5>
                         <div className="space-y-1 text-xs text-status-success">
                           <div><strong>Tom:</strong> {liaInsights.approachStrategy?.tone}</div>
@@ -262,7 +262,7 @@ export function QuickViewModal({ isOpen, onClose, candidate, onNavigateToFull }:
                     </div>
 
                     {/* Next Steps */}
-                    <div className="bg-lia-bg-primary rounded-md p-3 border border-status-success/30">
+                    <div className="bg-lia-bg-primary rounded-xl p-3 border border-status-success/30">
                       <h5 className="text-xs font-medium text-status-success mb-2">Próximos Passos Recomendados:</h5>
                       <div className="space-y-2">
                         {liaInsights.nextSteps?.slice(0, 3).map((step, idx: number) => (
@@ -287,7 +287,7 @@ export function QuickViewModal({ isOpen, onClose, candidate, onNavigateToFull }:
 
                     {/* Analysis Summary */}
                     <div className="grid grid-cols-2 gap-3">
-                      <div className="bg-lia-bg-primary rounded-md p-3 border border-status-success/30">
+                      <div className="bg-lia-bg-primary rounded-xl p-3 border border-status-success/30">
                         <h5 className="text-xs font-medium text-status-success mb-2 flex items-center gap-1">
                           <CheckCircle className="w-3 h-3 text-status-success" />
                           Pontos Fortes:
@@ -299,7 +299,7 @@ export function QuickViewModal({ isOpen, onClose, candidate, onNavigateToFull }:
                         </ul>
                       </div>
 
-                      <div className="bg-lia-bg-primary rounded-md p-3 border border-wedo-orange/30">
+                      <div className="bg-lia-bg-primary rounded-xl p-3 border border-wedo-orange/30">
                         <h5 className="text-xs font-medium text-wedo-orange mb-2 flex items-center gap-1">
                           <AlertCircle className="w-3 h-3 text-wedo-orange" />
                           Pontos de Atenção:
@@ -313,7 +313,7 @@ export function QuickViewModal({ isOpen, onClose, candidate, onNavigateToFull }:
                     </div>
 
                     {/* Quick Data Insights */}
-                    <div className="bg-lia-bg-primary rounded-md p-3 border border-status-success/30">
+                    <div className="bg-lia-bg-primary rounded-xl p-3 border border-status-success/30">
                       <h5 className="text-xs font-medium text-status-success mb-2">Métricas da LIA:</h5>
                       <div className="grid grid-cols-3 gap-2 text-xs">
                         <div className="text-center">
@@ -499,7 +499,7 @@ export function QuickViewModal({ isOpen, onClose, candidate, onNavigateToFull }:
                 </CardHeader>
                 <CardContent>
                   <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 bg-lia-bg-tertiary rounded-md flex items-center justify-center">
+                    <div className="w-8 h-8 bg-lia-bg-tertiary rounded-xl flex items-center justify-center">
                       <Globe className="w-4 h-4 text-lia-text-secondary" />
                     </div>
                     <div>

@@ -23,7 +23,7 @@ const CandidatesHeader = memo(function CandidatesHeader({
   showFilters,
 }: CandidatesHeaderProps) {
   return (
-    <div data-testid="candidates-header" className="flex items-center justify-between border-b border-lia-border-subtle dark:border-lia-border-subtle px-6 py-4 bg-lia-bg-primary dark:bg-lia-bg-primary">
+    <div data-testid="candidates-header" className="flex items-center justify-between dark:border-lia-border-subtle px-6 py-4 bg-lia-bg-primary dark:bg-lia-bg-primary">
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-2">
           <Users className="h-5 w-5 text-lia-text-secondary" />

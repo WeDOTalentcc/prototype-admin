@@ -66,7 +66,7 @@ export function EditQueryModal({
       onClick={handleBackdropClick}
     >
       <div
-        className="bg-lia-bg-primary dark:bg-lia-bg-primary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col mx-4"
+        className="bg-lia-bg-primary dark:bg-lia-bg-primary rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col mx-4"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -111,13 +111,13 @@ export function EditQueryModal({
         <div className="flex-shrink-0 border-t border-lia-border-subtle dark:border-lia-border-subtle p-6 pt-4 flex justify-end gap-3">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-sm text-lia-text-primary hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover rounded-md transition-colors motion-reduce:transition-none border border-lia-border-subtle dark:border-lia-border-subtle"
+            className="px-4 py-2 text-sm text-lia-text-primary hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover rounded-xl transition-colors motion-reduce:transition-none border border-lia-border-subtle dark:border-lia-border-subtle"
           >
             Cancelar
           </button>
           <button
             onClick={handleSaveAndSearch}
-            className="px-4 py-2 text-sm text-white rounded-md transition-colors motion-reduce:transition-none bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover"
+            className="px-4 py-2 text-sm text-white rounded-xl transition-colors motion-reduce:transition-none bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover"
           >
             Salvar e Buscar
           </button>

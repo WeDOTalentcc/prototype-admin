@@ -62,7 +62,7 @@ export function DepartmentGrid({
           departments.map((dept) => (
             <Card
               key={dept.id}
-              className="border border-lia-border-subtle/50 dark:border-lia-border-subtle/50 bg-lia-bg-primary/80 dark:bg-lia-bg-secondary/80 backdrop-blur-sm rounded-md hover:transition-shadow"
+              className="border border-lia-border-subtle/50 dark:border-lia-border-subtle/50 bg-lia-bg-primary/80 dark:bg-lia-bg-secondary/80 backdrop-blur-sm rounded-xl hover:transition-shadow"
             >
               <CardContent className="p-3">
                 <div className="flex items-start justify-between">
@@ -85,7 +85,7 @@ export function DepartmentGrid({
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-7 w-7 p-0 rounded-md hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse"
+                      className="h-7 w-7 p-0 rounded-xl hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse"
                       onClick={() => handleOpenOrgChart(dept)}
                       title="Ver organograma"
                     >
@@ -94,7 +94,7 @@ export function DepartmentGrid({
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-7 w-7 p-0 rounded-md hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse"
+                      className="h-7 w-7 p-0 rounded-xl hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse"
                       onClick={() => handleStartEditDepartment(dept)}
                       disabled={!isEditingDepartments}
                     >
@@ -119,7 +119,7 @@ export function DepartmentGrid({
                   {dept.manager && (
                     <Badge
                       variant="outline"
-                      className="text-micro rounded-md border-lia-border-subtle dark:border-lia-border-subtle text-lia-text-primary"
+                      className="text-micro rounded-xl border-lia-border-subtle dark:border-lia-border-subtle text-lia-text-primary"
                     >
                       {dept.manager}
                     </Badge>

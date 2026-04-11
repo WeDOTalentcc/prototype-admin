@@ -21,7 +21,7 @@ export function FairnessWarningBanner({ warnings, onDismiss }: Props) {
   if (warnings.length === 0) return null
 
   return (
-    <div className="mx-3 mb-2 rounded-md border border-status-warning/30 bg-status-warning/10 p-3">
+    <div className="mx-3 mb-2 rounded-xl border border-status-warning/30 bg-status-warning/10 p-3">
       <div className="flex items-start gap-2">
         <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-status-warning" />
         <div className="flex-1 min-w-0">

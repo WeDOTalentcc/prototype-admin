@@ -46,14 +46,14 @@ export function ScreeningFeedbackSection({ feedbackStrategy, copiedSection, onCo
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="p-4 bg-status-success/10 dark:bg-status-success/20 rounded-md border border-status-success/30">
+            <div className="p-4 bg-status-success/10 dark:bg-status-success/20 rounded-xl border border-status-success/30">
               <div className="flex items-center gap-2 mb-2">
                 <CheckCircle className="w-4 h-4 text-status-success" />
                 <span className="font-medium text-status-success dark:text-status-success">Candidatos Aprovados</span>
               </div>
               <p className="text-sm text-status-success dark:text-status-success">{feedbackStrategy.timing.approved}</p>
             </div>
-            <div className="p-4 bg-wedo-orange/10 dark:bg-wedo-orange/10/20 rounded-md border border-wedo-orange/30">
+            <div className="p-4 bg-wedo-orange/10 dark:bg-wedo-orange/10/20 rounded-xl border border-wedo-orange/30">
               <div className="flex items-center gap-2 mb-2">
                 <Heart className="w-4 h-4 text-wedo-orange" />
                 <span className="font-medium text-wedo-orange dark:text-wedo-orange">Candidatos Não Selecionados</span>
@@ -142,11 +142,11 @@ export function ScreeningFeedbackSection({ feedbackStrategy, copiedSection, onCo
           <div className="space-y-4">
             <div>
               <label className="text-sm font-medium text-lia-text-primary mb-2 block">Pontos Fortes Identificados</label>
-              <textarea placeholder="Ex: Excelente comunicação, conhecimento técnico sólido em React..." className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md text-sm" rows={3} />
+              <textarea placeholder="Ex: Excelente comunicação, conhecimento técnico sólido em React..." className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-xl text-sm" rows={3} />
             </div>
             <div>
               <label className="text-sm font-medium text-lia-text-primary mb-2 block">Áreas de Desenvolvimento Sugeridas</label>
-              <textarea placeholder="Ex: Aprofundar conhecimentos em TypeScript, ganhar experiência em liderança..." className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md text-sm" rows={3} />
+              <textarea placeholder="Ex: Aprofundar conhecimentos em TypeScript, ganhar experiência em liderança..." className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-xl text-sm" rows={3} />
             </div>
             <div className="flex gap-3">
               <Button className="flex-1 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active">Gerar Feedback Personalizado</Button>

@@ -66,7 +66,7 @@ export function CompleteStep({ successMessage, notificationReport }: CompleteSte
                 {showFailures ? 'Ocultar detalhes' : 'Ver candidatos com falha'}
               </button>
               {showFailures && (
-                <div className="mt-2 space-y-1 text-left bg-lia-bg-surface-secondary rounded-md p-2 max-h-32 overflow-y-auto">
+                <div className="mt-2 space-y-1 text-left bg-lia-bg-surface-secondary rounded-xl p-2 max-h-32 overflow-y-auto">
                   {failedDetails.map((detail, idx) => (
                     <div key={idx} className="flex items-start gap-1.5 text-xs text-status-error">
                       <AlertTriangle className="w-3 h-3 mt-0.5 shrink-0" />

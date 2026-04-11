@@ -107,7 +107,7 @@ export function CalibrationCandidateCard({
               <Badge
                 key={skill}
                 variant="secondary"
-                className="bg-lia-bg-tertiary text-lia-text-secondary text-xs rounded-md border-none"
+                className="bg-lia-bg-tertiary text-lia-text-secondary text-xs rounded-xl border-none"
               >
                 {skill}
               </Badge>
@@ -136,7 +136,7 @@ export function CalibrationCandidateCard({
             <div className="space-y-3">
               {candidate.experiences.slice(0, 4).map((exp) => (
                 <div key={exp.id} className="flex gap-3">
-                  <div className="w-8 h-8 rounded-md bg-lia-bg-tertiary flex items-center justify-center flex-shrink-0">
+                  <div className="w-8 h-8 rounded-xl bg-lia-bg-tertiary flex items-center justify-center flex-shrink-0">
                     <Building2 className="w-4 h-4 text-lia-text-tertiary" />
                   </div>
                   <div className="flex-1">
@@ -180,7 +180,7 @@ export function CalibrationCandidateCard({
             <div className="space-y-2">
               {candidate.education.slice(0, 3).map((edu) => (
                 <div key={edu.id} className="flex gap-3">
-                  <div className="w-8 h-8 rounded-md bg-lia-bg-tertiary flex items-center justify-center flex-shrink-0">
+                  <div className="w-8 h-8 rounded-xl bg-lia-bg-tertiary flex items-center justify-center flex-shrink-0">
                     <GraduationCap className="w-4 h-4 text-lia-text-tertiary" />
                   </div>
                   <div>
@@ -240,14 +240,14 @@ export function CalibrationCandidateCard({
           <div className="flex gap-2">
             <button
               onClick={onApprove}
-              className="flex-1 py-2.5 px-3 bg-lia-bg-inverse text-white rounded-md font-medium text-sm hover:bg-lia-bg-inverse transition-colors flex items-center justify-center gap-1.5"
+              className="flex-1 py-2.5 px-3 bg-lia-bg-inverse text-white rounded-xl font-medium text-sm hover:bg-lia-bg-inverse transition-colors flex items-center justify-center gap-1.5"
             >
               <CheckCircle2 className="w-4 h-4" />
               Aprovar
             </button>
             <button
               onClick={onReject}
-              className="flex-1 py-2.5 px-3 bg-white text-red-600 border border-red-300 rounded-md font-medium text-sm hover:bg-red-50 transition-colors flex items-center justify-center gap-1.5"
+              className="flex-1 py-2.5 px-3 bg-white text-red-600 border border-red-300 rounded-xl font-medium text-sm hover:bg-red-50 transition-colors flex items-center justify-center gap-1.5"
             >
               <X className="w-4 h-4" />
               Reprovar

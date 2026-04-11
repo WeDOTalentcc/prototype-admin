@@ -74,7 +74,7 @@ export function CandidatoFilesTab({
         <CardContent className="p-0">
           <div className="flex flex-col">
             {/* Header */}
-            <div className="p-4 border-b border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary">
+            <div className="p-4 dark:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary">
               <div className="flex items-center justify-between mb-3">
                 <h4 className="text-sm font-semibold text-lia-text-primary flex items-center gap-2">
                   <FileText className="w-4 h-4 text-lia-text-primary" />
@@ -171,7 +171,7 @@ export function CandidatoFilesTab({
               {visibleFiles.map((file) => {
                 const colors = getCategoryColor(String(file.file_type || ""))
                 return (
-                  <div key={String(file.id)} className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md transition-colors motion-reduce:transition-none">
+                  <div key={String(file.id)} className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl transition-colors motion-reduce:transition-none">
                     <div className="p-3">
                       <div className="flex items-start gap-3">
                         <div className="w-8 h-8 rounded-full bg-lia-bg-tertiary dark:bg-lia-bg-secondary flex items-center justify-center flex-shrink-0">

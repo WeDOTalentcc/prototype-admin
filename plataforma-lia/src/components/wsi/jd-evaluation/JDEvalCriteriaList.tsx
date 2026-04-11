@@ -28,7 +28,7 @@ export const JDEvalCriteriaList = React.memo(function JDEvalCriteriaList({
 
   return (
     <>
-      <div className="flex items-center gap-3 pb-2 border-b border-lia-border-subtle">
+      <div className="flex items-center gap-3 pb-2">
         <div className="flex items-center gap-1.5">
           <span className="text-xs font-semibold text-lia-text-primary">{evaluation.score}</span>
           <span className="text-micro text-lia-text-secondary">/100</span>
@@ -45,7 +45,7 @@ export const JDEvalCriteriaList = React.memo(function JDEvalCriteriaList({
       </div>
 
       {evaluation.indicators.some(i => i.dimension) && (
-        <div className="grid grid-cols-3 gap-1.5 pb-2 border-b border-lia-border-subtle">
+        <div className="grid grid-cols-3 gap-1.5 pb-2">
           {evaluation.indicators.map((indicator) => (
             <div key={indicator.label} className={cn(
               "flex items-center gap-1.5 px-2 py-1.5 rounded-md border text-micro",
@@ -78,7 +78,7 @@ export const JDEvalCriteriaList = React.memo(function JDEvalCriteriaList({
       )}
 
       {!evaluation.indicators.some(i => i.dimension) && (
-        <div className="flex items-center gap-3 pb-2 border-b border-lia-border-subtle flex-wrap">
+        <div className="flex items-center gap-3 pb-2 flex-wrap">
           {evaluation.indicators.map((indicator) => (
             <div key={indicator.label} className="flex items-center gap-1.5">
               <FileText className="h-3 w-3 text-lia-text-secondary" />

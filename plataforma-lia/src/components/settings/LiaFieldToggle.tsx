@@ -124,7 +124,7 @@ export function LiaFieldToggle({
               />
 
               {examples.length > 0 && (
-                <div className="space-y-2 p-3 bg-lia-bg-secondary rounded-md border border-lia-border-subtle">
+                <div className="space-y-2 p-3 bg-lia-bg-secondary rounded-xl border border-lia-border-subtle">
                   <div className="flex items-center gap-1 text-xs font-medium uppercase text-lia-text-secondary">
                     <Info className="w-3 h-3" />
                     <span>Exemplos</span>
@@ -134,7 +134,7 @@ export function LiaFieldToggle({
                       <button
                         key={idx}
                         onClick={() => setInstruction(example)}
-                        className="block w-full text-left text-xs text-lia-text-secondary hover:text-lia-text-primary p-1.5 rounded-md hover:bg-lia-bg-primary transition-colors motion-reduce:transition-none"
+                        className="block w-full text-left text-xs text-lia-text-secondary hover:text-lia-text-primary p-1.5 rounded-xl hover:bg-lia-bg-primary transition-colors motion-reduce:transition-none"
                       >
                         "{example}"
                       </button>
@@ -249,7 +249,7 @@ export function LiaFieldToggle({
             />
 
             {examples.length > 0 && (
-              <div className="space-y-2 p-3 bg-lia-bg-secondary rounded-md border border-lia-border-subtle">
+              <div className="space-y-2 p-3 bg-lia-bg-secondary rounded-xl border border-lia-border-subtle">
                 <div className="flex items-center gap-1 text-xs font-medium uppercase text-lia-text-secondary">
                   <Info className="w-3 h-3" />
                   <span>Exemplos</span>
@@ -259,7 +259,7 @@ export function LiaFieldToggle({
                     <button
                       key={idx}
                       onClick={() => setInstruction(example)}
-                      className="block w-full text-left text-xs text-lia-text-secondary hover:text-lia-text-primary p-1.5 rounded-md hover:bg-lia-bg-primary transition-colors motion-reduce:transition-none"
+                      className="block w-full text-left text-xs text-lia-text-secondary hover:text-lia-text-primary p-1.5 rounded-xl hover:bg-lia-bg-primary transition-colors motion-reduce:transition-none"
                     >
                       "{example}"
                     </button>

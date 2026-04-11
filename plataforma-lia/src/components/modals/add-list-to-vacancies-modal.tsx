@@ -148,7 +148,7 @@ const [vacancies, setVacancies] = useState<JobVacancy[]>([])
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-lg border-lia-border-subtle rounded-md" data-testid="add-list-to-vacancies-modal">
+      <DialogContent className="max-w-lg border-lia-border-subtle rounded-xl" data-testid="add-list-to-vacancies-modal">
         <DialogHeader>
           <DialogTitle className="font-['Open_Sans',sans-serif] text-lg flex items-center gap-2">
             <Briefcase className="w-5 h-5 text-lia-text-secondary" />
@@ -182,7 +182,7 @@ const [vacancies, setVacancies] = useState<JobVacancy[]>([])
               placeholder="Buscar vagas por título, departamento ou local..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-9 border-lia-border-subtle rounded-md text-xs"
+              className="pl-9 border-lia-border-subtle rounded-xl text-xs"
             />
           </div>
 
@@ -286,7 +286,7 @@ const [vacancies, setVacancies] = useState<JobVacancy[]>([])
               </ScrollArea>
 
               {selectedVacancyIds.size > 0 && (
-                <div className="flex items-center gap-2 px-3 py-2 bg-lia-bg-secondary rounded-md border border-lia-border-default">
+                <div className="flex items-center gap-2 px-3 py-2 bg-lia-bg-secondary rounded-xl border border-lia-border-default">
                   <Check className="w-4 h-4 text-lia-text-primary" />
                   <span className="text-xs text-lia-text-primary">
                     <strong>{selectedVacancyIds.size}</strong> vaga{selectedVacancyIds.size !== 1 ? 's' : ''} selecionada{selectedVacancyIds.size !== 1 ? 's' : ''}

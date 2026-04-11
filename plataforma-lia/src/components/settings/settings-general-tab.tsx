@@ -71,7 +71,7 @@ function PreferencesTab({ onSettingsChange }: { onSettingsChange: (changed: bool
                 setLanguage(e.target.value)
                 onSettingsChange(true)
               }}
-              className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary text-sm"
+              className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary text-sm"
             >
               <option value="pt-BR">Português (Brasil)</option>
               <option value="en-US">English (US)</option>
@@ -99,7 +99,7 @@ function PreferencesTab({ onSettingsChange }: { onSettingsChange: (changed: bool
                 setTimezone(e.target.value)
                 onSettingsChange(true)
               }}
-              className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary text-sm"
+              className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary text-sm"
             >
               <option value="America/Sao_Paulo">São Paulo (UTC-3)</option>
               <option value="America/New_York">New York (UTC-5)</option>
@@ -169,7 +169,7 @@ function LIATab({ onSettingsChange }: { onSettingsChange: (changed: boolean) => 
               { key: "proactiveInsights", label: "Insights Proativos", desc: "Análises e alertas automáticos" },
               { key: "learningMode", label: "Modo Aprendizado", desc: "LIA aprende com suas preferências" }
             ].map((setting) => (
-              <div key={setting.key} className="flex items-start gap-3 p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
+              <div key={setting.key} className="flex items-start gap-3 p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl">
                 <input
                   type="checkbox"
                   checked={liaSettings[setting.key as keyof typeof liaSettings] as boolean}

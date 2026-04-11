@@ -197,7 +197,7 @@ export function FilterAutocomplete({
       </div>
 
       {showDropdown && (
-        <div className="absolute z-50 w-full mt-1 bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md max-h-60 overflow-auto" role="status" aria-live="polite" aria-label="Carregando...">
+        <div className="absolute z-50 w-full mt-1 bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-xl max-h-60 overflow-auto" role="status" aria-live="polite" aria-label="Carregando...">
           {isLoading ? (
             <div className="flex items-center justify-center gap-2 p-3 text-xs text-lia-text-primary" role="status" aria-live="polite" aria-label="Carregando...">
               <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none text-lia-text-secondary" />

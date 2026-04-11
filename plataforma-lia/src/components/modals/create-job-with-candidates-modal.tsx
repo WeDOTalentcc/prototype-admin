@@ -148,12 +148,12 @@ export function CreateJobWithCandidatesModal({
 
       <div
         ref={modalRef}
-        className="relative bg-lia-btn-primary-bg border border-lia-border-medium rounded-md w-full max-w-lg mx-4 max-h-[90vh] overflow-hidden flex flex-col"
+        className="relative bg-lia-btn-primary-bg border border-lia-border-medium rounded-xl w-full max-w-lg mx-4 max-h-[90vh] overflow-hidden flex flex-col"
       >
-        <div className="border-b border-lia-border-medium p-5">
+        <div className=" p-5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-md bg-lia-bg-tertiary">
+              <div className="p-2 rounded-xl bg-lia-bg-tertiary">
                 <Brain className="w-5 h-5 text-wedo-cyan" />
               </div>
               <div>
@@ -181,7 +181,7 @@ export function CreateJobWithCandidatesModal({
         </div>
 
         <div className="p-5 space-y-5 flex-1 overflow-hidden flex flex-col">
-          <div className="bg-lia-btn-primary-bg/50 border border-lia-border-medium rounded-md p-4">
+          <div className="bg-lia-btn-primary-bg/50 border border-lia-border-medium rounded-xl p-4">
             <div className="flex items-center gap-2 mb-3">
               <Users className="w-4 h-4 text-lia-text-secondary" />
               <span className="text-xs font-medium text-lia-text-inverse">
@@ -199,7 +199,7 @@ export function CreateJobWithCandidatesModal({
                   {displayNames.map((name, idx) => (
                     <div 
                       key={idx} 
-                      className="flex items-center gap-2 p-2 bg-lia-btn-primary-bg rounded-md border border-lia-border-medium"
+                      className="flex items-center gap-2 p-2 bg-lia-btn-primary-bg rounded-xl border border-lia-border-medium"
                     >
                       <Avatar className="w-6 h-6">
                         <AvatarFallback className="text-micro bg-lia-bg-tertiary text-lia-text-secondary">
@@ -246,7 +246,7 @@ export function CreateJobWithCandidatesModal({
             </div>
 
             {hasComments && (
-              <div className="flex items-start space-x-3 p-3 bg-lia-btn-primary-bg/50 rounded-md border border-lia-border-medium">
+              <div className="flex items-start space-x-3 p-3 bg-lia-btn-primary-bg/50 rounded-xl border border-lia-border-medium">
                 <Checkbox
                   id="include-comments"
                   checked={includeComments}
@@ -269,7 +269,7 @@ export function CreateJobWithCandidatesModal({
             )}
           </div>
 
-          <div className="bg-lia-bg-tertiary border border-lia-border-subtle rounded-md p-3 mt-auto">
+          <div className="bg-lia-bg-tertiary border border-lia-border-subtle rounded-xl p-3 mt-auto">
             <div className="flex items-start gap-2">
               <Briefcase className="w-4 h-4 text-lia-text-secondary flex-shrink-0 mt-0.5" />
               <div>

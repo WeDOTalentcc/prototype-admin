@@ -205,10 +205,10 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
 
   return (
     <div className="fixed inset-0 bg-lia-overlay flex items-center justify-center z-50 p-4" onClick={onClose}>
-      <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="candidate-modal-title" className="w-full max-w-6xl max-h-[90vh] bg-lia-bg-primary rounded-md overflow-hidden" onClick={e => e.stopPropagation()}>
+      <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="candidate-modal-title" className="w-full max-w-6xl max-h-[90vh] bg-lia-bg-primary rounded-xl overflow-hidden" onClick={e => e.stopPropagation()}>
 
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-lia-border-subtle bg-lia-bg-secondary">
+        <div className="flex items-center justify-between p-6 bg-lia-bg-secondary">
           <div className="flex items-center gap-4">
 
             <CandidateAvatar
@@ -271,7 +271,7 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
         </div>
 
         {/* Tabs */}
-        <div className="border-b border-lia-border-subtle bg-lia-bg-primary">
+        <div className=" bg-lia-bg-primary">
           <div className="flex gap-8 px-6">
             {[
               { id: 'overview', label: 'Visão Geral', icon: User },
@@ -450,7 +450,7 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
                 </h3>
                 <div className="flex gap-2">
                   <select
-                    className="px-3 py-1 text-sm border border-lia-border-default rounded-md bg-lia-bg-primary"
+                    className="px-3 py-1 text-sm border border-lia-border-default rounded-xl bg-lia-bg-primary"
                     onChange={(e) => handleStatusChange(e.target.value)}
                     value=""
                   >
@@ -466,7 +466,7 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
 
               <div className="space-y-4">
                 {candidateData.movementHistory.map((movement: { id: number; from?: string | null; to?: string; toName?: string; fromName?: string; date?: string; user?: string; notes?: string }, index: number) => (
-                  <div key={movement.id} className="flex gap-4 p-4 bg-lia-bg-secondary rounded-md">
+                  <div key={movement.id} className="flex gap-4 p-4 bg-lia-bg-secondary rounded-xl">
                     <div className="flex flex-col items-center">
                       <div className="w-3 h-3 bg-lia-border-medium rounded-full"></div>
                       {index < candidateData.movementHistory.length - 1 && (
@@ -557,7 +557,7 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
                     value={newNote}
                     onChange={(e) => setNewNote(e.target.value)}
                     placeholder="Escreva sua nota ou comentário sobre o candidato..."
-                    className="w-full p-3 border border-lia-border-default rounded-md bg-lia-bg-primary text-lia-text-primary text-sm resize-none h-24 focus:outline-none focus:ring-2 focus:ring-lia-border-default/30"
+                    className="w-full p-3 border border-lia-border-default rounded-xl bg-lia-bg-primary text-lia-text-primary text-sm resize-none h-24 focus:outline-none focus:ring-2 focus:ring-lia-border-default/30"
                   />
 
                   <Button onClick={handleAddNote} className="gap-2" disabled={!newNote.trim()}>
@@ -607,7 +607,7 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
 
               <div className="space-y-3">
                 {candidateData.interactions.map((interaction: { id: number; type?: string; title?: string; date?: string; description?: string }) => (
-                  <div key={interaction.id} className="flex gap-4 p-4 bg-lia-bg-secondary rounded-md">
+                  <div key={interaction.id} className="flex gap-4 p-4 bg-lia-bg-secondary rounded-xl">
 
                     <div className="mt-1">
                       {getInteractionIcon(interaction.type || "")}

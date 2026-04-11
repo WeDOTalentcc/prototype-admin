@@ -64,7 +64,7 @@ export function SSISimilarMode(props: SSISimilarModeProps) {
           onChange={(e) => updateSimilarUrl(index, e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder={index === 0 ? "Cole a URL do LinkedIn ou ID do candidato..." : "Cole outra URL para combinar perfis..."}
-          className="w-full rounded-md pl-9 pr-20 py-2.5 text-base-ui focus:outline-none transition-colors motion-reduce:transition-none border bg-[var(--lia-bg-primary)] text-lia-text-primary"
+          className="w-full rounded-xl pl-9 pr-20 py-2.5 text-base-ui focus:outline-none transition-colors motion-reduce:transition-none border bg-[var(--lia-bg-primary)] text-lia-text-primary"
           onFocus={(e) => {
             e.currentTarget.style.borderColor = "var(--lia-border-default)"
             e.currentTarget.style.boxShadow = "0 0 0 2px var(--wedo-cyan-bg-12)"
@@ -144,7 +144,7 @@ export function SSISimilarMode(props: SSISimilarModeProps) {
       ) : (
         <button
           onClick={() => cvFileInputRef.current?.click()}
-          className="w-full flex items-center justify-center gap-2 py-2 rounded-md text-xs text-lia-text-secondary hover:text-lia-text-primary hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none border border-dashed"
+          className="w-full flex items-center justify-center gap-2 py-2 rounded-xl text-xs text-lia-text-secondary hover:text-lia-text-primary hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none border border-dashed"
         >
           <Upload className="w-3.5 h-3.5" />
           Arraste CVs aqui ou clique para upload (máx. 2)
@@ -159,7 +159,7 @@ export function SSISimilarMode(props: SSISimilarModeProps) {
     )}
 
     {showCombinedSuggestions && combinedSuggestions.length > 0 && (
-      <div className="p-3 rounded-md space-y-2 border border-lia-border-subtle bg-lia-bg-secondary">
+      <div className="p-3 rounded-xl space-y-2 border border-lia-border-subtle bg-lia-bg-secondary">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
@@ -174,7 +174,7 @@ export function SSISimilarMode(props: SSISimilarModeProps) {
         </div>
         <div className="flex flex-wrap gap-1.5">
           {combinedSuggestions.map((keyword) => (
-            <div key={keyword} className="flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium group border border-lia-border-subtle bg-lia-bg-primary">
+            <div key={keyword} className="flex items-center gap-1 px-2 py-1 rounded-xl text-xs font-medium group border border-lia-border-subtle bg-lia-bg-primary">
               <span className="text-lia-text-primary">{keyword}</span>
               <button onClick={() => removeSuggestion(keyword)} className="opacity-50 group-hover:opacity-100 hover:text-status-error transition-opacity motion-reduce:transition-none">
                 <X className="w-3 h-3" />
@@ -202,7 +202,7 @@ export function SSISimilarMode(props: SSISimilarModeProps) {
             value={similarSearchPrompt}
             onChange={(e) => setSimilarSearchPrompt(e.target.value)}
             placeholder="Descreva o perfil que deseja buscar..."
-            className="w-full resize-none rounded-md px-4 py-3 pr-28 text-base-ui focus:outline-none min-h-[60px] transition-colors motion-reduce:transition-none border bg-[var(--lia-bg-primary)] text-lia-text-primary"
+            className="w-full resize-none rounded-xl px-4 py-3 pr-28 text-base-ui focus:outline-none min-h-[60px] transition-colors motion-reduce:transition-none border bg-[var(--lia-bg-primary)] text-lia-text-primary"
             onFocus={(e) => { e.currentTarget.style.borderColor = "var(--lia-border-default)"; e.currentTarget.style.boxShadow = "0 0 0 2px var(--wedo-cyan-bg-12)" }}
             onBlur={(e) => { e.currentTarget.style.borderColor = "var(--lia-border-subtle)"; e.currentTarget.style.boxShadow = "none" }}
             rows={2}
@@ -247,7 +247,7 @@ export function SSISimilarMode(props: SSISimilarModeProps) {
           value={similarSearchPrompt}
           onChange={(e) => setSimilarSearchPrompt(e.target.value)}
           placeholder="Edite o prompt de busca ou adicione perfis acima..."
-          className="w-full resize-none rounded-md px-4 py-3 pr-28 text-base-ui focus:outline-none min-h-14 transition-colors motion-reduce:transition-none border bg-[var(--lia-bg-primary)] text-lia-text-primary"
+          className="w-full resize-none rounded-xl px-4 py-3 pr-28 text-base-ui focus:outline-none min-h-14 transition-colors motion-reduce:transition-none border bg-[var(--lia-bg-primary)] text-lia-text-primary"
           onFocus={(e) => { e.currentTarget.style.borderColor = "var(--lia-border-default)"; e.currentTarget.style.boxShadow = "0 0 0 2px var(--wedo-cyan-bg-12)" }}
           onBlur={(e) => { e.currentTarget.style.borderColor = "var(--lia-border-subtle)"; e.currentTarget.style.boxShadow = "none" }}
           rows={2}
@@ -285,7 +285,7 @@ export function SSISimilarMode(props: SSISimilarModeProps) {
       </div>
     )}
 
-    <div className="p-2.5 rounded-md bg-white border border-lia-border-subtle">
+    <div className="p-2.5 rounded-xl bg-white border border-lia-border-subtle">
       <div className="flex items-start gap-2">
         <Lightbulb className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-lia-text-secondary" />
         <p className="text-xs text-lia-text-secondary">

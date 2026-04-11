@@ -72,7 +72,7 @@ export function DonePanel({ data }: Props) {
 
       {/* Summary stats */}
       {jobId && (
-        <div className="rounded-md bg-lia-bg-secondary p-2.5 text-[11px] text-lia-text-disabled text-center">
+        <div className="rounded-xl bg-lia-bg-secondary p-2.5 text-[11px] text-lia-text-disabled text-center">
           Job ID: {jobId}
         </div>
       )}

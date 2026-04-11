@@ -223,7 +223,7 @@ export function CompetenciesStage({
     const justificationText = skill.weightJustification || inference.justificativa
 
     return (
-      <div key={skill.id} className="flex flex-col gap-1.5 p-2 bg-lia-bg-primary rounded-md border border-lia-border-subtle">
+      <div key={skill.id} className="flex flex-col gap-1.5 p-2 bg-lia-bg-primary rounded-xl border border-lia-border-subtle">
         <div className="flex items-center gap-2">
           <span className="flex-1 text-xs font-medium text-lia-text-primary flex items-center gap-1.5">
             {skill.name}
@@ -328,7 +328,7 @@ export function CompetenciesStage({
   return (
     <div className="space-y-4">
       {!isFieldRequired && (
-        <div className="p-3 bg-gradient-to-r from-green-500/10 to-lia-bg-tertiary dark:to-lia-bg-primary rounded-md border border-status-success/30/30">
+        <div className="p-3 bg-gradient-to-r from-green-500/10 to-lia-bg-tertiary dark:to-lia-bg-primary rounded-xl border border-status-success/30/30">
           <div className="flex items-center gap-2">
             <div className="w-6 h-6 rounded-full bg-status-success/20 flex items-center justify-center flex-shrink-0">
               <Brain className="w-3.5 h-3.5 text-status-success" />
@@ -349,7 +349,7 @@ export function CompetenciesStage({
             </div>
             <button
               onClick={handleToggleExpand}
-              className="p-1.5 hover:bg-lia-bg-primary/50 rounded-md transition-colors motion-reduce:transition-none"
+              className="p-1.5 hover:bg-lia-bg-primary/50 rounded-xl transition-colors motion-reduce:transition-none"
               aria-label={isExpanded ? 'Recolher painel de competências' : 'Expandir painel de competências'}
             >
               <ChevronDown className={cn(
@@ -362,7 +362,7 @@ export function CompetenciesStage({
       )}
 
       {hasSkillsFromCatalog && (
-        <div className="p-3 bg-gradient-to-r from-blue-500/10 to-lia-bg-tertiary dark:to-lia-bg-primary rounded-md border border-wedo-cyan/30/30">
+        <div className="p-3 bg-gradient-to-r from-blue-500/10 to-lia-bg-tertiary dark:to-lia-bg-primary rounded-xl border border-wedo-cyan/30/30">
           <div className="flex items-center gap-2">
             <div className="w-6 h-6 rounded-full bg-wedo-cyan/20 flex items-center justify-center flex-shrink-0">
               <Settings className="w-3.5 h-3.5 text-wedo-cyan-dark" />
@@ -381,7 +381,7 @@ export function CompetenciesStage({
       )}
 
       {hasSkillsFromTechStack && !hasSkillsFromCatalog && (
-        <div className="p-3 bg-gradient-to-r from-violet-500/10 to-lia-bg-tertiary dark:to-lia-bg-primary rounded-md border border-wedo-purple/30/30">
+        <div className="p-3 bg-gradient-to-r from-violet-500/10 to-lia-bg-tertiary dark:to-lia-bg-primary rounded-xl border border-wedo-purple/30/30">
           <div className="flex items-center gap-2">
             <div className="w-6 h-6 rounded-full bg-wedo-purple/20 flex items-center justify-center flex-shrink-0">
               <Laptop className="w-3.5 h-3.5 text-wedo-purple" />
@@ -461,7 +461,7 @@ export function CompetenciesStage({
                     {technicalSkills.filter(s => s.category === 'language').map(renderSkillItem)}
                     <button
                       onClick={() => onShowAddSkillModal?.('language')}
-                      className="w-full py-1.5 border border-dashed border-lia-border-subtle rounded-md text-xs text-lia-text-secondary hover:border-lia-btn-primary-bg hover:bg-lia-bg-secondary/50 transition-colors motion-reduce:transition-none flex items-center justify-center gap-2"
+                      className="w-full py-1.5 border border-dashed border-lia-border-subtle rounded-xl text-xs text-lia-text-secondary hover:border-lia-btn-primary-bg hover:bg-lia-bg-secondary/50 transition-colors motion-reduce:transition-none flex items-center justify-center gap-2"
                       aria-label="Adicionar linguagem de programação"
                     >
                       <Plus className="w-3.5 h-3.5" /> Adicionar linguagem
@@ -480,7 +480,7 @@ export function CompetenciesStage({
                     {technicalSkills.filter(s => s.category === 'framework').map(renderSkillItem)}
                     <button
                       onClick={() => onShowAddSkillModal?.('framework')}
-                      className="w-full py-1.5 border border-dashed border-lia-border-subtle rounded-md text-xs text-lia-text-secondary hover:border-lia-btn-primary-bg hover:bg-lia-bg-secondary/50 transition-colors motion-reduce:transition-none flex items-center justify-center gap-2"
+                      className="w-full py-1.5 border border-dashed border-lia-border-subtle rounded-xl text-xs text-lia-text-secondary hover:border-lia-btn-primary-bg hover:bg-lia-bg-secondary/50 transition-colors motion-reduce:transition-none flex items-center justify-center gap-2"
                       aria-label="Adicionar framework"
                     >
                       <Plus className="w-3.5 h-3.5" /> Adicionar framework
@@ -499,7 +499,7 @@ export function CompetenciesStage({
                     {technicalSkills.filter(s => s.category === 'database').map(renderSkillItem)}
                     <button
                       onClick={() => onShowAddSkillModal?.('database')}
-                      className="w-full py-1.5 border border-dashed border-lia-border-subtle rounded-md text-xs text-lia-text-secondary hover:border-lia-btn-primary-bg hover:bg-lia-bg-secondary/50 transition-colors motion-reduce:transition-none flex items-center justify-center gap-2"
+                      className="w-full py-1.5 border border-dashed border-lia-border-subtle rounded-xl text-xs text-lia-text-secondary hover:border-lia-btn-primary-bg hover:bg-lia-bg-secondary/50 transition-colors motion-reduce:transition-none flex items-center justify-center gap-2"
                       aria-label="Adicionar banco de dados"
                     >
                       <Plus className="w-3.5 h-3.5" /> Adicionar banco
@@ -518,7 +518,7 @@ export function CompetenciesStage({
                     {technicalSkills.filter(s => s.category === 'tool').map(renderSkillItem)}
                     <button
                       onClick={() => onShowAddSkillModal?.('tool')}
-                      className="w-full py-1.5 border border-dashed border-lia-border-subtle rounded-md text-xs text-lia-text-secondary hover:border-lia-btn-primary-bg hover:bg-lia-bg-secondary/50 transition-colors motion-reduce:transition-none flex items-center justify-center gap-2"
+                      className="w-full py-1.5 border border-dashed border-lia-border-subtle rounded-xl text-xs text-lia-text-secondary hover:border-lia-btn-primary-bg hover:bg-lia-bg-secondary/50 transition-colors motion-reduce:transition-none flex items-center justify-center gap-2"
                       aria-label="Adicionar ferramenta ou plataforma"
                     >
                       <Plus className="w-3.5 h-3.5" /> Adicionar ferramenta
@@ -537,7 +537,7 @@ export function CompetenciesStage({
                     {technicalSkills.filter(s => s.category === 'general').map(renderSkillItem)}
                     <button
                       onClick={() => onShowAddSkillModal?.('general')}
-                      className="w-full py-1.5 border border-dashed border-lia-border-subtle rounded-md text-xs text-lia-text-secondary hover:border-lia-btn-primary-bg hover:bg-lia-bg-secondary/50 transition-colors motion-reduce:transition-none flex items-center justify-center gap-2"
+                      className="w-full py-1.5 border border-dashed border-lia-border-subtle rounded-xl text-xs text-lia-text-secondary hover:border-lia-btn-primary-bg hover:bg-lia-bg-secondary/50 transition-colors motion-reduce:transition-none flex items-center justify-center gap-2"
                       aria-label="Adicionar competência técnica geral"
                     >
                       <Plus className="w-3.5 h-3.5" /> Adicionar competência geral
@@ -557,7 +557,7 @@ export function CompetenciesStage({
                   {technicalSkills.map(renderSkillItem)}
                   <button
                     onClick={() => onShowAddSkillModal?.('tool')}
-                    className="w-full py-1.5 border border-dashed border-lia-border-subtle rounded-md text-xs text-lia-text-secondary hover:border-lia-btn-primary-bg hover:bg-lia-bg-secondary/50 transition-colors motion-reduce:transition-none flex items-center justify-center gap-2"
+                    className="w-full py-1.5 border border-dashed border-lia-border-subtle rounded-xl text-xs text-lia-text-secondary hover:border-lia-btn-primary-bg hover:bg-lia-bg-secondary/50 transition-colors motion-reduce:transition-none flex items-center justify-center gap-2"
                     aria-label="Adicionar conhecimento técnico específico"
                   >
                     <Plus className="w-3.5 h-3.5" /> Adicionar conhecimento técnico
@@ -566,7 +566,7 @@ export function CompetenciesStage({
               </div>
             )}
 
-            <div className="p-2 bg-lia-bg-secondary rounded-md border border-lia-border-default">
+            <div className="p-2 bg-lia-bg-secondary rounded-xl border border-lia-border-default">
               <div className="flex items-center justify-between text-xs">
                 <span className="lia-text-secondary">Total de competências técnicas:</span>
                 <span className="font-semibold text-lia-text-primary">{technicalSkills.length}</span>
@@ -692,13 +692,13 @@ export function CompetenciesStage({
 
             <button
               onClick={onShowAddCompetencyModal}
-              className="w-full py-2 border border-dashed border-lia-border-subtle rounded-md text-xs text-lia-text-secondary hover:border-lia-btn-primary-bg hover:bg-lia-bg-secondary/50 transition-colors motion-reduce:transition-none flex items-center justify-center gap-2"
+              className="w-full py-2 border border-dashed border-lia-border-subtle rounded-xl text-xs text-lia-text-secondary hover:border-lia-btn-primary-bg hover:bg-lia-bg-secondary/50 transition-colors motion-reduce:transition-none flex items-center justify-center gap-2"
               aria-label="Adicionar competência comportamental"
             >
               <Plus className="w-3.5 h-3.5" /> Adicionar competência
             </button>
 
-            <div className="p-2 bg-lia-bg-secondary rounded-md border border-lia-border-default mt-2">
+            <div className="p-2 bg-lia-bg-secondary rounded-xl border border-lia-border-default mt-2">
               <div className="flex items-center justify-between text-xs">
                 <span className="lia-text-secondary">Competências ativas:</span>
                 <span className="font-semibold text-lia-text-primary">{behavioralCompetencies.filter(c => c.enabled).length}</span>

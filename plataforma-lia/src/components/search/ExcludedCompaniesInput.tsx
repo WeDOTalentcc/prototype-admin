@@ -159,7 +159,7 @@ export function ExcludedCompaniesInput({
       <div className="flex items-center gap-2">
         <Popover open={isTimeFilterOpen} onOpenChange={setIsTimeFilterOpen}>
           <PopoverTrigger asChild>
-            <button className="flex items-center gap-2 px-2.5 py-1 rounded-md border border-lia-border-subtle text-xs hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none">
+            <button className="flex items-center gap-2 px-2.5 py-1 rounded-xl border border-lia-border-subtle text-xs hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none">
               <span className="text-lia-text-primary">{currentTimeOption?.label}</span>
               <ChevronDown className="w-3.5 h-3.5 text-lia-text-tertiary" />
             </button>
@@ -261,7 +261,7 @@ export function ExcludedCompaniesInput({
         {isDropdownOpen && filteredSuggestions.length > 0 && (
           <div 
             ref={dropdownRef}
-            className="absolute z-50 w-full mt-1 bg-lia-bg-primary border border-lia-border-subtle rounded-md max-h-64 overflow-y-auto"
+            className="absolute z-50 w-full mt-1 bg-lia-bg-primary border border-lia-border-subtle rounded-xl max-h-64 overflow-y-auto"
           >
             {filteredSuggestions.map((company, index) => (
               <button
@@ -315,7 +315,7 @@ export function ExcludedCompaniesInput({
 
       {showSavePresetModal && (
         <div className="fixed inset-0 bg-lia-overlay flex items-center justify-center z-50" onClick={() => setShowSavePresetModal(false)}>
-          <div className="bg-lia-bg-primary rounded-md p-4 w-80" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-lia-bg-primary rounded-xl p-4 w-80" onClick={(e) => e.stopPropagation()}>
             <h3 className="font-medium text-sm mb-3">Salvar Preset</h3>
             <Input
               value={savePresetName}

@@ -82,7 +82,7 @@ export function DynamicContextPanel({
   return (
     <div className="flex flex-col h-full bg-lia-bg-primary">
       {/* Panel header */}
-      <div className="flex items-center justify-between px-4 py-2.5 border-b border-lia-border-subtle flex-shrink-0">
+      <div className="flex items-center justify-between px-4 py-2.5 flex-shrink-0">
         <h3 className="text-sm font-semibold text-lia-text-primary font-['Open_Sans',sans-serif]">
           {STAGE_LABELS[stage] || stage}
         </h3>

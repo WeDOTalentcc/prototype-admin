@@ -98,7 +98,7 @@ function WizardContent({ onClose, onMinimize, onJobCreated, inline }: Omit<Wizar
       inline ? "rounded-md border border-lia-border-subtle" : "fixed inset-0 z-50"
     )}>
       {/* Header with phase navigation */}
-      <div className="flex items-center justify-between px-4 py-2.5 bg-lia-bg-primary border-b border-lia-border-subtle">
+      <div className="flex items-center justify-between px-4 py-2.5 bg-lia-bg-primary">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1.5">
             <div className="w-8 h-8 rounded-full bg-gradient-to-br from-lia-bg-tertiary dark:from-lia-btn-primary-hover to-wedo-cyan-dark flex items-center justify-center">
@@ -150,7 +150,7 @@ function WizardContent({ onClose, onMinimize, onJobCreated, inline }: Omit<Wizar
       </div>
 
       {/* Stage navigation bar */}
-      <div className="flex items-center gap-1 px-4 py-2 bg-lia-bg-primary border-b border-lia-border-subtle overflow-x-auto">
+      <div className="flex items-center gap-1 px-4 py-2 bg-lia-bg-primary overflow-x-auto">
         {WIZARD_STAGES.map((stage, index) => renderStageIndicator(stage.id, index))}
       </div>
 
@@ -173,7 +173,7 @@ function WizardContent({ onClose, onMinimize, onJobCreated, inline }: Omit<Wizar
             className="border-l border-lia-border-subtle bg-lia-bg-primary flex flex-col"
             style={{width: `${panelWidth}%`}}
           >
-            <div className="p-3 border-b border-lia-border-subtle">
+            <div className="p-3">
               <h3 className="text-xs font-semibold text-lia-text-primary">
                 {currentStageConfig?.panelTitle || 'Painel'}
               </h3>
@@ -232,7 +232,7 @@ function WizardContent({ onClose, onMinimize, onJobCreated, inline }: Omit<Wizar
               if (onJobCreated) onJobCreated()
               onClose()
             }}
-            className="flex items-center gap-1.5 px-4 py-2 bg-status-success text-white rounded-md text-xs font-medium hover:bg-status-success transition-colors motion-reduce:transition-none"
+            className="flex items-center gap-1.5 px-4 py-2 bg-status-success text-white rounded-xl text-xs font-medium hover:bg-status-success transition-colors motion-reduce:transition-none"
            
           >
             <Check className="w-4 h-4" />
@@ -240,7 +240,7 @@ function WizardContent({ onClose, onMinimize, onJobCreated, inline }: Omit<Wizar
           </button>
         ) : isReviewStage ? (
           <button
-            className="flex items-center gap-1.5 px-4 py-2 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active rounded-md text-xs font-medium transition-colors motion-reduce:transition-none"
+            className="flex items-center gap-1.5 px-4 py-2 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active rounded-xl text-xs font-medium transition-colors motion-reduce:transition-none"
            
           >
             Publicar Vaga

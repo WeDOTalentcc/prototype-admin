@@ -128,7 +128,7 @@ export function ApiKeyConfigForm({
       )}
 
       {status === "success" && (
-        <div className="flex items-center gap-2 p-2.5 rounded-md bg-status-success/10 border border-status-success/30">
+        <div className="flex items-center gap-2 p-2.5 rounded-xl bg-status-success/10 border border-status-success/30">
           <CheckCircle2 className="w-3.5 h-3.5 text-status-success flex-shrink-0" />
           <p className={cn(textStyles.body, "text-status-success")}>{message}</p>
         </div>
@@ -160,7 +160,7 @@ export function ApiKeyConfigForm({
         </div>
 
         {status === "error" && (
-          <div className="flex items-center gap-2 p-2 rounded-md bg-status-error/10 border border-status-error/30">
+          <div className="flex items-center gap-2 p-2 rounded-xl bg-status-error/10 border border-status-error/30">
             <AlertCircle className="w-3 h-3 text-status-error flex-shrink-0" />
             <p className={cn(textStyles.body, "text-status-error text-[11px]")}>{message}</p>
           </div>

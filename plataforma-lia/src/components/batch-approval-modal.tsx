@@ -46,10 +46,10 @@ export function BatchApprovalModal({
 
   return (
     <div className="fixed inset-0 bg-lia-overlay/70 z-50 flex items-center justify-center p-4">
-      <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md w-full max-w-7xl max-h-[95vh] overflow-hidden flex flex-col">
-        <div className="flex items-center justify-between p-6 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+      <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-xl w-full max-w-7xl max-h-[95vh] overflow-hidden flex flex-col">
+        <div className="flex items-center justify-between p-6 dark:border-lia-border-subtle">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-lia-bg-tertiary dark:bg-lia-bg-elevated rounded-md flex items-center justify-center">
+            <div className="w-10 h-10 bg-lia-bg-tertiary dark:bg-lia-bg-elevated rounded-xl flex items-center justify-center">
               <Users className="w-5 h-5 text-lia-text-secondary" />
             </div>
             <div>

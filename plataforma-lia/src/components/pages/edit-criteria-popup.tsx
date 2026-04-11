@@ -112,7 +112,7 @@ export const EditCriteriaPopup: React.FC<EditCriteriaPopupProps> = ({ isOpen, on
     <div className="fixed inset-0 z-overlay flex items-center justify-center">
       <div className="absolute inset-0 bg-lia-overlay" onClick={onClose} />
       <div 
-        className="relative bg-lia-bg-primary dark:bg-lia-bg-primary rounded-md w-full max-w-lg p-6 z-10"
+        className="relative bg-lia-bg-primary dark:bg-lia-bg-primary rounded-xl w-full max-w-lg p-6 z-10"
        
       >
         <div className="flex items-center justify-between mb-4">
@@ -121,7 +121,7 @@ export const EditCriteriaPopup: React.FC<EditCriteriaPopupProps> = ({ isOpen, on
           </h3>
           <button
             onClick={onClose}
-            className="p-1 rounded-md hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none"
+            className="p-1 rounded-xl hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none"
           >
             <X className="w-5 h-5 text-lia-text-secondary" />
           </button>
@@ -178,7 +178,7 @@ export const EditCriteriaPopup: React.FC<EditCriteriaPopupProps> = ({ isOpen, on
             </button>
 
             {showPresets && (
-              <div className="absolute left-0 bottom-full mb-2 bg-lia-bg-primary rounded-md border border-lia-border-subtle py-2 min-w-sidebar-content z-20">
+              <div className="absolute left-0 bottom-full mb-2 bg-lia-bg-primary rounded-xl border border-lia-border-subtle py-2 min-w-sidebar-content z-20">
                 <p className="px-3 py-1 text-xs text-lia-text-secondary uppercase tracking-wide">Select a preset</p>
                 {allPresets.map((preset) => (
                   <button
@@ -194,14 +194,14 @@ export const EditCriteriaPopup: React.FC<EditCriteriaPopupProps> = ({ isOpen, on
             )}
 
             {showSavePreset && (
-              <div className="absolute left-0 bottom-full mb-2 bg-lia-bg-primary rounded-md border border-lia-border-subtle p-3 min-w-[250px] z-20">
+              <div className="absolute left-0 bottom-full mb-2 bg-lia-bg-primary rounded-xl border border-lia-border-subtle p-3 min-w-[250px] z-20">
                 <p className="text-xs font-medium text-lia-text-primary mb-2">Save as preset</p>
                 <input
                   type="text"
                   value={presetName}
                   onChange={(e) => setPresetName(e.target.value)}
                   placeholder="Preset name..."
-                  className="w-full px-3 py-2 text-sm border border-lia-border-subtle dark:border-lia-border-subtle rounded-md focus:outline-none focus:border-lia-border-medium dark:focus:border-lia-border-medium mb-2 bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary"
+                  className="w-full px-3 py-2 text-sm border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl focus:outline-none focus:border-lia-border-medium dark:focus:border-lia-border-medium mb-2 bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary"
                 />
                 <div className="flex gap-2">
                   <Button

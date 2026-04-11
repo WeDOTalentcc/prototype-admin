@@ -80,7 +80,7 @@ function CollapsibleSection({
   const [isOpen, setIsOpen] = useState(defaultOpen)
   
   return (
-    <div className="border border-lia-border-default rounded-md overflow-hidden">
+    <div className="border border-lia-border-default rounded-xl overflow-hidden">
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="w-full flex items-center justify-between p-3 bg-lia-btn-primary-hover/50 hover:bg-lia-btn-primary-hover transition-colors motion-reduce:transition-none"
@@ -158,7 +158,7 @@ export function FastTrackReviewPanel({
   
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-2 p-3 bg-lia-bg-tertiary dark:bg-lia-bg-secondary border border-lia-border-default dark:border-lia-border-default rounded-md">
+      <div className="flex items-center gap-2 p-3 bg-lia-bg-tertiary dark:bg-lia-bg-secondary border border-lia-border-default dark:border-lia-border-default rounded-xl">
         <Zap className="w-4 h-4 text-lia-text-secondary" />
         <div>
           <span className="text-sm font-medium text-lia-text-secondary">Vaga criada com Fast Track</span>
@@ -168,7 +168,7 @@ export function FastTrackReviewPanel({
         </div>
       </div>
       
-      <div className="p-3 bg-status-warning/10 border border-status-warning/30/30 rounded-md space-y-3">
+      <div className="p-3 bg-status-warning/10 border border-status-warning/30/30 rounded-xl space-y-3">
         <div className="flex items-center gap-2">
           <AlertTriangle className="w-4 h-4 text-status-warning" />
           <span className="text-sm font-medium text-status-warning">
@@ -253,7 +253,7 @@ export function FastTrackReviewPanel({
       </div>
       
       {hasCompetencyChanges && (
-        <div className="p-3 bg-wedo-cyan/10 border border-wedo-cyan/30/30 rounded-md">
+        <div className="p-3 bg-wedo-cyan/10 border border-wedo-cyan/30/30 rounded-xl">
           <div className="flex items-start gap-2">
             <HelpCircle className="w-4 h-4 text-wedo-cyan-dark mt-0.5" />
             <div>

@@ -74,9 +74,9 @@ export function KanbanColumnConfigPanel({
 
   return (
     <div className="flex-shrink-0 w-80 transition-colors motion-reduce:transition-none duration-300">
-      <Card className="h-[calc(100vh-12rem)] flex flex-col overflow-hidden border border-lia-border-subtle dark:border-lia-border-subtle rounded-md">
+      <Card className="h-[calc(100vh-12rem)] flex flex-col overflow-hidden border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl">
         {/* Header */}
-        <div className="flex-shrink-0 p-4 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+        <div className="flex-shrink-0 p-4 dark:border-lia-border-subtle">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <Columns className="w-4 h-4 text-lia-text-secondary" />
@@ -105,13 +105,13 @@ export function KanbanColumnConfigPanel({
             </div>
             <div className="flex gap-2">
               <button
-                className="flex-1 text-xs h-8 rounded-md bg-lia-bg-secondary hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none text-lia-text-secondary"
+                className="flex-1 text-xs h-8 rounded-xl bg-lia-bg-secondary hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none text-lia-text-secondary"
                 onClick={onResetColumns}
               >
                 Restaurar Padrão
               </button>
               <button
-                className="text-xs h-8 px-4 rounded-md bg-lia-bg-secondary hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none text-lia-text-secondary"
+                className="text-xs h-8 px-4 rounded-xl bg-lia-bg-secondary hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none text-lia-text-secondary"
                 onClick={showAll}
               >
                 Todas

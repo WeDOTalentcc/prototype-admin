@@ -306,7 +306,7 @@ function CustomSkillForm({ onAddCustomSkill, selectedSkills }: CustomSkillFormPr
           placeholder="ex: Python, React, Docker..."
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="bg-lia-bg-primary border-lia-border-subtle rounded-md focus:border-lia-border-medium"
+          className="bg-lia-bg-primary border-lia-border-subtle rounded-xl focus:border-lia-border-medium"
         />
       </div>
 
@@ -315,7 +315,7 @@ function CustomSkillForm({ onAddCustomSkill, selectedSkills }: CustomSkillFormPr
           Categoria
         </Label>
         <Select value={selectedCategory} onValueChange={(v) => setSelectedCategory(v as Skill['category'])}>
-          <SelectTrigger className="bg-lia-bg-secondary border-lia-border-subtle rounded-md">
+          <SelectTrigger className="bg-lia-bg-secondary border-lia-border-subtle rounded-xl">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -334,7 +334,7 @@ function CustomSkillForm({ onAddCustomSkill, selectedSkills }: CustomSkillFormPr
         <Label htmlFor="skill-weight" className="text-xs font-medium text-lia-text-primary">
           Peso/Importância
         </Label>
-        <div className="flex items-center gap-3 p-3 bg-lia-bg-secondary rounded-md">
+        <div className="flex items-center gap-3 p-3 bg-lia-bg-secondary rounded-xl">
           {[1, 2, 3, 4, 5].map((w) => (
             <button
               key={w}
@@ -359,7 +359,7 @@ function CustomSkillForm({ onAddCustomSkill, selectedSkills }: CustomSkillFormPr
         </div>
       </div>
 
-      <div className="flex items-center justify-between p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-md">
+      <div className="flex items-center justify-between p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-xl">
         <div className="space-y-0.5">
           <Label htmlFor="save-to-catalog" className="text-xs font-medium text-lia-text-primary cursor-pointer">
             Salvar no Catálogo da Empresa
@@ -376,13 +376,13 @@ function CustomSkillForm({ onAddCustomSkill, selectedSkills }: CustomSkillFormPr
       </div>
 
       {successMessage && (
-        <div className="p-2.5 bg-wedo-green/15 border border-wedo-green/30 rounded-md">
+        <div className="p-2.5 bg-wedo-green/15 border border-wedo-green/30 rounded-xl">
           <p className="text-xs text-wedo-green">{successMessage}</p>
         </div>
       )}
 
       {error && (
-        <div className="p-2.5 bg-status-error/10 border border-status-error/30 rounded-md">
+        <div className="p-2.5 bg-status-error/10 border border-status-error/30 rounded-xl">
           <p className="text-xs text-status-error">{error}</p>
         </div>
       )}
@@ -425,7 +425,7 @@ export function AddSkillModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl bg-lia-bg-primary border border-lia-border-subtle rounded-md" role="dialog" aria-modal="true" aria-labelledby="add-skill-modal-title">
+      <DialogContent className="max-w-2xl bg-lia-bg-primary border border-lia-border-subtle rounded-xl" role="dialog" aria-modal="true" aria-labelledby="add-skill-modal-title">
         <DialogHeader>
           <DialogTitle id="add-skill-modal-title" className="text-sm font-semibold text-lia-text-primary">
             Adicionar Skill: {CATEGORY_LABELS[category]}
@@ -436,22 +436,22 @@ export function AddSkillModal({
         </DialogHeader>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3 bg-lia-bg-secondary p-1 rounded-md mb-4">
+          <TabsList className="grid w-full grid-cols-3 bg-lia-bg-secondary p-1 rounded-xl mb-4">
             <TabsTrigger
               value="catalog"
-              className="text-xs font-medium rounded-md data-[state=active]:bg-lia-bg-primary data-[state=active]:text-lia-text-secondary text-lia-text-tertiary"
+              className="text-xs font-medium rounded-xl data-[state=active]:bg-lia-bg-primary data-[state=active]:text-lia-text-secondary text-lia-text-tertiary"
             >
               Catálogo da Empresa
             </TabsTrigger>
             <TabsTrigger
               value="market"
-              className="text-xs font-medium rounded-md data-[state=active]:bg-lia-bg-primary data-[state=active]:text-lia-text-secondary text-lia-text-tertiary"
+              className="text-xs font-medium rounded-xl data-[state=active]:bg-lia-bg-primary data-[state=active]:text-lia-text-secondary text-lia-text-tertiary"
             >
               Sugestões de Mercado
             </TabsTrigger>
             <TabsTrigger
               value="custom"
-              className="text-xs font-medium rounded-md data-[state=active]:bg-lia-bg-primary data-[state=active]:text-lia-text-secondary text-lia-text-tertiary"
+              className="text-xs font-medium rounded-xl data-[state=active]:bg-lia-bg-primary data-[state=active]:text-lia-text-secondary text-lia-text-tertiary"
             >
               Skill Customizado
             </TabsTrigger>
@@ -500,7 +500,7 @@ export function AddSkillModal({
           <Button
             variant="outline"
             onClick={() => onOpenChange(false)}
-            className="border-lia-border-subtle text-lia-text-secondary hover:bg-lia-interactive-hover rounded-md focus-visible:ring-2 focus-visible:ring-lia-border-default"
+            className="border-lia-border-subtle text-lia-text-secondary hover:bg-lia-interactive-hover rounded-xl focus-visible:ring-2 focus-visible:ring-lia-border-default"
             aria-label="Fechar"
           >
             <X className="w-3.5 h-3.5 mr-1.5" />

@@ -243,7 +243,7 @@ export function AdvancedReportExporter({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <div className="bg-lia-bg-primary rounded-md w-full max-w-5xl h-[90vh] flex flex-col">
+      <div className="bg-lia-bg-primary rounded-xl w-full max-w-5xl h-[90vh] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b">
           <div>
@@ -328,7 +328,7 @@ export function AdvancedReportExporter({
                         ...prev,
                         dateRange: e.target.value as ExportConfig['dateRange']
                       }))}
-                      className="w-full p-2 border border-lia-border-default rounded-md"
+                      className="w-full p-2 border border-lia-border-default rounded-xl"
                     >
                       <option value="last_week">Última Semana</option>
                       <option value="last_month">Último Mês</option>

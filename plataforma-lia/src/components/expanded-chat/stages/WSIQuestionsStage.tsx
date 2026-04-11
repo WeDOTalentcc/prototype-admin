@@ -179,7 +179,7 @@ export function WSIQuestionsStage({
                   value={q.expectedAnswer as number || ''}
                   onChange={(e) => onUpdateExpectedAnswer(q.id, parseInt(e.target.value) || 0)}
                   placeholder="Ex: 3 (anos mínimos)"
-                  className="w-full mt-1 px-3 py-1.5 text-xs border border-lia-border-subtle rounded-md focus:outline-none focus:border-lia-border-medium"
+                  className="w-full mt-1 px-3 py-1.5 text-xs border border-lia-border-subtle rounded-xl focus:outline-none focus:border-lia-border-medium"
                 />
               ) : q.type === 'multiple-choice' && q.options ? (
                 <div className="flex flex-wrap gap-1 mt-1">
@@ -204,7 +204,7 @@ export function WSIQuestionsStage({
                   value={q.expectedAnswer as string || ''}
                   onChange={(e) => onUpdateExpectedAnswer(q.id, e.target.value)}
                   placeholder="Palavras-chave ou critérios esperados..."
-                  className="w-full mt-1 px-3 py-1.5 text-xs border border-lia-border-subtle rounded-md focus:outline-none focus:border-lia-border-medium"
+                  className="w-full mt-1 px-3 py-1.5 text-xs border border-lia-border-subtle rounded-xl focus:outline-none focus:border-lia-border-medium"
                 />
               )}
             </div>
@@ -235,7 +235,7 @@ export function WSIQuestionsStage({
       </div>
 
       {companyDefaultQuestions.length > 0 ? (
-        <div className="mb-4 p-3 bg-lia-bg-secondary rounded-md border border-lia-border-subtle">
+        <div className="mb-4 p-3 bg-lia-bg-secondary rounded-xl border border-lia-border-subtle">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <Settings className="w-3.5 h-3.5 text-lia-text-secondary" />
@@ -253,7 +253,7 @@ export function WSIQuestionsStage({
           </div>
           <div className="space-y-2">
             {companyDefaultQuestions.map(q => (
-              <div key={q.id} className="flex items-center justify-between p-2 bg-lia-bg-primary rounded-md border border-lia-border-subtle">
+              <div key={q.id} className="flex items-center justify-between p-2 bg-lia-bg-primary rounded-xl border border-lia-border-subtle">
                 <div className="flex items-center gap-2 flex-1">
                   <button
                     onClick={() => onSetCompanyDefaultQuestions(
@@ -287,7 +287,7 @@ export function WSIQuestionsStage({
           </p>
         </div>
       ) : (
-        <div className="mb-4 p-3 bg-status-warning/15/30 rounded-md border border-status-warning/30/50">
+        <div className="mb-4 p-3 bg-status-warning/15/30 rounded-xl border border-status-warning/30/50">
           <div className="flex items-center gap-2 mb-2">
             <AlertTriangle className="w-4 h-4 text-status-warning" />
             <span className="text-xs font-semibold text-status-warning uppercase tracking-wide">
@@ -308,7 +308,7 @@ export function WSIQuestionsStage({
         <div className="space-y-3 max-h-content-lg overflow-y-auto pr-1">
           {technicalQuestions.length > 0 && (
             <div className="space-y-2">
-              <div className="flex items-center gap-2 bg-lia-bg-secondary px-3 py-1.5 rounded-md">
+              <div className="flex items-center gap-2 bg-lia-bg-secondary px-3 py-1.5 rounded-xl">
                 <Code className="w-3.5 h-3.5 text-lia-text-secondary" />
                 <span className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide">
                   Validação Técnica
@@ -321,7 +321,7 @@ export function WSIQuestionsStage({
 
           {behavioralQuestions.length > 0 && (
             <div className="space-y-2">
-              <div className="flex items-center gap-2 bg-lia-bg-secondary px-3 py-1.5 rounded-md">
+              <div className="flex items-center gap-2 bg-lia-bg-secondary px-3 py-1.5 rounded-xl">
                 <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
                 <span className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide">
                   Fit Comportamental
@@ -335,7 +335,7 @@ export function WSIQuestionsStage({
       )}
 
       {isGeneratingWSI && (
-        <div className="flex items-center justify-center py-4 bg-lia-bg-secondary rounded-md border border-lia-border-subtle" role="status" aria-live="polite" aria-label="Carregando...">
+        <div className="flex items-center justify-center py-4 bg-lia-bg-secondary rounded-xl border border-lia-border-subtle" role="status" aria-live="polite" aria-label="Carregando...">
           <Loader2 className="w-5 h-5 animate-spin motion-reduce:animate-none text-lia-text-secondary" />
           <span className="ml-2 text-xs text-lia-text-secondary">Gerando perguntas com metodologia WSI...</span>
         </div>
@@ -345,14 +345,14 @@ export function WSIQuestionsStage({
         <div className="flex gap-2">
           <button
             onClick={() => onGenerateWSIQuestions(3, 'technical')}
-            className="flex-1 py-2 border border-dashed border-lia-btn-primary-bg rounded-md text-xs text-lia-text-secondary hover:bg-lia-bg-secondary/50 transition-colors motion-reduce:transition-none flex items-center justify-center gap-2 focus-visible:ring-2 focus-visible:ring-lia-border-default"
+            className="flex-1 py-2 border border-dashed border-lia-btn-primary-bg rounded-xl text-xs text-lia-text-secondary hover:bg-lia-bg-secondary/50 transition-colors motion-reduce:transition-none flex items-center justify-center gap-2 focus-visible:ring-2 focus-visible:ring-lia-border-default"
             aria-label="Gerar perguntas técnicas WSI"
           >
             <Code className="w-3.5 h-3.5" /> Gerar perguntas técnicas
           </button>
           <button
             onClick={() => onGenerateWSIQuestions(3, 'behavioral')}
-            className="flex-1 py-2 border border-dashed border-wedo-purple/30 rounded-md text-xs text-wedo-purple hover:bg-wedo-purple/5 transition-colors motion-reduce:transition-none flex items-center justify-center gap-2 focus-visible:ring-2 focus-visible:ring-lia-border-default"
+            className="flex-1 py-2 border border-dashed border-wedo-purple/30 rounded-xl text-xs text-wedo-purple hover:bg-wedo-purple/5 transition-colors motion-reduce:transition-none flex items-center justify-center gap-2 focus-visible:ring-2 focus-visible:ring-lia-border-default"
             aria-label="Gerar perguntas de fit cultural WSI"
           >
             <Brain className="w-3.5 h-3.5 text-wedo-cyan" /> Gerar Fit Cultural
@@ -361,7 +361,7 @@ export function WSIQuestionsStage({
       )}
 
       {showCustomQuestionForm ? (
-        <div className="p-3 bg-lia-bg-secondary rounded-md border border-lia-border-subtle space-y-3">
+        <div className="p-3 bg-lia-bg-secondary rounded-xl border border-lia-border-subtle space-y-3">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide">
               Adicionar Pergunta Customizada
@@ -383,7 +383,7 @@ export function WSIQuestionsStage({
             value={customQuestionText}
             onChange={(e) => onSetCustomQuestionText(e.target.value)}
             placeholder="Digite sua pergunta aqui..."
-            className="w-full px-3 py-2 text-xs border border-lia-border-subtle rounded-md focus:outline-none focus:border-lia-border-medium resize-none"
+            className="w-full px-3 py-2 text-xs border border-lia-border-subtle rounded-xl focus:outline-none focus:border-lia-border-medium resize-none"
             rows={2}
           />
           <div className="flex items-center gap-3">
@@ -392,7 +392,7 @@ export function WSIQuestionsStage({
               <select
                 value={customQuestionType}
                 onChange={(e) => onSetCustomQuestionType(e.target.value as 'open' | 'yes-no' | 'numeric' | 'multiple-choice')}
-                className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-md focus:outline-none focus:border-lia-border-medium"
+                className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-xl focus:outline-none focus:border-lia-border-medium"
               >
                 <option value="open">Aberta</option>
                 <option value="yes-no">Sim/Não</option>
@@ -431,7 +431,7 @@ export function WSIQuestionsStage({
       ) : (
         <button
           onClick={() => onSetShowCustomQuestionForm(true)}
-          className="w-full py-2 border border-dashed border-lia-border-subtle rounded-md text-xs text-lia-text-secondary hover:border-lia-btn-primary-bg hover:text-lia-text-primary hover:bg-lia-bg-secondary/50 transition-colors motion-reduce:transition-none flex items-center justify-center gap-2"
+          className="w-full py-2 border border-dashed border-lia-border-subtle rounded-xl text-xs text-lia-text-secondary hover:border-lia-btn-primary-bg hover:text-lia-text-primary hover:bg-lia-bg-secondary/50 transition-colors motion-reduce:transition-none flex items-center justify-center gap-2"
           aria-label="Adicionar pergunta de triagem customizada"
         >
           <Plus className="w-3.5 h-3.5" /> Adicionar pergunta customizada

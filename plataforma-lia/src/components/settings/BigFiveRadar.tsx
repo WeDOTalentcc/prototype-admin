@@ -190,7 +190,7 @@ export function BigFiveRadar({
                 max="100"
                 value={scores[trait.key]}
                 onChange={(e) => handleSliderChange(trait.key, parseInt(e.target.value))}
-                className="w-full h-1.5 bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-md appearance-none cursor-pointer accent-lia-btn-primary-bg dark:accent-lia-bg-tertiary"
+                className="w-full h-1.5 bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-xl appearance-none cursor-pointer accent-lia-btn-primary-bg dark:accent-lia-bg-tertiary"
               />
             </div>
           ))}

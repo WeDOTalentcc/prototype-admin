@@ -99,8 +99,8 @@ export function BatchActionModal({ isOpen, onClose, selectedCandidates, onBatchA
 
   return (
     <div className="fixed inset-0 bg-lia-overlay/70 backdrop-blur-[1px] z-50 flex items-center justify-center p-4" onClick={onClose}>
-      <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="batch-action-modal-title" className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle w-full max-w-2xl max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
-        <div className="flex items-center justify-between p-6 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+      <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="batch-action-modal-title" className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle w-full max-w-2xl max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+        <div className="flex items-center justify-between p-6 dark:border-lia-border-subtle">
           <div>
             <h3 id="batch-action-modal-title" className="text-lg font-semibold text-lia-text-primary">
               Ações em Lote
@@ -120,7 +120,7 @@ export function BatchActionModal({ isOpen, onClose, selectedCandidates, onBatchA
             <h4 className="text-sm font-medium text-lia-text-primary mb-3">
               Candidatos Selecionados
             </h4>
-            <div className="max-h-32 overflow-y-auto border border-lia-border-subtle rounded-md p-3">
+            <div className="max-h-32 overflow-y-auto border border-lia-border-subtle rounded-xl p-3">
               <div className="space-y-2">
                 {selectedCandidates.map((candidate) => (
                   <div key={candidate.id} className="flex items-center gap-3">
@@ -169,7 +169,7 @@ export function BatchActionModal({ isOpen, onClose, selectedCandidates, onBatchA
               <select
                 value={stage}
                 onChange={(e) => setStage(e.target.value)}
-                className="w-full p-3 border border-lia-border-subtle rounded-md focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg"
+                className="w-full p-3 border border-lia-border-subtle rounded-xl focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg"
               >
                 <option value="">Selecione a etapa</option>
                 {stages.map((stageOption) => (
@@ -187,7 +187,7 @@ export function BatchActionModal({ isOpen, onClose, selectedCandidates, onBatchA
               <select
                 value={assignTo}
                 onChange={(e) => setAssignTo(e.target.value)}
-                className="w-full p-3 border border-lia-border-subtle rounded-md focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg"
+                className="w-full p-3 border border-lia-border-subtle rounded-xl focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg"
               >
                 <option value="">Selecione o responsável</option>
                 {recruiters.map((recruiter) => (
@@ -206,7 +206,7 @@ export function BatchActionModal({ isOpen, onClose, selectedCandidates, onBatchA
               value={comment}
               onChange={(e) => setComment(e.target.value)}
               rows={3}
-              className="w-full p-3 border border-lia-border-subtle rounded-md focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg"
+              className="w-full p-3 border border-lia-border-subtle rounded-xl focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg"
               placeholder="Adicione um comentário sobre esta ação..."
             />
           </div>
@@ -218,7 +218,7 @@ export function BatchActionModal({ isOpen, onClose, selectedCandidates, onBatchA
               id="notification"
               checked={sendNotification}
               onChange={(e) => setSendNotification(e.target.checked)}
-              className="rounded-md border-lia-border-subtle"
+              className="rounded-xl border-lia-border-subtle"
             />
             <label htmlFor="notification" className="text-sm text-lia-text-secondary">
               Enviar notificação para os candidatos sobre esta alteração

@@ -182,7 +182,7 @@ export const EAPTabBoolean = React.memo(function EAPTabBoolean(props: EAPTabBool
         ))}
       </div>
       {/* Dica contextual */}
-      <div className="p-2.5 rounded-md bg-white border border-lia-border-subtle">
+      <div className="p-2.5 rounded-xl bg-white border border-lia-border-subtle">
         <div className="flex items-start gap-2">
           <Lightbulb className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-lia-text-secondary" />
           <p className="text-xs text-lia-text-secondary">

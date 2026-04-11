@@ -45,7 +45,7 @@ export function JobFiltersPanel({
 
   return (
     <div className="w-72 flex-shrink-0 h-full">
-      <Card className="h-full flex flex-col bg-lia-bg-primary overflow-hidden rounded-md">
+      <Card className="h-full flex flex-col bg-lia-bg-primary overflow-hidden rounded-xl">
         <div className="flex-shrink-0 px-3 py-2 bg-lia-bg-secondary flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Filter className="w-4 h-4 text-lia-text-primary" />
@@ -376,7 +376,7 @@ export function JobFiltersPanel({
               Métricas
             </h4>
             <div className="space-y-2">
-              <label className="flex items-center gap-2 cursor-pointer text-xs p-2 hover:bg-lia-interactive-hover rounded-md bg-lia-bg-secondary">
+              <label className="flex items-center gap-2 cursor-pointer text-xs p-2 hover:bg-lia-interactive-hover rounded-xl bg-lia-bg-secondary">
                 <input
                   type="checkbox"
                   className="w-3 h-3"
@@ -385,7 +385,7 @@ export function JobFiltersPanel({
                 />
                 <span className="text-lia-text-primary">Pipeline vazio (sem candidatos)</span>
               </label>
-              <label className="flex items-center gap-2 cursor-pointer text-xs p-2 hover:bg-lia-interactive-hover rounded-md bg-lia-bg-secondary">
+              <label className="flex items-center gap-2 cursor-pointer text-xs p-2 hover:bg-lia-interactive-hover rounded-xl bg-lia-bg-secondary">
                 <input
                   type="checkbox"
                   className="w-3 h-3"
@@ -423,7 +423,7 @@ export function JobFiltersPanel({
                 {savedSearches.map((search) => (
                   <div
                     key={search.id}
-                    className="group flex items-center justify-between p-2 bg-lia-bg-secondary rounded-md hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none cursor-pointer"
+                    className="group flex items-center justify-between p-2 bg-lia-bg-secondary rounded-xl hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none cursor-pointer"
                     onClick={() => handleApplySavedSearch(search.id)}
                   >
                     <div className="flex-1 min-w-0">
@@ -469,7 +469,7 @@ export function JobFiltersPanel({
                 ))}
               </div>
             ) : (
-              <div className="text-center py-3 bg-lia-bg-secondary rounded-md">
+              <div className="text-center py-3 bg-lia-bg-secondary rounded-xl">
                 <Bookmark className="w-5 h-5 text-lia-text-secondary mx-auto mb-1" />
                 <p className="text-xs text-lia-text-secondary">
                   Nenhuma busca salva

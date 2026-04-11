@@ -82,7 +82,7 @@ export function InterviewCard({
 
   return (
     <div
-      className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-3.5 bg-lia-bg-primary dark:bg-lia-bg-primary transition-colors motion-reduce:transition-none duration-150 hover:border-lia-border-default dark:hover:border-lia-border-medium"
+      className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl p-3.5 bg-lia-bg-primary dark:bg-lia-bg-primary transition-colors motion-reduce:transition-none duration-150 hover:border-lia-border-default dark:hover:border-lia-border-medium"
     >
       <div className="flex gap-3">
         <Avatar className="w-10 h-10 flex-shrink-0 mt-0.5">
@@ -140,7 +140,7 @@ export function InterviewCard({
                   size="sm"
                   variant="outline"
                   onClick={() => onReschedule(interview)}
-                  className="h-7 px-2.5 text-xs font-[Open_Sans,sans-serif] font-medium gap-1 text-lia-text-secondary border-lia-border-default hover:bg-lia-bg-secondary hover:border-lia-border-medium dark:border-lia-border-default dark:hover:bg-lia-btn-primary-hover rounded-md"
+                  className="h-7 px-2.5 text-xs font-[Open_Sans,sans-serif] font-medium gap-1 text-lia-text-secondary border-lia-border-default hover:bg-lia-bg-secondary hover:border-lia-border-medium dark:border-lia-border-default dark:hover:bg-lia-btn-primary-hover rounded-xl"
                 >
                   <CalendarClock className="w-3 h-3" />
                   Alterar Horário

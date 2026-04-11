@@ -266,11 +266,11 @@ export function WorkModelCharts({ className }: WorkModelChartsProps) {
             <span className="text-xs text-lia-text-secondary">Remoto</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 bg-lia-bg-inverse rounded-md"></div>
+            <div className="w-3 h-3 bg-lia-bg-inverse rounded-xl"></div>
             <span className="text-xs text-lia-text-secondary">Híbrido</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 bg-lia-bg-secondary0 rounded-md"></div>
+            <div className="w-3 h-3 bg-lia-bg-secondary0 rounded-xl"></div>
             <span className="text-xs text-lia-text-secondary">Presencial</span>
           </div>
         </div>
@@ -346,7 +346,7 @@ export function WorkModelCharts({ className }: WorkModelChartsProps) {
             </CardTitle>
 
             {/* Seletor de tipo de gráfico */}
-            <div className="flex bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-md p-1">
+            <div className="flex bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-xl p-1">
               <button
                 onClick={() => setSelectedChart('donut')}
                 className={`px-3 py-1 text-xs rounded-md transition-colors motion-reduce:transition-none flex items-center gap-1 ${

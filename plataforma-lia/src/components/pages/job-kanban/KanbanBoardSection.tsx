@@ -140,7 +140,7 @@ export function KanbanBoardSection({ state }: KanbanBoardSectionProps) {
           {(!hasMounted || isLoadingCandidates) ? (
             <div className="flex gap-3 h-full min-w-max" suppressHydrationWarning>
               {dynamicStages.map((stage) => (
-                <div key={stage.id} className="flex flex-col flex-1 bg-lia-bg-primary rounded-md min-w-[250px] max-w-[320px] border border-lia-border-subtle h-[calc(100vh-16rem)]" suppressHydrationWarning>
+                <div key={stage.id} className="flex flex-col flex-1 bg-lia-bg-primary rounded-xl min-w-[250px] max-w-[320px] border border-lia-border-subtle h-[calc(100vh-16rem)]" suppressHydrationWarning>
                   <div className="flex-shrink-0 p-2.5 pb-1.5">
                     <div className="flex items-center gap-1.5">
                       <div className="w-2 h-2 rounded-full animate-pulse motion-reduce:animate-none" style={{backgroundColor: stage.color}}></div>
@@ -185,7 +185,7 @@ export function KanbanBoardSection({ state }: KanbanBoardSectionProps) {
               ))}
               <div className="flex-shrink-0 w-[280px]">
                 <div 
-                  className="h-full min-h-chart-sm rounded-md border-2 border-dashed border-lia-border-default hover:border-lia-border-medium flex flex-col items-center justify-center gap-3 cursor-pointer transition-colors motion-reduce:transition-none hover:bg-lia-bg-secondary/50 group"
+                  className="h-full min-h-chart-sm rounded-xl border-2 border-dashed border-lia-border-default hover:border-lia-border-medium flex flex-col items-center justify-center gap-3 cursor-pointer transition-colors motion-reduce:transition-none hover:bg-lia-bg-secondary/50 group"
                   onClick={() => setShowAddColumnPopover(true)}
                 >
                   <div className="w-10 h-10 rounded-full bg-lia-bg-tertiary group-hover:bg-lia-interactive-active flex items-center justify-center transition-colors motion-reduce:transition-none">
@@ -219,7 +219,7 @@ export function KanbanBoardSection({ state }: KanbanBoardSectionProps) {
 
       {isPreviewOpen && previewCandidate && (
         <div className={`flex-shrink-0 transition-colors motion-reduce:transition-none duration-300 ${isPreviewMaximized ? 'w-[600px]' : 'w-panel-lg'}`}>
-          <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle h-[calc(100vh-6rem)] overflow-hidden">
+          <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle h-[calc(100vh-6rem)] overflow-hidden">
           <CandidatePreview
             candidate={previewCandidate}
             isOpen={isPreviewOpen}

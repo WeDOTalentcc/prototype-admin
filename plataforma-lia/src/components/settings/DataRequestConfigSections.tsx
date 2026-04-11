@@ -25,10 +25,10 @@ function MessageField({ label, value, isEditing, onChange, rows }: {
           value={value}
           onChange={(e) => onChange(e.target.value)}
           rows={rows}
-          className="w-full px-2 py-1.5 text-xs border border-lia-border-default dark:border-lia-border-default rounded-md focus:outline-none focus:border-lia-btn-primary-bg dark:focus:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary"
+          className="w-full px-2 py-1.5 text-xs border border-lia-border-default dark:border-lia-border-default rounded-xl focus:outline-none focus:border-lia-btn-primary-bg dark:focus:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary"
         />
       ) : (
-        <p className="text-xs text-lia-text-secondary bg-lia-bg-secondary dark:bg-lia-bg-secondary p-2 rounded-md whitespace-pre-wrap">
+        <p className="text-xs text-lia-text-secondary bg-lia-bg-secondary dark:bg-lia-bg-secondary p-2 rounded-xl whitespace-pre-wrap">
           {value}
         </p>
       )}
@@ -45,7 +45,7 @@ interface GeneralSettingsProps {
 export function GeneralSettingsContent({ config, isEditing, updateGeneralConfig }: GeneralSettingsProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-      <div className="flex items-center justify-between p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
+      <div className="flex items-center justify-between p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl">
         <div className="flex items-center gap-2">
           <Shield className="w-3.5 h-3.5 text-lia-text-secondary" />
           <div>
@@ -60,7 +60,7 @@ export function GeneralSettingsContent({ config, isEditing, updateGeneralConfig 
         )}
       </div>
 
-      <div className="flex items-center justify-between p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
+      <div className="flex items-center justify-between p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl">
         <div className="flex items-center gap-2">
           <Bell className="w-3.5 h-3.5 text-lia-text-secondary" />
           <div>
@@ -75,7 +75,7 @@ export function GeneralSettingsContent({ config, isEditing, updateGeneralConfig 
         )}
       </div>
 
-      <div className="p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
+      <div className="p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl">
         <div className="flex items-center gap-2 mb-2">
           <Clock className="w-3.5 h-3.5 text-lia-text-secondary" />
           <Label className="text-xs font-medium text-lia-text-primary">Dias para Expiração</Label>
@@ -96,7 +96,7 @@ export function GeneralSettingsContent({ config, isEditing, updateGeneralConfig 
       </div>
 
       {config.autoReminders && (
-        <div className="p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
+        <div className="p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl">
           <div className="flex items-center gap-2 mb-2">
             <Bell className="w-3.5 h-3.5 text-lia-text-secondary" />
             <Label className="text-xs font-medium text-lia-text-primary">Enviar Lembrete Após</Label>
@@ -129,7 +129,7 @@ interface LgpdSectionProps {
 export function LgpdSectionContent({ config, isEditing, updateLgpdConfig }: LgpdSectionProps) {
   return (
     <div className="space-y-4">
-      <div className="p-3 bg-status-warning/10 dark:bg-status-warning/20 border border-status-warning/30 dark:border-status-warning/30 rounded-md">
+      <div className="p-3 bg-status-warning/10 dark:bg-status-warning/20 border border-status-warning/30 dark:border-status-warning/30 rounded-xl">
         <div className="flex items-start gap-2">
           <AlertCircle className="w-4 h-4 text-status-warning mt-0.5 flex-shrink-0" />
           <p className="text-micro text-status-warning dark:text-status-warning" aria-live="polite" aria-atomic="true">
@@ -139,7 +139,7 @@ export function LgpdSectionContent({ config, isEditing, updateLgpdConfig }: Lgpd
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        <div className="p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
+        <div className="p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl">
           <div className="flex items-center justify-between mb-2">
             <Label className="text-xs font-medium text-lia-text-primary">Exigir Consentimento</Label>
             {isEditing ? (
@@ -151,7 +151,7 @@ export function LgpdSectionContent({ config, isEditing, updateLgpdConfig }: Lgpd
           <p className="text-micro text-lia-text-secondary" aria-live="polite" aria-atomic="true">Candidato deve autorizar antes de enviar dados</p>
         </div>
 
-        <div className="p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
+        <div className="p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl">
           <div className="flex items-center justify-between mb-2">
             <Label className="text-xs font-medium text-lia-text-primary">Permitir Exclusão</Label>
             {isEditing ? (
@@ -164,7 +164,7 @@ export function LgpdSectionContent({ config, isEditing, updateLgpdConfig }: Lgpd
         </div>
       </div>
 
-      <div className="p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
+      <div className="p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl">
         <Label className="text-xs font-medium text-lia-text-primary mb-2 block">Retenção de Dados</Label>
         {isEditing ? (
           <div className="flex items-center gap-2">
@@ -174,7 +174,7 @@ export function LgpdSectionContent({ config, isEditing, updateLgpdConfig }: Lgpd
               onChange={(e) => updateLgpdConfig({ dataRetentionDays: parseInt(e.target.value) || 365 })}
               min={30}
               max={1825}
-              className="w-20 px-2 py-1 text-xs border border-lia-border-default dark:border-lia-border-default rounded-md focus:outline-none focus:border-lia-btn-primary-bg dark:focus:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-primary text-lia-text-primary"
+              className="w-20 px-2 py-1 text-xs border border-lia-border-default dark:border-lia-border-default rounded-xl focus:outline-none focus:border-lia-btn-primary-bg dark:focus:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-primary text-lia-text-primary"
             />
             <span className="text-micro text-lia-text-secondary">dias após término do processo</span>
           </div>

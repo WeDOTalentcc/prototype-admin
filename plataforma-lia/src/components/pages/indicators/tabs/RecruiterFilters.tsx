@@ -69,7 +69,7 @@ export function RecruiterFilters({
               <select
                 value={selectedPeriod}
                 onChange={(e) => setSelectedPeriod(e.target.value)}
-                className="w-full p-2 rounded-md text-sm bg-lia-bg-secondary focus:ring-2 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20 text-lia-text-primary"
+                className="w-full p-2 rounded-xl text-sm bg-lia-bg-secondary focus:ring-2 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20 text-lia-text-primary"
               >
                 <option value="current_month">Este Mês</option>
                 <option value="last_month">Mês Passado</option>
@@ -110,7 +110,7 @@ export function RecruiterFilters({
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="w-full p-2 rounded-md text-sm mb-2 bg-lia-bg-secondary focus:ring-2 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20 text-lia-text-primary"
+                className="w-full p-2 rounded-xl text-sm mb-2 bg-lia-bg-secondary focus:ring-2 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20 text-lia-text-primary"
               >
                 <option value="totalScore">Score Total</option>
                 <option value="npsScore">NPS</option>
@@ -121,7 +121,7 @@ export function RecruiterFilters({
               <select
                 value={sortOrder}
                 onChange={(e) => setSortOrder(e.target.value as "asc" | "desc")}
-                className="w-full p-2 rounded-md text-sm bg-lia-bg-secondary focus:ring-2 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20 text-lia-text-primary"
+                className="w-full p-2 rounded-xl text-sm bg-lia-bg-secondary focus:ring-2 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20 text-lia-text-primary"
               >
                 <option value="desc">Maior para Menor</option>
                 <option value="asc">Menor para Maior</option>

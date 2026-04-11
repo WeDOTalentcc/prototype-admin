@@ -64,7 +64,7 @@ export const KanbanJobHeader = React.memo(function KanbanJobHeader(props: Kanban
                     {currentJob.title as string}
                   </h1>
                   {!!(currentJob.jobId) && (
-                    <span className="text-micro font-mono text-lia-text-secondary bg-lia-bg-tertiary border border-lia-border-subtle px-1.5 py-0.5 rounded-md whitespace-nowrap">
+                    <span className="text-micro font-mono text-lia-text-secondary bg-lia-bg-tertiary border border-lia-border-subtle px-1.5 py-0.5 rounded-xl whitespace-nowrap">
                       {currentJob.jobId as string}
                     </span>
                   )}

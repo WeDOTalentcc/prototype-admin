@@ -225,7 +225,7 @@ export function QuestionAdjustmentChat({
             <div className="w-6 h-6 rounded-full flex items-center justify-center shrink-0 bg-wedo-cyan/15" role="status" aria-live="polite" aria-label="Carregando...">
               <Brain className="h-3 w-3 text-wedo-cyan" />
             </div>
-            <div className="bg-lia-bg-secondary border border-lia-border-subtle rounded-md px-3 py-2" role="status" aria-live="polite" aria-label="Carregando...">
+            <div className="bg-lia-bg-secondary border border-lia-border-subtle rounded-xl px-3 py-2" role="status" aria-live="polite" aria-label="Carregando...">
               <div className="flex items-center gap-2" role="status" aria-live="polite" aria-label="Carregando...">
                 <Loader2 className="h-3 w-3 animate-spin motion-reduce:animate-none text-lia-text-secondary" />
                 <span className="text-xs text-lia-text-secondary">Regenerando perguntas...</span>
@@ -243,7 +243,7 @@ export function QuestionAdjustmentChat({
           onKeyDown={handleKeyDown}
           placeholder={disabled ? "Edições bloqueadas" : "Descreva o ajuste desejado..."}
           disabled={disabled || isLoading}
-          className="w-full h-16 pl-3 pr-10 py-2 text-xs border border-lia-border-subtle rounded-md resize-none focus:outline-none focus:ring-2 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full h-16 pl-3 pr-10 py-2 text-xs border border-lia-border-subtle rounded-xl resize-none focus:outline-none focus:ring-2 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
           style={{ '--focus-ring-color': 'var(--wedo-cyan-border)' } as React.CSSProperties}
         />
         <Button

@@ -61,25 +61,25 @@ export function RecruitmentScreeningTab({
   return (
     <div className="space-y-6">
       {error && (
-        <div className="px-2 py-1.5 rounded-md flex items-center gap-2 bg-status-error/10 border border-status-error/30 text-status-error">
+        <div className="px-2 py-1.5 rounded-xl flex items-center gap-2 bg-status-error/10 border border-status-error/30 text-status-error">
           <AlertCircle className="w-4 h-4" />
           <span className={textStyles.body}>{error}</span>
         </div>
       )}
       {successMessage && (
-        <div className="px-2 py-1.5 rounded-md flex items-center gap-2 bg-status-success/10 border border-status-success/30 text-status-success dark:bg-status-success/20 dark:border-status-success/30 dark:text-status-success">
+        <div className="px-2 py-1.5 rounded-xl flex items-center gap-2 bg-status-success/10 border border-status-success/30 text-status-success dark:bg-status-success/20 dark:border-status-success/30 dark:text-status-success">
           <CheckCircle className="w-4 h-4" />
           <span className={textStyles.body}>{successMessage}</span>
         </div>
       )}
 
-      <div className="px-3 py-2.5 rounded-md bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 border border-lia-border-subtle dark:border-lia-border-subtle">
+      <div className="px-3 py-2.5 rounded-xl bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 border border-lia-border-subtle dark:border-lia-border-subtle">
         <p className={`${textStyles.caption} text-lia-text-secondary`}>
           <span className="font-semibold text-lia-text-primary">Perguntas automáticas</span> (modelo de trabalho, localização, idiomas, regime de contratação) são geradas automaticamente pela LIA a partir dos campos de cada vaga — não precisam ser configuradas aqui.
         </p>
       </div>
 
-      <Card className="border border-lia-border-subtle/50 dark:border-lia-border-subtle/50 bg-lia-bg-primary/80 dark:bg-lia-bg-secondary/80 backdrop-blur-sm rounded-md">
+      <Card className="border border-lia-border-subtle/50 dark:border-lia-border-subtle/50 bg-lia-bg-primary/80 dark:bg-lia-bg-secondary/80 backdrop-blur-sm rounded-xl">
         <CardHeader className="pb-4">
           <div className="flex items-center justify-between">
             <div>
@@ -223,7 +223,7 @@ function QuestionBankSection({
   getQuestionsByCategory, isQuestionAlreadyAdded,
 }: QuestionBankSectionProps) {
   return (
-    <Card className="border-2 border-dashed border-lia-border-default bg-lia-bg-secondary/30 dark:bg-lia-bg-secondary/10 rounded-md">
+    <Card className="border-2 border-dashed border-lia-border-default bg-lia-bg-secondary/30 dark:bg-lia-bg-secondary/10 rounded-xl">
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -245,7 +245,7 @@ function QuestionBankSection({
           const categoryInfo = QUESTION_CATEGORIES[category]
 
           return (
-            <div key={category} className="border border-lia-border-subtle rounded-md overflow-hidden">
+            <div key={category} className="border border-lia-border-subtle rounded-xl overflow-hidden">
               <button
                 onClick={() => onToggleCategory(category)}
                 className="w-full flex items-center justify-between p-2.5 bg-lia-bg-secondary hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none"
@@ -275,7 +275,7 @@ function QuestionBankSection({
                               : 'bg-lia-bg-primary border-lia-border-subtle hover:border-lia-border-subtle dark:bg-lia-bg-secondary dark:border-lia-border-subtle dark:hover:border-lia-border-medium'
                         }`}
                       >
-                        <input type="checkbox" checked={isSelected} disabled={isAdded} onChange={() => onToggleBankQuestion(q.id)} className="mt-0.5 rounded-md border-lia-border-default" />
+                        <input type="checkbox" checked={isSelected} disabled={isAdded} onChange={() => onToggleBankQuestion(q.id)} className="mt-0.5 rounded-xl border-lia-border-default" />
                         <div className="flex-1 min-w-0">
                           <p className={textStyles.bodySmall}>{q.question}</p>
                           <div className="flex items-center gap-1.5 mt-1">
@@ -323,7 +323,7 @@ interface QuestionFormSectionProps {
 
 function QuestionFormSection({ newQuestion, setNewQuestion, onAdd, onCancel }: QuestionFormSectionProps) {
   return (
-    <Card className="border border-lia-border-subtle/50 dark:border-lia-border-subtle/50 bg-lia-bg-primary/80 dark:bg-lia-bg-secondary/80 backdrop-blur-sm rounded-md">
+    <Card className="border border-lia-border-subtle/50 dark:border-lia-border-subtle/50 bg-lia-bg-primary/80 dark:bg-lia-bg-secondary/80 backdrop-blur-sm rounded-xl">
       <CardContent className="p-3 space-y-4">
         <div>
           <label className={`block mb-1.5 ${textStyles.labelSmall}`}>Pergunta</label>
@@ -360,7 +360,7 @@ function QuestionFormSection({ newQuestion, setNewQuestion, onAdd, onCancel }: Q
           </div>
         </div>
         {newQuestion.is_eliminatory && newQuestion.type === 'yesno' && (
-          <div className="p-3 bg-status-error/10 border border-status-error/30 rounded-md">
+          <div className="p-3 bg-status-error/10 border border-status-error/30 rounded-xl">
             <label className={`block mb-1.5 ${textStyles.labelSmall} text-status-error`}>
               Resposta esperada (candidato será avisado se não atender)
             </label>

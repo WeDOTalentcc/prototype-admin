@@ -23,8 +23,8 @@ export function CandidatesFilterPanel({
 }: CandidatesFilterPanelProps) {
   return (
     <div data-testid="candidates-filter-panel" className="flex-shrink-0 w-80 transition-colors motion-reduce:transition-none duration-300">
-      <div className="bg-lia-bg-primary rounded-md h-[calc(100vh-9rem)] overflow-hidden">
-        <div className="p-4 flex items-center justify-between border-b border-lia-border-subtle">
+      <div className="bg-lia-bg-primary rounded-xl h-[calc(100vh-9rem)] overflow-hidden">
+        <div className="p-4 flex items-center justify-between">
           <div>
             <h3 className="text-sm font-semibold text-lia-text-primary">
               Refinar Resultados

@@ -21,7 +21,7 @@ export const ThinkingIndicator = ({ message }: { message?: string }) => {
 
   return (
     <div
-      className="flex items-center gap-3 p-3 bg-lia-bg-tertiary rounded-md border border-lia-border-subtle mb-3 animate-fade-in-up"
+      className="flex items-center gap-3 p-3 bg-lia-bg-tertiary rounded-xl border border-lia-border-subtle mb-3 animate-fade-in-up"
     >
       <div className="flex items-center justify-center w-8 h-8 bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-full">
         <Brain className="w-4 h-4 text-wedo-cyan animate-pulse motion-reduce:animate-none" />
@@ -57,7 +57,7 @@ export const ProgressSteps = ({ steps, currentStep }: {
 }) => {
   return (
     <div
-      className="bg-lia-bg-tertiary rounded-md p-4 mb-3 border border-lia-border-subtle animate-fade-in-up"
+      className="bg-lia-bg-tertiary rounded-xl p-4 mb-3 border border-lia-border-subtle animate-fade-in-up"
     >
       <div className="space-y-3">
         {steps.map((step, index) => {
@@ -132,7 +132,7 @@ export const CommandExecution = ({
 }) => {
   return (
     <div
-      className="bg-lia-bg-tertiary rounded-md p-3 mb-3 font-mono text-sm border border-lia-border-subtle animate-scale-in-delayed"
+      className="bg-lia-bg-tertiary rounded-xl p-3 mb-3 font-mono text-sm border border-lia-border-subtle animate-scale-in-delayed"
     >
       <div className="flex items-center gap-2 mb-2">
         <div className={`w-2 h-2 rounded-full ${
@@ -175,7 +175,7 @@ export const FileCreationIndicator = ({
 }) => {
   return (
     <div
-      className="flex items-center gap-3 p-3 bg-lia-bg-tertiary rounded-md border border-lia-border-subtle mb-3 animate-fade-in-up"
+      className="flex items-center gap-3 p-3 bg-lia-bg-tertiary rounded-xl border border-lia-border-subtle mb-3 animate-fade-in-up"
     >
       <div className="flex items-center justify-center w-8 h-8 bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-full" role="status" aria-live="polite" aria-label="Carregando...">
         {status === "creating" ? (
@@ -230,7 +230,7 @@ export const CompletionMessage = ({
       className="space-y-3 animate-fade-in-up"
     >
       {/* Completion Message */}
-      <div className="flex items-start gap-3 p-4 bg-lia-bg-tertiary rounded-md border border-lia-border-subtle">
+      <div className="flex items-start gap-3 p-4 bg-lia-bg-tertiary rounded-xl border border-lia-border-subtle">
         <CheckCircle className="w-5 h-5 text-lia-text-primary mt-0.5" />
         <div className="flex-1">
           <p className="text-sm font-medium text-lia-text-primary">
@@ -240,7 +240,7 @@ export const CompletionMessage = ({
       </div>
 
       {/* Rating System */}
-      <div className="p-4 bg-lia-bg-secondary rounded-md border border-lia-border-subtle">
+      <div className="p-4 bg-lia-bg-secondary rounded-xl border border-lia-border-subtle">
         <p className="text-sm font-medium text-lia-text-primary mb-3" aria-live="polite" aria-atomic="true">
           Como você avalia este resultado?
         </p>
@@ -308,7 +308,7 @@ export const ProgressiveDisclosure = ({
     <div className="mb-4">
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="flex items-center gap-2 w-full p-3 bg-lia-bg-tertiary dark:bg-lia-bg-elevated rounded-md hover:bg-lia-interactive-active transition-colors motion-reduce:transition-none"
+        className="flex items-center gap-2 w-full p-3 bg-lia-bg-tertiary dark:bg-lia-bg-elevated rounded-xl hover:bg-lia-interactive-active transition-colors motion-reduce:transition-none"
       >
         <ChevronRight className={`w-4 h-4 transition-transform motion-reduce:transition-none ${isExpanded ? 'rotate-90' : ''}`} />
         <span className="text-sm font-medium text-lia-text-primary">

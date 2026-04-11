@@ -121,7 +121,7 @@ export function JobPreviewTab({ job, pipelineStages }: JobPreviewTabProps) {
 
   return (
     <div className="space-y-4">
-      <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-md">
+      <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-xl">
         <h5 className="text-xs font-semibold text-lia-text-primary flex items-center gap-1.5 mb-2">
           <FileText className="w-3.5 h-3.5 text-lia-text-secondary" />
           Descricao da Vaga
@@ -147,7 +147,7 @@ export function JobPreviewTab({ job, pipelineStages }: JobPreviewTabProps) {
         )}
       </div>
 
-      <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-md">
+      <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-xl">
         <h5 className="text-xs font-semibold text-lia-text-primary flex items-center gap-1.5 mb-2">
           <Zap className="w-3.5 h-3.5 text-lia-text-secondary" />
           Competencias Tecnicas
@@ -167,7 +167,7 @@ export function JobPreviewTab({ job, pipelineStages }: JobPreviewTabProps) {
         )}
       </div>
 
-      <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-md">
+      <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-xl">
         <h5 className="text-xs font-semibold text-lia-text-primary flex items-center gap-1.5 mb-2">
           <Heart className="w-3.5 h-3.5 text-lia-text-secondary" />
           Competencias Comportamentais
@@ -187,7 +187,7 @@ export function JobPreviewTab({ job, pipelineStages }: JobPreviewTabProps) {
         )}
       </div>
 
-      <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-md">
+      <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-xl">
         <h5 className="text-xs font-semibold text-lia-text-primary flex items-center gap-1.5 mb-2">
           <Globe className="w-3.5 h-3.5 text-lia-text-secondary" />
           Idiomas
@@ -219,7 +219,7 @@ export function JobPreviewTab({ job, pipelineStages }: JobPreviewTabProps) {
         )}
       </div>
 
-      <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-md">
+      <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-xl">
         <h5 className="text-xs font-semibold text-lia-text-primary flex items-center gap-1.5 mb-2">
           <DollarSign className="w-3.5 h-3.5 text-lia-text-secondary" />
           Remuneracao e Beneficios
@@ -259,7 +259,7 @@ export function JobPreviewTab({ job, pipelineStages }: JobPreviewTabProps) {
         </div>
       </div>
 
-      <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-md">
+      <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-xl">
         <h5 className="text-xs font-semibold text-lia-text-primary flex items-center gap-1.5 mb-2">
           <Layers3 className="w-3.5 h-3.5 text-lia-text-secondary" />
           Etapas do Processo
@@ -309,7 +309,7 @@ export function JobPreviewTab({ job, pipelineStages }: JobPreviewTabProps) {
       </div>
 
       {job.isAffirmative && (
-        <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-md">
+        <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-xl">
           <h5 className="text-xs font-semibold text-lia-text-primary flex items-center gap-1.5 mb-2">
             <Heart className="w-3.5 h-3.5 text-lia-text-secondary" />
             Acoes Afirmativas
@@ -342,7 +342,7 @@ export function JobPreviewTab({ job, pipelineStages }: JobPreviewTabProps) {
 
       <div className="border-t border-lia-border-subtle" />
 
-      <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-md">
+      <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-xl">
         <h5 className="text-xs font-semibold text-lia-text-primary flex items-center gap-1.5 mb-2">
           <ClipboardList className="w-3.5 h-3.5 text-lia-text-secondary" />
           Fluxo de Triagem WSI
@@ -367,7 +367,7 @@ export function JobPreviewTab({ job, pipelineStages }: JobPreviewTabProps) {
         </p>
       </div>
 
-      <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-md">
+      <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-xl">
         <h5 className="text-xs font-semibold text-lia-text-primary flex items-center gap-1.5 mb-2">
           <CalendarCheck className="w-3.5 h-3.5 text-lia-text-secondary" />
           Agendamento
@@ -397,7 +397,7 @@ export function JobPreviewTab({ job, pipelineStages }: JobPreviewTabProps) {
         </div>
       </div>
 
-      <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-md">
+      <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-xl">
         <h5 className="text-xs font-semibold text-lia-text-primary flex items-center gap-1.5 mb-2">
           <MessageSquare className="w-3.5 h-3.5 text-lia-text-secondary" />
           Canais de Comunicacao

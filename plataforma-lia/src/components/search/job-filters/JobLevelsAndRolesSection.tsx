@@ -146,8 +146,8 @@ export const JobLevelsAndRolesSection = ({
 
           {/* Semantic Suggestions for Roles */}
           {showRoleSuggestions && roleSuggestions.length > 0 && (
-            <div className="absolute z-50 mt-1 w-full bg-lia-bg-primary border border-lia-border-subtle rounded-md max-h-40 overflow-y-auto">
-              <div className="p-1 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+            <div className="absolute z-50 mt-1 w-full bg-lia-bg-primary border border-lia-border-subtle rounded-xl max-h-40 overflow-y-auto">
+              <div className="p-1 dark:border-lia-border-subtle">
                 <div className="flex items-center gap-1 text-micro text-lia-text-secondary">
                   <Zap className="w-2.5 h-2.5" />
                   <span>Sugestões AI</span>

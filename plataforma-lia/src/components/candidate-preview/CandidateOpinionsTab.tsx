@@ -47,7 +47,7 @@ export function CandidateOpinionsTab({
   return (
     <div className="p-3 space-y-3">
       {/* Subtabs Header */}
-      <div className="flex items-center gap-1 border-b border-lia-border-subtle pb-2">
+      <div className="flex items-center gap-1 pb-2">
         <button
           onClick={() => setOpinionsSubTab('pareceres')}
           className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-t transition-colors motion-reduce:transition-none ${
@@ -89,7 +89,7 @@ opinionsSubTab === 'analises'
           {isLoadingHistory && (
             <div className="space-y-3">
               {[1, 2].map((i) => (
-                <div key={i} className="bg-lia-bg-primary border border-lia-border-subtle rounded-md p-4 animate-pulse motion-reduce:animate-none">
+                <div key={i} className="bg-lia-bg-primary border border-lia-border-subtle rounded-xl p-4 animate-pulse motion-reduce:animate-none">
                   <div className="flex items-center gap-3 mb-3">
                     <div className="w-8 h-8 bg-lia-interactive-active rounded-full"></div>
                     <div className="flex-1">
@@ -108,7 +108,7 @@ opinionsSubTab === 'analises'
 
           {/* Empty State */}
           {!isLoadingHistory && opinionsHistory.length === 0 && (
-            <div className="bg-lia-bg-primary border border-lia-border-subtle rounded-md p-6 text-center">
+            <div className="bg-lia-bg-primary border border-lia-border-subtle rounded-xl p-6 text-center">
               <div className="w-12 h-12 rounded-full bg-lia-bg-tertiary flex items-center justify-center mx-auto mb-3">
                 <FileText className="w-6 h-6 text-lia-text-disabled" />
               </div>
@@ -153,7 +153,7 @@ opinionsSubTab === 'analises'
           {isLoadingAnalyses && (
             <div className="space-y-3">
               {[1, 2].map((i) => (
-                <div key={i} className="bg-lia-bg-primary border border-lia-border-subtle rounded-md p-4 animate-pulse motion-reduce:animate-none">
+                <div key={i} className="bg-lia-bg-primary border border-lia-border-subtle rounded-xl p-4 animate-pulse motion-reduce:animate-none">
                   <div className="flex items-center gap-3 mb-3">
                     <div className="w-8 h-8 bg-lia-interactive-active rounded-full"></div>
                     <div className="flex-1">
@@ -172,7 +172,7 @@ opinionsSubTab === 'analises'
 
           {/* Empty State */}
           {!isLoadingAnalyses && (!savedAnalyses || savedAnalyses.total_analyses === 0) && (
-            <div className="bg-lia-bg-primary border border-lia-border-subtle rounded-md p-6 text-center">
+            <div className="bg-lia-bg-primary border border-lia-border-subtle rounded-xl p-6 text-center">
               <div className="w-12 h-12 rounded-full bg-wedo-purple/10 flex items-center justify-center mx-auto mb-3">
                 <Brain className="w-6 h-6 text-wedo-purple" />
               </div>
@@ -197,7 +197,7 @@ opinionsSubTab === 'analises'
                 return (
                   <div
                     key={analysis.id as string}
-                    className="bg-lia-bg-primary border border-lia-border-subtle rounded-md overflow-hidden hover:transition-shadow"
+                    className="bg-lia-bg-primary border border-lia-border-subtle rounded-xl overflow-hidden hover:transition-shadow"
                   >
                     {/* Card Header - Always Visible */}
                     <div

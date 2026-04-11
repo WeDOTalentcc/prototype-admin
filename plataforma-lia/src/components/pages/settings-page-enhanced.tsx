@@ -495,7 +495,7 @@ export default function SettingsPageEnhanced() {
         onMouseLeave={() => !isLocked && setIsCollapsed(true)}
       >
         <Card className="h-full m-3 border border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary backdrop-blur-sm rounded-xl overflow-hidden flex flex-col">
-          <div className={`p-4 border-b border-lia-border-subtle dark:border-lia-border-subtle ${isCollapsed && !isLocked ? 'px-2' : ''}`}>
+          <div className={`p-4 dark:border-lia-border-subtle ${isCollapsed && !isLocked ? 'px-2' : ''}`}>
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 bg-lia-bg-tertiary dark:bg-lia-bg-elevated text-lia-text-primary rounded-lg flex items-center justify-center flex-shrink-0">
                 <Settings className="w-5 h-5" />
@@ -631,7 +631,7 @@ export default function SettingsPageEnhanced() {
       </aside>
 
         <div className="flex-1 flex flex-col">
-          <div className="p-6 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+          <div className="p-6 dark:border-lia-border-subtle">
             <div className="flex items-center justify-between">
               <div>
                 <h2 className={`${textStyles.h3} mb-1`}>

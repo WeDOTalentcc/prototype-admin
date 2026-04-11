@@ -110,7 +110,7 @@ function TechnicalSkillCard({ skill }: { skill: TechnicalSkillSuggestion }) {
   const sourceConfig = SOURCE_CONFIG[skill.source]
 
   return (
-    <div className="p-2.5 rounded-md bg-lia-bg-secondary border border-lia-border-subtle space-y-2">
+    <div className="p-2.5 rounded-xl bg-lia-bg-secondary border border-lia-border-subtle space-y-2">
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0">
           <Code className="h-3.5 w-3.5 text-lia-text-secondary flex-shrink-0" />
@@ -152,7 +152,7 @@ function BehavioralCompetencyCard({ competency }: { competency: BehavioralCompet
   const sourceConfig = SOURCE_CONFIG[competency.source]
 
   return (
-    <div className="p-2.5 rounded-md bg-lia-bg-secondary border border-lia-border-subtle space-y-2">
+    <div className="p-2.5 rounded-xl bg-lia-bg-secondary border border-lia-border-subtle space-y-2">
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0">
           <Brain className="h-3.5 w-3.5 text-wedo-purple flex-shrink-0" />

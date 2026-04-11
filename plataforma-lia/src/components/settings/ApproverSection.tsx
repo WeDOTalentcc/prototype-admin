@@ -49,19 +49,19 @@ export const ApproverSection = React.memo(function ApproverSection({
   return (
     <div className="space-y-3">
       {successMessage && (
-        <div className="bg-status-success/10 border border-status-success/30 rounded-md p-2 flex items-center gap-2 text-status-success text-xs">
+        <div className="bg-status-success/10 border border-status-success/30 rounded-xl p-2 flex items-center gap-2 text-status-success text-xs">
           <CheckCircle className="w-3.5 h-3.5" />
           {successMessage}
         </div>
       )}
       {error && (
-        <div className="bg-status-error/10 border border-status-error/30 rounded-md p-2 flex items-center gap-2 text-status-error text-xs">
+        <div className="bg-status-error/10 border border-status-error/30 rounded-xl p-2 flex items-center gap-2 text-status-error text-xs">
           <AlertCircle className="w-3.5 h-3.5" />
           {error}
         </div>
       )}
 
-      <Card className="border border-lia-border-subtle/50 dark:border-lia-border-subtle/50 bg-lia-bg-primary/80 dark:bg-lia-bg-secondary/80 backdrop-blur-sm rounded-md">
+      <Card className="border border-lia-border-subtle/50 dark:border-lia-border-subtle/50 bg-lia-bg-primary/80 dark:bg-lia-bg-secondary/80 backdrop-blur-sm rounded-xl">
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
             <div>
@@ -94,7 +94,7 @@ export const ApproverSection = React.memo(function ApproverSection({
         </CardHeader>
         <CardContent className="p-3 space-y-3">
           {(showApproverForm || editingApprover) && (
-            <Card className="border border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 rounded-md mb-3">
+            <Card className="border border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 rounded-xl mb-3">
               <CardContent className="p-3 space-y-2">
                 <h4 className="text-xs font-semibold">
                   {editingApprover ? "Editar Aprovador" : "Novo Aprovador"}
@@ -215,7 +215,7 @@ export const ApproverSection = React.memo(function ApproverSection({
                     >
                       {approver.level}
                     </div>
-                    <Card className="flex-1 border border-lia-border-subtle/50 dark:border-lia-border-subtle/50 bg-lia-bg-primary/80 dark:bg-lia-bg-secondary/80 backdrop-blur-sm rounded-md">
+                    <Card className="flex-1 border border-lia-border-subtle/50 dark:border-lia-border-subtle/50 bg-lia-bg-primary/80 dark:bg-lia-bg-secondary/80 backdrop-blur-sm rounded-xl">
                       <CardContent className="p-2 flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <Avatar className="h-8 w-8">
@@ -245,7 +245,7 @@ export const ApproverSection = React.memo(function ApproverSection({
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="h-7 w-7 p-0 rounded-md hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse"
+                            className="h-7 w-7 p-0 rounded-xl hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse"
                             onClick={() => setEditingApprover(approver)}
                           >
                             <Edit className="w-3.5 h-3.5" />
@@ -266,7 +266,7 @@ export const ApproverSection = React.memo(function ApproverSection({
             </div>
           )}
 
-          <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 rounded-md p-2 border border-lia-border-subtle dark:border-lia-border-subtle">
+          <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 rounded-xl p-2 border border-lia-border-subtle dark:border-lia-border-subtle">
             <div className="flex items-start gap-2">
               <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5 text-lia-text-secondary" />
               <div>

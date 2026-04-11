@@ -28,10 +28,10 @@ function LoadingSkeleton() {
     <ChatContainer>
       <div className="flex-1 flex items-center justify-center px-4">
         <div className="w-full max-w-md space-y-4 animate-pulse motion-reduce:animate-none">
-          <div className="h-12 bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-md w-2/3 mx-auto" />
-          <div className="h-6 bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-md w-1/2 mx-auto" />
-          <div className="h-32 bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-md" />
-          <div className="h-10 bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-md" />
+          <div className="h-12 bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-xl w-2/3 mx-auto" />
+          <div className="h-6 bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-xl w-1/2 mx-auto" />
+          <div className="h-32 bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-xl" />
+          <div className="h-10 bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-xl" />
         </div>
       </div>
     </ChatContainer>
@@ -58,7 +58,7 @@ function ErrorCard({ code, message }: { code: string; message: string }) {
   return (
     <ChatContainer>
       <div className="flex-1 flex items-center justify-center px-4">
-        <div className="w-full max-w-sm bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md shadow-lia-sm p-6 text-center space-y-4">
+        <div className="w-full max-w-sm bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl shadow-lia-sm p-6 text-center space-y-4">
           <div className="flex justify-center">{iconMap[code] || iconMap.SERVER_ERROR}</div>
           <h2 className="text-base font-semibold text-lia-text-primary dark:text-lia-text-primary font-['Open_Sans',sans-serif]">
             {titleMap[code] || "Erro"}

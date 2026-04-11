@@ -112,7 +112,7 @@ export function WizardHeader({
           )}
           <button
             onClick={() => onFullscreenChange(!isFullscreen)}
-            className="p-1 rounded-md hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none group focus-visible:ring-2 focus-visible:ring-lia-border-default"
+            className="p-1 rounded-xl hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none group focus-visible:ring-2 focus-visible:ring-lia-border-default"
             title={isFullscreen ? "Reduzir chat" : "Expandir tela cheia"}
             aria-label={isFullscreen ? "Reduzir chat" : "Expandir para tela cheia"}
           >

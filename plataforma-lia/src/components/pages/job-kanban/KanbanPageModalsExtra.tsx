@@ -70,7 +70,7 @@ export function KanbanPageModalsExtra(state: KanbanPageCoreState) {
       {selectedForCompare.size >= 2 && (
         <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2">
           <button
-            className="flex items-center gap-2 bg-lia-btn-primary-bg text-lia-btn-primary-text px-4 py-2 rounded-md text-sm font-medium hover:bg-lia-btn-primary-hover transition-colors motion-reduce:transition-none shadow-lia-md"
+            className="flex items-center gap-2 bg-lia-btn-primary-bg text-lia-btn-primary-text px-4 py-2 rounded-xl text-sm font-medium hover:bg-lia-btn-primary-hover transition-colors motion-reduce:transition-none shadow-lia-md"
             onClick={() => {
               const selectedIds = Array.from(selectedForCompare)
               const resolvedCandidates = allTableCandidates
@@ -84,7 +84,7 @@ export function KanbanPageModalsExtra(state: KanbanPageCoreState) {
             <span>Comparar ({selectedForCompare.size})</span>
           </button>
           <button
-            className="bg-lia-bg-primary border border-lia-border-subtle text-lia-text-secondary px-3 py-2 rounded-md text-sm hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none shadow-lia-md"
+            className="bg-lia-bg-primary border border-lia-border-subtle text-lia-text-secondary px-3 py-2 rounded-xl text-sm hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none shadow-lia-md"
             onClick={() => setSelectedForCompare(new Set())}
             aria-label="Limpar seleção de comparação"
           >
@@ -233,8 +233,8 @@ export function KanbanPageModalsExtra(state: KanbanPageCoreState) {
 
       {showPublishSuccess && publicLink && (
         <div className="fixed inset-0 bg-lia-overlay z-50 flex items-center justify-center" onClick={() => setShowPublishSuccess(false)}>
-          <div className="bg-lia-bg-secondary rounded-md shadow-lia-lg w-full max-w-sm mx-4 animate-in fade-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
-            <div className="px-6 py-4 border-b border-lia-border-subtle">
+          <div className="bg-lia-bg-secondary rounded-xl shadow-lia-lg w-full max-w-sm mx-4 animate-in fade-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
+            <div className="px-6 py-4">
               <h3 className="text-base font-semibold text-lia-text-primary font-['Open_Sans',sans-serif]">
                 Vaga Publicada!
               </h3>
@@ -270,7 +270,7 @@ export function KanbanPageModalsExtra(state: KanbanPageCoreState) {
             <div className="px-6 py-4 bg-lia-bg-secondary border-t border-lia-border-subtle flex justify-end">
               <button
                 onClick={() => setShowPublishSuccess(false)}
-                className="px-4 py-2 text-sm font-medium rounded-md bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover transition-colors motion-reduce:transition-none font-['Open_Sans',sans-serif]"
+                className="px-4 py-2 text-sm font-medium rounded-xl bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover transition-colors motion-reduce:transition-none font-['Open_Sans',sans-serif]"
               >
                 Fechar
               </button>

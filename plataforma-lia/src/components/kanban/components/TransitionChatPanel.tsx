@@ -228,7 +228,7 @@ export function TransitionChatPanel({
     <div className="flex flex-col h-full overflow-hidden p-3">
       <div className="flex flex-col flex-1 overflow-hidden rounded-xl border border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-primary">
         {/* Header */}
-        <div className="flex-shrink-0 px-4 py-3 border-b border-lia-border-subtle dark:border-lia-border-strong">
+        <div className="flex-shrink-0 px-4 py-3 dark:border-lia-border-strong">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="w-7 h-7 rounded-full flex items-center justify-center">
@@ -247,7 +247,7 @@ export function TransitionChatPanel({
                   onClick={onNewChat}
                   title="Novo chat"
                   aria-label="Iniciar novo chat"
-                  className="p-1.5 rounded-md text-lia-text-tertiary hover:text-lia-text-secondary hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none"
+                  className="p-1.5 rounded-xl text-lia-text-tertiary hover:text-lia-text-secondary hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none"
                 >
                   <Plus className="w-3.5 h-3.5" />
                 </button>
@@ -258,7 +258,7 @@ export function TransitionChatPanel({
                   disabled={messages.length === 0}
                   title="Limpar mensagens"
                   aria-label="Limpar mensagens"
-                  className="p-1.5 rounded-md text-lia-text-tertiary hover:text-lia-text-secondary hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none disabled:opacity-30 disabled:cursor-not-allowed"
+                  className="p-1.5 rounded-xl text-lia-text-tertiary hover:text-lia-text-secondary hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none disabled:opacity-30 disabled:cursor-not-allowed"
                 >
                   <Eraser className="w-3.5 h-3.5" />
                 </button>
@@ -268,7 +268,7 @@ export function TransitionChatPanel({
                   onClick={onToggleHistory}
                   title="Histórico de conversas"
                   aria-label="Ver histórico de conversas"
-                  className="p-1.5 rounded-md text-lia-text-tertiary hover:text-lia-text-secondary hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none"
+                  className="p-1.5 rounded-xl text-lia-text-tertiary hover:text-lia-text-secondary hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none"
                 >
                   <History className="w-3.5 h-3.5" />
                 </button>
@@ -281,7 +281,7 @@ export function TransitionChatPanel({
                     title="Fechar"
                     aria-label="Fechar"
                     data-dismiss="true"
-                    className="p-1.5 rounded-md text-lia-text-tertiary hover:text-lia-text-secondary hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none"
+                    className="p-1.5 rounded-xl text-lia-text-tertiary hover:text-lia-text-secondary hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none"
                   >
                     <X className="w-3.5 h-3.5" />
                   </button>

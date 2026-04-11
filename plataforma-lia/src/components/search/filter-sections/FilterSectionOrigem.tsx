@@ -113,7 +113,7 @@ export const FilterSectionOrigem = React.memo(function FilterSectionOrigem({
       </RadioGroup>
 
       {(searchSource === "local" || searchSource === "hybrid") && (
-        <div className="mt-4 flex items-center justify-between p-3 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-primary">
+        <div className="mt-4 flex items-center justify-between p-3 rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-primary">
           <div className="flex items-center gap-2">
             <Eye className="w-4 h-4 text-status-warning" />
             <div>

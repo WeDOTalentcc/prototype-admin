@@ -22,7 +22,7 @@ export const TabFiltros = React.memo(function TabFiltros({
 
   return (
     <div data-testid="tab-filtros" className="space-y-4 overflow-y-auto flex-1 p-4">
-      <div className="p-2.5 rounded-md bg-white border border-lia-border-subtle">
+      <div className="p-2.5 rounded-xl bg-white border border-lia-border-subtle">
         <div className="flex items-start gap-2">
           <Lightbulb className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-lia-text-secondary" />
           <p className="text-xs text-lia-text-secondary">
@@ -31,7 +31,7 @@ export const TabFiltros = React.memo(function TabFiltros({
         </div>
       </div>
       {hasActiveFilters && (
-        <div className="p-3 rounded-md border bg-status-success/5 border-status-success/30">
+        <div className="p-3 rounded-xl border bg-status-success/5 border-status-success/30">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Check className="w-4 h-4 text-status-success" />

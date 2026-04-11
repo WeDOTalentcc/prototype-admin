@@ -27,11 +27,11 @@ export function KanbanColumn({
 }: KanbanColumnProps) {
   return (
     <div 
-      className="flex flex-col w-panel-sm min-w-panel-sm bg-lia-bg-secondary dark:bg-lia-bg-primary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle"
+      className="flex flex-col w-panel-sm min-w-panel-sm bg-lia-bg-secondary dark:bg-lia-bg-primary rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle"
       data-testid="kanban-column"
       data-stage-id={stage.id}
     >
-      <div className="flex items-center justify-between p-3 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+      <div className="flex items-center justify-between p-3 dark:border-lia-border-subtle">
         <div className="flex items-center gap-2">
           <div 
             className="w-3 h-3 rounded-full" 

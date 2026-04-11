@@ -67,14 +67,14 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
   return (
     <div className="space-y-6">
       {error && (
-        <div className="bg-status-error/10 border border-status-error/30 text-status-error px-4 py-3 rounded-md flex items-center gap-2">
+        <div className="bg-status-error/10 border border-status-error/30 text-status-error px-4 py-3 rounded-xl flex items-center gap-2">
           <AlertCircle className="w-4 h-4" />
           {error}
         </div>
       )}
 
       {successMessage && (
-        <div className="bg-status-success/10 border border-status-success/30 text-status-success px-4 py-3 rounded-md flex items-center gap-2">
+        <div className="bg-status-success/10 border border-status-success/30 text-status-success px-4 py-3 rounded-xl flex items-center gap-2">
           <CheckCircle className="w-4 h-4" />
           {successMessage}
         </div>
@@ -139,7 +139,7 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
       />
 
       <Card className="border border-lia-border-subtle dark:border-lia-border-strong">
-        <CardHeader className="py-3 border-b border-lia-border-subtle dark:border-lia-border-strong">
+        <CardHeader className="py-3 dark:border-lia-border-strong">
           <CardTitle className={`${textStyles.h4} flex items-center justify-between`}>
             <span>Metas por Categoria</span>
             {isLoading && <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none" />}
@@ -241,7 +241,7 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
                           </thead>
                           <tbody>
                             {assignedUserObjects.map((user) => (
-                              <tr key={user!.id} className="border-b border-lia-border-subtle dark:border-lia-border-strong hover:bg-lia-bg-primary dark:hover:bg-lia-btn-primary-hover">
+                              <tr key={user!.id} className=" dark:border-lia-border-strong hover:bg-lia-bg-primary dark:hover:bg-lia-btn-primary-hover">
                                 <td className="p-2 sticky left-0 bg-lia-bg-secondary dark:bg-lia-bg-secondary border-r border-lia-border-subtle dark:border-lia-border-subtle">
                                   <div className="flex items-center gap-2">
                                     <Avatar className="w-5 h-5">

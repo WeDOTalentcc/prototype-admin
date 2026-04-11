@@ -125,7 +125,7 @@ export function TasksSection() {
             >
               <CardContent className="p-2">
                 <div className="flex items-start gap-2">
-                  <div className="flex-shrink-0 w-6 h-6 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-md flex items-center justify-center">
+                  <div className="flex-shrink-0 w-6 h-6 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-xl flex items-center justify-center">
  <task.icon className="w-3 h-3 text-lia-text-secondary" />
                   </div>
 

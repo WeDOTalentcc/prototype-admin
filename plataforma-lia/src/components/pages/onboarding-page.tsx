@@ -56,7 +56,7 @@ export function OnboardingPage() {
             </div>
           </div>
 
-          <div className="flex space-x-1 bg-lia-bg-tertiary p-1 rounded-md w-fit">
+          <div className="flex space-x-1 bg-lia-bg-tertiary p-1 rounded-xl w-fit">
             {tabs.map(tab => (
               <button
                 key={tab.id}

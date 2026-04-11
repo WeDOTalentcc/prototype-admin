@@ -38,7 +38,7 @@ export function ChatContextPanelPart1({ contextData }: Props) {
             </CardHeader>
             <CardContent className="p-6">
               <div className="space-y-6">
-                <div className="p-5 rounded-md bg-stone-50 dark:bg-stone-900/20">
+                <div className="p-5 rounded-xl bg-stone-50 dark:bg-stone-900/20">
                   <div className="flex items-center justify-between mb-4">
                     <div>
                       <p className="text-sm text-lia-text-secondary">Recomendação LIA - Target</p>
@@ -49,11 +49,11 @@ export function ChatContextPanelPart1({ contextData }: Props) {
                   <p className="text-sm text-lia-text-secondary">{data.recommended_package.total_compensation.positioning}</p>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="p-4 rounded-md border bg-lia-bg-tertiary border-lia-border-subtle">
+                  <div className="p-4 rounded-xl border bg-lia-bg-tertiary border-lia-border-subtle">
                     <h4 className="text-sm font-medium text-lia-text-secondary mb-3">Mediana de Mercado</h4>
                     <p className="text-lg font-semibold text-lia-text-primary">{data.market_analysis.salary_research.market_median}</p>
                   </div>
-                  <div className="p-4 rounded-md border bg-lia-bg-tertiary border-lia-border-subtle">
+                  <div className="p-4 rounded-xl border bg-lia-bg-tertiary border-lia-border-subtle">
                     <h4 className="text-sm font-medium text-lia-text-secondary mb-3">Faixa Recomendada</h4>
                     <p className="text-base font-semibold text-lia-text-primary">{data.recommended_package.base_salary.min} - {data.recommended_package.base_salary.max}</p>
                   </div>
@@ -62,7 +62,7 @@ export function ChatContextPanelPart1({ contextData }: Props) {
                   <h4 className="text-sm font-medium text-lia-text-secondary mb-3">Pacote de Benefícios</h4>
                   <div className="grid grid-cols-2 gap-2">
                     {Object.entries(data.recommended_package.benefits_package).map(([key, benefit]: [string, any]) => (
-                      <div key={key} className="flex items-center justify-between p-3 rounded-md bg-lia-bg-tertiary">
+                      <div key={key} className="flex items-center justify-between p-3 rounded-xl bg-lia-bg-tertiary">
                         <span className="text-sm font-medium capitalize">{key.replace('_', ' ')}</span>
                         <span className="text-sm font-semibold text-lia-text-primary">{benefit.estimated_value}</span>
                       </div>
@@ -73,7 +73,7 @@ export function ChatContextPanelPart1({ contextData }: Props) {
                   <h4 className="text-sm font-medium text-lia-text-secondary mb-3">Benchmarking Competitivo</h4>
                   <div className="space-y-2">
                     {(data.market_analysis as { benchmarking_companies: { company: string; notes: string; range: string }[] }).benchmarking_companies.map((company) => (
-                      <div key={company.company} className="flex items-center justify-between p-3 rounded-md bg-lia-bg-tertiary">
+                      <div key={company.company} className="flex items-center justify-between p-3 rounded-xl bg-lia-bg-tertiary">
                         <div>
                           <h5 className="font-medium text-lia-text-primary">{company.company}</h5>
                           <p className="text-sm text-lia-text-secondary">{company.notes}</p>
@@ -83,7 +83,7 @@ export function ChatContextPanelPart1({ contextData }: Props) {
                     ))}
                   </div>
                 </div>
-                <div className="p-4 rounded-md border bg-lia-bg-tertiary border-lia-border-subtle">
+                <div className="p-4 rounded-xl border bg-lia-bg-tertiary border-lia-border-subtle">
                   <div className="flex items-center justify-between">
                     <span className="text-base font-semibold text-lia-text-primary">Compensação Total Anual</span>
                     <span className="text-xl font-bold text-lia-text-primary">{data.recommended_package.total_compensation.total_annual}</span>
@@ -111,15 +111,15 @@ export function ChatContextPanelPart1({ contextData }: Props) {
             </CardHeader>
             <CardContent className="p-6">
               <div className="space-y-6">
-                <div className="p-5 rounded-md bg-wedo-cyan/15 dark:bg-wedo-cyan/20">
+                <div className="p-5 rounded-xl bg-wedo-cyan/15 dark:bg-wedo-cyan/20">
                   <h5 className="text-lg font-bold mb-2 text-lia-text-primary">{data.current_structure.missing_layer.role}</h5>
                   <p className="text-sm mb-3 text-lia-text-secondary">{data.current_structure.missing_layer.purpose}</p>
-                  <div className="p-3 rounded-md bg-lia-bg-tertiary">
+                  <div className="p-3 rounded-xl bg-lia-bg-tertiary">
                     <p className="text-sm font-medium text-lia-text-primary">{data.current_structure.missing_layer.impact}</p>
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="p-4 rounded-md border bg-lia-bg-tertiary border-lia-border-subtle">
+                  <div className="p-4 rounded-xl border bg-lia-bg-tertiary border-lia-border-subtle">
                     <h4 className="text-sm font-medium text-lia-text-secondary mb-3">Visão Geral da Empresa</h4>
                     <div className="space-y-2">
                       <div className="flex justify-between"><span className="text-sm text-lia-text-secondary">Porte:</span><span className="font-semibold text-lia-text-primary">{data.company_overview.size}</span></div>
@@ -127,7 +127,7 @@ export function ChatContextPanelPart1({ contextData }: Props) {
                       <div className="flex justify-between"><span className="text-sm text-lia-text-secondary">Time Tech Atual:</span><span className="font-semibold text-lia-text-primary">{data.company_overview.current_tech_team} pessoas</span></div>
                     </div>
                   </div>
-                  <div className="p-4 rounded-md border bg-lia-bg-tertiary border-lia-border-subtle">
+                  <div className="p-4 rounded-xl border bg-lia-bg-tertiary border-lia-border-subtle">
                     <h4 className="text-sm font-medium text-lia-text-secondary mb-3">Projeção de Crescimento</h4>
                     <div className="space-y-2">
                       <div className="flex justify-between"><span className="text-sm text-lia-text-secondary">6 meses:</span><span className="font-semibold text-lia-text-primary">{data.growth_projection.projected_6months} pessoas</span></div>
@@ -156,7 +156,7 @@ export function ChatContextPanelPart1({ contextData }: Props) {
             </CardHeader>
             <CardContent className="p-6">
               <div className="space-y-6">
-                <div className="p-5 rounded-md bg-status-warning/10 dark:bg-status-warning/20">
+                <div className="p-5 rounded-xl bg-status-warning/10 dark:bg-status-warning/20">
                   <h4 className="text-sm font-medium mb-2 text-lia-text-secondary">Foco Principal</h4>
                   <p className="text-base font-bold text-lia-text-primary">{data.role_focus}</p>
                 </div>
@@ -224,7 +224,7 @@ export function ChatContextPanelPart1({ contextData }: Props) {
             </CardHeader>
             <CardContent className="p-6">
               <div className="space-y-6 font-open-sans">
-                <div className="p-4 rounded-md bg-pink-50 dark:bg-pink-900/20">
+                <div className="p-4 rounded-xl bg-pink-50 dark:bg-pink-900/20">
                   <h3 className="text-base font-semibold text-lia-text-primary">{data.header.title}</h3>
                   <p className="text-lia-text-secondary">{data.header.company} • {data.header.location}</p>
                   <p className="text-sm mt-2 text-lia-text-secondary">{data.header.salary_range}</p>
@@ -281,7 +281,7 @@ export function ChatContextPanelPart1({ contextData }: Props) {
             </CardHeader>
             <CardContent className="p-6">
               <div className="space-y-6">
-                <div className="p-5 rounded-md bg-wedo-cyan/15 dark:bg-wedo-cyan/20">
+                <div className="p-5 rounded-xl bg-wedo-cyan/15 dark:bg-wedo-cyan/20">
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium text-lia-text-secondary">Sistema ATS Integrado</p>
@@ -297,7 +297,7 @@ export function ChatContextPanelPart1({ contextData }: Props) {
                   <h4 className="text-sm font-medium text-lia-text-secondary mb-3">Canais de Publicação</h4>
                   <div className="space-y-2">
                     {(data.publication_channels as { platform: string; reach: string; budget: string; status: string }[]).map((channel) => (
-                      <div key={channel.platform} className="flex items-center justify-between p-4 rounded-md bg-lia-bg-tertiary">
+                      <div key={channel.platform} className="flex items-center justify-between p-4 rounded-xl bg-lia-bg-tertiary">
                         <div className="flex-1">
                           <h5 className="font-medium text-lia-text-primary">{channel.platform}</h5>
                           <p className="text-sm mt-1 text-lia-text-secondary">{channel.reach} • {channel.budget}</p>
@@ -311,7 +311,7 @@ export function ChatContextPanelPart1({ contextData }: Props) {
                   <h4 className="text-sm font-medium text-lia-text-secondary mb-3">Metas de Sucesso</h4>
                   <div className="grid grid-cols-2 gap-3">
                     {Object.entries(data.success_metrics.targets).map(([key, value]: [string, any]) => (
-                      <div key={key} className="text-center p-4 rounded-md border bg-lia-bg-tertiary border-lia-border-subtle">
+                      <div key={key} className="text-center p-4 rounded-xl border bg-lia-bg-tertiary border-lia-border-subtle">
                         <p className="text-lg font-bold text-lia-text-primary">{String(value)}</p>
                         <p className="text-xs mt-1 capitalize text-lia-text-secondary">{key.replace('_', ' ')}</p>
                       </div>

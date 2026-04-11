@@ -161,7 +161,7 @@ export function CandidatePreviewModals({
       />
 
       <AlertDialog open={showUpdateOpinionAlert} onOpenChange={setShowUpdateOpinionAlert}>
-        <AlertDialogContent className="bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md">
+        <AlertDialogContent className="bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl">
           <AlertDialogHeader>
             <AlertDialogTitle className={textStyles.title}>
               Parecer Existente
@@ -184,7 +184,7 @@ export function CandidatePreviewModals({
       </AlertDialog>
       
       <AlertDialog open={!!analysisToDelete} onOpenChange={(open: boolean) => !open && setAnalysisToDelete(null)}>
-        <AlertDialogContent className="bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md">
+        <AlertDialogContent className="bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl">
           <AlertDialogHeader>
             <AlertDialogTitle className={textStyles.title}>
               Remover Análise

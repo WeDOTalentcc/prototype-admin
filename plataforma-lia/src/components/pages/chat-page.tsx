@@ -192,7 +192,7 @@ export function LegacyChatPage({ initialConversationId }: { initialConversationI
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   placeholder="Buscar na conversa..."
-                  className="w-full px-3 py-2 rounded-md text-xs font-['Open_Sans',sans-serif] focus:outline-none border border-lia-border-subtle bg-lia-bg-primary text-lia-text-primary"
+                  className="w-full px-3 py-2 rounded-xl text-xs font-['Open_Sans',sans-serif] focus:outline-none border border-lia-border-subtle bg-lia-bg-primary text-lia-text-primary"
                   autoFocus
                 />
                 <Search className="absolute right-3 top-2.5 w-4 h-4 text-lia-text-secondary" />
@@ -238,7 +238,7 @@ export function LegacyChatPage({ initialConversationId }: { initialConversationI
                     <div className="flex-shrink-0 pt-2">
                       <LIAIcon size="sm" />
                     </div>
-                    <div className="rounded-md p-5 flex-1 bg-lia-bg-tertiary">
+                    <div className="rounded-xl p-5 flex-1 bg-lia-bg-tertiary">
                       <div className="flex items-center space-x-2 mb-2">
                         <span className="text-sm font-medium lia-name -ml-1 text-lia-text-primary">
                           Lia
@@ -389,7 +389,7 @@ export function LegacyChatPage({ initialConversationId }: { initialConversationI
 
                 {/* File Validation Error Toast */}
                 {fileValidationError && (
-                  <div className="flex items-start gap-2 p-3 rounded-md mb-2 animate-in fade-in slide-in-from-top-2 duration-300 bg-status-error/10 border border-status-error/30"
+                  <div className="flex items-start gap-2 p-3 rounded-xl mb-2 animate-in fade-in slide-in-from-top-2 duration-300 bg-status-error/10 border border-status-error/30"
                   >
                     <AlertTriangle className="w-4 h-4 text-status-error mt-0.5 flex-shrink-0" />
                     <div className="flex-1">
@@ -410,7 +410,7 @@ export function LegacyChatPage({ initialConversationId }: { initialConversationI
 
                 {/* Attached Files Preview */}
                 {attachedFiles.length > 0 && (
-                  <div className="flex flex-wrap gap-2 p-2 rounded-md mb-2 bg-lia-bg-tertiary">
+                  <div className="flex flex-wrap gap-2 p-2 rounded-xl mb-2 bg-lia-bg-tertiary">
                     {attachedFiles.map((file, index) => {
                       const fileSizeKB = (file.size / 1024).toFixed(0)
                       const fileSizeMB = (file.size / (1024 * 1024)).toFixed(1)
@@ -442,7 +442,7 @@ export function LegacyChatPage({ initialConversationId }: { initialConversationI
 
                 {/* Recording Indicator */}
                 {isRecording && (
-                  <div className="flex items-center gap-3 p-3 rounded-md mb-2 animate-pulse motion-reduce:animate-none bg-status-error/10 border border-status-error/30">
+                  <div className="flex items-center gap-3 p-3 rounded-xl mb-2 animate-pulse motion-reduce:animate-none bg-status-error/10 border border-status-error/30">
                     <div className="w-3 h-3 bg-status-error rounded-full animate-ping motion-reduce:animate-none" />
                     <span className="text-sm font-medium text-status-error">
                       Gravando... {recordingTime}s
@@ -461,7 +461,7 @@ export function LegacyChatPage({ initialConversationId }: { initialConversationI
 
                 {/* Audio Ready Indicator */}
                 {audioBlob && !isRecording && (
-                  <div className="flex items-center gap-3 p-3 rounded-md mb-2 animate-in fade-in slide-in-from-bottom-2 duration-300 bg-lia-interactive-active/30 border border-wedo-cyan/30"
+                  <div className="flex items-center gap-3 p-3 rounded-xl mb-2 animate-in fade-in slide-in-from-bottom-2 duration-300 bg-lia-interactive-active/30 border border-wedo-cyan/30"
                   >
                     <div className="flex items-center gap-2">
                       <Mic className="w-4 h-4 text-lia-text-secondary" />
@@ -503,7 +503,7 @@ export function LegacyChatPage({ initialConversationId }: { initialConversationI
 
                 {/* File Analysis Context Indicator */}
                 {fileAnalysisContext && (
-                  <div className="flex items-center gap-3 p-3 rounded-md mb-2 animate-in fade-in slide-in-from-bottom-2 duration-300 bg-status-success/10 border border-status-success/30"
+                  <div className="flex items-center gap-3 p-3 rounded-xl mb-2 animate-in fade-in slide-in-from-bottom-2 duration-300 bg-status-success/10 border border-status-success/30"
                   >
                     <div className="flex items-center gap-2">
                       <FileText className="w-4 h-4 text-status-success" />
@@ -532,7 +532,7 @@ export function LegacyChatPage({ initialConversationId }: { initialConversationI
 
                 {/* Indicador de ação pendente */}
                 {activePendingAction && (
-                  <div className="flex items-center gap-2 px-3 py-1.5 mb-2 rounded-md border text-xs bg-wedo-cyan/[0.08] border-wedo-cyan/[0.35] text-lia-text-tertiary"
+                  <div className="flex items-center gap-2 px-3 py-1.5 mb-2 rounded-xl border text-xs bg-wedo-cyan/[0.08] border-wedo-cyan/[0.35] text-lia-text-tertiary"
                   >
                     <span className="w-2 h-2 rounded-full bg-wedo-cyan animate-pulse motion-reduce:animate-none shrink-0" />
                     <span>
@@ -705,7 +705,7 @@ export function LegacyChatPage({ initialConversationId }: { initialConversationI
       {/* Debug Buttons for Testing UI Actions Panels */}
       {process.env.NODE_ENV === 'development' && process.env.NEXT_PUBLIC_ENABLE_UI_ACTIONS_DEBUG === 'true' && (
         <div className="fixed bottom-24 right-4 z-50 flex flex-col gap-2">
-          <div className="bg-lia-btn-primary-bg/90 backdrop-blur-sm rounded-md p-2 border border-lia-border-strong">
+          <div className="bg-lia-btn-primary-bg/90 backdrop-blur-sm rounded-xl p-2 border border-lia-border-strong">
             <div className="text-xs text-lia-text-secondary mb-2 px-2">Debug: UI Actions</div>
             <div className="flex flex-col gap-1">
               <button
@@ -714,7 +714,7 @@ export function LegacyChatPage({ initialConversationId }: { initialConversationI
                   salary_max: 25000,
                   benefits: []
                 }, "Remuneração e Benefícios")}
-                className="px-3 py-1.5 text-xs bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:bg-lia-bg-secondary dark:hover:bg-lia-interactive-active rounded-md transition-colors motion-reduce:transition-none"
+                className="px-3 py-1.5 text-xs bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:bg-lia-bg-secondary dark:hover:bg-lia-interactive-active rounded-xl transition-colors motion-reduce:transition-none"
               >
                 Debug Panel
               </button>

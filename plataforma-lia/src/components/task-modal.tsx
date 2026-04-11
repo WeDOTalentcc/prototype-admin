@@ -36,8 +36,8 @@ export function TaskModal({ task, isOpen, onClose, onComplete }: TaskModalProps)
 
   return (
     <div className="fixed inset-0 bg-lia-overlay flex items-center justify-center z-50">
-      <Card className="w-full max-w-md mx-4 rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
-        <CardHeader className="pb-3 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+      <Card className="w-full max-w-md mx-4 rounded-xl dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
+        <CardHeader className="pb-3 dark:border-lia-border-subtle">
           <div className="flex items-center justify-between">
             <CardTitle className="text-lg">{task.title}</CardTitle>
             <Button

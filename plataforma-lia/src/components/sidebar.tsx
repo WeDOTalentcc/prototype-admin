@@ -634,7 +634,7 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
 
       {/* Indicador visual de atalho */}
       {isCollapsed && !isTemporaryExpanded && (
-        <div className="absolute top-20 left-1/2 transform -translate-x-1/2 bg-lia-bg-inverse text-lia-text-inverse text-xs px-2 py-1 rounded-md opacity-0 hover:opacity-100 transition-opacity motion-reduce:transition-none duration-200 pointer-events-none">
+        <div className="absolute top-20 left-1/2 transform -translate-x-1/2 bg-lia-bg-inverse text-lia-text-inverse text-xs px-2 py-1 rounded-xl opacity-0 hover:opacity-100 transition-opacity motion-reduce:transition-none duration-200 pointer-events-none">
           Ctrl+B
         </div>
       )}

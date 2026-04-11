@@ -69,7 +69,7 @@ export function CommunicationPreviewPanel({
         }`}>
           {(channel === 'email' || channel === 'both') ? (
             <div>
-              <div className="px-4 py-3 border-b border-lia-border-subtle bg-lia-bg-secondary">
+              <div className="px-4 py-3 bg-lia-bg-secondary">
                 <div className="flex items-center gap-2 mb-2">
                   <Avatar className="h-8 w-8">
                     <AvatarFallback className="text-micro bg-lia-btn-primary-bg text-lia-btn-primary-text">RH</AvatarFallback>
@@ -83,7 +83,7 @@ export function CommunicationPreviewPanel({
                   Para: <span className="text-lia-text-primary">{safeCandidate.email}</span>
                 </div>
               </div>
-              <div className="px-4 py-2 border-b border-lia-border-subtle">
+              <div className="px-4 py-2">
                 <div className={textStyles.subtitle}>
                   {subject || 'Sem assunto'}
                 </div>
@@ -116,7 +116,7 @@ export function CommunicationPreviewPanel({
         </div>
 
         {type === 'triagem' && (
-          <div className="mt-4 bg-status-warning/10 border border-status-warning/30 rounded-md p-3">
+          <div className="mt-4 bg-status-warning/10 border border-status-warning/30 rounded-xl p-3">
             <div className="flex items-start gap-2">
               <Info className="w-4 h-4 text-status-warning flex-shrink-0 mt-0.5" />
               <div className="text-micro text-status-warning">
@@ -132,7 +132,7 @@ export function CommunicationPreviewPanel({
         )}
 
         {type === 'agendamento' && (
-          <div className="mt-4 bg-lia-bg-tertiary border border-lia-border-default rounded-md p-3">
+          <div className="mt-4 bg-lia-bg-tertiary border border-lia-border-default rounded-xl p-3">
             <div className="flex items-start gap-2">
               <CalendarDays className="w-4 h-4 text-lia-text-secondary flex-shrink-0 mt-0.5" />
               <div className="text-micro text-wedo-cyan-dark">
@@ -149,7 +149,7 @@ export function CommunicationPreviewPanel({
         )}
 
         {type === 'feedback' && (
-          <div className="mt-4 bg-status-success/10 border border-status-success/30 rounded-md p-3">
+          <div className="mt-4 bg-status-success/10 border border-status-success/30 rounded-xl p-3">
             <div className="flex items-start gap-2">
               <CheckCircle className="w-4 h-4 text-status-success flex-shrink-0 mt-0.5" />
               <div className="text-micro text-status-success">

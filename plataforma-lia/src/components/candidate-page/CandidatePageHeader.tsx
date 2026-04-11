@@ -68,7 +68,7 @@ export function CandidatePageHeader({
 }: CandidatePageHeaderProps) {
   return (
     <TooltipProvider delayDuration={200}>
-      <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary border-b border-lia-border-subtle dark:border-lia-border-subtle px-6 py-3">
+      <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary dark:border-lia-border-subtle px-6 py-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <CandidateAvatar
@@ -104,7 +104,7 @@ export function CandidatePageHeader({
                       href={_candidate.linkedin_url || _candidate.linkedinUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="p-1.5 hover:bg-lia-bg-tertiary rounded-md transition-colors motion-reduce:transition-none"
+                      className="p-1.5 hover:bg-lia-bg-tertiary rounded-xl transition-colors motion-reduce:transition-none"
                     >
                       <Linkedin className="w-4 h-4 text-lia-text-secondary" />
                     </a>
@@ -119,7 +119,7 @@ export function CandidatePageHeader({
                       href={(_candidate.github_url as string | undefined) || (_candidate.githubUrl as string | undefined)}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="p-1.5 hover:bg-lia-bg-tertiary rounded-md transition-colors motion-reduce:transition-none"
+                      className="p-1.5 hover:bg-lia-bg-tertiary rounded-xl transition-colors motion-reduce:transition-none"
                     >
                       <Github className="w-4 h-4 text-lia-text-primary" />
                     </a>
@@ -134,7 +134,7 @@ export function CandidatePageHeader({
                       href={(_candidate.portfolio_url as string | undefined) || (_candidate.portfolioUrl as string | undefined) || (_candidate.website as string | undefined)}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="p-1.5 hover:bg-lia-bg-tertiary rounded-md transition-colors motion-reduce:transition-none"
+                      className="p-1.5 hover:bg-lia-bg-tertiary rounded-xl transition-colors motion-reduce:transition-none"
                     >
                       <Globe className="w-4 h-4 text-lia-text-secondary" />
                     </a>

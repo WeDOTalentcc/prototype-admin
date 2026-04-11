@@ -157,7 +157,7 @@ export function CandidatePreview({
   return (
     <div className="h-full bg-lia-bg-primary dark:bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-subtle flex flex-col transition-[width,height] duration-300 w-full">
       <TooltipProvider delayDuration={200}>
-        <div className="p-3 border-b border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-primary">
+        <div className="p-3 dark:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-primary">
           <CandidatePreviewHeader
             c={c}
             candidate={candidate}
@@ -193,7 +193,7 @@ export function CandidatePreview({
         />
       )}
 
-      <div className="border-b border-lia-border-subtle dark:border-lia-border-subtle flex items-center">
+      <div className=" dark:border-lia-border-subtle flex items-center">
         <div className="flex overflow-x-auto">
           {tabs.map(tab => (
             <button

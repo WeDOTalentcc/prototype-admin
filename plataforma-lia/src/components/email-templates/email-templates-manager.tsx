@@ -473,11 +473,11 @@ export function EmailTemplatesManager() {
           </DialogHeader>
           <div className="flex-1 overflow-y-auto">
             <div className="space-y-4">
-              <div className="p-3 bg-lia-bg-secondary rounded-md">
+              <div className="p-3 bg-lia-bg-secondary rounded-xl">
                 <span className="text-sm font-medium text-lia-text-secondary">Assunto:</span>
                 <p className="text-lia-text-primary">{selectedTemplate?.subject}</p>
               </div>
-              <div className="border rounded-md overflow-hidden">
+              <div className="border rounded-xl overflow-hidden">
                 <div className="bg-lia-bg-tertiary px-4 py-2 text-sm font-medium text-lia-text-secondary border-b">
                   Corpo do Email (HTML)
                 </div>
@@ -489,7 +489,7 @@ export function EmailTemplatesManager() {
                 />
               </div>
               {selectedTemplate?.variables && selectedTemplate.variables.length > 0 && (
-                <div className="p-3 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-md">
+                <div className="p-3 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-xl">
                   <span className="text-sm font-medium text-lia-text-secondary">Variáveis:</span>
                   <div className="flex flex-wrap gap-2 mt-2">
                     {selectedTemplate.variables.map((v) => (

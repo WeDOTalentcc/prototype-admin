@@ -37,7 +37,7 @@ export function LiaScreeningRightPanel({ currentStep, screeningData, jobData }: 
               <div className="space-y-3">
                 <div>
                   <label className="text-xs font-medium text-lia-text-primary">Objetivo:</label>
-                  <p className="text-sm text-lia-text-primary bg-lia-bg-secondary p-2 rounded-md">
+                  <p className="text-sm text-lia-text-primary bg-lia-bg-secondary p-2 rounded-xl">
                     {screeningData.overview.objective}
                   </p>
                 </div>
@@ -139,7 +139,7 @@ export function LiaScreeningRightPanel({ currentStep, screeningData, jobData }: 
                     ]
                   }
                 ].map((section) => (
-                  <div key={section.category} className="border border-wedo-purple/30 rounded-md p-3">
+                  <div key={section.category} className="border border-wedo-purple/30 rounded-xl p-3">
                     <h4 className="font-medium text-wedo-purple text-sm mb-2">{section.category}</h4>
                     <div className="space-y-1">
                       {section.questions.map((question, qIndex) => (
@@ -264,7 +264,7 @@ export function LiaScreeningRightPanel({ currentStep, screeningData, jobData }: 
                   { step: "Feedback", time: "24-48h após", desc: "Retorno personalizado" }
 
                 ].map((item, index) => (
-                  <div key={item.step} className="flex items-start gap-3 p-2 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-md">
+                  <div key={item.step} className="flex items-start gap-3 p-2 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-xl">
 
                     <div className="w-6 h-6 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-full flex items-center justify-center text-lia-text-secondary text-xs font-bold">
                       {(index + 1 as React.ReactNode)}
@@ -294,7 +294,7 @@ export function LiaScreeningRightPanel({ currentStep, screeningData, jobData }: 
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                <div className="text-center p-4 bg-status-success/10 rounded-md">
+                <div className="text-center p-4 bg-status-success/10 rounded-xl">
                   <CheckCircle className="w-8 h-8 text-status-success mx-auto mb-2" />
                   <div className="text-sm font-medium text-status-success">Roteiro Criado!</div>
                   <div className="text-xs text-status-success">Para {jobData?.title}</div>

@@ -86,7 +86,7 @@ export default function RegisterPage() {
       <div className="hidden lg:flex lg:w-1/2 bg-lia-btn-primary-bg flex-col justify-center items-center p-12 relative">
         <div className="absolute top-8 left-8">
           <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-lia-bg-primary rounded-md flex items-center justify-center">
+            <div className="w-8 h-8 bg-lia-bg-primary rounded-xl flex items-center justify-center">
               <WeDOLogo className="h-4 text-lia-text-primary dark:text-lia-text-primary" />
             </div>
           </div>
@@ -142,7 +142,7 @@ export default function RegisterPage() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Digite seu nome completo"
-                  className="w-full px-4 py-3 border border-lia-border-subtle rounded-md focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg focus:border-lia-btn-primary-bg transition-colors motion-reduce:transition-none"
+                  className="w-full px-4 py-3 border border-lia-border-subtle rounded-xl focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg focus:border-lia-btn-primary-bg transition-colors motion-reduce:transition-none"
                   required
                   aria-required="true"
                   aria-describedby={error ? "register-error" : undefined}
@@ -159,7 +159,7 @@ export default function RegisterPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="Digite seu email"
-                  className="w-full px-4 py-3 border border-lia-border-subtle rounded-md focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg focus:border-lia-btn-primary-bg transition-colors motion-reduce:transition-none"
+                  className="w-full px-4 py-3 border border-lia-border-subtle rounded-xl focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg focus:border-lia-btn-primary-bg transition-colors motion-reduce:transition-none"
                   required
                   aria-required="true"
                   aria-describedby={error ? "register-error" : undefined}
@@ -177,7 +177,7 @@ export default function RegisterPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Mínimo 8 caracteres"
-                    className="w-full px-4 py-3 pr-12 border border-lia-border-subtle rounded-md focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg focus:border-lia-btn-primary-bg transition-colors motion-reduce:transition-none"
+                    className="w-full px-4 py-3 pr-12 border border-lia-border-subtle rounded-xl focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg focus:border-lia-btn-primary-bg transition-colors motion-reduce:transition-none"
                     required
                     aria-required="true"
                     aria-describedby={error ? "register-error" : undefined}
@@ -204,7 +204,7 @@ export default function RegisterPage() {
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder="Digite a senha novamente"
-                    className="w-full px-4 py-3 pr-12 border border-lia-border-subtle rounded-md focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg focus:border-lia-btn-primary-bg transition-colors motion-reduce:transition-none"
+                    className="w-full px-4 py-3 pr-12 border border-lia-border-subtle rounded-xl focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg focus:border-lia-btn-primary-bg transition-colors motion-reduce:transition-none"
                     required
                     aria-required="true"
                     aria-describedby={error ? "register-error" : undefined}
@@ -227,7 +227,7 @@ export default function RegisterPage() {
                     type="checkbox"
                     checked={acceptTerms}
                     onChange={(e) => setAcceptTerms(e.target.checked)}
-                    className="w-4 h-4 mt-1 text-lia-text-primary dark:text-lia-text-primary border-lia-border-default rounded-md focus:ring-lia-btn-primary-bg"
+                    className="w-4 h-4 mt-1 text-lia-text-primary dark:text-lia-text-primary border-lia-border-default rounded-xl focus:ring-lia-btn-primary-bg"
                     aria-required="true"
                     aria-describedby={error ? "register-error" : undefined}
                   />
@@ -245,7 +245,7 @@ export default function RegisterPage() {
               </div>
 
               {error && (
-                <div id="register-error" role="alert" className="p-3 rounded-md bg-status-error/10 border border-status-error/30">
+                <div id="register-error" role="alert" className="p-3 rounded-xl bg-status-error/10 border border-status-error/30">
                   <p className="text-status-error text-sm font-medium">
                     <span aria-hidden="true">⚠ </span>
                     {error}

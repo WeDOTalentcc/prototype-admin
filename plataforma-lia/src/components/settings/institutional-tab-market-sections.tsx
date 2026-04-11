@@ -34,19 +34,19 @@ export function SocialMediaSection({ onSettingsChange }: SectionProps) {
                 type="url"
                 placeholder="https://instagram.com/sodexobrasil"
                 onChange={() => onSettingsChange(true)}
-                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
+                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary"
               />
             </div>
             <div>
               <label className="text-sm font-medium text-lia-text-primary mb-3 block flex items-center gap-2">
-                <div className="w-5 h-5 bg-lia-bg-inverse rounded-md"></div>
+                <div className="w-5 h-5 bg-lia-bg-inverse rounded-xl"></div>
                 Facebook
               </label>
               <input
                 type="url"
                 placeholder="https://facebook.com/sodexobrasil"
                 onChange={() => onSettingsChange(true)}
-                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
+                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary"
               />
             </div>
             <div>
@@ -58,7 +58,7 @@ export function SocialMediaSection({ onSettingsChange }: SectionProps) {
                 type="url"
                 defaultValue="https://linkedin.com/company/sodexo"
                 onChange={() => onSettingsChange(true)}
-                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
+                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary"
               />
             </div>
             <div>
@@ -70,7 +70,7 @@ export function SocialMediaSection({ onSettingsChange }: SectionProps) {
                 type="url"
                 placeholder="https://twitter.com/sodexobrasil"
                 onChange={() => onSettingsChange(true)}
-                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
+                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary"
               />
             </div>
             <div>
@@ -82,7 +82,7 @@ export function SocialMediaSection({ onSettingsChange }: SectionProps) {
                 type="url"
                 placeholder="https://youtube.com/@sodexobrasil"
                 onChange={() => onSettingsChange(true)}
-                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
+                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary"
               />
             </div>
             <div>
@@ -94,7 +94,7 @@ export function SocialMediaSection({ onSettingsChange }: SectionProps) {
                 type="url"
                 placeholder="https://tiktok.com/@sodexobrasil"
                 onChange={() => onSettingsChange(true)}
-                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
+                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary"
               />
             </div>
           </div>
@@ -110,7 +110,7 @@ export function SocialMediaSection({ onSettingsChange }: SectionProps) {
                   type="url"
                   placeholder="https://blog.sodexo.com.br"
                   onChange={() => onSettingsChange(true)}
-                  className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
+                  className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary"
                 />
               </div>
               <div>
@@ -121,7 +121,7 @@ export function SocialMediaSection({ onSettingsChange }: SectionProps) {
                   type="url"
                   placeholder="https://carreiras.sodexo.com.br"
                   onChange={() => onSettingsChange(true)}
-                  className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
+                  className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary"
                 />
               </div>
             </div>
@@ -151,7 +151,7 @@ export function SegmentSection({ onSettingsChange }: SectionProps) {
               <select
                 defaultValue="servicos"
                 onChange={() => onSettingsChange(true)}
-                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
+                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary"
               >
                 <option value="">Selecione o setor</option>
                 <option value="servicos">Alimentação e Serviços</option>
@@ -176,7 +176,7 @@ export function SegmentSection({ onSettingsChange }: SectionProps) {
                 type="text"
                 defaultValue="Facilities Management e Food Services"
                 onChange={() => onSettingsChange(true)}
-                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
+                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary"
                 placeholder="Ex: SaaS, E-commerce, Consultoria..."
               />
             </div>
@@ -187,7 +187,7 @@ export function SegmentSection({ onSettingsChange }: SectionProps) {
               <select
                 defaultValue="grande"
                 onChange={() => onSettingsChange(true)}
-                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
+                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary"
               >
                 <option value="startup">Startup (até 50 funcionários)</option>
                 <option value="scaleup">Scaleup (51-500 funcionários)</option>
@@ -202,7 +202,7 @@ export function SegmentSection({ onSettingsChange }: SectionProps) {
               </label>
               <select
                 onChange={() => onSettingsChange(true)}
-                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
+                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary"
               >
                 <option value="">Selecione o modelo</option>
                 <option value="b2b">B2B (Business to Business)</option>
@@ -224,7 +224,7 @@ export function SegmentSection({ onSettingsChange }: SectionProps) {
               </label>
               <select
                 onChange={() => onSettingsChange(true)}
-                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
+                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary"
               >
                 <option value="">Selecione a faixa</option>
                 <option value="ate100k">{`Até ${CURRENCY_SYMBOL} 100.000`}</option>
@@ -243,7 +243,7 @@ export function SegmentSection({ onSettingsChange }: SectionProps) {
                 type="text"
                 defaultValue="Brasil, França, Estados Unidos, Reino Unido, Alemanha, +50 países"
                 onChange={() => onSettingsChange(true)}
-                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
+                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary"
                 placeholder="Ex: Brasil, Argentina, Chile..."
               />
             </div>
@@ -257,7 +257,7 @@ export function SegmentSection({ onSettingsChange }: SectionProps) {
               rows={3}
               defaultValue="Serviços de alimentação corporativa, gestão de facilities, vouchers e cartões alimentação, benefícios para funcionários, gestão de espaços corporativos."
               onChange={() => onSettingsChange(true)}
-              className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
+              className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary"
               placeholder="Descreva os principais produtos ou serviços oferecidos..."
             />
           </div>
@@ -317,7 +317,7 @@ export function BranchesSection() {
                 status: "Ativa"
               }
             ].map((branch) => (
-              <div key={branch.id} className="p-4 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md">
+              <div key={branch.id} className="p-4 border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl">
                 <div className="flex items-center justify-between mb-3">
                   <div>
                     <h4 className="font-medium text-lia-text-primary">{branch.name}</h4>

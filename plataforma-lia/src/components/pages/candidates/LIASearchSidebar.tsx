@@ -99,7 +99,7 @@ export function LIASearchSidebar({
         <div className="flex-shrink-0 px-4 py-3 bg-lia-bg-primary dark:bg-lia-bg-secondary">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-3 flex-1 min-w-0">
-              <div className="w-10 h-10 rounded-md flex items-center justify-center flex-shrink-0 bg-lia-bg-secondary dark:bg-lia-bg-primary">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 bg-lia-bg-secondary dark:bg-lia-bg-primary">
                 <Brain className="w-6 h-6 text-wedo-cyan" strokeWidth={2.5} />
               </div>
               <div className="min-w-0 flex-1">

@@ -157,7 +157,7 @@ export function UniversityLocationsInput({
         {isDropdownOpen && hasResults && (
           <div 
             ref={dropdownRef}
-            className="absolute z-50 w-full mt-1 bg-lia-bg-primary border border-lia-border-subtle rounded-md max-h-64 overflow-y-auto"
+            className="absolute z-50 w-full mt-1 bg-lia-bg-primary border border-lia-border-subtle rounded-xl max-h-64 overflow-y-auto"
           >
             {allItems.map((item, index) => {
               if (item.type === 'header') {

@@ -165,8 +165,8 @@ export function SaveCommandModal({ isOpen, onClose, originalCommand, commandResu
 
   return (
     <div className="fixed inset-0 bg-lia-overlay flex items-center justify-center z-50 p-4">
-      <Card className="w-full max-w-3xl max-h-[90vh] bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle overflow-y-auto">
-        <CardHeader className="flex flex-row items-center justify-between pb-4 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+      <Card className="w-full max-w-3xl max-h-[90vh] bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle overflow-y-auto">
+        <CardHeader className="flex flex-row items-center justify-between pb-4 dark:border-lia-border-subtle">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-wedo-purple/15 dark:bg-wedo-purple/20 rounded-md flex items-center justify-center">
               <BookOpen className="w-5 h-5 text-wedo-purple dark:text-wedo-purple" />
@@ -192,12 +192,12 @@ export function SaveCommandModal({ isOpen, onClose, originalCommand, commandResu
 
         <CardContent className="space-y-6">
           {/* Comando Original */}
- <div className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-md p-4 border border-lia-border-default">
+ <div className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-xl p-4 border border-lia-border-default">
             <div className="flex items-center gap-2 mb-2">
               <MessageCircle className="w-4 h-4 text-lia-text-secondary" />
  <span className="text-sm font-medium text-lia-text-secondary">Comando Original:</span>
             </div>
- <div className="text-sm text-lia-text-secondary font-mono bg-lia-bg-primary rounded-md p-2">
+ <div className="text-sm text-lia-text-secondary font-mono bg-lia-bg-primary rounded-xl p-2">
               "{originalCommand}"
             </div>
           </div>
@@ -234,7 +234,7 @@ export function SaveCommandModal({ isOpen, onClose, originalCommand, commandResu
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Ex: Análise Avançada de Candidatos"
-              className="w-full px-3 py-2 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-elevated text-lia-text-primary text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="w-full px-3 py-2 border border-lia-border-default dark:border-lia-border-default rounded-xl bg-lia-bg-primary dark:bg-lia-bg-elevated text-lia-text-primary text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
             />
           </div>
 
@@ -273,7 +273,7 @@ export function SaveCommandModal({ isOpen, onClose, originalCommand, commandResu
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Descreva o que este comando faz e quando deve ser usado..."
               rows={3}
-              className="w-full px-3 py-2 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-elevated text-lia-text-primary text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
+              className="w-full px-3 py-2 border border-lia-border-default dark:border-lia-border-default rounded-xl bg-lia-bg-primary dark:bg-lia-bg-elevated text-lia-text-primary text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
             />
           </div>
 
@@ -285,7 +285,7 @@ export function SaveCommandModal({ isOpen, onClose, originalCommand, commandResu
             <div className="space-y-2">
               {examples.map((example, index) => (
                 <div key={`example-${index}`} className="flex items-center gap-2">
-                  <div className="flex-1 text-sm text-lia-text-primary bg-lia-bg-secondary dark:bg-lia-bg-elevated rounded-md px-3 py-2">
+                  <div className="flex-1 text-sm text-lia-text-primary bg-lia-bg-secondary dark:bg-lia-bg-elevated rounded-xl px-3 py-2">
                     "{example}"
                   </div>
                   {examples.length > 1 && (
@@ -307,7 +307,7 @@ export function SaveCommandModal({ isOpen, onClose, originalCommand, commandResu
                   value={newExample}
                   onChange={(e) => setNewExample(e.target.value)}
                   placeholder="Adicionar outro exemplo..."
-                  className="flex-1 px-3 py-2 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-elevated text-lia-text-primary text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="flex-1 px-3 py-2 border border-lia-border-default dark:border-lia-border-default rounded-xl bg-lia-bg-primary dark:bg-lia-bg-elevated text-lia-text-primary text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
                   onKeyPress={(e) => e.key === 'Enter' && handleAddExample()}
                 />
                 <Button variant="outline" size="sm" onClick={handleAddExample} disabled={!newExample.trim()} className="bg-lia-bg-primary border border-lia-border-default hover:bg-lia-bg-secondary dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-lia-bg-inverse">
@@ -345,7 +345,7 @@ export function SaveCommandModal({ isOpen, onClose, originalCommand, commandResu
                   value={newTag}
                   onChange={(e) => setNewTag(e.target.value)}
                   placeholder="Adicionar tag..."
-                  className="flex-1 px-3 py-2 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-elevated text-lia-text-primary text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="flex-1 px-3 py-2 border border-lia-border-default dark:border-lia-border-default rounded-xl bg-lia-bg-primary dark:bg-lia-bg-elevated text-lia-text-primary text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
                   onKeyPress={(e) => e.key === 'Enter' && handleAddTag()}
                 />
                 <Button variant="outline" size="sm" onClick={handleAddTag} disabled={!newTag.trim()} className="bg-lia-bg-primary border border-lia-border-default hover:bg-lia-bg-secondary dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-lia-bg-inverse">
@@ -357,7 +357,7 @@ export function SaveCommandModal({ isOpen, onClose, originalCommand, commandResu
 
           {/* Resultado do Comando (se disponível) */}
           {commandResult && (
-            <div className="bg-status-success/10 dark:bg-status-success/10 rounded-md p-4 border border-status-success/30 dark:border-status-success/30">
+            <div className="bg-status-success/10 dark:bg-status-success/10 rounded-xl p-4 border border-status-success/30 dark:border-status-success/30">
               <div className="flex items-center gap-2 mb-2">
                 <CheckCircle className="w-4 h-4 text-status-success" />
                 <span className="text-sm font-medium text-status-success dark:text-status-success">Resultado:</span>

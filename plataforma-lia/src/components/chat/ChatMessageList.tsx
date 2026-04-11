@@ -196,7 +196,7 @@ const ChatMessageListComponent = memo(function ChatMessageList({
                               candidatos qualificados.
                             </p>
 
-                            <div className="bg-lia-bg-primary/60/40 rounded-md p-3 mb-3 space-y-1.5">
+                            <div className="bg-lia-bg-primary/60/40 rounded-xl p-3 mb-3 space-y-1.5">
                               <div className="flex items-center justify-between text-xs">
                                 <span className="text-lia-text-secondary">
                                   Créditos disponíveis:
@@ -400,7 +400,7 @@ const ChatMessageListComponent = memo(function ChatMessageList({
                 )}
                 {message.needsApproval && message.approvalRequest && (
                   <div
-                    className="mt-4 p-5 rounded-md bg-stone-50 dark:bg-stone-900/20"
+                    className="mt-4 p-5 rounded-xl bg-stone-50 dark:bg-stone-900/20"
                   >
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center space-x-2">

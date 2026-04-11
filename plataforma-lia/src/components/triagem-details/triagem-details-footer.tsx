@@ -51,7 +51,7 @@ export function TriagemDetailsFooter({
         ) : (
           <button
             onClick={() => setConfirmReject(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-colors motion-reduce:transition-none hover:bg-status-error/10 border border-lia-border-subtle text-status-error"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-xl transition-colors motion-reduce:transition-none hover:bg-status-error/10 border border-lia-border-subtle text-status-error"
           >
             <ThumbsDown className="w-3.5 h-3.5" />
             Reprovar
@@ -64,7 +64,7 @@ export function TriagemDetailsFooter({
             setApproving(false)
           }}
           disabled={approving}
-          className="flex items-center gap-1.5 px-4 py-1.5 text-xs font-medium rounded-md transition-colors motion-reduce:transition-none hover:bg-lia-btn-primary-hover disabled:opacity-50 bg-lia-btn-primary-bg text-lia-text-tertiary"
+          className="flex items-center gap-1.5 px-4 py-1.5 text-xs font-medium rounded-xl transition-colors motion-reduce:transition-none hover:bg-lia-btn-primary-hover disabled:opacity-50 bg-lia-btn-primary-bg text-lia-text-tertiary"
         >
           {approving ? <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none" /> : <ThumbsUp className="w-3.5 h-3.5" />}
           Aprovar para Entrevista

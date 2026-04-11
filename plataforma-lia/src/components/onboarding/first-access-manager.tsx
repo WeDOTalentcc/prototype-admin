@@ -325,19 +325,19 @@ export function FirstAccessManager({ token, onAccessGranted, onAccessDenied }: F
                   </div>
 
                   <div className="space-y-4 lia-text-medium">
-                    <div className="flex items-center gap-4 p-4 lia-bg-cream rounded-md border border-lia-border-subtle">
+                    <div className="flex items-center gap-4 p-4 lia-bg-cream rounded-xl border border-lia-border-subtle">
                       <Building className="w-5 h-5 lia-text-blue flex-shrink-0" />
                       <span>{accessData?.companyData?.razaoSocial}</span>
                     </div>
-                    <div className="flex items-center gap-4 p-4 lia-bg-cream rounded-md border border-lia-border-subtle">
+                    <div className="flex items-center gap-4 p-4 lia-bg-cream rounded-xl border border-lia-border-subtle">
                       <MapPin className="w-5 h-5 lia-text-blue flex-shrink-0" />
                       <span>{accessData?.companyData?.endereco}</span>
                     </div>
-                    <div className="flex items-center gap-4 p-4 lia-bg-cream rounded-md border border-lia-border-subtle">
+                    <div className="flex items-center gap-4 p-4 lia-bg-cream rounded-xl border border-lia-border-subtle">
                       <Phone className="w-5 h-5 lia-text-blue flex-shrink-0" />
                       <span>{accessData?.companyData?.telefone}</span>
                     </div>
-                    <div className="flex items-center gap-4 p-4 lia-bg-cream rounded-md border border-lia-border-subtle">
+                    <div className="flex items-center gap-4 p-4 lia-bg-cream rounded-xl border border-lia-border-subtle">
                       <Calendar className="w-5 h-5 lia-text-blue flex-shrink-0" />
                       <span>Convite expira em {new Date(accessData?.expiresAt || '').toLocaleDateString('pt-BR')}</span>
                     </div>
@@ -349,7 +349,7 @@ export function FirstAccessManager({ token, onAccessGranted, onAccessDenied }: F
                   <h4 className="lia-title-medium text-lia-text-primary mb-4">
                     Convite enviado por:
                   </h4>
-                  <div className="flex items-center gap-4 p-4 lia-bg-lavender rounded-md">
+                  <div className="flex items-center gap-4 p-4 lia-bg-lavender rounded-xl">
                     <div className="w-14 h-14 lia-bg-blue rounded-full flex items-center justify-center">
                       <User className="w-7 h-7 lia-text-white" />
                     </div>

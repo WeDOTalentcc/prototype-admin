@@ -149,7 +149,7 @@ export function InterviewSettingsSection({ interviewSettings, setInterviewSettin
           <select
             value={interviewSettings.duration}
             onChange={(e) => setInterviewSettings(prev => ({ ...prev, duration: e.target.value }))}
-            className="w-full h-9 text-xs border border-lia-border-subtle rounded-md focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg/20"
+            className="w-full h-9 text-xs border border-lia-border-subtle rounded-xl focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg/20"
           >
             <option value="30">30 min</option>
             <option value="45">45 min</option>
@@ -164,7 +164,7 @@ export function InterviewSettingsSection({ interviewSettings, setInterviewSettin
             value={interviewSettings.date}
             onChange={(e) => setInterviewSettings(prev => ({ ...prev, date: e.target.value }))}
             min={new Date().toISOString().split('T')[0]}
-            className="w-full h-9 text-xs border border-lia-border-subtle rounded-md focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg/20"
+            className="w-full h-9 text-xs border border-lia-border-subtle rounded-xl focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg/20"
           />
         </div>
         <div>
@@ -173,7 +173,7 @@ export function InterviewSettingsSection({ interviewSettings, setInterviewSettin
             type="time"
             value={interviewSettings.time}
             onChange={(e) => setInterviewSettings(prev => ({ ...prev, time: e.target.value }))}
-            className="w-full h-9 text-xs border border-lia-border-subtle rounded-md focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg/20"
+            className="w-full h-9 text-xs border border-lia-border-subtle rounded-xl focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg/20"
           />
         </div>
       </div>
@@ -183,7 +183,7 @@ export function InterviewSettingsSection({ interviewSettings, setInterviewSettin
         <select
           value={interviewSettings.interviewer}
           onChange={(e) => setInterviewSettings(prev => ({ ...prev, interviewer: e.target.value }))}
-          className="w-full h-9 text-xs border border-lia-border-subtle rounded-md focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg/20"
+          className="w-full h-9 text-xs border border-lia-border-subtle rounded-xl focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg/20"
         >
           <option value="">Selecione...</option>
           {interviewers.map((person) => (
@@ -249,7 +249,7 @@ export function VacancyLinkingSection({
               value={selectedVacancyId || ''}
               onChange={(e) => setSelectedVacancyId(e.target.value || null)}
               disabled={isLoadingVacancies}
-              className="w-full h-9 text-xs border border-lia-border-subtle rounded-md focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg/20 bg-lia-bg-primary disabled:bg-lia-bg-tertiary disabled:cursor-not-allowed"
+              className="w-full h-9 text-xs border border-lia-border-subtle rounded-xl focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg/20 bg-lia-bg-primary disabled:bg-lia-bg-tertiary disabled:cursor-not-allowed"
             >
               <option value="">
                 {isLoadingVacancies ? 'Carregando vagas...' : 'Selecione uma vaga'}
@@ -271,7 +271,7 @@ export function VacancyLinkingSection({
             <select
               value={selectedStage}
               onChange={(e) => setSelectedStage(e.target.value)}
-              className="w-full h-9 text-xs border border-lia-border-subtle rounded-md focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg/20 bg-lia-bg-primary"
+              className="w-full h-9 text-xs border border-lia-border-subtle rounded-xl focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg/20 bg-lia-bg-primary"
             >
               {PIPELINE_STAGES.map((stage) => (
                 <option key={stage.value} value={stage.value}>
@@ -282,7 +282,7 @@ export function VacancyLinkingSection({
           </div>
 
           {type === 'triagem' && (
-            <div className="bg-status-warning/10 border border-status-warning/30 rounded-md p-3">
+            <div className="bg-status-warning/10 border border-status-warning/30 rounded-xl p-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Clock className="w-3.5 h-3.5 text-status-warning flex-shrink-0" />

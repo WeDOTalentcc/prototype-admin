@@ -259,7 +259,7 @@ const [lists, setLists] = useState<CandidateList[]>([])
                       value={newListName}
                       onChange={(e) => setNewListName(e.target.value)}
                       placeholder="Ex: Candidatos Finalistas"
-                      className="border-lia-border-subtle rounded-md"
+                      className="border-lia-border-subtle rounded-xl"
                       autoFocus
                     />
                   </div>

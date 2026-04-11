@@ -276,7 +276,7 @@ function InlineLeftShell({
       {hasDynamicPanel && state.dynamicPanel && (
         <DynamicContextPanel
           panel={state.dynamicPanel}
-          className="w-[420px] min-w-[420px] border border-lia-border-subtle rounded-md ml-2"
+          className="w-[420px] min-w-[420px] border border-lia-border-subtle rounded-xl ml-2"
         />
       )}
 

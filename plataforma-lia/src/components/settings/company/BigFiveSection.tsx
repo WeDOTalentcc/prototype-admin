@@ -37,7 +37,7 @@ export function BigFiveSection({
           size="sm"
           onClick={handleSaveCultureFields}
           disabled={saving}
-          className="text-micro rounded-md border-lia-border-default hover:bg-lia-bg-tertiary dark:border-lia-border-default dark:hover:bg-lia-bg-inverse"
+          className="text-micro rounded-xl border-lia-border-default hover:bg-lia-bg-tertiary dark:border-lia-border-default dark:hover:bg-lia-bg-inverse"
         >
           {saving ? (
             <>
@@ -64,7 +64,7 @@ export function BigFiveSection({
         onToggleChange={updateLiaToggle}
         onInstructionSave={updateLiaInstruction}
       >
-        <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 rounded-md p-4">
+        <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 rounded-xl p-4">
           <BigFiveRadar
             scores={{
               openness: companyData.openness_score ?? 50,

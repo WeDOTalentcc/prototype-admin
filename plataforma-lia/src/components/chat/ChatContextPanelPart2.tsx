@@ -37,16 +37,16 @@ export function ChatContextPanelPart2({ contextData }: Props) {
             <CardContent className="p-6">
               <div className="space-y-6">
                 <div className="grid grid-cols-4 gap-3">
-                  <div className="text-center p-4 rounded-md bg-stone-50 dark:bg-stone-900/20"><p className="text-lg font-bold text-lia-text-primary">{data.realtime_metrics.applications_received}</p><p className="text-xs mt-1 text-lia-text-secondary">Aplicações</p></div>
-                  <div className="text-center p-4 rounded-md bg-status-success/10 dark:bg-status-success/20"><p className="text-lg font-bold text-lia-text-primary">{data.realtime_metrics.active_sourcing_reached}</p><p className="text-xs mt-1 text-lia-text-secondary">Sourcing Ativo</p></div>
-                  <div className="text-center p-4 rounded-md bg-status-error/10 dark:bg-status-error/20"><p className="text-lg font-bold text-lia-text-primary">{data.realtime_metrics.response_rate}</p><p className="text-xs mt-1 text-lia-text-secondary">Taxa Resposta</p></div>
-                  <div className="text-center p-4 rounded-md bg-wedo-cyan/15 dark:bg-wedo-cyan/20"><p className="text-lg font-bold text-lia-text-primary">{data.realtime_metrics.avg_candidate_score}</p><p className="text-xs mt-1 text-lia-text-secondary">Score Médio</p></div>
+                  <div className="text-center p-4 rounded-xl bg-stone-50 dark:bg-stone-900/20"><p className="text-lg font-bold text-lia-text-primary">{data.realtime_metrics.applications_received}</p><p className="text-xs mt-1 text-lia-text-secondary">Aplicações</p></div>
+                  <div className="text-center p-4 rounded-xl bg-status-success/10 dark:bg-status-success/20"><p className="text-lg font-bold text-lia-text-primary">{data.realtime_metrics.active_sourcing_reached}</p><p className="text-xs mt-1 text-lia-text-secondary">Sourcing Ativo</p></div>
+                  <div className="text-center p-4 rounded-xl bg-status-error/10 dark:bg-status-error/20"><p className="text-lg font-bold text-lia-text-primary">{data.realtime_metrics.response_rate}</p><p className="text-xs mt-1 text-lia-text-secondary">Taxa Resposta</p></div>
+                  <div className="text-center p-4 rounded-xl bg-wedo-cyan/15 dark:bg-wedo-cyan/20"><p className="text-lg font-bold text-lia-text-primary">{data.realtime_metrics.avg_candidate_score}</p><p className="text-xs mt-1 text-lia-text-secondary">Score Médio</p></div>
                 </div>
                 <div>
                   <h4 className="text-sm font-medium text-lia-text-secondary mb-3">Candidatos Top Performance</h4>
                   <div className="space-y-2">
                     {(data.top_candidates as { name: string; current_role: string; score: number; highlights: string[]; status: string }[]).map((candidate) => (
-                      <div key={candidate.name} className="p-4 rounded-md bg-lia-bg-tertiary">
+                      <div key={candidate.name} className="p-4 rounded-xl bg-lia-bg-tertiary">
                         <div className="flex items-center justify-between mb-3">
                           <div><h5 className="font-medium text-lia-text-primary">{candidate.name}</h5><p className="text-sm text-lia-text-secondary">{candidate.current_role}</p></div>
                           <Badge className="bg-status-warning/10 dark:bg-status-warning/20 text-lia-text-primary">Score: {candidate.score}</Badge>
@@ -99,7 +99,7 @@ export function ChatContextPanelPart2({ contextData }: Props) {
                   <h4 className="text-sm font-medium text-lia-text-secondary mb-3">Estrutura do Processo</h4>
                   <div className="grid grid-cols-2 gap-4">
                     {Object.entries(data.interview_structure).map(([key, stage]: [string, any]) => (
-                      <div key={key} className="p-3 bg-lia-bg-secondary rounded-md">
+                      <div key={key} className="p-3 bg-lia-bg-secondary rounded-xl">
                         <h5 className="font-medium capitalize mb-2">{key.replace('stage_', 'Etapa ').replace('_', ' ')}</h5>
                         <div className="text-sm space-y-1">
                           <p><span className="text-lia-text-secondary">Duração:</span> {stage.duration}</p>
@@ -127,16 +127,16 @@ export function ChatContextPanelPart2({ contextData }: Props) {
             </CardHeader>
             <CardContent className="p-6">
               <div className="space-y-6 font-open-sans">
-                <div className="p-4 rounded-md bg-status-success/10 dark:bg-status-success/20">
+                <div className="p-4 rounded-xl bg-status-success/10 dark:bg-status-success/20">
                   <h4 className="font-medium text-lia-text-primary">Candidato Selecionado: Carlos Mendonça</h4>
                   <p className="text-sm text-lia-text-secondary">Score Final: 94/100 • Cultural Fit: Excelente</p>
                 </div>
                 <div>
                   <h4 className="text-sm font-medium text-lia-text-secondary mb-3">Processo de Finalização</h4>
                   <div className="space-y-3 font-open-sans">
-                    <div className="flex items-center justify-between p-3 rounded-md bg-lia-bg-tertiary"><span className="text-sm font-medium">Referências Profissionais</span><Badge className="bg-status-success/10 dark:bg-status-success/20 text-lia-text-primary">Concluído</Badge></div>
-                    <div className="flex items-center justify-between p-3 rounded-md bg-lia-bg-tertiary"><span className="text-sm font-medium">Background Check</span><Badge className="bg-status-success/10 dark:bg-status-success/20 text-lia-text-primary">Aprovado</Badge></div>
-                    <div className="flex items-center justify-between p-3 rounded-md bg-lia-bg-tertiary"><span className="text-sm font-medium">Proposta Salarial</span><Badge className="bg-wedo-cyan/15 dark:bg-wedo-cyan/20 text-lia-text-primary">Aceita</Badge></div>
+                    <div className="flex items-center justify-between p-3 rounded-xl bg-lia-bg-tertiary"><span className="text-sm font-medium">Referências Profissionais</span><Badge className="bg-status-success/10 dark:bg-status-success/20 text-lia-text-primary">Concluído</Badge></div>
+                    <div className="flex items-center justify-between p-3 rounded-xl bg-lia-bg-tertiary"><span className="text-sm font-medium">Background Check</span><Badge className="bg-status-success/10 dark:bg-status-success/20 text-lia-text-primary">Aprovado</Badge></div>
+                    <div className="flex items-center justify-between p-3 rounded-xl bg-lia-bg-tertiary"><span className="text-sm font-medium">Proposta Salarial</span><Badge className="bg-wedo-cyan/15 dark:bg-wedo-cyan/20 text-lia-text-primary">Aceita</Badge></div>
                   </div>
                 </div>
                 <div>
@@ -167,7 +167,7 @@ export function ChatContextPanelPart2({ contextData }: Props) {
             </CardHeader>
             <CardContent className="p-6">
               <div className="space-y-6 font-open-sans">
-                <div className="p-5 rounded-md bg-wedo-cyan/15 dark:bg-wedo-cyan/20">
+                <div className="p-5 rounded-xl bg-wedo-cyan/15 dark:bg-wedo-cyan/20">
                   <h4 className="text-base font-bold mb-2 text-lia-text-primary">Programa de 90 Dias</h4>
                   <p className="text-sm text-lia-text-secondary">Integração estratégica e cultural personalizada</p>
                 </div>
@@ -175,7 +175,7 @@ export function ChatContextPanelPart2({ contextData }: Props) {
                   <h4 className="text-sm font-medium text-lia-text-secondary mb-3">Primeiros 30 Dias</h4>
                   <div className="space-y-2">
                     {['Imersão na cultura e processos da empresa', 'Reuniões 1:1 com stakeholders principais', 'Análise do estado atual da infraestrutura TI'].map((item, i) => (
-                      <div key={i} className="flex items-start space-x-3 p-3 rounded-md bg-lia-bg-tertiary"><div className="w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0 bg-lia-bg-secondary0"></div><span className="text-sm">{item}</span></div>
+                      <div key={i} className="flex items-start space-x-3 p-3 rounded-xl bg-lia-bg-tertiary"><div className="w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0 bg-lia-bg-secondary0"></div><span className="text-sm">{item}</span></div>
                     ))}
                   </div>
                 </div>
@@ -183,7 +183,7 @@ export function ChatContextPanelPart2({ contextData }: Props) {
                   <h4 className="text-sm font-medium text-lia-text-secondary mb-3">60-90 Dias</h4>
                   <div className="space-y-2">
                     {['Apresentação do plano estratégico de transformação digital', 'Início das primeiras iniciativas de melhoria'].map((item, i) => (
-                      <div key={i} className="flex items-start space-x-3 p-3 rounded-md bg-lia-bg-tertiary"><div className="w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0 bg-lia-bg-secondary0"></div><span className="text-sm">{item}</span></div>
+                      <div key={i} className="flex items-start space-x-3 p-3 rounded-xl bg-lia-bg-tertiary"><div className="w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0 bg-lia-bg-secondary0"></div><span className="text-sm">{item}</span></div>
                     ))}
                   </div>
                 </div>
@@ -209,7 +209,7 @@ export function ChatContextPanelPart2({ contextData }: Props) {
             </CardHeader>
             <CardContent className="p-6">
               <div className="space-y-6 font-open-sans">
-                <div className="p-4 rounded-md bg-status-warning/10 dark:bg-status-warning/20">
+                <div className="p-4 rounded-xl bg-status-warning/10 dark:bg-status-warning/20">
                   <h4 className="font-medium text-lia-text-primary">Framework de Avaliação Anual</h4>
                   <p className="text-sm text-lia-text-secondary">OKRs + 360-feedback + desenvolvimento contínuo</p>
                 </div>
@@ -231,9 +231,9 @@ export function ChatContextPanelPart2({ contextData }: Props) {
                 <div>
                   <h4 className="text-sm font-medium text-lia-text-secondary mb-3">Cronograma de Reviews</h4>
                   <div className="grid grid-cols-3 gap-4 text-center">
-                    <div className="p-3 bg-lia-bg-secondary rounded-md"><p className="text-sm font-semibold">30 dias</p><p className="text-xs text-lia-text-secondary">Check-in inicial</p></div>
-                    <div className="p-3 bg-lia-bg-secondary rounded-md"><p className="text-sm font-semibold">90 dias</p><p className="text-xs text-lia-text-secondary">Avaliação onboarding</p></div>
-                    <div className="p-3 bg-lia-bg-secondary rounded-md"><p className="text-sm font-semibold">12 meses</p><p className="text-xs text-lia-text-secondary">Review anual</p></div>
+                    <div className="p-3 bg-lia-bg-secondary rounded-xl"><p className="text-sm font-semibold">30 dias</p><p className="text-xs text-lia-text-secondary">Check-in inicial</p></div>
+                    <div className="p-3 bg-lia-bg-secondary rounded-xl"><p className="text-sm font-semibold">90 dias</p><p className="text-xs text-lia-text-secondary">Avaliação onboarding</p></div>
+                    <div className="p-3 bg-lia-bg-secondary rounded-xl"><p className="text-sm font-semibold">12 meses</p><p className="text-xs text-lia-text-secondary">Review anual</p></div>
                   </div>
                 </div>
                 <div className="flex gap-3 pt-4">
@@ -257,7 +257,7 @@ export function ChatContextPanelPart2({ contextData }: Props) {
             </CardHeader>
             <CardContent className="p-6">
               <div className="space-y-6 font-open-sans">
-                <div className="p-4 rounded-md bg-wedo-cyan/15 dark:bg-wedo-cyan/20">
+                <div className="p-4 rounded-xl bg-wedo-cyan/15 dark:bg-wedo-cyan/20">
                   <h3 className="text-base font-semibold mb-3 text-lia-text-primary">Sumário Executivo</h3>
                   <div className="grid grid-cols-2 gap-4">
                     <div><p className="text-xs text-lia-text-secondary mb-1">Posição:</p><p className="font-medium">{data.executive_summary.position}</p></div>

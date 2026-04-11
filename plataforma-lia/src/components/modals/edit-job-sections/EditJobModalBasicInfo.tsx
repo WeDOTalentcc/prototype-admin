@@ -154,7 +154,7 @@ export function EditJobModalBasicInfo({
         </div>
         
         <div className="space-y-4">
-          <div className="p-3 bg-lia-bg-secondary rounded-md border border-lia-border-subtle">
+          <div className="p-3 bg-lia-bg-secondary rounded-xl border border-lia-border-subtle">
             <p className="text-xs font-medium uppercase text-lia-text-secondary mb-2">Recrutador(a)</p>
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -178,7 +178,7 @@ export function EditJobModalBasicInfo({
             </div>
           </div>
 
-          <div className="p-3 bg-lia-bg-secondary rounded-md border border-lia-border-subtle">
+          <div className="p-3 bg-lia-bg-secondary rounded-xl border border-lia-border-subtle">
             <p className="text-xs font-medium uppercase text-lia-text-secondary mb-2">Gestor(a) Solicitante</p>
             <div className="grid grid-cols-2 gap-3">
               <div>

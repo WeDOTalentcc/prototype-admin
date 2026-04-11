@@ -229,9 +229,9 @@ export function AlertSettingsModal({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4" data-testid="alert-settings-modal">
-      <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md w-full max-w-6xl h-[90vh] flex flex-col dark:border-lia-border-subtle">
+      <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-xl w-full max-w-6xl h-[90vh] flex flex-col dark:border-lia-border-subtle">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+        <div className="flex items-center justify-between p-6 dark:border-lia-border-subtle">
           <div>
             <h2 className="text-lg font-semibold font-['Open_Sans'] text-lia-text-primary">
               Configurações de Alertas KPI
@@ -387,7 +387,7 @@ export function AlertSettingsModal({
                           type="text"
                           value={editingRule.name}
                           onChange={(e) => setEditingRule(prev => prev ? { ...prev, name: e.target.value } : null)}
-                          className="w-full p-2 border border-lia-border-default rounded-md"
+                          className="w-full p-2 border border-lia-border-default rounded-xl"
                           placeholder="Ex: Time to Fill Crítico"
                         />
                       </div>
@@ -399,7 +399,7 @@ export function AlertSettingsModal({
                         <select
                           value={editingRule.metric}
                           onChange={(e) => setEditingRule(prev => prev ? { ...prev, metric: e.target.value } : null)}
-                          className="w-full p-2 border border-lia-border-default rounded-md"
+                          className="w-full p-2 border border-lia-border-default rounded-xl"
                         >
                           {metrics.map(metric => (
                             <option key={metric.value} value={metric.value}>
@@ -417,7 +417,7 @@ export function AlertSettingsModal({
                           <select
                             value={editingRule.operator}
                             onChange={(e) => setEditingRule(prev => prev ? { ...prev, operator: e.target.value as AlertRule['operator'] } : null)}
-                            className="w-full p-2 border border-lia-border-default rounded-md"
+                            className="w-full p-2 border border-lia-border-default rounded-xl"
                           >
                             <option value=">">Maior que (&gt;)</option>
                             <option value="<">Menor que (&lt;)</option>
@@ -435,7 +435,7 @@ export function AlertSettingsModal({
                             type="number"
                             value={editingRule.threshold}
                             onChange={(e) => setEditingRule(prev => prev ? { ...prev, threshold: Number(e.target.value) } : null)}
-                            className="w-full p-2 border border-lia-border-default rounded-md"
+                            className="w-full p-2 border border-lia-border-default rounded-xl"
                           />
                         </div>
                       </div>
@@ -448,7 +448,7 @@ export function AlertSettingsModal({
                           <select
                             value={editingRule.severity}
                             onChange={(e) => setEditingRule(prev => prev ? { ...prev, severity: e.target.value as AlertRule['severity'] } : null)}
-                            className="w-full p-2 border border-lia-border-default rounded-md"
+                            className="w-full p-2 border border-lia-border-default rounded-xl"
                           >
                             <option value="critical">Crítico</option>
                             <option value="warning">Aviso</option>
@@ -463,7 +463,7 @@ export function AlertSettingsModal({
                           <select
                             value={editingRule.frequency}
                             onChange={(e) => setEditingRule(prev => prev ? { ...prev, frequency: e.target.value as AlertRule['frequency'] } : null)}
-                            className="w-full p-2 border border-lia-border-default rounded-md"
+                            className="w-full p-2 border border-lia-border-default rounded-xl"
                           >
                             <option value="realtime">Tempo Real</option>
                             <option value="daily">Diário</option>

@@ -503,7 +503,7 @@ export function UnifiedCandidateTable({
             <button
               onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
               disabled={currentPage === 1}
-              className="px-3 py-1 text-xs rounded-md border border-lia-border-default dark:border-lia-border-default hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-3 py-1 text-xs rounded-xl border border-lia-border-default dark:border-lia-border-default hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Anterior
             </button>
@@ -513,7 +513,7 @@ export function UnifiedCandidateTable({
             <button
               onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
               disabled={currentPage === totalPages}
-              className="px-3 py-1 text-xs rounded-md border border-lia-border-default dark:border-lia-border-default hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-3 py-1 text-xs rounded-xl border border-lia-border-default dark:border-lia-border-default hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Próxima
             </button>

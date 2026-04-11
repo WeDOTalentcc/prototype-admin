@@ -32,18 +32,18 @@ export function AlertsTab({
   return (
     <div className="space-y-4">
       {successMessage && (
-        <div className="px-2 py-1.5 rounded-md flex items-center gap-2 bg-status-success/15 border border-status-success/30 text-status-success dark:bg-status-success dark:border-status-success/30 dark:text-status-success">
+        <div className="px-2 py-1.5 rounded-xl flex items-center gap-2 bg-status-success/15 border border-status-success/30 text-status-success dark:bg-status-success dark:border-status-success/30 dark:text-status-success">
           <CheckCircle className="w-3.5 h-3.5 text-status-success dark:text-status-success" />
           <span className="text-xs">{successMessage}</span>
         </div>
       )}
       {error && (
-        <div className="bg-status-error/10 border border-status-error/30 text-status-error px-2 py-1.5 rounded-md flex items-center gap-2">
+        <div className="bg-status-error/10 border border-status-error/30 text-status-error px-2 py-1.5 rounded-xl flex items-center gap-2">
           <AlertCircle className="w-3.5 h-3.5" />
           <span className="text-xs">{error}</span>
         </div>
       )}
-      <Card className="border border-lia-border-subtle/50 dark:border-lia-border-subtle/50 bg-lia-bg-primary/80 dark:bg-lia-bg-secondary/80 backdrop-blur-sm rounded-md">
+      <Card className="border border-lia-border-subtle/50 dark:border-lia-border-subtle/50 bg-lia-bg-primary/80 dark:bg-lia-bg-secondary/80 backdrop-blur-sm rounded-xl">
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
             <div>
@@ -126,7 +126,7 @@ export function AlertsTab({
         </CardContent>
       </Card>
 
-      <Card className="border border-lia-border-subtle/50 dark:border-lia-border-subtle/50 bg-lia-bg-primary/80 dark:bg-lia-bg-secondary/80 backdrop-blur-sm rounded-md">
+      <Card className="border border-lia-border-subtle/50 dark:border-lia-border-subtle/50 bg-lia-bg-primary/80 dark:bg-lia-bg-secondary/80 backdrop-blur-sm rounded-xl">
         <CardHeader className="pb-2">
           <CardTitle className={`${textStyles.h4} flex items-center gap-2`}>
             <MessageSquare className="w-3.5 h-3.5 text-lia-text-secondary" />
@@ -171,7 +171,7 @@ export function AlertsTab({
         </CardContent>
       </Card>
 
-      <Card className="border border-lia-border-subtle/50 dark:border-lia-border-subtle/50 bg-lia-bg-primary/80 dark:bg-lia-bg-secondary/80 backdrop-blur-sm rounded-md">
+      <Card className="border border-lia-border-subtle/50 dark:border-lia-border-subtle/50 bg-lia-bg-primary/80 dark:bg-lia-bg-secondary/80 backdrop-blur-sm rounded-xl">
         <CardHeader className="pb-2">
           <CardTitle className={`${textStyles.h4} flex items-center gap-2`}>
             <BarChart3 className="w-3.5 h-3.5 text-lia-text-secondary" />

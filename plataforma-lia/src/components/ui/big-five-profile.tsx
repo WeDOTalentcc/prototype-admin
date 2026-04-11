@@ -250,7 +250,7 @@ export function BigFiveProfile({ scores, compact = false, showInsights = true }:
         {showInsights && (
           <div className="space-y-2">
             {/* Insight comportamental minimalista */}
-            <div className="p-2 bg-wedo-purple/10 dark:bg-wedo-purple/10 rounded-md border border-wedo-purple/30 dark:border-wedo-purple/30">
+            <div className="p-2 bg-wedo-purple/10 dark:bg-wedo-purple/10 rounded-xl border border-wedo-purple/30 dark:border-wedo-purple/30">
               <div className="flex items-start gap-1.5">
                 <Brain className="w-3 h-3 mt-0.5 flex-shrink-0 text-wedo-cyan" />
                 <div className="space-y-1">

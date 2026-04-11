@@ -239,13 +239,13 @@ export function JobsDashboard({ className, onJobSelect }: JobsDashboardProps) {
             return (
               <Card
                 key={job.id}
-                className="rounded-md hover:border-lia-border-medium dark:hover:border-lia-border-medium transition-colors motion-reduce:transition-none cursor-pointer dark:bg-lia-bg-secondary dark:border-lia-border-subtle"
+                className="rounded-xl hover:border-lia-border-medium dark:hover:border-lia-border-medium transition-colors motion-reduce:transition-none cursor-pointer dark:bg-lia-bg-secondary dark:border-lia-border-subtle"
                 onClick={() => onJobSelect?.(job)}
               >
                 <CardHeader className="pb-2">
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-md bg-lia-bg-tertiary dark:bg-lia-bg-secondary flex items-center justify-center">
+                      <div className="w-8 h-8 rounded-xl bg-lia-bg-tertiary dark:bg-lia-bg-secondary flex items-center justify-center">
                         <TypeIcon className="h-4 w-4 text-lia-text-secondary" />
                       </div>
                       <div className="flex-1 min-w-0">

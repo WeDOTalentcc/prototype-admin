@@ -177,7 +177,7 @@ export function ColumnConfigurationModal({
       <SheetContent side="right" className="w-96 p-0">
         <div className="flex flex-col h-full">
           {/* Header */}
-          <SheetHeader className="p-4 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+          <SheetHeader className="p-4 dark:border-lia-border-subtle">
             <SheetTitle className="flex items-center gap-2 font-['Open_Sans',sans-serif]">
               <Settings className="w-4 h-4" />
               Columns
@@ -188,7 +188,7 @@ export function ColumnConfigurationModal({
           </SheetHeader>
 
           {/* Search */}
-          <div className="p-4 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+          <div className="p-4 dark:border-lia-border-subtle">
             <div className="relative">
               <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-lia-text-disabled" />
               <Input
@@ -202,11 +202,11 @@ export function ColumnConfigurationModal({
 
           {/* Saved Views */}
           {savedViews.length > 0 && (
-            <div className="p-4 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+            <div className="p-4 dark:border-lia-border-subtle">
               <h4 className="text-sm font-medium text-lia-text-primary mb-2">Visualizações Salvas</h4>
               <div className="space-y-1">
                 {savedViews.map(view => (
-                  <div key={view.id} className="flex items-center justify-between p-2 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
+                  <div key={view.id} className="flex items-center justify-between p-2 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl">
                     <button
                       onClick={() => onLoadView(view)}
                       className="flex-1 text-left text-sm text-lia-text-primary hover:text-lia-text-primary dark:hover:text-lia-text-inverse"
@@ -226,7 +226,7 @@ export function ColumnConfigurationModal({
           )}
 
           {/* Save New View */}
-          <div className="p-4 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+          <div className="p-4 dark:border-lia-border-subtle">
             {!showSaveView ? (
               <Button
                 variant="outline"

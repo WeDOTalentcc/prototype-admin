@@ -73,7 +73,7 @@ export function MetricsDetailedSections({
           <div className="space-y-2">
             {sourceMetrics.map((source) => (
               <div key={source.source} className="flex items-center gap-2">
-                <div className="w-6 h-6 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-md flex items-center justify-center">
+                <div className="w-6 h-6 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-xl flex items-center justify-center">
                   <Users className="w-3 h-3 text-lia-text-secondary" />
                 </div>
                 <div className="flex-1">
@@ -217,25 +217,25 @@ export function MetricsDetailedSections({
         <CardContent>
           <div className="space-y-4">
             <div className="grid grid-cols-4 gap-4 mb-4">
-              <div className="p-3 bg-lia-bg-tertiary rounded-md">
+              <div className="p-3 bg-lia-bg-tertiary rounded-xl">
                 <div className="flex items-center justify-between mb-2"><Timer className="w-5 h-5 text-lia-text-secondary" /><Badge className="bg-status-success text-white text-xs">✓ No Prazo</Badge></div>
                 <div className="text-2xl font-bold text-lia-text-primary">{avgTimeContact.toFixed(1)}d</div>
                 <div className="text-xs text-lia-text-secondary mt-1">Contato Inicial</div>
                 <div className="text-xs text-lia-text-secondary mt-1">SLA: 2 dias</div>
               </div>
-              <div className="p-3 bg-status-success/10 dark:bg-lia-bg-secondary rounded-md">
+              <div className="p-3 bg-status-success/10 dark:bg-lia-bg-secondary rounded-xl">
                 <div className="flex items-center justify-between mb-2"><Timer className="w-5 h-5 text-status-success" /><Badge className="bg-status-success text-white text-xs">✓ No Prazo</Badge></div>
                 <div className="text-2xl font-bold text-lia-text-primary">{avgTimeTriage.toFixed(1)}d</div>
                 <div className="text-xs text-lia-text-secondary mt-1">Triagem Completa</div>
                 <div className="text-xs text-lia-text-secondary mt-1">SLA: 3 dias</div>
               </div>
-              <div className="p-3 bg-status-warning/10 dark:bg-lia-bg-secondary rounded-md">
+              <div className="p-3 bg-status-warning/10 dark:bg-lia-bg-secondary rounded-xl">
                 <div className="flex items-center justify-between mb-2"><Timer className="w-5 h-5 text-status-warning" /><Badge className="bg-status-warning text-white text-xs">⚠ Atenção</Badge></div>
                 <div className="text-2xl font-bold text-lia-text-primary">{avgTimeInterview.toFixed(1)}d</div>
                 <div className="text-xs text-lia-text-secondary mt-1">Agendamento</div>
                 <div className="text-xs text-lia-text-secondary mt-1">SLA: 5 dias</div>
               </div>
-              <div className="p-3 bg-wedo-purple/10 dark:bg-lia-bg-secondary rounded-md">
+              <div className="p-3 bg-wedo-purple/10 dark:bg-lia-bg-secondary rounded-xl">
                 <div className="flex items-center justify-between mb-2"><Clock className="w-5 h-5 text-wedo-purple" /><Badge className="bg-lia-btn-primary-bg text-lia-btn-primary-text text-xs">Total</Badge></div>
                 <div className="text-2xl font-bold text-lia-text-primary">{avgTimeTotal.toFixed(1)}d</div>
                 <div className="text-xs text-lia-text-secondary mt-1">Tempo Total</div>
@@ -243,7 +243,7 @@ export function MetricsDetailedSections({
               </div>
             </div>
 
-            <div className="p-4 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
+            <div className="p-4 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 bg-lia-border-medium rounded-md flex items-center justify-center"><Award className="w-6 h-6 text-white" /></div>
@@ -270,21 +270,21 @@ export function MetricsDetailedSections({
             </div>
 
             <div className="grid grid-cols-3 gap-3">
-              <div className="p-3 bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md">
+              <div className="p-3 bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-xl">
                 <div className="text-xs text-lia-text-secondary mb-2">Mais Rápido</div>
                 <div className="flex items-center gap-2">
                   <CheckCircle className="w-4 h-4 text-status-success" />
                   <div><div className="text-lg font-bold text-lia-text-primary">{(avgTimeTotal * 0.6).toFixed(1)}d</div><div className="text-xs text-lia-text-secondary">Melhor caso</div></div>
                 </div>
               </div>
-              <div className="p-3 bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md">
+              <div className="p-3 bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-xl">
                 <div className="text-xs text-lia-text-secondary mb-2">Médio</div>
                 <div className="flex items-center gap-2">
                   <Target className="w-4 h-4 text-lia-text-secondary" />
                   <div><div className="text-lg font-bold text-lia-text-primary">{avgTimeTotal.toFixed(1)}d</div><div className="text-xs text-lia-text-secondary">Caso típico</div></div>
                 </div>
               </div>
-              <div className="p-3 bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md">
+              <div className="p-3 bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-xl">
                 <div className="text-xs text-lia-text-secondary mb-2">Mais Lento</div>
                 <div className="flex items-center gap-2">
                   <AlertCircle className="w-4 h-4 text-wedo-orange" />

@@ -94,7 +94,7 @@ export function JobUnpublishModal(props: JobUnpublishModalProps) {
     ]
 
     return (
-      <div className="flex items-center justify-center gap-1 mb-4 pb-3 border-b border-lia-border-subtle">
+      <div className="flex items-center justify-center gap-1 mb-4 pb-3">
         {steps.map((step, index) => (
           <React.Fragment key={step.id}>
             <div className="flex items-center gap-1.5">
@@ -207,9 +207,9 @@ export function JobUnpublishModal(props: JobUnpublishModalProps) {
   return (
     <Dialog open={props.isOpen} onOpenChange={(open) => !open && handleClose()}>
       <DialogContent className="max-w-lg bg-lia-bg-primary border border-lia-border-subtle">
-        <DialogHeader className="pb-3 border-b border-lia-border-subtle">
+        <DialogHeader className="pb-3">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-md bg-lia-bg-tertiary flex items-center justify-center">
+            <div className="w-8 h-8 rounded-xl bg-lia-bg-tertiary flex items-center justify-center">
               {currentStep === 'complete' ? (
                 <CheckCircle2 className="w-4 h-4 text-status-success" />
               ) : (

@@ -24,7 +24,7 @@ export function LgpdConsentDialog({ isOpen, fileName, onConfirm, onCancel }: Pro
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
       <div className="bg-lia-bg-primary rounded-xl border border-lia-border-subtle w-[400px] max-w-[90vw] overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-3.5 border-b border-lia-border-subtle">
+        <div className="flex items-center justify-between px-5 py-3.5">
           <div className="flex items-center gap-2">
             <Shield className="w-4.5 h-4.5 text-wedo-cyan" />
             <h3 className="text-sm font-semibold text-lia-text-primary font-['Open_Sans',sans-serif]">
@@ -60,7 +60,7 @@ export function LgpdConsentDialog({ isOpen, fileName, onConfirm, onCancel }: Pro
             </li>
           </ul>
 
-          <div className="p-2.5 rounded-md bg-wedo-cyan/5 border border-wedo-cyan/20">
+          <div className="p-2.5 rounded-xl bg-wedo-cyan/5 border border-wedo-cyan/20">
             <p className="text-[10px] text-wedo-cyan font-['Open_Sans',sans-serif]">
               Os dados serao processados pela IA para triagem e descartados apos o periodo
               de retencao configurado nas politicas da empresa.
@@ -72,7 +72,7 @@ export function LgpdConsentDialog({ isOpen, fileName, onConfirm, onCancel }: Pro
         <div className="flex items-center gap-2 px-5 py-3 border-t border-lia-border-subtle">
           <button
             onClick={onCancel}
-            className="flex-1 px-3 py-2 rounded-md border border-lia-border-subtle text-sm font-medium text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none font-['Open_Sans',sans-serif]"
+            className="flex-1 px-3 py-2 rounded-xl border border-lia-border-subtle text-sm font-medium text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none font-['Open_Sans',sans-serif]"
           >
             Cancelar
           </button>

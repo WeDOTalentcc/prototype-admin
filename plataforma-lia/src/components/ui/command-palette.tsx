@@ -106,7 +106,7 @@ export function CommandPalette({
       <DialogContent 
         className="max-w-2xl p-0 gap-0 overflow-hidden bg-lia-bg-secondary"
       >
-        <div className="flex items-center px-4 py-3 border-b border-lia-border-default">
+        <div className="flex items-center px-4 py-3">
           <Search className="w-4 h-4 mr-3 text-lia-text-secondary" />
           <Input
             ref={inputRef}
@@ -116,7 +116,7 @@ export function CommandPalette({
             className="border-0 focus-visible:ring-0 text-base bg-transparent text-lia-text-primary"
             autoFocus
           />
-          <kbd className="ml-2 px-2 py-1 text-xs rounded-md bg-lia-bg-primary text-lia-text-secondary border border-lia-border-default">
+          <kbd className="ml-2 px-2 py-1 text-xs rounded-xl bg-lia-bg-primary text-lia-text-secondary border border-lia-border-default">
             ESC
           </kbd>
         </div>
@@ -153,7 +153,7 @@ export function CommandPalette({
                       )}
                     </div>
                     {cmd.shortcut && (
-                      <kbd className="px-2 py-1 text-xs rounded-md flex-shrink-0 bg-lia-bg-primary text-lia-text-secondary border border-lia-border-default">
+                      <kbd className="px-2 py-1 text-xs rounded-xl flex-shrink-0 bg-lia-bg-primary text-lia-text-secondary border border-lia-border-default">
                         {cmd.shortcut}
                       </kbd>
                     )}

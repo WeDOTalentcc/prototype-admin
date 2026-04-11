@@ -152,7 +152,7 @@ export function AgentExplainabilityPanel({
       onOpenChange={handleToggle}
       className={cn("rounded-md border border-lia-border-default/50", className)}
     >
-      <CollapsibleTrigger className="flex w-full items-center justify-between rounded-md bg-lia-btn-primary-bg px-4 py-3 transition-colors motion-reduce:transition-none hover:bg-lia-btn-primary-bg/80">
+      <CollapsibleTrigger className="flex w-full items-center justify-between rounded-xl bg-lia-btn-primary-bg px-4 py-3 transition-colors motion-reduce:transition-none hover:bg-lia-btn-primary-bg/80">
         <div className="flex items-center gap-2">
           <Brain className="h-4 w-4 text-wedo-cyan" />
           <span className="text-sm font-medium text-lia-text-disabled font-[Inter]">

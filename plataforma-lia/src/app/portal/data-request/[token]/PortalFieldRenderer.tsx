@@ -97,7 +97,7 @@ export function PortalFieldRenderer({
         )}
         <div className="relative">
           {upload?.preview ? (
-            <div className="relative rounded-md overflow-hidden border border-lia-border-subtle">
+            <div className="relative rounded-xl overflow-hidden border border-lia-border-subtle">
               <img src={upload.preview} alt="Preview" className="w-full h-48 object-cover" />
               <button
                 type="button"
@@ -112,7 +112,7 @@ export function PortalFieldRenderer({
               </div>
             </div>
           ) : upload?.file ? (
-            <div className="flex items-center gap-3 p-4 border border-lia-border-subtle rounded-md">
+            <div className="flex items-center gap-3 p-4 border border-lia-border-subtle rounded-xl">
               <FileText className="w-8 h-8 text-lia-text-tertiary dark:text-lia-text-secondary" />
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-lia-text-primary dark:text-lia-text-disabled truncate">{upload.file.name}</p>
@@ -123,7 +123,7 @@ export function PortalFieldRenderer({
               </button>
             </div>
           ) : completedFile ? (
-            <div className="flex items-center gap-3 p-4 border border-status-success/30 bg-status-success/10 rounded-md">
+            <div className="flex items-center gap-3 p-4 border border-status-success/30 bg-status-success/10 rounded-xl">
               <CheckCircle2 className="w-6 h-6 text-status-success" />
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-lia-text-primary dark:text-lia-text-disabled truncate">{completedFile.file_name || "Arquivo enviado"}</p>
@@ -140,7 +140,7 @@ export function PortalFieldRenderer({
           ) : (
             <label
               htmlFor={`file-${field.name}`}
-              className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-lia-border-default rounded-md cursor-pointer hover:border-lia-border-medium dark:hover:border-lia-border-medium hover:bg-lia-bg-secondary dark:hover:bg-lia-bg-inverse transition-colors motion-reduce:transition-none"
+              className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-lia-border-default rounded-xl cursor-pointer hover:border-lia-border-medium dark:hover:border-lia-border-medium hover:bg-lia-bg-secondary dark:hover:bg-lia-bg-inverse transition-colors motion-reduce:transition-none"
             >
               <Upload className="w-8 h-8 text-lia-text-tertiary dark:text-lia-text-secondary mb-2" />
               <span className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary">
@@ -186,7 +186,7 @@ export function PortalFieldRenderer({
         <select
           value={value}
           onChange={(e) => onChange(field.name, e.target.value, field.field_type)}
-          className="flex h-10 w-full rounded-md border border-lia-border-default bg-lia-bg-primary dark:bg-lia-btn-primary-hover dark:text-lia-text-disabled dark:border-lia-border-medium px-3 py-2 text-sm focus:outline-none focus:border-lia-border-medium focus:ring-2 focus:ring-lia-border-subtle"
+          className="flex h-10 w-full rounded-xl border border-lia-border-default bg-lia-bg-primary dark:bg-lia-btn-primary-hover dark:text-lia-text-disabled dark:border-lia-border-medium px-3 py-2 text-sm focus:outline-none focus:border-lia-border-medium focus:ring-2 focus:ring-lia-border-subtle"
         >
           <option value="">Selecione...</option>
           {field.options.map((opt) => (
@@ -216,7 +216,7 @@ export function PortalFieldRenderer({
           onChange={(e) => onChange(field.name, e.target.value, field.field_type)}
           placeholder={field.placeholder}
           rows={4}
-          className="flex w-full rounded-md border border-lia-border-default bg-lia-bg-primary dark:bg-lia-btn-primary-hover dark:text-lia-text-disabled dark:border-lia-border-medium px-3 py-2 text-sm focus:outline-none focus:border-lia-border-medium focus:ring-2 focus:ring-lia-border-subtle resize-none"
+          className="flex w-full rounded-xl border border-lia-border-default bg-lia-bg-primary dark:bg-lia-btn-primary-hover dark:text-lia-text-disabled dark:border-lia-border-medium px-3 py-2 text-sm focus:outline-none focus:border-lia-border-medium focus:ring-2 focus:ring-lia-border-subtle resize-none"
         />
         {error && (
           <p className="text-xs text-status-error flex items-center gap-1">

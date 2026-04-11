@@ -87,7 +87,7 @@ export function KpiAlertCard({
 
             <p className="text-sm text-lia-text-secondary mb-3">{alert.description}</p>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-3 p-3 bg-lia-bg-secondary rounded-md">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-3 p-3 bg-lia-bg-secondary rounded-xl">
               <div className="text-center">
                 <div className="text-lg font-bold text-lia-text-primary">{alert.currentValue}</div>
                 <div className="text-xs text-lia-text-secondary">Atual</div>

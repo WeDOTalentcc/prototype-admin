@@ -208,13 +208,13 @@ export function RecruitmentJourneyConfig({
           {isEditMode && (
             <Popover open={catalogOpen} onOpenChange={setCatalogOpen}>
               <PopoverTrigger asChild>
-                <Button className="bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active rounded-md px-4 py-2 text-xs font-semibold transition-colors motion-reduce:transition-none">
+                <Button className="bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active rounded-xl px-4 py-2 text-xs font-semibold transition-colors motion-reduce:transition-none">
                   <Plus className="h-4 w-4 mr-2" />
                   Adicionar etapa
                 </Button>
               </PopoverTrigger>
               <PopoverContent align="end" className="w-80 p-0">
-                <div className="p-3 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+                <div className="p-3 dark:border-lia-border-subtle">
                   <h4 className={`${textStyles.bodyLarge} font-semibold text-lia-text-primary`}>
                     Adicionar do Catálogo
                   </h4>
@@ -225,7 +225,7 @@ export function RecruitmentJourneyConfig({
                       <button
                         key={cs.id}
                         onClick={() => handleAddFromCatalog(cs)}
-                        className="w-full flex items-center gap-3 px-3 py-2 rounded-md hover:bg-lia-bg-secondary dark:hover:bg-lia-bg-inverse/50 transition-colors motion-reduce:transition-none text-left"
+                        className="w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-lia-bg-secondary dark:hover:bg-lia-bg-inverse/50 transition-colors motion-reduce:transition-none text-left"
                       >
                         <span className="w-3 h-3 rounded-full flex-shrink-0" style={{backgroundColor: cs.color || 'var(--lia-text-tertiary)'}} />
                         <span className={`flex-1 ${textStyles.body} text-lia-text-primary`}>{cs.display_name}</span>
@@ -243,7 +243,7 @@ export function RecruitmentJourneyConfig({
                 <div className="border-t border-lia-border-subtle dark:border-lia-border-subtle p-2">
                   <button
                     onClick={handleAddStage}
-                    className="w-full flex items-center gap-2 px-3 py-2 rounded-md hover:bg-lia-bg-secondary dark:hover:bg-lia-bg-inverse/50 transition-colors motion-reduce:transition-none text-left"
+                    className="w-full flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-lia-bg-secondary dark:hover:bg-lia-bg-inverse/50 transition-colors motion-reduce:transition-none text-left"
                   >
                     <Plus className="h-4 w-4 text-lia-text-secondary" />
                     <span className={`${textStyles.body} text-lia-text-secondary`}>Criar etapa customizada</span>
@@ -255,7 +255,7 @@ export function RecruitmentJourneyConfig({
         </div>
       )}
 
-      <div className="mb-4 p-3 bg-lia-bg-secondary dark:bg-lia-bg-primary rounded-md border border-lia-border-subtle dark:border-lia-border-strong">
+      <div className="mb-4 p-3 bg-lia-bg-secondary dark:bg-lia-bg-primary rounded-xl border border-lia-border-subtle dark:border-lia-border-strong">
         <div className={`flex items-center gap-4 flex-wrap ${textStyles.caption}`}>
           <div className="flex items-center gap-1">
             <Lock className="h-3 w-3 text-lia-text-tertiary" />
@@ -300,7 +300,7 @@ export function RecruitmentJourneyConfig({
       )}
 
       {stages.length === 0 && (
-        <div className="text-center py-12 bg-lia-bg-secondary dark:bg-lia-bg-primary rounded-md border-2 border-dashed border-lia-border-subtle dark:border-lia-border-subtle">
+        <div className="text-center py-12 bg-lia-bg-secondary dark:bg-lia-bg-primary rounded-xl border-2 border-dashed border-lia-border-subtle dark:border-lia-border-subtle">
           <p className={textStyles.bodyLarge}>
             Nenhuma etapa configurada. {isEditMode && 'Clique em "Adicionar etapa" para começar.'}
           </p>

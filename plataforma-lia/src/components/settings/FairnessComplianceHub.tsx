@@ -225,7 +225,7 @@ export function FairnessComplianceHub({ activeSubsection }: FairnessComplianceHu
                 </thead>
                 <tbody>
                   {logs.map((log) => (
-                    <tr key={log.id} className="border-b border-lia-border/50 hover:bg-lia-bg-tertiary/50">
+                    <tr key={log.id} className=" border-lia-border/50 hover:bg-lia-bg-tertiary/50">
                       <td className="py-2.5 px-3">
                         <Badge variant="outline" className="text-xs">
                           {translateCategory(log.category)}

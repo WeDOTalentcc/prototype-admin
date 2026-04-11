@@ -180,7 +180,7 @@ export function DataRequestForm({ hook }: DataRequestFormProps) {
                         onChange={(e) => handleOtpChange(index, e.target.value)}
                         onKeyDown={(e) => handleOtpKeyDown(index, e)}
                         onPaste={index === 0 ? handleOtpPaste : undefined}
-                        className="w-12 h-14 text-center text-2xl font-semibold border-2 border-lia-border-default dark:border-lia-border-medium rounded-md focus:border-lia-border-medium focus:outline-none focus:ring-2 focus:ring-lia-border-subtle dark:bg-lia-btn-primary-hover dark:text-lia-text-disabled"
+                        className="w-12 h-14 text-center text-2xl font-semibold border-2 border-lia-border-default dark:border-lia-border-medium rounded-xl focus:border-lia-border-medium focus:outline-none focus:ring-2 focus:ring-lia-border-subtle dark:bg-lia-btn-primary-hover dark:text-lia-text-disabled"
                       />
                     ))}
                   </div>
@@ -260,7 +260,7 @@ export function DataRequestForm({ hook }: DataRequestFormProps) {
                   "Seus dados foram enviados com sucesso. Entraremos em contato em breve."}
               </p>
               {portalData?.vacancy_info && (
-                <div className="bg-lia-bg-secondary dark:bg-lia-btn-primary-hover rounded-md p-4 text-left">
+                <div className="bg-lia-bg-secondary dark:bg-lia-btn-primary-hover rounded-xl p-4 text-left">
                   <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary uppercase tracking-wider mb-1" aria-live="polite" aria-atomic="true">
                     Vaga
                   </p>
@@ -314,13 +314,13 @@ export function DataRequestForm({ hook }: DataRequestFormProps) {
       <div className="flex-1 p-4">
         <div className="max-w-lg mx-auto">
           {portalData?.branding.welcome_message && (
-            <div className="mb-6 p-4 bg-lia-bg-primary dark:bg-lia-btn-primary-hover rounded-md border dark:border-lia-border-strong">
+            <div className="mb-6 p-4 bg-lia-bg-primary dark:bg-lia-btn-primary-hover rounded-xl border dark:border-lia-border-strong">
               <p className="text-sm text-lia-text-secondary dark:text-lia-text-disabled">{portalData.branding.welcome_message}</p>
             </div>
           )}
 
           {portalData?.vacancy_info && (
-            <div className="mb-6 p-4 bg-lia-bg-primary dark:bg-lia-btn-primary-hover rounded-md border dark:border-lia-border-strong">
+            <div className="mb-6 p-4 bg-lia-bg-primary dark:bg-lia-btn-primary-hover rounded-xl border dark:border-lia-border-strong">
               <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary uppercase tracking-wider mb-1">
                 Preenchendo dados para
               </p>

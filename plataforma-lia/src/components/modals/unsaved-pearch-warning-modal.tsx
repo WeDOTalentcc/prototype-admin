@@ -72,7 +72,7 @@ export function UnsavedPearchWarningModal({
               </p>
               
               {unsavedCandidates.length > 0 && (
-                <div className="flex items-center gap-4 p-3 rounded-md bg-lia-bg-secondary border border-lia-border-subtle">
+                <div className="flex items-center gap-4 p-3 rounded-xl bg-lia-bg-secondary border border-lia-border-subtle">
                   <div className="flex items-center gap-1.5">
                     <Mail className="w-4 h-4 text-lia-text-secondary" />
                     <span className="text-xs text-lia-text-primary">
@@ -88,7 +88,7 @@ export function UnsavedPearchWarningModal({
                 </div>
               )}
               
-              <div className="p-4 rounded-md bg-status-warning/10 dark:bg-status-warning/20 border border-status-warning/30 dark:border-status-warning/30">
+              <div className="p-4 rounded-xl bg-status-warning/10 dark:bg-status-warning/20 border border-status-warning/30 dark:border-status-warning/30">
                 <div className="flex items-start gap-3">
                   <Database className="w-5 h-5 text-status-warning mt-0.5 flex-shrink-0" />
                   <div>

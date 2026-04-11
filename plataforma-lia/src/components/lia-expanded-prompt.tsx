@@ -157,7 +157,7 @@ export function LiaExpandedPrompt({
                 <button
                   key={suggestion.action || index}
                   onClick={() => onCommand?.(suggestion.action)}
-                  className="flex items-start gap-2 p-2 rounded-md hover:opacity-90 transition-opacity motion-reduce:transition-none text-left border border-lia-border-subtle"
+                  className="flex items-start gap-2 p-2 rounded-xl hover:opacity-90 transition-opacity motion-reduce:transition-none text-left border border-lia-border-subtle"
                   style={{backgroundColor: 'white',
                     borderColor: colors.borderColor + '40',
                     color: colors.textColor}}

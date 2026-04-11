@@ -116,10 +116,10 @@ export function JobAssignRecruiterModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
-      <DialogContent className="max-w-2xl bg-lia-bg-primary border border-lia-border-subtle rounded-md" data-testid="assign-recruiter-modal">
-        <DialogHeader className="pb-3 border-b border-lia-border-subtle">
+      <DialogContent className="max-w-2xl bg-lia-bg-primary border border-lia-border-subtle rounded-xl" data-testid="assign-recruiter-modal">
+        <DialogHeader className="pb-3">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-md bg-lia-bg-tertiary flex items-center justify-center">
+            <div className="w-8 h-8 rounded-xl bg-lia-bg-tertiary flex items-center justify-center">
               <Users className="w-4 h-4 text-lia-text-secondary" />
             </div>
             <div>
@@ -144,10 +144,10 @@ export function JobAssignRecruiterModal({
                   {jobs.map((job) => (
                     <div
                       key={job.id}
-                      className="p-2.5 rounded-md bg-lia-bg-secondary border border-lia-border-subtle"
+                      className="p-2.5 rounded-xl bg-lia-bg-secondary border border-lia-border-subtle"
                     >
                       <div className="flex items-center gap-2">
-                        <div className="w-7 h-7 rounded-md bg-lia-bg-primary border border-lia-border-subtle flex items-center justify-center flex-shrink-0">
+                        <div className="w-7 h-7 rounded-xl bg-lia-bg-primary border border-lia-border-subtle flex items-center justify-center flex-shrink-0">
                           <Briefcase className="w-3.5 h-3.5 text-lia-text-secondary" />
                         </div>
                         <div className="flex-1 min-w-0">
@@ -175,7 +175,7 @@ export function JobAssignRecruiterModal({
                 <h4 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-2 font-['Open_Sans',sans-serif]">
                   Opções
                 </h4>
-                <div className="space-y-2 p-3 rounded-md bg-lia-bg-secondary border border-lia-border-subtle">
+                <div className="space-y-2 p-3 rounded-xl bg-lia-bg-secondary border border-lia-border-subtle">
                   <div className="flex items-center space-x-2">
                     <Checkbox
                       id="notify"
@@ -214,9 +214,9 @@ export function JobAssignRecruiterModal({
               </div>
 
               {recommendedRecruiter && (
-                <div className="p-3 rounded-md bg-lia-bg-secondary border border-lia-border-subtle">
+                <div className="p-3 rounded-xl bg-lia-bg-secondary border border-lia-border-subtle">
                   <div className="flex items-start gap-2">
-                    <div className="w-6 h-6 rounded-md bg-lia-bg-tertiary flex items-center justify-center flex-shrink-0">
+                    <div className="w-6 h-6 rounded-xl bg-lia-bg-tertiary flex items-center justify-center flex-shrink-0">
                       <Brain className="w-3 h-3 text-wedo-cyan" />
                     </div>
                     <div>
@@ -246,7 +246,7 @@ export function JobAssignRecruiterModal({
                 />
               </div>
 
-              <div className="space-y-1.5 max-h-chart-sm overflow-y-auto border border-lia-border-subtle rounded-md p-2">
+              <div className="space-y-1.5 max-h-chart-sm overflow-y-auto border border-lia-border-subtle rounded-xl p-2">
                 {filteredRecruiters.length === 0 ? (
                   <div className="text-center py-4 text-xs text-lia-text-tertiary">
                     Nenhum recrutador encontrado

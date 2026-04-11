@@ -232,7 +232,7 @@ export const EAPTabNatural = React.memo(function EAPTabNatural(props: EAPTabNatu
       {/* Prompt Enhancement Card */}
       {promptEnhancement && !showAutocomplete && (
         <div
-          className="mt-2 p-3 rounded-md border transition-colors motion-reduce:transition-none bg-lia-interactive-active/20"
+          className="mt-2 p-3 rounded-xl border transition-colors motion-reduce:transition-none bg-lia-interactive-active/20"
         >
           <div className="flex items-start gap-2" role="status" aria-live="polite" aria-label="Carregando...">
             <Wand2 className="w-4 h-4 mt-0.5 flex-shrink-0 text-lia-text-secondary" />
@@ -257,7 +257,7 @@ export const EAPTabNatural = React.memo(function EAPTabNatural(props: EAPTabNatu
                 </button>
                 <button
                   onClick={handleDismissEnhancement}
-                  className="flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium text-lia-text-secondary hover:text-lia-text-secondary hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none"
+                  className="flex items-center gap-1 px-2.5 py-1 rounded-xl text-xs font-medium text-lia-text-secondary hover:text-lia-text-secondary hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none"
                 >
                   <X className="w-3 h-3" />
                   Ignorar
@@ -284,7 +284,7 @@ export const EAPTabNatural = React.memo(function EAPTabNatural(props: EAPTabNatu
       )}
 
       {showAutocomplete && autocompleteSuggestions.length > 0 && (
-        <div className="mt-2 bg-lia-bg-primary border border-lia-border-subtle rounded-md max-h-48 overflow-y-auto shadow-md" data-testid="autocomplete-dropdown">
+        <div className="mt-2 bg-lia-bg-primary border border-lia-border-subtle rounded-xl max-h-48 overflow-y-auto shadow-md" data-testid="autocomplete-dropdown">
           {autocompleteSuggestions.map((suggestion, index) => (
             <button
               key={`sug-${index}`}

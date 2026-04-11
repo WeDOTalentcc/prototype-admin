@@ -68,10 +68,10 @@ export function ScreeningSettingsModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-md rounded-md bg-lia-bg-primary border border-lia-border-subtle">
-        <DialogHeader className="pb-4 border-b border-lia-border-subtle">
+      <DialogContent className="max-w-md rounded-xl bg-lia-bg-primary border border-lia-border-subtle">
+        <DialogHeader className="pb-4">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-md flex items-center justify-center bg-lia-bg-tertiary">
+            <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-lia-bg-tertiary">
               <Settings className="w-4 h-4 text-lia-text-secondary" />
             </div>
             <div>

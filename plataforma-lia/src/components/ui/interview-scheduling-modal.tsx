@@ -137,7 +137,7 @@ export function InterviewSchedulingModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md dark:border-lia-border-subtle">
+      <DialogContent className="max-w-2xl bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-xl dark:border-lia-border-subtle">
         <DialogHeader>
           <div className="flex items-center gap-2">
             <Calendar className="w-4 h-4 text-lia-text-secondary" />
@@ -152,7 +152,7 @@ export function InterviewSchedulingModal({
 
         <div className="space-y-6 mt-4">
           {scheduledInterview ? (
-            <div className="p-4 rounded-md border border-status-success/30 bg-status-success/10">
+            <div className="p-4 rounded-xl border border-status-success/30 bg-status-success/10">
               <div className="flex items-center gap-2 mb-2">
                 <div className="w-2 h-2 bg-status-success rounded-full animate-pulse motion-reduce:animate-none" />
                 <span className="text-xs font-medium text-status-success">
@@ -200,7 +200,7 @@ export function InterviewSchedulingModal({
                       className="h-9 text-xs font-medium border-lia-border-subtle focus:ring-lia-border-medium focus:border-lia-border-medium bg-lia-bg-secondary text-lia-text-primary"
                     />
                     <div
-                      className="p-3 rounded-md border border-lia-border-subtle text-xs overflow-y-auto max-h-chart-sm bg-lia-bg-secondary text-lia-text-secondary"
+                      className="p-3 rounded-xl border border-lia-border-subtle text-xs overflow-y-auto max-h-chart-sm bg-lia-bg-secondary text-lia-text-secondary"
                       dangerouslySetInnerHTML={{ __html: sanitizeHtml(emailTemplate.body) }}
                     />
                   </div>
@@ -232,7 +232,7 @@ export function InterviewSchedulingModal({
               </div>
 
               {error && (
-                <div className="p-3 rounded-md border border-status-error/30 bg-status-error/10">
+                <div className="p-3 rounded-xl border border-status-error/30 bg-status-error/10">
                   <div className="flex items-start gap-2">
                     <AlertTriangle className="w-4 h-4 text-status-error mt-0.5 shrink-0" />
                     <div>

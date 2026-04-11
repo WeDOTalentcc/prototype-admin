@@ -221,7 +221,7 @@ export function ParecerLIACard({ data, onAcceptSuggestion, className }: ParecerL
           </div>
 
           {data.marketComparisons && data.marketComparisons.length > 0 && (
-            <div className="rounded-md bg-lia-bg-primary/60/40 p-3">
+            <div className="rounded-xl bg-lia-bg-primary/60/40 p-3">
               <div className="flex items-center gap-1.5 mb-2">
                 <BarChart3 className="w-3.5 h-3.5 text-wedo-cyan" />
                 <span className="text-xs font-semibold text-lia-text-primary font-['Open_Sans',sans-serif]">
@@ -229,7 +229,7 @@ export function ParecerLIACard({ data, onAcceptSuggestion, className }: ParecerL
                 </span>
               </div>
               <div className="space-y-1">
-                <div className="grid grid-cols-3 gap-2 text-micro font-medium text-lia-text-tertiary uppercase tracking-wider pb-1 border-b border-lia-border-subtle/50/50">
+                <div className="grid grid-cols-3 gap-2 text-micro font-medium text-lia-text-tertiary uppercase tracking-wider pb-1/50/50">
                   <span>Campo</span>
                   <span>Sua vaga</span>
                   <span>Mercado</span>
@@ -252,7 +252,7 @@ export function ParecerLIACard({ data, onAcceptSuggestion, className }: ParecerL
           )}
 
           {data.timeToFillEstimate && (
-            <div className="rounded-md bg-lia-bg-primary/60/40 p-3">
+            <div className="rounded-xl bg-lia-bg-primary/60/40 p-3">
               <div className="flex items-center gap-1.5 mb-1.5">
                 <Clock className="w-3.5 h-3.5 text-wedo-cyan" />
                 <span className="text-xs font-semibold text-lia-text-primary font-['Open_Sans',sans-serif]">
@@ -277,7 +277,7 @@ export function ParecerLIACard({ data, onAcceptSuggestion, className }: ParecerL
             </div>
           )}
 
-          <div className="rounded-md bg-lia-bg-primary/60/40 p-3">
+          <div className="rounded-xl bg-lia-bg-primary/60/40 p-3">
             <div className="flex items-center gap-1.5 mb-2">
               <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
               <span className="text-xs font-semibold text-lia-text-primary font-['Open_Sans',sans-serif]">

@@ -352,7 +352,7 @@ export function InteractiveChart({
           {showControls && (
             <div className="flex items-center gap-2">
               {/* Period Selector */}
-              <div className="flex bg-lia-bg-tertiary rounded-md p-1">
+              <div className="flex bg-lia-bg-tertiary rounded-xl p-1">
                 {(['monthly', 'quarterly', 'yearly'] as const).map((p) => (
                   <Button
                     key={p}
@@ -407,7 +407,7 @@ export function InteractiveChart({
 
         {/* Selected Data Point Details */}
         {selectedDataPoint && (
-          <div className="mt-4 p-3 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-md border border-lia-border-default dark:border-lia-border-default">
+          <div className="mt-4 p-3 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-xl border border-lia-border-default dark:border-lia-border-default">
             <h4 className="font-medium text-lia-text-primary mb-2">
               Detalhes - {String(selectedDataPoint.month ?? selectedDataPoint.stage ?? '')}
             </h4>

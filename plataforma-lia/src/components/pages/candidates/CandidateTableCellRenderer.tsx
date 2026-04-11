@@ -277,7 +277,7 @@ export function createCellRenderer(deps: CellRendererDeps) {
                   e.stopPropagation()
                   onToggleExpandedRow(candidate.id)
                 }}
-                className="flex-shrink-0 p-0.5 rounded-md hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none"
+                className="flex-shrink-0 p-0.5 rounded-xl hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none"
                 title={isRowExpanded ? "Recolher texto" : "Expandir texto"}
               >
                 <ChevronsLeftRight

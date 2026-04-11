@@ -54,7 +54,7 @@ export function InputEvaluationStage({
     <div data-testid="input-evaluation-stage">
       {/* Banner when using company config */}
       {configLoaded && hasConfigData && (
-        <div className="mb-3 px-3 py-2 bg-lia-bg-tertiary border border-lia-border-default rounded-md flex items-center gap-2">
+        <div className="mb-3 px-3 py-2 bg-lia-bg-tertiary border border-lia-border-default rounded-xl flex items-center gap-2">
           <Settings className="w-3.5 h-3.5 text-lia-text-secondary" />
           <span className="text-xs text-lia-text-secondary">
             Usando dados das Configurações da sua empresa
@@ -128,7 +128,7 @@ export function InputEvaluationStage({
       </div>
 
       {/* Progress Summary */}
-      <div className="mt-3 p-2.5 rounded-md bg-lia-bg-primary">
+      <div className="mt-3 p-2.5 rounded-xl bg-lia-bg-primary">
         <div className="flex items-center justify-between mb-1.5">
           <span className="text-micro text-lia-text-secondary">
             Detectando critérios...

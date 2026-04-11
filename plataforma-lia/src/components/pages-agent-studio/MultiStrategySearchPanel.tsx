@@ -136,7 +136,7 @@ export default function MultiStrategySearchPanel({
               value={jobTitle}
               onChange={e => setJobTitle(e.target.value)}
               placeholder="Título da vaga (ex: Senior Backend Engineer)"
-              className="flex-1 border border-lia-border-default rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
+              className="flex-1 border border-lia-border-default rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
               onKeyDown={e => e.key === "Enter" && handleSearch()}
             />
             <input
@@ -144,14 +144,14 @@ export default function MultiStrategySearchPanel({
               value={skills}
               onChange={e => setSkills(e.target.value)}
               placeholder="Skills (Python, Go, Kafka)"
-              className="w-48 border border-lia-border-default rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
+              className="w-48 border border-lia-border-default rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
             />
             <input
               type="text"
               value={location}
               onChange={e => setLocation(e.target.value)}
               placeholder="Local"
-              className="w-36 border border-lia-border-default rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
+              className="w-36 border border-lia-border-default rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
             />
             <Button className={buttonStyles.primary} onClick={handleSearch} disabled={isSearching || !jobTitle.trim()}>
               <Search className="w-4 h-4 mr-1" />
@@ -254,7 +254,7 @@ export default function MultiStrategySearchPanel({
               {result.candidates.map(c => {
                 const strategies = c.found_via_strategies || [c.found_via]
                 return (
-                  <tr key={c.id} className="border-b border-lia-border-subtle hover:bg-lia-bg-secondary">
+                  <tr key={c.id} className=" hover:bg-lia-bg-secondary">
                     <td className="py-2 px-3">
                       <input
                         type="checkbox"

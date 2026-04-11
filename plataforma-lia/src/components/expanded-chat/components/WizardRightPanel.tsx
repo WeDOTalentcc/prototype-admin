@@ -357,7 +357,7 @@ export function WizardRightPanel({
   return (
     <div
       ref={resizeRef}
-      className="flex flex-col rounded-md flex-shrink-0 m-3 ml-0 relative bg-lia-bg-secondary border border-lia-border-subtle"
+      className="flex flex-col rounded-xl flex-shrink-0 m-3 ml-0 relative bg-lia-bg-secondary border border-lia-border-subtle"
       style={{width: `${panelWidth}%`}}
     >
       {/* Resize Handle - cursor change only, no visual indicator */}
@@ -595,7 +595,7 @@ export function WizardRightPanel({
             {currentStageIndex > 0 && (
               <Button
                 variant="outline"
-                className="flex-1 h-9 rounded-md text-xs font-medium border-lia-border-subtle text-lia-text-secondary hover:border-lia-btn-primary-bg hover:text-lia-text-primary"
+                className="flex-1 h-9 rounded-xl text-xs font-medium border-lia-border-subtle text-lia-text-secondary hover:border-lia-btn-primary-bg hover:text-lia-text-primary"
                 onClick={onGoToPreviousStage}
                 aria-label="Voltar para etapa anterior"
               >

@@ -32,7 +32,7 @@ export function BasicDataSection({ onSettingsChange }: SectionProps) {
                 type="text"
                 defaultValue="Sodexo do Brasil Comercial S.A."
                 onChange={() => onSettingsChange(true)}
-                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
+                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary"
               />
             </div>
             <div>
@@ -43,7 +43,7 @@ export function BasicDataSection({ onSettingsChange }: SectionProps) {
                 type="text"
                 defaultValue="Sodexo Brasil"
                 onChange={() => onSettingsChange(true)}
-                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
+                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary"
               />
             </div>
             <div>
@@ -54,7 +54,7 @@ export function BasicDataSection({ onSettingsChange }: SectionProps) {
                 type="text"
                 defaultValue="12.345.678/0001-90"
                 onChange={() => onSettingsChange(true)}
-                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
+                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary"
               />
             </div>
             <div>
@@ -65,7 +65,7 @@ export function BasicDataSection({ onSettingsChange }: SectionProps) {
                 type="text"
                 defaultValue="123.456.789.012"
                 onChange={() => onSettingsChange(true)}
-                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
+                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary"
               />
             </div>
             <div>
@@ -76,7 +76,7 @@ export function BasicDataSection({ onSettingsChange }: SectionProps) {
                 type="date"
                 defaultValue="1966-03-15"
                 onChange={() => onSettingsChange(true)}
-                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
+                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary"
               />
             </div>
             <div>
@@ -85,7 +85,7 @@ export function BasicDataSection({ onSettingsChange }: SectionProps) {
               </label>
               <select
                 onChange={() => onSettingsChange(true)}
-                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
+                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary"
               >
                 <option>1-10 funcionários</option>
                 <option>11-50 funcionários</option>
@@ -106,7 +106,7 @@ export function BasicDataSection({ onSettingsChange }: SectionProps) {
                 type="url"
                 defaultValue="https://sodexo.com.br"
                 onChange={() => onSettingsChange(true)}
-                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
+                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary"
               />
             </div>
             <div>
@@ -117,7 +117,7 @@ export function BasicDataSection({ onSettingsChange }: SectionProps) {
                 type="email"
                 defaultValue="contato@sodexo.com.br"
                 onChange={() => onSettingsChange(true)}
-                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
+                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary"
               />
             </div>
             <div>
@@ -128,7 +128,7 @@ export function BasicDataSection({ onSettingsChange }: SectionProps) {
                 type="tel"
                 defaultValue="(11) 3049-6300"
                 onChange={() => onSettingsChange(true)}
-                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
+                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary"
               />
             </div>
             <div>
@@ -139,7 +139,7 @@ export function BasicDataSection({ onSettingsChange }: SectionProps) {
                 type="tel"
                 placeholder="(11) 99999-9999"
                 onChange={() => onSettingsChange(true)}
-                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
+                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary"
               />
             </div>
           </div>
@@ -152,7 +152,7 @@ export function BasicDataSection({ onSettingsChange }: SectionProps) {
               rows={4}
               defaultValue="A Sodexo é uma empresa francesa líder mundial em serviços de alimentação e facilities management, presente em 55 países. No Brasil desde 1997, oferece soluções integradas que melhoram a qualidade de vida diária."
               onChange={() => onSettingsChange(true)}
-              className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
+              className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary"
             />
           </div>
         </CardContent>
@@ -163,7 +163,7 @@ export function BasicDataSection({ onSettingsChange }: SectionProps) {
           <CardTitle>Logotipo da Empresa</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="rounded-md p-6 text-center bg-lia-bg-secondary dark:bg-lia-bg-secondary">
+          <div className="rounded-xl p-6 text-center bg-lia-bg-secondary dark:bg-lia-bg-secondary">
             <Upload className="w-8 h-8 mx-auto mb-2 text-lia-text-primary" />
             <p className="text-sm text-lia-text-primary mb-2">
               Faça upload do logotipo da empresa
@@ -199,7 +199,7 @@ export function AddressSection({ onSettingsChange }: SectionProps) {
                 type="text"
                 defaultValue="04571-020"
                 onChange={() => onSettingsChange(true)}
-                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
+                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary"
                 placeholder="00000-000"
               />
             </div>
@@ -211,7 +211,7 @@ export function AddressSection({ onSettingsChange }: SectionProps) {
                 type="text"
                 defaultValue="Rua Dr. Geraldo Campos Moreira"
                 onChange={() => onSettingsChange(true)}
-                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
+                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary"
               />
             </div>
           </div>
@@ -225,7 +225,7 @@ export function AddressSection({ onSettingsChange }: SectionProps) {
                 type="text"
                 defaultValue="375"
                 onChange={() => onSettingsChange(true)}
-                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
+                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary"
               />
             </div>
             <div className="md:col-span-2">
@@ -236,7 +236,7 @@ export function AddressSection({ onSettingsChange }: SectionProps) {
                 type="text"
                 placeholder="Andar, sala, bloco..."
                 onChange={() => onSettingsChange(true)}
-                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
+                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary"
               />
             </div>
             <div>
@@ -247,7 +247,7 @@ export function AddressSection({ onSettingsChange }: SectionProps) {
                 type="text"
                 defaultValue="Cidade Monções"
                 onChange={() => onSettingsChange(true)}
-                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
+                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary"
               />
             </div>
           </div>
@@ -261,7 +261,7 @@ export function AddressSection({ onSettingsChange }: SectionProps) {
                 type="text"
                 defaultValue="São Paulo"
                 onChange={() => onSettingsChange(true)}
-                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
+                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary"
               />
             </div>
             <div>
@@ -271,7 +271,7 @@ export function AddressSection({ onSettingsChange }: SectionProps) {
               <select
                 defaultValue="SP"
                 onChange={() => onSettingsChange(true)}
-                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
+                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary"
               >
                 <option value="">Selecione o estado</option>
                 <option value="AC">Acre</option>
@@ -312,7 +312,7 @@ export function AddressSection({ onSettingsChange }: SectionProps) {
             <select
               defaultValue="BR"
               onChange={() => onSettingsChange(true)}
-              className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
+              className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary"
             >
               <option value="BR">Brasil</option>
               <option value="US">Estados Unidos</option>

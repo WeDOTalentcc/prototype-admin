@@ -106,10 +106,10 @@ export const TabSimilar = React.memo(function TabSimilar({
           value={similarProfileUrl}
           onChange={(e) => setSimilarProfileUrl(e.target.value)}
           placeholder="Cole o link do LinkedIn ou nome do candidato..."
-          className="w-full p-3 text-xs rounded-md border focus:outline-none transition-colors motion-reduce:transition-none bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary border border-lia-border-subtle"
+          className="w-full p-3 text-xs rounded-xl border focus:outline-none transition-colors motion-reduce:transition-none bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary border border-lia-border-subtle"
         />
       </div>
-      <div className="p-2.5 rounded-md bg-white border border-lia-border-subtle">
+      <div className="p-2.5 rounded-xl bg-white border border-lia-border-subtle">
         <div className="flex items-start gap-2">
           <Lightbulb className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-lia-text-secondary" />
           <p className="text-xs text-lia-text-secondary">
