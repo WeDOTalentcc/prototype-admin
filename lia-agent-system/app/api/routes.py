@@ -214,6 +214,9 @@ from app.api.v1.agent_quality import router as agent_quality_router
 from app.api.v1.agent_templates import router as agent_templates_router
 from app.api.v1.sector_templates import router as sector_templates_router
 from app.api.v1.sourcing_agents import router as sourcing_agents_router
+from app.api.v1.custom_agents import router as custom_agents_router
+from app.api.v1.custom_agents import marketplace_router as agent_marketplace_router
+from app.api.v1.custom_agents import admin_marketplace_router
 from app.api.v1.multi_strategy_search import router as multi_strategy_router
 from app.api.v1.digital_twins import router as digital_twins_router
 from app.api.v1.voice_screening import router as voice_screening_router
@@ -565,6 +568,9 @@ def register_all_routes(app: FastAPI) -> None:
     # — Phase 6: Agent Studio, Sourcing, Digital Twins, Voice Screening
     app.include_router(sector_templates_router, prefix="/api/v1", tags=["sector-templates"])
     app.include_router(sourcing_agents_router, prefix="/api/v1", tags=["sourcing-agents"])
+    app.include_router(custom_agents_router, prefix="/api/v1", tags=["custom-agents"])
+    app.include_router(agent_marketplace_router, prefix="/api/v1", tags=["agent-marketplace"])
+    app.include_router(admin_marketplace_router, prefix="/api/v1", tags=["admin-marketplace"])
     app.include_router(multi_strategy_router, prefix="/api/v1", tags=["multi-strategy"])
     app.include_router(digital_twins_router, prefix="/api/v1", tags=["digital-twins"])
     app.include_router(voice_screening_router, prefix="/api/v1", tags=["voice-screening"])

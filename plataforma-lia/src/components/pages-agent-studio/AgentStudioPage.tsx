@@ -3,12 +3,14 @@
 import React, { useState, useEffect } from "react"
 import { TwinsList, EvaluateWithTwinModal } from "@/components/pages-agent-studio/DigitalTwinComponents"
 import MultiStrategySearchPanel from "@/components/pages-agent-studio/MultiStrategySearchPanel"
+import CustomAgentsTab from "@/components/pages-agent-studio/CustomAgentsTab"
+import MarketplaceTab from "@/components/pages-agent-studio/MarketplaceTab"
 import {
   Bot, Plus, Play, Pause, Briefcase, Database,
   Factory, HeartPulse, ShoppingCart, Code, Truck, Brain,
   ChevronRight, Zap, Target, ArrowRight,
   Activity, Eye, ThumbsUp, ThumbsDown, RefreshCw,
-  Loader2, Users, Wand2, Search,
+  Loader2, Users, Wand2, Search, Store,
   GraduationCap, BarChart3, Clock
 } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -83,7 +85,7 @@ export default function AgentStudioPage({
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [evaluatingTwinId, setEvaluatingTwinId] = useState<string | null>(null)
   const [selectedTemplate, setSelectedTemplate] = useState<SectorTemplate | null>(null)
-  const [activeTab, setActiveTab] = useState<"agents" | "twins" | "search">("agents")
+  const [activeTab, setActiveTab] = useState<"agents" | "custom" | "marketplace" | "twins" | "search">("agents")
 
   useEffect(() => {
     loadData()
@@ -196,7 +198,9 @@ export default function AgentStudioPage({
       <div className="px-6 pt-4 flex-shrink-0">
         <div className="flex gap-1 p-1 bg-lia-bg-secondary rounded-lg w-fit">
           {[
-            { id: "agents" as const, label: "Meus Agentes", icon: Bot, count: agents.length },
+            { id: "agents" as const, label: "Sourcing Agents", icon: Bot, count: agents.length },
+            { id: "custom" as const, label: "Custom Agents", icon: Wand2, count: null },
+            { id: "marketplace" as const, label: "Marketplace", icon: Store, count: null },
             { id: "twins" as const, label: "Digital Twins", icon: Users, count: null },
             { id: "search" as const, label: "Busca Inteligente", icon: Search, count: null },
           ].map(tab => (
@@ -411,6 +415,14 @@ export default function AgentStudioPage({
               </section>
             )}
           </div>
+        )}
+
+        {activeTab === "custom" && (
+          <CustomAgentsTab />
+        )}
+
+        {activeTab === "marketplace" && (
+          <MarketplaceTab />
         )}
 
         {activeTab === "twins" && (
