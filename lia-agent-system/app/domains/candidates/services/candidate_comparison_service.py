@@ -931,7 +931,8 @@ Gere a análise comparativa em JSON.""")
                 for cid, score in sorted(candidate_totals.items(), key=lambda x: x[1], reverse=True)
             ])
             
-            llm = llm_service.claude
+            # TODO(Item3-B): Route through managed LLM path for PII strip + audit
+        llm = llm_service.claude
             chain = prompt | llm | JsonOutputParser()
             
             result = await chain.ainvoke({

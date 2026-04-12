@@ -3,6 +3,9 @@ WSI Question Adjuster Service
 Regenerates WSI screening questions based on recruiter natural language requests.
 Uses Gemini 2.5 Flash for fast iteration.
 """
+# TODO(Item3-C): 1 direct Gemini generate_content() calls bypass LLM service.
+# Route through llm_service.generate(provider='gemini') for PII strip + audit + tenant config.
+
 import json
 import logging
 import os

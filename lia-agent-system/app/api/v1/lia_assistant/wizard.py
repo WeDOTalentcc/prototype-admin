@@ -6,6 +6,9 @@ Job-wizard routes:
   POST /lia/job-wizard/evaluate
   POST /lia/job-wizard/step
 """
+# TODO(Item3-C): 1 direct Gemini generate_content() calls bypass LLM service.
+# Route through llm_service.generate(provider='gemini') for PII strip + audit + tenant config.
+
 import json
 import re
 from typing import Any

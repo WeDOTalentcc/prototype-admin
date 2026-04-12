@@ -392,7 +392,8 @@ class Orchestrator:
                 extra_instructions=extra,
             )
             prompt = ChatPromptTemplate.from_messages([("system", system_prompt), ("human", "{message}")])
-            chain = prompt | self.llm_service.claude
+            # TODO(Item3-B): Route through managed LLM path for PII strip + audit
+        chain = prompt | self.llm_service.claude
             response = await chain.ainvoke({"message": message})
             return {"message": response.content, "success": True, "data": {},
                     "requires_user_input": True, "suggested_prompts": [], "next_actions": [],

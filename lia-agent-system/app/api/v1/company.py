@@ -885,6 +885,7 @@ Responda APENAS em formato JSON válido com a seguinte estrutura:
 }}
 """
 
+        # TODO(Item3-B): Route through managed LLM path for PII strip + audit
         llm = llm_service.claude
         response = await llm.ainvoke(analysis_prompt)
         response_text = response.content
