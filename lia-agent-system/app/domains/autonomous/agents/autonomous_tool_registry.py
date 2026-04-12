@@ -194,6 +194,11 @@ async def _wrap_get_job_details(**kwargs: Any) -> dict[str, Any]:
 
 # ── Sourcing ────────────────────────────────────────────────────────────────
 
+
+async def _wrap_rag_search(**kwargs: Any) -> dict[str, Any]:
+    """Semantic hybrid search (BM25 + pgvector)."""
+    return await _delegate_sourcing("rag_search", **kwargs)
+
 async def _wrap_auto_search_candidates(**kwargs: Any) -> dict[str, Any]:
     """Search candidates matching given criteria."""
     return await _delegate_sourcing("search_candidates", **kwargs)

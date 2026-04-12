@@ -1248,6 +1248,71 @@ TOOL_DEFINITIONS.append(
     )
 )
 
+
+@tool_handler("sourcing", require_company=False)
+async def _wrap_rag_search(**kwargs) -> dict:
+    """Busca semantica hibrida de candidatos (BM25 + pgvector)."""
+    query = kwargs.get("query", "")
+    company_id = kwargs.get("company_id", "")
+    limit = kwargs.get("limit", 20)
+    alpha = kwargs.get("alpha", 0.5)
+
+    if not query:
+        return {"success": False, "data": {}, "message": "Parametro query obrigatorio."}
+
+    try:
+        from app.domains.ai.services.rag_pipeline_service import rag_pipeline_service
+        async with AsyncSessionLocal() as session:
+            result = await rag_pipeline_service.search(
+                query=query,
+                company_id=company_id or "global",
+                db=session,
+                limit=min(limit, 50),
+                alpha=alpha,
+            )
+        candidates = []
+        for r in (result.results or []):
+            candidates.append({
+                "name": getattr(r, "name", ""),
+                "score": getattr(r, "score", 0),
+                "summary": (getattr(r, "summary", "") or "")[:200],
+                "id": str(getattr(r, "id", "")),
+            })
+        return {
+            "success": True,
+            "data": {"candidates": candidates, "total": result.total_found, "search_type": "hybrid_rag"},
+            "message": f"Encontrados {result.total_found} candidatos via busca semantica.",
+        }
+    except Exception as e:
+        logger.warning("[sourcing_tools] rag_search failed: %s", e)
+        return {
+            "success": False,
+            "data": {"candidates": [], "total": 0},
+            "message": f"Busca semantica indisponivel. Use search_candidates para busca textual.",
+        }
+
+
+TOOL_DEFINITIONS.append(
+    ToolDefinition(
+        name="rag_search",
+        description=(
+            "Busca semantica de candidatos combinando relevancia textual (BM25) e "
+            "similaridade vetorial (pgvector). Use para buscas por perfil, competencias "
+            "ou descricoes complexas onde keyword search nao e suficiente."
+        ),
+        parameters={
+            "type": "object",
+            "properties": {
+                "query": {"type": "string", "description": "Texto de busca em linguagem natural"},
+                "limit": {"type": "integer", "description": "Maximo de resultados (default 20, max 50)"},
+                "alpha": {"type": "number", "description": "Peso semantico vs textual (0.0-1.0, default 0.5)"},
+            },
+            "required": ["query"],
+        },
+        function=_wrap_rag_search,
+    )
+)
+
 _TOOL_MAP: dict[str, ToolDefinition] = {t.name: t for t in TOOL_DEFINITIONS}
 
 STAGE_TOOLS: dict[str, list[str]] = {
@@ -1279,25 +1344,4 @@ def get_stage_tools(stage: str) -> list[ToolDefinition]:
     return tools
 
 
-async def rag_semantic_search(query: str, company_id: str, limit: int = 20, alpha: float = 0.5) -> dict:
-    """Busca semântica de candidatos usando RAG (BM25 + pgvector).
-
-    Use quando o recrutador pedir busca por competências, experiência ou perfil.
-    Alpha controla o peso: 0.0=keyword puro, 1.0=semântico puro, 0.5=híbrido.
-    """
-    try:
-        from app.domains.ai.services.rag_pipeline_service import rag_pipeline_service
-        result = await rag_pipeline_service.search(
-            query=query,
-            company_id=company_id,
-            limit=limit,
-            alpha=alpha,
-        )
-        return {
-            "candidates": [{"name": r.name, "score": r.score, "summary": r.summary[:200]} for r in (result.results or [])],
-            "total": result.total_found,
-            "search_type": "hybrid_rag",
-        }
-    except Exception as e:
-        return {"error": str(e), "candidates": [], "total": 0}
 
