@@ -18,7 +18,7 @@ from lia_agents_core.enhanced_agent_mixin import EnhancedAgentMixin
 from lia_agents_core.langgraph_react_base import LangGraphReActBase
 from lia_agents_core.working_memory import WorkingMemoryService
 
-from app.domains.automation.agents.automation_system_prompt import get_automation_system_prompt
+from app.domains.automation.agents.automation_system_prompt import get_automation_system_prompt, AUTOMATION_DOMAIN_SPECIFIC
 from app.domains.automation.agents.automation_tool_registry import (
     get_automation_tools,
 )

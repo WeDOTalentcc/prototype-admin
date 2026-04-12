@@ -20,7 +20,7 @@ from app.domains.recruiter_assistant.agents.jobs_mgmt_stage_context import (
     STAGE_DEFINITIONS,
     get_stage_context,
 )
-from app.domains.recruiter_assistant.agents.jobs_mgmt_system_prompt import get_jobs_mgmt_system_prompt
+from app.domains.recruiter_assistant.agents.jobs_mgmt_system_prompt import get_jobs_mgmt_system_prompt, JOBS_MGMT_DOMAIN_SPECIFIC, JOBS_MGMT_FEW_SHOT_EXAMPLES, JOBS_MGMT_REASONING_PROMPT
 from app.domains.recruiter_assistant.agents.jobs_mgmt_tool_registry import (
     get_jobs_mgmt_tools,
 )

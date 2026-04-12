@@ -20,7 +20,7 @@ from app.domains.job_management.agents.stage_context import (
     STAGE_DEFINITIONS,
     get_stage_context,
 )
-from app.domains.job_management.agents.wizard_system_prompt import build_system_prompt
+from app.domains.job_management.agents.wizard_system_prompt import build_system_prompt, WIZARD_DOMAIN_SPECIFIC, WIZARD_REASONING_PROMPT
 from app.domains.job_management.agents.wizard_tool_registry import (
     get_wizard_tools,
 )

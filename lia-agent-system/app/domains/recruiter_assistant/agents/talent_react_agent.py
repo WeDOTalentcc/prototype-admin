@@ -20,7 +20,7 @@ from app.domains.recruiter_assistant.agents.talent_stage_context import (
     STAGE_DEFINITIONS,
     get_stage_context,
 )
-from app.domains.recruiter_assistant.agents.talent_system_prompt import get_talent_system_prompt
+from app.domains.recruiter_assistant.agents.talent_system_prompt import get_talent_system_prompt, TALENT_DOMAIN_SPECIFIC, TALENT_FEW_SHOT_EXAMPLES, TALENT_REASONING_PROMPT
 from app.domains.recruiter_assistant.agents.talent_tool_registry import (
     get_talent_tools,
 )

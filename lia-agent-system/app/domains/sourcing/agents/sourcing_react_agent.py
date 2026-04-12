@@ -21,7 +21,7 @@ from app.domains.sourcing.agents.sourcing_stage_context import (
     SOURCING_SUBAGENT_STAGE_MAP,
     get_stage_context,
 )
-from app.domains.sourcing.agents.sourcing_system_prompt import get_sourcing_system_prompt
+from app.domains.sourcing.agents.sourcing_system_prompt import get_sourcing_system_prompt, SOURCING_DOMAIN_SPECIFIC, SOURCING_FEW_SHOT_EXAMPLES, SOURCING_REASONING_PROMPT
 from app.domains.sourcing.agents.sourcing_tool_registry import (
     get_sourcing_tools,
 )

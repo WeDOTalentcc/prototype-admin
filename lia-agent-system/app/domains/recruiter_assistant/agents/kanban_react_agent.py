@@ -20,7 +20,7 @@ from app.domains.recruiter_assistant.agents.kanban_stage_context import (
     STAGE_DEFINITIONS,
     get_stage_context,
 )
-from app.domains.recruiter_assistant.agents.kanban_system_prompt import get_kanban_system_prompt
+from app.domains.recruiter_assistant.agents.kanban_system_prompt import get_kanban_system_prompt, KANBAN_DOMAIN_SPECIFIC, KANBAN_FEW_SHOT_EXAMPLES, KANBAN_REASONING_PROMPT
 from app.domains.recruiter_assistant.agents.kanban_tool_registry import (
     get_kanban_tools,
 )
