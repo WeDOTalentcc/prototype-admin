@@ -15,13 +15,6 @@ _TENANT_REQUIRED_RESPONSE: dict[str, Any] = {
     "message": "Tenant isolation error: 'company_id' é obrigatório. Nenhuma query de dados pode ser executada sem contexto de tenant.",
 }
 
-_MODULE_CONTEXT_MISSING_RESPONSE: dict[str, Any] = {
-    "success": False,
-    "data": {},
-    "message": "Module gating error: contexto de empresa/sessão insuficiente para verificar acesso ao módulo. "
-               "Forneça company_id e db para acessar ferramentas premium.",
-}
-
 
 def tool_handler(domain: str, *, require_company: bool = True, module: Optional[str] = None):
     """Decorator that wraps a tool function with tenant check + module gating + error handling.
