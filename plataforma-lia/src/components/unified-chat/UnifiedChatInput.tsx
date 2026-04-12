@@ -5,6 +5,7 @@ import { Send, Plus, Loader2, SlidersHorizontal, Paperclip, FileText, XCircle, A
 import { cn } from "@/lib/utils"
 import { AudioRecordButton } from "@/components/ui/audio-record-button"
 import { ChatSuggestionsPanel } from "./ChatSuggestionsPanel"
+import { ContextConfigPanel } from "./ContextConfigPanel"
 import type { ChatMode } from "./unified-chat-types"
 
 interface Props {
@@ -41,6 +42,7 @@ export function UnifiedChatInput({
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const [showPlusMenu, setShowPlusMenu] = useState(false)
   const [showSuggestions, setShowSuggestions] = useState(false)
+  const [showContextConfig, setShowContextConfig] = useState(false)
   const isBusy = isStreaming || isCreating
 
   // Auto-resize textarea
@@ -239,16 +241,30 @@ export function UnifiedChatInput({
               <Lightbulb className="w-4 h-4" />
             </button>
 
-            {/* Settings/filter */}
-            <button
-              type="button"
-              disabled={isBusy}
-              className="p-1.5 rounded-md text-lia-text-disabled hover:text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none disabled:opacity-40"
-              title="Configurações de contexto"
-              aria-label="Configurações de conversa"
-            >
-              <SlidersHorizontal className="w-4 h-4" />
-            </button>
+            {/* Context config */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setShowContextConfig(!showContextConfig)}
+                disabled={isBusy}
+                className={cn(
+                  "p-1.5 rounded-md transition-colors motion-reduce:transition-none disabled:opacity-40",
+                  showContextConfig
+                    ? "text-wedo-cyan bg-wedo-cyan/10"
+                    : "text-lia-text-disabled hover:text-lia-text-secondary hover:bg-lia-interactive-hover"
+                )}
+                title="Configurações de contexto"
+                aria-label="Configurações de conversa"
+              >
+                <SlidersHorizontal className="w-4 h-4" />
+              </button>
+
+              <ContextConfigPanel
+                isOpen={showContextConfig}
+                onClose={() => setShowContextConfig(false)}
+                mode={mode}
+              />
+            </div>
           </div>
 
           <div className="flex items-center gap-1">
