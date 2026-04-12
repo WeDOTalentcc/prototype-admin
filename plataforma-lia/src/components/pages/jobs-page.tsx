@@ -58,7 +58,7 @@ export function JobsPage(props: JobsPageProps) {
 
   const {
     hasMounted, activeFilter, allJobs, chatMode, closeChat,
-    deselectAllJobs, filteredJobs, isChatFullscreen, isLoadingJobs,
+    deselectAllJobs, filteredJobs, isChatFullscreen, isLoadingJobs, jobsError,
     inlineChatInitialMessage, liaInlineMessages, navigationFilters,
     openGeneralChat, openJobCreationChat, returnToGeneralChat,
     returnToLateralPrompt, setActiveFilter, setIsChatFullscreen,

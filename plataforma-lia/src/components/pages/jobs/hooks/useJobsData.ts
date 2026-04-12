@@ -63,7 +63,9 @@ export function useJobsData(): UseJobsDataReturn {
       setIsLoadingJobs(true)
       setJobsError(null)
 
+      console.debug('[useJobsData] fetching job vacancies...')
       const response = await fetchWithRetry(() => liaApi.listJobVacancies())
+      console.debug('[useJobsData] response received, items:', response?.items?.length ?? 'none')
 
       if (!mountedRef.current) return
 
@@ -172,6 +174,7 @@ export function useJobsData(): UseJobsDataReturn {
       }
       }).filter((j): j is Job => j !== null)
 
+      console.debug('[useJobsData] transform complete, valid jobs:', convertedJobs.length)
       setBackendJobs(convertedJobs)
       setIsLoadingJobs(false)
 

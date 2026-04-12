@@ -113,6 +113,7 @@ interface JobsListContentProps {
   handleJobsColumnDragLeave: () => void; handleJobsColumnDrop: (id: string, e: React.DragEvent) => void
   handleJobsColumnDragEnd: () => void; startJobsColumnResize: (column: string, e: React.MouseEvent) => void
   toggleUrgentJob: (id: number) => void; togglePinJob: (id: number) => void; toggleFavoriteJob: (id: number) => void
+  jobsError?: string | null; loadBackendJobs?: () => Promise<void>
 }
 
 export function JobsListContent(props: JobsListContentProps) {
@@ -146,6 +147,7 @@ export function JobsListContent(props: JobsListContentProps) {
     handleJobsColumnDragStart, handleJobsColumnDragOver, handleJobsColumnDragLeave,
     handleJobsColumnDrop, handleJobsColumnDragEnd, startJobsColumnResize,
     toggleUrgentJob, togglePinJob, toggleFavoriteJob, setShowColumnConfig,
+    jobsError, loadBackendJobs,
   } = props
 
   const bulkActions = [
@@ -256,7 +258,18 @@ export function JobsListContent(props: JobsListContentProps) {
                 </div>
               )}
               <div className="flex-1 overflow-y-auto" role="status" aria-live="polite" aria-label="Carregando...">
-                {isLoadingJobs ? (
+                {jobsError && !isLoadingJobs ? (
+                  <div className="flex items-center justify-center py-12">
+                    <div className="text-center">
+                      <p className="text-sm text-red-400 mb-3">{jobsError}</p>
+                      {loadBackendJobs && (
+                        <Button variant="outline" size="sm" onClick={() => loadBackendJobs()}>
+                          Tentar novamente
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                ) : isLoadingJobs ? (
                   <div className="flex items-center justify-center py-12" role="status" aria-live="polite" aria-label="Carregando...">
                     <div className="flex items-center gap-2 text-sm text-lia-text-tertiary" role="status" aria-live="polite" aria-label="Carregando...">
                       <Loader2 className="w-5 h-5 animate-spin motion-reduce:animate-none" />
