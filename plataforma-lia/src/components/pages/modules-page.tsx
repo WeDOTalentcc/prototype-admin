@@ -306,7 +306,7 @@ export function ModulesPage() {
   const [modules, setModules] = useState<ModuleInfo[]>(FALLBACK_MODULES)
   const [isLoading, setIsLoading] = useState(true)
   const { user } = useAuth()
-  const companyId = user?.company_id || "demo_company"
+  const companyId = user?.company || "demo_company"
 
   const loadModules = useCallback(async () => {
     setIsLoading(true)
