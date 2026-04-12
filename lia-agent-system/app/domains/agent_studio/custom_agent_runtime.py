@@ -97,6 +97,9 @@ class CustomAgentRuntime(LangGraphReActBase, EnhancedAgentMixin):
         "delete_candidate", "delete_job", "delete_company",
         "bulk_delete", "reset_pipeline", "drop_tenant",
         "modify_permissions", "change_plan", "admin_override",
+        # Etapa 2: batch/destructive operations blocked from Studio
+        "bulk_sync_candidates", "finalize_hiring",
+        "batch_move", "batch_move_candidates",
     })
 
     def _get_tools(self) -> list:
@@ -168,7 +171,24 @@ class CustomAgentRuntime(LangGraphReActBase, EnhancedAgentMixin):
                             "success": False,
                             "message": "Operação de escrita bloqueada: confirm=True necessário.",
                         }
-                    return await _fn(*args, **kwargs)
+                    _tool_result = await _fn(*args, **kwargs)
+
+                    # === 2.3: FairnessGuard on tool output (bias detection) ===
+                    try:
+                        from app.shared.compliance.fairness_guard import FairnessGuard
+                        _fg_out = FairnessGuard()
+                        _out_text = str(_tool_result) if not isinstance(_tool_result, str) else _tool_result
+                        if len(_out_text) > 20:
+                            _fg_check = _fg_out.check(_out_text)
+                            if _fg_check.is_blocked:
+                                logger.warning(
+                                    "[Studio] FairnessGuard flagged tool output: tool=%s",
+                                    _fn.__name__,
+                                )
+                    except Exception:
+                        pass
+
+                    return _tool_result
 
                 try:
                     wrapped_td = td.model_copy(update={"function": _tenant_safe_wrapper})
@@ -199,7 +219,21 @@ class CustomAgentRuntime(LangGraphReActBase, EnhancedAgentMixin):
             "configurable": {"thread_id": effective_thread},
             "recursion_limit": self._max_steps * 2 + 1,
         }
-        callbacks = [cb for cb in [audit_callback, streaming_callback] if cb is not None]
+        # === 2.4 + 2.5: Auto-inject PII strip + Audit callbacks ===
+        try:
+            from app.shared.llm.callbacks import AuditLogCallback, PIIStripCallback
+            auto_callbacks = [
+                PIIStripCallback(),
+                AuditLogCallback(
+                    tenant_id=self._company_id,
+                    caller=f"studio:{self._agent_name}",
+                ),
+            ]
+        except Exception:
+            auto_callbacks = []
+        callbacks = auto_callbacks + [
+            cb for cb in [audit_callback, streaming_callback] if cb is not None
+        ]
         if callbacks:
             config["callbacks"] = callbacks
 
@@ -322,6 +356,50 @@ class CustomAgentRuntime(LangGraphReActBase, EnhancedAgentMixin):
         effective_company_id = company_id or self._company_id
         _token = _CURRENT_COMPANY_ID.set(effective_company_id)
 
+        # === 2.1: SecurityPatterns — block SQL injection, XSS, path traversal ===
+        try:
+            from app.shared.robustness.security_patterns import check_input_security
+            _sec = check_input_security(message)
+            if _sec.is_blocked:
+                logger.warning(
+                    "[Studio:%s] SecurityPatterns blocked input: threats=%s",
+                    self._agent_name, _sec.threat_categories,
+                )
+                return AgentOutput(
+                    message="Solicitação bloqueada: padrão de segurança detectado.",
+                    confidence=1.0,
+                    metadata={
+                        "blocked": True,
+                        "reason": "security_patterns",
+                        "threats": _sec.threat_categories,
+                    },
+                )
+        except Exception:
+            pass
+
+        # === 2.2: PromptInjectionGuard — block jailbreak attempts ===
+        try:
+            from app.shared.prompt_injection import PromptInjectionGuard
+            _pig = PromptInjectionGuard()
+            _pig_result = _pig.check(message)
+            if _pig_result.is_blocked:
+                logger.warning(
+                    "[Studio:%s] PromptInjection blocked: patterns=%s",
+                    self._agent_name, _pig_result.matched_patterns,
+                )
+                return AgentOutput(
+                    message="Solicitação bloqueada: possível tentativa de injeção detectada.",
+                    confidence=1.0,
+                    metadata={
+                        "blocked": True,
+                        "reason": "prompt_injection",
+                        "patterns": _pig_result.matched_patterns,
+                    },
+                )
+        except Exception:
+            pass
+
+        # === Existing FairnessGuard ===
         try:
             from app.shared.compliance.fairness_guard import FairnessGuard
             _fg = FairnessGuard()
