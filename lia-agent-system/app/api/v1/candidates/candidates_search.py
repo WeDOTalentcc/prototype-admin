@@ -159,7 +159,7 @@ async def search_candidates_get(
     """Search for candidates using GET request (convenient for testing)."""
     try:
         from lia_models.pearch import SearchType as _ST
-        _type = _ST.PRO if search_type in ("pro", "deep") else _ST.FAST
+        _type = _ST.FAST
         req = PearchSearchRequest(query=query, type=_type, limit=limit)
         return await pearch_svc.search_candidates(request=req, timeout=timeout)
     except ValueError as e:

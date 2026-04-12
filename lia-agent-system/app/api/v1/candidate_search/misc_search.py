@@ -41,7 +41,7 @@ async def search_from_cv(
     file: UploadFile = File(..., description="CV file (PDF, DOCX, DOC, or TXT)"),
     limit: int = Query(20, ge=1, le=50, description="Number of results"),
     search_pearch: bool = Query(True, description="Include Pearch AI search"),
-    pearch_type: str = Query("fast", description="Pearch type: fast or pro"),
+    pearch_type: str = Query("fast", description="Search type (always fast)"),
     db: AsyncSession = Depends(get_db)
 ,
     cv_parser_svc: CVParserService = Depends(get_cv_parser_service),
@@ -88,7 +88,7 @@ async def search_from_cv(
             query=generated_query,
             search_local_first=True,
             include_pearch=search_pearch,
-            pearch_type=SearchType(pearch_type) if pearch_type in ["fast", "pro"] else SearchType.FAST,
+            pearch_type=SearchType.FAST,
             local_limit=limit,
             pearch_limit=limit
         )

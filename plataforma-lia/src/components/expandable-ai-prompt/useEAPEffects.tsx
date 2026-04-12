@@ -18,7 +18,7 @@ interface UseEAPEffectsParams {
   isExpanded: boolean
   showHistory: boolean
   commandHistory: string[]
-  pearchSearchType: 'fast' | 'pro'
+  pearchSearchType: 'fast'
   candidateLimit: number
   setSearchSource: React.Dispatch<React.SetStateAction<'local' | 'global' | 'hybrid'>>
   setPromptEnhancement: React.Dispatch<React.SetStateAction<{

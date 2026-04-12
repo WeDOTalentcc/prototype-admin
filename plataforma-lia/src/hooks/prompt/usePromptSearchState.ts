@@ -43,8 +43,8 @@ export interface UsePromptSearchStateReturn {
   setShowSourceChangeModal: (v: boolean) => void
   pendingSourceChange: 'hybrid' | 'global' | null
   setPendingSourceChange: (v: 'hybrid' | 'global' | null) => void
-  pearchSearchType: 'fast' | 'pro'
-  setPearchSearchType: (v: 'fast' | 'pro') => void
+  pearchSearchType: 'fast'
+  setPearchSearchType: (v: 'fast') => void
   candidateLimit: number
   setCandidateLimit: (v: number) => void
   requireEmails: boolean
@@ -91,7 +91,7 @@ export function usePromptSearchState(forceExpanded = false): UsePromptSearchStat
   const [searchSource, setSearchSource] = useState<SearchSource>('local')
   const [showSourceChangeModal, setShowSourceChangeModal] = useState(false)
   const [pendingSourceChange, setPendingSourceChange] = useState<'hybrid' | 'global' | null>(null)
-  const [pearchSearchType, setPearchSearchType] = useState<'fast' | 'pro'>('fast')
+  const [pearchSearchType, setPearchSearchType] = useState<'fast'>('fast')
   const [candidateLimit, setCandidateLimit] = useState(15)
 
   const [requireEmails, setRequireEmails] = useState(false)

@@ -60,7 +60,7 @@ export type HideViewedPeriod =
 
 export interface SearchFilters {
   ppiOptions?: {
-    searchType?: "fast" | "pro"
+    searchType?: "fast"
     highFreshness?: boolean
     strictFilters?: boolean
     requireEmails?: boolean

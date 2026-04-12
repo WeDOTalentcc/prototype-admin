@@ -1,7 +1,7 @@
 "use client"
 
 import { useMemo } from"react"
-import { AlertCircle, Coins, TrendingUp, Zap } from"lucide-react"
+import { AlertCircle, Coins, Mail, TrendingUp, Zap } from"lucide-react"
 import { Badge } from"@/components/ui/badge"
 import { 
   CreditEstimate,
@@ -16,7 +16,7 @@ import {
 } from"@/hooks/search/useCreditEstimator"
 
 interface PearchOptions {
-  searchType?:"fast" |"pro"
+  searchType?:"fast"
   highFreshness?: boolean
   requireEmails?: boolean
   showEmails?: boolean
@@ -94,7 +94,7 @@ export function CreditCostDisplay({
               Tipo de Busca
             </span>
             <span className="font-medium">
-              {estimate.pearch_type ==="fast" ?"Rapida" :"Profissional"} ({estimate.base_cost}/cand.)
+              Rapida ({estimate.base_cost}/cand.)
             </span>
           </div>
 
@@ -112,22 +112,13 @@ export function CreditCostDisplay({
             </div>
           )}
 
-          {estimate.email_cost > 0 && (
-            <div className="flex items-center justify-between text-lia-text-secondary">
-              <span>Opcoes de Email</span>
-              <span className="font-medium">+{estimate.email_cost}/cand.</span>
-            </div>
-          )}
-
-          {estimate.phone_cost > 0 && (
-            <div className="flex items-center justify-between text-status-warning">
-              <span className="flex items-center gap-1">
-                <AlertCircle className="w-3 h-3" />
-                Opcoes de Telefone
-              </span>
-              <span className="font-medium">+{estimate.phone_cost}/cand.</span>
-            </div>
-          )}
+          <div className="flex items-center justify-between text-wedo-cyan">
+            <span className="flex items-center gap-1">
+              <Mail className="w-3 h-3" />
+              Enriquecimento Apify
+            </span>
+            <span className="font-medium">$0.01/cand.</span>
+          </div>
 
           <div className="border-t pt-2 mt-2 border-lia-border-default dark:border-lia-border-default">
             <div className="flex items-center justify-between">

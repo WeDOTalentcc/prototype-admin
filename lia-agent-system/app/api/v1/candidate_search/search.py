@@ -41,6 +41,7 @@ from ._shared import (
     _normalize_name,
     _normalize_priority,
     assert_resource_ownership,
+    enrich_and_filter_candidates,
     get_current_user_or_demo,
     get_cv_parser_service,
     get_db,
@@ -109,7 +110,7 @@ async def search_candidates(
             search_spec=request.search_spec,
             search_local_first=request.search_local,
             include_pearch=request.search_pearch,
-            pearch_type=SearchType(request.pearch_type) if request.pearch_type in ["fast", "pro"] else SearchType.FAST,
+            pearch_type=SearchType.FAST,
             local_limit=request.local_limit,
             pearch_limit=request.pearch_limit,
             show_emails=request.show_emails,
@@ -134,6 +135,8 @@ async def search_candidates(
         
         for profile in result.pearch_candidates:
             candidates.append(CandidateSearchResultDTO.from_profile(profile, "pearch"))
+        
+        candidates = await enrich_and_filter_candidates(db, candidates)
         
         # Rubric evaluation if job_id is provided
         if request.job_id and candidates:

@@ -21,8 +21,8 @@ export interface UseSearchSourceResult {
   showSourceChangeModal: boolean
   setShowSourceChangeModal: (v: boolean) => void
   pendingSourceChange: 'hybrid' | 'global' | null
-  pearchSearchType: 'fast' | 'pro'
-  setPearchSearchType: (t: 'fast' | 'pro') => void
+  pearchSearchType: 'fast'
+  setPearchSearchType: (t: 'fast') => void
   candidateLimit: number
   setCandidateLimit: (n: number) => void
   requireEmails: boolean
@@ -44,7 +44,7 @@ export function useSearchSource(): UseSearchSourceResult {
   const [searchSource, setSearchSource] = useState<SearchSource>('local')
   const [showSourceChangeModal, setShowSourceChangeModal] = useState(false)
   const [pendingSourceChange, setPendingSourceChange] = useState<'hybrid' | 'global' | null>(null)
-  const [pearchSearchType, setPearchSearchType] = useState<'fast' | 'pro'>('fast')
+  const [pearchSearchType, setPearchSearchType] = useState<'fast'>('fast')
   const [candidateLimit, setCandidateLimit] = useState(15)
   const [requireEmails, setRequireEmails] = useState(false)
   const [requirePhoneNumbers, setRequirePhoneNumbers] = useState(false)

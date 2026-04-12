@@ -45,7 +45,7 @@ export interface CandidatesSearchContext {
   openCreditModals: { hybrid: boolean; global: boolean; email: boolean; phone: boolean }
   setOpenCreditModals: (v: CandidatesSearchContext['openCreditModals'] | ((prev: CandidatesSearchContext['openCreditModals']) => CandidatesSearchContext['openCreditModals'])) => void
   pearchSearchOptions: {
-    searchType: 'fast' | 'pro'
+    searchType: 'fast'
     limit: number
     showEmails: boolean
     showPhoneNumbers: boolean

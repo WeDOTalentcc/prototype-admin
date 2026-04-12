@@ -79,7 +79,7 @@ class ArchetypeSearchRequest(BaseModel):
     """Request to search using an archetype."""
     search_local: bool = Field(True, description="Buscar no banco local")
     search_pearch: bool = Field(True, description="Buscar na Pearch AI")
-    pearch_type: str = Field("fast", pattern="^(fast|pro)$")
+    pearch_type: str = Field("fast", description="Tipo de busca (sempre fast)")
     local_limit: int = Field(20, ge=1, le=100)
     pearch_limit: int = Field(15, ge=0, le=50)
     show_emails: bool = False
@@ -914,7 +914,7 @@ async def search_by_archetype(
             query=archetype.query,
             search_local_first=request.search_local,
             include_pearch=request.search_pearch,
-            pearch_type=SearchType(request.pearch_type) if request.pearch_type in ["fast", "pro"] else SearchType.FAST,
+            pearch_type=SearchType.FAST,
             local_limit=request.local_limit,
             pearch_limit=request.pearch_limit,
             show_emails=request.show_emails,

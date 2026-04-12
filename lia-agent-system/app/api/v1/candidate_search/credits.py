@@ -57,7 +57,7 @@ router = APIRouter()
 class CreditEstimateRequest(BaseModel):
     """Request completo para estimativa de créditos."""
     query: str = Field(..., description="Query de busca")
-    pearch_type: str = Field("fast", description="Tipo: fast ou pro")
+    pearch_type: str = Field("fast", description="Tipo de busca (sempre fast)")
     limit: int = Field(15, ge=1, le=50)
     
     # Opções de qualidade
@@ -111,12 +111,9 @@ async def estimate_search_credits(request: CreditEstimateRequest,
     Use este endpoint para mostrar ao usuário quanto a busca irá custar.
     Aceita todos os parâmetros Pearch para cálculo preciso.
     """
-    if request.pearch_type not in ["fast", "pro"]:
-        raise HTTPException(status_code=400, detail="pearch_type must be 'fast' or 'pro'")
-    
     pearch_request = PearchSearchRequest(
         query=request.query,
-        type=SearchType(request.pearch_type),
+        type=SearchType.FAST,
         insights=request.insights,
         high_freshness=request.high_freshness,
         profile_scoring=request.profile_scoring,
@@ -135,12 +132,10 @@ async def estimate_search_credits(request: CreditEstimateRequest,
     
     # Gerar alertas de custo
     warnings = []
-    if request.show_phone_numbers:
-        warnings.append("Exibir telefones adiciona +14 créditos por candidato - custo significativo!")
     if estimate.total_estimated > 100:
         warnings.append(f"Custo total estimado alto: {estimate.total_estimated} créditos")
-    if request.pearch_type == "pro" and request.limit > 30:
-        warnings.append("Busca profissional com muitos resultados pode consumir créditos rapidamente")
+    if request.require_emails or request.require_phone_numbers:
+        warnings.append("Contatos serão enriquecidos via Apify ($0.01/candidato) quando não disponíveis no Pearch")
     
     return DetailedCreditEstimateDTO(
         query=request.query,

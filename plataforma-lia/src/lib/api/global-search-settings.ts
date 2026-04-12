@@ -7,7 +7,7 @@ export interface GlobalSearchSettings {
   id?: string
   company_id?: string | null
   default_limit: number
-  search_type: 'fast' | 'pro'
+  search_type: 'fast'
   show_emails: boolean
   show_phone_numbers: boolean
   high_freshness: boolean
@@ -20,7 +20,7 @@ export interface GlobalSearchSettings {
 
 export interface GlobalSearchSettingsUpdate {
   default_limit?: number
-  search_type?: 'fast' | 'pro'
+  search_type?: 'fast'
   show_emails?: boolean
   show_phone_numbers?: boolean
   high_freshness?: boolean

@@ -1,6 +1,6 @@
 "use client"
 import React from"react"
-import { Zap, Mail, Phone, AlertCircle, TrendingUp } from"lucide-react"
+import { Zap, Mail, Phone, TrendingUp } from"lucide-react"
 import { Badge } from"@/components/ui/badge"
 import { Label } from"@/components/ui/label"
 import { Switch } from"@/components/ui/switch"
@@ -50,7 +50,7 @@ export const FilterSectionOpcoes = React.memo(function FilterSectionOpcoes({
           <div className="mt-3 pt-3 border-t border-wedo-cyan/20 space-y-1.5">
             <div className="flex justify-between text-xs">
               <span className="text-lia-text-secondary">
-                Base ({creditEstimate.pearch_type ==="fast" ?"Rápida" :"Profissional"})
+                Base (Busca Rápida)
               </span>
               <span className="font-medium">{creditEstimate.base_cost}</span>
             </div>
@@ -64,21 +64,13 @@ export const FilterSectionOpcoes = React.memo(function FilterSectionOpcoes({
                 <span className="font-medium">+{creditEstimate.freshness_cost}</span>
               </div>
             )}
-            {creditEstimate.email_cost > 0 && (
-              <div className="flex justify-between text-xs">
-                <span className="text-lia-text-secondary">Opções de Email</span>
-                <span className="font-medium">+{creditEstimate.email_cost}</span>
-              </div>
-            )}
-            {creditEstimate.phone_cost > 0 && (
-              <div className="flex justify-between text-xs text-status-warning">
-                <span className="flex items-center gap-1">
-                  <AlertCircle className="w-3 h-3" />
-                  Opções de Telefone
-                </span>
-                <span className="font-medium">+{creditEstimate.phone_cost}</span>
-              </div>
-            )}
+            <div className="flex justify-between text-xs text-wedo-cyan">
+              <span className="flex items-center gap-1">
+                <Mail className="w-3 h-3" />
+                Enriquecimento Apify
+              </span>
+              <span className="font-medium">$0.01/candidato</span>
+            </div>
             <div className="flex justify-between text-xs pt-1.5 border-t border-wedo-cyan/15">
               <span className="flex items-center gap-1 font-medium text-lia-text-primary">
                 <TrendingUp className="w-3 h-3" />

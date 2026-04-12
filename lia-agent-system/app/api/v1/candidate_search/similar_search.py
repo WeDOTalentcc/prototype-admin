@@ -41,6 +41,7 @@ from ._shared import (
     _normalize_name,
     _normalize_priority,
     assert_resource_ownership,
+    enrich_and_filter_candidates,
     get_current_user_or_demo,
     get_cv_parser_service,
     get_db,
@@ -60,7 +61,7 @@ class SimilarSearchRequest(BaseModel):
     candidate_id: str | None = Field(None, description="ID do candidato no banco local")
     limit: int = Field(20, ge=1, le=50, description="Número de resultados")
     search_pearch: bool = Field(True, description="Buscar também na Pearch AI")
-    pearch_type: str = Field("fast", description="Tipo: 'fast' ou 'pro'")
+    pearch_type: str = Field("fast", description="Tipo de busca (sempre fast)")
 
 
 class SimilarSearchResponse(BaseModel):
@@ -161,7 +162,7 @@ async def search_similar_candidates(
             query=generated_query,
             search_local_first=True,
             include_pearch=request.search_pearch,
-            pearch_type=SearchType(request.pearch_type) if request.pearch_type in ["fast", "pro"] else SearchType.FAST,
+            pearch_type=SearchType.FAST,
             local_limit=request.limit,
             pearch_limit=request.limit,
             exclude_candidate_ids=[request.candidate_id] if request.candidate_id else []
@@ -174,6 +175,8 @@ async def search_similar_candidates(
             candidates.append(CandidateSearchResultDTO.from_profile(profile, "local"))
         for profile in result.pearch_candidates:
             candidates.append(CandidateSearchResultDTO.from_profile(profile, "pearch"))
+        
+        candidates = await enrich_and_filter_candidates(db, candidates)
         
         return SimilarSearchResponse(
             reference_profile=reference_profile,

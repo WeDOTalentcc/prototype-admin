@@ -12,7 +12,7 @@ import type { ChatMessage } from "./candidates-core"
 export type SearchSource = 'local' | 'global' | 'hybrid'
 
 interface PearchSearchOptions {
-  searchType: 'fast' | 'pro'
+  searchType: 'fast'
   limit: number
   showEmails: boolean
   showPhoneNumbers: boolean

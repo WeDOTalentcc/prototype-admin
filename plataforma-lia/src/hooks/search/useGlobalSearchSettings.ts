@@ -5,7 +5,7 @@ import { getGlobalSearchSettings, GlobalSearchSettings } from "@/lib/api/global-
 
 export interface GlobalSearchSettingsState {
   defaultLimit: number
-  searchType: 'fast' | 'pro'
+  searchType: 'fast'
   showEmails: boolean
   showPhoneNumbers: boolean
   highFreshness: boolean

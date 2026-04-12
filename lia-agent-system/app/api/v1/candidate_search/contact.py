@@ -11,9 +11,11 @@ from ._shared import (
     PearchSearchRequest,
     PearchService,
     SearchType,
+    get_contact_enrichment_service,
     get_db,
     get_pearch_service,
 )
+from app.domains.sourcing.services.contact_enrichment_service import ContactEnrichmentService
 from app.domains.candidates.repositories.candidate_filter_repository import CandidateFilterRepository
 
 router = APIRouter()
@@ -93,31 +95,71 @@ async def reveal_contact(
     pearch_svc: PearchService = Depends(get_pearch_service),
 ):
     """
-    Revela email ou telefone de um candidato Pearch.
-    
-    Custos:
-    - Email: 2 créditos por candidato (só cobra se tiver email)
-    - Telefone: 14 créditos por candidato (só cobra se tiver telefone)
+    Revela email ou telefone de um candidato.
     
     Fluxo:
-    1. Faz busca específica no Pearch com show_emails ou show_phone_numbers
-    2. Retorna os dados de contato encontrados
-    3. Opcionalmente atualiza o candidato no banco local
+    1. Tenta Apify primeiro ($0.01/candidato) via LinkedIn URL
+    2. Se Apify falhar, usa Pearch como fallback (2/14 créditos)
     """
+    import logging as _log
+    _logger = _log.getLogger(__name__)
+    
     try:
-        # Configura busca específica
+        enrichment_svc = get_contact_enrichment_service()
+        
+        if request.linkedin_slug:
+            linkedin_url = f"https://www.linkedin.com/in/{request.linkedin_slug}"
+            _logger.info("[Reveal] Trying Apify first for %s", request.candidate_id)
+            
+            from uuid import UUID as _UUID
+            try:
+                cand_uuid = _UUID(request.candidate_id)
+                apify_result = await enrichment_svc.enrich_candidate_contact(
+                    db=db,
+                    candidate_id=cand_uuid,
+                    linkedin_url=linkedin_url,
+                    force=True,
+                )
+                
+                if apify_result.get("success") and apify_result.get("has_contact"):
+                    email = apify_result.get("email")
+                    phone = apify_result.get("phone")
+                    
+                    if request.reveal_type == "email" and email:
+                        return RevealContactResponse(
+                            success=True,
+                            candidate_id=request.candidate_id,
+                            reveal_type="email",
+                            email=email,
+                            emails=[email],
+                            credits_used=0,
+                            message="Email revelado via Apify ($0.01)",
+                        )
+                    elif request.reveal_type == "phone" and phone:
+                        return RevealContactResponse(
+                            success=True,
+                            candidate_id=request.candidate_id,
+                            reveal_type="phone",
+                            phone=phone,
+                            phones=[phone],
+                            credits_used=0,
+                            message="Telefone revelado via Apify ($0.01)",
+                        )
+            except Exception as apify_err:
+                _logger.warning("[Reveal] Apify failed, falling back to Pearch: %s", apify_err)
+        
+        _logger.info("[Reveal] Falling back to Pearch for %s", request.candidate_id)
+        
         search_query = request.candidate_name
         if request.linkedin_slug:
             search_query = f"{request.candidate_name} linkedin:{request.linkedin_slug}"
         
-        # Define flags baseado no tipo de reveal
         show_emails = request.reveal_type == "email"
         show_phone_numbers = request.reveal_type == "phone"
         
-        # Cria request para Pearch
         pearch_request = PearchSearchRequest(
             query=search_query,
-            type=SearchType.FAST,  # Usar fast para reveal individual
+            type=SearchType.FAST,
             limit=1,
             insights=False,
             profile_scoring=False,
@@ -128,7 +170,6 @@ async def reveal_contact(
             show_phone_numbers=show_phone_numbers
         )
         
-        # Executa busca
         result = await pearch_svc.search_candidates(pearch_request, timeout=30)
         
         if not result.search_results:
@@ -621,7 +662,7 @@ class ArchetypeSearchRequest(BaseModel):
     """Request to search using an archetype."""
     search_local: bool = Field(True, description="Buscar no banco local")
     search_pearch: bool = Field(True, description="Buscar na Pearch AI")
-    pearch_type: str = Field("fast", pattern="^(fast|pro)$")
+    pearch_type: str = Field("fast", description="Tipo de busca (sempre fast)")
     local_limit: int = Field(20, ge=1, le=100)
     pearch_limit: int = Field(15, ge=0, le=50)
     show_emails: bool = False

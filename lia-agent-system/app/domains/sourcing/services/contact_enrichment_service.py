@@ -1,0 +1,224 @@
+import asyncio
+import logging
+import time
+from datetime import datetime, timedelta
+from typing import Any
+from uuid import UUID
+
+from sqlalchemy import select, update
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.domains.candidates.services.candidate_enrichment_service import (
+    CandidateEnrichmentService,
+    candidate_enrichment_service,
+)
+from app.shared.resilience.circuit_breaker import APIFY_CIRCUIT
+from lia_models.candidate import Candidate
+
+logger = logging.getLogger(__name__)
+
+APIFY_COST_USD = 0.01
+DEDUP_WINDOW_HOURS = 24
+BATCH_CONCURRENCY = 5
+
+
+class ContactEnrichmentService:
+    def __init__(self, enrichment_svc: CandidateEnrichmentService | None = None):
+        self._enrichment_svc = enrichment_svc or candidate_enrichment_service
+
+    async def enrich_candidate_contact(
+        self,
+        db: AsyncSession,
+        candidate_id: UUID,
+        linkedin_url: str | None = None,
+        force: bool = False,
+    ) -> dict[str, Any]:
+        result = await db.execute(
+            select(Candidate).where(Candidate.id == candidate_id)
+        )
+        candidate = result.scalar_one_or_none()
+        if not candidate:
+            return {"success": False, "error": "Candidate not found", "source": None}
+
+        if self._has_contact(candidate) and not force:
+            return {
+                "success": True,
+                "already_has_contact": True,
+                "email": candidate.email,
+                "phone": getattr(candidate, "phone", None),
+                "source": "existing",
+            }
+
+        profile_url = linkedin_url or candidate.linkedin_url
+        if not profile_url:
+            return {"success": False, "error": "No LinkedIn URL available", "source": None}
+
+        if not force and self._recently_enriched(candidate):
+            return {
+                "success": False,
+                "error": "Recently enriched without results",
+                "source": "dedup_skip",
+            }
+
+        if APIFY_CIRCUIT.is_open:
+            logger.warning("[ContactEnrichment] Apify circuit breaker is OPEN, skipping")
+            return {"success": False, "error": "Apify circuit breaker open", "source": None}
+
+        try:
+            start = time.monotonic()
+            enrichment_result = await self._enrichment_svc.enrich_candidate(
+                db=db,
+                candidate_id=candidate_id,
+                linkedin_url=profile_url,
+                include_experiences=True,
+                include_education=True,
+                include_email_discovery=True,
+            )
+            elapsed = time.monotonic() - start
+
+            APIFY_CIRCUIT.record_success()
+
+            await db.refresh(candidate)
+
+            has_contact = self._has_contact(candidate)
+
+            logger.info(
+                "[ContactEnrichment] candidate=%s has_contact=%s elapsed=%.1fs fields=%s",
+                candidate_id,
+                has_contact,
+                elapsed,
+                enrichment_result.get("fields_updated", []),
+            )
+
+            return {
+                "success": enrichment_result.get("success", False),
+                "has_contact": has_contact,
+                "email": candidate.email,
+                "phone": getattr(candidate, "phone", None),
+                "fields_updated": enrichment_result.get("fields_updated", []),
+                "source": "apify",
+                "cost_usd": APIFY_COST_USD,
+                "elapsed_seconds": round(elapsed, 2),
+            }
+
+        except Exception as e:
+            APIFY_CIRCUIT.record_failure()
+            logger.error("[ContactEnrichment] Apify enrichment failed for %s: %s", candidate_id, e)
+            return {"success": False, "error": str(e), "source": "apify_error"}
+
+    async def enrich_batch(
+        self,
+        db: AsyncSession,
+        candidates: list[dict[str, Any]],
+        force: bool = False,
+    ) -> list[dict[str, Any]]:
+        semaphore = asyncio.Semaphore(BATCH_CONCURRENCY)
+
+        async def _enrich_one(cand: dict) -> dict[str, Any]:
+            async with semaphore:
+                cand_id = cand.get("id") or cand.get("candidate_id")
+                linkedin = cand.get("linkedin_url") or cand.get("linkedin_slug")
+                if linkedin and not linkedin.startswith("http"):
+                    linkedin = f"https://www.linkedin.com/in/{linkedin}"
+
+                if not cand_id:
+                    return {"success": False, "error": "No candidate ID"}
+
+                return await self.enrich_candidate_contact(
+                    db=db,
+                    candidate_id=UUID(str(cand_id)),
+                    linkedin_url=linkedin,
+                    force=force,
+                )
+
+        results = await asyncio.gather(
+            *[_enrich_one(c) for c in candidates],
+            return_exceptions=True,
+        )
+
+        processed = []
+        for i, r in enumerate(results):
+            if isinstance(r, Exception):
+                processed.append({"success": False, "error": str(r), "source": "exception"})
+            else:
+                processed.append(r)
+        return processed
+
+    async def enrich_search_results_and_filter(
+        self,
+        db: AsyncSession,
+        candidates: list[Any],
+        source_field: str = "source",
+    ) -> list[Any]:
+        needs_enrichment = []
+        for cand in candidates:
+            email = getattr(cand, "email", None) or getattr(cand, "best_personal_email", None)
+            phone = getattr(cand, "phone", None)
+            phones = getattr(cand, "phone_numbers", None)
+            if not email and not phone and not phones:
+                linkedin = getattr(cand, "linkedin_url", None) or getattr(cand, "linkedin_slug", None)
+                cand_id = getattr(cand, "id", None)
+                if linkedin and cand_id:
+                    needs_enrichment.append({
+                        "id": str(cand_id),
+                        "linkedin_url": linkedin if linkedin.startswith("http") else f"https://www.linkedin.com/in/{linkedin}",
+                    })
+
+        if needs_enrichment:
+            logger.info(
+                "[ContactEnrichment] Enriching %d/%d candidates missing contact",
+                len(needs_enrichment),
+                len(candidates),
+            )
+            await self.enrich_batch(db, needs_enrichment)
+
+        enriched = []
+        for cand in candidates:
+            email = getattr(cand, "email", None) or getattr(cand, "best_personal_email", None)
+            phone = getattr(cand, "phone", None)
+            phones = getattr(cand, "phone_numbers", None)
+            if email or phone or phones:
+                enriched.append(cand)
+            else:
+                cand_id = getattr(cand, "id", "?")
+                logger.debug("[ContactEnrichment] Filtering out candidate %s — no contact after enrichment", cand_id)
+
+        filtered_count = len(candidates) - len(enriched)
+        if filtered_count > 0:
+            logger.info(
+                "[ContactEnrichment] Filtered %d candidates without contact. Returning %d/%d",
+                filtered_count,
+                len(enriched),
+                len(candidates),
+            )
+
+        return enriched
+
+    def _has_contact(self, candidate: Candidate) -> bool:
+        if candidate.email:
+            return True
+        if getattr(candidate, "best_personal_email", None):
+            return True
+        if getattr(candidate, "best_business_email", None):
+            return True
+        if getattr(candidate, "phone", None):
+            return True
+        return False
+
+    def _recently_enriched(self, candidate: Candidate) -> bool:
+        enrichment_data = (candidate.additional_data or {}).get("enrichment", {})
+        last_enriched = enrichment_data.get("last_enriched_at")
+        if not last_enriched:
+            return False
+        try:
+            last_dt = datetime.fromisoformat(last_enriched)
+            return datetime.utcnow() - last_dt < timedelta(hours=DEDUP_WINDOW_HOURS)
+        except (ValueError, TypeError):
+            return False
+
+
+contact_enrichment_service = ContactEnrichmentService()
+
+
+def get_contact_enrichment_service() -> ContactEnrichmentService:
+    return contact_enrichment_service

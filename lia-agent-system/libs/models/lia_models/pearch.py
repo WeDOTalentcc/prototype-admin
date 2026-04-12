@@ -10,8 +10,7 @@ from enum import Enum
 
 class SearchType(str, Enum):
     """Tipos de busca disponíveis."""
-    FAST = "fast"  # 1 crédito/candidato - mais rápido, menor recall
-    PRO = "pro"    # 5 créditos/candidato - melhor qualidade e recall
+    FAST = "fast"  # 1 crédito/candidato
 
 
 class MatchLevel(str, Enum):

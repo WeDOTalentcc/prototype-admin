@@ -188,7 +188,7 @@ class PearchService:
         - require_phone_numbers: +1 crédito
         - show_phone_numbers: +14 créditos (só cobra se tiver telefone)
         """
-        base = 1 if request.type == SearchType.FAST else 5
+        base = 1
         insights = 1 if request.insights else 0
         scoring = 1 if request.profile_scoring else 0
         freshness = 2 if request.high_freshness else 0

@@ -364,6 +364,16 @@ PEARCH_CIRCUIT = CircuitBreaker(
     )
 )
 
+APIFY_CIRCUIT = CircuitBreaker(
+    "apify",
+    CircuitBreakerConfig(
+        failure_threshold=5,
+        recovery_timeout=60.0,
+        success_threshold=2,
+        timeout=120.0,
+    )
+)
+
 WORKOS_CIRCUIT = CircuitBreaker(
     "workos",
     CircuitBreakerConfig(

@@ -150,7 +150,7 @@ const showGlobalSearchOptions = !globalSettingsLoading && globalSettings.globalS
   const [searchSource, setSearchSource] = useState<SearchSource>('local')
   const [showSourceChangeModal, setShowSourceChangeModal] = useState(false)
   const [pendingSourceChange, setPendingSourceChange] = useState<'hybrid' | 'global' | null>(null)
-  const [pearchSearchType, setPearchSearchType] = useState<'fast' | 'pro'>('fast')
+  const [pearchSearchType, setPearchSearchType] = useState<'fast'>('fast')
   const [candidateLimit, setCandidateLimit] = useState(15)
   
   const [requireEmails, setRequireEmails] = useState(false)

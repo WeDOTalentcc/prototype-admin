@@ -10,7 +10,7 @@ class JobDescriptionSearchRequest(BaseModel):
     location: str | None = Field(None, description="Localização preferida")
     limit: int = Field(20, ge=1, le=50)
     search_pearch: bool = Field(True, description="Buscar também na Pearch AI")
-    pearch_type: str = Field("fast", description="Tipo: 'fast' ou 'pro'")
+    pearch_type: str = Field("fast", description="Tipo de busca (sempre fast)")
 
 
 class ExtractedCriteria(BaseModel):

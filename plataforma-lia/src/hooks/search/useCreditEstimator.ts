@@ -11,7 +11,7 @@ import {
 } from "@/lib/api/candidate-search"
 
 export interface CreditEstimatorOptions {
-  searchType: "fast" | "pro"
+  searchType: "fast"
   limit: number
   highFreshness: boolean
   requireEmails: boolean
@@ -146,22 +146,17 @@ export function getCostBgColor(level: "low" | "medium" | "high" | "very-high"): 
 export const CREDIT_COSTS = {
   searchType: {
     fast: 1,
-    pro: 5
   },
   insights: 1,
   profileScoring: 1,
   highFreshness: 2,
-  requireEmails: 1,
-  showEmails: 2,
-  requirePhoneNumbers: 1,
-  showPhoneNumbers: 14,
-  requirePhonesOrEmails: 1
+  apifyEnrichment: 0.01,
 } as const
 
 export function describeCostBreakdown(estimate: CreditEstimate): string[] {
   const lines: string[] = []
   
-  lines.push(`Base (${estimate.pearch_type}): ${estimate.base_cost} creditos`)
+  lines.push(`Base (Busca Rapida): ${estimate.base_cost} creditos`)
   
   if (estimate.insights_cost > 0) {
     lines.push(`Insights + Scoring: +${estimate.insights_cost} creditos`)
@@ -171,16 +166,10 @@ export function describeCostBreakdown(estimate: CreditEstimate): string[] {
     lines.push(`Dados Atualizados: +${estimate.freshness_cost} creditos`)
   }
   
-  if (estimate.email_cost > 0) {
-    lines.push(`Opcoes de Email: +${estimate.email_cost} creditos`)
-  }
-  
-  if (estimate.phone_cost > 0) {
-    lines.push(`Opcoes de Telefone: +${estimate.phone_cost} creditos`)
-  }
+  lines.push(`Enriquecimento Apify: $0.01/candidato (email + telefone)`)
   
   lines.push(`---`)
-  lines.push(`Por candidato: ${estimate.cost_per_candidate} creditos`)
+  lines.push(`Por candidato: ${estimate.cost_per_candidate} creditos + $0.01`)
   lines.push(`Total (${estimate.limit} candidatos): ${estimate.total_estimated} creditos`)
   
   return lines

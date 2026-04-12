@@ -20,6 +20,11 @@ from app.core.database import get_db  # noqa: F401
 from app.domains.cv_screening.services.cv_parser import CVParserService, cv_parser_service, get_cv_parser_service  # noqa: F401
 from app.domains.cv_screening.services.rubric_evaluation_service import RubricEvaluationService, rubric_evaluation_service, get_rubric_evaluation_service
 from app.domains.sourcing.services.pearch_service import PearchService, get_pearch_service, pearch_service  # noqa: F401
+from app.domains.sourcing.services.contact_enrichment_service import (  # noqa: F401
+    ContactEnrichmentService,
+    contact_enrichment_service,
+    get_contact_enrichment_service,
+)
 from app.domains.sourcing.services.search_analytics import search_analytics_service  # noqa: F401
 from app.models.pearch import (  # noqa: F401
     CandidateProfile,
@@ -411,7 +416,7 @@ class SearchRequestDTO(BaseModel):
     # Configuração de busca
     search_local: bool = Field(True, description="Buscar no banco local")
     search_pearch: bool = Field(True, description="Buscar na Pearch AI")
-    pearch_type: str = Field("fast", description="Tipo: 'fast' ou 'pro'", pattern="^(fast|pro)$")
+    pearch_type: str = Field("fast", description="Tipo de busca (sempre fast)")
     
     # Limites
     local_limit: int = Field(20, ge=1, le=100)
@@ -564,3 +569,44 @@ class EvaluateForJobResponse(BaseModel):
     evaluated_count: int
     failed_count: int
     results: list[EvaluateForJobResult]
+
+
+async def enrich_and_filter_candidates(
+    db: AsyncSession,
+    candidates: list["CandidateSearchResultDTO"],
+) -> list["CandidateSearchResultDTO"]:
+    enrichment_svc = get_contact_enrichment_service()
+
+    needs_enrichment = []
+    for cand in candidates:
+        has_email = bool(cand.email or cand.best_personal_email or cand.best_business_email)
+        has_phone = bool(getattr(cand, "phone", None) or getattr(cand, "phone_numbers", None))
+        if not has_email and not has_phone:
+            linkedin = cand.linkedin_url or cand.linkedin_slug
+            if linkedin and cand.id:
+                needs_enrichment.append({
+                    "id": str(cand.id),
+                    "linkedin_url": linkedin if str(linkedin).startswith("http") else f"https://www.linkedin.com/in/{linkedin}",
+                })
+
+    if needs_enrichment:
+        logger.info("[EnrichHook] Enriching %d/%d candidates missing contact", len(needs_enrichment), len(candidates))
+        try:
+            await enrichment_svc.enrich_batch(db, needs_enrichment)
+        except Exception as e:
+            logger.warning("[EnrichHook] Batch enrichment failed (non-fatal): %s", e)
+
+    enriched = []
+    for cand in candidates:
+        has_email = bool(cand.email or cand.best_personal_email or cand.best_business_email)
+        has_phone = bool(getattr(cand, "phone", None) or getattr(cand, "phone_numbers", None))
+        if has_email or has_phone:
+            enriched.append(cand)
+        else:
+            logger.debug("[EnrichHook] Filtering candidate %s — no contact", cand.id)
+
+    filtered = len(candidates) - len(enriched)
+    if filtered > 0:
+        logger.info("[EnrichHook] Filtered %d candidates without contact. Returning %d/%d", filtered, len(enriched), len(candidates))
+
+    return enriched

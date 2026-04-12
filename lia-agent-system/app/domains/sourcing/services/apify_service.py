@@ -18,7 +18,7 @@ APIFY_API_KEY = os.environ.get("APIFY_API_KEY", "")
 APIFY_BASE_URL = "https://api.apify.com/v2"
 
 LINKEDIN_ACTOR_ID = "voyager/linkedin-company-profile-scraper"
-LINKEDIN_PERSON_ACTOR_ID = "anchor/linkedin-profile-scraper"
+LINKEDIN_PERSON_ACTOR_ID = "dev_fusion/Linkedin-Profile-Scraper"
 EMAIL_FINDER_ACTOR_ID = "curious_coder/email-finder"
 GLASSDOOR_ACTOR_ID = "bebity/glassdoor-scraper"
 

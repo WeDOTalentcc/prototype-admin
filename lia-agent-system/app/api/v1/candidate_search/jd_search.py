@@ -12,6 +12,7 @@ from ._shared import (
     PearchService,
     SearchResponseDTO,
     SearchType,
+    enrich_and_filter_candidates,
     get_db,
     get_pearch_service,
 )
@@ -24,7 +25,7 @@ class JobDescriptionSearchRequest(BaseModel):
     location: str | None = Field(None, description="Localização preferida")
     limit: int = Field(20, ge=1, le=50)
     search_pearch: bool = Field(True, description="Buscar também na Pearch AI")
-    pearch_type: str = Field("fast", description="Tipo: 'fast' ou 'pro'")
+    pearch_type: str = Field("fast", description="Tipo de busca (sempre fast)")
 
 
 class ExtractedCriteria(BaseModel):
@@ -139,7 +140,7 @@ async def search_by_job_description(
             query=generated_query,
             search_local_first=True,
             include_pearch=request.search_pearch,
-            pearch_type=SearchType(request.pearch_type) if request.pearch_type in ["fast", "pro"] else SearchType.FAST,
+            pearch_type=SearchType.FAST,
             local_limit=request.limit,
             pearch_limit=request.limit
         )
@@ -151,6 +152,8 @@ async def search_by_job_description(
             candidates.append(CandidateSearchResultDTO.from_profile(profile, "local"))
         for profile in result.pearch_candidates:
             candidates.append(CandidateSearchResultDTO.from_profile(profile, "pearch"))
+        
+        candidates = await enrich_and_filter_candidates(db, candidates)
         
         return JobDescriptionSearchResponse(
             extracted_criteria=extracted,

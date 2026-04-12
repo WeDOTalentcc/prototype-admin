@@ -53,7 +53,7 @@ export interface StoredAdminClient {
 
 export interface StoredGlobalSearchSettings {
   defaultLimit: number
-  searchType: 'fast' | 'pro'
+  searchType: 'fast'
   showEmails: boolean
   showPhoneNumbers: boolean
   highFreshness: boolean

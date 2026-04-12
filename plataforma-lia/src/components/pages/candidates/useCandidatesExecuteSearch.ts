@@ -154,7 +154,7 @@ export function mapCandidateToInternal(c: RawCandidate): Candidate {
 export interface ExecuteSearchDeps {
   searchSource: SearchSource
   pearchSearchOptions: {
-    searchType: 'fast' | 'pro'
+    searchType: 'fast'
     limit: number
     showEmails: boolean
     showPhoneNumbers: boolean

@@ -3,7 +3,7 @@ import { CandidateResult } from "@/components/search/search-results-card"
 const API_BASE = ""
 
 export interface PearchOptions {
-  searchType: "fast" | "pro"
+  searchType: "fast"
   highFreshness: boolean
   strictFilters: boolean
   requireEmails: boolean
@@ -86,7 +86,7 @@ export interface SearchRequest {
   search_spec?: SearchSpec
   search_local?: boolean
   search_pearch?: boolean
-  pearch_type?: "fast" | "pro"
+  pearch_type?: "fast"
   local_limit?: number
   pearch_limit?: number
   show_emails?: boolean
@@ -142,7 +142,7 @@ export interface CreditEstimate {
 
 export interface CreditEstimateRequest {
   query: string
-  pearch_type?: "fast" | "pro"
+  pearch_type?: "fast"
   limit?: number
   insights?: boolean
   high_freshness?: boolean
@@ -292,7 +292,7 @@ export async function refineSearch(
 }
 
 export function calculateCreditsLocally(options: {
-  searchType: "fast" | "pro"
+  searchType: "fast"
   limit: number
   highFreshness?: boolean
   requireEmails?: boolean
@@ -301,25 +301,19 @@ export function calculateCreditsLocally(options: {
   showPhoneNumbers?: boolean
   requirePhonesOrEmails?: boolean
 }): CreditEstimate {
-  const base = options.searchType === "fast" ? 1 : 5
+  const base = 1
   const insights = 2
   const freshness = options.highFreshness ? 2 : 0
   
-  let emailCost = 0
-  if (options.requireEmails) emailCost += 1
-  if (options.showEmails) emailCost += 2
+  const emailCost = 0
+  const phoneCost = 0
   
-  let phoneCost = 0
-  if (options.requirePhoneNumbers) phoneCost += 1
-  if (options.showPhoneNumbers) phoneCost += 14
-  if (options.requirePhonesOrEmails) phoneCost += 1
-  
-  const perCandidate = base + insights + freshness + emailCost + phoneCost
+  const perCandidate = base + insights + freshness
   const total = perCandidate * options.limit
   
   const warnings: string[] = []
-  if (options.showPhoneNumbers) {
-    warnings.push("Exibir telefones adiciona +14 créditos por candidato")
+  if (options.requireEmails || options.requirePhoneNumbers) {
+    warnings.push("Contatos enriquecidos via Apify ($0.01/candidato) quando não disponíveis")
   }
   if (total > 100) {
     warnings.push(`Custo total estimado alto: ${total} créditos`)
@@ -327,7 +321,7 @@ export function calculateCreditsLocally(options: {
   
   return {
     query: "",
-    pearch_type: options.searchType,
+    pearch_type: "fast",
     limit: options.limit,
     base_cost: base,
     insights_cost: insights,
@@ -343,7 +337,7 @@ export function calculateCreditsLocally(options: {
       phones: phoneCost,
       freshness
     },
-    confirmation_message: `Custo estimado: ${total} créditos (${perCandidate}/candidato x ${options.limit})`,
+    confirmation_message: `Custo estimado: ${total} créditos (${perCandidate}/candidato x ${options.limit}) + Apify $0.01/candidato para contatos`,
     warnings
   }
 }

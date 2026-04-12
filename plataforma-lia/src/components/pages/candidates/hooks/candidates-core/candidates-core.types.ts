@@ -49,7 +49,7 @@ export type ChatMessage = {
 
 /** Pearch (global) search tuning options */
 export interface PearchSearchOptions {
-  searchType: 'fast' | 'pro'
+  searchType: 'fast'
   limit: number
   showEmails: boolean
   showPhoneNumbers: boolean
