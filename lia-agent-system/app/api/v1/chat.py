@@ -712,8 +712,8 @@ async def send_message(
         if not conversation:
             raise HTTPException(status_code=404, detail="Conversation not found")
 
-    # Save user message
-    await repo.add_user_message(conversation.id, message_data.content)
+    # M2: MainOrchestrator._setup_conversation_memory persists user message
+    # await repo.add_user_message(conversation.id, message_data.content)
 
     page_context = message_data.context or {}
 
@@ -744,17 +744,22 @@ async def send_message(
         if action_metadata:
             msg_metadata.update(action_metadata)
 
-        ai_message = await repo.add_ai_message(
-            conversation.id,
-            final_response,
-            msg_metadata,
-            prompt_version=orch_result.get("prompt_version"),
-        )
-
-        await repo.update_conversation_intent(conversation, detected_intent, orch_result["workflow_data"])
-        await repo.set_conversation_title(conversation, message_data.content[:100])
-
-        await repo.commit_and_refresh(ai_message, conversation)
+        # M2: MainOrchestrator._persist_response handles message + conversation updates
+        # Fetch the message that MainOrchestrator just persisted
+        await repo.db.commit()  # Ensure MainOrchestrator writes are visible
+        ai_message = await repo.get_last_ai_message(conversation.id)
+        if not ai_message:
+            # Fallback: MainOrchestrator may not have persisted (skip_memory_persist edge case)
+            ai_message = await repo.add_ai_message(
+                conversation.id, final_response, msg_metadata,
+                prompt_version=orch_result.get("prompt_version"),
+            )
+            await repo.update_conversation_intent(conversation, detected_intent, orch_result["workflow_data"])
+            await repo.set_conversation_title(conversation, message_data.content[:100])
+            await repo.commit_and_refresh(ai_message, conversation)
+        else:
+            # Refresh conversation to get MainOrchestrator updates (title, intent)
+            await repo.db.refresh(conversation)
 
         workflow_data = orch_result["workflow_data"]
         context_data = None
@@ -879,11 +884,8 @@ async def send_message_with_attachments(
         if not conversation:
             raise HTTPException(status_code=404, detail="Conversation not found")
 
-    await repo.add_user_message(
-        conversation.id,
-        augmented_content,
-        {"attachments": attachment_info, "audio": audio_info},
-    )
+    # M2: MainOrchestrator persists user message
+    # await repo.add_user_message(conversation.id, augmented_content, {"attachments": attachment_info, "audio": audio_info})
 
     # Augmented content includes attachment/audio context for the orchestrator
     orch_result = await _get_chat_adapter().process_message(

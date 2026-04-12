@@ -119,6 +119,18 @@ class ChatRepository:
         self.db.add(msg)
         return msg
 
+
+    async def get_last_ai_message(self, conversation_id: Any) -> Message | None:
+        """Get the most recent assistant message for a conversation."""
+        result = await self.db.execute(
+            select(Message)
+            .where(Message.conversation_id == conversation_id)
+            .where(Message.role == "assistant")
+            .order_by(Message.created_at.desc())
+            .limit(1)
+        )
+        return result.scalars().first()
+
     async def get_recent_messages(
         self, conversation_id: Any, limit: int = 20
     ) -> list[Message]:
