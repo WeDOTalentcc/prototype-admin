@@ -65,13 +65,19 @@ async def analyze_interview_recording(
     Otherwise falls back to inline transcript analysis.
     """
     db = kwargs.get("db")
-    company_id = kwargs.get("company_id")
+    company_id = kwargs.get("company_id", "")
 
     if interview_id and db:
+        if not company_id:
+            return {
+                "success": False,
+                "data": {},
+                "message": "company_id é obrigatório para isolamento de tenant.",
+            }
         return await _analyze_from_db(
             interview_id=interview_id,
             db=db,
-            company_id=company_id or "",
+            company_id=company_id,
             include_bias=include_bias,
             include_comparative=include_comparative,
             include_opinion=include_opinion,
@@ -124,7 +130,7 @@ async def _analyze_from_db(
     else:
         bias_result = None
 
-    if include_comparative and company_id:
+    if include_comparative:
         from app.domains.interview_intelligence.services.comparative_analysis_service import comparative_analysis_service
         comparative_result = await comparative_analysis_service.compare(
             interview_id, db, company_id
@@ -182,14 +188,20 @@ async def detect_interview_bias(
     Requires interview_id of a transcribed interview.
     """
     db = kwargs.get("db")
+    company_id = kwargs.get("company_id", "")
     if not interview_id or not db:
         return {
             "success": False,
             "data": {},
             "message": "interview_id e conexão com banco são obrigatórios.",
         }
+    if not company_id:
+        return {
+            "success": False,
+            "data": {},
+            "message": "company_id é obrigatório para isolamento de tenant.",
+        }
 
-    company_id = kwargs.get("company_id")
     from app.domains.interview_intelligence.services.bias_detector_service import bias_detector_service
     result = await bias_detector_service.detect(interview_id, db, use_llm=use_llm, company_id=company_id)
 
@@ -221,12 +233,18 @@ async def generate_interview_opinion(
     Runs WSI + bias first, then generates LLM opinion.
     """
     db = kwargs.get("db")
-    company_id = kwargs.get("company_id")
+    company_id = kwargs.get("company_id", "")
     if not interview_id or not db:
         return {
             "success": False,
             "data": {},
             "message": "interview_id e conexão com banco são obrigatórios.",
+        }
+    if not company_id:
+        return {
+            "success": False,
+            "data": {},
+            "message": "company_id é obrigatório para isolamento de tenant.",
         }
 
     from app.domains.interview_intelligence.services.interview_wsi_service import interview_wsi_service
@@ -236,11 +254,9 @@ async def generate_interview_opinion(
 
     wsi_data = await interview_wsi_service.analyze(interview_id, db, company_id=company_id)
     bias_data = await bias_detector_service.detect(interview_id, db, use_llm=True, company_id=company_id)
-    comp_data = None
-    if company_id:
-        comp_data = await comparative_analysis_service.compare(
-            interview_id, db, company_id
-        )
+    comp_data = await comparative_analysis_service.compare(
+        interview_id, db, company_id
+    )
 
     result = await strategic_opinion_service.generate(
         interview_id, db,
@@ -278,14 +294,20 @@ async def generate_candidate_feedback(
     Suitable for sharing with candidates.
     """
     db = kwargs.get("db")
+    company_id = kwargs.get("company_id", "")
     if not interview_id or not db:
         return {
             "success": False,
             "data": {},
             "message": "interview_id e conexão com banco são obrigatórios.",
         }
+    if not company_id:
+        return {
+            "success": False,
+            "data": {},
+            "message": "company_id é obrigatório para isolamento de tenant.",
+        }
 
-    company_id = kwargs.get("company_id")
     from app.domains.interview_intelligence.services.interview_wsi_service import interview_wsi_service
     from app.domains.interview_intelligence.services.feedback_generator_service import feedback_generator_service
 

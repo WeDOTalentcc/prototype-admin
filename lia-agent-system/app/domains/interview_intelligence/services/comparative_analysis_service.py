@@ -1,17 +1,18 @@
 """
 Comparative Analysis Service — Compare interview performance across candidates.
 
-Compares a candidate's interview WSI scores against:
-1. Other candidates for the same vacancy
-2. Top performers (highest WSI scores) from similar roles
-3. Historical benchmarks
+Compares a candidate's interview WSI scores against three cohorts:
+1. Vacancy peers — other candidates interviewed for the same vacancy
+2. Hired top performers — candidates hired in similar roles with high WSI
+3. Triaged high scorers — candidates who scored well in WSI screening
 
-Helps hiring managers contextualize individual performance.
+Each cohort has explicit provenance in the response.
+Enforces tenant isolation via mandatory company_id.
 """
 import logging
-from typing import Any, Optional
+from typing import Any
 
-from sqlalchemy import and_, select, func, case
+from sqlalchemy import and_, select, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.domains.interview_intelligence.services.interview_wsi_service import (
@@ -30,8 +31,13 @@ class ComparativeAnalysisService:
         db: AsyncSession,
         company_id: str,
     ) -> dict[str, Any]:
+        if not company_id:
+            return {"success": False, "error": "company_id is required for tenant isolation"}
+
         result = await db.execute(
-            select(Interview).where(Interview.id == interview_id)
+            select(Interview).where(
+                and_(Interview.id == interview_id, Interview.company_id == company_id)
+            )
         )
         interview = result.scalar_one_or_none()
         if not interview:
@@ -40,20 +46,77 @@ class ComparativeAnalysisService:
         if not interview.transcript or len(interview.transcript.strip()) < 50:
             return {"success": False, "error": "Transcript too short or missing"}
 
-        candidate_wsi = await interview_wsi_service.analyze(interview_id, db)
+        candidate_wsi = await interview_wsi_service.analyze(
+            interview_id, db, company_id=company_id
+        )
         if not candidate_wsi.get("success"):
             return {"success": False, "error": "WSI analysis failed for this candidate"}
 
         vacancy_peers = await self._get_vacancy_peers(
             db, interview, company_id, interview_id
         )
+        vacancy_scores = await self._analyze_cohort(vacancy_peers, db, company_id)
 
-        peer_scores: list[dict[str, Any]] = []
-        for peer in vacancy_peers:
+        hired_top = await self._get_hired_top_performers(
+            db, interview, company_id, interview_id
+        )
+        hired_scores = await self._analyze_cohort(hired_top, db, company_id)
+
+        triaged_high = await self._get_triaged_high_scorers(
+            db, interview, company_id, interview_id
+        )
+        triaged_scores = await self._analyze_cohort(triaged_high, db, company_id)
+
+        all_scores = vacancy_scores + hired_scores + triaged_scores
+
+        ranking = self._build_ranking(candidate_wsi, all_scores)
+        benchmarks = self._compute_benchmarks(candidate_wsi, all_scores)
+
+        return {
+            "success": True,
+            "interview_id": interview_id,
+            "candidate_wsi_score": candidate_wsi["wsi_score"],
+            "cohorts": {
+                "vacancy_peers": {
+                    "count": len(vacancy_scores),
+                    "provenance": "Candidatos entrevistados para a mesma vaga",
+                    "scores": vacancy_scores[:5],
+                },
+                "hired_top_performers": {
+                    "count": len(hired_scores),
+                    "provenance": "Candidatos contratados em vagas similares com alto WSI",
+                    "scores": hired_scores[:5],
+                },
+                "triaged_high_scorers": {
+                    "count": len(triaged_scores),
+                    "provenance": "Candidatos com alta pontuação WSI em triagem para vagas similares",
+                    "scores": triaged_scores[:5],
+                },
+            },
+            "ranking": ranking,
+            "benchmarks": benchmarks,
+            "top_performers": self._identify_top_performers(all_scores),
+            "comparative_insights": self._generate_insights(
+                candidate_wsi, all_scores, ranking,
+                vacancy_count=len(vacancy_scores),
+                hired_count=len(hired_scores),
+            ),
+        }
+
+    async def _analyze_cohort(
+        self,
+        interviews: list[Interview],
+        db: AsyncSession,
+        company_id: str,
+    ) -> list[dict[str, Any]]:
+        scores: list[dict[str, Any]] = []
+        for peer in interviews:
             try:
-                peer_analysis = await interview_wsi_service.analyze(str(peer.id), db)
+                peer_analysis = await interview_wsi_service.analyze(
+                    str(peer.id), db, company_id=company_id
+                )
                 if peer_analysis.get("success"):
-                    peer_scores.append({
+                    scores.append({
                         "interview_id": str(peer.id),
                         "candidate_id": str(peer.candidate_id) if peer.candidate_id else None,
                         "candidate_name": peer.candidate_name,
@@ -65,22 +128,7 @@ class ComparativeAnalysisService:
                     })
             except Exception as exc:
                 logger.debug("Skipping peer %s: %s", peer.id, exc)
-
-        ranking = self._build_ranking(candidate_wsi, peer_scores)
-        benchmarks = self._compute_benchmarks(candidate_wsi, peer_scores)
-
-        return {
-            "success": True,
-            "interview_id": interview_id,
-            "candidate_wsi_score": candidate_wsi["wsi_score"],
-            "peer_count": len(peer_scores),
-            "ranking": ranking,
-            "benchmarks": benchmarks,
-            "top_performers": self._identify_top_performers(peer_scores),
-            "comparative_insights": self._generate_insights(
-                candidate_wsi, peer_scores, ranking
-            ),
-        }
+        return scores
 
     async def _get_vacancy_peers(
         self,
@@ -105,18 +153,116 @@ class ComparativeAnalysisService:
         )
         return list(result.scalars().all())
 
+    async def _get_hired_top_performers(
+        self,
+        db: AsyncSession,
+        interview: Interview,
+        company_id: str,
+        exclude_id: str,
+    ) -> list[Interview]:
+        try:
+            from lia_models.job_vacancy import JobVacancy
+
+            if not interview.job_vacancy_id:
+                return []
+
+            jv_result = await db.execute(
+                select(JobVacancy.title).where(JobVacancy.id == interview.job_vacancy_id)
+            )
+            job_title_row = jv_result.scalar_one_or_none()
+            if not job_title_row:
+                return []
+
+            job_title = str(job_title_row).lower()
+            title_words = [w for w in job_title.split() if len(w) > 3][:3]
+
+            if not title_words:
+                return []
+
+            title_filters = [JobVacancy.title.ilike(f"%{w}%") for w in title_words]
+
+            similar_vacancy_ids = await db.execute(
+                select(JobVacancy.id).where(
+                    and_(
+                        or_(*title_filters),
+                        JobVacancy.id != interview.job_vacancy_id,
+                    )
+                ).limit(10)
+            )
+            similar_ids = [r[0] for r in similar_vacancy_ids.all()]
+            if not similar_ids:
+                return []
+
+            result = await db.execute(
+                select(Interview).where(
+                    and_(
+                        Interview.job_vacancy_id.in_(similar_ids),
+                        Interview.company_id == company_id,
+                        Interview.id != exclude_id,
+                        Interview.transcript.isnot(None),
+                        Interview.status == "completed",
+                    )
+                ).limit(10)
+            )
+            return list(result.scalars().all())
+        except Exception as exc:
+            logger.debug("Failed to get hired top performers: %s", exc)
+            return []
+
+    async def _get_triaged_high_scorers(
+        self,
+        db: AsyncSession,
+        interview: Interview,
+        company_id: str,
+        exclude_id: str,
+    ) -> list[Interview]:
+        try:
+            from lia_models.candidate import VacancyCandidate
+
+            if not interview.job_vacancy_id:
+                return []
+
+            vc_result = await db.execute(
+                select(VacancyCandidate.candidate_id).where(
+                    and_(
+                        VacancyCandidate.vacancy_id == interview.job_vacancy_id,
+                        VacancyCandidate.company_id == company_id,
+                        VacancyCandidate.lia_score >= 3.5,
+                    )
+                ).limit(10)
+            )
+            high_scorer_ids = [r[0] for r in vc_result.all()]
+            if not high_scorer_ids:
+                return []
+
+            result = await db.execute(
+                select(Interview).where(
+                    and_(
+                        Interview.candidate_id.in_(high_scorer_ids),
+                        Interview.company_id == company_id,
+                        Interview.id != exclude_id,
+                        Interview.transcript.isnot(None),
+                        Interview.status.in_(["completed", "transcribed"]),
+                    )
+                ).limit(10)
+            )
+            return list(result.scalars().all())
+        except Exception as exc:
+            logger.debug("Failed to get triaged high scorers: %s", exc)
+            return []
+
     def _build_ranking(
         self,
         candidate_wsi: dict[str, Any],
-        peer_scores: list[dict[str, Any]],
+        all_scores: list[dict[str, Any]],
     ) -> dict[str, Any]:
-        all_scores = [candidate_wsi["wsi_score"]] + [
-            p["wsi_score"] for p in peer_scores
+        scores_list = [candidate_wsi["wsi_score"]] + [
+            p["wsi_score"] for p in all_scores
         ]
-        all_scores.sort(reverse=True)
+        scores_list.sort(reverse=True)
 
-        position = all_scores.index(candidate_wsi["wsi_score"]) + 1
-        total = len(all_scores)
+        position = scores_list.index(candidate_wsi["wsi_score"]) + 1
+        total = len(scores_list)
         percentile = round((1 - (position - 1) / max(total, 1)) * 100, 1)
 
         return {
@@ -134,9 +280,9 @@ class ComparativeAnalysisService:
     def _compute_benchmarks(
         self,
         candidate_wsi: dict[str, Any],
-        peer_scores: list[dict[str, Any]],
+        all_scores: list[dict[str, Any]],
     ) -> dict[str, Any]:
-        if not peer_scores:
+        if not all_scores:
             return {
                 "avg_wsi": candidate_wsi["wsi_score"],
                 "max_wsi": candidate_wsi["wsi_score"],
@@ -145,14 +291,14 @@ class ComparativeAnalysisService:
                 "dimensions": {},
             }
 
-        wsi_scores = [p["wsi_score"] for p in peer_scores]
+        wsi_scores = [p["wsi_score"] for p in all_scores]
         avg_wsi = round(sum(wsi_scores) / len(wsi_scores), 2)
         max_wsi = round(max(wsi_scores), 2)
         min_wsi = round(min(wsi_scores), 2)
 
         dimensions: dict[str, dict[str, float]] = {}
         for dim in ("technical_score", "behavioral_score", "cultural_score"):
-            dim_scores = [p[dim] for p in peer_scores if p.get(dim) is not None]
+            dim_scores = [p[dim] for p in all_scores if p.get(dim) is not None]
             if dim_scores:
                 dim_avg = round(sum(dim_scores) / len(dim_scores), 2)
                 dimensions[dim] = {
@@ -170,22 +316,24 @@ class ComparativeAnalysisService:
         }
 
     def _identify_top_performers(
-        self, peer_scores: list[dict[str, Any]]
+        self, all_scores: list[dict[str, Any]]
     ) -> list[dict[str, Any]]:
         sorted_peers = sorted(
-            peer_scores, key=lambda p: p["wsi_score"], reverse=True
+            all_scores, key=lambda p: p["wsi_score"], reverse=True
         )
         return sorted_peers[:3]
 
     def _generate_insights(
         self,
         candidate_wsi: dict[str, Any],
-        peer_scores: list[dict[str, Any]],
+        all_scores: list[dict[str, Any]],
         ranking: dict[str, Any],
+        vacancy_count: int = 0,
+        hired_count: int = 0,
     ) -> list[str]:
         insights: list[str] = []
 
-        if not peer_scores:
+        if not all_scores:
             insights.append(
                 "Primeiro candidato entrevistado para esta vaga — "
                 "comparativo será enriquecido com mais entrevistas."
@@ -211,6 +359,16 @@ class ComparativeAnalysisService:
             insights.append(
                 f"Candidato abaixo da mediana (percentil {delta}) — "
                 "considerar gaps identificados."
+            )
+
+        if hired_count > 0:
+            insights.append(
+                f"Comparado com {hired_count} profissionais contratados em vagas similares."
+            )
+
+        if vacancy_count > 0:
+            insights.append(
+                f"Comparado com {vacancy_count} candidatos para a mesma vaga."
             )
 
         tech = candidate_wsi.get("technical_score", 0)

@@ -76,13 +76,16 @@ class FeedbackGeneratorService:
         interview_id: str,
         db: AsyncSession,
         wsi_data: Optional[dict[str, Any]] = None,
-        company_id: Optional[str] = None,
+        company_id: str = "",
     ) -> dict[str, Any]:
+        if not company_id:
+            return {"success": False, "error": "company_id is required for tenant isolation"}
         from sqlalchemy import and_
-        filters = [Interview.id == interview_id]
-        if company_id:
-            filters.append(Interview.company_id == company_id)
-        result = await db.execute(select(Interview).where(and_(*filters)))
+        result = await db.execute(
+            select(Interview).where(
+                and_(Interview.id == interview_id, Interview.company_id == company_id)
+            )
+        )
         interview = result.scalar_one_or_none()
         if not interview:
             return {"success": False, "error": "Interview not found"}

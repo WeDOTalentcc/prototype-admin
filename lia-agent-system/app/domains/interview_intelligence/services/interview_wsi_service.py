@@ -1,12 +1,20 @@
 """
-Interview WSI Service — Applies WSI methodology to interview transcripts.
+Interview WSI Service — Applies WSI 7-block methodology to interview transcripts.
 
 Wraps the existing InterviewTranscriptAnalysisService (deterministic scorer)
-and adds interview-specific context: job requirements, competency extraction,
-and enriched scoring with Bloom/Dreyfus/CBI/Big Five frameworks.
+and maps results to the 7-block WSI rubric:
+  1. Hard Skills (técnico)
+  2. Soft Skills (comportamental)
+  3. Experiência (Dreyfus stage)
+  4. Liderança
+  5. Comunicação
+  6. Fit Cultural
+  7. Potencial (Bloom cognitive level)
+
+Enforces tenant isolation via mandatory company_id.
 """
 import logging
-from typing import Any, Optional
+from typing import Any
 
 from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -18,6 +26,15 @@ from app.models.interview import Interview
 
 logger = logging.getLogger(__name__)
 
+LEADERSHIP_KEYWORDS = [
+    "liderar", "liderança", "equipe", "gerenciar", "coordenar",
+    "delegar", "mentoria", "gestão de pessoas", "people management",
+]
+COMMUNICATION_KEYWORDS = [
+    "comunicar", "comunicação", "apresentar", "explicar", "articular",
+    "negociar", "oratória", "feedback", "escuta ativa",
+]
+
 
 class InterviewWSIService:
 
@@ -28,14 +45,20 @@ class InterviewWSIService:
         self,
         interview_id: str,
         db: AsyncSession,
-        company_id: Optional[str] = None,
-        job_requirements: Optional[list[str]] = None,
+        company_id: str,
+        job_requirements: list[str] | None = None,
     ) -> dict[str, Any]:
-        filters = [Interview.id == interview_id]
-        if company_id:
-            filters.append(Interview.company_id == company_id)
+        if not company_id:
+            return {"success": False, "error": "company_id is required for tenant isolation"}
 
-        result = await db.execute(select(Interview).where(and_(*filters)))
+        result = await db.execute(
+            select(Interview).where(
+                and_(
+                    Interview.id == interview_id,
+                    Interview.company_id == company_id,
+                )
+            )
+        )
         interview = result.scalar_one_or_none()
         if not interview:
             return {"success": False, "error": "Interview not found"}
@@ -61,6 +84,8 @@ class InterviewWSIService:
             job_competencies=job_competencies,
         )
 
+        seven_blocks = self._map_to_seven_blocks(analysis, transcript)
+
         return {
             "success": True,
             "interview_id": interview_id,
@@ -75,6 +100,7 @@ class InterviewWSIService:
             "dreyfus_stage": analysis.dreyfus_average,
             "cbi_completeness": analysis.cbi_completeness,
             "big_five": analysis.big_five_profile,
+            "seven_blocks": seven_blocks,
             "evidences": [
                 {
                     "competency": e.competency_name,
@@ -90,6 +116,87 @@ class InterviewWSIService:
             "recommendation": analysis.recommendation,
             "summary": analysis.summary,
         }
+
+    def _map_to_seven_blocks(self, analysis: Any, transcript: str) -> dict[str, Any]:
+        text_lower = transcript.lower()
+
+        leadership_hits = sum(1 for kw in LEADERSHIP_KEYWORDS if kw in text_lower)
+        leadership_score = min(5.0, 2.0 + leadership_hits * 0.5)
+
+        comm_hits = sum(1 for kw in COMMUNICATION_KEYWORDS if kw in text_lower)
+        communication_score = min(5.0, 2.0 + comm_hits * 0.5)
+
+        big_five = analysis.big_five_profile or {}
+        extraversion = big_five.get("extraversion", 0)
+        agreeableness = big_five.get("agreeableness", 0)
+        if extraversion > 0.3 or agreeableness > 0.3:
+            communication_score = min(5.0, communication_score + 0.5)
+
+        potential_score = min(5.0, analysis.bloom_average)
+
+        return {
+            "hard_skills": {
+                "score": round(analysis.technical_score, 2),
+                "label": "Hard Skills / Técnico",
+                "description": "Competências técnicas demonstradas na entrevista",
+            },
+            "soft_skills": {
+                "score": round(analysis.behavioral_score, 2),
+                "label": "Soft Skills / Comportamental",
+                "description": "Competências comportamentais e interpessoais",
+            },
+            "experience": {
+                "score": round(analysis.dreyfus_average, 2),
+                "label": "Experiência (Dreyfus)",
+                "description": f"Estágio de expertise: {self._dreyfus_label(analysis.dreyfus_average)}",
+            },
+            "leadership": {
+                "score": round(leadership_score, 2),
+                "label": "Liderança",
+                "description": f"{leadership_hits} indicadores de liderança identificados",
+            },
+            "communication": {
+                "score": round(communication_score, 2),
+                "label": "Comunicação",
+                "description": f"{comm_hits} indicadores de comunicação identificados",
+            },
+            "cultural_fit": {
+                "score": round(analysis.cultural_score, 2),
+                "label": "Fit Cultural",
+                "description": "Compatibilidade cultural baseada em Big Five e evidências",
+            },
+            "potential": {
+                "score": round(potential_score, 2),
+                "label": "Potencial (Bloom)",
+                "description": f"Nível cognitivo: {self._bloom_label(analysis.bloom_average)}",
+            },
+        }
+
+    @staticmethod
+    def _dreyfus_label(score: float) -> str:
+        if score >= 4.5:
+            return "Expert"
+        if score >= 3.5:
+            return "Proficient"
+        if score >= 2.5:
+            return "Competent"
+        if score >= 1.5:
+            return "Advanced Beginner"
+        return "Novice"
+
+    @staticmethod
+    def _bloom_label(score: float) -> str:
+        if score >= 5.5:
+            return "Create"
+        if score >= 4.5:
+            return "Evaluate"
+        if score >= 3.5:
+            return "Analyze"
+        if score >= 2.5:
+            return "Apply"
+        if score >= 1.5:
+            return "Understand"
+        return "Remember"
 
 
 interview_wsi_service = InterviewWSIService()
