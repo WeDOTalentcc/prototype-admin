@@ -68,6 +68,7 @@ class InterviewFeedbackRequest(BaseModel):
     next_steps_suggested: str | None = None
 
 
+@router.post("/interviews", response_model=dict)
 @router.post("/interviews/schedule", response_model=dict)
 async def schedule_interview(
     request: ScheduleInterviewRequest,
@@ -929,7 +930,7 @@ async def upload_recording(
             raise HTTPException(status_code=404, detail="Interview not found")
 
         req_company_id = getattr(request_obj.state, "company_id", None) if hasattr(request_obj, "state") else None
-        if req_company_id and interview.company_id and interview.company_id != req_company_id:
+        if req_company_id and (not interview.company_id or interview.company_id != req_company_id):
             raise HTTPException(status_code=404, detail="Interview not found")
 
         interview.recording_url = request.recording_url
@@ -985,7 +986,7 @@ async def transcribe_interview(
             raise HTTPException(status_code=404, detail="Interview not found")
 
         req_company_id = getattr(request_obj.state, "company_id", None) if hasattr(request_obj, "state") else None
-        if req_company_id and interview.company_id and interview.company_id != req_company_id:
+        if req_company_id and (not interview.company_id or interview.company_id != req_company_id):
             raise HTTPException(status_code=404, detail="Interview not found")
 
         if not interview.recording_url:
@@ -1041,7 +1042,7 @@ async def get_interview_transcript(
             raise HTTPException(status_code=404, detail="Interview not found")
 
         req_company_id = getattr(request_obj.state, "company_id", None) if hasattr(request_obj, "state") else None
-        if req_company_id and interview.company_id and interview.company_id != req_company_id:
+        if req_company_id and (not interview.company_id or interview.company_id != req_company_id):
             raise HTTPException(status_code=404, detail="Interview not found")
 
         if not interview.transcript:

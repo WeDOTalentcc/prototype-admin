@@ -297,6 +297,8 @@ class TranscriptionService:
 
             await db.commit()
 
+            await self._update_pipeline_metadata(db, interview, transcription)
+
             logger.info(
                 "Transcription completed for interview %s: %d words, language=%s",
                 interview_id,
@@ -313,6 +315,58 @@ class TranscriptionService:
             await db.commit()
             logger.error("Transcription failed for interview %s: %s", interview_id, e)
             raise
+
+
+    @staticmethod
+    async def _update_pipeline_metadata(
+        db: AsyncSession,
+        interview,
+        transcription: dict[str, Any],
+    ) -> None:
+        if not interview.candidate_id or not interview.job_vacancy_id:
+            logger.info(
+                "Skipping pipeline update for interview %s: missing candidate_id or job_vacancy_id",
+                interview.id,
+            )
+            return
+
+        try:
+            from sqlalchemy import select, update
+            from libs.models.lia_models.candidate import VacancyCandidate
+
+            stmt = select(VacancyCandidate).where(
+                VacancyCandidate.candidate_id == interview.candidate_id,
+                VacancyCandidate.vacancy_id == interview.job_vacancy_id,
+            )
+            result = await db.execute(stmt)
+            vc = result.scalar_one_or_none()
+
+            if not vc:
+                logger.info(
+                    "No VacancyCandidate found for candidate=%s vacancy=%s",
+                    interview.candidate_id,
+                    interview.job_vacancy_id,
+                )
+                return
+
+            additional = vc.additional_data or {}
+            additional["interview_transcript_available"] = True
+            additional["interview_transcript_word_count"] = transcription.get("word_count", 0)
+            additional["interview_transcript_language"] = transcription.get("language", "pt-BR")
+            additional["interview_transcribed_at"] = transcription.get("transcribed_at")
+            additional["interview_id"] = str(interview.id)
+            vc.additional_data = additional
+
+            await db.commit()
+
+            logger.info(
+                "Pipeline metadata updated for candidate=%s vacancy=%s",
+                interview.candidate_id,
+                interview.job_vacancy_id,
+            )
+
+        except Exception as e:
+            logger.warning("Failed to update pipeline metadata: %s", e)
 
 
 transcription_service = TranscriptionService()
