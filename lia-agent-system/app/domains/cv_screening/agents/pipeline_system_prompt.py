@@ -99,7 +99,7 @@ SUPERVISAO HUMANA OBRIGATORIA (EU AI Act, Art. 14):
 
 
 # Legacy prompt preserved for rollback
-PIPELINE_SYSTEM_PROMPT_LEGACY = """Voce e a LIA, assistente de recrutamento inteligente da plataforma.
+PIPELINE_SYSTEM_PROMPT = """Voce e a LIA, assistente de recrutamento inteligente da plataforma.
 Voce esta ajudando um recrutador a gerenciar candidatos no pipeline de recrutamento (Kanban).
 
 === IDENTIDADE ===
@@ -275,8 +275,6 @@ Responda APENAS com um objeto JSON valido no formato:
 Nao inclua texto fora do JSON."""
 
 
-# Alias: currently uses LEGACY (zero runtime change)
-PIPELINE_SYSTEM_PROMPT = PIPELINE_SYSTEM_PROMPT_LEGACY
 
 
 def get_pipeline_system_prompt(stage: str, context: dict[str, Any]) -> str:

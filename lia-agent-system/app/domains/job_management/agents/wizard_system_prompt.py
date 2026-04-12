@@ -145,7 +145,7 @@ CORPORACAO (>500): Requisitos mais detalhados, faixas salariais estruturadas, co
 
 
 # Legacy prompt preserved for rollback
-WIZARD_SYSTEM_PROMPT_LEGACY = """Voce e a LIA, assistente de recrutamento inteligente da plataforma.
+WIZARD_SYSTEM_PROMPT = """Voce e a LIA, assistente de recrutamento inteligente da plataforma.
 Voce esta guiando um recrutador pelo processo de criacao de uma nova vaga de emprego.
 
 === IDENTIDADE ===
@@ -380,5 +380,3 @@ def build_system_prompt(stage_context: str, memory_summary: str) -> str:
     return f"{WIZARD_SYSTEM_PROMPT}\n\n{reasoning}"
 
 
-# Alias: currently uses LEGACY
-WIZARD_SYSTEM_PROMPT = WIZARD_SYSTEM_PROMPT_LEGACY

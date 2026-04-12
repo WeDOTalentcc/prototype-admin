@@ -66,44 +66,6 @@ class TalentReActAgent(LangGraphReActBase, EnhancedAgentMixin):
         tool_defs = get_talent_tools() + self._get_all_enhanced_tools()
         return [tool_definition_to_langchain_tool(td) for td in tool_defs]
 
-    # Legacy method — preserved for rollback
-    def _get_system_prompt_legacy(self, input: AgentInput) -> str:
-        # PoC: Compose via SystemPromptBuilder (persona + context) + domain-specific
-        from app.shared.prompts.system_prompt_builder import SystemPromptBuilder
-        from app.domains.recruiter_assistant.agents.talent_system_prompt import (
-            TALENT_DOMAIN_SPECIFIC, TALENT_FEW_SHOT_EXAMPLES, TALENT_REASONING_PROMPT,
-        )
-
-        ctx = input.context or {}
-
-        # Build persona + tenant + user + history + ReAct via SystemPromptBuilder
-        base_prompt = SystemPromptBuilder.build(
-            agent_type="talent",
-            tenant_context_snippet=ctx.get("tenant_context_snippet", ""),
-            user_name=ctx.get("user_name", ""),
-            user_role=ctx.get("user_role", ""),
-            conversation_summary=ctx.get("conversation_summary", ""),
-            conversation_history=ctx.get("conversation_history"),
-            context_page=ctx.get("context_page", "general"),
-            intent=ctx.get("intent", ""),
-            entities=ctx.get("extracted_params", {}),
-        )
-
-        # Build domain-specific: capabilities + rules + few-shot + reasoning
-        current_stage = ctx.get("current_stage", "discovery")
-        collected_fields = ctx.get("collected_data", {})
-        stage_ctx = get_stage_context(current_stage, collected_fields)
-
-        domain_section = TALENT_DOMAIN_SPECIFIC
-        domain_section += "\n\n" + TALENT_FEW_SHOT_EXAMPLES
-        domain_section += "\n\n" + TALENT_REASONING_PROMPT.format(
-            memory_summary="",
-            stage_context=stage_ctx,
-        )
-
-        # Compose: [persona + context + ReAct] --- [domain-specific]
-        return f"{base_prompt}\n\n---\n\n{domain_section}"
-
     def _get_system_prompt_legacy(self, input: AgentInput) -> str:
         """Legacy prompt for rollback. Switch _get_system_prompt to call this."""
         current_stage = input.context.get("current_stage", "discovery")

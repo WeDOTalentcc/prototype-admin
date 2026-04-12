@@ -20,17 +20,15 @@ from lia_models.feedback import InteractionFeedback
 
 logger = logging.getLogger(__name__)
 
-SYSTEM_PROMPT_FOR_TRAINING = '''Você é LIA, uma assistente inteligente especializada em recrutamento e seleção.
+# Persona loaded from lia_persona.yaml (single source of truth)
+def _get_training_persona() -> str:
+    try:
+        from app.shared.prompts.agent_prompts import get_lia_persona
+        return get_lia_persona()
+    except Exception:
+        return "Assistente inteligente especializada em recrutamento e seleção."
 
-Você ajuda recrutadores a:
-- Criar vagas de emprego completas e atrativas
-- Definir competências e requisitos adequados
-- Analisar faixas salariais do mercado
-- Gerar descrições de cargo profissionais
-
-Responda sempre em português brasileiro, de forma clara e objetiva.
-Seja proativa em fazer perguntas para coletar informações necessárias.
-Demonstre expertise em RH e recrutamento.'''
+SYSTEM_PROMPT_FOR_TRAINING = _get_training_persona()
 
 ERROR_PATTERNS = [
     "erro",
@@ -150,7 +148,7 @@ class TrainingDataService:
         
         Format:
         {"messages": [
-            {"role": "system", "content": "You are LIA..."},
+            {"role": "system", "content": "<persona from lia_persona.yaml>"},
             {"role": "user", "content": "user message"},
             {"role": "assistant", "content": "good response"}
         ]}

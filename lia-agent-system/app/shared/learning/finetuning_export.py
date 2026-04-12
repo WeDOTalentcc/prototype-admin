@@ -117,11 +117,8 @@ class FineTuningExportService:
                 self._format_value_as_text(wf.original_value)
                 corrected_text = self._format_value_as_text(wf.corrected_value)
 
-                system_content = (
-                    "You are LIA, an AI recruitment assistant specialized in helping "
-                    "recruiters create job vacancies. You provide intelligent suggestions "
-                    "for job fields based on company patterns and market data."
-                )
+                from app.shared.prompts.agent_prompts import get_lia_persona
+                system_content = get_lia_persona()
 
                 context_parts = []
                 if wf.role:
@@ -157,10 +154,8 @@ class FineTuningExportService:
                     sf.actual_value if sf.actual_value else sf.suggested_value
                 )
 
-                system_content = (
-                    "You are LIA, an AI recruitment assistant. You provide accurate "
-                    "suggestions for job vacancy fields based on company preferences."
-                )
+                from app.shared.prompts.agent_prompts import get_lia_persona
+                system_content = get_lia_persona()
 
                 context_info = ""
                 if sf.context and isinstance(sf.context, dict):

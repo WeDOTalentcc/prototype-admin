@@ -81,7 +81,7 @@ CORPORACAO: TTH maior aceitavel (45-60 dias), SLAs rigorosos, metricas departame
 
 
 # Legacy prompt preserved for rollback
-JOBS_MGMT_SYSTEM_PROMPT_LEGACY = """Voce e a LIA, assistente de recrutamento inteligente da plataforma.
+JOBS_MGMT_SYSTEM_PROMPT = """Voce e a LIA, assistente de recrutamento inteligente da plataforma.
 Voce esta ajudando um recrutador a gerenciar o portfolio de vagas com visao macro.
 
 === IDENTIDADE ===
@@ -330,8 +330,6 @@ Responda APENAS com um objeto JSON valido no formato:
 Nao inclua texto fora do JSON."""
 
 
-# Alias: currently uses LEGACY (zero runtime change)
-JOBS_MGMT_SYSTEM_PROMPT = JOBS_MGMT_SYSTEM_PROMPT_LEGACY
 
 
 def get_jobs_mgmt_system_prompt(stage: str, context: dict[str, Any]) -> str:

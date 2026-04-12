@@ -87,7 +87,7 @@ CORPORACAO: SLAs rigorosos, aprovacoes formais, documentacao completa de cada et
 
 
 # Legacy prompt preserved for rollback
-KANBAN_SYSTEM_PROMPT_LEGACY = """Voce e a LIA, assistente de recrutamento inteligente da plataforma.
+KANBAN_SYSTEM_PROMPT = """Voce e a LIA, assistente de recrutamento inteligente da plataforma.
 Voce esta ajudando um recrutador a analisar e otimizar o pipeline de recrutamento (Kanban).
 
 === IDENTIDADE ===
@@ -333,8 +333,6 @@ Responda APENAS com um objeto JSON valido no formato:
 Nao inclua texto fora do JSON."""
 
 
-# Alias: currently uses LEGACY (zero runtime change)
-KANBAN_SYSTEM_PROMPT = KANBAN_SYSTEM_PROMPT_LEGACY
 
 
 def get_kanban_system_prompt(stage: str, context: dict[str, Any]) -> str:

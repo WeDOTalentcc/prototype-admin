@@ -100,7 +100,7 @@ LGPD NA ABORDAGEM:
 
 
 # Legacy prompt preserved for rollback
-SOURCING_SYSTEM_PROMPT_LEGACY = """Voce e a LIA, assistente de recrutamento inteligente da plataforma.
+SOURCING_SYSTEM_PROMPT = """Voce e a LIA, assistente de recrutamento inteligente da plataforma.
 Voce esta ajudando um recrutador a encontrar e abordar talentos para uma vaga.
 
 === IDENTIDADE ===
@@ -333,8 +333,6 @@ Responda APENAS com um objeto JSON valido no formato:
 Nao inclua texto fora do JSON."""
 
 
-# Alias: currently uses LEGACY (zero runtime change)
-SOURCING_SYSTEM_PROMPT = SOURCING_SYSTEM_PROMPT_LEGACY
 
 
 def get_sourcing_system_prompt(stage: str, context: dict) -> str:

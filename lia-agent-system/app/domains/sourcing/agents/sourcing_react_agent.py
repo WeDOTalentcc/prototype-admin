@@ -144,16 +144,6 @@ class SourcingReActAgent(LangGraphReActBase, EnhancedAgentMixin):
 
         return [tool_definition_to_langchain_tool(td) for td in deduped]
 
-    # Legacy method — preserved for rollback
-    def _get_system_prompt_legacy(self, input: AgentInput) -> str:
-        current_stage = input.context.get("current_stage", "search-criteria")
-        collected_fields = input.context.get("collected_data", {})
-        stage_ctx = get_stage_context(current_stage, collected_fields)
-        return get_sourcing_system_prompt(
-            stage=current_stage,
-            context={"stage_context": stage_ctx, "memory_summary": ""},
-        )
-
     def _state_to_output(self, state: dict, input: AgentInput) -> AgentOutput:
         messages = state.get("messages", [])
         response = ""

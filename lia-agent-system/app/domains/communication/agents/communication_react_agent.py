@@ -63,10 +63,6 @@ class CommunicationReActAgent(LangGraphReActBase, EnhancedAgentMixin):
         tool_defs = get_communication_tools() + self._get_all_enhanced_tools()
         return [tool_definition_to_langchain_tool(td) for td in tool_defs]
 
-    # Legacy method — preserved for rollback
-    def _get_system_prompt_legacy(self, input: AgentInput) -> str:
-        return get_communication_system_prompt()
-
     def _state_to_output(self, state: dict, input: AgentInput) -> AgentOutput:
         messages = state.get("messages", [])
         response = ""
