@@ -441,30 +441,70 @@ class ApifyService:
         location: str,
     ) -> dict:
         """
-        Scrapes salary data from Glassdoor/LinkedIn via Apify.
-        Returns dict with 'salaries' list (BRL values).
-        Fail-open: returns empty dict on error.
+        Scrapes salary data via Apify actors.
+        Strategy: Google Jobs -> Indeed -> fallback empty.
+        Returns dict with salaries list (BRL values).
         """
-        try:
-            actor_id = "bebity/glassdoor-salary-scraper"
-            run_input = {
-                "jobTitle": job_title,
-                "location": location,
-                "maxItems": 50,
-            }
-            result = await self.run_apify_actor(actor_id, run_input)
-            if not result or not isinstance(result, (list, dict)):
-                return {}
-            items = result if isinstance(result, list) else result.get("items", [])
-            salaries = []
-            for item in items:
-                salary = item.get("salary") or item.get("basePayAmount")
-                if salary and isinstance(salary, (int, float)) and salary > 0:
-                    salaries.append(float(salary))
-            return {"salaries": salaries} if salaries else {}
-        except Exception as exc:
-            logger.warning("[Apify] scrape_salary_data failed: %s", exc)
-            return {}
+        import re as _re
+
+        actors = [
+            {
+                "id": "hMvNSpz3JnHgl5jkh",
+                "input": {"queries": [f"{job_title} {location}"], "maxPagesPerQuery": 3},
+            },
+            {
+                "id": "misceres/indeed-scraper",
+                "input": {"position": job_title, "location": location, "maxItems": 30},
+            },
+        ]
+
+        for actor_cfg in actors:
+            try:
+                result = await self.run_apify_actor(actor_cfg["id"], actor_cfg["input"])
+                if not result:
+                    continue
+                items = result if isinstance(result, list) else result.get("items", [])
+                salaries = self._extract_salaries(items)
+                if salaries:
+                    logger.info("[Apify] Salary data from %s: %d values", actor_cfg["id"], len(salaries))
+                    return {"salaries": salaries}
+            except Exception as exc:
+                logger.warning("[Apify] Actor %s failed: %s", actor_cfg["id"], exc)
+        return {}
+
+    @staticmethod
+    def _extract_salaries(items: list) -> list[float]:
+        """Extract salary values from job listing results."""
+        import re as _re
+        salaries = []
+        for item in items:
+            for key in ("salary", "salaryRange", "estimatedSalary", "compensation", "salaryText"):
+                val = item.get(key)
+                if val is None:
+                    continue
+                if isinstance(val, (int, float)) and 1000 < val < 200000:
+                    salaries.append(float(val))
+                    break
+                elif isinstance(val, str):
+                    cleaned = val.replace(".", "").replace(",", ".")
+                    nums = _re.findall(r"[0-9]+\.?[0-9]*", cleaned)
+                    for n in nums:
+                        try:
+                            v = float(n)
+                            if 1000 < v < 200000:
+                                salaries.append(v)
+                        except ValueError:
+                            pass
+                    if salaries:
+                        break
+                elif isinstance(val, dict):
+                    for sub in ("min", "max", "median", "value"):
+                        sv = val.get(sub)
+                        if isinstance(sv, (int, float)) and 1000 < sv < 200000:
+                            salaries.append(float(sv))
+                    if salaries:
+                        break
+        return salaries
 
 
 apify_service = ApifyService()
