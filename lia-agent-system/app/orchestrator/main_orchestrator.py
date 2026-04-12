@@ -780,28 +780,40 @@ class MainOrchestrator:
         if not result.get("success") or not ctx.company_id:
             return result
 
-        detected_intent = result.get("intent_detected", "") or ""
-        detected_domain = result.get("agent_used", "") or ""
-        context_signals = f"{detected_intent} {detected_domain} {ctx.message or ''}".lower()
-
-        hints: list[str] = []
         try:
-            from app.domains.modules.services.module_service import module_service
+            from app.orchestrator.tasting_engine import tasting_engine, format_tasting_block
 
-            for module_name, intent_keywords in self._MODULE_TASTING_INTENTS.items():
-                if any(kw in context_signals for kw in intent_keywords):
-                    status = await module_service.get_module_status(db, ctx.company_id, module_name)
-                    if status in ("disabled", "expired", "coming_soon") or status is None:
-                        suggestion = self._MODULE_TASTING_SUGGESTIONS.get(module_name)
-                        if suggestion:
-                            hints.append(suggestion)
+            detected_intent = result.get("intent_detected", result.get("intent", "")) or ""
+            detected_domain = result.get("agent_used", result.get("domain_id", "")) or ""
 
-            if hints:
-                tasting_block = "\n\n---\n" + "\n".join(hints[:2])
+            insights = await tasting_engine.generate_insights(
+                ctx_company_id=str(ctx.company_id),
+                ctx_message=ctx.message or "",
+                ctx_intent=detected_intent,
+                ctx_domain=detected_domain,
+                ctx_entity_id=ctx.entity_id,
+                ctx_entity_type=ctx.entity_type,
+                ctx_candidates=ctx.candidates,
+                ctx_job_context=ctx.job_context,
+                result=result,
+            )
+
+            if insights:
+                tasting_block = format_tasting_block(insights)
                 primary_field = "response" if "response" in result else ("message" if "message" in result else "content")
                 existing_text = result.get(primary_field, "")
                 result[primary_field] = existing_text + tasting_block
-                result["module_hints"] = hints[:2]
+                result["tasting_insights"] = [
+                    {
+                        "module_name": ins.module_name,
+                        "module_label": ins.module_label,
+                        "insight_type": ins.insight_type,
+                        "summary": ins.summary,
+                        "cta": ins.cta,
+                        "badge": ins.badge,
+                    }
+                    for ins in insights
+                ]
         except Exception as exc:
             logger.debug("[MainOrchestrator] Module tasting hints skipped: %s", exc)
 

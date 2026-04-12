@@ -10,6 +10,7 @@ import { renderMarkdown } from "@/lib/render-markdown"
 import { submitThumbsFeedback } from "@/services/lia-api/feedback-api"
 import type { LiaChatMessage } from "@/hooks/chat/use-lia-chat-connection"
 import { NavigationHintCard } from "./NavigationHintCard"
+import { TastingInsightCard } from "./TastingInsightCard"
 import type { ChatMode } from "./unified-chat-types"
 
 interface Props {
@@ -121,6 +122,7 @@ export function UnifiedMessageList({
         const hasPlan = message.executionPlan != null
         const hasFlowSteps = meta?.flowSteps != null
         const hasNavHint = meta?.navigation_hint != null
+        const hasTastingInsights = Array.isArray(meta?.tasting_insights) && (meta!.tasting_insights as unknown[]).length > 0
 
         return (
           <div
@@ -160,6 +162,12 @@ export function UnifiedMessageList({
                 {hasNavHint && (
                   <NavigationHintCard
                     hint={meta!.navigation_hint as { page: string; entity_id?: string }}
+                  />
+                )}
+
+                {hasTastingInsights && (
+                  <TastingInsightCard
+                    insights={meta!.tasting_insights as { module_name: string; module_label: string; insight_type: string; summary: string; cta: string; badge: string }[]}
                   />
                 )}
 
