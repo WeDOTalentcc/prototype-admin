@@ -234,6 +234,14 @@ async def handle_action_flow(
     if repo is None and db is not None:
         from app.domains.chat.repositories.chat_repository import ChatRepository as _CR
         repo = _CR(db)
+
+    # Path A Passo 2 Commit B: MainOrchestrator Phase 0+1 handles actions.
+    # This early return disables chat.py action handling.
+    # Revert: remove this return None to re-enable handle_action_flow.
+    # If specific action cases are not covered by Phase 0+1, they will be
+    # documented and this function will be partially re-enabled for those cases.
+    return None
+
     pending = pending_action_store.get(conversation_id)
 
     # Multi-turno: coletar parâmetro faltante se já há ação pendente
