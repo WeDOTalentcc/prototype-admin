@@ -932,7 +932,7 @@ Gere a análise comparativa em JSON.""")
             ])
             
             # TODO(Item3-B): Route through managed LLM path for PII strip + audit
-        llm = llm_service.claude
+            llm = llm_service.claude
             chain = prompt | llm | JsonOutputParser()
             
             result = await chain.ainvoke({
