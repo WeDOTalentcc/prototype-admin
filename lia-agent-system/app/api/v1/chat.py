@@ -373,10 +373,19 @@ async def send_message_with_attachments(
         if not conversation:
             raise HTTPException(status_code=404, detail="Conversation not found")
 
-    # M2: MainOrchestrator persists user message
-    # await repo.add_user_message(conversation.id, augmented_content, {"attachments": attachment_info, "audio": audio_info})
+    _conv_snapshot = {
+        "id": str(conversation.id),
+        "user_id": str(conversation.user_id),
+        "user_role": conversation.user_role or "",
+        "title": conversation.title,
+        "intent": conversation.intent,
+        "workflow_type": conversation.workflow_type,
+        "workflow_step": conversation.workflow_step,
+        "workflow_data": conversation.workflow_data,
+        "status": conversation.status,
+        "created_at": conversation.created_at,
+    }
 
-    # Augmented content includes attachment/audio context for the orchestrator
     orch_result = await _get_chat_adapter().process_message(
         user_message=augmented_content,
         user_id=user_id,
@@ -387,30 +396,9 @@ async def send_message_with_attachments(
     )
     lia_response = orch_result["response"]
 
-    ai_message = None
     if lia_response:
-        ai_message = await repo.add_ai_message(
-            conversation.id,
-            lia_response,
-            {
-                "intent": orch_result["intent"],
-                "entities": orch_result["entities"],
-                "processed_attachments": attachment_info,
-                "processed_audio": audio_info,
-            },
-        )
-
-        await repo.update_conversation_intent(conversation, orch_result["intent"], orch_result["workflow_data"])
-
-        if not conversation.title:
-            if attachment_info:
-                conversation.title = f"Analise de {len(attachment_info)} arquivo(s)"
-            elif audio_info:
-                conversation.title = "Analise de audio"
-            else:
-                conversation.title = content[:100]
-
-        await repo.commit_and_refresh(ai_message, conversation)
+        _conv_id_str = str(orch_result.get("conversation_id", _conv_snapshot["id"]))
+        _conv_snapshot["id"] = _conv_id_str
 
         workflow_data = orch_result["workflow_data"]
         context_data = None
@@ -419,7 +407,6 @@ async def send_message_with_attachments(
             search_results = workflow_data["search_results"]
             candidates = search_results.get("candidates", [])
             total_found = search_results.get("total_found", 0)
-
             if total_found > 0 and len(candidates) > 0:
                 context_data = {
                     "type": "candidates",
@@ -434,7 +421,6 @@ async def send_message_with_attachments(
                         "credits_consumed": search_results.get("credits_consumed", 0),
                     },
                 }
-
         elif "response_plan" in workflow_data:
             response_plan = workflow_data.get("response_plan", {})
             if response_plan.get("render_frame"):
@@ -446,52 +432,45 @@ async def send_message_with_attachments(
                     "data": frame.get("data", {}),
                 }
 
-        if ai_message:
-            if context_data:
-                ai_message.message_metadata = ai_message.message_metadata or {}
-                ai_message.message_metadata["context_data"] = context_data
-            _msg_resp = MessageResponse(
-                id=str(ai_message.id),
-                conversation_id=str(ai_message.conversation_id),
-                role=ai_message.role,
-                content=ai_message.content,
-                message_metadata=ai_message.message_metadata or {},
-                created_at=ai_message.created_at,
-            )
+        import uuid as _uuid
+        _now = __import__("datetime").datetime.utcnow()
+        _meta = {
+            "intent": orch_result.get("intent"),
+            "entities": orch_result.get("entities"),
+            "processed_attachments": attachment_info,
+            "processed_audio": audio_info,
+        }
+        if context_data:
+            _meta["context_data"] = context_data
+
+        if attachment_info:
+            _conv_snapshot["title"] = _conv_snapshot["title"] or f"Analise de {len(attachment_info)} arquivo(s)"
+        elif audio_info:
+            _conv_snapshot["title"] = _conv_snapshot["title"] or "Analise de audio"
         else:
-            import uuid as _uuid
-            _now = __import__("datetime").datetime.utcnow()
-            _meta = {
-                "intent": orch_result.get("intent"),
-                "entities": orch_result.get("entities"),
-                "processed_attachments": attachment_info,
-                "processed_audio": audio_info,
-            }
-            if context_data:
-                _meta["context_data"] = context_data
-            _msg_resp = MessageResponse(
-                id=str(_uuid.uuid4()),
-                conversation_id=conversation_id,
-                role="assistant",
-                content=lia_response or "",
-                message_metadata=_meta,
-                created_at=_now,
-            )
+            _conv_snapshot["title"] = _conv_snapshot["title"] or content[:100]
 
         return ChatResponse(
-            message=_msg_resp,
+            message=MessageResponse(
+                id=str(orch_result.get("message_id", _uuid.uuid4())),
+                conversation_id=_conv_id_str,
+                role="assistant",
+                content=lia_response,
+                message_metadata=_meta,
+                created_at=_now,
+            ),
             conversation=ConversationResponse(
-                id=str(conversation.id),
-                user_id=conversation.user_id,
-                user_role=conversation.user_role or "",
-                title=conversation.title,
-                intent=conversation.intent,
-                workflow_type=conversation.workflow_type,
-                workflow_step=conversation.workflow_step,
-                workflow_data=conversation.workflow_data or {},
-                status=conversation.status,
-                created_at=conversation.created_at,
-                updated_at=conversation.updated_at,
+                id=_conv_snapshot["id"],
+                user_id=_conv_snapshot["user_id"],
+                user_role=_conv_snapshot["user_role"],
+                title=_conv_snapshot["title"],
+                intent=orch_result.get("intent") or _conv_snapshot["intent"],
+                workflow_type=_conv_snapshot["workflow_type"],
+                workflow_step=_conv_snapshot["workflow_step"],
+                workflow_data=_conv_snapshot["workflow_data"] or {},
+                status=_conv_snapshot["status"],
+                created_at=_conv_snapshot["created_at"],
+                updated_at=_now,
             ),
         )
 

@@ -18,7 +18,7 @@ from lia_agents_core.langgraph_react_base import LangGraphReActBase
 from lia_agents_core.working_memory import WorkingMemoryService
 
 from app.domains.communication.agents.communication_system_prompt import (
-    get_communication_system_prompt, COMMUNICATION_DOMAIN_SPECIFIC,
+    COMMUNICATION_DOMAIN_SPECIFIC,
 )
 from app.domains.communication.agents.communication_tool_registry import (
     get_communication_tools,

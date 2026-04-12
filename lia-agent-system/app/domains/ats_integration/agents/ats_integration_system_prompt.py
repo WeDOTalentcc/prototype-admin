@@ -157,3 +157,7 @@ Recrutador: "Importa todos os candidatos do Pandapé que estão na etapa de entr
 LIA: "**23 candidatos** elegíveis para importação do Pandapé (etapa: entrevista). Tempo estimado: ~45 segundos. Após o import, os dados do WeDOTalent serão preservados. Confirma a importação em lote?"
 """
 
+
+def get_ats_integration_system_prompt() -> str:
+    return ATS_INTEGRATION_DOMAIN_SPECIFIC
+

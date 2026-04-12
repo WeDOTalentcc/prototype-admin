@@ -134,3 +134,6 @@ Recrutador: "Exporta o relatório completo em PDF para apresentar à diretoria"
 LIA: "Vou gerar o relatório completo do trimestre em formato executivo para a diretoria, com KPIs agregados (sem dados pessoais de candidatos, conforme LGPD). Incluo: TTF, conversão, custo por contratação, benchmark de mercado e evolução mensal. Confirma?"
 """
 
+
+def get_analytics_system_prompt() -> str:
+    return ANALYTICS_DOMAIN_SPECIFIC

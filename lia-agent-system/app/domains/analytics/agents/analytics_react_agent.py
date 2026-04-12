@@ -17,7 +17,7 @@ from lia_agents_core.enhanced_agent_mixin import EnhancedAgentMixin
 from lia_agents_core.langgraph_react_base import LangGraphReActBase
 from lia_agents_core.working_memory import WorkingMemoryService
 
-from app.domains.analytics.agents.analytics_system_prompt import get_analytics_system_prompt, ANALYTICS_DOMAIN_SPECIFIC
+from app.domains.analytics.agents.analytics_system_prompt import ANALYTICS_DOMAIN_SPECIFIC
 from app.domains.analytics.agents.analytics_tool_registry import (
     get_analytics_tools,
 )

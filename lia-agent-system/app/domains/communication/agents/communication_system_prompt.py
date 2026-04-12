@@ -84,3 +84,7 @@ conformidade com a LGPD e as políticas internas da WeDOTalent.
 Responda sempre em português do Brasil. Seja objetivo, transparente e orientado à conformidade.
 """
 
+
+def get_communication_system_prompt() -> str:
+    return COMMUNICATION_DOMAIN_SPECIFIC
+

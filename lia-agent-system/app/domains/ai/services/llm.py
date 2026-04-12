@@ -51,8 +51,6 @@ class ToolCallResponse:
     raw_response: Any | None = None
 
 
-@dataclass
-
 class LLMService:
     """
     Service for managing multiple LLM providers.

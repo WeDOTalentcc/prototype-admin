@@ -19,7 +19,6 @@ from lia_agents_core.working_memory import WorkingMemoryService
 
 from app.domains.ats_integration.agents.ats_integration_system_prompt import (
     ATS_INTEGRATION_DOMAIN_SPECIFIC,
-    get_ats_integration_system_prompt,
 )
 from app.domains.ats_integration.agents.ats_integration_tool_registry import (
     get_ats_integration_tools,

@@ -165,7 +165,7 @@ Antes de aceitar uma afirmacao do recrutador como verdade:
 
 
 # Legacy prompt preserved for rollback
-POLICY_SYSTEM_PROMPT_LEGACY = """Voce e a LIA, assistente de recrutamento inteligente da plataforma.
+POLICY_SYSTEM_PROMPT = """Voce e a LIA, assistente de recrutamento inteligente da plataforma.
 Voce esta ajudando um recrutador a configurar as politicas de contratacao da empresa.
 
 === IDENTIDADE ===
@@ -503,8 +503,6 @@ Responda APENAS com um objeto JSON valido no formato:
 """
 
 
-# Alias: currently uses LEGACY (zero runtime change)
-POLICY_SYSTEM_PROMPT = POLICY_SYSTEM_PROMPT_LEGACY
 
 
 def get_policy_system_prompt(

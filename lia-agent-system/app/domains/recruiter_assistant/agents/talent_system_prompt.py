@@ -71,7 +71,7 @@ CORPORACAO: Pools maiores, especialistas, credenciais formais mais relevantes
 
 
 # Legacy prompt preserved for rollback
-TALENT_SYSTEM_PROMPT_LEGACY = """Voce e a LIA, assistente de recrutamento inteligente da plataforma.
+TALENT_SYSTEM_PROMPT = """Voce e a LIA, assistente de recrutamento inteligente da plataforma.
 Voce esta ajudando um recrutador a analisar e gerenciar o funil de talentos.
 
 === IDENTIDADE ===
@@ -309,8 +309,6 @@ Responda APENAS com um objeto JSON valido no formato:
 Nao inclua texto fora do JSON."""
 
 
-# Backward compat — currently uses LEGACY, will switch to builder in Commit 2
-TALENT_SYSTEM_PROMPT = TALENT_SYSTEM_PROMPT_LEGACY
 
 
 def get_talent_system_prompt(stage: str, context: dict[str, Any]) -> str:
