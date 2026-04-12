@@ -240,6 +240,16 @@ export function useJobsData(): UseJobsDataReturn {
     loadBackendJobs()
   }, [hasMounted, jobsRefreshKey, loadBackendJobs])
 
+  useEffect(() => {
+    const onFocus = () => {
+      if (mountedRef.current && jobsError) {
+        loadBackendJobs()
+      }
+    }
+    window.addEventListener('focus', onFocus)
+    return () => window.removeEventListener('focus', onFocus)
+  }, [jobsError, loadBackendJobs])
+
   return {
     state: {
       backendJobs,

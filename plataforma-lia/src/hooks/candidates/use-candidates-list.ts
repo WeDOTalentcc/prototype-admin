@@ -122,6 +122,16 @@ export function useCandidatesList(initialFilters?: CandidatesListFilters): UseCa
     setFetchTrigger(prev => prev + 1)
   }, [])
 
+  useEffect(() => {
+    const onFocus = () => {
+      if (error) {
+        setFetchTrigger(prev => prev + 1)
+      }
+    }
+    window.addEventListener('focus', onFocus)
+    return () => window.removeEventListener('focus', onFocus)
+  }, [error])
+
   const totalPages = Math.max(1, Math.ceil(total / PER_PAGE))
 
   return {

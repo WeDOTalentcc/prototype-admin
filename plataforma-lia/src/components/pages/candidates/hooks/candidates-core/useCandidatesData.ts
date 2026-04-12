@@ -3,7 +3,7 @@
 // viewed-candidate tracking, and ancillary list/vacancy loading.
 // Pure React — no Next.js router/navigation dependencies.
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import { liaApi, CandidateLocal } from "@/services/lia-api"
 import { useCandidatesListMapped } from "@/hooks/candidates/use-candidates-list-mapped"
 import { useBulkCandidateDataRequests } from "@/hooks/candidates/use-candidate-data-requests"
@@ -66,8 +66,11 @@ export function useCandidatesData({
   // ── Job vacancies and email templates for bulk actions ────────────────────
   const [bulkJobVacancies, setBulkJobVacancies] = useState<JobVacancy[]>([])
   const [bulkEmailTemplates, setBulkEmailTemplates] = useState<EmailTemplate[]>([])
+  const secondaryFetchFailedRef = useRef(false)
 
-  useEffect(() => {
+  const loadSecondaryData = useCallback(() => {
+    secondaryFetchFailedRef.current = false
+
     liaApi
       .getCandidateLists({ limit: 50 })
       .then(r =>
@@ -80,7 +83,7 @@ export function useCandidatesData({
           }))
         )
       )
-      .catch(() => setCandidateListsForModal([]))
+      .catch(() => { setCandidateListsForModal([]); secondaryFetchFailedRef.current = true })
 
     fetchWithRetry(async () => {
       const r = await fetch('/api/backend-proxy/candidates/viewed')
@@ -92,11 +95,8 @@ export function useCandidatesData({
           onViewedIdsChange(() => new Set<string>(data.candidate_ids))
         }
       })
-      .catch((err) => { console.warn('[useCandidatesData] viewed-candidates fetch failed (cold-start)', err?.message || err) })
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []) // intentional: runs once on mount to fetch viewed candidates; onViewedIdsChange is a setState - stable but adding it could cause re-runs
+      .catch((err) => { console.warn('[useCandidatesData] viewed-candidates fetch failed (cold-start)', err?.message || err); secondaryFetchFailedRef.current = true })
 
-  useEffect(() => {
     fetchWithRetry(() => liaApi.listJobVacancies())
       .then(r =>
         r.items &&
@@ -104,11 +104,27 @@ export function useCandidatesData({
           r.items.filter((j: JobVacancy) => j.status === 'open' || j.status === 'draft')
         )
       )
-      .catch((err) => { console.warn('[useCandidatesData] listJobVacancies fetch failed (cold-start)', err?.message || err) })
+      .catch((err) => { console.warn('[useCandidatesData] listJobVacancies fetch failed (cold-start)', err?.message || err); secondaryFetchFailedRef.current = true })
+
     fetchWithRetry(() => liaApi.listEmailTemplates(undefined, true))
       .then(r => r.items && setBulkEmailTemplates(r.items))
-      .catch((err) => { console.warn('[useCandidatesData] listEmailTemplates fetch failed (cold-start)', err?.message || err) })
+      .catch((err) => { console.warn('[useCandidatesData] listEmailTemplates fetch failed (cold-start)', err?.message || err); secondaryFetchFailedRef.current = true })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  useEffect(() => {
+    loadSecondaryData()
+  }, [loadSecondaryData])
+
+  useEffect(() => {
+    const onFocus = () => {
+      if (secondaryFetchFailedRef.current) {
+        loadSecondaryData()
+      }
+    }
+    window.addEventListener('focus', onFocus)
+    return () => window.removeEventListener('focus', onFocus)
+  }, [loadSecondaryData])
 
   // ── Mark a candidate as viewed ────────────────────────────────────────────
   const markCandidateAsViewed = async (candidateId: string, source = 'profile') => {
