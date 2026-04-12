@@ -78,17 +78,54 @@ class CustomAgentRuntime(LangGraphReActBase, EnhancedAgentMixin):
     def available_tools(self) -> list[str]:
         return list(self._allowed_tools)
 
+    # Tools NOT available to Studio agents (admin/destructive operations)
+    _RESTRICTED_TOOLS = frozenset({
+        "delete_candidate", "delete_job", "delete_company",
+        "bulk_delete", "reset_pipeline", "drop_tenant",
+        "modify_permissions", "change_plan", "admin_override",
+    })
+
     def _get_tools(self) -> list:
         from lia_agents_core.react_loop import tool_definition_to_langchain_tool
 
+        # GAP 5: Load tools from autonomous pool + domain-specific registries
+        all_tools = []
+
+        # Pool 1: Autonomous tools (40 curated cross-domain tools)
         try:
             from app.domains.autonomous.agents.autonomous_tool_registry import get_autonomous_tools
-            all_tools = get_autonomous_tools()
+            all_tools.extend(get_autonomous_tools())
         except Exception:
-            all_tools = []
+            pass
+
+        # Pool 2: Domain-specific tools based on agent domain
+        domain = self._domain.split(":")[0] if ":" in self._domain else self._domain
+        domain_tool_loaders = {
+            "sourcing": "app.domains.sourcing.agents.sourcing_tool_registry.get_sourcing_tools",
+            "pipeline": "app.domains.pipeline.agents.pipeline_tool_registry.get_pipeline_tools",
+            "screening": "app.domains.cv_screening.agents.pipeline_tool_registry.get_pipeline_tools",
+            "communication": "app.domains.communication.agents.communication_tool_registry.get_communication_tools",
+            "analytics": "app.domains.analytics.agents.analytics_tool_registry.get_analytics_tools",
+            "job_management": "app.domains.job_management.agents.wizard_tool_registry.get_wizard_tools",
+            "automation": "app.domains.automation.agents.automation_tool_registry.get_automation_tools",
+        }
+        loader_path = domain_tool_loaders.get(domain)
+        if loader_path:
+            try:
+                module_path, func_name = loader_path.rsplit(".", 1)
+                import importlib
+                mod = importlib.import_module(module_path)
+                domain_tools = getattr(mod, func_name)()
+                all_tools.extend(domain_tools)
+            except Exception as _e:
+                logger.debug("[CustomAgentRuntime] Domain tools load failed for %s: %s", domain, _e)
 
         enhanced_tools = self._get_all_enhanced_tools()
-        all_available = {td.name: td for td in all_tools + enhanced_tools}
+        # Deduplicate by name, filter out restricted
+        all_available = {}
+        for td in all_tools + enhanced_tools:
+            if td.name not in self._RESTRICTED_TOOLS:
+                all_available[td.name] = td
 
         filtered = []
         for tool_name in self._allowed_tools:
