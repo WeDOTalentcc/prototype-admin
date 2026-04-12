@@ -20,15 +20,10 @@ from lia_models.feedback import InteractionFeedback
 
 logger = logging.getLogger(__name__)
 
-# Persona loaded from lia_persona.yaml (single source of truth)
-def _get_training_persona() -> str:
-    try:
-        from app.shared.prompts.agent_prompts import get_lia_persona
-        return get_lia_persona()
-    except Exception:
-        return "Assistente inteligente especializada em recrutamento e seleção."
+# Fixed, versioned persona for training consistency (not from dynamic YAML)
+from app.shared.prompts.training_persona import TRAINING_PERSONA
 
-SYSTEM_PROMPT_FOR_TRAINING = _get_training_persona()
+SYSTEM_PROMPT_FOR_TRAINING = TRAINING_PERSONA
 
 ERROR_PATTERNS = [
     "erro",

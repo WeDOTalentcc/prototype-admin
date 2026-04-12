@@ -117,8 +117,8 @@ class FineTuningExportService:
                 self._format_value_as_text(wf.original_value)
                 corrected_text = self._format_value_as_text(wf.corrected_value)
 
-                from app.shared.prompts.agent_prompts import get_lia_persona
-                system_content = get_lia_persona()
+                from app.shared.prompts.training_persona import TRAINING_PERSONA
+                system_content = TRAINING_PERSONA
 
                 context_parts = []
                 if wf.role:
@@ -154,8 +154,8 @@ class FineTuningExportService:
                     sf.actual_value if sf.actual_value else sf.suggested_value
                 )
 
-                from app.shared.prompts.agent_prompts import get_lia_persona
-                system_content = get_lia_persona()
+                from app.shared.prompts.training_persona import TRAINING_PERSONA
+                system_content = TRAINING_PERSONA
 
                 context_info = ""
                 if sf.context and isinstance(sf.context, dict):
