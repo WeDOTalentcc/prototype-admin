@@ -80,7 +80,7 @@ export function useJobsData(): UseJobsDataReturn {
         'Finalização': 'Finalização',
         'Encerrada': 'Encerrada'
       }
-      const convertedJobs: Job[] = response.items.map((jv_raw, index: number) => { const jv = jv_raw as unknown as Record<string, unknown>
+      const convertedJobs: Job[] = response.items.map((jv_raw, index: number) => { try { const jv = jv_raw as unknown as Record<string, unknown>
         const funnelData = (jv.funnel_data as Record<string, number>) || { total: 0, screening: 0, interview: 0, final: 0, hired: 0 }
         return {
           id: index + 1,
@@ -166,7 +166,11 @@ export function useJobsData(): UseJobsDataReturn {
           closedAt: (jv.closed_at as string) || undefined,
           createdByEmail: (jv.created_by_email as string) || undefined,
         } as unknown as Job
-      })
+      } catch (itemErr) {
+        console.warn(`[useJobsData] Failed to parse job at index ${index}`, itemErr instanceof Error ? itemErr.message : itemErr)
+        return null
+      }
+      }).filter((j): j is Job => j !== null)
 
       setBackendJobs(convertedJobs)
       setIsLoadingJobs(false)
