@@ -351,7 +351,7 @@ class TestToolHandlerWithModule:
         assert result["module_required"] == "talent_intelligence_pro"
 
     @pytest.mark.asyncio
-    async def test_tool_handler_no_require_company_without_db_passes_through(self):
+    async def test_tool_handler_no_require_company_without_db_returns_degraded(self):
         from app.shared.tool_handler import tool_handler
 
         @tool_handler("test_domain", require_company=False, module="talent_intelligence_pro")
@@ -359,9 +359,8 @@ class TestToolHandlerWithModule:
             return {"result": 1}
 
         result = await my_tool()
-        assert result["success"] is True
-        assert result["data"]["result"] == 1
-        assert "is_degraded" not in result
+        assert result["is_degraded"] is True
+        assert result["module_required"] == "talent_intelligence_pro"
 
     @pytest.mark.asyncio
     async def test_tool_handler_module_error_returns_degraded(self):

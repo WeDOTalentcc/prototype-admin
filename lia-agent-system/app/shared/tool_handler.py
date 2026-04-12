@@ -54,18 +54,12 @@ def tool_handler(domain: str, *, require_company: bool = True, module: Optional[
                 db = kwargs.get("db")
 
                 if not company_id or not db:
-                    if not require_company:
-                        logger.debug(
-                            "[%s] Module gating skipped for %s (require_company=False, no tenant context)",
-                            domain, func.__name__,
-                        )
-                    else:
-                        from app.shared.module_gating import build_degraded_response
-                        logger.warning(
-                            "[%s] Module gating fail-closed: missing context for %s (company_id=%s, db=%s)",
-                            domain, func.__name__, bool(company_id), bool(db),
-                        )
-                        return build_degraded_response(func.__name__, module)
+                    from app.shared.module_gating import build_degraded_response
+                    logger.warning(
+                        "[%s] Module gating fail-closed: missing context for %s (company_id=%s, db=%s)",
+                        domain, func.__name__, bool(company_id), bool(db),
+                    )
+                    return build_degraded_response(func.__name__, module)
 
                 if company_id and db:
                     try:
