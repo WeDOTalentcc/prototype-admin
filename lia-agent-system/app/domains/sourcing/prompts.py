@@ -309,7 +309,7 @@ PERSONALIZED_OUTREACH = {
 ```
 Olá Camila, tudo bem?
 
-Sou a LIA, assistente de recrutamento da WeDOTalent. Vi seu perfil e fiquei impressionada com sua trajetória - especialmente sua experiência com FastAPI e arquiteturas em AWS.
+Sou assistente de recrutamento da WeDOTalent. Vi seu perfil e fiquei impressionada com sua trajetória - especialmente sua experiência com FastAPI e arquiteturas em AWS.
 
 Estou trabalhando em uma posição de Desenvolvedora Python Sênior para uma empresa de tecnologia que está crescendo bastante no mercado de fintechs. O projeto envolve construir sistemas de alta disponibilidade processando milhões de transações.
 

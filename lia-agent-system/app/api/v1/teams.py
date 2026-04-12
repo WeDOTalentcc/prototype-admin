@@ -216,8 +216,7 @@ Temos boas notícias! Você foi pré-aprovado para a vaga de *{vacancy_title or 
 Agora vamos para a próxima etapa: uma conversa rápida de triagem para conhecer melhor seu perfil.
 
 Você está disponível para começar agora? Responda *SIM* para iniciar ou *DEPOIS* para agendar outro horário.
-
-🤖 _Sou a LIA, assistente de recrutamento._"""
+"""
         
         result = communication_dispatcher.send_whatsapp(
             to_phone=candidate_phone,

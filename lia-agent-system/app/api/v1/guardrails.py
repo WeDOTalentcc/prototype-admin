@@ -199,7 +199,7 @@ DEFAULT_PRIMARY_GUARDRAILS: list[dict] = [
     {
         "level": "primary",
         "rule": "Sempre identificar interação como gerada por IA quando solicitado.",
-        "blocking_message": "Sou a LIA, um assistente de IA da WeDOTalent.",
+        "blocking_message": "Sou uma assistente de IA da WeDOTalent, projetada para apoiar processos de recrutamento de forma transparente.",
     },
     {
         "level": "primary",

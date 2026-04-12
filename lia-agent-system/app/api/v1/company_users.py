@@ -363,9 +363,7 @@ async def get_smart_wizard_greeting(
             company_config_service.get_configuration(company_id, profile_repo.db),
         )
 
-        base_intro = """Olá! Sou a LIA, sua assistente de recrutamento.
-
-Como você gostaria de começar?
+        base_intro = """Como você gostaria de começar?
 
 🆕 **Criar vaga do zero** — Me conte sobre a posição que você precisa preencher
 
