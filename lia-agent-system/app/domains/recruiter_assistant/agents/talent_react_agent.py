@@ -66,16 +66,6 @@ class TalentReActAgent(LangGraphReActBase, EnhancedAgentMixin):
         tool_defs = get_talent_tools() + self._get_all_enhanced_tools()
         return [tool_definition_to_langchain_tool(td) for td in tool_defs]
 
-    def _get_system_prompt_legacy(self, input: AgentInput) -> str:
-        """Legacy prompt for rollback. Switch _get_system_prompt to call this."""
-        current_stage = input.context.get("current_stage", "discovery")
-        collected_fields = input.context.get("collected_data", {})
-        stage_ctx = get_stage_context(current_stage, collected_fields)
-        return get_talent_system_prompt(
-            stage=current_stage,
-            context={"stage_context": stage_ctx, "memory_summary": ""},
-        )
-
     def _state_to_output(self, state: dict, input: AgentInput) -> AgentOutput:
         messages = state.get("messages", [])
         response = ""
