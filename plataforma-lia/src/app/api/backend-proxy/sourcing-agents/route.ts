@@ -5,6 +5,6 @@ const handlers = createProxyHandlers({
   methods: ["GET", "POST"],
 })
 
-export const dynamic = handlers.dynamic
+export const dynamic = "force-dynamic"
 export const GET = handlers.GET
 export const POST = handlers.POST

@@ -1,6 +1,6 @@
 "use client"
 import React from"react"
-import { Zap, Mail, Phone, TrendingUp } from"lucide-react"
+import { Zap, Mail, Phone, TrendingUp, AlertCircle } from"lucide-react"
 import { Badge } from"@/components/ui/badge"
 import { Label } from"@/components/ui/label"
 import { Switch } from"@/components/ui/switch"
