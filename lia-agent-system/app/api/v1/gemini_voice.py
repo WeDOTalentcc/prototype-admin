@@ -350,21 +350,18 @@ async def gemini_live_stream_websocket(
         from google import genai
         from google.genai import types
 
-        api_key = os.environ.get("AI_INTEGRATIONS_GEMINI_API_KEY")
-        base_url = os.environ.get("AI_INTEGRATIONS_GEMINI_BASE_URL")
-
-        if not api_key or not base_url:
+        # === Tenant-aware Gemini client (LGPD compliance) ===
+        try:
+            from app.shared.tenant_llm_context import get_gemini_client_for_tenant
+            client = get_gemini_client_for_tenant(session.company_id)
+        except (ValueError, Exception) as _client_err:
+            logger.warning("[GEMINI VOICE WS] Gemini unavailable: %s", _client_err)
             await websocket.send_json({
                 "type": "error",
                 "message": "Gemini Live Audio não configurado no servidor",
             })
             await websocket.close(code=4500)
             return
-
-        client = genai.Client(
-            api_key=api_key,
-            http_options={"api_version": "", "base_url": base_url},
-        )
 
         live_config = types.LiveConnectConfig(
             response_modalities=["AUDIO"],

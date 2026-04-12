@@ -958,25 +958,18 @@ class VoiceScreeningOrchestrator:
                 )
 
         try:
-            import os
-
-            from google import genai
             from google.genai import types
 
-            api_key = os.environ.get("AI_INTEGRATIONS_GEMINI_API_KEY")
-            base_url = os.environ.get("AI_INTEGRATIONS_GEMINI_BASE_URL")
-
-            if not api_key or not base_url:
-                # If Gemini is unavailable but presentation is pending, generate fallback intro
+            # === Tenant-aware Gemini client (LGPD compliance) ===
+            try:
+                from app.shared.tenant_llm_context import get_gemini_client_for_tenant
+                client = get_gemini_client_for_tenant(session.company_id)
+            except (ValueError, Exception) as _client_err:
+                logger.warning("[VoiceOrchestrator] Gemini unavailable: %s", _client_err)
                 if not session.presentation_done:
                     session.presentation_done = True
                     return self._build_fallback_job_presentation(session)
                 return self._get_next_scripted_question(session, wsi_questions if has_wsi_questions else None)
-
-            client = genai.Client(
-                api_key=api_key,
-                http_options={"api_version": "", "base_url": base_url},
-            )
 
             questions_asked = session.questions_asked
             next_q_index = len(questions_asked)

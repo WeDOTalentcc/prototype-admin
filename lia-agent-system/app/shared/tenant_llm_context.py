@@ -15,6 +15,7 @@ Usage:
         # Use tenant's provider + API key
 """
 import logging
+import os
 
 logger = logging.getLogger(__name__)
 
@@ -74,6 +75,86 @@ async def get_tenant_llm_config(company_id: str) -> dict | None:
         logger.debug("[TenantLLM] No DB config for %s: %s", company_id, e)
 
     return None
+
+
+def get_gemini_client_for_tenant(company_id: str | None = None):
+    """Get a Gemini genai.Client respecting tenant LLM config.
+
+    If tenant has a custom Gemini API key, creates a client with that key
+    (direct Google API, no Replit proxy). Otherwise returns client with
+    the global Replit AI Integration key.
+
+    Safe to call from any context — returns a fresh client each time.
+    The llm_bootstrap monkey-patch ensures audit logging regardless.
+    """
+    from google import genai
+
+    tenant_id = company_id or get_current_llm_tenant()
+    if tenant_id:
+        config = _tenant_configs.get(tenant_id)
+        if config:
+            providers = config.get("providers", {})
+            gemini_cfg = providers.get("gemini", {})
+            tenant_key = gemini_cfg.get("api_key")
+            if tenant_key:
+                logger.info(
+                    "[TenantLLM] Using tenant Gemini key for tenant=%s",
+                    tenant_id,
+                )
+                return genai.Client(api_key=tenant_key)
+
+    api_key = os.environ.get("AI_INTEGRATIONS_GEMINI_API_KEY")
+    base_url = os.environ.get("AI_INTEGRATIONS_GEMINI_BASE_URL")
+    if not api_key:
+        raise ValueError("AI_INTEGRATIONS_GEMINI_API_KEY not configured")
+
+    kwargs: dict = {"api_key": api_key}
+    if base_url:
+        kwargs["http_options"] = {"api_version": "", "base_url": base_url}
+    return genai.Client(**kwargs)
+
+
+def get_claude_model_for_tenant(company_id: str | None = None):
+    """Get a ChatAnthropic model respecting tenant LLM config.
+
+    If tenant has a custom Claude/Anthropic API key, creates model with
+    that key. Otherwise returns None (caller should use global default).
+    """
+    tenant_id = company_id or get_current_llm_tenant()
+    if not tenant_id:
+        return None
+
+    config = _tenant_configs.get(tenant_id)
+    if not config:
+        return None
+
+    providers = config.get("providers", {})
+    claude_cfg = providers.get("claude", {})
+    tenant_key = claude_cfg.get("api_key")
+    if not tenant_key:
+        return None
+
+    try:
+        from langchain_anthropic import ChatAnthropic
+
+        from app.core.config import settings
+
+        tenant_model = claude_cfg.get("model", settings.LLM_PRIMARY_MODEL)
+        logger.info(
+            "[TenantLLM] Using tenant Claude key for tenant=%s model=%s",
+            tenant_id,
+            tenant_model,
+        )
+        return ChatAnthropic(
+            model_name=tenant_model,
+            api_key=tenant_key,
+            temperature=settings.LLM_DEFAULT_TEMPERATURE,
+            max_tokens=settings.LLM_MAX_TOKENS,
+            timeout=settings.LLM_TIMEOUT_SECONDS,
+        )
+    except Exception as exc:
+        logger.warning("[TenantLLM] Failed to create tenant Claude model: %s", exc)
+        return None
 
 
 def clear_tenant_config_cache(company_id: str = ""):

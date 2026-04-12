@@ -26,9 +26,10 @@ class GeminiEmbeddingProvider(EmbeddingProviderABC):
 
     _provider_name = "gemini"
 
-    def __init__(self, model: str | None = None):
+    def __init__(self, model: str | None = None, api_key: str | None = None):
         self._model = model or GEMINI_EMBEDDING_MODEL
         self._client = None
+        self._custom_api_key = api_key
 
     @property
     def provider_name(self) -> str:
@@ -44,25 +45,26 @@ class GeminiEmbeddingProvider(EmbeddingProviderABC):
 
     @property
     def _gemini_client(self):
-        """Lazy-initialize Gemini client."""
+        """Lazy-initialize Gemini client (tenant-aware)."""
         if self._client is None:
             from google import genai
 
-            api_key = os.environ.get("AI_INTEGRATIONS_GEMINI_API_KEY")
-            base_url = os.environ.get("AI_INTEGRATIONS_GEMINI_BASE_URL")
-
-            if not api_key or not base_url:
-                raise ValueError(
-                    "AI_INTEGRATIONS_GEMINI_API_KEY or AI_INTEGRATIONS_GEMINI_BASE_URL not configured"
+            if self._custom_api_key:
+                # Tenant-specific key — direct Google API
+                self._client = genai.Client(api_key=self._custom_api_key)
+                logger.info("[GeminiEmbedding] Using tenant-specific API key")
+            else:
+                # Global Replit AI Integration
+                api_key = os.environ.get("AI_INTEGRATIONS_GEMINI_API_KEY")
+                base_url = os.environ.get("AI_INTEGRATIONS_GEMINI_BASE_URL")
+                if not api_key or not base_url:
+                    raise ValueError(
+                        "AI_INTEGRATIONS_GEMINI_API_KEY or AI_INTEGRATIONS_GEMINI_BASE_URL not configured"
+                    )
+                self._client = genai.Client(
+                    api_key=api_key,
+                    http_options={"api_version": "", "base_url": base_url},
                 )
-
-            self._client = genai.Client(
-                api_key=api_key,
-                http_options={
-                    "api_version": "",
-                    "base_url": base_url,
-                },
-            )
         return self._client
 
     async def embed_text(self, text: str) -> EmbeddingResult:

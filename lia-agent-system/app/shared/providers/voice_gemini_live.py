@@ -58,12 +58,12 @@ class GeminiLiveVoiceProvider(VoiceStreamProviderABC):
         if GEMINI_LIVE_CIRCUIT.state.value == "open":
             raise RuntimeError("Gemini Live circuit breaker is open")
 
-        from google import genai
         from google.genai import types
 
-        client = genai.Client(
-            api_key=self._api_key,
-            http_options={"api_version": "", "base_url": self._base_url},
+        # === Tenant-aware Gemini client (LGPD compliance) ===
+        from app.shared.tenant_llm_context import get_gemini_client_for_tenant
+        client = get_gemini_client_for_tenant(
+            config.tenant_id if config else None
         )
 
         live_config = types.LiveConnectConfig(

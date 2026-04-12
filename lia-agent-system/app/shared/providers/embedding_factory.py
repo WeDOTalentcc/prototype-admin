@@ -97,6 +97,7 @@ class EmbeddingProviderFactory:
         cls,
         text: str,
         preferred_provider: str | None = None,
+        company_id: str | None = None,
     ) -> tuple[list[float], str, str]:
         """Generate embedding with automatic provider fallback.
 
@@ -108,6 +109,7 @@ class EmbeddingProviderFactory:
         Args:
             text: Text to embed.
             preferred_provider: Provider to try first (optional).
+            company_id: Tenant ID for tenant-specific API keys (LGPD).
 
         Returns:
             Tuple of (vector, provider_name, model_name) from the first
@@ -121,7 +123,7 @@ class EmbeddingProviderFactory:
         errors: list[str] = []
         for provider_name in order:
             try:
-                provider = cls.get(provider_name)
+                provider = cls._get_tenant_provider(provider_name, company_id)
                 result = await provider.embed_text(text)
                 if provider_name != order[0]:
                     logger.warning(
@@ -153,12 +155,14 @@ class EmbeddingProviderFactory:
         cls,
         texts: list[str],
         preferred_provider: str | None = None,
+        company_id: str | None = None,
     ) -> tuple[list[list[float]], str, str]:
         """Generate batch embeddings with automatic provider fallback.
 
         Args:
             texts: Texts to embed.
             preferred_provider: Provider to try first (optional).
+            company_id: Tenant ID for tenant-specific API keys (LGPD).
 
         Returns:
             Tuple of (vectors, provider_name, model_name) from the first
@@ -172,7 +176,7 @@ class EmbeddingProviderFactory:
         errors: list[str] = []
         for provider_name in order:
             try:
-                provider = cls.get(provider_name)
+                provider = cls._get_tenant_provider(provider_name, company_id)
                 results = await provider.embed_batch(texts)
                 vectors = [r.vector for r in results]
                 if results:
@@ -197,6 +201,38 @@ class EmbeddingProviderFactory:
     # ------------------------------------------------------------------
     # Internal helpers
     # ------------------------------------------------------------------
+
+    @classmethod
+    def _get_tenant_provider(
+        cls, provider_name: str, company_id: str | None = None
+    ) -> "EmbeddingProviderABC":
+        """Get provider with tenant-specific config if available (LGPD)."""
+        if company_id and provider_name == "gemini":
+            try:
+                from app.shared.tenant_llm_context import _tenant_configs
+
+                config = _tenant_configs.get(company_id)
+                if config:
+                    providers = config.get("providers", {})
+                    gemini_cfg = providers.get("gemini", {})
+                    tenant_key = gemini_cfg.get("api_key")
+                    if tenant_key:
+                        from app.shared.providers.embedding_gemini import (
+                            GeminiEmbeddingProvider,
+                        )
+
+                        logger.info(
+                            "[EmbeddingFactory] Using tenant key for %s",
+                            company_id,
+                        )
+                        return GeminiEmbeddingProvider(api_key=tenant_key)
+            except Exception as exc:
+                logger.warning(
+                    "[EmbeddingFactory] Tenant key lookup failed for %s: %s",
+                    company_id,
+                    exc,
+                )
+        return cls.get(provider_name)
 
     @classmethod
     def _build_fallback_order(cls, preferred_provider: str | None) -> list[str]:

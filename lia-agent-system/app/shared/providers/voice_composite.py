@@ -88,13 +88,11 @@ class CompositeVoiceProvider(VoiceStreamProviderABC):
     async def _stt_transcribe(self, audio_data: bytes) -> str:
         import functools
 
-        from google import genai
         from google.genai import types
 
-        client = genai.Client(
-            api_key=self._gemini_api_key,
-            http_options={"api_version": "", "base_url": self._gemini_base_url},
-        )
+        # === Tenant-aware Gemini client (LGPD compliance) ===
+        from app.shared.tenant_llm_context import get_gemini_client_for_tenant
+        client = get_gemini_client_for_tenant(self._tenant_id)
 
         loop = asyncio.get_event_loop()
         response = await loop.run_in_executor(
@@ -147,13 +145,11 @@ class CompositeVoiceProvider(VoiceStreamProviderABC):
     async def _tts_synthesize(self, text: str, voice_name: str = "Aoede") -> bytes:
         import functools
 
-        from google import genai
         from google.genai import types
 
-        client = genai.Client(
-            api_key=self._gemini_api_key,
-            http_options={"api_version": "", "base_url": self._gemini_base_url},
-        )
+        # === Tenant-aware Gemini client (LGPD compliance) ===
+        from app.shared.tenant_llm_context import get_gemini_client_for_tenant
+        client = get_gemini_client_for_tenant(self._tenant_id)
 
         loop = asyncio.get_event_loop()
         response = await loop.run_in_executor(

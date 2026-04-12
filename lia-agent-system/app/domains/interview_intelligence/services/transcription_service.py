@@ -86,15 +86,10 @@ class TranscriptionService:
 
     def _get_client(self):
         if not self._client:
-            from google import genai
-            api_key = os.environ.get("AI_INTEGRATIONS_GEMINI_API_KEY")
-            base_url = os.environ.get("AI_INTEGRATIONS_GEMINI_BASE_URL")
-            if not api_key:
-                raise ValueError("Gemini API not configured — AI_INTEGRATIONS_GEMINI_API_KEY missing")
-            client_kwargs = {"api_key": api_key}
-            if base_url:
-                client_kwargs["http_options"] = {"api_version": "", "base_url": base_url}
-            self._client = genai.Client(**client_kwargs)
+            # === Tenant-aware Gemini client (LGPD compliance) ===
+            from app.shared.tenant_llm_context import get_gemini_client_for_tenant
+            company_id = getattr(self, "_company_id", None)
+            self._client = get_gemini_client_for_tenant(company_id)
         return self._client
 
     async def transcribe_from_url(

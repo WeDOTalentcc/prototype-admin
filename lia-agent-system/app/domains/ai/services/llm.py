@@ -137,7 +137,18 @@ class LLMService:
             caller = f"{os.path.basename(frame.f_back.f_code.co_filename)}:{frame.f_back.f_lineno}"
 
         tenant_id = company_id or self._current_tenant or ""
-        base_model = self.claude
+
+        # === Tenant-aware model selection (LGPD compliance) ===
+        base_model = None
+        if tenant_id:
+            try:
+                from app.shared.tenant_llm_context import get_claude_model_for_tenant
+                base_model = get_claude_model_for_tenant(tenant_id)
+            except Exception:
+                pass
+        if base_model is None:
+            base_model = self.claude
+
         callbacks = [PIIStripCallback(), AuditLogCallback(tenant_id=tenant_id, caller=caller)]
         return base_model.with_config(callbacks=callbacks)
 
@@ -204,7 +215,9 @@ class LLMService:
         _t0 = _time.monotonic()
 
         try:
-            client = self.gemini_native
+            # === Tenant-aware Gemini client (LGPD compliance) ===
+            from app.shared.tenant_llm_context import get_gemini_client_for_tenant
+            client = get_gemini_client_for_tenant(tenant_id) if tenant_id else self.gemini_native
 
             # Build kwargs
             kwargs: dict[str, Any] = {"model": model, "contents": contents}
@@ -267,7 +280,9 @@ class LLMService:
         _t0 = _time.monotonic()
 
         try:
-            client = self.gemini_native
+            # === Tenant-aware Gemini client (LGPD compliance) ===
+            from app.shared.tenant_llm_context import get_gemini_client_for_tenant
+            client = get_gemini_client_for_tenant(tenant_id) if tenant_id else self.gemini_native
             kwargs: dict[str, Any] = {"model": model, "contents": contents}
             if config is not None:
                 kwargs["config"] = config
