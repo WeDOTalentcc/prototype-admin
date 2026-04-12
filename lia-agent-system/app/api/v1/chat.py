@@ -715,7 +715,26 @@ async def send_message(
     # M2: MainOrchestrator._setup_conversation_memory persists user message
     # await repo.add_user_message(conversation.id, message_data.content)
 
+    # M2: Commit conversation so MainOrchestrator can find it in the same DB
+    await repo.db.commit()
+    await repo.db.refresh(conversation)
+
     page_context = message_data.context or {}
+
+    # M2: Snapshot conversation attrs before orchestrator (commit expires objects)
+    _conv_snapshot = {
+        "id": str(conversation.id),
+        "user_id": conversation.user_id,
+        "user_role": getattr(conversation, "user_role", "") or "",
+        "title": conversation.title,
+        "intent": conversation.intent,
+        "workflow_type": getattr(conversation, "workflow_type", None),
+        "workflow_step": getattr(conversation, "workflow_step", None),
+        "workflow_data": getattr(conversation, "workflow_data", None) or {},
+        "status": conversation.status,
+        "created_at": conversation.created_at,
+        "updated_at": conversation.updated_at,
+    }
 
     orch_result = await _get_chat_adapter().process_message(
         user_message=message_data.content,
@@ -741,25 +760,13 @@ async def send_message(
             "entities": detected_entities,
         }
 
-        if action_metadata:
-            msg_metadata.update(action_metadata)
+        # Item 2: action_metadata removed — MainOrchestrator handles actions
 
-        # M2: MainOrchestrator._persist_response handles message + conversation updates
-        # Fetch the message that MainOrchestrator just persisted
-        await repo.db.commit()  # Ensure MainOrchestrator writes are visible
-        ai_message = await repo.get_last_ai_message(conversation.id)
-        if not ai_message:
-            # Fallback: MainOrchestrator may not have persisted (skip_memory_persist edge case)
-            ai_message = await repo.add_ai_message(
-                conversation.id, final_response, msg_metadata,
-                prompt_version=orch_result.get("prompt_version"),
-            )
-            await repo.update_conversation_intent(conversation, detected_intent, orch_result["workflow_data"])
-            await repo.set_conversation_title(conversation, message_data.content[:100])
-            await repo.commit_and_refresh(ai_message, conversation)
-        else:
-            # Refresh conversation to get MainOrchestrator updates (title, intent)
-            await repo.db.refresh(conversation)
+        # M2: MainOrchestrator._persist_response already committed via same db session
+        # Session objects are expired after commit — use snapshot + orch_result for response
+        # Use orchestrator conversation_id (may differ if MainOrchestrator created its own)
+        _conv_id_str = str(orch_result.get("conversation_id", _conv_snapshot["id"]))
+        _conv_snapshot["id"] = _conv_id_str
 
         workflow_data = orch_result["workflow_data"]
         context_data = None
@@ -795,31 +802,38 @@ async def send_message(
                     "data": frame.get("data", {}),
                 }
 
+        # Build response entirely from in-memory data (session expired after commit)
+        import uuid as _uuid
+        _now = __import__("datetime").datetime.utcnow()
+        _meta = msg_metadata.copy()
         if context_data:
-            ai_message.message_metadata = ai_message.message_metadata or {}
-            ai_message.message_metadata["context_data"] = context_data
+            _meta["context_data"] = context_data
+
+        # Update snapshot with orchestrator results
+        _conv_snapshot["title"] = _conv_snapshot["title"] or message_data.content[:100]
+        _conv_snapshot["intent"] = detected_intent or _conv_snapshot["intent"]
 
         return ChatResponse(
             message=MessageResponse(
-                id=str(ai_message.id),
-                conversation_id=str(ai_message.conversation_id),
-                role=ai_message.role,
-                content=ai_message.content,
-                message_metadata=ai_message.message_metadata or {},
-                created_at=ai_message.created_at,
+                id=str(orch_result.get("message_id", _uuid.uuid4())),
+                conversation_id=_conv_id_str,
+                role="assistant",
+                content=final_response,
+                message_metadata=_meta,
+                created_at=_now,
             ),
             conversation=ConversationResponse(
-                id=str(conversation.id),
-                user_id=conversation.user_id,
-                user_role=conversation.user_role or "",
-                title=conversation.title,
-                intent=conversation.intent,
-                workflow_type=conversation.workflow_type,
-                workflow_step=conversation.workflow_step,
-                workflow_data=conversation.workflow_data or {},
-                status=conversation.status,
-                created_at=conversation.created_at,
-                updated_at=conversation.updated_at,
+                id=_conv_snapshot["id"],
+                user_id=_conv_snapshot["user_id"],
+                user_role=_conv_snapshot["user_role"],
+                title=_conv_snapshot["title"],
+                intent=_conv_snapshot["intent"],
+                workflow_type=_conv_snapshot["workflow_type"],
+                workflow_step=_conv_snapshot["workflow_step"],
+                workflow_data=_conv_snapshot["workflow_data"],
+                status=_conv_snapshot["status"],
+                created_at=_conv_snapshot["created_at"],
+                updated_at=_now,
             ),
         )
 
@@ -956,19 +970,36 @@ async def send_message_with_attachments(
                     "data": frame.get("data", {}),
                 }
 
-        if context_data:
-            ai_message.message_metadata = ai_message.message_metadata or {}
-            ai_message.message_metadata["context_data"] = context_data
-
-        return ChatResponse(
-            message=MessageResponse(
+        if ai_message:
+            if context_data:
+                ai_message.message_metadata = ai_message.message_metadata or {}
+                ai_message.message_metadata["context_data"] = context_data
+            _msg_resp = MessageResponse(
                 id=str(ai_message.id),
                 conversation_id=str(ai_message.conversation_id),
                 role=ai_message.role,
                 content=ai_message.content,
                 message_metadata=ai_message.message_metadata or {},
                 created_at=ai_message.created_at,
-            ),
+            )
+        else:
+            # Build response from in-memory data (MainOrchestrator persisted but session stale)
+            import uuid as _uuid
+            _now = __import__("datetime").datetime.utcnow()
+            _meta = msg_metadata.copy()
+            if context_data:
+                _meta["context_data"] = context_data
+            _msg_resp = MessageResponse(
+                id=str(_uuid.uuid4()),
+                conversation_id=_conv_id_str,
+                role="assistant",
+                content=final_response,
+                message_metadata=_meta,
+                created_at=_now,
+            )
+
+        return ChatResponse(
+            message=_msg_resp,
             conversation=ConversationResponse(
                 id=str(conversation.id),
                 user_id=conversation.user_id,

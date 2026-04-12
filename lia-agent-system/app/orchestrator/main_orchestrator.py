@@ -717,7 +717,7 @@ class MainOrchestrator:
                             sa_update(ConvModel).where(ConvModel.id == _conv_uuid).values(**_updates)
                         )
                 except Exception as _upd_exc:
-                    logger.debug("[MainOrchestrator] Conv update skipped: %s", _upd_exc)
+                    logger.warning("[MainOrchestrator] Conv update FAILED: %s", _upd_exc, exc_info=True)
 
                 if (
                     getattr(conv, "message_count", None)
@@ -735,7 +735,7 @@ class MainOrchestrator:
                 await db.rollback()
             except Exception:
                 pass
-            logger.debug("[MainOrchestrator] Memory persist skipped: %s", _persist_exc)
+            logger.warning("[MainOrchestrator] Memory persist FAILED: %s", _persist_exc, exc_info=True)
 
     async def _write_cache(self, cache_service: Any, cache_key: str, result: dict[str, Any]) -> None:
         """Write successful result to response cache."""
