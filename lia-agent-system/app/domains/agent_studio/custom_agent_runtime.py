@@ -136,8 +136,10 @@ class CustomAgentRuntime(LangGraphReActBase, EnhancedAgentMixin):
         if compiled is None:
             raise RuntimeError(f"[CustomAgentRuntime:{self._agent_name}] Grafo LangGraph não disponível")
 
+        # GAP 4: Deterministic thread_id for conversation continuity
+        effective_thread = session_id or f"{self._agent_id}:{initial_state.get('user_id', 'anon')}:{self._company_id}"
         config: dict[str, Any] = {
-            "configurable": {"thread_id": session_id},
+            "configurable": {"thread_id": effective_thread},
             "recursion_limit": self._max_steps * 2 + 1,
         }
         callbacks = [cb for cb in [audit_callback, streaming_callback] if cb is not None]
@@ -147,12 +149,74 @@ class CustomAgentRuntime(LangGraphReActBase, EnhancedAgentMixin):
         return await compiled.ainvoke(initial_state, config=config)
 
     def _get_system_prompt(self, input: AgentInput) -> str:
-        context_snippet = ""
-        if input.context:
-            for key, value in input.context.items():
-                if value and isinstance(value, str) and len(value) < 500:
-                    context_snippet += f"\n{key}: {value}"
-        return self._system_prompt_template + context_snippet
+        """Compose system prompt: LIA persona base + domain + tenant + user + custom instructions.
+
+        The client's custom prompt is injected as extra_instructions, NOT replacing the persona.
+        """
+        from app.shared.prompts.system_prompt_builder import SystemPromptBuilder
+
+        ctx = input.context or {}
+
+        # Map domain to agent_type for SystemPromptBuilder
+        agent_type = self._domain if self._domain != "custom" else "general"
+        if ":" in agent_type:
+            agent_type = agent_type.split(":")[0]  # "custom:MyAgent" -> "custom"
+        # Map known domain values to builder agent_types
+        domain_map = {
+            "sourcing": "sourcing",
+            "screening": "cv_screening",
+            "pipeline": "pipeline",
+            "analytics": "analytics",
+            "communication": "communication",
+            "job_management": "job_planner",
+            "general": "recruiter_assistant",
+            "custom": "recruiter_assistant",
+        }
+        builder_agent_type = domain_map.get(agent_type, "recruiter_assistant")
+
+        # Build base prompt with full LIA intelligence
+        base = SystemPromptBuilder.build(
+            agent_type=builder_agent_type,
+            tenant_context_snippet=ctx.get("tenant_context_snippet", ""),
+            user_name=ctx.get("user_name", ""),
+            user_role=ctx.get("user_role", ""),
+            recruiter_context=ctx.get("recruiter_context", ""),
+            conversation_summary=ctx.get("conversation_summary", ""),
+            conversation_history=ctx.get("conversation_history"),
+            context_page=ctx.get("context_page", "general"),
+            extra_instructions=f"INSTRUCOES ADICIONAIS DO OPERADOR:\n{self._system_prompt_template}",
+        )
+
+        # GAP 6: Inject domain-specific few-shot examples + reasoning
+        domain_instructions = self._load_domain_instructions()
+        if domain_instructions:
+            return f"{base}\n\n---\n\n{domain_instructions}"
+        return base
+
+    def _load_domain_instructions(self) -> str:
+        """Load DOMAIN_INSTRUCTIONS for the agent's domain (same as product agents)."""
+        domain = self._domain.split(":")[0] if ":" in self._domain else self._domain
+        _domain_loaders = {
+            "sourcing": lambda: self._safe_import("app.domains.sourcing.agents.sourcing_system_prompt", "SOURCING_DOMAIN_SPECIFIC"),
+            "screening": lambda: self._safe_import("app.domains.cv_screening.agents.pipeline_system_prompt", "PIPELINE_DOMAIN_SPECIFIC"),
+            "pipeline": lambda: self._safe_import("app.domains.cv_screening.agents.pipeline_system_prompt", "PIPELINE_DOMAIN_SPECIFIC"),
+            "analytics": lambda: self._safe_import("app.domains.analytics.agents.analytics_system_prompt", "ANALYTICS_DOMAIN_SPECIFIC"),
+            "communication": lambda: self._safe_import("app.domains.communication.agents.communication_system_prompt", "COMMUNICATION_DOMAIN_SPECIFIC"),
+            "job_management": lambda: self._safe_import("app.domains.job_management.agents.wizard_system_prompt", "WIZARD_DOMAIN_SPECIFIC"),
+            "automation": lambda: self._safe_import("app.domains.automation.agents.automation_system_prompt", "AUTOMATION_DOMAIN_SPECIFIC"),
+        }
+        loader = _domain_loaders.get(domain)
+        return loader() if loader else ""
+
+    @staticmethod
+    def _safe_import(module_path: str, attr_name: str) -> str:
+        """Safely import a domain-specific constant."""
+        try:
+            import importlib
+            mod = importlib.import_module(module_path)
+            return getattr(mod, attr_name, "")
+        except Exception:
+            return ""
 
     def _state_to_output(self, state: dict, input: AgentInput) -> AgentOutput:
         messages = state.get("messages", [])

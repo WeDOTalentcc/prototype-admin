@@ -236,12 +236,24 @@ async def execute_custom_agent(
         )
 
         start = time.time()
+        # GAP 2+3: Enrich context with tenant + user info
+        enriched_context = dict(body.context or {})
+        try:
+            from app.shared.services.tenant_context_service import TenantContextService
+            _tcs = TenantContextService()
+            _tenant_ctx = await _tcs.get_context(company_id=current_user.company_id, db=db)
+            enriched_context["tenant_context_snippet"] = _tenant_ctx.to_prompt_snippet()
+        except Exception:
+            pass
+        enriched_context["user_name"] = getattr(current_user, "name", "") or getattr(current_user, "full_name", "") or ""
+        enriched_context["user_role"] = getattr(current_user, "role", "") or ""
+
         output = await runtime.execute(
             message=body.message,
             user_id=str(current_user.id),
             company_id=current_user.company_id,
             session_id=body.session_id or "",
-            context=body.context,
+            context=enriched_context,
         )
         elapsed_ms = int((time.time() - start) * 1000)
 
