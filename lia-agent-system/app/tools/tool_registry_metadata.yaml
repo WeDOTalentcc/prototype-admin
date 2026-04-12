@@ -732,6 +732,7 @@ tools:
     allowed_agents: [orchestrator, recruiter_assistant, sourcing, analytics, job_planner, job_wizard]
     scope: GLOBAL
     version: "1.0"
+    module: talent_intelligence_pro
     parameters:
       type: object
       required: [skills]
@@ -745,6 +746,7 @@ tools:
     allowed_agents: [orchestrator, recruiter_assistant, sourcing, analytics, job_planner, job_wizard]
     scope: GLOBAL
     version: "1.0"
+    module: talent_intelligence_pro
     parameters:
       type: object
       required: [skill]
@@ -757,6 +759,7 @@ tools:
     allowed_agents: [orchestrator, recruiter_assistant, sourcing, analytics, screening]
     scope: TALENT_FUNNEL
     version: "1.0"
+    module: talent_intelligence_pro
     parameters:
       type: object
       properties:
@@ -770,6 +773,7 @@ tools:
     allowed_agents: [orchestrator, recruiter_assistant, sourcing, analytics, screening]
     scope: TALENT_FUNNEL
     version: "1.0"
+    module: talent_intelligence_pro
     parameters:
       type: object
       properties:
@@ -783,6 +787,7 @@ tools:
     allowed_agents: [orchestrator, recruiter_assistant, analytics]
     scope: TALENT_FUNNEL
     version: "1.0"
+    module: internal_mobility
     parameters:
       type: object
       properties:
@@ -800,6 +805,7 @@ tools:
     allowed_agents: [orchestrator, recruiter_assistant, analytics]
     scope: GLOBAL
     version: "1.0"
+    module: workforce_planning
     parameters:
       type: object
       properties:
@@ -815,6 +821,7 @@ tools:
     allowed_agents: [orchestrator, recruiter_assistant, screening, analytics]
     scope: IN_JOB
     version: "1.0"
+    module: interview_intelligence
     parameters:
       type: object
       required: [transcript]
@@ -832,6 +839,7 @@ tools:
     allowed_agents: [orchestrator, recruiter_assistant, communication, recruitment_campaign]
     scope: TALENT_FUNNEL
     version: "1.0"
+    module: candidate_nurture
     parameters:
       type: object
       required: [candidate_ids]
@@ -846,6 +854,7 @@ tools:
     allowed_agents: [orchestrator, recruiter_assistant, analytics, recruitment_campaign]
     scope: TALENT_FUNNEL
     version: "1.0"
+    module: candidate_nurture
     parameters:
       type: object
       properties:
@@ -857,6 +866,7 @@ tools:
     allowed_agents: [orchestrator, recruiter_assistant, sourcing, recruitment_campaign]
     scope: TALENT_FUNNEL
     version: "1.0"
+    module: candidate_nurture
     parameters:
       type: object
       properties:
@@ -868,6 +878,7 @@ tools:
     allowed_agents: [orchestrator, recruiter_assistant, sourcing, analyst_feedback, wsi_evaluator]
     scope: GLOBAL
     version: "1.0"
+    module: talent_intelligence_pro
     parameters:
       type: object
       properties:

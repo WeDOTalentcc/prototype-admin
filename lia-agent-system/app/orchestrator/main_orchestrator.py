@@ -498,6 +498,8 @@ class MainOrchestrator:
         await self._persist_candidate_list(conv_id, result)
         await self._audit_output(ctx, conv_id, result)
 
+        result = await self._inject_module_tasting_hints(ctx, result, db)
+
         return ChatResponse.from_orchestrator_result(result, conv_id=conv_id)
 
     async def _try_cache_lookup(
@@ -727,6 +729,78 @@ class MainOrchestrator:
                 )
             except Exception as _audit_err:
                 logger.warning("Output audit failed (non-blocking): %s", _audit_err)
+
+    _MODULE_TASTING_INTENTS: dict[str, list[str]] = {
+        "talent_intelligence_pro": [
+            "talent", "skills", "skill_analysis", "gap_analysis",
+            "ontology", "market_intelligence", "busca", "sourcing",
+        ],
+        "internal_mobility": ["internal_mobility", "mobilidade_interna", "talent"],
+        "interview_intelligence": ["interview", "entrevista", "screening"],
+        "workforce_planning": ["workforce", "planning", "analytics", "previsão"],
+        "candidate_nurture": [
+            "nurture", "reengagement", "engagement", "crm",
+            "candidato_passivo", "communication",
+        ],
+    }
+
+    _MODULE_TASTING_SUGGESTIONS: dict[str, str] = {
+        "talent_intelligence_pro": (
+            "💡 **Talent Intelligence Pro** — Analise skills com ontologia de grafos, "
+            "identifique gaps e obtenha market intelligence em tempo real."
+        ),
+        "internal_mobility": (
+            "💡 **Internal Mobility** — Descubra talentos internos com matching "
+            "por skills adjacentes e readiness scoring."
+        ),
+        "interview_intelligence": (
+            "💡 **Interview Intelligence** — Análise de entrevistas com detecção "
+            "de viés, mapeamento de competências e sentimento."
+        ),
+        "workforce_planning": (
+            "💡 **Workforce Planning** — Previsão de contratação baseada em "
+            "turnover, pipeline e cenários de crescimento."
+        ),
+        "candidate_nurture": (
+            "💡 **Candidate Nurture** — Sequências automatizadas de engajamento "
+            "para candidatos passivos com métricas de conversão."
+        ),
+    }
+
+    async def _inject_module_tasting_hints(
+        self,
+        ctx: UniversalContext,
+        result: dict[str, Any],
+        db: Any,
+    ) -> dict[str, Any]:
+        if not result.get("success") or not ctx.company_id:
+            return result
+
+        detected_intent = result.get("intent_detected", "") or ""
+        detected_domain = result.get("agent_used", "") or ""
+        context_signals = f"{detected_intent} {detected_domain} {ctx.message or ''}".lower()
+
+        hints: list[str] = []
+        try:
+            from app.domains.modules.services.module_service import module_service
+
+            for module_name, intent_keywords in self._MODULE_TASTING_INTENTS.items():
+                if any(kw in context_signals for kw in intent_keywords):
+                    status = await module_service.get_module_status(db, ctx.company_id, module_name)
+                    if status in ("disabled", "expired", "coming_soon") or status is None:
+                        suggestion = self._MODULE_TASTING_SUGGESTIONS.get(module_name)
+                        if suggestion:
+                            hints.append(suggestion)
+
+            if hints:
+                existing_content = result.get("content", "")
+                tasting_block = "\n\n---\n" + "\n".join(hints[:2])
+                result["content"] = existing_content + tasting_block
+                result["module_hints"] = hints[:2]
+        except Exception as exc:
+            logger.debug("[MainOrchestrator] Module tasting hints skipped: %s", exc)
+
+        return result
 
 
 # ---------------------------------------------------------------------------
