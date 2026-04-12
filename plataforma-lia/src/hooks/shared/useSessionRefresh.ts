@@ -1,7 +1,6 @@
 import { useEffect, useRef, useCallback } from 'react'
 
-const REFRESH_INTERVAL = 5 * 60 * 1000 // Check every 5 minutes
-const REFRESH_THRESHOLD = 30 * 60 * 1000 // Refresh if less than 30 min left
+const REFRESH_INTERVAL = 10 * 60 * 1000 // Check every 10 minutes
 
 interface SessionRefreshHook {
   refreshSession: () => Promise<boolean>
@@ -14,26 +13,38 @@ export function useSessionRefresh(enabled: boolean = true): SessionRefreshHook {
 
   const refreshSession = useCallback(async (): Promise<boolean> => {
     if (isRefreshingRef.current) return false
-    
+
     isRefreshingRef.current = true
     try {
-      const response = await fetch('/api/auth/workos/refresh', {
+      // JWT users: refresh via JWT endpoint first
+      const jwtResponse = await fetch('/api/auth/session/refresh', {
         method: 'POST',
         credentials: 'include',
       })
-      
-      if (!response.ok) {
-        if (response.status === 401) {
-          // Session expired or invalid, redirect to login
+
+      if (jwtResponse.ok) {
+        // skipped=true means token still valid, no refresh needed — also fine
+        return true
+      }
+
+      if (jwtResponse.status === 401) {
+        // JWT refresh token expired — try WorkOS SSO as fallback (SSO users)
+        const ssoResponse = await fetch('/api/auth/workos/refresh', {
+          method: 'POST',
+          credentials: 'include',
+        })
+
+        if (!ssoResponse.ok && ssoResponse.status === 401) {
+          // Both failed — session truly expired
           window.location.href = '/login'
           return false
         }
-        return false
+
+        return ssoResponse.ok
       }
-      
-      const data = await response.json()
-      return data.refreshed
-    } catch (error) {
+
+      return false
+    } catch {
       return false
     } finally {
       isRefreshingRef.current = false
@@ -43,10 +54,6 @@ export function useSessionRefresh(enabled: boolean = true): SessionRefreshHook {
   useEffect(() => {
     if (!enabled) return
 
-    // Initial refresh check
-    refreshSession()
-
-    // Set up periodic refresh
     intervalRef.current = setInterval(() => {
       refreshSession()
     }, REFRESH_INTERVAL)
