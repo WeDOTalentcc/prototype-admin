@@ -89,7 +89,7 @@ class LLMService:
     
     @property
     def claude(self) -> BaseChatModel:
-        """Get Claude client via Replit AI Integration, direct key, or Gemini fallback."""
+        """Get Claude client via Replit AI Integration or fallback to Gemini."""
         if settings.AI_INTEGRATIONS_ANTHROPIC_API_KEY:
             if not self._claude_client:
                 self._claude_client = ChatAnthropic(
@@ -102,7 +102,7 @@ class LLMService:
                     stop=None,
                 )
             return self._claude_client
-
+        
         if settings.ANTHROPIC_API_KEY:
             if not self._claude_client:
                 self._claude_client = ChatAnthropic(
@@ -114,23 +114,7 @@ class LLMService:
                     stop=None,
                 )
             return self._claude_client
-
-        # Fallback: use Gemini via LangChain when no Anthropic key is configured
-        gemini_key = settings.AI_INTEGRATIONS_GEMINI_API_KEY or getattr(settings, "GEMINI_API_KEY", None)
-        if gemini_key:
-            if not self._claude_client:
-                from langchain_google_genai import ChatGoogleGenerativeAI
-                logger.warning(
-                    "[LLMService] No Anthropic key — falling back to Gemini (gemini-2.0-flash) for 'claude' calls"
-                )
-                self._claude_client = ChatGoogleGenerativeAI(
-                    model="gemini-2.0-flash",
-                    google_api_key=gemini_key,
-                    temperature=settings.LLM_DEFAULT_TEMPERATURE,
-                    max_output_tokens=settings.LLM_MAX_TOKENS,
-                )
-            return self._claude_client
-
+        
         raise ValueError("No Claude API key configured")
     
 

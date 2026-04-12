@@ -4,7 +4,7 @@ FROM base AS builder
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 COPY package.json package-lock.json* ./
-RUN npm install --legacy-peer-deps
+RUN npm ci
 COPY . .
 
 ENV NEXT_TELEMETRY_DISABLED=1
@@ -14,14 +14,6 @@ ARG NEXT_PUBLIC_SENTRY_DSN
 ARG NEXT_PUBLIC_WS_URL
 ARG NEXT_PUBLIC_TEAMS_URL
 ARG NEXT_PUBLIC_WHATSAPP_NUMBER
-
-# WorkOS/Jira need env vars at build time for API route collection
-ENV WORKOS_API_KEY=build_placeholder
-ENV WORKOS_CLIENT_ID=build_placeholder
-ENV WORKOS_SESSION_SECRET=build_placeholder_secret_at_least_32_chars_long
-ENV JIRA_HOST=https://placeholder.atlassian.net
-ENV JIRA_EMAIL=placeholder@example.com
-ENV JIRA_API_TOKEN=placeholder
 
 RUN npm run build
 
