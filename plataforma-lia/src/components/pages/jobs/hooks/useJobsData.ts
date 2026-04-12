@@ -2,15 +2,9 @@
 
 
 import { formatBRL } from "@/lib/pricing"
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import { liaApi } from "@/services/lia-api"
 import type { Job } from "@/components/jobs"
-
-// ---------------------------------------------------------------------------
-// useJobsData
-// Responsável por: carregar vagas do backend, converter para o modelo Job,
-// buscar métricas de overview (dashboardStats) e expor helpers de reload.
-// ---------------------------------------------------------------------------
 
 interface UseJobsDataReturn {
   state: {
@@ -29,7 +23,26 @@ interface UseJobsDataReturn {
   }
 }
 
+async function fetchWithRetry<T>(
+  fn: () => Promise<T>,
+  retries = 4,
+  baseDelayMs = 2000,
+): Promise<T> {
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      return await fn()
+    } catch (err) {
+      if (attempt === retries) throw err
+      const delay = baseDelayMs * (attempt + 1)
+      console.warn(`[useJobsData] fetch attempt ${attempt + 1} failed, retrying in ${delay}ms`, err instanceof Error ? err.message : err)
+      await new Promise(r => setTimeout(r, delay))
+    }
+  }
+  throw new Error("unreachable")
+}
+
 export function useJobsData(): UseJobsDataReturn {
+  const mountedRef = useRef(false)
   const [hasMounted, setHasMounted] = useState(false)
   const [backendJobs, setBackendJobs] = useState<Job[]>([])
   const [isLoadingJobs, setIsLoadingJobs] = useState(true)
@@ -37,21 +50,22 @@ export function useJobsData(): UseJobsDataReturn {
   const [jobsRefreshKey, setJobsRefreshKey] = useState(0)
   const [dashboardStats, setDashboardStats] = useState<Record<string, unknown> | null>(null)
   const [isLoadingStats, setIsLoadingStats] = useState(true)
-  const statsLoaded = useRef(false)
 
   useEffect(() => {
+    mountedRef.current = true
     setHasMounted(true)
+    return () => { mountedRef.current = false }
   }, [])
 
-  const retryCount = useRef(0)
-
-  const loadBackendJobs = async () => {
-    if (!hasMounted) return
+  const loadBackendJobs = useCallback(async () => {
+    if (!mountedRef.current) return
     try {
       setIsLoadingJobs(true)
       setJobsError(null)
 
-      const response = await liaApi.listJobVacancies()
+      const response = await fetchWithRetry(() => liaApi.listJobVacancies())
+
+      if (!mountedRef.current) return
 
       if (!response || !response.items) {
         throw new Error('Invalid response format')
@@ -157,9 +171,9 @@ export function useJobsData(): UseJobsDataReturn {
       setBackendJobs(convertedJobs)
       setIsLoadingJobs(false)
 
-      // Fetch dashboard overview stats
       try {
         const overviewData = await liaApi.getJobVacanciesOverview()
+        if (!mountedRef.current) return
         const stats = {
           total: overviewData.active_jobs.total + (overviewData.all_jobs.hired_last_90d || 0),
           ativas: overviewData.active_jobs.total,
@@ -181,8 +195,8 @@ export function useJobsData(): UseJobsDataReturn {
         }
         setDashboardStats(stats)
         setIsLoadingStats(false)
-        statsLoaded.current = true
       } catch {
+        if (!mountedRef.current) return
         const stats = {
           total: convertedJobs.length,
           ativas: convertedJobs.filter(job => job.status === 'Ativa').length,
@@ -206,23 +220,18 @@ export function useJobsData(): UseJobsDataReturn {
         setIsLoadingStats(false)
       }
     } catch (error) {
-      if (retryCount.current < 2) {
-        retryCount.current += 1
-        setTimeout(() => loadBackendJobs(), 2000 * retryCount.current)
-        return
-      }
+      if (!mountedRef.current) return
+      console.error('[useJobsData] loadBackendJobs failed after retries', error instanceof Error ? error.message : error)
       setJobsError(error instanceof Error ? error.message : 'Failed to load jobs')
       setIsLoadingStats(false)
       setIsLoadingJobs(false)
     }
-  }
+  }, [])
 
   useEffect(() => {
     if (!hasMounted) return
-    retryCount.current = 0
     loadBackendJobs()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hasMounted, jobsRefreshKey])
+  }, [hasMounted, jobsRefreshKey, loadBackendJobs])
 
   return {
     state: {

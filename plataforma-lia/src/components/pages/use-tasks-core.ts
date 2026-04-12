@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useMemo, useCallback } from "react"
+import { useState, useEffect, useMemo, useCallback, useRef } from "react"
 import { useUIPreferencesStore } from "@/stores/ui-preferences-store"
 import { useJWTAuth } from "@/contexts/auth-context"
 import { toast } from "@/lib/toast"
@@ -290,8 +290,36 @@ function mapJobToJobWithAlert(job: Partial<BackendJob>): JobWithAlert {
   }
 }
 
+const RETRYABLE_STATUSES = new Set([502, 503, 504, 429])
+
+async function fetchEndpointWithRetry(url: string, retries = 3, baseDelayMs = 2000): Promise<Response> {
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      const controller = new AbortController()
+      const timeout = setTimeout(() => controller.abort(), 30000)
+      let res: Response
+      try {
+        res = await fetch(url, { signal: controller.signal })
+      } finally {
+        clearTimeout(timeout)
+      }
+      if (res.ok || attempt === retries || !RETRYABLE_STATUSES.has(res.status)) {
+        return res
+      }
+      const delay = baseDelayMs * (attempt + 1)
+      await new Promise(r => setTimeout(r, delay))
+    } catch (err) {
+      if (attempt === retries) throw err
+      const delay = baseDelayMs * (attempt + 1)
+      await new Promise(r => setTimeout(r, delay))
+    }
+  }
+  throw new Error("unreachable")
+}
+
 export function useTasksCore(onNavigate?: (page: string) => void) {
   const { user } = useJWTAuth()
+  const mountedRef = useRef(false)
   const [jobSearchTerm, setJobSearchTerm] = useState("")
   const [showJobFilters, setShowJobFilters] = useState(false)
   const [selectedDepartments, setSelectedDepartments] = useState<string[]>([])
@@ -317,22 +345,31 @@ export function useTasksCore(onNavigate?: (page: string) => void) {
   const [error, setError] = useState<string | null>(null)
 
   const currentUserId = user?.id || user?.email || 'default_user'
+
+  useEffect(() => {
+    mountedRef.current = true
+    return () => { mountedRef.current = false }
+  }, [])
+
   useEffect(() => {
     fetchAllData()
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUserId])
 
   const fetchAllData = async () => {
+    if (!mountedRef.current) return
     setLoading(true)
     setError(null)
 
     try {
       const [tasksRes, summaryRes, alertsRes, jobsRes] = await Promise.allSettled([
-        fetch(`${API_BASE}/tasks?limit=50&status=pending`),
-        fetch(`${API_BASE}/tasks/summary`),
-        fetch(`${API_BASE}/alerts?limit=20&status=active`),
-        fetch(`${API_BASE}/job-vacancies?limit=20`),
+        fetchEndpointWithRetry(`${API_BASE}/tasks?limit=50&status=pending`),
+        fetchEndpointWithRetry(`${API_BASE}/tasks/summary`),
+        fetchEndpointWithRetry(`${API_BASE}/alerts?limit=20&status=active`),
+        fetchEndpointWithRetry(`${API_BASE}/job-vacancies?limit=20`),
       ])
+
+      if (!mountedRef.current) return
 
       let parsedTasks: BackendTask[] = []
       if (tasksRes.status === 'fulfilled' && tasksRes.value.ok) {
@@ -388,6 +425,8 @@ export function useTasksCore(onNavigate?: (page: string) => void) {
         setJobsWithAlerts(mapped)
       }
 
+      if (!mountedRef.current) return
+
       const failedRequests = [tasksRes, summaryRes, alertsRes, jobsRes].filter(
         r => r.status === 'rejected' || (r.status === 'fulfilled' && !r.value.ok)
       )
@@ -396,10 +435,13 @@ export function useTasksCore(onNavigate?: (page: string) => void) {
       } else if (failedRequests.length > 0) {
         setError('Alguns dados podem estar incompletos.')
       }
-    } catch (err) {
+    } catch {
+      if (!mountedRef.current) return
       setError('Erro ao carregar dados. Tente novamente.')
     } finally {
-      setLoading(false)
+      if (mountedRef.current) {
+        setLoading(false)
+      }
     }
   }
 
