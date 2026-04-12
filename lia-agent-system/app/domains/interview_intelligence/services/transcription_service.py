@@ -1,0 +1,253 @@
+"""
+Transcription Service — Transcribes audio/video recordings using Gemini API.
+
+Supports:
+- Audio files (mp3, wav, ogg, m4a, webm)
+- Video files (mp4, webm, mov)
+- URLs to remote files (downloaded first)
+- Fallback: text extraction from pre-existing transcript fields
+
+Cost: Gemini audio/video input pricing (much cheaper than dedicated STT).
+"""
+import asyncio
+import logging
+import os
+import tempfile
+from datetime import datetime
+from typing import Any
+
+import httpx
+from sqlalchemy.ext.asyncio import AsyncSession
+
+logger = logging.getLogger(__name__)
+
+SUPPORTED_AUDIO_TYPES = {
+    ".mp3": "audio/mp3",
+    ".wav": "audio/wav",
+    ".ogg": "audio/ogg",
+    ".m4a": "audio/mp4",
+    ".webm": "audio/webm",
+    ".flac": "audio/flac",
+}
+
+SUPPORTED_VIDEO_TYPES = {
+    ".mp4": "video/mp4",
+    ".webm": "video/webm",
+    ".mov": "video/quicktime",
+    ".avi": "video/x-msvideo",
+}
+
+TRANSCRIPTION_PROMPT = """Transcreva o áudio/vídeo a seguir de forma completa e fiel.
+
+REGRAS:
+1. Transcreva TODO o conteúdo falado, sem resumir
+2. Identifique os diferentes interlocutores quando possível (ex: "Entrevistador:", "Candidato:")
+3. Mantenha o idioma original da fala
+4. Inclua pausas significativas como [pausa]
+5. Inclua marcadores de tempo aproximados a cada 2-3 minutos [HH:MM]
+6. NÃO adicione interpretações ou análises — apenas a transcrição
+
+Retorne APENAS a transcrição, sem comentários adicionais."""
+
+LANGUAGE_DETECT_PROMPT = """Identifique o idioma principal desta transcrição.
+Retorne APENAS o código BCP-47 (ex: pt-BR, en-US, es-ES). Nada mais."""
+
+
+class TranscriptionService:
+    def __init__(self):
+        self._client = None
+
+    def _get_client(self):
+        if not self._client:
+            from google import genai
+            api_key = os.environ.get("AI_INTEGRATIONS_GEMINI_API_KEY")
+            base_url = os.environ.get("AI_INTEGRATIONS_GEMINI_BASE_URL")
+            if not api_key:
+                raise ValueError("Gemini API not configured — AI_INTEGRATIONS_GEMINI_API_KEY missing")
+            client_kwargs = {"api_key": api_key}
+            if base_url:
+                client_kwargs["http_options"] = {"api_version": "", "base_url": base_url}
+            self._client = genai.Client(**client_kwargs)
+        return self._client
+
+    async def transcribe_from_url(
+        self,
+        recording_url: str,
+        language_hint: str = "pt-BR",
+        timeout_seconds: int = 120,
+    ) -> dict[str, Any]:
+        local_path = await self._download_file(recording_url)
+        try:
+            return await self.transcribe_from_file(
+                local_path,
+                language_hint=language_hint,
+                timeout_seconds=timeout_seconds,
+            )
+        finally:
+            try:
+                os.unlink(local_path)
+            except OSError:
+                pass
+
+    async def transcribe_from_file(
+        self,
+        file_path: str,
+        language_hint: str = "pt-BR",
+        timeout_seconds: int = 120,
+    ) -> dict[str, Any]:
+        ext = os.path.splitext(file_path)[1].lower()
+        mime = SUPPORTED_AUDIO_TYPES.get(ext) or SUPPORTED_VIDEO_TYPES.get(ext)
+        if not mime:
+            raise ValueError(
+                f"Unsupported file type: {ext}. "
+                f"Supported: {list(SUPPORTED_AUDIO_TYPES.keys()) + list(SUPPORTED_VIDEO_TYPES.keys())}"
+            )
+
+        client = self._get_client()
+
+        uploaded_file = await asyncio.to_thread(
+            client.files.upload,
+            file=file_path,
+        )
+        logger.info("File uploaded to Gemini: %s (%s)", uploaded_file.name, mime)
+
+        try:
+            transcript_text = await asyncio.wait_for(
+                self._generate_transcript(client, uploaded_file, language_hint),
+                timeout=timeout_seconds,
+            )
+        except asyncio.TimeoutError:
+            logger.error("Transcription timed out after %ds for %s", timeout_seconds, file_path)
+            raise TimeoutError(f"Transcription timed out after {timeout_seconds}s")
+
+        detected_language = await self._detect_language(client, transcript_text)
+
+        word_count = len(transcript_text.split())
+        estimated_duration = round(word_count / 150, 1)
+
+        return {
+            "transcript": transcript_text,
+            "language": detected_language or language_hint,
+            "source": "gemini",
+            "word_count": word_count,
+            "estimated_duration_minutes": estimated_duration,
+            "transcribed_at": datetime.utcnow().isoformat(),
+        }
+
+    async def _generate_transcript(self, client, uploaded_file, language_hint: str) -> str:
+        prompt = TRANSCRIPTION_PROMPT
+        if language_hint and not language_hint.startswith("pt"):
+            prompt += f"\n\nO idioma esperado é: {language_hint}"
+
+        response = await asyncio.to_thread(
+            client.models.generate_content,
+            model="gemini-2.5-flash",
+            contents=[uploaded_file, prompt],
+        )
+        text = response.text or ""
+        if not text.strip():
+            raise ValueError("Gemini returned empty transcription")
+        return text.strip()
+
+    async def _detect_language(self, client, transcript_text: str) -> str | None:
+        try:
+            snippet = transcript_text[:500]
+            response = await asyncio.to_thread(
+                client.models.generate_content,
+                model="gemini-2.5-flash",
+                contents=[LANGUAGE_DETECT_PROMPT, snippet],
+            )
+            lang = (response.text or "").strip()
+            if lang and len(lang) <= 10:
+                return lang
+        except Exception as e:
+            logger.warning("Language detection failed: %s", e)
+        return None
+
+    async def _download_file(self, url: str) -> str:
+        async with httpx.AsyncClient(timeout=60.0) as http:
+            response = await http.get(url, follow_redirects=True)
+            response.raise_for_status()
+
+        content_type = response.headers.get("content-type", "")
+        ext = ".tmp"
+        for e, m in {**SUPPORTED_AUDIO_TYPES, **SUPPORTED_VIDEO_TYPES}.items():
+            if m in content_type:
+                ext = e
+                break
+        if ext == ".tmp":
+            from urllib.parse import urlparse
+            path = urlparse(url).path
+            for e in list(SUPPORTED_AUDIO_TYPES.keys()) + list(SUPPORTED_VIDEO_TYPES.keys()):
+                if path.endswith(e):
+                    ext = e
+                    break
+
+        fd, local_path = tempfile.mkstemp(suffix=ext)
+        with os.fdopen(fd, "wb") as f:
+            f.write(response.content)
+
+        logger.info("Downloaded recording: %s -> %s (%d bytes)", url, local_path, len(response.content))
+        return local_path
+
+    async def transcribe_and_persist(
+        self,
+        interview_id: str,
+        recording_url: str,
+        db: AsyncSession,
+        language_hint: str = "pt-BR",
+    ) -> dict[str, Any]:
+        from sqlalchemy import select
+        from app.models.interview import Interview
+
+        stmt = select(Interview).where(Interview.id == interview_id)
+        result = await db.execute(stmt)
+        interview = result.scalar_one_or_none()
+        if not interview:
+            raise ValueError(f"Interview {interview_id} not found")
+
+        interview.status = "transcribing"
+        interview.recording_url = recording_url
+        await db.flush()
+
+        try:
+            transcription = await self.transcribe_from_url(
+                recording_url,
+                language_hint=language_hint,
+            )
+
+            interview.transcript = transcription["transcript"]
+            interview.transcript_language = transcription["language"]
+            interview.transcript_source = transcription["source"]
+            interview.transcribed_at = datetime.utcnow()
+            interview.status = "transcribed"
+
+            current_feedback = interview.feedback or {}
+            current_feedback["transcript_text"] = transcription["transcript"]
+            current_feedback["transcript_fetched_at"] = transcription["transcribed_at"]
+            current_feedback["transcript_source"] = "gemini"
+            current_feedback["word_count"] = transcription["word_count"]
+            current_feedback["estimated_duration_minutes"] = transcription["estimated_duration_minutes"]
+            interview.feedback = current_feedback
+
+            await db.commit()
+
+            logger.info(
+                "Transcription completed for interview %s: %d words, language=%s",
+                interview_id,
+                transcription["word_count"],
+                transcription["language"],
+            )
+            return transcription
+
+        except Exception as e:
+            interview.status = "completed"
+            current_feedback = interview.feedback or {}
+            current_feedback["transcription_error"] = str(e)
+            interview.feedback = current_feedback
+            await db.commit()
+            logger.error("Transcription failed for interview %s: %s", interview_id, e)
+            raise
+
+
+transcription_service = TranscriptionService()

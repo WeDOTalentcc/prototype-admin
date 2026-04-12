@@ -4,7 +4,7 @@ Interview scheduling models with Microsoft Graph Calendar integration.
 from datetime import datetime
 from typing import Optional
 from sqlalchemy import Column, String, Integer, DateTime, Text, JSON, Boolean, Float, ForeignKey
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.dialects.postgresql import UUID, JSONB
 import uuid
 
 from lia_config.database import Base
@@ -20,39 +20,42 @@ class Interview(Base):
     # Primary key
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     
+    # Multi-tenant
+    company_id = Column(String(255), nullable=True, index=True)
+    
     # Interview details
-    title = Column(String(255), nullable=False)  # "Entrevista Técnica - João Silva"
-    description = Column(Text, nullable=True)  # Additional notes
-    interview_type = Column(String(50), nullable=False)  # technical, behavioral, cultural, final
-    interview_mode = Column(String(50), default="video")  # video, in_person, phone
+    title = Column(String(255), nullable=False)
+    description = Column(Text, nullable=True)
+    interview_type = Column(String(50), nullable=False)
+    interview_mode = Column(String(50), default="video")
     
     # Participants
-    candidate_id = Column(UUID(as_uuid=True), nullable=True)  # Link to candidates table
+    candidate_id = Column(UUID(as_uuid=True), nullable=True)
     candidate_name = Column(String(255), nullable=False)
     candidate_email = Column(String(255), nullable=False)
     
     interviewer_name = Column(String(255), nullable=False)
     interviewer_email = Column(String(255), nullable=False)
-    additional_interviewers = Column(JSON, default=[])  # [{"name": "...", "email": "..."}]
+    additional_interviewers = Column(JSON, default=[])
     
     # Scheduling
-    start_time = Column(DateTime, nullable=False)  # Interview start datetime
-    end_time = Column(DateTime, nullable=False)  # Interview end datetime
+    start_time = Column(DateTime, nullable=False)
+    end_time = Column(DateTime, nullable=False)
     timezone = Column(String(100), default="America/Sao_Paulo")
     duration_minutes = Column(Integer, default=60)
     
     # Location/Meeting details
-    location = Column(String(500), nullable=True)  # Physical location
-    meeting_url = Column(String(1000), nullable=True)  # Teams/Zoom/Meet link
-    meeting_platform = Column(String(50), nullable=True)  # teams, zoom, meet, google_meet
-    meeting_id = Column(String(255), nullable=True)  # Platform-specific meeting ID
+    location = Column(String(500), nullable=True)
+    meeting_url = Column(String(1000), nullable=True)
+    meeting_platform = Column(String(50), nullable=True)
+    meeting_id = Column(String(255), nullable=True)
     
     # Microsoft Graph integration
-    graph_event_id = Column(String(255), nullable=True, index=True)  # Calendar event ID
-    graph_calendar_id = Column(String(255), nullable=True)  # Calendar ID
-    graph_organizer_email = Column(String(255), nullable=True)  # Who created the event
+    graph_event_id = Column(String(255), nullable=True, index=True)
+    graph_calendar_id = Column(String(255), nullable=True)
+    graph_organizer_email = Column(String(255), nullable=True)
     is_synced_to_calendar = Column(Boolean, default=False)
-    calendar_sync_error = Column(Text, nullable=True)  # Last sync error message
+    calendar_sync_error = Column(Text, nullable=True)
     last_synced_at = Column(DateTime, nullable=True)
 
     # Google Calendar integration (Sprint 5)
@@ -60,10 +63,10 @@ class Interview(Base):
     google_meet_link = Column(String(500), nullable=True)
     
     # Status tracking
-    status = Column(String(50), default="scheduled", index=True)  
-    # scheduled, confirmed, rescheduled, completed, cancelled, no_show
+    status = Column(String(50), default="scheduled", index=True)
+    # scheduled, confirmed, rescheduled, completed, cancelled, no_show, transcribing, transcribed
     
-    confirmation_status = Column(String(50), default="pending")  
+    confirmation_status = Column(String(50), default="pending")
     # pending, confirmed_by_candidate, declined_by_candidate
     
     # Notifications
@@ -73,24 +76,34 @@ class Interview(Base):
     confirmation_request_sent_at = Column(DateTime, nullable=True)
     
     # Job context
-    job_vacancy_id = Column(UUID(as_uuid=True), nullable=True)  # Link to job_vacancies table
+    job_vacancy_id = Column(UUID(as_uuid=True), nullable=True)
     job_title = Column(String(255), nullable=True)
-    application_stage = Column(String(100), nullable=True)  # triagem, tecnica, final, etc
+    application_stage = Column(String(100), nullable=True)
     recruitment_stage_id = Column(UUID(as_uuid=True), nullable=True, index=True)
     
     # Feedback & Results
-    feedback = Column(JSON, default={})  # {"technical_score": 8, "notes": "..."}
+    feedback = Column(JSON, default={})
     interviewer_notes = Column(Text, nullable=True)
-    recording_url = Column(String(1000), nullable=True)  # If interview was recorded
+    recording_url = Column(String(1000), nullable=True)
+    
+    # Transcript (dedicated columns for Interview Intelligence)
+    transcript = Column(Text, nullable=True)
+    transcript_language = Column(String(10), nullable=True, default="pt-BR")
+    transcript_source = Column(String(50), nullable=True)  # teams, gemini, manual
+    transcribed_at = Column(DateTime, nullable=True)
     
     # AI-generated content
-    lia_preparation_notes = Column(JSON, default={})  # LIA suggestions for interviewer
-    lia_suggested_questions = Column(JSON, default=[])  # ["Explique sua experiência com...", ...]
+    lia_preparation_notes = Column(JSON, default={})
+    lia_suggested_questions = Column(JSON, default=[])
+    
+    # Extended metadata
+    interview_metadata = Column("metadata", JSONB, default={})
     
     # Metadata
     created_by = Column(String(255), nullable=False, default="system")
     created_at = Column(DateTime, default=datetime.utcnow, index=True)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    completed_at = Column(DateTime, nullable=True)
     cancelled_at = Column(DateTime, nullable=True)
     cancellation_reason = Column(Text, nullable=True)
     

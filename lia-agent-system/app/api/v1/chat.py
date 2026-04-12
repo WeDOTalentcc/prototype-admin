@@ -776,7 +776,14 @@ async def send_message(
         )
         # MainOrchestrator handles: conversation.intent, title, workflow_data
         # Re-fetch conversation to get MainOrchestrator updates
-        conversation = await repo.get_conversation_by_id(str(conversation.id))
+        _conv_id_str = str(conversation.id)
+        _orig_conv = conversation
+        try:
+            _refreshed = await repo.get_conversation_by_id(_conv_id_str)
+            if _refreshed:
+                conversation = _refreshed
+        except Exception:
+            pass  # Keep original conversation object
 
         workflow_data = orch_result["workflow_data"]
         context_data = None
@@ -935,7 +942,12 @@ async def send_message_with_attachments(
             },
             created_at=_dt.now(_tz.utc),
         )
-        conversation = await repo.get_conversation_by_id(str(conversation.id))
+        try:
+            _refreshed2 = await repo.get_conversation_by_id(str(conversation.id))
+            if _refreshed2:
+                conversation = _refreshed2
+        except Exception:
+            pass
 
         workflow_data = orch_result["workflow_data"]
         context_data = None

@@ -34,6 +34,7 @@ from app.models.job_draft import JobDraft
 from app.models.conversation import Conversation, Message, ConversationSummary
 from app.models.job_vacancy import JobVacancy
 from app.models.candidate import Candidate, VacancyCandidate
+from app.models.interview import Interview, InterviewFeedback
 
 from lia_models.billing import CompanyModule
 

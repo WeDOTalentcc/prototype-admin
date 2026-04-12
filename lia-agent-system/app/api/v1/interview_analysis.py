@@ -602,6 +602,11 @@ async def process_meeting_transcript(resource_data: dict, resource_path: str = "
             current_feedback["analyzed_at"] = datetime.utcnow().isoformat()
             current_feedback["auto_analyzed"] = True
 
+            interview.transcript = transcript_text
+            interview.transcript_language = "pt-BR"
+            interview.transcript_source = "teams"
+            interview.transcribed_at = datetime.utcnow()
+
             await repo.update_interview_status_and_feedback(
                 interview_id=str(interview.id),
                 feedback=current_feedback,

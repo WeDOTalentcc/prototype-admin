@@ -5,7 +5,7 @@ import json
 import uuid
 from datetime import datetime, timedelta
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Request
 from app.shared.providers.llm_factory import get_provider_for_tenant
 from pydantic import BaseModel, EmailStr
 
@@ -147,9 +147,16 @@ async def schedule_interview(
             except (ValueError, Exception) as e:
                 logger.warning("Invalid recruitment_stage_id: %s", e)
 
+        req_company_id = (
+            getattr(request_obj.state, "company_id", None)
+            if hasattr(request_obj, "state")
+            else None
+        )
+
         # Create database record
         interview = Interview(
             title=f"Entrevista: {request.candidate_name} - {request.job_title}",
+            company_id=req_company_id,
             interview_type=request.interview_type,
             interview_mode=request.interview_mode,
             candidate_name=request.candidate_name,
@@ -877,3 +884,200 @@ async def get_interview_stages(
     except Exception as e:
         logger.error("Failed to get interview stages: %s", e)
         raise HTTPException(status_code=500, detail="Error fetching stages")
+
+
+def _validate_interview_uuid(interview_id: str) -> None:
+    try:
+        uuid.UUID(interview_id)
+    except (ValueError, AttributeError):
+        raise HTTPException(status_code=404, detail="Interview not found")
+
+
+class UploadRecordingRequest(BaseModel):
+    recording_url: str
+    language_hint: str = "pt-BR"
+    auto_transcribe: bool = True
+
+
+class TranscribeInterviewRequest(BaseModel):
+    language_hint: str = "pt-BR"
+
+
+@router.patch("/interviews/{interview_id}/recording", response_model=dict)
+async def upload_recording(
+    interview_id: str,
+    request: UploadRecordingRequest,
+    background_tasks: BackgroundTasks,
+    repo: InterviewRepository = Depends(get_interview_repo),
+):
+    """
+    Attach a recording URL to an interview and optionally trigger transcription.
+    """
+    _validate_interview_uuid(interview_id)
+
+    try:
+        interview = await repo.get_interview_by_id(interview_id)
+        if not interview:
+            raise HTTPException(status_code=404, detail="Interview not found")
+
+        interview.recording_url = request.recording_url
+        await repo.commit()
+
+        logger.info("Recording URL attached to interview %s", interview_id)
+
+        if request.auto_transcribe:
+            background_tasks.add_task(
+                _run_transcription_background,
+                interview_id,
+                request.recording_url,
+                request.language_hint,
+            )
+            return {
+                "success": True,
+                "interview_id": interview_id,
+                "recording_url": request.recording_url,
+                "transcription_status": "queued",
+                "message": "Recording attached. Transcription started in background.",
+            }
+
+        return {
+            "success": True,
+            "interview_id": interview_id,
+            "recording_url": request.recording_url,
+            "transcription_status": "not_started",
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error("Failed to attach recording to interview %s: %s", interview_id, e)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/interviews/{interview_id}/transcribe", response_model=dict)
+async def transcribe_interview(
+    interview_id: str,
+    request: TranscribeInterviewRequest,
+    background_tasks: BackgroundTasks,
+    repo: InterviewRepository = Depends(get_interview_repo),
+):
+    """
+    Trigger transcription for an interview that already has a recording URL.
+    """
+    _validate_interview_uuid(interview_id)
+
+    try:
+        interview = await repo.get_interview_by_id(interview_id)
+        if not interview:
+            raise HTTPException(status_code=404, detail="Interview not found")
+
+        if not interview.recording_url:
+            raise HTTPException(
+                status_code=400,
+                detail="Interview does not have a recording URL. Attach one first via PATCH /interviews/{id}/recording.",
+            )
+
+        if interview.transcript:
+            return {
+                "success": True,
+                "interview_id": interview_id,
+                "transcription_status": "already_transcribed",
+                "word_count": len(interview.transcript.split()),
+                "language": interview.transcript_language,
+            }
+
+        background_tasks.add_task(
+            _run_transcription_background,
+            interview_id,
+            interview.recording_url,
+            request.language_hint,
+        )
+
+        return {
+            "success": True,
+            "interview_id": interview_id,
+            "transcription_status": "queued",
+            "message": "Transcription started in background.",
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error("Failed to trigger transcription for interview %s: %s", interview_id, e)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/interviews/{interview_id}/transcript", response_model=dict)
+async def get_interview_transcript(
+    interview_id: str,
+    repo: InterviewRepository = Depends(get_interview_repo),
+):
+    """
+    Get the transcript for an interview.
+    """
+    _validate_interview_uuid(interview_id)
+
+    try:
+        interview = await repo.get_interview_by_id(interview_id)
+        if not interview:
+            raise HTTPException(status_code=404, detail="Interview not found")
+
+        if not interview.transcript:
+            feedback = interview.feedback or {}
+            fallback_transcript = feedback.get("transcript_text")
+            if fallback_transcript:
+                return {
+                    "interview_id": interview_id,
+                    "has_transcript": True,
+                    "transcript": fallback_transcript,
+                    "language": interview.transcript_language or "pt-BR",
+                    "source": interview.transcript_source or feedback.get("transcript_source", "teams"),
+                    "word_count": len(fallback_transcript.split()),
+                }
+            return {
+                "interview_id": interview_id,
+                "has_transcript": False,
+                "transcript": None,
+                "message": "No transcript available for this interview.",
+            }
+
+        return {
+            "interview_id": interview_id,
+            "has_transcript": True,
+            "transcript": interview.transcript,
+            "language": interview.transcript_language,
+            "source": interview.transcript_source,
+            "word_count": len(interview.transcript.split()),
+            "transcribed_at": interview.transcribed_at.isoformat() if interview.transcribed_at else None,
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error("Failed to get transcript for interview %s: %s", interview_id, e)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+async def _run_transcription_background(
+    interview_id: str,
+    recording_url: str,
+    language_hint: str,
+) -> None:
+    from app.core.database import AsyncSessionLocal
+    from app.domains.interview_intelligence.services.transcription_service import transcription_service
+
+    try:
+        async with AsyncSessionLocal() as db:
+            result = await transcription_service.transcribe_and_persist(
+                interview_id=interview_id,
+                recording_url=recording_url,
+                db=db,
+                language_hint=language_hint,
+            )
+            logger.info(
+                "Background transcription completed for interview %s: %d words",
+                interview_id,
+                result.get("word_count", 0),
+            )
+    except Exception as e:
+        logger.error("Background transcription failed for interview %s: %s", interview_id, e)
