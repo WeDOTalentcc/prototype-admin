@@ -87,7 +87,7 @@ A distinção entre gratuito e pago segue uma regra clara:
 | Feedback estruturado | Gerado automaticamente para devolver ao candidato |
 | Scoring de competências | Competências demonstradas (não só declaradas no CV) |
 
-**Backend**: Parcial (tool de análise implementada, falta infraestrutura de vídeo/transcrição)
+**Backend**: Completo (Task #162 — 5 serviços: WSI, Bias Detection, Comparative Analysis, Strategic Opinion, Feedback Generator)
 **Frontend**: Não existe ainda
 
 ### 3.4 Workforce Planning

@@ -55,19 +55,23 @@ class ModuleService:
         company_id: str,
         module_name: str,
     ) -> Optional[str]:
-        stmt = select(CompanyModule).where(
-            and_(
-                CompanyModule.company_id == company_id,
-                CompanyModule.module_name == module_name,
+        try:
+            stmt = select(CompanyModule).where(
+                and_(
+                    CompanyModule.company_id == company_id,
+                    CompanyModule.module_name == module_name,
+                )
             )
-        )
-        result = await db.execute(stmt)
-        mod = result.scalar_one_or_none()
-        if not mod:
+            result = await db.execute(stmt)
+            mod = result.scalar_one_or_none()
+            if not mod:
+                return None
+            if mod.expires_at and mod.expires_at < datetime.utcnow():
+                return ModuleStatus.EXPIRED.value
+            return mod.status
+        except Exception as e:
+            self.logger.error(f"Error getting module status {module_name} for {company_id}: {e}")
             return None
-        if mod.expires_at and mod.expires_at < datetime.utcnow():
-            return ModuleStatus.EXPIRED.value
-        return mod.status
 
     async def get_company_modules(
         self,
