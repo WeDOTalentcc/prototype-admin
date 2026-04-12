@@ -20,7 +20,7 @@ import asyncio
 import logging
 import re
 import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any
 
 logger = logging.getLogger(__name__)
@@ -38,12 +38,6 @@ class TastingInsight:
     cta: str
     context_key: str
     badge: str = "BETA"
-
-
-@dataclass
-class _DisplayRecord:
-    context_key: str
-    timestamp: float
 
 
 class _FrequencyCache:
