@@ -122,6 +122,7 @@ class TranscriptionService:
         file_path: str,
         language_hint: str = "pt-BR",
         timeout_seconds: int = 120,
+        max_retries: int = 3,
     ) -> dict[str, Any]:
         ext = os.path.splitext(file_path)[1].lower()
         mime = SUPPORTED_AUDIO_TYPES.get(ext) or SUPPORTED_VIDEO_TYPES.get(ext)
@@ -139,14 +140,27 @@ class TranscriptionService:
         )
         logger.info("File uploaded to Gemini: %s (%s)", uploaded_file.name, mime)
 
-        try:
-            transcript_text = await asyncio.wait_for(
-                self._generate_transcript(client, uploaded_file, language_hint),
-                timeout=timeout_seconds,
-            )
-        except asyncio.TimeoutError:
-            logger.error("Transcription timed out after %ds for %s", timeout_seconds, file_path)
-            raise TimeoutError(f"Transcription timed out after {timeout_seconds}s")
+        last_error = None
+        for attempt in range(1, max_retries + 1):
+            try:
+                transcript_text = await asyncio.wait_for(
+                    self._generate_transcript(client, uploaded_file, language_hint),
+                    timeout=timeout_seconds,
+                )
+                break
+            except asyncio.TimeoutError:
+                last_error = TimeoutError(f"Transcription timed out after {timeout_seconds}s")
+                logger.warning("Transcription attempt %d/%d timed out", attempt, max_retries)
+            except Exception as e:
+                last_error = e
+                logger.warning("Transcription attempt %d/%d failed: %s", attempt, max_retries, e)
+
+            if attempt < max_retries:
+                backoff = 2 ** attempt
+                logger.info("Retrying transcription in %ds...", backoff)
+                await asyncio.sleep(backoff)
+        else:
+            raise last_error  # type: ignore[misc]
 
         detected_language = await self._detect_language(client, transcript_text)
 
@@ -195,8 +209,14 @@ class TranscriptionService:
     async def _download_file(self, url: str) -> str:
         self._validate_url(url)
 
-        async with httpx.AsyncClient(timeout=60.0) as http:
-            async with http.stream("GET", url, follow_redirects=True) as response:
+        async with httpx.AsyncClient(timeout=60.0, max_redirects=5) as http:
+            head_resp = await http.head(url, follow_redirects=True)
+            head_resp.raise_for_status()
+            final_url = str(head_resp.url)
+            if final_url != url:
+                self._validate_url(final_url)
+
+            async with http.stream("GET", final_url, follow_redirects=False) as response:
                 response.raise_for_status()
 
                 content_length = response.headers.get("content-length")

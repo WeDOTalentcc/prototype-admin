@@ -970,6 +970,7 @@ async def upload_recording(
 async def transcribe_interview(
     interview_id: str,
     request: TranscribeInterviewRequest,
+    request_obj: Request,
     background_tasks: BackgroundTasks,
     repo: InterviewRepository = Depends(get_interview_repo),
 ):
@@ -981,6 +982,10 @@ async def transcribe_interview(
     try:
         interview = await repo.get_interview_by_id(interview_id)
         if not interview:
+            raise HTTPException(status_code=404, detail="Interview not found")
+
+        req_company_id = getattr(request_obj.state, "company_id", None) if hasattr(request_obj, "state") else None
+        if req_company_id and interview.company_id and interview.company_id != req_company_id:
             raise HTTPException(status_code=404, detail="Interview not found")
 
         if not interview.recording_url:
@@ -1022,6 +1027,7 @@ async def transcribe_interview(
 @router.get("/interviews/{interview_id}/transcript", response_model=dict)
 async def get_interview_transcript(
     interview_id: str,
+    request_obj: Request,
     repo: InterviewRepository = Depends(get_interview_repo),
 ):
     """
@@ -1032,6 +1038,10 @@ async def get_interview_transcript(
     try:
         interview = await repo.get_interview_by_id(interview_id)
         if not interview:
+            raise HTTPException(status_code=404, detail="Interview not found")
+
+        req_company_id = getattr(request_obj.state, "company_id", None) if hasattr(request_obj, "state") else None
+        if req_company_id and interview.company_id and interview.company_id != req_company_id:
             raise HTTPException(status_code=404, detail="Interview not found")
 
         if not interview.transcript:
