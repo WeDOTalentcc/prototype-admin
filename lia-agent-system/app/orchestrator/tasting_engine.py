@@ -107,6 +107,40 @@ _INTERNAL_MOBILITY_PATTERNS = (
 )
 
 
+def _parse_salary(val: Any) -> float | None:
+    if val is None:
+        return None
+    try:
+        return float(val)
+    except (ValueError, TypeError):
+        return None
+
+
+def _compute_salary_delta(
+    company_min: float | None,
+    company_max: float | None,
+    market_mid: float,
+) -> str:
+    if market_mid <= 0:
+        return ""
+    company_mid: float | None = None
+    if company_min is not None and company_max is not None:
+        company_mid = (company_min + company_max) / 2
+    elif company_min is not None:
+        company_mid = company_min
+    elif company_max is not None:
+        company_mid = company_max
+
+    if company_mid is None or company_mid <= 0:
+        return ""
+
+    pct = ((company_mid - market_mid) / market_mid) * 100
+    if abs(pct) < 1:
+        return " Sua faixa está alinhada com o mercado."
+    direction = "acima" if pct > 0 else "abaixo"
+    return f" Sua faixa está **{abs(pct):.0f}% {direction}** do mercado."
+
+
 class TastingEngine:
     def __init__(self) -> None:
         self._cache = _FrequencyCache()
@@ -283,12 +317,21 @@ class TastingEngine:
         location = ""
         seniority = ""
         job_id = ""
+        company_sal_min: float | None = None
+        company_sal_max: float | None = None
 
         if job_context:
             job_title = str(job_context.get("title", job_context.get("job_title", "")))
             location = str(job_context.get("location", job_context.get("location_city", "")))
             seniority = str(job_context.get("seniority_level", job_context.get("seniority", "")))
             job_id = str(job_context.get("id", job_context.get("job_id", "")))
+            salary_range = job_context.get("salary_range") or job_context.get("salary") or {}
+            if isinstance(salary_range, dict):
+                company_sal_min = _parse_salary(salary_range.get("min"))
+                company_sal_max = _parse_salary(salary_range.get("max"))
+            elif isinstance(salary_range, (int, float)):
+                company_sal_min = float(salary_range)
+                company_sal_max = float(salary_range)
 
         context_key = f"market_intel:{company_id}:{job_id or job_title or 'none'}"
         if self._cache.was_shown(context_key):
@@ -307,14 +350,19 @@ class TastingEngine:
                 if mi_result.get("success"):
                     data = mi_result.get("data", {})
                     sal = data.get("salary_benchmark", {})
-                    sal_min = sal.get("min")
-                    sal_max = sal.get("max")
-                    if sal_min and sal_max:
-                        summary = (
+                    market_min = _parse_salary(sal.get("min"))
+                    market_max = _parse_salary(sal.get("max"))
+                    if market_min and market_max:
+                        market_mid = (market_min + market_max) / 2
+                        range_text = (
                             f"Para **{job_title}**"
                             f"{' em ' + location if location else ''}, "
-                            f"o mercado paga R$ {int(sal_min):,} – R$ {int(sal_max):,}."
+                            f"o mercado paga R$ {int(market_min):,} – R$ {int(market_max):,}."
                         )
+                        delta_text = _compute_salary_delta(
+                            company_sal_min, company_sal_max, market_mid,
+                        )
+                        summary = f"{range_text}{delta_text}"
         except Exception as exc:
             logger.debug("[TastingEngine] market intel call failed: %s", exc)
 
