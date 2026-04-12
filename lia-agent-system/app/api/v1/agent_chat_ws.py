@@ -47,6 +47,8 @@ from app.shared.chat_event_serializer import (
     serialize_thinking,
 )
 from app.shared.prompt_injection import PromptInjectionGuard
+from app.shared.robustness.security_patterns import check_input_security, get_block_response
+from app.shared.compliance.fairness_guard import FairnessGuard
 from app.shared.tenant_session import create_session_id
 
 logger = logging.getLogger(__name__)
@@ -181,6 +183,7 @@ _AGENT_TIMEOUT = settings.LLM_TIMEOUT_SECONDS
 
 # SEG-1: singleton de proteção contra injeção de prompt
 _injection_guard = PromptInjectionGuard()
+_fairness_guard = FairnessGuard()  # Item 4: inline FairnessGuard for WS
 
 
 def _build_agent_input(
@@ -626,6 +629,32 @@ async def agent_chat_ws(
                     "patterns=%s — prosseguindo com log",
                     session_id, _inj_result.matched_patterns,
                 )
+
+            # Item 4: SecurityPatterns pre-check (inline for WS)
+            _sec_result = check_input_security(content)
+            if _sec_result.is_blocked:
+                logger.warning(
+                    "[AgentChatWS][SEG-2] SecurityPatterns blocked session=%s risk=%s",
+                    session_id, _sec_result.risk_level,
+                )
+                await ws_mgr.send_to_session(session_id, serialize_error(
+                    get_block_response(_sec_result, language="pt"),
+                    "security_blocked",
+                ))
+                continue
+
+            # Item 4: FairnessGuard pre-check (inline for WS)
+            _fg_result = _fairness_guard.check(content)
+            if _fg_result.is_blocked:
+                logger.warning(
+                    "[AgentChatWS][SEG-3] FairnessGuard blocked session=%s",
+                    session_id,
+                )
+                await ws_mgr.send_to_session(session_id, serialize_error(
+                    _fg_result.educational_message or "Solicitacao bloqueada por criterios de equidade.",
+                    "fairness_blocked",
+                ))
+                continue
 
             context = msg.get("context", {})
             context.setdefault("company_id", company_id)
