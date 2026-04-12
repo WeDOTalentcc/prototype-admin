@@ -52,14 +52,6 @@ class ToolCallResponse:
 
 
 @dataclass
-class LLMCascadeResult:
-    """Result from generate_with_cascade — includes which model was used."""
-    content: str | None
-    model_used: str
-    confidence: float
-    requires_human: bool = False
-    reason: str = ""
-
 
 class LLMService:
     """
@@ -1018,95 +1010,6 @@ class LLMService:
             kwargs["base_url"] = settings.AI_INTEGRATIONS_ANTHROPIC_BASE_URL
 
         return ChatAnthropic(**kwargs)  # type: ignore[arg-type]
-
-    async def generate_with_cascade(
-        self,
-        prompt: str,
-        system_prompt: str = "",
-        context: str = "",
-    ) -> LLMCascadeResult:
-        """
-        Tenta o modelo mais barato primeiro (Haiku → Sonnet → Opus).
-
-        Usa a pontuação de confidence extraída da resposta JSON do LLM para
-        decidir se o resultado é confiável o suficiente. Se nenhum modelo
-        atingir o threshold mínimo, retorna requires_human=True.
-
-        Thresholds configuráveis via settings:
-          - Haiku  aceito se confidence >= LLM_CASCADE_FAST_THRESHOLD (0.80)
-          - Sonnet aceito se confidence >= LLM_CASCADE_MID_THRESHOLD  (0.70)
-          - Opus   aceito se confidence >= LLM_CASCADE_FALLBACK_THRESHOLD (0.60)
-        """
-        # E6: PII stripping
-        if isinstance(prompt, str): prompt = strip_pii_for_llm_prompt(prompt)
-
-        import json as _json
-
-
-        cascade = [
-            (settings.LLM_FAST_MODEL,    settings.LLM_CASCADE_FAST_THRESHOLD),
-            (settings.LLM_PRIMARY_MODEL, settings.LLM_CASCADE_MID_THRESHOLD),
-            (settings.LLM_POWERFUL_MODEL, settings.LLM_CASCADE_FALLBACK_THRESHOLD),
-        ]
-
-        full_prompt = f"{context}\n\n{prompt}".strip() if context else prompt
-
-        for model_name, threshold in cascade:
-            try:
-                llm = self._get_claude_for_model(model_name)
-                messages_to_send: list[Any] = []
-                if system_prompt:
-                    from langchain_core.messages import HumanMessage, SystemMessage
-                    messages_to_send = [SystemMessage(content=system_prompt), HumanMessage(content=full_prompt)]
-                else:
-                    messages_to_send = [full_prompt]
-
-                response = await llm.ainvoke(messages_to_send)
-                raw = response.content
-                if isinstance(raw, list):
-                    raw = " ".join(
-                        b.get("text", "") if isinstance(b, dict) else str(b)
-                        for b in raw
-                    )
-                raw = str(raw)
-
-                # Tenta extrair confidence do JSON retornado (se o prompt pedir JSON)
-                confidence = 0.5
-                try:
-                    parsed = _json.loads(raw)
-                    confidence = float(parsed.get("confidence", 0.5))
-                except Exception:
-                    # Resposta não é JSON — assume confidence neutra (0.5)
-                    confidence = 0.5
-
-                logger.info(
-                    f"[cascade] model={model_name} confidence={confidence:.2f} threshold={threshold}"
-                )
-
-                if confidence >= threshold:
-                    return LLMCascadeResult(
-                        content=raw,
-                        model_used=model_name,
-                        confidence=confidence,
-                    )
-
-                logger.info(
-                    f"[cascade] Escalando: {model_name} confidence={confidence:.2f} < {threshold}"
-                )
-
-            except Exception as exc:
-                logger.warning(f"[cascade] Falha no modelo {model_name}: {exc}")
-                continue
-
-        return LLMCascadeResult(
-            content=None,
-            model_used="none",
-            confidence=0.0,
-            requires_human=True,
-            reason="all_models_low_confidence",
-        )
-
-
 
     async def safe_invoke(self, prompt: str, provider: str = "claude", **kwargs) -> str:
         """Wrapper for direct .claude.ainvoke() calls — adds PII stripping + audit.
