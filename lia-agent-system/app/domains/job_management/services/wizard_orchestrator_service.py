@@ -323,31 +323,6 @@ class WizardOrchestratorService:
 
         return result
 
-    def get_system_prompt_with_context(
-        self,
-        base_prompt: str,
-        context_string: str | None = None
-    ) -> str:
-        """
-        Combine base system prompt with conversation context.
-
-        Args:
-            base_prompt: The base system prompt for the wizard
-            context_string: Optional context string from build_context_for_prompt
-
-        Returns:
-            Combined system prompt
-        """
-        if not context_string:
-            return base_prompt
-
-        return f"""{base_prompt}
-
----
-{context_string}
----
-
-Use o contexto da conversa acima para manter continuidade e lembrar de preferências e decisões anteriores do usuário."""
 
 
 wizard_orchestrator_service = WizardOrchestratorService()

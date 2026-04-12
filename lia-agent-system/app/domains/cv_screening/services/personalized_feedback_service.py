@@ -1378,41 +1378,6 @@ OUTPUT: Just the WhatsApp message text, nothing else."""
             if should_close:
                 await db.close()
     
-    def generate_from_template(
-        self,
-        request: PersonalizedFeedbackRequest
-    ) -> dict[str, str]:
-        """
-        Generate feedback using existing templates (fallback method).
-        
-        This uses the templates from communication_templates.py as a base
-        when AI generation is not available or fails.
-        
-        Args:
-            request: PersonalizedFeedbackRequest with context
-            
-        Returns:
-            Template-based feedback
-        """
-        template = EmailTemplates.screening_failed(
-            candidate_name=request.candidate.name,
-            job_title=request.job.title,
-            strengths=request.evaluation.strengths[:3],
-            development_areas=request.evaluation.development_areas[:2]
-        )
-        
-        whatsapp = WhatsAppTemplates.screening_failed(
-            candidate_name=request.candidate.name,
-            strengths=request.evaluation.strengths[:3],
-            development_areas=request.evaluation.development_areas[:2]
-        )
-        
-        return {
-            "subject": template["subject"],
-            "body": template["body"],
-            "whatsapp": whatsapp,
-            "personalization_level": "low"
-        }
 
 
 personalized_feedback_service = PersonalizedFeedbackService()

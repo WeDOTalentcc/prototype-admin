@@ -497,9 +497,6 @@ class Orchestrator:
     def get_available_tools(self, agent_type: str | None = None) -> list[dict[str, Any]]:
         return get_all_tool_schemas(agent_type=agent_type, format="claude")
 
-    def get_tools_for_context(self, prompt_context: str) -> list[dict[str, Any]]:
-        scope = SCOPE_MAPPING.get(prompt_context.lower(), PromptScope.GLOBAL)
-        return filter_tools_by_scope(get_all_tool_schemas(format="claude"), scope)
 
     def get_scope_system_prompt(self, prompt_context: str) -> str:
         return get_scope_system_prompt_addition(SCOPE_MAPPING.get(prompt_context.lower(), PromptScope.GLOBAL))

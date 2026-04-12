@@ -332,5 +332,3 @@ class FineTuningExportService:
 finetuning_export_service = FineTuningExportService()
 
 
-def get_finetuning_export_service() -> "FineTuningExportService":
-    return finetuning_export_service
