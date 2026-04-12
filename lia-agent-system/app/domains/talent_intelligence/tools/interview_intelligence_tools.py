@@ -1,8 +1,12 @@
 """
-Interview Intelligence — Analyze interview transcriptions for sentiment,
-competency mapping, and bias detection.
+Interview Intelligence Pro — Full interview analysis suite.
 
-Complements the existing voice screening with deeper interview analysis.
+Premium tools (module: interview_intelligence):
+- analyze_interview_recording: Full WSI + bias + comparative + opinion + feedback
+- detect_interview_bias: Standalone bias detection
+- generate_interview_opinion: Strategic hiring recommendation
+- generate_candidate_feedback: Structured feedback for candidate
+- compare_interview_performance: Comparative analysis across candidates
 """
 import logging
 import re
@@ -42,24 +46,38 @@ SENTIMENT_NEGATIVE = ["fraco", "ruim", "insuficiente", "falta", "não conseguiu"
 
 @tool_handler("talent_intelligence", module="interview_intelligence")
 async def analyze_interview_recording(
+    interview_id: str | None = None,
     transcript: str = "",
     candidate_id: str | None = None,
     job_id: str | None = None,
     interviewer_name: str | None = None,
     interview_type: str = "behavioral",
+    include_bias: bool = True,
+    include_comparative: bool = True,
+    include_opinion: bool = True,
+    include_feedback: bool = True,
     **kwargs,
 ) -> dict[str, Any]:
     """
-    Analyze an interview transcript for sentiment, competency mapping,
-    and potential bias indicators.
+    Full interview analysis: WSI + bias detection + comparative + opinion + feedback.
 
-    Args:
-        transcript: Full text transcript of the interview
-        candidate_id: UUID of the candidate being interviewed
-        job_id: UUID of the job position
-        interviewer_name: Name of the interviewer
-        interview_type: Type of interview (behavioral, technical, cultural, final)
+    If interview_id is provided, fetches transcript from DB.
+    Otherwise falls back to inline transcript analysis.
     """
+    db = kwargs.get("db")
+    company_id = kwargs.get("company_id")
+
+    if interview_id and db:
+        return await _analyze_from_db(
+            interview_id=interview_id,
+            db=db,
+            company_id=company_id or "",
+            include_bias=include_bias,
+            include_comparative=include_comparative,
+            include_opinion=include_opinion,
+            include_feedback=include_feedback,
+        )
+
     if not transcript or len(transcript.strip()) < 50:
         return {
             "success": False,
@@ -67,6 +85,280 @@ async def analyze_interview_recording(
             "message": "Transcrição da entrevista é obrigatória (mínimo 50 caracteres).",
         }
 
+    return _analyze_inline(
+        transcript=transcript,
+        candidate_id=candidate_id,
+        job_id=job_id,
+        interviewer_name=interviewer_name,
+        interview_type=interview_type,
+    )
+
+
+async def _analyze_from_db(
+    interview_id: str,
+    db: Any,
+    company_id: str,
+    include_bias: bool,
+    include_comparative: bool,
+    include_opinion: bool,
+    include_feedback: bool,
+) -> dict[str, Any]:
+    from app.domains.interview_intelligence.services.interview_wsi_service import interview_wsi_service
+
+    wsi_result = await interview_wsi_service.analyze(interview_id, db, company_id=company_id)
+    if not wsi_result.get("success"):
+        return {
+            "success": False,
+            "data": {},
+            "message": wsi_result.get("error", "WSI analysis failed"),
+        }
+
+    result: dict[str, Any] = {
+        "wsi_analysis": wsi_result,
+    }
+
+    if include_bias:
+        from app.domains.interview_intelligence.services.bias_detector_service import bias_detector_service
+        bias_result = await bias_detector_service.detect(interview_id, db, use_llm=True, company_id=company_id)
+        result["bias_detection"] = bias_result
+    else:
+        bias_result = None
+
+    if include_comparative and company_id:
+        from app.domains.interview_intelligence.services.comparative_analysis_service import comparative_analysis_service
+        comparative_result = await comparative_analysis_service.compare(
+            interview_id, db, company_id
+        )
+        result["comparative_analysis"] = comparative_result
+    else:
+        comparative_result = None
+
+    if include_opinion:
+        from app.domains.interview_intelligence.services.strategic_opinion_service import strategic_opinion_service
+        opinion_result = await strategic_opinion_service.generate(
+            interview_id, db,
+            wsi_data=wsi_result,
+            bias_data=bias_result,
+            comparative_data=comparative_result,
+            company_id=company_id,
+        )
+        result["strategic_opinion"] = opinion_result
+    else:
+        opinion_result = None
+
+    if include_feedback:
+        from app.domains.interview_intelligence.services.feedback_generator_service import feedback_generator_service
+        feedback_result = await feedback_generator_service.generate(
+            interview_id, db, wsi_data=wsi_result, company_id=company_id
+        )
+        result["candidate_feedback"] = feedback_result
+
+    recommendation = "AVALIAR MAIS"
+    if opinion_result and opinion_result.get("success"):
+        recommendation = opinion_result.get("recommendation", "AVALIAR MAIS")
+    elif wsi_result.get("recommendation"):
+        rec_map = {"approve": "CONTRATAR", "reject": "NÃO CONTRATAR", "pending_review": "AVALIAR MAIS"}
+        recommendation = rec_map.get(wsi_result["recommendation"], "AVALIAR MAIS")
+
+    return {
+        "success": True,
+        "data": result,
+        "message": (
+            f"Análise completa da entrevista concluída. "
+            f"WSI: {wsi_result.get('wsi_score', 'N/A')}/5.0. "
+            f"Recomendação: {recommendation}."
+        ),
+    }
+
+
+@tool_handler("talent_intelligence", module="interview_intelligence")
+async def detect_interview_bias(
+    interview_id: str = "",
+    use_llm: bool = True,
+    **kwargs,
+) -> dict[str, Any]:
+    """
+    Detect bias in an interview transcript (pattern + LLM analysis).
+    Requires interview_id of a transcribed interview.
+    """
+    db = kwargs.get("db")
+    if not interview_id or not db:
+        return {
+            "success": False,
+            "data": {},
+            "message": "interview_id e conexão com banco são obrigatórios.",
+        }
+
+    company_id = kwargs.get("company_id")
+    from app.domains.interview_intelligence.services.bias_detector_service import bias_detector_service
+    result = await bias_detector_service.detect(interview_id, db, use_llm=use_llm, company_id=company_id)
+
+    if not result.get("success"):
+        return {
+            "success": False,
+            "data": {},
+            "message": result.get("error", "Bias detection failed"),
+        }
+
+    return {
+        "success": True,
+        "data": result,
+        "message": (
+            f"Detecção de viés concluída. "
+            f"Viés detectado: {'Sim' if result.get('bias_detected') else 'Não'}. "
+            f"Score de equidade: {result.get('overall_fairness_score', 'N/A')}/5."
+        ),
+    }
+
+
+@tool_handler("talent_intelligence", module="interview_intelligence")
+async def generate_interview_opinion(
+    interview_id: str = "",
+    **kwargs,
+) -> dict[str, Any]:
+    """
+    Generate strategic hiring opinion (parecer) for an interview.
+    Runs WSI + bias first, then generates LLM opinion.
+    """
+    db = kwargs.get("db")
+    company_id = kwargs.get("company_id")
+    if not interview_id or not db:
+        return {
+            "success": False,
+            "data": {},
+            "message": "interview_id e conexão com banco são obrigatórios.",
+        }
+
+    from app.domains.interview_intelligence.services.interview_wsi_service import interview_wsi_service
+    from app.domains.interview_intelligence.services.bias_detector_service import bias_detector_service
+    from app.domains.interview_intelligence.services.comparative_analysis_service import comparative_analysis_service
+    from app.domains.interview_intelligence.services.strategic_opinion_service import strategic_opinion_service
+
+    wsi_data = await interview_wsi_service.analyze(interview_id, db, company_id=company_id)
+    bias_data = await bias_detector_service.detect(interview_id, db, use_llm=True, company_id=company_id)
+    comp_data = None
+    if company_id:
+        comp_data = await comparative_analysis_service.compare(
+            interview_id, db, company_id
+        )
+
+    result = await strategic_opinion_service.generate(
+        interview_id, db,
+        wsi_data=wsi_data,
+        bias_data=bias_data,
+        comparative_data=comp_data,
+        company_id=company_id,
+    )
+
+    if not result.get("success"):
+        return {
+            "success": False,
+            "data": {},
+            "message": result.get("error", "Opinion generation failed"),
+        }
+
+    return {
+        "success": True,
+        "data": result,
+        "message": (
+            f"Parecer estratégico gerado. "
+            f"Recomendação: {result.get('recommendation', 'N/A')} "
+            f"(confiança: {result.get('confidence', 'N/A')})."
+        ),
+    }
+
+
+@tool_handler("talent_intelligence", module="interview_intelligence")
+async def generate_candidate_feedback(
+    interview_id: str = "",
+    **kwargs,
+) -> dict[str, Any]:
+    """
+    Generate structured candidate feedback from an interview analysis.
+    Suitable for sharing with candidates.
+    """
+    db = kwargs.get("db")
+    if not interview_id or not db:
+        return {
+            "success": False,
+            "data": {},
+            "message": "interview_id e conexão com banco são obrigatórios.",
+        }
+
+    company_id = kwargs.get("company_id")
+    from app.domains.interview_intelligence.services.interview_wsi_service import interview_wsi_service
+    from app.domains.interview_intelligence.services.feedback_generator_service import feedback_generator_service
+
+    wsi_data = await interview_wsi_service.analyze(interview_id, db, company_id=company_id)
+    result = await feedback_generator_service.generate(
+        interview_id, db, wsi_data=wsi_data, company_id=company_id
+    )
+
+    if not result.get("success"):
+        return {
+            "success": False,
+            "data": {},
+            "message": result.get("error", "Feedback generation failed"),
+        }
+
+    return {
+        "success": True,
+        "data": result,
+        "message": (
+            f"Feedback estruturado gerado para {result.get('candidate_name', 'candidato')}."
+        ),
+    }
+
+
+@tool_handler("talent_intelligence", module="interview_intelligence")
+async def compare_interview_performance(
+    interview_id: str = "",
+    **kwargs,
+) -> dict[str, Any]:
+    """
+    Compare interview performance against other candidates for the same vacancy.
+    Provides ranking, benchmarks, and insights.
+    """
+    db = kwargs.get("db")
+    company_id = kwargs.get("company_id")
+    if not interview_id or not db or not company_id:
+        return {
+            "success": False,
+            "data": {},
+            "message": "interview_id, company_id e conexão com banco são obrigatórios.",
+        }
+
+    from app.domains.interview_intelligence.services.comparative_analysis_service import comparative_analysis_service
+    result = await comparative_analysis_service.compare(
+        interview_id, db, company_id
+    )
+
+    if not result.get("success"):
+        return {
+            "success": False,
+            "data": {},
+            "message": result.get("error", "Comparative analysis failed"),
+        }
+
+    ranking = result.get("ranking", {})
+    return {
+        "success": True,
+        "data": result,
+        "message": (
+            f"Análise comparativa concluída. "
+            f"Posição: {ranking.get('position', '?')}/{ranking.get('total_candidates', '?')} "
+            f"(percentil {ranking.get('percentile', '?')})."
+        ),
+    }
+
+
+def _analyze_inline(
+    transcript: str,
+    candidate_id: str | None,
+    job_id: str | None,
+    interviewer_name: str | None,
+    interview_type: str,
+) -> dict[str, Any]:
     transcript_lower = transcript.lower()
     word_count = len(transcript.split())
 

@@ -817,20 +817,73 @@ tools:
   # ── Talent Intelligence: Interview Intelligence ──────────────────────────
 
   - name: analyze_interview_recording
-    description: Analyze an interview transcript for sentiment analysis, competency mapping, and bias detection with structured recommendations
+    description: "Análise completa de entrevista: WSI (Bloom, Dreyfus, CBI, Big Five) + detecção de viés + análise comparativa + parecer estratégico + feedback ao candidato."
+    allowed_agents: [orchestrator, recruiter_assistant, screening, analytics]
+    scope: IN_JOB
+    version: "2.0"
+    module: interview_intelligence
+    parameters:
+      type: object
+      properties:
+        interview_id: {type: string, description: "UUID da entrevista (busca do banco)"}
+        transcript: {type: string, description: "Transcrição inline (fallback)"}
+        candidate_id: {type: string}
+        job_id: {type: string}
+        interviewer_name: {type: string}
+        interview_type: {type: string, enum: [behavioral, technical, cultural, final]}
+        include_bias: {type: boolean, default: true}
+        include_comparative: {type: boolean, default: true}
+        include_opinion: {type: boolean, default: true}
+        include_feedback: {type: boolean, default: true}
+
+  - name: detect_interview_bias
+    description: "Detectar viés em entrevista: padrões linguísticos + análise LLM. Identifica viés de idade, gênero, aparência, afinidade e perguntas ilegais."
     allowed_agents: [orchestrator, recruiter_assistant, screening, analytics]
     scope: IN_JOB
     version: "1.0"
     module: interview_intelligence
     parameters:
       type: object
-      required: [transcript]
+      required: [interview_id]
       properties:
-        transcript: {type: string}
-        candidate_id: {type: string}
-        job_id: {type: string}
-        interviewer_name: {type: string}
-        interview_type: {type: string, enum: [behavioral, technical, cultural, final]}
+        interview_id: {type: string}
+        use_llm: {type: boolean, default: true}
+
+  - name: generate_interview_opinion
+    description: "Gerar parecer estratégico de contratação: CONTRATAR / NÃO CONTRATAR / AVALIAR MAIS com evidências da transcrição."
+    allowed_agents: [orchestrator, recruiter_assistant, screening, analytics]
+    scope: IN_JOB
+    version: "1.0"
+    module: interview_intelligence
+    parameters:
+      type: object
+      required: [interview_id]
+      properties:
+        interview_id: {type: string}
+
+  - name: generate_candidate_feedback
+    description: "Gerar feedback estruturado e construtivo para devolver ao candidato após entrevista."
+    allowed_agents: [orchestrator, recruiter_assistant, screening, analytics]
+    scope: IN_JOB
+    version: "1.0"
+    module: interview_intelligence
+    parameters:
+      type: object
+      required: [interview_id]
+      properties:
+        interview_id: {type: string}
+
+  - name: compare_interview_performance
+    description: "Comparar performance do candidato vs. outros da mesma vaga com ranking, benchmarks e insights."
+    allowed_agents: [orchestrator, recruiter_assistant, screening, analytics]
+    scope: IN_JOB
+    version: "1.0"
+    module: interview_intelligence
+    parameters:
+      type: object
+      required: [interview_id]
+      properties:
+        interview_id: {type: string}
 
   # ── Talent Intelligence: Passive Candidate Nurture ───────────────────────
 

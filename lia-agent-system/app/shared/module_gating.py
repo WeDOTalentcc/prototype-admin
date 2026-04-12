@@ -23,6 +23,10 @@ TOOL_MODULE_MAP: dict[str, str] = {
     "match_internal_candidates": "internal_mobility",
 
     "analyze_interview_recording": "interview_intelligence",
+    "detect_interview_bias": "interview_intelligence",
+    "generate_interview_opinion": "interview_intelligence",
+    "generate_candidate_feedback": "interview_intelligence",
+    "compare_interview_performance": "interview_intelligence",
 
     "forecast_hiring_needs": "workforce_planning",
 
@@ -33,6 +37,10 @@ TOOL_MODULE_MAP: dict[str, str] = {
 
 PREMIUM_GATED_TOOLS: set[str] = {
     "analyze_interview_recording",
+    "detect_interview_bias",
+    "generate_interview_opinion",
+    "generate_candidate_feedback",
+    "compare_interview_performance",
     "forecast_hiring_needs",
     "create_nurture_sequence",
 }

@@ -9,7 +9,13 @@ from .candidate_nurture_tools import (
     suggest_reengagement,
 )
 from .internal_mobility_tools import match_internal_candidates
-from .interview_intelligence_tools import analyze_interview_recording
+from .interview_intelligence_tools import (
+    analyze_interview_recording,
+    compare_interview_performance,
+    detect_interview_bias,
+    generate_candidate_feedback,
+    generate_interview_opinion,
+)
 from .market_intelligence_tools import get_market_intelligence
 from .skills_ontology_tools import (
     analyze_skill_gaps,
@@ -122,19 +128,80 @@ def register_talent_intelligence_tools() -> None:
 
     tool_registry.register(ToolDefinition(
         name="analyze_interview_recording",
-        description="Analisar transcrição de entrevista com sentimento, mapeamento de competências e detecção de viés.",
+        description="Análise completa de entrevista: WSI (Bloom, Dreyfus, CBI, Big Five) + detecção de viés + análise comparativa + parecer estratégico + feedback ao candidato. Se interview_id fornecido, busca transcrição do banco.",
         parameters_schema={
             "type": "object",
             "properties": {
-                "transcript": {"type": "string", "description": "Transcrição completa da entrevista"},
+                "interview_id": {"type": "string", "description": "UUID da entrevista (busca transcrição do banco)"},
+                "transcript": {"type": "string", "description": "Transcrição completa (fallback se sem interview_id)"},
                 "candidate_id": {"type": "string", "description": "UUID do candidato (opcional)"},
                 "job_id": {"type": "string", "description": "UUID da vaga (opcional)"},
                 "interviewer_name": {"type": "string", "description": "Nome do entrevistador (opcional)"},
-                "interview_type": {"type": "string", "enum": ["behavioral", "technical", "cultural", "final"], "default": "behavioral", "description": "Tipo de entrevista"},
+                "interview_type": {"type": "string", "enum": ["behavioral", "technical", "cultural", "final"], "default": "behavioral"},
+                "include_bias": {"type": "boolean", "default": True, "description": "Incluir detecção de viés"},
+                "include_comparative": {"type": "boolean", "default": True, "description": "Incluir análise comparativa"},
+                "include_opinion": {"type": "boolean", "default": True, "description": "Incluir parecer estratégico"},
+                "include_feedback": {"type": "boolean", "default": True, "description": "Incluir feedback ao candidato"},
             },
-            "required": ["transcript"],
         },
         handler=analyze_interview_recording,
+        allowed_agents=["orchestrator", "recruiter_assistant", "screening", "analytics"],
+    ))
+
+    tool_registry.register(ToolDefinition(
+        name="detect_interview_bias",
+        description="Detectar viés em entrevista: padrões linguísticos + análise LLM profunda. Identifica viés de idade, gênero, aparência, afinidade, confirmação e perguntas ilegais.",
+        parameters_schema={
+            "type": "object",
+            "properties": {
+                "interview_id": {"type": "string", "description": "UUID da entrevista transcrita"},
+                "use_llm": {"type": "boolean", "default": True, "description": "Usar análise LLM além de padrões"},
+            },
+            "required": ["interview_id"],
+        },
+        handler=detect_interview_bias,
+        allowed_agents=["orchestrator", "recruiter_assistant", "screening", "analytics"],
+    ))
+
+    tool_registry.register(ToolDefinition(
+        name="generate_interview_opinion",
+        description="Gerar parecer estratégico de contratação baseado em WSI, viés e comparativo. Recomendação: CONTRATAR / NÃO CONTRATAR / AVALIAR MAIS com evidências.",
+        parameters_schema={
+            "type": "object",
+            "properties": {
+                "interview_id": {"type": "string", "description": "UUID da entrevista transcrita"},
+            },
+            "required": ["interview_id"],
+        },
+        handler=generate_interview_opinion,
+        allowed_agents=["orchestrator", "recruiter_assistant", "screening", "analytics"],
+    ))
+
+    tool_registry.register(ToolDefinition(
+        name="generate_candidate_feedback",
+        description="Gerar feedback estruturado e construtivo para devolver ao candidato após entrevista. Foca em competências demonstradas e áreas de desenvolvimento.",
+        parameters_schema={
+            "type": "object",
+            "properties": {
+                "interview_id": {"type": "string", "description": "UUID da entrevista transcrita"},
+            },
+            "required": ["interview_id"],
+        },
+        handler=generate_candidate_feedback,
+        allowed_agents=["orchestrator", "recruiter_assistant", "screening", "analytics"],
+    ))
+
+    tool_registry.register(ToolDefinition(
+        name="compare_interview_performance",
+        description="Comparar performance de candidato em entrevista vs. outros candidatos da mesma vaga. Ranking, benchmarks e insights.",
+        parameters_schema={
+            "type": "object",
+            "properties": {
+                "interview_id": {"type": "string", "description": "UUID da entrevista transcrita"},
+            },
+            "required": ["interview_id"],
+        },
+        handler=compare_interview_performance,
         allowed_agents=["orchestrator", "recruiter_assistant", "screening", "analytics"],
     ))
 
@@ -201,4 +268,4 @@ def register_talent_intelligence_tools() -> None:
         allowed_agents=["orchestrator", "recruiter_assistant", "sourcing", "analyst_feedback", "wsi_evaluator"],
     ))
 
-    logger.info("Registered 11 talent intelligence tools")
+    logger.info("Registered 15 talent intelligence tools")
