@@ -1344,3 +1344,15 @@ lia_score_service = LIAScoreService()
 
 def get_lia_score_service() -> "LIAScoreService":
     return lia_score_service
+
+    async def _get_cultural_fit_score(self, candidate_id: str, company_id: str) -> float | None:
+        """Get cultural fit score if available. Returns None if not computed."""
+        try:
+            from app.shared.services.cultural_fit_integration_service import cultural_fit_service
+            result = await cultural_fit_service.compute_integrated_fit(
+                candidate_id=candidate_id, company_id=company_id
+            )
+            return result.get("integrated_score") if result else None
+        except Exception:
+            return None
+

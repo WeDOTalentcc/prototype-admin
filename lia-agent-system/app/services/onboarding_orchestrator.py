@@ -492,6 +492,13 @@ class OnboardingOrchestrator:
         self, session: OnboardingSession, message: str
     ) -> dict:
         """Use LLM to handle unexpected messages during WhatsApp intro."""
+        # Use SystemPromptBuilder for persona-consistent responses
+        from app.shared.prompts.system_prompt_builder import SystemPromptBuilder
+        _onboarding_system = SystemPromptBuilder.build(
+            agent_type="recruiter_assistant",
+            user_name=session.user_name or "",
+            extra_instructions="Você está no fluxo de onboarding. Seja acolhedora e guie o recrutador passo a passo.",
+        )
         if not self.llm:
             return self._build_wa_response(
                 session,

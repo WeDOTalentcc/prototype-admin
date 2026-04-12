@@ -64,6 +64,7 @@ class SystemPromptBuilder:
         tenant_context_snippet: str = "",
         user_name: str = "",
         user_role: str = "",
+        recruiter_context: str = "",
         conversation_summary: str = "",
         conversation_history: list[dict[str, Any]] | None = None,
         context_page: str = "general",
@@ -85,6 +86,9 @@ class SystemPromptBuilder:
 
         if tenant_context_snippet:
             context_parts.append(f"### Contexto do Cliente\n{tenant_context_snippet}")
+
+        if recruiter_context:
+            context_parts.append(f"### Preferências do Recrutador\n{recruiter_context}")
 
         if user_name:
             user_desc = f"Você está conversando com **{user_name}**"

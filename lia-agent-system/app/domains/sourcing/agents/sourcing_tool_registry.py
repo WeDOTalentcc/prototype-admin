@@ -1277,3 +1277,27 @@ def get_stage_tools(stage: str) -> list[ToolDefinition]:
     tools = [_TOOL_MAP[name] for name in tool_names if name in _TOOL_MAP]
     logger.debug(f"[sourcing_tools] Stage '{stage}' tools: {[t.name for t in tools]}")
     return tools
+
+
+async def rag_semantic_search(query: str, company_id: str, limit: int = 20, alpha: float = 0.5) -> dict:
+    """Busca semântica de candidatos usando RAG (BM25 + pgvector).
+
+    Use quando o recrutador pedir busca por competências, experiência ou perfil.
+    Alpha controla o peso: 0.0=keyword puro, 1.0=semântico puro, 0.5=híbrido.
+    """
+    try:
+        from app.domains.ai.services.rag_pipeline_service import rag_pipeline_service
+        result = await rag_pipeline_service.search(
+            query=query,
+            company_id=company_id,
+            limit=limit,
+            alpha=alpha,
+        )
+        return {
+            "candidates": [{"name": r.name, "score": r.score, "summary": r.summary[:200]} for r in (result.results or [])],
+            "total": result.total_found,
+            "search_type": "hybrid_rag",
+        }
+    except Exception as e:
+        return {"error": str(e), "candidates": [], "total": 0}
+

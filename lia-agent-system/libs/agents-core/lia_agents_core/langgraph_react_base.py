@@ -403,6 +403,7 @@ class LangGraphReActBase(LangGraphBase):
             tenant_context_snippet=ctx.get("tenant_context_snippet", ""),
             user_name=ctx.get("user_name", ""),
             user_role=ctx.get("user_role", ""),
+            recruiter_context=ctx.get("recruiter_context", ""),
             conversation_summary=ctx.get("conversation_summary", ""),
             conversation_history=ctx.get("conversation_history"),
             context_page=ctx.get("context_page", "general"),

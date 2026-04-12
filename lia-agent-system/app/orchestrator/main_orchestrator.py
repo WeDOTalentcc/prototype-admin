@@ -248,6 +248,24 @@ class MainOrchestrator:
             except Exception as _tc_exc:
                 logger.debug("[MainOrchestrator] TenantContext skipped: %s", _tc_exc)
 
+            # Enriquecer contexto com personalização do recrutador
+            try:
+                from app.domains.analytics.services.recruiter_personalization_service import RecruiterPersonalizationService
+                _perso_svc = RecruiterPersonalizationService()
+                _perso_ctx = await _perso_svc.get_or_create_profile(ctx.user_id, db)
+                if _perso_ctx and hasattr(_perso_ctx, 'settings') and _perso_ctx.settings:
+                    _prefs = []
+                    if getattr(_perso_ctx.settings, 'communication_style', ''):
+                        _prefs.append(f"Estilo de comunicação: {_perso_ctx.settings.communication_style}")
+                    if getattr(_perso_ctx.settings, 'verbosity_preference', ''):
+                        _prefs.append(f"Verbosidade: {_perso_ctx.settings.verbosity_preference}")
+                    if getattr(_perso_ctx.settings, 'focus_areas', None):
+                        _prefs.append(f"Foco principal: {', '.join(_perso_ctx.settings.focus_areas)}")
+                    if _prefs:
+                        ctx.extra["recruiter_context"] = "\n".join(_prefs)
+            except Exception as _perso_exc:
+                logger.debug("[MainOrchestrator] Recruiter personalization skipped: %s", _perso_exc)
+
             # Enriquecer contexto do usuário (nome e role)
             if not ctx.user_name and ctx.user_id:
                 try:
