@@ -119,8 +119,7 @@ IMPORTANTE:
 """
 
     try:
-        # TODO(Item3-B): Route through managed LLM path for PII strip + audit
-        llm = llm_service.claude
+        llm = llm_service.get_audited_model()
         prompt = ChatPromptTemplate.from_template(analysis_prompt)
         chain = prompt | llm | JsonOutputParser()
         result = await chain.ainvoke({})

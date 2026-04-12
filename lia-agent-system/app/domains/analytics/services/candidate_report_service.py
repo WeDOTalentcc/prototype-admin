@@ -492,8 +492,7 @@ Resumo: {interview_data.get('summary', 'N/A')}"""
         has_screening = available_data["has_voice_screening"] or available_data["has_text_screening"]
         has_behavioral = available_data["has_wsi"] or available_data["has_big_five"]
         
-        # TODO(Item3-B): Route through managed LLM path for PII strip + audit
-        llm = llm_service.claude
+        llm = llm_service.get_audited_model()
         chain = prompt | llm | JsonOutputParser()
         
         try:
@@ -817,8 +816,7 @@ Resumo: {screening_data.get('summary', 'N/A')}
 Pontos Fortes: {', '.join(screening_data.get('strengths', []))}
 Pontos de Atenção: {', '.join(screening_data.get('concerns', []))}"""
         
-        # TODO(Item3-B): Route through managed LLM path for PII strip + audit
-        llm = llm_service.claude
+        llm = llm_service.get_audited_model()
         chain = prompt | llm | JsonOutputParser()
         
         result = await chain.ainvoke({

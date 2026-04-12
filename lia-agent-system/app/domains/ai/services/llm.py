@@ -127,6 +127,30 @@ class LLMService:
         
         raise ValueError("No Claude API key configured")
     
+
+    def get_audited_model(self, company_id: str | None = None) -> "BaseChatModel":
+        """Get a ChatModel wrapped with PII stripping and audit logging callbacks.
+
+        Use this instead of ``llm_service.claude`` for chain patterns (prompt | llm).
+        Ensures PII is stripped and all calls are audit-logged.
+
+        Args:
+            company_id: Optional company ID for tenant-specific model routing.
+                        If set and tenant has custom keys, uses tenant model.
+        """
+        from app.shared.llm.callbacks import PIIStripCallback, AuditLogCallback
+        import inspect
+
+        frame = inspect.currentframe()
+        caller = ""
+        if frame and frame.f_back:
+            caller = f"{os.path.basename(frame.f_back.f_code.co_filename)}:{frame.f_back.f_lineno}"
+
+        tenant_id = company_id or self._current_tenant or ""
+        base_model = self.claude
+        callbacks = [PIIStripCallback(), AuditLogCallback(tenant_id=tenant_id, caller=caller)]
+        return base_model.with_config(callbacks=callbacks)
+
     @property
     def openai(self) -> BaseChatModel:
         """Get OpenAI client."""

@@ -79,8 +79,7 @@ async def send_gate_feedback(
             )
 
         # Guardrail: FairnessGuard no output gerado
-        # TODO(Item3-B): Route through managed LLM path for PII strip + audit
-        llm = llm_service.claude
+        llm = llm_service.get_audited_model()
         template = ChatPromptTemplate.from_template(feedback_prompt)
         chain = template | llm
         response = await chain.ainvoke({})

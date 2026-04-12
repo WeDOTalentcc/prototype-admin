@@ -38,8 +38,7 @@ class TaskPlanner:
     
     def __init__(self, llm_service):
         """Initialize Task Planner with LLM service."""
-        # TODO(Item3-B): Route through managed LLM path
-        self.llm = llm_service.claude
+        self.llm = llm_service.get_audited_model()
         self.planning_prompt = self._create_planning_prompt()
         
     def _create_planning_prompt(self) -> ChatPromptTemplate:
