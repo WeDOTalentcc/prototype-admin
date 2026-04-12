@@ -65,79 +65,6 @@ JOB_ACTION_MAP: dict[str, str] = {
 SKIP_ACTION_INTENTS = {"create_job", "greeting", "general_question", "unknown", "search_candidates"}
 
 
-def _flatten_entities(entities: dict[str, Any]) -> dict[str, Any]:
-    flat = dict(entities)
-    if "entidades" in entities and isinstance(entities["entidades"], dict):
-        flat.update(entities["entidades"])
-    return flat
-
-
-def _build_tool_schema_for_intent(action_id: str, config: dict[str, Any]) -> dict[str, Any]:
-    """Constrói schema de tool Claude-compatible a partir de uma config ACTIONABLE_INTENTS."""
-    required = config.get("required_params", [])
-    optional = config.get("optional_params", [])
-    param_labels = config.get("param_labels", {})
-    clarification_prompts = config.get("clarification_prompts", {})
-
-    properties: dict[str, Any] = {}
-    for param in required + optional:
-        label = param_labels.get(param, param)
-        description = clarification_prompts.get(param, f"Valor para {label}")
-        properties[param] = {"type": "string", "description": description}
-
-    return {
-        "name": action_id,
-        "description": f"Executa a ação '{action_id}' com os parâmetros extraídos da mensagem.",
-        "input_schema": {
-            "type": "object",
-            "properties": properties,
-            "required": required,
-        },
-    }
-
-
-async def _try_extract_params_with_llm(
-    user_message: str,
-    intent: str,
-    config: dict[str, Any],
-    collected_params: dict[str, Any],
-    missing: list[str],
-) -> dict[str, Any] | None:
-    """
-    Tenta extrair parâmetros faltantes via LLM (generate_with_tools, single-shot).
-
-    Retorna dict com parâmetros completos (collected + extraídos) se conseguir
-    preencher todos os required_params. Retorna None se falhar ou parâmetros
-    continuarem faltando após a extração.
-    """
-    try:
-        from app.domains.ai.services.llm import LLMService as _LLMService  # lazy import — patchable by tests
-        llm_svc = _LLMService()
-        tool_schema = _build_tool_schema_for_intent(config["action_id"], config)
-        messages = [{"role": "user", "content": user_message}]
-        system_prompt = (
-            "Você é um assistente de RH. Extraia os parâmetros mencionados na mensagem do usuário "
-            "e chame a ferramenta adequada. Se um parâmetro não for mencionado, omita o campo — "
-            "nunca invente valores."
-        )
-        response = await llm_svc.generate_with_tools(
-            messages=messages,
-            tools=[tool_schema],
-            system_prompt=system_prompt,
-            max_tokens=512,
-        )
-        if response.is_tool_call and response.tool_calls:
-            extracted = response.tool_calls[0].parameters
-            merged = {**collected_params, **extracted}
-            still_missing = [p for p in missing if not merged.get(p)]
-            if not still_missing:
-                return merged
-    except Exception as e:
-        logger.warning(f"LLM param extraction failed for intent '{intent}': {e}")
-    return None
-
-
-
 async def resolve_candidate_by_name(
     candidate_name: str,
     company_id: str | None = None,
@@ -700,10 +627,8 @@ async def websocket_endpoint(
 # SSE STREAMING ENDPOINT
 # =============================================
 
-_LIA_STREAM_SYSTEM_PROMPT = """Você é LIA, a assistente de recrutamento inteligente da WeDOTalent.
-Você ajuda recrutadores a criar vagas, buscar candidatos, avaliar perfis e gerenciar pipelines de contratação.
-Seja objetiva, profissional e útil. Responda sempre em português brasileiro.
-Use markdown quando útil (listas, negrito), mas evite formatação excessiva em respostas simples."""
+# System prompt now composed dynamically via SystemPromptBuilder (persona + context)
+# Replaces hardcoded _LIA_STREAM_SYSTEM_PROMPT — see prompt audit 2026-04-12
 
 
 async def _sse_event_generator(
@@ -712,6 +637,10 @@ async def _sse_event_generator(
     history: list[dict[str, str]],
     repo: ChatRepository,
     conversation_obj,
+    *,
+    user_name: str = "",
+    user_role: str = "",
+    company_id: str = "",
 ) -> AsyncGenerator[str, None]:
     """Streams Claude tokens as SSE events and persists the full response."""
     from anthropic import AsyncAnthropic
@@ -730,11 +659,22 @@ async def _sse_event_generator(
 
     full_response = ""
 
+    from app.shared.prompts.system_prompt_builder import SystemPromptBuilder
+    from app.core.config import settings
+
+    _system_prompt = SystemPromptBuilder.build(
+        agent_type="orchestrator",
+        user_name=user_name,
+        user_role=user_role,
+        conversation_history=history[-10:] if history else None,
+        extra_instructions="Use markdown quando útil (listas, negrito), mas evite formatação excessiva em respostas simples.",
+    )
+
     try:
         async with client.messages.stream(
-            model="claude-sonnet-4-6",
+            model=settings.LLM_PRIMARY_MODEL,
             max_tokens=2048,
-            system=_LIA_STREAM_SYSTEM_PROMPT,
+            system=_system_prompt,
             messages=history,
         ) as stream:
             async for text_chunk in stream.text_stream:
@@ -801,7 +741,12 @@ async def stream_message(
     ]
 
     return StreamingResponse(
-        _sse_event_generator(conversation_id, user_content, history, repo, conversation),
+        _sse_event_generator(
+            conversation_id, user_content, history, repo, conversation,
+            user_name=getattr(current_user, "name", "") or "",
+            user_role=str(getattr(current_user, "role", "")) or "",
+            company_id=str(getattr(current_user, "company_id", "")) or "",
+        ),
         media_type="text/event-stream",
         headers={
             "Cache-Control": "no-cache",
