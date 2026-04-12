@@ -16,6 +16,9 @@ class CreateCustomAgentRequest(BaseModel):
     max_steps: int = Field(default=8, ge=1, le=20)
     temperature: float = Field(default=0.7, ge=0.0, le=2.0)
     model_override: Optional[str] = None
+    enable_memory: bool = True
+    context_level: str = Field(default="full", pattern="^(full|standard|minimal)$")
+    excluded_tools: list[str] = Field(default_factory=list)
 
 
 class UpdateCustomAgentRequest(BaseModel):
@@ -30,6 +33,9 @@ class UpdateCustomAgentRequest(BaseModel):
     max_steps: Optional[int] = Field(None, ge=1, le=20)
     temperature: Optional[float] = Field(None, ge=0.0, le=2.0)
     model_override: Optional[str] = None
+    enable_memory: Optional[bool] = None
+    context_level: Optional[str] = Field(None, pattern="^(full|standard|minimal)$")
+    excluded_tools: Optional[list[str]] = None
     status: Optional[str] = Field(None, pattern="^(draft|active|paused|archived)$")
 
 
@@ -50,6 +56,9 @@ class CustomAgentResponse(BaseModel):
     max_steps: int = 8
     temperature: float = 0.7
     model_override: Optional[str] = None
+    enable_memory: bool = True
+    context_level: str = "full"
+    excluded_tools: list[str] = []
     total_executions: int = 0
     avg_confidence: float = 0.0
     last_executed_at: Optional[str] = None

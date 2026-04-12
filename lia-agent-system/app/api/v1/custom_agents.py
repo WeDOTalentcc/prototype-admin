@@ -180,6 +180,8 @@ async def test_custom_agent(
             company_id=current_user.company_id,
             enable_memory=getattr(agent, "enable_memory", True),
             excluded_tools=getattr(agent, "excluded_tools", None),
+            context_level=getattr(agent, "context_level", "full"),
+            context_level=getattr(agent, "context_level", "full"),
         )
 
         start = time.time()
@@ -540,3 +542,59 @@ async def get_studio_quota(
     except Exception as e:
         logger.error("Error fetching studio quota: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail="Failed to fetch studio quota")
+
+
+@router.get("/{agent_id}/preview-prompt")
+async def preview_agent_prompt(
+    agent_id: str,
+    current_user=Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Preview the composed system prompt for a custom agent.
+
+    Returns the first 80 lines of the fully-composed prompt so the creator
+    can inspect what the LLM actually sees.  Only the agent creator (same
+    company) may preview.
+    """
+    agent = await agent_marketplace_service.get_agent(
+        db=db, agent_id=agent_id, company_id=current_user.company_id
+    )
+    if not agent:
+        raise HTTPException(status_code=404, detail="Agent not found")
+
+    from app.domains.agent_studio.custom_agent_runtime import get_or_create_runtime
+    from lia_agents_core.agent_interface import AgentInput
+
+    runtime = get_or_create_runtime(
+        agent_id=str(agent.id),
+        agent_name=agent.name,
+        system_prompt=agent.system_prompt,
+        allowed_tools=agent.allowed_tools or [],
+        domain=agent.domain or "general",
+        max_steps=agent.max_steps or 8,
+        temperature=agent.temperature or 0.7,
+        model_override=agent.model_override,
+        enable_memory=getattr(agent, "enable_memory", True),
+        excluded_tools=getattr(agent, "excluded_tools", None),
+        context_level=getattr(agent, "context_level", "full"),
+        company_id=current_user.company_id,
+    )
+
+    dummy_input = AgentInput(
+        message="(preview)",
+        user_id=str(current_user.id),
+        company_id=current_user.company_id,
+        session_id="preview",
+        context={},
+    )
+    full_prompt = runtime._get_system_prompt(dummy_input)
+    lines = full_prompt.split("\n")
+    preview_lines = lines[:80]
+
+    return {
+        "agent_id": agent_id,
+        "context_level": getattr(agent, "context_level", "full"),
+        "total_lines": len(lines),
+        "preview_lines": 80,
+        "prompt_preview": "\n".join(preview_lines),
+    }

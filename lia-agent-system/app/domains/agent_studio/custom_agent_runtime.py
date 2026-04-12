@@ -53,6 +53,7 @@ class CustomAgentRuntime(LangGraphReActBase, EnhancedAgentMixin):
         company_id: str = "",
         enable_memory: bool = True,
         excluded_tools: list[str] | None = None,
+        context_level: str = "full",
     ) -> None:
         super().__init__()
         self._agent_id = agent_id
@@ -66,6 +67,7 @@ class CustomAgentRuntime(LangGraphReActBase, EnhancedAgentMixin):
         self._company_id = company_id
         self._enable_memory = enable_memory
         self._excluded_tools = set(excluded_tools or [])
+        self._context_level = context_level if context_level in ("full", "standard", "minimal") else "full"
         self._setup_enhanced(domain=f"custom:{agent_name}")
         logger.info(
             "[CustomAgentRuntime] Initialized agent=%s tools=%d max_steps=%d",
@@ -240,9 +242,11 @@ class CustomAgentRuntime(LangGraphReActBase, EnhancedAgentMixin):
         return await compiled.ainvoke(initial_state, config=config)
 
     def _get_system_prompt(self, input: AgentInput) -> str:
-        """Compose system prompt: LIA persona base + domain + tenant + user + custom instructions.
+        """Compose system prompt respecting context_level:
 
-        The client's custom prompt is injected as extra_instructions, NOT replacing the persona.
+        - full: persona + domain + tenant + user + history + few-shot + custom (default)
+        - standard: persona + tenant + user + custom (no history, no few-shot)
+        - minimal: persona + custom instructions only
         """
         from app.shared.prompts.system_prompt_builder import SystemPromptBuilder
 
@@ -251,8 +255,7 @@ class CustomAgentRuntime(LangGraphReActBase, EnhancedAgentMixin):
         # Map domain to agent_type for SystemPromptBuilder
         agent_type = self._domain if self._domain != "custom" else "general"
         if ":" in agent_type:
-            agent_type = agent_type.split(":")[0]  # "custom:MyAgent" -> "custom"
-        # Map known domain values to builder agent_types
+            agent_type = agent_type.split(":")[0]
         domain_map = {
             "sourcing": "sourcing",
             "screening": "cv_screening",
@@ -265,7 +268,28 @@ class CustomAgentRuntime(LangGraphReActBase, EnhancedAgentMixin):
         }
         builder_agent_type = domain_map.get(agent_type, "recruiter_assistant")
 
-        # Build base prompt with full LIA intelligence
+        # === context_level routing ===
+        if self._context_level == "minimal":
+            # Minimal: persona base + custom instructions only
+            base = SystemPromptBuilder.build(
+                agent_type=builder_agent_type,
+                extra_instructions=f"INSTRUCOES ADICIONAIS DO OPERADOR:\n{self._system_prompt_template}",
+            )
+            return base
+
+        if self._context_level == "standard":
+            # Standard: persona + tenant + user + custom (no history, no few-shot)
+            base = SystemPromptBuilder.build(
+                agent_type=builder_agent_type,
+                tenant_context_snippet=ctx.get("tenant_context_snippet", ""),
+                user_name=ctx.get("user_name", ""),
+                user_role=ctx.get("user_role", ""),
+                context_page=ctx.get("context_page", "general"),
+                extra_instructions=f"INSTRUCOES ADICIONAIS DO OPERADOR:\n{self._system_prompt_template}",
+            )
+            return base
+
+        # Full: everything (default — same as before)
         base = SystemPromptBuilder.build(
             agent_type=builder_agent_type,
             tenant_context_snippet=ctx.get("tenant_context_snippet", ""),
@@ -278,7 +302,7 @@ class CustomAgentRuntime(LangGraphReActBase, EnhancedAgentMixin):
             extra_instructions=f"INSTRUCOES ADICIONAIS DO OPERADOR:\n{self._system_prompt_template}",
         )
 
-        # GAP 6: Inject domain-specific few-shot examples + reasoning
+        # Inject domain-specific few-shot examples + reasoning
         domain_instructions = self._load_domain_instructions()
         if domain_instructions:
             return f"{base}\n\n---\n\n{domain_instructions}"
@@ -457,6 +481,7 @@ def get_or_create_runtime(
     force_new: bool = False,
     enable_memory: bool = True,
     excluded_tools: list[str] | None = None,
+    context_level: str = "full",
 ) -> CustomAgentRuntime:
     cache_key = f"{agent_id}:{company_id}"
     if cache_key not in _runtime_cache or force_new:
@@ -471,6 +496,7 @@ def get_or_create_runtime(
             model_override=model_override,
             enable_memory=enable_memory,
             excluded_tools=excluded_tools,
+            context_level=context_level,
             company_id=company_id,
         )
     return _runtime_cache[cache_key]
