@@ -167,6 +167,7 @@ async def _wrap_update_candidate_field(**kwargs: Any) -> dict[str, Any]:
         "work_model_preference",
         "education_level", "languages", "availability_date",
     }
+    _SAFE_COL_RE = re.compile(r"^[a-z][a-z0-9_]{0,62}$")
 
     if not candidate_id or not field_name:
         return {"success": False, "error": "candidate_id e field_name são obrigatórios"}
@@ -176,6 +177,9 @@ async def _wrap_update_candidate_field(**kwargs: Any) -> dict[str, Any]:
             "success": False,
             "error": f"Campo '{field_name}' não é atualizável. Campos permitidos: {', '.join(sorted(ALLOWED_FIELDS))}",
         }
+
+    if not _SAFE_COL_RE.match(field_name):
+        return {"success": False, "error": f"Campo '{field_name}' contém caracteres inválidos."}
 
     try:
         async with AsyncSessionLocal() as db:

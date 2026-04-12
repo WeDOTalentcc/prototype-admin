@@ -16,6 +16,7 @@ Tasks registradas:
   - digest.send_weekly           — envia weekly digest a todos os recrutadores ativos
 """
 import asyncio
+import re
 from datetime import UTC
 
 from app.core.celery_app import celery_app
@@ -776,8 +777,10 @@ def pii_backfill_encrypt_existing_task(
             "errors": [],
         }
 
+        _PII_TABLES_ALLOWED = frozenset(["candidates", "client_users", "users"])
+        _SAFE_ID_RE = re.compile(r"^[a-z][a-z0-9_]{0,62}$")
+
         tables_config = [
-            # (table, email_col, encrypted_col, hash_col)
             ("candidates", "email", "email_encrypted", "email_hash"),
             ("client_users", "email", "email_encrypted", "email_hash"),
             ("users", "email", "email_encrypted", "email_hash"),
@@ -785,12 +788,20 @@ def pii_backfill_encrypt_existing_task(
 
         async with AsyncSessionLocal() as db:
             for table, email_col, enc_col, hash_col in tables_config:
+                if table not in _PII_TABLES_ALLOWED:
+                    raise ValueError(f"Table '{table}' not in PII backfill allow-list")
+                if not _SAFE_ID_RE.match(table):
+                    raise ValueError(f"Table '{table}' contains invalid characters")
+                for col in (email_col, enc_col, hash_col):
+                    if not _SAFE_ID_RE.match(col):
+                        raise ValueError(f"Column '{col}' contains invalid characters")
+
                 encrypted_count = 0
                 try:
                     while True:
                         rows = (await db.execute(
                             text(
-                                f"SELECT id, {email_col} FROM {table} "  # noqa: S608
+                                f"SELECT id, {email_col} FROM {table} "
                                 f"WHERE {enc_col} IS NULL AND {email_col} IS NOT NULL "
                                 f"LIMIT :limit"
                             ),
@@ -806,7 +817,7 @@ def pii_backfill_encrypt_existing_task(
                             if not dry_run:
                                 await db.execute(
                                     text(
-                                        f"UPDATE {table} SET {enc_col} = :enc, {hash_col} = :hsh "  # noqa: S608
+                                        f"UPDATE {table} SET {enc_col} = :enc, {hash_col} = :hsh "
                                         f"WHERE id = :id"
                                     ),
                                     {"enc": enc_val, "hsh": hash_val, "id": row[0]},

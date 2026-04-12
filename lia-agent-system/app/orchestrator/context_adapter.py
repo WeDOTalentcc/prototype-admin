@@ -276,16 +276,21 @@ class ContextAdapter:
             return True  # sem dados suficientes para validar — não bloquear
 
         try:
+            import re
             from sqlalchemy import text
 
-            table_map = {
+            _TABLE_MAP = {
                 "sourcing": "sourcing_sessions",
                 "job": "job_vacancies",
                 "candidate": "candidates",
             }
-            table = table_map.get(entity_type)
+            table = _TABLE_MAP.get(entity_type)
             if not table:
-                return True  # tipo desconhecido — não bloquear
+                return True
+
+            if not re.match(r"^[a-z][a-z0-9_]{0,62}$", table):
+                logger.error("[ContextAdapter] Invalid table name from map: %s", table)
+                return False
 
             result = await db.execute(
                 text(f"SELECT id FROM {table} WHERE id = :eid AND company_id = :cid LIMIT 1"),

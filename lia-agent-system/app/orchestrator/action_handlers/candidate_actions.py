@@ -4,6 +4,7 @@ Candidate Actions — closed-loop candidate management actions.
 Handles: move_candidate, update_candidate_field, start_screening, analyze_profile
 """
 import logging
+import re
 from datetime import datetime
 from typing import Any
 
@@ -18,6 +19,16 @@ ALLOWED_DIRECT_FIELDS = {
 
 ALLOWED_JSON_FIELDS = {"availability_date", "education_level"}
 ALLOWED_FIELDS = ALLOWED_DIRECT_FIELDS | ALLOWED_JSON_FIELDS
+
+_SAFE_COLUMN_RE = re.compile(r"^[a-z][a-z0-9_]{0,62}$")
+
+
+def _safe_identifier(name: str, allowed: set[str]) -> str:
+    if name not in allowed:
+        raise ValueError(f"Column '{name}' not in allow-list")
+    if not _SAFE_COLUMN_RE.match(name):
+        raise ValueError(f"Column '{name}' contains invalid characters")
+    return name
 
 FIELD_ALIASES = {
     "telefone": "phone",
@@ -215,8 +226,9 @@ async def _update_candidate_field(params: dict[str, Any], context: dict[str, Any
                     {"key": resolved_field, "val": field_value, "cid": candidate_id},
                 )
             else:
+                safe_col = _safe_identifier(resolved_field, ALLOWED_DIRECT_FIELDS)
                 result = await db.execute(
-                    text(f"UPDATE candidates SET {resolved_field} = :val, updated_at = NOW() WHERE id = CAST(:cid AS uuid)"),
+                    text(f"UPDATE candidates SET {safe_col} = :val, updated_at = NOW() WHERE id = CAST(:cid AS uuid)"),
                     {"val": field_value, "cid": candidate_id},
                 )
 

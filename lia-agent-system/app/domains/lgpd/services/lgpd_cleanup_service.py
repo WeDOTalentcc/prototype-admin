@@ -21,6 +21,7 @@ Design principles:
 from __future__ import annotations
 
 import logging
+import re
 from datetime import datetime, timedelta
 from uuid import UUID
 
@@ -32,6 +33,12 @@ from lia_models.ai_consumption import AiConsumption
 from lia_models.candidate import Candidate, VacancyCandidate
 
 logger = logging.getLogger(__name__)
+
+_SAFE_TABLE_RE = re.compile(r"^[a-z][a-z0-9_]{0,62}$")
+_ALLOWED_TTL_TABLES = frozenset([
+    "messages", "conversation_messages", "chat_messages",
+    "interview_notes", "screening_tasks", "fairness_audit_log",
+])
 
 # Default retention windows (days) — maps data type → TTL
 RETENTION_DAYS = {
@@ -93,6 +100,11 @@ async def _cleanup_by_created_at(
 
     Returns count of rows deleted (or would be deleted in dry-run mode).
     """
+    if table_name not in _ALLOWED_TTL_TABLES:
+        raise ValueError(f"Table '{table_name}' not in LGPD TTL allow-list")
+    if not _SAFE_TABLE_RE.match(table_name):
+        raise ValueError(f"Table '{table_name}' contains invalid characters")
+
     cutoff = datetime.utcnow() - timedelta(days=retention_days)
 
     count_result = await db.execute(

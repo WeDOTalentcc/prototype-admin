@@ -8,6 +8,7 @@ FairnessGuard for compliance validation.
 """
 import json
 import logging
+import re
 from typing import Any
 
 from lia_agents_core.react_loop import ToolDefinition
@@ -18,6 +19,12 @@ from app.shared.compliance.fairness_guard import FairnessGuard
 from app.shared.tool_handler import tool_handler
 
 logger = logging.getLogger(__name__)
+
+_SAFE_COL_RE = re.compile(r"^[a-z][a-z0-9_]{0,62}$")
+_VALID_POLICY_BLOCKS = frozenset([
+    "pipeline_rules", "scheduling_rules", "communication_rules",
+    "screening_rules", "automation_rules",
+])
 
 _fairness_guard = FairnessGuard()
 
@@ -90,16 +97,15 @@ async def _wrap_save_policy_field(**kwargs: Any) -> dict[str, Any]:
     field = kwargs.get("field", "")
     value = kwargs.get("value")
 
-    valid_blocks = [
-        "pipeline_rules", "scheduling_rules", "communication_rules",
-        "screening_rules", "automation_rules",
-    ]
-    if block not in valid_blocks:
+    if block not in _VALID_POLICY_BLOCKS:
         return {
             "success": False,
             "data": {},
-            "message": f"Bloco '{block}' nao e valido. Blocos validos: {valid_blocks}",
+            "message": f"Bloco '{block}' nao e valido. Blocos validos: {sorted(_VALID_POLICY_BLOCKS)}",
         }
+
+    if not _SAFE_COL_RE.match(block):
+        return {"success": False, "data": {}, "message": f"Bloco '{block}' contém caracteres inválidos."}
 
     async with AsyncSessionLocal() as session:
         existing = await session.execute(
@@ -910,16 +916,15 @@ async def _wrap_save_policy_block(**kwargs: Any) -> dict[str, Any]:
     block = kwargs.get("block", "")
     data = kwargs.get("data", {})
 
-    valid_blocks = [
-        "pipeline_rules", "scheduling_rules", "communication_rules",
-        "screening_rules", "automation_rules",
-    ]
-    if block not in valid_blocks:
+    if block not in _VALID_POLICY_BLOCKS:
         return {
             "success": False,
             "data": {},
-            "message": f"Bloco '{block}' nao e valido. Blocos validos: {valid_blocks}",
+            "message": f"Bloco '{block}' nao e valido. Blocos validos: {sorted(_VALID_POLICY_BLOCKS)}",
         }
+
+    if not _SAFE_COL_RE.match(block):
+        return {"success": False, "data": {}, "message": f"Bloco '{block}' contém caracteres inválidos."}
 
     if not data or not isinstance(data, dict):
         return {

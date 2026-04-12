@@ -378,12 +378,17 @@ class WizardStepService:
                 Filters by company_id for multi-tenant data isolation.
                 """
                 patterns = {}
+                import re as _re
+                _SAFE_PATTERN_COLS = frozenset(["work_model", "employment_type", "location"])
+                _SAFE_COL_RE = _re.compile(r"^[a-z][a-z0-9_]{0,62}$")
                 _pattern_fields = [
                     ("work_model", "work_model IS NOT NULL"),
                     ("employment_type", "employment_type IS NOT NULL"),
                     ("location", "location IS NOT NULL AND location != ''"),
                 ]
                 for col, where_clause in _pattern_fields:
+                    if col not in _SAFE_PATTERN_COLS or not _SAFE_COL_RE.match(col):
+                        continue
                     query = text(f"""
                         SELECT {col}, COUNT(*) as count
                         FROM job_vacancies
