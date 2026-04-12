@@ -40,7 +40,7 @@ SENTIMENT_POSITIVE = ["excelente", "ótimo", "bom", "forte", "destaque", "impres
 SENTIMENT_NEGATIVE = ["fraco", "ruim", "insuficiente", "falta", "não conseguiu", "dificuldade", "preocupante", "risco", "confuso", "inseguro"]
 
 
-@tool_handler("talent_intelligence")
+@tool_handler("talent_intelligence", module="interview_intelligence")
 async def analyze_interview_recording(
     transcript: str = "",
     candidate_id: str | None = None,

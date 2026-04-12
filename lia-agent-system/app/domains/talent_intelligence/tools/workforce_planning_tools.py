@@ -11,7 +11,7 @@ from app.shared.tool_handler import tool_handler
 logger = logging.getLogger(__name__)
 
 
-@tool_handler("talent_intelligence")
+@tool_handler("talent_intelligence", module="workforce_planning")
 async def forecast_hiring_needs(
     period: str = "quarter",
     department: str | None = None,

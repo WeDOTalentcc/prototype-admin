@@ -16,7 +16,7 @@ from app.shared.tool_handler import tool_handler
 logger = logging.getLogger(__name__)
 
 
-@tool_handler("talent_intelligence", require_company=False)
+@tool_handler("talent_intelligence", require_company=False, module="talent_intelligence_pro")
 async def infer_related_skills(
     skills: list[str] | None = None,
     depth: int = 2,
@@ -67,7 +67,7 @@ async def infer_related_skills(
     }
 
 
-@tool_handler("talent_intelligence", require_company=False)
+@tool_handler("talent_intelligence", require_company=False, module="talent_intelligence_pro")
 async def get_skill_adjacencies(
     skill: str = "",
     min_weight: float = 0.0,
@@ -115,7 +115,7 @@ async def get_skill_adjacencies(
     }
 
 
-@tool_handler("talent_intelligence")
+@tool_handler("talent_intelligence", module="talent_intelligence_pro")
 async def analyze_skill_gaps(
     candidate_skills: list[str] | None = None,
     required_skills: list[str] | None = None,
@@ -203,7 +203,7 @@ async def analyze_skill_gaps(
     }
 
 
-@tool_handler("talent_intelligence")
+@tool_handler("talent_intelligence", module="talent_intelligence_pro")
 async def map_candidate_skills_to_ontology(
     skills: list[str] | None = None,
     candidate_id: str | None = None,

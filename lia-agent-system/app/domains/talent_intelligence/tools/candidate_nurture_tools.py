@@ -56,7 +56,7 @@ SEQUENCE_TEMPLATES = {
 }
 
 
-@tool_handler("talent_intelligence")
+@tool_handler("talent_intelligence", module="candidate_nurture")
 async def create_nurture_sequence(
     candidate_ids: list[str] | None = None,
     template: str = "general",
@@ -161,7 +161,7 @@ async def create_nurture_sequence(
     }
 
 
-@tool_handler("talent_intelligence")
+@tool_handler("talent_intelligence", module="candidate_nurture")
 async def get_engagement_metrics(
     sequence_id: str | None = None,
     period: str = "month",
@@ -343,7 +343,7 @@ async def get_engagement_metrics(
     }
 
 
-@tool_handler("talent_intelligence")
+@tool_handler("talent_intelligence", module="candidate_nurture")
 async def suggest_reengagement(
     days_inactive: int = 30,
     limit: int = 20,

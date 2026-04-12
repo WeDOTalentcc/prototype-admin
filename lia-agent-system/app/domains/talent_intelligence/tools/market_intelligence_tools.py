@@ -15,7 +15,7 @@ from app.shared.tool_handler import tool_handler
 logger = logging.getLogger(__name__)
 
 
-@tool_handler("talent_intelligence", require_company=False)
+@tool_handler("talent_intelligence", require_company=False, module="talent_intelligence_pro")
 async def get_market_intelligence(
     job_title: str = "",
     seniority: str | None = None,

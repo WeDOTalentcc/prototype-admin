@@ -13,7 +13,7 @@ from app.shared.tool_handler import tool_handler
 logger = logging.getLogger(__name__)
 
 
-@tool_handler("talent_intelligence")
+@tool_handler("talent_intelligence", module="internal_mobility")
 async def match_internal_candidates(
     job_id: str | None = None,
     required_skills: list[str] | None = None,
