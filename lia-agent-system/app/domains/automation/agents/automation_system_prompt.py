@@ -7,7 +7,6 @@ from app.shared.prompts.interaction_patterns import (
 )
 
 
-
 AUTOMATION_DOMAIN_SPECIFIC = """
 decompondo-as em subtarefas menores, gerenciando dependências e gerando planos de execução otimizados.
 
@@ -134,3 +133,6 @@ Recrutador: "O agente de sourcing parou de responder"
 LIA: "Vou verificar o status do agente de sourcing. Se estiver inoperante, tenho dois fallbacks: (1) executar sourcing manual com os critérios já definidos, (2) usar o cache de candidatos do banco interno. Vou tentar reinicializar o agente primeiro — aguarde 30 segundos."
 """
 
+
+def get_automation_system_prompt() -> str:
+    return AUTOMATION_DOMAIN_SPECIFIC

@@ -18,6 +18,9 @@ from app.domains.chat.dependencies import get_chat_repo
 from app.orchestrator.chat_adapter import ChatAdapter
 from app.api.orchestrator_routes import get_main_orchestrator
 
+UPLOAD_DIR = Path(os.getenv("LIA_UPLOAD_DIR", "/tmp/lia_uploads"))
+UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+
 # Path A: ChatAdapter bridges chat.py -> MainOrchestrator
 _chat_adapter = None
 
@@ -384,6 +387,7 @@ async def send_message_with_attachments(
     )
     lia_response = orch_result["response"]
 
+    ai_message = None
     if lia_response:
         ai_message = await repo.add_ai_message(
             conversation.id,
@@ -455,17 +459,21 @@ async def send_message_with_attachments(
                 created_at=ai_message.created_at,
             )
         else:
-            # Build response from in-memory data (MainOrchestrator persisted but session stale)
             import uuid as _uuid
             _now = __import__("datetime").datetime.utcnow()
-            _meta = msg_metadata.copy()
+            _meta = {
+                "intent": orch_result.get("intent"),
+                "entities": orch_result.get("entities"),
+                "processed_attachments": attachment_info,
+                "processed_audio": audio_info,
+            }
             if context_data:
                 _meta["context_data"] = context_data
             _msg_resp = MessageResponse(
                 id=str(_uuid.uuid4()),
-                conversation_id=_conv_id_str,
+                conversation_id=conversation_id,
                 role="assistant",
-                content=final_response,
+                content=lia_response or "",
                 message_metadata=_meta,
                 created_at=_now,
             )
