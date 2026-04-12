@@ -311,7 +311,12 @@ class LangGraphReActBase(LangGraphBase):
 
             # Default to Claude (LangChain agents need ChatModel interface)
             provider = "claude"
-            model_name = settings.LLM_PRIMARY_MODEL
+            # Use per-agent model config (E5: kanban/policy/automation/communication/ats = Haiku)
+            try:
+                from app.core.agent_model_config import get_model_for_agent
+                model_name = get_model_for_agent(self.domain_name)
+            except ImportError:
+                model_name = settings.LLM_PRIMARY_MODEL
             api_key = settings.AI_INTEGRATIONS_ANTHROPIC_API_KEY or settings.ANTHROPIC_API_KEY
             base_url = os.environ.get("AI_INTEGRATIONS_ANTHROPIC_BASE_URL") or getattr(settings, "AI_INTEGRATIONS_ANTHROPIC_BASE_URL", None)
 
