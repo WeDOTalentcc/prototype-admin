@@ -258,6 +258,17 @@ async def list_interviews(
     List interviews with optional filters.
     """
     try:
+        if job_vacancy_id:
+            try:
+                uuid.UUID(job_vacancy_id)
+            except (ValueError, AttributeError):
+                raise HTTPException(status_code=400, detail="Invalid job_vacancy_id format")
+        if candidate_id:
+            try:
+                uuid.UUID(candidate_id)
+            except (ValueError, AttributeError):
+                raise HTTPException(status_code=400, detail="Invalid candidate_id format")
+
         company_id = getattr(request_obj.state, "company_id", None) if hasattr(request_obj, "state") else None
         rows = await repo.list_interviews(
             status=status,
@@ -302,6 +313,8 @@ async def list_interviews(
             for interview, job_code, job_manager in rows
         ]
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error("Failed to list interviews: %s", e)
         raise HTTPException(status_code=500, detail=str(e))
