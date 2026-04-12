@@ -107,11 +107,14 @@ export function UnifiedMessageList({
   return (
     <div
       ref={containerRef}
-      className={cn(
-        "flex-1 overflow-y-auto px-4 py-4 space-y-4",
-        mode === "fullscreen" ? "max-w-[720px] mx-auto w-full" : ""
-      )}
+      className="flex-1 overflow-y-auto"
     >
+      <div
+        className={cn(
+          "px-4 py-4 space-y-4",
+          mode === "fullscreen" ? "max-w-[720px] mx-auto w-full" : ""
+        )}
+      >
       {messages.map((message) => {
         const isLia = message.sender === "lia"
         const meta = message.metadata
@@ -203,6 +206,7 @@ export function UnifiedMessageList({
       )}
 
       <div ref={bottomRef} />
+      </div>
     </div>
   )
 }
