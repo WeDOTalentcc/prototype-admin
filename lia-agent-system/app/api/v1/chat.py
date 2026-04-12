@@ -759,17 +759,24 @@ async def send_message(
         if action_metadata:
             msg_metadata.update(action_metadata)
 
-        ai_message = await repo.add_ai_message(
-            conversation.id,
-            final_response,
-            msg_metadata,
-            prompt_version=orch_result.get("prompt_version"),
+        # M2: Writes migrados para MainOrchestrator._persist_response
+        # Build in-memory Message for REST response (not persisted here)
+        from uuid import uuid4 as _uuid4
+        from datetime import datetime as _dt, timezone as _tz
+        class _MsgProxy:
+            def __init__(self, **kw):
+                self.__dict__.update(kw)
+        ai_message = _MsgProxy(
+            id=_uuid4(),
+            conversation_id=conversation.id,
+            role="assistant",
+            content=final_response,
+            message_metadata=msg_metadata,
+            created_at=_dt.now(_tz.utc),
         )
-
-        await repo.update_conversation_intent(conversation, detected_intent, orch_result["workflow_data"])
-        await repo.set_conversation_title(conversation, message_data.content[:100])
-
-        await repo.commit_and_refresh(ai_message, conversation)
+        # MainOrchestrator handles: conversation.intent, title, workflow_data
+        # Refresh conversation from DB to get MainOrchestrator updates
+        await repo.db.refresh(conversation)
 
         workflow_data = orch_result["workflow_data"]
         context_data = None
@@ -1252,7 +1259,7 @@ async def stream_message(
     # Build history for Claude (last 20 messages to stay within context limits)
     history_msgs = await repo.get_recent_messages(conversation.id, limit=20)
     history = [
-        {"role": "user" if m.role == "human" else "assistant", "content": m.content}
+        {"role": "user" if m.role in ("human", "user") else "assistant", "content": m.content}
         for m in history_msgs
     ]
 

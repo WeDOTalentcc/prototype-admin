@@ -96,7 +96,7 @@ class ChatAdapter:
         )
 
         # Passo 2: ChatRepository remains memory owner until M2
-        ctx.skip_memory_persist = True
+        ctx.skip_memory_persist = False  # M2: MainOrchestrator owns persistence now
 
         return ctx
 

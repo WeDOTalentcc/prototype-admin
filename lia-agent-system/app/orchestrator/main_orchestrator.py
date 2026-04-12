@@ -654,11 +654,52 @@ class MainOrchestrator:
         from app.domains.recruiter_assistant.services.conversation_memory import conversation_memory
         try:
             if result.get("success") and conv is not None:
+                # M2 Item 1: Build rich metadata matching ChatRepository format
+                _msg_metadata = {
+                    "intent": result.get("intent", ""),
+                    "entities": (result.get("result") or {}).get("data", {}).get("entities", {}),
+                    "agent_used": result.get("agent", ""),
+                    "confidence": result.get("confidence", 0),
+                }
+                _structured = (result.get("result") or {}).get("data", {})
+                if _structured and (_structured.get("search_results") or _structured.get("response_plan")):
+                    _msg_metadata["context_data"] = _structured
+                if result.get("action_result"):
+                    _msg_metadata["action_result"] = result["action_result"]
+                if result.get("pending_action_id"):
+                    _msg_metadata["pending_action"] = {
+                        "pending_id": result.get("pending_action_id"),
+                        "awaiting_confirmation": result.get("needs_confirmation", False),
+                    }
+
                 await conversation_memory.add_message(
                     db=db, conversation_id=conv_id, role="assistant",
                     content=result.get("message", result.get("content", "")),
                     intent=result.get("intent"),
+                    metadata=_msg_metadata,
                 )
+
+                # M2 Item 2: Update conversation title, intent, workflow_data
+                try:
+                    from sqlalchemy import update as sa_update
+                    from lia_models.conversation import Conversation as ConvModel
+                    from uuid import UUID as _UUID
+                    _conv_uuid = _UUID(conv_id) if isinstance(conv_id, str) else conv_id
+                    _updates = {"updated_at": __import__("datetime").datetime.utcnow()}
+                    if result.get("intent"):
+                        _updates["intent"] = result["intent"]
+                    _wf_data = (result.get("result") or {}).get("data", {})
+                    if _wf_data:
+                        _updates["workflow_data"] = _wf_data
+                    if not getattr(conv, "title", None):
+                        _updates["title"] = ctx.message[:100]
+                    if _updates:
+                        await db.execute(
+                            sa_update(ConvModel).where(ConvModel.id == _conv_uuid).values(**_updates)
+                        )
+                except Exception as _upd_exc:
+                    logger.debug("[MainOrchestrator] Conv update skipped: %s", _upd_exc)
+
                 if (
                     getattr(conv, "message_count", None)
                     and conv.message_count % settings.ROUTER_SUMMARY_EVERY_N_MESSAGES == 0
@@ -796,6 +837,7 @@ class MainOrchestrator:
                 ctx_candidates=ctx.candidates,
                 ctx_job_context=ctx.job_context,
                 result=result,
+                db=db,
             )
 
             if insights:

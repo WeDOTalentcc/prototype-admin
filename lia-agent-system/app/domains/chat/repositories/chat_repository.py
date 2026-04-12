@@ -94,7 +94,7 @@ class ChatRepository:
     ) -> Message:
         msg = Message(
             conversation_id=conversation_id,
-            role="human",
+            role="user",
             content=content,
             message_metadata=message_metadata or {},
         )
@@ -111,7 +111,7 @@ class ChatRepository:
     ) -> Message:
         msg = Message(
             conversation_id=conversation_id,
-            role="ai",
+            role="assistant",
             content=content,
             message_metadata=message_metadata or {},
             prompt_version=prompt_version,

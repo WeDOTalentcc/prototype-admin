@@ -151,6 +151,7 @@ class TastingEngine:
         ctx_candidates: list[dict[str, Any]] | None,
         ctx_job_context: dict[str, Any] | None,
         result: dict[str, Any],
+        db: Any = None,
     ) -> list[TastingInsight]:
         if not ctx_company_id:
             return []
@@ -167,6 +168,7 @@ class TastingEngine:
                     entity_id=ctx_entity_id,
                     entity_type=ctx_entity_type,
                     result=result,
+                    db=db,
                 ),
                 "skill_gap",
             )
@@ -179,6 +181,7 @@ class TastingEngine:
                     company_id=ctx_company_id,
                     job_context=ctx_job_context,
                     result=result,
+                    db=db,
                 ),
                 "market_intel",
             )
@@ -192,6 +195,7 @@ class TastingEngine:
                     job_context=ctx_job_context,
                     entity_id=ctx_entity_id,
                     result=result,
+                    db=db,
                 ),
                 "internal_mobility",
             )
@@ -232,6 +236,7 @@ class TastingEngine:
         entity_id: str | None,
         entity_type: str | None,
         result: dict[str, Any],
+        db: Any = None,
     ) -> TastingInsight | None:
         candidate_id = None
         candidate_skills: list[str] = []
@@ -269,6 +274,7 @@ class TastingEngine:
                 candidate_id=candidate_id,
                 job_id=job_id,
                 company_id=company_id,
+                db=db,
             )
             if gap_result.get("success"):
                 data = gap_result.get("data", {})
@@ -306,6 +312,7 @@ class TastingEngine:
         company_id: str,
         job_context: dict[str, Any] | None,
         result: dict[str, Any],
+        db: Any = None,
     ) -> TastingInsight | None:
         job_title = ""
         location = ""
@@ -340,6 +347,8 @@ class TastingEngine:
                     seniority=seniority or None,
                     location=location or None,
                     include_trends=False,
+                    company_id=company_id,
+                    db=db,
                 )
                 if mi_result.get("success"):
                     data = mi_result.get("data", {})
@@ -378,6 +387,7 @@ class TastingEngine:
         job_context: dict[str, Any] | None,
         entity_id: str | None,
         result: dict[str, Any],
+        db: Any = None,
     ) -> TastingInsight | None:
         job_id = ""
         job_title = ""
@@ -407,6 +417,7 @@ class TastingEngine:
                 job_title=job_title or None,
                 limit=5,
                 company_id=company_id,
+                db=db,
             )
             if im_result.get("success"):
                 data = im_result.get("data", {})
@@ -435,7 +446,28 @@ class TastingEngine:
         )
 
     def _log_display(self, company_id: str, insight: TastingInsight) -> None:
+        self._log_event(company_id, insight, "display")
+
+    def log_click(self, company_id: str, module_name: str, insight_type: str, context_key: str = "") -> None:
         record = {
+            "event": "click",
+            "company_id": company_id,
+            "module_name": module_name,
+            "insight_type": insight_type,
+            "context_key": context_key,
+            "timestamp": time.time(),
+        }
+        self._display_log.append(record)
+        if len(self._display_log) > 10000:
+            self._display_log = self._display_log[-5000:]
+        logger.info(
+            "[TastingEngine] insight_clicked company=%s module=%s type=%s key=%s",
+            company_id, module_name, insight_type, context_key,
+        )
+
+    def _log_event(self, company_id: str, insight: TastingInsight, event: str) -> None:
+        record = {
+            "event": event,
             "company_id": company_id,
             "module_name": insight.module_name,
             "insight_type": insight.insight_type,
@@ -446,8 +478,8 @@ class TastingEngine:
         if len(self._display_log) > 10000:
             self._display_log = self._display_log[-5000:]
         logger.info(
-            "[TastingEngine] insight_displayed company=%s module=%s type=%s key=%s",
-            company_id, insight.module_name, insight.insight_type, insight.context_key,
+            "[TastingEngine] insight_%s company=%s module=%s type=%s key=%s",
+            event, company_id, insight.module_name, insight.insight_type, insight.context_key,
         )
 
     def get_display_stats(self, company_id: str | None = None) -> dict[str, Any]:
@@ -456,11 +488,18 @@ class TastingEngine:
             records = [r for r in records if r["company_id"] == company_id]
         by_module: dict[str, int] = {}
         by_type: dict[str, int] = {}
+        displays = 0
+        clicks = 0
         for r in records:
             by_module[r["module_name"]] = by_module.get(r["module_name"], 0) + 1
             by_type[r["insight_type"]] = by_type.get(r["insight_type"], 0) + 1
+            if r.get("event") == "click":
+                clicks += 1
+            else:
+                displays += 1
         return {
-            "total_displays": len(records),
+            "total_displays": displays,
+            "total_clicks": clicks,
             "by_module": by_module,
             "by_type": by_type,
         }
