@@ -1,18 +1,26 @@
 """
 Bias Detector Service — Enhanced interviewer bias detection.
 
-Two layers:
-1. Deterministic: regex pattern matching for known bias indicators
-2. LLM-powered: deep contextual analysis for subtle/implicit bias
+Analyzes ONLY interviewer utterances (not candidate self-disclosures).
+
+Three detection layers:
+1. Speaker-aware pattern matching: parses speaker turns, applies regex only to
+   interviewer lines (illegal questions, bias indicators)
+2. Structural analysis: talk-time ratio (interviewer vs candidate), leading
+   question detection, question diversity
+3. LLM-powered: deep contextual analysis with interviewer-only transcript
 
 Detects: age, gender, appearance, family status, socioeconomic,
-disability, racial, religious, sexual orientation, and affinity bias.
+disability, racial, religious, sexual orientation, affinity bias,
+disproportionate talk-time, and leading questions.
+
+Enforces tenant isolation via mandatory company_id.
 """
 import logging
 import re
-from typing import Any, Optional
+from typing import Any
 
-from sqlalchemy import select
+from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.interview import Interview
@@ -42,14 +50,30 @@ BIAS_PATTERNS: list[tuple[str, str, str, str]] = [
      "cultural_proxy_bias", "medium", "Proxy para viés via 'cultural fit'"),
 ]
 
-INTERVIEWER_PATTERN_INDICATORS = [
-    (r"entrevistador[a]?:\s*(?:[^?]*\?)", "question_pattern",
-     "Padrão de perguntas do entrevistador"),
+LEADING_QUESTION_PATTERNS: list[tuple[str, str]] = [
+    (r"você não acha que\b", "Pergunta indutiva: 'você não acha que...'"),
+    (r"concorda que\b", "Pergunta indutiva: 'concorda que...'"),
+    (r"é verdade que\b", "Pergunta indutiva: 'é verdade que...'"),
+    (r"obviamente você\b", "Pergunta presumptiva: 'obviamente você...'"),
+    (r"certamente você\b", "Pergunta presumptiva: 'certamente você...'"),
+    (r"todo mundo sabe que\b", "Pressão social: 'todo mundo sabe que...'"),
+    (r"não seria melhor\b", "Pergunta direcionada: 'não seria melhor...'"),
+    (r"você deveria\b", "Pergunta prescritiva: 'você deveria...'"),
+]
+
+INTERVIEWER_LABELS = [
+    "entrevistador", "entrevistadora", "interviewer", "recruiter",
+    "recrutador", "recrutadora", "avaliador", "avaliadora",
+    "gestor", "gestora", "manager", "hiring manager",
+]
+
+CANDIDATE_LABELS = [
+    "candidato", "candidata", "candidate", "entrevistado", "entrevistada",
 ]
 
 LLM_BIAS_PROMPT = """Você é um especialista em recrutamento justo e equitativo (DEI — Diversity, Equity & Inclusion).
 
-Analise a transcrição de entrevista abaixo e identifique quaisquer sinais de viés (consciente ou inconsciente) por parte do(s) entrevistador(es).
+Analise APENAS as falas do ENTREVISTADOR na transcrição abaixo. Identifique sinais de viés (consciente ou inconsciente) nas PERGUNTAS e COMENTÁRIOS do entrevistador — NÃO em auto-revelações do candidato.
 
 TIPOS DE VIÉS A DETECTAR:
 1. Viés de confirmação — perguntas direcionadas para confirmar impressão inicial
@@ -60,18 +84,13 @@ TIPOS DE VIÉS A DETECTAR:
 6. Viés socioeconômico — julgamento por origem social
 7. Viés de aparência — comentários sobre aparência física
 8. Perguntas ilegais — perguntas sobre família, religião, orientação sexual, saúde
-9. Estereotipagem — generalizações baseadas em grupo
+9. Perguntas indutivas/direcionadas — leading questions que sugerem a resposta
+10. Estereotipagem — generalizações baseadas em grupo
 
-Para cada viés detectado, forneça:
-- Tipo de viés
-- Trecho relevante da transcrição (citação direta)
-- Severidade: alta/média/baixa
-- Recomendação para o entrevistador
+IMPORTANTE: Se o candidato menciona espontaneamente informações pessoais (família, religião, etc.), isso NÃO é viés do entrevistador. Foque apenas nas perguntas e comentários iniciados pelo entrevistador.
 
-Se NÃO detectar viés, diga explicitamente que a entrevista parece justa.
-
-TRANSCRIÇÃO:
-{transcript}
+FALAS DO ENTREVISTADOR:
+{interviewer_text}
 
 Responda em JSON com a estrutura:
 {{
@@ -80,7 +99,7 @@ Responda em JSON com a estrutura:
   "findings": [
     {{
       "type": "tipo_do_viés",
-      "excerpt": "trecho citado",
+      "excerpt": "trecho citado do entrevistador",
       "severity": "alta/média/baixa",
       "recommendation": "sugestão"
     }}
@@ -100,7 +119,7 @@ class BiasDetectorService:
     ) -> dict[str, Any]:
         if not company_id:
             return {"success": False, "error": "company_id is required for tenant isolation"}
-        from sqlalchemy import and_
+
         result = await db.execute(
             select(Interview).where(
                 and_(Interview.id == interview_id, Interview.company_id == company_id)
@@ -114,28 +133,97 @@ class BiasDetectorService:
         if not transcript or len(transcript.strip()) < 50:
             return {"success": False, "error": "Transcript too short or missing"}
 
-        pattern_findings = self._detect_patterns(transcript)
+        turns = self._parse_speaker_turns(transcript)
+        interviewer_text = self._extract_interviewer_text(turns)
+
+        pattern_findings = self._detect_patterns_interviewer_only(interviewer_text)
+        leading_findings = self._detect_leading_questions(interviewer_text)
+        talk_time = self._compute_talk_time(turns)
 
         llm_findings: dict[str, Any] = {}
-        if use_llm:
-            llm_findings = await self._detect_with_llm(transcript)
+        if use_llm and interviewer_text:
+            llm_findings = await self._detect_with_llm(interviewer_text)
 
-        merged = self._merge_findings(pattern_findings, llm_findings)
+        merged = self._merge_findings(
+            pattern_findings, leading_findings, talk_time, llm_findings
+        )
 
         return {
             "success": True,
             "interview_id": interview_id,
             "bias_detected": merged["bias_detected"],
             "overall_fairness_score": merged["fairness_score"],
+            "talk_time_analysis": talk_time,
             "pattern_alerts": pattern_findings,
+            "leading_question_alerts": leading_findings,
             "llm_analysis": llm_findings if use_llm else None,
             "findings": merged["findings"],
             "summary": merged["summary"],
             "recommendations": merged["recommendations"],
         }
 
-    def _detect_patterns(self, transcript: str) -> list[dict[str, Any]]:
-        text_lower = transcript.lower()
+    def _parse_speaker_turns(self, transcript: str) -> list[dict[str, Any]]:
+        lines = transcript.strip().split("\n")
+        turns: list[dict[str, Any]] = []
+        current_speaker = "unknown"
+        current_role = "unknown"
+        current_text: list[str] = []
+
+        for line in lines:
+            line = line.strip()
+            if not line:
+                continue
+
+            speaker_match = re.match(r"^([^:]{1,50}):\s*(.*)$", line)
+            if speaker_match:
+                if current_text:
+                    turns.append({
+                        "speaker": current_speaker,
+                        "role": current_role,
+                        "text": " ".join(current_text),
+                        "word_count": sum(len(t.split()) for t in current_text),
+                    })
+                    current_text = []
+
+                current_speaker = speaker_match.group(1).strip()
+                current_role = self._classify_speaker(current_speaker)
+                remaining = speaker_match.group(2).strip()
+                if remaining:
+                    current_text.append(remaining)
+            else:
+                current_text.append(line)
+
+        if current_text:
+            turns.append({
+                "speaker": current_speaker,
+                "role": current_role,
+                "text": " ".join(current_text),
+                "word_count": sum(len(t.split()) for t in current_text),
+            })
+
+        return turns
+
+    def _classify_speaker(self, speaker_name: str) -> str:
+        name_lower = speaker_name.lower().strip()
+        for label in INTERVIEWER_LABELS:
+            if label in name_lower:
+                return "interviewer"
+        for label in CANDIDATE_LABELS:
+            if label in name_lower:
+                return "candidate"
+        return "unknown"
+
+    def _extract_interviewer_text(self, turns: list[dict[str, Any]]) -> str:
+        interviewer_turns = [t["text"] for t in turns if t["role"] == "interviewer"]
+        if not interviewer_turns:
+            if len(turns) >= 2:
+                interviewer_turns = [t["text"] for t in turns[::2]]
+        return "\n".join(interviewer_turns)
+
+    def _detect_patterns_interviewer_only(self, interviewer_text: str) -> list[dict[str, Any]]:
+        if not interviewer_text:
+            return []
+        text_lower = interviewer_text.lower()
         alerts: list[dict[str, Any]] = []
         for pattern, bias_type, severity, description in BIAS_PATTERNS:
             matches = re.findall(pattern, text_lower, re.IGNORECASE)
@@ -146,18 +234,62 @@ class BiasDetectorService:
                     "occurrences": len(matches),
                     "severity": severity,
                     "matched_terms": list(set(matches))[:5],
-                    "source": "pattern",
+                    "source": "pattern_interviewer",
                 })
         return alerts
 
-    async def _detect_with_llm(self, transcript: str) -> dict[str, Any]:
+    def _detect_leading_questions(self, interviewer_text: str) -> list[dict[str, Any]]:
+        if not interviewer_text:
+            return []
+        text_lower = interviewer_text.lower()
+        alerts: list[dict[str, Any]] = []
+        for pattern, description in LEADING_QUESTION_PATTERNS:
+            matches = re.findall(pattern, text_lower, re.IGNORECASE)
+            if matches:
+                alerts.append({
+                    "type": "leading_question",
+                    "description": description,
+                    "occurrences": len(matches),
+                    "severity": "medium",
+                    "source": "leading_question_detector",
+                })
+        return alerts
+
+    def _compute_talk_time(self, turns: list[dict[str, Any]]) -> dict[str, Any]:
+        interviewer_words = sum(
+            t["word_count"] for t in turns if t["role"] == "interviewer"
+        )
+        candidate_words = sum(
+            t["word_count"] for t in turns if t["role"] == "candidate"
+        )
+        total = interviewer_words + candidate_words or 1
+
+        interviewer_ratio = round(interviewer_words / total, 2)
+        candidate_ratio = round(candidate_words / total, 2)
+
+        disproportionate = interviewer_ratio > 0.60
+
+        return {
+            "interviewer_words": interviewer_words,
+            "candidate_words": candidate_words,
+            "interviewer_ratio": interviewer_ratio,
+            "candidate_ratio": candidate_ratio,
+            "disproportionate": disproportionate,
+            "assessment": (
+                "Entrevistador fala demais — candidato teve pouco espaço"
+                if disproportionate
+                else "Proporção de fala equilibrada"
+            ),
+        }
+
+    async def _detect_with_llm(self, interviewer_text: str) -> dict[str, Any]:
         import json
         try:
             from app.domains.ai.services.llm import LLMService
             llm = LLMService()
 
-            truncated = transcript[:8000] if len(transcript) > 8000 else transcript
-            prompt = LLM_BIAS_PROMPT.format(transcript=truncated)
+            truncated = interviewer_text[:6000] if len(interviewer_text) > 6000 else interviewer_text
+            prompt = LLM_BIAS_PROMPT.format(interviewer_text=truncated)
 
             raw = await llm.generate(prompt, provider="gemini")
 
@@ -178,6 +310,8 @@ class BiasDetectorService:
     def _merge_findings(
         self,
         pattern_alerts: list[dict[str, Any]],
+        leading_alerts: list[dict[str, Any]],
+        talk_time: dict[str, Any],
         llm_result: dict[str, Any],
     ) -> dict[str, Any]:
         findings: list[dict[str, Any]] = []
@@ -187,8 +321,28 @@ class BiasDetectorService:
                 "type": alert["type"],
                 "description": alert["description"],
                 "severity": alert["severity"],
-                "source": "pattern",
+                "source": "pattern_interviewer",
                 "occurrences": alert["occurrences"],
+            })
+
+        for alert in leading_alerts:
+            findings.append({
+                "type": alert["type"],
+                "description": alert["description"],
+                "severity": alert["severity"],
+                "source": "leading_question_detector",
+                "occurrences": alert["occurrences"],
+            })
+
+        if talk_time.get("disproportionate"):
+            findings.append({
+                "type": "disproportionate_talk_time",
+                "description": (
+                    f"Entrevistador usou {talk_time['interviewer_ratio']*100:.0f}% do tempo de fala. "
+                    "Candidato teve pouco espaço para demonstrar competências."
+                ),
+                "severity": "medium",
+                "source": "talk_time_analysis",
             })
 
         llm_findings = llm_result.get("findings", [])
@@ -207,7 +361,7 @@ class BiasDetectorService:
         if fairness_from_llm is not None:
             fairness_score = fairness_from_llm
         else:
-            high_count = sum(1 for f in findings if f.get("severity") == "alta" or f.get("severity") == "high")
+            high_count = sum(1 for f in findings if f.get("severity") in ("alta", "high"))
             med_count = sum(1 for f in findings if f.get("severity") in ("média", "medium"))
             penalty = high_count * 1.0 + med_count * 0.5
             fairness_score = max(1, round(5 - penalty))
@@ -215,12 +369,20 @@ class BiasDetectorService:
         recommendations: list[str] = []
         if bias_detected:
             recommendations.append(
-                "Revisar linguagem e perguntas da entrevista para eliminar vieses identificados."
+                "Revisar linguagem e perguntas do entrevistador para eliminar vieses identificados."
             )
             high_severity = [f for f in findings if f.get("severity") in ("alta", "high")]
             if high_severity:
                 recommendations.append(
                     "Treinamento urgente em entrevista inclusiva recomendado para o entrevistador."
+                )
+            if any(f["type"] == "leading_question" for f in findings):
+                recommendations.append(
+                    "Substituir perguntas indutivas por perguntas abertas baseadas em competências."
+                )
+            if talk_time.get("disproportionate"):
+                recommendations.append(
+                    "Reduzir tempo de fala do entrevistador — regra 80/20 (candidato fala 80%)."
                 )
             recommendations.append(
                 "Considerar uso de roteiro padronizado para garantir equidade entre candidatos."
@@ -234,11 +396,11 @@ class BiasDetectorService:
         if not summary:
             if bias_detected:
                 summary = (
-                    f"{len(findings)} indicador(es) de viés detectado(s). "
+                    f"{len(findings)} indicador(es) de viés detectado(s) nas falas do entrevistador. "
                     f"Score de equidade: {fairness_score}/5."
                 )
             else:
-                summary = "Nenhum viés detectado. Entrevista conduzida de forma justa e equitativa."
+                summary = "Nenhum viés detectado nas falas do entrevistador. Entrevista conduzida de forma justa."
 
         return {
             "bias_detected": bias_detected,

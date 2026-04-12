@@ -84,12 +84,12 @@ class ComparativeAnalysisService:
                 },
                 "hired_top_performers": {
                     "count": len(hired_scores),
-                    "provenance": "Candidatos contratados em vagas similares com alto WSI",
+                    "provenance": "Candidatos contratados (status=hired) em vagas similares com lia_score >= 3.5",
                     "scores": hired_scores[:5],
                 },
                 "triaged_high_scorers": {
                     "count": len(triaged_scores),
-                    "provenance": "Candidatos com alta pontuação WSI em triagem para vagas similares",
+                    "provenance": "Candidatos com alta pontuação na triagem (lia_score >= 3.5) para a mesma vaga",
                     "scores": triaged_scores[:5],
                 },
             },
@@ -162,12 +162,18 @@ class ComparativeAnalysisService:
     ) -> list[Interview]:
         try:
             from lia_models.job_vacancy import JobVacancy
+            from lia_models.candidate import VacancyCandidate
 
             if not interview.job_vacancy_id:
                 return []
 
             jv_result = await db.execute(
-                select(JobVacancy.title).where(JobVacancy.id == interview.job_vacancy_id)
+                select(JobVacancy.title).where(
+                    and_(
+                        JobVacancy.id == interview.job_vacancy_id,
+                        JobVacancy.company_id == company_id,
+                    )
+                )
             )
             job_title_row = jv_result.scalar_one_or_none()
             if not job_title_row:
@@ -185,22 +191,36 @@ class ComparativeAnalysisService:
                 select(JobVacancy.id).where(
                     and_(
                         or_(*title_filters),
-                        JobVacancy.id != interview.job_vacancy_id,
+                        JobVacancy.company_id == company_id,
                     )
-                ).limit(10)
+                ).limit(20)
             )
             similar_ids = [r[0] for r in similar_vacancy_ids.all()]
             if not similar_ids:
                 return []
 
+            hired_candidate_ids = await db.execute(
+                select(VacancyCandidate.candidate_id).where(
+                    and_(
+                        VacancyCandidate.vacancy_id.in_(similar_ids),
+                        VacancyCandidate.company_id == company_id,
+                        VacancyCandidate.status == "hired",
+                        VacancyCandidate.lia_score >= 3.5,
+                    )
+                ).limit(10)
+            )
+            hired_ids = [r[0] for r in hired_candidate_ids.all()]
+            if not hired_ids:
+                return []
+
             result = await db.execute(
                 select(Interview).where(
                     and_(
-                        Interview.job_vacancy_id.in_(similar_ids),
+                        Interview.candidate_id.in_(hired_ids),
                         Interview.company_id == company_id,
                         Interview.id != exclude_id,
                         Interview.transcript.isnot(None),
-                        Interview.status == "completed",
+                        Interview.status.in_(["completed", "transcribed"]),
                     )
                 ).limit(10)
             )
