@@ -29,17 +29,11 @@ def get_agent_prompt(agent_type: str, context: str = "", **kwargs) -> str:
     )
 
 
-def get_data_persistence_guidelines() -> str:
-    return DATA_PERSISTENCE_GUIDELINES
 
 
-def get_hr_vocabulary() -> str:
-    return HR_VOCABULARY
 
 
 def get_lia_persona() -> str:
     return LIA_PERSONA
 
 
-def get_ethical_guidelines() -> str:
-    return ETHICAL_GUIDELINES
