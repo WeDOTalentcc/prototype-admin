@@ -47,6 +47,13 @@ class UniversalContext:
     entity_id: str | None = None
     entity_type: str | None = None  # "sourcing", "job", "candidate"
 
+    # Contexto do usuário (enriquecido pelo MainOrchestrator via DB lookup)
+    user_name: str = ""
+    user_role: str = ""
+
+    # Contexto do tenant (injetado pelo MainOrchestrator)
+    tenant_context_snippet: str = ""
+
     # Dados ricos de contexto (repassados para o DomainWorkflow)
     candidates: list[dict[str, Any]] = field(default_factory=list)
     selected_candidate_ids: list[str] | None = None
@@ -70,6 +77,11 @@ class UniversalContext:
             "selected_candidate_ids": self.selected_candidate_ids,
             "channel": self.channel,
             "company_id": self.company_id,
+            "user_name": self.user_name,
+            "user_role": self.user_role,
+            "context_page": self.context_page,
+            "entity_type": self.entity_type,
+            "tenant_context_snippet": self.tenant_context_snippet,
         }
         if self.job_context:
             ctx["job_context"] = self.job_context

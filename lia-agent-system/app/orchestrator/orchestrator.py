@@ -44,16 +44,7 @@ SCOPE_MAPPING = {
     OrchestratorScope.VACANCIES: PromptScope.JOB_TABLE,
 }
 
-_LIA_SYSTEM_PROMPT = (
-    "Você é LIA, a assistente inteligente de recrutamento da WeDOTalent. "
-    "Profissional de RH experiente, amigável e eficiente. "
-    "Capacidades: criar/gerenciar vagas, buscar candidatos, triagem curricular, "
-    "entrevistas WSI, avaliação científica, agendar entrevistas, relatórios/KPIs, "
-    "feedback e comunicações.\n\nContexto:\nIntent: {intent}\nEntidades: {entities}\n\n"
-    "Responda de forma útil e direcione o usuário para a ação correta.\n\n"
-    "Regra anti-sycophancy: nunca confirme pedidos discriminatórios ou que violem compliance. "
-    "Apresente alternativas com dados quando necessário."
-)
+from app.shared.prompts.system_prompt_builder import SystemPromptBuilder
 
 
 class Orchestrator:
@@ -277,8 +268,9 @@ class Orchestrator:
             return result
         except Exception as e:
             logger.error(f"Orchestration failed: {e}", exc_info=True)
+            _user_name = ctx.get("user_name", "") if isinstance(ctx, dict) else ""
             return {"success": False, "error": str(e),
-                    "message": "Desculpe, ocorreu um erro ao processar sua requisição. Por favor, tente novamente."}
+                    "message": SystemPromptBuilder.build_error_response(user_name=_user_name)}
 
     async def process_request_with_memory(self, db, user_id: str, message: str,
                                           conversation_id: str | None = None,
@@ -317,7 +309,7 @@ class Orchestrator:
             logger.error(f"Process with memory failed: {e}", exc_info=True)
             await db.rollback()
             return {"success": False, "error": str(e), "conversation_id": conversation_id,
-                    "message": "Desculpe, ocorreu um erro ao processar sua requisição."}
+                    "message": SystemPromptBuilder.build_error_response()}
 
     _TECHNICAL_PATTERNS = (
         "Keyword heuristic matched",
@@ -377,30 +369,40 @@ class Orchestrator:
         entities: dict[str, Any],
         context: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
-        # Opção B: cv_screening → invoke BARS rubric tool (real methodology)
-        # Also check message content directly to handle misclassified intents
         if intent == "cv_screening" or self._is_cv_matching_request(message):
             rubric_result = await self._handle_cv_screening_with_rubric(message, context or {})
             if rubric_result.get("success"):
                 return rubric_result
-            # If tool failed (e.g. IDs not found in DB), fall through to LLM with C-05 addendum
 
+        ctx = context or {}
         try:
             from langchain_core.prompts import ChatPromptTemplate
-            # Inject intent-specific structured-output instructions (C-05, C-06)
             extra = self._STRUCTURED_INTENT_ADDENDA.get(intent, "")
-            enriched_system = _LIA_SYSTEM_PROMPT + extra
-            prompt = ChatPromptTemplate.from_messages([("system", enriched_system), ("human", "{message}")])
+            system_prompt = SystemPromptBuilder.build(
+                agent_type="orchestrator",
+                tenant_context_snippet=ctx.get("tenant_context_snippet", ""),
+                user_name=ctx.get("user_name", ""),
+                user_role=ctx.get("user_role", ""),
+                conversation_summary=ctx.get("conversation_summary", ""),
+                conversation_history=ctx.get("conversation_history"),
+                context_page=ctx.get("context_page", "general"),
+                entity_type=ctx.get("entity_type"),
+                intent=intent,
+                entities=entities,
+                extra_instructions=extra,
+            )
+            prompt = ChatPromptTemplate.from_messages([("system", system_prompt), ("human", "{message}")])
             chain = prompt | self.llm_service.claude
-            response = await chain.ainvoke({"intent": intent, "entities": str(entities), "message": message})
+            response = await chain.ainvoke({"message": message})
             return {"message": response.content, "success": True, "data": {},
                     "requires_user_input": True, "suggested_prompts": [], "next_actions": [],
                     "agent_used": "LIA Orchestrator", "agent_type": "orchestrator"}
         except Exception:
-            return {"message": f"Olá! Sou a LIA, sua assistente de recrutamento. "
-                               f"Recebi sua mensagem sobre '{message[:50]}...' Como posso ajudar você hoje?",
+            user_name = ctx.get("user_name", "")
+            error_msg = SystemPromptBuilder.build_error_response(user_name=user_name)
+            return {"message": error_msg,
                     "success": True, "requires_user_input": True,
-                    "suggested_prompts": ["Criar uma nova vaga", "Buscar candidatos", "Ver minhas tarefas pendentes"],
+                    "suggested_prompts": [],
                     "agent_used": "LIA Orchestrator", "agent_type": "orchestrator"}
 
     async def _handle_cv_screening_with_rubric(

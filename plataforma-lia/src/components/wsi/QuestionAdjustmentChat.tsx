@@ -56,7 +56,7 @@ export function QuestionAdjustmentChat({
     {
       id: "welcome",
       role: "assistant",
-      content: "Olá! Sou a LIA. Descreva o ajuste que deseja nas perguntas deste bloco. Por exemplo: \"Quero uma pergunta mais focada em gestão de conflitos\" ou \"Substitua a pergunta sobre liderança por algo sobre trabalho em equipe\".",
+      content: "Descreva o ajuste que deseja nas perguntas deste bloco. Por exemplo: \"Quero uma pergunta mais focada em gestão de conflitos\" ou \"Substitua a pergunta sobre liderança por algo sobre trabalho em equipe\".",
       timestamp: new Date()
     }
   ])

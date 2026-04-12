@@ -55,26 +55,21 @@ class RouteResult:
 
 
 
-# Opções padrão de clarificação quando o router não sabe o domínio
-_DEFAULT_CLARIFICATION_OPTIONS = [
-    "Criar ou gerenciar uma vaga",
-    "Buscar ou avaliar candidatos",
-    "Acompanhar pipeline / triagem",
-    "Agendar entrevistas",
-    "Relatórios e analytics",
-    "Outra solicitação",
-]
+from app.shared.prompts.system_prompt_builder import SystemPromptBuilder
 
 
-def _build_clarification_question(message: str) -> str:
-    """Gera uma pergunta de clarificação baseada na mensagem do usuário."""
-    snippet = message.strip()[:80]
-    if snippet:
-        return (
-            f"Não consegui identificar o que você precisa com '{snippet}'. "
-            "O que você gostaria de fazer?"
-        )
-    return "Não entendi sua solicitação. O que você gostaria de fazer?"
+def _build_clarification_question(
+    message: str,
+    partial_matches: list[dict] | None = None,
+    user_name: str = "",
+) -> tuple[str, list[str]]:
+    """Gera clarificação contextual baseada nos matches parciais do roteamento."""
+    question, options = SystemPromptBuilder.build_clarification(
+        message=message,
+        partial_matches=partial_matches,
+        user_name=user_name,
+    )
+    return question, options
 
 
 def _init_ab_experiment() -> None:
@@ -314,6 +309,8 @@ class CascadedRouter:
                     _t3_span.set_attribute("error_detail", str(_vec_exc))
                     logger.debug("CascadedRouter: vector cache skipped: %s", _vec_exc)
 
+        _partial_candidates: list[dict] = []
+
         # Tier 4 — FastRouter (regex/keyword)
         async with _tracer.start_span("router.tier4_fast_router", attributes={
             "tier_name": "tier4_fast_router", "service": "cascaded_router", "match_type": "regex_keyword",
@@ -360,6 +357,8 @@ class CascadedRouter:
                         pass
                 logger.debug("CascadedRouter: fast match for '%s...' → %s", message[:40], result.domain_id)
                 return result
+            if fast_result and fast_result.confidence > 0:
+                _partial_candidates.append({"domain_id": fast_result.domain_id, "confidence": fast_result.confidence})
             _t4_span.set_attribute("hit", "false")
             _t4_span.set_attribute("confidence_score", "0.0")
             _t4_span.set_attribute("latency_ms", f"{(time.perf_counter() - _t0) * 1000:.2f}")
@@ -405,6 +404,7 @@ class CascadedRouter:
                     _t5_span.set_attribute("model_tier", _tier_name)
                     _t5_span.set_attribute("latency_ms", f"{_elapsed_ms:.2f}")
                     if cascade_result.confidence < _TIER5_MIN_CONFIDENCE:
+                        _partial_candidates.append({"domain_id": cascade_result.domain_id, "confidence": cascade_result.confidence})
                         _t5_span.set_attribute("hit", "false")
                         _t5_span.set_attribute("below_threshold", "true")
                         logger.info(
@@ -502,13 +502,19 @@ class CascadedRouter:
             if _hit_counter:
                 _hit_counter.labels(tier="clarification_needed").inc()
             _fb_span.set_attribute("confidence_score", "0.0")
+            _user_name = context.get("user_name", "") if context else ""
+            _clar_question, _clar_options = _build_clarification_question(
+                message,
+                partial_matches=_partial_candidates if _partial_candidates else None,
+                user_name=_user_name,
+            )
             return RouteResult(
                 domain_id="recruiter_assistant",
                 confidence=0.0,
                 source="clarification_needed",
                 needs_clarification=True,
-                clarification_question=_build_clarification_question(message),
-                clarification_options=_DEFAULT_CLARIFICATION_OPTIONS,
+                clarification_question=_clar_question,
+                clarification_options=_clar_options,
             )
 
     async def _apply_adaptive_adjustments(

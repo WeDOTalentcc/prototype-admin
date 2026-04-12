@@ -1,5 +1,6 @@
 """Shared prompts module."""
 from .agent_prompts import get_agent_prompt
+from .system_prompt_builder import SystemPromptBuilder
 from .cot import ChainOfThoughtBuilder, CoTStrategy, cot_builder
 from .few_shot_examples import (
     COMPETENCY_EXTRACTION_EXAMPLES,
@@ -37,6 +38,7 @@ from .templates import PromptLibrary, PromptTemplate, prompt_library
 
 __all__ = [
     "get_agent_prompt",
+    "SystemPromptBuilder",
     "prompt_registry",
     "init_prompts",
     "get_prompt_from_registry",

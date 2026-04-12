@@ -133,7 +133,7 @@ export async function interpretMessage(request: InterpretMessageRequest): Promis
       confidence: 0.5,
       should_advance: false,
       clarification_needed: false,
-      lia_response: 'Ocorreu um erro. Por favor, tente novamente.'
+      lia_response: 'Estou com dificuldade de conexão. Pode tentar novamente em alguns segundos?'
     }
   }
 }
@@ -148,7 +148,7 @@ export async function getConversationalResponse(request: ConversationalRequest):
 
     if (!response.ok) {
       return {
-        response: "Sou a LIA, sua assistente de recrutamento! Aqui posso te ajudar a:\n\n• **Criar uma nova vaga** do zero com toda inteligência da plataforma\n• **Reutilizar uma vaga anterior** para publicar rapidamente\n\nComo gostaria de começar?",
+        response: "Estou com dificuldade de conexão no momento. Pode tentar novamente em alguns segundos?",
         understood_intent: "fallback",
         can_help: true
       }
@@ -157,7 +157,7 @@ export async function getConversationalResponse(request: ConversationalRequest):
     return await response.json()
   } catch {
     return {
-      response: "Sou a LIA, sua assistente de recrutamento! Aqui posso te ajudar a:\n\n• **Criar uma nova vaga** do zero com toda inteligência da plataforma\n• **Reutilizar uma vaga anterior** para publicar rapidamente\n\nComo gostaria de começar?",
+      response: "Estou com dificuldade de conexão no momento. Pode tentar novamente em alguns segundos?",
       understood_intent: "fallback",
       can_help: true
     }

@@ -196,9 +196,7 @@ export function useLIAChatMessage(
         }
       } catch (error) {
 
-        const fallbackContent = isConversationalMessage(trimmedMessage)
-          ? `Olá! Sou a LIA, sua assistente de recrutamento. Aqui no Funil de Talentos posso ajudá-lo a:\n\n🔍 **Buscar candidatos** — descreva o perfil desejado\n📊 **Analisar candidatos** — selecione e peça análise\n⚖️ **Comparar perfis** — selecione candidatos e peça comparação\n\nComo posso ajudar?`
-          : `Entendi sua pergunta! Posso ajudá-lo a:\n\n🔍 **Buscar candidatos** - descreva o perfil desejado\n📊 **Analisar candidatos** - selecione e peça análise\n📋 **Criar vagas** - diga "criar nova vaga"\n⚖️ **Comparar perfis** - selecione candidatos e peça comparação\n\nComo posso ajudar?`
+        const fallbackContent = "Estou com dificuldade para processar essa solicitação no momento. Pode tentar novamente em alguns segundos?"
 
         addChatMessage({
           id: `lia-response-${Date.now()}`,

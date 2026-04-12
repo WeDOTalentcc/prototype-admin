@@ -38,40 +38,27 @@ router = APIRouter()
 
 _conversation_memory = ConversationMemory()
 
-LIA_CAPABILITIES_PROMPT = """Você é a LIA, assistente inteligente de recrutamento da plataforma WeDoTalent.
-
-SUAS CAPACIDADES NESTE CHAT:
-1. **Criar vagas de emprego** - Guio você pelo processo completo de criação de vagas com análise inteligente
-2. **Reutilizar vagas anteriores** (Fast Track) - Encontro vagas passadas similares para republicar rapidamente
-3. **Analisar remuneração** - Forneço benchmarks de mercado e recomendações salariais
-4. **Sugerir competências** - Recomendo skills técnicas e comportamentais baseadas no cargo
-5. **Gerar descrições de vaga** - Crio JDs profissionais otimizadas
-
-CAPACIDADES DISPONÍVEIS EM OUTROS MÓDULOS DA LIA:
-- **Pipeline e Status** - Mover candidatos entre etapas, aprovar, reprovar, avançar no pipeline
-- **Candidatos** - Buscar, analisar currículos, calcular score WSI, comparar candidatos
-- **Entrevistas** - Agendar, reagendar, cancelar entrevistas
-- **Comunicação** - Enviar e-mails, feedback, WhatsApp para candidatos
-- **Relatórios** - KPIs, funil de conversão, gargalos, previsões
-
-IMPORTANTE:
-- Este chat é otimizado para criação e gestão de vagas
-- Se o usuário pedir algo de outro módulo (como mover candidato, alterar status, agendar entrevista), informe que a funcionalidade existe na plataforma e oriente a usar o chat principal da LIA para essas ações
-- Nunca diga que a LIA "não possui" ou "não tem" funcionalidades de pipeline, status ou gestão de candidatos — essas capacidades existem em outros módulos
-
-CONTEXTO DA CONVERSA:
-{conversation_context}
-
-INSTRUÇÕES:
-- Responda sempre em português brasileiro
-- Seja natural e conversacional, não robótica
-- Se o usuário perguntar algo fora do escopo deste chat, explique que a funcionalidade existe e oriente sobre como acessá-la
-- Se for uma saudação ou conversa casual, responda de forma amigável e redirecione para ajudar com vagas
-- Mantenha respostas concisas mas úteis
-
-Mensagem do usuário: {message}
-
-Responda de forma natural e útil:"""
+def _build_conversational_prompt(
+    message: str,
+    conversation_context: str,
+    user_name: str = "",
+    tenant_context_snippet: str = "",
+) -> str:
+    from app.shared.prompts.system_prompt_builder import SystemPromptBuilder
+    system = SystemPromptBuilder.build(
+        agent_type="orchestrator",
+        user_name=user_name,
+        tenant_context_snippet=tenant_context_snippet,
+        conversation_summary=conversation_context if conversation_context != "Início da conversa" else "",
+        context_page="wizard",
+        extra_instructions=(
+            "Este chat é otimizado para criação e gestão de vagas. "
+            "Se pedirem algo de outro módulo (pipeline, status, entrevistas), "
+            "oriente a usar o chat principal. Nunca diga que a LIA 'não possui' funcionalidades — "
+            "elas existem em outros módulos."
+        ),
+    )
+    return f"{system}\n\nMensagem do usuário: {message}\n\nResponda de forma natural e útil:"
 
 
 async def _get_active_draft_for_user(db: AsyncSession, user_id: str) -> JobDraft | None:
@@ -252,9 +239,26 @@ Solicitação: {request.message}"""
             except Exception as e:
                 logger.warning(f"Failed to load conversation history: {e}")
 
-        prompt = LIA_CAPABILITIES_PROMPT.format(
+        _conv_user_name = ""
+        _conv_tenant_snippet = ""
+        try:
+            _conv_user_name = current_user.name if hasattr(current_user, "name") else ""
+        except Exception:
+            pass
+        try:
+            _company_id = getattr(current_user, "company_id", None)
+            if _company_id:
+                from app.shared.services.tenant_context_service import TenantContextService
+                _tcs = TenantContextService()
+                _tc = await _tcs.get_context(company_id=str(_company_id), db=db)
+                _conv_tenant_snippet = _tc.to_prompt_snippet()
+        except Exception as _tc_exc:
+            logger.debug("Tenant context skipped in conversational: %s", _tc_exc)
+        prompt = _build_conversational_prompt(
             message=request.message,
             conversation_context=conversation_context_text,
+            user_name=_conv_user_name or "",
+            tenant_context_snippet=_conv_tenant_snippet,
         )
         response_text = await llm_svc.generate(prompt, provider="gemini")
 
@@ -337,8 +341,14 @@ Solicitação: {request.message}"""
 
     except Exception as e:
         logger.error(f"Error in conversational response: {e}")
+        from app.shared.prompts.system_prompt_builder import SystemPromptBuilder
+        _user_name = ""
+        try:
+            _user_name = current_user.name if hasattr(current_user, "name") else ""
+        except Exception:
+            pass
         return ConversationalResponse(
-            response="Sou a LIA, sua assistente de recrutamento! Aqui posso te ajudar a:\n\n• **Criar uma nova vaga** do zero com toda inteligência da plataforma\n• **Reutilizar uma vaga anterior** para publicar rapidamente\n\nComo gostaria de começar?",
+            response=SystemPromptBuilder.build_error_response(user_name=_user_name),
             understood_intent="fallback",
             can_help=True
         )

@@ -99,7 +99,7 @@ export function SmartSuggestions({ contextPage, mode, onSuggestionClick }: Props
           {getGreeting()}! Sou a LIA.
         </h3>
         <p className="text-xs text-lia-text-secondary mt-1">
-          Como posso ajudar no recrutamento hoje?
+          Como posso ajudar você hoje?
         </p>
       </div>
 

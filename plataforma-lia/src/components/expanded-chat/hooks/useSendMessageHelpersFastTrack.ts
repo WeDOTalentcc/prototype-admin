@@ -327,7 +327,7 @@ export async function handleFastTrackFlow(
       const liaMessage: Message = {
         id: `lia-guidance-fallback-${Date.now()}`,
         role: 'assistant',
-        content: 'Sou a LIA, sua assistente de recrutamento! Aqui posso te ajudar a:\n\n• **Criar uma nova vaga** do zero com toda inteligência da plataforma\n• **Reutilizar uma vaga anterior** para publicar rapidamente\n\nComo gostaria de começar?',
+        content: 'Estou com dificuldade para processar essa solicitação no momento. Pode tentar novamente em alguns segundos?',
         timestamp: new Date()
       }
       ctx.setMessages(prev => [...prev, liaMessage])

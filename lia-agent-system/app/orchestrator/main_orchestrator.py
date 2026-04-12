@@ -248,6 +248,21 @@ class MainOrchestrator:
             except Exception as _tc_exc:
                 logger.debug("[MainOrchestrator] TenantContext skipped: %s", _tc_exc)
 
+            # Enriquecer contexto do usuário (nome e role)
+            if not ctx.user_name and ctx.user_id:
+                try:
+                    from sqlalchemy import select as sa_select
+                    from app.auth.models import User
+                    _user_result = await db.execute(
+                        sa_select(User).where(User.id == ctx.user_id)
+                    )
+                    _user = _user_result.scalar_one_or_none()
+                    if _user:
+                        ctx.user_name = getattr(_user, "name", "") or getattr(_user, "full_name", "") or ""
+                        ctx.user_role = getattr(_user, "role", "") or ""
+                except Exception as _user_exc:
+                    logger.debug("[MainOrchestrator] User lookup skipped: %s", _user_exc)
+
             # ── Phase 0: PendingAction ──────────────────────────────────────
             pending_response = await self._handle_pending_action(ctx, conv_id)
             if pending_response is not None:
@@ -285,9 +300,13 @@ class MainOrchestrator:
                 f"company={ctx.company_id} channel={ctx.channel}: {exc}",
                 exc_info=True,
             )
+            from app.shared.prompts.system_prompt_builder import SystemPromptBuilder
+            _error_msg = SystemPromptBuilder.build_error_response(
+                user_name=getattr(ctx, "user_name", ""),
+            )
             return ChatResponse(
                 success=False,
-                content="Ocorreu um erro ao processar sua solicitação. Tente novamente.",
+                content=_error_msg,
                 intent_detected="error",
                 conversation_id=conv_id,
             )

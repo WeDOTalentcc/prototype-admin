@@ -88,9 +88,7 @@ export const WIZARD_STAGES: ExtendedWizardStageConfig[] = [
     title: 'Avaliação',
     subtitle: 'Construção',
     panelTitle: 'Critérios Detectados',
-    liaMessage: `Olá! Sou a LIA, sua assistente de recrutamento inteligente. 🎯
-
-Vou te guiar na criação desta vaga de forma conversacional e consultiva.
+    liaMessage: `Vou guiar você na criação desta vaga de forma conversacional.
 
 **Como funciona:**
 1. Você descreve a vaga (texto livre ou cole um JD)
@@ -98,10 +96,10 @@ Vou te guiar na criação desta vaga de forma conversacional e consultiva.
 3. Juntos refinamos cada etapa
 
 **O que eu detecto automaticamente:**
-• Cargo, senioridade e área
-• Competências técnicas e comportamentais
-• Modelo de trabalho e localização
-• Indicadores de vaga afirmativa
+- Cargo, senioridade e área
+- Competências técnicas e comportamentais
+- Modelo de trabalho e localização
+- Indicadores de vaga afirmativa
 
 💡 **Dica:** Quanto mais detalhes você fornecer, mais precisa será minha análise!
 
@@ -560,21 +558,17 @@ export const generateMissingFieldsMessage = (missing: { required: string[], reco
 /**
  * Pre-wizard message shown before wizard mode selection
  */
-export const PRE_WIZARD_MESSAGE = `Olá! Sou a LIA e vou te ajudar a criar uma nova vaga. 🚀
+export const PRE_WIZARD_MESSAGE = `Vou ajudar você a criar uma nova vaga.
 
-**Como você quer começar?**
+**Como quer começar?**
 
-🔄 **Aproveitar vaga anterior** (Fast Track)
-   Busco uma vaga passada similar e você só confirma ou ajusta detalhes.
-   Ideal para: vagas recorrentes, mesmo perfil de sempre.
+**Aproveitar vaga anterior** (Fast Track)
+Busco uma vaga passada similar e você só confirma ou ajusta detalhes. Ideal para vagas recorrentes.
 
-✨ **Criar do zero** (Wizard completo)
-   Construímos a vaga passo a passo com toda a inteligência da LIA.
-   Ideal para: novas posições, perfis diferentes.
+**Criar do zero** (Wizard completo)
+Construímos a vaga passo a passo. Ideal para novas posições ou perfis diferentes.
 
-**Digite sua escolha:**
-• "usar vaga anterior" ou "fast track"
-• "criar do zero" ou "nova vaga"`
+Digite "usar vaga anterior" ou "criar do zero".`
 
 /**
  * Message shown when a draft is detected - user must choose to continue or start fresh
@@ -594,19 +588,15 @@ Digite "continuar" ou "começar do zero".`
  * Initial message for job creation wizard
  * Stage: input-evaluation (criteria detection)
  */
-export const INITIAL_JOB_CREATION_MESSAGE = `Olá! Sou a LIA, sua assistente de recrutamento.
+export const INITIAL_JOB_CREATION_MESSAGE = `**Como você gostaria de começar?**
 
-**Como você gostaria de começar?**
+**Criar vaga do zero** — Me conte sobre a posição que você precisa preencher
 
-🆕 **Criar vaga do zero** — Me conte sobre a posição que você precisa preencher
+**Usar vaga existente** — Posso duplicar e adaptar uma vaga anterior
 
-📋 **Usar vaga existente** — Posso duplicar e adaptar uma vaga anterior
+**Usar template** — Escolha entre nossos modelos prontos por área/cargo
 
-📝 **Usar template** — Escolha entre nossos modelos prontos por área/cargo
-
-💡 **Dica:** Você pode descrever a vaga em linguagem natural que eu extraio as informações automaticamente.
-
-**Qual opção você prefere?**`
+Você também pode descrever a vaga em linguagem natural que eu extraio as informações automaticamente.`
 
 /**
  * Orientation message when user chooses to create from scratch
@@ -634,13 +624,4 @@ export const FROM_SCRATCH_ORIENTATION_MESSAGE = `Ótimo! Vamos criar sua vaga do
 /**
  * Initial general assistant message
  */
-export const INITIAL_GENERAL_MESSAGE = `Olá! Sou a LIA, sua assistente de recrutamento.
-
-Posso te ajudar com:
-- Analisar e comparar vagas
-- Sugerir melhorias em descrições
-- Buscar candidatos compatíveis
-- Gerar scripts de entrevista
-- Responder dúvidas sobre o processo
-
-Como posso ajudar você hoje?`
+export const INITIAL_GENERAL_MESSAGE = `Como posso ajudar você? Posso analisar vagas, buscar candidatos, gerar scripts de entrevista ou responder dúvidas sobre o processo.`

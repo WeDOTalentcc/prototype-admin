@@ -189,10 +189,17 @@ class _YamlDomainProxy:
         return self._system_prompt
 
     def get_system_prompt(self, **kwargs):
-        prompt = self._parse_prompt()
+        from app.shared.prompts.system_prompt_builder import SystemPromptBuilder
+        domain_yaml_additions = self._parse_prompt()
         for key, value in kwargs.items():
-            prompt = prompt.replace("{{" + key + "}}", str(value))
-        return prompt
+            domain_yaml_additions = domain_yaml_additions.replace("{{" + key + "}}", str(value))
+        return SystemPromptBuilder.build(
+            agent_type=self.domain_id,
+            extra_instructions=domain_yaml_additions,
+            tenant_context_snippet=kwargs.get("tenant_context_snippet", ""),
+            user_name=kwargs.get("user_name", ""),
+            user_role=kwargs.get("user_role", ""),
+        )
 
     def get_allowed_actions(self):
         return []

@@ -19,7 +19,6 @@ from app.orchestrator.cascaded_router import (
     CascadedRouter,
     RouteResult,
     _build_clarification_question,
-    _DEFAULT_CLARIFICATION_OPTIONS,
 )
 
 
@@ -36,12 +35,10 @@ def _make_router(
     """Cria CascadedRouter com mocks injetados."""
     router = CascadedRouter()
 
-    # Mock SemanticCache (Redis)
     router._redis_cache = MagicMock()
     router._redis_cache.get = AsyncMock(return_value=redis_hit)
     router._redis_cache.set = AsyncMock()
 
-    # Mock VectorSemanticCache
     if vector_hit is not None:
         mock_vector = MagicMock()
         mock_vector.get = AsyncMock(return_value=vector_hit)
@@ -55,11 +52,9 @@ def _make_router(
         mock_vector.threshold = 0.92
         router._vector_cache = mock_vector
 
-    # Mock FastRouter
     router.fast = MagicMock()
     router.fast.match = MagicMock(return_value=fast_match)
 
-    # Mock LLM Cascade via patch
     router._llm_cascade_result = llm_cascade_result
 
     return router
@@ -77,7 +72,6 @@ async def test_clarification_when_all_tiers_fail():
         redis_hit=None,
         vector_hit=None,
     )
-    # Desativa LLM cascade e llm_fallback
     router.llm_fallback = None
 
     async def _no_cascade(*args, **kwargs):
@@ -118,12 +112,12 @@ async def test_no_clarification_when_fast_router_succeeds():
 
 
 # ---------------------------------------------------------------------------
-# test_clarification_result_has_question_and_options
+# test_clarification_result_has_question
 # ---------------------------------------------------------------------------
 
 @pytest.mark.asyncio
-async def test_clarification_result_has_question_and_options():
-    """RouteResult de clarification deve ter question e options preenchidos."""
+async def test_clarification_result_has_question():
+    """RouteResult de clarification deve ter question preenchido."""
     router = _make_router()
     router.llm_fallback = None
 
@@ -133,10 +127,6 @@ async def test_clarification_result_has_question_and_options():
     assert result.needs_clarification is True
     assert isinstance(result.clarification_question, str)
     assert len(result.clarification_question) > 10
-    assert isinstance(result.clarification_options, list)
-    assert len(result.clarification_options) >= 3
-    # Deve conter opções padrão
-    assert any("vaga" in opt.lower() for opt in result.clarification_options)
 
 
 # ---------------------------------------------------------------------------
@@ -229,15 +219,28 @@ async def test_clarification_issued_stat_incremented():
 
 def test_build_clarification_question_with_message():
     """_build_clarification_question deve incluir trecho da mensagem."""
-    question = _build_clarification_question("criar uma vaga urgente")
+    question, options = _build_clarification_question("criar uma vaga urgente")
     assert "criar uma vaga urgente" in question
 
 
 def test_build_clarification_question_empty():
     """_build_clarification_question com mensagem vazia deve retornar texto padrão."""
-    question = _build_clarification_question("")
+    question, options = _build_clarification_question("")
     assert len(question) > 0
     assert "?" in question
+    assert isinstance(options, list)
+    assert len(options) >= 3
+
+
+def test_build_clarification_question_with_partial_matches():
+    """_build_clarification_question com partial matches gera opções contextuais."""
+    partial = [
+        {"domain_id": "job_planner"},
+        {"domain_id": "sourcing"},
+    ]
+    question, options = _build_clarification_question("preciso de ajuda", partial_matches=partial)
+    assert len(question) > 0
+    assert len(options) >= 1
 
 
 # ---------------------------------------------------------------------------
@@ -274,7 +277,6 @@ async def test_vector_cache_hit_stored_in_memory_cache():
     msg = "criar uma nova vaga para desenvolvedor python"
     await router.route(msg)
 
-    # Segunda chamada deve ser memory hit (LRU cache)
     import hashlib
     key = hashlib.md5(msg.lower().strip().encode()).hexdigest()
     assert key in router._memory_cache

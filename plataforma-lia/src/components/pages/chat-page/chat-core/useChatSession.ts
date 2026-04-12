@@ -337,7 +337,7 @@ export function useChatSession({
       if (companyId) await emptyFieldNotifications.fetchNotifications(companyId)
       setMessages(prev => [...prev, {
         id: Date.now(), sender: "lia",
-        content: `Olá! Sou a **LIA**, sua assistente de recrutamento. Vou ajudar você a criar uma nova vaga de forma conversacional.\n\nPara começar, me conte sobre a posição que você precisa preencher:\n\n**O que preciso saber:**\n- Qual é o **cargo/título** da vaga?\n- Para qual **departamento** ou **área** é essa posição?\n- É uma vaga **presencial**, **híbrida** ou **remota**?\n\nVocê pode me contar livremente ou colar uma descrição de vaga existente que eu extraio as informações automaticamente!`,
+        content: `Vou ajudar você a criar uma nova vaga. Me conte sobre a posição que você precisa preencher — cargo, departamento, modalidade (presencial/híbrida/remota) — ou cole uma descrição de vaga existente que eu extraio as informações automaticamente.`,
         timestamp: new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
         type: "text",
       }])

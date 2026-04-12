@@ -104,7 +104,7 @@ export function useHiringPolicies() {
 
       setMessages([{
         role: 'assistant',
-        content: 'Ola! Sou a LIA e vou ajudar voce a configurar as politicas de contratacao da sua empresa. Vamos comecar pelo **Pipeline e Processo**. Quantas entrevistas no minimo voce exige antes de fazer uma oferta?',
+        content: 'Vou ajudar você a configurar as políticas de contratação da sua empresa. Vamos começar pelo **Pipeline e Processo**. Quantas entrevistas no mínimo você exige antes de fazer uma oferta?',
         timestamp: new Date()
       }])
     }
