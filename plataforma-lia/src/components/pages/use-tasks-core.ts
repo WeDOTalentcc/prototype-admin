@@ -296,7 +296,7 @@ async function fetchEndpointWithRetry(url: string, retries = 3, baseDelayMs = 20
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
       const controller = new AbortController()
-      const timeout = setTimeout(() => controller.abort(), 30000)
+      const timeout = setTimeout(() => controller.abort(), 90000)
       let res: Response
       try {
         res = await fetch(url, { signal: controller.signal })

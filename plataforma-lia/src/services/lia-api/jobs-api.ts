@@ -33,7 +33,7 @@ export async function listJobVacancies(status?: string, skip: number = 0, limit:
   const url = `${BACKEND_URL}/job-vacancies?${params}`
 
   const controller = new AbortController()
-  const timeout = setTimeout(() => controller.abort(), 30000)
+  const timeout = setTimeout(() => controller.abort(), 90000)
 
   try {
     const response = await fetch(url, {
