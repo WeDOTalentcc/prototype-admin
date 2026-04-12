@@ -626,6 +626,7 @@ async def _sse_event_generator(
     user_name: str = "",
     user_role: str = "",
     company_id: str = "",
+    tenant_context_snippet: str = "",
 ) -> AsyncGenerator[str, None]:
     """Streams Claude tokens as SSE events and persists the full response."""
     from anthropic import AsyncAnthropic
@@ -649,6 +650,7 @@ async def _sse_event_generator(
 
     _system_prompt = SystemPromptBuilder.build(
         agent_type="orchestrator",
+        tenant_context_snippet=tenant_context_snippet,
         user_name=user_name,
         user_role=user_role,
         conversation_history=history[-10:] if history else None,
@@ -725,12 +727,26 @@ async def stream_message(
         for m in history_msgs
     ]
 
+    # Fetch tenant context (same pattern as MainOrchestrator)
+    _tenant_snippet = ""
+    _company_id = str(getattr(current_user, "company_id", "")) or ""
+    if _company_id:
+        try:
+            from app.shared.services.tenant_context_service import TenantContextService
+            _tenant_ctx = await TenantContextService().get_context(
+                company_id=_company_id, db=repo.db
+            )
+            _tenant_snippet = _tenant_ctx.to_prompt_snippet()
+        except Exception:
+            pass  # Fail-safe: proceed without tenant context
+
     return StreamingResponse(
         _sse_event_generator(
             conversation_id, user_content, history, repo, conversation,
             user_name=getattr(current_user, "name", "") or "",
             user_role=str(getattr(current_user, "role", "")) or "",
-            company_id=str(getattr(current_user, "company_id", "")) or "",
+            company_id=_company_id,
+            tenant_context_snippet=_tenant_snippet,
         ),
         media_type="text/event-stream",
         headers={
