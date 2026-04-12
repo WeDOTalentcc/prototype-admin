@@ -55,6 +55,9 @@ class UniversalContext:
     target_job: dict[str, Any] | None = None
     extra: dict[str, Any] = field(default_factory=dict)
 
+    # Tenant context — preenchido pelo MainOrchestrator apos lookup no DB
+    tenant_context_snippet: str = ""
+
     def to_orchestrator_context(self) -> dict[str, Any]:
         """Converte para o formato que Orchestrator.process_request_with_memory() espera."""
         ctx: dict[str, Any] = {
@@ -71,6 +74,8 @@ class UniversalContext:
             ctx["search_context"] = self.search_context
         if self.target_job:
             ctx["target_job"] = self.target_job
+        if self.tenant_context_snippet:
+            ctx["tenant_context_snippet"] = self.tenant_context_snippet
         ctx.update(self.extra)
         return ctx
 
