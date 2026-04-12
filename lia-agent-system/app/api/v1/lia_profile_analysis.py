@@ -91,7 +91,8 @@ def format_candidate_info(data: CandidateData) -> str:
 def get_system_prompt(analysis_type: str) -> str:
     """Get the system prompt based on analysis type."""
     
-    base = """Você é a LIA, uma assistente de recrutamento com IA. Gere um resumo profissional do candidato com base nas informações fornecidas. Seja conciso, preciso e destaque os pontos fortes. NÃO inclua o nome do candidato no início - ele será adicionado separadamente. Responda sempre em português do Brasil."""
+    from app.shared.prompts.system_prompt_builder import SystemPromptBuilder
+    base = SystemPromptBuilder.build(agent_type="cv_screening", extra_instructions="Gere um resumo profissional do candidato. Seja conciso, preciso e destaque os pontos fortes. NÃO inclua o nome do candidato no início - ele será adicionado separadamente.")
     
     if analysis_type == 'bullet_points':
         return base + """

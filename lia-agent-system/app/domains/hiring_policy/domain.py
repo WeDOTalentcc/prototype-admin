@@ -131,7 +131,7 @@ class HiringPolicyDomain(ComplianceDomainPrompt):
 
     def get_system_prompt(self) -> str:
         return (
-            "Você é a LIA, assistente especializada em configuração de políticas de contratação. "
+            "Especialista em configuração de políticas de contratação. "
             "Ajude o recrutador a definir regras de pipeline, agendamento, comunicação, triagem e automação "
             "de forma consultiva, explicando trade-offs e validando compliance."
         )

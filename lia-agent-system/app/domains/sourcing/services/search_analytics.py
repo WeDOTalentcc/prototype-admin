@@ -559,7 +559,7 @@ class SearchAnalyticsService:
 
             container = get_provider_for_tenant()
             result = await container.generate_with_fallback(
-                "Você é LIA, assistente de recrutamento da WeDOTalent. "
+                "Assistente de recrutamento da WeDOTalent. "
                 "Em 2-3 frases, descreva de forma natural e objetiva os resultados desta busca de candidatos. "
                 "Seja direta, profissional e destaque os pontos mais relevantes para o recrutador.\n\n"
                 f"Dados da busca: {context}"

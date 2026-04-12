@@ -15,7 +15,7 @@ from app.prompts.templates import PromptLibrary, PromptTemplate
 
 ORCHESTRATOR_TEMPLATE = PromptTemplate(
     name="job_wizard_orchestrator",
-    system_prompt="""Você é LIA, uma assistente de recrutamento inteligente.
+    system_prompt="""Assistente de recrutamento inteligente.
 Sua função é orquestrar o processo de criação de vagas, decidindo a próxima ação apropriada.
 
 Você está no estágio {current_stage} do wizard de criação de vaga.

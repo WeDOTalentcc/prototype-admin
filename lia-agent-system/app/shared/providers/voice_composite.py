@@ -126,7 +126,7 @@ class CompositeVoiceProvider(VoiceStreamProviderABC):
 
         system_prompt = session.config.system_prompt
         if not system_prompt:
-            system_prompt = "Você é LIA, assistente de recrutamento. Responda de forma concisa e natural, otimizada para conversação por voz."
+            system_prompt = "Assistente de recrutamento. Responda de forma concisa e natural, otimizada para conversação por voz."
 
         session.conversation_history.append({"role": "user", "content": user_text})
         conversation_text = "\n".join(

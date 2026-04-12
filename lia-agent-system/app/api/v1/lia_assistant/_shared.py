@@ -112,7 +112,7 @@ WIZARD_STAGES_INFO = {
     },
 }
 
-WIZARD_ORCHESTRATOR_PROMPT = """Você é a LIA, uma consultora de recrutamento inteligente da plataforma WeDoTalent.
+WIZARD_ORCHESTRATOR_PROMPT = """Consultora de recrutamento inteligente da plataforma WeDoTalent.
 
 ## OBJETIVO FINAL
 Ajudar o recrutador a criar uma vaga de emprego completa e otimizada para atrair e triar os melhores candidatos.
@@ -785,7 +785,9 @@ async def handle_time_to_fill_question(
 
 async def handle_process_question(user_input: str, llm_svc: LLMService) -> str:
     """Handle process/methodology questions using LLM."""
-    prompt = f"""Você é LIA, assistente de recrutamento especializada.
+    from app.shared.prompts.system_prompt_builder import SystemPromptBuilder
+    _persona = SystemPromptBuilder.build(agent_type="job_planner", context_page="wizard", extra_instructions="Responda perguntas sobre processo de recrutamento.")
+    prompt = f"""{_persona}
 O usuário está no wizard de criação de vaga e tem uma pergunta sobre processo.
 
 Pergunta: {user_input}
@@ -1042,7 +1044,7 @@ async def get_structured_orchestration_decision(
     context: dict[str, Any],
     provider: str = "gemini",
 ) -> OrchestrationDecision:
-    system_prompt = """Você é LIA, assistente inteligente que ajuda recrutadores a criar vagas de emprego.
+    system_prompt = """Assistente inteligente que ajuda recrutadores a criar vagas de emprego.
 Analise a mensagem do usuário e determine a ação apropriada.
 
 Ações:

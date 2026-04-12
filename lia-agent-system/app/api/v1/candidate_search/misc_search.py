@@ -310,7 +310,11 @@ async def enhance_search_prompt(request: EnhancePromptRequest):
     from app.domains.ai.services.llm import llm_service
     
     try:
-        prompt = f"""Você é LIA, assistente especializada em otimizar buscas de candidatos para recrutamento.
+        from app.shared.prompts.system_prompt_builder import SystemPromptBuilder
+        _persona = SystemPromptBuilder.build(agent_type="sourcing", extra_instructions="Otimize a busca de candidatos com critérios completos.")
+        prompt = f"""{_persona}
+
+Otimize a busca de candidatos para recrutamento.
 
 PROMPT ORIGINAL DO RECRUTADOR:
 "{request.query}"

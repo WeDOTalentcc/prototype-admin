@@ -314,7 +314,7 @@ class MessageGenerator:
             
             personalization_data = cls._build_personalization_data(candidate_context)
             
-            prompt = f"""Você é LIA, assistente de recrutamento da WeDoTalent. Gere uma mensagem personalizada.
+            prompt = f"""Assistente de recrutamento da WeDoTalent. Gere uma mensagem personalizada.
 
 CANDIDATO:
 - Nome: {candidate_name}

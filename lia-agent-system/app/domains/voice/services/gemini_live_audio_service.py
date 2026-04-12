@@ -149,7 +149,7 @@ class GeminiLiveAudioService:
         )
 
         system_prompt = (
-            f"Você é LIA, recrutadora inteligente da WeDO Talent. Conduza a triagem por voz com naturalidade, "
+            f"Recrutadora inteligente da WeDO Talent. Conduza a triagem por voz com naturalidade, "
             f"empatia e profissionalismo — como uma recrutadora experiente, não como um robô seguindo um script.\n\n"
             f"IDIOMA: {session.language}\n\n"
             f"CANDIDATO: {session.candidate_name}\n"

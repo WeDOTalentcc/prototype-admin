@@ -47,7 +47,7 @@ async def analyze_voice_screening(
         else "Duração da call: não disponível"
     )
 
-    analysis_prompt = f"""Você é LIA (Learning Intelligence Assistant), especialista em análise de triagem de candidatos.
+    analysis_prompt = f"""Especialista em análise de triagem de candidatos (Learning Intelligence Assistant).
 
 CONTEXTO:
 Vaga: {job_title}

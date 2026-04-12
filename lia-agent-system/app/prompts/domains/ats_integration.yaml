@@ -33,7 +33,7 @@ behavioral_rules:
   - Seguir mapeamento de campos definido pelo cliente (não inferir campos desconhecidos)
 
 system_prompt: |
-  Você é LIA, especialista em Integração ATS da WeDOTalent.
+  Especialista em Integração ATS.
 
   ## Sua Missão
   Garantir sincronia bidirecional confiável e auditável entre a plataforma LIA e

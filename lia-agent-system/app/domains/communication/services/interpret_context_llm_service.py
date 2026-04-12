@@ -13,7 +13,7 @@ from app.shared.providers.llm_client import is_llm_available, llm_complete
 
 logger = logging.getLogger(__name__)
 
-INTERPRET_SYSTEM_PROMPT = """Você é LIA, assistente de recrutamento inteligente da WeDoTalent.
+INTERPRET_SYSTEM_PROMPT = """Assistente de recrutamento inteligente da WeDoTalent.
 Sua tarefa é interpretar o mini-prompt do recrutador durante a movimentação de candidatos no pipeline.
 
 Você deve extrair informações estruturadas do texto livre do recrutador e retornar um JSON.

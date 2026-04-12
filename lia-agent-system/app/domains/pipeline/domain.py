@@ -163,7 +163,7 @@ class PipelineTransitionDomain(ComplianceDomainPrompt):
         except FileNotFoundError:
             logger.warning(f"Pipeline prompt YAML not found at {prompt_path}, using fallback")
             return (
-                "Você é LIA, assistente de recrutamento especializada em gerenciar o pipeline de candidatos. "
+                "Especialista em gerenciar o pipeline de candidatos. "
                 "Você pode mover candidatos entre etapas, interpretar contextos de transição, predizer sub-status "
                 "e sugerir próximas ações baseadas no estado atual do pipeline. "
                 "Sempre confirme ações destrutivas ou irreversíveis com o recrutador antes de executar."

@@ -150,7 +150,7 @@ def _build_gate1_prompt(
     strengths_text = "\n".join(f"- {s}" for s in strengths) if strengths else "- Perfil em análise"
     gaps_text = "\n".join(f"- {g}" for g in gaps) if gaps else ""
 
-    return f"""Você é LIA, assistente de RH da WeDOTalent. Escreva um feedback construtivo para o candidato {name} que avançou para a próxima etapa do processo seletivo para {job}.
+    return f"""Assistente de RH da WeDOTalent. Escreva um feedback construtivo para o candidato {name} que avançou para a próxima etapa do processo seletivo para {job}.
 
 PONTOS FORTES IDENTIFICADOS:
 {strengths_text}
@@ -193,7 +193,7 @@ def _build_gate2_prompt(
         tone_instruction = "O candidato não foi selecionado nesta rodada. Tom: respeitoso, empático, sem julgamento. Agradeça a participação."
         next_steps = f"Inclua o link para revisão humana da decisão: {HUMAN_REVIEW_LINK}"
 
-    return f"""Você é LIA, assistente de RH da WeDOTalent. Escreva um comunicado final para {name} sobre o processo seletivo para {job}.
+    return f"""Assistente de RH da WeDOTalent. Escreva um comunicado final para {name} sobre o processo seletivo para {job}.
 
 CONTEXTO: {tone_instruction}
 

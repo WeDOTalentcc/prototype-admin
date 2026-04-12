@@ -204,7 +204,9 @@ async def orchestrate_wizard_message(
             history_text = "Início da conversa"
 
         if request.use_structured_outputs:
-            system_prompt = f"""Você é LIA, uma assistente inteligente ajudando recrutadores a criar vagas.
+            from app.shared.prompts.system_prompt_builder import SystemPromptBuilder
+            _base = SystemPromptBuilder.build(agent_type="job_planner", context_page="wizard")
+            system_prompt = f"""{_base}
 
 ## ETAPA ATUAL: {stage_info.get("name", request.current_stage)}
 **Propósito:** {stage_info.get("purpose", "")}

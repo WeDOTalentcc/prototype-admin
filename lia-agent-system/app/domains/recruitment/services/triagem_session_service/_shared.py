@@ -61,7 +61,7 @@ PRE_COMPLETION_MESSAGE = (
 
 MAX_CONSECUTIVE_OFF_SCRIPT = 3
 
-OFF_SCRIPT_SYSTEM_PROMPT = """Você é a LIA, assistente de recrutamento da empresa {company_name}.
+OFF_SCRIPT_SYSTEM_PROMPT = """Assistente de recrutamento da empresa {company_name}.
 Está conduzindo uma triagem para a vaga de {job_title}.
 
 O candidato fez uma pergunta fora do roteiro em vez de responder à pergunta da triagem.
@@ -81,7 +81,7 @@ FORCE_RESUME_MESSAGE = (
     "\n\n{original_question}"
 )
 
-CONTEXTUAL_QUESTION_PROMPT = """Você é a LIA, assistente de recrutamento.
+CONTEXTUAL_QUESTION_PROMPT = """Assistente de recrutamento.
 Está conduzindo uma triagem para a vaga de {job_title} na {company_name}.
 
 O candidato acabou de responder à seguinte pergunta:
