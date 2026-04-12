@@ -16,6 +16,7 @@ from app.api.public import shared_searches as public_shared_searches
 # ── Lazy imports (originally inline in main.py) ───────────────────────────────
 from app.api.v1 import llm_config as llm_config_router_mod
 
+from app.api.v1 import stubs as stubs_router_mod
 from app.api.v1 import (
     ab_testing,
     activities,
@@ -551,13 +552,18 @@ def register_all_routes(app: FastAPI) -> None:
 
     # ── Agent Studio / Retention (Etapa 4 & 8) ───────────────────────────────
     app.include_router(company_retention_router, prefix="/api/v1", tags=["company-retention"])
+    # sector_templates must be registered BEFORE agent_templates to avoid
+    # GET /agent-templates/sectors being swallowed by /agent-templates/{template_id}
+    app.include_router(sector_templates_router, prefix="/api/v1", tags=["sector-templates"])
     app.include_router(agent_templates_router, prefix="/api/v1", tags=["agent-templates"])
     # — Phase 6: Agent Studio, Sourcing, Digital Twins, Voice Screening
-    app.include_router(sector_templates_router, prefix="/api/v1", tags=["sector-templates"])
     app.include_router(sourcing_agents_router, prefix="/api/v1", tags=["sourcing-agents"])
     app.include_router(multi_strategy_router, prefix="/api/v1", tags=["multi-strategy"])
     app.include_router(digital_twins_router, prefix="/api/v1", tags=["digital-twins"])
     app.include_router(voice_screening_router, prefix="/api/v1", tags=["voice-screening"])
+
+    # ── Public (no /api/v1 prefix) ────────────────────────────────────────────
+    app.include_router(stubs_router_mod.router, prefix="/api/v1", tags=["stubs"])
 
     # ── Public (no /api/v1 prefix) ────────────────────────────────────────────
     app.include_router(candidate_portal.router, tags=["candidate-portal"])

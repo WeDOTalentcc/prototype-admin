@@ -17,7 +17,7 @@ from app.core.database import get_db
 from pydantic import BaseModel
 from typing import Optional
 
-router = APIRouter(prefix="/api/v1", tags=["Agent Studio — Sector Templates"])
+router = APIRouter(tags=["Agent Studio — Sector Templates"])
 
 
 class SectorTemplateSummary(BaseModel):

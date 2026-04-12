@@ -283,7 +283,7 @@ def get_enrichment_suggestions(entities: dict[str, Any]) -> dict[str, list[str]]
     """Get enrichment suggestions based on current entities."""
     enrichments = {}
     
-    job_title = entities.get("job_title", "").lower()
+    job_title = (entities.get("job_title") or "").lower()
     if job_title:
         if "frontend" in job_title or "react" in job_title:
             enrichments["skills"] = ["React", "TypeScript", "Next.js", "Tailwind CSS"]
@@ -295,8 +295,8 @@ def get_enrichment_suggestions(entities: dict[str, Any]) -> dict[str, list[str]]
             enrichments["skills"] = ["Docker", "Kubernetes", "AWS", "Terraform"]
         elif "product" in job_title:
             enrichments["skills"] = ["Product Discovery", "Métricas", "Roadmap", "Stakeholders"]
-    
-    skills = entities.get("skills", [])
+
+    skills = entities.get("skills") or []
     if skills:
         skill_lower = [s.lower() for s in skills]
         if "react" in skill_lower or "vue" in skill_lower:

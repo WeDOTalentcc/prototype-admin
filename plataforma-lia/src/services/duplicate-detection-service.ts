@@ -64,7 +64,7 @@ export class DuplicateDetectionService {
 
   async refreshCandidates(): Promise<void> {
     try {
-      const response = await fetch('/api/backend-proxy/candidates/?skip=0&limit=1000', {
+      const response = await fetch('/api/backend-proxy/candidates/?skip=0&limit=200', {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' }
       })

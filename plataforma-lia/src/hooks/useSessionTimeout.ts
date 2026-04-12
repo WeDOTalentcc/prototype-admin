@@ -1,8 +1,8 @@
 import { useEffect, useCallback, useRef } from "react"
 import { useRouter } from "next/navigation"
 
-const SESSION_TIMEOUT_MS = 30 * 60 * 1000 // 30 minutos
-const WARNING_BEFORE_MS = 2 * 60 * 1000   // aviso 2 min antes
+const SESSION_TIMEOUT_MS = 8 * 60 * 60 * 1000 // 8 horas (alinhado com ACCESS_TOKEN_EXPIRE_MINUTES=480)
+const WARNING_BEFORE_MS = 10 * 60 * 1000      // aviso 10 min antes
 
 interface UseSessionTimeoutOptions {
   onWarning?: () => void

@@ -210,7 +210,7 @@ export function useCandidatesExecuteSearch(deps: ExecuteSearchDeps) {
           query, thread_id: searchThreadId, search_spec: searchSpec,
           search_local: true, search_pearch: shouldUsePearch || shouldUseHybrid,
           pearch_type: pearchSearchOptions.searchType, local_limit: 50,
-          pearch_limit: shouldUsePearch || shouldUseHybrid ? pearchSearchOptions.limit : 0,
+          pearch_limit: shouldUsePearch || shouldUseHybrid ? pearchSearchOptions.limit : 1,
           show_emails: pearchSearchOptions.showEmails,
           show_phone_numbers: pearchSearchOptions.showPhoneNumbers, high_freshness: pearchSearchOptions.highFreshness,
           require_emails: pearchSearchOptions.requireEmails, require_phone_numbers: pearchSearchOptions.requirePhoneNumbers

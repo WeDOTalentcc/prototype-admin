@@ -90,9 +90,9 @@ class TaskPlanner:
 ## FORMATO DE RESPOSTA
 
 ```json
-{
+{{
   "plan": [
-    {
+    {{
       "step": 1,
       "description": "Descrição clara da tarefa",
       "agent": "Nome do Agente",
@@ -101,12 +101,12 @@ class TaskPlanner:
       "success_criteria": "Critério mensurável",
       "estimated_duration_seconds": 30,
       "can_run_parallel": false
-    }
+    }}
   ],
   "estimated_steps": 2,
   "estimated_total_duration_seconds": 60,
   "requires_user_confirmation": false
-}
+}}
 ```
 
 **can_run_parallel = true** quando a tarefa não depende de nenhuma outra e pode rodar simultaneamente."""
