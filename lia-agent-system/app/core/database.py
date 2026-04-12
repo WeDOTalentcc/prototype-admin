@@ -53,7 +53,14 @@ async def get_tenant_db(request: "Request") -> AsyncGenerator[AsyncSession, None
             ...
     """
     async with AsyncSessionLocal() as session:
+        _role_set = False
         try:
+            try:
+                await session.execute(sa.text("SET ROLE lia_app"))
+                _role_set = True
+            except Exception as role_err:
+                logger.error("[RLS] SET ROLE lia_app failed in get_tenant_db: %s — request blocked", role_err)
+                raise RuntimeError("RLS role enforcement failed") from role_err
             company_id = getattr(request.state, "company_id", None)
             if company_id:
                 await set_tenant_context(session, company_id)
@@ -63,6 +70,11 @@ async def get_tenant_db(request: "Request") -> AsyncGenerator[AsyncSession, None
             await session.rollback()
             raise
         finally:
+            if _role_set:
+                try:
+                    await session.execute(sa.text("RESET ROLE"))
+                except Exception:
+                    pass
             await session.close()
 
 async def add_task_lifecycle_columns():

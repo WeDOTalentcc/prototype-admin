@@ -95,9 +95,18 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
     """
     async with AsyncSessionLocal() as session:
         try:
-            # RLS: inject tenant context if available
+            try:
+                await session.execute(sa.text("RESET ROLE"))
+            except Exception:
+                pass
+
             _cid = _get_current_company_id()
             if _cid:
+                try:
+                    await session.execute(sa.text("SET ROLE lia_app"))
+                except Exception as role_err:
+                    logger.error("[RLS] SET ROLE lia_app failed: %s — request blocked (fail-closed)", role_err)
+                    raise RuntimeError("RLS role enforcement failed") from role_err
                 await session.execute(
                     sa.text("SELECT set_config('app.company_id', :cid, true)"),
                     {"cid": _cid},
@@ -108,4 +117,8 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
             await session.rollback()
             raise
         finally:
+            try:
+                await session.execute(sa.text("RESET ROLE"))
+            except Exception:
+                pass
             await session.close()

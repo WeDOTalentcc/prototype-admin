@@ -740,9 +740,12 @@ function MoveToJobModal({ poolId, selectedIds, candidates, onClose, onMoved }: M
   ]
 
   useEffect(() => {
-    fetch("/api/backend-proxy/jobs?status=open")
+    fetch("/api/backend-proxy/job-vacancies?status=Ativa&limit=500")
       .then(res => res.json())
-      .then(data => setJobs(data?.jobs || data?.data?.map((d: { id: number; attributes: { title: string } }) => ({ id: d.id, title: d.attributes?.title })) || []))
+      .then(data => {
+        const items = data?.items || []
+        setJobs(items.map((d: { id: string; title: string }) => ({ id: d.id, title: d.title })))
+      })
       .catch((err) => { console.error('[TalentPoolPage] jobs fetch failed', err) })
   }, [])
 
