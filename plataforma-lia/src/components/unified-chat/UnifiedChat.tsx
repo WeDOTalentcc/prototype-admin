@@ -145,10 +145,8 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
     setInputText("")
     setAttachedFile(null)
 
-    // Detect navigation intent and auto-navigate if confident
     detectNavIntent(text).then((result) => {
-      if (result?.page) {
-        // Dispatch navigation event for dashboard-app to handle
+      if (result?.page && result.confidence >= 0.85) {
         window.dispatchEvent(new CustomEvent("lia:navigation-hint", {
           detail: { page: result.page, hint: result.hint },
         }))

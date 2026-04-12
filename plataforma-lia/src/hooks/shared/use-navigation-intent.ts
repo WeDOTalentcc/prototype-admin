@@ -19,7 +19,7 @@ export interface NavigationIntentResult {
   hint: string | null
 }
 
-const CONFIDENCE_THRESHOLD = 0.65
+const CONFIDENCE_THRESHOLD = 0.75
 
 export function useNavigationIntent() {
   const [result, setResult] = useState<NavigationIntentResult | null>(null)
