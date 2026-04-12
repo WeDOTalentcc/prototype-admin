@@ -51,6 +51,8 @@ class CustomAgentRuntime(LangGraphReActBase, EnhancedAgentMixin):
         temperature: float = 0.7,
         model_override: Optional[str] = None,
         company_id: str = "",
+        enable_memory: bool = True,
+        excluded_tools: list[str] | None = None,
     ) -> None:
         super().__init__()
         self._agent_id = agent_id
@@ -62,8 +64,8 @@ class CustomAgentRuntime(LangGraphReActBase, EnhancedAgentMixin):
         self._temperature = temperature
         self._model_override = model_override
         self._company_id = company_id
-        self._enable_memory = kwargs.get("enable_memory", True)
-        self._excluded_tools = set(kwargs.get("excluded_tools") or [])
+        self._enable_memory = enable_memory
+        self._excluded_tools = set(excluded_tools or [])
         self._setup_enhanced(domain=f"custom:{agent_name}")
         logger.info(
             "[CustomAgentRuntime] Initialized agent=%s tools=%d max_steps=%d",
@@ -75,6 +77,16 @@ class CustomAgentRuntime(LangGraphReActBase, EnhancedAgentMixin):
     @property
     def domain_name(self) -> str:
         return f"custom:{self._agent_name}"
+
+    async def process(self, input) -> "AgentOutput":
+        """Implement abstract method from AgentInterface — delegates to execute()."""
+        return await self.execute(
+            message=input.message,
+            user_id=input.user_id,
+            company_id=input.company_id,
+            session_id=input.session_id,
+            context=input.context,
+        )
 
     @property
     def available_tools(self) -> list[str]:
@@ -130,7 +142,9 @@ class CustomAgentRuntime(LangGraphReActBase, EnhancedAgentMixin):
                 all_available[td.name] = td
 
         filtered = []
-        for tool_name in self._allowed_tools:
+        # If allowed_tools is empty, allow ALL available tools (minus restricted/excluded)
+        tool_names_to_use = self._allowed_tools if self._allowed_tools else list(all_available.keys())
+        for tool_name in tool_names_to_use:
             if tool_name in all_available:
                 td = all_available[tool_name]
                 original_fn = td.function
