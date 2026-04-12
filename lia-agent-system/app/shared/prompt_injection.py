@@ -42,6 +42,11 @@ class InjectionCheckResult:
     sanitized_input: str = ""
     confidence: float = 0.0
 
+    @property
+    def is_blocked(self) -> bool:
+        """Alias for is_suspicious - backward compat with compliance_base."""
+        return self.is_suspicious
+
 
 def _to_injection_result(sec: SecurityCheckResult, sanitized: str = "") -> InjectionCheckResult:
     """Convert canonical SecurityCheckResult to legacy InjectionCheckResult."""
