@@ -3,10 +3,10 @@ WSI Question Adjuster Service
 Regenerates WSI screening questions based on recruiter natural language requests.
 Uses Gemini 2.5 Flash for fast iteration.
 """
-# TODO(Item3-C): 1 direct Gemini generate_content() calls bypass LLM service.
-# Route through llm_service.generate(provider='gemini') for PII strip + audit + tenant config.
 
 import json
+
+from app.domains.ai.services.llm import llm_service
 import logging
 import os
 from typing import Any
@@ -243,9 +243,10 @@ Gere uma avaliação curta (2-3 frases) em português do Brasil:
 
 Responda APENAS com o texto da avaliação, sem formatação especial."""
 
-            response = model.generate_content(
-                [{"role": "user", "parts": [{"text": eval_prompt}]}],
-                generation_config={"temperature": 0.5, "max_output_tokens": 500}
+            response = llm_service.generate_native_gemini_sync(
+                contents=[{"role": "user", "parts": [{"text": eval_prompt}]}],
+                model="gemini-2.5-flash",
+                generation_config={"temperature": 0.5, "max_output_tokens": 500},
             )
             lia_suggestion = response.text.strip()
         except Exception as e:

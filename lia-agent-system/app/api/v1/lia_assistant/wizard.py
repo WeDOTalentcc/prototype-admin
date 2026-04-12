@@ -6,8 +6,6 @@ Job-wizard routes:
   POST /lia/job-wizard/evaluate
   POST /lia/job-wizard/step
 """
-# TODO(Item3-C): 1 direct Gemini generate_content() calls bypass LLM service.
-# Route through llm_service.generate(provider='gemini') for PII strip + audit + tenant config.
 
 import json
 import re
@@ -455,10 +453,9 @@ IMPORTANTE:
 
 Retorne APENAS o JSON, sem texto adicional."""
 
-        gemini = llm_svc.gemini_native
-        response = await gemini.aio.models.generate_content(
+        response = await llm_svc.generate_native_gemini(
+            contents=extraction_prompt,
             model="gemini-2.5-flash",
-            contents=extraction_prompt
         )
 
         response_text = response.text.strip()

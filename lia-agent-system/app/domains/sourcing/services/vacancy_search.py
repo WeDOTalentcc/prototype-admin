@@ -6,8 +6,6 @@ Provides functionality to:
 - Search previous vacancies by criteria
 - Apply adjustments to reused vacancies
 """
-# TODO(Item3-C): 2 direct Gemini generate_content() calls bypass LLM service.
-# Route through llm_service.generate(provider='gemini') for PII strip + audit + tenant config.
 
 import json
 import logging
@@ -126,10 +124,9 @@ Se nenhum ajuste for mencionado, retorne null para todos os campos."""
         try:
             prompt = self.CRITERIA_EXTRACTION_PROMPT.format(message=message[:500])
             
-            gemini = self._llm_service.gemini_native
-            response = await gemini.aio.models.generate_content(
+            response = await self._llm_service.generate_native_gemini(
+                contents=prompt,
                 model="gemini-2.5-flash",
-                contents=prompt
             )
             
             response_text = response.text.strip()
@@ -376,10 +373,9 @@ Se nenhum ajuste for mencionado, retorne null para todos os campos."""
         try:
             prompt = self.ADJUSTMENTS_EXTRACTION_PROMPT.format(message=message[:500])
             
-            gemini = self._llm_service.gemini_native
-            response = await gemini.aio.models.generate_content(
+            response = await self._llm_service.generate_native_gemini(
+                contents=prompt,
                 model="gemini-2.5-flash",
-                contents=prompt
             )
             
             response_text = response.text.strip()

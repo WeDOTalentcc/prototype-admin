@@ -27,8 +27,6 @@ Session persistence:
 - Active sessions persisted in wsi_sessions.voice_session_state (JSONB)
 - Session survives server restarts; loaded from DB on first request
 """
-# TODO(Item3-C): 1 direct Gemini generate_content() calls bypass LLM service.
-# Route through llm_service.generate(provider='gemini') for PII strip + audit + tenant config.
 
 
 import json
@@ -1110,9 +1108,9 @@ class VoiceScreeningOrchestrator:
                 )
             )
 
-            response = client.models.generate_content(
-                model="gemini-2.5-flash",
+            response = self._llm_service.generate_native_gemini_sync(
                 contents=conversation_history,
+                model="gemini-2.5-flash",
                 config=types.GenerateContentConfig(
                     system_instruction=system_prompt,
                     temperature=0.7,

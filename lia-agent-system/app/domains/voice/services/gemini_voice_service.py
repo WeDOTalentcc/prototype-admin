@@ -4,8 +4,6 @@ Gemini Voice-to-Text Service
 Transcrição de áudio usando Gemini Flash 2.5 via Replit AI Integrations.
 Suporta múltiplos formatos de áudio e vídeo.
 """
-# TODO(Item3-C): 3 direct Gemini generate_content() calls bypass LLM service.
-# Route through llm_service.generate(provider='gemini') for PII strip + audit + tenant config.
 
 import logging
 import os
@@ -140,7 +138,7 @@ Instruções:
 Forneça apenas a transcrição, sem introdução ou explicações."""
         
         try:
-            response = self.client.models.generate_content(
+            response = self._get_llm_service().generate_native_gemini_sync(
                 model="gemini-2.5-flash",
                 contents=[
                     prompt,
@@ -230,7 +228,7 @@ Parágrafo 3: Próximos passos ou recomendações (se mencionado)"""
         prompt = prompts.get(analysis_type, prompts["full"])
         
         try:
-            response = self.client.models.generate_content(
+            response = self._get_llm_service().generate_native_gemini_sync(
                 model="gemini-2.5-flash",
                 contents=[
                     prompt,
@@ -310,7 +308,7 @@ Para cada pergunta/tópico:
 Sugestões para follow-up ou próximas etapas."""
 
         try:
-            response = self.client.models.generate_content(
+            response = self._get_llm_service().generate_native_gemini_sync(
                 model="gemini-2.5-flash",
                 contents=[
                     prompt,

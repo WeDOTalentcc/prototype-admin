@@ -177,6 +177,130 @@ class LLMService:
         
         return response.text or ""
     
+
+    async def generate_native_gemini(
+        self,
+        contents: "str | list",
+        model: str = "gemini-2.5-flash",
+        config: "Any | None" = None,
+        system_instruction: str | None = None,
+    ) -> "Any":
+        """Wrapper around gemini_native.generate_content with PII strip + audit.
+
+        For simple text prompts: returns response object (access .text).
+        For multimodal (audio/image): pass contents as list with types.Part.
+        Supports config dict or types.GenerateContentConfig.
+
+        Args:
+            contents: Prompt string or list of content parts.
+            model: Gemini model name.
+            config: Optional GenerateContentConfig or dict.
+            system_instruction: Optional system instruction string.
+        """
+        import time as _time
+
+        # PII strip on text content
+        if isinstance(contents, str):
+            contents = strip_pii_for_llm_prompt(contents)
+        elif isinstance(contents, list):
+            contents = [
+                strip_pii_for_llm_prompt(c) if isinstance(c, str) else c
+                for c in contents
+            ]
+        if system_instruction:
+            system_instruction = strip_pii_for_llm_prompt(system_instruction)
+
+        tenant_id = self._current_tenant or ""
+        _t0 = _time.monotonic()
+
+        try:
+            client = self.gemini_native
+
+            # Build kwargs
+            kwargs: dict[str, Any] = {"model": model, "contents": contents}
+            if config is not None:
+                kwargs["config"] = config
+            elif system_instruction:
+                # If no config but system_instruction provided, build config
+                try:
+                    from google.genai import types
+                    kwargs["config"] = types.GenerateContentConfig(
+                        system_instruction=system_instruction,
+                    )
+                except ImportError:
+                    pass
+
+            response = await client.aio.models.generate_content(**kwargs)
+
+            _elapsed = round((_time.monotonic() - _t0) * 1000)
+            logger.info(
+                "[LLM-AUDIT] provider=gemini-native action=generate_content model=%s "
+                "latency_ms=%d tenant=%s",
+                model, _elapsed, tenant_id or "default",
+            )
+            return response
+
+        except Exception as exc:
+            _elapsed = round((_time.monotonic() - _t0) * 1000)
+            logger.warning(
+                "[LLM-AUDIT] provider=gemini-native action=generate_content.ERROR "
+                "model=%s error=%s latency_ms=%d tenant=%s",
+                model, type(exc).__name__, _elapsed, tenant_id or "default",
+            )
+            raise
+
+    def generate_native_gemini_sync(
+        self,
+        contents: "str | list",
+        model: str = "gemini-2.5-flash",
+        config: "Any | None" = None,
+        generation_config: "dict | None" = None,
+    ) -> "Any":
+        """Synchronous wrapper for direct Gemini SDK calls with PII strip + audit.
+
+        For sync callers that use client.models.generate_content() directly.
+        """
+        import time as _time
+
+        if isinstance(contents, str):
+            contents = strip_pii_for_llm_prompt(contents)
+        elif isinstance(contents, list):
+            for i, c in enumerate(contents):
+                if isinstance(c, str):
+                    contents[i] = strip_pii_for_llm_prompt(c)
+                elif isinstance(c, dict) and c.get("parts"):
+                    for j, part in enumerate(c["parts"]):
+                        if isinstance(part, dict) and "text" in part:
+                            c["parts"][j]["text"] = strip_pii_for_llm_prompt(part["text"])
+
+        tenant_id = self._current_tenant or ""
+        _t0 = _time.monotonic()
+
+        try:
+            client = self.gemini_native
+            kwargs: dict[str, Any] = {"model": model, "contents": contents}
+            if config is not None:
+                kwargs["config"] = config
+            if generation_config is not None:
+                kwargs["generation_config"] = generation_config
+
+            response = client.models.generate_content(**kwargs)
+
+            _elapsed = round((_time.monotonic() - _t0) * 1000)
+            logger.info(
+                "[LLM-AUDIT] provider=gemini-native-sync action=generate_content model=%s "
+                "latency_ms=%d tenant=%s",
+                model, _elapsed, tenant_id or "default",
+            )
+            return response
+        except Exception as exc:
+            _elapsed = round((_time.monotonic() - _t0) * 1000)
+            logger.warning(
+                "[LLM-AUDIT] provider=gemini-native-sync ERROR=%s latency_ms=%d tenant=%s",
+                type(exc).__name__, _elapsed, tenant_id or "default",
+            )
+            raise
+
     async def generate(
         self,
         prompt: str,
