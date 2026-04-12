@@ -56,6 +56,11 @@ class CustomAgent(Base):
     temperature = Column(Float, nullable=False, default=0.7)
     model_override = Column(String(64), nullable=True)
 
+    # GAP 8: New fields for Agent Studio parity
+    enable_memory = Column(Boolean, nullable=False, default=True, server_default="true")
+    context_level = Column(String(20), nullable=False, default="full", server_default="full")
+    excluded_tools = Column(ARRAY(String), nullable=False, default=list, server_default="{}")
+
     total_executions = Column(Integer, default=0)
     avg_confidence = Column(Float, default=0.0)
     last_executed_at = Column(DateTime, nullable=True)
@@ -105,6 +110,9 @@ class CustomAgent(Base):
             "max_steps": self.max_steps,
             "temperature": self.temperature,
             "model_override": self.model_override,
+            "enable_memory": self.enable_memory if self.enable_memory is not None else True,
+            "context_level": self.context_level or "full",
+            "excluded_tools": self.excluded_tools or [],
             "total_executions": self.total_executions,
             "avg_confidence": self.avg_confidence,
             "last_executed_at": self.last_executed_at.isoformat() if self.last_executed_at else None,

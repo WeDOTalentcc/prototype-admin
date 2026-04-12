@@ -178,6 +178,8 @@ async def test_custom_agent(
             temperature=agent.temperature,
             model_override=agent.model_override,
             company_id=current_user.company_id,
+            enable_memory=getattr(agent, "enable_memory", True),
+            excluded_tools=getattr(agent, "excluded_tools", None),
         )
 
         start = time.time()
@@ -233,6 +235,8 @@ async def execute_custom_agent(
             temperature=agent.temperature,
             model_override=agent.model_override,
             company_id=current_user.company_id,
+            enable_memory=getattr(agent, "enable_memory", True),
+            excluded_tools=getattr(agent, "excluded_tools", None),
         )
 
         start = time.time()

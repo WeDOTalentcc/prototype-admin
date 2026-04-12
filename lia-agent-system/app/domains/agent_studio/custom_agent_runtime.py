@@ -62,6 +62,8 @@ class CustomAgentRuntime(LangGraphReActBase, EnhancedAgentMixin):
         self._temperature = temperature
         self._model_override = model_override
         self._company_id = company_id
+        self._enable_memory = kwargs.get("enable_memory", True)
+        self._excluded_tools = set(kwargs.get("excluded_tools") or [])
         self._setup_enhanced(domain=f"custom:{agent_name}")
         logger.info(
             "[CustomAgentRuntime] Initialized agent=%s tools=%d max_steps=%d",
@@ -124,7 +126,7 @@ class CustomAgentRuntime(LangGraphReActBase, EnhancedAgentMixin):
         # Deduplicate by name, filter out restricted
         all_available = {}
         for td in all_tools + enhanced_tools:
-            if td.name not in self._RESTRICTED_TOOLS:
+            if td.name not in self._RESTRICTED_TOOLS and td.name not in self._excluded_tools:
                 all_available[td.name] = td
 
         filtered = []
@@ -173,8 +175,12 @@ class CustomAgentRuntime(LangGraphReActBase, EnhancedAgentMixin):
         if compiled is None:
             raise RuntimeError(f"[CustomAgentRuntime:{self._agent_name}] Grafo LangGraph não disponível")
 
-        # GAP 4: Deterministic thread_id for conversation continuity
-        effective_thread = session_id or f"{self._agent_id}:{initial_state.get('user_id', 'anon')}:{self._company_id}"
+        # GAP 4+8: Thread_id based on enable_memory setting
+        if self._enable_memory:
+            effective_thread = session_id or f"{self._agent_id}:{initial_state.get('user_id', 'anon')}:{self._company_id}"
+        else:
+            import uuid as _uuid
+            effective_thread = f"stateless:{self._agent_id}:{_uuid.uuid4().hex[:8]}"
         config: dict[str, Any] = {
             "configurable": {"thread_id": effective_thread},
             "recursion_limit": self._max_steps * 2 + 1,
@@ -357,6 +363,8 @@ def get_or_create_runtime(
     model_override: Optional[str] = None,
     company_id: str = "",
     force_new: bool = False,
+    enable_memory: bool = True,
+    excluded_tools: list[str] | None = None,
 ) -> CustomAgentRuntime:
     cache_key = f"{agent_id}:{company_id}"
     if cache_key not in _runtime_cache or force_new:
@@ -369,6 +377,8 @@ def get_or_create_runtime(
             max_steps=max_steps,
             temperature=temperature,
             model_override=model_override,
+            enable_memory=enable_memory,
+            excluded_tools=excluded_tools,
             company_id=company_id,
         )
     return _runtime_cache[cache_key]
