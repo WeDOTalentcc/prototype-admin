@@ -543,7 +543,7 @@ async def process_meeting_transcript(resource_data: dict, resource_path: str = "
     """
     Background task to process meeting transcript when notified by Teams webhook.
     """
-    from app.core.database import async_session_maker
+    from app.core.database import AsyncSessionLocal
 
     try:
         meeting_id = resource_data.get("meetingId") or resource_data.get("id")
@@ -555,7 +555,7 @@ async def process_meeting_transcript(resource_data: dict, resource_path: str = "
 
         logger.info(f"🔄 Processing transcript for meeting: {meeting_id}")
 
-        async with async_session_maker() as db:
+        async with AsyncSessionLocal() as db:
             repo = InterviewAnalysisRepository(db)
             interview = await repo.get_interview_by_meeting_id(meeting_id)
 
@@ -612,6 +612,7 @@ async def process_meeting_transcript(resource_data: dict, resource_path: str = "
                 feedback=current_feedback,
                 status="completed",
             )
+            await db.commit()
 
             company_id = interview.company_id if hasattr(interview, 'company_id') and interview.company_id else None
             logger.warning(f"Using company_id='{company_id}' for background interview analysis task")

@@ -10,11 +10,14 @@ Supports:
 Cost: Gemini audio/video input pricing (much cheaper than dedicated STT).
 """
 import asyncio
+import ipaddress
 import logging
 import os
+import socket
 import tempfile
 from datetime import datetime
 from typing import Any
+from urllib.parse import urlparse
 
 import httpx
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -53,9 +56,33 @@ LANGUAGE_DETECT_PROMPT = """Identifique o idioma principal desta transcrição.
 Retorne APENAS o código BCP-47 (ex: pt-BR, en-US, es-ES). Nada mais."""
 
 
+MAX_DOWNLOAD_SIZE = 500 * 1024 * 1024  # 500 MB
+ALLOWED_URL_SCHEMES = {"https"}
+BLOCKED_HOSTS = {"localhost", "127.0.0.1", "0.0.0.0", "metadata.google.internal", "169.254.169.254"}
+
+
 class TranscriptionService:
     def __init__(self):
         self._client = None
+
+    @staticmethod
+    def _validate_url(url: str) -> None:
+        parsed = urlparse(url)
+        if parsed.scheme not in ALLOWED_URL_SCHEMES:
+            raise ValueError(f"URL scheme '{parsed.scheme}' not allowed. Only HTTPS is accepted.")
+        hostname = parsed.hostname or ""
+        if not hostname:
+            raise ValueError("Invalid URL: no hostname")
+        if hostname in BLOCKED_HOSTS:
+            raise ValueError(f"Blocked host: {hostname}")
+        try:
+            resolved = socket.getaddrinfo(hostname, None)
+            for _, _, _, _, sockaddr in resolved:
+                ip = ipaddress.ip_address(sockaddr[0])
+                if ip.is_private or ip.is_loopback or ip.is_link_local or ip.is_reserved:
+                    raise ValueError(f"URL resolves to private/internal IP: {ip}")
+        except socket.gaierror:
+            raise ValueError(f"Cannot resolve hostname: {hostname}")
 
     def _get_client(self):
         if not self._client:
@@ -76,6 +103,7 @@ class TranscriptionService:
         language_hint: str = "pt-BR",
         timeout_seconds: int = 120,
     ) -> dict[str, Any]:
+        self._validate_url(recording_url)
         local_path = await self._download_file(recording_url)
         try:
             return await self.transcribe_from_file(
@@ -165,29 +193,46 @@ class TranscriptionService:
         return None
 
     async def _download_file(self, url: str) -> str:
+        self._validate_url(url)
+
         async with httpx.AsyncClient(timeout=60.0) as http:
-            response = await http.get(url, follow_redirects=True)
-            response.raise_for_status()
+            async with http.stream("GET", url, follow_redirects=True) as response:
+                response.raise_for_status()
 
-        content_type = response.headers.get("content-type", "")
-        ext = ".tmp"
-        for e, m in {**SUPPORTED_AUDIO_TYPES, **SUPPORTED_VIDEO_TYPES}.items():
-            if m in content_type:
-                ext = e
-                break
-        if ext == ".tmp":
-            from urllib.parse import urlparse
-            path = urlparse(url).path
-            for e in list(SUPPORTED_AUDIO_TYPES.keys()) + list(SUPPORTED_VIDEO_TYPES.keys()):
-                if path.endswith(e):
-                    ext = e
-                    break
+                content_length = response.headers.get("content-length")
+                if content_length and int(content_length) > MAX_DOWNLOAD_SIZE:
+                    raise ValueError(f"File too large: {int(content_length)} bytes (max {MAX_DOWNLOAD_SIZE})")
 
-        fd, local_path = tempfile.mkstemp(suffix=ext)
-        with os.fdopen(fd, "wb") as f:
-            f.write(response.content)
+                content_type = response.headers.get("content-type", "")
+                ext = ".tmp"
+                for e, m in {**SUPPORTED_AUDIO_TYPES, **SUPPORTED_VIDEO_TYPES}.items():
+                    if m in content_type:
+                        ext = e
+                        break
+                if ext == ".tmp":
+                    parsed_path = urlparse(url).path
+                    for e in list(SUPPORTED_AUDIO_TYPES.keys()) + list(SUPPORTED_VIDEO_TYPES.keys()):
+                        if parsed_path.endswith(e):
+                            ext = e
+                            break
 
-        logger.info("Downloaded recording: %s -> %s (%d bytes)", url, local_path, len(response.content))
+                fd, local_path = tempfile.mkstemp(suffix=ext)
+                total_bytes = 0
+                try:
+                    with os.fdopen(fd, "wb") as f:
+                        async for chunk in response.aiter_bytes(chunk_size=65536):
+                            total_bytes += len(chunk)
+                            if total_bytes > MAX_DOWNLOAD_SIZE:
+                                raise ValueError(f"File too large during download (>{MAX_DOWNLOAD_SIZE} bytes)")
+                            f.write(chunk)
+                except Exception:
+                    try:
+                        os.unlink(local_path)
+                    except OSError:
+                        pass
+                    raise
+
+        logger.info("Downloaded recording: %s -> %s (%d bytes)", url, local_path, total_bytes)
         return local_path
 
     async def transcribe_and_persist(
@@ -241,7 +286,7 @@ class TranscriptionService:
             return transcription
 
         except Exception as e:
-            interview.status = "completed"
+            interview.status = "transcription_failed"
             current_feedback = interview.feedback or {}
             current_feedback["transcription_error"] = str(e)
             interview.feedback = current_feedback
