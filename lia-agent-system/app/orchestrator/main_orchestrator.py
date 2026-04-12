@@ -793,9 +793,10 @@ class MainOrchestrator:
                             hints.append(suggestion)
 
             if hints:
-                existing_content = result.get("content", "")
                 tasting_block = "\n\n---\n" + "\n".join(hints[:2])
-                result["content"] = existing_content + tasting_block
+                primary_field = "response" if "response" in result else ("message" if "message" in result else "content")
+                existing_text = result.get(primary_field, "")
+                result[primary_field] = existing_text + tasting_block
                 result["module_hints"] = hints[:2]
         except Exception as exc:
             logger.debug("[MainOrchestrator] Module tasting hints skipped: %s", exc)

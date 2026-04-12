@@ -232,23 +232,38 @@ def _extract_tasting_data(result: dict[str, Any]) -> dict[str, Any]:
 
     tasting: dict[str, Any] = {"preview": True}
 
-    if "skills" in data and isinstance(data["skills"], list):
-        tasting["skills_preview"] = data["skills"][:3]
-        tasting["count"] = len(data["skills"])
-        tasting["total_available"] = len(data["skills"])
+    skills_key = None
+    for k in ("skills", "related_skills", "canonical_skills", "mapped_skills"):
+        if k in data and isinstance(data[k], list):
+            skills_key = k
+            break
+    if skills_key:
+        tasting["skills_preview"] = data[skills_key][:3]
+        tasting["count"] = len(data[skills_key])
+        tasting["total_available"] = len(data[skills_key])
 
-    if "candidates" in data and isinstance(data["candidates"], list):
+    candidates_key = None
+    for k in ("candidates", "matches", "internal_matches", "internal_candidates"):
+        if k in data and isinstance(data[k], list):
+            candidates_key = k
+            break
+    if candidates_key:
         tasting["candidates_preview"] = [
-            {"name": c.get("name", ""), "match_score": c.get("match_score")}
-            for c in data["candidates"][:2]
+            {"name": c.get("name", ""), "match_score": c.get("match_score", c.get("score"))}
+            for c in data[candidates_key][:2]
         ]
-        tasting["count"] = len(data["candidates"])
+        tasting["count"] = len(data[candidates_key])
 
-    if "gaps" in data and isinstance(data["gaps"], list):
-        tasting["gaps_count"] = len(data["gaps"])
-        tasting["count"] = len(data["gaps"])
-        if data["gaps"]:
-            tasting["top_gap"] = data["gaps"][0] if isinstance(data["gaps"][0], str) else str(data["gaps"][0])
+    gaps_key = None
+    for k in ("gaps", "missing_skills", "skill_gaps"):
+        if k in data and isinstance(data[k], list):
+            gaps_key = k
+            break
+    if gaps_key:
+        tasting["gaps_count"] = len(data[gaps_key])
+        tasting["count"] = len(data[gaps_key])
+        if data[gaps_key]:
+            tasting["top_gap"] = data[gaps_key][0] if isinstance(data[gaps_key][0], str) else str(data[gaps_key][0])
 
     if "adjacencies" in data and isinstance(data["adjacencies"], (list, dict)):
         count = len(data["adjacencies"]) if isinstance(data["adjacencies"], list) else len(data["adjacencies"].keys())
@@ -257,5 +272,10 @@ def _extract_tasting_data(result: dict[str, Any]) -> dict[str, Any]:
     if "metrics" in data and isinstance(data["metrics"], dict):
         tasting["metrics_preview"] = {k: data["metrics"][k] for k in list(data["metrics"].keys())[:2]}
         tasting["count"] = len(data["metrics"])
+
+    if "market_snapshot" in data and isinstance(data["market_snapshot"], dict):
+        snap = data["market_snapshot"]
+        tasting["market_preview"] = {k: snap[k] for k in list(snap.keys())[:3]}
+        tasting["count"] = tasting.get("count", len(snap))
 
     return tasting

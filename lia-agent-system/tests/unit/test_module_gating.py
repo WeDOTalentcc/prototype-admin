@@ -131,6 +131,33 @@ class TestExtractTastingData:
         assert len(result["metrics_preview"]) == 2
         assert result["count"] == 3
 
+    def test_related_skills_key(self):
+        data = {"data": {"related_skills": ["React", "Vue", "Angular", "Svelte"]}}
+        result = _extract_tasting_data(data)
+        assert len(result["skills_preview"]) == 3
+        assert result["count"] == 4
+
+    def test_matches_key_for_internal_mobility(self):
+        data = {"data": {"matches": [
+            {"name": "Ana", "score": 0.9},
+            {"name": "Bob", "score": 0.8},
+            {"name": "Carol", "score": 0.7},
+        ]}}
+        result = _extract_tasting_data(data)
+        assert len(result["candidates_preview"]) == 2
+        assert result["count"] == 3
+
+    def test_missing_skills_key(self):
+        data = {"data": {"missing_skills": ["Docker", "Kubernetes"]}}
+        result = _extract_tasting_data(data)
+        assert result["gaps_count"] == 2
+        assert result["top_gap"] == "Docker"
+
+    def test_market_snapshot(self):
+        data = {"data": {"market_snapshot": {"avg_salary": 120000, "demand": "high", "growth": "12%", "extra": "x"}}}
+        result = _extract_tasting_data(data)
+        assert len(result["market_preview"]) == 3
+
 
 class TestCheckToolModuleAccess:
     @pytest.mark.asyncio
