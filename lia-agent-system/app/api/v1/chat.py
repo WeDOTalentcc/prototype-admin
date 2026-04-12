@@ -15,6 +15,19 @@ from fastapi.responses import StreamingResponse
 from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
 from app.domains.chat.dependencies import get_chat_repo
+from app.orchestrator.chat_adapter import ChatAdapter
+from app.api.orchestrator_routes import get_main_orchestrator
+
+# Path A: ChatAdapter bridges chat.py -> MainOrchestrator
+_chat_adapter = None
+
+def _get_chat_adapter():
+    global _chat_adapter
+    if _chat_adapter is None:
+        _main_orch = get_main_orchestrator()
+        _chat_adapter = ChatAdapter(main_orchestrator=_main_orch)
+    return _chat_adapter
+
 from app.domains.chat.repositories.chat_repository import ChatRepository
 from app.orchestrator.action_executor import (
     ACTIONABLE_INTENTS,
@@ -586,7 +599,7 @@ UPLOAD_DIR = Path("uploads")
 UPLOAD_DIR.mkdir(exist_ok=True)
 
 
-async def _invoke_orchestrator(
+async def _invoke_orchestrator_legacy(
     user_message: str,
     user_id: str,
     conversation_id: str,
@@ -696,12 +709,13 @@ async def send_message(
 
     page_context = message_data.context or {}
 
-    orch_result = await _invoke_orchestrator(
+    orch_result = await _get_chat_adapter().process_message(
         user_message=message_data.content,
         user_id=user_id,
+        company_id=str(current_user.company_id) if current_user.company_id else "",
         conversation_id=conversation_id,
-        company_id=current_user.company_id,
         page_context=page_context,
+        db=repo.db,
     )
     lia_response = orch_result["response"]
     detected_intent = orch_result["intent"]
@@ -879,11 +893,13 @@ async def send_message_with_attachments(
     )
 
     # Augmented content includes attachment/audio context for the orchestrator
-    orch_result = await _invoke_orchestrator(
+    orch_result = await _get_chat_adapter().process_message(
         user_message=augmented_content,
         user_id=user_id,
+        company_id=str(current_user.company_id) if current_user.company_id else "",
         conversation_id=conversation_id,
-        company_id=current_user.company_id,
+        page_context=None,
+        db=repo.db,
     )
     lia_response = orch_result["response"]
 
@@ -1069,7 +1085,8 @@ async def websocket_endpoint(
                 await repo.add_user_message(conversation.id, user_content)
 
                 # Run LIA via Orchestrator + ReAct agents
-                ws_orch = await _invoke_orchestrator(
+                ws_orch = await _invoke_orchestrator_legacy(
+
                     user_message=user_content,
                     user_id=user_id,
                     conversation_id=conversation_id,
