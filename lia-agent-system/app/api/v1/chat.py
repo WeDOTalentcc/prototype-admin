@@ -759,31 +759,17 @@ async def send_message(
         if action_metadata:
             msg_metadata.update(action_metadata)
 
-        # M2: Writes migrados para MainOrchestrator._persist_response
-        # Build in-memory Message for REST response (not persisted here)
-        from uuid import uuid4 as _uuid4
-        from datetime import datetime as _dt, timezone as _tz
-        class _MsgProxy:
-            def __init__(self, **kw):
-                self.__dict__.update(kw)
-        ai_message = _MsgProxy(
-            id=_uuid4(),
-            conversation_id=conversation.id,
-            role="assistant",
-            content=final_response,
-            message_metadata=msg_metadata,
-            created_at=_dt.now(_tz.utc),
+        ai_message = await repo.add_ai_message(
+            conversation.id,
+            final_response,
+            msg_metadata,
+            prompt_version=orch_result.get("prompt_version"),
         )
-        # MainOrchestrator handles: conversation.intent, title, workflow_data
-        # Re-fetch conversation to get MainOrchestrator updates
-        _conv_id_str = str(conversation.id)
-        _orig_conv = conversation
-        try:
-            _refreshed = await repo.get_conversation_by_id(_conv_id_str)
-            if _refreshed:
-                conversation = _refreshed
-        except Exception:
-            pass  # Keep original conversation object
+
+        await repo.update_conversation_intent(conversation, detected_intent, orch_result["workflow_data"])
+        await repo.set_conversation_title(conversation, message_data.content[:100])
+
+        await repo.commit_and_refresh(ai_message, conversation)
 
         workflow_data = orch_result["workflow_data"]
         context_data = None
@@ -908,8 +894,11 @@ async def send_message_with_attachments(
         if not conversation:
             raise HTTPException(status_code=404, detail="Conversation not found")
 
-    # M2: Writes migrados para MainOrchestrator._persist_response
-    # await repo.add_user_message(conversation.id, augmented_content, {"attachments": attachment_info, "audio": audio_info})
+    await repo.add_user_message(
+        conversation.id,
+        augmented_content,
+        {"attachments": attachment_info, "audio": audio_info},
+    )
 
     # Augmented content includes attachment/audio context for the orchestrator
     orch_result = await _get_chat_adapter().process_message(
@@ -923,31 +912,28 @@ async def send_message_with_attachments(
     lia_response = orch_result["response"]
 
     if lia_response:
-        # M2: Writes migrados para MainOrchestrator._persist_response
-        from uuid import uuid4 as _uuid4
-        from datetime import datetime as _dt, timezone as _tz
-        class _MsgProxy:
-            def __init__(self, **kw):
-                self.__dict__.update(kw)
-        ai_message = _MsgProxy(
-            id=_uuid4(),
-            conversation_id=conversation.id,
-            role="assistant",
-            content=lia_response,
-            message_metadata={
+        ai_message = await repo.add_ai_message(
+            conversation.id,
+            lia_response,
+            {
                 "intent": orch_result["intent"],
                 "entities": orch_result["entities"],
                 "processed_attachments": attachment_info,
                 "processed_audio": audio_info,
             },
-            created_at=_dt.now(_tz.utc),
         )
-        try:
-            _refreshed2 = await repo.get_conversation_by_id(str(conversation.id))
-            if _refreshed2:
-                conversation = _refreshed2
-        except Exception:
-            pass
+
+        await repo.update_conversation_intent(conversation, orch_result["intent"], orch_result["workflow_data"])
+
+        if not conversation.title:
+            if attachment_info:
+                conversation.title = f"Analise de {len(attachment_info)} arquivo(s)"
+            elif audio_info:
+                conversation.title = "Analise de audio"
+            else:
+                conversation.title = content[:100]
+
+        await repo.commit_and_refresh(ai_message, conversation)
 
         workflow_data = orch_result["workflow_data"]
         context_data = None

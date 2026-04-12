@@ -52,6 +52,9 @@ class InterviewRepository:
         status: Optional[str] = None,
         candidate_email: Optional[str] = None,
         interviewer_email: Optional[str] = None,
+        job_vacancy_id: Optional[str] = None,
+        candidate_id: Optional[str] = None,
+        company_id: Optional[str] = None,
         limit: int = 50,
     ):
         """Return list of (Interview, job_code, job_manager) tuples."""
@@ -67,6 +70,14 @@ class InterviewRepository:
             filters.append(Interview.candidate_email == candidate_email)
         if interviewer_email:
             filters.append(Interview.interviewer_email == interviewer_email)
+        if job_vacancy_id:
+            import uuid as _uuid
+            filters.append(Interview.job_vacancy_id == _uuid.UUID(job_vacancy_id))
+        if candidate_id:
+            import uuid as _uuid
+            filters.append(Interview.candidate_id == _uuid.UUID(candidate_id))
+        if company_id:
+            filters.append(Interview.company_id == company_id)
 
         if filters:
             query = query.where(and_(*filters))

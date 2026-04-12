@@ -244,9 +244,12 @@ async def schedule_interview(
 
 @router.get("/interviews", response_model=list[dict])
 async def list_interviews(
+    request_obj: Request,
     status: str | None = Query(None, description="Filter by status"),
     candidate_email: str | None = Query(None, description="Filter by candidate email"),
     interviewer_email: str | None = Query(None, description="Filter by interviewer email"),
+    job_vacancy_id: str | None = Query(None, description="Filter by job vacancy ID"),
+    candidate_id: str | None = Query(None, description="Filter by candidate ID"),
     limit: int = Query(50, ge=1, le=100),
     repo: InterviewRepository = Depends(get_interview_repo),
 ):
@@ -254,10 +257,14 @@ async def list_interviews(
     List interviews with optional filters.
     """
     try:
+        company_id = getattr(request_obj.state, "company_id", None) if hasattr(request_obj, "state") else None
         rows = await repo.list_interviews(
             status=status,
             candidate_email=candidate_email,
             interviewer_email=interviewer_email,
+            job_vacancy_id=job_vacancy_id,
+            candidate_id=candidate_id,
+            company_id=company_id,
             limit=limit,
         )
 
@@ -907,6 +914,7 @@ class TranscribeInterviewRequest(BaseModel):
 async def upload_recording(
     interview_id: str,
     request: UploadRecordingRequest,
+    request_obj: Request,
     background_tasks: BackgroundTasks,
     repo: InterviewRepository = Depends(get_interview_repo),
 ):
@@ -918,6 +926,10 @@ async def upload_recording(
     try:
         interview = await repo.get_interview_by_id(interview_id)
         if not interview:
+            raise HTTPException(status_code=404, detail="Interview not found")
+
+        req_company_id = getattr(request_obj.state, "company_id", None) if hasattr(request_obj, "state") else None
+        if req_company_id and interview.company_id and interview.company_id != req_company_id:
             raise HTTPException(status_code=404, detail="Interview not found")
 
         interview.recording_url = request.recording_url
