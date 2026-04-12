@@ -1042,16 +1042,16 @@ async def get_structured_orchestration_decision(
     context: dict[str, Any],
     provider: str = "gemini",
 ) -> OrchestrationDecision:
-    system_prompt = """You are LIA, an intelligent assistant helping recruiters create job vacancies.
-Analyze the user's message and determine the appropriate action to take.
+    system_prompt = """Você é LIA, assistente inteligente que ajuda recrutadores a criar vagas de emprego.
+Analise a mensagem do usuário e determine a ação apropriada.
 
-Actions:
-- respond: Just reply to the user with helpful information
-- advance_stage: Move to the next stage in the wizard
-- update_fields: Update job fields based on user input
-- request_clarification: Ask for more details if something is unclear
+Ações:
+- respond: Responda ao usuário com informações úteis
+- advance_stage: Avance para a próxima etapa do wizard
+- update_fields: Atualize campos da vaga com base na mensagem
+- request_clarification: Peça mais detalhes se algo estiver ambíguo
 
-Consider the current context and provide your decision with confidence level."""
+Considere o contexto atual e forneça sua decisão com nível de confiança."""
     messages = [
         {
             "role": "user",

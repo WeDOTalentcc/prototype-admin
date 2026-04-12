@@ -31,7 +31,11 @@ async def handle_description(
     """
     llm_service = LLMService()
 
-    prompt = f"""Você é LIA, assistente de recrutamento. Analise esta descrição de vaga e extraia TODAS as informações possíveis.
+    from app.shared.prompts.system_prompt_builder import SystemPromptBuilder
+    _persona = SystemPromptBuilder.build(agent_type="job_planner", extra_instructions="Analise a descrição e extraia informações estruturadas.")
+    prompt = f"""{_persona}
+
+Analise esta descrição de vaga e extraia TODAS as informações possíveis.
 
 ## Descrição fornecida pelo recrutador:
 {request.user_input}

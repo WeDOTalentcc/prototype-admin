@@ -100,6 +100,26 @@ class AutonomousReActAgent(LangGraphReActBase, EnhancedAgentMixin):
     e de EnhancedAgentMixin (memória de longa duração + FairnessGuard + learning).
     """
 
+    DOMAIN_INSTRUCTIONS = (
+        "Você foi acionada porque a solicitação cruza múltiplos domínios de recrutamento "
+        "(vagas, sourcing, pipeline, analytics, agendamento) e nenhum agente especializado "
+        "pôde resolver sozinho.\n\n"
+        "## Suas responsabilidades:\n"
+        "1. Entender a query cross-domain do usuário\n"
+        "2. Usar as ferramentas disponíveis para coletar informações de diferentes domínios\n"
+        "3. Consolidar o contexto com a tool `summarize_context`\n"
+        "4. Fornecer uma resposta completa e integrada\n\n"
+        "## Regras obrigatórias:\n"
+        "- NUNCA invente dados — use apenas informações retornadas pelas tools\n"
+        "- Se não encontrar dados suficientes, use `clarify_request` para pedir mais informações\n"
+        "- Priorize leitura (read) antes de qualquer operação de escrita\n"
+        "- Se a query for simples e coberta por um único domínio, responda diretamente\n\n"
+        "## Formato da resposta:\n"
+        "- Seja objetivo e direto\n"
+        "- Inclua dados concretos retornados pelas tools (nomes, scores, contagens)\n"
+        "- Para comparações, use ranking com justificativa clara"
+    )
+
     def __init__(self) -> None:
         super().__init__()
         self._memory_service = WorkingMemoryService()
@@ -202,16 +222,9 @@ class AutonomousReActAgent(LangGraphReActBase, EnhancedAgentMixin):
         result = await compiled.ainvoke(initial_state, config=config)
         return result
 
-    def _get_system_prompt(self, input: AgentInput) -> str:
-        context_snippet = ""
-        if input.context:
-            tenant_snippet = input.context.get("tenant_context_snippet", "")
-            job_context = input.context.get("job_context", {})
-            if tenant_snippet:
-                context_snippet += f"\n## Contexto do cliente:\n{tenant_snippet}"
-            if job_context:
-                context_snippet += f"\n## Contexto da vaga:\n{job_context}"
-        return _AUTONOMOUS_SYSTEM_PROMPT.format(context_snippet=context_snippet)
+    # _get_system_prompt is now inherited from LangGraphReActBase.
+    # It uses SystemPromptBuilder.build() + DOMAIN_INSTRUCTIONS automatically.
+    # The old _AUTONOMOUS_SYSTEM_PROMPT hardcoded prompt has been retired.
 
     def _state_to_output(self, state: dict, input: AgentInput) -> AgentOutput:
         """Converte estado final LangGraph em AgentOutput com detecção de clarificação."""

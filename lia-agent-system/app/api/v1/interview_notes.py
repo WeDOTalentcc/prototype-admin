@@ -541,7 +541,12 @@ async def generate_interview_questions(
                     screening_context += f"\n### Skills faltantes (VALIDAR NA ENTREVISTA):\n{', '.join(missing_list[:5])}\n"
         
         # Build the complete prompt with REAL data
-        prompt = f"""Você é a LIA, uma assistente especializada em recrutamento e seleção.
+        from app.shared.prompts.system_prompt_builder import SystemPromptBuilder
+        _persona = SystemPromptBuilder.build(
+            agent_type="orchestrator",
+            extra_instructions="Você está gerando perguntas de entrevista PERSONALIZADAS. Seja analítica e precisa.",
+        )
+        prompt = f"""{_persona}
 
 Gere perguntas de entrevista PERSONALIZADAS com base nos dados REAIS abaixo.
 
@@ -938,7 +943,12 @@ async def generate_interview_parecer(
             for q in request.questions
         ])
         
-        prompt = f"""Você é a LIA, uma assistente especializada em recrutamento e seleção.
+        from app.shared.prompts.system_prompt_builder import SystemPromptBuilder
+        _persona = SystemPromptBuilder.build(
+            agent_type="orchestrator",
+            extra_instructions="Você está gerando um parecer profissional de entrevista. Seja analítica, objetiva e fundamentada.",
+        )
+        prompt = f"""{_persona}
 
 Analise as respostas da entrevista abaixo e gere um parecer profissional.
 

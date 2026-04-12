@@ -486,7 +486,7 @@ class WizardStepService:
                 else:
                     import json as _json
                     prompt = (
-                        f"Você é LIA, assistente de recrutamento. Responda brevemente à pergunta:\n\n"
+                        f"Responda brevemente à pergunta do recrutador sobre a vaga:\n\n"
                         f"Pergunta: {request.user_input}\n"
                         f"Contexto da vaga: {_json.dumps(job_draft, default=str)}\n\n"
                         f"Responda de forma útil e concisa."

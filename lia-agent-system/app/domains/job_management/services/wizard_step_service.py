@@ -594,7 +594,11 @@ class WizardStepService:
                 elif question_type == QuestionType.PROCESS:
                     lia_message = await handle_process_question(request.user_input, llm_service)
                 else:
-                    prompt = f"""Você é LIA, assistente de recrutamento. Responda brevemente à pergunta:
+                    from app.shared.prompts.system_prompt_builder import SystemPromptBuilder
+                    _persona = SystemPromptBuilder.build(agent_type="job_planner", extra_instructions="Responda brevemente à pergunta do recrutador sobre a vaga.")
+                    prompt = f"""{_persona}
+
+Responda brevemente à pergunta:
 
     Pergunta: {request.user_input}
     Contexto da vaga: {json.dumps(job_draft, default=str)}
@@ -720,7 +724,11 @@ class WizardStepService:
                 benchmarks = await get_stage_benchmarks(db, company_id, job_draft, current_stage)
 
                 if current_stage == 1:
-                    prompt = f"""Você é LIA, assistente de recrutamento. Analise esta descrição de vaga e extraia TODAS as informações possíveis.
+                    from app.shared.prompts.system_prompt_builder import SystemPromptBuilder
+                    _persona = SystemPromptBuilder.build(agent_type="job_planner", extra_instructions="Analise a descrição e extraia informações estruturadas.")
+                    prompt = f"""{_persona}
+
+Analise esta descrição de vaga e extraia TODAS as informações possíveis.
 
     ## Descrição fornecida pelo recrutador:
     {request.user_input}

@@ -238,43 +238,40 @@ async def _handle_jobs_management_query(
         jobs_text = "\n".join(jobs_lines) if jobs_lines else "Nenhuma vaga encontrada para esta empresa."
         scope_note = f"vagas selecionadas ({total})" if context_ids else f"últimas {total} vagas"
 
-        prompt = f"""Você é LIA, assistente de recrutamento inteligente da plataforma WeDOTalent.
-Você está auxiliando um RECRUTADOR no painel de gestão de vagas.
+        from app.shared.prompts.system_prompt_builder import SystemPromptBuilder
 
-=== IMPORTANTE ===
-- O usuário é um RECRUTADOR gerenciando as vagas da empresa, NÃO um candidato buscando emprego.
-- NUNCA pergunte sobre cargo desejado, localização pessoal, nível de experiência do usuário, tipo de contrato preferido.
-- Responda sempre em Português Brasileiro.
-- Seja direta, objetiva e profissional.
-
-=== DADOS REAIS DAS VAGAS ({scope_note}) ===
-Total: {total} | Ativas/Publicadas: {active} | Pausadas: {paused} | Rascunhos: {draft} | Risco de SLA: {sla_risk_count}
-
-{jobs_text}
-
-=== MENSAGEM DO RECRUTADOR ===
-{message}
-
-=== INSTRUÇÕES DE RESPOSTA ===
-- Use os dados acima para responder com precisão.
-- Se pedir lista, formate como tabela ou lista estruturada com as vagas reais.
-- Se pedir análise, analise os dados (SLA, performance, gargalos, prioridades).
-- Se pedir comparação, compare as vagas entre si usando os dados disponíveis.
-- Destaque alertas de SLA quando relevante.
-- Sugira ações concretas quando identificar problemas."""
+        _jobs_data = (
+            f"=== DADOS REAIS DAS VAGAS ({scope_note}) ===\n"
+            f"Total: {total} | Ativas/Publicadas: {active} | Pausadas: {paused} | Rascunhos: {draft} | Risco de SLA: {sla_risk_count}\n\n"
+            f"{jobs_text}\n\n"
+            f"=== MENSAGEM DO RECRUTADOR ===\n{message}"
+        )
+        _extra = (
+            "O usuário é um RECRUTADOR gerenciando vagas, NÃO um candidato.\n"
+            "NUNCA pergunte sobre cargo desejado, localização pessoal ou tipo de contrato.\n"
+            "Use os dados de vagas para responder com precisão.\n"
+            "Se pedir lista, formate como tabela. Se pedir análise, analise SLA e gargalos.\n"
+            "Destaque alertas de SLA. Sugira ações concretas."
+        )
+        prompt = SystemPromptBuilder.build(
+            agent_type="orchestrator",
+            context_page="jobs",
+            extra_instructions=f"{_extra}\n\n{_jobs_data}",
+        )
 
         return await llm_svc.generate(prompt)
 
     except Exception as exc:
         logger.warning("[expanded-prompt/jobs] Erro ao buscar vagas: %s", exc)
-        prompt = f"""Você é LIA, assistente de recrutamento inteligente da plataforma WeDOTalent.
-Você está auxiliando um RECRUTADOR no painel de gestão de vagas da empresa.
-O usuário é RECRUTADOR, não candidato.
-
-Mensagem do recrutador: {message}
-
-Responda em Português Brasileiro de forma útil e profissional.
-Não solicite informações pessoais do usuário."""
+        prompt = SystemPromptBuilder.build(
+            agent_type="orchestrator",
+            context_page="jobs",
+            extra_instructions=(
+                f"O usuário é RECRUTADOR, não candidato.\n"
+                f"Mensagem do recrutador: {message}\n\n"
+                f"Responda de forma útil e profissional."
+            ),
+        )
         return await llm_svc.generate(prompt)
 
 
@@ -402,13 +399,15 @@ async def process_expanded_prompt(
 
         except Exception as orch_err:
             logger.warning(f"[expanded-prompt] Orchestrator error, falling back to LLM: {orch_err}")
-            prompt = f"""Você é LIA, assistente de recrutamento inteligente da plataforma WeDOTalent.
-Você está auxiliando um RECRUTADOR.
-
-Mensagem do recrutador: {request.message}
-Contexto: {request.context_type}
-
-Responda em Português Brasileiro de forma útil, clara e profissional."""
+            prompt = SystemPromptBuilder.build(
+                agent_type="orchestrator",
+                context_page=request.context_type or "general",
+                extra_instructions=(
+                    f"Mensagem do recrutador: {request.message}\n"
+                    f"Contexto: {request.context_type}\n\n"
+                    f"Responda de forma útil, clara e profissional."
+                ),
+            )
             response_text = await llm_svc.generate(prompt, provider="gemini")
             return ExpandedPromptResponse(
                 response=response_text,
