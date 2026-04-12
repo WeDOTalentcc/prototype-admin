@@ -27,6 +27,8 @@ logger = logging.getLogger(__name__)
 
 
 class AnalyticsReActAgent(LangGraphReActBase, EnhancedAgentMixin):
+    DOMAIN_INSTRUCTIONS = ANALYTICS_DOMAIN_SPECIFIC
+
     """ReAct agent for analytics: KPI analysis, reports, predictions and agent monitoring."""
 
     def __init__(self) -> None:
@@ -55,7 +57,8 @@ class AnalyticsReActAgent(LangGraphReActBase, EnhancedAgentMixin):
         tool_defs = get_analytics_tools() + self._get_all_enhanced_tools()
         return [tool_definition_to_langchain_tool(td) for td in tool_defs]
 
-    def _get_system_prompt(self, input: AgentInput) -> str:
+    # Legacy method — preserved for rollback
+    def _get_system_prompt_legacy(self, input: AgentInput) -> str:
         return get_analytics_system_prompt()
 
     def _state_to_output(self, state: dict, input: AgentInput) -> AgentOutput:

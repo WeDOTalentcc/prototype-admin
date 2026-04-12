@@ -29,6 +29,8 @@ logger = logging.getLogger(__name__)
 
 
 class ATSIntegrationReActAgent(LangGraphReActBase, EnhancedAgentMixin):
+    DOMAIN_INSTRUCTIONS = ATS_INTEGRATION_DOMAIN_SPECIFIC
+
     """ReAct agent for bidirectional ATS synchronization via LangGraph nativo.
 
     Supports Gupy, Pandapé and Merge providers.
@@ -60,7 +62,8 @@ class ATSIntegrationReActAgent(LangGraphReActBase, EnhancedAgentMixin):
         tool_defs = get_ats_integration_tools() + self._get_all_enhanced_tools()
         return [tool_definition_to_langchain_tool(td) for td in tool_defs]
 
-    def _get_system_prompt(self, input: AgentInput) -> str:
+    # Legacy method — preserved for rollback
+    def _get_system_prompt_legacy(self, input: AgentInput) -> str:
         return get_ats_integration_system_prompt()
 
     def _state_to_output(self, state: dict, input: AgentInput) -> AgentOutput:

@@ -36,6 +36,8 @@ _CONFIRMATION_WORDS = {
 
 
 class PolicyReActAgent(LangGraphReActBase, EnhancedAgentMixin):
+    DOMAIN_INSTRUCTIONS = POLICY_DOMAIN_SPECIFIC + "\n\n" + POLICY_FEW_SHOT_EXAMPLES + "\n\n" + POLICY_REASONING_PROMPT.format(memory_summary="", stage_context="")
+
     """Autonomous agent for hiring policy configuration via LangGraph nativo."""
     # ── HITL integration for policy updates ──
     # Sprint-I spec: when output.state_updates are present, request HITL approval.
@@ -83,7 +85,8 @@ class PolicyReActAgent(LangGraphReActBase, EnhancedAgentMixin):
         tool_defs = get_policy_tools() + self._get_all_enhanced_tools()
         return [tool_definition_to_langchain_tool(td) for td in tool_defs]
 
-    def _get_system_prompt(self, input: AgentInput) -> str:
+    # Legacy method — preserved for rollback
+    def _get_system_prompt_legacy(self, input: AgentInput) -> str:
         current_stage = input.context.get("current_stage", "onboarding")
         policy_state = input.context.get("policy_state", {})
         stage_ctx = get_stage_context(current_stage, policy_state)

@@ -35,6 +35,8 @@ _CONFIRMATION_WORDS = {
 
 
 class PipelineReActAgent(LangGraphReActBase, EnhancedAgentMixin):
+    DOMAIN_INSTRUCTIONS = PIPELINE_DOMAIN_SPECIFIC + "\n\n" + PIPELINE_REASONING_PROMPT.format(memory_summary="", stage_context="")
+
     """Autonomous agent for the candidate recruitment pipeline via LangGraph nativo."""
 
     def __init__(self) -> None:
@@ -58,7 +60,8 @@ class PipelineReActAgent(LangGraphReActBase, EnhancedAgentMixin):
         tool_defs = get_pipeline_tools() + self._get_all_enhanced_tools()
         return [tool_definition_to_langchain_tool(td) for td in tool_defs]
 
-    def _get_system_prompt(self, input: AgentInput) -> str:
+    # Legacy method — preserved for rollback
+    def _get_system_prompt_legacy(self, input: AgentInput) -> str:
         current_stage = input.context.get("current_stage", "triage")
         collected_fields = input.context.get("collected_data", {})
         stage_ctx = get_stage_context(current_stage, collected_fields)

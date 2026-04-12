@@ -382,10 +382,32 @@ class LangGraphReActBase(LangGraphBase):
         except ImportError as e:
             raise RuntimeError(f"LLM provider not installed: {e}")
 
-    def _get_system_prompt(self, input: AgentInput) -> str:
-        """Retorna system prompt. Subclasses devem sobrescrever."""
-        return f"Você é LIA, assistente de recrutamento do domínio {self.domain_name}."
+    # Class attribute: subclasses set this to their domain-specific instructions
+    DOMAIN_INSTRUCTIONS: str = ""
 
+    def _get_system_prompt(self, input: AgentInput) -> str:
+        """Compose system prompt via SystemPromptBuilder + domain-specific instructions.
+
+        Subclasses set DOMAIN_INSTRUCTIONS class attribute instead of overriding this method.
+        """
+        from app.shared.prompts.system_prompt_builder import SystemPromptBuilder
+
+        ctx = input.context or {}
+        base = SystemPromptBuilder.build(
+            agent_type=self.domain_name,
+            tenant_context_snippet=ctx.get("tenant_context_snippet", ""),
+            user_name=ctx.get("user_name", ""),
+            user_role=ctx.get("user_role", ""),
+            conversation_summary=ctx.get("conversation_summary", ""),
+            conversation_history=ctx.get("conversation_history"),
+            context_page=ctx.get("context_page", "general"),
+            intent=ctx.get("intent", ""),
+            entities=ctx.get("extracted_params", {}),
+        )
+
+        if self.DOMAIN_INSTRUCTIONS:
+            return f"{base}\n\n---\n\n{self.DOMAIN_INSTRUCTIONS}"
+        return base
     def _extract_text_content(self, content: Any) -> str:
         """Extrai texto de content que pode ser string, lista de blocos ou dict."""
         if isinstance(content, str):

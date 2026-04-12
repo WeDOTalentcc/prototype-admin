@@ -79,6 +79,8 @@ def _aggregate_all_tool_names() -> list[str]:
 
 
 class SourcingReActAgent(LangGraphReActBase, EnhancedAgentMixin):
+    DOMAIN_INSTRUCTIONS = SOURCING_DOMAIN_SPECIFIC + "\n\n" + SOURCING_FEW_SHOT_EXAMPLES + "\n\n" + SOURCING_REASONING_PROMPT.format(memory_summary="", stage_context="")
+
     """Autonomous agent for talent sourcing and candidate screening via LangGraph nativo."""
 
     def __init__(self) -> None:
@@ -142,7 +144,8 @@ class SourcingReActAgent(LangGraphReActBase, EnhancedAgentMixin):
 
         return [tool_definition_to_langchain_tool(td) for td in deduped]
 
-    def _get_system_prompt(self, input: AgentInput) -> str:
+    # Legacy method — preserved for rollback
+    def _get_system_prompt_legacy(self, input: AgentInput) -> str:
         current_stage = input.context.get("current_stage", "search-criteria")
         collected_fields = input.context.get("collected_data", {})
         stage_ctx = get_stage_context(current_stage, collected_fields)

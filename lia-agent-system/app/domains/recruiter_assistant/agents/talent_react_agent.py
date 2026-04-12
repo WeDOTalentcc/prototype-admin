@@ -36,6 +36,8 @@ _CONFIRMATION_WORDS = {
 
 
 class TalentReActAgent(LangGraphReActBase, EnhancedAgentMixin):
+    DOMAIN_INSTRUCTIONS = TALENT_DOMAIN_SPECIFIC + "\n\n" + TALENT_FEW_SHOT_EXAMPLES + "\n\n" + TALENT_REASONING_PROMPT.format(memory_summary="", stage_context="")
+
     """Autonomous agent for the talent funnel domain via LangGraph nativo."""
 
     def __init__(self) -> None:
@@ -64,7 +66,8 @@ class TalentReActAgent(LangGraphReActBase, EnhancedAgentMixin):
         tool_defs = get_talent_tools() + self._get_all_enhanced_tools()
         return [tool_definition_to_langchain_tool(td) for td in tool_defs]
 
-    def _get_system_prompt(self, input: AgentInput) -> str:
+    # Legacy method — preserved for rollback
+    def _get_system_prompt_legacy(self, input: AgentInput) -> str:
         # PoC: Compose via SystemPromptBuilder (persona + context) + domain-specific
         from app.shared.prompts.system_prompt_builder import SystemPromptBuilder
         from app.domains.recruiter_assistant.agents.talent_system_prompt import (

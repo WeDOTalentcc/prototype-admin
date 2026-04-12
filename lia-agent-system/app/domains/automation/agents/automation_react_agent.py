@@ -28,6 +28,8 @@ logger = logging.getLogger(__name__)
 
 
 class AutomationReActAgent(LangGraphReActBase, EnhancedAgentMixin):
+    DOMAIN_INSTRUCTIONS = AUTOMATION_DOMAIN_SPECIFIC
+
     """ReAct agent for task decomposition, DAG planning and execution orchestration."""
 
     def __init__(self) -> None:
@@ -56,7 +58,8 @@ class AutomationReActAgent(LangGraphReActBase, EnhancedAgentMixin):
         tool_defs = get_automation_tools() + self._get_all_enhanced_tools()
         return [tool_definition_to_langchain_tool(td) for td in tool_defs]
 
-    def _get_system_prompt(self, input: AgentInput) -> str:
+    # Legacy method — preserved for rollback
+    def _get_system_prompt_legacy(self, input: AgentInput) -> str:
         return get_automation_system_prompt()
 
     def _state_to_output(self, state: dict, input: AgentInput) -> AgentOutput:
