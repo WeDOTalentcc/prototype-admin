@@ -17,9 +17,14 @@ from lia_models.candidate import Candidate
 
 logger = logging.getLogger(__name__)
 
-APIFY_COST_USD = 0.01
+from app.domains.sourcing.services.apify_service import (
+    APIFY_COST_PER_ENRICHMENT_USD,
+    APIFY_MAX_CONCURRENT,
+)
+
+APIFY_COST_USD = APIFY_COST_PER_ENRICHMENT_USD
 DEDUP_WINDOW_HOURS = 24
-BATCH_CONCURRENCY = 5
+BATCH_CONCURRENCY = APIFY_MAX_CONCURRENT
 
 
 class ContactEnrichmentService:

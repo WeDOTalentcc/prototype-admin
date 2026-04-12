@@ -309,6 +309,10 @@ class IntegrationSettings(BaseSettings):
 
     # Apify (web scraping)
     APIFY_API_KEY: Optional[str] = None
+    APIFY_COST_PER_ENRICHMENT_USD: float = 0.01
+    APIFY_ENRICHMENT_TIMEOUT_SECONDS: int = 30
+    APIFY_MAX_CONCURRENT_ENRICHMENTS: int = 5
+    APIFY_LEGACY_ACTOR: str = "anchor/linkedin-person-scraper"
 
     # Merge.dev (multi-ATS)
     MERGE_API_KEY: Optional[str] = None

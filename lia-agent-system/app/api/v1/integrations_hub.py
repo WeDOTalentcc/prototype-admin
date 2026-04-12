@@ -546,3 +546,31 @@ async def seed_providers(
     except Exception as e:
         logger.error(f"Failed to seed providers: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/apify/health")
+async def apify_health_check():
+    from app.shared.resilience.circuit_breaker import APIFY_CIRCUIT
+
+    cb_state = APIFY_CIRCUIT.state
+    last_success = getattr(APIFY_CIRCUIT, "_last_success_time", None)
+
+    if cb_state == "closed" and last_success:
+        from datetime import datetime as _dt, timezone as _tz
+        age = (_dt.now(_tz.utc) - last_success).total_seconds() if hasattr(last_success, "total_seconds") else 9999
+        status = "ok" if age < 300 else "degraded"
+    elif cb_state == "half_open":
+        status = "degraded"
+    elif cb_state == "open":
+        status = "down"
+    else:
+        status = "ok"
+
+    return {
+        "status": status,
+        "circuit_breaker": cb_state,
+        "actor": "dev_fusion/Linkedin-Profile-Scraper",
+        "last_successful_call": str(last_success) if last_success else None,
+        "avg_response_time_ms": None,
+        "cost_per_enrichment_usd": 0.01,
+    }

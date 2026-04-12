@@ -19,8 +19,13 @@ APIFY_BASE_URL = "https://api.apify.com/v2"
 
 LINKEDIN_ACTOR_ID = "voyager/linkedin-company-profile-scraper"
 LINKEDIN_PERSON_ACTOR_ID = "dev_fusion/Linkedin-Profile-Scraper"
+LINKEDIN_LEGACY_ACTOR_ID = os.environ.get("APIFY_LEGACY_ACTOR", "anchor/linkedin-person-scraper")
 EMAIL_FINDER_ACTOR_ID = "curious_coder/email-finder"
 GLASSDOOR_ACTOR_ID = "bebity/glassdoor-scraper"
+
+APIFY_COST_PER_ENRICHMENT_USD = float(os.environ.get("APIFY_COST_PER_ENRICHMENT_USD", "0.01"))
+APIFY_ENRICHMENT_TIMEOUT = int(os.environ.get("APIFY_ENRICHMENT_TIMEOUT_SECONDS", "30"))
+APIFY_MAX_CONCURRENT = int(os.environ.get("APIFY_MAX_CONCURRENT_ENRICHMENTS", "5"))
 
 
 class ApifyService:
