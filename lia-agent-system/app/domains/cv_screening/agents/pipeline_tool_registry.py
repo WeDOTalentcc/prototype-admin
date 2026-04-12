@@ -69,7 +69,7 @@ async def _wrap_move_candidate(**kwargs: Any) -> dict[str, Any]:
     candidate_id = kwargs.get("candidate_id", "unknown")
     target_stage = kwargs.get("target_stage", "unknown")
     reason = kwargs.get("reason", "")
-    logger.info(f"[pipeline_tools] move_candidate called: candidate={candidate_id} target={target_stage} reason={reason}")
+    logger.warning(f"[pipeline_tools] move_candidate called: candidate={candidate_id} target={target_stage} reason={reason}")
     async with AsyncSessionLocal() as session:
         prev = await session.execute(
             text("SELECT stage, status FROM vacancy_candidates WHERE candidate_id = :candidate_id ORDER BY updated_at DESC LIMIT 1"),

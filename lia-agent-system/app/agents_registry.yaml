@@ -59,3 +59,38 @@ agents:
     model_id: claude-sonnet-4-6
     system_prompt_path: null
     enabled: true
+
+  - name: analytics
+    domain: analytics
+    class_path: app.domains.analytics.agents.analytics_react_agent.AnalyticsReActAgent
+    model_id: claude-sonnet-4-6
+    system_prompt_path: app/domains/analytics/agents/analytics_system_prompt.py
+    enabled: true
+
+  - name: ats_integration
+    domain: ats_integration
+    class_path: app.domains.ats_integration.agents.ats_integration_react_agent.ATSIntegrationReActAgent
+    model_id: claude-haiku-4-5-20251001
+    system_prompt_path: app/domains/ats_integration/agents/ats_integration_system_prompt.py
+    enabled: true
+
+  - name: automation
+    domain: automation
+    class_path: app.domains.automation.agents.automation_react_agent.AutomationReActAgent
+    model_id: claude-haiku-4-5-20251001
+    system_prompt_path: app/domains/automation/agents/automation_system_prompt.py
+    enabled: true
+
+  - name: communication
+    domain: communication
+    class_path: app.domains.communication.agents.communication_react_agent.CommunicationReActAgent
+    model_id: claude-haiku-4-5-20251001
+    system_prompt_path: app/domains/communication/agents/communication_system_prompt.py
+    enabled: true
+
+  - name: autonomous
+    domain: autonomous
+    class_path: app.domains.autonomous.agents.autonomous_react_agent.AutonomousReActAgent
+    model_id: claude-sonnet-4-6
+    system_prompt_path: null
+    enabled: true

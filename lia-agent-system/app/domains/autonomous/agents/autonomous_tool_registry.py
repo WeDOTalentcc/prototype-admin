@@ -78,52 +78,57 @@ async def _wrap_list_jobs(**kwargs: Any) -> dict[str, Any]:
     """List open job vacancies for the company."""
     logger.info("[autonomous_tools] list_jobs called with: %s", list(kwargs.keys()))
     from sqlalchemy import text
-    from app.core.database import AsyncSessionLocal
-    company_id = kwargs.get("company_id", "")
-    status = kwargs.get("status", "open")
-    limit = min(int(kwargs.get("limit", 20)), 50)
+    try:
+        from app.core.database import AsyncSessionLocal
+        company_id = kwargs.get("company_id", "")
+        status = kwargs.get("status", "open")
+        limit = min(int(kwargs.get("limit", 20)), 50)
 
-    conditions = ["is_deleted = false"]
-    params: dict[str, Any] = {"lim": limit}
-    if company_id:
-        conditions.append("company_id = :company_id")
-        params["company_id"] = company_id
-    if status:
-        conditions.append("status = :status")
-        params["status"] = status
+        conditions = ["is_deleted = false"]
+        params: dict[str, Any] = {"lim": limit}
+        if company_id:
+            conditions.append("company_id = :company_id")
+            params["company_id"] = company_id
+        if status:
+            conditions.append("status = :status")
+            params["status"] = status
 
-    where = " AND ".join(conditions)
-    async with AsyncSessionLocal() as session:
-        result = await session.execute(
-            text(f"""
-                SELECT id, title, department, seniority_level, location, work_model,
-                       status, created_at
-                FROM job_vacancies
-                WHERE {where}
-                ORDER BY created_at DESC
-                LIMIT :lim
-            """),
-            params,
-        )
-        rows = result.mappings().all()
+        where = " AND ".join(conditions)
+        async with AsyncSessionLocal() as session:
+            result = await session.execute(
+                text(f"""
+                    SELECT id, title, department, seniority_level, location, work_model,
+                           status, created_at
+                    FROM job_vacancies
+                    WHERE {where}
+                    ORDER BY created_at DESC
+                    LIMIT :lim
+                """),
+                params,
+            )
+            rows = result.mappings().all()
 
-    jobs = [
-        {
-            "id": str(r["id"]),
-            "title": r["title"],
-            "department": r["department"],
-            "seniority_level": r["seniority_level"],
-            "location": r["location"],
-            "work_model": r["work_model"],
-            "status": r["status"],
+        jobs = [
+            {
+                "id": str(r["id"]),
+                "title": r["title"],
+                "department": r["department"],
+                "seniority_level": r["seniority_level"],
+                "location": r["location"],
+                "work_model": r["work_model"],
+                "status": r["status"],
+            }
+            for r in rows
+        ]
+        return {
+            "success": True,
+            "data": {"jobs": jobs, "total": len(jobs)},
+            "message": f"{len(jobs)} vagas encontradas.",
         }
-        for r in rows
-    ]
-    return {
-        "success": True,
-        "data": {"jobs": jobs, "total": len(jobs)},
-        "message": f"{len(jobs)} vagas encontradas.",
-    }
+    except Exception as _db_exc:
+        import logging as _log
+        _log.getLogger(__name__).warning("[autonomous_tools] %s DB error: %s", "_wrap_list_jobs", _db_exc)
+        return {"success": False, "error": str(_db_exc), "data": {}}
 
 
 @tool_handler("autonomous")
@@ -131,55 +136,60 @@ async def _wrap_get_job_details(**kwargs: Any) -> dict[str, Any]:
     """Get full details of a specific job vacancy with tenant isolation."""
     logger.info("[autonomous_tools] get_job_details called")
     from sqlalchemy import text
-    from app.core.database import AsyncSessionLocal
-    job_id = kwargs.get("job_id", "")
-    company_id = kwargs.get("company_id", "")
-    if not job_id:
-        return {"success": False, "data": {}, "message": "Parâmetro 'job_id' é obrigatório."}
+    try:
+        from app.core.database import AsyncSessionLocal
+        job_id = kwargs.get("job_id", "")
+        company_id = kwargs.get("company_id", "")
+        if not job_id:
+            return {"success": False, "data": {}, "message": "Parâmetro 'job_id' é obrigatório."}
 
-    conditions = ["id = :jid"]
-    params: dict[str, Any] = {"jid": job_id}
-    if company_id:
-        conditions.append("company_id = :company_id")
-        params["company_id"] = company_id
-    where = " AND ".join(conditions)
+        conditions = ["id = :jid"]
+        params: dict[str, Any] = {"jid": job_id}
+        if company_id:
+            conditions.append("company_id = :company_id")
+            params["company_id"] = company_id
+        where = " AND ".join(conditions)
 
-    async with AsyncSessionLocal() as session:
-        result = await session.execute(
-            text(f"""
-                SELECT id, title, description, requirements, department,
-                       seniority_level, location, work_model, status,
-                       salary_min, salary_max, salary_currency,
-                       created_at, updated_at
-                FROM job_vacancies WHERE {where}
-            """),
-            params,
-        )
-        row = result.mappings().first()
+        async with AsyncSessionLocal() as session:
+            result = await session.execute(
+                text(f"""
+                    SELECT id, title, description, requirements, department,
+                           seniority_level, location, work_model, status,
+                           salary_min, salary_max, salary_currency,
+                           created_at, updated_at
+                    FROM job_vacancies WHERE {where}
+                """),
+                params,
+            )
+            row = result.mappings().first()
 
-    if not row:
-        return {"success": False, "data": {}, "message": f"Vaga '{job_id}' não encontrada."}
+        if not row:
+            return {"success": False, "data": {}, "message": f"Vaga '{job_id}' não encontrada."}
 
-    return {
-        "success": True,
-        "data": {
-            "id": str(row["id"]),
-            "title": row["title"],
-            "description": row["description"],
-            "requirements": row["requirements"] or [],
-            "department": row["department"],
-            "seniority_level": row["seniority_level"],
-            "location": row["location"],
-            "work_model": row["work_model"],
-            "status": row["status"],
-            "salary_range": {
-                "min": row["salary_min"],
-                "max": row["salary_max"],
-                "currency": row["salary_currency"],
+        return {
+            "success": True,
+            "data": {
+                "id": str(row["id"]),
+                "title": row["title"],
+                "description": row["description"],
+                "requirements": row["requirements"] or [],
+                "department": row["department"],
+                "seniority_level": row["seniority_level"],
+                "location": row["location"],
+                "work_model": row["work_model"],
+                "status": row["status"],
+                "salary_range": {
+                    "min": row["salary_min"],
+                    "max": row["salary_max"],
+                    "currency": row["salary_currency"],
+                },
             },
-        },
-        "message": f"Detalhes da vaga '{row['title']}' obtidos.",
-    }
+            "message": f"Detalhes da vaga '{row['title']}' obtidos.",
+        }
+    except Exception as _db_exc:
+        import logging as _log
+        _log.getLogger(__name__).warning("[autonomous_tools] %s DB error: %s", "_wrap_get_job_details", _db_exc)
+        return {"success": False, "error": str(_db_exc), "data": {}}
 
 
 # ── Sourcing ────────────────────────────────────────────────────────────────
@@ -216,49 +226,54 @@ async def _wrap_get_pipeline_status(**kwargs: Any) -> dict[str, Any]:
     """Get current pipeline status and candidate counts per stage for a job."""
     logger.info("[autonomous_tools] get_pipeline_status called")
     from sqlalchemy import text
-    from app.core.database import AsyncSessionLocal
-    job_id = kwargs.get("job_id", "")
-    company_id = kwargs.get("company_id", "")
+    try:
+        from app.core.database import AsyncSessionLocal
+        job_id = kwargs.get("job_id", "")
+        company_id = kwargs.get("company_id", "")
 
-    conditions = ["1=1"]
-    params: dict[str, Any] = {}
-    if job_id:
-        conditions.append("job_id = :job_id")
-        params["job_id"] = job_id
-    if company_id:
-        conditions.append("company_id = :company_id")
-        params["company_id"] = company_id
+        conditions = ["1=1"]
+        params: dict[str, Any] = {}
+        if job_id:
+            conditions.append("job_id = :job_id")
+            params["job_id"] = job_id
+        if company_id:
+            conditions.append("company_id = :company_id")
+            params["company_id"] = company_id
 
-    where = " AND ".join(conditions)
-    async with AsyncSessionLocal() as session:
-        result = await session.execute(
-            text(f"""
-                SELECT stage, COUNT(*) as count, status
-                FROM pipeline_candidates
-                WHERE {where}
-                GROUP BY stage, status
-                ORDER BY stage
-            """),
-            params,
-        )
-        rows = result.mappings().all()
+        where = " AND ".join(conditions)
+        async with AsyncSessionLocal() as session:
+            result = await session.execute(
+                text(f"""
+                    SELECT stage, COUNT(*) as count, status
+                    FROM pipeline_candidates
+                    WHERE {where}
+                    GROUP BY stage, status
+                    ORDER BY stage
+                """),
+                params,
+            )
+            rows = result.mappings().all()
 
-    stages: dict[str, Any] = {}
-    for row in rows:
-        stage = row["stage"] or "unknown"
-        if stage not in stages:
-            stages[stage] = {"stage": stage, "total": 0, "by_status": {}}
-        stages[stage]["total"] += row["count"]
-        stages[stage]["by_status"][row["status"] or "unknown"] = row["count"]
+        stages: dict[str, Any] = {}
+        for row in rows:
+            stage = row["stage"] or "unknown"
+            if stage not in stages:
+                stages[stage] = {"stage": stage, "total": 0, "by_status": {}}
+            stages[stage]["total"] += row["count"]
+            stages[stage]["by_status"][row["status"] or "unknown"] = row["count"]
 
-    return {
-        "success": True,
-        "data": {
-            "stages": list(stages.values()),
-            "total_candidates": sum(s["total"] for s in stages.values()),
-        },
-        "message": f"Pipeline com {len(stages)} etapas obtido.",
-    }
+        return {
+            "success": True,
+            "data": {
+                "stages": list(stages.values()),
+                "total_candidates": sum(s["total"] for s in stages.values()),
+            },
+            "message": f"Pipeline com {len(stages)} etapas obtido.",
+        }
+    except Exception as _db_exc:
+        import logging as _log
+        _log.getLogger(__name__).warning("[autonomous_tools] %s DB error: %s", "_wrap_get_pipeline_status", _db_exc)
+        return {"success": False, "error": str(_db_exc), "data": {}}
 
 
 @tool_handler("autonomous")
@@ -266,56 +281,61 @@ async def _wrap_get_candidates_in_stage(**kwargs: Any) -> dict[str, Any]:
     """Get list of candidates currently in a specific pipeline stage with tenant isolation."""
     logger.info("[autonomous_tools] get_candidates_in_stage called")
     from sqlalchemy import text
-    from app.core.database import AsyncSessionLocal
-    stage = kwargs.get("stage", "")
-    job_id = kwargs.get("job_id", "")
-    company_id = kwargs.get("company_id", "")
-    limit = min(int(kwargs.get("limit", 20)), 50)
-    if not stage:
-        return {"success": False, "data": {}, "message": "Parâmetro 'stage' é obrigatório."}
+    try:
+        from app.core.database import AsyncSessionLocal
+        stage = kwargs.get("stage", "")
+        job_id = kwargs.get("job_id", "")
+        company_id = kwargs.get("company_id", "")
+        limit = min(int(kwargs.get("limit", 20)), 50)
+        if not stage:
+            return {"success": False, "data": {}, "message": "Parâmetro 'stage' é obrigatório."}
 
-    params: dict[str, Any] = {"stage": stage, "lim": limit}
-    extra_conditions = []
-    if job_id:
-        extra_conditions.append("pc.job_id = :job_id")
-        params["job_id"] = job_id
-    if company_id:
-        extra_conditions.append("pc.company_id = :company_id")
-        params["company_id"] = company_id
-    extra = (" AND " + " AND ".join(extra_conditions)) if extra_conditions else ""
+        params: dict[str, Any] = {"stage": stage, "lim": limit}
+        extra_conditions = []
+        if job_id:
+            extra_conditions.append("pc.job_id = :job_id")
+            params["job_id"] = job_id
+        if company_id:
+            extra_conditions.append("pc.company_id = :company_id")
+            params["company_id"] = company_id
+        extra = (" AND " + " AND ".join(extra_conditions)) if extra_conditions else ""
 
-    async with AsyncSessionLocal() as session:
-        result = await session.execute(
-            text(f"""
-                SELECT pc.id, pc.candidate_id, pc.stage, pc.status,
-                       c.name, c.current_title, c.lia_score
-                FROM pipeline_candidates pc
-                JOIN candidates c ON c.id = pc.candidate_id
-                WHERE pc.stage = :stage{extra}
-                ORDER BY c.lia_score DESC NULLS LAST
-                LIMIT :lim
-            """),
-            params,
-        )
-        rows = result.mappings().all()
+        async with AsyncSessionLocal() as session:
+            result = await session.execute(
+                text(f"""
+                    SELECT pc.id, pc.candidate_id, pc.stage, pc.status,
+                           c.name, c.current_title, c.lia_score
+                    FROM pipeline_candidates pc
+                    JOIN candidates c ON c.id = pc.candidate_id
+                    WHERE pc.stage = :stage{extra}
+                    ORDER BY c.lia_score DESC NULLS LAST
+                    LIMIT :lim
+                """),
+                params,
+            )
+            rows = result.mappings().all()
 
-    candidates = [
-        {
-            "pipeline_id": str(r["id"]),
-            "candidate_id": str(r["candidate_id"]),
-            "name": r["name"],
-            "current_title": r["current_title"],
-            "stage": r["stage"],
-            "status": r["status"],
-            "lia_score": r["lia_score"],
+        candidates = [
+            {
+                "pipeline_id": str(r["id"]),
+                "candidate_id": str(r["candidate_id"]),
+                "name": r["name"],
+                "current_title": r["current_title"],
+                "stage": r["stage"],
+                "status": r["status"],
+                "lia_score": r["lia_score"],
+            }
+            for r in rows
+        ]
+        return {
+            "success": True,
+            "data": {"candidates": candidates, "stage": stage, "count": len(candidates)},
+            "message": f"{len(candidates)} candidatos na etapa '{stage}'.",
         }
-        for r in rows
-    ]
-    return {
-        "success": True,
-        "data": {"candidates": candidates, "stage": stage, "count": len(candidates)},
-        "message": f"{len(candidates)} candidatos na etapa '{stage}'.",
-    }
+    except Exception as _db_exc:
+        import logging as _log
+        _log.getLogger(__name__).warning("[autonomous_tools] %s DB error: %s", "_wrap_get_candidates_in_stage", _db_exc)
+        return {"success": False, "error": str(_db_exc), "data": {}}
 
 
 @tool_handler("autonomous")
@@ -323,85 +343,90 @@ async def _wrap_match_candidates_to_job(**kwargs: Any) -> dict[str, Any]:
     """Cross-domain: find best candidates from sourcing for a specific job vacancy."""
     logger.info("[autonomous_tools] match_candidates_to_job called")
     from sqlalchemy import text
-    from app.core.database import AsyncSessionLocal
-    job_id = kwargs.get("job_id", "")
-    limit = min(int(kwargs.get("limit", 10)), 30)
-    if not job_id:
-        return {"success": False, "data": {}, "message": "Parâmetro 'job_id' é obrigatório."}
+    try:
+        from app.core.database import AsyncSessionLocal
+        job_id = kwargs.get("job_id", "")
+        limit = min(int(kwargs.get("limit", 10)), 30)
+        if not job_id:
+            return {"success": False, "data": {}, "message": "Parâmetro 'job_id' é obrigatório."}
 
-    company_id = kwargs.get("company_id", "")
+        company_id = kwargs.get("company_id", "")
 
-    async with AsyncSessionLocal() as session:
-        job_conditions = ["id = :jid"]
-        job_params: dict[str, Any] = {"jid": job_id}
-        if company_id:
-            job_conditions.append("company_id = :company_id")
-            job_params["company_id"] = company_id
-        job_where = " AND ".join(job_conditions)
+        async with AsyncSessionLocal() as session:
+            job_conditions = ["id = :jid"]
+            job_params: dict[str, Any] = {"jid": job_id}
+            if company_id:
+                job_conditions.append("company_id = :company_id")
+                job_params["company_id"] = company_id
+            job_where = " AND ".join(job_conditions)
 
-        job_result = await session.execute(
-            text(f"SELECT title, requirements, seniority_level FROM job_vacancies WHERE {job_where}"),
-            job_params,
-        )
-        job = job_result.mappings().first()
-        if not job:
-            return {"success": False, "data": {}, "message": f"Vaga '{job_id}' não encontrada."}
+            job_result = await session.execute(
+                text(f"SELECT title, requirements, seniority_level FROM job_vacancies WHERE {job_where}"),
+                job_params,
+            )
+            job = job_result.mappings().first()
+            if not job:
+                return {"success": False, "data": {}, "message": f"Vaga '{job_id}' não encontrada."}
 
-        requirements = job["requirements"] or []
-        seniority = job["seniority_level"] or ""
+            requirements = job["requirements"] or []
+            seniority = job["seniority_level"] or ""
 
-        cand_conditions = ["is_active = true"]
-        cand_params: dict[str, Any] = {"lim": 200}
-        if company_id:
-            cand_conditions.append("company_id = :company_id")
-            cand_params["company_id"] = company_id
-        cand_where = " AND ".join(cand_conditions)
+            cand_conditions = ["is_active = true"]
+            cand_params: dict[str, Any] = {"lim": 200}
+            if company_id:
+                cand_conditions.append("company_id = :company_id")
+                cand_params["company_id"] = company_id
+            cand_where = " AND ".join(cand_conditions)
 
-        candidate_result = await session.execute(
-            text(f"""
-                SELECT id, name, current_title, seniority_level,
-                       years_of_experience, technical_skills, lia_score
-                FROM candidates
-                WHERE {cand_where}
-                ORDER BY lia_score DESC NULLS LAST
-                LIMIT :lim
-            """),
-            cand_params,
-        )
-        rows = candidate_result.mappings().all()
+            candidate_result = await session.execute(
+                text(f"""
+                    SELECT id, name, current_title, seniority_level,
+                           years_of_experience, technical_skills, lia_score
+                    FROM candidates
+                    WHERE {cand_where}
+                    ORDER BY lia_score DESC NULLS LAST
+                    LIMIT :lim
+                """),
+                cand_params,
+            )
+            rows = candidate_result.mappings().all()
 
-    scored = []
-    for row in rows:
-        cand_skills = set(s.lower() for s in (row["technical_skills"] or []))
-        req_skills = set(r.lower() for r in requirements)
-        skill_match = (len(cand_skills & req_skills) / len(req_skills) * 100) if req_skills else 50.0
-        seniority_match = 100.0 if (seniority and row["seniority_level"] and
-                                     seniority.lower() == row["seniority_level"].lower()) else 50.0
-        composite = round(skill_match * 0.6 + seniority_match * 0.4, 2)
-        scored.append({
-            "candidate_id": str(row["id"]),
-            "name": row["name"],
-            "current_title": row["current_title"],
-            "seniority_level": row["seniority_level"],
-            "years_of_experience": row["years_of_experience"],
-            "matched_skills": list(cand_skills & set(r.lower() for r in requirements)),
-            "lia_score": row["lia_score"] or 0.0,
-            "match_score": composite,
-        })
+        scored = []
+        for row in rows:
+            cand_skills = set(s.lower() for s in (row["technical_skills"] or []))
+            req_skills = set(r.lower() for r in requirements)
+            skill_match = (len(cand_skills & req_skills) / len(req_skills) * 100) if req_skills else 50.0
+            seniority_match = 100.0 if (seniority and row["seniority_level"] and
+                                         seniority.lower() == row["seniority_level"].lower()) else 50.0
+            composite = round(skill_match * 0.6 + seniority_match * 0.4, 2)
+            scored.append({
+                "candidate_id": str(row["id"]),
+                "name": row["name"],
+                "current_title": row["current_title"],
+                "seniority_level": row["seniority_level"],
+                "years_of_experience": row["years_of_experience"],
+                "matched_skills": list(cand_skills & set(r.lower() for r in requirements)),
+                "lia_score": row["lia_score"] or 0.0,
+                "match_score": composite,
+            })
 
-    ranked = sorted(scored, key=lambda x: x["match_score"], reverse=True)[:limit]
-    for i, c in enumerate(ranked):
-        c["rank"] = i + 1
+        ranked = sorted(scored, key=lambda x: x["match_score"], reverse=True)[:limit]
+        for i, c in enumerate(ranked):
+            c["rank"] = i + 1
 
-    return {
-        "success": True,
-        "data": {
-            "job_id": job_id,
-            "job_title": job["title"],
-            "top_candidates": ranked,
-        },
-        "message": f"Top {len(ranked)} candidatos encontrados para '{job['title']}'.",
-    }
+        return {
+            "success": True,
+            "data": {
+                "job_id": job_id,
+                "job_title": job["title"],
+                "top_candidates": ranked,
+            },
+            "message": f"Top {len(ranked)} candidatos encontrados para '{job['title']}'.",
+        }
+    except Exception as _db_exc:
+        import logging as _log
+        _log.getLogger(__name__).warning("[autonomous_tools] %s DB error: %s", "_wrap_match_candidates_to_job", _db_exc)
+        return {"success": False, "error": str(_db_exc), "data": {}}
 
 
 # ── Analytics ───────────────────────────────────────────────────────────────
@@ -442,68 +467,73 @@ async def _wrap_get_scheduled_interviews(**kwargs: Any) -> dict[str, Any]:
     """Get upcoming or past interviews for a candidate or job with tenant isolation."""
     logger.info("[autonomous_tools] get_scheduled_interviews called")
     from sqlalchemy import text
-    from app.core.database import AsyncSessionLocal
-    candidate_id = kwargs.get("candidate_id", "")
-    job_id = kwargs.get("job_id", "")
-    company_id = kwargs.get("company_id", "")
-    status = kwargs.get("status", "scheduled")
-    limit = min(int(kwargs.get("limit", 20)), 50)
+    try:
+        from app.core.database import AsyncSessionLocal
+        candidate_id = kwargs.get("candidate_id", "")
+        job_id = kwargs.get("job_id", "")
+        company_id = kwargs.get("company_id", "")
+        status = kwargs.get("status", "scheduled")
+        limit = min(int(kwargs.get("limit", 20)), 50)
 
-    if not company_id and not candidate_id and not job_id:
+        if not company_id and not candidate_id and not job_id:
+            return {
+                "success": False,
+                "data": {},
+                "message": "Pelo menos um de 'candidate_id', 'job_id' ou 'company_id' é obrigatório.",
+            }
+
+        conditions: list[str] = []
+        params: dict[str, Any] = {"lim": limit}
+        if candidate_id:
+            conditions.append("candidate_id = :candidate_id")
+            params["candidate_id"] = candidate_id
+        if job_id:
+            conditions.append("job_id = :job_id")
+            params["job_id"] = job_id
+        if company_id:
+            conditions.append("company_id = :company_id")
+            params["company_id"] = company_id
+        if status:
+            conditions.append("status = :status")
+            params["status"] = status
+
+        where = " AND ".join(conditions) if conditions else "1=0"
+        async with AsyncSessionLocal() as session:
+            result = await session.execute(
+                text(f"""
+                    SELECT id, candidate_id, job_id, interview_type,
+                           scheduled_at, duration_minutes, status, notes
+                    FROM interviews
+                    WHERE {where}
+                    ORDER BY scheduled_at ASC
+                    LIMIT :lim
+                """),
+                params,
+            )
+            rows = result.mappings().all()
+
+        interviews = [
+            {
+                "id": str(r["id"]),
+                "candidate_id": str(r["candidate_id"]),
+                "job_id": str(r["job_id"]) if r["job_id"] else None,
+                "interview_type": r["interview_type"],
+                "scheduled_at": str(r["scheduled_at"]) if r["scheduled_at"] else None,
+                "duration_minutes": r["duration_minutes"],
+                "status": r["status"],
+                "notes": r["notes"],
+            }
+            for r in rows
+        ]
         return {
-            "success": False,
-            "data": {},
-            "message": "Pelo menos um de 'candidate_id', 'job_id' ou 'company_id' é obrigatório.",
+            "success": True,
+            "data": {"interviews": interviews, "count": len(interviews)},
+            "message": f"{len(interviews)} entrevistas encontradas.",
         }
-
-    conditions: list[str] = []
-    params: dict[str, Any] = {"lim": limit}
-    if candidate_id:
-        conditions.append("candidate_id = :candidate_id")
-        params["candidate_id"] = candidate_id
-    if job_id:
-        conditions.append("job_id = :job_id")
-        params["job_id"] = job_id
-    if company_id:
-        conditions.append("company_id = :company_id")
-        params["company_id"] = company_id
-    if status:
-        conditions.append("status = :status")
-        params["status"] = status
-
-    where = " AND ".join(conditions) if conditions else "1=0"
-    async with AsyncSessionLocal() as session:
-        result = await session.execute(
-            text(f"""
-                SELECT id, candidate_id, job_id, interview_type,
-                       scheduled_at, duration_minutes, status, notes
-                FROM interviews
-                WHERE {where}
-                ORDER BY scheduled_at ASC
-                LIMIT :lim
-            """),
-            params,
-        )
-        rows = result.mappings().all()
-
-    interviews = [
-        {
-            "id": str(r["id"]),
-            "candidate_id": str(r["candidate_id"]),
-            "job_id": str(r["job_id"]) if r["job_id"] else None,
-            "interview_type": r["interview_type"],
-            "scheduled_at": str(r["scheduled_at"]) if r["scheduled_at"] else None,
-            "duration_minutes": r["duration_minutes"],
-            "status": r["status"],
-            "notes": r["notes"],
-        }
-        for r in rows
-    ]
-    return {
-        "success": True,
-        "data": {"interviews": interviews, "count": len(interviews)},
-        "message": f"{len(interviews)} entrevistas encontradas.",
-    }
+    except Exception as _db_exc:
+        import logging as _log
+        _log.getLogger(__name__).warning("[autonomous_tools] %s DB error: %s", "_wrap_get_scheduled_interviews", _db_exc)
+        return {"success": False, "error": str(_db_exc), "data": {}}
 
 
 # ── Communication ────────────────────────────────────────────────────────────
@@ -513,49 +543,54 @@ async def _wrap_get_communication_history(**kwargs: Any) -> dict[str, Any]:
     """Get communication history (emails, messages) with a candidate."""
     logger.info("[autonomous_tools] get_communication_history called")
     from sqlalchemy import text
-    from app.core.database import AsyncSessionLocal
-    candidate_id = kwargs.get("candidate_id", "")
-    company_id = kwargs.get("company_id", "")
-    limit = min(int(kwargs.get("limit", 20)), 50)
-    if not candidate_id:
-        return {"success": False, "data": {}, "message": "Parâmetro 'candidate_id' é obrigatório."}
+    try:
+        from app.core.database import AsyncSessionLocal
+        candidate_id = kwargs.get("candidate_id", "")
+        company_id = kwargs.get("company_id", "")
+        limit = min(int(kwargs.get("limit", 20)), 50)
+        if not candidate_id:
+            return {"success": False, "data": {}, "message": "Parâmetro 'candidate_id' é obrigatório."}
 
-    conditions = ["candidate_id = :cid"]
-    params: dict[str, Any] = {"cid": candidate_id, "lim": limit}
-    if company_id:
-        conditions.append("company_id = :company_id")
-        params["company_id"] = company_id
-    where = " AND ".join(conditions)
+        conditions = ["candidate_id = :cid"]
+        params: dict[str, Any] = {"cid": candidate_id, "lim": limit}
+        if company_id:
+            conditions.append("company_id = :company_id")
+            params["company_id"] = company_id
+        where = " AND ".join(conditions)
 
-    async with AsyncSessionLocal() as session:
-        result = await session.execute(
-            text(f"""
-                SELECT id, channel, subject, status, sent_at, opened_at
-                FROM communications
-                WHERE {where}
-                ORDER BY sent_at DESC NULLS LAST
-                LIMIT :lim
-            """),
-            params,
-        )
-        rows = result.mappings().all()
+        async with AsyncSessionLocal() as session:
+            result = await session.execute(
+                text(f"""
+                    SELECT id, channel, subject, status, sent_at, opened_at
+                    FROM communications
+                    WHERE {where}
+                    ORDER BY sent_at DESC NULLS LAST
+                    LIMIT :lim
+                """),
+                params,
+            )
+            rows = result.mappings().all()
 
-    comms = [
-        {
-            "id": str(r["id"]),
-            "channel": r["channel"],
-            "subject": r["subject"],
-            "status": r["status"],
-            "sent_at": str(r["sent_at"]) if r["sent_at"] else None,
-            "opened_at": str(r["opened_at"]) if r["opened_at"] else None,
+        comms = [
+            {
+                "id": str(r["id"]),
+                "channel": r["channel"],
+                "subject": r["subject"],
+                "status": r["status"],
+                "sent_at": str(r["sent_at"]) if r["sent_at"] else None,
+                "opened_at": str(r["opened_at"]) if r["opened_at"] else None,
+            }
+            for r in rows
+        ]
+        return {
+            "success": True,
+            "data": {"communications": comms, "count": len(comms)},
+            "message": f"{len(comms)} comunicações encontradas para o candidato.",
         }
-        for r in rows
-    ]
-    return {
-        "success": True,
-        "data": {"communications": comms, "count": len(comms)},
-        "message": f"{len(comms)} comunicações encontradas para o candidato.",
-    }
+    except Exception as _db_exc:
+        import logging as _log
+        _log.getLogger(__name__).warning("[autonomous_tools] %s DB error: %s", "_wrap_get_communication_history", _db_exc)
+        return {"success": False, "error": str(_db_exc), "data": {}}
 
 
 # ── Additional tools: Job Management (extended) ──────────────────────────────
@@ -645,42 +680,47 @@ async def _wrap_rank_candidates(**kwargs: Any) -> dict[str, Any]:
         return {"success": False, "data": {}, "message": "Parâmetro 'candidate_ids' é obrigatório."}
 
     from sqlalchemy import text
-    from app.core.database import AsyncSessionLocal
-    placeholders = ", ".join([f":id_{i}" for i in range(len(candidate_ids))])
-    params: dict[str, Any] = {f"id_{i}": cid for i, cid in enumerate(candidate_ids)}
+    try:
+        from app.core.database import AsyncSessionLocal
+        placeholders = ", ".join([f":id_{i}" for i in range(len(candidate_ids))])
+        params: dict[str, Any] = {f"id_{i}": cid for i, cid in enumerate(candidate_ids)}
 
-    conditions = [f"id IN ({placeholders})"]
-    if company_id:
-        conditions.append("company_id = :company_id")
-        params["company_id"] = company_id
-    where = " AND ".join(conditions)
+        conditions = [f"id IN ({placeholders})"]
+        if company_id:
+            conditions.append("company_id = :company_id")
+            params["company_id"] = company_id
+        where = " AND ".join(conditions)
 
-    async with AsyncSessionLocal() as session:
-        result = await session.execute(
-            text(f"""
-                SELECT id, name, current_title, years_of_experience,
-                       seniority_level, lia_score
-                FROM candidates
-                WHERE {where}
-            """),
-            params,
+        async with AsyncSessionLocal() as session:
+            result = await session.execute(
+                text(f"""
+                    SELECT id, name, current_title, years_of_experience,
+                           seniority_level, lia_score
+                    FROM candidates
+                    WHERE {where}
+                """),
+                params,
+            )
+            rows = result.mappings().all()
+
+        ranked = sorted(
+            [dict(r) for r in rows],
+            key=lambda x: (x.get("lia_score") or 0, x.get("years_of_experience") or 0),
+            reverse=True,
         )
-        rows = result.mappings().all()
+        for i, c in enumerate(ranked):
+            c["rank"] = i + 1
+            c["id"] = str(c["id"])
 
-    ranked = sorted(
-        [dict(r) for r in rows],
-        key=lambda x: (x.get("lia_score") or 0, x.get("years_of_experience") or 0),
-        reverse=True,
-    )
-    for i, c in enumerate(ranked):
-        c["rank"] = i + 1
-        c["id"] = str(c["id"])
-
-    return {
-        "success": True,
-        "data": {"ranked_candidates": ranked, "total": len(ranked), "criteria": criteria},
-        "message": f"{len(ranked)} candidatos ranqueados por {', '.join(criteria)}.",
-    }
+        return {
+            "success": True,
+            "data": {"ranked_candidates": ranked, "total": len(ranked), "criteria": criteria},
+            "message": f"{len(ranked)} candidatos ranqueados por {', '.join(criteria)}.",
+        }
+    except Exception as _db_exc:
+        import logging as _log
+        _log.getLogger(__name__).warning("[autonomous_tools] %s DB error: %s", "_wrap_rank_candidates", _db_exc)
+        return {"success": False, "error": str(_db_exc), "data": {}}
 
 
 # ── Additional tools: Analytics (extended) ───────────────────────────────────
@@ -706,52 +746,57 @@ async def _wrap_get_candidate_by_id(**kwargs: Any) -> dict[str, Any]:
     """Get basic candidate information by ID with tenant isolation."""
     logger.info("[autonomous_tools] get_candidate_by_id called")
     from sqlalchemy import text
-    from app.core.database import AsyncSessionLocal
-    candidate_id = kwargs.get("candidate_id", "")
-    company_id = kwargs.get("company_id", "")
-    if not candidate_id:
-        return {"success": False, "data": {}, "message": "Parâmetro 'candidate_id' é obrigatório."}
+    try:
+        from app.core.database import AsyncSessionLocal
+        candidate_id = kwargs.get("candidate_id", "")
+        company_id = kwargs.get("company_id", "")
+        if not candidate_id:
+            return {"success": False, "data": {}, "message": "Parâmetro 'candidate_id' é obrigatório."}
 
-    conditions = ["id = :cid"]
-    params: dict[str, Any] = {"cid": candidate_id}
-    if company_id:
-        conditions.append("company_id = :company_id")
-        params["company_id"] = company_id
-    where = " AND ".join(conditions)
+        conditions = ["id = :cid"]
+        params: dict[str, Any] = {"cid": candidate_id}
+        if company_id:
+            conditions.append("company_id = :company_id")
+            params["company_id"] = company_id
+        where = " AND ".join(conditions)
 
-    async with AsyncSessionLocal() as session:
-        result = await session.execute(
-            text(f"""
-                SELECT id, name, email, current_title, current_company,
-                       seniority_level, years_of_experience, technical_skills,
-                       soft_skills, location_city, location_country,
-                       status, lia_score, created_at
-                FROM candidates WHERE {where}
-            """),
-            params,
-        )
-        row = result.mappings().first()
+        async with AsyncSessionLocal() as session:
+            result = await session.execute(
+                text(f"""
+                    SELECT id, name, email, current_title, current_company,
+                           seniority_level, years_of_experience, technical_skills,
+                           soft_skills, location_city, location_country,
+                           status, lia_score, created_at
+                    FROM candidates WHERE {where}
+                """),
+                params,
+            )
+            row = result.mappings().first()
 
-    if not row:
-        return {"success": False, "data": {}, "message": f"Candidato '{candidate_id}' não encontrado."}
+        if not row:
+            return {"success": False, "data": {}, "message": f"Candidato '{candidate_id}' não encontrado."}
 
-    return {
-        "success": True,
-        "data": {
-            "id": str(row["id"]),
-            "name": row["name"],
-            "current_title": row["current_title"],
-            "current_company": row["current_company"],
-            "seniority_level": row["seniority_level"],
-            "years_of_experience": row["years_of_experience"],
-            "technical_skills": row["technical_skills"] or [],
-            "soft_skills": row["soft_skills"] or [],
-            "location": f"{row['location_city'] or ''}, {row['location_country'] or ''}".strip(", "),
-            "status": row["status"],
-            "lia_score": row["lia_score"],
-        },
-        "message": f"Candidato '{row['name']}' encontrado.",
-    }
+        return {
+            "success": True,
+            "data": {
+                "id": str(row["id"]),
+                "name": row["name"],
+                "current_title": row["current_title"],
+                "current_company": row["current_company"],
+                "seniority_level": row["seniority_level"],
+                "years_of_experience": row["years_of_experience"],
+                "technical_skills": row["technical_skills"] or [],
+                "soft_skills": row["soft_skills"] or [],
+                "location": f"{row['location_city'] or ''}, {row['location_country'] or ''}".strip(", "),
+                "status": row["status"],
+                "lia_score": row["lia_score"],
+            },
+            "message": f"Candidato '{row['name']}' encontrado.",
+        }
+    except Exception as _db_exc:
+        import logging as _log
+        _log.getLogger(__name__).warning("[autonomous_tools] %s DB error: %s", "_wrap_get_candidate_by_id", _db_exc)
+        return {"success": False, "error": str(_db_exc), "data": {}}
 
 
 @tool_handler("autonomous")
@@ -759,41 +804,46 @@ async def _wrap_search_candidates_by_name(**kwargs: Any) -> dict[str, Any]:
     """Search candidates by name with tenant isolation."""
     logger.info("[autonomous_tools] search_candidates_by_name called")
     from sqlalchemy import text
-    from app.core.database import AsyncSessionLocal
-    name = kwargs.get("name", "")
-    company_id = kwargs.get("company_id", "")
-    limit = min(int(kwargs.get("limit", 10)), 30)
-    if not name:
-        return {"success": False, "data": {}, "message": "Parâmetro 'name' é obrigatório."}
+    try:
+        from app.core.database import AsyncSessionLocal
+        name = kwargs.get("name", "")
+        company_id = kwargs.get("company_id", "")
+        limit = min(int(kwargs.get("limit", 10)), 30)
+        if not name:
+            return {"success": False, "data": {}, "message": "Parâmetro 'name' é obrigatório."}
 
-    conditions = ["name ILIKE :name_pattern", "is_active = true"]
-    params: dict[str, Any] = {"name_pattern": f"%{name}%", "lim": limit}
-    if company_id:
-        conditions.append("company_id = :company_id")
-        params["company_id"] = company_id
-    where = " AND ".join(conditions)
+        conditions = ["name ILIKE :name_pattern", "is_active = true"]
+        params: dict[str, Any] = {"name_pattern": f"%{name}%", "lim": limit}
+        if company_id:
+            conditions.append("company_id = :company_id")
+            params["company_id"] = company_id
+        where = " AND ".join(conditions)
 
-    async with AsyncSessionLocal() as session:
-        result = await session.execute(
-            text(f"""
-                SELECT id, name, current_title, seniority_level, lia_score, status
-                FROM candidates WHERE {where}
-                ORDER BY lia_score DESC NULLS LAST LIMIT :lim
-            """),
-            params,
-        )
-        rows = result.mappings().all()
+        async with AsyncSessionLocal() as session:
+            result = await session.execute(
+                text(f"""
+                    SELECT id, name, current_title, seniority_level, lia_score, status
+                    FROM candidates WHERE {where}
+                    ORDER BY lia_score DESC NULLS LAST LIMIT :lim
+                """),
+                params,
+            )
+            rows = result.mappings().all()
 
-    candidates = [
-        {"id": str(r["id"]), "name": r["name"], "current_title": r["current_title"],
-         "seniority_level": r["seniority_level"], "lia_score": r["lia_score"], "status": r["status"]}
-        for r in rows
-    ]
-    return {
-        "success": True,
-        "data": {"candidates": candidates, "count": len(candidates)},
-        "message": f"{len(candidates)} candidatos encontrados com nome '{name}'.",
-    }
+        candidates = [
+            {"id": str(r["id"]), "name": r["name"], "current_title": r["current_title"],
+             "seniority_level": r["seniority_level"], "lia_score": r["lia_score"], "status": r["status"]}
+            for r in rows
+        ]
+        return {
+            "success": True,
+            "data": {"candidates": candidates, "count": len(candidates)},
+            "message": f"{len(candidates)} candidatos encontrados com nome '{name}'.",
+        }
+    except Exception as _db_exc:
+        import logging as _log
+        _log.getLogger(__name__).warning("[autonomous_tools] %s DB error: %s", "_wrap_search_candidates_by_name", _db_exc)
+        return {"success": False, "error": str(_db_exc), "data": {}}
 
 
 @tool_handler("autonomous")
@@ -801,49 +851,54 @@ async def _wrap_get_job_applications_summary(**kwargs: Any) -> dict[str, Any]:
     """Get a summary of all applications/candidates for a job vacancy."""
     logger.info("[autonomous_tools] get_job_applications_summary called")
     from sqlalchemy import text
-    from app.core.database import AsyncSessionLocal
-    job_id = kwargs.get("job_id", "")
-    company_id = kwargs.get("company_id", "")
-    if not job_id:
-        return {"success": False, "data": {}, "message": "Parâmetro 'job_id' é obrigatório."}
+    try:
+        from app.core.database import AsyncSessionLocal
+        job_id = kwargs.get("job_id", "")
+        company_id = kwargs.get("company_id", "")
+        if not job_id:
+            return {"success": False, "data": {}, "message": "Parâmetro 'job_id' é obrigatório."}
 
-    conditions = ["pc.job_id = :job_id"]
-    params: dict[str, Any] = {"job_id": job_id}
-    if company_id:
-        conditions.append("pc.company_id = :company_id")
-        params["company_id"] = company_id
-    where = " AND ".join(conditions)
+        conditions = ["pc.job_id = :job_id"]
+        params: dict[str, Any] = {"job_id": job_id}
+        if company_id:
+            conditions.append("pc.company_id = :company_id")
+            params["company_id"] = company_id
+        where = " AND ".join(conditions)
 
-    async with AsyncSessionLocal() as session:
-        result = await session.execute(
-            text(f"""
-                SELECT pc.stage, COUNT(*) as count,
-                       AVG(c.lia_score) as avg_score,
-                       MAX(pc.updated_at) as last_updated
-                FROM pipeline_candidates pc
-                LEFT JOIN candidates c ON c.id = pc.candidate_id
-                WHERE {where}
-                GROUP BY pc.stage ORDER BY pc.stage
-            """),
-            params,
-        )
-        rows = result.mappings().all()
+        async with AsyncSessionLocal() as session:
+            result = await session.execute(
+                text(f"""
+                    SELECT pc.stage, COUNT(*) as count,
+                           AVG(c.lia_score) as avg_score,
+                           MAX(pc.updated_at) as last_updated
+                    FROM pipeline_candidates pc
+                    LEFT JOIN candidates c ON c.id = pc.candidate_id
+                    WHERE {where}
+                    GROUP BY pc.stage ORDER BY pc.stage
+                """),
+                params,
+            )
+            rows = result.mappings().all()
 
-    stages = [
-        {
-            "stage": r["stage"],
-            "count": r["count"],
-            "avg_lia_score": round(float(r["avg_score"] or 0), 2),
-            "last_updated": str(r["last_updated"]) if r["last_updated"] else None,
+        stages = [
+            {
+                "stage": r["stage"],
+                "count": r["count"],
+                "avg_lia_score": round(float(r["avg_score"] or 0), 2),
+                "last_updated": str(r["last_updated"]) if r["last_updated"] else None,
+            }
+            for r in rows
+        ]
+        total = sum(s["count"] for s in stages)
+        return {
+            "success": True,
+            "data": {"job_id": job_id, "stages": stages, "total_applications": total},
+            "message": f"Resumo de {total} candidaturas para a vaga.",
         }
-        for r in rows
-    ]
-    total = sum(s["count"] for s in stages)
-    return {
-        "success": True,
-        "data": {"job_id": job_id, "stages": stages, "total_applications": total},
-        "message": f"Resumo de {total} candidaturas para a vaga.",
-    }
+    except Exception as _db_exc:
+        import logging as _log
+        _log.getLogger(__name__).warning("[autonomous_tools] %s DB error: %s", "_wrap_get_job_applications_summary", _db_exc)
+        return {"success": False, "error": str(_db_exc), "data": {}}
 
 
 @tool_handler("autonomous", require_company=False)
@@ -917,46 +972,51 @@ async def _wrap_get_shortlists(**kwargs: Any) -> dict[str, Any]:
     """Get shortlists for a company with candidate counts."""
     logger.info("[autonomous_tools] get_shortlists called")
     from sqlalchemy import text
-    from app.core.database import AsyncSessionLocal
-    company_id = kwargs.get("company_id", "")
-    job_id = kwargs.get("job_id", "")
-    limit = min(int(kwargs.get("limit", 10)), 30)
+    try:
+        from app.core.database import AsyncSessionLocal
+        company_id = kwargs.get("company_id", "")
+        job_id = kwargs.get("job_id", "")
+        limit = min(int(kwargs.get("limit", 10)), 30)
 
-    conditions: list[str] = []
-    params: dict[str, Any] = {"lim": limit}
-    if company_id:
-        conditions.append("s.company_id = :company_id")
-        params["company_id"] = company_id
-    if job_id:
-        conditions.append("s.job_id = :job_id")
-        params["job_id"] = job_id
-    where = ("WHERE " + " AND ".join(conditions)) if conditions else ""
+        conditions: list[str] = []
+        params: dict[str, Any] = {"lim": limit}
+        if company_id:
+            conditions.append("s.company_id = :company_id")
+            params["company_id"] = company_id
+        if job_id:
+            conditions.append("s.job_id = :job_id")
+            params["job_id"] = job_id
+        where = ("WHERE " + " AND ".join(conditions)) if conditions else ""
 
-    async with AsyncSessionLocal() as session:
-        result = await session.execute(
-            text(f"""
-                SELECT s.id, s.name, s.job_id, s.created_at,
-                       COUNT(sc.candidate_id) as candidate_count
-                FROM shortlists s
-                LEFT JOIN shortlist_candidates sc ON sc.shortlist_id = s.id
-                {where}
-                GROUP BY s.id, s.name, s.job_id, s.created_at
-                ORDER BY s.created_at DESC LIMIT :lim
-            """),
-            params,
-        )
-        rows = result.mappings().all()
+        async with AsyncSessionLocal() as session:
+            result = await session.execute(
+                text(f"""
+                    SELECT s.id, s.name, s.job_id, s.created_at,
+                           COUNT(sc.candidate_id) as candidate_count
+                    FROM shortlists s
+                    LEFT JOIN shortlist_candidates sc ON sc.shortlist_id = s.id
+                    {where}
+                    GROUP BY s.id, s.name, s.job_id, s.created_at
+                    ORDER BY s.created_at DESC LIMIT :lim
+                """),
+                params,
+            )
+            rows = result.mappings().all()
 
-    shortlists = [
-        {"id": str(r["id"]), "name": r["name"], "job_id": str(r["job_id"]) if r["job_id"] else None,
-         "candidate_count": r["candidate_count"], "created_at": str(r["created_at"]) if r["created_at"] else None}
-        for r in rows
-    ]
-    return {
-        "success": True,
-        "data": {"shortlists": shortlists, "count": len(shortlists)},
-        "message": f"{len(shortlists)} shortlists encontradas.",
-    }
+        shortlists = [
+            {"id": str(r["id"]), "name": r["name"], "job_id": str(r["job_id"]) if r["job_id"] else None,
+             "candidate_count": r["candidate_count"], "created_at": str(r["created_at"]) if r["created_at"] else None}
+            for r in rows
+        ]
+        return {
+            "success": True,
+            "data": {"shortlists": shortlists, "count": len(shortlists)},
+            "message": f"{len(shortlists)} shortlists encontradas.",
+        }
+    except Exception as _db_exc:
+        import logging as _log
+        _log.getLogger(__name__).warning("[autonomous_tools] %s DB error: %s", "_wrap_get_shortlists", _db_exc)
+        return {"success": False, "error": str(_db_exc), "data": {}}
 
 
 @tool_handler("autonomous", require_company=False)
@@ -971,42 +1031,47 @@ async def _wrap_get_job_history(**kwargs: Any) -> dict[str, Any]:
     """Get change history / audit trail for a job vacancy."""
     logger.info("[autonomous_tools] get_job_history called")
     from sqlalchemy import text
-    from app.core.database import AsyncSessionLocal
-    job_id = kwargs.get("job_id", "")
-    company_id = kwargs.get("company_id", "")
-    limit = min(int(kwargs.get("limit", 20)), 50)
-    if not job_id:
-        return {"success": False, "data": {}, "message": "Parâmetro 'job_id' é obrigatório."}
+    try:
+        from app.core.database import AsyncSessionLocal
+        job_id = kwargs.get("job_id", "")
+        company_id = kwargs.get("company_id", "")
+        limit = min(int(kwargs.get("limit", 20)), 50)
+        if not job_id:
+            return {"success": False, "data": {}, "message": "Parâmetro 'job_id' é obrigatório."}
 
-    conditions = ["job_id = :job_id"]
-    params: dict[str, Any] = {"job_id": job_id, "lim": limit}
-    if company_id:
-        conditions.append("company_id = :company_id")
-        params["company_id"] = company_id
-    where = " AND ".join(conditions)
+        conditions = ["job_id = :job_id"]
+        params: dict[str, Any] = {"job_id": job_id, "lim": limit}
+        if company_id:
+            conditions.append("company_id = :company_id")
+            params["company_id"] = company_id
+        where = " AND ".join(conditions)
 
-    async with AsyncSessionLocal() as session:
-        result = await session.execute(
-            text(f"""
-                SELECT id, action, changed_by, changed_at, details
-                FROM job_history WHERE {where}
-                ORDER BY changed_at DESC LIMIT :lim
-            """),
-            params,
-        )
-        rows = result.mappings().all()
+        async with AsyncSessionLocal() as session:
+            result = await session.execute(
+                text(f"""
+                    SELECT id, action, changed_by, changed_at, details
+                    FROM job_history WHERE {where}
+                    ORDER BY changed_at DESC LIMIT :lim
+                """),
+                params,
+            )
+            rows = result.mappings().all()
 
-    history = [
-        {"id": str(r["id"]), "action": r["action"], "changed_by": r["changed_by"],
-         "changed_at": str(r["changed_at"]) if r["changed_at"] else None,
-         "details": r["details"]}
-        for r in rows
-    ]
-    return {
-        "success": True,
-        "data": {"history": history, "count": len(history)},
-        "message": f"{len(history)} eventos no histórico da vaga.",
-    }
+        history = [
+            {"id": str(r["id"]), "action": r["action"], "changed_by": r["changed_by"],
+             "changed_at": str(r["changed_at"]) if r["changed_at"] else None,
+             "details": r["details"]}
+            for r in rows
+        ]
+        return {
+            "success": True,
+            "data": {"history": history, "count": len(history)},
+            "message": f"{len(history)} eventos no histórico da vaga.",
+        }
+    except Exception as _db_exc:
+        import logging as _log
+        _log.getLogger(__name__).warning("[autonomous_tools] %s DB error: %s", "_wrap_get_job_history", _db_exc)
+        return {"success": False, "error": str(_db_exc), "data": {}}
 
 
 @tool_handler("autonomous", require_company=False)
