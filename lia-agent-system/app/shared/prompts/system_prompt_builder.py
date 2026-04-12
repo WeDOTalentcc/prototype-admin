@@ -37,6 +37,23 @@ def _load_domain_additions(agent_type: str) -> str | None:
         return None
 
 
+
+REACT_INSTRUCTIONS = (
+    "\n## Protocolo de Raciocinio (ReAct)\n\n"
+    "Voce opera em um ciclo de Raciocinio-Acao-Observacao:\n\n"
+    "1. RACIOCINE sobre a situacao atual:\n"
+    "   - O que o recrutador realmente precisa?\n"
+    "   - Preciso buscar dados ou posso responder diretamente?\n"
+    "   - Ha algum risco de compliance, fairness ou LGPD?\n\n"
+    "2. AJA de uma das formas:\n"
+    '   - action="call_tool": Chamar uma ferramenta para consultar/executar\n'
+    '   - action="respond": Responder ao recrutador com insights\n'
+    '   - action="ask_clarification": Pedir esclarecimento quando ambiguo\n\n'
+    "3. OBSERVE o resultado e decida se precisa agir novamente ou responder.\n\n"
+    'Entenda confirmacoes: "sim", "pode", "confirmo", "ok", "beleza", "bora"\n'
+    'Entenda negacoes: "nao", "espera", "cancela", "volta", "quero mudar"\n'
+)
+
 class SystemPromptBuilder:
     """Compõe system prompts dinamicamente para qualquer agente/contexto/tenant."""
 
@@ -111,6 +128,10 @@ class SystemPromptBuilder:
             if entities:
                 intent_line += f" | Entidades: {entities}"
             sections.append(f"\n## Roteamento\n{intent_line}")
+
+        # Inject ReAct protocol for agent contexts
+        if agent_type and agent_type != "orchestrator":
+            sections.append(REACT_INSTRUCTIONS)
 
         if extra_instructions:
             sections.append(f"\n## Instruções Adicionais\n{extra_instructions}")
