@@ -484,11 +484,15 @@ class MainOrchestrator:
         if streaming_callback:
             orchestrator_context["streaming_callback"] = streaming_callback
 
-        conv, conv_id = await self._setup_conversation_memory(ctx, conv_id, db, orchestrator_context)
+        if not ctx.skip_memory_persist:
+            conv, conv_id = await self._setup_conversation_memory(ctx, conv_id, db, orchestrator_context)
+        else:
+            conv, conv_id = None, conv_id
 
         result = await self._route_with_tenant_llm(ctx, conv_id, db, orchestrator_context)
 
-        await self._persist_response(ctx, conv_id, conv, result, db)
+        if not ctx.skip_memory_persist:
+            await self._persist_response(ctx, conv_id, conv, result, db)
 
         result.update({"conversation_id": conv_id})
 

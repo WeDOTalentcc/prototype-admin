@@ -58,6 +58,9 @@ class UniversalContext:
     # Tenant context — preenchido pelo MainOrchestrator apos lookup no DB
     tenant_context_snippet: str = ""
 
+    # Flag: skip memory persistence (Passo 2 Path A — ChatRepository remains owner until M2)
+    skip_memory_persist: bool = False
+
     def to_orchestrator_context(self) -> dict[str, Any]:
         """Converte para o formato que Orchestrator.process_request_with_memory() espera."""
         ctx: dict[str, Any] = {
