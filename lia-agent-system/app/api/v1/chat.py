@@ -587,8 +587,6 @@ async def websocket_endpoint(
                         "intent": ws_orch["intent"],
                         "entities": ws_orch["entities"],
                     }
-                    if ws_action_metadata:
-                        ws_msg_metadata.update(ws_action_metadata)
 
                     await repo.add_ai_message(
                         conversation.id,
