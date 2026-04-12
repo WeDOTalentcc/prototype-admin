@@ -147,7 +147,7 @@ Retorne APENAS JSON válido (sem texto fora do JSON):
   }}
 }}"""
         try:
-            response = await self.llm.claude.bind(temperature=0.1, max_tokens=800).ainvoke(prompt)
+            response = await self.llm.safe_invoke(prompt, temperature=0.1, max_tokens=800)
             parsed = safe_json_parse(response.content, fallback={"big_five_jd": _FALLBACK})
             data = parsed.get("big_five_jd") or _FALLBACK
             if not isinstance(data, dict) or not any(t in data for t in _FIVE_TRAITS):
@@ -425,7 +425,7 @@ Retorne APENAS JSON válido (sem texto fora do JSON):
         )
         full_prompt = f"SYSTEM:\n{system_prompt}\n\nUSER:\n{user_prompt}"
         try:
-            response = await self.llm.claude.bind(temperature=0.0, max_tokens=300).ainvoke(full_prompt)
+            response = await self.llm.safe_invoke(full_prompt, temperature=0.0, max_tokens=300)
             result = safe_json_parse(response.content, fallback=None)
             if result and isinstance(result, dict) and "is_anchored" in result:
                 return result
@@ -572,7 +572,7 @@ Responda APENAS em JSON:
 }}"""
 
         try:
-            response = await self.llm.claude.bind(temperature=0.7).ainvoke(prompt)
+            response = await self.llm.safe_invoke(prompt, temperature=0.7)
             data = safe_json_parse(response.content, fallback={
                 "framework": "CBI",
                 "question_type": "contextual",
@@ -630,7 +630,7 @@ Combina:
 Responda APENAS em JSON com mesma estrutura anterior."""
 
         try:
-            response = await self.llm.claude.bind(temperature=0.75).ainvoke(prompt)
+            response = await self.llm.safe_invoke(prompt, temperature=0.75)
             data = safe_json_parse(response.content, fallback={
                 "framework": "Dreyfus",
                 "question_type": "autodeclaration",
@@ -698,7 +698,7 @@ Responda APENAS em JSON."""
         cognitive_level = "APLICAR" if bloom_level == 3 else "ANALISAR" if bloom_level == 4 else "CRIAR"
         
         try:
-            response = await self.llm.claude.bind(temperature=0.75).ainvoke(prompt)
+            response = await self.llm.safe_invoke(prompt, temperature=0.75)
             data = safe_json_parse(response.content, fallback={
                 "framework": "Bloom",
                 "question_type": "microcase",
@@ -818,7 +818,7 @@ Foco em traços OCEAN:
 Responda APENAS em JSON."""
 
         try:
-            response = await self.llm.claude.bind(temperature=0.8).ainvoke(prompt)
+            response = await self.llm.safe_invoke(prompt, temperature=0.8)
             data = safe_json_parse(response.content, fallback={
                 "framework": "BigFive",
                 "question_type": "situational",
