@@ -733,23 +733,8 @@ async def send_message(
         detected_entities["job_id"] = page_context["job_vacancy_id"]
 
     if lia_response:
-        action_metadata = None
-        try:
-            action_metadata = await handle_action_flow(
-                conversation_id=conversation_id,
-                user_message_text=message_data.content,
-                intent=detected_intent,
-                entities=detected_entities,
-                user_id=user_id,
-                current_user=current_user,
-                repo=repo,
-            )
-        except Exception as e:
-            logger.error(f"Action flow error: {e}", exc_info=True)
-
-        # Ciclo fechado: sobrescreve resposta quando há resultado de ação
-        action_response = _build_response_from_action(action_metadata) if action_metadata else None
-        final_response = action_response if action_response else lia_response
+        # Item 2: handle_action_flow deleted — MainOrchestrator Phase 0+1 handles all actions
+        final_response = lia_response
 
         msg_metadata: dict[str, Any] = {
             "intent": detected_intent,
@@ -1103,27 +1088,8 @@ async def websocket_endpoint(
                 lia_response = ws_orch["response"]
 
                 if lia_response:
-                    ws_action_metadata = None
-                    try:
-                        _ws_user = type("_U", (), {
-                            "id": user_id,
-                            "email": "",
-                            "company_id": None,
-                        })()
-                        ws_action_metadata = await handle_action_flow(
-                            conversation_id=conversation_id,
-                            user_message_text=user_content,
-                            intent=ws_orch["intent"],
-                            entities=ws_orch["entities"],
-                            user_id=user_id,
-                            current_user=_ws_user,
-                            repo=repo,
-                        )
-                    except Exception as _e:
-                        logger.error(f"WS action flow error: {_e}", exc_info=True)
-
-                    ws_action_response = _build_response_from_action(ws_action_metadata) if ws_action_metadata else None
-                    ws_final_response = ws_action_response if ws_action_response else lia_response
+                    # Item 2: handle_action_flow deleted — Phase 0+1 handles actions
+                    ws_final_response = lia_response
 
                     ws_msg_metadata: dict[str, Any] = {
                         "intent": ws_orch["intent"],
