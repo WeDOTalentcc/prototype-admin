@@ -7,6 +7,8 @@ Equivalente ao que Greenhouse e Workday oferecem como "compliance baseline check
 
 from fastapi import APIRouter, Depends, Path
 
+from app.auth.dependencies import require_admin
+
 router = APIRouter(prefix="/bias-audit", tags=["Bias Audit - Admin"])
 
 
@@ -14,7 +16,7 @@ router = APIRouter(prefix="/bias-audit", tags=["Bias Audit - Admin"])
 async def run_bias_audit_baseline(
     job_id: str = Path(..., description="ID da vaga"),
     save_snapshot: bool = True,
-    _user=Depends(lambda: None),  # substituir por auth real em produção
+    _user=Depends(require_admin),
 ):
     """
     Executa bias audit com dataset sintético balanceado (golden dataset).

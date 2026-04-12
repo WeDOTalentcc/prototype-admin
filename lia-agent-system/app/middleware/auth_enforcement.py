@@ -80,7 +80,28 @@ PUBLIC_PATHS = {
 # Path prefixes that are public (e.g. static files, docs)
 # Dev-mode flag: when True, unauthenticated requests get a synthetic dev-user context
 # instead of 401. This allows the Replit demo to work without full SSO/JWT setup.
-_DEV_MODE = os.environ.get("LIA_DEV_MODE", "").lower() in ("1", "true", "yes") or os.environ.get("REPL_ID", "")
+# SECURITY: Only explicit LIA_DEV_MODE activates dev mode — REPL_ID is NOT used.
+_DEV_MODE = os.environ.get("LIA_DEV_MODE", "").lower() in ("1", "true", "yes")
+_DEV_API_KEY = os.environ.get("LIA_DEV_API_KEY", "")
+
+if _DEV_MODE:
+    logger.warning("[AuthEnforcement] ⚠ DEV_MODE is ACTIVE — authentication is relaxed")
+
+
+def _check_dev_api_key(request: Request, path: str) -> JSONResponse | None:
+    """Validate X-Dev-Api-Key header when DEV_MODE is active with an API key configured.
+
+    Returns a 401 JSONResponse if the key is required but missing/wrong,
+    or None if the request should proceed with synthetic user injection.
+    """
+    if _DEV_API_KEY:
+        provided = request.headers.get("X-Dev-Api-Key", "")
+        if provided != _DEV_API_KEY:
+            logger.warning("[AuthEnforcement] DEV_MODE request rejected — invalid or missing X-Dev-Api-Key for %s %s", request.method, path)
+            return JSONResponse({"detail": "Invalid or missing dev API key"}, status_code=401)
+    else:
+        logger.warning("[AuthEnforcement] DEV_MODE sem API key — zero autenticação para %s %s", request.method, path)
+    return None
 
 PUBLIC_PREFIXES = (
     "/api/v1/teams/",
@@ -171,7 +192,9 @@ class AuthEnforcementMiddleware(BaseHTTPMiddleware):
         auth_header = request.headers.get("Authorization", "")
         if not auth_header.startswith("Bearer "):
             if _DEV_MODE:
-                # Dev mode: inject synthetic user context for unauthenticated requests
+                rejection = _check_dev_api_key(request, path)
+                if rejection is not None:
+                    return rejection
                 request.state.token_payload = {"sub": "dev-user", "company_id": "demo_company", "role": "admin"}
                 request.state.user_id = "dev-user"
                 request.state.company_id = "demo_company"
@@ -191,6 +214,9 @@ class AuthEnforcementMiddleware(BaseHTTPMiddleware):
             from app.auth.security import decode_token
             payload = decode_token(token)
             if payload is None and _DEV_MODE:
+                rejection = _check_dev_api_key(request, path)
+                if rejection is not None:
+                    return rejection
                 request.state.token_payload = {"sub": "dev-user", "company_id": "demo_company", "role": "admin"}
                 request.state.user_id = "dev-user"
                 request.state.company_id = "demo_company"
@@ -233,6 +259,9 @@ class AuthEnforcementMiddleware(BaseHTTPMiddleware):
 
         except Exception as e:
             if _DEV_MODE:
+                rejection = _check_dev_api_key(request, path)
+                if rejection is not None:
+                    return rejection
                 request.state.token_payload = {"sub": "dev-user", "company_id": "demo_company", "role": "admin"}
                 request.state.user_id = "dev-user"
                 request.state.company_id = "demo_company"
