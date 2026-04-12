@@ -58,8 +58,8 @@ export function useCandidatesList(initialFilters?: CandidatesListFilters): UseCa
 
       const qs = query.toString()
       const url = `${BACKEND_URL}/candidates${qs ? `?${qs}` : ''}`
-      const maxRetries = 2
-      const baseDelay = 1500
+      const maxRetries = 4
+      const baseDelay = 2000
 
       for (let attempt = 0; attempt <= maxRetries; attempt++) {
         try {
