@@ -38,6 +38,7 @@ import {
   EyeOff,
   Check,
   Loader2,
+  Layers,
 } from "lucide-react"
 import type { RecentItem } from "@/hooks/shared/use-recent-items"
 import { hasModuleAccess } from "@/utils/license-manager"
@@ -112,6 +113,7 @@ const BASE_MENU_SECTIONS: MenuSection[] = [
         seeAllLabel: "Ver todos os agentes",
         seeAllTarget: "Agent Studio",
       },
+      { icon: Layers, label: "Módulos", isCore: true },
     ],
   },
 ]

@@ -26,6 +26,7 @@ import { LiaSplitPanel } from "@/components/lia-float/LiaSplitPanel"
 import { DashboardChatPanel } from "@/components/unified-chat"
 import { GlobalSearchModal } from "@/components/global-search-modal"
 import { PipelineOverviewPage } from "@/components/pages/pipeline-overview-page"
+import { ModulesPage } from "@/components/pages/modules-page"
 
 interface DashboardAppProps {
   initialPage?: string
@@ -227,6 +228,8 @@ export function DashboardApp({ initialPage = "Chat LIA" }: DashboardAppProps) {
         return <PipelineOverviewPage />
       case "Configurações":
         return <SettingsPageEnhanced />
+      case "Módulos":
+        return <ModulesPage />
       default:
         return <CandidatesPage />
     }

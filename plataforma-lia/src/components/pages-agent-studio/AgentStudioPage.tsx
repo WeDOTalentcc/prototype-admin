@@ -16,6 +16,7 @@ import {
 import { cn } from "@/lib/utils"
 import { toast } from "@/lib/toast"
 import { Button } from "@/components/ui/button"
+import { BetaBadge } from "@/components/ui/beta-badge"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
 import { PageTabNavigation } from "@/components/ui/page-tab-navigation"
 
@@ -495,7 +496,10 @@ function AgentCard({
               <Bot className="w-5 h-5 text-wedo-cyan" />
             </div>
             <div>
-              <p className="text-sm font-semibold text-lia-text-primary">{agent.agent_name}</p>
+              <div className="flex items-center gap-1.5">
+                <p className="text-sm font-semibold text-lia-text-primary">{agent.agent_name}</p>
+                <BetaBadge />
+              </div>
               <div className="flex items-center gap-2 mt-0.5">
                 <span className="text-[10px] text-lia-text-disabled">v{agent.calibration_v}</span>
                 <span className="text-lia-text-disabled">·</span>
