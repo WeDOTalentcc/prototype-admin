@@ -186,15 +186,15 @@ class InterviewWSIService:
 
     @staticmethod
     def _bloom_label(score: float) -> str:
-        if score >= 5.5:
-            return "Create"
         if score >= 4.5:
-            return "Evaluate"
+            return "Create"
         if score >= 3.5:
-            return "Analyze"
+            return "Evaluate"
         if score >= 2.5:
-            return "Apply"
+            return "Analyze"
         if score >= 1.5:
+            return "Apply"
+        if score >= 0.5:
             return "Understand"
         return "Remember"
 
