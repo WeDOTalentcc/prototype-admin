@@ -44,7 +44,7 @@ WEBHOOK_EVENTS = [e.value for e in WebhookEvent]
 
 
 class Webhook(Base):
-    __tablename__ = "webhooks"
+    __tablename__ = "studio_webhooks"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     company_id = Column(String(64), nullable=False, index=True)

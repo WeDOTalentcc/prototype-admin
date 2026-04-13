@@ -16,7 +16,7 @@ depends_on = None
 
 def upgrade():
     op.create_table(
-        "webhooks",
+        "studio_webhooks",
         sa.Column("id", UUID(as_uuid=True), primary_key=True),
         sa.Column("company_id", sa.String(64), nullable=False, index=True),
         sa.Column("name", sa.String(256), nullable=False),
@@ -36,4 +36,4 @@ def upgrade():
 
 
 def downgrade():
-    op.drop_table("webhooks")
+    op.drop_table("studio_webhooks")
