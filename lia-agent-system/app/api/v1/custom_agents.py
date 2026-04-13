@@ -181,7 +181,6 @@ async def test_custom_agent(
             enable_memory=getattr(agent, "enable_memory", True),
             excluded_tools=getattr(agent, "excluded_tools", None),
             context_level=getattr(agent, "context_level", "full"),
-            context_level=getattr(agent, "context_level", "full"),
         )
 
         start = time.time()
@@ -239,6 +238,7 @@ async def execute_custom_agent(
             company_id=current_user.company_id,
             enable_memory=getattr(agent, "enable_memory", True),
             excluded_tools=getattr(agent, "excluded_tools", None),
+            context_level=getattr(agent, "context_level", "full"),
         )
 
         start = time.time()
