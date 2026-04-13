@@ -1,3 +1,14 @@
+"""
+LIA-D06: DEPRECATED — This Orchestrator class is the v1 entry point.
+
+All NEW code must use MainOrchestrator from main_orchestrator.py via
+get_main_orchestrator(). This class is still used by app/api/orchestrator_routes.py
+(legacy route). Kept for backwards compat and will be removed in a future release.
+
+DO NOT use this class in new code.
+"""
+import warnings as _lia_warnings
+
 import logging
 from typing import Any
 
@@ -49,6 +60,11 @@ from app.shared.prompts.system_prompt_builder import SystemPromptBuilder
 
 class Orchestrator:
     def __init__(self, llm_service, db_service=None):
+        _lia_warnings.warn(
+            "[LIA-D06] Orchestrator is deprecated. Use MainOrchestrator instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         self.llm_service = llm_service
         self.db_service = db_service
         self.task_planner = TaskPlanner(llm_service)

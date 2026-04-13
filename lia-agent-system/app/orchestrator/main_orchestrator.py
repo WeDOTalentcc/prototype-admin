@@ -175,12 +175,21 @@ class MainOrchestrator:
         db: Any,
         streaming_callback: Callable | None = None,
     ) -> ChatResponse:
+        # LIA-P05: streaming_callback enables streaming output through the full compliance pipeline.
+        # Callers should pass an async generator callback that receives chunks.
+        # This is the preferred way to add streaming without bypassing compliance.
+        # All security checks (SecurityPatterns, FairnessGuard, memory persistence)
+        # run before any tokens are emitted, ensuring full pipeline compliance.
         """
         Processa uma mensagem através do pipeline unificado.
 
         Phase 0: PendingAction — se há ação pendente aguardando confirmação/params
         Phase 1: ActionExecutor — ações fechadas detectáveis por padrão
         Phase 2: Orchestrator completo — CascadedRouter → DomainWorkflow → ReAct Agent
+
+        LIA-A03: Agentic interpretation is controlled by LIA_AGENTIC_INTERPRET env var.
+        Set to "false" to disable LLM interpretation of action results (falls back to raw).
+        Default: "true" — LLM interprets all action results for natural responses.
         """
         conv_id = ctx.conversation_id or str(uuid.uuid4())
         _t0 = time.monotonic()
@@ -316,6 +325,56 @@ class MainOrchestrator:
                     action_response.fairness_warnings = _soft_warnings
                 return action_response
 
+            # ── Phase 1.5: Agentic Tool Calling (LIA-A04) ──────────────────
+            # If Phase 1 did not match, let the LLM decide whether to call tools
+            # via function calling. Feature-flagged: LIA_AGENTIC_LOOP=true
+            import os as _os_flag
+            if _os_flag.getenv("LIA_AGENTIC_LOOP", "false").lower() in ("true", "1"):
+                try:
+                    from app.orchestrator.agentic_loop import agentic_loop
+
+                    _agentic_result = await agentic_loop.run(
+                        user_message=ctx.message,
+                        system_prompt="",
+                        conversation_history=ctx.extra.get("conversation_history", []),
+                        company_id=getattr(ctx, "company_id", None),
+                        user_id=getattr(ctx, "user_id", None),
+                        provider="gemini",
+                    )
+
+                    if _agentic_result and _agentic_result.get("response"):
+                        logger.info(
+                            "[LIA-A04] Agentic loop resolved in %d iterations with %d tool calls",
+                            _agentic_result.get("iterations", 0),
+                            len(_agentic_result.get("tool_calls_made", [])),
+                        )
+                        # Persist to conversation memory
+                        if conv and not ctx.skip_memory_persist:
+                            try:
+                                await self._persist_response(
+                                    ctx, conv_id, conv,
+                                    {"response": _agentic_result["response"]}, db,
+                                )
+                            except Exception:
+                                pass
+
+                        _resp = ChatResponse(
+                            success=True,
+                            content=_agentic_result["response"],
+                            intent_detected="agentic_tool_call",
+                            conversation_id=conv_id,
+                            action_executed=bool(_agentic_result.get("tool_calls_made")),
+                            structured_data={
+                                "tool_calls": _agentic_result.get("tool_calls_made", []),
+                                "iterations": _agentic_result.get("iterations", 0),
+                            },
+                        )
+                        if _soft_warnings:
+                            _resp.fairness_warnings = _soft_warnings
+                        return _resp
+                except Exception as exc:
+                    logger.debug("[LIA-A04] Agentic loop skipped: %s", exc)
+
             # ── Phase 2: Orchestrator completo ─────────────────────────────
             _phase2_response = await self._process_via_orchestrator(ctx, conv_id, db, streaming_callback, conv=conv)
             if _soft_warnings and not _phase2_response.fairness_warnings:
@@ -375,6 +434,24 @@ class MainOrchestrator:
                     {"conversation_id": conv_id, "user_id": ctx.user_id},
                 )
                 pending_action_store.remove(conv_id)
+                # LIA-A01: Interpret Phase 0 confirmation action results
+                if exec_result and exec_result.status == "executed":
+                    try:
+                        _phase0_ctx = {
+                            "user_name": getattr(ctx, "user_name", "") or "",
+                            "user_role": getattr(ctx, "user_role", "") or "",
+                        }
+                        _interpreted = await self._interpret_action_result(ctx, exec_result, _phase0_ctx)
+                        if _interpreted:
+                            exec_result = ActionResult(
+                                status=exec_result.status,
+                                action_type=exec_result.action_type,
+                                message=_interpreted,
+                                data=exec_result.data,
+                                candidates=getattr(exec_result, "candidates", None),
+                            )
+                    except Exception as e:
+                        logger.debug("[LIA-A01] Phase 0 confirmation interpretation skipped: %s", e)
                 return ChatResponse.from_action_result(
                     exec_result,
                     intent=pending.intent,
@@ -440,6 +517,24 @@ class MainOrchestrator:
                                 {"conversation_id": conv_id, "user_id": ctx.user_id},
                             )
                             pending_action_store.remove(conv_id)
+                            # LIA-A01: Interpret Phase 0 param-complete action results
+                            if exec_result and exec_result.status == "executed":
+                                try:
+                                    _phase0_ctx = {
+                                        "user_name": getattr(ctx, "user_name", "") or "",
+                                        "user_role": getattr(ctx, "user_role", "") or "",
+                                    }
+                                    _interpreted = await self._interpret_action_result(ctx, exec_result, _phase0_ctx)
+                                    if _interpreted:
+                                        exec_result = ActionResult(
+                                            status=exec_result.status,
+                                            action_type=exec_result.action_type,
+                                            message=_interpreted,
+                                            data=exec_result.data,
+                                            candidates=getattr(exec_result, "candidates", None),
+                                        )
+                                except Exception as e:
+                                    logger.debug("[LIA-A01] Phase 0 param-complete interpretation skipped: %s", e)
                             return ChatResponse.from_action_result(
                                 exec_result,
                                 intent=pending.intent,
@@ -504,6 +599,28 @@ class MainOrchestrator:
             )
 
         if action_result.status == "executed":
+            # LIA-A01: LLM interpretation of action results
+            # Instead of returning raw action result, ask the LLM to generate a natural response
+            try:
+                # FIX-2: Build minimal context for interpretation (full orchestrator_context
+                # is only available in Phase 2; here we extract what we can from ctx)
+                _phase1_context = {
+                    "user_name": getattr(ctx, "user_name", "") or "",
+                    "user_role": getattr(ctx, "user_role", "") or "",
+                    "tenant_id": getattr(ctx, "company_id", "") or "",
+                }
+                _interpreted = await self._interpret_action_result(ctx, action_result, _phase1_context)
+                if _interpreted:
+                    action_result = ActionResult(
+                        status=action_result.status,
+                        action_type=action_result.action_type,
+                        message=_interpreted,
+                        data=action_result.data,
+                        candidates=action_result.candidates,
+                    )
+            except Exception as e:
+                logger.debug("[LIA-A01] LLM interpretation skipped (fail-open): %s", e)
+
             return ChatResponse.from_action_result(
                 action_result,
                 intent=action_result.action_type or "action",
@@ -516,6 +633,73 @@ class MainOrchestrator:
         return None
 
     # ------------------------------------------------------------------
+    # LIA-A01 — LLM interpretation of action results
+    # ------------------------------------------------------------------
+
+    async def _interpret_action_result(
+        self, ctx: UniversalContext, action_result: ActionResult, orchestrator_context: dict
+    ) -> str | None:
+        """LIA-A01: Use LLM to generate natural response from action result.
+
+        Uses a direct prompt instead of SystemPromptBuilder to keep interpretation
+        lightweight and avoid signature coupling. FIX-9: LLMService() is instantiated
+        fresh here -- MainOrchestrator delegates LLM to Orchestrator/DomainWorkflow
+        in Phase 2, so there is no shared instance available in Phases 0/1.
+        """
+        import asyncio
+        import os as _os
+        if _os.getenv("LIA_AGENTIC_INTERPRET", "true").lower() not in ("true", "1"):
+            return None
+
+        try:
+            # FIX-1: Direct prompt -- no SystemPromptBuilder dependency
+            user_name = orchestrator_context.get("user_name", "") or getattr(ctx, "user_name", "") or ""
+            greeting = f"O usuario {user_name}" if user_name else "O usuario"
+
+            interpretation_prompt = (
+                "Voce e a LIA, assistente inteligente da WeDOTalent.\n"
+                f"{greeting} pediu: {ctx.message}\n\n"
+                f"A acao '{action_result.action_type}' foi executada com sucesso.\n"
+                f"Resultado: {action_result.message}\n"
+            )
+
+            if action_result.data:
+                import json
+                try:
+                    data_str = json.dumps(action_result.data, ensure_ascii=False, default=str)[:2000]
+                    interpretation_prompt += f"Dados retornados: {data_str}\n"
+                except Exception:
+                    pass
+
+            interpretation_prompt += (
+                "\nGere uma resposta natural e contextualizada para o usuario. "
+                "Seja conciso. Nao repita o que o usuario disse. "
+                "Se houver dados, apresente-os de forma organizada."
+            )
+
+            from app.domains.ai.services.llm import LLMService
+            llm_svc = LLMService()
+
+            # FIX-7: Timeout to prevent slow LLM calls from blocking the response
+            response = await asyncio.wait_for(
+                llm_svc.generate(
+                    prompt=interpretation_prompt,
+                    provider="gemini",
+                    max_tokens=500,
+                ),
+                timeout=10.0,
+            )
+
+            if response and response.strip():
+                return response.strip()
+        except asyncio.TimeoutError:
+            logger.debug("[LIA-A01] Interpretation timed out after 10s")
+        except Exception as e:
+            logger.debug("[LIA-A01] Interpretation failed: %s", e)
+
+        return None
+
+        # ------------------------------------------------------------------
     # Phase 2 — Pipeline consolidado (sem delegação intermediária)
     # ------------------------------------------------------------------
 

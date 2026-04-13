@@ -19,6 +19,37 @@ from app.orchestrator.action_executor.intents_config import (
 )
 
 
+# ---------------------------------------------------------------------------
+# LIA-I04: Build a shadow KeywordIntentMatcher from MESSAGE_INTENT_PATTERNS
+# for telemetry.  Runs alongside the regex to surface migration signals.
+# ---------------------------------------------------------------------------
+_INTENT_MATCHER = None
+
+
+def _get_intent_matcher():
+    global _INTENT_MATCHER
+    if _INTENT_MATCHER is not None:
+        return _INTENT_MATCHER
+    try:
+        from app.shared.services.keyword_intent_matcher import KeywordIntentMatcher
+        import re as _re
+        keywords_map: dict[str, str] = {}
+        for intent_name, patterns in MESSAGE_INTENT_PATTERNS:
+            for pattern in patterns:
+                # Extract literal keywords from regex (strip metacharacters)
+                literal = _re.sub(r"[\^\$\(\)\[\]\?\*\+\\\|\{\}]", "", pattern).strip()
+                literal = _re.sub(r"\s\+", " ", literal)
+                literal = _re.sub(r"\s+", " ", literal)
+                if literal and len(literal) > 2:
+                    keywords_map[literal.lower()] = intent_name
+        _INTENT_MATCHER = KeywordIntentMatcher.from_keyword_map(
+            keywords_map, domain_id="action_executor"
+        )
+        return _INTENT_MATCHER
+    except Exception:
+        return None
+
+
 def is_confirmation(message: str) -> bool:
     msg = message.lower().strip().rstrip("!.?")
     for pattern in CONFIRMATION_PATTERNS:
@@ -80,7 +111,10 @@ def resolve_stage(stage_text: str | None) -> str | None:
 
 
 def _detect_intent_from_message(message: str, conversation_history: list | None = None) -> str | None:
-    """Detect an actionable intent from a raw message string."""
+    """Detect an actionable intent from a raw message string.
+
+    LIA-I04: shadow-compares with KeywordIntentMatcher for telemetry.
+    """
     if not message:
         return None
     msg_lower = message.lower().strip()
@@ -101,11 +135,30 @@ def _detect_intent_from_message(message: str, conversation_history: list | None 
         except Exception:
             pass  # fail-open
 
+    detected_intent = None
     for intent, patterns in MESSAGE_INTENT_PATTERNS:
         for pattern in patterns:
             if re.search(pattern, msg_lower):
-                return intent
-    return None
+                detected_intent = intent
+                break
+        if detected_intent:
+            break
+
+    # LIA-I04: Shadow comparison with KeywordIntentMatcher (fail-open)
+    try:
+        matcher = _get_intent_matcher()
+        if matcher is not None:
+            shadow_match = matcher.match(message)
+            shadow_intent = shadow_match.action if shadow_match.confidence > 0.5 else None
+            if detected_intent != shadow_intent:
+                logger.debug(
+                    "[LIA-I04] Intent disagreement: regex=%s, matcher=%s (conf=%.2f), msg=%r",
+                    detected_intent, shadow_intent, shadow_match.confidence, message[:60],
+                )
+    except Exception as e:
+        logger.debug("[LIA-I04] Shadow match failed (fail-open): %s", e)
+
+    return detected_intent
 
 
 def _extract_entities_from_message(message: str, intent: str) -> dict[str, Any]:
