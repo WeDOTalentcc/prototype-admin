@@ -1288,7 +1288,7 @@ async def _wrap_rag_search(**kwargs) -> dict:
         return {
             "success": False,
             "data": {"candidates": [], "total": 0},
-            "message": f"Busca semantica indisponivel. Use search_candidates para busca textual.",
+            "message": "Busca semantica indisponivel. Use search_candidates para busca textual.",
         }
 
 

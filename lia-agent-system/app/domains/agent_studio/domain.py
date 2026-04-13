@@ -48,6 +48,22 @@ class AgentStudioDomain(ComplianceDomainPrompt):
 
     async def process_intent(self, query, context):
         q = query.lower()
+
+        # LIA-I01: Use KeywordIntentMatcher for info/action disambiguation
+        try:
+            from app.shared.services.keyword_intent_matcher import KeywordIntentMatcher
+            _matcher = KeywordIntentMatcher()
+            if _matcher.is_info_query(query) and any(kw in q for kw in ("agent studio", "agente", "studio")):
+                return IntentResult(
+                    intent_id="agent_studio.explain_agent_studio",
+                    action_id="explain_agent_studio",
+                    confidence=0.9,
+                    extracted_params={"raw_query": query},
+                    reasoning="Info query about Agent Studio detected via LIA-I01",
+                )
+        except Exception:
+            pass
+
         best_action, best_conf = "list_agents", 0.3
         for kw, action in _KEYWORD_ACTION_MAP.items():
             if kw in q:
@@ -77,6 +93,8 @@ class AgentStudioDomain(ComplianceDomainPrompt):
             "get_studio_consumption": self._handle_get_studio_consumption,
             "deactivate_agent": self._handle_deactivate_agent,
             "uninstall_agent": self._handle_uninstall_agent,
+            "explain_agent_studio": self._handle_explain_agent_studio,
+            "list_agents": self._handle_list_agents,
         }
 
         handler = handler_map.get(action_id)
@@ -197,7 +215,7 @@ class AgentStudioDomain(ComplianceDomainPrompt):
             msg = (
                 f"Calibração iniciada! {len(candidates)} candidatos selecionados para avaliação.\n\n"
                 f"Primeiros perfis:\n" + "\n".join(candidate_list) +
-                f"\n\nAvalie cada perfil com 👍 (aprovar) ou 👎 (rejeitar) para calibrar o agente."
+                "\n\nAvalie cada perfil com 👍 (aprovar) ou 👎 (rejeitar) para calibrar o agente."
             )
 
             return DomainResponse.success_response(
@@ -667,7 +685,7 @@ class AgentStudioDomain(ComplianceDomainPrompt):
                 return DomainResponse.error_response(error="Agente não encontrado.")
 
             return DomainResponse.success_response(
-                message=f"Agente publicado no marketplace! Status: aguardando aprovação. O admin revisará antes de disponibilizar para outras empresas.",
+                message="Agente publicado no marketplace! Status: aguardando aprovação. O admin revisará antes de disponibilizar para outras empresas.",
                 data=listing.to_dict(),
                 domain_id=self.domain_id, action_id="publish_to_marketplace",
             )
@@ -916,3 +934,66 @@ class AgentStudioDomain(ComplianceDomainPrompt):
         except Exception as exc:
             logger.exception("Failed to uninstall agent: %s", exc)
             return DomainResponse.error_response(error=f"Erro ao desinstalar agente: {exc}", domain_id=self.domain_id, action_id="uninstall_agent")
+
+    async def _handle_explain_agent_studio(
+        self, params: dict[str, Any], context: DomainContext
+    ) -> DomainResponse:
+        """LIA-I01: Handle 'como funciona o Agent Studio?' queries."""
+        return DomainResponse.success_response(
+            message=(
+                "O Agent Studio permite criar e configurar agentes de IA personalizados "
+                "para o seu processo seletivo. Voce pode:\n\n"
+                "1. **Criar agentes especializados** \u2014 por exemplo, um agente de sourcing "
+                "que busca candidatos com criterios especificos\n"
+                "2. **Personalizar o comportamento** \u2014 definir prompts, ferramentas e "
+                "regras de negocio para cada agente\n"
+                "3. **Ativar/desativar agentes** \u2014 controlar quais agentes estao ativos\n"
+                "4. **Monitorar resultados** \u2014 acompanhar o desempenho de cada agente\n\n"
+                "Quer criar seu primeiro agente ou ver os que ja estao configurados?"
+            ),
+            data={"suggestions": ["Criar novo agente", "Listar meus agentes", "Como configurar um agente"]},
+            domain_id=self.domain_id,
+            action_id="explain_agent_studio",
+        )
+
+    async def _handle_list_agents(
+        self, params: dict[str, Any], context: DomainContext
+    ) -> DomainResponse:
+        """List all agents for the current tenant."""
+        try:
+            from app.core.database import get_db
+            async with get_db() as db:
+                result = await db.execute(
+                    "SELECT id, name, type, status FROM sourcing_agents WHERE company_id = :cid ORDER BY created_at DESC LIMIT 20",
+                    {"cid": context.tenant_id},
+                )
+                agents = [dict(r) for r in result.fetchall()] if result else []
+
+            if not agents:
+                return DomainResponse.success_response(
+                    message="Voce ainda nao tem agentes configurados. Quer criar o primeiro?",
+                    data={"agents": [], "suggestions": ["Criar novo agente", "Ver templates disponiveis"]},
+                    domain_id=self.domain_id,
+                    action_id="list_agents",
+                )
+
+            lines = ["Seus agentes configurados:\n"]
+            for a in agents:
+                status_icon = "\u2705" if a.get("status") == "active" else "\u23f8\ufe0f"
+                lines.append(f"- {status_icon} **{a.get('name', 'Sem nome')}** ({a.get('type', 'custom')}) - {a.get('status', 'unknown')}")
+
+            return DomainResponse.success_response(
+                message="\n".join(lines),
+                data={"agents": agents, "count": len(agents)},
+                domain_id=self.domain_id,
+                action_id="list_agents",
+            )
+        except Exception as exc:
+            logger.warning("[AgentStudio] list_agents failed: %s", exc)
+            return DomainResponse.success_response(
+                message="Voce tem agentes configurados no Agent Studio. Use o painel para gerencia-los.",
+                data={"suggestions": ["Criar novo agente", "Ver status dos agentes"]},
+                domain_id=self.domain_id,
+                action_id="list_agents",
+            )
+

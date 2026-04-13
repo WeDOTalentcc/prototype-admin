@@ -15,6 +15,8 @@ _SCHEDULING_SESSION_PREFIX = "scheduling:"
 
 _GRAPH_ACTIONS = {"schedule_interview"}
 
+from app.shared.services.keyword_intent_matcher import KeywordIntentMatcher
+
 logger = logging.getLogger(__name__)
 
 _KEYWORD_ACTION_MAP: dict[str, str] = {
@@ -128,6 +130,9 @@ _KEYWORD_ACTION_MAP: dict[str, str] = {
     "iniciar triagem": "start_quick_screening",
 }
 
+# LIA-I03: Shared KeywordIntentMatcher singleton
+_matcher = KeywordIntentMatcher.from_keyword_map(_KEYWORD_ACTION_MAP, domain_id="interview_scheduling")
+
 
 @register_domain
 class InterviewSchedulingDomain(ComplianceDomainPrompt):
@@ -149,26 +154,50 @@ class InterviewSchedulingDomain(ComplianceDomainPrompt):
         return PromptLoader.get_domain_prompt(self.domain_id)
 
     async def process_intent(self, query: str, context: DomainContext) -> IntentResult:
-        query_lower = query.lower().strip()
-        best_action = "list_today_interviews"
-        best_confidence = 0.3
-        best_keyword = ""
+        # LIA-I07: Check if query is an info request (e.g., "como funciona X?")
+        if _matcher.is_info_query(query):
+            try:
+                match = _matcher.match(query, default_action="list_today_interviews")
+                return IntentResult(
+                    intent_id=f"interview_scheduling.{match.action}",
+                    action_id=match.action,
+                    confidence=match.confidence,
+                    extracted_params={"raw_query": query, "is_info_query": True},
+                    reasoning=f"[LIA-I07] Info query routed via is_info_query (action='{match.action}')",
+                )
+            except Exception:
+                pass  # Fall through to normal logic
 
-        for keyword, action_id in _KEYWORD_ACTION_MAP.items():
-            if keyword in query_lower:
-                confidence = min(0.95, 0.6 + len(keyword) * 0.02)
-                if confidence > best_confidence or (confidence == best_confidence and len(keyword) > len(best_keyword)):
-                    best_action = action_id
-                    best_confidence = confidence
-                    best_keyword = keyword
-
-        return IntentResult(
-            intent_id=f"interview_scheduling.{best_action}",
-            action_id=best_action,
-            confidence=best_confidence,
-            extracted_params={"raw_query": query},
-            reasoning=f"Keyword heuristic matched action '{best_action}'",
-        )
+        # LIA-I03: Use shared KeywordIntentMatcher (falls back to loop on error)
+        try:
+            match = _matcher.match(query, default_action="list_today_interviews")
+            return IntentResult(
+                intent_id=f"interview_scheduling.{match.action}",
+                action_id=match.action,
+                confidence=match.confidence,
+                extracted_params={"raw_query": query},
+                reasoning=f"KeywordIntentMatcher matched action '{match.action}'",
+            )
+        except Exception as e:
+            logger.debug("[LIA-I03] Matcher failed, using fallback: %s", e)
+            query_lower = query.lower().strip()
+            best_action = "list_today_interviews"
+            best_confidence = 0.3
+            best_keyword = ""
+            for keyword, action_id in _KEYWORD_ACTION_MAP.items():
+                if keyword in query_lower:
+                    confidence = min(0.95, 0.6 + len(keyword) * 0.02)
+                    if confidence > best_confidence or (confidence == best_confidence and len(keyword) > len(best_keyword)):
+                        best_action = action_id
+                        best_confidence = confidence
+                        best_keyword = keyword
+            return IntentResult(
+                intent_id=f"interview_scheduling.{best_action}",
+                action_id=best_action,
+                confidence=best_confidence,
+                extracted_params={"raw_query": query},
+                reasoning=f"Keyword heuristic matched action '{best_action}'",
+            )
 
     _ACTION_TOOL_MAP: dict[str, str] = {
         "schedule_interview": "scheduling_schedule_interview",

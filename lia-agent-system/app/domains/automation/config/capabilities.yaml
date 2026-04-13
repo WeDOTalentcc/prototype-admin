@@ -1,0 +1,219 @@
+domain_id: automation
+name: Automation & Tasks
+description: Gerenciamento de tarefas, automacoes e alertas proativos
+
+intents:
+  - action: create_task
+    type: action
+    keywords:
+      - "criar tarefa"
+      - "nova tarefa"
+      - "create task"
+      - "adicionar tarefa"
+    description: Cria uma nova tarefa
+    confidence: 0.85
+
+  - action: list_tasks
+    type: action
+    keywords:
+      - "listar tarefas"
+      - "minhas tarefas"
+      - "list tasks"
+      - "tarefas pendentes"
+      - "ver tarefas"
+    description: Lista tarefas pendentes
+    confidence: 0.85
+
+  - action: complete_task
+    type: action
+    keywords:
+      - "concluir tarefa"
+      - "completar tarefa"
+      - "tarefa concluída"
+      - "complete task"
+      - "finalizar tarefa"
+    description: Marca tarefa como concluida
+    confidence: 0.85
+
+  - action: cancel_task
+    type: action
+    keywords:
+      - "cancelar tarefa"
+      - "cancel task"
+      - "remover tarefa"
+    description: Cancela uma tarefa
+    confidence: 0.85
+
+  - action: decompose_task
+    type: action
+    keywords:
+      - "decompor tarefa"
+      - "quebrar tarefa"
+      - "decompose task"
+      - "dividir tarefa"
+      - "subtarefas"
+    description: Decompoe tarefa em subtarefas
+    confidence: 0.85
+
+  - action: plan_execution
+    type: action
+    keywords:
+      - "planejar execução"
+      - "plano de execução"
+      - "plan execution"
+      - "criar plano"
+      - "planejamento"
+    description: Cria plano de execucao
+    confidence: 0.85
+
+  - action: get_next_tasks
+    type: action
+    keywords:
+      - "próximas tarefas"
+      - "próxima tarefa"
+      - "next tasks"
+      - "o que fazer agora"
+      - "tarefas prioritárias"
+    description: Retorna proximas tarefas prioritarias
+    confidence: 0.85
+
+  - action: create_automation
+    type: action
+    keywords:
+      - "criar automação"
+      - "nova automação"
+      - "create automation"
+      - "configurar automação"
+      - "adicionar automação"
+    description: Cria nova automacao
+    confidence: 0.85
+
+  - action: list_automations
+    type: action
+    keywords:
+      - "listar automações"
+      - "ver automações"
+      - "list automations"
+      - "automações configuradas"
+      - "automações ativas"
+    description: Lista automacoes configuradas
+    confidence: 0.85
+
+  - action: enable_automation
+    type: action
+    keywords:
+      - "ativar automação"
+      - "enable automation"
+      - "habilitar automação"
+      - "ligar automação"
+    description: Ativa uma automacao
+    confidence: 0.85
+
+  - action: disable_automation
+    type: action
+    keywords:
+      - "desativar automação"
+      - "disable automation"
+      - "desabilitar automação"
+      - "pausar automação"
+      - "desligar automação"
+    description: Desativa uma automacao
+    confidence: 0.85
+
+  - action: trigger_automation
+    type: action
+    keywords:
+      - "disparar automação"
+      - "trigger automation"
+      - "executar automação"
+      - "rodar automação"
+    description: Dispara automacao manualmente
+    confidence: 0.85
+
+  - action: view_automation_log
+    type: action
+    keywords:
+      - "log automação"
+      - "log de automação"
+      - "histórico automação"
+      - "histórico de automação"
+      - "automation log"
+    description: Visualiza log de automacao
+    confidence: 0.85
+
+  - action: configure_stage_automation
+    type: action
+    keywords:
+      - "automação de etapa"
+      - "automação de estágio"
+      - "stage automation"
+      - "transição automática"
+      - "automatizar etapa"
+      - "automatizar transição"
+    description: Configura automacao de etapa
+    confidence: 0.85
+
+  - action: predict_substatus
+    type: action
+    keywords:
+      - "prever sub-status"
+      - "prever substatus"
+      - "predict substatus"
+      - "próximo status"
+      - "previsão de status"
+    description: Preve proximo sub-status
+    confidence: 0.85
+
+  - action: check_proactive_alerts
+    type: action
+    keywords:
+      - "alertas proativos"
+      - "verificar alertas"
+      - "proactive alerts"
+      - "alertas pendentes"
+      - "meus alertas"
+    description: Verifica alertas proativos
+    confidence: 0.85
+
+  - action: configure_alert
+    type: action
+    keywords:
+      - "configurar alerta"
+      - "criar alerta"
+      - "configure alert"
+      - "novo alerta"
+    description: Configura um alerta
+    confidence: 0.85
+
+  - action: schedule_recurring
+    type: action
+    keywords:
+      - "tarefa recorrente"
+      - "agendar recorrente"
+      - "recurring task"
+      - "automação periódica"
+      - "tarefa programada"
+    description: Agenda tarefa recorrente
+    confidence: 0.85
+
+  - action: view_task_dependencies
+    type: action
+    keywords:
+      - "dependências tarefa"
+      - "dependências de tarefa"
+      - "ver dependências"
+      - "task dependencies"
+      - "grafo de tarefas"
+    description: Visualiza dependencias de tarefas
+    confidence: 0.85
+
+  - action: run_autonomous_check
+    type: action
+    keywords:
+      - "verificação autônoma"
+      - "autonomous check"
+      - "verificação automática"
+      - "background check"
+      - "agente autônomo"
+    description: Executa verificacao autonoma
+    confidence: 0.85

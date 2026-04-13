@@ -12,6 +12,38 @@ from dataclasses import dataclass
 logger = logging.getLogger(__name__)
 
 
+# ---------------------------------------------------------------------------
+# LIA-I05: Build a shadow KeywordIntentMatcher from DOMAIN_PATTERNS
+# for telemetry.  Runs alongside the regex to surface migration signals.
+# ---------------------------------------------------------------------------
+_DOMAIN_MATCHER = None
+
+
+def _get_domain_matcher():
+    global _DOMAIN_MATCHER
+    if _DOMAIN_MATCHER is not None:
+        return _DOMAIN_MATCHER
+    try:
+        from app.shared.services.keyword_intent_matcher import KeywordIntentMatcher
+        import re as _re
+        keywords_map: dict[str, str] = {}
+        for domain_id, patterns in DOMAIN_PATTERNS.items():
+            for pattern_str in patterns:
+                # Convert regex to literal keyword (best-effort)
+                literal = _re.sub(r"[\^\$\(\)\[\]\?\*\+\\\|\{\}]", "", pattern_str).strip()
+                literal = _re.sub(r"\\b", "", literal)
+                literal = _re.sub(r"\s\+", " ", literal)
+                literal = _re.sub(r"\s+", " ", literal)
+                if literal and len(literal) > 2:
+                    keywords_map[literal.lower()] = domain_id
+        _DOMAIN_MATCHER = KeywordIntentMatcher.from_keyword_map(
+            keywords_map, domain_id="fast_router"
+        )
+        return _DOMAIN_MATCHER
+    except Exception:
+        return None
+
+
 @dataclass
 class FastRouteResult:
     domain_id: str
@@ -517,6 +549,19 @@ class FastRouter:
                     # but ensure the deduplication winner's confidence is used
                     # only if it differs meaningfully (dedup doesn't change conf)
                     break
+
+        # LIA-I05: Shadow comparison with KeywordIntentMatcher (fail-open)
+        try:
+            domain_matcher = _get_domain_matcher()
+            if domain_matcher is not None:
+                shadow = domain_matcher.match(message)
+                if shadow.confidence > 0.5 and shadow.action != best_match.domain_id:
+                    logger.debug(
+                        "[LIA-I05] Domain routing disagreement: fast_router=%s, matcher=%s (conf=%.2f), query=%r",
+                        best_match.domain_id, shadow.action, shadow.confidence, message[:60],
+                    )
+        except Exception as e:
+            logger.debug("[LIA-I05] Shadow match failed: %s", e)
 
         logger.debug(
             f"FastRouter matched '{message[:50]}...' → {best_match.domain_id} "

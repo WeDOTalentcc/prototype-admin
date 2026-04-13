@@ -1,0 +1,150 @@
+domain_id: job_management
+name: Job Management & Wizard
+description: Criacao, gestao e otimizacao de vagas de emprego
+
+intents:
+  - action: create_job
+    type: action
+    keywords: ["criar vaga", "nova vaga", "create job", "abrir vaga"]
+    description: Cria nova vaga
+    confidence: 0.80
+  - action: guided_wizard
+    type: action
+    keywords: ["wizard", "guiado", "passo a passo", "step"]
+    description: Wizard guiado de criacao de vaga
+    confidence: 0.80
+  - action: extract_requirements
+    type: action
+    keywords: ["extrair requisito", "extract", "requisitos"]
+    description: Extrai requisitos da vaga
+    confidence: 0.80
+  - action: generate_rubrics
+    type: action
+    keywords: ["rubrica", "rubric"]
+    description: Gera rubricas de avaliacao
+    confidence: 0.80
+  - action: update_job
+    type: action
+    keywords: ["atualizar vaga", "editar vaga", "update", "alterar vaga"]
+    description: Atualiza vaga existente
+    confidence: 0.80
+  - action: health_check
+    type: action
+    keywords: ["saúde", "health", "diagnóstico"]
+    description: Verifica saude da vaga
+    confidence: 0.80
+  - action: suggest_strategy
+    type: action
+    keywords: ["estratégia", "strategy"]
+    description: Sugere estrategia para vaga
+    confidence: 0.80
+  - action: duplicate_job
+    type: action
+    keywords: ["duplicar", "duplicate"]
+    description: Duplica vaga existente
+    confidence: 0.80
+  - action: create_from_template
+    type: action
+    keywords: ["template", "modelo"]
+    description: Cria vaga a partir de template
+    confidence: 0.80
+  - action: clone_job
+    type: action
+    keywords: ["clonar", "clone"]
+    description: Clona vaga
+    confidence: 0.80
+  - action: close_job
+    type: action
+    keywords: ["fechar vaga", "close", "arquivar", "encerrar"]
+    description: Fecha/arquiva vaga
+    confidence: 0.80
+  - action: pause_job
+    type: action
+    keywords: ["pausar vaga", "pausar", "pause", "pausa", "suspender", "suspende"]
+    description: Pausa vaga
+    confidence: 0.80
+  - action: get_benefits
+    type: action
+    keywords: ["benefício", "benefit"]
+    description: Consulta beneficios
+    confidence: 0.80
+  - action: suggest_jd_improvements
+    type: action
+    keywords: ["melhorar jd", "improve", "sugerir melhoria"]
+    description: Sugere melhorias na JD
+    confidence: 0.80
+  - action: detect_criteria
+    type: action
+    keywords: ["detectar critério", "detect", "auto detect"]
+    description: Detecta criterios automaticamente
+    confidence: 0.80
+  - action: generate_wsi_questions
+    type: action
+    keywords: ["pergunta wsi", "wsi question", "triagem"]
+    description: Gera perguntas WSI
+    confidence: 0.80
+  - action: advance_wizard_step
+    type: action
+    keywords: ["avançar etapa", "avançar para próxima", "próxima etapa", "next step", "advance"]
+    description: Avanca etapa do wizard
+    confidence: 0.80
+  - action: get_wizard_step_data
+    type: action
+    keywords: ["dados etapa", "step data", "etapa atual"]
+    description: Dados da etapa atual do wizard
+    confidence: 0.80
+  - action: enrich_jd
+    type: action
+    keywords: ["enriquecer jd", "enriquecer a job", "enriquecer", "enrich", "enriquecimento"]
+    description: Enriquece job description
+    confidence: 0.80
+  - action: import_jd
+    type: action
+    keywords: ["importar jd", "import jd"]
+    description: Importa job description
+    confidence: 0.80
+  - action: generate_jd
+    type: action
+    keywords: ["gerar jd", "generate jd", "gerar job description"]
+    description: Gera job description com IA
+    confidence: 0.80
+  - action: job_analytics
+    type: action
+    keywords: ["analytics", "métricas", "relatório"]
+    description: Analytics da vaga
+    confidence: 0.80
+  - action: qualify_job
+    type: action
+    keywords: ["qualificação", "qualify"]
+    description: Qualifica vaga
+    confidence: 0.80
+  - action: publish_job
+    type: action
+    keywords: ["publicar", "publish", "job board"]
+    description: Publica vaga
+    confidence: 0.80
+  - action: job_status_webhook
+    type: action
+    keywords: ["webhook", "status"]
+    description: Webhook de status da vaga
+    confidence: 0.80
+  - action: search_templates
+    type: action
+    keywords: ["buscar template", "pesquisar template", "search template"]
+    description: Busca templates de vaga
+    confidence: 0.80
+  - action: apply_template
+    type: action
+    keywords: ["aplicar template", "usar template", "apply template"]
+    description: Aplica template em vaga
+    confidence: 0.80
+  - action: analyze_jd
+    type: action
+    keywords: ["analisar jd", "avaliar jd", "qualidade jd", "analyze jd"]
+    description: Analisa qualidade da JD
+    confidence: 0.80
+  - action: suggest_compensation
+    type: action
+    keywords: ["compensação", "faixa salarial", "salary range", "sugerir salário", "remuneração"]
+    description: Sugere faixa salarial
+    confidence: 0.80

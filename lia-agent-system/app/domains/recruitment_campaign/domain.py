@@ -7,6 +7,8 @@ from app.domains.base import DomainAction, DomainContext, DomainResponse, Intent
 from app.domains.compliance_base import ComplianceDomainPrompt
 from app.domains.registry import register_domain
 
+from app.shared.services.keyword_intent_matcher import KeywordIntentMatcher
+
 logger = logging.getLogger(__name__)
 
 _KEYWORD_ACTION_MAP = {
@@ -17,6 +19,9 @@ _KEYWORD_ACTION_MAP = {
     "avançar campanha": "advance_campaign", "próxima etapa": "advance_campaign",
     "listar campanhas": "list_campaigns", "minhas campanhas": "list_campaigns",
 }
+
+# LIA-I03: Shared KeywordIntentMatcher singleton
+_matcher = KeywordIntentMatcher.from_keyword_map(_KEYWORD_ACTION_MAP, domain_id="recruitment_campaign")
 
 @register_domain
 class RecruitmentCampaignDomain(ComplianceDomainPrompt):
@@ -34,14 +39,34 @@ class RecruitmentCampaignDomain(ComplianceDomainPrompt):
         return PromptLoader.get_domain_prompt("talent_pool")
 
     async def process_intent(self, query, context):
-        q = query.lower()
-        best_action, best_conf = "list_campaigns", 0.3
-        for kw, action in _KEYWORD_ACTION_MAP.items():
-            if kw in q:
-                conf = 0.9 if len(kw) > 6 else 0.75
-                if conf > best_conf:
-                    best_action, best_conf = action, conf
-        return IntentResult(intent_id=f"recruitment_campaign.{best_action}", action_id=best_action, confidence=best_conf, extracted_params={"raw_query": query}, reasoning=f"Keyword matched '{best_action}'")
+        # LIA-I07: Check if query is an info request (e.g., "como funciona X?")
+        if _matcher.is_info_query(query):
+            try:
+                match = _matcher.match(query, default_action="list_campaigns")
+                return IntentResult(
+                    intent_id=f"recruitment_campaign.{match.action}",
+                    action_id=match.action,
+                    confidence=match.confidence,
+                    extracted_params={"raw_query": query, "is_info_query": True},
+                    reasoning=f"[LIA-I07] Info query routed via is_info_query (action='{match.action}')",
+                )
+            except Exception:
+                pass  # Fall through to normal logic
+
+        # LIA-I03: Use shared KeywordIntentMatcher (falls back to loop on error)
+        try:
+            match = _matcher.match(query, default_action="list_campaigns")
+            return IntentResult(intent_id=f"recruitment_campaign.{match.action}", action_id=match.action, confidence=match.confidence, extracted_params={"raw_query": query}, reasoning=f"KeywordIntentMatcher matched '{match.action}'")
+        except Exception as e:
+            logger.debug("[LIA-I03] Matcher failed, using fallback: %s", e)
+            q = query.lower()
+            best_action, best_conf = "list_campaigns", 0.3
+            for kw, action in _KEYWORD_ACTION_MAP.items():
+                if kw in q:
+                    conf = 0.9 if len(kw) > 6 else 0.75
+                    if conf > best_conf:
+                        best_action, best_conf = action, conf
+            return IntentResult(intent_id=f"recruitment_campaign.{best_action}", action_id=best_action, confidence=best_conf, extracted_params={"raw_query": query}, reasoning=f"Keyword matched '{best_action}'")
 
     async def execute_action(self, action_id: str, params: dict[str, Any], context: DomainContext) -> DomainResponse:
         action = self.get_action_by_id(action_id)

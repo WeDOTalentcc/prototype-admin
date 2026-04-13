@@ -1,0 +1,202 @@
+domain_id: ats_integration
+name: ATS Integration
+description: Sincronizacao bidirecional com plataformas ATS externas
+
+intents:
+  - action: sync_candidate
+    type: action
+    keywords:
+      - "sincronizar candidato"
+      - "sync candidato"
+      - "sync candidate"
+      - "enviar candidato para ats"
+      - "enviar candidato para o ats"
+      - "sincronizar com ats"
+    description: Sincroniza candidato com ATS externo
+    confidence: 0.85
+
+  - action: sync_job
+    type: action
+    keywords:
+      - "sincronizar vaga"
+      - "sync vaga"
+      - "sync job"
+      - "enviar vaga para ats"
+      - "enviar vaga para o ats"
+    description: Sincroniza vaga com ATS externo
+    confidence: 0.85
+
+  - action: bulk_sync
+    type: action
+    keywords:
+      - "sincronização em massa"
+      - "sync em massa"
+      - "bulk sync"
+      - "sincronizar tudo"
+      - "sincronizar todos"
+    description: Sincronizacao em massa de dados
+    confidence: 0.85
+
+  - action: pull_candidates
+    type: action
+    keywords:
+      - "importar candidatos"
+      - "pull candidates"
+      - "puxar candidatos"
+      - "importar candidatos do ats"
+      - "buscar candidatos no ats"
+    description: Importa candidatos do ATS
+    confidence: 0.85
+
+  - action: pull_jobs
+    type: action
+    keywords:
+      - "importar vagas"
+      - "pull jobs"
+      - "puxar vagas"
+      - "importar vagas do ats"
+    description: Importa vagas do ATS
+    confidence: 0.85
+
+  - action: check_sync_status
+    type: action
+    keywords:
+      - "status sincronização"
+      - "status da sincronização"
+      - "verificar sincronização"
+      - "sync status"
+      - "status do sync"
+    description: Verifica status da sincronizacao
+    confidence: 0.85
+
+  - action: configure_ats
+    type: action
+    keywords:
+      - "configurar ats"
+      - "config ats"
+      - "setup ats"
+      - "conectar ats"
+      - "configurar integração ats"
+    description: Configura integracao com ATS
+    confidence: 0.85
+
+  - action: list_connections
+    type: action
+    keywords:
+      - "listar conexões"
+      - "conexões ats"
+      - "list connections"
+      - "ver conexões"
+      - "quais ats conectados"
+    description: Lista conexoes ATS configuradas
+    confidence: 0.85
+
+  - action: test_connection
+    type: action
+    keywords:
+      - "testar conexão"
+      - "test connection"
+      - "verificar conexão"
+      - "conexão ats"
+      - "testar integração"
+    description: Testa conexao com ATS
+    confidence: 0.85
+
+  - action: map_fields
+    type: action
+    keywords:
+      - "mapear campos"
+      - "mapeamento de campos"
+      - "field mapping"
+      - "configurar campos"
+      - "map fields"
+    description: Mapeia campos entre sistemas
+    confidence: 0.85
+
+  - action: view_sync_log
+    type: action
+    keywords:
+      - "log sincronização"
+      - "log de sincronização"
+      - "histórico sync"
+      - "sync log"
+      - "auditoria ats"
+      - "auditoria do ats"
+    description: Visualiza log de sincronizacao
+    confidence: 0.85
+
+  - action: resolve_conflict
+    type: action
+    keywords:
+      - "conflito dados"
+      - "conflito de dados"
+      - "resolver conflito ats"
+      - "data conflict"
+      - "conflito sincronização"
+      - "conflito de sincronização"
+    description: Resolve conflitos de dados entre sistemas
+    confidence: 0.85
+
+  - action: update_status_ats
+    type: action
+    keywords:
+      - "atualizar status ats"
+      - "atualizar status no ats"
+      - "update status ats"
+      - "enviar status para ats"
+      - "push status"
+    description: Atualiza status no ATS externo
+    confidence: 0.85
+
+  - action: send_score_ats
+    type: action
+    keywords:
+      - "enviar score ats"
+      - "enviar score para ats"
+      - "enviar score para o ats"
+      - "send score ats"
+      - "enviar parecer ats"
+      - "enviar parecer para ats"
+      - "enviar parecer para o ats"
+    description: Envia score ou parecer para ATS
+    confidence: 0.85
+
+  - action: sync_interview_result
+    type: action
+    keywords:
+      - "sincronizar resultado entrevista"
+      - "sincronizar resultado da entrevista"
+      - "sync interview result"
+      - "enviar resultado entrevista ats"
+    description: Sincroniza resultado de entrevista com ATS
+    confidence: 0.85
+
+  - action: enable_webhook
+    type: action
+    keywords:
+      - "ativar webhook"
+      - "enable webhook"
+      - "webhook ats"
+      - "configurar webhook"
+    description: Ativa webhook para ATS
+    confidence: 0.85
+
+  - action: disable_webhook
+    type: action
+    keywords:
+      - "desativar webhook"
+      - "disable webhook"
+      - "remover webhook"
+      - "desabilitar webhook"
+    description: Desativa webhook do ATS
+    confidence: 0.85
+
+  - action: view_field_mapping
+    type: action
+    keywords:
+      - "ver mapeamento"
+      - "ver mapeamento de campos"
+      - "view field mapping"
+      - "campos mapeados"
+    description: Visualiza mapeamento de campos
+    confidence: 0.85

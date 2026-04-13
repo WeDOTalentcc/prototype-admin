@@ -1,0 +1,95 @@
+domain_id: analytics
+name: Analytics & Reporting
+description: Data analytics, KPIs, and predictive insights
+
+intents:
+  - action: generate_kpi_report
+    type: action
+    keywords: ["relatorio kpi", "relatorio de kpi", "kpi report", "gerar kpi", "indicadores kpi"]
+    description: Gera relatorio de KPIs
+    confidence: 0.80
+  - action: analyze_funnel
+    type: action
+    keywords: ["funil conversao", "funil de conversao", "analyze funnel", "metricas funil", "metricas do funil"]
+    description: Analisa funil de conversao
+    confidence: 0.80
+  - action: job_health_check
+    type: action
+    keywords: ["saude vaga", "saude da vaga", "job health", "health check", "verificar saude"]
+    description: Verifica saude da vaga
+    confidence: 0.80
+  - action: detect_anomalies
+    type: action
+    keywords: ["detectar anomalia", "anomalia", "detect anomalies", "alerta anomalia"]
+    description: Detecta anomalias nos dados
+    confidence: 0.80
+  - action: compare_periods
+    type: action
+    keywords: ["comparar periodo", "comparar periodos", "compare periods", "comparacao mensal", "comparacao de periodos"]
+    description: Compara metricas entre periodos
+    confidence: 0.80
+  - action: forecast
+    type: action
+    keywords: ["previsao", "previsao de metricas", "forecast", "projecao", "tendencia"]
+    description: Projecao e previsao de metricas
+    confidence: 0.80
+  - action: suggest_strategy
+    type: action
+    keywords: ["sugerir estrategia", "estrategia recrutamento", "estrategia de recrutamento", "sugestao estrategica", "recomendacao"]
+    description: Sugere estrategia de recrutamento
+    confidence: 0.80
+  - action: answer_data_question
+    type: action
+    keywords: ["pergunta dados", "pergunta sobre dados", "data question", "consulta dados", "consulta de dados"]
+    description: Responde perguntas sobre dados
+    confidence: 0.80
+  - action: get_job_insights
+    type: action
+    keywords: ["insights vaga", "insights da vaga", "job insights", "benchmark salarial", "benchmark", "salario medio"]
+    description: Insights e benchmarks da vaga
+    confidence: 0.80
+  - action: generate_job_report
+    type: action
+    keywords: ["relatorio vaga", "relatorio da vaga", "job report", "gerar relatorio"]
+    description: Gera relatorio da vaga
+    confidence: 0.80
+  - action: generate_candidate_report
+    type: action
+    keywords: ["relatorio candidato", "relatorio de candidato", "relatorio comparativo", "comparar candidatos"]
+    description: Gera relatorio comparativo de candidatos
+    confidence: 0.80
+  - action: get_search_analytics
+    type: action
+    keywords: ["analytics busca", "analytics de busca", "search analytics", "desempenho busca", "desempenho de busca"]
+    description: Analytics de busca de candidatos
+    confidence: 0.80
+  - action: get_wizard_analytics
+    type: action
+    keywords: ["analytics wizard", "analytics do wizard", "wizard analytics", "uso do wizard"]
+    description: Analytics do wizard de vagas
+    confidence: 0.80
+  - action: predict_hiring_probability
+    type: action
+    keywords: ["probabilidade contratacao", "probabilidade de contratacao", "hiring probability", "chance de contratar"]
+    description: Prevê probabilidade de contratacao
+    confidence: 0.80
+  - action: predict_time_to_fill
+    type: action
+    keywords: ["tempo preenchimento", "tempo de preenchimento", "time to fill", "prazo da vaga"]
+    description: Prevê tempo para preencher vaga
+    confidence: 0.80
+  - action: predict_dropout_risk
+    type: action
+    keywords: ["risco desistencia", "risco de desistencia", "dropout risk", "candidato desistir"]
+    description: Prevê risco de desistencia
+    confidence: 0.80
+  - action: get_dashboard_data
+    type: action
+    keywords: ["dashboard", "dados dashboard", "dados do dashboard", "painel indicadores", "painel de indicadores"]
+    description: Dados do dashboard principal
+    confidence: 0.80
+  - action: get_agent_monitoring
+    type: action
+    keywords: ["monitoramento agentes", "monitoramento de agentes", "agent monitoring", "performance agentes", "performance dos agentes"]
+    description: Monitoramento de performance dos agentes
+    confidence: 0.80

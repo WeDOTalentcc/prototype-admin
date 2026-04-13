@@ -30,7 +30,9 @@ Analise a mensagem do usuário e retorne um JSON com:
   kanban_search, kanban_insight, kanban_action,
   pipeline_context, pipeline_decision, pipeline_action,
   sourcing_planner, sourcing_search, sourcing_enrich, sourcing_engagement,
-  analytics, communication, automation, recruiter_assistant]
+  analytics, communication, automation, recruiter_assistant,
+  agent_studio, digital_twin, recruitment_campaign,
+  ats_integration, interview_scheduling, hiring_policy, talent_pool]
 - confidence: float de 0.0 a 1.0
 - reason: explicação curta (max 50 chars)
 
@@ -39,6 +41,15 @@ Guia de domínios sourcing:
   sourcing_search: buscar/filtrar/ver candidatos, talent pool, boolean search
   sourcing_enrich: analisar perfil, scoring WSI, comparar candidatos, shortlist, ranking
   sourcing_engagement: abordagem (outreach), gerar mensagem personalizada, rastrear resposta
+
+Guia de dominios extras:
+  agent_studio: criar/gerenciar agentes IA customizados, marketplace, calibracao
+  digital_twin: digital twin do candidato, simulacao de fit cultural
+  recruitment_campaign: campanhas de recrutamento, outreach em massa
+  ats_integration: integracoes ATS externas, importar/exportar dados
+  interview_scheduling: agendar/reagendar entrevistas, disponibilidade
+  hiring_policy: politicas de contratacao, compliance, regras de aprovacao
+  talent_pool: banco de talentos, pools de candidatos, nurturing
 
 Guia de domínios kanban/pipeline:
   kanban_search: listar/ver candidatos, resumo de pipeline, métricas de etapa

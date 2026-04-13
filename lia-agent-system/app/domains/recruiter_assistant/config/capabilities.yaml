@@ -1,0 +1,281 @@
+domain_id: recruiter_assistant
+name: Recruiter Assistant
+description: Assistente pessoal do recrutador com briefings, insights e acoes proativas
+
+intents:
+  - action: daily_briefing
+    type: action
+    keywords:
+      - "briefing diário"
+      - "briefing do dia"
+      - "daily briefing"
+      - "bom dia lia"
+      - "resumo matinal"
+      - "como está meu dia"
+    description: Gera briefing diario do recrutador
+    confidence: 0.85
+
+  - action: end_of_day_summary
+    type: action
+    keywords:
+      - "resumo do dia"
+      - "resumo final"
+      - "end of day"
+      - "encerrar dia"
+      - "fim do dia"
+    description: Gera resumo de fim de dia
+    confidence: 0.85
+
+  - action: quick_question
+    type: action
+    keywords:
+      - "pergunta rápida"
+      - "dúvida rápida"
+      - "quick question"
+      - "me ajuda com"
+    description: Responde pergunta rapida
+    confidence: 0.85
+
+  - action: plan_day
+    type: action
+    keywords:
+      - "planejar dia"
+      - "planejar meu dia"
+      - "plan day"
+      - "organizar agenda"
+      - "organizar minha agenda"
+    description: Planeja o dia do recrutador
+    confidence: 0.85
+
+  - action: pipeline_health
+    type: action
+    keywords:
+      - "saúde do pipeline"
+      - "saúde pipeline"
+      - "pipeline health"
+      - "como está o pipeline"
+      - "status do pipeline"
+    description: Analisa saude do pipeline
+    confidence: 0.85
+
+  - action: stale_candidates
+    type: action
+    keywords:
+      - "candidatos parados"
+      - "candidatos estão parados"
+      - "candidatos inativos"
+      - "stale candidates"
+      - "candidatos sem movimento"
+      - "candidatos esquecidos"
+    description: Lista candidatos parados no pipeline
+    confidence: 0.85
+
+  - action: move_candidate
+    type: action
+    keywords:
+      - "mover candidato"
+      - "mover para etapa"
+      - "move candidate"
+      - "mudar etapa"
+      - "trocar etapa"
+      - "avançar candidato"
+    description: Move candidato entre etapas
+    confidence: 0.85
+
+  - action: suggest_action
+    type: action
+    keywords:
+      - "sugerir ação"
+      - "próxima ação"
+      - "suggest action"
+      - "o que fazer com"
+      - "recomendação de ação"
+    description: Sugere proxima acao para candidato
+    confidence: 0.85
+
+  - action: search_context
+    type: action
+    keywords:
+      - "buscar contexto"
+      - "histórico conversa"
+      - "histórico de conversa"
+      - "search context"
+      - "buscar no histórico"
+    description: Busca contexto no historico
+    confidence: 0.85
+
+  - action: save_memory
+    type: action
+    keywords:
+      - "salvar memória"
+      - "lembrar disso"
+      - "save memory"
+      - "guardar informação"
+      - "anotar"
+    description: Salva informacao na memoria
+    confidence: 0.85
+
+  - action: recall_memory
+    type: action
+    keywords:
+      - "recuperar memória"
+      - "o que eu disse sobre"
+      - "recall memory"
+      - "lembrar de"
+      - "buscar memória"
+    description: Recupera informacao da memoria
+    confidence: 0.85
+
+  - action: conversation_summary
+    type: action
+    keywords:
+      - "resumo da conversa"
+      - "resumir conversa"
+      - "conversation summary"
+      - "resumo do chat"
+    description: Gera resumo da conversa
+    confidence: 0.85
+
+  - action: kanban_analysis
+    type: action
+    keywords:
+      - "análise do kanban"
+      - "análise kanban"
+      - "kanban analysis"
+      - "analisar kanban"
+      - "visão do kanban"
+      - "ranking"
+      - "rankear"
+      - "rankear candidatos"
+      - "ranking de candidatos"
+      - "melhores candidatos"
+      - "quem são os melhores"
+      - "top candidatos"
+      - "ordenar candidatos"
+      - "classificar candidatos"
+      - "performance do funil"
+      - "como está o funil"
+      - "métricas do funil"
+      - "gargalos"
+      - "gargalo no processo"
+      - "taxa de conversão"
+      - "tempo médio"
+    description: Analisa kanban e metricas do funil
+    confidence: 0.85
+
+  - action: calibrate_profile
+    type: action
+    keywords:
+      - "calibrar perfil"
+      - "calibrar candidato ideal"
+      - "calibrate profile"
+      - "perfil ideal"
+      - "ajustar perfil"
+    description: Calibra perfil ideal de candidato
+    confidence: 0.85
+
+  - action: send_notification
+    type: action
+    keywords:
+      - "enviar notificação"
+      - "notificar"
+      - "send notification"
+      - "alerta para mim"
+    description: Envia notificacao
+    confidence: 0.85
+
+  - action: track_goals
+    type: action
+    keywords:
+      - "acompanhar metas"
+      - "minhas metas"
+      - "track goals"
+      - "progresso das metas"
+      - "metas de recrutamento"
+    description: Acompanha metas de recrutamento
+    confidence: 0.85
+
+  - action: generate_insights
+    type: action
+    keywords:
+      - "gerar insights"
+      - "insights de busca"
+      - "generate insights"
+      - "análise proativa"
+      - "sugestões proativas"
+    description: Gera insights proativos
+    confidence: 0.85
+
+  - action: proactive_alerts
+    type: action
+    keywords:
+      - "alertas"
+      - "alertas proativos"
+      - "smart alerts"
+      - "alertas inteligentes"
+      - "riscos do pipeline"
+    description: Mostra alertas proativos
+    confidence: 0.85
+
+  - action: autonomous_actions
+    type: action
+    keywords:
+      - "ações autônomas"
+      - "ações automáticas"
+      - "ações pendentes"
+      - "autonomous actions"
+    description: Lista acoes autonomas pendentes
+    confidence: 0.85
+
+  - action: stakeholder_notify
+    type: action
+    keywords:
+      - "notificar gestor"
+      - "notificar hiring manager"
+      - "decisões pendentes"
+      - "pending decisions"
+      - "escalar decisão"
+    description: Notifica stakeholders sobre decisoes
+    confidence: 0.85
+
+  - action: learning_insights
+    type: action
+    keywords:
+      - "aprendizado"
+      - "learning insights"
+      - "o que a lia aprendeu"
+      - "insights de contratação"
+    description: Mostra insights de aprendizado
+    confidence: 0.85
+
+  - action: compare_candidates
+    type: action
+    keywords:
+      - "comparar candidatos"
+      - "compare candidates"
+      - "comparação de candidatos"
+      - "candidato vs candidato"
+    description: Compara candidatos
+    confidence: 0.85
+
+  - action: stage_recommendation
+    type: action
+    keywords:
+      - "recomendar etapa"
+      - "qual próxima etapa"
+      - "stage recommendation"
+      - "sugerir etapa"
+      - "recomendação de etapa"
+    description: Recomenda proxima etapa para candidato
+    confidence: 0.85
+
+  - action: help_command
+    type: action
+    keywords:
+      - "ajuda"
+      - "help"
+      - "comandos disponíveis"
+      - "o que você pode fazer"
+      - "funcionalidades"
+    description: Mostra comandos disponiveis
+    confidence: 0.85

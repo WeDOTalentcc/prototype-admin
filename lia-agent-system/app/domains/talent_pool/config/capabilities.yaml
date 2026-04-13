@@ -1,0 +1,35 @@
+domain_id: talent_pool
+name: Talent Pool Management
+description: Gestao de bancos de talentos vivos
+
+intents:
+  - action: create_talent_pool
+    type: action
+    keywords: ["criar pool", "criar banco", "novo banco", "novo pool"]
+    description: Cria um novo banco de talentos
+    confidence: 0.85
+  - action: list_talent_pools
+    type: action
+    keywords: ["banco de talentos", "listar pool", "meus bancos", "meus pools"]
+    description: Lista bancos de talentos existentes
+    confidence: 0.85
+  - action: add_to_pool
+    type: action
+    keywords: ["adicionar ao pool", "adicionar no banco"]
+    description: Adiciona candidatos ao banco de talentos
+    confidence: 0.85
+  - action: move_pool_to_job
+    type: action
+    keywords: ["mover para vaga", "migrar para vaga"]
+    description: Move candidatos do pool para uma vaga
+    confidence: 0.85
+  - action: get_pool_candidates
+    type: action
+    keywords: ["candidatos do pool", "ver pool"]
+    description: Lista candidatos de um pool
+    confidence: 0.85
+  - action: create_job_from_pool
+    type: action
+    keywords: ["criar vaga do pool", "vaga a partir do pool"]
+    description: Cria uma vaga a partir de um pool
+    confidence: 0.85

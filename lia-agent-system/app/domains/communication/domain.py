@@ -6,6 +6,8 @@ from app.domains.base import DomainAction, DomainContext, DomainResponse, Intent
 from app.domains.compliance_base import ComplianceDomainPrompt
 from app.domains.registry import register_domain
 
+from app.shared.services.keyword_intent_matcher import KeywordIntentMatcher
+
 logger = logging.getLogger(__name__)
 
 _KEYWORD_ACTION_MAP: dict[str, str] = {
@@ -87,6 +89,8 @@ _KEYWORD_ACTION_MAP: dict[str, str] = {
     "lgpd solicitação": "handle_data_request",
     "lgpd": "handle_data_request",
 }
+_matcher = KeywordIntentMatcher.from_keyword_map(_KEYWORD_ACTION_MAP, domain_id="communication")
+
 
 
 @register_domain
@@ -109,6 +113,34 @@ class CommunicationDomain(ComplianceDomainPrompt):
         return PromptLoader.get_domain_prompt(self.domain_id)
 
     async def process_intent(self, query: str, context: DomainContext) -> IntentResult:
+        # LIA-I07: Check if query is an info request (e.g., "como funciona X?")
+        if _matcher.is_info_query(query):
+            try:
+                match = _matcher.match(query, default_action="send_email")
+                return IntentResult(
+                    intent_id=f"communication.{match.action}",
+                    action_id=match.action,
+                    confidence=match.confidence,
+                    extracted_params={"raw_query": query, "is_info_query": True},
+                    reasoning=f"[LIA-I07] Info query routed via is_info_query (action='{match.action}')",
+                )
+            except Exception:
+                pass  # Fall through to normal logic
+
+        # LIA-I03: Use shared KeywordIntentMatcher (falls back to loop on error)
+        try:
+            match = _matcher.match(query, default_action="send_email")
+            if match.intent_type.value == "info":
+                logger.info("[LIA-I03] Info query detected for communication: %s", query[:60])
+            return IntentResult(
+                intent_id=f"communication.{match.action}",
+                action_id=match.action,
+                confidence=match.confidence,
+                extracted_params={"raw_query": query},
+                reasoning=f"KeywordIntentMatcher matched action '{match.action}' (kw='{match.matched_keyword}')",
+            )
+        except Exception as e:
+            logger.debug("[LIA-I03] Matcher failed, using fallback: %s", e)
         query_lower = query.lower().strip()
         best_action = "send_email"
         best_confidence = 0.3
@@ -127,6 +159,7 @@ class CommunicationDomain(ComplianceDomainPrompt):
             extracted_params={"raw_query": query},
             reasoning=f"Keyword heuristic matched action '{best_action}'",
         )
+
 
     _ACTION_TOOL_MAP: dict[str, str] = {
         "send_email": "communication_send_email",

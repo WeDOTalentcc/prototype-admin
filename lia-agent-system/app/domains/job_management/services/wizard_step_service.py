@@ -573,11 +573,11 @@ class WizardStepService:
 
             if company_departments:
                 dept_info = [f"- {d['name']}" + (f" (Gestor: {d['manager']})" if d.get('manager') else "") for d in company_departments[:10]]
-                company_context += f"\nDEPARTAMENTOS:\n" + "\n".join(dept_info) + "\n"
+                company_context += "\nDEPARTAMENTOS:\n" + "\n".join(dept_info) + "\n"
 
             if company_benefits:
                 benefit_info = [f"- {b['name']} ({b['category']})" for b in company_benefits[:10]]
-                company_context += f"\nBENEFÍCIOS:\n" + "\n".join(benefit_info) + "\n"
+                company_context += "\nBENEFÍCIOS:\n" + "\n".join(benefit_info) + "\n"
 
             detected_criteria = None
             lia_message = ""
@@ -998,7 +998,7 @@ Analise esta descrição de vaga e extraia TODAS as informações possíveis.
                                     suggestion_parts.append(f"**Localização**: {job_draft.get('location')} ({ctx})")
 
                                 if suggestion_parts:
-                                    lia_message += f"\n\n📊 **Sugestões baseadas no seu histórico**:\n"
+                                    lia_message += "\n\n📊 **Sugestões baseadas no seu histórico**:\n"
                                     lia_message += "\n".join(['• ' + p for p in suggestion_parts])
                                     lia_message += "\n\n*Esses valores foram sugeridos com base nas suas vagas anteriores. Deseja manter ou alterar?*"
 
@@ -1065,7 +1065,7 @@ Analise esta descrição de vaga e extraia TODAS as informações possíveis.
 
                                 if gap_analysis.get('missing_behavioral'):
                                     behav_names = [s.get('name', str(s)) for s in gap_analysis['missing_behavioral'][:3]]
-                                    gap_feedback_parts.append(f"\n🎯 **Competências comportamentais sugeridas**:")
+                                    gap_feedback_parts.append("\n🎯 **Competências comportamentais sugeridas**:")
                                     gap_feedback_parts.extend([f"  • {name}" for name in behav_names])
 
                                 gap_feedback_parts.append("\n*Gostaria de adicionar alguma dessas competências à vaga?*")
@@ -1144,7 +1144,7 @@ Analise esta descrição de vaga e extraia TODAS as informações possíveis.
                 elif current_stage == 4:
                     benefits_list = ""
                     if company_benefits:
-                        benefits_list = f"\n\n✅ **Benefícios cadastrados da empresa:**\n" + "\n".join([f"• {b['name']}" for b in company_benefits[:10]])
+                        benefits_list = "\n\n✅ **Benefícios cadastrados da empresa:**\n" + "\n".join([f"• {b['name']}" for b in company_benefits[:10]])
                     else:
                         benefits_list = "\n\n⚠️ *Nenhum benefício cadastrado. Você pode adicionar benefícios em Configurações → Benefícios.*"
 

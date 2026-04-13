@@ -1,0 +1,213 @@
+domain_id: interview_scheduling
+name: Interview & Scheduling
+description: Gerenciamento de entrevistas, agendamento e metodologia WSI
+
+intents:
+  - action: schedule_interview
+    type: action
+    keywords:
+      - "agendar entrevista"
+      - "marcar entrevista"
+      - "schedule interview"
+      - "agendar reunião"
+    description: Agenda uma nova entrevista
+    confidence: 0.85
+
+  - action: reschedule_interview
+    type: action
+    keywords:
+      - "reagendar entrevista"
+      - "reagendar"
+      - "remarcar entrevista"
+      - "reschedule"
+      - "mudar horário entrevista"
+      - "mudar horário da entrevista"
+    description: Reagenda uma entrevista existente
+    confidence: 0.85
+
+  - action: cancel_interview
+    type: action
+    keywords:
+      - "cancelar entrevista"
+      - "cancel interview"
+      - "desmarcar entrevista"
+    description: Cancela uma entrevista
+    confidence: 0.85
+
+  - action: check_availability
+    type: action
+    keywords:
+      - "verificar disponibilidade"
+      - "checar disponibilidade"
+      - "check availability"
+      - "disponibilidade calendário"
+      - "disponibilidade do calendário"
+      - "horários disponíveis"
+      - "horários livres"
+    description: Verifica disponibilidade no calendario
+    confidence: 0.85
+
+  - action: generate_self_scheduling_link
+    type: action
+    keywords:
+      - "link agendamento"
+      - "link de agendamento"
+      - "auto-agendamento"
+      - "self scheduling"
+      - "link para candidato agendar"
+    description: Gera link de auto-agendamento para candidato
+    confidence: 0.85
+
+  - action: find_common_slots
+    type: action
+    keywords:
+      - "horários comuns"
+      - "slots comuns"
+      - "encontrar horários"
+      - "common slots"
+    description: Encontra horarios comuns entre participantes
+    confidence: 0.85
+
+  - action: send_reminder
+    type: action
+    keywords:
+      - "enviar lembrete"
+      - "lembrete entrevista"
+      - "lembrete de entrevista"
+      - "reminder"
+    description: Envia lembrete de entrevista
+    confidence: 0.85
+
+  - action: schedule_reminders
+    type: action
+    keywords:
+      - "agendar lembretes"
+      - "programar lembretes"
+      - "lembretes automáticos"
+    description: Programa lembretes automaticos
+    confidence: 0.85
+
+  - action: list_today_interviews
+    type: action
+    keywords:
+      - "entrevistas hoje"
+      - "entrevistas de hoje"
+      - "agenda hoje"
+      - "agenda de hoje"
+      - "today interviews"
+      - "entrevistas do dia"
+    description: Lista entrevistas do dia
+    confidence: 0.85
+
+  - action: resolve_conflict
+    type: action
+    keywords:
+      - "conflito agenda"
+      - "conflito de agenda"
+      - "resolver conflito"
+      - "scheduling conflict"
+    description: Resolve conflitos de agenda
+    confidence: 0.85
+
+  - action: start_wsi_interview
+    type: action
+    keywords:
+      - "entrevista wsi"
+      - "iniciar entrevista wsi"
+      - "wsi interview"
+      - "entrevista completa"
+    description: Inicia entrevista com metodologia WSI
+    confidence: 0.85
+
+  - action: send_question
+    type: action
+    keywords:
+      - "enviar pergunta"
+      - "fazer pergunta"
+      - "próxima pergunta"
+      - "send question"
+    description: Envia pergunta ao candidato
+    confidence: 0.85
+
+  - action: analyze_response
+    type: action
+    keywords:
+      - "analisar resposta"
+      - "avaliar resposta"
+      - "analyze response"
+      - "análise de resposta"
+    description: Analisa resposta do candidato
+    confidence: 0.85
+
+  - action: transcribe_audio
+    type: action
+    keywords:
+      - "transcrever áudio"
+      - "transcrição"
+      - "transcribe"
+      - "transcrever entrevista"
+    description: Transcreve audio de entrevista
+    confidence: 0.85
+
+  - action: analyze_voice
+    type: action
+    keywords:
+      - "analisar voz"
+      - "análise de voz"
+      - "análise vocal"
+      - "voice analysis"
+    description: Analisa padroes vocais
+    confidence: 0.85
+
+  - action: detect_evasive
+    type: action
+    keywords:
+      - "resposta evasiva"
+      - "detectar evasiva"
+      - "candidato evadindo"
+      - "evasive answer"
+    description: Detecta respostas evasivas
+    confidence: 0.85
+
+  - action: generate_followup
+    type: action
+    keywords:
+      - "pergunta follow-up"
+      - "pergunta de follow-up"
+      - "follow-up"
+      - "gerar follow-up"
+      - "aprofundar resposta"
+    description: Gera pergunta follow-up
+    confidence: 0.85
+
+  - action: complete_interview
+    type: action
+    keywords:
+      - "finalizar entrevista"
+      - "encerrar entrevista"
+      - "complete interview"
+      - "concluir entrevista"
+      - "resumo da entrevista"
+    description: Finaliza entrevista e gera resumo
+    confidence: 0.85
+
+  - action: interview_qa
+    type: action
+    keywords:
+      - "dúvida entrevista"
+      - "dúvida sobre entrevista"
+      - "pergunta sobre entrevista"
+      - "interview qa"
+    description: Responde duvidas sobre entrevistas
+    confidence: 0.85
+
+  - action: start_quick_screening
+    type: action
+    keywords:
+      - "triagem rápida"
+      - "quick screening"
+      - "triagem inicial"
+      - "screening rápido"
+      - "iniciar triagem"
+    description: Inicia triagem rapida de candidato
+    confidence: 0.85

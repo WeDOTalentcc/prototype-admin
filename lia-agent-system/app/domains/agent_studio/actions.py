@@ -21,4 +21,5 @@ AGENT_STUDIO_ACTIONS = [
     DomainAction(action_id="get_studio_consumption", name="Consumo do Studio", description="Ver consumo de tokens e créditos dos agentes do Studio", required_params=[], optional_params=["days"], requires_confirmation=False),
     DomainAction(action_id="deactivate_agent", name="Desativar Agente", description="Desativar agente de sourcing ou custom (libera quota)", required_params=["agent_id"], optional_params=["agent_type"], requires_confirmation=True),
     DomainAction(action_id="uninstall_agent", name="Desinstalar Agente", description="Desinstalar agente do marketplace (libera quota)", required_params=["installation_id"], optional_params=[], requires_confirmation=True),
+    DomainAction(action_id="explain_agent_studio", name="Explicar Agent Studio", description="Explica o que e o Agent Studio e como funciona", required_params=[], optional_params=[], requires_confirmation=False),
 ]

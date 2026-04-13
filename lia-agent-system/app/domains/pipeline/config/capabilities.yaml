@@ -1,0 +1,30 @@
+domain_id: pipeline_transition
+name: Pipeline Transition
+description: Gerencia movimentacao de candidatos no pipeline de recrutamento
+
+intents:
+  - action: move_candidate
+    type: action
+    keywords: ["mover candidato", "move candidate", "avançar candidato", "avançar etapa", "mudar etapa", "transição"]
+    description: Move candidato para nova etapa do pipeline
+    confidence: 0.85
+  - action: interpret_context
+    type: action
+    keywords: ["interpretar contexto", "interpretar"]
+    description: Interpreta contexto de transicao usando IA
+    confidence: 0.85
+  - action: predict_sub_status
+    type: action
+    keywords: ["prever sub-status", "predizer sub-status"]
+    description: Prediz sub-status adequado
+    confidence: 0.85
+  - action: suggest_next_action
+    type: action
+    keywords: ["sugerir ação", "próxima ação"]
+    description: Sugere proxima acao para candidato
+    confidence: 0.85
+  - action: list_pipeline_stages
+    type: action
+    keywords: ["listar etapas", "etapas do pipeline", "ver pipeline"]
+    description: Lista etapas do pipeline
+    confidence: 0.85

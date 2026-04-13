@@ -168,19 +168,19 @@ async def _wrap_referral_prepare_request(**kwargs: Any) -> dict[str, Any]:
             f"Olá {connector_name.split()[0]}! 👋\n\n"
             f"Estamos com uma vaga aberta de *{role}*"
             + (f" na {company_name}" if company_name else "") + ".\n\n"
-            f"Você conhece alguém com esse perfil que possa ter interesse? "
-            f"Qualquer indicação é muito bem-vinda! 🙏\n\n"
-            f"Se quiser, posso compartilhar mais detalhes da vaga."
+            "Você conhece alguém com esse perfil que possa ter interesse? "
+            "Qualquer indicação é muito bem-vinda! 🙏\n\n"
+            "Se quiser, posso compartilhar mais detalhes da vaga."
         )
     else:
         message = (
             f"Olá {connector_name.split()[0]},\n\n"
             f"Espero que esteja bem! Estamos com uma vaga aberta de {role}"
             + (f" em {company_name}" if company_name else "") + ".\n\n"
-            f"Sabe de alguém com esse perfil que possa ter interesse? "
-            f"Sua indicação pode fazer toda a diferença.\n\n"
-            f"Qualquer nome ou contato que você queira sugerir será muito apreciado!\n\n"
-            f"Obrigado(a) pela ajuda."
+            "Sabe de alguém com esse perfil que possa ter interesse? "
+            "Sua indicação pode fazer toda a diferença.\n\n"
+            "Qualquer nome ou contato que você queira sugerir será muito apreciado!\n\n"
+            "Obrigado(a) pela ajuda."
         )
 
     if custom_message:

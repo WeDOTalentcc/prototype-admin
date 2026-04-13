@@ -100,7 +100,7 @@ class JobVacancyCRUDRepository:
         return self.db
 
     async def search_by_query(self, company_id, query: str, offset: int, page_size: int):
-        from sqlalchemy import and_, or_, func, select
+        from sqlalchemy import func, select
         from app.models.job_vacancy import JobVacancy
         base_filter = JobVacancy.company_id == company_id
         if query and len(query) >= 2:

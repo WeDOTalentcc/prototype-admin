@@ -25,7 +25,7 @@ async def handle_competencies(
         tech_skills = [s["skill"] for s in skills_list if s.get("category") == "Técnico"][:6]
         if tech_skills:
             skills_suggestion = (
-                f"\n\n🎯 **Skills sugeridas** (baseado em vagas similares):\n• "
+                "\n\n🎯 **Skills sugeridas** (baseado em vagas similares):\n• "
                 + "\n• ".join(tech_skills)
             )
 

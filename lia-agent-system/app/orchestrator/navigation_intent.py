@@ -107,6 +107,7 @@ class NavigationIntentDetector:
     """Keyword-based navigation intent detector with interrogative dampening."""
 
     def detect(self, message: str) -> NavigationIntentResult:
+        logger.debug("[LIA-I06] NavigationIntentDetector still uses internal patterns. Migration to KeywordIntentMatcher pending.")
         text = message.lower().strip()
 
         is_question = bool(

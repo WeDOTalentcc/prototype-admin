@@ -102,6 +102,9 @@ class CustomAgentRuntime(LangGraphReActBase, EnhancedAgentMixin):
         # Etapa 2: batch/destructive operations blocked from Studio
         "bulk_sync_candidates", "finalize_hiring",
         "batch_move", "batch_move_candidates",
+        # Etapa 3: additional dangerous tools (OWASP LLM06 audit)
+        "reject_autonomous_action", "calibrate_sourcing_agent",
+        "advance_campaign_stage", "move_pool_to_job",
     })
 
     def _get_tools(self) -> list:

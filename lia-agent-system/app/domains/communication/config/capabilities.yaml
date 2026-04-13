@@ -1,0 +1,105 @@
+domain_id: communication
+name: Communication & Messaging
+description: Multi-channel communication management
+
+intents:
+  - action: send_email
+    type: action
+    keywords: ["enviar email", "send email", "disparar email", "email candidato"]
+    description: Envia email para candidato
+    confidence: 0.80
+  - action: send_bulk_email
+    type: action
+    keywords: ["email em massa", "bulk email", "envio massa", "envio em lote"]
+    description: Envio de emails em lote
+    confidence: 0.80
+  - action: send_candidate_report
+    type: action
+    keywords: ["enviar parecer", "parecer gestor", "relatório candidato", "report gestor"]
+    description: Envia parecer do candidato ao gestor
+    confidence: 0.80
+  - action: send_progress_report
+    type: action
+    keywords: ["relatório progresso", "relatório de progresso", "progress report", "andamento da vaga", "progresso da vaga"]
+    description: Envia relatório de progresso
+    confidence: 0.80
+  - action: send_kpi_report
+    type: action
+    keywords: ["relatório kpi", "relatório de kpi", "kpi report", "relatório consolidado", "indicadores"]
+    description: Envia relatório de KPIs
+    confidence: 0.80
+  - action: send_feedback
+    type: action
+    keywords: ["feedback candidato", "enviar feedback", "devolutiva candidato", "retorno candidato"]
+    description: Envia feedback ao candidato
+    confidence: 0.80
+  - action: create_template
+    type: action
+    keywords: ["criar template", "template email", "novo template"]
+    description: Cria template de email
+    confidence: 0.80
+  - action: edit_template
+    type: action
+    keywords: ["editar template", "atualizar template"]
+    description: Edita template existente
+    confidence: 0.80
+  - action: list_templates
+    type: action
+    keywords: ["listar template", "templates disponíveis"]
+    description: Lista templates disponíveis
+    confidence: 0.80
+  - action: preview_template
+    type: action
+    keywords: ["visualizar template", "preview template", "preview do template"]
+    description: Visualiza preview do template
+    confidence: 0.80
+  - action: notify_stakeholders
+    type: action
+    keywords: ["notificar stakeholder", "notificação", "avisar gestor", "alertar equipe"]
+    description: Notifica stakeholders
+    confidence: 0.80
+  - action: send_whatsapp
+    type: action
+    keywords: ["enviar whatsapp", "whatsapp candidato", "mensagem whatsapp", "whatsapp"]
+    description: Envia mensagem via WhatsApp
+    confidence: 0.80
+  - action: send_teams_message
+    type: action
+    keywords: ["enviar teams", "mensagem teams", "teams", "notificar teams"]
+    description: Envia mensagem via Teams
+    confidence: 0.80
+  - action: send_sms
+    type: action
+    keywords: ["enviar sms", "sms candidato", "sms"]
+    description: Envia SMS
+    confidence: 0.80
+  - action: get_communication_history
+    type: action
+    keywords: ["histórico comunicação", "histórico de comunicação", "communication history", "histórico email", "histórico mensagem"]
+    description: Historico de comunicacoes
+    confidence: 0.80
+  - action: send_screening_invite
+    type: action
+    keywords: ["convite triagem", "convite de triagem", "convidar triagem", "screening invite"]
+    description: Envia convite para triagem
+    confidence: 0.80
+  - action: send_interview_invite
+    type: action
+    keywords: ["convite entrevista", "convite de entrevista", "convidar entrevista", "interview invite"]
+    description: Envia convite para entrevista
+    confidence: 0.80
+  - action: update_preferences
+    type: action
+    keywords: ["preferência comunicação", "preferências de comunicação", "opt-out", "preferências candidato", "canal preferido"]
+    description: Atualiza preferencias de comunicacao
+    confidence: 0.80
+  - action: manage_webhook
+    type: action
+    keywords: ["webhook", "configurar webhook", "registrar webhook"]
+    description: Gerencia webhooks
+    confidence: 0.80
+  - action: handle_data_request
+    type: action
+    keywords: ["solicitação dados", "solicitação de dados", "data request", "lgpd solicitação", "lgpd"]
+    description: Processa solicitacoes LGPD
+    confidence: 0.80

@@ -1,0 +1,80 @@
+domain_id: hiring_policy
+name: Hiring Policy
+description: Configuracao e gestao de politicas de contratacao, pipeline, triagem e automacao
+
+intents:
+  - action: configure_policy
+    type: action
+    keywords:
+      - "política"
+      - "politica"
+      - "policy"
+      - "regra"
+      - "configurar"
+      - "setup"
+    description: Configura regras da politica de contratacao
+    confidence: 0.85
+
+  - action: configure_pipeline
+    type: action
+    keywords:
+      - "pipeline"
+      - "etapa"
+      - "stage"
+    description: Define regras de pipeline e etapas
+    confidence: 0.85
+
+  - action: configure_scheduling
+    type: action
+    keywords:
+      - "agendamento"
+      - "scheduling"
+      - "agendar"
+    description: Define regras de agendamento
+    confidence: 0.85
+
+  - action: configure_communication
+    type: action
+    keywords:
+      - "comunicação"
+      - "comunicacao"
+      - "communication"
+      - "email"
+      - "whatsapp"
+    description: Define regras de comunicacao
+    confidence: 0.85
+
+  - action: configure_screening
+    type: action
+    keywords:
+      - "triagem"
+      - "screening"
+    description: Define regras de triagem
+    confidence: 0.85
+
+  - action: configure_automation
+    type: action
+    keywords:
+      - "automação"
+      - "automacao"
+      - "automation"
+      - "autonomia"
+    description: Define nivel de autonomia e automacao
+    confidence: 0.85
+
+  - action: validate_compliance
+    type: action
+    keywords:
+      - "compliance"
+      - "conformidade"
+      - "validar"
+    description: Valida compliance da politica
+    confidence: 0.85
+
+  - action: get_progress
+    type: action
+    keywords:
+      - "progresso"
+      - "progress"
+    description: Retorna progresso da configuracao
+    confidence: 0.85

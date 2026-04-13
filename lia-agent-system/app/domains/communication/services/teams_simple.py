@@ -73,7 +73,8 @@ class SimpleTeamsBot:
 
             # Decode token payload (no verification) to log key claims for debugging
             try:
-                import base64, json as _json
+                import base64
+                import json as _json
                 payload_b64 = self._access_token.split(".")[1]
                 payload_b64 += "=" * (4 - len(payload_b64) % 4)
                 claims = _json.loads(base64.b64decode(payload_b64))
