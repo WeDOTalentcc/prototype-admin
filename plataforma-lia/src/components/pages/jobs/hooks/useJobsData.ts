@@ -86,7 +86,7 @@ export function useJobsData(): UseJobsDataReturn {
       setJobsError(null)
 
       console.debug('[useJobsData] fetching job vacancies...')
-      const response = await fetchWithRetry(() => liaApi.listJobVacancies())
+      const response = await fetchWithRetry(() => liaApi.listJobVacancies(undefined, 0, 50))
       console.debug('[useJobsData] response received, items:', response?.items?.length ?? 'none')
 
       if (!mountedRef.current) return

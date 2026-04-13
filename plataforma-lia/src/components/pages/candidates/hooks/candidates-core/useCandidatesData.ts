@@ -27,11 +27,11 @@ let serverReady = false
 
 async function fetchWithRetry<T>(
   fn: () => Promise<T>,
-  retries = 6,
-  baseDelayMs = 3000,
+  retries = 3,
+  baseDelayMs = 2000,
 ): Promise<T> {
   if (!serverReady) {
-    serverReady = await waitForServer(90_000)
+    serverReady = await waitForServer(20_000)
   }
 
   for (let attempt = 0; attempt <= retries; attempt++) {

@@ -1,3 +1,4 @@
+
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from 'next/server'
 import { validateBody } from '@/lib/api/validate'
@@ -30,7 +31,9 @@ export async function GET(request: NextRequest) {
     }
 
     const data = await response.json()
-    return NextResponse.json(data)
+    // Unwrap FastAPI envelope: {ok: true, data: [...], meta: {}}
+    const payload = (data && typeof data === 'object' && 'ok' in data && 'data' in data) ? data.data : data
+    return NextResponse.json(payload)
   } catch (error) {
     return NextResponse.json(
       { error: 'Erro ao conectar com o backend' },

@@ -24,7 +24,7 @@ export async function healthCheck(): Promise<{ status: string; app: string; envi
   return response.json()
 }
 
-export async function listJobVacancies(status?: string, skip: number = 0, limit: number = 500): Promise<JobVacancyListResponse> {
+export async function listJobVacancies(status?: string, skip: number = 0, limit: number = 50): Promise<JobVacancyListResponse> {
   const params = new URLSearchParams()
   if (status) params.set('status', status)
   params.set('skip', String(skip))
@@ -33,7 +33,7 @@ export async function listJobVacancies(status?: string, skip: number = 0, limit:
   const url = `${BACKEND_URL}/job-vacancies?${params}`
 
   const controller = new AbortController()
-  const timeout = setTimeout(() => controller.abort(), 90000)
+  const timeout = setTimeout(() => controller.abort(), 15000)
 
   try {
     const response = await fetch(url, {

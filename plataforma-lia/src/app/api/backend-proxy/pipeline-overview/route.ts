@@ -1,3 +1,4 @@
+
 /**
  * GET /api/backend-proxy/pipeline-overview
  *
@@ -78,8 +79,12 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const pipelineData = await pipelineRes.json()
-    const overviewData = await overviewRes.json()
+    const pipelineRaw = await pipelineRes.json()
+    const overviewRaw = await overviewRes.json()
+
+    // Unwrap FastAPI envelope: {ok: true, data: {...}, meta: {}}
+    const pipelineData = (pipelineRaw && 'ok' in pipelineRaw && pipelineRaw.data) ? pipelineRaw.data : pipelineRaw
+    const overviewData = (overviewRaw && 'ok' in overviewRaw && overviewRaw.data) ? overviewRaw.data : overviewRaw
 
     const pipeline: PipelineStage[] = (pipelineData.pipeline || []).filter(
       (s: PipelineStage) => s.is_active !== false

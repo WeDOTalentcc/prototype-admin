@@ -25,10 +25,14 @@ export async function GET(request: NextRequest) {
     }
 
     const data = await response.json()
-    return NextResponse.json(data)
+    // Unwrap FastAPI envelope: {ok: true, data: {total, items}}
+    const payload = (data && typeof data === 'object' && 'ok' in data && data.data) ? data.data : data
+    return NextResponse.json(payload)
   } catch (error) {
+    const msg = error instanceof Error ? error.message : String(error)
+    console.error('[job-vacancies] GET error:', msg)
     return NextResponse.json(
-      { error: 'Erro ao conectar com o backend' },
+      { error: 'Erro ao conectar com o backend', details: msg },
       { status: 500 }
     )
   }

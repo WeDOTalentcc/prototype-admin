@@ -74,13 +74,15 @@ async function getDevToken(): Promise<string | null> {
     })
     if (!res.ok) return null
     const data = await res.json()
-    if (!data.access_token) return null
+    // FastAPI wraps response: {ok: true, data: {access_token}}
+    const token = data.access_token || data?.data?.access_token
+    if (!token) return null
 
     cachedDevToken = {
-      token: data.access_token,
+      token,
       expiresAt: Date.now() + 25 * 60 * 1000,
     }
-    return data.access_token
+    return token
   } catch {
     return null
   }
@@ -139,28 +141,28 @@ export async function middleware(request: NextRequest) {
     const token = await getDevToken()
     if (token) {
       const requestHeaders = new Headers(request.headers)
-        requestHeaders.set('Authorization', `Bearer ${token}`)
+      requestHeaders.set('Authorization', `Bearer ${token}`)
 
-        const response = NextResponse.next({ request: { headers: requestHeaders } })
+      const response = NextResponse.next({ request: { headers: requestHeaders } })
 
-        response.cookies.set('lia_access_token', token, {
-          path: '/',
-          maxAge: 60 * 60 * 24 * 7,
-          secure: COOKIE_SECURE,
-          sameSite: COOKIE_SAMESITE,
-          httpOnly: true,
-        })
-        response.cookies.set('lia_auth_method', 'dev-auto-login', {
-          path: '/',
-          maxAge: 60 * 60 * 24 * 7,
-          secure: COOKIE_SECURE,
-          sameSite: COOKIE_SAMESITE,
-          httpOnly: false,
-        })
+      response.cookies.set('lia_access_token', token, {
+        path: '/',
+        maxAge: 60 * 60 * 24 * 7,
+        secure: COOKIE_SECURE,
+        sameSite: COOKIE_SAMESITE,
+        httpOnly: true,
+      })
+      response.cookies.set('lia_auth_method', 'dev-auto-login', {
+        path: '/',
+        maxAge: 60 * 60 * 24 * 7,
+        secure: COOKIE_SECURE,
+        sameSite: COOKIE_SAMESITE,
+        httpOnly: false,
+      })
 
-        response.cookies.delete("lia_logged_out")
-        return response
-      }
+      response.cookies.delete("lia_logged_out")
+      return response
+    }
   }
 
   const accessTokenCookie = request.cookies.get('lia_access_token')

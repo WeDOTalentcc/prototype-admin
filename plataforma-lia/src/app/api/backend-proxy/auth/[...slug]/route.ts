@@ -6,6 +6,13 @@ import { z } from 'zod'
 
 const BACKEND_URL = process.env.BACKEND_URL || 'http://127.0.0.1:8001'
 
+function unwrapFastAPI(data: unknown): unknown {
+  if (data && typeof data === 'object' && 'ok' in data && 'data' in data) {
+    return (data as Record<string, unknown>).data
+  }
+  return data
+}
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ slug: string[] }> }
@@ -30,7 +37,7 @@ export async function GET(
     }
 
     const data = await response.json()
-    return NextResponse.json(data)
+    return NextResponse.json(unwrapFastAPI(data))
   } catch {
     return NextResponse.json(
       { error: 'Failed to connect to backend' },
@@ -69,7 +76,7 @@ export async function POST(
     }
 
     const data = await response.json()
-    return NextResponse.json(data)
+    return NextResponse.json(unwrapFastAPI(data))
   } catch {
     return NextResponse.json(
       { error: 'Failed to connect to backend' },
@@ -106,7 +113,7 @@ export async function PUT(
     }
 
     const data = await response.json()
-    return NextResponse.json(data)
+    return NextResponse.json(unwrapFastAPI(data))
   } catch {
     return NextResponse.json(
       { error: 'Failed to connect to backend' },

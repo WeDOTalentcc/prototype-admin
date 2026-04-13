@@ -162,7 +162,10 @@ export function createProxyHandlers<M extends HttpMethod = "GET">(
         }
 
         const data = await response.json()
-        const result = onResponse ? onResponse(data) : data
+        // Unwrap FastAPI envelope: {ok: true, data: ..., meta: {}}
+        // Unwrap FastAPI envelope: {ok: true, data: ..., meta: {}}
+        const unwrapped = (data && typeof data === 'object' && 'ok' in data && 'data' in data) ? (data as Record<string, unknown>).data : data
+        const result = onResponse ? onResponse(unwrapped) : unwrapped
         return NextResponse.json(result)
       } catch (error) {
         return NextResponse.json(
