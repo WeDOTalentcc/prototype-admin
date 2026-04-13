@@ -70,6 +70,7 @@ import { useAuth } from "@/contexts/auth-context"
 import type { Notification as AppNotification } from "@/hooks/shared/use-notifications"
 import Image from "next/image"
 import { useTranslations } from 'next-intl'
+import { LanguageSwitcher } from "@/components/language-switcher"
 
 const sectionLabelKeys: Record<string, string> = {
   "Operacional": "sections.operational",
@@ -776,6 +777,8 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
           <div className="flex items-center">
             <ThemeToggle />
           </div>
+
+          <LanguageSwitcher collapsed={isCollapsed && !isTemporaryExpanded} />
 
           <Button
             variant="ghost"
