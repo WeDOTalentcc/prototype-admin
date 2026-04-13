@@ -19,8 +19,11 @@ import {
   Globe,
   Fingerprint,
   Info,
+  Calendar,
+  User,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { formatScorePercent } from "@/lib/design-tokens"
 import { getStageIcon, getStageColor, translateStatus } from "@/lib/pipeline-stage-maps"
@@ -71,6 +74,12 @@ interface CandidateItem {
   technical_test_score?: number | null
   english_test_score?: number | null
   big_five_data?: Record<string, number> | null
+  vacancy_manager?: string | null
+  vacancy_open_date?: string | null
+  vacancy_level?: string | null
+  vacancy_work_model?: string | null
+  vacancy_contract_type?: string | null
+  vacancy_department?: string | null
 }
 
 interface PipelineStageWithCount {
@@ -721,6 +730,19 @@ interface PipelineCandidateCardProps {
   onOpenScoreModal: (c: CandidateItem, type: ModalType) => void
 }
 
+function getSlaInfo(openDate: string | null | undefined): { days: number; isLate: boolean } | null {
+  if (!openDate) return null
+  try {
+    const d = new Date(openDate)
+    if (isNaN(d.getTime())) return null
+    const days = Math.floor((Date.now() - d.getTime()) / (1000 * 60 * 60 * 24))
+    if (days <= 0) return null
+    return { days, isLate: days > 30 }
+  } catch {
+    return null
+  }
+}
+
 function PipelineCandidateCard({
   candidate,
   stageColor,
@@ -755,6 +777,31 @@ function PipelineCandidateCard({
 
   const visibleScores = scores.filter(s => s.value != null)
 
+  const shortVacancyId = candidate.vacancy_id
+    ? `#${candidate.vacancy_id.replace(/-/g, "").slice(0, 7).toUpperCase()}`
+    : null
+
+  const sla = getSlaInfo(candidate.vacancy_open_date)
+
+  const openDateLabel = candidate.vacancy_open_date
+    ? (() => {
+        try {
+          const d = new Date(candidate.vacancy_open_date)
+          if (isNaN(d.getTime())) return null
+          return d.toLocaleDateString("pt-BR", { day: "numeric", month: "short" })
+        } catch {
+          return null
+        }
+      })()
+    : null
+
+  const vacancyBadges = [
+    candidate.vacancy_level ? { key: "level", label: candidate.vacancy_level } : null,
+    candidate.vacancy_work_model ? { key: "work_model", label: candidate.vacancy_work_model } : null,
+    candidate.vacancy_contract_type ? { key: "contract_type", label: candidate.vacancy_contract_type } : null,
+    candidate.vacancy_department ? { key: "department", label: candidate.vacancy_department } : null,
+  ].filter(Boolean) as { key: string; label: string }[]
+
   return (
     <div
       className="flex items-center gap-3 px-4 py-3 rounded-lg bg-lia-bg-secondary hover:bg-lia-bg-tertiary transition-colors border border-transparent hover:border-lia-border-subtle group cursor-pointer"
@@ -783,7 +830,7 @@ function PipelineCandidateCard({
 
         <div className="flex items-center gap-2 text-xs text-lia-text-secondary">
           {candidate.vacancy_title && (
-            <span className="truncate max-w-[180px]">{candidate.vacancy_title}</span>
+            <span className="truncate max-w-[200px]">{candidate.vacancy_title}</span>
           )}
           {timeInStage && (
             <>
@@ -795,40 +842,92 @@ function PipelineCandidateCard({
             </>
           )}
         </div>
+
+        {(shortVacancyId || candidate.vacancy_manager || openDateLabel) && (
+          <div className="flex items-center gap-2 text-[10px] text-lia-text-disabled mt-0.5">
+            {shortVacancyId && (
+              <span className="font-mono font-medium text-lia-text-secondary">{shortVacancyId}</span>
+            )}
+            {candidate.vacancy_manager && (
+              <>
+                {shortVacancyId && <span>·</span>}
+                <span className="flex items-center gap-0.5 truncate max-w-[120px]">
+                  <User className="w-2.5 h-2.5 flex-shrink-0" />
+                  {candidate.vacancy_manager}
+                </span>
+              </>
+            )}
+            {openDateLabel && (
+              <>
+                {(shortVacancyId || candidate.vacancy_manager) && <span>·</span>}
+                <span className="flex items-center gap-0.5 flex-shrink-0">
+                  <Calendar className="w-2.5 h-2.5" />
+                  {openDateLabel}
+                </span>
+              </>
+            )}
+          </div>
+        )}
+
+        {(vacancyBadges.length > 0 || sla) && (
+          <div className="flex items-center gap-1 mt-1 flex-wrap">
+            {vacancyBadges.map((b) => (
+              <Badge
+                key={b.key}
+                className="bg-lia-bg-tertiary border border-lia-border-subtle text-lia-text-primary font-medium whitespace-nowrap text-[10px] px-1.5 py-0 h-auto leading-4 rounded-sm"
+              >
+                {b.label}
+              </Badge>
+            ))}
+            {sla && (
+              <Badge
+                className={`border whitespace-nowrap text-[10px] px-1.5 py-0 h-auto leading-4 rounded-sm font-semibold ${
+                  sla.isLate
+                    ? "bg-status-error/10 border-status-error/30 text-status-error"
+                    : "bg-lia-bg-tertiary border-lia-border-subtle text-lia-text-secondary"
+                }`}
+              >
+                {sla.days}d {sla.isLate ? "de atraso" : "aberta"}
+              </Badge>
+            )}
+          </div>
+        )}
       </div>
 
-      {visibleScores.length > 0 ? (
-        <div className="flex items-center gap-1.5 flex-shrink-0">
-          {visibleScores.map(({ id, icon: Icon, value, label }) => (
-            <Tooltip key={id}>
-              <TooltipTrigger asChild>
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    onOpenScoreModal(candidate, id)
-                  }}
-                  className="flex items-center gap-0.5 cursor-pointer hover:scale-105 transition-transform rounded-full"
-                  aria-label={`${label}: ${value != null ? formatScorePercent(value, 0) : "N/A"}`}
-                >
-                  <Icon className="w-3.5 h-3.5 text-lia-text-secondary" strokeWidth={2} />
-                  <span className="text-[11px] font-semibold text-lia-text-secondary">
-                    {formatScorePercent(value as number, 0)}
-                  </span>
-                </button>
-              </TooltipTrigger>
-              <TooltipContent side="top" className="text-xs">
-                {label}: {formatScorePercent(value as number, 0)}
-              </TooltipContent>
-            </Tooltip>
-          ))}
-        </div>
-      ) : (
-        <div className="flex items-center gap-1 flex-shrink-0 text-lia-text-disabled">
-          <Info className="w-3 h-3" />
-          <span className="text-[10px]">Sem scores</span>
-        </div>
-      )}
+      <div className="flex-shrink-0 border-l border-lia-border-subtle pl-3">
+        {visibleScores.length > 0 ? (
+          <div className="flex items-center gap-1.5">
+            {visibleScores.map(({ id, icon: Icon, value, label }) => (
+              <Tooltip key={id}>
+                <TooltipTrigger asChild>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      onOpenScoreModal(candidate, id)
+                    }}
+                    className="flex items-center gap-0.5 cursor-pointer hover:scale-105 transition-transform rounded-full"
+                    aria-label={`${label}: ${value != null ? formatScorePercent(value, 0) : "N/A"}`}
+                  >
+                    <Icon className="w-3.5 h-3.5 text-lia-text-secondary" strokeWidth={2} />
+                    <span className="text-[11px] font-semibold text-lia-text-secondary">
+                      {formatScorePercent(value as number, 0)}
+                    </span>
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="top" className="text-xs">
+                  {label}: {formatScorePercent(value as number, 0)}
+                </TooltipContent>
+              </Tooltip>
+            ))}
+          </div>
+        ) : (
+          <div className="flex items-center gap-1 text-lia-text-disabled">
+            <Info className="w-3 h-3" />
+            <span className="text-[10px]">Sem scores</span>
+          </div>
+        )}
+      </div>
 
       <div className="flex items-center gap-1 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
         <Tooltip>

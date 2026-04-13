@@ -30,6 +30,16 @@ interface PipelineStage {
   action_behavior?: string
 }
 
+interface VacancyMeta {
+  id: string
+  manager?: string | null
+  open_date?: string | null
+  level?: string | null
+  work_model?: string | null
+  employment_type?: string | null
+  department?: string | null
+}
+
 interface BackendStageItem {
   stage: string
   count: number
@@ -49,6 +59,12 @@ interface BackendStageItem {
     technical_test_score?: number | null
     english_test_score?: number | null
     big_five_data?: Record<string, number> | null
+    vacancy_manager?: string | null
+    vacancy_open_date?: string | null
+    vacancy_level?: string | null
+    vacancy_work_model?: string | null
+    vacancy_contract_type?: string | null
+    vacancy_department?: string | null
   }>
 }
 
@@ -56,14 +72,17 @@ export async function GET(request: NextRequest) {
   try {
     const authHeaders = getAuthHeaders(request)
 
-    // Fetch both pipeline metadata and overview data in parallel
-    const [pipelineRes, overviewRes] = await Promise.all([
+    // Fetch pipeline metadata, overview data, and job vacancies in parallel
+    const [pipelineRes, overviewRes, vacanciesRes] = await Promise.all([
       fetch(`${BACKEND_URL}/api/v1/recruitment-stages/company-pipeline`, {
         headers: authHeaders,
       }),
       fetch(`${BACKEND_URL}/api/v1/pipeline-overview?candidates_per_stage=100`, {
         headers: authHeaders,
       }),
+      fetch(`${BACKEND_URL}/api/v1/job-vacancies?per_page=500`, {
+        headers: authHeaders,
+      }).catch(() => null),
     ])
 
     if (!pipelineRes.ok) {
@@ -82,6 +101,32 @@ export async function GET(request: NextRequest) {
     const pipelineRaw = await pipelineRes.json()
     const overviewRaw = await overviewRes.json()
 
+    // Build vacancy metadata map (vacancy_id → meta), gracefully degrade if unavailable
+    const vacancyMetaMap: Record<string, VacancyMeta> = {}
+    if (vacanciesRes && vacanciesRes.ok) {
+      try {
+        const vacanciesRaw = await vacanciesRes.json()
+        const vacanciesData = (vacanciesRaw && 'ok' in vacanciesRaw && vacanciesRaw.data) ? vacanciesRaw.data : vacanciesRaw
+        const items: Record<string, unknown>[] = vacanciesData?.items || vacanciesData || []
+        for (const v of items) {
+          const vid = (v.id || v.vacancy_id) as string | undefined
+          if (vid) {
+            vacancyMetaMap[vid] = {
+              id: vid,
+              manager: (v.manager || v.responsible_manager) as string | null,
+              open_date: (v.open_date || v.created_at || v.openDate) as string | null,
+              level: (v.level || v.seniority) as string | null,
+              work_model: (v.work_model || v.workModel) as string | null,
+              employment_type: (v.employment_type || v.type || v.contract_type) as string | null,
+              department: v.department as string | null,
+            }
+          }
+        }
+      } catch {
+        console.warn("[pipeline-overview] Failed to parse vacancies for metadata enrichment")
+      }
+    }
+
     // Unwrap FastAPI envelope: {ok: true, data: {...}, meta: {}}
     const pipelineData = (pipelineRaw && 'ok' in pipelineRaw && pipelineRaw.data) ? pipelineRaw.data : pipelineRaw
     const overviewData = (overviewRaw && 'ok' in overviewRaw && overviewRaw.data) ? overviewRaw.data : overviewRaw
@@ -96,6 +141,26 @@ export async function GET(request: NextRequest) {
     const backendMap: Record<string, BackendStageItem> = {}
     for (const s of backendStages) {
       backendMap[s.stage.toLowerCase()] = s
+    }
+
+    // Helper to enrich a candidate list with vacancy metadata
+    function enrichCandidates(
+      candidates: BackendStageItem["candidates"]
+    ): BackendStageItem["candidates"] {
+      if (Object.keys(vacancyMetaMap).length === 0) return candidates
+      return candidates.map((c) => {
+        const meta = vacancyMetaMap[c.vacancy_id]
+        if (!meta) return c
+        return {
+          ...c,
+          vacancy_manager: meta.manager ?? null,
+          vacancy_open_date: meta.open_date ?? null,
+          vacancy_level: meta.level ?? null,
+          vacancy_work_model: meta.work_model ?? null,
+          vacancy_contract_type: meta.employment_type ?? null,
+          vacancy_department: meta.department ?? null,
+        }
+      })
     }
 
     // Merge pipeline metadata with backend counts; exclude only rejection stages —
@@ -114,7 +179,7 @@ export async function GET(request: NextRequest) {
         return {
           ...s,
           count: data?.count ?? 0,
-          candidates: data?.candidates ?? [],
+          candidates: enrichCandidates(data?.candidates ?? []),
         }
       })
 
@@ -141,7 +206,7 @@ export async function GET(request: NextRequest) {
           console.log(
             `[pipeline-overview] Unmapped internal stage "${s.stage}" with ${s.count} candidates grouped under "Outros"`
           )
-          otherCandidates = otherCandidates.concat(s.candidates)
+          otherCandidates = otherCandidates.concat(enrichCandidates(s.candidates))
           otherCount += s.count
         } else {
           console.log(
@@ -171,7 +236,7 @@ export async function GET(request: NextRequest) {
             is_rejection: false,
             stage_category: "custom",
             count: s.count,
-            candidates: s.candidates,
+            candidates: enrichCandidates(s.candidates),
           })
         }
       }
