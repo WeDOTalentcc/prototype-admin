@@ -646,25 +646,24 @@ async def _sse_event_generator(
     company_id: str = "",
     tenant_context_snippet: str = "",
 ) -> AsyncGenerator[str, None]:
-    """Streams Claude tokens as SSE events and persists the full response."""
-    from anthropic import AsyncAnthropic
-    from app.shared.providers.llm_factory import LLMProviderFactory
+    """Streams Claude tokens as SSE events and persists the full response.
+
+    LIA-LLM-1: Uses get_anthropic_streaming_client_for_tenant to respect
+    Choose Your AI — tenant gets billed on their own Anthropic key + model,
+    not the global env key.
+    """
+    from app.shared.tenant_llm_context import get_anthropic_streaming_client_for_tenant
 
     try:
-        _provider = LLMProviderFactory.get("claude")
-        _sync_client = _provider._get_client()
-        client = AsyncAnthropic(
-            api_key=_sync_client.api_key,
-            base_url=str(_sync_client.base_url) if hasattr(_sync_client, "base_url") and _sync_client.base_url else None,
-        )
+        client, _model = get_anthropic_streaming_client_for_tenant(company_id=company_id)
     except Exception as _e:
+        logger.error("[SSE] Failed to get tenant streaming client: %s", _e)
         yield f"data: {json.dumps({'error': 'LLM not configured'})}\n\n"
         return
 
     full_response = ""
 
     from app.shared.prompts.system_prompt_builder import SystemPromptBuilder
-    from app.core.config import settings
 
     _system_prompt = SystemPromptBuilder.build(
         agent_type="orchestrator",
@@ -677,7 +676,7 @@ async def _sse_event_generator(
 
     try:
         async with client.messages.stream(
-            model=settings.LLM_PRIMARY_MODEL,
+            model=_model,
             max_tokens=2048,
             system=_system_prompt,
             messages=history,

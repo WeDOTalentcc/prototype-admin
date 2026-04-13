@@ -163,3 +163,67 @@ def clear_tenant_config_cache(company_id: str = ""):
         _tenant_configs.pop(company_id, None)
     else:
         _tenant_configs.clear()
+
+
+def get_anthropic_streaming_client_for_tenant(
+    company_id: str | None = None,
+) -> tuple["AsyncAnthropic", str]:
+    """Return (AsyncAnthropic client, model_name) respecting tenant Choose Your AI.
+
+    LIA-LLM-1 (Choose Your AI enforcement): Used by SSE/streaming endpoints
+    that need native Anthropic streaming (LLMProviderABC does not yet expose
+    a stream() method).
+
+    Resolution order:
+      1. Tenant has custom Claude key in DB → use tenant key + tenant model
+      2. No tenant key → use global env key + global default model
+
+    Args:
+        company_id: explicit tenant id. If None, falls back to contextvar.
+
+    Returns:
+        (AsyncAnthropic client, model_name) tuple.
+
+    Raises:
+        ValueError: when no Claude API key is configured anywhere.
+    """
+    from anthropic import AsyncAnthropic
+    import os as _os
+    from app.core.config import settings
+
+    tenant_id = company_id or get_current_llm_tenant()
+    api_key: str | None = None
+    base_url: str | None = None
+    model: str = settings.LLM_PRIMARY_MODEL
+    source = "global"
+
+    if tenant_id:
+        config = _tenant_configs.get(tenant_id)
+        if config:
+            providers = config.get("providers", {})
+            claude_cfg = providers.get("claude", {})
+            tenant_key = claude_cfg.get("api_key")
+            if tenant_key:
+                api_key = tenant_key
+                model = claude_cfg.get("model", model)
+                source = f"tenant={tenant_id}"
+
+    if api_key is None:
+        api_key = (
+            _os.environ.get("AI_INTEGRATIONS_ANTHROPIC_API_KEY")
+            or _os.environ.get("ANTHROPIC_API_KEY")
+        )
+        base_url = _os.environ.get("AI_INTEGRATIONS_ANTHROPIC_BASE_URL")
+
+    if not api_key:
+        raise ValueError("No Claude API key configured (tenant or global)")
+
+    logger.info(
+        "[TenantLLM][stream] Anthropic streaming client source=%s model=%s",
+        source, model,
+    )
+
+    kwargs: dict = {"api_key": api_key}
+    if base_url:
+        kwargs["base_url"] = base_url
+    return AsyncAnthropic(**kwargs), model
