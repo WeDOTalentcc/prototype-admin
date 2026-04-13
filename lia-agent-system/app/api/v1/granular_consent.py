@@ -25,24 +25,6 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/consent/granular", tags=["granular-consent"])
 
 
-# DEPRECATED: Use get_verified_company_id from tenant_guard instead (LIA-C01)
-def _require_company_id(
-    x_company_id: str | None = Header(None, alias="X-Company-ID"),
-) -> str:
-    if not x_company_id:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="X-Company-ID header obrigatório",
-        )
-    try:
-        UUID(x_company_id)
-    except ValueError:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="X-Company-ID inválido — deve ser UUID",
-        )
-    return x_company_id
-
 
 # ---------------------------------------------------------------------------
 # Schemas
