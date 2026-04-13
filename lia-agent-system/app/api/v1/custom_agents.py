@@ -350,6 +350,21 @@ async def execute_custom_agent(
 
         await db.commit()
 
+        # P2.5a: Internal notification (non-blocking)
+        try:
+            from app.services.studio_notification_service import studio_notification_service
+            await studio_notification_service.notify_execution_completed(
+                db=db,
+                user_id=str(current_user.id),
+                agent_id=str(agent.id),
+                agent_name=agent.name,
+                candidates_processed=1,
+                execution_time_ms=elapsed_ms,
+            )
+            await db.commit()
+        except Exception as _notif_err:
+            logger.warning("[StudioNotif] execute notify failed: %s", _notif_err)
+
         tool_calls = [a.params.get("tool", "") for a in (output.actions or [])]
 
         _meta = output.metadata or {}

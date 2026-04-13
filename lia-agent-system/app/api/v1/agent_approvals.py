@@ -38,6 +38,30 @@ async def request_agent_approval(
             requested_by=str(current_user.id),
         )
         await db.commit()
+
+        # P2.5a: Notify all admins (non-blocking)
+        try:
+            from app.services.studio_notification_service import (
+                studio_notification_service, get_company_admin_ids,
+            )
+            from sqlalchemy import select as _sel
+            from lia_models.custom_agent import CustomAgent as _CA
+            _agent_res = await db.execute(_sel(_CA).where(_CA.id == agent_id))
+            _agent = _agent_res.scalar_one_or_none()
+            if _agent:
+                _admin_ids = await get_company_admin_ids(db, current_user.company_id)
+                if _admin_ids:
+                    await studio_notification_service.notify_approval_requested(
+                        db=db,
+                        admin_user_ids=_admin_ids,
+                        agent_id=str(_agent.id),
+                        agent_name=_agent.name,
+                        requested_by=str(current_user.id),
+                    )
+                    await db.commit()
+        except Exception as _notif_err:
+            logger.warning("[StudioNotif] approval request notify failed: %s", _notif_err)
+
         return ApprovalResponse(**approval.to_dict())
     except ValueError as e:
         await db.rollback()
@@ -96,6 +120,28 @@ async def review_approval(
             notes=body.notes,
         )
         await db.commit()
+
+        # P2.5a: Notify creator of decision (non-blocking)
+        try:
+            from app.services.studio_notification_service import studio_notification_service
+            from sqlalchemy import select as _sel
+            from lia_models.custom_agent import CustomAgent as _CA
+            _agent_res = await db.execute(_sel(_CA).where(_CA.id == approval.agent_id))
+            _agent = _agent_res.scalar_one_or_none()
+            if _agent and approval.requested_by:
+                await studio_notification_service.notify_approval_reviewed(
+                    db=db,
+                    creator_user_id=approval.requested_by,
+                    agent_id=str(_agent.id),
+                    agent_name=_agent.name,
+                    action=body.action,
+                    reviewer_id=str(current_user.id),
+                    review_notes=body.notes,
+                )
+                await db.commit()
+        except Exception as _notif_err:
+            logger.warning("[StudioNotif] approval review notify failed: %s", _notif_err)
+
         return ApprovalResponse(**approval.to_dict())
     except ValueError as e:
         await db.rollback()

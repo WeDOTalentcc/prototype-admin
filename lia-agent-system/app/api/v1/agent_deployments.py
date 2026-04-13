@@ -41,6 +41,27 @@ async def create_deployment(
             data=body.model_dump(),
         )
         await db.commit()
+
+        # P2.5a: Internal notification (non-blocking)
+        try:
+            from app.services.studio_notification_service import studio_notification_service
+            from sqlalchemy import select as _sel
+            from lia_models.custom_agent import CustomAgent as _CA
+            _agent_res = await db.execute(_sel(_CA).where(_CA.id == agent_id))
+            _agent = _agent_res.scalar_one_or_none()
+            if _agent:
+                await studio_notification_service.notify_deployment_created(
+                    db=db,
+                    user_id=str(current_user.id),
+                    agent_id=str(deployment.agent_id),
+                    agent_name=_agent.name,
+                    target_type=deployment.target_type,
+                    target_name=deployment.target_name,
+                )
+                await db.commit()
+        except Exception as _notif_err:
+            logger.warning("[StudioNotif] deployment notify failed: %s", _notif_err)
+
         return DeploymentResponse(**deployment.to_dict())
     except ValueError as e:
         await db.rollback()
