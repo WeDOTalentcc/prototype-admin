@@ -26,6 +26,9 @@ from app.shared.services.confidence_policy_service import confidence_policy_serv
 logger = logging.getLogger(__name__)
 
 
+from app.shared.agents.agent_registry import register_agent
+
+@register_agent("analytics")
 class AnalyticsReActAgent(LangGraphReActBase, EnhancedAgentMixin):
     DOMAIN_INSTRUCTIONS = ANALYTICS_DOMAIN_SPECIFIC
 

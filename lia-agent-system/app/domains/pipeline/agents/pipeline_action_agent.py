@@ -19,6 +19,9 @@ from app.domains.pipeline.agents.pipeline_transition_agent import PipelineTransi
 logger = logging.getLogger(__name__)
 
 
+from app.shared.agents.agent_registry import register_agent
+
+@register_agent("pipeline_action")
 class PipelineActionAgent(PipelineTransitionAgent):
     """Action subagent for candidate field updates, communication and interview management.
 

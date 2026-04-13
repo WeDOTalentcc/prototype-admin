@@ -18,6 +18,9 @@ from app.domains.pipeline.agents.pipeline_transition_agent import PipelineTransi
 logger = logging.getLogger(__name__)
 
 
+from app.shared.agents.agent_registry import register_agent
+
+@register_agent("pipeline_context")
 class PipelineContextAgent(PipelineTransitionAgent):
     """Read-only subagent for candidate profiles, scores, salary and job context.
 

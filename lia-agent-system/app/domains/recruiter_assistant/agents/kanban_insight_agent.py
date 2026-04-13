@@ -18,6 +18,9 @@ from app.domains.recruiter_assistant.agents.kanban_react_agent import KanbanReAc
 logger = logging.getLogger(__name__)
 
 
+from app.shared.agents.agent_registry import register_agent
+
+@register_agent("kanban_insight")
 class KanbanInsightAgent(KanbanReActAgent):
     """Analytics subagent for bottleneck detection, aging reports and risk prediction.
 

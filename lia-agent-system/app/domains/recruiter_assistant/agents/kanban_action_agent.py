@@ -20,6 +20,9 @@ from app.domains.recruiter_assistant.agents.kanban_react_agent import KanbanReAc
 logger = logging.getLogger(__name__)
 
 
+from app.shared.agents.agent_registry import register_agent
+
+@register_agent("kanban_action")
 class KanbanActionAgent(KanbanReActAgent):
     """Action subagent for batch mutations, mass communications and fairness enforcement.
 

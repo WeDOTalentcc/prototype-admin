@@ -35,6 +35,9 @@ _CONFIRMATION_WORDS = {
 }
 
 
+from app.shared.agents.agent_registry import register_agent
+
+@register_agent("policy")
 class PolicyReActAgent(LangGraphReActBase, EnhancedAgentMixin):
     DOMAIN_INSTRUCTIONS = POLICY_DOMAIN_SPECIFIC + "\n\n" + POLICY_FEW_SHOT_EXAMPLES + "\n\n" + POLICY_REASONING_PROMPT.format(memory_summary="", stage_context="")
 

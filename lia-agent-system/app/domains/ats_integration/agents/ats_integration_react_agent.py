@@ -28,6 +28,9 @@ from app.shared.services.confidence_policy_service import confidence_policy_serv
 logger = logging.getLogger(__name__)
 
 
+from app.shared.agents.agent_registry import register_agent
+
+@register_agent("ats_integration", aliases=['ats'])
 class ATSIntegrationReActAgent(LangGraphReActBase, EnhancedAgentMixin):
     DOMAIN_INSTRUCTIONS = ATS_INTEGRATION_DOMAIN_SPECIFIC
 

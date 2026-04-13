@@ -35,6 +35,9 @@ _CONFIRMATION_WORDS = {
 }
 
 
+from app.shared.agents.agent_registry import register_agent
+
+@register_agent("kanban")
 class KanbanReActAgent(LangGraphReActBase, EnhancedAgentMixin):
     DOMAIN_INSTRUCTIONS = KANBAN_DOMAIN_SPECIFIC + "\n\n" + KANBAN_FEW_SHOT_EXAMPLES + "\n\n" + KANBAN_REASONING_PROMPT.format(memory_summary="", stage_context="")
 

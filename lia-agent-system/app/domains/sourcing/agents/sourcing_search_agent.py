@@ -15,6 +15,9 @@ from app.domains.sourcing.agents.sourcing_search_tool_registry import get_search
 logger = logging.getLogger(__name__)
 
 
+from app.shared.agents.agent_registry import register_agent
+
+@register_agent("sourcing_search")
 class SourcingSearchAgent(SourcingReActAgent):
     """Subagente de busca de candidatos — search, filter, view."""
 

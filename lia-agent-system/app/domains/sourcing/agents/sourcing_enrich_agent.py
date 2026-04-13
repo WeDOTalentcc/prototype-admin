@@ -17,6 +17,9 @@ from app.domains.sourcing.agents.sourcing_react_agent import SourcingReActAgent
 logger = logging.getLogger(__name__)
 
 
+from app.shared.agents.agent_registry import register_agent
+
+@register_agent("sourcing_enrich")
 class SourcingEnrichAgent(SourcingReActAgent):
     """Subagente de enriquecimento — análise, scoring e shortlist."""
 

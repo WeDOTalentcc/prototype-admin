@@ -18,6 +18,9 @@ from app.domains.pipeline.agents.pipeline_transition_agent import PipelineTransi
 logger = logging.getLogger(__name__)
 
 
+from app.shared.agents.agent_registry import register_agent
+
+@register_agent("pipeline_decision")
 class PipelineDecisionAgent(PipelineTransitionAgent):
     """Decision subagent for validating transitions and managing recruiter preferences.
 

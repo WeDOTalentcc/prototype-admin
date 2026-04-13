@@ -303,82 +303,69 @@ def _subagent_for_pipeline(message: str) -> str:
 
 
 def _get_agent(domain: str) -> Any | None:
-    """Retorna instância do agente para o domínio solicitado."""
+    """Retorna instancia do agente para o dominio solicitado.
+
+    Fase 3a (Wave 2): Delegates to AgentRegistry. The 21-branch if/elif
+    was replaced — each agent class is decorated with @register_agent(id).
+    Fallback to "talent" preserved for unknown domain.
+    """
     try:
-        if domain == "wizard":
-            from app.domains.job_management.agents.wizard_react_agent import WizardReActAgent
-            return WizardReActAgent()
-        elif domain in ("pipeline", "cv_screening"):
-            from app.domains.cv_screening.agents.pipeline_react_agent import PipelineReActAgent
-            return PipelineReActAgent()
-        elif domain == "sourcing":
-            from app.domains.sourcing.agents.sourcing_react_agent import SourcingReActAgent
-            return SourcingReActAgent()
-        # Z2-02: Sourcing subagents
-        elif domain == "sourcing_planner":
-            from app.domains.sourcing.agents.sourcing_planner_agent import SourcingPlannerAgent
-            return SourcingPlannerAgent()
-        elif domain == "sourcing_search":
-            from app.domains.sourcing.agents.sourcing_search_agent import SourcingSearchAgent
-            return SourcingSearchAgent()
-        elif domain == "sourcing_enrich":
-            from app.domains.sourcing.agents.sourcing_enrich_agent import SourcingEnrichAgent
-            return SourcingEnrichAgent()
-        elif domain == "sourcing_engagement":
-            from app.domains.sourcing.agents.sourcing_engagement_agent import SourcingEngagementAgent
-            return SourcingEngagementAgent()
-        elif domain == "talent":
-            from app.domains.recruiter_assistant.agents.talent_react_agent import TalentReActAgent
-            return TalentReActAgent()
-        elif domain == "kanban":
-            from app.domains.recruiter_assistant.agents.kanban_react_agent import KanbanReActAgent
-            return KanbanReActAgent()
-        # Z1-01: Kanban subagents
-        elif domain == "kanban_search":
-            from app.domains.recruiter_assistant.agents.kanban_search_agent import KanbanSearchAgent
-            return KanbanSearchAgent()
-        elif domain == "kanban_insight":
-            from app.domains.recruiter_assistant.agents.kanban_insight_agent import KanbanInsightAgent
-            return KanbanInsightAgent()
-        elif domain == "kanban_action":
-            from app.domains.recruiter_assistant.agents.kanban_action_agent import KanbanActionAgent
-            return KanbanActionAgent()
-        elif domain in ("jobs_management", "jobs_mgmt"):
-            from app.domains.recruiter_assistant.agents.jobs_mgmt_react_agent import JobsManagementReActAgent
-            return JobsManagementReActAgent()
-        elif domain == "policy":
-            from app.domains.hiring_policy.agents.policy_react_agent import PolicyReActAgent
-            return PolicyReActAgent()
-        elif domain == "pipeline_transition":
-            from app.domains.pipeline.agents.pipeline_transition_agent import PipelineTransitionAgent
-            return PipelineTransitionAgent()
-        # Z1-02: Pipeline subagents
-        elif domain == "pipeline_context":
-            from app.domains.pipeline.agents.pipeline_context_agent import PipelineContextAgent
-            return PipelineContextAgent()
-        elif domain == "pipeline_decision":
-            from app.domains.pipeline.agents.pipeline_decision_agent import PipelineDecisionAgent
-            return PipelineDecisionAgent()
-        elif domain == "pipeline_action":
-            from app.domains.pipeline.agents.pipeline_action_agent import PipelineActionAgent
-            return PipelineActionAgent()
-        elif domain == "analytics":
-            from app.domains.analytics.agents.analytics_react_agent import AnalyticsReActAgent
-            return AnalyticsReActAgent()
-        elif domain in ("communication", "comms"):
-            from app.domains.communication.agents.communication_react_agent import CommunicationReActAgent
-            return CommunicationReActAgent()
-        elif domain in ("ats_integration", "ats"):
-            from app.domains.ats_integration.agents.ats_integration_react_agent import ATSIntegrationReActAgent
-            return ATSIntegrationReActAgent()
-        else:
-            # Fallback: recruiter assistant (talent)
-            from app.domains.recruiter_assistant.agents.talent_react_agent import TalentReActAgent
-            return TalentReActAgent()
+        # Trigger agent module imports (one-time, idempotent) so decorators run.
+        # Each import registers the class in AgentRegistry.
+        _ensure_agents_loaded()
+
+        from app.shared.agents.agent_registry import AgentRegistry
+        return AgentRegistry().get_or_fallback(domain, fallback_id="talent")
     except Exception as exc:
         logger.error("[AgentChatWS] Falha ao carregar agente domain=%s: %s", domain, exc)
         return None
 
+
+_AGENTS_LOADED = False
+
+
+def _ensure_agents_loaded() -> None:
+    """Import all agent modules once to trigger @register_agent decorators.
+
+    Idempotent. Safe to call repeatedly.
+    """
+    global _AGENTS_LOADED
+    if _AGENTS_LOADED:
+        return
+
+    try:
+        # Top-level ReAct agents
+        from app.domains.job_management.agents.wizard_react_agent import WizardReActAgent  # noqa: F401
+        from app.domains.cv_screening.agents.pipeline_react_agent import PipelineReActAgent  # noqa: F401
+        from app.domains.sourcing.agents.sourcing_react_agent import SourcingReActAgent  # noqa: F401
+        from app.domains.recruiter_assistant.agents.talent_react_agent import TalentReActAgent  # noqa: F401
+        from app.domains.recruiter_assistant.agents.kanban_react_agent import KanbanReActAgent  # noqa: F401
+        from app.domains.recruiter_assistant.agents.jobs_mgmt_react_agent import JobsManagementReActAgent  # noqa: F401
+        from app.domains.hiring_policy.agents.policy_react_agent import PolicyReActAgent  # noqa: F401
+        from app.domains.pipeline.agents.pipeline_transition_agent import PipelineTransitionAgent  # noqa: F401
+        from app.domains.analytics.agents.analytics_react_agent import AnalyticsReActAgent  # noqa: F401
+        from app.domains.communication.agents.communication_react_agent import CommunicationReActAgent  # noqa: F401
+        from app.domains.ats_integration.agents.ats_integration_react_agent import ATSIntegrationReActAgent  # noqa: F401
+
+        # Sourcing sub-agents
+        from app.domains.sourcing.agents.sourcing_planner_agent import SourcingPlannerAgent  # noqa: F401
+        from app.domains.sourcing.agents.sourcing_search_agent import SourcingSearchAgent  # noqa: F401
+        from app.domains.sourcing.agents.sourcing_enrich_agent import SourcingEnrichAgent  # noqa: F401
+        from app.domains.sourcing.agents.sourcing_engagement_agent import SourcingEngagementAgent  # noqa: F401
+
+        # Kanban sub-agents
+        from app.domains.recruiter_assistant.agents.kanban_search_agent import KanbanSearchAgent  # noqa: F401
+        from app.domains.recruiter_assistant.agents.kanban_insight_agent import KanbanInsightAgent  # noqa: F401
+        from app.domains.recruiter_assistant.agents.kanban_action_agent import KanbanActionAgent  # noqa: F401
+
+        # Pipeline sub-agents
+        from app.domains.pipeline.agents.pipeline_context_agent import PipelineContextAgent  # noqa: F401
+        from app.domains.pipeline.agents.pipeline_decision_agent import PipelineDecisionAgent  # noqa: F401
+        from app.domains.pipeline.agents.pipeline_action_agent import PipelineActionAgent  # noqa: F401
+
+        _AGENTS_LOADED = True
+    except Exception as exc:
+        logger.error("[AgentChatWS] Falha ao carregar modulos de agentes: %s", exc)
 
 def _extract_auth(token: str | None) -> dict[str, Any]:
     """Extrai company_id e user_id do JWT (best-effort, sem bloquear WS)."""

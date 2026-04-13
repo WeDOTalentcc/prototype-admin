@@ -78,6 +78,9 @@ def _aggregate_all_tool_names() -> list[str]:
             return []
 
 
+from app.shared.agents.agent_registry import register_agent
+
+@register_agent("sourcing")
 class SourcingReActAgent(LangGraphReActBase, EnhancedAgentMixin):
     DOMAIN_INSTRUCTIONS = SOURCING_DOMAIN_SPECIFIC + "\n\n" + SOURCING_FEW_SHOT_EXAMPLES + "\n\n" + SOURCING_REASONING_PROMPT.format(memory_summary="", stage_context="")
 

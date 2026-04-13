@@ -34,6 +34,9 @@ _CONFIRMATION_WORDS = {
 }
 
 
+from app.shared.agents.agent_registry import register_agent
+
+@register_agent("pipeline", aliases=['cv_screening'])
 class PipelineReActAgent(LangGraphReActBase, EnhancedAgentMixin):
     DOMAIN_INSTRUCTIONS = PIPELINE_DOMAIN_SPECIFIC + "\n\n" + PIPELINE_REASONING_PROMPT.format(memory_summary="", stage_context="")
 

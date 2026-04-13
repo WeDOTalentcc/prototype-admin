@@ -15,6 +15,9 @@ from app.domains.sourcing.agents.sourcing_react_agent import SourcingReActAgent
 logger = logging.getLogger(__name__)
 
 
+from app.shared.agents.agent_registry import register_agent
+
+@register_agent("sourcing_planner")
 class SourcingPlannerAgent(SourcingReActAgent):
     """Subagente de planejamento de sourcing — define critérios e sugere skills."""
 

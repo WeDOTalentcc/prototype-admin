@@ -17,6 +17,9 @@ from app.domains.recruiter_assistant.agents.kanban_search_tool_registry import (
 logger = logging.getLogger(__name__)
 
 
+from app.shared.agents.agent_registry import register_agent
+
+@register_agent("kanban_search")
 class KanbanSearchAgent(KanbanReActAgent):
     """Read-only subagent for candidate queries and pipeline state retrieval.
 

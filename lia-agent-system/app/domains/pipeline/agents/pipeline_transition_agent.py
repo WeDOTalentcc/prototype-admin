@@ -27,6 +27,9 @@ from app.domains.pipeline.agents.pipeline_system_prompt import get_pipeline_syst
 logger = logging.getLogger(__name__)
 
 
+from app.shared.agents.agent_registry import register_agent
+
+@register_agent("pipeline_transition")
 class PipelineTransitionAgent(LangGraphReActBase, EnhancedAgentMixin):
     """Autonomous agent for intelligent candidate stage transitions.
 

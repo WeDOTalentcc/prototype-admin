@@ -35,6 +35,9 @@ _CONFIRMATION_WORDS = {
 }
 
 
+from app.shared.agents.agent_registry import register_agent
+
+@register_agent("talent")
 class TalentReActAgent(LangGraphReActBase, EnhancedAgentMixin):
     DOMAIN_INSTRUCTIONS = TALENT_DOMAIN_SPECIFIC + "\n\n" + TALENT_FEW_SHOT_EXAMPLES + "\n\n" + TALENT_REASONING_PROMPT.format(memory_summary="", stage_context="")
 
