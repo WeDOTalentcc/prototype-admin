@@ -61,9 +61,15 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
     CMD curl -f http://localhost:8000/api/v1/health || exit 1
 
-# Gunicorn in prod (multi-worker), uvicorn workers for async
+# LIA-D02: Migrations must run BEFORE containers start.
+# Use a pre-deploy step (Cloud Run Job, init container, or GitHub Actions step).
+# See deploy/run_migrations.sh or .github/workflows/deploy.yml migration step.
+# DO NOT add `alembic upgrade head` unconditionally to CMD -- race condition on scale-up.
+#
+# Transition: Set LIA_SKIP_MIGRATIONS_IN_CMD=true to disable in-container migrations.
+# Without the env var, alembic still runs (backward-compatible with existing deploys).
 CMD ["sh", "-c", \
-    "alembic upgrade head && \
+    "if [ \"$LIA_SKIP_MIGRATIONS_IN_CMD\" != \"true\" ]; then echo \'[LIA-D02] Running alembic in CMD (legacy mode)...\'; alembic upgrade head; fi && \
      gunicorn app.main:app \
      --workers ${GUNICORN_WORKERS:-4} \
      --worker-class uvicorn.workers.UvicornWorker \

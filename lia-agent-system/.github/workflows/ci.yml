@@ -155,6 +155,9 @@ jobs:
           python-version: "3.11"
           cache: pip
 
+      # LIA-D04: TODO — make lint blocking once 752 ruff errors are resolved.
+      # Auto-fixable: ~0 remaining (28 already fixed). F821 (155) and F405 (360) need manual fixes.
+      # Currently `|| true` is intentional — remove when error count is near zero.
       - name: Install ruff
         run: pip install ruff
 

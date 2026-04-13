@@ -25,12 +25,15 @@ jobs:
         run: pip install bandit[toml] pip-audit safety --quiet
 
       - name: Bandit SAST scan
-        run: bandit -r app/ -ll -q --exclude app/tests
-        continue-on-error: true
+        # LIA-D03: Security scans block deploy. HIGH severity = hard fail.
+        # B324 excluded: MD5 used for cache keys only, not security.
+        run: bandit -r app/ -lll -q --exclude app/tests --skip B324
+        continue-on-error: false
 
       - name: pip-audit (dependency vulnerabilities)
+        # LIA-D03: Dependency vuln scan blocks deploy
         run: pip-audit -r requirements.txt --desc
-        continue-on-error: true
+        continue-on-error: false
 
   build-and-deploy:
     name: Build & Deploy API + Worker
@@ -91,6 +94,21 @@ jobs:
           docker push ${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT }}/lia/lia-api:latest
           docker push ${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT }}/lia/lia-worker:${{ github.sha }}
           docker push ${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT }}/lia/lia-worker:latest
+
+      # LIA-D02: Run database migrations as a pre-deploy step (not in container CMD).
+      # TODO: Create 'lia-migrations' Cloud Run Job via:
+      #   gcloud run jobs create lia-migrations \
+      #     --image=${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT }}/lia/lia-api:${{ github.sha }} \
+      #     --region=${{ env.GCP_REGION }} \
+      #     --command="alembic" \
+      #     --args="upgrade,head" \
+      #     --set-secrets="DATABASE_URL=DATABASE_URL:latest"
+      # Then uncomment the step below and set LIA_SKIP_MIGRATIONS_IN_CMD=true on the API service.
+      #
+      # - name: Run database migrations (pre-deploy)
+      #   run: |
+      #     gcloud run jobs execute lia-migrations --region=${{ env.GCP_REGION }} --wait
+      #   continue-on-error: false
 
       - name: Deploy API to Cloud Run
         run: |

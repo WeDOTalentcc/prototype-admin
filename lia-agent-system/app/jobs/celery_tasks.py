@@ -15,6 +15,26 @@ Tasks registradas:
   - ragas.evaluate_batch         — avaliação RAGAS de qualidade LLM (ACH-027)
   - digest.send_weekly           — envia weekly digest a todos os recrutadores ativos
 """
+
+# ─────────────────────────────────────────────────────────────────────────
+# LIA-D07: TODO — split this 2108-line file into tasks/ subdirectory.
+#
+# Planned structure:
+#   - tasks/agents.py (7 tasks: execute_wizard, execute_pipeline, etc.)
+#   - tasks/agents_legacy.py (4 tasks: run_drift_batch, start_wsi_interview, etc.)
+#   - tasks/communication.py (3 tasks: send_bulk_email, send_daily_briefing, etc.)
+#   - tasks/compliance.py (5 tasks: apply_audit_lifecycle_policy, run_lgpd_cleanup, etc.)
+#   - tasks/followup.py (2 tasks: followup_process_pending, wsi_check_abandoned)
+#   - tasks/feedback.py (3 tasks: feedback_generate_and_send, etc.)
+#   - tasks/ml.py (7 tasks: run_ragas_evaluate_batch, rebuild_domain_index, etc.)
+#   - tasks/registry.py (1 task: check_agent_registry_reload)
+#   - tasks/voice.py (1 task: run_openmic_wsi_pipeline)
+#   - tasks/_utils.py (shared helpers: _celery_span, _finish_celery_*, etc.)
+#
+# Main celery_tasks.py becomes a facade that re-exports from tasks/ modules.
+# Defer actual split until after celery worker deployment stability verified.
+# ─────────────────────────────────────────────────────────────────────────
+
 import asyncio
 import re
 from datetime import UTC

@@ -9,6 +9,17 @@ Environment Variables:
 - CACHE_TTL_CANDIDATE_SEARCH: TTL for candidate search (default: 120)
 """
 
+
+# LIA-D05: DEPRECATED — superseded by app/shared/cache_strategy.py
+# This module has conflicting TTLs with cache_strategy.py. Use cache_strategy.py
+# as the single source of truth. Kept temporarily for backwards compat.
+import warnings as _lia_warnings
+_lia_warnings.warn(
+    "[LIA-D05] app.config.cache_config is deprecated. Use app.shared.cache_strategy.",
+    DeprecationWarning,
+    stacklevel=2,
+)
+
 import os
 
 

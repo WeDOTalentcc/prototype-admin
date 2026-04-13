@@ -14,7 +14,7 @@ from typing import Dict, Any, List, Optional
 
 import httpx
 
-from app.config.settings import get_settings
+from app.core.config import settings  # LIA-D01: Fix import path (was app.config.settings)
 from app.services.ott_service import get_ott_service
 
 logger = logging.getLogger(__name__)
@@ -31,7 +31,7 @@ class APIResponse:
 class JobCreationAPIClient:
 
     def __init__(self, context=None):
-        self.settings = get_settings()
+        self.settings = settings  # LIA-D01: settings is a singleton, not a function
         self.base_url = self.settings.ats_api.base_url
         self.timeout = self.settings.rails_api.timeout
         self._ott_service = get_ott_service()
