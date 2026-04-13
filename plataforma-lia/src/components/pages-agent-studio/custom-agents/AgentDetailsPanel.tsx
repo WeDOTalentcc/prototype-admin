@@ -1,7 +1,7 @@
 "use client"
 
-import React from "react"
-import { Bot, Link2, Zap, Calendar, MousePointer, GitBranch, MapPin, Loader2 } from "lucide-react"
+import React, { useState } from "react"
+import { Bot, Link2, Zap, Calendar, MousePointer, GitBranch, MapPin, Loader2, Copy } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { cardStyles, badgeStyles, textStyles } from "@/lib/design-tokens"
 import { BetaBadge } from "@/components/ui/beta-badge"
@@ -30,6 +30,25 @@ interface AgentDetailsPanelProps {
 
 export function AgentDetailsPanel({ agent, open, onClose, onDeploy, onTest }: AgentDetailsPanelProps) {
   const { deployments, isLoading: deploymentsLoading } = useAgentDeployments(agent?.id ?? null)
+  const [isCloning, setIsCloning] = useState(false)
+
+  const handleClone = async () => {
+    if (!agent) return
+    setIsCloning(true)
+    try {
+      const token = localStorage.getItem("auth_token")
+      const res = await fetch(`/api/backend-proxy/custom-agents/${agent.id}/clone`, {
+        method: "POST",
+        headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+      })
+      if (!res.ok) throw new Error("Erro ao clonar")
+      onClose()
+    } catch {
+      // toast handled by caller
+    } finally {
+      setIsCloning(false)
+    }
+  }
 
   if (!agent) return null
 
@@ -154,6 +173,15 @@ export function AgentDetailsPanel({ agent, open, onClose, onDeploy, onTest }: Ag
               className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-md text-xs font-medium bg-wedo-cyan/10 text-wedo-cyan-dark hover:bg-wedo-cyan/20 transition-colors"
             >
               Vincular
+            </button>
+            <button
+              type="button"
+              onClick={handleClone}
+              disabled={isCloning}
+              className="inline-flex items-center justify-center gap-1 px-3 py-2 rounded-md text-xs font-medium text-lia-text-secondary hover:bg-lia-bg-tertiary transition-colors"
+            >
+              <Copy className="w-3.5 h-3.5" />
+              {isCloning ? "..." : "Clonar"}
             </button>
           </div>
         </div>

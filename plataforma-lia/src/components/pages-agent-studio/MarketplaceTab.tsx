@@ -106,6 +106,8 @@ function BrowseMarketplace() {
   const [search, setSearch] = useState("")
   const [installing, setInstalling] = useState<string | null>(null)
 
+  useEffect(() => { loadListings() }, [category, search])
+
   const loadListings = useCallback(async () => {
     setIsLoading(true)
     try {
@@ -125,7 +127,7 @@ function BrowseMarketplace() {
     }
   }, [category, search])
 
-  useEffect(() => { loadListings() }, [loadListings])
+  // Removed: useEffect handled above with [category, search]
 
   const handleInstall = async (listingId: string) => {
     setInstalling(listingId)

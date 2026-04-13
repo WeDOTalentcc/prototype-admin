@@ -717,6 +717,49 @@ Responda APENAS com o JSON, sem texto adicional."""
         raise HTTPException(status_code=500, detail=f"Erro ao gerar configuracao: {e}")
 
 
+@router.post("/{agent_id}/clone", summary="Clone an existing agent")
+async def clone_custom_agent(
+    agent_id: str,
+    current_user=Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Create a copy of an existing agent with '(copia)' appended to name."""
+    agent = await agent_marketplace_service.get_agent(
+        db=db, agent_id=agent_id, company_id=current_user.company_id
+    )
+    if not agent:
+        raise HTTPException(status_code=404, detail="Agent not found")
+
+    clone_data = {
+        "name": f"{agent.name} (copia)",
+        "role": agent.role,
+        "description": agent.description,
+        "system_prompt": agent.system_prompt,
+        "allowed_tools": agent.allowed_tools or [],
+        "domain": agent.domain or "general",
+        "icon": agent.icon,
+        "max_steps": agent.max_steps or 8,
+        "temperature": agent.temperature or 0.7,
+        "model_override": agent.model_override,
+        "enable_memory": getattr(agent, "enable_memory", True),
+        "context_level": getattr(agent, "context_level", "full"),
+        "excluded_tools": getattr(agent, "excluded_tools", []),
+    }
+    try:
+        cloned = await agent_marketplace_service.create_agent(
+            db=db,
+            company_id=current_user.company_id,
+            created_by=str(current_user.id),
+            data=clone_data,
+        )
+        await db.commit()
+        return CustomAgentResponse(**cloned.to_dict())
+    except Exception as e:
+        await db.rollback()
+        logger.error("Error cloning agent: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail="Failed to clone agent")
+
+
 @router.get("/{agent_id}/preview-prompt")
 async def preview_agent_prompt(
     agent_id: str,
