@@ -4,6 +4,10 @@ import React, { useState, useEffect } from "react"
 import { TwinsList, EvaluateWithTwinModal } from "@/components/pages-agent-studio/DigitalTwinComponents"
 import MultiStrategySearchPanel from "@/components/pages-agent-studio/MultiStrategySearchPanel"
 import CustomAgentsTab from "@/components/pages-agent-studio/CustomAgentsTab"
+import { TemplateGallery, AgentCard as CustomAgentCard, DeployDialog } from "@/components/pages-agent-studio/custom-agents"
+import { useCustomAgents } from "@/hooks/agents"
+import { useAgentStudioStore } from "@/stores/agent-studio-store"
+import type { CustomAgent, AgentTemplate } from "@/components/pages-agent-studio/custom-agents/types"
 import MarketplaceTab from "@/components/pages-agent-studio/MarketplaceTab"
 import {
   Bot, Plus, Play, Pause, Briefcase, Database,
@@ -87,6 +91,9 @@ export default function AgentStudioPage({
   const [isLoading, setIsLoading] = useState(true)
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [evaluatingTwinId, setEvaluatingTwinId] = useState<string | null>(null)
+  const [deployAgent, setDeployAgent] = useState<CustomAgent | null>(null)
+  const { agents: customAgents, mutate: mutateCustomAgents } = useCustomAgents()
+  const { selectTemplate, reset: resetStudio } = useAgentStudioStore()
   const [selectedTemplate, setSelectedTemplate] = useState<SectorTemplate | null>(null)
   const [activeTab, setActiveTab] = useState<"agents" | "custom" | "marketplace" | "twins" | "search">("agents")
 
@@ -130,6 +137,60 @@ export default function AgentStudioPage({
     } catch (err) {
       console.error("Failed to toggle agent:", err)
       toast.error("Erro ao alterar status do agente", "Tente novamente em alguns instantes.")
+    }
+  }
+
+  const handleTemplateSelect = async (template: AgentTemplate) => {
+    selectTemplate(template)
+    try {
+      const token = localStorage.getItem("auth_token")
+      const res = await fetch("/api/backend-proxy/custom-agents", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          name: template.name,
+          role: template.description,
+          description: template.description,
+          system_prompt: template.system_prompt,
+          allowed_tools: template.allowed_tools,
+          domain: template.domain,
+          icon: template.icon,
+          max_steps: template.max_steps,
+          temperature: template.temperature,
+          enable_memory: template.enable_memory,
+          context_level: template.context_level,
+          excluded_tools: template.excluded_tools,
+        }),
+      })
+      if (!res.ok) throw new Error("Erro ao criar agente")
+      toast.success(`Agente "${template.name}" criado!`, "Agora vincule a uma vaga ou banco de talentos.")
+      mutateCustomAgents()
+      resetStudio()
+      setActiveTab("custom")
+    } catch {
+      toast.error("Erro ao criar agente", "Tente novamente.")
+    }
+  }
+
+  const handleCustomAgentToggle = async (agent: CustomAgent) => {
+    const newStatus = agent.status === "active" ? "paused" : "active"
+    try {
+      const token = localStorage.getItem("auth_token")
+      await fetch(`/api/backend-proxy/custom-agents/${agent.id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ status: newStatus }),
+      })
+      toast.success(newStatus === "active" ? "Agente ativado" : "Agente pausado")
+      mutateCustomAgents()
+    } catch {
+      toast.error("Erro ao alterar status")
     }
   }
 
@@ -402,7 +463,51 @@ export default function AgentStudioPage({
         )}
 
         {activeTab === "custom" && (
-          <CustomAgentsTab />
+          <div className="space-y-6">
+            {/* My Agents */}
+            {customAgents.length > 0 && (
+              <section>
+                <h3 className="text-sm font-semibold text-lia-text-primary mb-3">
+                  Meus Agentes ({customAgents.length})
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {customAgents.map((agent) => (
+                    <CustomAgentCard
+                      key={agent.id}
+                      agent={agent}
+                      onTest={() => {/* TODO: open test modal */}}
+                      onDeploy={(a) => setDeployAgent(a)}
+                      onToggleStatus={(a) => { handleCustomAgentToggle(a) }}
+                    />
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* Template Gallery */}
+            <TemplateGallery
+              onTemplateSelect={handleTemplateSelect}
+              onCreateManual={() => setShowCreateModal(true)}
+            />
+
+            {/* Deploy Dialog */}
+            <DeployDialog
+              agent={deployAgent}
+              open={!!deployAgent}
+              onClose={() => setDeployAgent(null)}
+              onDeployed={() => mutateCustomAgents()}
+            />
+
+            {/* Legacy form for advanced editing */}
+            <details className="mt-4">
+              <summary className="text-xs text-lia-text-disabled cursor-pointer hover:text-lia-text-secondary">
+                Formulario avancado (modo tecnico)
+              </summary>
+              <div className="mt-3">
+                <CustomAgentsTab />
+              </div>
+            </details>
+          </div>
         )}
 
         {activeTab === "marketplace" && (
