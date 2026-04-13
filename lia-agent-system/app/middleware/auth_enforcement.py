@@ -89,18 +89,36 @@ if _DEV_MODE:
 
 
 def _check_dev_api_key(request: Request, path: str) -> JSONResponse | None:
-    """Validate X-Dev-Api-Key header when DEV_MODE is active with an API key configured.
+    """Validate X-Dev-Api-Key header when DEV_MODE is active.
 
-    Returns a 401 JSONResponse if the key is required but missing/wrong,
-    or None if the request should proceed with synthetic user injection.
+    Fail-closed: if LIA_DEV_MODE is active but LIA_DEV_API_KEY is NOT configured,
+    the request is rejected. This prevents the previous bypass where forgetting
+    to set the dev key opened full admin access to every request.
+
+    Returns 401 JSONResponse if auth fails, or None if request should proceed
+    with synthetic user injection.
     """
-    if _DEV_API_KEY:
-        provided = request.headers.get("X-Dev-Api-Key", "")
-        if provided != _DEV_API_KEY:
-            logger.warning("[AuthEnforcement] DEV_MODE request rejected — invalid or missing X-Dev-Api-Key for %s %s", request.method, path)
-            return JSONResponse({"detail": "Invalid or missing dev API key"}, status_code=401)
-    else:
-        logger.warning("[AuthEnforcement] DEV_MODE sem API key — zero autenticação para %s %s", request.method, path)
+    if not _DEV_API_KEY:
+        # LIA-SEC-01: fail-closed. Previously this logged a warning and allowed
+        # unauthenticated access — now it rejects the request.
+        logger.error(
+            "[AuthEnforcement] DEV_MODE active but LIA_DEV_API_KEY not set — rejecting %s %s. "
+            "Set LIA_DEV_API_KEY in env or disable LIA_DEV_MODE.",
+            request.method, path,
+        )
+        return JSONResponse(
+            {"detail": "DEV_MODE misconfigured: LIA_DEV_API_KEY required"},
+            status_code=401,
+        )
+
+    provided = request.headers.get("X-Dev-Api-Key", "")
+    if provided != _DEV_API_KEY:
+        logger.warning(
+            "[AuthEnforcement] DEV_MODE request rejected — invalid or missing X-Dev-Api-Key for %s %s",
+            request.method, path,
+        )
+        return JSONResponse({"detail": "Invalid or missing dev API key"}, status_code=401)
+
     return None
 
 PUBLIC_PREFIXES = (
