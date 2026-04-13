@@ -32,6 +32,8 @@ ACTION_CREDIT_COSTS: dict[str, int] = {
     "interview_schedule": 3,
     "cv_parsing": 3,
     "bulk_search": 5,
+    "pearch_search": 2,
+    "apify_enrichment": 0,
 }
 
 

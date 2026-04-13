@@ -92,6 +92,67 @@ class TokenTrackingService:
             return merged
         return DEFAULT_LIMITS.copy()
     
+    async def record_apify_usage(
+        self,
+        company_id: str,
+        user_id: str | None,
+        candidate_id: str | None,
+        operation: str,
+        cost_usd: float,
+        response_time_ms: int = 0,
+        extra_data: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        import os
+        rate = float(os.environ.get("APIFY_USD_TO_BRL_RATE", "5.50"))
+        cost_cents_brl = int(round(cost_usd * rate * 100))
+        try:
+            try:
+                _parsed_company_id = UUID(company_id)
+            except (ValueError, AttributeError):
+                logger.debug("[TokenTracking] Non-UUID company_id '%s', skipping ai_consumption", company_id)
+                return {"skipped": True, "reason": "non_uuid_company_id"}
+            try:
+                _parsed_user_id = UUID(user_id) if user_id else None
+            except (ValueError, AttributeError):
+                _parsed_user_id = None
+            consumption = AiConsumption(
+                company_id=_parsed_company_id,
+                user_id=_parsed_user_id,
+                agent_type="apify_enrichment",
+                operation=operation,
+                model="apify",
+                input_tokens=0,
+                output_tokens=0,
+                total_tokens=0,
+                cost_cents=cost_cents_brl,
+                candidate_id=UUID(candidate_id) if candidate_id else None,
+                extra_data={
+                    "cost_usd": cost_usd,
+                    "exchange_rate": rate,
+                    "response_time_ms": response_time_ms,
+                    **(extra_data or {}),
+                },
+            )
+            self.db.add(consumption)
+            await self.db.commit()
+            await self.db.refresh(consumption)
+
+            logger.info(
+                "[TokenTracking] Apify usage recorded: %s $%.4f (%d centavos BRL)",
+                operation, cost_usd, cost_cents_brl,
+            )
+            return {
+                "id": str(consumption.id),
+                "cost_usd": cost_usd,
+                "cost_cents_brl": cost_cents_brl,
+                "agent_type": "apify_enrichment",
+                "operation": operation,
+            }
+        except Exception as e:
+            logger.error("Error recording Apify usage: %s", e, exc_info=True)
+            await self.db.rollback()
+            raise
+
     async def record_usage(
         self,
         user_id: str,

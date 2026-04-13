@@ -243,7 +243,8 @@ class PearchService:
     async def search_candidates(
         self,
         request: PearchSearchRequest,
-        timeout: int = 120
+        timeout: int = 120,
+        company_id: str | None = None,
     ) -> PearchSearchResponse:
         """
         Busca candidatos usando a API v2 da Pearch.
@@ -293,6 +294,8 @@ class PearchService:
         except Exception as _fg_exc:
             logger.debug("[PearchService] FairnessGuard check skipped: %s", _fg_exc)
 
+        company_id = company_id or getattr(request, "company_id", None)
+
         logger.info(f"Searching Pearch AI v2: '{request.query}' (limit={request.limit}, type={request.type})")
         
         start_time = datetime.now()
@@ -341,6 +344,21 @@ class PearchService:
                     f"(credits remaining: {parsed_response.credits_remaining})"
                 )
                 
+                credit_estimate = self.estimate_credits(request)
+                estimated_credits = min(
+                    credit_estimate.total_estimated,
+                    credit_estimate.total_per_candidate * len(parsed_response.search_results),
+                )
+
+                await self._track_pearch_consumption(
+                    company_id=company_id,
+                    operation="search",
+                    credits_consumed=estimated_credits,
+                    success=True,
+                    result_status="success",
+                    response_time_ms=int(search_time * 1000),
+                )
+
                 return parsed_response
         
         except httpx.HTTPStatusError as e:
@@ -351,16 +369,78 @@ class PearchService:
                     "Routing to local RAG fallback for query='%s'.",
                     retry_after, request.query,
                 )
+                await self._track_pearch_consumption(
+                    company_id=company_id,
+                    operation="search",
+                    credits_consumed=0,
+                    success=False,
+                    result_status="rate_limited",
+                    error_message=f"HTTP 429 rate limited",
+                )
                 return await _pearch_search_fallback(self, request, timeout)
             logger.error(f"Pearch API error: {e.response.status_code} - {e.response.text}")
+            await self._track_pearch_consumption(
+                company_id=company_id,
+                operation="search",
+                credits_consumed=0,
+                success=False,
+                result_status="fail",
+                error_message=f"HTTP {e.response.status_code}",
+            )
             raise
         except httpx.TimeoutException:
             logger.error(f"Pearch API timeout after {timeout}s")
+            await self._track_pearch_consumption(
+                company_id=company_id,
+                operation="search",
+                credits_consumed=0,
+                success=False,
+                result_status="timeout",
+                error_message=f"Timeout after {timeout}s",
+            )
             raise
         except Exception as e:
             logger.error(f"Unexpected error calling Pearch API: {e}")
+            await self._track_pearch_consumption(
+                company_id=company_id,
+                operation="search",
+                credits_consumed=0,
+                success=False,
+                result_status="fail",
+                error_message=str(e)[:500],
+            )
             raise
     
+    @staticmethod
+    async def _track_pearch_consumption(
+        company_id: str | None,
+        operation: str,
+        credits_consumed: int,
+        success: bool,
+        result_status: str = "success",
+        response_time_ms: int = 0,
+        error_message: str | None = None,
+    ) -> None:
+        resolved_company_id = company_id or "unattributed"
+        try:
+            from app.core.database import AsyncSessionLocal
+            from app.domains.billing.services.consumption_tracking_service import ConsumptionTrackingService
+            async with AsyncSessionLocal() as db:
+                await ConsumptionTrackingService.record_pearch_call(
+                    db=db,
+                    company_id=resolved_company_id,
+                    user_id=None,
+                    operation=operation,
+                    credits_consumed=credits_consumed,
+                    success=success,
+                    result_status=result_status,
+                    response_time_ms=response_time_ms,
+                    error_message=error_message,
+                )
+                await db.commit()
+        except Exception as e:
+            logger.error("[PearchService] Failed to track consumption: %s", e)
+
     def _parse_response(self, data: dict[str, Any], search_time: float) -> PearchSearchResponse:
         """Parse raw API response into structured models."""
         search_results = []

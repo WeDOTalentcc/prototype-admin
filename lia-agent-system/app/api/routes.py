@@ -76,6 +76,7 @@ from app.api.v1 import (
     compliance_status,
     consent_management,
     conversations,
+    consumption,
     credits,
     cv_parser,
     dashboard_data,
@@ -437,6 +438,7 @@ def register_all_routes(app: FastAPI) -> None:
     app.include_router(workforce.router, prefix="/api/v1", tags=["workforce"])
     app.include_router(workforce_planning.router, prefix="/api/v1", tags=["workforce-planning"])
     app.include_router(credits.router, prefix="/api/v1", tags=["credits"])
+    app.include_router(consumption.router, prefix="/api/v1", tags=["consumption"])
 
     # ── WSI / Triagem ─────────────────────────────────────────────────────────
     app.include_router(wsi_endpoints.router, tags=["wsi"])

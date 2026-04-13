@@ -1237,6 +1237,8 @@ async def _wrap_enrich_candidate_contact(**kwargs: Any) -> dict[str, Any]:
     candidate_id = kwargs.get("candidate_id", "")
     linkedin_url = kwargs.get("linkedin_url", "")
     force = kwargs.get("force", False)
+    company_id = kwargs.get("company_id", "") or ""
+    user_id = kwargs.get("user_id", "") or ""
 
     if not candidate_id:
         return {"success": False, "data": {}, "message": "Parametro 'candidate_id' e obrigatorio."}
@@ -1249,6 +1251,8 @@ async def _wrap_enrich_candidate_contact(**kwargs: Any) -> dict[str, Any]:
                 candidate_id=_UUID(candidate_id),
                 linkedin_url=linkedin_url or None,
                 force=force,
+                company_id=company_id or None,
+                user_id=user_id or None,
             )
             await session.commit()
 

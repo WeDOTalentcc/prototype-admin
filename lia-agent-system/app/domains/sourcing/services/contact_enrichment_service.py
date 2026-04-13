@@ -31,12 +31,47 @@ class ContactEnrichmentService:
     def __init__(self, enrichment_svc: CandidateEnrichmentService | None = None):
         self._enrichment_svc = enrichment_svc or candidate_enrichment_service
 
+    async def _track_apify_consumption(
+        self,
+        db: AsyncSession,
+        company_id: str | None,
+        user_id: str | None,
+        candidate_id: str | None,
+        linkedin_url: str | None,
+        operation: str,
+        cost_usd: float,
+        success: bool,
+        result_status: str = "success",
+        response_time_ms: int = 0,
+        error_message: str | None = None,
+    ) -> None:
+        resolved_company_id = company_id or "unattributed"
+        try:
+            from app.domains.billing.services.consumption_tracking_service import ConsumptionTrackingService
+            await ConsumptionTrackingService.record_apify_call(
+                db=db,
+                company_id=resolved_company_id,
+                user_id=user_id,
+                candidate_id=str(candidate_id) if candidate_id else None,
+                linkedin_url=linkedin_url,
+                operation=operation,
+                cost_usd=cost_usd,
+                success=success,
+                result_status=result_status,
+                response_time_ms=response_time_ms,
+                error_message=error_message,
+            )
+        except Exception as e:
+            logger.error("[ContactEnrichment] Failed to track consumption: %s", e)
+
     async def enrich_candidate_contact(
         self,
         db: AsyncSession,
         candidate_id: UUID,
         linkedin_url: str | None = None,
         force: bool = False,
+        company_id: str | None = None,
+        user_id: str | None = None,
     ) -> dict[str, Any]:
         result = await db.execute(
             select(Candidate).where(Candidate.id == candidate_id)
@@ -104,6 +139,20 @@ class ContactEnrichmentService:
 
             await self._sync_to_rails(candidate, enrichment_result.get("fields_updated", []))
 
+            result_status = "success" if has_contact else "no_contact"
+            await self._track_apify_consumption(
+                db=db,
+                company_id=company_id,
+                user_id=user_id,
+                candidate_id=str(candidate_id),
+                linkedin_url=profile_url,
+                operation="enrich",
+                cost_usd=APIFY_COST_USD,
+                success=enrichment_result.get("success", False),
+                result_status=result_status,
+                response_time_ms=int(elapsed * 1000),
+            )
+
             return {
                 "success": enrichment_result.get("success", False),
                 "has_contact": has_contact,
@@ -118,6 +167,20 @@ class ContactEnrichmentService:
         except Exception as e:
             APIFY_CIRCUIT.record_failure()
             logger.error("[ContactEnrichment] Apify enrichment failed for %s: %s", candidate_id, e)
+
+            await self._track_apify_consumption(
+                db=db,
+                company_id=company_id,
+                user_id=user_id,
+                candidate_id=str(candidate_id),
+                linkedin_url=profile_url,
+                operation="enrich",
+                cost_usd=APIFY_COST_USD,
+                success=False,
+                result_status="fail",
+                error_message=str(e)[:500],
+            )
+
             return {"success": False, "error": str(e), "source": "apify_error"}
 
     async def enrich_batch(
@@ -161,18 +224,36 @@ class ContactEnrichmentService:
     async def enrich_by_linkedin_url(
         self,
         linkedin_url: str,
+        company_id: str | None = None,
     ) -> dict[str, Any]:
         """
         Enrich contact data from a LinkedIn URL without requiring a local DB candidate.
         Uses dev_fusion/Linkedin-Profile-Scraper directly and extracts email/phone.
         Returns dict with success, email, phone fields.
         """
+        import time as _time
+        _start = _time.monotonic()
         try:
             profile_data = await self._enrichment_svc._scrape_linkedin_profile(
                 linkedin_url, "dev_fusion/Linkedin-Profile-Scraper"
             )
-            if not profile_data or profile_data.get("error"):
-                return {"success": False, "error": profile_data.get("error", "No data")}
+            _elapsed_ms = int((_time.monotonic() - _start) * 1000)
+            error_msg = None
+            if not profile_data:
+                error_msg = "No data"
+            elif isinstance(profile_data, dict) and profile_data.get("error"):
+                error_msg = profile_data["error"]
+            if error_msg:
+                await self._track_apify_consumption_fire_and_forget(
+                    company_id=company_id,
+                    linkedin_url=linkedin_url,
+                    operation="enrich_url",
+                    cost_usd=APIFY_COST_USD,
+                    success=False,
+                    result_status="no_contact",
+                    response_time_ms=_elapsed_ms,
+                )
+                return {"success": False, "error": error_msg}
 
             email = (
                 profile_data.get("email")
@@ -195,17 +276,73 @@ class ContactEnrichmentService:
             if not phone and phone_numbers:
                 phone = phone_numbers[0] if isinstance(phone_numbers[0], str) else str(phone_numbers[0])
 
+            has_contact = bool(email or phone)
+            result_status = "success" if has_contact else "no_contact"
+            await self._track_apify_consumption_fire_and_forget(
+                company_id=company_id,
+                linkedin_url=linkedin_url,
+                operation="enrich_url",
+                cost_usd=APIFY_COST_USD,
+                success=True,
+                result_status=result_status,
+                response_time_ms=_elapsed_ms,
+            )
+
             return {
                 "success": True,
                 "email": email,
                 "phone": phone,
-                "has_contact": bool(email or phone),
+                "has_contact": has_contact,
                 "source": "apify",
                 "cost_usd": APIFY_COST_USD,
             }
         except Exception as e:
+            _elapsed_ms = int((_time.monotonic() - _start) * 1000)
             logger.error("[ContactEnrichment] URL-only enrichment failed for %s: %s", linkedin_url, e)
+            await self._track_apify_consumption_fire_and_forget(
+                company_id=company_id,
+                linkedin_url=linkedin_url,
+                operation="enrich_url",
+                cost_usd=APIFY_COST_USD,
+                success=False,
+                result_status="fail",
+                response_time_ms=_elapsed_ms,
+                error_message=str(e)[:500],
+            )
             return {"success": False, "error": str(e)}
+
+    async def _track_apify_consumption_fire_and_forget(
+        self,
+        company_id: str | None,
+        linkedin_url: str | None,
+        operation: str,
+        cost_usd: float,
+        success: bool,
+        result_status: str = "success",
+        response_time_ms: int = 0,
+        error_message: str | None = None,
+    ) -> None:
+        resolved_company_id = company_id or "unattributed"
+        try:
+            from app.core.database import AsyncSessionLocal
+            from app.domains.billing.services.consumption_tracking_service import ConsumptionTrackingService
+            async with AsyncSessionLocal() as db:
+                await ConsumptionTrackingService.record_apify_call(
+                    db=db,
+                    company_id=resolved_company_id,
+                    user_id=None,
+                    candidate_id=None,
+                    linkedin_url=linkedin_url,
+                    operation=operation,
+                    cost_usd=cost_usd,
+                    success=success,
+                    result_status=result_status,
+                    response_time_ms=response_time_ms,
+                    error_message=error_message,
+                )
+                await db.commit()
+        except Exception as e:
+            logger.error("[ContactEnrichment] Fire-and-forget tracking failed: %s", e)
 
     async def enrich_search_results_and_filter(
         self,

@@ -20,6 +20,33 @@ from app.domains.candidates.repositories.candidate_filter_repository import Cand
 
 router = APIRouter()
 
+import logging as _contact_log
+_contact_logger = _contact_log.getLogger(__name__)
+
+
+async def _track_pearch_reveal(
+    db: AsyncSession,
+    company_id: str | None,
+    operation: str,
+    credits_consumed: int,
+    success: bool,
+    result_status: str = "success",
+) -> None:
+    resolved_company_id = company_id or "unattributed"
+    try:
+        from app.domains.billing.services.consumption_tracking_service import ConsumptionTrackingService
+        await ConsumptionTrackingService.record_pearch_call(
+            db=db,
+            company_id=resolved_company_id,
+            user_id=None,
+            operation=operation,
+            credits_consumed=credits_consumed,
+            success=success,
+            result_status=result_status,
+        )
+    except Exception as e:
+        _contact_logger.error("[Reveal] Failed to track pearch reveal: %s", e)
+
 class RevealType(str):
     EMAIL = "email"
     PHONE = "phone"
@@ -145,6 +172,19 @@ async def reveal_contact(
             except Exception as lookup_err:
                 _logger.warning("[Reveal] LinkedIn lookup failed: %s", lookup_err)
         
+        _company_id = None
+        if cand_uuid:
+            try:
+                from lia_models.candidate import CreditsUsage
+                _cu_result = await db.execute(
+                    select(CreditsUsage.company_id).where(
+                        CreditsUsage.candidate_id == cand_uuid
+                    ).limit(1)
+                )
+                _company_id = _cu_result.scalar_one_or_none()
+            except Exception:
+                pass
+
         if linkedin_url:
             _logger.info("[Reveal] Trying Apify first for %s", request.candidate_id)
             
@@ -155,6 +195,7 @@ async def reveal_contact(
                         candidate_id=cand_uuid,
                         linkedin_url=linkedin_url,
                         force=True,
+                        company_id=_company_id,
                     )
                     
                     if apify_result.get("success") and apify_result.get("has_contact"):
@@ -186,7 +227,7 @@ async def reveal_contact(
             else:
                 _logger.info("[Reveal] Non-UUID candidate %s, trying Apify direct scrape", request.candidate_id)
                 try:
-                    apify_result = await enrichment_svc.enrich_by_linkedin_url(linkedin_url)
+                    apify_result = await enrichment_svc.enrich_by_linkedin_url(linkedin_url, company_id=_company_id)
                     if apify_result.get("success") and apify_result.get("has_contact"):
                         email = apify_result.get("email")
                         phone = apify_result.get("phone")
@@ -236,9 +277,10 @@ async def reveal_contact(
             show_phone_numbers=show_phone_numbers
         )
         
-        result = await pearch_svc.search_candidates(pearch_request, timeout=30)
+        result = await pearch_svc.search_candidates(pearch_request, timeout=30, company_id=_company_id)
         
         if not result.search_results:
+            await _track_pearch_reveal(db, _company_id, f"reveal_{request.reveal_type}", 0, False, result_status="no_contact")
             return RevealContactResponse(
                 success=False,
                 candidate_id=request.candidate_id,
@@ -255,6 +297,7 @@ async def reveal_contact(
             primary_email = profile.best_personal_email or profile.best_business_email or (emails[0] if emails else None)
             
             if not emails and not primary_email:
+                await _track_pearch_reveal(db, _company_id, "reveal_email", 0, False, result_status="no_contact")
                 return RevealContactResponse(
                     success=False,
                     candidate_id=request.candidate_id,
@@ -264,6 +307,7 @@ async def reveal_contact(
                     credits_remaining=result.credits_remaining
                 )
             
+            await _track_pearch_reveal(db, _company_id, "reveal_email", 2, True)
             return RevealContactResponse(
                 success=True,
                 candidate_id=request.candidate_id,
@@ -280,6 +324,7 @@ async def reveal_contact(
             primary_phone = phones[0] if phones else None
             
             if not phones:
+                await _track_pearch_reveal(db, _company_id, "reveal_phone", 0, False, result_status="no_contact")
                 return RevealContactResponse(
                     success=False,
                     candidate_id=request.candidate_id,
@@ -289,6 +334,7 @@ async def reveal_contact(
                     credits_remaining=result.credits_remaining
                 )
             
+            await _track_pearch_reveal(db, _company_id, "reveal_phone", 14, True)
             return RevealContactResponse(
                 success=True,
                 candidate_id=request.candidate_id,

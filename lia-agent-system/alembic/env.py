@@ -37,6 +37,7 @@ from app.models.candidate import Candidate, VacancyCandidate
 from app.models.interview import Interview, InterviewFeedback
 
 from lia_models.billing import CompanyModule
+from lia_models.external_api_consumption import ExternalApiConsumption
 
 target_metadata = Base.metadata
 

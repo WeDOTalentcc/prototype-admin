@@ -314,6 +314,8 @@ class CreditTransactionType(str, enum.Enum):
     REFUND = "refund"
     BONUS = "bonus"
     ADJUSTMENT = "adjustment"
+    APIFY_ENRICHMENT = "apify_enrichment"
+    PEARCH_SEARCH = "pearch_search"
     SUBSCRIPTION_GRANT = "subscription_grant"
     EXPIRATION = "expiration"
 
