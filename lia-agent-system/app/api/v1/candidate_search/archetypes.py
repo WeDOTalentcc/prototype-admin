@@ -1026,42 +1026,7 @@ async def search_by_archetype(
             
             candidates.append(candidate_dto)
         
-<<<<<<< HEAD
-        candidates_as_dto = [
-            CandidateSearchResultDTO(
-                id=c.id,
-                name=c.name,
-                first_name=c.first_name,
-                last_name=c.last_name,
-                picture_url=c.picture_url,
-                headline=c.headline,
-                current_title=c.current_title,
-                current_company=c.current_company,
-                location=c.location,
-                total_experience_years=c.total_experience_years,
-                skills=c.skills,
-                score=c.score,
-                match_summary=c.match_summary,
-                linkedin_url=c.linkedin_url,
-                has_email=c.has_email,
-                has_phone=c.has_phone,
-                email=c.email,
-                phone=c.phone,
-                contact_source=c.contact_source,
-                source=c.source,
-                is_open_to_work=c.is_open_to_work,
-            )
-            for c in candidates
-        ]
-        filtered_dtos = await enrich_and_filter_candidates(db, candidates_as_dto)
-        filtered_ids = {dto.id for dto in filtered_dtos}
-        candidates = [c for c in candidates if c.id in filtered_ids]
-
-        # Sort by LIA score if calculated
-=======
         candidates = await enrich_and_filter_candidates(db, candidates)
-        
->>>>>>> 21b3cc6ec (Task #172: Apify T2 — Pipeline de Busca: Enrichment Obrigatório + Remover Pro)
         if request.calculate_lia_score:
             candidates.sort(key=lambda x: x.lia_score or 0, reverse=True)
         
@@ -1086,13 +1051,8 @@ async def search_by_archetype(
             query=archetype.query,
             thread_id=search_result.thread_id,
             candidates=candidates,
-<<<<<<< HEAD
-            local_count=sum(1 for c in candidates if c.source == "local"),
-            pearch_count=sum(1 for c in candidates if c.source == "pearch"),
-=======
             local_count=search_result.local_count,
             pearch_count=search_result.pearch_count,
->>>>>>> 21b3cc6ec (Task #172: Apify T2 — Pipeline de Busca: Enrichment Obrigatório + Remover Pro)
             total_count=len(candidates),
             credits_remaining=search_result.pearch_credits_remaining,
             search_time_seconds=(search_result.local_search_time or 0) + (search_result.pearch_search_time or 0),
