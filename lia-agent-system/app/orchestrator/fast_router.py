@@ -52,7 +52,7 @@ class FastRouteResult:
     matched_text: str
 
 
-DOMAIN_PATTERNS: dict[str, list[str]] = {
+_HARDCODED_DOMAIN_PATTERNS: dict[str, list[str]] = {
     "job_management": [
         r"criar?\s+\w*\s*vaga",
         r"nova\s+vaga",
@@ -373,6 +373,65 @@ DOMAIN_PATTERNS: dict[str, list[str]] = {
     ],
 
 }
+
+
+# LIA-I06 (Wave 3 / Fase 5): Load DOMAIN_PATTERNS from YAML with hardcoded fallback.
+# Config path: app/orchestrator/config/domain_routing.yaml
+# If YAML is missing/malformed, falls back to _HARDCODED_DOMAIN_PATTERNS above.
+# This is config-as-data: edit YAML + restart worker, no code deploy needed.
+def _load_domain_patterns() -> dict[str, list[str]]:
+    import os as _os
+    import yaml as _yaml
+    import pathlib as _pathlib
+
+    # Resolve YAML path relative to this file (works in any deployment layout)
+    _yaml_path = (
+        _pathlib.Path(__file__).parent.parent
+        / "orchestrator"
+        / "config"
+        / "domain_routing.yaml"
+    )
+    # app/orchestrator/fast_router.py -> app/orchestrator/config/domain_routing.yaml
+    _yaml_path = _pathlib.Path(__file__).parent / "config" / "domain_routing.yaml"
+
+    if _os.environ.get("LIA_DISABLE_YAML_ROUTING", "").lower() in ("1", "true", "yes"):
+        logger.info("[LIA-I06] LIA_DISABLE_YAML_ROUTING set — using hardcoded DOMAIN_PATTERNS")
+        return _HARDCODED_DOMAIN_PATTERNS
+
+    try:
+        with open(_yaml_path, "r", encoding="utf-8") as f:
+            data = _yaml.safe_load(f)
+        loaded = data.get("domains", {})
+        if not loaded or not isinstance(loaded, dict):
+            logger.warning("[LIA-I06] YAML %s has empty/invalid 'domains' — using hardcoded", _yaml_path)
+            return _HARDCODED_DOMAIN_PATTERNS
+
+        # Validate each value is a list of strings
+        validated: dict[str, list[str]] = {}
+        for domain_id, patterns in loaded.items():
+            if not isinstance(patterns, list) or not all(isinstance(p, str) for p in patterns):
+                logger.warning("[LIA-I06] Skipping malformed domain '%s' in YAML", domain_id)
+                continue
+            validated[str(domain_id)] = list(patterns)
+
+        if not validated:
+            logger.warning("[LIA-I06] No valid domain in YAML — using hardcoded")
+            return _HARDCODED_DOMAIN_PATTERNS
+
+        logger.info(
+            "[LIA-I06] Loaded %d domains (%d total patterns) from %s",
+            len(validated), sum(len(p) for p in validated.values()), _yaml_path,
+        )
+        return validated
+    except FileNotFoundError:
+        logger.warning("[LIA-I06] YAML %s not found — using hardcoded DOMAIN_PATTERNS", _yaml_path)
+        return _HARDCODED_DOMAIN_PATTERNS
+    except Exception as exc:
+        logger.error("[LIA-I06] YAML load failed: %s — using hardcoded DOMAIN_PATTERNS", exc)
+        return _HARDCODED_DOMAIN_PATTERNS
+
+
+DOMAIN_PATTERNS: dict[str, list[str]] = _load_domain_patterns()
 
 _DOMAIN_ID_NORMALIZE: dict[str, str] = {
     "wsi_assessment": "cv_screening",
