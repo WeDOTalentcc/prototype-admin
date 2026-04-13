@@ -1,3 +1,4 @@
+from pathlib import Path
 from __future__ import annotations
 
 import logging
@@ -8,39 +9,17 @@ from app.domains.compliance_base import ComplianceDomainPrompt
 from app.domains.registry import register_domain
 
 from app.shared.services.keyword_intent_matcher import KeywordIntentMatcher
+import yaml as _yaml_imp  # Fase 5
 
 logger = logging.getLogger(__name__)
 
-_KEYWORD_ACTION_MAP: dict[str, str] = {
-    "política": "configure_policy",
-    "politica": "configure_policy",
-    "policy": "configure_policy",
-    "regra": "configure_policy",
-    "configurar": "configure_policy",
-    "setup": "configure_policy",
-    "pipeline": "configure_pipeline",
-    "etapa": "configure_pipeline",
-    "stage": "configure_pipeline",
-    "agendamento": "configure_scheduling",
-    "scheduling": "configure_scheduling",
-    "agendar": "configure_scheduling",
-    "comunicação": "configure_communication",
-    "comunicacao": "configure_communication",
-    "communication": "configure_communication",
-    "email": "configure_communication",
-    "whatsapp": "configure_communication",
-    "triagem": "configure_screening",
-    "screening": "configure_screening",
-    "automação": "configure_automation",
-    "automacao": "configure_automation",
-    "automation": "configure_automation",
-    "autonomia": "configure_automation",
-    "compliance": "validate_compliance",
-    "conformidade": "validate_compliance",
-    "validar": "validate_compliance",
-    "progresso": "get_progress",
-    "progress": "get_progress",
-}
+# Fase 5: _KEYWORD_ACTION_MAP loaded from capabilities.yaml (LIA-I05)
+_capabilities_yaml_path = Path(__file__).parent / 'config' / 'capabilities.yaml'
+_KEYWORD_ACTION_MAP: dict[str, str] = (
+    _yaml_imp.safe_load(_capabilities_yaml_path.read_text()).get('intent_keywords', {})
+    if _capabilities_yaml_path.exists()
+    else {}
+)
 
 # LIA-I03: Shared KeywordIntentMatcher singleton
 _matcher = KeywordIntentMatcher.from_keyword_map(_KEYWORD_ACTION_MAP, domain_id="hiring_policy")

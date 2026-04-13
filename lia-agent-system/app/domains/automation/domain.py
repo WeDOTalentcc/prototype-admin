@@ -1,3 +1,4 @@
+from pathlib import Path
 """Automation & Tasks Domain - Task management, automations and proactive alerts."""
 import logging
 from typing import Any
@@ -7,125 +8,17 @@ from app.domains.compliance_base import ComplianceDomainPrompt
 from app.domains.registry import register_domain
 
 from app.shared.services.keyword_intent_matcher import KeywordIntentMatcher
+import yaml as _yaml_imp  # Fase 5
 
 logger = logging.getLogger(__name__)
 
-_KEYWORD_ACTION_MAP: dict[str, str] = {
-    "criar tarefa": "create_task",
-    "nova tarefa": "create_task",
-    "create task": "create_task",
-    "adicionar tarefa": "create_task",
-
-    "listar tarefas": "list_tasks",
-    "minhas tarefas": "list_tasks",
-    "list tasks": "list_tasks",
-    "tarefas pendentes": "list_tasks",
-    "ver tarefas": "list_tasks",
-
-    "concluir tarefa": "complete_task",
-    "completar tarefa": "complete_task",
-    "tarefa concluída": "complete_task",
-    "complete task": "complete_task",
-    "finalizar tarefa": "complete_task",
-
-    "cancelar tarefa": "cancel_task",
-    "cancel task": "cancel_task",
-    "remover tarefa": "cancel_task",
-
-    "decompor tarefa": "decompose_task",
-    "quebrar tarefa": "decompose_task",
-    "decompose task": "decompose_task",
-    "dividir tarefa": "decompose_task",
-    "subtarefas": "decompose_task",
-
-    "planejar execução": "plan_execution",
-    "plano de execução": "plan_execution",
-    "plan execution": "plan_execution",
-    "criar plano": "plan_execution",
-    "planejamento": "plan_execution",
-
-    "próximas tarefas": "get_next_tasks",
-    "próxima tarefa": "get_next_tasks",
-    "next tasks": "get_next_tasks",
-    "o que fazer agora": "get_next_tasks",
-    "tarefas prioritárias": "get_next_tasks",
-
-    "criar automação": "create_automation",
-    "nova automação": "create_automation",
-    "create automation": "create_automation",
-    "configurar automação": "create_automation",
-    "adicionar automação": "create_automation",
-
-    "listar automações": "list_automations",
-    "ver automações": "list_automations",
-    "list automations": "list_automations",
-    "automações configuradas": "list_automations",
-    "automações ativas": "list_automations",
-
-    "ativar automação": "enable_automation",
-    "enable automation": "enable_automation",
-    "habilitar automação": "enable_automation",
-    "ligar automação": "enable_automation",
-
-    "desativar automação": "disable_automation",
-    "disable automation": "disable_automation",
-    "desabilitar automação": "disable_automation",
-    "pausar automação": "disable_automation",
-    "desligar automação": "disable_automation",
-
-    "disparar automação": "trigger_automation",
-    "trigger automation": "trigger_automation",
-    "executar automação": "trigger_automation",
-    "rodar automação": "trigger_automation",
-
-    "log automação": "view_automation_log",
-    "log de automação": "view_automation_log",
-    "histórico automação": "view_automation_log",
-    "histórico de automação": "view_automation_log",
-    "automation log": "view_automation_log",
-
-    "automação de etapa": "configure_stage_automation",
-    "automação de estágio": "configure_stage_automation",
-    "stage automation": "configure_stage_automation",
-    "transição automática": "configure_stage_automation",
-    "automatizar etapa": "configure_stage_automation",
-    "automatizar transição": "configure_stage_automation",
-
-    "prever sub-status": "predict_substatus",
-    "prever substatus": "predict_substatus",
-    "predict substatus": "predict_substatus",
-    "próximo status": "predict_substatus",
-    "previsão de status": "predict_substatus",
-
-    "alertas proativos": "check_proactive_alerts",
-    "verificar alertas": "check_proactive_alerts",
-    "proactive alerts": "check_proactive_alerts",
-    "alertas pendentes": "check_proactive_alerts",
-    "meus alertas": "check_proactive_alerts",
-
-    "configurar alerta": "configure_alert",
-    "criar alerta": "configure_alert",
-    "configure alert": "configure_alert",
-    "novo alerta": "configure_alert",
-
-    "tarefa recorrente": "schedule_recurring",
-    "agendar recorrente": "schedule_recurring",
-    "recurring task": "schedule_recurring",
-    "automação periódica": "schedule_recurring",
-    "tarefa programada": "schedule_recurring",
-
-    "dependências tarefa": "view_task_dependencies",
-    "dependências de tarefa": "view_task_dependencies",
-    "ver dependências": "view_task_dependencies",
-    "task dependencies": "view_task_dependencies",
-    "grafo de tarefas": "view_task_dependencies",
-
-    "verificação autônoma": "run_autonomous_check",
-    "autonomous check": "run_autonomous_check",
-    "verificação automática": "run_autonomous_check",
-    "background check": "run_autonomous_check",
-    "agente autônomo": "run_autonomous_check",
-}
+# Fase 5: _KEYWORD_ACTION_MAP loaded from capabilities.yaml (LIA-I05)
+_capabilities_yaml_path = Path(__file__).parent / 'config' / 'capabilities.yaml'
+_KEYWORD_ACTION_MAP: dict[str, str] = (
+    _yaml_imp.safe_load(_capabilities_yaml_path.read_text()).get('intent_keywords', {})
+    if _capabilities_yaml_path.exists()
+    else {}
+)
 
 # LIA-I03: Shared KeywordIntentMatcher singleton
 _matcher = KeywordIntentMatcher.from_keyword_map(_KEYWORD_ACTION_MAP, domain_id="automation")

@@ -1,3 +1,4 @@
+from pathlib import Path
 """Interview & Scheduling Domain - Interview management and WSI methodology."""
 import logging
 import uuid
@@ -16,119 +17,17 @@ _SCHEDULING_SESSION_PREFIX = "scheduling:"
 _GRAPH_ACTIONS = {"schedule_interview"}
 
 from app.shared.services.keyword_intent_matcher import KeywordIntentMatcher
+import yaml as _yaml_imp  # Fase 5
 
 logger = logging.getLogger(__name__)
 
-_KEYWORD_ACTION_MAP: dict[str, str] = {
-    "agendar entrevista": "schedule_interview",
-    "marcar entrevista": "schedule_interview",
-    "schedule interview": "schedule_interview",
-    "agendar reunião": "schedule_interview",
-
-    "reagendar entrevista": "reschedule_interview",
-    "reagendar": "reschedule_interview",
-    "remarcar entrevista": "reschedule_interview",
-    "reschedule": "reschedule_interview",
-    "mudar horário entrevista": "reschedule_interview",
-    "mudar horário da entrevista": "reschedule_interview",
-
-    "cancelar entrevista": "cancel_interview",
-    "cancel interview": "cancel_interview",
-    "desmarcar entrevista": "cancel_interview",
-
-    "verificar disponibilidade": "check_availability",
-    "checar disponibilidade": "check_availability",
-    "check availability": "check_availability",
-    "disponibilidade calendário": "check_availability",
-    "disponibilidade do calendário": "check_availability",
-    "horários disponíveis": "check_availability",
-    "horários livres": "check_availability",
-
-    "link agendamento": "generate_self_scheduling_link",
-    "link de agendamento": "generate_self_scheduling_link",
-    "auto-agendamento": "generate_self_scheduling_link",
-    "self scheduling": "generate_self_scheduling_link",
-    "link para candidato agendar": "generate_self_scheduling_link",
-
-    "horários comuns": "find_common_slots",
-    "slots comuns": "find_common_slots",
-    "encontrar horários": "find_common_slots",
-    "common slots": "find_common_slots",
-
-    "enviar lembrete": "send_reminder",
-    "lembrete entrevista": "send_reminder",
-    "lembrete de entrevista": "send_reminder",
-    "reminder": "send_reminder",
-
-    "agendar lembretes": "schedule_reminders",
-    "programar lembretes": "schedule_reminders",
-    "lembretes automáticos": "schedule_reminders",
-
-    "entrevistas hoje": "list_today_interviews",
-    "entrevistas de hoje": "list_today_interviews",
-    "agenda hoje": "list_today_interviews",
-    "agenda de hoje": "list_today_interviews",
-    "today interviews": "list_today_interviews",
-    "entrevistas do dia": "list_today_interviews",
-
-    "conflito agenda": "resolve_conflict",
-    "conflito de agenda": "resolve_conflict",
-    "resolver conflito": "resolve_conflict",
-    "scheduling conflict": "resolve_conflict",
-
-    "entrevista wsi": "start_wsi_interview",
-    "iniciar entrevista wsi": "start_wsi_interview",
-    "wsi interview": "start_wsi_interview",
-    "entrevista completa": "start_wsi_interview",
-
-    "enviar pergunta": "send_question",
-    "fazer pergunta": "send_question",
-    "próxima pergunta": "send_question",
-    "send question": "send_question",
-
-    "analisar resposta": "analyze_response",
-    "avaliar resposta": "analyze_response",
-    "analyze response": "analyze_response",
-    "análise de resposta": "analyze_response",
-
-    "transcrever áudio": "transcribe_audio",
-    "transcrição": "transcribe_audio",
-    "transcribe": "transcribe_audio",
-    "transcrever entrevista": "transcribe_audio",
-
-    "analisar voz": "analyze_voice",
-    "análise de voz": "analyze_voice",
-    "análise vocal": "analyze_voice",
-    "voice analysis": "analyze_voice",
-
-    "resposta evasiva": "detect_evasive",
-    "detectar evasiva": "detect_evasive",
-    "candidato evadindo": "detect_evasive",
-    "evasive answer": "detect_evasive",
-
-    "pergunta follow-up": "generate_followup",
-    "pergunta de follow-up": "generate_followup",
-    "follow-up": "generate_followup",
-    "gerar follow-up": "generate_followup",
-    "aprofundar resposta": "generate_followup",
-
-    "finalizar entrevista": "complete_interview",
-    "encerrar entrevista": "complete_interview",
-    "complete interview": "complete_interview",
-    "concluir entrevista": "complete_interview",
-    "resumo da entrevista": "complete_interview",
-
-    "dúvida entrevista": "interview_qa",
-    "dúvida sobre entrevista": "interview_qa",
-    "pergunta sobre entrevista": "interview_qa",
-    "interview qa": "interview_qa",
-
-    "triagem rápida": "start_quick_screening",
-    "quick screening": "start_quick_screening",
-    "triagem inicial": "start_quick_screening",
-    "screening rápido": "start_quick_screening",
-    "iniciar triagem": "start_quick_screening",
-}
+# Fase 5: _KEYWORD_ACTION_MAP loaded from capabilities.yaml (LIA-I05)
+_capabilities_yaml_path = Path(__file__).parent / 'config' / 'capabilities.yaml'
+_KEYWORD_ACTION_MAP: dict[str, str] = (
+    _yaml_imp.safe_load(_capabilities_yaml_path.read_text()).get('intent_keywords', {})
+    if _capabilities_yaml_path.exists()
+    else {}
+)
 
 # LIA-I03: Shared KeywordIntentMatcher singleton
 _matcher = KeywordIntentMatcher.from_keyword_map(_KEYWORD_ACTION_MAP, domain_id="interview_scheduling")

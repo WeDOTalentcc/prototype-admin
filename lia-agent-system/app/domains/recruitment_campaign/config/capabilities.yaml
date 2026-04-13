@@ -1,39 +1,14 @@
-domain_id: recruitment_campaign
-name: Recruitment Campaigns
-description: Workflow ponta-a-ponta de recrutamento, da definicao ao placement
+domain: recruitment_campaign
 
-intents:
-  - action: create_campaign
-    type: action
-    keywords:
-      - "criar campanha"
-      - "nova campanha"
-      - "iniciar campanha"
-      - "campanha de recrutamento"
-    description: Cria nova campanha de recrutamento
-    confidence: 0.85
-
-  - action: get_campaign_progress
-    type: action
-    keywords:
-      - "progresso campanha"
-      - "status campanha"
-      - "como está a campanha"
-    description: Consulta progresso da campanha
-    confidence: 0.85
-
-  - action: advance_campaign
-    type: action
-    keywords:
-      - "avançar campanha"
-      - "próxima etapa"
-    description: Avanca campanha para proxima etapa
-    confidence: 0.85
-
-  - action: list_campaigns
-    type: action
-    keywords:
-      - "listar campanhas"
-      - "minhas campanhas"
-    description: Lista campanhas de recrutamento
-    confidence: 0.85
+intent_keywords:
+  criar campanha: create_campaign
+  nova campanha: create_campaign
+  iniciar campanha: create_campaign
+  campanha de recrutamento: create_campaign
+  progresso campanha: get_campaign_progress
+  status campanha: get_campaign_progress
+  como está a campanha: get_campaign_progress
+  avançar campanha: advance_campaign
+  próxima etapa: advance_campaign
+  listar campanhas: list_campaigns
+  minhas campanhas: list_campaigns

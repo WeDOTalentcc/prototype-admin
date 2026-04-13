@@ -1,5 +1,7 @@
+from pathlib import Path
 """Talent Pool Domain - Live talent banks management."""
 import logging
+import yaml as _yaml_imp  # Fase 5
 import uuid
 from datetime import datetime, timezone
 from typing import Any
@@ -12,16 +14,13 @@ from app.shared.services.keyword_intent_matcher import KeywordIntentMatcher
 
 logger = logging.getLogger(__name__)
 
-_KEYWORD_ACTION_MAP = {
-    "criar pool": "create_talent_pool", "criar banco": "create_talent_pool",
-    "novo banco": "create_talent_pool", "novo pool": "create_talent_pool",
-    "banco de talentos": "list_talent_pools", "listar pool": "list_talent_pools",
-    "meus bancos": "list_talent_pools", "meus pools": "list_talent_pools",
-    "adicionar ao pool": "add_to_pool", "adicionar no banco": "add_to_pool",
-    "mover para vaga": "move_pool_to_job", "migrar para vaga": "move_pool_to_job",
-    "candidatos do pool": "get_pool_candidates", "ver pool": "get_pool_candidates",
-    "criar vaga do pool": "create_job_from_pool", "vaga a partir do pool": "create_job_from_pool",
-}
+# Fase 5: _KEYWORD_ACTION_MAP loaded from capabilities.yaml (LIA-I05)
+_capabilities_yaml_path = Path(__file__).parent / 'config' / 'capabilities.yaml'
+_KEYWORD_ACTION_MAP: dict[str, str] = (
+    _yaml_imp.safe_load(_capabilities_yaml_path.read_text()).get('intent_keywords', {})
+    if _capabilities_yaml_path.exists()
+    else {}
+)
 
 _matcher = KeywordIntentMatcher.from_keyword_map(_KEYWORD_ACTION_MAP, domain_id="talent_pool")
 

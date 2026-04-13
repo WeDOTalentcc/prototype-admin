@@ -1,3 +1,4 @@
+from pathlib import Path
 from __future__ import annotations
 
 import logging
@@ -8,65 +9,17 @@ from app.domains.compliance_base import ComplianceDomainPrompt
 from app.domains.registry import register_domain
 
 from app.shared.services.keyword_intent_matcher import KeywordIntentMatcher
+import yaml as _yaml_imp  # Fase 5
 
 logger = logging.getLogger(__name__)
 
-_KEYWORD_ACTION_MAP: dict[str, str] = {
-    "search": "search_candidates",
-    "buscar": "search_candidates",
-    "busca": "search_candidates",
-    "candidato": "search_candidates",
-    "global": "global_search",
-    "semantic": "semantic_search",
-    "semântic": "semantic_search",
-    "boolean": "generate_boolean",
-    "booleana": "generate_boolean",
-    "cv": "parse_cv",
-    "currículo": "parse_cv",
-    "curriculo": "parse_cv",
-    "analisar cv": "parse_cv",
-    "adicionar": "add_candidate",
-    "cadastrar": "add_candidate",
-    "sugerir": "suggest_candidates",
-    "suggest": "suggest_candidates",
-    "sugestão": "suggest_candidates",
-    "match": "match_candidates",
-    "compatibilidade": "match_candidates",
-    "enriquecer": "enrich_profile",
-    "enrich": "enrich_profile",
-    "pipeline": "auto_source",
-    "automático": "auto_source",
-    "auto_source": "auto_source",
-    "volume": "check_volume",
-    "proativ": "proactive_suggest",
-    "filtrar": "filter_candidates",
-    "filtro": "filter_candidates",
-    "rankear": "rank_candidates",
-    "rank": "rank_candidates",
-    "comparar": "compare_candidates",
-    "talent pool": "talent_pool_search",
-    "pool": "talent_pool_search",
-    "pearch": "pearch_search",
-    "estratégia": "build_search_strategy",
-    "strategy": "build_search_strategy",
-    "resultado": "analyze_search_results",
-    "feedback": "feedback_search",
-    "expandir": "expand_search",
-    "ampliar": "expand_search",
-    "contatar": "contact_candidates",
-    "outreach": "contact_candidates",
-    "triagem": "screen_candidates",
-    "screening": "screen_candidates",
-    "mercado": "assess_market",
-    "exportar": "export_candidates",
-    "importar": "import_candidates",
-    "dedup": "dedup_candidates",
-    "duplica": "dedup_candidates",
-    "tag": "tag_candidates",
-    "taguear": "tag_candidates",
-    "engagement": "engagement_pipeline",
-    "agendar": "schedule_outreach",
-}
+# Fase 5: _KEYWORD_ACTION_MAP loaded from capabilities.yaml (LIA-I05)
+_capabilities_yaml_path = Path(__file__).parent / 'config' / 'capabilities.yaml'
+_KEYWORD_ACTION_MAP: dict[str, str] = (
+    _yaml_imp.safe_load(_capabilities_yaml_path.read_text()).get('intent_keywords', {})
+    if _capabilities_yaml_path.exists()
+    else {}
+)
 _matcher = KeywordIntentMatcher.from_keyword_map(_KEYWORD_ACTION_MAP, domain_id="sourcing")
 
 

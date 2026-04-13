@@ -10,6 +10,7 @@ from app.domains.compliance_base import ComplianceDomainPrompt
 from app.domains.registry import register_domain
 
 from app.shared.services.keyword_intent_matcher import KeywordIntentMatcher
+import yaml as _yaml_imp  # Fase 5
 
 logger = logging.getLogger(__name__)
 
@@ -78,23 +79,13 @@ DOMAIN_INTENTS = [
     "sugerir_acao",
 ]
 
-_KEYWORD_ACTION_MAP: dict[str, str] = {
-    "mover candidato": "move_candidate",
-    "move candidate": "move_candidate",
-    "avançar candidato": "move_candidate",
-    "avançar etapa": "move_candidate",
-    "mudar etapa": "move_candidate",
-    "transição": "move_candidate",
-    "interpretar contexto": "interpret_context",
-    "interpretar": "interpret_context",
-    "prever sub-status": "predict_sub_status",
-    "predizer sub-status": "predict_sub_status",
-    "sugerir ação": "suggest_next_action",
-    "próxima ação": "suggest_next_action",
-    "listar etapas": "list_pipeline_stages",
-    "etapas do pipeline": "list_pipeline_stages",
-    "ver pipeline": "list_pipeline_stages",
-}
+# Fase 5: _KEYWORD_ACTION_MAP loaded from capabilities.yaml (LIA-I05)
+_capabilities_yaml_path = Path(__file__).parent / 'config' / 'capabilities.yaml'
+_KEYWORD_ACTION_MAP: dict[str, str] = (
+    _yaml_imp.safe_load(_capabilities_yaml_path.read_text()).get('intent_keywords', {})
+    if _capabilities_yaml_path.exists()
+    else {}
+)
 _matcher = KeywordIntentMatcher.from_keyword_map(_KEYWORD_ACTION_MAP, domain_id="pipeline_transition")
 
 

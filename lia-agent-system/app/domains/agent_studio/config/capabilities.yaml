@@ -1,82 +1,42 @@
-domain_id: agent_studio
-name: Agent Studio
-description: Gerenciamento e configuracao de agentes IA personalizados
+domain: agent_studio
 
-intents:
-  - action: explain_agent_studio
-    type: info
-    keywords:
-      - "como funciona o agent studio"
-      - "o que e agent studio"
-      - "como usar agent studio"
-      - "me explica agent studio"
-    description: Explica o que e o Agent Studio e como funciona
-    confidence: 0.9
-
-  - action: list_agents
-    type: action
-    keywords:
-      - "listar agentes"
-      - "meus agentes"
-      - "ver agentes"
-      - "quais agentes"
-      - "agentes ativos"
-    description: Lista agentes configurados
-    confidence: 0.85
-
-  - action: create_sourcing_agent
-    type: action
-    keywords:
-      - "criar agente"
-      - "novo agente"
-      - "configurar agente"
-      - "adicionar agente"
-      - "ativar agente"
-      - "agente sourcing"
-    description: Cria um novo agente de sourcing
-    confidence: 0.85
-
-  - action: calibrate_agent
-    type: action
-    keywords:
-      - "calibrar"
-      - "calibracao"
-      - "recalibrar"
-    description: Calibra ou recalibra um agente
-    confidence: 0.85
-
-  - action: get_agent_status
-    type: action
-    keywords:
-      - "status agente"
-      - "como esta o agente"
-    description: Consulta status de um agente
-    confidence: 0.85
-
-  - action: create_custom_agent
-    type: action
-    keywords:
-      - "agente custom"
-      - "agente customizado"
-      - "criar custom"
-      - "novo custom"
-    description: Cria agente customizado
-    confidence: 0.85
-
-  - action: browse_marketplace
-    type: action
-    keywords:
-      - "marketplace"
-      - "explorar marketplace"
-    description: Navega o marketplace de agentes
-    confidence: 0.85
-
-  - action: run_multi_strategy
-    type: action
-    keywords:
-      - "busca inteligente"
-      - "multi estrategia"
-      - "busca multi"
-      - "4 estrategias"
-    description: Executa busca multi-estrategia
-    confidence: 0.85
+intent_keywords:
+  criar agente: create_sourcing_agent
+  novo agente: create_sourcing_agent
+  ativar agente: create_sourcing_agent
+  agente sourcing: create_sourcing_agent
+  agent studio: list_agents
+  studio agentes: list_agents
+  calibrar: calibrate_agent
+  calibração: calibrate_agent
+  recalibrar: recalibrate_agent
+  status agente: get_agent_status
+  como está o agente: get_agent_status
+  pausar agente: pause_agent
+  parar agente: pause_agent
+  templates setor: list_sector_templates
+  templates disponíveis: list_sector_templates
+  busca inteligente: run_multi_strategy
+  multi estratégia: run_multi_strategy
+  busca multi: run_multi_strategy
+  4 estratégias: run_multi_strategy
+  agente custom: create_custom_agent
+  agente customizado: create_custom_agent
+  criar custom: create_custom_agent
+  novo custom: create_custom_agent
+  listar custom: list_custom_agents
+  meus agentes custom: list_custom_agents
+  testar agente: test_custom_agent
+  testar custom: test_custom_agent
+  executar agente: execute_custom_agent
+  executar custom: execute_custom_agent
+  marketplace: browse_marketplace
+  explorar marketplace: browse_marketplace
+  publicar marketplace: publish_to_marketplace
+  publicar agente: publish_to_marketplace
+  instalar agente: install_from_marketplace
+  instalar marketplace: install_from_marketplace
+  atribuir crew: assign_to_crew
+  adicionar crew: assign_to_crew
+  consumo studio: get_studio_consumption
+  uso agentes: get_studio_consumption

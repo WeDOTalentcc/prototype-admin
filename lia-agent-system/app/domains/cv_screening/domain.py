@@ -1,3 +1,4 @@
+from pathlib import Path
 from __future__ import annotations
 
 import logging
@@ -8,94 +9,17 @@ from app.domains.compliance_base import ComplianceDomainPrompt
 from app.domains.registry import register_domain
 
 from app.shared.services.keyword_intent_matcher import KeywordIntentMatcher
+import yaml as _yaml_imp  # Fase 5
 
 logger = logging.getLogger(__name__)
 
-_KEYWORD_ACTION_MAP: dict[str, str] = {
-    "analisar cv": "parse_cv",
-    "parse cv": "parse_cv",
-    "extrair cv": "parse_cv",
-    "currículo": "parse_cv",
-    "curriculo": "parse_cv",
-    "triagem automática": "auto_screen",
-    "triar candidato": "auto_screen",
-    "screening": "auto_screen",
-    "triagem": "auto_screen",
-    "triagem lote": "batch_screen",
-    "batch screening": "batch_screen",
-    "triagem em massa": "batch_screen",
-    "score wsi": "calculate_wsi_score",
-    "calcular wsi": "calculate_wsi_score",
-    "wsi score": "calculate_wsi_score",
-    "pontuação wsi": "calculate_wsi_score",
-    "rankear": "rank_candidates",
-    "ranking": "rank_candidates",
-    "rank candidato": "rank_candidates",
-    "ordenar candidatos": "rank_candidates",
-    "corte dinâmico": "dynamic_cutoff",
-    "top 25": "dynamic_cutoff",
-    "dynamic cut": "dynamic_cutoff",
-    "red flag": "detect_red_flags",
-    "red flags": "detect_red_flags",
-    "detectar red flag": "detect_red_flags",
-    "risco cv": "detect_red_flags",
-    "flag": "detect_red_flags",
-    "saturação": "check_saturation",
-    "pipeline saturado": "check_saturation",
-    "saturation": "check_saturation",
-    "bloom": "classify_bloom",
-    "taxonomia bloom": "classify_bloom",
-    "bloom taxonomy": "classify_bloom",
-    "dreyfus": "classify_dreyfus",
-    "proficiência": "classify_dreyfus",
-    "dreyfus level": "classify_dreyfus",
-    "big five": "map_big_five",
-    "big5": "map_big_five",
-    "personalidade": "map_big_five",
-    "comportamental": "map_big_five",
-    "cbi": "validate_cbi",
-    "competency based": "validate_cbi",
-    "competência": "validate_cbi",
-    "parecer": "generate_report",
-    "relatório candidato": "generate_report",
-    "parecer candidato": "generate_report",
-    "comparar candidato": "compare_candidates",
-    "comparação": "compare_candidates",
-    "compare": "compare_candidates",
-    "calibrar": "calibrate_model",
-    "calibração": "calibrate_model",
-    "calibrate": "calibrate_model",
-    "feedback modelo": "calibrate_model",
-    "explicar score": "explain_score",
-    "explainability": "explain_score",
-    "como calculou": "explain_score",
-    "rubrica": "evaluate_rubric",
-    "avaliação rubrica": "evaluate_rubric",
-    "rubric evaluation": "evaluate_rubric",
-    "pergunta triagem": "generate_questions",
-    "screening question": "generate_questions",
-    "gerar pergunta": "generate_questions",
-    "ajustar pergunta": "adjust_questions",
-    "refinar pergunta": "adjust_questions",
-    "adjust question": "adjust_questions",
-    "voz": "voice_screening",
-    "voice screening": "voice_screening",
-    "triagem por voz": "voice_screening",
-    "normalizar score": "normalize_scores",
-    "normalize": "normalize_scores",
-    "normalização": "normalize_scores",
-    "senioridade": "assess_seniority",
-    "seniority": "assess_seniority",
-    "nível experiência": "assess_seniority",
-    "feedback candidato": "send_feedback",
-    "feedback triagem": "send_feedback",
-    "enviar feedback": "send_feedback",
-    "devolutiva": "send_feedback",
-    "feedback ao candidato": "send_feedback",
-    "pré-qualificação": "pre_qualify",
-    "pre qualify": "pre_qualify",
-    "pré-qualificar": "pre_qualify",
-}
+# Fase 5: _KEYWORD_ACTION_MAP loaded from capabilities.yaml (LIA-I05)
+_capabilities_yaml_path = Path(__file__).parent / 'config' / 'capabilities.yaml'
+_KEYWORD_ACTION_MAP: dict[str, str] = (
+    _yaml_imp.safe_load(_capabilities_yaml_path.read_text()).get('intent_keywords', {})
+    if _capabilities_yaml_path.exists()
+    else {}
+)
 _matcher = KeywordIntentMatcher.from_keyword_map(_KEYWORD_ACTION_MAP, domain_id="cv_screening")
 
 

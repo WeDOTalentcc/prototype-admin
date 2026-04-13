@@ -1,38 +1,13 @@
-domain_id: digital_twin
-name: Digital Twins
-description: Clone de raciocinio de especialistas via RAG few-shot para avaliacao de candidatos
+domain: digital_twin
 
-intents:
-  - action: list_twins
-    type: action
-    keywords:
-      - "digital twin"
-      - "gêmeo digital"
-    description: Lista Digital Twins configurados
-    confidence: 0.85
-
-  - action: create_twin
-    type: action
-    keywords:
-      - "criar twin"
-      - "novo twin"
-    description: Cria novo Digital Twin
-    confidence: 0.85
-
-  - action: evaluate_with_twin
-    type: action
-    keywords:
-      - "avaliar com twin"
-      - "avaliação twin"
-      - "segunda opinião"
-      - "opinião do especialista"
-    description: Avalia candidato com Digital Twin
-    confidence: 0.85
-
-  - action: index_twin_audio
-    type: action
-    keywords:
-      - "treinar twin"
-      - "indexar áudio"
-    description: Treina twin com audio de especialista
-    confidence: 0.85
+intent_keywords:
+  digital twin: list_twins
+  gêmeo digital: list_twins
+  criar twin: create_twin
+  novo twin: create_twin
+  avaliar com twin: evaluate_with_twin
+  avaliação twin: evaluate_with_twin
+  segunda opinião: evaluate_with_twin
+  opinião do especialista: evaluate_with_twin
+  treinar twin: index_twin_audio
+  indexar áudio: index_twin_audio

@@ -1,5 +1,7 @@
+from pathlib import Path
 """Recruitment Campaign Domain - End-to-end workflow management."""
 import logging
+import yaml as _yaml_imp  # Fase 5
 from datetime import datetime
 from typing import Any
 
@@ -11,14 +13,13 @@ from app.shared.services.keyword_intent_matcher import KeywordIntentMatcher
 
 logger = logging.getLogger(__name__)
 
-_KEYWORD_ACTION_MAP = {
-    "criar campanha": "create_campaign", "nova campanha": "create_campaign",
-    "iniciar campanha": "create_campaign", "campanha de recrutamento": "create_campaign",
-    "progresso campanha": "get_campaign_progress", "status campanha": "get_campaign_progress",
-    "como está a campanha": "get_campaign_progress",
-    "avançar campanha": "advance_campaign", "próxima etapa": "advance_campaign",
-    "listar campanhas": "list_campaigns", "minhas campanhas": "list_campaigns",
-}
+# Fase 5: _KEYWORD_ACTION_MAP loaded from capabilities.yaml (LIA-I05)
+_capabilities_yaml_path = Path(__file__).parent / 'config' / 'capabilities.yaml'
+_KEYWORD_ACTION_MAP: dict[str, str] = (
+    _yaml_imp.safe_load(_capabilities_yaml_path.read_text()).get('intent_keywords', {})
+    if _capabilities_yaml_path.exists()
+    else {}
+)
 
 # LIA-I03: Shared KeywordIntentMatcher singleton
 _matcher = KeywordIntentMatcher.from_keyword_map(_KEYWORD_ACTION_MAP, domain_id="recruitment_campaign")

@@ -1,5 +1,7 @@
+from pathlib import Path
 """Agent Studio Domain - Sourcing agents, custom agents, calibration, marketplace."""
 import logging
+import yaml as _yaml_imp  # Fase 5
 from typing import Any
 
 from app.domains.base import DomainAction, DomainContext, DomainResponse, IntentResult
@@ -8,28 +10,13 @@ from app.domains.registry import register_domain
 
 logger = logging.getLogger(__name__)
 
-_KEYWORD_ACTION_MAP = {
-    "criar agente": "create_sourcing_agent", "novo agente": "create_sourcing_agent",
-    "ativar agente": "create_sourcing_agent", "agente sourcing": "create_sourcing_agent",
-    "agent studio": "list_agents", "studio agentes": "list_agents",
-    "calibrar": "calibrate_agent", "calibração": "calibrate_agent",
-    "recalibrar": "recalibrate_agent",
-    "status agente": "get_agent_status", "como está o agente": "get_agent_status",
-    "pausar agente": "pause_agent", "parar agente": "pause_agent",
-    "templates setor": "list_sector_templates", "templates disponíveis": "list_sector_templates",
-    "busca inteligente": "run_multi_strategy", "multi estratégia": "run_multi_strategy",
-    "busca multi": "run_multi_strategy", "4 estratégias": "run_multi_strategy",
-    "agente custom": "create_custom_agent", "agente customizado": "create_custom_agent",
-    "criar custom": "create_custom_agent", "novo custom": "create_custom_agent",
-    "listar custom": "list_custom_agents", "meus agentes custom": "list_custom_agents",
-    "testar agente": "test_custom_agent", "testar custom": "test_custom_agent",
-    "executar agente": "execute_custom_agent", "executar custom": "execute_custom_agent",
-    "marketplace": "browse_marketplace", "explorar marketplace": "browse_marketplace",
-    "publicar marketplace": "publish_to_marketplace", "publicar agente": "publish_to_marketplace",
-    "instalar agente": "install_from_marketplace", "instalar marketplace": "install_from_marketplace",
-    "atribuir crew": "assign_to_crew", "adicionar crew": "assign_to_crew",
-    "consumo studio": "get_studio_consumption", "uso agentes": "get_studio_consumption",
-}
+# Fase 5: _KEYWORD_ACTION_MAP loaded from capabilities.yaml (LIA-I05)
+_capabilities_yaml_path = Path(__file__).parent / 'config' / 'capabilities.yaml'
+_KEYWORD_ACTION_MAP: dict[str, str] = (
+    _yaml_imp.safe_load(_capabilities_yaml_path.read_text()).get('intent_keywords', {})
+    if _capabilities_yaml_path.exists()
+    else {}
+)
 
 @register_domain
 class AgentStudioDomain(ComplianceDomainPrompt):

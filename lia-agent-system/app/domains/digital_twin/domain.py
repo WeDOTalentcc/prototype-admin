@@ -1,5 +1,7 @@
+from pathlib import Path
 """Digital Twin Domain - RAG few-shot evaluation using SME reasoning."""
 import logging
+import yaml as _yaml_imp  # Fase 5
 from typing import Any
 
 from app.domains.base import DomainAction, DomainContext, DomainResponse, IntentResult
@@ -10,13 +12,13 @@ from app.shared.services.keyword_intent_matcher import KeywordIntentMatcher
 
 logger = logging.getLogger(__name__)
 
-_KEYWORD_ACTION_MAP = {
-    "digital twin": "list_twins", "gêmeo digital": "list_twins",
-    "criar twin": "create_twin", "novo twin": "create_twin",
-    "avaliar com twin": "evaluate_with_twin", "avaliação twin": "evaluate_with_twin",
-    "segunda opinião": "evaluate_with_twin", "opinião do especialista": "evaluate_with_twin",
-    "treinar twin": "index_twin_audio", "indexar áudio": "index_twin_audio",
-}
+# Fase 5: _KEYWORD_ACTION_MAP loaded from capabilities.yaml (LIA-I05)
+_capabilities_yaml_path = Path(__file__).parent / 'config' / 'capabilities.yaml'
+_KEYWORD_ACTION_MAP: dict[str, str] = (
+    _yaml_imp.safe_load(_capabilities_yaml_path.read_text()).get('intent_keywords', {})
+    if _capabilities_yaml_path.exists()
+    else {}
+)
 
 # LIA-I03: Shared KeywordIntentMatcher singleton
 _matcher = KeywordIntentMatcher.from_keyword_map(_KEYWORD_ACTION_MAP, domain_id="digital_twin")

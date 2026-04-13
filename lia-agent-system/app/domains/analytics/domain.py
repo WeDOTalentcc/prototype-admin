@@ -1,3 +1,4 @@
+from pathlib import Path
 """Analytics & Reporting Domain - Data analytics, KPIs, and predictive insights."""
 import logging
 from typing import Any
@@ -7,112 +8,17 @@ from app.domains.compliance_base import ComplianceDomainPrompt
 from app.domains.registry import register_domain
 
 from app.shared.services.keyword_intent_matcher import KeywordIntentMatcher
+import yaml as _yaml_imp  # Fase 5
 
 logger = logging.getLogger(__name__)
 
-_KEYWORD_ACTION_MAP: dict[str, str] = {
-    "relatório kpi": "generate_kpi_report",
-    "relatório de kpi": "generate_kpi_report",
-    "kpi report": "generate_kpi_report",
-    "gerar kpi": "generate_kpi_report",
-    "indicadores kpi": "generate_kpi_report",
-
-    "funil conversão": "analyze_funnel",
-    "funil de conversão": "analyze_funnel",
-    "analyze funnel": "analyze_funnel",
-    "métricas funil": "analyze_funnel",
-    "métricas do funil": "analyze_funnel",
-
-    "saúde vaga": "job_health_check",
-    "saúde da vaga": "job_health_check",
-    "job health": "job_health_check",
-    "health check": "job_health_check",
-    "verificar saúde": "job_health_check",
-
-    "detectar anomalia": "detect_anomalies",
-    "anomalia": "detect_anomalies",
-    "detect anomalies": "detect_anomalies",
-    "alerta anomalia": "detect_anomalies",
-
-    "comparar período": "compare_periods",
-    "comparar períodos": "compare_periods",
-    "compare periods": "compare_periods",
-    "comparação mensal": "compare_periods",
-    "comparação de períodos": "compare_periods",
-
-    "previsão": "forecast",
-    "previsão de métricas": "forecast",
-    "forecast": "forecast",
-    "projeção": "forecast",
-    "tendência": "forecast",
-
-    "sugerir estratégia": "suggest_strategy",
-    "estratégia recrutamento": "suggest_strategy",
-    "estratégia de recrutamento": "suggest_strategy",
-    "sugestão estratégica": "suggest_strategy",
-    "recomendação": "suggest_strategy",
-
-    "pergunta dados": "answer_data_question",
-    "pergunta sobre dados": "answer_data_question",
-    "data question": "answer_data_question",
-    "consulta dados": "answer_data_question",
-    "consulta de dados": "answer_data_question",
-
-    "insights vaga": "get_job_insights",
-    "insights da vaga": "get_job_insights",
-    "job insights": "get_job_insights",
-    "benchmark salarial": "get_job_insights",
-    "benchmark": "get_job_insights",
-    "salário médio": "get_job_insights",
-
-    "relatório vaga": "generate_job_report",
-    "relatório da vaga": "generate_job_report",
-    "job report": "generate_job_report",
-    "gerar relatório": "generate_job_report",
-
-    "relatório candidato": "generate_candidate_report",
-    "relatório de candidato": "generate_candidate_report",
-    "relatório comparativo": "generate_candidate_report",
-    "comparar candidatos": "generate_candidate_report",
-
-    "analytics busca": "get_search_analytics",
-    "analytics de busca": "get_search_analytics",
-    "search analytics": "get_search_analytics",
-    "desempenho busca": "get_search_analytics",
-    "desempenho de busca": "get_search_analytics",
-
-    "analytics wizard": "get_wizard_analytics",
-    "analytics do wizard": "get_wizard_analytics",
-    "wizard analytics": "get_wizard_analytics",
-    "uso do wizard": "get_wizard_analytics",
-
-    "probabilidade contratação": "predict_hiring_probability",
-    "probabilidade de contratação": "predict_hiring_probability",
-    "hiring probability": "predict_hiring_probability",
-    "chance de contratar": "predict_hiring_probability",
-
-    "tempo preenchimento": "predict_time_to_fill",
-    "tempo de preenchimento": "predict_time_to_fill",
-    "time to fill": "predict_time_to_fill",
-    "prazo da vaga": "predict_time_to_fill",
-
-    "risco desistência": "predict_dropout_risk",
-    "risco de desistência": "predict_dropout_risk",
-    "dropout risk": "predict_dropout_risk",
-    "candidato desistir": "predict_dropout_risk",
-
-    "dashboard": "get_dashboard_data",
-    "dados dashboard": "get_dashboard_data",
-    "dados do dashboard": "get_dashboard_data",
-    "painel indicadores": "get_dashboard_data",
-    "painel de indicadores": "get_dashboard_data",
-
-    "monitoramento agentes": "get_agent_monitoring",
-    "monitoramento de agentes": "get_agent_monitoring",
-    "agent monitoring": "get_agent_monitoring",
-    "performance agentes": "get_agent_monitoring",
-    "performance dos agentes": "get_agent_monitoring",
-}
+# Fase 5: _KEYWORD_ACTION_MAP loaded from capabilities.yaml (LIA-I05)
+_capabilities_yaml_path = Path(__file__).parent / 'config' / 'capabilities.yaml'
+_KEYWORD_ACTION_MAP: dict[str, str] = (
+    _yaml_imp.safe_load(_capabilities_yaml_path.read_text()).get('intent_keywords', {})
+    if _capabilities_yaml_path.exists()
+    else {}
+)
 _matcher = KeywordIntentMatcher.from_keyword_map(_KEYWORD_ACTION_MAP, domain_id="analytics")
 
 
