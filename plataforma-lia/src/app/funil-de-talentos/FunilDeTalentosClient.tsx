@@ -1,19 +1,13 @@
 "use client"
 
-import { useState, useMemo, useEffect } from"react"
+import { useState, useMemo } from"react"
+import dynamic from "next/dynamic"
 import { Button } from"@/components/ui/button"
 import { Input } from"@/components/ui/input"
 import { Badge } from"@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from"@/components/ui/tabs"
-import TalentPoolsTab from"@/components/pages-candidates/TalentPoolsTab"
-import { useRouter } from"next/navigation"
 import { BulkActionsBar } from"@/components/ui/bulk-actions-bar"
 import { CandidatesTable } from"@/components/pages/candidates/CandidatesTable"
-import { ShareSearchModal } from"@/components/modals/share-search-modal"
-import { FavoritesTab } from"@/components/talent-funnel-tabs/favorites-tab"
-import { ListsTab } from"@/components/talent-funnel-tabs/lists-tab"
-import { SavedSearchesTab } from"@/components/talent-funnel-tabs/saved-searches-tab"
-import { HistoryTab } from"@/components/talent-funnel-tabs/history-tab"
 import { useCandidatesList } from"@/hooks/candidates/use-candidates-list"
 import { useBulkSelection } from"@/hooks/candidates/use-bulk-selection"
 import { useTalentFunnel } from"@/hooks/candidates/use-talent-funnel"
@@ -23,6 +17,37 @@ import type { Candidate, SortConfig } from"@/components/pages/candidates/types"
 import type { TableCandidate } from"@/components/tables"
 import type { CandidateLocal } from"@/services/lia-api"
 import { cn } from"@/lib/utils"
+import { LoadingFallback } from"@/components/ui/loading"
+
+const FavoritesTab = dynamic(
+  () => import("@/components/talent-funnel-tabs/favorites-tab").then(m => ({ default: m.FavoritesTab })),
+  { ssr: false, loading: () => <LoadingFallback height="h-40" text="Carregando favoritos..." /> }
+)
+
+const ListsTab = dynamic(
+  () => import("@/components/talent-funnel-tabs/lists-tab").then(m => ({ default: m.ListsTab })),
+  { ssr: false, loading: () => <LoadingFallback height="h-40" text="Carregando listas..." /> }
+)
+
+const SavedSearchesTab = dynamic(
+  () => import("@/components/talent-funnel-tabs/saved-searches-tab").then(m => ({ default: m.SavedSearchesTab })),
+  { ssr: false, loading: () => <LoadingFallback height="h-40" text="Carregando buscas salvas..." /> }
+)
+
+const HistoryTab = dynamic(
+  () => import("@/components/talent-funnel-tabs/history-tab").then(m => ({ default: m.HistoryTab })),
+  { ssr: false, loading: () => <LoadingFallback height="h-40" text="Carregando histórico..." /> }
+)
+
+const TalentPoolsTab = dynamic(
+  () => import("@/components/pages-candidates/TalentPoolsTab"),
+  { ssr: false, loading: () => <LoadingFallback height="h-40" text="Carregando bancos de talentos..." /> }
+)
+
+const ShareSearchModal = dynamic(
+  () => import("@/components/modals/share-search-modal").then(m => ({ default: m.ShareSearchModal })),
+  { ssr: false }
+)
 
 // ── Mapper: CandidateLocal → Candidate (para reutilizar CandidatesTable) ──────
 function toCandidateTableRow(c: CandidateLocal): Candidate {
@@ -99,11 +124,6 @@ export default function FunilDeTalentosPage() {
   const [activeTab, setActiveTab] = useState("todos")
   const [shareModalOpen, setShareModalOpen] = useState(false)
   const [shareBulkOpen, setShareBulkOpen] = useState(false)
-  const [mounted, setMounted] = useState(false)
-
-  useEffect(() => {
-    setMounted(true)
-  }, [])
 
   const candidates = useMemo(() => rawCandidates.map(toCandidateTableRow), [rawCandidates])
   const selectedIds = useMemo(() => selectedCandidates, [selectedCandidates])
@@ -147,27 +167,6 @@ const STATUS_COLORS: Record<string, { active: string; inactive: string }> = {"No
 
 const STATUS_OPTIONS = ["Novo","Em triagem","Aprovado","Reprovado"]
   const SENIORITY_OPTIONS = ["Júnior","Pleno","Sênior","Especialista"]
-
-  if (!mounted) {
-    return (
-      <div className="min-h-screen bg-lia-bg-primary dark:bg-lia-bg-primary">
-        <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 py-6 space-y-4">
-          <div>
-            <h1 className={cn(textStyles.title,"text-lg font-semibold")}>
-              Funil de Talentos
-            </h1>
-            <p className={cn(textStyles.description,"text-xs mt-0.5")}>
-              Busque candidatos na base
-            </p>
-          </div>
-          <div className="bg-lia-bg-card dark:bg-lia-bg-elevated rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle p-8 flex items-center justify-center gap-2 text-lia-text-secondary">
-            <div className="animate-spin h-5 w-5 border-2 border-lia-border-default border-t-wedo-cyan rounded-full" />
-            Carregando candidatos...
-          </div>
-        </div>
-      </div>
-    )
-  }
 
   return (
     <div className="min-h-screen bg-lia-bg-primary dark:bg-lia-bg-primary">
@@ -438,28 +437,32 @@ const STATUS_OPTIONS = ["Novo","Em triagem","Aprovado","Reprovado"]
       </div>
 
       {/* Modal: Compartilhar Busca (H.4) */}
-      <ShareSearchModal
-        open={shareModalOpen}
-        onClose={() => setShareModalOpen(false)}
-        shareType="search"
-        title={`Busca — ${filters.search ||"Todos os candidatos"}`}
-        candidateIds={candidates.map(c => c.id)}
-        candidateCount={candidates.length}
-        sourceQuery={JSON.stringify(filters)}
-      />
+      {shareModalOpen && (
+        <ShareSearchModal
+          open={shareModalOpen}
+          onClose={() => setShareModalOpen(false)}
+          shareType="search"
+          title={`Busca — ${filters.search ||"Todos os candidatos"}`}
+          candidateIds={candidates.map(c => c.id)}
+          candidateCount={candidates.length}
+          sourceQuery={JSON.stringify(filters)}
+        />
+      )}
 
       {/* Modal: Compartilhar Seleção (H.3b via bulk) */}
-      <ShareSearchModal
-        open={shareBulkOpen}
-        onClose={() => {
-          setShareBulkOpen(false)
-          clearSelection()
-        }}
-        shareType="list"
-        title={`Seleção de ${selectedCount} candidatos`}
-        candidateIds={selectedIdsArray}
-        candidateCount={selectedCount}
-      />
+      {shareBulkOpen && (
+        <ShareSearchModal
+          open={shareBulkOpen}
+          onClose={() => {
+            setShareBulkOpen(false)
+            clearSelection()
+          }}
+          shareType="list"
+          title={`Seleção de ${selectedCount} candidatos`}
+          candidateIds={selectedIdsArray}
+          candidateCount={selectedCount}
+        />
+      )}
     </div>
   )
 }

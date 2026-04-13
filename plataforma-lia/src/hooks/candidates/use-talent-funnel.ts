@@ -107,6 +107,7 @@ export function useTalentFunnel() {
         setSavedSearches(normalized)
       }
 
+      await new Promise(r => setTimeout(r, 500))
       const apiFavorites = await fetchFavoritesFromAPI()
       if (apiFavorites.size > 0) {
         setFavorites(apiFavorites)

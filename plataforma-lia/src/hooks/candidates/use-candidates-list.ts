@@ -58,16 +58,18 @@ export function useCandidatesList(initialFilters?: CandidatesListFilters): UseCa
 
       const qs = query.toString()
       const url = `${BACKEND_URL}/candidates${qs ? `?${qs}` : ''}`
-      const maxRetries = 4
+      const maxRetries = 2
       const baseDelay = 2000
 
       console.log('[useCandidatesList] fetching:', url)
 
       for (let attempt = 0; attempt <= maxRetries; attempt++) {
+        if (cancelled) return
         try {
           console.debug(`[useCandidatesList] attempt ${attempt}/${maxRetries}`)
           const response = await fetch(url, {
             headers: { 'Content-Type': 'application/json' },
+            signal: AbortSignal.timeout(12000),
           })
 
           console.debug(`[useCandidatesList] response status: ${response.status}`)
@@ -87,7 +89,8 @@ export function useCandidatesList(initialFilters?: CandidatesListFilters): UseCa
         } catch (err) {
           if (cancelled) return
           if (attempt < maxRetries) {
-            await new Promise(r => setTimeout(r, baseDelay * (attempt + 1)))
+            const delay = baseDelay * Math.pow(2, attempt)
+            await new Promise(r => setTimeout(r, delay))
           } else {
             setError("Erro ao carregar candidatos. Tente novamente.")
             setLoading(false)
@@ -126,15 +129,6 @@ export function useCandidatesList(initialFilters?: CandidatesListFilters): UseCa
   const refresh = useCallback(() => {
     setFetchTrigger(prev => prev + 1)
   }, [])
-
-  useEffect(() => {
-    if (error) {
-      const timer = setTimeout(() => {
-        setFetchTrigger(prev => prev + 1)
-      }, 5000)
-      return () => clearTimeout(timer)
-    }
-  }, [error])
 
   useEffect(() => {
     const onFocus = () => {

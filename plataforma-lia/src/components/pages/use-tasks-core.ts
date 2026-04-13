@@ -292,11 +292,11 @@ function mapJobToJobWithAlert(job: Partial<BackendJob>): JobWithAlert {
 
 const RETRYABLE_STATUSES = new Set([401, 502, 503, 504, 429])
 
-async function fetchEndpointWithRetry(url: string, retries = 3, baseDelayMs = 2000): Promise<Response> {
+async function fetchEndpointWithRetry(url: string, retries = 2, baseDelayMs = 2000): Promise<Response> {
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
       console.debug(`[useTasksCore] fetch attempt ${attempt}/${retries}: ${url}`)
-      const res = await fetch(url, { signal: AbortSignal.timeout(30000) })
+      const res = await fetch(url, { signal: AbortSignal.timeout(12000) })
       console.debug(`[useTasksCore] fetch result: ${url} → ${res.status}`)
       if (res.ok || attempt === retries || !RETRYABLE_STATUSES.has(res.status)) {
         return res
@@ -440,24 +440,12 @@ export function useTasksCore(onNavigate?: (page: string) => void) {
       )
       if (failedRequests.length === 4) {
         setError('Não foi possível conectar ao servidor. Verifique sua conexão.')
-        if (retryTimerRef.current) clearTimeout(retryTimerRef.current)
-        retryTimerRef.current = setTimeout(() => {
-          if (mountedRef.current) fetchAllData()
-        }, 5000)
       } else if (failedRequests.length > 0) {
         setError('Alguns dados podem estar incompletos.')
-        if (retryTimerRef.current) clearTimeout(retryTimerRef.current)
-        retryTimerRef.current = setTimeout(() => {
-          if (mountedRef.current) fetchAllData()
-        }, 8000)
       }
     } catch {
       if (!mountedRef.current) return
       setError('Erro ao carregar dados. Tente novamente.')
-      if (retryTimerRef.current) clearTimeout(retryTimerRef.current)
-      retryTimerRef.current = setTimeout(() => {
-        if (mountedRef.current) fetchAllData()
-      }, 5000)
     } finally {
       if (mountedRef.current) {
         setLoading(false)
