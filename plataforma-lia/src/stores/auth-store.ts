@@ -167,19 +167,24 @@ export const useAuthStore = create<AuthStore>()(
         }
 
         if (process.env.NODE_ENV !== 'production') {
-          try {
-            const userData = await authService.getMeDirect()
-            if (userData && userData.email) {
-              set({
-                user: userData,
-                authMethod: 'dev-auto-login' as AuthMethod,
-                isAuthenticated: true,
-                isSSO: false,
-                isLoading: false,
-              }, false, 'auth/init/dev')
-              return
+          for (let attempt = 0; attempt < 3; attempt++) {
+            try {
+              const userData = await authService.getMeDirect()
+              if (userData && userData.email) {
+                set({
+                  user: userData,
+                  authMethod: 'dev-auto-login' as AuthMethod,
+                  isAuthenticated: true,
+                  isSSO: false,
+                  isLoading: false,
+                }, false, 'auth/init/dev')
+                return
+              }
+            } catch {
+              if (attempt < 2) {
+                await new Promise(r => setTimeout(r, 3000))
+              }
             }
-          } catch {
           }
         }
 

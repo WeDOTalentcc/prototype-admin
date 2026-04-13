@@ -11,7 +11,7 @@ import { mapCandidateToInternal as _mapCandidateToInternal } from "@/components/
 import type { Candidate } from "@/components/pages/candidates/types"
 import type { JobVacancy, EmailTemplate } from "@/services/lia-api"
 
-async function waitForServer(maxWaitMs = 60_000): Promise<boolean> {
+async function waitForServer(maxWaitMs = 20_000): Promise<boolean> {
   const start = Date.now()
   while (Date.now() - start < maxWaitMs) {
     try {

@@ -290,7 +290,7 @@ function mapJobToJobWithAlert(job: Partial<BackendJob>): JobWithAlert {
   }
 }
 
-const RETRYABLE_STATUSES = new Set([502, 503, 504, 429])
+const RETRYABLE_STATUSES = new Set([401, 502, 503, 504, 429])
 
 async function fetchEndpointWithRetry(url: string, retries = 3, baseDelayMs = 2000): Promise<Response> {
   for (let attempt = 0; attempt <= retries; attempt++) {

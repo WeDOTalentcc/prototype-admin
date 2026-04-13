@@ -70,11 +70,10 @@ async function getDevToken(): Promise<string | null> {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: demoEmail, password: demoPassword }),
-      signal: AbortSignal.timeout(5000),
+      signal: AbortSignal.timeout(15000),
     })
     if (!res.ok) return null
     const data = await res.json()
-    // FastAPI wraps response: {ok: true, data: {access_token}}
     const token = data.access_token || data?.data?.access_token
     if (!token) return null
 
