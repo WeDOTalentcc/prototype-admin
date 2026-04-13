@@ -83,7 +83,7 @@ function getRecommendationText(recommendation: string): string {
   if (recommendation ==="pause_screening") {
     return"Recomendamos agendar entrevistas antes de desbloquear"
   }
-  return"Pipeline com capacidade — triagem pode continuar"
+  return"Funil com capacidade — triagem pode continuar"
 }
 
 export function SaturationBadge({ jobId }: SaturationBadgeProps) {
@@ -124,7 +124,7 @@ export function SaturationBadge({ jobId }: SaturationBadgeProps) {
       })
 
       if (!response.ok) {
-        toast.error("Erro ao desbloquear pipeline")
+        toast.error("Erro ao desbloquear funil")
         return
       }
 
@@ -153,7 +153,7 @@ export function SaturationBadge({ jobId }: SaturationBadgeProps) {
   const sourcingPercent = Math.min(data.sourcing.percentage, 100)
 
   const badgeElement = isSaturated ? (
-    <Badge variant="danger" className="gap-1 cursor-pointer font-semibold rounded-lg" title="Pipeline Saturado">
+    <Badge variant="danger" className="gap-1 cursor-pointer font-semibold rounded-lg" title="Funil Saturado">
       <AlertTriangle className="w-3 h-3 shrink-0" />
       <span>{data.organic.count}/{data.organic.threshold} org</span>
       <span>|</span>
@@ -180,7 +180,7 @@ export function SaturationBadge({ jobId }: SaturationBadgeProps) {
       >
         <div className="p-3 space-y-3 text-xs">
           <div className="font-medium text-lia-text-primary">
-            {isSaturated ?"Pipeline Saturado" :"Quase Saturado"}
+            {isSaturated ?"Funil Saturado" :"Quase Saturado"}
           </div>
 
           <div className="space-y-2">

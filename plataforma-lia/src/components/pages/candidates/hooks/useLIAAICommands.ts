@@ -249,7 +249,7 @@ function buildSearchAnalysisResponse(
       id: `lia-${Date.now()}`, type: 'lia', timestamp: new Date(),
       content: topSkills.length === 0
         ? `📊 **Nenhuma skill identificada** nos perfis.\n\n💡 *Os candidatos podem não ter skills cadastradas.*`
-        : `📊 **Top Skills mais comuns:**\n\n${topSkills.map(([skill, count], i) => `${i+1}. **${skill}** - ${count} candidato${count > 1 ? 's' : ''}`).join('\n')}\n\n💡 *Use essas skills como filtro para refinar sua busca.*`
+        : `📊 **Competências Principais mais comuns:**\n\n${topSkills.map(([skill, count], i) => `${i+1}. **${skill}** - ${count} candidato${count > 1 ? 's' : ''}`).join('\n')}\n\n💡 *Use essas competências como filtro para refinar sua busca.*`
     }
   }
   if (trimmedCommand.includes('experiência') && trimmedCommand.includes('média')) {
@@ -293,7 +293,7 @@ function buildSearchAnalysisResponse(
       id: `lia-${Date.now()}`, type: 'lia', timestamp: new Date(),
       content: commonSkills.length === 0
         ? `📊 **Nenhuma skill em comum** encontrada entre os ${selected.length} candidatos selecionados.`
-        : `📊 **Pontos fortes em comum** (${selected.length} candidatos):\n\n${commonSkills.slice(0, 8).map(s => `• **${s}**`).join('\n')}\n\n💡 *Essas são as skills compartilhadas pela maioria.*`
+        : `📊 **Pontos fortes em comum** (${selected.length} candidatos):\n\n${commonSkills.slice(0, 8).map(s => `• **${s}**`).join('\n')}\n\n💡 *Essas são as competências compartilhadas pela maioria.*`
     }
   }
   if (trimmedCommand.includes('gaps') || trimmedCommand.includes('competência')) {

@@ -2,7 +2,7 @@
  * useLearning hook - Integrates with the Job Learning API
  * 
  * Provides:
- * - Wizard suggestions (salary, skills, behavioral, TTF)
+ * - Wizard suggestions (salary, competências, behavioral, TTF)
  * - Similar jobs lookup
  * - Pattern-based recommendations
  */

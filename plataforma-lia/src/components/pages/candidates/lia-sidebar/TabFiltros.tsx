@@ -26,7 +26,7 @@ export const TabFiltros = React.memo(function TabFiltros({
         <div className="flex items-start gap-2">
           <Lightbulb className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-lia-text-secondary" />
           <p className="text-xs text-lia-text-secondary">
-            <strong>Dica:</strong> Use os filtros avan\u00e7ados para refinar sua busca por localiza\u00e7\u00e3o, experi\u00eancia, skills, idiomas e muito mais.
+            <strong>Dica:</strong> Use os filtros avan\u00e7ados para refinar sua busca por localiza\u00e7\u00e3o, experi\u00eancia, competências, idiomas e muito mais.
           </p>
         </div>
       </div>

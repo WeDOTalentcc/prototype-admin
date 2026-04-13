@@ -78,14 +78,14 @@ export function TemplatesTab({
 
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <h3 className={textStyles.h4}>Templates de Comunicação</h3>
+          <h3 className={textStyles.h4}>Modelos de Comunicação</h3>
         </div>
 
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1 max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-lia-text-tertiary" />
             <Input
-              placeholder="Buscar templates..."
+              placeholder="Buscar modelos..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10 text-xs h-9 rounded-md"

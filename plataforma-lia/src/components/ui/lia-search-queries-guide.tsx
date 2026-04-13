@@ -76,7 +76,7 @@ const SEARCH_QUERY_EXAMPLES: SearchQueryExample[] = [
   { id: 'sq17', icon: Target, question: 'Quais gaps de competência posso identificar?', category: 'candidatos_selecionados' },
   { id: 'sq18', icon: UserCheck, question: 'Compare os selecionados com o perfil ideal da vaga', category: 'candidatos_selecionados' },
   
-  // Comparações (3 ideias - removido fit cultural)
+  // Comparações (3 ideias - removido aderência cultural)
   { id: 'sq19', icon: Target, question: 'Compare os 3 melhores candidatos', category: 'comparacoes' },
   { id: 'sq20', icon: Clock, question: 'Quem tem mais experiência relevante?', category: 'comparacoes' },
   { id: 'sq21', icon: Briefcase, question: 'Compare as habilidades técnicas dos top candidatos', category: 'comparacoes' },

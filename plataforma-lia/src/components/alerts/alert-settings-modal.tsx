@@ -112,7 +112,7 @@ export function AlertSettingsModal({
   if (!isOpen) return null
 
   const metrics = [
-    { value: 'avgTimeToFill', label: 'Time to Fill (dias)', icon: Clock },
+    { value: 'avgTimeToFill', label: 'Tempo de Preenchimento (dias)', icon: Clock },
     { value: 'conversionRate', label: 'Taxa de Conversão (%)', icon: Target },
     { value: 'npsScore', label: 'NPS', icon: Star },
     { value: 'totalHires', label: 'Total de Contratações', icon: Users },
@@ -388,7 +388,7 @@ export function AlertSettingsModal({
                           value={editingRule.name}
                           onChange={(e) => setEditingRule(prev => prev ? { ...prev, name: e.target.value } : null)}
                           className="w-full p-2 border border-lia-border-default rounded-xl"
-                          placeholder="Ex: Time to Fill Crítico"
+                          placeholder="Ex: Tempo de Preenchimento Crítico"
                         />
                       </div>
 

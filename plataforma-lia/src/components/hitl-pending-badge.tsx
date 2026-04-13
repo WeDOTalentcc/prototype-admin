@@ -16,7 +16,7 @@ const ACTION_LABELS: Record<string, string> = {
   move_candidate: "Mover Candidato",
   finalize_wsi: "Finalizar Avaliação WSI",
   send_email: "Enviar E-mail",
-  pipeline_transition: "Transição de Pipeline",
+  pipeline_transition: "Transição de Funil",
 }
 
 function formatAction(action: string): string {

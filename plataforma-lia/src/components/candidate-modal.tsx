@@ -101,7 +101,7 @@ const mockCandidateDetails = {
       id: 2,
       author:"João Costa",
       date:"2025-03-15T16:45:00",
-      content:"Score LIA muito alto, skills matching perfeito para nossa necessidade. Verificar disponibilidade para início.",
+      content:"Nota LIA muito alta, compatibilidade perfeita para nossa necessidade. Verificar disponibilidade para início.",
       type:"neutral"
     }
   ],

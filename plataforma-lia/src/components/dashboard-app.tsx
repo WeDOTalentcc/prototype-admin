@@ -197,7 +197,7 @@ export function DashboardApp({ initialPage = "Chat LIA" }: DashboardAppProps) {
         return <TemplatesPage />
       case "Tarefas":
         return <TasksPage onNavigate={handleNavigate} />
-      case "Agent Studio":
+      case "Estúdio de Agentes":
         return (
           <>
             <AgentStudioPage
@@ -224,7 +224,7 @@ export function DashboardApp({ initialPage = "Chat LIA" }: DashboardAppProps) {
             )}
           </>
         )
-      case "Visão do Pipeline":
+      case "Visão do Funil":
         return <PipelineOverviewPage />
       case "Configurações":
         return <SettingsPageEnhanced />

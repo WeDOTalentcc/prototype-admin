@@ -29,7 +29,7 @@ export function IntegrationsTemplates({ templates, onNewTemplate, onEditTemplate
             className="gap-2 hover:bg-lia-interactive-hover transition-colors cursor-pointer"
           >
             <Plus className="w-4 h-4" />
-            Novo Template
+            Novo Modelo
           </Button>
         </div>
       </CardHeader>

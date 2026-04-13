@@ -246,7 +246,7 @@ function mapJobToJobWithAlert(job: Partial<BackendJob>): JobWithAlert {
     alertAction = 'Acelerar processo'
   } else if (urgencyLevel === 'urgent') {
     alertType = 'warning'
-    alertMessage = `${totalCandidates} candidatos no pipeline`
+    alertMessage = `${totalCandidates} candidatos no funil`
     alertAction = 'Revisar pipeline'
   } else {
     alertType = 'success'

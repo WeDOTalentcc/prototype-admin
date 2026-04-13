@@ -245,7 +245,7 @@ export function EditJobModalRequirements({
                     Carregando...
                   </span>
                 ) : (
-                  <SelectValue placeholder="Usar template" />
+                  <SelectValue placeholder="Usar modelo" />
                 )}
               </SelectTrigger>
               <SelectContent>

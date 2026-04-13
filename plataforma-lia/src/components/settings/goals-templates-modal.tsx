@@ -74,7 +74,7 @@ export function GoalsTemplatesModal({
       <div className="bg-lia-bg-primary rounded-xl p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-3">
           <div>
-            <h3 className={textStyles.h4}>Templates de Metas</h3>
+            <h3 className={textStyles.h4}>Modelos de Metas</h3>
             <p className={textStyles.caption}>Selecione uma ou mais metas para aplicar</p>
           </div>
           <Button variant="ghost" size="sm" onClick={() => {
@@ -129,7 +129,7 @@ export function GoalsTemplatesModal({
               <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 w-3 h-3 text-lia-text-tertiary" />
               <input
                 type="text"
-                placeholder="Buscar templates..."
+                placeholder="Buscar modelos..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-7 pr-2.5 py-1 border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary text-micro"

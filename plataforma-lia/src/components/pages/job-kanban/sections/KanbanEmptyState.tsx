@@ -12,7 +12,7 @@ export const KanbanEmptyState = React.memo(function KanbanEmptyState({ onAddCand
   return (
     <EmptyState
       icon={<Users />}
-      title="Nenhum candidato neste pipeline ainda"
+      title="Nenhum candidato neste funil ainda"
       description="Adicione candidatos ou busque no banco de talentos para iniciar o processo."
       action={{
         label: "Buscar candidatos",

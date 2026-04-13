@@ -293,7 +293,7 @@ export const KanbanJobHeader = React.memo(function KanbanJobHeader(props: Kanban
             {/* Right: Action Buttons */}
             <div className="flex items-center gap-2 pt-1 flex-shrink-0">
               <Button variant="outline" size="sm" className="gap-2 h-8" onClick={() => {
-                toast.success("Em breve", { description:"Em breve: Configuração de etapas do pipeline" })
+                toast.success("Em breve", { description:"Em breve: Configuração de etapas do funil" })
               }}>
                 <Settings className="w-3.5 h-3.5" />
                 Configurar Etapas

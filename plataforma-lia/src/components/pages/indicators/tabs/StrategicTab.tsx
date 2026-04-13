@@ -91,7 +91,7 @@ export function StrategicTab() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Clock className="w-5 h-5 text-status-success" />
-              Time to Fill por Senioridade
+              Tempo de Preenchimento por Senioridade
             </CardTitle>
           </CardHeader>
           <CardContent>

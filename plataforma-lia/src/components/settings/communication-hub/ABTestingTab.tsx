@@ -177,7 +177,7 @@ export function ABTestingTab() {
         <div>
           <h3 className="text-sm font-semibold text-lia-text-primary flex items-center gap-2">
             <FlaskConical className="w-4 h-4 text-wedo-cyan" />
-            A/B Testing de Templates de Email
+            A/B Testing de Modelos de Email
           </h3>
           <p className="text-xs text-lia-text-tertiary mt-0.5">
             Gerencie experimentos para otimizar templates de email com base em dados reais

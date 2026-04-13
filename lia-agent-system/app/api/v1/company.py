@@ -593,7 +593,11 @@ async def create_company_profile(
         if not resolved_client_id and current_user and hasattr(current_user, 'company_id') and current_user.company_id:
             resolved_client_id = str(current_user.company_id)
         if resolved_client_id:
-            profile_data["client_account_id"] = resolved_client_id
+            try:
+                uuid.UUID(resolved_client_id)
+                profile_data["client_account_id"] = resolved_client_id
+            except (ValueError, AttributeError):
+                pass
 
         profile = await profile_repo.create(profile_data)
         logger.info(f"Created company profile: {profile.name} (client_account_id={resolved_client_id})")
@@ -619,7 +623,11 @@ async def update_company_profile(
             raise HTTPException(status_code=404, detail="Company profile not found")
 
         if not profile.client_account_id and current_user and hasattr(current_user, 'company_id') and current_user.company_id:
-            update_data["client_account_id"] = str(current_user.company_id)
+            try:
+                uuid.UUID(str(current_user.company_id))
+                update_data["client_account_id"] = str(current_user.company_id)
+            except (ValueError, AttributeError):
+                pass
 
         update_data["updated_at"] = datetime.utcnow()
         updated = await profile_repo.update(profile_id, update_data)

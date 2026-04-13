@@ -57,7 +57,7 @@ export function PredictionsTab({ recruiters }: PredictionsTabProps) {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-lia-text-secondary font-medium">
-                  Time to Fill
+                  Tempo de Preenchimento
                 </p>
                 <p className="text-2xl font-semibold text-lia-text-primary">
                   {loading ?"..." : `${ttfDays} dias`}
@@ -121,7 +121,7 @@ export function PredictionsTab({ recruiters }: PredictionsTabProps) {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Brain className="w-5 h-5 text-wedo-purple" />
-              Fatores de Impacto — Time to Fill
+              Fatores de Impacto — Tempo de Preenchimento
             </CardTitle>
           </CardHeader>
           <CardContent>

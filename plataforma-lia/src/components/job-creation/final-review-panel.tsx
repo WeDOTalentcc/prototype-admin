@@ -110,7 +110,7 @@ const SOURCE_LABELS: Record<string, { label: string; icon: typeof Building; colo
     color:"text-wedo-purple",
   },
   market_benchmark: {
-    label:"Benchmark de mercado",
+    label:"Referência de mercado",
     icon: Brain,
     color:"text-status-warning",
   },

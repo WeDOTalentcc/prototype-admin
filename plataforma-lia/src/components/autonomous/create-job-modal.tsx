@@ -194,7 +194,7 @@ export function CreateJobModal({ open, onOpenChange, onJobCreated }: CreateJobMo
         return (
           <div className="space-y-3">
             <div className="space-y-1.5">
-              <Label className="text-xs">Template de Email</Label>
+              <Label className="text-xs">Modelo de Email</Label>
               <Select
                 value={config.template_id || ''}
                 onValueChange={(value) => setConfig({ ...config, template_id: value })}

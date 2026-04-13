@@ -139,7 +139,7 @@ export function useJobCompare(jobs: JobCompareItem[]) {
       insights.push({
         type: "comparative",
         title: "Diferença de Volume",
-        description: `"${bestConversion.title}" converte ${conversionBestRate.toFixed(1)}% dos candidatos, indicando boa qualificação do pipeline comparado às demais vagas.`,
+        description: `"${bestConversion.title}" converte ${conversionBestRate.toFixed(1)}% dos candidatos, indicando boa qualificação do funil comparado às demais vagas.`,
       })
     }
 

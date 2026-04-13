@@ -67,7 +67,7 @@ export function CandidatePreviewPanel({ candidate, onClose }: { candidate: Candi
                     ></div>
                   </div>
                   <div className={`${textStyles.description} mt-1`}>
-                    Score baseado em habilidades, experiência e fit cultural
+                    Score baseado em habilidades, experiência e aderência cultural
                   </div>
                   <div className="mt-3 pt-2 border-t border-lia-border-subtle dark:border-lia-border-subtle">
                     <LIAFeedbackWidget

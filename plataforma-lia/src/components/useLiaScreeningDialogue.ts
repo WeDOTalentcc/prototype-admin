@@ -72,7 +72,7 @@ export function useLiaScreeningDialogue(isOpen: boolean, jobData: JobData, onCom
       duration: "25-30 minutos",
       criteria: [
         { name: "Competências Técnicas", weight: 40 },
-        { name: "Fit Cultural", weight: 30 },
+        { name: "Aderência Cultural", weight: 30 },
         { name: "Motivação", weight: 20 },
         { name: "Expectativas", weight: 10 }
       ]
@@ -147,7 +147,7 @@ export function useLiaScreeningDialogue(isOpen: boolean, jobData: JobData, onCom
           )
         } else if (userInput.includes('Criar do zero')) {
           addMessage(
-            `Ótimo! Vamos criar um roteiro completamente personalizado.\n\nPrimeiro, me conte: **qual é o principal objetivo desta triagem?**\n\nPor exemplo:\n• Validar conhecimentos técnicos específicos\n• Avaliar fit cultural e comportamental\n• Triagem rápida para alto volume\n• Avaliação aprofundada para posição crítica`,
+            `Ótimo! Vamos criar um roteiro completamente personalizado.\n\nPrimeiro, me conte: **qual é o principal objetivo desta triagem?**\n\nPor exemplo:\n• Validar conhecimentos técnicos específicos\n• Avaliar aderência cultural e comportamental\n• Triagem rápida para alto volume\n• Avaliação aprofundada para posição crítica`,
             'lia'
           )
         } else if (userInput.includes('Ver configurações')) {

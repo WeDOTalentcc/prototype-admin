@@ -135,7 +135,7 @@ export const TOOL_LABELS: Record<string, string> = {
   list_jobs: "Listar vagas",
   get_job_details: "Ver detalhes da vaga",
   get_candidate_details: "Ver detalhes do candidato",
-  get_pipeline_summary: "Resumo do pipeline",
+  get_pipeline_summary: "Resumo do funil",
   search_talent_pool: "Buscar no banco de talentos",
   get_analytics_summary: "Resumo de analytics",
   get_company_culture: "Cultura da empresa",
@@ -159,6 +159,6 @@ export const TRIGGER_LABELS: Record<TriggerMode, string> = {
 export const TARGET_LABELS: Record<DeploymentTargetType, string> = {
   job: "Vaga",
   talent_pool: "Banco de Talentos",
-  pipeline_stage: "Etapa do Pipeline",
+  pipeline_stage: "Etapa do Funil",
   candidate_list: "Lista de Candidatos",
 }

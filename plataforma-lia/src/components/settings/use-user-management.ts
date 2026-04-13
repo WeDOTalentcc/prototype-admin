@@ -123,13 +123,10 @@ export function useUserManagement() {
   }, [])
 
   const handleSaveUser = useCallback(async () => {
-    if (!effectiveCompanyId) {
-      alert('Empresa não identificada. Recarregue a página.')
-      return
-    }
+    const cid = effectiveCompanyId || 'demo_company'
     try {
       if (isCreating) {
-        const response = await fetch(`/api/backend-proxy/company/users?company_id=${effectiveCompanyId}`, {
+        const response = await fetch(`/api/backend-proxy/company/users?company_id=${cid}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -149,7 +146,7 @@ export function useUserManagement() {
         setSuccessMessage(`Usuário criado com sucesso! Um email de convite foi enviado para ${formData.email} com instruções para ativar a conta.`)
         setTimeout(() => setSuccessMessage(null), 8000)
       } else if (selectedUser) {
-        const response = await fetch(`/api/backend-proxy/company/users/${selectedUser.id}?company_id=${effectiveCompanyId}`, {
+        const response = await fetch(`/api/backend-proxy/company/users/${selectedUser.id}?company_id=${cid}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -173,10 +170,10 @@ export function useUserManagement() {
   }, [effectiveCompanyId, isCreating, formData, selectedUser, fetchUsers])
 
   const handleResendInvitation = useCallback(async (userId: string, userEmail: string) => {
-    if (!effectiveCompanyId) return
+    const cid = effectiveCompanyId || 'demo_company'
     setResendingInvite(userId)
     try {
-      const response = await fetch(`/api/backend-proxy/company/users/${userId}/resend-invitation?company_id=${effectiveCompanyId}`, {
+      const response = await fetch(`/api/backend-proxy/company/users/${userId}/resend-invitation?company_id=${cid}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' }
       })
@@ -194,10 +191,10 @@ export function useUserManagement() {
   }, [effectiveCompanyId])
 
   const handleDeleteUser = useCallback(async (userId: string) => {
-    if (!effectiveCompanyId) return
+    const cid = effectiveCompanyId || 'demo_company'
     if (confirm('Tem certeza que deseja excluir este usuário?')) {
       try {
-        const response = await fetch(`/api/backend-proxy/company/users/${userId}?company_id=${effectiveCompanyId}`, {
+        const response = await fetch(`/api/backend-proxy/company/users/${userId}?company_id=${cid}`, {
           method: 'DELETE'
         })
         if (!response.ok) throw new Error('Failed to delete user')

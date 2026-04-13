@@ -47,15 +47,15 @@ const MODULE_ICONS: Record<string, React.ElementType> = {
 
 const MODULE_FEATURES: Record<string, string[]> = {
   talent_intelligence_pro: [
-    "Skills Ontology com taxonomia O*NET",
-    "Gap Analysis por competências",
-    "Market Intelligence e benchmarking",
-    "Recomendação de skills adjacentes",
+    "Ontologia de Competências com O*NET",
+    "Análise de Lacunas por competências",
+    "Inteligência de Mercado e análise comparativa",
+    "Recomendação de competências adjacentes",
     "Snapshot de mercado por cargo",
   ],
   internal_mobility: [
-    "Matching de talentos internos",
-    "Readiness scoring por posição",
+    "Correspondência de talentos internos",
+    "Nota de prontidão por posição",
     "Plano de desenvolvimento individual",
     "Mapeamento de sucessão",
   ],
@@ -69,11 +69,11 @@ const MODULE_FEATURES: Record<string, string[]> = {
     "Previsão de demanda de contratação",
     "Cenários de crescimento do time",
     "Dashboard de capacidade",
-    "Alerta de gargalos no pipeline",
+    "Alerta de gargalos no funil",
   ],
   candidate_nurture: [
     "Sequências automatizadas de contato",
-    "Tracking de engajamento",
+    "Rastreamento de engajamento",
     "CRM de candidatos passivos",
     "Templates personalizáveis",
   ],
@@ -86,14 +86,14 @@ const MODULE_FEATURES: Record<string, string[]> = {
   predictive_analytics: [
     "Previsão de risco de turnover",
     "Análise de padrões de saída",
-    "Score de retenção por equipe",
-    "Alertas proativos de attrition",
+    "Nota de retenção por equipe",
+    "Alertas proativos de rotatividade",
   ],
 }
 
 const STATUS_DISPLAY: Record<ModuleStatusType, { label: string; variant: "lilac" | "success" | "info" | "default" | "secondary"; icon: React.ElementType }> = {
   beta: { label: "BETA", variant: "lilac", icon: Sparkles },
-  trial: { label: "Trial", variant: "info", icon: Clock },
+  trial: { label: "Teste", variant: "info", icon: Clock },
   active: { label: "Ativo", variant: "success", icon: CheckCircle },
   expired: { label: "Expirado", variant: "default", icon: Clock },
   disabled: { label: "Desabilitado", variant: "secondary", icon: Lock },
@@ -246,23 +246,23 @@ function ModuleCard({ module }: { module: ModuleInfo }) {
 const FALLBACK_MODULES: ModuleInfo[] = [
   {
     module_name: "talent_intelligence_pro",
-    label: "Talent Intelligence Pro",
-    description: "Skills Ontology + Gap Analysis + Market Intelligence",
+    label: "Inteligência de Talentos Pro",
+    description: "Ontologia de Competências + Análise de Lacunas + Inteligência de Mercado",
     status: "beta",
     features: MODULE_FEATURES.talent_intelligence_pro,
     icon: Brain,
   },
   {
     module_name: "internal_mobility",
-    label: "Internal Mobility Suite",
-    description: "Matching interno + Readiness scoring",
+    label: "Mobilidade Interna",
+    description: "Correspondência interna + Nota de prontidão",
     status: "beta",
     features: MODULE_FEATURES.internal_mobility,
     icon: Users,
   },
   {
     module_name: "interview_intelligence",
-    label: "Interview Intelligence Pro",
+    label: "Inteligência de Entrevista Pro",
     description: "Análise WSI de entrevista + viés + parecer",
     status: "beta",
     features: MODULE_FEATURES.interview_intelligence,
@@ -270,7 +270,7 @@ const FALLBACK_MODULES: ModuleInfo[] = [
   },
   {
     module_name: "workforce_planning",
-    label: "Workforce Planning",
+    label: "Planejamento de Equipe",
     description: "Previsão + cenários + dashboard",
     status: "beta",
     features: MODULE_FEATURES.workforce_planning,
@@ -278,7 +278,7 @@ const FALLBACK_MODULES: ModuleInfo[] = [
   },
   {
     module_name: "candidate_nurture",
-    label: "Candidate Nurture / CRM",
+    label: "Nutrição de Candidatos / CRM",
     description: "Sequências + engajamento + CRM",
     status: "beta",
     features: MODULE_FEATURES.candidate_nurture,
@@ -286,7 +286,7 @@ const FALLBACK_MODULES: ModuleInfo[] = [
   },
   {
     module_name: "onboarding_suite",
-    label: "Onboarding Intelligence",
+    label: "Inteligência de Integração",
     description: "Workflow pós-contratação completo",
     status: "coming_soon",
     features: MODULE_FEATURES.onboarding_suite,
@@ -294,7 +294,7 @@ const FALLBACK_MODULES: ModuleInfo[] = [
   },
   {
     module_name: "predictive_analytics",
-    label: "Predictive Attrition",
+    label: "Previsão de Rotatividade",
     description: "Previsão de risco de turnover com ML",
     status: "coming_soon",
     features: MODULE_FEATURES.predictive_analytics,

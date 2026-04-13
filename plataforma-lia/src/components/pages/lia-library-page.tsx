@@ -34,8 +34,8 @@ const commands: Command[] = [
   },
   {
     id: '2',
-    title: 'Analisar fit cultural',
-    command: 'Analise o perfil do candidato focando em fit cultural para nossa empresa',
+    title: 'Analisar aderência cultural',
+    command: 'Analise o perfil do candidato focando em aderência cultural para nossa empresa',
     description: 'Avalia compatibilidade cultural e comportamental do candidato',
     category: 'candidates',
     usageCount: 89

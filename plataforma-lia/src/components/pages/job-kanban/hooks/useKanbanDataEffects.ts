@@ -58,9 +58,9 @@ export function useKanbanDataEffects({
               if (!wsiData) return c
               return {
                 ...c,
-                liaNota: wsiData.overall_wsi,
+                liaScore: wsiData.overall_wsi,
                 score: wsiData.overall_wsi,
-                wsiNota: wsiData.overall_wsi,
+                wsiScore: wsiData.overall_wsi,
                 wsiTechnical: wsiData.technical_wsi,
                 wsiBehavioral: wsiData.behavioral_wsi,
                 wsiClassification: wsiData.classification,

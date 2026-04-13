@@ -48,7 +48,7 @@ export function renderScoreCell(
             e.stopPropagation()
             if (hasNotaGeral) {
               onSetSelectedCandidateForModal(candidate)
-              onSetActiveModal('notaGeral')
+              onSetActiveModal('scoreGeral')
             }
           }}
           title={hasNotaGeral ? 'Clique para ver detalhes' : 'Não avaliado'}

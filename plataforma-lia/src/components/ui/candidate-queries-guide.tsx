@@ -97,7 +97,7 @@ const CANDIDATE_QUERY_EXAMPLES: CandidateQueryExample[] = [
   
   { id: 'c26', icon: Users, question: 'Comparar os 3 finalistas lado a lado', category: 'comparacao' },
   { id: 'c27', icon: Target, question: 'Quem tem experiência mais relevante para a vaga?', category: 'comparacao' },
-  { id: 'c28', icon: Star, question: 'Comparar fit cultural dos candidatos', category: 'comparacao' },
+  { id: 'c28', icon: Star, question: 'Comparar aderência cultural dos candidatos', category: 'comparacao' },
   { id: 'c29', icon: BarChart3, question: 'Comparar candidatos locais vs globais', category: 'comparacao' },
   { id: 'c30', icon: TrendingUp, question: 'Ranking de candidatos por adequação', category: 'comparacao' }
 ]

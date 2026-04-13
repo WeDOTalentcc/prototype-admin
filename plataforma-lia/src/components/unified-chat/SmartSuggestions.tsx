@@ -41,7 +41,7 @@ const ALL_SUGGESTIONS: Suggestion[] = [
 
   // Analisar
   { icon: BarChart2, label: "Relatorio semanal", prompt: "Gerar relatorio semanal de recrutamento", category: "analisar" },
-  { icon: BarChart2, label: "Pipeline health", prompt: "Como esta a saude do pipeline?", category: "analisar" },
+  { icon: BarChart2, label: "Saúde do Funil", prompt: "Como esta a saude do funil?", category: "analisar" },
   { icon: Sparkles, label: "Analytics de vagas", prompt: "Analytics das vagas abertas", category: "analisar" },
 
   // Comunicar

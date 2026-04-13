@@ -353,7 +353,7 @@ export function WSIQuestionsStage({
           <button
             onClick={() => onGenerateWSIQuestions(3, 'behavioral')}
             className="flex-1 py-2 border border-dashed border-wedo-purple/30 rounded-xl text-xs text-wedo-purple hover:bg-wedo-purple/5 transition-colors motion-reduce:transition-none flex items-center justify-center gap-2 focus-visible:ring-2 focus-visible:ring-lia-border-default"
-            aria-label="Gerar perguntas de fit cultural WSI"
+            aria-label="Gerar perguntas de aderência cultural WSI"
           >
             <Brain className="w-3.5 h-3.5 text-wedo-cyan" /> Gerar Fit Cultural
           </button>

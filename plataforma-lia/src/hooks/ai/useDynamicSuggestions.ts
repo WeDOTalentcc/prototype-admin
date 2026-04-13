@@ -128,9 +128,9 @@ function generateContextualSuggestions(data: ContextualData): DynamicSuggestion[
     contextual.push({
       id: "ctx-stalled-candidates",
       icon: Users,
-      title: `${data.stalledCandidates} candidato(s) parado(s) no pipeline`,
+      title: `${data.stalledCandidates} candidato(s) parado(s) no funil`,
       description: "Candidatos aguardando ação há mais de 7 dias",
-      command: "Mostre candidatos parados no pipeline e sugira próximos passos",
+      command: "Mostre candidatos parados no funil e sugira próximos passos",
       category: "candidatos",
       priority: 90,
       actionType: "inline"

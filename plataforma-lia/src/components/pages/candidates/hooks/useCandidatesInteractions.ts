@@ -334,7 +334,7 @@ export function useCandidatesInteractions({
       currentSalary: c.salary?.current?.toString() || '',
       expectedSalary: c.salary?.expected?.toString() || '',
       linkedin: c.linkedin, languages: c.languages || [], benefits: c.benefits || [],
-      liaNota: c.liaAnalysis?.score || c.score, skillsMatch: c.skills.length,
+      liaScore: c.liaAnalysis?.score || c.score, skillsMatch: c.skills.length,
       currentStage: 'Triagem',
       appliedDate: c.lastUpdated?.toISOString() || new Date().toISOString(),
       lastInteraction: c.lastUpdated?.toISOString() || new Date().toISOString(),

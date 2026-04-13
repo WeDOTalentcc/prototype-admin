@@ -122,7 +122,7 @@ export function LiaScreeningRightPanel({ currentStep, screeningData, jobData }: 
                     ]
                   },
                   {
-                    category:"Fit Cultural",
+                    category:"Aderência Cultural",
                     questions: ["Adaptação a ambientes dinâmicos","Como lida com feedback"
                     ]
                   },

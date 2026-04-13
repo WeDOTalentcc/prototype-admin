@@ -20,7 +20,7 @@ export const ONBOARDING_TOUR_STEPS: TourStep[] = [
     type: "spotlight",
     message: "1. PIPELINE — e seu centro de controle. Aqui voce ve TODAS as vagas, com cada candidato em cada etapa. Voce aprova, rejeita, move candidatos, e eu te ajudo em cada decisao.",
     selector: "[data-tour='nav-pipeline'], [data-nav='pipeline'], a[href*='pipeline']",
-    spotlightText: "Pipeline — centro de controle de vagas e candidatos",
+    spotlightText: "Funil — centro de controle de vagas e candidatos",
     position: "right",
   },
   {
@@ -52,7 +52,7 @@ export const ONBOARDING_TOUR_STEPS: TourStep[] = [
   {
     id: "tour_daily",
     type: "message_only",
-    message: "No dia-a-dia funciona assim:\n1. Voce abre uma vaga (eu ajudo a criar o JD e perguntas)\n2. Um agente busca candidatos automaticamente\n3. Candidatos sao triados por chat, ligacao ou WhatsApp\n4. Eu emito parecer detalhado com score e recomendacao\n5. Voce decide quem avanca no Pipeline\n6. Eu agendo entrevistas e acompanho ate a oferta\n\nTudo com transparencia — voce sempre ve o que eu fiz e por que.",
+    message: "No dia-a-dia funciona assim:\n1. Voce abre uma vaga (eu ajudo a criar o JD e perguntas)\n2. Um agente busca candidatos automaticamente\n3. Candidatos sao triados por chat, ligacao ou WhatsApp\n4. Eu emito parecer detalhado com score e recomendacao\n5. Voce decide quem avanca no Funil\n6. Eu agendo entrevistas e acompanho ate a oferta\n\nTudo com transparencia — voce sempre ve o que eu fiz e por que.",
     autoAdvanceMs: 8000,
   },
 
@@ -79,7 +79,7 @@ export const JOB_CREATION_DEMO_STEPS: TourStep[] = [
   {
     id: "demo_enrichment",
     type: "message_only",
-    message: "Olha o que eu fiz! Enriqueci o JD, identifiquei skills, mapeei competencias e verifiquei linguagem inclusiva. Tudo automatico.",
+    message: "Olha o que eu fiz! Enriqueci o JD, identifiquei competências, mapeei competencias e verifiquei linguagem inclusiva. Tudo automatico.",
     autoAdvanceMs: 5000,
   },
   {

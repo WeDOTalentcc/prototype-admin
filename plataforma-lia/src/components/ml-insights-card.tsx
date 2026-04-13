@@ -122,7 +122,7 @@ export function MLInsightsCard({ companyId, jobData, className = "" }: MLInsight
             </div>
           )}
 
-          {/* Time to Fill */}
+          {/* Tempo de Preenchimento */}
           {timeToFill && (
             <div className="flex items-start gap-2">
               <Clock className="w-3.5 h-3.5 text-lia-text-secondary flex-shrink-0 mt-0.5" />

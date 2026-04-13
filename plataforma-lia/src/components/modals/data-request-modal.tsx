@@ -162,7 +162,7 @@ export function DataRequestModal({
             <Label className="text-xs font-medium text-lia-text-primary">Template</Label>
             <Select value={selectedTemplate} onValueChange={handleTemplateChange}>
               <SelectTrigger className="w-full h-9">
-                <SelectValue placeholder="Selecione um template" />
+                <SelectValue placeholder="Selecione um modelo" />
               </SelectTrigger>
               <SelectContent className="z-select">
                 {DATA_REQUEST_TEMPLATES.map((template) => (

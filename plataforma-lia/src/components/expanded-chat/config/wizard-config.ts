@@ -612,7 +612,7 @@ export const FROM_SCRATCH_ORIENTATION_MESSAGE = `Ótimo! Vamos criar sua vaga do
 • **Gestor/Área** — Quem será o gestor e qual área/departamento
 • **Principais Responsabilidades** — O que essa pessoa vai fazer no dia-a-dia
 • **Competências Técnicas (min. 3)** — Skills técnicos necessários
-• **Competências Comportamentais (min. 3)** — Soft skills desejadas
+• **Competências Comportamentais (min. 3)** — Comp. Comportamentais desejadas
 • **Faixa Salarial** — Se já tiver em mente
 • **Vaga Afirmativa?** — Se for exclusiva para algum grupo
 

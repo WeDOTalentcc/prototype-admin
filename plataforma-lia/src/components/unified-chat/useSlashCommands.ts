@@ -31,7 +31,7 @@ export function useSlashCommands(options: UseSlashCommandsOptions) {
     const prompts: Record<string, string> = {
       "criar-vaga": "Quero criar uma nova vaga de emprego. ",
       "buscar": "Buscar candidatos que ",
-      "pipeline": "Mostrar o status do pipeline de candidatos",
+      "pipeline": "Mostrar o status do funil de candidatos",
       "relatorio": "Gerar um relatorio de recrutamento ",
       "ajuda": "O que voce pode fazer? Liste todas as suas capacidades.",
     }

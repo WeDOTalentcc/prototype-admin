@@ -26,7 +26,7 @@ type TabKey ="respostas" |"parecer" |"ranking"
 const TABS: { key: TabKey; label: string }[] = [
   { key:"respostas", label:"Respostas e Avaliação" },
   { key:"parecer", label:"Parecer e Feedback" },
-  { key:"ranking", label:"Ranking e Comparativo" },
+  { key:"ranking", label:"Classificação e Comparativo" },
 ]
 
 const severidadeConfig = {

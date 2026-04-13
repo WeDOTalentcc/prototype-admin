@@ -179,7 +179,7 @@ export function TemplatesPage() {
           className="gap-2"
         >
           <Plus className="w-4 h-4" />
-          Novo Template
+          Novo Modelo
         </Button>
       </div>
 
@@ -250,7 +250,7 @@ export function TemplatesPage() {
       <div className="flex flex-col lg:flex-row gap-4 mb-6">
         <div className="flex-1">
           <Input
-            placeholder="Buscar templates..."
+            placeholder="Buscar modelos..."
             value={searchTerm}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
             className="w-full"

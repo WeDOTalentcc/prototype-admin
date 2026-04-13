@@ -361,7 +361,7 @@ export const defaultLiaFieldExamples: Record<LiaFieldKey, string[]> = {
     "Mencionar cultura de feedback contínuo e desenvolvimento pessoal.",
   ],
   pipeline: [
-    "Pipeline padrão tem 5 etapas. Vagas urgentes podem pular teste técnico se sênior+.",
+    "Funil padrão tem 5 etapas. Vagas urgentes podem pular teste técnico se sênior+.",
     "Assessment comportamental é obrigatório para cargos de liderança.",
   ],
   eligibility_questions: [

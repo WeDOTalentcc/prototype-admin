@@ -17,14 +17,14 @@ export const recruitersData = {
     totalHires: 5,
     avgTimeToFill: 28,
     conversionRate: 2.1,
-    npsNota: 88,
+    npsScore: 88,
     interviewsPerWeek: 12,
     candidateResponseRate: 76,
     offerAcceptanceRate: 85,
-    qualityOfHireNota: 4.2,
+    qualityOfHireScore: 4.2,
     // Novas métricas para ranking e metas
     ranking: 1,
-    totalNota: 92.8,
+    totalScore: 92.8,
     goals: {
       monthly: {
         hires: { target: 6, current: 5, status: 'on_track' },
@@ -33,7 +33,7 @@ export const recruitersData = {
         interviews: { target: 40, current: 42, status: 'exceeded' }
       },
       quarterly: {
-        qualityNota: { target: 4.0, current: 4.2, status: 'exceeded' },
+        qualityScore: { target: 4.0, current: 4.2, status: 'exceeded' },
         conversionRate: { target: 2.0, current: 2.1, status: 'exceeded' }
       }
     },
@@ -64,13 +64,13 @@ export const recruitersData = {
     totalHires: 4,
     avgTimeToFill: 25,
     conversionRate: 4.1,
-    npsNota: 91,
+    npsScore: 91,
     interviewsPerWeek: 6,
     candidateResponseRate: 84,
     offerAcceptanceRate: 92,
-    qualityOfHireNota: 4.5,
+    qualityOfHireScore: 4.5,
     ranking: 2,
-    totalNota: 89.3,
+    totalScore: 89.3,
     goals: {
       monthly: {
         hires: { target: 3, current: 4, status: 'exceeded' },
@@ -79,7 +79,7 @@ export const recruitersData = {
         interviews: { target: 20, current: 24, status: 'exceeded' }
       },
       quarterly: {
-        qualityNota: { target: 4.0, current: 4.5, status: 'exceeded' },
+        qualityScore: { target: 4.0, current: 4.5, status: 'exceeded' },
         conversionRate: { target: 3.5, current: 4.1, status: 'exceeded' }
       }
     },
@@ -110,13 +110,13 @@ export const recruitersData = {
     totalHires: 3,
     avgTimeToFill: 32,
     conversionRate: 1.9,
-    npsNota: 82,
+    npsScore: 82,
     interviewsPerWeek: 8,
     candidateResponseRate: 68,
     offerAcceptanceRate: 78,
-    qualityOfHireNota: 3.9,
+    qualityOfHireScore: 3.9,
     ranking: 3,
-    totalNota: 79.2,
+    totalScore: 79.2,
     goals: {
       monthly: {
         hires: { target: 4, current: 3, status: 'behind' },
@@ -125,7 +125,7 @@ export const recruitersData = {
         interviews: { target: 30, current: 28, status: 'behind' }
       },
       quarterly: {
-        qualityNota: { target: 4.0, current: 3.9, status: 'behind' },
+        qualityScore: { target: 4.0, current: 3.9, status: 'behind' },
         conversionRate: { target: 2.0, current: 1.9, status: 'behind' }
       }
     },
@@ -156,13 +156,13 @@ export const recruitersData = {
     totalHires: 2,
     avgTimeToFill: 35,
     conversionRate: 2.2,
-    npsNota: 85,
+    npsScore: 85,
     interviewsPerWeek: 4,
     candidateResponseRate: 72,
     offerAcceptanceRate: 88,
-    qualityOfHireNota: 4.3,
+    qualityOfHireScore: 4.3,
     ranking: 4,
-    totalNota: 82.1,
+    totalScore: 82.1,
     goals: {
       monthly: {
         hires: { target: 3, current: 2, status: 'behind' },
@@ -171,7 +171,7 @@ export const recruitersData = {
         interviews: { target: 20, current: 18, status: 'behind' }
       },
       quarterly: {
-        qualityNota: { target: 4.0, current: 4.3, status: 'exceeded' },
+        qualityScore: { target: 4.0, current: 4.3, status: 'exceeded' },
         conversionRate: { target: 2.5, current: 2.2, status: 'behind' }
       }
     },
@@ -202,7 +202,7 @@ export const TABS: Array<{ id: ActiveTab; label: string; icon: React.ComponentTy
 
 export const VIEW_MODES: Array<{ id: ViewMode; label: string; icon: React.ComponentType<{ className?: string }> }> = [
   { id: "cards", label: "Cards Individuais", icon: Layout },
-  { id: "ranking", label: "Ranking Geral", icon: Trophy },
+  { id: "ranking", label: "Classificação Geral", icon: Trophy },
   { id: "goals", label: "Metas e Objetivos", icon: Target },
   { id: "comparison", label: "Comparacao", icon: BarChart3 },
 ]

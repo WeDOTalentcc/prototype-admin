@@ -73,7 +73,7 @@ export function RecruiterRankingView({ filteredRecruiters }: RecruiterRankingVie
                     {recruiter.avgTimeToFill}d
                   </div>
                   <div className="text-xs text-lia-text-primary">
-                    Time to Fill
+                    Tempo de Preenchimento
                   </div>
                 </div>
                 <div>

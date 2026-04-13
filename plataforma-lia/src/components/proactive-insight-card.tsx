@@ -301,7 +301,7 @@ export function ProactiveInsightCard({
               <div className="space-y-1.5">
                 <h4 className={`${textStyles.label} uppercase tracking-wider flex items-center gap-1`}>
                   <GraduationCap className="w-3 h-3" />
-                  Top Skills
+                  Competências Principais
                 </h4>
                 <div className="flex flex-wrap gap-1">
                   {top_skills.slice(0, 8).map((skill) => (

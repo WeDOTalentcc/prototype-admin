@@ -79,7 +79,7 @@ const RECRUITMENT_STAGES: WorkflowReelStage[] = [
       },
       {
         id: "job-template",
-        title: "Usar template de vaga",
+        title: "Usar modelo de vaga",
         description: "Comece a partir de um modelo existente",
         command: "Criar vaga a partir de template",
       },
@@ -140,7 +140,7 @@ const RECRUITMENT_STAGES: WorkflowReelStage[] = [
       {
         id: "update-status",
         title: "Atualizar status",
-        description: "Modifique situação no pipeline",
+        description: "Modifique situação no funil",
         command: "Atualize status do candidato",
       },
     ],
@@ -202,7 +202,7 @@ const RECRUITMENT_STAGES: WorkflowReelStage[] = [
   {
     id: "contratacao",
     label: "Contratação",
-    shortLabel: "Hire",
+    shortLabel: "Contratação",
     icon: TrendingUp,
     pulseStageId: "contratacao",
     color: {
@@ -231,8 +231,8 @@ const RECRUITMENT_STAGES: WorkflowReelStage[] = [
 const UTILITY_NODES: WorkflowReelStage[] = [
   {
     id: "analytics",
-    label: "Analytics",
-    shortLabel: "Analytics",
+    label: "Análises",
+    shortLabel: "Análises",
     icon: BarChart3,
     color: {
       accent: "var(--wedo-amber, #D1A960)",

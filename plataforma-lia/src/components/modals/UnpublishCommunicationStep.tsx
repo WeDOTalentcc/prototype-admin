@@ -103,7 +103,7 @@ export function CommunicationStep({ hook }: StepProps) {
         <Label className="text-micro text-lia-text-secondary mb-1 block">Template de mensagem</Label>
         <Select value={selectedTemplateId} onValueChange={handleTemplateChange}>
           <SelectTrigger className="h-8 text-xs border-lia-border-subtle">
-            <SelectValue placeholder="Selecione um template..." />
+            <SelectValue placeholder="Selecione um modelo..." />
           </SelectTrigger>
           <SelectContent>
             {availableTemplates.map((template) => (
@@ -263,7 +263,7 @@ export function UnpublishCommunicationStep({
         <Label className="text-micro text-lia-text-secondary mb-1 block">Template de mensagem</Label>
         <Select value={selectedTemplateId} onValueChange={handleTemplateChange}>
           <SelectTrigger className="h-8 text-xs border-lia-border-subtle">
-            <SelectValue placeholder="Selecione um template..." />
+            <SelectValue placeholder="Selecione um modelo..." />
           </SelectTrigger>
           <SelectContent>
             {availableTemplates.map((template) => (

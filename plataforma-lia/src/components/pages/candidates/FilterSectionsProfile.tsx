@@ -88,7 +88,7 @@ export function FilterSectionsProfile({
         </h4>
         <div className="space-y-2">
           {[
-            { key: "isOpenToWork" as const, label: "Open to Work" },
+            { key: "isOpenToWork" as const, label: "Aberto a Propostas" },
             { key: "isDecisionMaker" as const, label: "Decision Maker" },
             { key: "isTopUniversities" as const, label: "Top Universidades" },
             { key: "isStartup" as const, label: "Trabalha em Startup" },

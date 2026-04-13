@@ -28,7 +28,7 @@ export const LIA_ASSISTANT_TIPS_DEFAULT: string[] = [
   "Seja específico sobre habilidades técnicas necessárias",
   "Indique a senioridade desejada (júnior, pleno, sênior)",
   "Mencione localização se for relevante para a vaga",
-  "Inclua soft skills importantes para o time",
+  "Inclua soft competências importantes para o time",
 ]
 
 /** Default options for Pearch (global talent) searches */

@@ -188,7 +188,7 @@ export function AdvancedReportExporter({
             ['Métrica', 'Valor', 'Variação'],
             ['Total Candidatos', '1247', '+15%'],
             ['Contratações', '45', '+8%'],
-            ['Time to Fill', '28 dias', '-12%'],
+            ['Tempo de Preenchimento', '28 dias', '-12%'],
             ['NPS Médio', '85%', '+5%']
           ]
         },
@@ -234,7 +234,7 @@ export function AdvancedReportExporter({
   }
 
   const availableMetrics = [
-    'Candidatos Totais', 'Entrevistas', 'Contratações', 'Time to Fill',
+    'Candidatos Totais', 'Entrevistas', 'Contratações', 'Tempo de Preenchimento',
     'Taxa de Conversão', 'NPS', 'Custo por Hire', 'Qualidade de Hire',
     'Taxa de Retenção', 'Diversidade', 'Performance por Fonte'
   ]

@@ -358,7 +358,7 @@ export function GoalsEditTemplateModal({
               <Settings className="w-4 h-4 text-lia-text-primary" />
             </div>
             <div>
-              <h3 className={textStyles.h4}>Editar Template</h3>
+              <h3 className={textStyles.h4}>Editar Modelo</h3>
               <p className={textStyles.caption}>Personalize os valores padrão</p>
             </div>
           </div>

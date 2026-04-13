@@ -168,7 +168,7 @@ export function useEAPCommandCallbacks(params: UseEAPCallbacksParams) {
   const getSmartSuggestions = () => {
     if (candidateContext) {
       return [
-        { id: 'analyze_profile', icon: '🔍', label: `Analisar perfil completo de ${(candidateContext as Record<string, unknown>).name}`, description: 'Análise detalhada de competências, fit cultural e potencial', action: 'analyze_individual_profile' },
+        { id: 'analyze_profile', icon: '🔍', label: `Analisar perfil completo de ${(candidateContext as Record<string, unknown>).name}`, description: 'Análise detalhada de competências, aderência cultural e potencial', action: 'analyze_individual_profile' },
         { id: 'generate_interview_questions', icon: '❓', label: 'Gerar roteiro de entrevista personalizado', description: 'Perguntas técnicas e comportamentais baseadas no perfil', action: 'generate_interview_questions' },
         { id: 'draft_email', icon: '📧', label: 'Rascunhar convite personalizado', description: 'Email de convite customizado para o candidato', action: 'draft_personalized_email' },
         { id: 'compare_with_role', icon: '⚖️', label: 'Comparar com requisitos da vaga', description: 'Match detalhado com job description', action: 'compare_with_job_requirements' },
@@ -226,7 +226,7 @@ export function useEAPCommandCallbacks(params: UseEAPCallbacksParams) {
       const individualSuggestions = [
         { id: 'send_personalized_email', icon: '📧', label: `Enviar convite personalizado para ${candidateName}`, description: 'Email customizado baseado no perfil e interesses', action: 'send_personalized_email' },
         { id: 'schedule_interview', icon: '📅', label: 'Agendar entrevista estratégica', description: 'Escolher melhor horário e formato baseado no perfil', action: 'schedule_strategic_interview' },
-        { id: 'deep_profile_analysis', icon: '🔬', label: 'Análise profunda do perfil', description: 'Investigação completa de competências e fit cultural', action: 'deep_profile_analysis' },
+        { id: 'deep_profile_analysis', icon: '🔬', label: 'Análise profunda do perfil', description: 'Investigação completa de competências e aderência cultural', action: 'deep_profile_analysis' },
         { id: 'salary_negotiation_prep', icon: '💰', label: 'Preparar negociação salarial', description: 'Estratégia e faixas baseadas no perfil específico', action: 'prepare_salary_negotiation' },
         { id: 'reference_check_strategy', icon: '📋', label: 'Estratégia de referências', description: 'Plano para checagem de background e referências', action: 'plan_reference_checks' },
         { id: 'competitor_intel', icon: '🕵️', label: 'Intel sobre empresa atual', description: 'Pesquisa sobre empresa e possíveis motivadores', action: 'research_current_company' }

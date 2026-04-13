@@ -433,7 +433,7 @@ export function CloseVacancyModal({
             disabled={templatesLoading || step1Templates.length === 0}
           >
             <SelectTrigger className="w-full">
-              <SelectValue placeholder="Selecione um template..." />
+              <SelectValue placeholder="Selecione um modelo..." />
             </SelectTrigger>
             <SelectContent>
               {step1Templates.map(template => (
@@ -556,7 +556,7 @@ export function CloseVacancyModal({
               disabled={templatesLoading || step2Templates.length === 0}
             >
               <SelectTrigger className="w-full">
-                <SelectValue placeholder="Selecione um template..." />
+                <SelectValue placeholder="Selecione um modelo..." />
               </SelectTrigger>
               <SelectContent>
                 {step2Templates.map(template => (

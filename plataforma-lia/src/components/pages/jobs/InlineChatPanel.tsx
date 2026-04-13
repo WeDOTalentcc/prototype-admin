@@ -68,7 +68,7 @@ interface InlineChatPanelProps {
 
 const JOB_CHIPS = [
   { id: "criar-vaga", label: "Nova Vaga", prompt: "Criar uma nova vaga", icon: <Plus className="w-2.5 h-2.5" /> },
-  { id: "analisar", label: "Analisar Pipeline", prompt: "Analisar o pipeline de todas as vagas", icon: <Briefcase className="w-2.5 h-2.5" /> },
+  { id: "analisar", label: "Analisar Funil", prompt: "Analisar o funil de todas as vagas", icon: <Briefcase className="w-2.5 h-2.5" /> },
   { id: "top-vagas", label: "Top Vagas", prompt: "Quais vagas têm melhor desempenho?", icon: <Star className="w-2.5 h-2.5" /> },
 ]
 

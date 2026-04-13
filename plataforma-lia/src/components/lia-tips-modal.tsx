@@ -47,7 +47,7 @@ const tipCategories = [
       "Busque com critérios específicos: 'Busque React com 5+ anos'",
       "Agende entrevistas: 'Marque entrevista com Ana para terça'",
       "Envie follow-ups: 'Email para candidatos em processo'",
-      "Calcule scores: 'Score de compatibilidade dos ativos'",
+      "Calcule scores: 'Nota de compatibilidade dos ativos'",
       "Analise diversidade: 'Relatório de diversidade aprovados'"
     ]
   },

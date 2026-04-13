@@ -157,7 +157,7 @@ export function useScreeningGuide(job: Record<string, unknown>, candidate?: Reco
         purpose: "Validar competências técnicas específicas da vaga",
       },
       {
-        category: "Fit Cultural",
+        category: "Aderência Cultural",
         questions: [
           "Como você se adapta a ambientes de trabalho dinâmicos?",
           "Descreva como você lida com feedback construtivo",

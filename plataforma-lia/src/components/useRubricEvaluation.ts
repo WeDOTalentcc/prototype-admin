@@ -176,7 +176,7 @@ export function useRubricEvaluation(
         ? `O candidato apresenta potencial, mas gaps em requisitos essenciais requerem avaliação mais aprofundada antes de prosseguir.`
         : `O candidato não atende requisitos mínimos para a posição. Recomenda-se não prosseguir neste momento.`,
       proximos_passos: score >= 70
-        ? ['Agendar Quick Screening para validar soft skills e fit cultural', 'Explorar experiência prática durante a triagem']
+        ? ['Agendar Quick Screening para validar soft skills e aderência cultural', 'Explorar experiência prática durante a triagem']
         : score >= 50
         ? ['Avaliar experiências adjacentes que possam compensar gaps', 'Considerar para outras vagas mais alinhadas']
         : ['Manter no talent pool para oportunidades futuras']

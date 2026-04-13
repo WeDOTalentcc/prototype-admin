@@ -147,7 +147,7 @@ export const getSuggestedActions = (metric: string, _currentValue: number, _thre
       return [
         'Melhorar processo de avaliação técnica',
         'Implementar entrevistas comportamentais',
-        'Revisar fit cultural',
+        'Revisar aderência cultural',
         'Acompanhar onboarding dos novos contratados'
       ]
     default:
@@ -168,7 +168,7 @@ export const getCategoryFromMetric = (metric: string): KPIAlert['category'] => {
 
 export const getMetricDisplayName = (metric: string): string => {
   switch (metric) {
-    case 'avgTimeToFill': return 'Time to Fill'
+    case 'avgTimeToFill': return 'Tempo de Preenchimento'
     case 'conversionRate': return 'Taxa de Conversão'
     case 'npsScore': return 'NPS'
     case 'totalHires': return 'Total de Contratações'

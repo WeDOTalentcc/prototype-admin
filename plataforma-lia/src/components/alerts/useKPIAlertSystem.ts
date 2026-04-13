@@ -122,7 +122,7 @@ function getSuggestedActions(metric: string, _currentValue: number, _threshold: 
     case 'conversionRate': return ['Melhorar qualidade do sourcing', 'Revisar critérios de triagem', 'Implementar pré-qualificação mais rigorosa', 'Analisar feedback dos candidatos rejeitados']
     case 'npsScore': return ['Coletar feedback detalhado dos candidatos', 'Melhorar comunicação durante o processo', 'Revisar experiência do candidato', 'Implementar follow-up pós-entrevista']
     case 'totalHires': return ['Aumentar atividades de sourcing', 'Revisar requisitos das vagas', 'Implementar sourcing passivo', 'Buscar parcerias com universidades']
-    case 'qualityOfHireScore': return ['Melhorar processo de avaliação técnica', 'Implementar entrevistas comportamentais', 'Revisar fit cultural', 'Acompanhar onboarding dos novos contratados']
+    case 'qualityOfHireScore': return ['Melhorar processo de avaliação técnica', 'Implementar entrevistas comportamentais', 'Revisar aderência cultural', 'Acompanhar onboarding dos novos contratados']
     default: return ['Analisar métrica em detalhes', 'Consultar gestor direto']
   }
 }
@@ -140,7 +140,7 @@ function getCategoryFromMetric(metric: string): KPIAlert['category'] {
 
 function getMetricDisplayName(metric: string): string {
   switch (metric) {
-    case 'avgTimeToFill': return 'Time to Fill'
+    case 'avgTimeToFill': return 'Tempo de Preenchimento'
     case 'conversionRate': return 'Taxa de Conversão'
     case 'npsScore': return 'NPS'
     case 'totalHires': return 'Total de Contratações'

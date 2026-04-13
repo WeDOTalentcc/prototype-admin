@@ -439,7 +439,7 @@ function CreateCustomAgentModal({
                 <option value="general">Geral</option>
                 <option value="sourcing">Sourcing</option>
                 <option value="pipeline">Pipeline</option>
-                <option value="analytics">Analytics</option>
+                <option value="analytics">Análises</option>
                 <option value="communication">Comunicação</option>
                 <option value="screening">Triagem</option>
               </select>

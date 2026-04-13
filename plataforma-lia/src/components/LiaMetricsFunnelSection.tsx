@@ -100,7 +100,7 @@ export function LiaMetricsFunnelSection({ data }: LiaMetricsFunnelSectionProps) 
             <div className="h-48">
               <LiaMetricsChart
                 data={scoreDistribution}
-                title="Distribuição de Scores"
+                title="Distribuição de Notas"
                 color="var(--status-success)"
               />
             </div>

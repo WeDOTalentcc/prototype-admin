@@ -55,7 +55,7 @@ const liaActivities = [
   {
     id: 6,
     icon: Star,
-    activity:"Score de adequação calculado",
+    activity:"Nota de adequação calculada",
     details:"3 novos candidatos receberam pontuação inicial",
     time:"07:45hrs",
     date:"26/03/2025",

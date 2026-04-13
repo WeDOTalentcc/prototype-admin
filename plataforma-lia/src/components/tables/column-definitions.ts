@@ -31,7 +31,7 @@ export const COLUMN_CATEGORIES: ColumnCategory[] = [
   { id: 'documentos', label: 'Documentos', description: 'Currículo e documentos' },
   { id: 'origem', label: 'Origem', description: 'Fonte e integração' },
   { id: 'ia', label: 'IA / Match', description: 'Scores e insights da LIA' },
-  { id: 'status', label: 'Status', description: 'Status no pipeline' },
+  { id: 'status', label: 'Status', description: 'Status no funil' },
   { id: 'comunicacao', label: 'Comunicação', description: 'Preferências de comunicação' },
   { id: 'cadastro', label: 'Cadastro', description: 'Status de cadastro' },
   { id: 'adicional', label: 'Adicional', description: 'Informações adicionais' },
@@ -101,7 +101,7 @@ export const ALL_COLUMN_DEFINITIONS: StandardColumnDefinition[] = [
   // COMPETÊNCIAS E HABILIDADES
   // ============================================
   { id: 'technical_skills', label: 'Habilidades técnicas', defaultVisible: false, defaultOrder: 24, category: 'competencias', width: 200 },
-  { id: 'soft_skills', label: 'Soft skills', defaultVisible: false, defaultOrder: 25, category: 'competencias', width: 180 },
+  { id: 'soft_skills', label: 'Comp. Comportamentais', defaultVisible: false, defaultOrder: 25, category: 'competencias', width: 180 },
   { id: 'languages', label: 'Idiomas', defaultVisible: false, defaultOrder: 26, category: 'competencias', width: 150 },
   { id: 'certifications', label: 'Certificações', defaultVisible: false, defaultOrder: 27, category: 'competencias', width: 180 },
   { id: 'interests', label: 'Interesses', defaultVisible: false, defaultOrder: 28, category: 'competencias', width: 150 },

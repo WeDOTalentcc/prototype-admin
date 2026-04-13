@@ -111,7 +111,7 @@ export default function CalibrationCardModal({
 
   const handleApprove = async () => {
     if (!candidate || isSubmitting) return
-    const ok = await submitFeedback("positive","Perfil aprovado para o pipeline")
+    const ok = await submitFeedback("positive","Perfil aprovado para o funil")
     if (ok) {
       setApprovedCount(prev => prev + 1)
       advanceOrComplete()

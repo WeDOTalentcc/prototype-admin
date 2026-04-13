@@ -25,7 +25,7 @@ export const CATEGORY_INFO = {
 }
 
 export const QUERY_EXAMPLES: QueryExample[] = [
-  { id: 'q1', icon: BarChart3, question: 'Quantos candidatos estão ativos no pipeline?', category: 'metricas' },
+  { id: 'q1', icon: BarChart3, question: 'Quantos candidatos estão ativos no funil?', category: 'metricas' },
   { id: 'q2', icon: TrendingUp, question: 'Qual é a taxa de conversão do meu funil este mês?', category: 'metricas' },
   { id: 'q3', icon: Clock, question: 'Qual o tempo médio para fechar uma vaga?', category: 'metricas' },
   { id: 'q4', icon: BarChart3, question: 'Quantas contratações fizemos este trimestre?', category: 'metricas' },

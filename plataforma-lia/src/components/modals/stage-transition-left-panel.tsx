@@ -229,7 +229,7 @@ export function StageTransitionLeftPanel({
               }}
             >
               <SelectTrigger className="text-xs">
-                <SelectValue placeholder="Selecionar template..." />
+                <SelectValue placeholder="Selecionar modelo..." />
               </SelectTrigger>
               <SelectContent className="z-modal">
                 {filteredTemplates.map(t => (

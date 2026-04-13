@@ -96,7 +96,7 @@ const BASE_MENU_SECTIONS: MenuSection[] = [
         seeAllLabel: "Ver todos os bancos",
         seeAllTarget: "Funil de Talentos",
       },
-      { icon: GitBranch, label: "Visão do Pipeline", isCore: true },
+      { icon: GitBranch, label: "Visão do Funil", isCore: true },
     ],
   },
   {
@@ -104,12 +104,12 @@ const BASE_MENU_SECTIONS: MenuSection[] = [
     items: [
       {
         icon: Bot,
-        label: "Agent Studio",
+        label: "Estúdio de Agentes",
         isCore: true,
         navigateOnClick: true,
         maxVisibleSubItems: 3,
         seeAllLabel: "Ver todos os agentes",
-        seeAllTarget: "Agent Studio",
+        seeAllTarget: "Estúdio de Agentes",
         isBeta: true,
       },
       { icon: Layers, label: "Módulos", isCore: true, isBeta: true },
@@ -551,7 +551,7 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
             })),
           }
         }
-        if (item.label === "Agent Studio" && agents.length > 0) {
+        if (item.label === "Estúdio de Agentes" && agents.length > 0) {
           return {
             ...item,
             subItems: agents.map(a => ({
@@ -573,7 +573,7 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
       return
     }
     if (page.startsWith("agent:")) {
-      onNavigate("Agent Studio")
+      onNavigate("Estúdio de Agentes")
       return
     }
     onNavigate(page)

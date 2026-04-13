@@ -132,7 +132,7 @@ export function useWizardIntegration({
       return true
     }
     if (cmdLower === "/pipeline") {
-      sendMessage("Mostrar pipeline de vagas abertas")
+      sendMessage("Mostrar funil de vagas abertas")
       return true
     }
     if (cmdLower === "/relatorio") {

@@ -231,7 +231,7 @@ export function useKanbanLIAHandlers(ctx: KanbanLIAHandlersContext) {
     }
 
     const recruiterName = currentJob.recruiter?.split(' ')[0] || 'Recrutador'
-    return `💬 **Olá, ${recruiterName}!**\n\nEu ainda estou evoluindo e em breve estarei pronta para atender a todas as suas solicitações e esclarecer todas as suas dúvidas. 🚀\n\nPeço desculpas por não conseguir te ajudar com essa pergunta específica agora.\n\nNeste momento, posso te ajudar com **análises e informações do pipeline de recrutamento**, como:\n\n• "Quantos candidatos temos no processo?"\n• "Quem são os top 5 candidatos?"\n• "Como está a distribuição por etapa?"\n• "Comparar candidatos selecionados"\n• "Identificar gargalos no processo"\n\n✨ Vamos conversar muito em breve! Use as sugestões acima ou me pergunte sobre seus candidatos.`
+    return `💬 **Olá, ${recruiterName}!**\n\nEu ainda estou evoluindo e em breve estarei pronta para atender a todas as suas solicitações e esclarecer todas as suas dúvidas. 🚀\n\nPeço desculpas por não conseguir te ajudar com essa pergunta específica agora.\n\nNeste momento, posso te ajudar com **análises e informações do funil de recrutamento**, como:\n\n• "Quantos candidatos temos no processo?"\n• "Quem são os top 5 candidatos?"\n• "Como está a distribuição por etapa?"\n• "Comparar candidatos selecionados"\n• "Identificar gargalos no processo"\n\n✨ Vamos conversar muito em breve! Use as sugestões acima ou me pergunte sobre seus candidatos.`
   }
 
   const handleLiaUiAction = useCallback((action: string, params: Record<string, unknown>) => {
@@ -347,10 +347,10 @@ export function useKanbanLIAHandlers(ctx: KanbanLIAHandlersContext) {
         currentCompany: c.currentCompany,
         location: c.location,
         score: c.score,
-        wsiNota: c.wsiScore || c.score,
+        wsiScore: c.wsiScore || c.score,
         wsiTechnical: c.wsiTechnical,
         wsiBehavioral: c.wsiBehavioral,
-        fitNota: c.fitScore,
+        fitScore: c.fitScore,
         skills: c.skills,
         experience: c.experience,
         stage: c.stage,
@@ -468,7 +468,7 @@ export function useKanbanLIAHandlers(ctx: KanbanLIAHandlersContext) {
           currentCompany: c.currentCompany,
           location: c.location,
           score: c.score,
-          fitNota: c.fitScore,
+          fitScore: c.fitScore,
           skills: c.skills,
           experience: c.experience,
           stage: c.stage,
@@ -540,10 +540,10 @@ export function useKanbanLIAHandlers(ctx: KanbanLIAHandlersContext) {
       currentCompany: c.currentCompany,
       location: c.location,
       score: c.score,
-      wsiNota: c.wsiScore || c.score,
+      wsiScore: c.wsiScore || c.score,
       wsiTechnical: c.wsiTechnical,
       wsiBehavioral: c.wsiBehavioral,
-      fitNota: c.fitScore,
+      fitScore: c.fitScore,
       skills: c.skills,
       experience: c.experience,
       stage: c.stage,

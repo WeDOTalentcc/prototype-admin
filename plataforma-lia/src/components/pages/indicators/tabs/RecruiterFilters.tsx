@@ -115,7 +115,7 @@ export function RecruiterFilters({
                 <option value="totalScore">Score Total</option>
                 <option value="npsScore">NPS</option>
                 <option value="conversionRate">Taxa Conversão</option>
-                <option value="avgTimeToFill">Time to Fill</option>
+                <option value="avgTimeToFill">Tempo de Preenchimento</option>
                 <option value="totalHires">Total Contratações</option>
               </select>
               <select

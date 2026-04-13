@@ -60,7 +60,7 @@ export function useCandidatePageCore(candidate: Record<string, unknown> | null) 
       score: 95,
       status: 'approved',
       statusLabel: 'Aprovado',
-      summary: 'Candidato altamente qualificado com excelente fit cultural e técnico.',
+      summary: 'Candidato altamente qualificado com excelente aderência cultural e técnico.',
       details: {
         technicalNota: 92,
         culturalFit: 98,
@@ -116,7 +116,7 @@ export function useCandidatePageCore(candidate: Record<string, unknown> | null) 
         testType: 'Design System Case',
         duration: '4 horas',
         score: 88,
-        maxNota: 100,
+        maxScore: 100,
         evaluator: 'Carlos Mendes',
         strengths: ['Componentização', 'Documentação', 'Tokens de design'],
         weaknesses: ['Performance em mobile'],

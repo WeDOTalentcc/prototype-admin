@@ -1,7 +1,7 @@
 /**
  * useCompanyPipeline
  *
- * Carrega o pipeline configurado da empresa via GET /api/backend-proxy/company-pipeline.
+ * Carrega o funil configurado da empresa via GET /api/backend-proxy/company-pipeline.
  * Retorna as etapas no formato interno do JobEditTab.
  *
  * Vue 3: useState → ref, useEffect([]) → onMounted

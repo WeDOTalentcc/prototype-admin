@@ -21,7 +21,7 @@ export function getRankingIcon(ranking: number) {
 
 export const VIEW_MODES = [
   { id: "cards" as ViewMode, label: "Cards Individuais", icon: Layout },
-  { id: "ranking" as ViewMode, label: "Ranking Geral", icon: Trophy },
+  { id: "ranking" as ViewMode, label: "Classificação Geral", icon: Trophy },
   { id: "goals" as ViewMode, label: "Metas e Objetivos", icon: Target },
   { id: "comparison" as ViewMode, label: "Comparação", icon: BarChart3 },
 ]
@@ -30,7 +30,7 @@ export function getGoalLabel(key: string, variant: "short" | "long" = "short"): 
   if (variant === "long") {
     switch (key) {
       case "hires": return "Contratações"
-      case "timeToFill": return "Time to Fill (dias)"
+      case "timeToFill": return "Tempo de Preenchimento (dias)"
       case "nps": return "NPS"
       case "interviews": return "Entrevistas"
       case "qualityScore": return "Nota de Qualidade"
@@ -40,7 +40,7 @@ export function getGoalLabel(key: string, variant: "short" | "long" = "short"): 
   }
   switch (key) {
     case "hires": return "Contratações"
-    case "timeToFill": return "Time to Fill"
+    case "timeToFill": return "Tempo de Preenchimento"
     case "nps": return "NPS"
     case "interviews": return "Entrevistas"
     default: return key

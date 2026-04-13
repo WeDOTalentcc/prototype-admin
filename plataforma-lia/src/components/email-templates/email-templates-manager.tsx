@@ -276,14 +276,14 @@ export function EmailTemplatesManager() {
     <div data-testid="email-templates-manager" className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-sans font-semibold text-lia-text-primary">Templates de Email</h2>
+          <h2 className="text-2xl font-sans font-semibold text-lia-text-primary">Modelos de Email</h2>
           <p className="text-lia-text-secondary mt-1">
             Gerencie os templates de email para comunicação com candidatos
           </p>
         </div>
         <Button onClick={handleCreateTemplate} className="gap-2">
           <Plus className="w-4 h-4" />
-          Novo Template
+          Novo Modelo
         </Button>
       </div>
 
@@ -291,7 +291,7 @@ export function EmailTemplatesManager() {
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-lia-text-secondary" />
           <Input
-            placeholder="Buscar templates..."
+            placeholder="Buscar modelos..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-10"
@@ -335,13 +335,13 @@ export function EmailTemplatesManager() {
               <FileText className="w-12 h-12 text-lia-text-secondary mx-auto mb-4" />
               <h3 className="text-lg font-medium text-lia-text-primary mb-2">
                 {searchQuery || categoryFilter !=="all"
-                  ?"Nenhum template encontrado"
-                  :"Nenhum template cadastrado"}
+                  ?"Nenhum modelo encontrado"
+                  :"Nenhum modelo cadastrado"}
               </h3>
               <p className="text-lia-text-secondary mb-4">
                 {searchQuery || categoryFilter !=="all"
                   ?"Tente ajustar os filtros de busca"
-                  :"Crie seu primeiro template de email para começar"}
+                  :"Crie seu primeiro modelo de email para começar"}
               </p>
               {!searchQuery && categoryFilter ==="all" && (
                 <Button onClick={handleCreateTemplate}>
@@ -468,7 +468,7 @@ export function EmailTemplatesManager() {
               Preview: {selectedTemplate?.name}
             </DialogTitle>
             <DialogDescription>
-              Visualização do template de email
+              Visualização do modelo de email
             </DialogDescription>
           </DialogHeader>
           <div className="flex-1 overflow-y-auto">
@@ -513,7 +513,7 @@ export function EmailTemplatesManager() {
               }}
             >
               <Edit className="w-4 h-4 mr-2" />
-              Editar Template
+              Editar Modelo
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -524,7 +524,7 @@ export function EmailTemplatesManager() {
           <DialogHeader>
             <DialogTitle className="text-status-error">Excluir Template</DialogTitle>
             <DialogDescription>
-              Tem certeza que deseja excluir o template"{templateToDelete?.name}"? Esta ação não pode ser desfeita.
+              Tem certeza que deseja excluir o modelo"{templateToDelete?.name}"? Esta ação não pode ser desfeita.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

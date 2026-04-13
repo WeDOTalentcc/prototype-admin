@@ -65,7 +65,7 @@ export function RecruiterCardView({ filteredRecruiters, getStatusColor }: Recrui
                   {recruiter.avgTimeToFill}d
                 </div>
                 <div className="text-xs text-lia-text-secondary">
-                  Time to Fill
+                  Tempo de Preenchimento
                 </div>
               </div>
               <div className="text-center p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl">

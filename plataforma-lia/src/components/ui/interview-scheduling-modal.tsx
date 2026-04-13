@@ -205,7 +205,7 @@ export function InterviewSchedulingModal({
                     />
                   </div>
                 ) : (
-                  <p className="text-xs text-status-error">Erro ao gerar template de email</p>
+                  <p className="text-xs text-status-error">Erro ao gerar modelo de email</p>
                 )}
               </div>
 

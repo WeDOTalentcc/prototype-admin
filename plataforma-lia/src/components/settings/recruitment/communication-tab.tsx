@@ -51,7 +51,7 @@ export function CommunicationTab({ onSettingsChange }: { onSettingsChange: (chan
   ])
 
   const subTabs = [
-    { id: 'templates', name: 'Templates de Email', icon: Mail },
+    { id: 'templates', name: 'Modelos de Email', icon: Mail },
     { id: 'notifications', name: 'Notificações', icon: Bell },
     { id: 'whatsapp', name: 'WhatsApp Business', icon: MessageSquare },
     { id: 'sms', name: 'SMS', icon: Phone },
@@ -65,11 +65,11 @@ export function CommunicationTab({ onSettingsChange }: { onSettingsChange: (chan
           <CardTitle className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Mail className="w-4 h-4" />
-              Templates de Email
+              Modelos de Email
             </div>
             <Button className="gap-2">
               <Plus className="w-4 h-4" />
-              Novo Template
+              Novo Modelo
             </Button>
           </CardTitle>
         </CardHeader>
@@ -252,7 +252,7 @@ export function CommunicationTab({ onSettingsChange }: { onSettingsChange: (chan
           </div>
 
           <div>
-            <h4 className="font-medium text-lia-text-primary mb-3">Templates de Mensagem</h4>
+            <h4 className="font-medium text-lia-text-primary mb-3">Modelos de Mensagem</h4>
             <div className="space-y-2">
               {[
                 { name:"Convite para entrevista", message:"Parabéns! Você foi selecionado(a) para a próxima etapa do processo seletivo para a vaga de {vaga}. 🎉" },

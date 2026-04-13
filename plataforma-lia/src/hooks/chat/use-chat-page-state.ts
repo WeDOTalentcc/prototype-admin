@@ -138,7 +138,7 @@ export function useChatPageState({
       return "Relatório & Analytics"
     }
 
-    if (firstMessages.includes("onboarding")) return "Plano de Onboarding"
+    if (firstMessages.includes("onboarding")) return "Plano de Integração"
 
     return "Conversa Geral"
   })

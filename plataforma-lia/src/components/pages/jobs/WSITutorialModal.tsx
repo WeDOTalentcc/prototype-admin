@@ -64,7 +64,7 @@ export function WSITutorialModal({ open, onClose }: WSITutorialModalProps) {
             </div>
             <p className="text-xs text-lia-text-primary leading-relaxed">
               <strong>WeDoTalent Skill Index</strong> é um índice conversacional proprietário que combina
-              IA com psicometria para validar competências técnicas, comportamentais e fit cultural em
+              IA com psicometria para validar competências técnicas, comportamentais e aderência cultural em
               triagens de <strong>5-10 minutos</strong>.
             </p>
           </div>
@@ -109,7 +109,7 @@ export function WSITutorialModal({ open, onClose }: WSITutorialModalProps) {
                   <span className="text-micro text-lia-text-secondary">1992</span>
                 </div>
                 <p className="text-micro text-lia-text-primary">
-                  Traços comportamentais para fit cultural
+                  Traços comportamentais para aderência cultural
                 </p>
               </div>
             </div>

@@ -22,7 +22,7 @@ interface LIAScoreCardProps {
 const DIMENSION_LABELS: Record<string, string> = {
   technical: "Técnico",
   behavioral: "Comportamental",
-  cultural_fit: "Fit Cultural",
+  cultural_fit: "Aderência Cultural",
   experience: "Experiência",
 }
 

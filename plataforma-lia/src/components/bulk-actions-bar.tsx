@@ -532,13 +532,13 @@ const BulkActionsBar = memo(function BulkActionsBar({
               Enviar Email
             </DialogTitle>
             <DialogDescription>
-              Selecione um template de email para enviar aos {selectedCount} candidato{selectedCount !== 1 ? 's' : ''} selecionado{selectedCount !== 1 ? 's' : ''}.
+              Selecione um modelo de email para enviar aos {selectedCount} candidato{selectedCount !== 1 ? 's' : ''} selecionado{selectedCount !== 1 ? 's' : ''}.
             </DialogDescription>
           </DialogHeader>
           <div className="py-4">
             <Select value={selectedTemplateId} onValueChange={setSelectedTemplateId}>
               <SelectTrigger>
-                <SelectValue placeholder="Selecione um template" />
+                <SelectValue placeholder="Selecione um modelo" />
               </SelectTrigger>
               <SelectContent>
                 {emailTemplates.map((template) => (

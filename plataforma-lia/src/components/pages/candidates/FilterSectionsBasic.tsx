@@ -34,8 +34,8 @@ export function FilterSectionsBasic({
         <RadioGroup value={searchSortBy} onValueChange={onSortChange} className="space-y-1.5">
           {[
             { value: "relevance", label: "Relevância" },
-            { value: "score_desc", label: "Maior Score" },
-            { value: "score_asc", label: "Menor Score" },
+            { value: "score_desc", label: "Maior Nota" },
+            { value: "score_asc", label: "Menor Nota" },
             { value: "name_asc", label: "Nome (A-Z)" },
             { value: "name_desc", label: "Nome (Z-A)" },
             { value: "experience_desc", label: "Maior Experiência" },
@@ -147,7 +147,7 @@ export function FilterSectionsBasic({
               onChange={(e) =>
                 setTableFilters((prev) => ({
                   ...prev,
-                  minNota: e.target.value ? Number(e.target.value) : undefined,
+                  minScore: e.target.value ? Number(e.target.value) : undefined,
                 }))
               }
               className="h-8 text-xs"
@@ -165,7 +165,7 @@ export function FilterSectionsBasic({
               onChange={(e) =>
                 setTableFilters((prev) => ({
                   ...prev,
-                  maxNota: e.target.value ? Number(e.target.value) : undefined,
+                  maxScore: e.target.value ? Number(e.target.value) : undefined,
                 }))
               }
               className="h-8 text-xs"

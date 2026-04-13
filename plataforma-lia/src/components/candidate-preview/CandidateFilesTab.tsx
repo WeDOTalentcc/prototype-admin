@@ -520,7 +520,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
                   {/* Mini parecer */}
                   <div className="mt-2 pt-2 border-t border-lia-border-subtle">
                     <p className={textStyles.bodySmall}>
-                      <span className="font-semibold text-lia-text-primary">Score Geral: 91%</span> - Candidato demonstra excelente comunicação e fit cultural.
+                      <span className="font-semibold text-lia-text-primary">Score Geral: 91%</span> - Candidato demonstra excelente comunicação e aderência cultural.
                     </p>
                   </div>
                 </div>

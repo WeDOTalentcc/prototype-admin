@@ -8,7 +8,7 @@ import { Progress } from "@/components/ui/progress"
 interface TestCategory {
   name: string
   score: number
-  avgNota: number
+  avgScore: number
 }
 
 interface TestData {
@@ -63,13 +63,13 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
     maxDuration: 90,
     completedAt: '2024-01-15',
     categories: [
-      { name: 'Design System', score: 95, avgNota: 72 },
-      { name: 'Prototipagem', score: 90, avgNota: 68 },
-      { name: 'User Research', score: 85, avgNota: 75 },
-      { name: 'Ferramentas', score: 88, avgNota: 70 },
-      { name: 'Metodologias Ágeis', score: 82, avgNota: 65 },
+      { name: 'Design System', score: 95, avgScore: 72 },
+      { name: 'Prototipagem', score: 90, avgScore: 68 },
+      { name: 'User Research', score: 85, avgScore: 75 },
+      { name: 'Ferramentas', score: 88, avgScore: 70 },
+      { name: 'Metodologias Ágeis', score: 82, avgScore: 65 },
     ],
-    averageNota: 72
+    averageScore: 72
   }
 
   const status: TestStatus = testData.status ?? 'pending'
@@ -78,14 +78,14 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
 
   const getScoreColor = getPercentageScoreVar
 
-  const getComparisonIcon = (candidateNota: number, avgNota: number) => {
+  const getComparisonIcon = (candidateScore: number, avgScore: number) => {
     const diff = candidateScore - avgScore
     if (diff > 5) return <TrendingUp className="w-3 h-3 text-status-success"  />
     if (diff < -5) return <TrendingDown className="w-3 h-3 text-status-error"  />
     return <Minus className="w-3 h-3 text-lia-text-disabled" />
   }
 
-  const getComparisonLabel = (candidateNota: number, avgNota: number) => {
+  const getComparisonLabel = (candidateScore: number, avgScore: number) => {
     const diff = candidateScore - avgScore
     if (diff > 0) return `+${diff} acima da média`
     if (diff < 0) return `${diff} abaixo da média`

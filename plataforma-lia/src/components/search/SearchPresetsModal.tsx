@@ -195,7 +195,7 @@ export function SearchPresetsModal<T>({
           <Input
             value={newPresetDescription}
             onChange={e => setNewPresetDescription(e.target.value)}
-            placeholder="Description of this preset..."
+            placeholder="Descrição desta predefinição..."
             className="mt-1"
           />
         </div>
@@ -225,7 +225,7 @@ export function SearchPresetsModal<T>({
         <Input
           value={newPresetName}
           onChange={e => setNewPresetName(e.target.value)}
-          placeholder="Preset name"
+          placeholder="Nome da predefinição"
           className="text-sm"
         />
         <Input
@@ -278,7 +278,7 @@ export function SearchPresetsModal<T>({
             <Input
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
-              placeholder="Search presets..."
+              placeholder="Buscar predefinições..."
               className="pl-9 text-sm"
             />
           </div>

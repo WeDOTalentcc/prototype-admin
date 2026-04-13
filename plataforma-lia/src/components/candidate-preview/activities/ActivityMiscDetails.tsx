@@ -78,7 +78,7 @@ export function ActivityMiscDetails({ activity }: ActivityMiscDetailsProps) {
               </div>
               <div className={`text-center p-2 rounded-md border ${(activity.score ?? 0) >= 80 ? 'bg-status-success/10 border-status-success/30 dark:bg-status-success/20 dark:border-status-success/30' : (activity.score ?? 0) >= 60 ? 'bg-lia-bg-secondary border-lia-border-subtle' : 'bg-lia-bg-tertiary border-lia-border-default'}`}>
                 <p className={`text-base font-bold ${(activity.score ?? 0) >= 80 ? 'text-status-success' : (activity.score ?? 0) >= 60 ? 'text-lia-text-primary' : 'text-lia-text-tertiary'}`}>{activity.score}%</p>
-                <p className={textStyles.caption}>Score</p>
+                <p className={textStyles.caption}> Nota</p>
               </div>
             </div>
             {activity.details.categories && (
@@ -160,7 +160,7 @@ export function ActivityMiscDetails({ activity }: ActivityMiscDetailsProps) {
                 <p className={`${textStyles.label}`}>{activity.details.duration}</p>
               </div>
               <div>
-                <p className={textStyles.bodySmall}>Score</p>
+                <p className={textStyles.bodySmall}> Nota</p>
                 <p className={`${textStyles.label}`}>{activity.details.score}/{activity.details.maxScore}</p>
               </div>
               <div>

@@ -243,7 +243,7 @@ export function useChatSession({
     return () => window.removeEventListener('lia:new-chat', handleNewChat)
   }, [setMessages, setContextData, setIsPanelOpen, closeDynamicPanel, switchChatContext])
 
-  // "Open Pipeline"
+  // "Funil Aberto"
   useEffect(() => {
     const handleOpenPipeline = async () => {
       setChatTitle('Gerenciamento de Pipeline')
@@ -253,7 +253,7 @@ export function useChatSession({
         if (report && report.groups) {
           setContextData({
             type: "pipeline-report",
-            title: "Pipeline - Candidatos Parados",
+            title: "Funil - Candidatos Parados",
             data: report as unknown as Record<string, unknown>,
           })
           setIsPanelOpen(true)
@@ -266,7 +266,7 @@ export function useChatSession({
             id: Date.now(), sender: "lia",
             content: Number(totalStale) > 0
               ? `Encontrei **${totalStale} candidatos** que estão parados há mais de 3 dias em **${report.groups.length} vagas**. No painel ao lado você pode ver o detalhamento e tomar ações rápidas para cada candidato.\n\nQuer que eu priorize alguma vaga específica ou sugira as próximas ações?`
-              : `Ótimo! Todos os candidatos estão fluindo bem pelo pipeline. Nenhum candidato está parado há mais de 3 dias.\n\nPosso ajudar com outra coisa?`,
+              : `Ótimo! Todos os candidatos estão fluindo bem pelo funil. Nenhum candidato está parado há mais de 3 dias.\n\nPosso ajudar com outra coisa?`,
             timestamp: new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
             type: "text",
           }])
@@ -274,7 +274,7 @@ export function useChatSession({
       } catch {
         setMessages(prev => [...prev, {
           id: Date.now(), sender: "lia",
-          content: "Desculpe, não consegui carregar os dados do pipeline. Tente novamente em alguns instantes.",
+          content: "Desculpe, não consegui carregar os dados do funil. Tente novamente em alguns instantes.",
           timestamp: new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
           type: "text",
         }])

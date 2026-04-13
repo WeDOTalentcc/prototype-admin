@@ -315,8 +315,8 @@ export function InsightsOverviewSection({
           </h3>
           <div className="space-y-3">
             {[
-              { label: "Score Médio (Todos)", value: `${qualityMetrics.avgScoreTodos}%`, score: qualityMetrics.avgScoreTodos },
-              { label: "Score Médio (Triados)", value: `${qualityMetrics.avgScoreTriados}%`, score: qualityMetrics.avgScoreTriados },
+              { label: "Nota Média (Todos)", value: `${qualityMetrics.avgScoreTodos}%`, score: qualityMetrics.avgScoreTodos },
+              { label: "Nota Média (Triados)", value: `${qualityMetrics.avgScoreTriados}%`, score: qualityMetrics.avgScoreTriados },
               { label: "Taxa Triagem → Aprovação", value: `${qualityMetrics.taxaAprovacao}%`, score: undefined },
             ].map(({ label, value, score }) => (
               <div key={label} className="flex items-center justify-between bg-lia-bg-primary rounded-xl p-2.5 border border-lia-border-subtle">

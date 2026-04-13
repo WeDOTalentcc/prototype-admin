@@ -54,7 +54,7 @@ const categoryColors: Record<InterviewNoteQuestion["category"], string> = {
 const categoryLabels: Record<InterviewNoteQuestion["category"], string> = {
   vaga:"Vaga",
   gap_analysis:"Gap Analysis",
-  fit_cultural:"Fit Cultural",
+  fit_cultural:"Aderência Cultural",
   custom:"Personalizada",
 }
 

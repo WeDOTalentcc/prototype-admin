@@ -316,7 +316,7 @@ export function PipelineOverviewPage() {
       <div className="flex-1 flex items-center justify-center h-full bg-lia-bg-primary">
         <div className="flex flex-col items-center gap-3 text-lia-text-secondary">
           <Loader2 className="w-8 h-8 animate-spin" />
-          <span className="text-sm">Carregando pipeline...</span>
+          <span className="text-sm">Carregando funil...</span>
         </div>
       </div>
     )
@@ -373,7 +373,7 @@ export function PipelineOverviewPage() {
               <div className="flex items-center gap-2 text-lia-text-disabled text-sm">
                 <AlertCircle className="w-4 h-4" />
                 <span>
-                  Nenhuma etapa encontrada. Configure o pipeline da empresa nas
+                  Nenhuma etapa encontrada. Configure o funil da empresa nas
                   Configurações.
                 </span>
               </div>
@@ -694,24 +694,24 @@ function candidateItemToRecord(c: CandidateItem): Record<string, unknown> {
     vacancy_title: c.vacancy_title,
     sub_status: c.sub_status,
     stage_entered_at: c.stage_entered_at,
-    liaNota: triagemVal,
+    liaScore: triagemVal,
     score: c.lia_opinion_score,
     lia_score: c.lia_score,
     skillsMatch: cvFitVal,
-    fitNota: cvFitVal,
+    fitScore: cvFitVal,
     cvFitNota: cvFitVal,
     match_percentage: c.match_percentage,
     wsi_score: c.wsi_score,
     triagemNota: triagemVal,
     screeningNota: triagemVal,
     technicalNota: techVal,
-    technicalTestNota: techVal,
+    technicalTestScore: techVal,
     technicalTest: techVal != null ? {
       status: "completed",
       score: techVal,
     } : undefined,
     englishNota: engVal,
-    englishTestNota: engVal,
+    englishTestScore: engVal,
     englishTest: engVal != null ? {
       status: "completed",
       score: engVal,

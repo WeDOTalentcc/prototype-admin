@@ -83,7 +83,7 @@ export const integrations: Integration[] = [
     capabilities: [
       { name: "Análise Profunda", description: "Raciocínio complexo sobre candidatos" },
       { name: "Geração de Texto", description: "Comunicações e feedbacks elaborados" },
-      { name: "Avaliação Contextual", description: "Análise de fit cultural" },
+      { name: "Avaliação Contextual", description: "Análise de aderência cultural" },
       { name: "Fallback Provider", description: "Backup automático quando Gemini indisponível" },
     ],
     configFields: ["ANTHROPIC_API_KEY"],
@@ -279,7 +279,7 @@ export const integrations: Integration[] = [
     connectAction: "none",
     capabilities: [
       { name: "Sync de Contatos", description: "Candidatos e clientes sincronizados" },
-      { name: "Pipeline de Vendas", description: "Oportunidades de recrutamento" },
+      { name: "Funil de Vendas", description: "Oportunidades de recrutamento" },
       { name: "Relatórios", description: "Dashboards integrados" },
     ],
   },
@@ -297,7 +297,7 @@ export const integrations: Integration[] = [
     connectAction: "none",
     capabilities: [
       { name: "Gestão de Talentos", description: "Integração com módulo de recrutamento" },
-      { name: "Onboarding", description: "Fluxo de admissão automatizado" },
+      { name: "Integração", description: "Fluxo de admissão automatizado" },
       { name: "Perfil do Colaborador", description: "Dados unificados de RH" },
     ],
   },

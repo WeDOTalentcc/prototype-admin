@@ -115,7 +115,7 @@ export function useExpandedChatEffects(ctx) {
       return
     }
     
-    const { salary, skills, behavioral } = learning.suggestions
+    const { salary, competências, behavioral } = learning.suggestions
     
     // Apply salary suggestions if no salary is set
     if (salary?.has_suggestion && salary.min_salary && salary.max_salary) {

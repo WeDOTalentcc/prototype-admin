@@ -244,7 +244,7 @@ export default function MultiStrategySearchPanel({
                   />
                 </th>
                 <th className={`py-2 px-3 text-left ${textStyles.labelSmall}`}>Candidato</th>
-                <th className={`py-2 px-3 text-left ${textStyles.labelSmall}`}>Score</th>
+                <th className={`py-2 px-3 text-left ${textStyles.labelSmall}`}> Nota</th>
                 <th className={`py-2 px-3 text-left ${textStyles.labelSmall}`}>Estratégia</th>
                 <th className={`py-2 px-3 text-left ${textStyles.labelSmall}`}>Skills</th>
               </tr>

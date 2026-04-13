@@ -180,7 +180,7 @@ export function useJobInsights({
       jobs.reduce((sum, j) => sum + (j.performance_score || 0), 0) / (jobs.length || 1)
     const dimensions: WSIScore[] = [
       { dimension: "Técnico", score: Math.round(avg * 0.95), label: "Competências técnicas" },
-      { dimension: "Comportamental", score: Math.round(avg * 0.88), label: "Soft skills e atitudes" },
+      { dimension: "Comportamental", score: Math.round(avg * 0.88), label: "Comp. Comportamentais e atitudes" },
       { dimension: "Cultural", score: Math.round(avg * 0.92), label: "Fit cultural" },
       { dimension: "Experiência", score: Math.round(avg * 0.85), label: "Anos e relevância" },
       { dimension: "Potencial", score: Math.round(avg * 0.78), label: "Capacidade de crescimento" },
@@ -231,7 +231,7 @@ export function useJobInsights({
   const calculatedConversionRates = useMemo((): ConversionRate[] => {
     if (conversionRates && conversionRates.length > 0) return conversionRates
     const stages = [
-      { from: "Pipeline LIA", to: "Triagens Agendadas", fromValue: liaFunnelMetrics.pipeline_lia, toValue: liaFunnelMetrics.triagens_agendadas },
+      { from: "Funil LIA", to: "Triagens Agendadas", fromValue: liaFunnelMetrics.pipeline_lia, toValue: liaFunnelMetrics.triagens_agendadas },
       { from: "Triagens Agendadas", to: "Triagens Realizadas", fromValue: liaFunnelMetrics.triagens_agendadas, toValue: liaFunnelMetrics.triagens_realizadas },
       { from: "Triagens Realizadas", to: "Entrevistas Agendadas", fromValue: liaFunnelMetrics.triagens_realizadas, toValue: liaFunnelMetrics.entrevistas_agendadas },
       { from: "Inscritos", to: "Aprovados", fromValue: aggregateMetrics.totalCandidates, toValue: aggregateMetrics.totalApproved },

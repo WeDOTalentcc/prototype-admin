@@ -602,7 +602,7 @@ Digite abaixo o perfil ideal e vou buscar simultaneamente no nosso banco proprie
           const updatedData = await liaApi.getStaleCandidates()
           setContextData({
             type: "pipeline-report",
-            title: "Pipeline de Candidatos",
+            title: "Funil de Candidatos",
             data: updatedData
           })
         }

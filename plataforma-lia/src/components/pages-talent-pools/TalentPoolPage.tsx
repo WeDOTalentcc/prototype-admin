@@ -394,7 +394,7 @@ function CandidatesTab({
                 />
               </th>
               <th className={`py-2 px-3 text-left ${textStyles.labelSmall}`}>Candidato</th>
-              <th className={`py-2 px-3 text-left ${textStyles.labelSmall}`}>Score</th>
+              <th className={`py-2 px-3 text-left ${textStyles.labelSmall}`}> Nota</th>
               <th className={`py-2 px-3 text-left ${textStyles.labelSmall}`}>Status</th>
               <th className={`py-2 px-3 text-left ${textStyles.labelSmall}`}>Progresso</th>
               <th className={`py-2 px-3 text-left ${textStyles.labelSmall}`}>Origem</th>

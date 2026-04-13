@@ -31,7 +31,7 @@ interface ScoreBreakdownBadgeProps {
 const DEFAULT_DIMENSIONS: ScoreDimension[] = [
   { label: "Skills Técnicas", value: 0 },
   { label: "Experiência", value: 0 },
-  { label: "Fit Cultural", value: 0 },
+  { label: "Aderência Cultural", value: 0 },
   { label: "Formação", value: 0 },
   { label: "Disponibilidade", value: 0 },
 ]
@@ -215,7 +215,7 @@ export function ScoreBreakdownBadge({
     ? [
         { label: "Skills Técnicas", value: breakdown.skills ?? 0 },
         { label: "Experiência", value: breakdown.experience ?? 0 },
-        { label: "Fit Cultural", value: breakdown.culture_fit ?? 0 },
+        { label: "Aderência Cultural", value: breakdown.culture_fit ?? 0 },
         { label: "Formação", value: breakdown.education ?? 0 },
         { label: "Disponibilidade", value: breakdown.availability ?? 0 },
       ]

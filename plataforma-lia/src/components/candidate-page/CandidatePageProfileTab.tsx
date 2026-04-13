@@ -64,7 +64,7 @@ export interface CandidatePageProfileTabProps {
   candidate: import("@/services/lia-api").CandidateLocal & Record<string, unknown>
   experiences: Record<string, unknown>[]
   education: Record<string, unknown>[]
-  liaNota: number
+  liaScore: number
   opinionsHistory: OpinionRecord[]
   formatDateShort: (dateStr: string | null | undefined) => string
   formatDate: (dateStr: string | null | undefined) => string | null

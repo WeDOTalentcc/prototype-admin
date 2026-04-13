@@ -139,7 +139,7 @@ export function RecruitersTab({
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-wedo-orange font-medium">Time to Fill Médio</p>
+                <p className="text-sm text-wedo-orange font-medium">Tempo de Preenchimento Médio</p>
                 <p className="text-2xl font-semibold text-wedo-orange">{teamMetrics.avgTimeToFill}d</p>
               </div>
               <Clock className="w-8 h-8 text-wedo-orange" />
@@ -186,7 +186,7 @@ export function RecruitersTab({
             <div className="text-center p-4 bg-status-error/10 rounded-xl">
               <div className="text-2xl font-semibold text-status-error">2</div>
               <div className="text-sm text-status-error">Alertas Críticos</div>
-              <div className="text-xs text-status-error mt-1">Time to Fill &gt; 45 dias</div>
+              <div className="text-xs text-status-error mt-1">Tempo de Preenchimento &gt; 45 dias</div>
             </div>
             <div className="text-center p-4 bg-status-warning/10 rounded-xl">
               <div className="text-2xl font-semibold text-status-warning">5</div>

@@ -265,7 +265,7 @@ export function JobPreviewLiaMetrics({ previewJob }: JobPreviewLiaMetricsProps) 
               {(() => {
                 const pipelineLia = previewJob.liaMetrics?.pipeline_lia ?? 0
                 const semResposta = previewJob.liaMetrics?.sem_resposta ?? 0
-                return pipelineLia > 0 ? `${Math.round((semResposta / pipelineLia) * 100)}% do pipeline` : 'N/A'
+                return pipelineLia > 0 ? `${Math.round((semResposta / pipelineLia) * 100)}% do funil` : 'N/A'
               })()}
             </p>
           </div>
@@ -305,7 +305,7 @@ export function JobPreviewLiaMetrics({ previewJob }: JobPreviewLiaMetricsProps) 
               <li>• {previewJob.liaMetrics?.triagens_realizadas ?? 0} triagens realizadas de {previewJob.liaMetrics?.triagens_agendadas ?? 0} agendadas</li>
               <li>• {previewJob.liaMetrics?.entrevistas_agendadas ?? 0} entrevistas agendadas</li>
               <li>• {previewJob.liaMetrics?.sem_resposta ?? 0} candidatos sem resposta</li>
-              <li>• {previewJob.liaMetrics?.pipeline_lia ?? 0} candidatos no pipeline LIA</li>
+              <li>• {previewJob.liaMetrics?.pipeline_lia ?? 0} candidatos no funil LIA</li>
             </ul>
           </div>
         </div>

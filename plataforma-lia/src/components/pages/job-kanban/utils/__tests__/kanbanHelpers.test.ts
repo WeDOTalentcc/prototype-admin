@@ -36,9 +36,9 @@ const baseCandidatePerfect = {
   id: 'c1',
   name: 'Perfect Candidate',
   skillsMatch: 100,
-  liaNota: 100,
-  technicalTestNota: 100,
-  englishTestNota: 100,
+  liaScore: 100,
+  technicalTestScore: 100,
+  englishTestScore: 100,
   triageComplete: true,
   stage: 'Final',
 }
@@ -59,17 +59,17 @@ describe('calculateNotaLiaGeral', () => {
   })
 
   it('liaScore 100 contributes 30 to base', () => {
-    const score = calculateNotaLiaGeral({ id: 'x', name: 'x', liaNota: 100 })
+    const score = calculateNotaLiaGeral({ id: 'x', name: 'x', liaScore: 100 })
     expect(score).toBe(30)
   })
 
   it('technicalTestScore 100 contributes 25 to base', () => {
-    const score = calculateNotaLiaGeral({ id: 'x', name: 'x', technicalTestNota: 100 })
+    const score = calculateNotaLiaGeral({ id: 'x', name: 'x', technicalTestScore: 100 })
     expect(score).toBe(25)
   })
 
   it('englishTestScore 100 contributes 20 to base', () => {
-    const score = calculateNotaLiaGeral({ id: 'x', name: 'x', englishTestNota: 100 })
+    const score = calculateNotaLiaGeral({ id: 'x', name: 'x', englishTestScore: 100 })
     expect(score).toBe(20)
   })
 
@@ -102,7 +102,7 @@ describe('calculateNotaLiaGeral', () => {
   })
 
   it('uses fitScore as fallback for skillsMatch', () => {
-    const score = calculateNotaLiaGeral({ id: 'x', name: 'x', fitNota: 100 })
+    const score = calculateNotaLiaGeral({ id: 'x', name: 'x', fitScore: 100 })
     expect(score).toBe(25)
   })
 

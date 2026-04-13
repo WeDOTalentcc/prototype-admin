@@ -510,7 +510,7 @@ export function useWSIAndCalibrationHandlers(ctx: WSIAndCalibrationHandlersConte
         }
       }
       
-      // Soft skills (also maps to behavioral competencies display)
+      // Comp. Comportamentais (also maps to behavioral competencies display)
       if (detectedCriteriaFromBackend.soft_skills && Array.isArray(detectedCriteriaFromBackend.soft_skills)) {
         const newComps = detectedCriteriaFromBackend.soft_skills as string[]
         if (newComps.length > 0) {

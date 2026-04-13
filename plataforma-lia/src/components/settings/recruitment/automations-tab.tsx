@@ -197,7 +197,7 @@ export function AutomationsTab({ onSettingsChange }: { onSettingsChange: (change
             <Button variant="outline" className="h-auto p-4 justify-start gap-3">
               <Download className="w-5 h-5 text-status-success" />
               <div className="text-left">
-                <div className="font-medium">Importar Template</div>
+                <div className="font-medium">Importar Modelo</div>
                 <div className="text-sm text-lia-text-primary">Da biblioteca de templates</div>
               </div>
             </Button>
@@ -226,7 +226,7 @@ export function AutomationsTab({ onSettingsChange }: { onSettingsChange: (change
   const renderTemplates = () => (
     <div className="text-center py-12">
       <FileText className="w-12 h-12 text-lia-text-primary mx-auto mb-4" />
-      <h3 className="text-lg font-medium text-lia-text-primary mb-2">Biblioteca de Templates</h3>
+      <h3 className="text-lg font-medium text-lia-text-primary mb-2">Biblioteca de Modelos</h3>
       <p className="text-lia-text-primary">Templates pré-configurados para casos comuns</p>
     </div>
   )

@@ -94,7 +94,7 @@ export function CommunicationStep({
         ) : (
           <Select value={selectedTemplateId} onValueChange={onTemplateChange}>
             <SelectTrigger className="h-9 text-xs border-lia-border-subtle">
-              <SelectValue placeholder="Selecione um template..." />
+              <SelectValue placeholder="Selecione um modelo..." />
             </SelectTrigger>
             <SelectContent>
               {availableTemplates.map((template) => (

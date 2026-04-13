@@ -36,7 +36,7 @@ export const CANDIDATES_DEFAULT_COLUMNS = [
   { id: 'self_introduction', label: 'Autoapresentação', visible: false, order: 23, category: 'profissional' },
   // Competências
   { id: 'technical_skills', label: 'Habilidades técnicas', visible: false, order: 24, category: 'competencias' },
-  { id: 'soft_skills', label: 'Soft skills', visible: false, order: 25, category: 'competencias' },
+  { id: 'soft_skills', label: 'Comp. Comportamentais', visible: false, order: 25, category: 'competencias' },
   { id: 'languages', label: 'Idiomas', visible: false, order: 26, category: 'competencias' },
   { id: 'certifications', label: 'Certificações', visible: false, order: 27, category: 'competencias' },
   { id: 'interests', label: 'Interesses', visible: false, order: 28, category: 'competencias' },
@@ -99,7 +99,7 @@ export const CANDIDATES_DEFAULT_COLUMNS = [
   { id: 'lia_insights', label: 'Insights LIA', visible: false, order: 65, category: 'ia' },
   { id: 'skills_match_percentage', label: '% Match de habilidades', visible: false, order: 66, category: 'ia' },
   // Status e Workflow
-  { id: 'status', label: 'Status no pipeline', visible: false, order: 56, category: 'status' },
+  { id: 'status', label: 'Status no funil', visible: false, order: 56, category: 'status' },
   { id: 'is_active', label: 'Ativo no sistema', visible: false, order: 57, category: 'status' },
   { id: 'is_blacklisted', label: 'LCNU', visible: false, order: 58, category: 'status' },
   { id: 'blacklist_reason', label: 'Motivo LCNU', visible: false, order: 59, category: 'status' },

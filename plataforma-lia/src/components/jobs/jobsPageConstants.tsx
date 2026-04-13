@@ -106,7 +106,7 @@ export const WSI_BLOCKS: WSIBlock[] = [
   {
     id: 4,
     name: 'Competências Comportamentais e Fit',
-    description: 'Perguntas situacionais com follow-ups e fit cultural',
+    description: 'Perguntas situacionais com follow-ups e aderência cultural',
     duration: '4 min',
     editable: true,
     type: 'situational'

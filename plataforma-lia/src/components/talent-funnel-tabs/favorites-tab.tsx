@@ -247,7 +247,7 @@ export function FavoritesTab({
               <PopoverTrigger asChild>
                 <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-lia-bg-tertiary dark:bg-lia-bg-secondary transition-colors motion-reduce:transition-none group">
                   <TrendingUp className="w-3.5 h-3.5 text-lia-text-secondary" />
-                  <span className="text-xs font-medium text-lia-text-secondary">Insights</span>
+                  <span className="text-xs font-medium text-lia-text-secondary">Análises</span>
                   <Badge className="h-4 px-1.5 text-xs bg-lia-bg-inverse text-white">
                     {filteredCandidates.length}
                   </Badge>

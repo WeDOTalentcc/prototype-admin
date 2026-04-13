@@ -218,7 +218,7 @@ export function useCalibrationAndFastTrackHandlers(ctx: CalibrationAndFastTrackC
           ctx.setLocalCandidateCount(searchResponse.total_results)
           ctx.setSearchPhase('local-complete')
           
-          // Add candidates to pipeline if job was created
+          // Add candidates to funil if job was created
           if (ctx.publishedJobId && searchResponse.candidates.length > 0) {
             const candidateIds = searchResponse.candidates
               .filter(c => c.id)
@@ -235,7 +235,7 @@ export function useCalibrationAndFastTrackHandlers(ctx: CalibrationAndFastTrackC
               await liaApi.sendNotification({
                 user_id: ctx.user?.email || 'system',
                 title: 'Novos candidatos encontrados',
-                message: `${candidateIds.length} candidatos foram adicionados ao pipeline da vaga ${ctx.basicInfoFields.cargo || 'Nova Vaga'}`,
+                message: `${candidateIds.length} candidatos foram adicionados ao funil da vaga ${ctx.basicInfoFields.cargo || 'Nova Vaga'}`,
                 notification_type: 'candidates_added',
                 related_job_id: ctx.publishedJobId,
                 action_url: `/jobs/${ctx.publishedJobId}/kanban`
@@ -497,7 +497,7 @@ export function useCalibrationAndFastTrackHandlers(ctx: CalibrationAndFastTrackC
         const successMessage: Message = {
           id: `lia-success-${Date.now()}`,
           role: 'assistant',
-          content: `🎉 **Vaga publicada com sucesso!**\n\nA vaga "${ctx.fastTrackSelectedVacancy.title}" está ativa e já está recebendo candidatos.\n\nVocê pode acompanhar o pipeline de candidatos no Kanban ou me pedir para buscar candidatos compatíveis.`,
+          content: `🎉 **Vaga publicada com sucesso!**\n\nA vaga "${ctx.fastTrackSelectedVacancy.title}" está ativa e já está recebendo candidatos.\n\nVocê pode acompanhar o funil de candidatos no Kanban ou me pedir para buscar candidatos compatíveis.`,
           timestamp: new Date()
         }
         ctx.setMessages(prev => [...prev, successMessage])

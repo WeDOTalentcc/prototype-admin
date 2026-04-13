@@ -20,7 +20,7 @@ const modernConversationPart2: Message[] = [
     timestamp: "09:38",
     type: "action",
     actions: [
-      { label: "Ver Pipeline de Candidatos", icon: Users, variant: "secondary" },
+      { label: "Ver Funil de Candidatos", icon: Users, variant: "secondary" },
       { label: "Iniciar Triagem Automática", icon: Filter, variant: "secondary" },
       { label: "Agendar Primeiras Entrevistas", icon: Calendar, variant: "secondary" }
     ],
@@ -122,14 +122,14 @@ const modernConversationPart2: Message[] = [
           stage_1_screening: {
             duration: "30 minutes",
             interviewer: "Ana Silva (Recruiter)",
-            focus: ["Cultural fit", "Communication skills", "Salary expectations"],
-            success_criteria: "Score ≥ 7/10 para advance"
+            focus: ["Aderência cultural", "Habilidades de comunicação", "Expectativa salarial"],
+            success_criteria: "Nota ≥ 7/10 para avançar"
           },
           stage_2_technical: {
             duration: "90 minutes",
             interviewer: "CTO + Senior Tech Lead",
             focus: ["Technical leadership", "Architecture decisions", "Team management"],
-            success_criteria: "Score ≥ 8/10 para advance"
+            success_criteria: "Nota ≥ 8/10 para avançar"
           }
         }
       }
@@ -362,7 +362,7 @@ WeDo Talent Solutions`
             ],
             outcomes: [
               "200+ aplicações de qualidade",
-              "59 candidatos no pipeline",
+              "59 candidatos no funil",
               "Seleção final com 94% de score",
               "Proposta aceita em primeira rodada"
             ]
@@ -431,7 +431,7 @@ WeDo Talent Solutions`
             confidence: 89,
             actions: [
               "Refinar critérios de sourcing com ML",
-              "Implementar análise preditiva de fit cultural",
+              "Implementar análise preditiva de aderência cultural",
               "Otimizar job descriptions com NLP"
             ]
           },

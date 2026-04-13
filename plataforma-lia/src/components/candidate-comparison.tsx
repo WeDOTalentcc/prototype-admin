@@ -313,7 +313,7 @@ export function CandidateComparison({
                     LIA analisando candidatos...
                   </h5>
                   <p className="text-status-success dark:text-status-success">
-                    Comparando perfis, experiências e fit cultural
+                    Comparando perfis, experiências e aderência cultural
                   </p>
                   <div className="flex items-center justify-center gap-4 mt-4 text-sm text-status-success">
                     <span>⚡ Análise técnica</span>

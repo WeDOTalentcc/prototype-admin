@@ -312,7 +312,7 @@ export function SystemConfigurationModal({ system, onClose }: SystemConfiguratio
           {selectedTab === 'mapping' && (
             <div className="space-y-6">
               <div>
-                <h4 className="text-xs font-medium text-lia-text-primary mb-4">Templates de Mapeamento</h4>
+                <h4 className="text-xs font-medium text-lia-text-primary mb-4">Modelos de Mapeamento</h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                   {mappingTemplates.map(template => (
                     <div

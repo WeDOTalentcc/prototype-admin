@@ -92,7 +92,7 @@ export function AddCandidateModal({ isOpen, onClose, onAdd }: AddCandidateModalP
     setTimeout(() => {
       setLiaAnalysis({
         score: Math.floor(Math.random() * 30) + 70,
-        fitNota: Math.floor(Math.random() * 30) + 70,
+        fitScore: Math.floor(Math.random() * 30) + 70,
         strengths: ["Experiência sólida na área","Habilidades técnicas alinhadas","Boa formação acadêmica"
         ],
         improvements: ["Verificar disponibilidade para início","Alinhar expectativa salarial"

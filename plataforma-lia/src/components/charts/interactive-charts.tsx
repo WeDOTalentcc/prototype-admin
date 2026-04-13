@@ -467,7 +467,7 @@ export function RecruiterPerformanceChart() {
   const metrics = [
     { key: 'hires', label: 'Contratações', color: 'rgb(3 7 18 / 1.00)' },
     { key: 'interviews', label: 'Entrevistas', color: 'rgb(3 7 18 / 0.60)' },
-    { key: 'timeToFill', label: 'Time to Fill', color: 'rgb(3 7 18 / 0.35)' },
+    { key: 'timeToFill', label: 'Tempo de Preenchimento', color: 'rgb(3 7 18 / 0.35)' },
     { key: 'nps', label: 'NPS', color: 'rgb(3 7 18 / 0.15)' }
   ]
 

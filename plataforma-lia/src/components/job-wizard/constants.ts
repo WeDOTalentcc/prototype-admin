@@ -49,7 +49,7 @@ Revise e ajuste conforme necessário. Se precisar alterar algo, é só me dizer 
 
 No painel ao lado você encontra:
 - **Competências Técnicas**: Conhecimentos e ferramentas da área
-- **Competências Comportamentais**: Soft skills e fit cultural
+- **Competências Comportamentais**: Comp. Comportamentais e aderência cultural
 
 Para cada competência você pode:
 - Ajustar o nível de proficiência

@@ -104,7 +104,7 @@ const mockResults: SearchResult[] = [
 const aiSuggestionsByCategory: Record<string, string[]> = {
   all: ["Candidatos React com 5+ anos","Vagas abertas em São Paulo","Últimas conversas sobre UX Designer","Relatórios de performance mensal","Automações de follow-up ativas","Configurações de notificação"
   ],
-  candidate: ["Candidatos React sênior","Designers com experiência em Figma","Ativos localizados em São Paulo","Score LIA acima de 80","Contratados nos últimos 30 dias","Com entrevista agendada","Backend Python ou Node.js","Disponíveis para início imediato"
+  candidate: ["Candidatos React sênior","Designers com experiência em Figma","Ativos localizados em São Paulo","Nota LIA acima de 80","Contratados nos últimos 30 dias","Com entrevista agendada","Backend Python ou Node.js","Disponíveis para início imediato"
   ],
   job: ["Vagas abertas com urgência","Posições de Tech em São Paulo","Publicadas esta semana","Com mais de 10 candidatos","Próximas do deadline","Sem candidatos ativos","Vagas remotas disponíveis","Posições de liderança"
   ],

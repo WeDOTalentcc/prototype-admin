@@ -206,12 +206,12 @@ export function EmailTemplateFormModal({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Mail className="w-5 h-5 text-lia-text-primary" />
-            {isEditing ?"Editar Template" :"Novo Template de Email"}
+            {isEditing ?"Editar Modelo" :"Novo Modelo de Email"}
           </DialogTitle>
           <DialogDescription className="dark:text-lia-text-tertiary">
             {isEditing
-              ?"Atualize as informações do template de email"
-              :"Crie um novo template de email para comunicação com candidatos"}
+              ?"Atualize as informações do modelo de email"
+              :"Crie um novo modelo de email para comunicação com candidatos"}
           </DialogDescription>
         </DialogHeader>
 

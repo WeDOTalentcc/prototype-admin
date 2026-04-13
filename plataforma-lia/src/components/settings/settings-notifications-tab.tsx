@@ -64,7 +64,7 @@ export function SettingsNotificationsTab({ onSettingsChange }: SettingsNotificat
             { key: "newCandidates", label: "Novos Candidatos", desc: "Quando novos candidatos se inscrevem" },
             { key: "interviews", label: "Entrevistas", desc: "Lembretes e confirmações de entrevistas" },
             { key: "deadlines", label: "Prazos", desc: "Deadlines de feedback e processos" },
-            { key: "liaInsights", label: "Insights da LIA", desc: "Análises e sugestões da IA" }
+            { key: "liaInsights", label: "Análises da LIA", desc: "Análises e sugestões da IA" }
           ].map((type) => (
             <div key={type.key} className="flex items-center justify-between p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl">
               <div>

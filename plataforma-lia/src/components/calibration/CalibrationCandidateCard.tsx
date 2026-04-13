@@ -4,7 +4,7 @@
  * CalibrationCandidateCard — shared presentation component for calibration review.
  *
  * Renders a two-panel layout:
- *   Left:  Candidate profile (avatar, title, skills, experience, education)
+ *   Left:  Candidate profile (avatar, title, competências, experience, education)
  *   Right: Match criteria analysis + action buttons (approve/reject)
  *
  * Both CalibrationCardModal and CalibrationProfileModal use this component

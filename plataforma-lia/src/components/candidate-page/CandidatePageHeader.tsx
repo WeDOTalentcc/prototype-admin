@@ -33,7 +33,7 @@ type CandidateRecord = {
 
 interface CandidatePageHeaderProps {
   _candidate: CandidateRecord
-  liaNota: number
+  liaScore: number
   showLiaAnalysisModal: boolean
   setShowLiaAnalysisModal: (value: boolean) => void
   handleAnalysisTransport: () => void

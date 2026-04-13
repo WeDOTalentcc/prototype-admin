@@ -174,13 +174,13 @@ export function KanbanPageModalsInline(state: KanbanPageCoreState) {
           >
             <div className="flex items-center justify-between px-6 py-4 bg-lia-bg-secondary">
               <div className="flex items-center gap-3">
-                {activeModal === 'notaGeral' && <BrainCircuit className="w-5 h-5 text-lia-text-primary" />}
+                {activeModal === 'scoreGeral' && <BrainCircuit className="w-5 h-5 text-lia-text-primary" />}
                 {activeModal === 'triagem' && <BrainCircuit className="w-5 h-5 text-wedo-cyan" />}
                 {activeModal === 'testeTecnico' && <FileText className="w-5 h-5 text-lia-text-secondary" />}
                 {activeModal === 'testeIngles' && <Languages className="w-5 h-5 text-lia-text-secondary" />}
                 <div>
                   <h2 className="text-lg font-semibold text-lia-text-primary">
-                    {activeModal === 'notaGeral' && 'Nota Geral'}
+                    {activeModal === 'scoreGeral' && 'Nota Geral'}
                     {activeModal === 'triagem' && 'Nota Triagem'}
                     {activeModal === 'testeTecnico' && 'Teste Técnico'}
                     {activeModal === 'testeIngles' && 'Teste Inglês'}
@@ -200,7 +200,7 @@ export function KanbanPageModalsInline(state: KanbanPageCoreState) {
             </div>
 
             <div className="p-6 overflow-y-auto max-h-[calc(85vh-140px)]">
-              {activeModal === 'notaGeral' && (
+              {activeModal === 'scoreGeral' && (
                 <div className="space-y-6">
                   <div className="text-center py-8">
                     <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-lia-bg-tertiary mb-4">
