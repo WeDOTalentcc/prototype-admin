@@ -133,7 +133,7 @@ class TestConsumptionTracking:
                 operation="apify_search",
                 cost_usd=0.05,
                 success=True,
-                pipeline_id="test-pipeline-id",
+                pipeline_id="550e8400-e29b-41d4-a716-446655440000",
                 response_time_ms=5000,
             )
 
@@ -179,20 +179,21 @@ class TestConsumptionTracking:
             "app.domains.billing.services.consumption_tracking_service.ConsumptionTrackingService._check_budget_alert",
             new_callable=AsyncMock,
         ):
+            _pid = "550e8400-e29b-41d4-a716-446655440000"
             r1 = await ConsumptionTrackingService.record_apify_search_call(
                 db=mock_db, company_id="c1", user_id="u1",
                 operation="apify_search", cost_usd=0.02, success=True,
-                pipeline_id="p1", response_time_ms=1000,
+                pipeline_id=_pid, response_time_ms=1000,
             )
             r2 = await ConsumptionTrackingService.record_apify_search_call(
                 db=mock_db, company_id="c1", user_id="u1",
                 operation="profile_scrape", cost_usd=0.01, success=True,
-                pipeline_id="p1", response_time_ms=500,
+                pipeline_id=_pid, response_time_ms=500,
             )
             r3 = await ConsumptionTrackingService.record_apify_search_call(
                 db=mock_db, company_id="c1", user_id="u1",
                 operation="email_finder", cost_usd=0.01, success=False,
-                pipeline_id="p1", response_time_ms=300,
+                pipeline_id=_pid, response_time_ms=300,
                 error_message="timeout",
             )
 

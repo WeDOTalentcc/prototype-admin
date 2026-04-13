@@ -2,7 +2,7 @@ import enum
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Boolean, Column, DateTime, Float, Index, Integer, String
+from sqlalchemy import Boolean, Column, DateTime, Float, Index, Integer, String, Text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
 
@@ -12,6 +12,7 @@ from lia_config.database import Base
 class ExternalApiProvider(str, enum.Enum):
     APIFY = "apify"
     PEARCH = "pearch"
+    LLM = "llm"
 
 
 class ExternalApiOperation(str, enum.Enum):
@@ -22,6 +23,7 @@ class ExternalApiOperation(str, enum.Enum):
     APIFY_SEARCH = "apify_search"
     PROFILE_SCRAPE = "profile_scrape"
     EMAIL_FINDER = "email_finder"
+    LLM_INFERENCE = "llm_inference"
 
 
 class ExternalApiConsumption(Base):
@@ -29,6 +31,7 @@ class ExternalApiConsumption(Base):
     __table_args__ = (
         Index("ix_extapi_company_created", "company_id", "created_at"),
         Index("ix_extapi_company_provider", "company_id", "provider"),
+        Index("ix_extapi_pipeline", "pipeline_id"),
     )
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
@@ -39,6 +42,14 @@ class ExternalApiConsumption(Base):
 
     provider = Column(String(30), nullable=False, index=True)
     operation = Column(String(50), nullable=False, index=True)
+
+    pipeline_id = Column(UUID(as_uuid=True), nullable=True)
+    search_session_id = Column(String(100), nullable=True)
+    actor_id = Column(String(200), nullable=True)
+
+    tokens_input = Column(Integer, nullable=True)
+    tokens_output = Column(Integer, nullable=True)
+    model_name = Column(String(100), nullable=True)
 
     credits_consumed = Column(Integer, default=0, nullable=False)
 
@@ -65,6 +76,12 @@ class ExternalApiConsumption(Base):
             "linkedin_url": self.linkedin_url,
             "provider": self.provider,
             "operation": self.operation,
+            "pipeline_id": str(self.pipeline_id) if self.pipeline_id else None,
+            "search_session_id": self.search_session_id,
+            "actor_id": self.actor_id,
+            "tokens_input": self.tokens_input,
+            "tokens_output": self.tokens_output,
+            "model_name": self.model_name,
             "credits_consumed": self.credits_consumed,
             "cost_usd": self.cost_usd,
             "cost_brl": self.cost_brl,

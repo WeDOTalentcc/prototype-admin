@@ -2,7 +2,7 @@ import logging
 from datetime import datetime
 from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Path, Query
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -11,6 +11,7 @@ from app.domains.billing.services.consumption_report_service import ConsumptionR
 from app.domains.billing.services.consumption_tracking_service import (
     APIFY_MONTHLY_BUDGET_USD,
     APIFY_USD_TO_BRL_RATE,
+    CATEGORY_BUDGETS,
     ConsumptionTrackingService,
 )
 from app.shared.tenant_guard import get_verified_company_id
@@ -51,6 +52,48 @@ class BudgetStatusResponse(BaseModel):
     remaining_usd: float
     usage_percentage: float
     exchange_rate: float
+
+
+class DashboardResponse(BaseModel):
+    company_id: str
+    period: str
+    total_cost_usd: float
+    total_cost_brl: float
+    total_operations: int
+    by_provider: dict[str, Any]
+    by_operation: dict[str, Any]
+    top_users: list[dict[str, Any]]
+    daily_trend: list[dict[str, Any]]
+
+
+class TenantSummaryResponse(BaseModel):
+    period: str
+    total_platform_cost_usd: float
+    tenant_count: int
+    tenants: list[dict[str, Any]]
+
+
+class DetailedInvoiceResponse(BaseModel):
+    company_id: str
+    period: str
+    period_start: str
+    period_end: str
+    line_items: list[dict[str, Any]]
+    subtotals: dict[str, Any]
+    total_usd: float
+    total_brl: float
+    exchange_rate: float
+    line_count: int
+
+
+class PricingAnalyticsResponse(BaseModel):
+    period: str
+    cost_per_candidate_found: float
+    cost_per_candidate_with_contact: float
+    search: dict[str, Any]
+    enrichment: dict[str, Any]
+    email_discovery: dict[str, Any]
+    provider_success_rates: dict[str, Any]
 
 
 @router.get("/report", response_model=ConsumptionReportResponse)
@@ -109,3 +152,65 @@ async def get_budget_status(
     except Exception as e:
         logger.error("Error getting budget status: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail="Failed to get budget status")
+
+
+@router.get("/dashboard", response_model=DashboardResponse)
+async def get_consumption_dashboard(
+    company_id: str = Depends(get_verified_company_id),
+    db: AsyncSession = Depends(get_db),
+):
+    try:
+        data = await ConsumptionReportService.get_dashboard(db, company_id)
+        return DashboardResponse(**data)
+    except Exception as e:
+        logger.error("Error generating dashboard: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail="Failed to generate consumption dashboard")
+
+
+@router.get("/tenant-summary", response_model=TenantSummaryResponse)
+async def get_tenant_summary(
+    company_id: str = Depends(get_verified_company_id),
+    db: AsyncSession = Depends(get_db),
+):
+    try:
+        data = await ConsumptionReportService.get_tenant_summary(db)
+        return TenantSummaryResponse(**data)
+    except Exception as e:
+        logger.error("Error generating tenant summary: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail="Failed to generate tenant summary")
+
+
+@router.get(
+    "/invoice/{company_id}/{year}/{month}",
+    response_model=DetailedInvoiceResponse,
+)
+async def get_detailed_invoice(
+    company_id: str = Path(..., description="Company ID"),
+    year: int = Path(..., ge=2024, le=2030, description="Invoice year"),
+    month: int = Path(..., ge=1, le=12, description="Invoice month"),
+    verified_company_id: str = Depends(get_verified_company_id),
+    db: AsyncSession = Depends(get_db),
+):
+    if company_id != verified_company_id:
+        raise HTTPException(status_code=403, detail="Access denied to this company's invoice")
+    try:
+        data = await ConsumptionReportService.get_detailed_invoice(
+            db, company_id, year, month
+        )
+        return DetailedInvoiceResponse(**data)
+    except Exception as e:
+        logger.error("Error generating detailed invoice: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail="Failed to generate detailed invoice")
+
+
+@router.get("/pricing-analytics", response_model=PricingAnalyticsResponse)
+async def get_pricing_analytics(
+    company_id: str = Depends(get_verified_company_id),
+    db: AsyncSession = Depends(get_db),
+):
+    try:
+        data = await ConsumptionReportService.get_pricing_analytics(db, company_id)
+        return PricingAnalyticsResponse(**data)
+    except Exception as e:
+        logger.error("Error generating pricing analytics: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail="Failed to generate pricing analytics")
