@@ -24,6 +24,13 @@ repos:
         files: ^lia-agent-system/app/.*\.py$
 
   # ── Frontend (TypeScript) ─────────────────────────────────────────────────
+      - id: llm-factory-enforcement
+        name: Enforce Choose Your AI (LIA-LLM-1)
+        entry: bash -c 'cd lia-agent-system && python3 scripts/check_llm_factory_enforcement.py'
+        language: system
+        files: ^(lia-agent-system/app|lia-agent-system/libs).*\.py$
+        pass_filenames: false
+
   - repo: local
     hooks:
       - id: biome-check
