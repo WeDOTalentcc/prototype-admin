@@ -25,9 +25,7 @@ RUN pip install --no-cache-dir \
     -e libs/messaging \
     -e libs/models \
     -e libs/agents-core \
-    -e libs/services \
-    -e libs/contexts \
-    -e libs/auth
+    -e libs/services
 
 # Expose port
 EXPOSE 8000
