@@ -5,22 +5,13 @@ GET /api/v1/salary-benchmark?job_title=&seniority=&location=&company_id=
 """
 import logging
 
-from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query
 
 from app.shared.services.salary_benchmark_service import salary_benchmark_service
 from app.shared.tenant_guard import get_verified_company_id
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/salary-benchmark", tags=["salary-benchmark"])
-
-
-# DEPRECATED — use get_verified_company_id
-def _require_company_id(
-    x_company_id: str | None = Header(None, alias="X-Company-ID"),
-) -> str:
-    if not x_company_id:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="X-Company-ID obrigatório")
-    return x_company_id
 
 
 @router.get("", response_model=None)

@@ -10,7 +10,7 @@ import logging
 from typing import Literal
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Header, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -22,25 +22,6 @@ from app.shared.tenant_guard import get_verified_company_id
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/candidates", tags=["candidate-compare"])
-
-
-# DEPRECATED — use get_verified_company_id
-def _require_company_id(
-    x_company_id: str | None = Header(None, alias="X-Company-ID"),
-) -> str:
-    if not x_company_id:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="X-Company-ID header obrigatório",
-        )
-    try:
-        UUID(x_company_id)
-    except ValueError:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="X-Company-ID inválido — deve ser UUID",
-        )
-    return x_company_id
 
 
 class CompareRequest(BaseModel):

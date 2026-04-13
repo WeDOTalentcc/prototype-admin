@@ -14,6 +14,7 @@ from fastapi.responses import StreamingResponse
 
 from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
+from app.shared.compliance.c3b_layer import pre_compliance, post_compliance, ComplianceContext
 from app.domains.chat.dependencies import get_chat_repo
 from app.orchestrator.chat_adapter import ChatAdapter
 from app.api.orchestrator_routes import get_main_orchestrator
@@ -211,8 +212,17 @@ async def send_message(
         "updated_at": conversation.updated_at,
     }
 
+    _c3b_company = str(current_user.company_id) if current_user.company_id else ""
+    _c3b_pre = await pre_compliance(
+        message_data.content,
+        _c3b_company,
+        page_context.get("domain", ""),
+    )
+    if _c3b_pre.fairness_blocked:
+        raise HTTPException(status_code=422, detail=_c3b_pre.block_reason or "Solicitação bloqueada por critérios de equidade.")
+
     orch_result = await _get_chat_adapter().process_message(
-        user_message=message_data.content,
+        user_message=_c3b_pre.clean_message,
         user_id=user_id,
         company_id=str(current_user.company_id) if current_user.company_id else "",
         conversation_id=conversation_id,
@@ -222,6 +232,18 @@ async def send_message(
     lia_response = orch_result["response"]
     detected_intent = orch_result["intent"]
     detected_entities = orch_result["entities"]
+
+    if lia_response:
+        _c3b_ctx = ComplianceContext(
+            company_id=_c3b_company,
+            user_id=user_id,
+            session_id=conversation_id,
+            domain=page_context.get("domain", detected_intent or ""),
+            agent_id=detected_intent or "chat",
+            original_message=_c3b_pre.original_message,
+            fairness_flags=_c3b_pre.fairness_flags,
+        )
+        lia_response = await post_compliance(lia_response, _c3b_ctx)
 
     if page_context.get("job_vacancy_id") and "job_id" not in detected_entities:
         detected_entities["job_id"] = page_context["job_vacancy_id"]

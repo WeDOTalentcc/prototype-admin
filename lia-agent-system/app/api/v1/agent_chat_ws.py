@@ -49,6 +49,7 @@ from app.shared.chat_event_serializer import (
 from app.shared.prompt_injection import PromptInjectionGuard
 from app.shared.robustness.security_patterns import check_input_security, get_block_response
 from app.shared.compliance.fairness_guard import FairnessGuard
+from app.shared.compliance.c3b_layer import pre_compliance, post_compliance, ComplianceContext
 from app.shared.tenant_session import create_session_id
 
 logger = logging.getLogger(__name__)
@@ -648,6 +649,12 @@ async def agent_chat_ws(
             context.setdefault("user_id", user_id)
             active_domain = msg.get("domain", domain)
 
+            _c3b_result = await pre_compliance(content, company_id, active_domain)
+            if _c3b_result.fairness_blocked:
+                await ws_mgr.send_to_session(session_id, {"type": "error", "code": "fairness_block", "message": _c3b_result.block_reason})
+                continue
+            content = _c3b_result.clean_message
+
             await ws_mgr.send_to_session(session_id, serialize_thinking())
 
             # ── Plan Detection (multi-step workflows) ─────────────────────
@@ -905,6 +912,18 @@ async def agent_chat_ws(
                         logger.warning("[AgentChatWS] increment_usage falhou: %s", _inc_exc)
 
                 clean_message = _strip_react_json(output.message or "")
+
+                _c3b_ctx = ComplianceContext(
+                    company_id=company_id or "",
+                    user_id=user_id,
+                    session_id=session_id,
+                    domain=active_domain,
+                    agent_id=active_domain,
+                    original_message=_c3b_result.original_message,
+                    fairness_flags=_c3b_result.fairness_flags,
+                )
+                clean_message = await post_compliance(clean_message, _c3b_ctx)
+
                 conversation_history.append({"role": "user", "content": content})
                 conversation_history.append({"role": "assistant", "content": clean_message})
 
