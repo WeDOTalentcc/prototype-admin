@@ -1026,6 +1026,7 @@ async def search_by_archetype(
             
             candidates.append(candidate_dto)
         
+<<<<<<< HEAD
         candidates_as_dto = [
             CandidateSearchResultDTO(
                 id=c.id,
@@ -1057,6 +1058,10 @@ async def search_by_archetype(
         candidates = [c for c in candidates if c.id in filtered_ids]
 
         # Sort by LIA score if calculated
+=======
+        candidates = await enrich_and_filter_candidates(db, candidates)
+        
+>>>>>>> 21b3cc6ec (Task #172: Apify T2 — Pipeline de Busca: Enrichment Obrigatório + Remover Pro)
         if request.calculate_lia_score:
             candidates.sort(key=lambda x: x.lia_score or 0, reverse=True)
         
@@ -1081,8 +1086,13 @@ async def search_by_archetype(
             query=archetype.query,
             thread_id=search_result.thread_id,
             candidates=candidates,
+<<<<<<< HEAD
             local_count=sum(1 for c in candidates if c.source == "local"),
             pearch_count=sum(1 for c in candidates if c.source == "pearch"),
+=======
+            local_count=search_result.local_count,
+            pearch_count=search_result.pearch_count,
+>>>>>>> 21b3cc6ec (Task #172: Apify T2 — Pipeline de Busca: Enrichment Obrigatório + Remover Pro)
             total_count=len(candidates),
             credits_remaining=search_result.pearch_credits_remaining,
             search_time_seconds=(search_result.local_search_time or 0) + (search_result.pearch_search_time or 0),

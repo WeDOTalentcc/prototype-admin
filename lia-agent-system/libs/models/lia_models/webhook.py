@@ -12,11 +12,12 @@ Eventos suportados:
   - agent.approval.requested
   - agent.approval.reviewed
 """
+import enum
 import uuid
 
 from enum import Enum as PyEnum
 
-from sqlalchemy import Boolean, Column, DateTime, Enum, Integer, String, Text, func
+from sqlalchemy import Boolean, Column, DateTime, Enum, ForeignKey, Integer, String, Text, func
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB, UUID
 
 from lia_config.database import Base
@@ -90,7 +91,7 @@ class WebhookLog(Base):
     __tablename__ = "webhook_logs"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    webhook_id = Column(UUID(as_uuid=True), nullable=False, index=True)
+    webhook_id = Column(UUID(as_uuid=True), ForeignKey("webhooks.id", ondelete="CASCADE"), nullable=False, index=True)
     event = Column(String(128), nullable=False)
     status = Column(Enum(WebhookStatus), default=WebhookStatus.PENDING, nullable=False)
     status_code = Column(Integer, nullable=True)
@@ -98,4 +99,18 @@ class WebhookLog(Base):
     response_body = Column(Text, nullable=True)
     error = Column(Text, nullable=True)
     attempt = Column(Integer, default=1, nullable=False)
+    duration_ms = Column(Integer, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    def to_dict(self):
+        return {
+            "id": str(self.id),
+            "webhook_id": str(self.webhook_id),
+            "event": self.event,
+            "status": self.status.value if self.status else None,
+            "status_code": self.status_code,
+            "error": self.error,
+            "attempt": self.attempt,
+            "duration_ms": self.duration_ms,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+        }

@@ -1227,6 +1227,78 @@ async def _wrap_enrich_candidate_profile(**kwargs: Any) -> dict[str, Any]:
     }
 
 
+@tool_handler("sourcing", require_company=False)
+async def _wrap_enrich_candidate_contact(**kwargs: Any) -> dict[str, Any]:
+    """Enrich a candidate's contact info (email/phone) via Apify ($0.01/candidate)."""
+    from uuid import UUID as _UUID
+
+    from app.domains.sourcing.services.contact_enrichment_service import get_contact_enrichment_service
+
+    candidate_id = kwargs.get("candidate_id", "")
+    linkedin_url = kwargs.get("linkedin_url", "")
+    force = kwargs.get("force", False)
+
+    if not candidate_id:
+        return {"success": False, "data": {}, "message": "Parametro 'candidate_id' e obrigatorio."}
+
+    try:
+        svc = get_contact_enrichment_service()
+        async with AsyncSessionLocal() as session:
+            result = await svc.enrich_candidate_contact(
+                db=session,
+                candidate_id=_UUID(candidate_id),
+                linkedin_url=linkedin_url or None,
+                force=force,
+            )
+            await session.commit()
+
+        email = result.get("email")
+        phone = result.get("phone")
+        has_contact = result.get("has_contact", False) or bool(email or phone)
+
+        return {
+            "success": result.get("success", False),
+            "data": {
+                "candidate_id": candidate_id,
+                "email": email,
+                "phone": phone,
+                "has_contact": has_contact,
+                "source": result.get("source", "unknown"),
+                "cost_usd": result.get("cost_usd", 0),
+            },
+            "message": (
+                f"Contato enriquecido: email={email or 'N/A'}, phone={phone or 'N/A'} (custo: ${result.get('cost_usd', 0):.2f})"
+                if has_contact
+                else "Nenhum contato encontrado para este candidato via Apify."
+            ),
+        }
+    except Exception as e:
+        logger.warning("[sourcing_tools] enrich_candidate_contact failed: %s", e)
+        return {"success": False, "data": {}, "message": f"Falha no enriquecimento de contato: {e}"}
+
+
+TOOL_DEFINITIONS.append(
+    ToolDefinition(
+        name="enrich_candidate_contact",
+        description=(
+            "Enriquece contato (email/telefone) de um candidato via Apify ($0.01/candidato). "
+            "Muito mais barato que revelar via Pearch (2-14 creditos). "
+            "Use para obter email ou telefone de candidatos interessantes antes da abordagem."
+        ),
+        parameters={
+            "type": "object",
+            "properties": {
+                "candidate_id": {"type": "string", "description": "UUID do candidato"},
+                "linkedin_url": {"type": "string", "description": "URL do LinkedIn (opcional se ja cadastrado)"},
+                "force": {"type": "boolean", "description": "Forcar re-enriquecimento mesmo se ja enriquecido recentemente"},
+            },
+            "required": ["candidate_id"],
+        },
+        function=_wrap_enrich_candidate_contact,
+    )
+)
+
+
 TOOL_DEFINITIONS.append(
     ToolDefinition(
         name="enrich_candidate_profile",
@@ -1317,8 +1389,8 @@ _TOOL_MAP: dict[str, ToolDefinition] = {t.name: t for t in TOOL_DEFINITIONS}
 
 STAGE_TOOLS: dict[str, list[str]] = {
     "search-criteria": ["set_search_criteria", "suggest_skills"],
-    "talent-search": ["search_candidates", "filter_results", "view_candidate", "enrich_candidate_profile"],
-    "profile-analysis": ["analyze_profile", "compare_candidates", "score_candidate", "enrich_candidate_profile"],
+    "talent-search": ["search_candidates", "filter_results", "view_candidate", "enrich_candidate_profile", "enrich_candidate_contact"],
+    "profile-analysis": ["analyze_profile", "compare_candidates", "score_candidate", "enrich_candidate_profile", "enrich_candidate_contact"],
     "shortlist-creation": ["add_to_shortlist", "remove_from_shortlist", "rank_candidates", "generate_report"],
     "outreach": ["send_outreach", "generate_message", "track_response"],
 }

@@ -184,7 +184,7 @@ async def search_similar_candidates(
             candidates=candidates,
             local_count=result.local_count,
             pearch_count=result.pearch_count,
-            total_count=result.total_count,
+            total_count=len(candidates),
             credits_remaining=result.pearch_credits_remaining,
             search_time_seconds=(result.local_search_time or 0) + (result.pearch_search_time or 0)
         )

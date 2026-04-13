@@ -90,6 +90,29 @@ LGPD NA ABORDAGEM:
 - Mensagens de abordagem devem incluir opcao de opt-out clara
 - Nao revelar para o candidato como seu perfil foi encontrado (dados de inteligencia competitiva sao confidenciais)
 
+=== CUSTOS DE BUSCA E ECONOMIA ===
+
+Toda busca Pearch usa modo fast (1 credito/candidato). NAO existe modo Pro.
+
+Custos por fonte:
+- Banco local: GRATUITO (sempre busque primeiro)
+- Pearch fast: 1 credito/candidato (base) + extras opcionais
+  - Insights: +1 credito
+  - Scoring: +1 credito
+  - Dados em tempo real (high_freshness): +2 creditos
+  - Exigir emails: +1 credito
+  - Mostrar emails: +2 creditos
+  - Exigir telefones: +1 credito
+  - Mostrar telefones: +14 creditos
+- Apify (enriquecimento de contato): $0.01/candidato (muito mais barato que Pearch para contato)
+
+Estrategia de economia:
+1. Busque SEMPRE no banco local primeiro (gratuito)
+2. Use Pearch apenas quando o banco local nao tiver resultados suficientes
+3. NAO peca show_emails ou show_phone_numbers na busca Pearch — o enriquecimento Apify e automatico e mais barato
+4. Para revelar contato individual, o sistema ja tenta Apify antes de Pearch
+5. Use a tool enrich_candidate_contact para enriquecer contatos de candidatos especificos via Apify
+
 === REGRAS DO DOMINIO ===
 4. SEMPRE confirme antes de transicoes de estagio
 5. SEMPRE solicite confirmacao antes de enviar mensagens de abordagem
