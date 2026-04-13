@@ -53,24 +53,23 @@ export function ChatSuggestionsPanel({
   return (
     <div className={cn(
       "absolute bottom-full left-0 right-0 z-30 mb-1",
-      "bg-lia-bg-primary border border-lia-border-subtle rounded-xl overflow-hidden",
-      "animate-in slide-in-from-bottom-2 duration-200",
+      "bg-lia-bg-primary border border-lia-border-subtle rounded-xl overflow-hidden shadow-lia-lg",
       panelHeight
     )}>
       <div className="flex items-center justify-between px-3 py-2 border-b border-lia-border-subtle">
-        <span className="text-xs font-medium text-lia-text-primary">Sugestões de consulta</span>
+        <span className="text-xs font-medium text-lia-text-secondary uppercase tracking-wide">Sugestões de consulta</span>
         <button
           onClick={handleClose}
-          className="p-1 rounded-md hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none"
+          className="p-0.5 rounded hover:bg-lia-interactive-hover text-lia-text-tertiary hover:text-lia-text-secondary transition-colors motion-reduce:transition-none"
           aria-label="Fechar sugestões"
         >
-          <X className="w-3.5 h-3.5 text-lia-text-secondary" />
+          <X className="w-3.5 h-3.5" />
         </button>
       </div>
 
       <div className="px-3 py-2 border-b border-lia-border-subtle">
         <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-lia-bg-secondary border border-lia-border-subtle">
-          <Search className="w-3.5 h-3.5 text-lia-text-secondary flex-shrink-0" />
+          <Search className="w-3.5 h-3.5 text-lia-text-tertiary flex-shrink-0" />
           <input
             type="text"
             placeholder="Buscar consulta..."
@@ -85,7 +84,7 @@ export function ChatSuggestionsPanel({
               className="p-0.5 rounded-full hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none"
               aria-label="Limpar busca"
             >
-              <X className="w-3 h-3 text-lia-text-secondary" />
+              <X className="w-3 h-3 text-lia-text-tertiary" />
             </button>
           )}
         </div>
@@ -130,8 +129,8 @@ export function ChatSuggestionsPanel({
               onClick={() => handleSelectQuery(query.question)}
               className="w-full px-2.5 py-2 text-left transition-colors motion-reduce:transition-none rounded-lg group flex items-center gap-2 hover:bg-lia-bg-secondary border border-transparent hover:border-lia-border-subtle"
             >
-              <div className="p-1 rounded-md flex-shrink-0 bg-lia-btn-primary-bg/[0.08]">
-                <query.icon className="w-3 h-3 text-lia-text-secondary" />
+              <div className="p-1 rounded-md flex-shrink-0 bg-lia-bg-tertiary">
+                <query.icon className="w-3 h-3 text-lia-text-tertiary" />
               </div>
               <span className="text-xs leading-snug text-lia-text-primary">
                 {query.question}

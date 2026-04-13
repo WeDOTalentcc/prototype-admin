@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useMemo } from "react"
-import { Briefcase, Users, X, MessageSquare, ChevronRight } from "lucide-react"
+import { Briefcase, Users, X, MessageSquare, ChevronRight, HelpCircle } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useLiaFloat } from "@/contexts/lia-float-context"
 import { useRecentItemsStore } from "@/stores/recent-items-store"
@@ -17,19 +17,19 @@ const CONTEXT_MODES = [
   {
     type: "general" as const,
     label: "Conversa Geral",
-    description: "Sem foco específico",
+    description: "Pergunte sobre qualquer tema",
     icon: MessageSquare,
   },
   {
     type: "job_chat" as const,
     label: "Foco em Vaga",
-    description: "Contextualizar em uma vaga",
+    description: "A LIA responde usando dados da vaga selecionada",
     icon: Briefcase,
   },
   {
     type: "talent_chat" as const,
     label: "Foco em Candidato",
-    description: "Contextualizar em um candidato",
+    description: "A LIA responde usando dados do candidato selecionado",
     icon: Users,
   },
 ]
@@ -92,7 +92,7 @@ export function ContextConfigPanel({ isOpen, onClose, mode }: Props) {
       <div className="fixed inset-0 z-40" onClick={onClose} />
       <div
         className={cn(
-          "absolute left-0 bottom-full mb-1 z-50 rounded-xl border border-lia-border-subtle bg-lia-bg-primary shadow-lg",
+          "absolute left-0 bottom-full mb-1 z-50 rounded-xl border border-lia-border-subtle bg-lia-bg-primary shadow-lia-lg",
           mode === "fullscreen" ? "w-80" : "w-72"
         )}
       >
@@ -108,9 +108,16 @@ export function ContextConfigPanel({ isOpen, onClose, mode }: Props) {
           </button>
         </div>
 
+        <div className="mx-3 mb-2 flex items-start gap-2 px-2.5 py-2 rounded-lg bg-lia-bg-secondary">
+          <HelpCircle className="w-3.5 h-3.5 flex-shrink-0 text-lia-text-tertiary mt-px" />
+          <p className="text-[11px] text-lia-text-tertiary leading-relaxed">
+            Defina o foco da conversa. No modo Vaga ou Candidato, a LIA usa os dados específicos para responder com mais precisão.
+          </p>
+        </div>
+
         {activeEntity && (
-          <div className="mx-3 mb-2 flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-lg bg-wedo-cyan/5 border border-wedo-cyan/20">
-            <span className="text-xs text-wedo-cyan truncate">{activeEntity}</span>
+          <div className="mx-3 mb-2 flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-lg bg-lia-bg-secondary border border-lia-border-subtle">
+            <span className="text-xs text-lia-info-color truncate">{activeEntity}</span>
             <button
               onClick={handleClearContext}
               className="text-xs text-lia-text-tertiary hover:text-lia-text-secondary whitespace-nowrap"
@@ -130,16 +137,16 @@ export function ContextConfigPanel({ isOpen, onClose, mode }: Props) {
                 className={cn(
                   "w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-left transition-colors",
                   isActive
-                    ? "bg-wedo-cyan/10 text-wedo-cyan"
+                    ? "bg-lia-interactive-active text-lia-text-primary"
                     : "text-lia-text-secondary hover:bg-lia-bg-secondary"
                 )}
               >
-                <Icon className="w-4 h-4 flex-shrink-0" />
+                <Icon className={cn("w-4 h-4 flex-shrink-0", isActive ? "text-lia-info-color" : "")} />
                 <div className="flex-1 min-w-0">
                   <div className="text-sm font-medium">{label}</div>
                   <div className="text-[11px] text-lia-text-tertiary">{description}</div>
                 </div>
-                {isActive && <div className="w-1.5 h-1.5 rounded-full bg-wedo-cyan flex-shrink-0" />}
+                {isActive && <div className="w-1.5 h-1.5 rounded-full bg-lia-info-color flex-shrink-0" />}
               </button>
             )
           })}
