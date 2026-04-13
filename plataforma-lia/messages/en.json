@@ -1,0 +1,87 @@
+{
+  "sidebar": {
+    "sections": {
+      "operational": "Operational",
+      "recruitment": "Recruitment",
+      "configuration": "Configuration"
+    },
+    "items": {
+      "chatLia": "Chat LIA",
+      "tasks": "Tasks",
+      "jobs": "Jobs",
+      "talentPipeline": "Talent Pipeline",
+      "pipelineView": "Pipeline View",
+      "agentStudio": "Agent Studio",
+      "modules": "Modules"
+    },
+    "filters": {
+      "all": "All",
+      "active": "Active",
+      "paused": "Paused",
+      "completed": "Completed",
+      "cancelled": "Cancelled",
+      "byStage": "By Stage"
+    },
+    "labels": {
+      "seeAllPools": "See all pools",
+      "seeAllAgents": "See all agents",
+      "seeAll": "See all",
+      "recent": "Recent",
+      "clearRecent": "Clear",
+      "removeFromRecent": "Remove from recent"
+    },
+    "user": {
+      "admin": "Administrator",
+      "recruiter": "Recruiter",
+      "viewer": "Viewer",
+      "defaultName": "User",
+      "defaultEmail": "user@company.com",
+      "myProfile": "My profile",
+      "changePassword": "Change password",
+      "settings": "Company & Team",
+      "apiKeys": "API Keys",
+      "logout": "Sign out"
+    },
+    "password": {
+      "title": "Change Password",
+      "description": "Your new password must be at least 8 characters",
+      "currentPassword": "Current Password",
+      "newPassword": "New Password",
+      "confirmPassword": "Confirm New Password",
+      "cancel": "Cancel",
+      "changing": "Changing...",
+      "change": "Change Password",
+      "success": "Password changed successfully!",
+      "errorFillAll": "Please fill in all fields",
+      "errorMinLength": "New password must be at least 8 characters",
+      "errorMismatch": "Passwords do not match",
+      "errorGeneric": "Error changing password. Please check your current password.",
+      "ssoNotAllowed": "Password managed by corporate SSO"
+    }
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "delete": "Delete",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "confirm": "Confirm",
+    "close": "Close",
+    "search": "Search",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "yes": "Yes",
+    "no": "No",
+    "beta": "BETA",
+    "premium": "Premium",
+    "skipToContent": "Skip to main content"
+  },
+  "metadata": {
+    "title": "LIA Platform — WeDoTalent",
+    "titleTemplate": "{title} | LIA WeDoTalent",
+    "description": "Intelligent AI-powered recruitment platform — Screening, Kanban and Candidate Analysis"
+  }
+}

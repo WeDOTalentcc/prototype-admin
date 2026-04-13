@@ -1,0 +1,87 @@
+{
+  "sidebar": {
+    "sections": {
+      "operational": "Operacional",
+      "recruitment": "Recrutamento",
+      "configuration": "Configuração"
+    },
+    "items": {
+      "chatLia": "Chat LIA",
+      "tasks": "Tarefas",
+      "jobs": "Vagas",
+      "talentPipeline": "Funil de Talentos",
+      "pipelineView": "Visão do Funil",
+      "agentStudio": "Estúdio de Agentes",
+      "modules": "Módulos"
+    },
+    "filters": {
+      "all": "Todas",
+      "active": "Ativas",
+      "paused": "Paralisadas",
+      "completed": "Concluídas",
+      "cancelled": "Canceladas",
+      "byStage": "Por Estágio"
+    },
+    "labels": {
+      "seeAllPools": "Ver todos os bancos",
+      "seeAllAgents": "Ver todos os agentes",
+      "seeAll": "Ver todos",
+      "recent": "Recentes",
+      "clearRecent": "Limpar",
+      "removeFromRecent": "Remover dos recentes"
+    },
+    "user": {
+      "admin": "Administrador(a)",
+      "recruiter": "Recrutador(a)",
+      "viewer": "Visualizador(a)",
+      "defaultName": "Usuário",
+      "defaultEmail": "usuario@empresa.com",
+      "myProfile": "Meu perfil",
+      "changePassword": "Alterar senha",
+      "settings": "Empresa & Equipe",
+      "apiKeys": "Chaves de API",
+      "logout": "Sair"
+    },
+    "password": {
+      "title": "Alterar Senha",
+      "description": "Sua nova senha deve ter pelo menos 8 caracteres",
+      "currentPassword": "Senha Atual",
+      "newPassword": "Nova Senha",
+      "confirmPassword": "Confirmar Nova Senha",
+      "cancel": "Cancelar",
+      "changing": "Alterando...",
+      "change": "Alterar Senha",
+      "success": "Senha alterada com sucesso!",
+      "errorFillAll": "Preencha todos os campos",
+      "errorMinLength": "A nova senha deve ter pelo menos 8 caracteres",
+      "errorMismatch": "As senhas não coincidem",
+      "errorGeneric": "Erro ao alterar senha. Verifique a senha atual.",
+      "ssoNotAllowed": "Senha gerenciada pelo SSO corporativo"
+    }
+  },
+  "common": {
+    "save": "Salvar",
+    "cancel": "Cancelar",
+    "edit": "Editar",
+    "delete": "Excluir",
+    "loading": "Carregando...",
+    "error": "Erro",
+    "success": "Sucesso",
+    "confirm": "Confirmar",
+    "close": "Fechar",
+    "search": "Buscar",
+    "back": "Voltar",
+    "next": "Próximo",
+    "previous": "Anterior",
+    "yes": "Sim",
+    "no": "Não",
+    "beta": "BETA",
+    "premium": "Premium",
+    "skipToContent": "Ir para o conteúdo principal"
+  },
+  "metadata": {
+    "title": "Plataforma LIA — WeDoTalent",
+    "titleTemplate": "{title} | LIA WeDoTalent",
+    "description": "Plataforma de recrutamento inteligente com IA — Triagem, Kanban e Análise de Candidatos"
+  }
+}

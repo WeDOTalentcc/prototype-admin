@@ -3,6 +3,9 @@ export const runtime = 'nodejs'
 import { NextRequest, NextResponse } from 'next/server'
 import { jwtVerify } from 'jose'
 import { verifyAndDecodeSession } from '@/lib/session-crypto'
+import createMiddleware from 'next-intl/middleware'
+import { routing } from '@/i18n/routing'
+import { locales, defaultLocale } from '@/i18n/config'
 
 const DEV_AUTO_LOGIN = process.env.NODE_ENV !== 'production'
 const BACKEND_URL = process.env.BACKEND_URL || 'http://127.0.0.1:8001'
@@ -10,14 +13,24 @@ const IS_PRODUCTION = process.env.NODE_ENV === 'production'
 const COOKIE_SECURE = IS_PRODUCTION
 const COOKIE_SAMESITE: 'lax' | 'none' = IS_PRODUCTION ? 'none' : 'lax'
 
+const intlMiddleware = createMiddleware(routing)
+
 const PUBLIC_PATHS = [
   '/login',
   '/privacidade',
+  '/privacy',
   '/portal',
   '/vagas',
+  '/jobs',
   '/shared',
   '/forgot-password',
   '/acesso-negado',
+  '/register',
+  '/reset-password',
+  '/triagem',
+  '/aceitar-convite',
+  '/accept-invitation',
+  '/access',
 ]
 
 const PUBLIC_API_PATHS = [
@@ -36,12 +49,29 @@ const STATIC_PATHS = [
   '/favicon',
 ]
 
-function isPublicPath(pathname: string): boolean {
+function stripLocalePrefix(pathname: string): string {
+  for (const locale of locales) {
+    if (pathname === `/${locale}`) return '/'
+    if (pathname.startsWith(`/${locale}/`)) return pathname.slice(locale.length + 1)
+  }
+  return pathname
+}
+
+function isStaticOrApiPath(pathname: string): boolean {
   if (STATIC_PATHS.some(p => pathname.startsWith(p))) return true
-  if (PUBLIC_PATHS.some(p => pathname.startsWith(p))) return true
+  if (pathname.startsWith('/api/')) return true
+  if (pathname.endsWith('.ico') || pathname.endsWith('.png') || pathname.endsWith('.jpg') || pathname.endsWith('.svg') || pathname.endsWith('.webp') || pathname.endsWith('.json') || pathname.endsWith('.xml') || pathname.endsWith('.txt')) return true
+  return false
+}
+
+function isPublicPath(strippedPathname: string): boolean {
+  if (PUBLIC_PATHS.some(p => strippedPathname.startsWith(p))) return true
+  return false
+}
+
+function isPublicApiPath(pathname: string): boolean {
   if (PUBLIC_API_PATHS.some(p => pathname.startsWith(p))) return true
   if (pathname.startsWith('/api/v1')) return true
-  if (pathname.endsWith('.ico') || pathname.endsWith('.png') || pathname.endsWith('.jpg') || pathname.endsWith('.svg') || pathname.endsWith('.webp')) return true
   return false
 }
 
@@ -87,6 +117,15 @@ async function getDevToken(): Promise<string | null> {
   }
 }
 
+function extractLocaleFromPath(pathname: string): string {
+  for (const locale of locales) {
+    if (pathname === `/${locale}` || pathname.startsWith(`/${locale}/`)) {
+      return locale
+    }
+  }
+  return defaultLocale
+}
+
 function denyAccess(request: NextRequest, pathname: string): NextResponse {
   if (pathname.startsWith('/api/')) {
     return NextResponse.json(
@@ -96,7 +135,8 @@ function denyAccess(request: NextRequest, pathname: string): NextResponse {
   }
 
   const base = getBaseUrl(request)
-  const loginUrl = new URL('/login', base)
+  const currentLocale = extractLocaleFromPath(pathname)
+  const loginUrl = new URL(`/${currentLocale}/login`, base)
   loginUrl.searchParams.set('next', pathname)
   return NextResponse.redirect(loginUrl)
 }
@@ -129,24 +169,88 @@ async function verifyJwt(token: string): Promise<Record<string, unknown> | null>
   }
 }
 
+function applyAuthHeaders(request: NextRequest, token: string): NextResponse {
+  const requestHeaders = new Headers(request.headers)
+  if (!requestHeaders.get('Authorization')) {
+    requestHeaders.set('Authorization', `Bearer ${token}`)
+  }
+  return NextResponse.next({ request: { headers: requestHeaders } })
+}
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  if (isPublicPath(pathname)) {
+  if (isStaticOrApiPath(pathname)) {
+    if (pathname.startsWith('/api/') && !isPublicApiPath(pathname)) {
+      const accessTokenCookie = request.cookies.get('lia_access_token')
+      if (DEV_AUTO_LOGIN) {
+        const token = await getDevToken()
+        if (token) {
+          const requestHeaders = new Headers(request.headers)
+          requestHeaders.set('Authorization', `Bearer ${token}`)
+          const response = NextResponse.next({ request: { headers: requestHeaders } })
+          response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate')
+          response.headers.set('Pragma', 'no-cache')
+          return response
+        }
+      }
+      if (accessTokenCookie && accessTokenCookie.value !== '_sso_session_') {
+        const payload = await verifyJwt(accessTokenCookie.value)
+        if (payload) return applyAuthHeaders(request, accessTokenCookie.value)
+      }
+      const workosSessionCookie = request.cookies.get('workos_session')
+      if (workosSessionCookie?.value) {
+        const sessionData = verifyAndDecodeSession(workosSessionCookie.value)
+        if (sessionData?.accessToken) {
+          const requestHeaders = new Headers(request.headers)
+          requestHeaders.set('Authorization', `Bearer ${sessionData.accessToken}`)
+          requestHeaders.set('X-Auth-Method', 'workos')
+          return NextResponse.next({ request: { headers: requestHeaders } })
+        }
+      }
+      return denyAccess(request, pathname)
+    }
     return NextResponse.next()
+  }
+
+  const strippedPath = stripLocalePrefix(pathname)
+
+  if (isPublicPath(strippedPath)) {
+    return intlMiddleware(request)
   }
 
   if (DEV_AUTO_LOGIN) {
     const token = await getDevToken()
     if (token) {
+      const intlResponse = intlMiddleware(request)
+
       const requestHeaders = new Headers(request.headers)
       requestHeaders.set('Authorization', `Bearer ${token}`)
 
+      const isRedirect = intlResponse.status >= 300 && intlResponse.status < 400
+      if (isRedirect) {
+        intlResponse.cookies.set('lia_access_token', token, {
+          path: '/',
+          maxAge: 60 * 60 * 24 * 7,
+          secure: COOKIE_SECURE,
+          sameSite: COOKIE_SAMESITE,
+          httpOnly: true,
+        })
+        intlResponse.cookies.set('lia_auth_method', 'dev-auto-login', {
+          path: '/',
+          maxAge: 60 * 60 * 24 * 7,
+          secure: COOKIE_SECURE,
+          sameSite: COOKIE_SAMESITE,
+          httpOnly: false,
+        })
+        intlResponse.cookies.delete("lia_logged_out")
+        return intlResponse
+      }
+
       const response = NextResponse.next({ request: { headers: requestHeaders } })
 
-      if (pathname.startsWith('/api/')) {
-        response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate')
-        response.headers.set('Pragma', 'no-cache')
+      for (const [key, value] of intlResponse.headers.entries()) {
+        response.headers.set(key, value)
       }
 
       response.cookies.set('lia_access_token', token, {
@@ -163,7 +267,6 @@ export async function middleware(request: NextRequest) {
         sameSite: COOKIE_SAMESITE,
         httpOnly: false,
       })
-
       response.cookies.delete("lia_logged_out")
       return response
     }
@@ -178,33 +281,44 @@ export async function middleware(request: NextRequest) {
       return denyAccess(request, pathname)
     }
 
+    const intlResponse = intlMiddleware(request)
+    const isRedirect = intlResponse.status >= 300 && intlResponse.status < 400
+    if (isRedirect) return intlResponse
+
     const requestHeaders = new Headers(request.headers)
     if (sessionData.accessToken && !requestHeaders.get('Authorization')) {
       requestHeaders.set('Authorization', `Bearer ${sessionData.accessToken}`)
       requestHeaders.set('X-Auth-Method', 'workos')
     }
 
-    return NextResponse.next({
-      request: { headers: requestHeaders },
-    })
+    const response = NextResponse.next({ request: { headers: requestHeaders } })
+    for (const [key, value] of intlResponse.headers.entries()) {
+      response.headers.set(key, value)
+    }
+    return response
   }
 
   if (accessTokenCookie && accessTokenCookie.value !== '_sso_session_') {
     const token = accessTokenCookie.value
-
     const payload = await verifyJwt(token)
     if (!payload) {
       return denyAccess(request, pathname)
     }
+
+    const intlResponse = intlMiddleware(request)
+    const isRedirect = intlResponse.status >= 300 && intlResponse.status < 400
+    if (isRedirect) return intlResponse
 
     const requestHeaders = new Headers(request.headers)
     if (!requestHeaders.get('Authorization')) {
       requestHeaders.set('Authorization', `Bearer ${token}`)
     }
 
-    return NextResponse.next({
-      request: { headers: requestHeaders },
-    })
+    const response = NextResponse.next({ request: { headers: requestHeaders } })
+    for (const [key, value] of intlResponse.headers.entries()) {
+      response.headers.set(key, value)
+    }
+    return response
   }
 
   return denyAccess(request, pathname)

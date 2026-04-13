@@ -69,6 +69,41 @@ import { ProfileModal } from "@/components/modals/profile-modal"
 import { useAuth } from "@/contexts/auth-context"
 import type { Notification as AppNotification } from "@/hooks/shared/use-notifications"
 import Image from "next/image"
+import { useTranslations } from 'next-intl'
+
+const sectionLabelKeys: Record<string, string> = {
+  "Operacional": "sections.operational",
+  "Recrutamento": "sections.recruitment",
+  "Configuração": "sections.configuration",
+}
+
+const itemLabelKeys: Record<string, string> = {
+  "Chat LIA": "items.chatLia",
+  "Tarefas": "items.tasks",
+  "Vagas": "items.jobs",
+  "Funil de Talentos": "items.talentPipeline",
+  "Visão do Funil": "items.pipelineView",
+  "Estúdio de Agentes": "items.agentStudio",
+  "Módulos": "items.modules",
+}
+
+const filterLabelKeys: Record<string, string> = {
+  "Todas": "filters.all",
+  "Ativas": "filters.active",
+  "Paralisadas": "filters.paused",
+  "Concluídas": "filters.completed",
+  "Canceladas": "filters.cancelled",
+  "Por Estágio": "filters.byStage",
+}
+
+const miscLabelKeys: Record<string, string> = {
+  "Ver todos os bancos": "labels.seeAllPools",
+  "Ver todos os agentes": "labels.seeAllAgents",
+  "Ver todos": "labels.seeAll",
+  "RECENTES": "labels.recent",
+  "Limpar": "labels.clearRecent",
+  "Remover dos recentes": "labels.removeFromRecent",
+}
 
 interface MenuSection {
   label: string
@@ -187,13 +222,15 @@ const MenuItem = React.memo(({
   currentPage,
   onNavigate,
   isCollapsed,
-  shouldShowContent
+  shouldShowContent,
+  t,
 }: {
   item: MenuItemType
   currentPage: string
   onNavigate: (page: string) => void
   isCollapsed: boolean
   shouldShowContent: boolean
+  t: (key: string) => string
 }) => {
   const [isExpanded, setIsExpanded] = useState(false)
   const isLocked = item.moduleId && !hasModuleAccess(item.moduleId)
@@ -239,7 +276,7 @@ const MenuItem = React.memo(({
             : "text-lia-text-primary font-normal",
           isCollapsed && !shouldShowContent ? "justify-center px-1.5" : ""
         )}
-        title={isCollapsed && !shouldShowContent ? `${item.label}${item.isBeta ? " (BETA)" : ""}` : undefined}
+        title={isCollapsed && !shouldShowContent ? `${itemLabelKeys[item.label] ? t(itemLabelKeys[item.label]) : item.label}${item.isBeta ? " (BETA)" : ""}` : undefined}
         disabled={isLocked || false}
       >
         <div className="flex items-center gap-1">
@@ -249,7 +286,7 @@ const MenuItem = React.memo(({
         {shouldShowContent && (
           <div className="flex items-center justify-between flex-1">
             <div className="flex items-center gap-1.5">
-              <span className="text-base-ui">{item.label}</span>
+              <span className="text-base-ui">{itemLabelKeys[item.label] ? t(itemLabelKeys[item.label]) : item.label}</span>
               {item.isBeta && (
                 <span className="text-[10px] font-semibold bg-lia-info-light text-lia-info-color border border-lia-info-color px-1.5 py-0.5 rounded-full leading-none">
                   BETA
@@ -332,7 +369,7 @@ const MenuItem = React.memo(({
             >
               <MoreHorizontal className="w-3 h-3 flex-shrink-0 text-lia-text-disabled" />
               <span className="text-xs text-lia-text-disabled hover:text-lia-text-secondary">
-                {item.seeAllLabel || "Ver todos"} ({item.subItems!.length})
+                {item.seeAllLabel ? (miscLabelKeys[item.seeAllLabel] ? t(miscLabelKeys[item.seeAllLabel]) : item.seeAllLabel) : t("labels.seeAll")} ({item.subItems!.length})
               </span>
             </button>
           )}
@@ -439,6 +476,7 @@ const RecentItemRow = React.memo(({
 RecentItemRow.displayName = 'RecentItemRow'
 
 export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClick, onRecentItemRemove, onRecentItemsClear, onShowSearch }: SidebarProps) {
+  const t = useTranslations('sidebar')
   const { talentPools, agents } = useSidebarDynamicItems()
   const { user: authUser, refreshUser } = useAuth()
 
@@ -459,17 +497,17 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
   }, [])
 
   const roleLabels: Record<string, string> = {
-    admin: "Administrador(a)",
-    recruiter: "Recrutador(a)",
-    viewer: "Visualizador(a)",
+    admin: t("user.admin"),
+    recruiter: t("user.recruiter"),
+    viewer: t("user.viewer"),
   }
 
   const isSSOUser = !!(authUser && "sso_provider" in authUser && authUser.sso_provider)
 
   const currentUser = {
-    name: authUser?.name || "Usuário",
-    email: authUser?.email || "usuario@empresa.com",
-    role: authUser?.role ? (roleLabels[authUser.role] ?? authUser.role) : "Recrutador(a)",
+    name: authUser?.name || t("user.defaultName"),
+    email: authUser?.email || t("user.defaultEmail"),
+    role: authUser?.role ? (roleLabels[authUser.role] ?? authUser.role) : t("user.recruiter"),
     company: authUser?.company || "",
     avatar_url: (authUser && "avatar_url" in authUser ? authUser.avatar_url : undefined) as string | undefined,
     sso_provider: (authUser && "sso_provider" in authUser ? authUser.sso_provider : null) as string | null,
@@ -657,7 +695,7 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
             <div key={section.label}>
               {shouldShowContent && (
                 <h3 className="text-[10px] font-semibold text-lia-text-disabled mb-1.5 tracking-[0.18em] uppercase px-2 opacity-70">
-                  {section.label}
+                  {sectionLabelKeys[section.label] ? t(sectionLabelKeys[section.label]) : section.label}
                 </h3>
               )}
               {!shouldShowContent && sectionIdx > 0 && (
@@ -672,6 +710,7 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
                     onNavigate={handleDynamicNavigate}
                     isCollapsed={isCollapsed}
                     shouldShowContent={shouldShowContent}
+                    t={t}
                   />
                 ))}
               </div>
@@ -682,7 +721,7 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
         {shouldShowContent && recentItems && recentItems.length > 0 && onRecentItemClick && onRecentItemRemove && (
           <div className="mt-5">
             <h3 className="text-xs font-semibold text-lia-text-primary mb-2 tracking-[0.2em] uppercase">
-              RECENTES
+              {t("labels.recent")}
             </h3>
             <div className="space-y-0.5 max-h-[280px] overflow-y-auto">
               {recentItems.map((item) => (
@@ -810,7 +849,7 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
                   onClick={() => setShowProfileModal(true)}
                 >
                   <User className="w-3.5 h-3.5 mr-2" />
-                  Meu Perfil
+                  {t("user.myProfile")}
                 </DropdownMenuItem>
                 {!isSSOUser && (
                   <DropdownMenuItem
@@ -818,7 +857,7 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
                     onClick={handleOpenPasswordModal}
                   >
                     <KeyRound className="w-3.5 h-3.5 mr-2" />
-                    Alterar Senha
+                    {t("user.changePassword")}
                   </DropdownMenuItem>
                 )}
                 <DropdownMenuItem
@@ -838,7 +877,7 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
                   onClick={() => onNavigate("Sair")}
                 >
                   <LogOut className="w-3.5 h-3.5 mr-2" />
-                  Sair
+                  {t("user.logout")}
                 </DropdownMenuItem>
               </div>
             </DropdownMenuContent>

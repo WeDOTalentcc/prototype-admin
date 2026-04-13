@@ -67,3 +67,18 @@ The platform uses Next.js, React, and TypeScript for the frontend, styled with R
 - Twilio (Voice — PSTN fallback only)
 - Deepgram (STT/transcrição de voz)
 - Celery
+
+# i18n (Internationalization)
+- **Library**: next-intl
+- **Default locale**: pt (Portuguese), maps to messages/pt-BR.json
+- **Supported locales**: pt, en
+- **Locale prefix**: always (all routes prefixed with /pt/ or /en/)
+- **Root / redirects**: 307 to /pt/
+- **Config files**: src/i18n/config.ts, src/i18n/request.ts, src/i18n/routing.ts
+- **Message files**: messages/pt-BR.json, messages/en.json
+- **Route structure**: src/app/[locale]/ contains all page routes; src/app/api/ stays outside [locale]
+- **Localized pathnames**: /vagas↔/jobs, /funil↔/pipeline, /configuracoes↔/settings, etc. (defined in routing.ts)
+- **Middleware**: src/middleware.ts chains next-intl locale routing with existing JWT/WorkOS auth
+- **Sidebar**: Uses useTranslations('sidebar') — section labels, item labels, user menu, recent items all translated
+- **next.config.js**: Uses createNextIntlPlugin wrapping withBundleAnalyzer
+- **Translation status**: Sidebar fully translated. Main content (DashboardApp, chat, pipeline, etc.) still hardcoded PT — will be translated in future tasks (#191-#194)
