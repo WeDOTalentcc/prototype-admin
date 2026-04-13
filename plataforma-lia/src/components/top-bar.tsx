@@ -34,8 +34,6 @@ import {
 } from "lucide-react"
 import { NotificationSystem } from "@/components/notification-system"
 import { HitlPendingBadge } from "@/components/hitl-pending-badge"
-import { WeeklyDigestOverlay } from "@/components/notifications/weekly-digest-overlay"
-import { useWeeklyDigest } from "@/hooks/ai/use-weekly-digest"
 import { ProfileModal } from "@/components/modals/profile-modal"
 import type { Notification as AppNotification } from "@/hooks/shared/use-notifications"
 
@@ -59,16 +57,9 @@ export function TopBar({ onNavigate, currentPage }: TopBarProps = {}) {
 
   const { user: authUser, refreshUser } = useAuth()
 
-  const weeklyDigest = useWeeklyDigest({ enabled: true, triggerOnMonday: true, userId: authUser?.email })
-
-  const handleNotificationClick = useCallback((notification: AppNotification) => {
-    if (
-      notification.proactive_type === 'weekly_digest' ||
-      (notification.category === 'system' && notification.title?.toLowerCase().includes('resumo semanal'))
-    ) {
-      weeklyDigest.reload()
-    }
-  }, [weeklyDigest])
+  const handleNotificationClick = useCallback((_notification: AppNotification) => {
+    // digest notifications are now handled by WeeklyDigestChatProvider
+  }, [])
 
   const roleLabels: Record<string, string> = {
     admin: "Administrador(a)",
@@ -162,14 +153,6 @@ export function TopBar({ onNavigate, currentPage }: TopBarProps = {}) {
 
   return (
     <div className="px-2 py-3">
-      {weeklyDigest.isVisible && weeklyDigest.digest && (
-        <WeeklyDigestOverlay
-          digest={weeklyDigest.digest}
-          recruiterName={authUser?.name?.split(' ')[0]}
-          onDismiss={weeklyDigest.dismiss}
-        />
-      )}
-
       <div className="flex items-center justify-between">
         <div className="flex-1" />
 

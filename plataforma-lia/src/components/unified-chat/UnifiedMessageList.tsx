@@ -11,7 +11,15 @@ import { submitThumbsFeedback } from "@/services/lia-api/feedback-api"
 import type { LiaChatMessage } from "@/hooks/chat/use-lia-chat-connection"
 import { NavigationHintCard } from "./NavigationHintCard"
 import { TastingInsightCard } from "./TastingInsightCard"
+import { WeeklyDigestChatMessage } from "@/components/notifications/weekly-digest-chat-message"
+import type { WeeklyDigestData } from "@/components/notifications/weekly-digest-notification"
 import type { ChatMode } from "./unified-chat-types"
+
+function isWeeklyDigestMeta(meta: Record<string, unknown> | undefined): meta is Record<string, unknown> & { digest: WeeklyDigestData; recruiterName?: string } {
+  if (!meta || meta.type !== "weekly_digest") return false
+  const d = meta.digest as Record<string, unknown> | undefined
+  return d != null && typeof d === "object" && "pipeline" in d && "atRiskJobs" in d && "compliance" in d
+}
 
 interface Props {
   mode: ChatMode
@@ -123,6 +131,7 @@ export function UnifiedMessageList({
         const hasFlowSteps = meta?.flowSteps != null
         const hasNavHint = meta?.navigation_hint != null
         const hasTastingInsights = Array.isArray(meta?.tasting_insights) && (meta!.tasting_insights as unknown[]).length > 0
+        const weeklyDigestMeta = isWeeklyDigestMeta(meta)
 
         return (
           <div
@@ -135,12 +144,29 @@ export function UnifiedMessageList({
             {isLia ? (
               /* LIA message — Notion style: plain text, no bubble bg, left-aligned */
               <div className="max-w-[90%]">
+                {weeklyDigestMeta ? (
+                  <WeeklyDigestChatMessage
+                    digest={meta!.digest as WeeklyDigestData}
+                    recruiterName={meta!.recruiterName as string | undefined}
+                    onDetailRiskJobs={() => {
+                      window.dispatchEvent(new CustomEvent("lia:navigation-hint", {
+                        detail: { page: "Vagas", hint: null },
+                      }))
+                    }}
+                    onViewMetrics={() => {
+                      window.dispatchEvent(new CustomEvent("lia:navigation-hint", {
+                        detail: { page: "Visão do Pipeline", hint: null },
+                      }))
+                    }}
+                  />
+                ) : (
                 <div
                   className="text-[13px] leading-relaxed text-lia-text-primary lia-markdown-content"
                   dangerouslySetInnerHTML={{
                     __html: renderMarkdown(message.content),
                   }}
                 />
+                )}
 
                 {/* Execution plan */}
                 {hasPlan && (

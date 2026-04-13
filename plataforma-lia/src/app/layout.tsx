@@ -12,6 +12,7 @@ import { Toaster as SonnerToaster } from "sonner"
 import { LiaFloatProvider } from "@/contexts/lia-float-context"
 import { UnifiedChatConditional } from "@/components/unified-chat"
 import WorkflowRailWrapper from "@/components/workflow-rail/WorkflowRailWrapper"
+import { WeeklyDigestChatProvider } from "@/components/notifications/weekly-digest-chat-provider"
 
 async function getServerUser(): Promise<Record<string, unknown> | null> {
   try {
@@ -154,6 +155,7 @@ export default async function RootLayout({
                 <SonnerToaster position="top-right" richColors />
                 <WorkflowRailWrapper />
                 <UnifiedChatConditional />
+                <WeeklyDigestChatProvider />
               </ErrorBoundary>
             </LiaFloatProvider>
           </JWTAuthProvider>
