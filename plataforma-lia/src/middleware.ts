@@ -136,11 +136,9 @@ export async function middleware(request: NextRequest) {
   }
 
   if (DEV_AUTO_LOGIN) {
-    const loggedOut = request.cookies.get('lia_logged_out')
-    if (!loggedOut) {
-      const token = await getDevToken()
-      if (token) {
-        const requestHeaders = new Headers(request.headers)
+    const token = await getDevToken()
+    if (token) {
+      const requestHeaders = new Headers(request.headers)
         requestHeaders.set('Authorization', `Bearer ${token}`)
 
         const response = NextResponse.next({ request: { headers: requestHeaders } })
@@ -160,9 +158,9 @@ export async function middleware(request: NextRequest) {
           httpOnly: false,
         })
 
+        response.cookies.delete("lia_logged_out")
         return response
       }
-    }
   }
 
   const accessTokenCookie = request.cookies.get('lia_access_token')
