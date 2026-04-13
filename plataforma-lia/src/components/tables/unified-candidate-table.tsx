@@ -417,7 +417,6 @@ export function UnifiedCandidateTable({
             </tr>
           </thead>
           <tbody
-            className="divide-y divide-lia-border-subtle dark:divide-lia-border-strong"
             style={rowVirtualizer ? {
               position: "relative",
               height: `${rowVirtualizer.getTotalSize()}px`,
