@@ -155,7 +155,7 @@ export function SearchPreviewCard({
                   >
                     <Zap className="w-3 h-3" />
                     <span>
-                      {data.pearchCredits} créditos 
+                      {data.pearchCredits} créditos + $0.01/cand Apify
                       {!canAffordPearch && " (saldo insuficiente)"}
                     </span>
                   </div>
@@ -171,7 +171,7 @@ export function SearchPreviewCard({
               <div className="flex items-center justify-between mb-2">
                 <span>Custo estimado:</span>
                 <span className="font-semibold text-lia-text-primary">
-                  {data.pearchCredits} créditos
+                  {data.pearchCredits} créditos + $0.01/cand Apify
                 </span>
               </div>
               <div className="flex items-center justify-between text-xs text-lia-text-secondary">

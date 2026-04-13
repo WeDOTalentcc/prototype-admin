@@ -20,7 +20,6 @@ export interface LimitOption {
   description: string
   estimatedCredits: {
     fast: number
-    pro: number
   }
   recommended?: boolean
 }
@@ -30,26 +29,26 @@ export const limitOptions: LimitOption[] = [
     value: 50,
     label: "50 candidatos",
     description: "Ideal para buscas exploratórias e vagas específicas",
-    estimatedCredits: { fast: 50, pro: 350 },
+    estimatedCredits: { fast: 50 },
     recommended: true
   },
   {
     value: 100,
     label: "100 candidatos",
     description: "Bom para vagas com alta demanda de candidatos",
-    estimatedCredits: { fast: 100, pro: 700 }
+    estimatedCredits: { fast: 100 }
   },
   {
     value: 150,
     label: "150 candidatos",
     description: "Para processos seletivos de grande volume",
-    estimatedCredits: { fast: 150, pro: 1050 }
+    estimatedCredits: { fast: 150 }
   },
   {
     value: 200,
     label: "200 candidatos",
     description: "Máximo recomendado - projetos de sourcing massivo",
-    estimatedCredits: { fast: 200, pro: 1400 }
+    estimatedCredits: { fast: 200 }
   }
 ]
 
@@ -182,9 +181,7 @@ export function useGlobalSearchSettings(onChangesUpdate?: (hasChanges: boolean) 
   }
 
   const selectedLimit = limitOptions.find(o => o.value === settings.defaultLimit) || limitOptions[0]
-  const estimatedCreditsPerSearch = settings.searchType === 'fast'
-    ? selectedLimit.estimatedCredits.fast
-    : selectedLimit.estimatedCredits.pro
+  const estimatedCreditsPerSearch = selectedLimit.estimatedCredits.fast
 
   return {
     settings,

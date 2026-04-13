@@ -3,7 +3,7 @@
 import React from"react"
 import { Button } from"@/components/ui/button"
 import { Badge } from"@/components/ui/badge"
-import { Users, ChevronRight } from"lucide-react"
+import { Users, ChevronRight, Loader2 } from"lucide-react"
 import { UnifiedCandidateTable } from"@/components/tables"
 import type { TableCandidate } from"@/components/tables"
 import { CandidatesLoadMoreFooter } from"./CandidatesLoadMoreFooter"
@@ -42,6 +42,7 @@ export interface CandidatesTableAreaProps {
   displayedResultsCount: number
   isLoadingMore: boolean
   onLoadMore: () => void
+  isEnrichingContacts?: boolean
 }
 
 export function CandidatesTableArea({
@@ -76,6 +77,7 @@ export function CandidatesTableArea({
   displayedResultsCount,
   isLoadingMore,
   onLoadMore,
+  isEnrichingContacts,
 }: CandidatesTableAreaProps) {
   return (
     <div data-testid="candidates-table-area" className={`bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md transition-colors motion-reduce:transition-none duration-300 ${
@@ -134,6 +136,13 @@ export function CandidatesTableArea({
                     Carregando candidatos...
                   </p>
                 </div>
+              </div>
+            )}
+
+            {isEnrichingContacts && (
+              <div className="flex items-center gap-2 px-4 py-2 bg-status-info/10 border border-status-info/20 rounded-lg mx-2 mt-2">
+                <Loader2 className="h-4 w-4 animate-spin text-status-info" />
+                <span className="text-sm text-status-info font-medium">Enriquecendo contatos via Apify ($0.01/candidato)...</span>
               </div>
             )}
 

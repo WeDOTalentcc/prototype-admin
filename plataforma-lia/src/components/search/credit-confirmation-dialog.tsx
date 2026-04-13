@@ -108,7 +108,7 @@ export function CreditConfirmationDialog({
           <div 
             className="text-micro text-center text-lia-text-tertiary"
           >
-            Créditos serão consumidos ao executar a busca
+            Créditos + enriquecimento Apify ($0.01/cand) serão aplicados ao executar a busca
           </div>
         </div>
 

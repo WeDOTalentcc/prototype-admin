@@ -45,19 +45,19 @@ const LOCAL_SOURCE_LABELS: Record<string, { label: string; subtext: string }> = 
 }
 
 const GLOBAL_SOURCE_LABELS: Record<string, { label: string; subtext: string; credits: string }> = {
-  'pearch': { label: 'Base Global', subtext: 'Busca inteligente global', credits: '5-7 créditos/candidato' },
-  'pearch_ai': { label: 'Base Global Pro', subtext: 'Busca profissional com insights', credits: '7 créditos/candidato' },
-  'pearch_pro': { label: 'Base Global Pro', subtext: 'Busca avançada com scoring', credits: '7 créditos/candidato' },
-  'pearch_fast': { label: 'Base Global Fast', subtext: 'Busca rápida', credits: '3 créditos/candidato' },
-  'pearch-ai': { label: 'Base Global Pro', subtext: 'Busca profissional com insights', credits: '7 créditos/candidato' },
-  'pearch-pro': { label: 'Base Global Pro', subtext: 'Busca avançada com scoring', credits: '7 créditos/candidato' },
-  'pearch-fast': { label: 'Base Global Fast', subtext: 'Busca rápida', credits: '3 créditos/candidato' },
-  'global': { label: 'Base Global', subtext: 'Candidato de busca externa', credits: '5+ créditos/candidato' },
-  'external': { label: 'Fonte Externa', subtext: 'Sourcing externo', credits: 'Variável' },
-  'external_search': { label: 'Busca Externa', subtext: 'Candidato de busca externa', credits: '5+ créditos/candidato' },
-  'ai_search': { label: 'Busca IA', subtext: 'Encontrado via inteligência artificial', credits: '5+ créditos/candidato' },
-  'aisearch': { label: 'Busca IA', subtext: 'Encontrado via inteligência artificial', credits: '5+ créditos/candidato' },
-  'sourcing': { label: 'Sourcing', subtext: 'Sourcing externo', credits: 'Variável' },
+  'pearch': { label: 'Base Global', subtext: 'Busca inteligente global', credits: '1 cred + $0.01 Apify/cand' },
+  'pearch_ai': { label: 'Base Global', subtext: 'Busca com insights', credits: '1 cred + $0.01 Apify/cand' },
+  'pearch_pro': { label: 'Base Global', subtext: 'Busca avançada', credits: '1 cred + $0.01 Apify/cand' },
+  'pearch_fast': { label: 'Base Global', subtext: 'Busca rápida', credits: '1 cred + $0.01 Apify/cand' },
+  'pearch-ai': { label: 'Base Global', subtext: 'Busca com insights', credits: '1 cred + $0.01 Apify/cand' },
+  'pearch-pro': { label: 'Base Global', subtext: 'Busca avançada', credits: '1 cred + $0.01 Apify/cand' },
+  'pearch-fast': { label: 'Base Global', subtext: 'Busca rápida', credits: '1 cred + $0.01 Apify/cand' },
+  'global': { label: 'Base Global', subtext: 'Candidato de busca externa', credits: '1 cred + $0.01 Apify/cand' },
+  'external': { label: 'Fonte Externa', subtext: 'Sourcing externo', credits: '1 cred + $0.01 Apify/cand' },
+  'external_search': { label: 'Busca Externa', subtext: 'Candidato de busca externa', credits: '1 cred + $0.01 Apify/cand' },
+  'ai_search': { label: 'Busca IA', subtext: 'Encontrado via inteligência artificial', credits: '1 cred + $0.01 Apify/cand' },
+  'aisearch': { label: 'Busca IA', subtext: 'Encontrado via inteligência artificial', credits: '1 cred + $0.01 Apify/cand' },
+  'sourcing': { label: 'Sourcing', subtext: 'Sourcing externo', credits: '1 cred + $0.01 Apify/cand' },
 }
 
 export function normalizeSourceField(source: string | undefined | null): string {
@@ -89,7 +89,7 @@ export function getSourceDetails(source: string | undefined | null, hasPearchId?
     const globalDetails = GLOBAL_SOURCE_LABELS[normalized] || {
       label: 'Base Global',
       subtext: 'Busca inteligente global',
-      credits: '5-7 créditos/candidato'
+      credits: '1 cred + $0.01 Apify/cand'
     }
     return {
       ...globalDetails,

@@ -77,7 +77,7 @@ export const EAPTabBoolean = React.memo(function EAPTabBoolean(props: EAPTabBool
                 </TooltipTrigger>
                 <TooltipContent side="bottom">
                   <p className="text-xs font-medium">Híbrido (Local + Global)</p>
-                  <p className="text-micro text-lia-text-secondary" aria-live="polite" aria-atomic="true">1 crédito/candidato</p>
+                  <p className="text-micro text-lia-text-secondary" aria-live="polite" aria-atomic="true">1 cred + $0.01 Apify/cand</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -101,7 +101,7 @@ export const EAPTabBoolean = React.memo(function EAPTabBoolean(props: EAPTabBool
                 </TooltipTrigger>
                 <TooltipContent side="bottom">
                   <p className="text-xs font-medium">Base Global</p>
-                  <p className="text-micro text-lia-text-secondary" aria-live="polite" aria-atomic="true">1 crédito/candidato</p>
+                  <p className="text-micro text-lia-text-secondary" aria-live="polite" aria-atomic="true">1 cred + $0.01 Apify/cand</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -128,7 +128,7 @@ export const EAPTabBoolean = React.memo(function EAPTabBoolean(props: EAPTabBool
               </TooltipTrigger>
               <TooltipContent side="bottom">
                 <p className="text-xs font-medium">Apenas com Email</p>
-                <p className="text-micro text-lia-text-secondary">{requireEmails ? 'Ativo' : '+1 crédito se ativo'}</p>
+                <p className="text-micro text-lia-text-secondary">{requireEmails ? 'Ativo' : '$0.01/cand se ativo'}</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
@@ -150,7 +150,7 @@ export const EAPTabBoolean = React.memo(function EAPTabBoolean(props: EAPTabBool
               </TooltipTrigger>
               <TooltipContent side="bottom">
                 <p className="text-xs font-medium">Apenas com Telefone</p>
-                <p className="text-micro text-lia-text-secondary">{requirePhoneNumbers ? 'Ativo' : '+1 crédito se ativo'}</p>
+                <p className="text-micro text-lia-text-secondary">{requirePhoneNumbers ? 'Ativo' : '$0.01/cand se ativo'}</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>

@@ -74,7 +74,7 @@ export function SearchSourceSelector({
               </button>
             </TooltipTrigger>
             <TooltipContent side="bottom">
-              <p className="text-xs">Local + Global (1 créd/cand)</p>
+              <p className="text-xs">Local + Global (1 cred + $0.01 Apify/cand)</p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
@@ -96,7 +96,7 @@ export function SearchSourceSelector({
               </button>
             </TooltipTrigger>
             <TooltipContent side="bottom">
-              <p className="text-xs">Busca Global (1 créd/cand)</p>
+              <p className="text-xs">Busca Global (1 cred + $0.01 Apify/cand)</p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
@@ -123,7 +123,7 @@ export function SearchSourceSelector({
           </TooltipTrigger>
           <TooltipContent side="bottom">
             <p className="text-xs font-medium">Apenas com Email</p>
-            <p className="text-micro text-lia-text-tertiary">{requireEmails ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
+            <p className="text-micro text-lia-text-tertiary">{requireEmails ? 'Ativo ($0.01/cand)' : 'Clique para ativar ($0.01/cand)'}</p>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
@@ -146,7 +146,7 @@ export function SearchSourceSelector({
           </TooltipTrigger>
           <TooltipContent side="bottom">
             <p className="text-xs font-medium">Apenas com Telefone</p>
-            <p className="text-micro text-lia-text-tertiary">{requirePhoneNumbers ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
+            <p className="text-micro text-lia-text-tertiary">{requirePhoneNumbers ? 'Ativo ($0.01/cand)' : 'Clique para ativar ($0.01/cand)'}</p>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>

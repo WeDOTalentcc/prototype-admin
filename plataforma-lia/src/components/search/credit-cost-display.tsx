@@ -62,7 +62,7 @@ export function CreditCostDisplay({
       <div className={`flex items-center gap-2 ${className}`}>
         <Coins className="w-4 h-4 text-lia-text-primary" />
         <span className={`text-sm font-medium ${costColor}`}>
-          {formatCreditCost(estimate.total_estimated)}
+          {formatCreditCost(estimate.total_estimated)} + ${estimate.apify_total.toFixed(2)}
         </span>
         {estimate.warnings.length > 0 && (
           <AlertCircle className="w-4 h-4 text-status-warning" />
@@ -82,7 +82,7 @@ export function CreditCostDisplay({
           variant="outline" 
           className={`${costColor} border-current`}
         >
-          {formatCreditCost(estimate.total_estimated)}
+          {formatCreditCost(estimate.total_estimated)} + ${estimate.apify_total.toFixed(2)} Apify
         </Badge>
       </div>
 
@@ -117,7 +117,7 @@ export function CreditCostDisplay({
               <Mail className="w-3 h-3" />
               Enriquecimento Apify
             </span>
-            <span className="font-medium">$0.01/cand.</span>
+            <span className="font-medium">${estimate.apify_cost_per_candidate}/cand.</span>
           </div>
 
           <div className="border-t pt-2 mt-2 border-lia-border-default dark:border-lia-border-default">
@@ -126,12 +126,12 @@ export function CreditCostDisplay({
                 <TrendingUp className="w-3 h-3" />
                 Por Candidato
               </span>
-              <span className="font-semibold">{estimate.cost_per_candidate} creditos</span>
+              <span className="font-semibold">{estimate.cost_per_candidate} cred + ${estimate.apify_cost_per_candidate}</span>
             </div>
             <div className="flex items-center justify-between mt-1">
               <span>Total ({limit} candidatos)</span>
               <span className={`font-semibold text-lg ${costColor}`}>
-                {estimate.total_estimated} creditos
+                {estimate.total_estimated} cred + ${estimate.apify_total.toFixed(2)} Apify
               </span>
             </div>
           </div>

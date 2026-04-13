@@ -55,9 +55,9 @@ export function ContactFilterConfirmModal({
               </div>
               <div className="border-t border-lia-border-subtle dark:border-lia-border-subtle pt-2">
                 <div className="flex justify-between items-center">
-                  <span className="font-medium">Custo adicional:</span>
+                  <span className="font-medium">Enriquecimento via Apify:</span>
                   <span className="font-semibold text-lg text-wedo-green">
-                    +1 crédito/cand
+                    $0.01/candidato
                   </span>
                 </div>
               </div>
@@ -65,7 +65,7 @@ export function ContactFilterConfirmModal({
 
             <div className="flex items-center gap-2 text-xs text-status-success bg-status-success/10 p-2 rounded-md">
               <CheckCircle className="w-4 h-4 flex-shrink-0" />
-              <span>Você não gastará créditos com perfis sem dados de contato disponíveis.</span>
+              <span>Contatos são enriquecidos automaticamente via Apify quando não disponíveis na base.</span>
             </div>
           </AlertDialogDescription>
         </AlertDialogHeader>

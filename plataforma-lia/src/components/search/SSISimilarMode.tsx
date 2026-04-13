@@ -211,12 +211,12 @@ export function SSISimilarMode(props: SSISimilarModeProps) {
             <div className="absolute right-3 bottom-2.5 flex flex-col items-end gap-1 z-10">
               <div className="flex items-center gap-1">
                 <ScopeButton icon={Home} active={searchSource === 'local'} activeColor="wedo-green" onClick={() => onSearchSourceChange('local')} label="Seu banco de talentos" sublabel="Gratuito • Local" />
-                {showGlobalSearchOptions && <ScopeButton icon={Zap} active={searchSource === 'hybrid'} activeColor="wedo-orange" onClick={() => handleSourceChange('hybrid')} label="Expanda sua busca" sublabel="Local + Global • 1 crédito/candidato" />}
-                {showGlobalSearchOptions && <ScopeButton icon={Globe} active={searchSource === 'global'} activeColor="wedo-cyan" onClick={() => handleSourceChange('global')} label="Alcance global" sublabel="800M+ candidatos • 1 crédito/candidato" />}
+                {showGlobalSearchOptions && <ScopeButton icon={Zap} active={searchSource === 'hybrid'} activeColor="wedo-orange" onClick={() => handleSourceChange('hybrid')} label="Expanda sua busca" sublabel="Local + Global • 1 cred + $0.01 Apify/cand" />}
+                {showGlobalSearchOptions && <ScopeButton icon={Globe} active={searchSource === 'global'} activeColor="wedo-cyan" onClick={() => handleSourceChange('global')} label="Alcance global" sublabel="800M+ candidatos • 1 cred + $0.01 Apify/cand" />}
                 {(searchSource === 'global' || searchSource === 'hybrid') && onRequireEmailsChange && onRequirePhoneNumbersChange && (
                   <>
-                    <ScopeButton icon={Mail} active={requireEmails} activeColor="wedo-green" onClick={() => onRequireEmailsChange(!requireEmails)} label="Apenas com Email" sublabel={requireEmails ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'} small />
-                    <ScopeButton icon={Phone} active={requirePhoneNumbers} activeColor="wedo-green" onClick={() => onRequirePhoneNumbersChange(!requirePhoneNumbers)} label="Apenas com Telefone" sublabel={requirePhoneNumbers ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'} small />
+                    <ScopeButton icon={Mail} active={requireEmails} activeColor="wedo-green" onClick={() => onRequireEmailsChange(!requireEmails)} label="Apenas com Email" sublabel={requireEmails ? 'Ativo ($0.01/cand)' : 'Clique para ativar ($0.01/cand)'} small />
+                    <ScopeButton icon={Phone} active={requirePhoneNumbers} activeColor="wedo-green" onClick={() => onRequirePhoneNumbersChange(!requirePhoneNumbers)} label="Apenas com Telefone" sublabel={requirePhoneNumbers ? 'Ativo ($0.01/cand)' : 'Clique para ativar ($0.01/cand)'} small />
                   </>
                 )}
                 <TooltipProvider>
@@ -256,12 +256,12 @@ export function SSISimilarMode(props: SSISimilarModeProps) {
           <div className="absolute right-3 bottom-2.5 flex flex-col items-end gap-1 z-10">
             <div className="flex items-center gap-1">
               <ScopeButton icon={Home} active={searchSource === 'local'} activeColor="wedo-green" onClick={() => onSearchSourceChange('local')} label="Seu banco de talentos" sublabel="Gratuito • Local" />
-              {showGlobalSearchOptions && <ScopeButton icon={Zap} active={searchSource === 'hybrid'} activeColor="wedo-orange" onClick={() => handleSourceChange('hybrid')} label="Expanda sua busca" sublabel="Local + Global • 1 crédito/candidato" />}
-              {showGlobalSearchOptions && <ScopeButton icon={Globe} active={searchSource === 'global'} activeColor="wedo-cyan" onClick={() => handleSourceChange('global')} label="Alcance global" sublabel="800M+ candidatos • 1 crédito/candidato" />}
+              {showGlobalSearchOptions && <ScopeButton icon={Zap} active={searchSource === 'hybrid'} activeColor="wedo-orange" onClick={() => handleSourceChange('hybrid')} label="Expanda sua busca" sublabel="Local + Global • 1 cred + $0.01 Apify/cand" />}
+              {showGlobalSearchOptions && <ScopeButton icon={Globe} active={searchSource === 'global'} activeColor="wedo-cyan" onClick={() => handleSourceChange('global')} label="Alcance global" sublabel="800M+ candidatos • 1 cred + $0.01 Apify/cand" />}
               {(searchSource === 'global' || searchSource === 'hybrid') && onRequireEmailsChange && onRequirePhoneNumbersChange && (
                 <>
-                  <ScopeButton icon={Mail} active={requireEmails} activeColor="wedo-green" onClick={() => onRequireEmailsChange(!requireEmails)} label="Apenas com Email" sublabel={requireEmails ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'} small />
-                  <ScopeButton icon={Phone} active={requirePhoneNumbers} activeColor="wedo-green" onClick={() => onRequirePhoneNumbersChange(!requirePhoneNumbers)} label="Apenas com Telefone" sublabel={requirePhoneNumbers ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'} small />
+                  <ScopeButton icon={Mail} active={requireEmails} activeColor="wedo-green" onClick={() => onRequireEmailsChange(!requireEmails)} label="Apenas com Email" sublabel={requireEmails ? 'Ativo ($0.01/cand)' : 'Clique para ativar ($0.01/cand)'} small />
+                  <ScopeButton icon={Phone} active={requirePhoneNumbers} activeColor="wedo-green" onClick={() => onRequirePhoneNumbersChange(!requirePhoneNumbers)} label="Apenas com Telefone" sublabel={requirePhoneNumbers ? 'Ativo ($0.01/cand)' : 'Clique para ativar ($0.01/cand)'} small />
                 </>
               )}
               <TooltipProvider>

@@ -67,6 +67,7 @@ export const CANDIDATES_DEFAULT_COLUMNS = [
   { id: 'resume_text', label: 'Currículo (texto)', visible: false, order: 48, category: 'documentos' },
   { id: 'cover_letter', label: 'Carta de apresentação', visible: false, order: 49, category: 'documentos' },
   // Origem
+  { id: 'enrichment_source', label: 'Enriquecimento', visible: false, order: 50, category: 'origem' },
   { id: 'ats_source_name', label: 'Nome do ATS', visible: false, order: 51, category: 'origem' },
   { id: 'ats_candidate_id', label: 'ID no ATS', visible: false, order: 52, category: 'origem' },
   { id: 'pearch_profile_id', label: 'ID na Base Global', visible: false, order: 53, category: 'origem' },

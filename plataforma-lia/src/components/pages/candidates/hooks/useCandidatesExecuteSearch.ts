@@ -30,6 +30,7 @@ interface SearchResults {
   isLoading: boolean
   showGlobalResults: boolean
   globalDismissed: boolean
+  isEnrichingContacts: boolean
 }
 
 interface ExecuteSearchDeps {
@@ -120,6 +121,9 @@ export function mapCandidateToInternal(c: Record<string, unknown>): Candidate {
       recommendation: (c.match_reasoning as string) || (c.match_summary as string) || '',
     },
     source: candidateSource,
+    contact_source: (c.contact_source as string) || null,
+    enrichment_source: (c.enrichment_source as string) || null,
+    is_enriching: (c.is_enriching as boolean) || false,
     pearch_profile_id: c.pearch_profile_id as string | undefined,
     has_email: (c.has_email as boolean) ?? true,
     has_phone: (c.has_phone as boolean) ?? true,
@@ -163,6 +167,7 @@ export function useCandidatesExecuteSearch(deps: ExecuteSearchDeps) {
       const shouldUseHybrid = searchSource === 'hybrid'
       let localCount = 0
       let pearchCount = 0
+      let isEnrichingContacts = false
 
       if (mode === 'similar' && metadata) {
         const similarUrl = metadata.similarProfileUrl || metadata.similarProfileUrls?.[0]
@@ -174,6 +179,7 @@ export function useCandidatesExecuteSearch(deps: ExecuteSearchDeps) {
           if (response.ok) {
             const data = await response.json()
             totalCount = data.total_count || 0; localCount = data.local_count || 0; pearchCount = data.pearch_count || 0; creditsUsed = data.credits_used
+            if (data.is_enriching_contacts) isEnrichingContacts = true
             if (data.credits_remaining !== undefined) setCreditsRemaining(() => data.credits_remaining)
             if (data.candidates?.length > 0) mappedCandidates = data.candidates.map((c: Record<string, unknown>) => mapCandidateToInternal(c))
           }
@@ -186,6 +192,7 @@ export function useCandidatesExecuteSearch(deps: ExecuteSearchDeps) {
         if (response.ok) {
           const data = await response.json()
           totalCount = data.total_count || 0; localCount = data.local_count || 0; pearchCount = data.pearch_count || 0; creditsUsed = data.credits_used
+          if (data.is_enriching_contacts) isEnrichingContacts = true
           if (data.credits_remaining !== undefined) setCreditsRemaining(() => data.credits_remaining)
           if (data.candidates?.length > 0) mappedCandidates = data.candidates.map((c: Record<string, unknown>) => mapCandidateToInternal(c))
         }
@@ -197,6 +204,7 @@ export function useCandidatesExecuteSearch(deps: ExecuteSearchDeps) {
         if (response.ok) {
           const data = await response.json()
           totalCount = data.total_count || 0; localCount = data.local_count || 0; pearchCount = data.pearch_count || 0; creditsUsed = data.credits_used
+          if (data.is_enriching_contacts) isEnrichingContacts = true
           if (data.credits_remaining !== undefined) setCreditsRemaining(() => data.credits_remaining)
           if (data.candidates?.length > 0) mappedCandidates = data.candidates.map((c: Record<string, unknown>) => mapCandidateToInternal(c))
         }
@@ -217,6 +225,7 @@ export function useCandidatesExecuteSearch(deps: ExecuteSearchDeps) {
         })
         if (searchResponse.thread_id) setSearchThreadId(searchResponse.thread_id)
         creditsUsed = searchResponse.credits_used
+        if (searchResponse.is_enriching_contacts) isEnrichingContacts = true
         totalCount = searchResponse.total_count || 0; localCount = searchResponse.local_count || 0; pearchCount = searchResponse.pearch_count || 0
         if (searchResponse.credits_remaining !== undefined && searchResponse.credits_remaining !== null) {
           setCreditsRemaining(() => searchResponse.credits_remaining as number)
@@ -266,6 +275,7 @@ export function useCandidatesExecuteSearch(deps: ExecuteSearchDeps) {
         globalCount: pearchCount > 0 ? pearchCount : globalCandidates.length,
         query, isLoading: false, showGlobalResults: shouldAutoShowGlobal,
         globalDismissed: prev.globalDismissed,
+        isEnrichingContacts,
       }))
 
       setShowExpandedLIA(true)

@@ -86,4 +86,5 @@ export interface SearchResults {
   globalDismissed: boolean
   local: unknown[]
   global: unknown[]
+  isEnrichingContacts: boolean
 }

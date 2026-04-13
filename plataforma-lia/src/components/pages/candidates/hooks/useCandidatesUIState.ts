@@ -84,9 +84,11 @@ export function useCandidatesUIState() {
     local: Candidate[]; global: Candidate[]
     localCount: number; globalCount: number; query: string
     isLoading: boolean; showGlobalResults: boolean; globalDismissed: boolean
+    isEnrichingContacts: boolean
   }>({
     local: [], global: [], localCount: 0, globalCount: 0, query: '',
     isLoading: false, showGlobalResults: false, globalDismissed: false,
+    isEnrichingContacts: false,
   })
   const [selectedTemplate, setSelectedTemplate] = useState('')
   const [searchThreadId, setSearchThreadId] = useState<string | undefined>(undefined)

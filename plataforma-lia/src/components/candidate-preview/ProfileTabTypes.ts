@@ -71,5 +71,8 @@ export type CandidateData = {
   certifications?: Array<Record<string, unknown>>
   projects?: Array<Record<string, unknown>>
   awards?: Array<Record<string, unknown>>
+  contact_source?: string | null
+  enrichment_source?: string | null
+  is_enriching?: boolean
   [key: string]: unknown
 }

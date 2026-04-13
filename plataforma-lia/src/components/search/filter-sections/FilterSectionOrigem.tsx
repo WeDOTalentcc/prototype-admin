@@ -63,7 +63,7 @@ export const FilterSectionOrigem = React.memo(function FilterSectionOrigem({
             className="absolute top-2 right-2 text-micro px-1.5 py-0.5 font-medium text-status-warning"
            
           >
-            1 CRÉDITO/CAND.
+            1 CRED + $0.01 APIFY
           </Badge>
           <div className="flex items-center gap-2 mb-2">
             <RadioGroupItem value="hybrid" id="hybrid" className="sr-only" />
@@ -91,7 +91,7 @@ export const FilterSectionOrigem = React.memo(function FilterSectionOrigem({
             className="absolute top-2 right-2 text-micro px-1.5 py-0.5 font-medium text-status-warning"
            
           >
-            1 CRÉDITO/CAND.
+            1 CRED + $0.01 APIFY
           </Badge>
           <div className="flex items-center gap-2 mb-2">
             <RadioGroupItem value="global" id="global" className="sr-only" />

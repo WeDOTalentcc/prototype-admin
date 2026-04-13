@@ -208,7 +208,7 @@ export function LIASearchSidebarChat({
                           Expandir para Busca Global?
                         </p>
                         <p className="text-xs text-lia-text-secondary" aria-live="polite" aria-atomic="true">
-                          Acesse +800M de perfis (1 crédito/candidato)
+                          Acesse +800M de perfis (1 cred + $0.01 Apify/cand)
                         </p>
                       </div>
                     </div>

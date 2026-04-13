@@ -33,6 +33,7 @@ interface SearchResults {
   isLoading: boolean
   showGlobalResults: boolean
   globalDismissed: boolean
+  isEnrichingContacts: boolean
 }
 
 interface PendingSearchRequest {

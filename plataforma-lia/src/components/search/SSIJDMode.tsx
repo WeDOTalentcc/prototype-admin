@@ -238,7 +238,7 @@ export function SSIJDMode(props: SSIJDModeProps) {
                   </TooltipTrigger>
                   <TooltipContent side="bottom" className="!animate-none !duration-0">
                     <p className="text-xs font-medium">Expanda sua busca</p>
-                    <p className="text-xs text-lia-text-disabled" aria-live="polite" aria-atomic="true">Local + Global • 1 crédito/candidato</p>
+                    <p className="text-xs text-lia-text-disabled" aria-live="polite" aria-atomic="true">Local + Global • 1 cred + $0.01 Apify/cand</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -263,7 +263,7 @@ export function SSIJDMode(props: SSIJDModeProps) {
                   </TooltipTrigger>
                   <TooltipContent side="bottom" className="!animate-none !duration-0">
                     <p className="text-xs font-medium">Alcance global</p>
-                    <p className="text-xs text-lia-text-disabled" aria-live="polite" aria-atomic="true">800M+ candidatos • 1 crédito/candidato</p>
+                    <p className="text-xs text-lia-text-disabled" aria-live="polite" aria-atomic="true">800M+ candidatos • 1 cred + $0.01 Apify/cand</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -289,7 +289,7 @@ export function SSIJDMode(props: SSIJDModeProps) {
                     </TooltipTrigger>
                     <TooltipContent side="bottom" className="!animate-none !duration-0">
                       <p className="text-xs font-medium">Apenas com Email</p>
-                      <p className="text-xs text-lia-text-disabled">{requireEmails ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
+                      <p className="text-xs text-lia-text-disabled">{requireEmails ? 'Ativo ($0.01/cand)' : 'Clique para ativar ($0.01/cand)'}</p>
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
@@ -312,7 +312,7 @@ export function SSIJDMode(props: SSIJDModeProps) {
                     </TooltipTrigger>
                     <TooltipContent side="bottom" className="!animate-none !duration-0">
                       <p className="text-xs font-medium">Apenas com Telefone</p>
-                      <p className="text-xs text-lia-text-disabled">{requirePhoneNumbers ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
+                      <p className="text-xs text-lia-text-disabled">{requirePhoneNumbers ? 'Ativo ($0.01/cand)' : 'Clique para ativar ($0.01/cand)'}</p>
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>

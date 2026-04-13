@@ -27,7 +27,9 @@ import {
   Target,
   Brain,
   Save,
-  Eye
+  Eye,
+  Loader2,
+  Zap
 } from"lucide-react"
 
 export interface CandidateResult {
@@ -59,6 +61,8 @@ export interface CandidateResult {
   secondary_email?: string
   source:"local" |"pearch"
   contact_source?: "local" | "pearch" | "apify" | null
+  enrichment_source?: "pearch" | "apify" | "local" | null
+  is_enriching?: boolean
   is_open_to_work?: boolean
   is_opentowork?: boolean
   is_decision_maker?: boolean
@@ -81,6 +85,7 @@ interface SearchResultsCardProps {
   searchTimeSeconds?: number
   warningMessage?: string
   canLoadMore: boolean
+  isEnrichingContacts?: boolean
   onLoadMore?: () => void
   onSelectCandidate?: (candidate: CandidateResult) => void
   onAddToJob?: (candidateIds: string[]) => void
@@ -100,6 +105,7 @@ export function SearchResultsCard({
   searchTimeSeconds,
   warningMessage,
   canLoadMore,
+  isEnrichingContacts,
   onLoadMore,
   onSelectCandidate,
   onAddToJob,
@@ -207,6 +213,14 @@ export function SearchResultsCard({
         )}
       </CardHeader>
 
+      {isEnrichingContacts && (
+        <div className="mx-6 mb-3 flex items-center gap-2 p-3 rounded-xl border border-status-info/30 bg-status-info/10">
+          <Loader2 className="h-4 w-4 animate-spin text-status-info" />
+          <span className="text-sm text-status-info font-medium">Enriquecendo contatos via Apify...</span>
+          <span className="text-xs text-lia-text-secondary">Isso pode levar 2-5 segundos extras</span>
+        </div>
+      )}
+
       <CardContent className="pt-0">
         {selectedIds.size > 0 && (
           <div className="flex items-center gap-2 mb-3 p-2 bg-lia-bg-secondary rounded-xl border border-lia-border-subtle">
@@ -308,6 +322,38 @@ export function SearchResultsCard({
                           :"Candidato encontrado na busca global (Pearch)"}
                       </TooltipContent>
                     </Tooltip>
+                    {candidate.enrichment_source && (
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <Badge 
+                            variant="outline" 
+                            className={`text-xs ${
+                              candidate.enrichment_source === "apify"
+                                ? "border-status-info/30 bg-status-info/10 text-status-info"
+                                : candidate.enrichment_source === "pearch"
+                                ? "border-wedo-cyan/30 bg-wedo-cyan/10 text-wedo-cyan"
+                                : "border-lia-border-default bg-lia-bg-secondary text-lia-text-secondary"
+                            }`}
+                          >
+                            <Zap className="h-3 w-3 mr-1" />
+                            {candidate.enrichment_source === "apify" ? "Apify" : candidate.enrichment_source === "pearch" ? "Pearch" : "Local"}
+                          </Badge>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          {candidate.enrichment_source === "apify" 
+                            ? "Contatos enriquecidos via Apify ($0.01/candidato)" 
+                            : candidate.enrichment_source === "pearch"
+                            ? "Contatos obtidos via Pearch"
+                            : "Contatos da base local"}
+                        </TooltipContent>
+                      </Tooltip>
+                    )}
+                    {candidate.is_enriching && (
+                      <Badge variant="outline" className="text-xs border-status-info/30 bg-status-info/10 text-status-info">
+                        <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                        Enriquecendo...
+                      </Badge>
+                    )}
                     {candidate.is_discovered && (
                       <Tooltip>
                         <TooltipTrigger>

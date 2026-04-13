@@ -105,7 +105,7 @@ export const GlobalSearchHub = forwardRef<GlobalSearchHubRef, GlobalSearchHubPro
                           <li><strong>Resultados de Busca:</strong> Ícones de expansão global e híbrida no prompt expandido</li>
                           <li><strong>Criação de Vaga:</strong> LIA pode buscar candidatos externos para calibração e sourcing</li>
                           <li><strong>Sourcing Automático:</strong> Expansão para base global quando banco local é insuficiente</li>
-                          <li><strong>Revelação de Contatos:</strong> Opção de revelar emails e telefones (consome créditos)</li>
+                          <li><strong>Revelação de Contatos:</strong> Opção de revelar emails e telefones (1 crédito + $0.01 Apify/candidato)</li>
                         </ul>
                       </>
                     ) : (

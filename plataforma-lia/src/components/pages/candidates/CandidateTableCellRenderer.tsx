@@ -136,6 +136,30 @@ export function createCellRenderer(deps: CellRendererDeps) {
       case"source":
         return renderSourceCell(candidate)
 
+      case"enrichment_source": {
+        if (candidate.is_enriching) {
+          return (
+            <Badge className="text-micro px-1.5 py-0.5 bg-status-warning/15 text-status-warning animate-pulse">
+              Enriquecendo...
+            </Badge>
+          )
+        }
+        if (!candidate.enrichment_source) return <span className="text-xs text-lia-text-tertiary">—</span>
+        const esrc = String(candidate.enrichment_source).toLowerCase()
+        const eConfig = esrc === 'apify'
+          ? { label: 'Apify', cls: 'bg-wedo-orange/15 text-wedo-orange' }
+          : esrc === 'pearch'
+            ? { label: 'Pearch', cls: 'bg-wedo-cyan/15 text-wedo-cyan' }
+            : esrc === 'local'
+              ? { label: 'Local', cls: 'bg-stone-400/15 text-stone-500' }
+              : { label: candidate.enrichment_source, cls: 'bg-lia-bg-tertiary text-lia-text-secondary' }
+        return (
+          <Badge className={`text-micro px-1.5 py-0.5 ${eConfig.cls}`}>
+            {eConfig.label}
+          </Badge>
+        )
+      }
+
       // Delegated to ScoreCells
       case"match_score":
         return renderMatchScoreCell(candidate, searchQuery)

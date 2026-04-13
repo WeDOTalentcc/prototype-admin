@@ -59,7 +59,7 @@ export function GlobalExpansionConfirmModal({
                 <div className="flex justify-between items-center">
                   <span className="font-medium" aria-live="polite" aria-atomic="true">Custo por candidato:</span>
                   <span className="font-semibold text-lg text-lia-text-secondary">
-                    1 crédito
+                    1 cred + $0.01 Apify
                   </span>
                 </div>
               </div>

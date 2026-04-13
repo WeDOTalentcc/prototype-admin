@@ -170,7 +170,7 @@ requireEmails
               </TooltipTrigger>
               <TooltipContent side="bottom">
                 <p className="text-xs font-medium">Apenas com Email</p>
-                <p className="text-micro text-lia-text-secondary">{requireEmails ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
+                <p className="text-micro text-lia-text-secondary">{requireEmails ? 'Ativo ($0.01/cand)' : 'Clique para ativar ($0.01/cand)'}</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
@@ -192,7 +192,7 @@ requirePhoneNumbers
               </TooltipTrigger>
               <TooltipContent side="bottom">
                 <p className="text-xs font-medium">Apenas com Telefone</p>
-                <p className="text-micro text-lia-text-secondary">{requirePhoneNumbers ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
+                <p className="text-micro text-lia-text-secondary">{requirePhoneNumbers ? 'Ativo ($0.01/cand)' : 'Clique para ativar ($0.01/cand)'}</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>

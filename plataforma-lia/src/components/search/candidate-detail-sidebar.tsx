@@ -29,7 +29,9 @@ import {
   Database,
   Globe,
   Eye,
-  Save
+  Save,
+  Loader2,
+  Zap
 } from"lucide-react"
 import { CandidateResult } from"./search-results-card"
 import { textStyles, buttonStyles, cardStyles, badgeStyles } from"@/lib/design-tokens"
@@ -162,6 +164,27 @@ export function CandidateDetailSidebar({
                       </>
                     )}
                   </Badge>
+                  {candidate.enrichment_source && (
+                    <Badge 
+                      variant="outline" 
+                      className={`${
+                        candidate.enrichment_source === "apify"
+                          ? "border-status-info/30 bg-status-info/10 text-status-info"
+                          : candidate.enrichment_source === "pearch"
+                          ? "border-wedo-cyan/30 bg-wedo-cyan/10 text-wedo-cyan"
+                          : "border-lia-border-default bg-lia-bg-secondary text-lia-text-secondary"
+                      }`}
+                    >
+                      <Zap className="h-3 w-3 mr-1" />
+                      {candidate.enrichment_source === "apify" ? "Apify" : candidate.enrichment_source === "pearch" ? "Pearch" : "Local"}
+                    </Badge>
+                  )}
+                  {candidate.is_enriching && (
+                    <Badge variant="outline" className="border-status-info/30 bg-status-info/10 text-status-info">
+                      <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                      Enriquecendo...
+                    </Badge>
+                  )}
                   {candidate.is_discovered && (
                     <Badge 
                       variant="outline" 

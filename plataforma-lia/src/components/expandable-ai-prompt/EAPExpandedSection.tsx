@@ -91,7 +91,7 @@ searchSource === 'local'
                     ? 'lia-tab-active' 
                     : 'lia-tab'
                 }`}
-                title="Buscar apenas na base local (sem consumo de créditos)"
+                title="Buscar apenas na base local (gratuito)"
               >
                 <Home className="w-3 h-3" />
                 <span className="hidden sm:inline">Local</span>
@@ -103,7 +103,7 @@ searchSource === 'hybrid'
                     ? 'lia-tab-active' 
                     : 'lia-tab'
                 }`}
-                title="Buscar na base local + Base Global (consome créditos para resultados externos)"
+                title="Buscar na base local + Base Global (1 cred + $0.01 Apify/cand)"
               >
                 <Zap className="w-3 h-3" />
                 <span className="hidden sm:inline">Híbrido</span>
@@ -115,7 +115,7 @@ searchSource === 'global'
                     ? 'lia-tab-active' 
                     : 'lia-tab'
                 }`}
-                title="Buscar apenas na Base Global (800M+ perfis, consome créditos)"
+                title="Buscar apenas na Base Global (800M+ perfis, 1 cred + $0.01 Apify/cand)"
               >
                 <Globe className="w-3 h-3" />
                 <span className="hidden sm:inline">Global</span>
@@ -157,7 +157,7 @@ creditEstimate.isLocal
                   </div>
                   {creditEstimate.isLocal ? (
                     <div className="text-status-success">
-                      Busca local gratuita - sem consumo de créditos
+                      Busca local gratuita - sem custos adicionais
                     </div>
                   ) : (
                     <div className="space-y-1.5">
@@ -173,11 +173,11 @@ creditEstimate.canAfford ? 'text-status-success' : 'text-status-error'
                       )}
                       <div className="flex justify-between">
                         <span className="lia-text-muted">Tipo de busca:</span>
-                        <span className="font-medium">Rápida (1 crédito/candidato)</span>
+                        <span className="font-medium">Rápida (1 cred + $0.01 Apify/cand)</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="lia-text-muted" aria-live="polite" aria-atomic="true">Por candidato:</span>
-                        <span className="font-medium">{creditEstimate.perCandidate} créditos</span>
+                        <span className="font-medium">{creditEstimate.perCandidate} créditos + $0.01 Apify</span>
                       </div>
                       <div className="flex justify-between pt-1.5 border-t border-lia-border-strong">
                         <span className="lia-text-muted">Total ({candidateLimit} cand.):</span>

@@ -157,6 +157,11 @@ export interface Candidate {
     neuroticism: number
   }
 
+  // Contact enrichment fields
+  contact_source?: string | null
+  enrichment_source?: string | null
+  is_enriching?: boolean
+
   // Pearch / contact reveal fields
   has_email?: boolean
   has_phone?: boolean

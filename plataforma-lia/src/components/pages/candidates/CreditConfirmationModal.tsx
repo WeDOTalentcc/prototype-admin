@@ -44,14 +44,14 @@ export function CreditConfirmationModal({
           </AlertDialogTitle>
           <AlertDialogDescription className="space-y-4">
             <p className="text-sm text-lia-text-primary">
-              Esta busca utilizará créditos da sua conta.
+              Esta busca utilizará créditos da sua conta + enriquecimento via Apify ($0.01/candidato).
             </p>
 
             {creditEstimate && (
               <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 rounded-xl p-4 space-y-3">
                 <div className="flex justify-between items-center text-sm">
                   <span className="text-lia-text-primary">Tipo de busca:</span>
-                  <span className="font-medium">Rápida (1 crédito/candidato)</span>
+                  <span className="font-medium">Rápida (1 cred + $0.01 Apify/cand)</span>
                 </div>
                 <div className="flex justify-between items-center text-sm">
                   <span className="text-lia-text-primary">Limite de resultados:</span>
@@ -59,7 +59,7 @@ export function CreditConfirmationModal({
                 </div>
 
                 <div className="flex justify-between items-center text-sm">
-                  <span className="text-lia-text-primary">Custo base:</span>
+                  <span className="text-lia-text-primary">Custo base (créditos):</span>
                   <span className="font-medium">{creditEstimate.base_cost} créditos</span>
                 </div>
 
@@ -83,7 +83,7 @@ export function CreditConfirmationModal({
                   <div className="flex justify-between items-center">
                     <span className="font-medium">Total estimado:</span>
                     <span className="text-base-ui font-semibold text-lia-text-secondary">
-                      {creditEstimate.total_estimated} créditos
+                      {creditEstimate.total_estimated} créditos + $0.01/cand Apify
                     </span>
                   </div>
                 </div>

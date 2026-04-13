@@ -66,6 +66,9 @@ type RawCandidate = {
   company_info?: { is_startup?: boolean }
   expertise?: string[]
   outreach_message?: string
+  contact_source?: string | null
+  enrichment_source?: string | null
+  is_enriching?: boolean
 }
 
 type ChatMessage = {
@@ -139,6 +142,9 @@ export function mapCandidateToInternal(c: RawCandidate): Candidate {
       recommendation: c.match_reasoning || c.match_summary || ''
     },
     source: candidateSource,
+    contact_source: c.contact_source || null,
+    enrichment_source: c.enrichment_source || null,
+    is_enriching: c.is_enriching || false,
     pearch_profile_id: c.pearch_profile_id,
     has_email: c.has_email ?? true,
     has_phone: c.has_phone ?? true,
@@ -383,6 +389,9 @@ export function createExecuteSearch(deps: ExecuteSearchDeps) {
                 recommendation: c.match_reasoning || ''
               },
               source: candidateSource,
+              contact_source: c.contact_source || null,
+              enrichment_source: c.enrichment_source || null,
+              is_enriching: c.is_enriching || false,
               pearch_profile_id: c.pearch_profile_id,
               has_email: c.has_email ?? true,
               has_phone: c.has_phone ?? true,
@@ -454,6 +463,9 @@ export function createExecuteSearch(deps: ExecuteSearchDeps) {
               recommendation: c.lia_insights?.recommendation || ''
             },
             source: 'local',
+            contact_source: 'local',
+            enrichment_source: 'local',
+            is_enriching: false,
             tags: c.tags || [],
             notes: c.notes,
             has_email: true,

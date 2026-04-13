@@ -85,6 +85,26 @@ export function CandidatePreviewHeader({
                 LGPD
               </Badge>
             )}
+            {c.is_enriching && (
+              <Badge className="text-micro px-1.5 py-0 h-4 flex items-center gap-0.5 bg-status-warning/15 text-status-warning border-status-warning/30 animate-pulse">
+                Enriquecendo...
+              </Badge>
+            )}
+            {c.enrichment_source && !c.is_enriching && (() => {
+              const src = String(c.enrichment_source).toLowerCase()
+              const config = src === 'apify'
+                ? { label: 'Apify', cls: 'bg-wedo-orange/15 text-wedo-orange border-wedo-orange/30' }
+                : src === 'pearch'
+                  ? { label: 'Pearch', cls: 'bg-wedo-cyan/15 text-wedo-cyan border-wedo-cyan/30' }
+                  : src === 'local'
+                    ? { label: 'Local', cls: 'bg-stone-400/15 text-stone-500 border-stone-400/30' }
+                    : { label: String(c.enrichment_source), cls: 'bg-lia-bg-tertiary text-lia-text-secondary border-lia-border-default' }
+              return (
+                <Badge className={`text-micro px-1.5 py-0 h-4 ${config.cls}`}>
+                  {config.label}
+                </Badge>
+              )
+            })()}
           </div>
 
           <div className="flex items-center gap-1.5 flex-wrap">

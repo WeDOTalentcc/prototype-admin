@@ -114,6 +114,7 @@ export interface SearchResponse {
   search_time_seconds?: number
   warning_message?: string
   can_load_more: boolean
+  is_enriching_contacts?: boolean
 }
 
 export interface CreditBreakdown {
@@ -135,6 +136,8 @@ export interface CreditEstimate {
   phone_cost: number
   cost_per_candidate: number
   total_estimated: number
+  apify_cost_per_candidate: number
+  apify_total: number
   breakdown: CreditBreakdown
   confirmation_message: string
   warnings: string[]
@@ -302,21 +305,20 @@ export function calculateCreditsLocally(options: {
   requirePhonesOrEmails?: boolean
 }): CreditEstimate {
   const base = 1
-  const insights = 2
   const freshness = options.highFreshness ? 2 : 0
   
-  const emailCost = 0
-  const phoneCost = 0
-  
-  const perCandidate = base + insights + freshness
+  const perCandidate = base + freshness
   const total = perCandidate * options.limit
+
+  const apifyCostPerCandidate = 0.01
+  const apifyTotal = +(apifyCostPerCandidate * options.limit).toFixed(2)
   
   const warnings: string[] = []
-  if (options.requireEmails || options.requirePhoneNumbers) {
-    warnings.push("Contatos enriquecidos via Apify ($0.01/candidato) quando não disponíveis")
+  if (options.requireEmails || options.requirePhoneNumbers || options.requirePhonesOrEmails) {
+    warnings.push("Contatos enriquecidos via Apify ($0.01/candidato)")
   }
   if (total > 100) {
-    warnings.push(`Custo total estimado alto: ${total} créditos`)
+    warnings.push(`Custo total estimado alto: ${total} créditos + $${apifyTotal.toFixed(2)} Apify`)
   }
   
   return {
@@ -324,20 +326,22 @@ export function calculateCreditsLocally(options: {
     pearch_type: "fast",
     limit: options.limit,
     base_cost: base,
-    insights_cost: insights,
+    insights_cost: 0,
     freshness_cost: freshness,
-    email_cost: emailCost,
-    phone_cost: phoneCost,
+    email_cost: 0,
+    phone_cost: 0,
     cost_per_candidate: perCandidate,
     total_estimated: total,
+    apify_cost_per_candidate: apifyCostPerCandidate,
+    apify_total: apifyTotal,
     breakdown: {
       base,
-      insights,
-      emails: emailCost,
-      phones: phoneCost,
+      insights: 0,
+      emails: 0,
+      phones: 0,
       freshness
     },
-    confirmation_message: `Custo estimado: ${total} créditos (${perCandidate}/candidato x ${options.limit}) + Apify $0.01/candidato para contatos`,
+    confirmation_message: `Custo estimado: ${total} créditos (${perCandidate} cred/cand x ${options.limit}) + $${apifyTotal.toFixed(2)} Apify ($0.01/cand)`,
     warnings
   }
 }

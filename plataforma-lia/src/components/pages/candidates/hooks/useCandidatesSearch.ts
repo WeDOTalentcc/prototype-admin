@@ -177,7 +177,7 @@ export function useCandidatesSearch(ctx: CandidatesSearchContext) {
       // Local é gratuito - muda direto
       setSearchSource('local')
     } else {
-      // Híbrido ou Global consome créditos - mostrar modal de confirmação
+      // Híbrido ou Global - mostrar modal de confirmação
       setPendingSourceChange(newSource)
       setShowSourceChangeModal(true)
     }
@@ -211,7 +211,7 @@ export function useCandidatesSearch(ctx: CandidatesSearchContext) {
     }
   }
 
-  // Handler para mudança de filtro de contato com confirmação de créditos
+  // Handler para mudança de filtro de contato com confirmação
   const handleContactFilterChange = (filterType: 'email' | 'phone') => {
     const isCurrentlyActive = filterType === 'email'
       ? pearchSearchOptions.requireEmails
@@ -225,7 +225,7 @@ export function useCandidatesSearch(ctx: CandidatesSearchContext) {
         setPearchSearchOptions(prev => ({ ...prev, requirePhoneNumbers: false }))
       }
     } else {
-      // Ativar filtro - mostrar modal de confirmação (consome créditos extras)
+      // Ativar filtro - mostrar modal de confirmação (enriquecimento via Apify $0.01/candidato)
       setPendingContactFilter(filterType)
       setShowContactFilterModal(true)
     }
@@ -405,6 +405,9 @@ export function useCandidatesSearch(ctx: CandidatesSearchContext) {
               recommendation: c.match_reasoning || ''
             },
             source: candidateSource,
+            contact_source: (c as unknown as Record<string, unknown>).contact_source as string || null,
+            enrichment_source: (c as unknown as Record<string, unknown>).enrichment_source as string || null,
+            is_enriching: (c as unknown as Record<string, unknown>).is_enriching as boolean || false,
             pearch_profile_id: c.pearch_profile_id,
             has_email: c.has_email ?? true,
             has_phone: c.has_phone ?? true,

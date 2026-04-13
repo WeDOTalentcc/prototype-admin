@@ -201,9 +201,7 @@ export function useGlobalSearchHub(
   }), [handleSave, handleCancel, hasChanges])
 
   const selectedLimit = limitOptions.find(o => o.value === settings.defaultLimit) || limitOptions[0]
-  const estimatedCreditsPerSearch = settings.searchType === 'fast'
-    ? selectedLimit.estimatedCredits.fast
-    : selectedLimit.estimatedCredits.pro
+  const estimatedCreditsPerSearch = selectedLimit.estimatedCredits.fast
 
   return {
     activeTab, setActiveTab,

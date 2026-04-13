@@ -52,15 +52,15 @@ export function SourceChangeConfirmModal({
               <div className="flex justify-between items-center text-xs">
                 <span className={`${textStyles.label} text-lia-text-primary`}>Custo por candidato:</span>
                 <span className="font-semibold text-lia-text-secondary">
-                  1 crédito
+                  1 cred + $0.01 Apify
                 </span>
               </div>
             </div>
           </div>
 
-          <div className="flex items-center gap-1.5 text-micro text-status-warning bg-status-warning/10 p-2 rounded-md">
+          <div className="flex items-center gap-1.5 text-micro text-status-info bg-status-info/10 p-2 rounded-md">
             <AlertCircle className="w-3 h-3 flex-shrink-0" />
-            <span>Cada candidato da base global consumirá 1 crédito.</span>
+            <span>Cada candidato custa 1 crédito base + $0.01 de enriquecimento Apify.</span>
           </div>
         </div>
 
