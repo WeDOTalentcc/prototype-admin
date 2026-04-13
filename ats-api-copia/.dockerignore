@@ -1,0 +1,44 @@
+# Ignore git
+.git
+.gitignore
+
+# Bundler config
+.bundle
+
+# Envs
+.env*
+!/.env*.erb
+
+# Rails secrets
+/config/master.key
+/config/credentials/*.key
+
+# Logs
+log/*
+!log/.keep
+
+# Tmp (NÃO INCLUI SUBDIRS)
+tmp/*
+!tmp/.keep
+
+# Ignore problematic tmp subfolders
+tmp/db/*
+tmp/db
+
+# Storage
+storage/*
+!storage/.keep
+
+# Node and assets
+node_modules/
+app/assets/builds/*
+!app/assets/builds/.keep
+public/assets
+
+# Dev and CI
+.github
+.devcontainer
+
+# Docker
+.dockerignore
+Dockerfile*
