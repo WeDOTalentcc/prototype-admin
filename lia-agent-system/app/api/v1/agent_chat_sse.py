@@ -197,6 +197,31 @@ async def sse_chat_stream(
             detail="Mensagem bloqueada por segurança. Por favor, reformule sua solicitação.",
         )
 
+
+    # LIA-P03: Add FairnessGuard and SecurityPatterns to agent SSE
+    try:
+        from app.shared.compliance.fairness_guard import FairnessGuard
+        from app.shared.robustness.security_patterns import check_input_security
+
+        _security_result = check_input_security(content)
+        if _security_result and _security_result.get("blocked"):
+            raise HTTPException(
+                status_code=400,
+                detail="Mensagem bloqueada por verificacao de seguranca."
+            )
+
+        _fg = FairnessGuard()
+        _fr = _fg.check(content)
+        if _fr and _fr.is_blocked:
+            raise HTTPException(
+                status_code=400,
+                detail=_fr.educational_message or "Sua solicitacao contem termos que podem gerar vies."
+            )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.debug("[LIA-P03] Agent SSE compliance skipped: %s", e)
+
     active_domain = req.domain or "recruiter_assistant"
     context = req.context or {}
     context.setdefault("company_id", company_id)
@@ -214,7 +239,6 @@ async def sse_chat_stream(
 
         yield format_sse_event(serialize_thinking(), next_id())
 
-        import asyncio
 
         async def _check_budget_async():
             try:

@@ -296,6 +296,32 @@ async def process_expanded_prompt(
     company_id = current_user.company_id
     user_id = str(current_user.id)
 
+    # LIA-P04: Compliance for expanded-prompt
+    try:
+        from app.shared.compliance.fairness_guard import FairnessGuard
+        from app.shared.robustness.security_patterns import check_input_security
+
+        _sec = check_input_security(request.message)
+        if _sec and _sec.get("blocked"):
+            return ExpandedPromptResponse(
+                response="Mensagem bloqueada por verificacao de seguranca.",
+                agent_used="compliance_block",
+                actions=[],
+                follow_up_suggestions=["Reformule sua solicitacao."],
+            )
+
+        _fg = FairnessGuard()
+        _fr = _fg.check(request.message)
+        if _fr and _fr.is_blocked:
+            return ExpandedPromptResponse(
+                response=_fr.educational_message or "Sua solicitacao contem termos que podem gerar vies.",
+                agent_used="compliance_block",
+                actions=[],
+                follow_up_suggestions=["Reformule sua solicitacao."],
+            )
+    except Exception as e:
+        logger.debug("[LIA-P04] Expanded-prompt compliance skipped: %s", e)
+
     try:
         # --- Phase 1: specialized pre-handlers for job_creation context ---
         if request.context_type == "job_creation":

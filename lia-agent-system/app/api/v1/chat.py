@@ -559,6 +559,24 @@ async def websocket_endpoint(
                 conversation_id = data.get("conversation_id")
                 user_content = data["content"]
 
+                # LIA-P02: Compliance enforcement for legacy WebSocket
+                try:
+                    from app.shared.compliance.fairness_guard import FairnessGuard
+                    from app.shared.robustness.security_patterns import check_input_security
+
+                    _security_result = check_input_security(user_content)
+                    if _security_result and _security_result.get("blocked"):
+                        await websocket.send_json({"type": "error", "message": "Mensagem bloqueada por seguranca."})
+                        continue
+
+                    _fg = FairnessGuard()
+                    _fr = _fg.check(user_content)
+                    if _fr and _fr.is_blocked:
+                        await websocket.send_json({"type": "error", "message": _fr.educational_message or "Solicitacao com possivel vies."})
+                        continue
+                except Exception as e:
+                    logger.debug("[LIA-P02] WS compliance check skipped: %s", e)
+
                 # Create or get conversation
                 if not conversation_id:
                     conversation = await repo.create_conversation(user_id)
@@ -739,6 +757,29 @@ async def stream_message(
             _tenant_snippet = _tenant_ctx.to_prompt_snippet()
         except Exception:
             pass  # Fail-safe: proceed without tenant context
+
+
+    # LIA-P01: Compliance enforcement for SSE streaming path
+    try:
+        from app.shared.compliance.fairness_guard import FairnessGuard
+        from app.shared.robustness.security_patterns import check_input_security
+
+        _security_result = check_input_security(user_content)
+        if _security_result and _security_result.get("blocked"):
+            return JSONResponse(
+                status_code=400,
+                content={"error": True, "message": "Mensagem bloqueada por verificacao de seguranca."}
+            )
+
+        _fairness_guard = FairnessGuard()
+        _fairness_result = _fairness_guard.check(user_content)
+        if _fairness_result and _fairness_result.is_blocked:
+            return JSONResponse(
+                status_code=400,
+                content={"error": True, "message": _fairness_result.educational_message or "Sua solicitacao contem termos que podem gerar vies."}
+            )
+    except Exception as e:
+        logger.debug("[LIA-P01] SSE compliance check skipped (fail-open): %s", e)
 
     return StreamingResponse(
         _sse_event_generator(
