@@ -652,6 +652,39 @@ class LLMService:
         strip_pii_for_llm_prompt(prompt)
 
         
+        # === E6: PII stripping (LGPD Art. 12 / EU AI Act Art. 13) ===
+        # Strip PII from each user/assistant message content before sending to provider.
+        for _msg in messages:
+            _content = _msg.get("content", "")
+            if isinstance(_content, str) and _content:
+                _msg["content"] = strip_pii_for_llm_prompt(_content)
+        if system_prompt:
+            system_prompt = strip_pii_for_llm_prompt(system_prompt)
+
+        # === E7: Audit logging ===
+        _cid = getattr(self, "_current_tenant", "") or get_current_llm_tenant()
+        logger.info(
+            "[LLMService] generate_structured tenant=%s provider=%s output_model=%s msg_count=%d",
+            _cid or "global", provider, output_model.__name__, len(messages),
+        )
+        try:
+            if _cid and _audit_svc:
+                await _audit_svc.log_decision(
+                    company_id=_cid,
+                    action="llm_call",
+                    resource_type="llm_provider",
+                    resource_id=f"{provider}:structured:{output_model.__name__}",
+                    details={
+                        "provider": provider,
+                        "method": "generate_structured",
+                        "output_model": output_model.__name__,
+                        "msg_count": len(messages),
+                    },
+                    user_id="system",
+                )
+        except Exception:
+            pass  # Audit non-blocking
+
         logger.info(f"Generating structured output: {output_model.__name__} via {provider}")
         
         if provider == "claude":

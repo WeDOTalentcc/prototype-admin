@@ -143,6 +143,15 @@ class AuthEnforcementMiddleware(BaseHTTPMiddleware):
         "/api/v1/candidates",
         "/api/v1/wsi",
         "/api/v1/search",
+        # LIA-P02 (Wave 2 Fase 3c): user-facing LLM endpoints that previously
+        # bypassed PromptInjectionGuard. Background handlers (/api/v1/automation)
+        # NOT added — payloads are internal events, not user input.
+        "/api/v1/interview-notes",
+        "/api/v1/interview_notes",  # both URL forms
+        "/api/v1/journey-mapping",
+        "/api/v1/journey_mapping",
+        "/api/v1/lia",
+        "/api/v1/company",
     )
 
     async def dispatch(self, request: Request, call_next):
