@@ -173,7 +173,7 @@ async def get_tenant_summary(
     db: AsyncSession = Depends(get_db),
 ):
     try:
-        data = await ConsumptionReportService.get_tenant_summary(db)
+        data = await ConsumptionReportService.get_tenant_summary(db, company_id=company_id)
         return TenantSummaryResponse(**data)
     except Exception as e:
         logger.error("Error generating tenant summary: %s", e, exc_info=True)

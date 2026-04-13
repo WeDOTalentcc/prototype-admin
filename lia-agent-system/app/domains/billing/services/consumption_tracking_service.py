@@ -42,6 +42,7 @@ PRICING_TABLE = {
 CATEGORY_BUDGETS = {
     "apify": APIFY_MONTHLY_BUDGET_USD,
     "llm": LLM_MONTHLY_BUDGET_USD,
+    "pearch": float(PEARCH_MONTHLY_BUDGET_CREDITS),
 }
 
 
@@ -219,6 +220,8 @@ class ConsumptionTrackingService:
             "[ConsumptionTracking] Pearch %s recorded: company=%s credits=%d status=%s",
             operation, company_id, credits_consumed, record.result_status,
         )
+
+        await ConsumptionTrackingService._check_budget_alert(db, company_id, "pearch")
 
         from app.domains.billing.services.consumption_logger import ConsumptionAuditLogger
         ConsumptionAuditLogger.log_operation(
@@ -409,21 +412,29 @@ class ConsumptionTrackingService:
         month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
 
         provider_filter = category
-        if category == "apify":
-            provider_filter = "apify"
-        elif category == "llm":
-            provider_filter = "llm"
 
-        result = await db.execute(
-            select(func.sum(ExternalApiConsumption.cost_usd)).where(
-                and_(
-                    ExternalApiConsumption.company_id == company_id,
-                    ExternalApiConsumption.provider == provider_filter,
-                    ExternalApiConsumption.created_at >= month_start,
+        if category == "pearch":
+            result = await db.execute(
+                select(func.sum(ExternalApiConsumption.credits_consumed)).where(
+                    and_(
+                        ExternalApiConsumption.company_id == company_id,
+                        ExternalApiConsumption.provider == "pearch",
+                        ExternalApiConsumption.created_at >= month_start,
+                    )
                 )
             )
-        )
-        total_usd = result.scalar() or 0.0
+            total_usd = float(result.scalar() or 0)
+        else:
+            result = await db.execute(
+                select(func.sum(ExternalApiConsumption.cost_usd)).where(
+                    and_(
+                        ExternalApiConsumption.company_id == company_id,
+                        ExternalApiConsumption.provider == provider_filter,
+                        ExternalApiConsumption.created_at >= month_start,
+                    )
+                )
+            )
+            total_usd = result.scalar() or 0.0
 
         budget = ConsumptionTrackingService.get_tenant_budget(company_id, category)
 

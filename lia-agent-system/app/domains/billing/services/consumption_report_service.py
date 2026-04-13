@@ -251,9 +251,14 @@ class ConsumptionReportService:
     @staticmethod
     async def get_tenant_summary(
         db: AsyncSession,
+        company_id: str | None = None,
     ) -> dict[str, Any]:
         now = datetime.utcnow()
         month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+
+        conditions = [ExternalApiConsumption.created_at >= month_start]
+        if company_id:
+            conditions.append(ExternalApiConsumption.company_id == company_id)
 
         tenant_query = select(
             ExternalApiConsumption.company_id,
@@ -262,7 +267,7 @@ class ConsumptionReportService:
             func.count(ExternalApiConsumption.id).label("count"),
             func.sum(case((ExternalApiConsumption.success == True, 1), else_=0)).label("success_count"),
         ).where(
-            ExternalApiConsumption.created_at >= month_start,
+            and_(*conditions),
         ).group_by(
             ExternalApiConsumption.company_id
         ).order_by(
