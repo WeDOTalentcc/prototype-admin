@@ -13,14 +13,16 @@ from app.core.database import get_db
 from app.domains.notifications.repositories.alert_repository import AlertRepository
 from app.domains.job_management.services.job_alert_service import job_alert_service
 from app.models.alert import AlertConfig, AlertPreference, AlertSeverity
+from app.shared.tenant_guard import get_verified_company_id
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/alerts", tags=["alerts"])
 
 
+# DEPRECATED — use get_verified_company_id from app.shared.tenant_guard
 def require_company_id(x_company_id: str | None = Header(None, alias="X-Company-ID")) -> str:
-    """Dependency to require and validate X-Company-ID header."""
+    """DEPRECATED: Use get_verified_company_id instead. Kept for backward compatibility."""
     if not x_company_id:
         raise HTTPException(
             status_code=403,
@@ -172,7 +174,7 @@ DEFAULT_ALERTS = [
 
 @router.get("/config", response_model=AlertConfigResponse)
 async def get_alert_config(
-    company_id: str = Depends(require_company_id),
+    company_id: str = Depends(get_verified_company_id),
     repo: AlertRepository = Depends(get_alert_repo),
 ):
     """Get current alert configuration. Requires X-Company-ID header for multi-tenant isolation."""
@@ -199,7 +201,7 @@ async def get_alert_config(
 @router.put("/config", response_model=AlertConfigResponse)
 async def update_alert_config(
     data: AlertConfigRequest,
-    company_id: str = Depends(require_company_id),
+    company_id: str = Depends(get_verified_company_id),
     repo: AlertRepository = Depends(get_alert_repo),
 ):
     """Update alert configuration. Requires X-Company-ID header for multi-tenant isolation."""
@@ -288,7 +290,7 @@ DEFAULT_ALERT_PREFERENCES = [
 @router.get("/preferences", response_model=None)
 async def get_alert_preferences(
     user_id: str = Query(..., description="User ID (required)"),
-    company_id: str = Depends(require_company_id),
+    company_id: str = Depends(get_verified_company_id),
     repo: AlertRepository = Depends(get_alert_repo),
 ):
     """Get users alert preferences. Requires X-Company-ID header for multi-tenant isolation."""
@@ -327,7 +329,7 @@ async def get_alert_preferences(
 @router.post("/preferences", response_model=None)
 async def create_alert_preferences(
     data: AlertPreferenceRequest,
-    company_id: str = Depends(require_company_id),
+    company_id: str = Depends(get_verified_company_id),
     repo: AlertRepository = Depends(get_alert_repo),
 ):
     """Create or update users alert preferences. Requires X-Company-ID header for multi-tenant isolation."""
@@ -375,7 +377,7 @@ async def create_alert_preferences(
 @router.put("/preferences", response_model=None)
 async def update_alert_preferences(
     data: AlertPreferenceRequest,
-    company_id: str = Depends(require_company_id),
+    company_id: str = Depends(get_verified_company_id),
     repo: AlertRepository = Depends(get_alert_repo),
 ):
     """Update users alert preferences. Requires X-Company-ID header for multi-tenant isolation."""

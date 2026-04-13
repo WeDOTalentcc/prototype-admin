@@ -23,6 +23,7 @@ from app.domains.communication.services.whatsapp_service import (
     SendWhatsAppTemplateRequest,
     whatsapp_service,
 )
+from app.shared.tenant_guard import get_verified_company_id
 from app.schemas.communication import (
     CommunicationCreate,
     CommunicationListResponse,
@@ -36,8 +37,9 @@ router = APIRouter(prefix="/communications", tags=["communications"])
 candidate_communications_router = APIRouter(prefix="/candidates", tags=["candidates"])
 
 
+# DEPRECATED — use get_verified_company_id from app.shared.tenant_guard
 def require_company_id(x_company_id: str | None = Header(None, alias="X-Company-ID")) -> str:
-    """Dependency to require and validate X-Company-ID header for multi-tenant security."""
+    """DEPRECATED: Use get_verified_company_id instead. Kept for backward compatibility."""
     if not x_company_id:
         raise HTTPException(
             status_code=403,
@@ -282,7 +284,7 @@ async def get_candidate_communications(
 @router.post("/email/send", response_model=dict[str, Any], status_code=status.HTTP_200_OK)
 async def send_email(
     request: SendEmailRequest,
-    company_id: str = Depends(require_company_id),
+    company_id: str = Depends(get_verified_company_id),
     mailgun_svc: MailgunEmailService = Depends(get_mailgun_email_service),
 ):
     """
@@ -347,7 +349,7 @@ async def send_email(
 @router.post("/email/send-template", response_model=dict[str, Any], status_code=status.HTTP_200_OK)
 async def send_template_email(
     request: SendTemplateEmailRequest,
-    company_id: str = Depends(require_company_id),
+    company_id: str = Depends(get_verified_company_id),
     mailgun_svc: MailgunEmailService = Depends(get_mailgun_email_service),
 ):
     """
@@ -400,7 +402,7 @@ async def send_template_email(
 @router.post("/email/send-bulk", response_model=dict[str, Any], status_code=status.HTTP_200_OK)
 async def send_bulk_email(
     request: SendBulkEmailRequest,
-    company_id: str = Depends(require_company_id),
+    company_id: str = Depends(get_verified_company_id),
     mailgun_svc: MailgunEmailService = Depends(get_mailgun_email_service),
 ):
     """
@@ -446,7 +448,7 @@ async def send_bulk_email(
 @router.post("/whatsapp/send", response_model=dict[str, Any], status_code=status.HTTP_200_OK)
 async def send_whatsapp(
     request: SendWhatsAppRequest,
-    company_id: str = Depends(require_company_id)
+    company_id: str = Depends(get_verified_company_id)
 ):
     """
     Send a WhatsApp message via Twilio.
@@ -499,7 +501,7 @@ async def send_whatsapp(
 @router.post("/whatsapp/send-template", response_model=dict[str, Any], status_code=status.HTTP_200_OK)
 async def send_whatsapp_template(
     request: SendWhatsAppTemplateRequest,
-    company_id: str = Depends(require_company_id)
+    company_id: str = Depends(get_verified_company_id)
 ):
     """
     Send a WhatsApp message using a predefined template.
@@ -546,7 +548,7 @@ async def send_whatsapp_template(
 @router.post("/whatsapp/send-interactive", response_model=dict[str, Any], status_code=status.HTTP_200_OK)
 async def send_whatsapp_interactive(
     request: SendInteractiveRequest,
-    company_id: str = Depends(require_company_id)
+    company_id: str = Depends(get_verified_company_id)
 ):
     """
     Send an interactive WhatsApp message with buttons.
@@ -606,7 +608,7 @@ class TransferCommunicationsRequest(BaseModel):
 @router.post("/transfer", response_model=None)
 async def transfer_communications(
     request: TransferCommunicationsRequest,
-    company_id: str = Depends(require_company_id)
+    company_id: str = Depends(get_verified_company_id)
 ):
     """
     Transfer pending communications from previous recruiters to a new recruiter.

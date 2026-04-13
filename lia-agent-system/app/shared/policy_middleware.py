@@ -41,7 +41,18 @@ async def get_policy_from_request(
         or company_id
         or request.path_params.get("company_id")
     )
-    
+
+    # LIA-C07: Cross-check against JWT-verified company_id
+    jwt_company_id = getattr(request.state, "company_id", None)
+    if jwt_company_id and resolved_company_id and str(resolved_company_id) != str(jwt_company_id):
+        logger.warning(
+            "[LIA-C07] company_id mismatch: header=%s, jwt=%s. Using JWT value.",
+            resolved_company_id, jwt_company_id
+        )
+        resolved_company_id = jwt_company_id
+    elif jwt_company_id and not resolved_company_id:
+        resolved_company_id = jwt_company_id
+
     if not resolved_company_id:
         logger.debug("No company_id found in request, returning defaults")
         return _get_defaults_dict()

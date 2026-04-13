@@ -156,6 +156,21 @@ class DomainWorkflow:
 
             state = await self._format(state)
 
+            # LIA-A02: LLM interpretation for domain execution results
+            # If the formatted response looks like a raw template, interpret it
+            if state.formatted_response and state.formatted_response.message:
+                try:
+                    _interpreted_msg = await self._interpret_if_technical(
+                        state.formatted_response.message,
+                        query,
+                        {},
+                    )
+                    if _interpreted_msg != state.formatted_response.message:
+                        state.formatted_response.message = _interpreted_msg
+                        state.log_step("agentic_interpret", {"status": "rewritten"})
+                except Exception as _interp_exc:
+                    logger.debug("[LIA-A02] Interpretation skipped (fail-open): %s", _interp_exc)
+
             # LIA-C02: Post-process compliance (FactCheck via ComplianceDomainPrompt)
             _ComplianceDomainPrompt2 = _get_compliance_class()
             if (
@@ -334,6 +349,19 @@ class DomainWorkflow:
             except Exception as e:
                 logger.warning(f"SmartExtractor failed (non-blocking): {e}")
                 state.log_step("smart_extract", {"status": "error", "error": str(e)})
+
+            # LIA-I02: Info/Action disambiguation
+            # If the user asks "como funciona X?", tag it so domains can route to explanation
+            try:
+                from app.shared.services.keyword_intent_matcher import KeywordIntentMatcher
+                _info_matcher = KeywordIntentMatcher()
+                if _info_matcher.is_info_query(state.query):
+                    logger.info("[LIA-I02] Info query detected: %s", state.query[:80])
+                    state.metadata["is_info_query"] = True
+                    if hasattr(state.context, "current_data"):
+                        state.context.current_data["is_info_query"] = True
+            except Exception as _info_exc:
+                logger.debug("[LIA-I02] Info detection skipped: %s", _info_exc)
 
             intent_result = await state.domain.process_intent(state.query, state.context)
             state.intent_result = intent_result
@@ -529,6 +557,58 @@ class DomainWorkflow:
         })
 
         return state
+
+    # ------------------------------------------------------------------
+    # LIA-A02 — LLM interpretation for domain execution results
+    # ------------------------------------------------------------------
+
+    async def _interpret_if_technical(self, response_text: str, question: str, context: dict) -> str:
+        """LIA-A02: Interpret technical/template responses into natural language."""
+        # Skip if response is already natural (> 200 chars, has multiple sentences)
+        # FIX-5: Skip only if response is clearly natural language (long + conversational)
+        if len(response_text) > 500 and response_text.count('.') > 5:
+            return response_text
+
+        # Skip known natural patterns
+        # FIX-6: Expanded technical patterns for better detection
+        _technical_patterns = [
+            "encaminhada", "executada", "realizada", "cancelada",
+            "Acao ", "Operacao ", "Lista ", "Resultado:",
+            "Candidato movido", "Email enviado", "Etapa atualizada",
+            "Registro criado", "Registro atualizado", "Registro removido",
+            "Vaga criada", "Vaga atualizada", "Agente criado",
+            "Processo seletivo", "Pipeline atualizado",
+            "total:", "items:", "count:",
+            "ID:", "id:", "uuid:",
+        ]
+        is_technical = any(p in response_text for p in _technical_patterns)
+        if not is_technical:
+            return response_text
+
+        import os as _os
+        if _os.getenv("LIA_AGENTIC_INTERPRET", "true").lower() not in ("true", "1"):
+            return response_text
+
+        try:
+            from app.domains.ai.services.llm import LLMService
+            llm_svc = LLMService()
+
+            prompt = (
+                f"O usuario perguntou: {question}\n"
+                f"O sistema respondeu: {response_text}\n\n"
+                f"Reescreva essa resposta de forma natural, amigavel e informativa. "
+                f"Mantenha o conteudo. Seja conciso."
+            )
+
+            import asyncio as _asyncio
+            # FIX-7: Timeout to prevent slow LLM calls from blocking
+            result = await _asyncio.wait_for(
+                llm_svc.generate(prompt=prompt, provider="gemini", max_tokens=300),
+                timeout=8.0,
+            )
+            return result.strip() if result else response_text
+        except Exception:
+            return response_text
 
     def _build_error_response(self, state: WorkflowState) -> DomainResponse:
         return DomainResponse.error_response(
