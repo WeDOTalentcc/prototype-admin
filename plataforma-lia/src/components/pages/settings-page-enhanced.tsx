@@ -194,6 +194,7 @@ const getDefaultSections = (): SettingsSection[] => [
     subsections: [
       { id: 'dashboard', title: 'Dashboard', description: 'Visão geral de fairness', fields: ['fairness_summary'] },
       { id: 'audit-log', title: 'Auditoria', description: 'Log de eventos de compliance', fields: ['audit_log'] },
+      { id: 'studio', title: 'Studio', description: 'Compliance dos agentes Studio', fields: ['studio_compliance'] },
       { id: 'export', title: 'Exportar', description: 'Relatórios para auditores', fields: ['export_reports'] },
     ]
   },

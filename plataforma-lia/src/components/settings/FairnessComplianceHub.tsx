@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from"@/
 import { Shield, AlertTriangle, TrendingDown, Download } from"lucide-react"
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from"recharts"
 import { textStyles, cardStyles } from"@/lib/design-tokens"
+import { StudioComplianceView } from"./StudioComplianceView"
 
 interface FairnessSummary {
   total_blocks: number
@@ -53,6 +54,11 @@ interface FairnessComplianceHubProps {
 }
 
 export function FairnessComplianceHub({ activeSubsection }: FairnessComplianceHubProps) {
+  // P2.3: Studio subsection has its own dedicated view
+  if (activeSubsection === "studio") {
+    return <StudioComplianceView />
+  }
+
   const [period, setPeriod] = useState("30")
   const [summary, setSummary] = useState<FairnessSummary | null>(null)
   const [logs, setLogs] = useState<AuditLogEntry[]>([])

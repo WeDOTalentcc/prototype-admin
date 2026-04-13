@@ -772,6 +772,141 @@ async def search_agents_by_name(
     }
 
 
+@router.get("/studio/compliance-summary", summary="Aggregated compliance metrics for Studio")
+async def get_studio_compliance_summary(
+    period_days: int = Query(30, ge=1, le=365),
+    current_user=Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Aggregated compliance metrics across all Studio agents in the period.
+
+    Returns:
+      - Total executions and breakdown by compliance_status (pass/blocked)
+      - Top agents by blocked execution count (highest risk)
+      - Daily trend (executions per day)
+      - Active agents count
+      - Block rate percentage
+
+    Used by Settings > Fairness & Compliance > Studio dashboard.
+    """
+    from datetime import datetime, timedelta, timezone
+    from sqlalchemy import select, and_, func, desc, cast, Date
+    from lia_models.custom_agent import CustomAgent
+    from lia_models.agent_execution_log import AgentExecutionLog
+
+    since = datetime.now(timezone.utc) - timedelta(days=period_days)
+    base_filter = and_(
+        AgentExecutionLog.company_id == current_user.company_id,
+        AgentExecutionLog.created_at >= since,
+    )
+
+    # Totals
+    totals = await db.execute(
+        select(
+            func.count(AgentExecutionLog.id).label("total"),
+            func.coalesce(
+                func.sum(
+                    func.case((AgentExecutionLog.compliance_status != "pass", 1), else_=0)
+                ),
+                0,
+            ).label("blocked"),
+            func.coalesce(func.avg(AgentExecutionLog.confidence), 0.0).label("avg_confidence"),
+        ).where(base_filter)
+    )
+    t = totals.one()
+    total_exec = t.total or 0
+    blocked = t.blocked or 0
+    block_rate = round((blocked / total_exec * 100), 2) if total_exec > 0 else 0.0
+
+    # Breakdown by compliance_status
+    status_breakdown = await db.execute(
+        select(
+            AgentExecutionLog.compliance_status,
+            func.count(AgentExecutionLog.id).label("count"),
+        )
+        .where(base_filter)
+        .group_by(AgentExecutionLog.compliance_status)
+    )
+    by_status = {row.compliance_status or "unknown": row.count for row in status_breakdown.all()}
+
+    # Top blocked agents (highest risk)
+    top_blocked_q = await db.execute(
+        select(
+            AgentExecutionLog.agent_id,
+            func.count(AgentExecutionLog.id).label("blocks"),
+        )
+        .where(
+            and_(
+                base_filter,
+                AgentExecutionLog.compliance_status != "pass",
+            )
+        )
+        .group_by(AgentExecutionLog.agent_id)
+        .order_by(desc("blocks"))
+        .limit(5)
+    )
+    top_blocked_rows = list(top_blocked_q.all())
+
+    top_blocked_agents = []
+    for row in top_blocked_rows:
+        agent_res = await db.execute(
+            select(CustomAgent).where(CustomAgent.id == row.agent_id)
+        )
+        agent = agent_res.scalar_one_or_none()
+        top_blocked_agents.append({
+            "agent_id": str(row.agent_id),
+            "agent_name": agent.name if agent else "(deleted)",
+            "blocked_count": row.blocks,
+        })
+
+    # Daily trend (executions per day)
+    trend_q = await db.execute(
+        select(
+            cast(AgentExecutionLog.created_at, Date).label("day"),
+            func.count(AgentExecutionLog.id).label("count"),
+            func.coalesce(
+                func.sum(
+                    func.case((AgentExecutionLog.compliance_status != "pass", 1), else_=0)
+                ),
+                0,
+            ).label("blocked"),
+        )
+        .where(base_filter)
+        .group_by("day")
+        .order_by("day")
+    )
+    trend = [
+        {
+            "day": row.day.isoformat() if row.day else None,
+            "executions": row.count,
+            "blocked": row.blocked or 0,
+        }
+        for row in trend_q.all()
+    ]
+
+    # Active agents
+    active_count = await db.scalar(
+        select(func.count(CustomAgent.id)).where(
+            and_(
+                CustomAgent.company_id == current_user.company_id,
+                CustomAgent.status == "active",
+            )
+        )
+    ) or 0
+
+    return {
+        "period_days": period_days,
+        "total_executions": total_exec,
+        "blocked_executions": blocked,
+        "block_rate_pct": block_rate,
+        "avg_confidence": round(float(t.avg_confidence or 0), 3),
+        "active_agents": active_count,
+        "by_status": by_status,
+        "top_blocked_agents": top_blocked_agents,
+        "trend": trend,
+    }
+
+
 @router.get("/studio/metrics/summary", summary="Aggregated Studio metrics for dashboard/chat")
 async def get_studio_metrics_summary(
     period_days: int = Query(7, ge=1, le=90),
