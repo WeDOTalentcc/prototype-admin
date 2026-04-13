@@ -9,7 +9,7 @@ Uses existing infrastructure:
   - ToolExecutor for safe execution with ToolExecutionContext
   - LLMService.generate_with_tools() for function calling (Claude & Gemini)
 
-Feature-flagged via LIA_AGENTIC_LOOP env var (default: false).
+Enabled by default. Disable with LIA_AGENTIC_LOOP=false..
 """
 import asyncio
 import json

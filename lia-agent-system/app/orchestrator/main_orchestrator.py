@@ -329,17 +329,33 @@ class MainOrchestrator:
             # If Phase 1 did not match, let the LLM decide whether to call tools
             # via function calling. Feature-flagged: LIA_AGENTIC_LOOP=true
             import os as _os_flag
-            if _os_flag.getenv("LIA_AGENTIC_LOOP", "false").lower() in ("true", "1"):
+            if _os_flag.getenv("LIA_AGENTIC_LOOP", "true").lower() not in ("false", "0"):
                 try:
                     from app.orchestrator.agentic_loop import agentic_loop
+
+                    # LIA-LLM-1: Respect Choose Your AI — use tenant's chat provider
+                    _agentic_provider = "gemini"
+                    _loop_company_id = getattr(ctx, "company_id", None)
+                    if _loop_company_id:
+                        try:
+                            from app.shared.tenant_llm_context import get_tenant_llm_config as _get_llm_cfg
+                            _tenant_cfg = await _get_llm_cfg(_loop_company_id)
+                            if _tenant_cfg:
+                                _agentic_provider = (
+                                    _tenant_cfg.get("routing", {}).get("chat")
+                                    or _tenant_cfg.get("primary_provider")
+                                    or "gemini"
+                                )
+                        except Exception:
+                            pass  # Fail-open: use gemini default
 
                     _agentic_result = await agentic_loop.run(
                         user_message=ctx.message,
                         system_prompt="",
                         conversation_history=ctx.extra.get("conversation_history", []),
-                        company_id=getattr(ctx, "company_id", None),
+                        company_id=_loop_company_id,
                         user_id=getattr(ctx, "user_id", None),
-                        provider="gemini",
+                        provider=_agentic_provider,
                     )
 
                     if _agentic_result and _agentic_result.get("response"):

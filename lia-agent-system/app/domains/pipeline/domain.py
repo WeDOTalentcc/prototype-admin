@@ -3,6 +3,7 @@ PipelineTransitionDomain - Exposes pipeline transitions as agent-callable tools.
 Part of the domain-driven architecture for agent orchestration.
 """
 import logging
+from pathlib import Path
 from typing import Any
 
 from app.domains.base import DomainAction, DomainContext, DomainResponse, IntentResult
