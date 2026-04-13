@@ -114,7 +114,7 @@ export default function LoginPage() {
             Recrutamento <span className="text-wedo-cyan font-semibold">simples</span>
           </p>
           <p className="mt-5 text-[13px] text-lia-text-tertiary dark:text-lia-text-tertiary tracking-wide border-l-2 border-wedo-cyan/50 pl-3">
-            Conecta ao seu ATS&nbsp;&nbsp;·&nbsp;&nbsp;Ou seja o seu
+            <span className="font-bold">Conecta ao seu ATS</span>&nbsp;&nbsp;·&nbsp;&nbsp;Ou fazemos o trabalho completo.
           </p>
         </div>
 

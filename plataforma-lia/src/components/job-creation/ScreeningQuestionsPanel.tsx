@@ -53,7 +53,7 @@ export function ScreeningQuestionsPanel({
     toggleBlock,
     handleModelChange,
   } = useScreeningQuestionsPanel({
-    jobTitle, department, seniority, bigFiveProfile, skills,
+    jobTitle, department, seniority, bigFiveProfile, competências,
     behavioralCompetencies, isAffirmative, affirmativeType, onQuestionsChange,
   })
 
