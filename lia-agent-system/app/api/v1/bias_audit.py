@@ -19,12 +19,14 @@ from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
+from app.shared.tenant_guard import get_verified_company_id
 from app.shared.services.bias_audit_service import (
     BiasAuditReport,
     bias_audit_service,
 )
 
 
+# DEPRECATED: Use get_verified_company_id from tenant_guard instead (LIA-C01)
 def _require_company_id(
     x_company_id: str | None = Header(None, alias="X-Company-ID"),
 ) -> str:
@@ -98,7 +100,7 @@ def _to_response(report: BiasAuditReport) -> BiasAuditReportResponse:
 @router.get("/job/{job_id}", response_model=BiasAuditReportResponse)
 async def get_bias_audit(
     job_id: UUID,
-    company_id: str = Depends(_require_company_id),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db),
 ) -> BiasAuditReportResponse:
     """
@@ -126,7 +128,7 @@ async def get_bias_audit(
 @router.get("/job/{job_id}/history", response_model=None)
 async def get_bias_audit_history(
     job_id: str,
-    company_id: str = Depends(_require_company_id),
+    company_id: str = Depends(get_verified_company_id),
     limit: int = Query(10, ge=1, le=100),
     db: AsyncSession = Depends(get_db),
 ):

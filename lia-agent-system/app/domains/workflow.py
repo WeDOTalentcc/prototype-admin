@@ -403,6 +403,21 @@ class DomainWorkflow:
             return state
 
         try:
+            # LIA-C06: Compliance pre-check before agent delegation
+            if hasattr(state.domain, "pre_process"):
+                try:
+                    _compliance_result = await state.domain.pre_process(state.query, state.context)
+                    if _compliance_result and getattr(_compliance_result, "is_blocked", False):
+                        state.raw_response = _compliance_result
+                        state.log_step("execute", {
+                            "status": "blocked_by_compliance",
+                            "action_id": state.intent_result.action_id if state.intent_result else "",
+                            "executor": "compliance_pre_check",
+                        })
+                        return state
+                except Exception as e:
+                    logger.debug("[LIA-C06] Compliance pre-check skipped (fail-open): %s", e)
+
             # Tenta delegar para o ReAct agent do domínio (com raciocínio autônomo)
             # Fallback para execute_action (heurística) se o agente não estiver disponível
             react_response = await self._try_react_agent(state)

@@ -12,6 +12,7 @@ import logging
 import uuid
 from typing import Dict, Any, List, Optional, Tuple
 
+from app.domains.compliance_base import ComplianceDomainPrompt
 from app.domains.base import (
     DomainPrompt,
     DomainAction,
@@ -40,7 +41,7 @@ def _mask_pii(text: str) -> str:
 
 
 @register_domain
-class JobCreationDomain(DomainPrompt):
+class JobCreationDomain(ComplianceDomainPrompt):
 
     def __init__(self):
         self._graph = None
@@ -204,11 +205,18 @@ class JobCreationDomain(DomainPrompt):
             ),
         ]
 
-    def get_system_prompt(self, context: DomainContext) -> str:
+    def get_system_prompt(self, context: DomainContext, **kwargs) -> str:
+        # LIA-C01: Merge compliance base prompt with domain-specific prompt
+        _base_prompt = ""
+        try:
+            _base_prompt = super().get_system_prompt(context, **kwargs)
+        except Exception:
+            pass  # fail-open: if compliance base unavailable, use domain prompt only
+
         wizard_state = context.metadata.get("wizard_state", {})
         current_stage = wizard_state.get("current_stage", "not_started")
 
-        return f"""Voce e a LIA, assistente de recrutamento da WeDOTalent.
+        _domain_prompt = f"""Voce e a LIA, assistente de recrutamento da WeDOTalent.
 Voce esta guiando o recrutador pelo wizard de criacao de vaga usando a metodologia WSI.
 
 ETAPA ATUAL: {current_stage}
@@ -237,6 +245,10 @@ FLUXO DO WIZARD:
 
 Responda de forma conversacional, guiando o recrutador pela etapa atual.
 Sempre informe qual e a proxima etapa e o que precisa ser feito."""
+        # Combine compliance base + domain-specific prompt
+        if _base_prompt:
+            return f"{_base_prompt}\n\n---\n\n{_domain_prompt}"
+        return _domain_prompt
 
     def process_intent(self, user_query: str, context: DomainContext) -> Dict[str, Any]:
         """Route user message to the appropriate wizard action."""

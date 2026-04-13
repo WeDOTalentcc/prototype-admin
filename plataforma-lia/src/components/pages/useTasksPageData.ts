@@ -17,13 +17,19 @@ export function useTasksPageData(onNavigate?: (page: string) => void) {
     setError(null)
     try {
       let res: Response | null = null
-      for (let attempt = 0; attempt < 3; attempt++) {
-        res = await fetch('/api/backend-proxy/interviews/?limit=100', {
-          cache: 'no-store',
-          headers: { 'Cache-Control': 'no-cache' },
-        })
-        if (res.ok || (res.status >= 400 && res.status < 500)) break
-        await new Promise(r => setTimeout(r, 2000 * (attempt + 1)))
+      for (let attempt = 0; attempt <= 6; attempt++) {
+        try {
+          res = await fetch('/api/backend-proxy/interviews/?limit=100', {
+            cache: 'no-store',
+            headers: { 'Cache-Control': 'no-cache' },
+            signal: AbortSignal.timeout(30000),
+          })
+          if (res.ok || (res.status >= 400 && res.status < 500)) break
+        } catch {
+          res = null
+        }
+        const delay = Math.min(3000 * Math.pow(1.5, attempt), 15000)
+        await new Promise(r => setTimeout(r, delay))
       }
       if (!res || !res.ok) throw new Error(`Erro ${res?.status || 'desconhecido'}`)
       const data: BackendInterview[] = await res.json()

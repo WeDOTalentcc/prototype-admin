@@ -17,12 +17,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.shared.services.ml_feedback_service import FeedbackSignal, MLFeedbackService
 from app.domains.analytics.services.ml_feedback_service import get_ml_feedback_service
+from app.shared.tenant_guard import get_verified_company_id
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/ml-feedback", tags=["ml-feedback"])
 
 
+# DEPRECATED — use get_verified_company_id
 def _require_company_id(
     x_company_id: str | None = Header(None, alias="X-Company-ID"),
 ) -> str:
@@ -61,7 +63,7 @@ class FeedbackSignalRequest(BaseModel):
 @router.post("/signal", response_model=None)
 async def record_feedback_signal(
     payload: FeedbackSignalRequest,
-    company_id: str = Depends(_require_company_id),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db),
     service: MLFeedbackService = Depends(get_ml_feedback_service),
 ) -> dict:
@@ -87,7 +89,7 @@ async def record_feedback_signal(
 @router.get("/weights", response_model=None)
 async def get_adaptive_weights(
     job_id: str = Query(..., description="ID da vaga"),
-    company_id: str = Depends(_require_company_id),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db),
     service: MLFeedbackService = Depends(get_ml_feedback_service),
 ) -> dict:

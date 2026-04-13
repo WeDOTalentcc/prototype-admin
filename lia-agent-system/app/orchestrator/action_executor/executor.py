@@ -49,7 +49,7 @@ class ActionExecutorService:
     ) -> ActionResult:
         # Support message-based call (from MainOrchestrator)
         if message and not intent:
-            detected = _detect_intent_from_message(message)
+            detected = _detect_intent_from_message(message, conversation_history=(context or {}).get("conversation_history"))
             if not detected:
                 return ActionResult(status="not_actionable")
             intent = detected

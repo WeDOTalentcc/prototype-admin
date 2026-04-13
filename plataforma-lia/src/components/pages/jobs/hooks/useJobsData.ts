@@ -23,18 +23,40 @@ interface UseJobsDataReturn {
   }
 }
 
+async function waitForServer(maxWaitMs = 60_000): Promise<boolean> {
+  const start = Date.now()
+  while (Date.now() - start < maxWaitMs) {
+    try {
+      const r = await fetch('/api/backend-proxy/health', { signal: AbortSignal.timeout(5000) })
+      if (r.ok) return true
+    } catch {}
+    await new Promise(r => setTimeout(r, 3000))
+  }
+  return false
+}
+
+let serverReady = false
+
 async function fetchWithRetry<T>(
   fn: () => Promise<T>,
-  retries = 4,
-  baseDelayMs = 2000,
+  retries = 6,
+  baseDelayMs = 3000,
 ): Promise<T> {
+  if (!serverReady) {
+    console.debug('[useJobsData] waiting for server readiness...')
+    serverReady = await waitForServer(90_000)
+    if (!serverReady) {
+      console.warn('[useJobsData] server not ready after 90s, attempting fetch anyway')
+    }
+  }
+
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
       return await fn()
     } catch (err) {
       if (attempt === retries) throw err
-      const delay = baseDelayMs * (attempt + 1)
-      console.warn(`[useJobsData] fetch attempt ${attempt + 1} failed, retrying in ${delay}ms`, err instanceof Error ? err.message : err)
+      const delay = Math.min(baseDelayMs * Math.pow(1.5, attempt), 15000)
+      console.warn(`[useJobsData] fetch attempt ${attempt + 1} failed, retrying in ${Math.round(delay)}ms`, err instanceof Error ? err.message : err)
       await new Promise(r => setTimeout(r, delay))
     }
   }

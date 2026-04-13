@@ -292,27 +292,18 @@ function mapJobToJobWithAlert(job: Partial<BackendJob>): JobWithAlert {
 
 const RETRYABLE_STATUSES = new Set([502, 503, 504, 429])
 
-async function fetchEndpointWithRetry(url: string, retries = 3, baseDelayMs = 2000): Promise<Response> {
+async function fetchEndpointWithRetry(url: string, retries = 6, baseDelayMs = 3000): Promise<Response> {
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
-      const controller = new AbortController()
-      const timeout = setTimeout(() => controller.abort(), 90000)
-      let res: Response
-      try {
-        res = await fetch(url, { signal: controller.signal })
-      } finally {
-        clearTimeout(timeout)
-      }
+      const res = await fetch(url, { signal: AbortSignal.timeout(30000) })
       if (res.ok || attempt === retries || !RETRYABLE_STATUSES.has(res.status)) {
         return res
       }
-      const delay = baseDelayMs * (attempt + 1)
-      await new Promise(r => setTimeout(r, delay))
     } catch (err) {
       if (attempt === retries) throw err
-      const delay = baseDelayMs * (attempt + 1)
-      await new Promise(r => setTimeout(r, delay))
     }
+    const delay = Math.min(baseDelayMs * Math.pow(1.5, attempt), 15000)
+    await new Promise(r => setTimeout(r, delay))
   }
   throw new Error("unreachable")
 }

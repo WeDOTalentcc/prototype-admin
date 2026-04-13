@@ -11,17 +11,36 @@ import { mapCandidateToInternal as _mapCandidateToInternal } from "@/components/
 import type { Candidate } from "@/components/pages/candidates/types"
 import type { JobVacancy, EmailTemplate } from "@/services/lia-api"
 
+async function waitForServer(maxWaitMs = 60_000): Promise<boolean> {
+  const start = Date.now()
+  while (Date.now() - start < maxWaitMs) {
+    try {
+      const r = await fetch('/api/backend-proxy/health', { signal: AbortSignal.timeout(5000) })
+      if (r.ok) return true
+    } catch {}
+    await new Promise(r => setTimeout(r, 3000))
+  }
+  return false
+}
+
+let serverReady = false
+
 async function fetchWithRetry<T>(
   fn: () => Promise<T>,
-  retries = 3,
-  baseDelayMs = 2000,
+  retries = 6,
+  baseDelayMs = 3000,
 ): Promise<T> {
+  if (!serverReady) {
+    serverReady = await waitForServer(90_000)
+  }
+
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
       return await fn()
     } catch (err) {
       if (attempt === retries) throw err
-      await new Promise(r => setTimeout(r, baseDelayMs * (attempt + 1)))
+      const delay = Math.min(baseDelayMs * Math.pow(1.5, attempt), 15000)
+      await new Promise(r => setTimeout(r, delay))
     }
   }
   throw new Error("unreachable")

@@ -246,6 +246,24 @@ class LangGraphReActBase(LangGraphBase):
             initial_state["messages"]
         )
 
+        # LIA-C05: Automatic FairnessGuard check on agent input
+        try:
+            from app.shared.compliance.fairness_guard import FairnessGuard
+            _fairness_guard = FairnessGuard()
+            _user_message = input.message if hasattr(input, "message") else str(input)
+            _fairness_result = _fairness_guard.check(_user_message)
+            if _fairness_result and _fairness_result.is_blocked:
+                logger.warning(
+                    "[LIA-C05] FairnessGuard blocked agent input: %s (domain=%s)",
+                    _fairness_result.category, self.domain_name
+                )
+                return AgentOutput(
+                    message=_fairness_result.educational_message or "Sua solicitacao contem termos que podem gerar vies no processo seletivo. Por favor, reformule.",
+                    metadata={"fairness_blocked": True, "category": _fairness_result.category}
+                )
+        except Exception as e:
+            logger.debug("[LIA-C05] FairnessGuard check skipped (fail-open): %s", e)
+
         import time as _time
         _t0 = _time.monotonic()
         try:

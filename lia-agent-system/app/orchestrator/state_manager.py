@@ -35,6 +35,14 @@ class StateManager:
         self.db = db_service
         self.conversation_memory = conversation_memory
         self.state_store: dict[str, dict[str, Any]] = {}
+
+        # LIA-M05: Warn if in-memory fallback is used in production
+        import os
+        if os.getenv("ENVIRONMENT", "development") == "production":
+            logger.warning(
+                "[LIA-M05] StateManager using in-memory dict fallback in PRODUCTION. "
+                "State will be lost on restart. Ensure Redis is configured."
+            )
         
     def set_conversation_memory(self, conversation_memory):
         """Set the ConversationMemory service for persistent storage."""

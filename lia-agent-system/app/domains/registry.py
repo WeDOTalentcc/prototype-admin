@@ -9,6 +9,14 @@ from typing import Optional
 
 from app.domains.base import DomainAction, DomainPrompt
 
+# LIA-C01: Compliance enforcement — domains MUST extend ComplianceDomainPrompt
+def _get_compliance_base():
+    try:
+        from app.domains.compliance_base import ComplianceDomainPrompt
+        return ComplianceDomainPrompt
+    except ImportError:
+        return None
+
 logger = logging.getLogger(__name__)
 
 _DOMAIN_REGISTRY: dict[str, type[DomainPrompt]] = {}
@@ -33,6 +41,17 @@ def register_domain(cls: type[DomainPrompt]) -> type[DomainPrompt]:
             f"Overwriting with {cls.__name__}."
         )
     
+    # LIA-C01: Enforce ComplianceDomainPrompt inheritance
+    _ComplianceBase = _get_compliance_base()
+    if _ComplianceBase is not None and not issubclass(cls, _ComplianceBase):
+        logger.error(
+            "[LIA-C01] Domain %s does NOT extend ComplianceDomainPrompt — "
+            "compliance bypass detected. This will be BLOCKED in future versions. "
+            "(class=%s)",
+            cls.domain_id,
+            cls.__name__,
+        )
+
     _DOMAIN_REGISTRY[cls.domain_id] = cls
     logger.info(f"Domain registered: {cls.domain_id} ({cls.__name__})")
     return cls

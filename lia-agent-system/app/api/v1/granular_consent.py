@@ -14,6 +14,7 @@ from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
+from app.shared.tenant_guard import get_verified_company_id
 from app.shared.services.granular_consent_service import (
     ALL_PURPOSES,
     GranularConsentService,
@@ -24,6 +25,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/consent/granular", tags=["granular-consent"])
 
 
+# DEPRECATED: Use get_verified_company_id from tenant_guard instead (LIA-C01)
 def _require_company_id(
     x_company_id: str | None = Header(None, alias="X-Company-ID"),
 ) -> str:
@@ -76,7 +78,7 @@ class BulkConsentUpdateRequest(BaseModel):
 @router.get("/{candidate_id}", response_model=GranularConsentSummaryResponse)
 async def get_granular_consents(
     candidate_id: str,
-    company_id: str = Depends(_require_company_id),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db),
 ) -> GranularConsentSummaryResponse:
     """
@@ -118,7 +120,7 @@ async def update_granular_consents(
     candidate_id: str,
     payload: BulkConsentUpdateRequest,
     request: Request,
-    company_id: str = Depends(_require_company_id),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db),
 ) -> dict:
     """

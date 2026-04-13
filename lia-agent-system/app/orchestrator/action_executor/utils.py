@@ -6,6 +6,10 @@ import re
 from datetime import datetime
 from typing import Any
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 from app.orchestrator.action_executor.intents_config import (
     CONFIRMATION_PATTERNS,
     MESSAGE_INTENT_PATTERNS,
@@ -75,11 +79,28 @@ def resolve_stage(stage_text: str | None) -> str | None:
     return stage_text.title()
 
 
-def _detect_intent_from_message(message: str) -> str | None:
+def _detect_intent_from_message(message: str, conversation_history: list | None = None) -> str | None:
     """Detect an actionable intent from a raw message string."""
     if not message:
         return None
     msg_lower = message.lower().strip()
+
+    # LIA-M04: Loop detection — if the same intent was just executed, skip
+    if conversation_history:
+        try:
+            last_assistant = None
+            for msg in reversed(conversation_history):
+                if msg.get("role") == "assistant":
+                    last_assistant = msg.get("content", "")
+                    break
+            if last_assistant and "encaminhada" in last_assistant.lower():
+                # Last response was an action confirmation — likely user is retrying
+                # Fall through to Phase 2 (LLM-based) instead of repeating same action
+                logger.info("[LIA-M04] Loop detected: last response was action confirmation, skipping regex intent")
+                return None
+        except Exception:
+            pass  # fail-open
+
     for intent, patterns in MESSAGE_INTENT_PATTERNS:
         for pattern in patterns:
             if re.search(pattern, msg_lower):

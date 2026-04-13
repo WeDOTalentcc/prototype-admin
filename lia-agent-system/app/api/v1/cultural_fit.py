@@ -10,11 +10,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.shared.services.cultural_fit_integration_service import cultural_fit_service
+from app.shared.tenant_guard import get_verified_company_id
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/candidates", tags=["cultural-fit"])
 
 
+# DEPRECATED — use get_verified_company_id
 def _require_company_id(
     x_company_id: str | None = Header(None, alias="X-Company-ID"),
 ) -> str:
@@ -27,7 +29,7 @@ def _require_company_id(
 async def get_cultural_fit(
     candidate_id: str,
     job_id: str = Query(..., description="ID da vaga"),
-    company_id: str = Depends(_require_company_id),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db),
 ) -> dict:
     """

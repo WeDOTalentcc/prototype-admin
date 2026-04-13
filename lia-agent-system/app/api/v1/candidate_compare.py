@@ -17,12 +17,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.domains.candidates.services.candidate_comparison_service import CandidateComparisonService
 from app.domains.candidates.services.candidate_comparison_service import get_candidate_comparison_service
+from app.shared.tenant_guard import get_verified_company_id
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/candidates", tags=["candidate-compare"])
 
 
+# DEPRECATED — use get_verified_company_id
 def _require_company_id(
     x_company_id: str | None = Header(None, alias="X-Company-ID"),
 ) -> str:
@@ -50,7 +52,7 @@ class CompareRequest(BaseModel):
 @router.post("/compare", response_model=None)
 async def compare_candidates(
     payload: CompareRequest,
-    company_id: str = Depends(_require_company_id),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db),
     service: CandidateComparisonService = Depends(get_candidate_comparison_service),
 ) -> dict:

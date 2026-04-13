@@ -391,7 +391,23 @@ class Orchestrator:
                 entities=entities,
                 extra_instructions=extra,
             )
-            prompt = ChatPromptTemplate.from_messages([("system", system_prompt), ("human", "{message}")])
+            # LIA-M03: Include conversation history as real message turns
+            messages = [("system", system_prompt)]
+
+            # Add conversation history as actual turns (last 10 messages max)
+            conversation_history = ctx.get("conversation_history", [])
+            if conversation_history and isinstance(conversation_history, list):
+                recent_history = conversation_history[-10:]
+                for msg in recent_history:
+                    role = msg.get("role", "")
+                    content = msg.get("content", "")
+                    if role == "user":
+                        messages.append(("human", content))
+                    elif role == "assistant":
+                        messages.append(("ai", content))
+
+            messages.append(("human", "{message}"))
+            prompt = ChatPromptTemplate.from_messages(messages)
             chain = prompt | self.llm_service.get_audited_model()
             response = await chain.ainvoke({"message": message})
             return {"message": response.content, "success": True, "data": {},

@@ -281,9 +281,24 @@ class MainOrchestrator:
                 except Exception as _user_exc:
                     logger.debug("[MainOrchestrator] User lookup skipped: %s", _user_exc)
 
+            # LIA-M01: Setup conversation memory BEFORE any phase
+            # This ensures every user message is persisted regardless of which phase handles it
+            conv, conv_id = None, conv_id
+            if not ctx.skip_memory_persist:
+                try:
+                    conv, conv_id = await self._setup_conversation_memory(ctx, conv_id, db, {})
+                except Exception as e:
+                    logger.warning("[LIA-M01] Memory setup failed (non-blocking): %s", e)
+
             # ── Phase 0: PendingAction ──────────────────────────────────────
             pending_response = await self._handle_pending_action(ctx, conv_id)
             if pending_response is not None:
+                # LIA-M02: Persist Phase 0 response to conversation memory
+                if conv and not ctx.skip_memory_persist:
+                    try:
+                        await self._persist_response(ctx, conv_id, conv, {"response": pending_response.content}, db)
+                    except Exception as e:
+                        logger.warning("[LIA-M02] Phase 0 memory persist failed: %s", e)
                 if _soft_warnings and not pending_response.fairness_warnings:
                     pending_response.fairness_warnings = _soft_warnings
                 return pending_response
@@ -291,12 +306,18 @@ class MainOrchestrator:
             # ── Phase 1: ActionExecutor ────────────────────────────────────
             action_response = await self._try_action_executor(ctx, conv_id)
             if action_response is not None:
+                # LIA-M02: Persist Phase 1 response to conversation memory
+                if conv and not ctx.skip_memory_persist:
+                    try:
+                        await self._persist_response(ctx, conv_id, conv, {"response": action_response.content}, db)
+                    except Exception as e:
+                        logger.warning("[LIA-M02] Phase 1 memory persist failed: %s", e)
                 if _soft_warnings and not action_response.fairness_warnings:
                     action_response.fairness_warnings = _soft_warnings
                 return action_response
 
             # ── Phase 2: Orchestrator completo ─────────────────────────────
-            _phase2_response = await self._process_via_orchestrator(ctx, conv_id, db, streaming_callback)
+            _phase2_response = await self._process_via_orchestrator(ctx, conv_id, db, streaming_callback, conv=conv)
             if _soft_warnings and not _phase2_response.fairness_warnings:
                 _phase2_response.fairness_warnings = _soft_warnings
 
@@ -463,6 +484,7 @@ class MainOrchestrator:
                     "conversation_id": conv_id,
                     "user_id": ctx.user_id,
                     "company_id": ctx.company_id,
+                    "conversation_history": ctx.extra.get("conversation_history", []),
                 },
             )
         except Exception as exc:
@@ -503,6 +525,7 @@ class MainOrchestrator:
         conv_id: str,
         db: Any,
         streaming_callback: Callable | None,
+        conv: Any = None,
     ) -> ChatResponse:
         """
         Pipeline consolidado: ConversationMemory → CascadedRouter → DomainWorkflow.
@@ -521,10 +544,22 @@ class MainOrchestrator:
         if streaming_callback:
             orchestrator_context["streaming_callback"] = streaming_callback
 
-        if not ctx.skip_memory_persist:
+        # LIA-M01: Memory already setup in process() — only setup here if running standalone
+        if conv is None and not ctx.skip_memory_persist:
             conv, conv_id = await self._setup_conversation_memory(ctx, conv_id, db, orchestrator_context)
-        else:
-            conv, conv_id = None, conv_id
+        elif conv is not None and not ctx.skip_memory_persist:
+            # Memory already setup — just enrich orchestrator_context with conversation data
+            try:
+                from app.domains.recruiter_assistant.services.conversation_memory import conversation_memory
+                llm_ctx = await conversation_memory.get_context_for_llm(db=db, conversation_id=conv_id, max_messages=20)
+                orchestrator_context.update({
+                    "conversation_history": llm_ctx.get("messages", []),
+                    "conversation_summary": llm_ctx.get("summary"),
+                    "context_type": ctx.context_type,
+                    "context_id": ctx.entity_id,
+                })
+            except Exception as _enrich_exc:
+                logger.debug("[LIA-M01] Context enrichment skipped: %s", _enrich_exc)
 
         result = await self._route_with_tenant_llm(ctx, conv_id, db, orchestrator_context)
 
