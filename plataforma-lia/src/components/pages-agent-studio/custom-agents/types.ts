@@ -122,7 +122,7 @@ export interface CreateDeploymentRequest {
 /** Human-readable labels for category display */
 export const CATEGORY_LABELS: Record<AgentCategory, string> = {
   screening: "Triagem",
-  sourcing: "Sourcing",
+  sourcing: "Captação",
   communication: "Comunicacao",
   analytics: "Analise",
   job_management: "Vagas",

@@ -87,8 +87,8 @@ const RECRUITMENT_STAGES: WorkflowReelStage[] = [
   },
   {
     id: "sourcing",
-    label: "Sourcing",
-    shortLabel: "Sourcing",
+    label: "Captação",
+    shortLabel: "Captação",
     icon: Search,
     pulseStageId: "sourcing",
     color: {

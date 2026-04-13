@@ -45,7 +45,7 @@ interface Installation {
 
 const CATEGORIES = [
   { value: "", label: "Todos" },
-  { value: "sourcing", label: "Sourcing" },
+  { value: "sourcing", label: "Captação" },
   { value: "pipeline", label: "Pipeline" },
   { value: "analytics", label: "Analytics" },
   { value: "communication", label: "Comunicação" },

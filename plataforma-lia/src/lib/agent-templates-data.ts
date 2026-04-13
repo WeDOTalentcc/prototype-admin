@@ -251,7 +251,7 @@ export const AGENT_TEMPLATES: AgentTemplate[] = [
 export const TEMPLATE_CATEGORIES = [
   { id: "all" as const, label: "Todos", icon: "LayoutGrid" },
   { id: "screening" as const, label: "Triagem", icon: "Filter" },
-  { id: "sourcing" as const, label: "Sourcing", icon: "Search" },
+  { id: "sourcing" as const, label: "Captação", icon: "Search" },
   { id: "communication" as const, label: "Comunicacao", icon: "MessageCircle" },
   { id: "analytics" as const, label: "Analise", icon: "BarChart3" },
   { id: "job_management" as const, label: "Vagas", icon: "Briefcase" },

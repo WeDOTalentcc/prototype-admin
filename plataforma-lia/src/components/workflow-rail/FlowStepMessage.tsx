@@ -146,7 +146,7 @@ export const FLOW_TEMPLATES = {
     const steps = [
       { id: "config", label: "Config", icon: "⚙️" },
       { id: "calibration", label: "Calibrar", icon: "✅" },
-      { id: "sourcing", label: "Sourcing", icon: "🤖" },
+      { id: "sourcing", label: "Captação", icon: "🤖" },
     ]
     return assignStatuses(steps, currentStep)
   },
@@ -163,7 +163,7 @@ export const FLOW_TEMPLATES = {
   fullCampaign: (currentStep: string = "definition"): FlowStep[] => {
     const steps = [
       { id: "definition", label: "Vaga", icon: "📋" },
-      { id: "sourcing", label: "Sourcing", icon: "🔍" },
+      { id: "sourcing", label: "Captação", icon: "🔍" },
       { id: "screening", label: "Triagem", icon: "🔄" },
       { id: "wsi", label: "WSI", icon: "📊" },
       { id: "interview", label: "Entrevista", icon: "🗓" },

@@ -54,7 +54,7 @@ interface PlanProgressCardProps {
 
 const DOMAIN_LABELS: Record<string, string> = {
   cv_screening: "Triagem de CV",
-  sourcing: "Sourcing",
+  sourcing: "Captação",
   job_management: "Gestão de Vagas",
   analytics: "Analytics",
   communication: "Comunicação",
