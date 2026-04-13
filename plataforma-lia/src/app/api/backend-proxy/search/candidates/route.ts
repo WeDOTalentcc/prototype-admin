@@ -8,6 +8,13 @@ const BACKEND_URL = process.env.BACKEND_URL || 'http://127.0.0.1:8001'
 
 const _bodySchema = z.record(z.string(), z.unknown())
 
+function unwrapEnvelope(json: Record<string, unknown>): Record<string, unknown> {
+  if (json && typeof json === 'object' && 'ok' in json && 'data' in json && json.data && typeof json.data === 'object') {
+    return json.data as Record<string, unknown>
+  }
+  return json
+}
+
 export async function POST(request: NextRequest) {
   try {
     const bodyResult = await validateBody(request, _bodySchema)
@@ -33,7 +40,7 @@ export async function POST(request: NextRequest) {
     }
 
     const data = await response.json()
-    return NextResponse.json(data)
+    return NextResponse.json(unwrapEnvelope(data))
   } catch (error) {
     return NextResponse.json(
       { error: 'Erro ao conectar com o backend' },
@@ -64,7 +71,7 @@ export async function GET(request: NextRequest) {
     }
 
     const data = await response.json()
-    return NextResponse.json(data)
+    return NextResponse.json(unwrapEnvelope(data))
   } catch (error) {
     return NextResponse.json(
       { error: 'Erro ao conectar com o backend' },

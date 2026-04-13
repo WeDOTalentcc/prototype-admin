@@ -57,7 +57,8 @@ export async function POST(request: NextRequest) {
     }
 
     const data = await response.json()
-    return NextResponse.json(data)
+    const unwrapped = (data && typeof data === 'object' && 'ok' in data && 'data' in data) ? data.data : data
+    return NextResponse.json(unwrapped)
   } catch (error) {
     return NextResponse.json(
       { error: 'Erro ao conectar com o backend' },
