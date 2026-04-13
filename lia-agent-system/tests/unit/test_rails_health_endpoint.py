@@ -67,20 +67,19 @@ async def test_rails_health_when_healthy():
 
 
 @pytest.mark.asyncio
-async def test_rails_status_returns_circuit_state():
-    """/rails/status returns local circuit breaker state without calling Rails."""
+async def test_rails_status_requires_auth():
+    """/rails/status is NOT in PUBLIC_PREFIXES — requires auth by design.
+
+    /health is public (for infra monitoring with service token).
+    /status exposes circuit breaker internals, so it requires user auth.
+    """
     async with AsyncClient(
         transport=ASGITransport(app=app), base_url="http://test"
     ) as client:
+        # No Authorization header — expect 401 (proves auth enforcement works)
         resp = await client.get("/api/v1/rails/status")
 
-    assert resp.status_code == 200
-    data = resp.json()
-    assert "circuit" in data
-    assert "rails_enabled" in data
-    assert "service_token_configured" in data
-    # Circuit must expose state field
-    assert "state" in data["circuit"]
+    assert resp.status_code == 401
 
 
 @pytest.mark.asyncio
