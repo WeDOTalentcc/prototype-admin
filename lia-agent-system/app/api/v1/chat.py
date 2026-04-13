@@ -1,6 +1,7 @@
 """
 Chat API endpoints for LIA conversation.
 """
+import asyncio
 import json
 import logging
 import os
@@ -41,6 +42,8 @@ from app.orchestrator.action_executor import (
     is_rejection,
 )
 from app.orchestrator.pending_action import PendingActionState, pending_action_store
+
+from app.orchestrator.context_adapter import UniversalContext
 from app.schemas.chat import (
     ChatResponse,
     ConversationListResponse,
@@ -722,6 +725,97 @@ async def _sse_event_generator(
         yield f"data: {json.dumps({'error': str(exc)})}\n\n"
 
 
+
+async def _sse_via_orchestrator(
+    conversation_id: str,
+    user_message: str,
+    history: list[dict[str, str]],
+    repo: ChatRepository,
+    conversation_obj,
+    *,
+    user_id: str = "",
+    user_name: str = "",
+    user_role: str = "",
+    company_id: str = "",
+    tenant_context_snippet: str = "",
+) -> AsyncGenerator[str, None]:
+    """Fase 3: SSE via MainOrchestrator (unified pipeline) — LIA-P05."""
+    import asyncio as _asyncio
+
+    main_orch = get_main_orchestrator()
+    sse_queue: _asyncio.Queue = _asyncio.Queue()
+    full_response_parts: list[str] = []
+
+    async def _streaming_callback(event: dict) -> None:
+        ev_type = event.get("type", "")
+        if ev_type == "token" and event.get("content"):
+            token = event["content"]
+            full_response_parts.append(token)
+            await sse_queue.put({"token": token})
+        elif ev_type == "token_done":
+            await sse_queue.put({"_token_done": True})
+
+    ctx = UniversalContext(
+        message=user_message,
+        user_id=user_id,
+        company_id=company_id,
+        conversation_id=conversation_id,
+        user_name=user_name,
+        user_role=user_role,
+        tenant_context_snippet=tenant_context_snippet,
+    )
+
+    async def _run_orchestrator():
+        try:
+            result = await main_orch.process(ctx, repo.db, streaming_callback=_streaming_callback)
+            await sse_queue.put({"_done": True, "_result": result})
+        except Exception as exc:
+            await sse_queue.put({"_error": str(exc)})
+
+    task = _asyncio.create_task(_run_orchestrator())
+
+    try:
+        while True:
+            try:
+                item = await _asyncio.wait_for(sse_queue.get(), timeout=60.0)
+            except _asyncio.TimeoutError:
+                yield f"data: {json.dumps({'error': 'stream timeout'})}\n\n"
+                task.cancel()
+                return
+
+            if "_error" in item:
+                yield f"data: {json.dumps({'error': item['_error']})}\n\n"
+                return
+            if "_done" in item:
+                if not full_response_parts:
+                    result_obj = item.get("_result")
+                    text = ""
+                    if result_obj and hasattr(result_obj, "message"):
+                        text = result_obj.message or ""
+                    elif isinstance(result_obj, dict):
+                        text = result_obj.get("message", "")
+                    if text:
+                        yield f"data: {json.dumps({'token': text})}\n\n"
+                        full_response_parts.append(text)
+                break
+            if "_token_done" in item:
+                continue
+            yield f"data: {json.dumps(item)}\n\n"
+    finally:
+        if not task.done():
+            task.cancel()
+
+    yield "data: [DONE]\n\n"
+
+    full_response = "".join(full_response_parts)
+    if full_response:
+        try:
+            await repo.add_ai_message(conversation_obj.id, full_response, {"stream": True, "via": "orchestrator"})
+            await repo.commit()
+        except Exception as exc:
+            logger.warning("[Fase3] Failed to persist SSE response: %s", exc)
+
+
 @router.post("/stream", response_model=None)
 async def stream_message(
     request: Request,
@@ -802,14 +896,27 @@ async def stream_message(
     except Exception as e:
         logger.debug("[LIA-P01] SSE compliance check skipped (fail-open): %s", e)
 
-    return StreamingResponse(
+    _disable_unified = os.getenv("LIA_DISABLE_SSE_UNIFIED", "").lower() in ("1", "true", "yes")
+    _generator = (
         _sse_event_generator(
             conversation_id, user_content, history, repo, conversation,
             user_name=getattr(current_user, "name", "") or "",
             user_role=str(getattr(current_user, "role", "")) or "",
             company_id=_company_id,
             tenant_context_snippet=_tenant_snippet,
-        ),
+        )
+        if _disable_unified
+        else _sse_via_orchestrator(
+            conversation_id, user_content, history, repo, conversation,
+            user_id=str(current_user.id),
+            user_name=getattr(current_user, "name", "") or "",
+            user_role=str(getattr(current_user, "role", "")) or "",
+            company_id=_company_id,
+            tenant_context_snippet=_tenant_snippet,
+        )
+    )
+    return StreamingResponse(
+        _generator,
         media_type="text/event-stream",
         headers={
             "Cache-Control": "no-cache",
