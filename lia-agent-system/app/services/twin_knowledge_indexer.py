@@ -216,7 +216,8 @@ class TwinKnowledgeIndexer:
 
         try:
             import whisper
-            import tempfile, os
+            import tempfile
+            import os
             model = whisper.load_model("base")
             with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as f:
                 f.write(audio_bytes)

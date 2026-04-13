@@ -379,7 +379,7 @@ class OnboardingOrchestrator:
             return {
                 "action": "skip_to_login",
                 "response_text": (
-                    f"Claro! Clique abaixo para acessar — sem precisar criar senha:"
+                    "Claro! Clique abaixo para acessar — sem precisar criar senha:"
                 ),
                 "cta_url": session.magic_link_url,
                 "session": session.to_dict(),

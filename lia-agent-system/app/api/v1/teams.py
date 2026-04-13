@@ -1296,7 +1296,6 @@ async def teams_tab_auth(
     import os
 
     import httpx
-    from sqlalchemy import select
 
     from app.auth.models import User
 
@@ -1395,7 +1394,6 @@ async def teams_tab_events(
     If the event represents a complex action, sends a proactive Adaptive
     Card to the recruiter's Teams chat with a deep link to the platform.
     """
-    from sqlalchemy import select
 
     from app.domains.communication.services.teams_simple import SimpleTeamsBot
     from app.domains.communication.services.teams_tab_trigger import get_trigger_engine
