@@ -135,12 +135,15 @@ class WebhookService:
     async def dispatch(
         self, db: AsyncSession, company_id: str, event: str, payload: dict
     ) -> int:
-        """Dispatch event to all subscribed webhooks. Returns count of queued deliveries."""
+        """Dispatch event to all subscribed external webhooks AND Rails internal bus.
+
+        Returns count of queued external webhook deliveries (Rails publish is fire-and-forget).
+        """
+        # External webhooks (P2.5b)
         webhooks = await self.find_subscribers(db, company_id, event)
         queued = 0
         for wh in webhooks:
             try:
-                # Lazy import to avoid circular dep
                 from app.jobs.webhook_tasks import deliver_webhook_task
                 deliver_webhook_task.delay(
                     webhook_id=str(wh.id),
@@ -157,6 +160,21 @@ class WebhookService:
                 "[Webhook] dispatched event=%s to %d webhook(s) for company=%s",
                 event, queued, company_id,
             )
+
+        # Phase 5: Rails internal bus (non-blocking, fire-and-forget)
+        try:
+            from app.shared.messaging.unified_event_publisher import unified_event_publisher
+            await unified_event_publisher.publish(
+                event_type=event,
+                payload=payload,
+                company_id=company_id,
+            )
+        except Exception as rails_exc:
+            logger.warning(
+                "[RailsBridge] publish failed for event=%s company=%s: %s",
+                event, company_id, rails_exc,
+            )
+
         return queued
 
 

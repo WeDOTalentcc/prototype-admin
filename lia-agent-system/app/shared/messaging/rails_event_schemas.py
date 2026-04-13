@@ -133,6 +133,12 @@ EVENT_VERSIONS = {
     "offer.sent": "1.0",
     "candidate.enriched": "1.0",
     "pipeline.moved": "1.0",
+    "agent.execution.completed": "1.0",
+    "agent.execution.failed": "1.0",
+    "agent.deployment.created": "1.0",
+    "agent.deployment.paused": "1.0",
+    "agent.approval.requested": "1.0",
+    "agent.approval.reviewed": "1.0",
 }
 
 
