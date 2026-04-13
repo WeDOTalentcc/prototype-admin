@@ -93,7 +93,7 @@ export const integrations: Integration[] = [
     name: "OpenAI GPT",
     shortDescription: "Modelo de IA com ampla base de conhecimento",
     fullDescription:
-      "OpenAI GPT oferece modelos versáteis com ampla base de conhecimento. Disponível como provedor terciário na cadeia de fallback da plataforma LIA, suportando GPT-4o e GPT-4o-mini.",
+      "OpenAI GPT oferece modelos versáteis com ampla base de conhecimento. Disponível como provedor terciário na cadeia de fallback da plataforma LIA, suportando GPT-4o e GPT-4o-mini. Essencial para transcrição de áudio (Whisper STT) e voz da LIA (TTS) nas triagens — sem esta chave, as funcionalidades de voz ficam indisponíveis.",
     category: "ai_models",
     status: "connected",
     iconBg: "bg-emerald-500/10",
@@ -105,6 +105,8 @@ export const integrations: Integration[] = [
       { name: "Processamento de Linguagem", description: "Compreensão e geração de texto" },
       { name: "Embeddings", description: "Representações vetoriais para busca semântica" },
       { name: "Function Calling", description: "Integração com ferramentas da plataforma" },
+      { name: "Transcrição (Whisper)", description: "STT para áudio de candidatos em triagens" },
+      { name: "Voz da LIA (TTS)", description: "Síntese de voz para perguntas da LIA em triagens" },
       { name: "Fallback Provider", description: "Terceiro na cadeia de resiliência" },
     ],
     configFields: ["OPENAI_API_KEY"],

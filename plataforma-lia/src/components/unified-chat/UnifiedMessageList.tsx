@@ -148,16 +148,6 @@ export function UnifiedMessageList({
                   <WeeklyDigestChatMessage
                     digest={meta!.digest as WeeklyDigestData}
                     recruiterName={meta!.recruiterName as string | undefined}
-                    onDetailRiskJobs={() => {
-                      window.dispatchEvent(new CustomEvent("lia:navigation-hint", {
-                        detail: { page: "Vagas", hint: null },
-                      }))
-                    }}
-                    onViewMetrics={() => {
-                      window.dispatchEvent(new CustomEvent("lia:navigation-hint", {
-                        detail: { page: "Visão do Pipeline", hint: null },
-                      }))
-                    }}
                   />
                 ) : (
                 <div
