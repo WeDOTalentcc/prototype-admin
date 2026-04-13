@@ -201,7 +201,7 @@ export function CandidateTableRow({
       {columns.map((column, index) => (
         <td 
           key={column.id}
-          className={`py-3 px-3 relative ${
+          className={`py-2 px-3 relative whitespace-nowrap overflow-hidden ${
  column.align === 'center' ? 'text-center' : 
             column.align === 'right' ? 'text-right' : 'text-left'
           }`}

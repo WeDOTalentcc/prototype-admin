@@ -1,7 +1,7 @@
 "use client"
 
 import { Globe, AlertCircle, Zap } from "lucide-react"
-import { AlertDialog, AlertDialogContent } from "@/components/ui/alert-dialog"
+import { AlertDialog, AlertDialogContent, AlertDialogDescription, AlertDialogTitle } from "@/components/ui/alert-dialog"
 import { textStyles } from "@/lib/design-tokens"
 
 interface SourceChangeConfirmModalProps {
@@ -22,6 +22,12 @@ export function SourceChangeConfirmModal({
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent data-testid="source-change-confirm-modal" className="sm:max-w-[320px] w-[85vw] p-4 border border-lia-border-subtle dark:border-lia-border-subtle">
+        <AlertDialogTitle className="sr-only">
+          {pendingSourceChange === 'hybrid' ? 'Ativar Busca Híbrida' : 'Ativar Busca Global'}
+        </AlertDialogTitle>
+        <AlertDialogDescription className="sr-only">
+          Confirme a alteração da fonte de busca
+        </AlertDialogDescription>
         <div className="space-y-3">
           <div className="flex items-center gap-2.5">
             <div className={`w-8 h-8 rounded-full flex items-center justify-center ${pendingSourceChange === 'hybrid' ? 'bg-wedo-cyan/15' : 'bg-status-warning/15'}`}>

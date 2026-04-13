@@ -35,10 +35,11 @@ interface JobData {
 }
 
 
-import React, { useState, useEffect } from "react"
+import React, { useState, useEffect, useCallback } from "react"
 import { useParams } from "next/navigation"
 import { JobKanbanPage } from "@/components/pages/job-kanban-page"
 import { liaApi } from "@/services/lia-api"
+import { ErrorBoundarySection } from "@/components/ui/error-boundary-section"
 
 export default function JobPage() {
   const params = useParams()
@@ -46,11 +47,20 @@ export default function JobPage() {
   const [jobData, setJobData] = useState<JobData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [reloadTrigger, setReloadTrigger] = useState(0)
+
+  const handleRetry = useCallback(() => {
+    setError(null)
+    setJobData(null)
+    setIsLoading(true)
+    setReloadTrigger(prev => prev + 1)
+  }, [])
 
   useEffect(() => {
     if (!jobId) return
 
     setIsLoading(true)
+    setError(null)
     liaApi.getJobVacancy(jobId)
       .then(vacancy => {
         const salaryRange = vacancy.salary_range
@@ -58,7 +68,6 @@ export default function JobPage() {
           ? `${formatBRL(Number(salaryRange.min || 0))} - ${formatBRL(Number(salaryRange.max || 0))}`
           : undefined
 
-        // Extended vacancy has fields not in current TypeScript type definitions
         const v = vacancy as typeof vacancy & {
           job_code?: string
           contract_type?: string
@@ -100,11 +109,11 @@ export default function JobPage() {
           screeningConfig: v.screening_config,
         })
       })
-      .catch(err => {
+      .catch(() => {
         setError('Erro ao carregar a vaga')
       })
       .finally(() => setIsLoading(false))
-  }, [jobId])
+  }, [jobId, reloadTrigger])
 
   if (isLoading) {
     return (
@@ -116,11 +125,35 @@ export default function JobPage() {
 
   if (error || !jobData) {
     return (
-      <div className="flex items-center justify-center h-screen text-lia-text-secondary dark:text-lia-text-tertiary text-sm" role="alert" aria-live="assertive">
-        {error || 'Vaga não encontrada'}
+      <div className="flex flex-col items-center justify-center h-screen gap-4 text-lia-text-secondary dark:text-lia-text-tertiary" role="alert" aria-live="assertive">
+        <p className="text-sm">{error || 'Vaga não encontrada'}</p>
+        {error && (
+          <button
+            onClick={handleRetry}
+            className="text-xs px-3 py-1.5 rounded-lg bg-lia-bg-secondary border border-lia-border-subtle hover:bg-lia-bg-tertiary transition-colors"
+          >
+            Tentar novamente
+          </button>
+        )}
       </div>
     )
   }
 
-  return <JobKanbanPage job={jobData as unknown as Record<string, unknown>} />
+  return (
+    <ErrorBoundarySection
+      fallback={
+        <div className="flex flex-col items-center justify-center h-screen gap-4 text-lia-text-secondary dark:text-lia-text-tertiary" role="alert">
+          <p className="text-sm">Erro ao carregar a vaga. Tente novamente.</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="text-xs px-3 py-1.5 rounded-lg bg-lia-bg-secondary border border-lia-border-subtle hover:bg-lia-bg-tertiary transition-colors"
+          >
+            Recarregar página
+          </button>
+        </div>
+      }
+    >
+      <JobKanbanPage job={jobData as unknown as Record<string, unknown>} />
+    </ErrorBoundarySection>
+  )
 }

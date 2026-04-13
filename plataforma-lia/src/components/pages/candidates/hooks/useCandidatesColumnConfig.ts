@@ -15,7 +15,7 @@ export const CANDIDATES_DEFAULT_COLUMNS = [
   { id: 'desired_salary_max', label: 'Expectativa salarial', visible: true, order: 4, category: 'salario' },
   { id: 'mobile_phone', label: 'Celular', visible: true, order: 5, category: 'contato' },
   { id: 'email', label: 'E-mail', visible: true, order: 6, category: 'contato' },
-  { id: 'location_city', label: 'Cidade', visible: true, order: 7, category: 'localizacao' },
+  { id: 'location_city', label: 'Cidade', visible: false, order: 7, category: 'localizacao' },
   { id: 'linkedin_url', label: 'LinkedIn', visible: true, order: 8, category: 'contato' },
   // Identificação e Contato
   { id: 'id', label: 'ID do candidato', visible: false, order: 9, category: 'basico' },

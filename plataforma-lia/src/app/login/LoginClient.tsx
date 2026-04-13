@@ -88,6 +88,7 @@ export default function LoginPage() {
             width={230}
             height={73}
             className="w-[230px] h-auto max-w-[230px]"
+            style={{ height: 'auto' }}
             priority
           />
           <span

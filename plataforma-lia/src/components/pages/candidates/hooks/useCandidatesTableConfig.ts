@@ -33,7 +33,7 @@ export function useCandidatesTableConfig() {
     { id: 'desired_salary_max', label: 'Expectativa salarial', visible: true, order: 4, category: 'salario' },
     { id: 'mobile_phone', label: 'Celular', visible: true, order: 5, category: 'contato' },
     { id: 'email', label: 'E-mail', visible: true, order: 6, category: 'contato' },
-    { id: 'location_city', label: 'Cidade', visible: true, order: 7, category: 'localizacao' },
+    { id: 'location_city', label: 'Cidade', visible: false, order: 7, category: 'localizacao' },
     { id: 'linkedin_url', label: 'LinkedIn', visible: true, order: 8, category: 'contato' },
     { id: 'id', label: 'ID do candidato', visible: false, order: 9, category: 'basico' },
     { id: 'secondary_email', label: 'E-mail secundário', visible: false, order: 10, category: 'contato' },
