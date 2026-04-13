@@ -16,6 +16,13 @@ module LiaEvents
       "offer.sent"          => "1.0",
       "candidate.enriched"  => "1.0",
       "pipeline.moved"      => "1.0",
+      # Phase 5: Agent Studio events (mirrors lia-agent-system/app/shared/messaging/rails_event_schemas.py)
+      "agent.execution.completed" => "1.0",
+      "agent.execution.failed"    => "1.0",
+      "agent.deployment.created"  => "1.0",
+      "agent.deployment.paused"   => "1.0",
+      "agent.approval.requested"  => "1.0",
+      "agent.approval.reviewed"   => "1.0",
     }.freeze
 
     # Check if received version is compatible with current schema.

@@ -90,4 +90,60 @@ class LiaEventsWorker
     Rails.logger.info("[LIA-E03] handle_pipeline_moved: payload=#{payload.inspect}")
     # TODO: update Apply pipeline_stage
   end
+
+  # Phase 5: Agent Studio event handlers
+  # These handlers react to Studio events emitted from the Python LIA backend.
+  # Currently only logging — extend with side-effects (ActivityLog, notifications, badges)
+  # as ATS product requirements evolve.
+
+  def handle_agent_execution_completed(payload, company_id)
+    Rails.logger.info(
+      "[AgentStudio] execution.completed: agent=#{payload['agent_name']} " \
+      "agent_id=#{payload['agent_id']} latency_ms=#{payload['execution_time_ms']} " \
+      "tokens=#{payload['tokens_input'].to_i + payload['tokens_output'].to_i} company=#{company_id}"
+    )
+    # TODO (product): create ActivityLog entry on related job
+    # TODO (product): increment "automated executions today" counter
+  end
+
+  def handle_agent_execution_failed(payload, company_id)
+    Rails.logger.warn(
+      "[AgentStudio] execution.failed: agent=#{payload['agent_name']} " \
+      "error=#{payload['error']} company=#{company_id}"
+    )
+    # TODO (product): notify admins via existing notification infra
+  end
+
+  def handle_agent_deployment_created(payload, company_id)
+    Rails.logger.info(
+      "[AgentStudio] deployment.created: agent_id=#{payload['agent_id']} " \
+      "target=#{payload['target_type']}/#{payload['target_id']} " \
+      "trigger=#{payload['trigger_mode']} company=#{company_id}"
+    )
+    # TODO (product): tag visual on related job/pool ("agent ativo")
+  end
+
+  def handle_agent_deployment_paused(payload, company_id)
+    Rails.logger.info(
+      "[AgentStudio] deployment.paused: deployment_id=#{payload['deployment_id']} company=#{company_id}"
+    )
+    # TODO (product): remove visual tag, log to deployment history
+  end
+
+  def handle_agent_approval_requested(payload, company_id)
+    Rails.logger.info(
+      "[AgentStudio] approval.requested: agent_id=#{payload['agent_id']} " \
+      "requested_by=#{payload['requested_by']} company=#{company_id}"
+    )
+    # TODO (product): internal notification to ATS admins
+  end
+
+  def handle_agent_approval_reviewed(payload, company_id)
+    Rails.logger.info(
+      "[AgentStudio] approval.reviewed: agent_id=#{payload['agent_id']} " \
+      "action=#{payload['action']} reviewer=#{payload['reviewer_id']} company=#{company_id}"
+    )
+    # TODO (product): log to agent approval history table
+  end
+
 end
