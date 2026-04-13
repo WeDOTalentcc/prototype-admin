@@ -33,6 +33,8 @@ export interface MenuItemType {
   moduleId?: string
   /** Visual premium badge indicator */
   isPremium?: boolean
+  /** Visual beta badge indicator — marks features in testing phase */
+  isBeta?: boolean
   /** Nested navigation items */
   subItems?: MenuItemType[]
   /** Custom navigation key (used instead of label when set) */

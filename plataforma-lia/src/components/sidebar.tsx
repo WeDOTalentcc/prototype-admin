@@ -110,8 +110,9 @@ const BASE_MENU_SECTIONS: MenuSection[] = [
         maxVisibleSubItems: 3,
         seeAllLabel: "Ver todos os agentes",
         seeAllTarget: "Agent Studio",
+        isBeta: true,
       },
-      { icon: Layers, label: "Módulos", isCore: true },
+      { icon: Layers, label: "Módulos", isCore: true, isBeta: true },
     ],
   },
 ]
@@ -238,7 +239,7 @@ const MenuItem = React.memo(({
             : "text-lia-text-primary font-normal",
           isCollapsed && !shouldShowContent ? "justify-center px-1.5" : ""
         )}
-        title={isCollapsed && !shouldShowContent ? item.label : undefined}
+        title={isCollapsed && !shouldShowContent ? `${item.label}${item.isBeta ? " (BETA)" : ""}` : undefined}
         disabled={isLocked || false}
       >
         <div className="flex items-center gap-1">
@@ -247,7 +248,14 @@ const MenuItem = React.memo(({
         </div>
         {shouldShowContent && (
           <div className="flex items-center justify-between flex-1">
-            <span className="text-base-ui">{item.label}</span>
+            <div className="flex items-center gap-1.5">
+              <span className="text-base-ui">{item.label}</span>
+              {item.isBeta && (
+                <span className="text-[10px] font-semibold bg-lia-info-light text-lia-info-color border border-lia-info-color px-1.5 py-0.5 rounded-full leading-none">
+                  BETA
+                </span>
+              )}
+            </div>
             <div className="flex items-center gap-1">
               {item.isPremium && !isLocked && (
                 <Crown className="w-2 h-2 text-lia-text-primary" />
