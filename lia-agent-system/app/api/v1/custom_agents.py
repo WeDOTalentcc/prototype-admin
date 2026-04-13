@@ -613,6 +613,110 @@ async def get_studio_quota(
         raise HTTPException(status_code=500, detail="Failed to fetch studio quota")
 
 
+@router.post("/generate-from-description", summary="LIA generates agent config from description")
+async def generate_agent_from_description(
+    body: dict,
+    current_user=Depends(get_current_user),
+):
+    """Generate a complete agent configuration from a natural language description.
+
+    The recruiter describes what they need in Portuguese, and LIA generates:
+    name, role, domain, tools, system_prompt, context_level, etc.
+
+    Compliance: FairnessGuard + SecurityPatterns run on the description before generation.
+    """
+    description = (body.get("description") or "").strip()
+    if not description or len(description) < 10:
+        raise HTTPException(status_code=400, detail="Descricao deve ter pelo menos 10 caracteres")
+
+    # Security checks on input
+    try:
+        from app.shared.robustness.security_patterns import check_input_security
+        sec = check_input_security(description)
+        if sec.is_blocked:
+            raise HTTPException(status_code=400, detail="Descricao bloqueada por padrao de seguranca")
+    except HTTPException:
+        raise
+    except Exception:
+        pass
+
+    try:
+        from app.shared.compliance.fairness_guard import FairnessGuard
+        fg = FairnessGuard()
+        fg_result = fg.check(description)
+        if fg_result.is_blocked:
+            raise HTTPException(status_code=400, detail="Descricao bloqueada por criterios de equidade")
+    except HTTPException:
+        raise
+    except Exception:
+        pass
+
+    # Generate config using audited LLM
+    try:
+        from app.domains.ai.services.llm import llm_service
+        import json
+
+        generation_prompt = f"""Voce e um especialista em configuracao de agentes de IA para recrutamento.
+O recrutador descreveu o que precisa:
+
+"{description}"
+
+Gere uma configuracao completa de agente no formato JSON com estes campos:
+- suggested_name: nome curto e descritivo (max 50 chars)
+- suggested_role: descricao do papel do agente (max 200 chars)
+- suggested_domain: um de [sourcing, screening, pipeline, analytics, communication, job_management, automation, general]
+- suggested_tools: lista de tools (escolha entre: search_candidates, list_jobs, get_job_details, get_candidate_details, get_pipeline_summary, search_talent_pool, get_analytics_summary, get_company_culture, get_evaluation_criteria, summarize_context, move_candidate, send_email, update_candidate_field, schedule_interview, create_note)
+- suggested_prompt: system prompt completo para o agente (em portugues, 200-500 chars)
+- suggested_context_level: "full", "standard" ou "minimal"
+- suggested_max_steps: numero entre 5 e 15
+- suggested_temperature: numero entre 0.2 e 0.8
+- reasoning: explique brevemente por que escolheu essa configuracao (em portugues)
+
+Responda APENAS com o JSON, sem texto adicional."""
+
+        model = llm_service.get_audited_model(company_id=current_user.company_id)
+        response = await model.ainvoke(generation_prompt)
+        content = response.content if hasattr(response, "content") else str(response)
+        if isinstance(content, list):
+            content = "".join(
+                b.get("text", "") if isinstance(b, dict) else str(b) for b in content
+            )
+
+        # Parse JSON from response
+        content = content.strip()
+        if content.startswith("```"):
+            content = content.split("\n", 1)[-1].rsplit("```", 1)[0]
+        config = json.loads(content)
+
+        return {
+            "suggested_name": config.get("suggested_name", "Novo Agente"),
+            "suggested_role": config.get("suggested_role", description[:200]),
+            "suggested_domain": config.get("suggested_domain", "general"),
+            "suggested_tools": config.get("suggested_tools", ["search_candidates", "get_candidate_details"]),
+            "suggested_prompt": config.get("suggested_prompt", ""),
+            "suggested_context_level": config.get("suggested_context_level", "standard"),
+            "suggested_max_steps": config.get("suggested_max_steps", 8),
+            "suggested_temperature": config.get("suggested_temperature", 0.5),
+            "reasoning": config.get("reasoning", ""),
+        }
+    except json.JSONDecodeError:
+        # Fallback: return sensible defaults
+        return {
+            "suggested_name": "Novo Agente",
+            "suggested_role": description[:200],
+            "suggested_domain": "general",
+            "suggested_tools": ["search_candidates", "get_candidate_details"],
+            "suggested_prompt": f"Voce e um agente de recrutamento. {description}",
+            "suggested_context_level": "standard",
+            "suggested_max_steps": 8,
+            "suggested_temperature": 0.5,
+            "reasoning": "Configuracao padrao gerada como fallback.",
+        }
+    except Exception as e:
+        logger.error("Error generating agent config: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Erro ao gerar configuracao: {e}")
+
+
 @router.get("/{agent_id}/preview-prompt")
 async def preview_agent_prompt(
     agent_id: str,

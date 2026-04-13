@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react"
 import { TwinsList, EvaluateWithTwinModal } from "@/components/pages-agent-studio/DigitalTwinComponents"
 import MultiStrategySearchPanel from "@/components/pages-agent-studio/MultiStrategySearchPanel"
 import CustomAgentsTab from "@/components/pages-agent-studio/CustomAgentsTab"
-import { TemplateGallery, AgentCard as CustomAgentCard, DeployDialog } from "@/components/pages-agent-studio/custom-agents"
+import { TemplateGallery, AgentCard as CustomAgentCard, DeployDialog, ConversationalCreator, TestDebugPanel } from "@/components/pages-agent-studio/custom-agents"
 import { useCustomAgents } from "@/hooks/agents"
 import { useAgentStudioStore } from "@/stores/agent-studio-store"
 import type { CustomAgent, AgentTemplate } from "@/components/pages-agent-studio/custom-agents/types"
@@ -92,6 +92,7 @@ export default function AgentStudioPage({
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [evaluatingTwinId, setEvaluatingTwinId] = useState<string | null>(null)
   const [deployAgent, setDeployAgent] = useState<CustomAgent | null>(null)
+  const [testAgent, setTestAgent] = useState<CustomAgent | null>(null)
   const { agents: customAgents, mutate: mutateCustomAgents } = useCustomAgents()
   const { selectTemplate, reset: resetStudio } = useAgentStudioStore()
   const [selectedTemplate, setSelectedTemplate] = useState<SectorTemplate | null>(null)
@@ -475,7 +476,7 @@ export default function AgentStudioPage({
                     <CustomAgentCard
                       key={agent.id}
                       agent={agent}
-                      onTest={() => {/* TODO: open test modal */}}
+                      onTest={(a) => setTestAgent(a)}
                       onDeploy={(a) => setDeployAgent(a)}
                       onToggleStatus={(a) => { handleCustomAgentToggle(a) }}
                     />
@@ -490,12 +491,22 @@ export default function AgentStudioPage({
               onCreateManual={() => setShowCreateModal(true)}
             />
 
+            {/* Conversational Creator */}
+            <ConversationalCreator onAgentCreated={() => mutateCustomAgents()} />
+
             {/* Deploy Dialog */}
             <DeployDialog
               agent={deployAgent}
               open={!!deployAgent}
               onClose={() => setDeployAgent(null)}
               onDeployed={() => mutateCustomAgents()}
+            />
+
+            {/* Test Debug Panel */}
+            <TestDebugPanel
+              agent={testAgent}
+              open={!!testAgent}
+              onClose={() => setTestAgent(null)}
             />
 
             {/* Legacy form for advanced editing */}
