@@ -1,0 +1,117 @@
+"use client"
+
+import React, { useState } from "react"
+import { History, RotateCcw, Loader2, ChevronRight } from "lucide-react"
+import { cn } from "@/lib/utils"
+import { cardStyles, badgeStyles, textStyles, buttonStyles } from "@/lib/design-tokens"
+import { toast } from "@/lib/toast"
+import { useAgentVersions } from "@/hooks/agents"
+
+interface VersionHistoryPanelProps {
+  agentId: string
+  currentVersion: number
+  onReverted?: () => void
+}
+
+export function VersionHistoryPanel({ agentId, currentVersion, onReverted }: VersionHistoryPanelProps) {
+  const { versions, isLoading, mutate } = useAgentVersions(agentId)
+  const [revertingVersion, setRevertingVersion] = useState<number | null>(null)
+
+  const handleRevert = async (version: number) => {
+    if (!confirm(`Reverter para versao ${version}? O estado atual sera salvo como novo snapshot.`)) return
+    setRevertingVersion(version)
+    try {
+      const token = localStorage.getItem("auth_token")
+      const res = await fetch(`/api/backend-proxy/custom-agents/${agentId}/revert/${version}`, {
+        method: "POST",
+        headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ detail: "Erro" }))
+        throw new Error(err.detail || "Erro ao reverter")
+      }
+      toast.success(`Revertido para versao ${version}`)
+      mutate()
+      onReverted?.()
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Erro ao reverter")
+    } finally {
+      setRevertingVersion(null)
+    }
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center gap-2 py-4 text-xs text-lia-text-disabled">
+        <Loader2 className="w-3.5 h-3.5 animate-spin" /> Carregando historico...
+      </div>
+    )
+  }
+
+  if (versions.length === 0) {
+    return (
+      <div className={cn(cardStyles.flat, "p-4 text-center")}>
+        <History className="w-6 h-6 text-lia-text-disabled mx-auto mb-1.5" />
+        <p className="text-xs text-lia-text-secondary">Nenhuma versao anterior</p>
+        <p className="text-[10px] text-lia-text-disabled mt-1">Snapshots sao criados automaticamente a cada edicao</p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center gap-1.5 mb-2">
+        <History className="w-3.5 h-3.5 text-lia-text-disabled" />
+        <h4 className={cn(textStyles.subtitle, "text-xs font-semibold")}>
+          Historico de versoes
+        </h4>
+        <span className={cn(badgeStyles.default, "text-[10px] ml-auto")}>
+          v{currentVersion} (atual)
+        </span>
+      </div>
+
+      <div className="space-y-1.5 max-h-64 overflow-auto">
+        {versions.map((v) => {
+          const isReverting = revertingVersion === v.version
+          const date = v.created_at ? new Date(v.created_at).toLocaleString("pt-BR", {
+            day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit",
+          }) : ""
+
+          return (
+            <div key={v.id} className={cn(cardStyles.compact, "flex items-center justify-between")}>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-1.5">
+                  <span className={cn(badgeStyles.default, "text-[10px]")}>v{v.version}</span>
+                  <span className="text-[10px] text-lia-text-disabled">{date}</span>
+                </div>
+                {v.changed_fields.length > 0 && (
+                  <p className="text-[10px] text-lia-text-secondary mt-0.5 truncate">
+                    Mudou: {v.changed_fields.slice(0, 3).join(", ")}
+                    {v.changed_fields.length > 3 && ` +${v.changed_fields.length - 3}`}
+                  </p>
+                )}
+                {v.change_reason && (
+                  <p className="text-[10px] text-lia-text-disabled italic mt-0.5 truncate">{v.change_reason}</p>
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={() => handleRevert(v.version)}
+                disabled={isReverting || v.version >= currentVersion}
+                className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-medium text-lia-text-secondary hover:bg-lia-bg-tertiary transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                title={v.version >= currentVersion ? "Ja eh a versao atual" : "Reverter para esta versao"}
+              >
+                {isReverting ? (
+                  <Loader2 className="w-3 h-3 animate-spin" />
+                ) : (
+                  <RotateCcw className="w-3 h-3" />
+                )}
+                Reverter
+              </button>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}

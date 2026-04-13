@@ -11,6 +11,28 @@ export type AgentStatus = "draft" | "pending_approval" | "active" | "paused" | "
 
 export type ApprovalStatus = "pending" | "approved" | "rejected"
 
+export interface AgentVersionSummary {
+  id: string
+  agent_id: string
+  version: number
+  changed_fields: string[]
+  change_reason: string | null
+  changed_by: string
+  created_at: string | null
+}
+
+export interface AgentVersionDetail {
+  id: string
+  agent_id: string
+  company_id: string
+  version: number
+  snapshot_data: Record<string, unknown>
+  changed_fields: string[]
+  change_reason: string | null
+  changed_by: string
+  created_at: string | null
+}
+
 export interface AgentApproval {
   id: string
   agent_id: string

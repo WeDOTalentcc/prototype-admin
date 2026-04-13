@@ -9,6 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.auth.dependencies import get_current_user, require_admin
 from app.core.database import get_db
 from app.domains.agent_studio.custom_agent_runtime import get_available_tool_names
+from lia_models.custom_agent import CustomAgent
 from app.schemas.custom_agent import (
     AgentInstallationListResponse,
     AgentInstallationResponse,
@@ -111,6 +112,31 @@ async def update_custom_agent(
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
+    """Update custom agent. Automatically creates a version snapshot before applying changes."""
+    # P2.2: Snapshot before update
+    try:
+        from app.services.agent_version_service import agent_version_service
+        from sqlalchemy import select as _sel
+        _existing_result = await db.execute(
+            _sel(CustomAgent).where(
+                CustomAgent.id == agent_id,
+                CustomAgent.company_id == current_user.company_id,
+            )
+        )
+        _existing = _existing_result.scalar_one_or_none()
+        if _existing:
+            _update_data_peek = body.model_dump(exclude_unset=True)
+            _changed_fields = [k for k in _update_data_peek.keys() if hasattr(_existing, k)]
+            if _changed_fields:
+                await agent_version_service.create_snapshot(
+                    db=db,
+                    agent=_existing,
+                    changed_fields=_changed_fields,
+                    changed_by=str(current_user.id),
+                )
+    except Exception as _snap_err:
+        logger.warning("[AgentVersion] snapshot failed (non-blocking): %s", _snap_err)
+
     try:
         update_data = body.model_dump(exclude_unset=True)
         agent = await agent_marketplace_service.update_agent(
@@ -611,6 +637,90 @@ async def get_studio_quota(
     except Exception as e:
         logger.error("Error fetching studio quota: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail="Failed to fetch studio quota")
+
+
+@router.get("/{agent_id}/versions", summary="List agent version history")
+async def list_agent_versions(
+    agent_id: str,
+    limit: int = Query(20, ge=1, le=100),
+    offset: int = Query(0, ge=0),
+    current_user=Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Paginated list of version snapshots for an agent."""
+    from app.services.agent_version_service import agent_version_service
+    versions, total = await agent_version_service.list_versions(
+        db=db,
+        agent_id=agent_id,
+        company_id=current_user.company_id,
+        limit=limit,
+        offset=offset,
+    )
+    return {
+        "versions": [v.summary() for v in versions],
+        "total": total,
+        "limit": limit,
+        "offset": offset,
+    }
+
+
+@router.get("/{agent_id}/versions/{version}", summary="Get specific version snapshot")
+async def get_agent_version(
+    agent_id: str,
+    version: int,
+    current_user=Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Get full snapshot data for a specific version."""
+    from app.services.agent_version_service import agent_version_service
+    snap = await agent_version_service.get_version(
+        db=db,
+        agent_id=agent_id,
+        version=version,
+        company_id=current_user.company_id,
+    )
+    if not snap:
+        raise HTTPException(status_code=404, detail="Version not found")
+    return snap.to_dict()
+
+
+@router.post("/{agent_id}/revert/{version}", summary="Revert agent to previous version")
+async def revert_agent_to_version(
+    agent_id: str,
+    version: int,
+    current_user=Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Revert agent state to a previous version. Creates a new snapshot before reverting."""
+    from app.services.agent_version_service import agent_version_service
+    from sqlalchemy import select as _sel
+
+    agent_result = await db.execute(
+        _sel(CustomAgent).where(
+            CustomAgent.id == agent_id,
+            CustomAgent.company_id == current_user.company_id,
+        )
+    )
+    agent = agent_result.scalar_one_or_none()
+    if not agent:
+        raise HTTPException(status_code=404, detail="Agent not found")
+
+    try:
+        reverted = await agent_version_service.revert(
+            db=db,
+            agent=agent,
+            target_version=version,
+            reverted_by=str(current_user.id),
+        )
+        await db.commit()
+        return CustomAgentResponse(**reverted.to_dict())
+    except ValueError as e:
+        await db.rollback()
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        await db.rollback()
+        logger.error("[AgentVersion] revert failed: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail="Failed to revert agent")
 
 
 @router.get("/search", summary="Search agents by name (fuzzy)")

@@ -9,6 +9,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog"
 import { useAgentDeployments } from "@/hooks/agents"
+import { VersionHistoryPanel } from "./VersionHistoryPanel"
 import type { CustomAgent } from "./types"
 import { CATEGORY_LABELS, TARGET_LABELS, TRIGGER_LABELS, TOOL_LABELS } from "./types"
 import type { AgentCategory } from "./types"
@@ -156,6 +157,17 @@ export function AgentDetailsPanel({ agent, open, onClose, onDeploy, onTest }: Ag
                 ))}
               </div>
             )}
+          </div>
+
+          {/* Version History */}
+          <div className="pt-2 border-t border-lia-border-subtle">
+            <VersionHistoryPanel
+              agentId={agent.id}
+              currentVersion={(agent as unknown as { version?: number }).version || 1}
+              onReverted={() => {
+                // parent should refetch if needed
+              }}
+            />
           </div>
 
           {/* Actions */}

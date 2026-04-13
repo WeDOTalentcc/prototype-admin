@@ -3,7 +3,7 @@
 import React from "react"
 import {
   Briefcase, Users, Calendar, BarChart2, Mail,
-  Plug, Bell, StickyNote, CalendarDays, UserCog,
+  Plug, Bell, StickyNote, CalendarDays, UserCog, Bot, Search, BarChart3,
   type LucideIcon,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -70,6 +70,24 @@ const MODE_CONFIG: Record<NonNullable<ActionType>, ModeLabelConfig> = {
     bg: "bg-teal-500/10",
     text: "text-teal-600 dark:text-teal-400",
     border: "border-teal-500/20",
+  },
+  studio_create: {
+    icon: Bot,
+    bg: "bg-wedo-cyan/10",
+    text: "text-wedo-cyan-dark dark:text-wedo-cyan",
+    border: "border-wedo-cyan/20",
+  },
+  studio_query: {
+    icon: Search,
+    bg: "bg-wedo-cyan/10",
+    text: "text-wedo-cyan-dark dark:text-wedo-cyan",
+    border: "border-wedo-cyan/20",
+  },
+  studio_metrics: {
+    icon: BarChart3,
+    bg: "bg-wedo-cyan/10",
+    text: "text-wedo-cyan-dark dark:text-wedo-cyan",
+    border: "border-wedo-cyan/20",
   },
 }
 
