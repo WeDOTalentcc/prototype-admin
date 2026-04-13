@@ -39,12 +39,12 @@ let serverReady = false
 
 async function fetchWithRetry<T>(
   fn: () => Promise<T>,
-  retries = 6,
+  retries = 3,
   baseDelayMs = 3000,
 ): Promise<T> {
   if (!serverReady) {
     console.debug('[useJobsData] waiting for server readiness...')
-    serverReady = await waitForServer(90_000)
+    serverReady = await waitForServer(20_000)
     if (!serverReady) {
       console.warn('[useJobsData] server not ready after 90s, attempting fetch anyway')
     }
