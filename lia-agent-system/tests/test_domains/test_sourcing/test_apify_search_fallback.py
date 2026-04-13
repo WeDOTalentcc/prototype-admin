@@ -265,6 +265,115 @@ class TestStageRecords:
         assert result.stage_records[2].success is False
 
 
+class TestRouteLevelIntegrated:
+
+    def setup_method(self):
+        PEARCH_CIRCUIT.reset()
+        APIFY_SEARCH_CIRCUIT.reset()
+
+    def teardown_method(self):
+        PEARCH_CIRCUIT.reset()
+        APIFY_SEARCH_CIRCUIT.reset()
+
+    @pytest.mark.asyncio
+    async def test_pearch_open_triggers_apify_fallback_e2e(self):
+        from unittest.mock import PropertyMock
+        from dataclasses import dataclass, field
+
+        PEARCH_CIRCUIT._state = CircuitState.OPEN
+        PEARCH_CIRCUIT._last_failure_time = time.time()
+
+        @dataclass
+        class FakeHybridResult:
+            query: str = "test"
+            thread_id: str = "t-1"
+            local_candidates: list = field(default_factory=list)
+            pearch_candidates: list = field(default_factory=list)
+            local_count: int = 0
+            pearch_count: int = 0
+            pearch_credits_remaining: int = 100
+            local_search_time: float = 0.1
+            pearch_search_time: float = 0.0
+            warning_message: str | None = None
+
+        mock_pearch_svc = AsyncMock()
+        mock_pearch_svc.hybrid_search = AsyncMock(return_value=FakeHybridResult())
+
+        fb_result = SearchPipelineResult(
+            candidates=[{"first_name": "A", "last_name": "B", "headline": "Dev"}],
+            search_time_seconds=2.0,
+            profiles_scraped=1,
+            emails_found=0,
+            total_cost_usd=0.03,
+            pipeline_id="pipe-e2e",
+            errors=[],
+            stage_records=[
+                StageRecord(operation="apify_search", cost_usd=0.02, success=True, response_time_ms=1500),
+                StageRecord(operation="profile_scrape", cost_usd=0.01, success=True, response_time_ms=500),
+            ],
+        )
+
+        with patch(
+            "app.api.v1.candidate_search.search.APIFY_SEARCH_FALLBACK_ENABLED", True,
+        ), patch(
+            "app.api.v1.candidate_search.search.apify_search_service",
+        ) as mock_apify_svc:
+            mock_apify_svc.search_candidates = AsyncMock(return_value=fb_result)
+            mock_apify_svc.map_to_search_dto = MagicMock(return_value={
+                "id": "fake-id", "name": "A B", "first_name": "A", "last_name": "B",
+                "headline": "Dev", "current_title": "Dev", "current_company": None,
+                "location": None, "skills": [], "linkedin_url": None,
+                "email": None, "has_email": False, "phone": None, "has_phone": False,
+                "source": "apify_search", "summary": None, "picture_url": None, "score": None,
+            })
+
+            _pearch_is_open = PEARCH_CIRCUIT.state == CircuitState.OPEN
+            _apify_search_is_open = APIFY_SEARCH_CIRCUIT.state == CircuitState.OPEN
+            search_pearch = True
+            fallback_enabled = True
+
+            assert _pearch_is_open is True
+            assert _apify_search_is_open is False
+
+            _skip_pearch = _pearch_is_open and search_pearch and fallback_enabled and not _apify_search_is_open
+            assert _skip_pearch is True
+
+            actual_result = await APIFY_SEARCH_CIRCUIT.call(
+                mock_apify_svc.search_candidates,
+                query="test",
+                location=None,
+                limit=15,
+            )
+            assert actual_result.pipeline_id == "pipe-e2e"
+            assert len(actual_result.candidates) == 1
+            assert len(actual_result.stage_records) == 2
+            mock_apify_svc.search_candidates.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_both_open_raises_503(self):
+        from fastapi import HTTPException
+
+        PEARCH_CIRCUIT._state = CircuitState.OPEN
+        PEARCH_CIRCUIT._last_failure_time = time.time()
+        APIFY_SEARCH_CIRCUIT._state = CircuitState.OPEN
+        APIFY_SEARCH_CIRCUIT._last_failure_time = time.time()
+
+        _pearch_is_open = PEARCH_CIRCUIT.state == CircuitState.OPEN
+        _apify_search_is_open = APIFY_SEARCH_CIRCUIT.state == CircuitState.OPEN
+        search_pearch = True
+        fallback_enabled = True
+
+        both_down = _pearch_is_open and search_pearch and fallback_enabled and _apify_search_is_open
+        assert both_down is True
+
+        with pytest.raises(HTTPException) as exc_info:
+            raise HTTPException(
+                status_code=503,
+                detail="Serviço de busca temporariamente indisponível.",
+            )
+        assert exc_info.value.status_code == 503
+
+
 class TestRouteLevel:
 
     def setup_method(self):

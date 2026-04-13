@@ -164,7 +164,7 @@ async def search_candidates(
             candidates.append(CandidateSearchResultDTO.from_profile(profile, "pearch"))
 
         if _skip_pearch:
-            logger.info("[SearchFallback] Pearch circuit open, routing to Apify search fallback")
+            logger.info("[SearchFallback] Pearch circuit open, using Apify search fallback")
             _company_id = getattr(current_user, "company_id", None) or getattr(getattr(current_user, "state", None), "company_id", None)
             _user_id = getattr(current_user, "id", None) or getattr(current_user, "user_id", None)
             _location = (request.search_spec or {}).get("location")
