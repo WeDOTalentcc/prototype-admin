@@ -46,6 +46,13 @@ jobs:
             -e libs/contexts \
             -e libs/auth
 
+      - name: Block unresolved merge conflict markers
+        run: |
+          if grep -rn --include='*.py' -E '^(<<<<<<< HEAD|=======$|>>>>>>> )' .; then
+            echo "::error::Unresolved merge conflict markers found — resolve before pushing"
+            exit 1
+          fi
+
       - name: Lint with ruff
         run: ruff check app/ --output-format=github
 
