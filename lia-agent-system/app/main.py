@@ -29,6 +29,7 @@ from app.domains.automation.services.automation_scheduler import automation_sche
 from app.middleware.auth_enforcement import AuthEnforcementMiddleware
 from app.middleware.rate_limiter import RateLimitMiddleware
 from app.middleware.request_id import RequestIdMiddleware
+from app.middleware.response_envelope import ResponseEnvelopeMiddleware
 from app.shared.services.embedding_cache_service import embedding_cache
 from app.domains.ai.services.llm import LLMService
 from app.tools import initialize_tools
@@ -370,6 +371,9 @@ Authorization: Bearer <token>
 
 # Auth enforcement — validates JWT and injects company_id (multi-tenancy)
 app.add_middleware(AuthEnforcementMiddleware)
+
+# Response envelope — auto-wraps 2xx JSON into {"ok": true, "data": ...}
+app.add_middleware(ResponseEnvelopeMiddleware)
 
 # Rate limiting middleware
 app.add_middleware(RateLimitMiddleware)

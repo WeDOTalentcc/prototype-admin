@@ -181,21 +181,21 @@ async def get_tenant_summary(
 
 
 @router.get(
-    "/invoice/{company_id}/{year}/{month}",
+    "/invoice/{target_company_id}/{year}/{month}",
     response_model=DetailedInvoiceResponse,
 )
 async def get_detailed_invoice(
-    company_id: str = Path(..., description="Company ID"),
+    target_company_id: str = Path(..., description="Company ID"),
     year: int = Path(..., ge=2024, le=2030, description="Invoice year"),
     month: int = Path(..., ge=1, le=12, description="Invoice month"),
-    verified_company_id: str = Depends(get_verified_company_id),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db),
 ):
-    if company_id != verified_company_id:
+    if target_company_id != company_id:
         raise HTTPException(status_code=403, detail="Access denied to this company's invoice")
     try:
         data = await ConsumptionReportService.get_detailed_invoice(
-            db, company_id, year, month
+            db, target_company_id, year, month
         )
         return DetailedInvoiceResponse(**data)
     except Exception as e:
