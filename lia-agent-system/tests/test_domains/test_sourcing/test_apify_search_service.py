@@ -10,6 +10,7 @@ from app.domains.sourcing.services.apify_search_service import (
     APIFY_SEARCH_COST_USD,
     ApifySearchService,
     SearchPipelineResult,
+    StageRecord,
 )
 
 
@@ -64,6 +65,10 @@ class TestApifySearchService:
             assert result.pipeline_id
             assert result.search_time_seconds >= 0
             assert result.total_cost_usd > 0
+            assert len(result.stage_records) > 0
+            ops = [sr.operation for sr in result.stage_records]
+            assert "apify_search" in ops
+            assert "profile_scrape" in ops
 
             mock_actor.assert_called_once()
             assert mock_scrape.call_count == 3
@@ -147,9 +152,11 @@ class TestApifySearchService:
         with patch.object(
             service._apify, "_discover_email", new_callable=AsyncMock, return_value=["found@email.com"]
         ) as mock_email:
-            found = await service._step3_find_emails(profiles, [])
+            found, records = await service._step3_find_emails(profiles, [])
             assert mock_email.call_count == 2
             assert found == 2
+            assert len(records) == 2
+            assert all(r.operation == "email_finder" for r in records)
 
     def test_map_to_search_dto(self, service):
         profile = {

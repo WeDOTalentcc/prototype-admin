@@ -3,17 +3,9 @@ import logging
 import os
 import time
 import uuid
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
-import httpx
-
-from app.domains.sourcing.services.apify_service import (
-    APIFY_API_KEY,
-    APIFY_BASE_URL,
-    EMAIL_FINDER_ACTOR_ID,
-    LINKEDIN_PERSON_ACTOR_ID,
-    ApifyService,
-)
+from app.domains.sourcing.services.apify_service import ApifyService
 
 logger = logging.getLogger(__name__)
 
@@ -37,6 +29,15 @@ APIFY_SEARCH_FALLBACK_ENABLED = os.environ.get(
 
 
 @dataclass
+class StageRecord:
+    operation: str
+    cost_usd: float
+    success: bool
+    response_time_ms: int
+    error_message: str | None = None
+
+
+@dataclass
 class SearchPipelineResult:
     candidates: list[dict]
     search_time_seconds: float
@@ -45,6 +46,7 @@ class SearchPipelineResult:
     total_cost_usd: float
     pipeline_id: str
     errors: list[str]
+    stage_records: list[StageRecord] = field(default_factory=list)
 
 
 class ApifySearchService:
@@ -63,13 +65,31 @@ class ApifySearchService:
         pipeline_id = str(uuid.uuid4())
         start = time.time()
         errors: list[str] = []
+        stage_records: list[StageRecord] = []
 
         logger.info(
             "[ApifySearch] Starting pipeline %s: query=%r location=%r limit=%d",
             pipeline_id, query, location, limit,
         )
 
-        linkedin_urls = await self._step1_search(query, location, limit, errors)
+        step1_start = time.time()
+        try:
+            linkedin_urls = await self._step1_search(query, location, limit, errors)
+            stage_records.append(StageRecord(
+                operation="apify_search",
+                cost_usd=APIFY_SEARCH_COST_USD,
+                success=True,
+                response_time_ms=int((time.time() - step1_start) * 1000),
+            ))
+        except Exception as e:
+            stage_records.append(StageRecord(
+                operation="apify_search",
+                cost_usd=APIFY_SEARCH_COST_USD,
+                success=False,
+                response_time_ms=int((time.time() - step1_start) * 1000),
+                error_message=str(e)[:500],
+            ))
+            raise
 
         if not linkedin_urls:
             logger.warning("[ApifySearch] Pipeline %s: no URLs from search step", pipeline_id)
@@ -81,18 +101,17 @@ class ApifySearchService:
                 total_cost_usd=APIFY_SEARCH_COST_USD,
                 pipeline_id=pipeline_id,
                 errors=errors,
+                stage_records=stage_records,
             )
 
-        profiles = await self._step2_scrape_profiles(linkedin_urls, errors)
+        profiles, profile_stage_records = await self._step2_scrape_profiles(linkedin_urls, errors)
+        stage_records.extend(profile_stage_records)
 
-        emails_found = await self._step3_find_emails(profiles, errors)
+        emails_found, email_stage_records = await self._step3_find_emails(profiles, errors)
+        stage_records.extend(email_stage_records)
 
         elapsed = round(time.time() - start, 2)
-        total_cost = (
-            APIFY_SEARCH_COST_USD
-            + len(profiles) * APIFY_PROFILE_SCRAPE_COST_USD
-            + emails_found * APIFY_EMAIL_FINDER_COST_USD
-        )
+        total_cost = sum(sr.cost_usd for sr in stage_records)
 
         logger.info(
             "[ApifySearch] Pipeline %s complete: %d profiles, %d emails, $%.4f, %.1fs",
@@ -107,6 +126,7 @@ class ApifySearchService:
             total_cost_usd=round(total_cost, 4),
             pipeline_id=pipeline_id,
             errors=errors,
+            stage_records=stage_records,
         )
 
     async def _step1_search(
@@ -164,21 +184,52 @@ class ApifySearchService:
         self,
         urls: list[str],
         errors: list[str],
-    ) -> list[dict]:
+    ) -> tuple[list[dict], list[StageRecord]]:
+        records: list[StageRecord] = []
+
         async def _scrape_one(url: str) -> dict | None:
             async with self._semaphore:
+                t0 = time.time()
                 try:
                     result = await asyncio.wait_for(
                         self._apify._scrape_linkedin_person(url),
                         timeout=APIFY_PROFILE_TIMEOUT,
                     )
+                    elapsed_ms = int((time.time() - t0) * 1000)
                     if result:
                         result["linkedin_url"] = url
+                        records.append(StageRecord(
+                            operation="profile_scrape",
+                            cost_usd=APIFY_PROFILE_SCRAPE_COST_USD,
+                            success=True,
+                            response_time_ms=elapsed_ms,
+                        ))
                         return result
+                    records.append(StageRecord(
+                        operation="profile_scrape",
+                        cost_usd=APIFY_PROFILE_SCRAPE_COST_USD,
+                        success=False,
+                        response_time_ms=elapsed_ms,
+                        error_message="empty result",
+                    ))
                 except asyncio.TimeoutError:
                     errors.append(f"Profile scrape timeout: {url}")
+                    records.append(StageRecord(
+                        operation="profile_scrape",
+                        cost_usd=APIFY_PROFILE_SCRAPE_COST_USD,
+                        success=False,
+                        response_time_ms=int((time.time() - t0) * 1000),
+                        error_message="timeout",
+                    ))
                 except Exception as e:
                     errors.append(f"Profile scrape error ({url}): {e}")
+                    records.append(StageRecord(
+                        operation="profile_scrape",
+                        cost_usd=APIFY_PROFILE_SCRAPE_COST_USD,
+                        success=False,
+                        response_time_ms=int((time.time() - t0) * 1000),
+                        error_message=str(e)[:200],
+                    ))
             return None
 
         tasks = [_scrape_one(url) for url in urls]
@@ -192,20 +243,21 @@ class ApifySearchService:
                 errors.append(f"Profile scrape exception: {r}")
 
         logger.info("[ApifySearch] Step 2: scraped %d/%d profiles", len(profiles), len(urls))
-        return profiles
+        return profiles, records
 
     async def _step3_find_emails(
         self,
         profiles: list[dict],
         errors: list[str],
-    ) -> int:
+    ) -> tuple[int, list[StageRecord]]:
+        records: list[StageRecord] = []
         candidates_needing_email = [
             p for p in profiles
             if not p.get("emails") and p.get("first_name")
         ]
 
         if not candidates_needing_email:
-            return 0
+            return 0, records
 
         found = 0
 
@@ -214,18 +266,47 @@ class ApifySearchService:
                 name = f"{profile.get('first_name', '')} {profile.get('last_name', '')}".strip()
                 if not name:
                     return False
+                t0 = time.time()
                 try:
                     emails = await asyncio.wait_for(
                         self._apify._discover_email(name, profile.get("linkedin_url")),
                         timeout=APIFY_EMAIL_TIMEOUT,
                     )
+                    elapsed_ms = int((time.time() - t0) * 1000)
                     if emails:
                         profile["emails"] = emails
+                        records.append(StageRecord(
+                            operation="email_finder",
+                            cost_usd=APIFY_EMAIL_FINDER_COST_USD,
+                            success=True,
+                            response_time_ms=elapsed_ms,
+                        ))
                         return True
+                    records.append(StageRecord(
+                        operation="email_finder",
+                        cost_usd=APIFY_EMAIL_FINDER_COST_USD,
+                        success=False,
+                        response_time_ms=elapsed_ms,
+                        error_message="no email found",
+                    ))
                 except asyncio.TimeoutError:
                     errors.append(f"Email finder timeout: {name}")
+                    records.append(StageRecord(
+                        operation="email_finder",
+                        cost_usd=APIFY_EMAIL_FINDER_COST_USD,
+                        success=False,
+                        response_time_ms=int((time.time() - t0) * 1000),
+                        error_message="timeout",
+                    ))
                 except Exception as e:
                     errors.append(f"Email finder error ({name}): {e}")
+                    records.append(StageRecord(
+                        operation="email_finder",
+                        cost_usd=APIFY_EMAIL_FINDER_COST_USD,
+                        success=False,
+                        response_time_ms=int((time.time() - t0) * 1000),
+                        error_message=str(e)[:200],
+                    ))
                 return False
 
         tasks = [_find_one(p) for p in candidates_needing_email]
@@ -238,7 +319,7 @@ class ApifySearchService:
             "[ApifySearch] Step 3: found emails for %d/%d candidates",
             found, len(candidates_needing_email),
         )
-        return found
+        return found, records
 
     def map_to_search_dto(self, profile: dict) -> dict:
         first = profile.get("first_name", "")

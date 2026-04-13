@@ -134,34 +134,41 @@ async def search_candidates(
         if request.search_spec:
             logger.info(f"SearchSpec received: {request.search_spec}")
         
-        _used_apify_fallback = False
         _apify_fallback_warning = None
-        
+        _fb_pearch_count = 0
+        _fb_search_time = 0.0
+        _fb_can_load_more = False
+
         _pearch_is_open = PEARCH_CIRCUIT.state == CircuitState.OPEN
-        _should_use_fallback = (
-            _pearch_is_open
-            and request.search_pearch
-            and APIFY_SEARCH_FALLBACK_ENABLED
-            and APIFY_SEARCH_CIRCUIT.state != CircuitState.OPEN
-        )
+        _apify_search_is_open = APIFY_SEARCH_CIRCUIT.state == CircuitState.OPEN
+
+        if _pearch_is_open and request.search_pearch and APIFY_SEARCH_FALLBACK_ENABLED and _apify_search_is_open:
+            raise HTTPException(
+                status_code=503,
+                detail="Serviço de busca temporariamente indisponível. Pearch e Apify fallback estão fora do ar. Tente novamente em alguns minutos.",
+            )
+
+        _skip_pearch = _pearch_is_open and request.search_pearch and APIFY_SEARCH_FALLBACK_ENABLED and not _apify_search_is_open
+
+        if _skip_pearch:
+            hybrid_request.include_pearch = False
 
         result = await pearch_svc.hybrid_search(db, hybrid_request)
-        
+
         candidates = []
-        
+
         for profile in result.local_candidates:
             candidates.append(CandidateSearchResultDTO.from_profile(profile, "local"))
-        
+
         for profile in result.pearch_candidates:
             candidates.append(CandidateSearchResultDTO.from_profile(profile, "pearch"))
 
-        if _should_use_fallback and result.pearch_count == 0:
-            logger.info("[SearchFallback] Pearch circuit open, using Apify search fallback")
+        if _skip_pearch:
+            logger.info("[SearchFallback] Pearch circuit open, routing to Apify search fallback")
+            _company_id = getattr(current_user, "company_id", None) or getattr(getattr(current_user, "state", None), "company_id", None)
+            _user_id = getattr(current_user, "id", None) or getattr(current_user, "user_id", None)
+            _location = (request.search_spec or {}).get("location")
             try:
-                _company_id = getattr(current_user, "company_id", None) or getattr(getattr(current_user, "state", None), "company_id", None)
-                _user_id = getattr(current_user, "id", None) or getattr(current_user, "user_id", None)
-                _location = (request.search_spec or {}).get("location")
-
                 _fb_start = _time.time()
                 _fb_result = await APIFY_SEARCH_CIRCUIT.call(
                     apify_search_service.search_candidates,
@@ -177,7 +184,10 @@ async def search_candidates(
                     _dto_data = apify_search_service.map_to_search_dto(_profile)
                     candidates.append(CandidateSearchResultDTO(**_dto_data))
 
-                _used_apify_fallback = True
+                _fb_pearch_count = len(_fb_result.candidates)
+                _fb_search_time = _fb_result.search_time_seconds
+                _fb_can_load_more = _fb_pearch_count >= request.pearch_limit
+
                 _apify_fallback_warning = (
                     f"Busca Pearch indisponível — usando fallback Apify "
                     f"({_fb_result.profiles_scraped} perfis, {_fb_result.emails_found} emails, "
@@ -187,16 +197,18 @@ async def search_candidates(
                 if _company_id:
                     try:
                         from app.domains.billing.services.consumption_tracking_service import ConsumptionTrackingService
-                        await ConsumptionTrackingService.record_apify_search_call(
-                            db=db,
-                            company_id=str(_company_id),
-                            user_id=str(_user_id) if _user_id else None,
-                            operation="apify_search",
-                            cost_usd=_fb_result.total_cost_usd,
-                            success=True,
-                            pipeline_id=_fb_result.pipeline_id,
-                            response_time_ms=_fb_elapsed_ms,
-                        )
+                        for _sr in _fb_result.stage_records:
+                            await ConsumptionTrackingService.record_apify_search_call(
+                                db=db,
+                                company_id=str(_company_id),
+                                user_id=str(_user_id) if _user_id else None,
+                                operation=_sr.operation,
+                                cost_usd=_sr.cost_usd,
+                                success=_sr.success,
+                                pipeline_id=_fb_result.pipeline_id,
+                                response_time_ms=_sr.response_time_ms,
+                                error_message=_sr.error_message,
+                            )
                         await db.commit()
                     except Exception as _track_err:
                         logger.warning("[SearchFallback] Consumption tracking error: %s", _track_err)
@@ -207,7 +219,7 @@ async def search_candidates(
                 )
             except CircuitBreakerError:
                 _apify_fallback_warning = get_degraded_response("apify_search")
-                logger.warning("[SearchFallback] Apify search circuit also open")
+                logger.warning("[SearchFallback] Apify search circuit opened during call")
             except Exception as _fb_err:
                 _apify_fallback_warning = "Busca fallback via Apify falhou. Tente novamente em instantes."
                 logger.error("[SearchFallback] Apify fallback error: %s", _fb_err)
@@ -285,22 +297,28 @@ async def search_candidates(
         except Exception as _credit_err:
             logger.warning("[Credits] Credit deduction error (non-fatal): %s", _credit_err)
 
+        _effective_pearch_count = result.pearch_count + _fb_pearch_count
+        _effective_search_time = (result.local_search_time or 0) + (result.pearch_search_time or 0) + _fb_search_time
+        _effective_can_load_more = (result.pearch_count >= request.pearch_limit) or _fb_can_load_more
+
         return SearchResponseDTO(
             query=result.query,
             thread_id=result.thread_id,
             candidates=candidates,
             local_count=result.local_count,
-            pearch_count=result.pearch_count,
+            pearch_count=_effective_pearch_count,
             total_count=len(candidates),
             credits_remaining=result.pearch_credits_remaining,
-            search_time_seconds=(result.local_search_time or 0) + (result.pearch_search_time or 0),
+            search_time_seconds=_effective_search_time,
             warning_message=_apify_fallback_warning or _credit_warning or result.warning_message,
-            can_load_more=result.pearch_count >= request.pearch_limit,
+            can_load_more=_effective_can_load_more,
             should_expand_to_global=should_expand,
             expansion_message=expansion_message,
             high_adherence_count=high_adherence_count
         )
     
+    except HTTPException:
+        raise
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:

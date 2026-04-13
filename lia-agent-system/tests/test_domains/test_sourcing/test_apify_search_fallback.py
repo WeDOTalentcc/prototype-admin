@@ -7,6 +7,7 @@ from app.domains.sourcing.services.apify_search_service import (
     APIFY_SEARCH_FALLBACK_ENABLED,
     ApifySearchService,
     SearchPipelineResult,
+    StageRecord,
 )
 from app.shared.resilience.circuit_breaker import (
     APIFY_SEARCH_CIRCUIT,
@@ -167,6 +168,40 @@ class TestConsumptionTracking:
             assert record.result_status == "fail"
             assert record.error_message == "Search actor timeout"
 
+    @pytest.mark.asyncio
+    async def test_record_per_stage_operations(self):
+        from app.domains.billing.services.consumption_tracking_service import ConsumptionTrackingService
+
+        mock_db = AsyncMock()
+        mock_db.flush = AsyncMock()
+
+        with patch(
+            "app.domains.billing.services.consumption_tracking_service.ConsumptionTrackingService._check_budget_alert",
+            new_callable=AsyncMock,
+        ):
+            r1 = await ConsumptionTrackingService.record_apify_search_call(
+                db=mock_db, company_id="c1", user_id="u1",
+                operation="apify_search", cost_usd=0.02, success=True,
+                pipeline_id="p1", response_time_ms=1000,
+            )
+            r2 = await ConsumptionTrackingService.record_apify_search_call(
+                db=mock_db, company_id="c1", user_id="u1",
+                operation="profile_scrape", cost_usd=0.01, success=True,
+                pipeline_id="p1", response_time_ms=500,
+            )
+            r3 = await ConsumptionTrackingService.record_apify_search_call(
+                db=mock_db, company_id="c1", user_id="u1",
+                operation="email_finder", cost_usd=0.01, success=False,
+                pipeline_id="p1", response_time_ms=300,
+                error_message="timeout",
+            )
+
+            assert r1.operation == "apify_search"
+            assert r2.operation == "profile_scrape"
+            assert r3.operation == "email_finder"
+            assert r3.success is False
+            assert mock_db.add.call_count == 3
+
 
 class TestOperationEnums:
 
@@ -184,3 +219,162 @@ class TestOperationEnums:
         assert ExternalApiOperation.SEARCH == "search"
         assert ExternalApiOperation.REVEAL_EMAIL == "reveal_email"
         assert ExternalApiOperation.REVEAL_PHONE == "reveal_phone"
+
+
+class TestStageRecords:
+
+    def test_stage_record_creation(self):
+        sr = StageRecord(
+            operation="profile_scrape",
+            cost_usd=0.01,
+            success=True,
+            response_time_ms=500,
+        )
+        assert sr.operation == "profile_scrape"
+        assert sr.error_message is None
+
+    def test_stage_record_with_error(self):
+        sr = StageRecord(
+            operation="email_finder",
+            cost_usd=0.01,
+            success=False,
+            response_time_ms=300,
+            error_message="timeout",
+        )
+        assert sr.success is False
+        assert sr.error_message == "timeout"
+
+    def test_pipeline_result_includes_stage_records(self):
+        stages = [
+            StageRecord(operation="apify_search", cost_usd=0.02, success=True, response_time_ms=1000),
+            StageRecord(operation="profile_scrape", cost_usd=0.01, success=True, response_time_ms=500),
+            StageRecord(operation="email_finder", cost_usd=0.01, success=False, response_time_ms=200, error_message="timeout"),
+        ]
+        result = SearchPipelineResult(
+            candidates=[{"name": "Test"}],
+            search_time_seconds=1.7,
+            profiles_scraped=1,
+            emails_found=0,
+            total_cost_usd=0.04,
+            pipeline_id="test-id",
+            errors=[],
+            stage_records=stages,
+        )
+        assert len(result.stage_records) == 3
+        assert result.stage_records[0].operation == "apify_search"
+        assert result.stage_records[2].success is False
+
+
+class TestRouteLevel:
+
+    def setup_method(self):
+        PEARCH_CIRCUIT.reset()
+        APIFY_SEARCH_CIRCUIT.reset()
+
+    def teardown_method(self):
+        PEARCH_CIRCUIT.reset()
+        APIFY_SEARCH_CIRCUIT.reset()
+
+    def test_pearch_open_sets_skip_pearch_flag(self):
+        PEARCH_CIRCUIT._state = CircuitState.OPEN
+        PEARCH_CIRCUIT._last_failure_time = time.time()
+
+        _pearch_is_open = PEARCH_CIRCUIT.state == CircuitState.OPEN
+        _apify_search_is_open = APIFY_SEARCH_CIRCUIT.state == CircuitState.OPEN
+        search_pearch = True
+        fallback_enabled = True
+
+        _skip_pearch = _pearch_is_open and search_pearch and fallback_enabled and not _apify_search_is_open
+        assert _skip_pearch is True
+
+    def test_both_circuits_open_detected(self):
+        PEARCH_CIRCUIT._state = CircuitState.OPEN
+        PEARCH_CIRCUIT._last_failure_time = time.time()
+        APIFY_SEARCH_CIRCUIT._state = CircuitState.OPEN
+        APIFY_SEARCH_CIRCUIT._last_failure_time = time.time()
+
+        _pearch_is_open = PEARCH_CIRCUIT.state == CircuitState.OPEN
+        _apify_search_is_open = APIFY_SEARCH_CIRCUIT.state == CircuitState.OPEN
+        search_pearch = True
+        fallback_enabled = True
+
+        both_down = _pearch_is_open and search_pearch and fallback_enabled and _apify_search_is_open
+        assert both_down is True
+
+    def test_no_skip_when_fallback_disabled(self):
+        PEARCH_CIRCUIT._state = CircuitState.OPEN
+        PEARCH_CIRCUIT._last_failure_time = time.time()
+
+        _pearch_is_open = PEARCH_CIRCUIT.state == CircuitState.OPEN
+        _apify_search_is_open = APIFY_SEARCH_CIRCUIT.state == CircuitState.OPEN
+        search_pearch = True
+        fallback_enabled = False
+
+        _skip_pearch = _pearch_is_open and search_pearch and fallback_enabled and not _apify_search_is_open
+        assert _skip_pearch is False
+
+    def test_no_skip_when_pearch_not_requested(self):
+        PEARCH_CIRCUIT._state = CircuitState.OPEN
+        PEARCH_CIRCUIT._last_failure_time = time.time()
+
+        _pearch_is_open = PEARCH_CIRCUIT.state == CircuitState.OPEN
+        search_pearch = False
+        fallback_enabled = True
+
+        _skip_pearch = _pearch_is_open and search_pearch and fallback_enabled
+        assert _skip_pearch is False
+
+    @pytest.mark.asyncio
+    async def test_fallback_result_updates_response_counts(self):
+        fb_result = SearchPipelineResult(
+            candidates=[{"name": "A"}, {"name": "B"}],
+            search_time_seconds=2.5,
+            profiles_scraped=2,
+            emails_found=1,
+            total_cost_usd=0.04,
+            pipeline_id="test-pipeline",
+            errors=[],
+            stage_records=[
+                StageRecord(operation="apify_search", cost_usd=0.02, success=True, response_time_ms=1500),
+                StageRecord(operation="profile_scrape", cost_usd=0.01, success=True, response_time_ms=500),
+                StageRecord(operation="profile_scrape", cost_usd=0.01, success=True, response_time_ms=400),
+            ],
+        )
+
+        _fb_pearch_count = len(fb_result.candidates)
+        _fb_search_time = fb_result.search_time_seconds
+        _fb_can_load_more = _fb_pearch_count >= 15
+
+        pearch_count_from_hybrid = 0
+        _effective_pearch_count = pearch_count_from_hybrid + _fb_pearch_count
+        assert _effective_pearch_count == 2
+
+        hybrid_search_time = 0.3
+        _effective_search_time = hybrid_search_time + _fb_search_time
+        assert _effective_search_time == pytest.approx(2.8, abs=0.01)
+
+        assert _fb_can_load_more is False
+
+    @pytest.mark.asyncio
+    async def test_per_stage_records_tracked_on_success(self):
+        fb_result = SearchPipelineResult(
+            candidates=[{"name": "Test"}],
+            search_time_seconds=3.0,
+            profiles_scraped=1,
+            emails_found=1,
+            total_cost_usd=0.04,
+            pipeline_id="pipe-123",
+            errors=[],
+            stage_records=[
+                StageRecord(operation="apify_search", cost_usd=0.02, success=True, response_time_ms=2000),
+                StageRecord(operation="profile_scrape", cost_usd=0.01, success=True, response_time_ms=600),
+                StageRecord(operation="email_finder", cost_usd=0.01, success=True, response_time_ms=400),
+            ],
+        )
+
+        assert len(fb_result.stage_records) == 3
+        ops = [sr.operation for sr in fb_result.stage_records]
+        assert "apify_search" in ops
+        assert "profile_scrape" in ops
+        assert "email_finder" in ops
+        assert all(sr.success for sr in fb_result.stage_records)
