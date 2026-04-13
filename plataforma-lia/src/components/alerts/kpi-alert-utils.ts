@@ -170,7 +170,7 @@ export const getMetricDisplayName = (metric: string): string => {
   switch (metric) {
     case 'avgTimeToFill': return 'Time to Fill'
     case 'conversionRate': return 'Taxa de Conversão'
-    case 'npsScore': return 'NPS Score'
+    case 'npsScore': return 'NPS'
     case 'totalHires': return 'Total de Contratações'
     case 'qualityOfHireScore': return 'Score de Qualidade'
     default: return metric

@@ -105,7 +105,7 @@ export function ScreeningSettingsModal({
               className="w-full"
             />
             <p className="text-micro text-lia-text-secondary" aria-live="polite" aria-atomic="true">
-              Candidatos com score abaixo de {minScore}% serão reprovados automaticamente
+              Candidatos com nota abaixo de {minScore}% serão reprovados automaticamente
             </p>
           </div>
 

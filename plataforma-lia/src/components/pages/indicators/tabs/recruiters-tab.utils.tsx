@@ -31,9 +31,9 @@ export function getGoalLabel(key: string, variant: "short" | "long" = "short"): 
     switch (key) {
       case "hires": return "Contratações"
       case "timeToFill": return "Time to Fill (dias)"
-      case "nps": return "NPS Score"
+      case "nps": return "NPS"
       case "interviews": return "Entrevistas"
-      case "qualityScore": return "Score de Qualidade"
+      case "qualityScore": return "Nota de Qualidade"
       case "conversionRate": return "Taxa de Conversão (%)"
       default: return key
     }

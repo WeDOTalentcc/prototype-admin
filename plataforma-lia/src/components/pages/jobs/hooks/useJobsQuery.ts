@@ -73,7 +73,7 @@ export function useJobsQuery(options: UseJobsQueryOptions = {}): UseJobsQueryRes
       openDate: raw.open_date as string | undefined,
       targetCloseDate: raw.target_close_date as string | undefined,
       daysOpen: raw.days_open as number | undefined,
-      confidenceScore: raw.confidence_score as number | undefined,
+      confidenceNota: raw.confidence_score as number | undefined,
       tags: raw.tags as string[] | undefined,
       isConfidential: raw.is_confidential as boolean | undefined,
     }

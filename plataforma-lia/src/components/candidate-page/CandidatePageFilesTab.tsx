@@ -170,7 +170,7 @@ export function CandidatePageFilesTab({
                 <p className="text-xs text-lia-text-primary">45.2 MB • 8:20 min</p>
                 <div className="flex gap-1 mt-2">
                   <Badge className="text-xs">Destaque</Badge>
-                  <Badge className="text-xs">Score: 88%</Badge>
+                  <Badge className="text-xs">Nota: 88%</Badge>
                 </div>
               </div>
             </div>
@@ -198,7 +198,7 @@ export function CandidatePageFilesTab({
                 <p className="text-xs text-lia-text-primary">1.8 MB • 4:32 min • há 1 dia</p>
                 <div className="flex gap-1 mt-2">
                   <Badge className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary text-xs">Triagem WSI</Badge>
-                  <Badge className="text-xs">Score: 92%</Badge>
+                  <Badge className="text-xs">Nota: 92%</Badge>
                 </div>
               </div>
             </div>

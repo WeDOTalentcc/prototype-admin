@@ -340,7 +340,7 @@ export function useCalibrationAndFastTrackHandlers(ctx: CalibrationAndFastTrackC
       matchCriteria: [
         { id: 'match-1', criteria: 'Experiência como Marketing Manager em empresa de grande porte', isMatch: true, explanation: 'Experiência como Marketing Director em fintech unicórnio com 5000+ funcionários.', importance: 1 }
       ],
-      overallScore: 90,
+      overallNota: 90,
       averageTenure: '3 anos',
       currentTenure: '3 anos 9 meses',
       totalExperience: '10 anos'

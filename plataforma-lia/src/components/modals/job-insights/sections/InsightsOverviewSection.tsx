@@ -337,7 +337,7 @@ export function InsightsOverviewSection({
             <span className="text-xs text-lia-text-disabled font-normal ml-1">(estimativa baseada em performance)</span>
           </h3>
           <div className="flex items-center gap-1.5">
-            <span className="text-xs text-lia-text-tertiary">Score Médio:</span>
+            <span className="text-xs text-lia-text-tertiary">Nota Média:</span>
             <span className="text-sm font-bold text-lia-text-primary">{wsiMetrics.avgWSI}%</span>
           </div>
         </div>

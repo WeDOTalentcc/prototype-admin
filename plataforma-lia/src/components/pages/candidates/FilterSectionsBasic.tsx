@@ -147,7 +147,7 @@ export function FilterSectionsBasic({
               onChange={(e) =>
                 setTableFilters((prev) => ({
                   ...prev,
-                  minScore: e.target.value ? Number(e.target.value) : undefined,
+                  minNota: e.target.value ? Number(e.target.value) : undefined,
                 }))
               }
               className="h-8 text-xs"
@@ -165,7 +165,7 @@ export function FilterSectionsBasic({
               onChange={(e) =>
                 setTableFilters((prev) => ({
                   ...prev,
-                  maxScore: e.target.value ? Number(e.target.value) : undefined,
+                  maxNota: e.target.value ? Number(e.target.value) : undefined,
                 }))
               }
               className="h-8 text-xs"

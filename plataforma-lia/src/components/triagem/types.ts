@@ -39,7 +39,7 @@ export interface TriagemSession {
   expiresAt: string
   startedAt: string | null
   completedAt: string | null
-  wsiFinalScore: number | null
+  wsiFinalNota: number | null
   recommendation: "approved" | "pending" | "rejected" | null
 }
 

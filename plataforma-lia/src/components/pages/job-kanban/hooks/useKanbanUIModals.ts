@@ -59,11 +59,11 @@ export function useKanbanUIModals({ job }: {
     '5️⃣ Quando você redesenha uma interface, quais **métricas** usa para avaliar se ela teve sucesso?'
   ])
   const defaultSkillWeights = [
-    { skill: 'Design System', weight: 25, avgScore: 4.3, classification: 'Alto', validationType: 'Contexto real + microteste' },
-    { skill: 'Prototipagem (Figma)', weight: 25, avgScore: 4.8, classification: 'Excelente', validationType: 'Microcase prático' },
-    { skill: 'User Research', weight: 20, avgScore: 3.9, classification: 'Médio', validationType: 'Situação contextual' },
-    { skill: 'Testes de Usabilidade', weight: 15, avgScore: 4.1, classification: 'Alto', validationType: 'Autodeclarado + microteste' },
-    { skill: 'Métricas de UX', weight: 15, avgScore: 4.0, classification: 'Alto', validationType: 'Pergunta teórica' }
+    { skill: 'Design System', weight: 25, avgNota: 4.3, classification: 'Alto', validationType: 'Contexto real + microteste' },
+    { skill: 'Prototipagem (Figma)', weight: 25, avgNota: 4.8, classification: 'Excelente', validationType: 'Microcase prático' },
+    { skill: 'User Research', weight: 20, avgNota: 3.9, classification: 'Médio', validationType: 'Situação contextual' },
+    { skill: 'Testes de Usabilidade', weight: 15, avgNota: 4.1, classification: 'Alto', validationType: 'Autodeclarado + microteste' },
+    { skill: 'Métricas de UX', weight: 15, avgNota: 4.0, classification: 'Alto', validationType: 'Pergunta teórica' }
   ]
   const [skillWeights, setSkillWeights] = useState(defaultSkillWeights)
   const [originalSkillWeights] = useState(defaultSkillWeights)

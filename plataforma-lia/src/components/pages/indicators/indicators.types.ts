@@ -20,7 +20,7 @@ export interface RecruiterGoals {
     interviews: MonthlyGoal
   }
   quarterly: {
-    qualityScore: QuarterlyGoal
+    qualityNota: QuarterlyGoal
     conversionRate: QuarterlyGoal
   }
 }
@@ -38,13 +38,13 @@ export interface RecruiterData {
   totalHires: number
   avgTimeToFill: number
   conversionRate: number
-  npsScore: number
+  npsNota: number
   interviewsPerWeek: number
   candidateResponseRate: number
   offerAcceptanceRate: number
-  qualityOfHireScore: number
+  qualityOfHireNota: number
   ranking: number
-  totalScore: number
+  totalNota: number
   goals: RecruiterGoals
   monthlyTrends: {
     interviews: number[]
@@ -69,7 +69,7 @@ export interface TeamMetrics {
   avgConversionRate: string
   avgTimeToFill: number
   avgNPS: number
-  avgQualityScore: string
+  avgQualityNota: string
   totalRecruiters: number
 }
 

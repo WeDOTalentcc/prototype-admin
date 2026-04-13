@@ -84,7 +84,7 @@ export function useKanbanCandidateLoader({
                 recruiter: recruiterName,
                 manager: managerName,
                 score: c.lia_score ?? null,
-                fitScore: c.skills_match_percentage ?? null,
+                fitNota: c.skills_match_percentage ?? null,
                 warnings: 0, avatar: c.avatar_url || '', source: c.source || 'website',
                 appliedDate: c.created_at ? new Date(c.created_at).toLocaleDateString('pt-BR') : null,
                 email: c.email || '', phone: c.phone || '', linkedin: c.linkedin_url || '',

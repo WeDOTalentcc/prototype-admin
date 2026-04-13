@@ -257,7 +257,7 @@ export function CandidatePreviewModals({
             },
             profile: (discModalData as DISCModalDataType).profile || 'DI',
             profileDescription: (discModalData as DISCModalDataType).profileDescription || '',
-            culturalFitScore: (discModalData as DISCModalDataType).culturalFitScore || (discModalData as DISCModalDataType).culturalFit || 82,
+            culturalFitNota: (discModalData as DISCModalDataType).culturalFitScore || (discModalData as DISCModalDataType).culturalFit || 82,
           } as never}
         />
       )}

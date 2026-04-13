@@ -56,7 +56,7 @@ const generateRealisticData = () => {
       timeToFill: Math.round(28 + Math.sin(index * 0.4) * 8 + Math.random() * 6),
       costPerHire: Math.round(3200 + Math.sin(index * 0.2) * 600 + Math.random() * 400),
       nps: Math.round(82 + Math.sin(index * 0.3) * 8 + Math.random() * 6),
-      qualityScore: Number((4.2 + Math.sin(index * 0.2) * 0.5 + Math.random() * 0.3).toFixed(1)),
+      qualityNota: Number((4.2 + Math.sin(index * 0.2) * 0.5 + Math.random() * 0.3).toFixed(1)),
       conversionRate: Number((2.8 + Math.sin(index * 0.4) * 0.8 + Math.random() * 0.4).toFixed(1))
     })),
 

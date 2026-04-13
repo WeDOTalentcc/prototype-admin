@@ -270,7 +270,7 @@ export function FavoritesTab({
 
                   <div className="space-y-3">
                     <div className="flex items-center justify-between p-2 bg-lia-bg-primary/60 dark:bg-lia-bg-elevated/60 rounded-xl">
-                      <span className="text-xs text-lia-text-primary">Score médio</span>
+                      <span className="text-xs text-lia-text-primary">Nota média</span>
                       <span className="text-sm font-bold text-lia-text-secondary">
                         {filteredCandidates.length > 0 
                           ? Math.round(filteredCandidates.reduce((acc, c) => acc + (c.liaAnalysis?.score || c.lia_score || c.score || 0), 0) / filteredCandidates.length)

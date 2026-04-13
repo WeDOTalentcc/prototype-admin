@@ -105,7 +105,7 @@ export interface CalibrationCandidate {
   languages: string[]
   additionalSkills: string[]
   matchCriteria: CalibrationMatchCriteria[]
-  overallScore: number
+  overallNota: number
   averageTenure: string
   currentTenure: string
   totalExperience: string

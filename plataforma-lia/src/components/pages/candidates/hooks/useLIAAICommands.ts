@@ -100,7 +100,7 @@ function buildSearchSummaryResponse(
 
   return {
     id: `lia-${Date.now()}`, type: 'lia', timestamp: new Date(),
-    content: `📊 **Resumo da Busca**\n\nEncontrei **${totalCandidates} candidato${totalCandidates !== 1 ? 's' : ''}** (${localCount} da base local).\n\n**Score médio de compatibilidade:** ${formatScorePercent(avgScore)}\n\n**Top skills mais comuns:**\n${skillsText}\n\n**Localizações:** ${locationsText}\n\n💡 *Posso analisar candidatos específicos ou comparar os selecionados.*`
+    content: `📊 **Resumo da Busca**\n\nEncontrei **${totalCandidates} candidato${totalCandidates !== 1 ? 's' : ''}** (${localCount} da base local).\n\n**Nota média de compatibilidade:** ${formatScorePercent(avgScore)}\n\n**Top skills mais comuns:**\n${skillsText}\n\n**Localizações:** ${locationsText}\n\n💡 *Posso analisar candidatos específicos ou comparar os selecionados.*`
   }
 }
 
@@ -114,7 +114,7 @@ function buildTopCandidatesResponse(candidates: Candidate[]): LIAChatMessage {
     const skillsPreview = candidateSkills.length > 0
       ? ` | Skills: ${candidateSkills.slice(0, 3).join(', ')}${candidateSkills.length > 3 ? '...' : ''}`
       : ''
-    return `${i + 1}. **${c.name}** - ${c.position || c.current_title || 'N/A'} @ ${c.current_company || 'N/A'} (Score: ${formatScorePercent(c.score || 0)})${skillsPreview}`
+    return `${i + 1}. **${c.name}** - ${c.position || c.current_title || 'N/A'} @ ${c.current_company || 'N/A'} (Nota: ${formatScorePercent(c.score || 0)})${skillsPreview}`
   }).join('\n')
   return { id: `lia-${Date.now()}`, type: 'lia', content: `🏆 **Top ${topCandidates.length} Candidatos**\n\n${topList}\n\n💡 *Selecione candidatos para análise mais detalhada ou comparação.*`, timestamp: new Date() }
 }
@@ -132,7 +132,7 @@ function buildComparisonResponse(candidates: Candidate[], selectedCandidatesForB
     const skillsText = candidateSkills.length > 0 ? candidateSkills.slice(0, 5).join(', ') : 'Não informadas'
     const expYears = c.experience ?? c.years_of_experience
     const experienceText = typeof expYears === 'number' ? `${expYears} ${expYears === 1 ? 'ano' : 'anos'}` : 'Não informado'
-    return `**${c.name}**\n• Cargo: ${c.position || c.current_title || 'Não informado'}\n• Empresa: ${c.current_company || 'Não informada'}\n• Experiência: ${experienceText}\n• Score: ${formatScorePercent(c.score || 0)}\n• Skills: ${skillsText}`
+    return `**${c.name}**\n• Cargo: ${c.position || c.current_title || 'Não informado'}\n• Empresa: ${c.current_company || 'Não informada'}\n• Experiência: ${experienceText}\n• Nota: ${formatScorePercent(c.score || 0)}\n• Skills: ${skillsText}`
   }).join('\n\n')
   return { id: `lia-${Date.now()}`, type: 'lia', content: `⚖️ **Comparação de ${selectedCandidates.length} Candidatos**\n\n${comparison}\n\n💡 *Clique no score CV de cada candidato na tabela para ver a análise detalhada.*`, timestamp: new Date() }
 }
@@ -308,7 +308,7 @@ function buildSearchAnalysisResponse(
       id: `lia-${Date.now()}`, type: 'lia', timestamp: new Date(),
       content: sorted.length === 0
         ? `📊 **Nenhum candidato** para organizar.\n\n💡 *Faça uma busca primeiro.*`
-        : `📊 **Candidatos por prioridade:**\n\n${sorted.map((c, i) => `${i+1}. **${c.name}** - Score: ${formatScorePercent(c.score || 0)} | ${c.position || c.current_title || 'N/A'}`).join('\n')}\n\n💡 *Ordenados por score de compatibilidade.*`
+        : `📊 **Candidatos por prioridade:**\n\n${sorted.map((c, i) => `${i+1}. **${c.name}** - Nota: ${formatScorePercent(c.score || 0)} | ${c.position || c.current_title || 'N/A'}`).join('\n')}\n\n💡 *Ordenados por score de compatibilidade.*`
     }
   }
   if (trimmedCommand.includes('melhorar') && trimmedCommand.includes('busca')) {
@@ -325,6 +325,6 @@ function buildSearchAnalysisResponse(
 
   return {
     id: `lia-${Date.now()}`, type: 'lia', timestamp: new Date(),
-    content: `🤔 Entendi sua solicitação, mas **ainda não consigo responder a esse tipo de pergunta**.\n\nEstou em constante evolução e **em breve serei capaz** de atender você em diversas situações e demandas do seu dia a dia como recrutador!\n\n**Por enquanto, posso ajudar você com:**\n\n📊 **Análises de busca:**\n• Resumir esta busca\n• Top 5 candidatos\n• Skills mais comuns\n• Score médio dos candidatos\n\n👥 **Análise de candidatos selecionados:**\n• Analisar potencial de crescimento\n• Comparar candidatos\n• Pontos fortes em comum\n• Definir tipo de perfil\n\n💡 *Clique em "Mais ideias" para ver todas as opções disponíveis!*`
+    content: `🤔 Entendi sua solicitação, mas **ainda não consigo responder a esse tipo de pergunta**.\n\nEstou em constante evolução e **em breve serei capaz** de atender você em diversas situações e demandas do seu dia a dia como recrutador!\n\n**Por enquanto, posso ajudar você com:**\n\n📊 **Análises de busca:**\n• Resumir esta busca\n• Top 5 candidatos\n• Skills mais comuns\n• Nota média dos candidatos\n\n👥 **Análise de candidatos selecionados:**\n• Analisar potencial de crescimento\n• Comparar candidatos\n• Pontos fortes em comum\n• Definir tipo de perfil\n\n💡 *Clique em "Mais ideias" para ver todas as opções disponíveis!*`
   }
 }

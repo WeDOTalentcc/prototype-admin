@@ -551,7 +551,7 @@ export function useWSIAndCalibrationHandlers(ctx: WSIAndCalibrationHandlersConte
           const enrichedData: EnrichedJDData = {
             sections: (er.sections || []) as EnrichedJDData['sections'],
             compensation: er.compensation as EnrichedJDData['compensation'],
-            wsiQualityScore: (er.wsi_quality_score ?? er.wsiQualityScore ?? 0) as number,
+            wsiQualityNota: (er.wsi_quality_score ?? er.wsiQualityScore ?? 0) as number,
             overallCompleteness: (er.overall_completeness ?? er.overallCompleteness ?? 0) as number,
             totalSuggestions: (er.total_suggestions ?? er.totalSuggestions ?? 0) as number
           }

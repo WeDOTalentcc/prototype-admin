@@ -224,7 +224,7 @@ export function CandidatePageOpinionsTab({
                             <div className="flex items-center gap-2 mt-0.5">
                               {displayScore !== null && displayScore !== undefined && (
                                 <span className={`text-micro font-semibold ${getOpinionScoreColor(displayScore, isWsiOpinion)}`}>
-                                  {isWsiOpinion ? `WSI: ${(displayScore as number).toFixed(1)}/5` : `Score: ${Math.round(displayScore as number)}/100`}
+                                  {isWsiOpinion ? `WSI: ${(displayScore as number).toFixed(1)}/5` : `Nota: ${Math.round(displayScore as number)}/100`}
                                 </span>
                               )}
                               {!!opinion.archetype && (

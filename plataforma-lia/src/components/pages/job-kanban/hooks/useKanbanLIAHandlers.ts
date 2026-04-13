@@ -187,7 +187,7 @@ export function useKanbanLIAHandlers(ctx: KanbanLIAHandlersContext) {
 
       return `🏆 **Top 5 Candidatos**\n\n` +
         sorted.map((c, i) => {
-          const score = c.score ? `Score LIA: ${c.score}` : `FitScore: ${c.fitScore || 'N/A'}%`
+          const score = c.score ? `Score LIA: ${c.score}` : `FitNota: ${c.fitScore || 'N/A'}%`
           return `${i + 1}. **${c.name}**\n   ${c.role || 'N/A'} | ${c.currentCompany || ''}\n   ${score}`
         }).join('\n\n')
     }
@@ -201,7 +201,7 @@ export function useKanbanLIAHandlers(ctx: KanbanLIAHandlersContext) {
         const selectedList = allTableCandidates.filter(c => selectedCandidates.has(String(c.id)))
         return `⚖️ **Comparação - ${selectedList.length} Candidatos**\n\n` +
           selectedList.map(c => {
-            const score = c.score ? `Score: ${c.score}` : `Fit: ${c.fitScore || 'N/A'}%`
+            const score = c.score ? `Nota: ${c.score}` : `Fit: ${c.fitScore || 'N/A'}%`
             return `**${c.name}**\n` +
               `• ${c.role || 'N/A'} @ ${c.currentCompany || 'N/A'}\n` +
               `• ${score} | Warnings: ${c.warnings || 0}\n` +
@@ -347,10 +347,10 @@ export function useKanbanLIAHandlers(ctx: KanbanLIAHandlersContext) {
         currentCompany: c.currentCompany,
         location: c.location,
         score: c.score,
-        wsiScore: c.wsiScore || c.score,
+        wsiNota: c.wsiScore || c.score,
         wsiTechnical: c.wsiTechnical,
         wsiBehavioral: c.wsiBehavioral,
-        fitScore: c.fitScore,
+        fitNota: c.fitScore,
         skills: c.skills,
         experience: c.experience,
         stage: c.stage,
@@ -468,7 +468,7 @@ export function useKanbanLIAHandlers(ctx: KanbanLIAHandlersContext) {
           currentCompany: c.currentCompany,
           location: c.location,
           score: c.score,
-          fitScore: c.fitScore,
+          fitNota: c.fitScore,
           skills: c.skills,
           experience: c.experience,
           stage: c.stage,
@@ -540,10 +540,10 @@ export function useKanbanLIAHandlers(ctx: KanbanLIAHandlersContext) {
       currentCompany: c.currentCompany,
       location: c.location,
       score: c.score,
-      wsiScore: c.wsiScore || c.score,
+      wsiNota: c.wsiScore || c.score,
       wsiTechnical: c.wsiTechnical,
       wsiBehavioral: c.wsiBehavioral,
-      fitScore: c.fitScore,
+      fitNota: c.fitScore,
       skills: c.skills,
       experience: c.experience,
       stage: c.stage,

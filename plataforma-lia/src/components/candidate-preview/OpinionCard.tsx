@@ -113,7 +113,7 @@ export function OpinionCard({ opinion, isExpanded, onToggle, type, copiedItemId,
             <div className="flex items-center gap-2 mt-0.5">
               {displayScore !== null && displayScore !== undefined && (
                 <span className={`text-micro font-semibold ${getScoreColor(displayScore, isWsiOpinion)}`}>
-                  {isWsiOpinion ? `WSI: ${displayScore.toFixed(1)}/5` : `Score: ${Math.round(displayScore)}/100`}
+                  {isWsiOpinion ? `WSI: ${displayScore.toFixed(1)}/5` : `Nota: ${Math.round(displayScore)}/100`}
                 </span>
               )}
               {!!opinion.archetype && (

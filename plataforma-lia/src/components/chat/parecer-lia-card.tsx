@@ -19,8 +19,8 @@ interface MarketComparison {
 }
 
 export interface ParecerLIAData {
-  overallScore: number
-  completenessScore: number
+  overallNota: number
+  completenessNota: number
   sections: ParecerSection[]
   marketComparisons?: MarketComparison[]
   timeToFillEstimate?: {

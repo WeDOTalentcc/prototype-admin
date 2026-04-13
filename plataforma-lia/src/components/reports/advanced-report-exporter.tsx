@@ -235,7 +235,7 @@ export function AdvancedReportExporter({
 
   const availableMetrics = [
     'Candidatos Totais', 'Entrevistas', 'Contratações', 'Time to Fill',
-    'Taxa de Conversão', 'NPS Score', 'Custo por Hire', 'Qualidade de Hire',
+    'Taxa de Conversão', 'NPS', 'Custo por Hire', 'Qualidade de Hire',
     'Taxa de Retenção', 'Diversidade', 'Performance por Fonte'
   ]
 

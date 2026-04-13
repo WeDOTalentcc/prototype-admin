@@ -170,7 +170,7 @@ export function LiaChatModal({
                   {candidate.candidateId || candidate.id} • {candidate.name}
                 </div>
                 <div className="text-xs text-lia-text-secondary">
-                  {candidate.position} • Score: {formatScorePercent(candidate.score ?? 0)}
+                  {candidate.position} • Nota: {formatScorePercent(candidate.score ?? 0)}
                 </div>
               </div>
               <Badge className="bg-lia-bg-tertiary text-lia-text-primary border-lia-border-subtle text-xs px-2 py-0.5">

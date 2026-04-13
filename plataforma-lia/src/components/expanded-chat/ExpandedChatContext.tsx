@@ -110,7 +110,7 @@ export interface WizardContextState {
   hasPendingChanges: boolean
   catalogMaturity: CatalogMaturity
   isLoading: boolean
-  wsiQualityScore: number
+  wsiQualityNota: number
   wsiMissingFields: string[]
   fastTrackSourceJobId: string | null
 }

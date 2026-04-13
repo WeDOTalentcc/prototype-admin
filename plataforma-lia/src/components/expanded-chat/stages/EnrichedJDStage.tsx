@@ -58,7 +58,7 @@ export interface CompensationSuggestions {
 export interface EnrichedJDData {
   sections: SectionSuggestions[]
   compensation?: CompensationSuggestions
-  wsiQualityScore: number
+  wsiQualityNota: number
   overallCompleteness: number
   totalSuggestions: number
 }

@@ -62,7 +62,7 @@ export function useCandidatePageCore(candidate: Record<string, unknown> | null) 
       statusLabel: 'Aprovado',
       summary: 'Candidato altamente qualificado com excelente fit cultural e técnico.',
       details: {
-        technicalScore: 92,
+        technicalNota: 92,
         culturalFit: 98,
         experience: 95,
         softSkills: 93,
@@ -116,7 +116,7 @@ export function useCandidatePageCore(candidate: Record<string, unknown> | null) 
         testType: 'Design System Case',
         duration: '4 horas',
         score: 88,
-        maxScore: 100,
+        maxNota: 100,
         evaluator: 'Carlos Mendes',
         strengths: ['Componentização', 'Documentação', 'Tokens de design'],
         weaknesses: ['Performance em mobile'],
@@ -328,7 +328,7 @@ export function useCandidatePageCore(candidate: Record<string, unknown> | null) 
       'general': 'Parecer Geral',
       'wsi': 'Parecer WSI'
     }
-    const header = `PARECER LIA - ${candidateName}\nTipo: ${analysisLabels[type] || type}\n${opinion.job_vacancy_title ? `Vaga: ${opinion.job_vacancy_title}\n` : ''}Score: ${opinion.score || opinion.wsi_score || 'N/A'}/100\nData: ${opinion.created_at ? new Date(String(opinion.created_at)).toLocaleDateString('pt-BR') : 'N/A'}\n\n`
+    const header = `PARECER LIA - ${candidateName}\nTipo: ${analysisLabels[type] || type}\n${opinion.job_vacancy_title ? `Vaga: ${opinion.job_vacancy_title}\n` : ''}Nota: ${opinion.score || opinion.wsi_score || 'N/A'}/100\nData: ${opinion.created_at ? new Date(String(opinion.created_at)).toLocaleDateString('pt-BR') : 'N/A'}\n\n`
     const content = cleanTextForCopy(String(opinion.summary || opinion.content || ''))
     await navigator.clipboard.writeText(header + content)
     setCopiedItemId(`opinion-${opinion.id}`)

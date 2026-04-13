@@ -142,7 +142,7 @@ export function ChatContextPanelPart3({ contextData, onPipelineAction, onClose }
                     {(data.candidates_to_schedule as { name: string; score: number; interview_type: string; preferred_times: string[] }[]).map((candidate) => (
                       <div key={candidate.name} className="p-4 rounded-xl border bg-lia-bg-tertiary border-lia-border-subtle">
                         <div className="flex justify-between items-start mb-2">
-                          <div><h5 className="font-medium text-lia-text-primary">{candidate.name}</h5><p className="text-sm text-lia-text-secondary">Score: {candidate.score}/100</p></div>
+                          <div><h5 className="font-medium text-lia-text-primary">{candidate.name}</h5><p className="text-sm text-lia-text-secondary">Nota: {candidate.score}/100</p></div>
                           <Badge className="bg-wedo-cyan/15 dark:bg-wedo-cyan/20 text-lia-text-primary">{candidate.interview_type}</Badge>
                         </div>
                         <div className="flex gap-2 text-xs text-lia-text-secondary">

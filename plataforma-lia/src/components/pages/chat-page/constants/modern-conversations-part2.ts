@@ -426,8 +426,8 @@ WeDo Talent Solutions`
           },
           {
             category: "Qualidade dos Candidatos",
-            current_performance: "Score médio 78/100",
-            predicted_improvement: "Score médio 87/100 (+12%)",
+            current_performance: "Nota média 78/100",
+            predicted_improvement: "Nota média 87/100 (+12%)",
             confidence: 89,
             actions: [
               "Refinar critérios de sourcing com ML",

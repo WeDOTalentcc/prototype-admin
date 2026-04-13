@@ -260,12 +260,12 @@ export function useJobInsights({
 
     if (jobs.length > 1) {
       const avgScore = jobs.reduce((sum, j) => sum + (j.performance_score || 0), 0) / jobs.length
-      generated.push({ type: "comparison", title: "Comparativo entre Vagas", description: `Score médio de ${Math.round(avgScore)}% entre as ${jobs.length} vagas selecionadas.` })
+      generated.push({ type: "comparison", title: "Comparativo entre Vagas", description: `Nota média de ${Math.round(avgScore)}% entre as ${jobs.length} vagas selecionadas.` })
     }
 
     const lowScoreJobs = jobs.filter((j) => (j.performance_score || 0) < 60)
     if (lowScoreJobs.length > 0)
-      generated.push({ type: "attention", title: "Vagas com Baixa Performance", description: `${lowScoreJobs.length} vaga(s) com score abaixo de 60% requerem atenção imediata.`, badge: "Crítico" })
+      generated.push({ type: "attention", title: "Vagas com Baixa Performance", description: `${lowScoreJobs.length} vaga(s) com nota abaixo de 60% requerem atenção imediata.`, badge: "Crítico" })
 
     if (liaFunnelMetrics.sem_resposta > liaFunnelMetrics.triagens_realizadas * 0.3)
       generated.push({ type: "attention", title: "Alto Índice de Não Resposta", description: `${liaFunnelMetrics.sem_resposta} candidatos sem resposta. Considere revisar horários de contato.` })
@@ -322,7 +322,7 @@ export function useJobInsights({
   const generateAttentionPoints = useCallback(() => {
     const points: string[] = []
     const lowScore = jobs.filter((j) => (j.performance_score || 0) < 70)
-    if (lowScore.length) points.push(`${lowScore.length} vaga(s) com score abaixo de 70%`)
+    if (lowScore.length) points.push(`${lowScore.length} vaga(s) com nota abaixo de 70%`)
     const urgent = jobs.filter((j) => { const d = getDaysRemaining(j.deadline); return d !== null && d <= 7 })
     if (urgent.length) points.push(`${urgent.length} vaga(s) com prazo em até 7 dias`)
     const lowCand = jobs.filter((j) => (j.candidates_count || 0) < 5)
@@ -386,7 +386,7 @@ export function useJobInsights({
         </div>
         <h2>Vagas Analisadas</h2>
         <div class="section">
-          ${jobs.map((job) => `<div class="job-item"><strong>${job.code || ""} ${job.title}</strong><div style="font-size:12px;color:#6b7280;">${job.candidates_count || 0} candidatos • ${job.approved_count || 0} aprovados • Score: ${job.performance_score || "--"}%</div></div>`).join("")}
+          ${jobs.map((job) => `<div class="job-item"><strong>${job.code || ""} ${job.title}</strong><div style="font-size:12px;color:#6b7280;">${job.candidates_count || 0} candidatos • ${job.approved_count || 0} aprovados • Nota: ${job.performance_score || "--"}%</div></div>`).join("")}
         </div>
         <p style="font-size:12px;color:#9ca3af;margin-top:32px;">Gerado pela Plataforma LIA - WeDO Talent</p>
       </body>

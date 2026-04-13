@@ -64,7 +64,7 @@ export interface CandidatePageProfileTabProps {
   candidate: import("@/services/lia-api").CandidateLocal & Record<string, unknown>
   experiences: Record<string, unknown>[]
   education: Record<string, unknown>[]
-  liaScore: number
+  liaNota: number
   opinionsHistory: OpinionRecord[]
   formatDateShort: (dateStr: string | null | undefined) => string
   formatDate: (dateStr: string | null | undefined) => string | null
@@ -112,7 +112,7 @@ export function CandidatePageProfileTab({
                   <div className="flex items-center gap-1.5">
                     <span className="text-micro font-medium text-lia-text-primary uppercase tracking-wider">Parecer LIA</span>
                     <span className="text-micro font-semibold text-status-success">
-                      Score: {opinionsHistory[0]?.score || liaScore}/100
+                      Nota: {opinionsHistory[0]?.score || liaScore}/100
                     </span>
                   </div>
                   <div className="flex items-center gap-1.5 mt-0.5">

@@ -49,7 +49,7 @@ export function ChatContextPanelPart2({ contextData }: Props) {
                       <div key={candidate.name} className="p-4 rounded-xl bg-lia-bg-tertiary">
                         <div className="flex items-center justify-between mb-3">
                           <div><h5 className="font-medium text-lia-text-primary">{candidate.name}</h5><p className="text-sm text-lia-text-secondary">{candidate.current_role}</p></div>
-                          <Badge className="bg-status-warning/10 dark:bg-status-warning/20 text-lia-text-primary">Score: {candidate.score}</Badge>
+                          <Badge className="bg-status-warning/10 dark:bg-status-warning/20 text-lia-text-primary">Nota: {candidate.score}</Badge>
                         </div>
                         <div className="flex flex-wrap gap-2 mb-2">
                           {candidate.highlights.map((highlight: string, i: number) => (<Badge key={`hl-${i}`} variant="outline" className="text-xs border-lia-border-subtle">{highlight}</Badge>))}

@@ -109,7 +109,7 @@ export function ProfileLiaOpinionCard({
           <div className="flex items-center gap-2 flex-wrap">
             {displayScore !== null && displayScore !== undefined && (
               <span className={`${textStyles.label} ${getScoreColor(displayScore, isWsiOpinion)}`}>
-                {isWsiOpinion ? `WSI: ${displayScore.toFixed(1)}/5` : `Score: ${Math.round(displayScore)}/100`}
+                {isWsiOpinion ? `WSI: ${displayScore.toFixed(1)}/5` : `Nota: ${Math.round(displayScore)}/100`}
               </span>
             )}
             {opinion.archetype && (

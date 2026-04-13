@@ -114,7 +114,7 @@ export function AlertSettingsModal({
   const metrics = [
     { value: 'avgTimeToFill', label: 'Time to Fill (dias)', icon: Clock },
     { value: 'conversionRate', label: 'Taxa de Conversão (%)', icon: Target },
-    { value: 'npsScore', label: 'NPS Score', icon: Star },
+    { value: 'npsScore', label: 'NPS', icon: Star },
     { value: 'totalHires', label: 'Total de Contratações', icon: Users },
     { value: 'qualityOfHireScore', label: 'Score de Qualidade', icon: CheckCircle },
     { value: 'candidateResponseRate', label: 'Taxa de Resposta (%)', icon: Mail },

@@ -214,7 +214,7 @@ export function ScoreCardWSI({
   interviewerName,
   interviewDate,
   blocks,
-  wsiScore: providedWsiScore,
+  wsiNota: providedWsiScore,
   onCalculateWSI,
   onApprove,
   onReject,
