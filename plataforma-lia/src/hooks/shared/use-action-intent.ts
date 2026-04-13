@@ -15,7 +15,7 @@
 
 import { useCallback } from "react"
 
-export type ActionType = "wizard" | "wsi" | "analytics" | "communication" | "ats_integration" | "task_reminder" | "note" | "calendar" | "candidate_field" | null
+export type ActionType = "wizard" | "wsi" | "analytics" | "communication" | "ats_integration" | "task_reminder" | "note" | "calendar" | "candidate_field" | "studio_create" | "studio_query" | "studio_metrics" | null
 
 export interface ActionIntentResult {
   actionType: ActionType
@@ -113,6 +113,34 @@ function scoreKeywords(message: string, keywords: string[]): number {
   return hits
 }
 
+const STUDIO_CREATE_KEYWORDS = [
+  "criar agente", "criar agent", "novo agente", "novo agent",
+  "cria um agente", "cria um agent", "configura um agente", "configure um agent",
+  "montar agente", "montar agent", "quero um agente", "quero um agent",
+  "agente de triagem", "agent de triagem", "agente que filtra", "agent que filtra",
+  "agente para sourcing", "agent para sourcing", "agente de comunicacao", "agente de comunicação",
+  "studio agent", "agent studio", "criar assistente", "novo assistente",
+]
+
+const STUDIO_QUERY_KEYWORDS = [
+  "como esta o agente", "como está o agente", "como esta o agent", "como está o agent",
+  "status do agente", "status do agent", "detalhes do agente", "detalhes do agent",
+  "me fala sobre o agente", "me fala sobre o agent", "info do agente", "info do agent",
+  "qual a configuracao do agente", "qual a configuração do agent",
+  "ver agente", "ver agent", "mostrar agente", "mostrar agent",
+  "o agente", "o agent",
+]
+
+const STUDIO_METRICS_KEYWORDS = [
+  "consumo dos agentes", "consumo dos agents", "meu consumo",
+  "quantas execucoes", "quantas execuções", "execucoes hoje", "execuções hoje",
+  "execucoes essa semana", "execuções essa semana", "execucoes do mes", "execuções do mês",
+  "qual agente mais rodou", "qual agent mais rodou", "top agentes", "top agents",
+  "metricas dos agentes", "métricas dos agentes", "metricas do studio", "métricas do studio",
+  "custo dos agentes", "custo dos agents", "tokens consumidos",
+  "dashboard dos agentes", "dashboard dos agents",
+]
+
 interface ScoredAction {
   actionType: NonNullable<ActionType>
   score: number
@@ -180,6 +208,24 @@ function detectActionType(message: string): ActionIntentResult {
       confidence: 0,
       label: "Modo: Atualizar Candidato",
     },
+    {
+      actionType: "studio_create",
+      score: scoreKeywords(message, STUDIO_CREATE_KEYWORDS),
+      confidence: 0,
+      label: "Modo: Criar Agent Studio",
+    },
+    {
+      actionType: "studio_query",
+      score: scoreKeywords(message, STUDIO_QUERY_KEYWORDS),
+      confidence: 0,
+      label: "Modo: Consultar Agent",
+    },
+    {
+      actionType: "studio_metrics",
+      score: scoreKeywords(message, STUDIO_METRICS_KEYWORDS),
+      confidence: 0,
+      label: "Modo: Metricas Studio",
+    },
   ]
 
   // Calcular confidence para cada candidato
@@ -227,6 +273,9 @@ export function actionTypeToDomain(actionType: ActionType): string {
     case "note":            return "task_planning"
     case "calendar":        return "interview_scheduling"
     case "candidate_field": return "pipeline_action"
+    case "studio_create":   return "agent_studio"
+    case "studio_query":    return "agent_studio"
+    case "studio_metrics":  return "agent_studio"
     default:                return "general"
   }
 }

@@ -40,6 +40,9 @@ export type DynamicPanelType =
   | "profile"
   | "job_creation"
   | "scheduling"
+  | "agent_creation_preview"
+  | "agent_details"
+  | "agent_metrics"
 
 export interface DynamicPanelData {
   panelType: DynamicPanelType

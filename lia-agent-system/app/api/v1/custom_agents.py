@@ -613,6 +613,137 @@ async def get_studio_quota(
         raise HTTPException(status_code=500, detail="Failed to fetch studio quota")
 
 
+@router.get("/search", summary="Search agents by name (fuzzy)")
+async def search_agents_by_name(
+    name: str = Query(..., min_length=1, max_length=256),
+    limit: int = Query(5, ge=1, le=20),
+    current_user=Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Fuzzy search for agents by name. Used by chat to find agent mentioned by user.
+
+    Returns top N matches ordered by relevance. Tenant-isolated.
+    """
+    from sqlalchemy import select, and_, func
+    from lia_models.custom_agent import CustomAgent
+
+    # Case-insensitive LIKE search
+    name_lower = name.lower().strip()
+    result = await db.execute(
+        select(CustomAgent)
+        .where(
+            and_(
+                CustomAgent.company_id == current_user.company_id,
+                func.lower(CustomAgent.name).contains(name_lower),
+            )
+        )
+        .limit(limit)
+    )
+    agents = list(result.scalars().all())
+    return {
+        "agents": [a.to_dict() for a in agents],
+        "total": len(agents),
+        "query": name,
+    }
+
+
+@router.get("/studio/metrics/summary", summary="Aggregated Studio metrics for dashboard/chat")
+async def get_studio_metrics_summary(
+    period_days: int = Query(7, ge=1, le=90),
+    current_user=Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Returns aggregated metrics across all tenant agents for the specified period.
+
+    Used by chat intent "meu consumo" / "quantas execucoes hoje".
+    """
+    from datetime import datetime, timedelta, timezone
+    from sqlalchemy import select, and_, func, desc
+    from lia_models.custom_agent import CustomAgent
+    from lia_models.agent_execution_log import AgentExecutionLog
+
+    since = datetime.now(timezone.utc) - timedelta(days=period_days)
+
+    # Total metrics
+    totals = await db.execute(
+        select(
+            func.count(AgentExecutionLog.id).label("total_executions"),
+            func.coalesce(func.sum(AgentExecutionLog.tokens_input), 0).label("total_tokens_input"),
+            func.coalesce(func.sum(AgentExecutionLog.tokens_output), 0).label("total_tokens_output"),
+            func.coalesce(func.sum(AgentExecutionLog.credits_consumed), 0).label("total_credits"),
+            func.coalesce(func.avg(AgentExecutionLog.confidence), 0.0).label("avg_confidence"),
+            func.coalesce(func.avg(AgentExecutionLog.latency_ms), 0).label("avg_latency_ms"),
+        ).where(
+            and_(
+                AgentExecutionLog.company_id == current_user.company_id,
+                AgentExecutionLog.created_at >= since,
+            )
+        )
+    )
+    total_row = totals.one()
+
+    # Top 3 agents by execution count
+    top_agents_result = await db.execute(
+        select(
+            AgentExecutionLog.agent_id,
+            func.count(AgentExecutionLog.id).label("exec_count"),
+            func.coalesce(func.sum(AgentExecutionLog.tokens_input + AgentExecutionLog.tokens_output), 0).label("total_tokens"),
+        )
+        .where(
+            and_(
+                AgentExecutionLog.company_id == current_user.company_id,
+                AgentExecutionLog.created_at >= since,
+            )
+        )
+        .group_by(AgentExecutionLog.agent_id)
+        .order_by(desc("exec_count"))
+        .limit(3)
+    )
+    top_agent_rows = list(top_agents_result.all())
+
+    # Enrich top agents with names
+    top_agents = []
+    for row in top_agent_rows:
+        agent_result = await db.execute(
+            select(CustomAgent).where(CustomAgent.id == row.agent_id)
+        )
+        agent = agent_result.scalar_one_or_none()
+        top_agents.append({
+            "agent_id": str(row.agent_id),
+            "agent_name": agent.name if agent else "(deleted)",
+            "execution_count": row.exec_count,
+            "total_tokens": row.total_tokens,
+        })
+
+    # Active agent count
+    active_count = await db.scalar(
+        select(func.count(CustomAgent.id)).where(
+            and_(
+                CustomAgent.company_id == current_user.company_id,
+                CustomAgent.status == "active",
+            )
+        )
+    ) or 0
+
+    # Estimated cost (R$0.000003 per token — rough estimate)
+    total_tokens = (total_row.total_tokens_input or 0) + (total_row.total_tokens_output or 0)
+    estimated_cost_brl = round(total_tokens * 0.000003, 4)
+
+    return {
+        "period_days": period_days,
+        "total_executions": total_row.total_executions or 0,
+        "total_tokens_input": total_row.total_tokens_input or 0,
+        "total_tokens_output": total_row.total_tokens_output or 0,
+        "total_tokens": total_tokens,
+        "total_credits": total_row.total_credits or 0,
+        "estimated_cost_brl": estimated_cost_brl,
+        "avg_confidence": round(float(total_row.avg_confidence or 0), 3),
+        "avg_latency_ms": int(total_row.avg_latency_ms or 0),
+        "active_agents": active_count,
+        "top_agents": top_agents,
+    }
+
+
 @router.post("/generate-from-description", summary="LIA generates agent config from description")
 async def generate_agent_from_description(
     body: dict,
