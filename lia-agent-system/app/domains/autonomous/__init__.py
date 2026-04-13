@@ -24,4 +24,4 @@ apply to the domain agents that autonomous calls (e.g., sourcing, pipeline, cv_s
 Registry status: NOT registered in DomainRegistry (see DOMAIN_CATALOG.md).
 """
 
-__domain_type__ = "cross_domain"
+__domain_type__ = "deprecated"
