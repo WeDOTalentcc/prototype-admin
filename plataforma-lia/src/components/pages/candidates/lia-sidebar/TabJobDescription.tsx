@@ -75,7 +75,8 @@ export const TabJobDescription = React.memo(function TabJobDescription({
         setPearchResultsCount(data.pearch_count || global.length)
         setSearchResults(prev => ({ local, global, localCount: data.local_count || local.length,
           globalCount: data.pearch_count || global.length, query: data.query_generated || jobDescriptionText.substring(0, 50),
-          isLoading: false, showGlobalResults: showGlobal, globalDismissed: prev.globalDismissed }))
+          isLoading: false, showGlobalResults: showGlobal, globalDismissed: prev.globalDismissed,
+          isEnrichingContacts: prev.isEnrichingContacts }))
         const localCount = data.local_count || local.length
         setChatMessages(prev => [...prev, {
           id: `lia-jd-result-${Date.now()}`, type: 'lia', timestamp: new Date(),

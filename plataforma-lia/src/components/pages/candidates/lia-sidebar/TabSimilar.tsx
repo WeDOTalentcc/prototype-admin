@@ -75,7 +75,8 @@ export const TabSimilar = React.memo(function TabSimilar({
         setPearchResultsCount(data.pearch_count || global.length)
         setSearchResults(prev => ({ local, global, localCount: data.local_count || local.length,
           globalCount: data.pearch_count || global.length, query: data.query_generated || 'Similar Search',
-          isLoading: false, showGlobalResults: showGlobal, globalDismissed: prev.globalDismissed }))
+          isLoading: false, showGlobalResults: showGlobal, globalDismissed: prev.globalDismissed,
+          isEnrichingContacts: prev.isEnrichingContacts }))
         const refInfo = data.reference_profile
           ? `\n\n**Perfil de refer\u00eancia:** ${data.reference_profile.name || data.reference_profile.linkedin_url || 'ID: ' + data.reference_profile.id}`
           : ''

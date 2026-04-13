@@ -67,7 +67,7 @@ class Notification(Base):
     __table_args__ = {"extend_existing": True}
     
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
-    user_id = Column(String, nullable=False, index=True)
+    user_id = Column(String, nullable=False)
     
     title = Column(String(255), nullable=False)
     message = Column(Text, nullable=True)
@@ -135,8 +135,8 @@ class ChatNotification(Base):
     __table_args__ = {"extend_existing": True}
     
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
-    user_id = Column(String, nullable=False, index=True)
-    thread_id = Column(String, nullable=True, index=True)
+    user_id = Column(String, nullable=False)
+    thread_id = Column(String, nullable=True)
     
     title = Column(String(255), nullable=False)
     message = Column(Text, nullable=False)
