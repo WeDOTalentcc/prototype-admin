@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react"
 import { TwinsList, EvaluateWithTwinModal } from "@/components/pages-agent-studio/DigitalTwinComponents"
 import MultiStrategySearchPanel from "@/components/pages-agent-studio/MultiStrategySearchPanel"
 import CustomAgentsTab from "@/components/pages-agent-studio/CustomAgentsTab"
-import { TemplateGallery, AgentCard as CustomAgentCard, DeployDialog, ConversationalCreator, TestDebugPanel } from "@/components/pages-agent-studio/custom-agents"
+import { TemplateGallery, AgentCard as CustomAgentCard, AgentCardSkeleton, AgentDetailsPanel, DeployDialog, ConversationalCreator, TestDebugPanel } from "@/components/pages-agent-studio/custom-agents"
 import { useCustomAgents } from "@/hooks/agents"
 import { useAgentStudioStore } from "@/stores/agent-studio-store"
 import type { CustomAgent, AgentTemplate } from "@/components/pages-agent-studio/custom-agents/types"
@@ -93,6 +93,7 @@ export default function AgentStudioPage({
   const [evaluatingTwinId, setEvaluatingTwinId] = useState<string | null>(null)
   const [deployAgent, setDeployAgent] = useState<CustomAgent | null>(null)
   const [testAgent, setTestAgent] = useState<CustomAgent | null>(null)
+  const [detailsAgent, setDetailsAgent] = useState<CustomAgent | null>(null)
   const { agents: customAgents, mutate: mutateCustomAgents } = useCustomAgents()
   const { selectTemplate, reset: resetStudio } = useAgentStudioStore()
   const [selectedTemplate, setSelectedTemplate] = useState<SectorTemplate | null>(null)
@@ -466,24 +467,31 @@ export default function AgentStudioPage({
         {activeTab === "custom" && (
           <div className="space-y-6">
             {/* My Agents */}
-            {customAgents.length > 0 && (
-              <section>
-                <h3 className="text-sm font-semibold text-lia-text-primary mb-3">
-                  Meus Agentes ({customAgents.length})
-                </h3>
+            <section>
+              <h3 className="text-sm font-semibold text-lia-text-primary mb-3">
+                Meus Agentes {customAgents.length > 0 && `(${customAgents.length})`}
+              </h3>
+              {customAgents.length === 0 ? (
+                <div className="text-center py-8">
+                  <Bot className="w-8 h-8 text-lia-text-disabled mx-auto mb-2" />
+                  <p className="text-sm text-lia-text-secondary">Nenhum agente criado ainda</p>
+                  <p className="text-xs text-lia-text-disabled mt-1">Escolha um template abaixo ou descreva para a LIA o que voce precisa</p>
+                </div>
+              ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                   {customAgents.map((agent) => (
-                    <CustomAgentCard
-                      key={agent.id}
-                      agent={agent}
-                      onTest={(a) => setTestAgent(a)}
-                      onDeploy={(a) => setDeployAgent(a)}
-                      onToggleStatus={(a) => { handleCustomAgentToggle(a) }}
-                    />
+                    <div key={agent.id} onClick={() => setDetailsAgent(agent)} className="cursor-pointer">
+                      <CustomAgentCard
+                        agent={agent}
+                        onTest={(a) => { a; setTestAgent(agent) }}
+                        onDeploy={(a) => { a; setDeployAgent(agent) }}
+                        onToggleStatus={(a) => { handleCustomAgentToggle(a) }}
+                      />
+                    </div>
                   ))}
                 </div>
-              </section>
-            )}
+              )}
+            </section>
 
             {/* Template Gallery */}
             <TemplateGallery
@@ -507,6 +515,15 @@ export default function AgentStudioPage({
               agent={testAgent}
               open={!!testAgent}
               onClose={() => setTestAgent(null)}
+            />
+
+            {/* Agent Details Panel */}
+            <AgentDetailsPanel
+              agent={detailsAgent}
+              open={!!detailsAgent}
+              onClose={() => setDetailsAgent(null)}
+              onDeploy={(a) => { setDetailsAgent(null); setDeployAgent(a) }}
+              onTest={(a) => { setDetailsAgent(null); setTestAgent(a) }}
             />
 
             {/* Legacy form for advanced editing */}
