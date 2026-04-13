@@ -16,6 +16,10 @@ export const routing = defineRouting({
       pt: '/register',
       en: '/register',
     },
+    '/vagas': {
+      pt: '/vagas',
+      en: '/jobs',
+    },
     '/vagas/[slug]': {
       pt: '/vagas/[slug]',
       en: '/jobs/[slug]',

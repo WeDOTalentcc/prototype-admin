@@ -180,6 +180,10 @@ function applyAuthHeaders(request: NextRequest, token: string): NextResponse {
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
+  if (pathname === '/') {
+    return intlMiddleware(request)
+  }
+
   if (isStaticOrApiPath(pathname)) {
     if (pathname.startsWith('/api/') && !isPublicApiPath(pathname)) {
       const accessTokenCookie = request.cookies.get('lia_access_token')
