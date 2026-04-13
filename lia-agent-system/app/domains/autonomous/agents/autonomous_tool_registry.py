@@ -1526,6 +1526,17 @@ AUTONOMOUS_TOOL_POOL: list[ToolDefinition] = [
         ),
         function=_wrap_get_tenant_hiring_overview,
     ),
+    # -- RAG Search (semantic hybrid) -----------------------------------------
+    ToolDefinition(
+        name="rag_search",
+        description=(
+            "Busca semantica hibrida de candidatos (BM25 + pgvector). "
+            "Fallback BM25 quando embeddings indisponiveis. "
+            "Parametros: query (str, obrigatorio), company_id (str, recomendado), "
+            "limit (int, padrao 20, max 50), filters (dict, opcional)."
+        ),
+        function=_wrap_rag_search,
+    ),
 ]
 
 # Mapeamento por nome para lookup rápido
@@ -1583,6 +1594,8 @@ TOOL_PERMISSION_SCOPE: dict[str, str] = {
     # Utility
     "summarize_context": "utility",
     "clarify_request": "utility",
+    # RAG Search
+    "rag_search": "read",
 }
 
 

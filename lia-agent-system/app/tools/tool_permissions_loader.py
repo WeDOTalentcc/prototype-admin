@@ -45,11 +45,13 @@ class ToolPermissionsConfig:
         scopes: dict[str, dict[str, set[str]]],
         llm_provider: str,
         llm_fallback_order: list[str],
+        restricted_tools: set[str] | None = None,
     ) -> None:
         self._tenant_id = tenant_id
         self._scopes = scopes
         self._llm_provider = llm_provider
         self._llm_fallback_order = llm_fallback_order
+        self._restricted_tools = restricted_tools or set()
 
     @property
     def tenant_id(self) -> str | None:
@@ -89,6 +91,15 @@ class ToolPermissionsConfig:
             return set(combined)
         # Return a copy to prevent callers from mutating cached internal state
         return set(scope_data.get(tool_type, set()))
+
+    @property
+    def restricted_tools(self) -> set[str]:
+        """Return the set of tools that require explicit user confirmation."""
+        return set(self._restricted_tools)
+
+    def is_restricted(self, tool_name: str) -> bool:
+        """Check if a tool requires explicit user confirmation (OWASP LLM06)."""
+        return tool_name in self._restricted_tools
 
     def is_tool_allowed(self, tool_name: str, scope: str) -> bool:
         return tool_name in self.get_tools(scope, "all")
@@ -223,11 +234,15 @@ def _build_tenant_config(
                     scopes[scope_name]["query"] -= remove_set
                     scopes[scope_name]["action"] -= remove_set
 
+    # Load restricted tools list (OWASP LLM06 enforcement)
+    restricted_tools = set(global_cfg.get("restricted_tools", []))
+
     return ToolPermissionsConfig(
         tenant_id=tenant_id,
         scopes=scopes,
         llm_provider=provider,
         llm_fallback_order=fallback_order,
+        restricted_tools=restricted_tools,
     )
 
 
