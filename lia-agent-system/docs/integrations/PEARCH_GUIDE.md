@@ -1,6 +1,6 @@
 # Pearch AI - Guia Completo de Integração
 
-**Última Atualização:** 30 Janeiro 2026
+**Última Atualização:** 13 Abril 2026
 
 ## Status: ✅ OPERATIONAL (24/11/2025)
 
@@ -59,8 +59,19 @@ A Pearch AI é uma plataforma de busca de candidatos com 800M+ perfis profission
 
 | Tipo de Busca | Custo Base | Descrição |
 |---------------|------------|-----------|
-| `fast` | 1 crédito | Busca rápida, dados essenciais |
-| `pro` | 5 créditos | Busca profunda com mais detalhes |
+| `fast` | 1 crédito | Busca padrão, dados completos |
+
+> **Nota:** O modo `pro` (5 créditos) foi removido. Todas as buscas utilizam o modo `fast`.
+
+### Enriquecimento de Contato via Apify
+
+Candidatos sem email ou telefone são enriquecidos automaticamente via Apify (`dev_fusion/Linkedin-Profile-Scraper`) ao custo de **$0.01/candidato**. Candidatos que continuam sem contato após enriquecimento são filtrados dos resultados.
+
+| Etapa | Custo | Descrição |
+|-------|-------|-----------|
+| Busca Pearch | 1 crédito/candidato | Dados de perfil completos |
+| Enriquecimento Apify | $0.01/candidato | Fallback quando Pearch não retorna contato |
+| Revelação de contato | Apify primeiro, Pearch fallback | Endpoint `/contact/reveal` |
 
 ### Dados Incluídos no Custo Base (GRATUITOS após busca)
 
@@ -541,7 +552,7 @@ O LIA detecta automaticamente intenção de busca de candidatos:
 ### Performance
 
 - **Busca fast:** 3-5 segundos (média)
-- **Busca deep:** 10-30 segundos (análise mais profunda)
+- **Enriquecimento Apify:** 5-15 segundos por candidato
 - **Timeout default:** 60 segundos
 - **Timeout máximo:** 1800 segundos (30 minutos)
 
@@ -616,7 +627,7 @@ const candidate = await revealContact(pearchId, {
 - [ ] Chamar `/candidates/persist-revealed` ao revelar contato
 - [ ] Mostrar badge "Salvo" em candidatos já importados
 - [ ] Diferenciar visualmente candidatos locais vs Pearch
-- [ ] Alertar usuário sobre custos de revelar telefone (+14 créditos)
+- [ ] Mostrar badge de source do contato (Apify/Pearch/Local)
 
 ### Próximos Passos
 
@@ -644,6 +655,7 @@ const candidate = await revealContact(pearchId, {
 
 ---
 
-**Última atualização:** Janeiro 2026  
+**Última atualização:** Abril 2026  
 **Status:** ✅ Produção-ready  
-**Cobertura:** 800M+ perfis profissionais
+**Cobertura:** 800M+ perfis profissionais  
+**Enrichment:** Apify dev_fusion/Linkedin-Profile-Scraper ($0.01/candidato)

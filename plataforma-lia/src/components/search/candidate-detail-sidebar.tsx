@@ -344,8 +344,10 @@ export function CandidateDetailSidebar({
                 {candidate.email && (
                   <div className="flex items-center justify-between p-2 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl">
                     <div className="flex items-center gap-2">
-                      <Mail className="h-4 w-4 text-lia-text-primary" />
+                      <Mail className={`h-4 w-4 ${candidate.contact_source === "apify" ? "text-status-info" : "text-lia-text-primary"}`} />
                       <span className="text-sm text-lia-text-primary">{candidate.email}</span>
+                      {candidate.contact_source === "apify" && <span className="text-xs text-status-info">(Apify)</span>}
+                      {candidate.contact_source === "pearch" && <span className="text-xs text-lia-text-tertiary">(Pearch)</span>}
                     </div>
                     <div className="flex gap-1">
                       <Button
@@ -370,8 +372,10 @@ export function CandidateDetailSidebar({
                 {candidate.phone && (
                   <div className="flex items-center justify-between p-2 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl">
                     <div className="flex items-center gap-2">
-                      <Phone className="h-4 w-4 text-lia-text-primary" />
+                      <Phone className={`h-4 w-4 ${candidate.contact_source === "apify" ? "text-status-info" : "text-lia-text-primary"}`} />
                       <span className="text-sm text-lia-text-primary">{candidate.phone}</span>
+                      {candidate.contact_source === "apify" && <span className="text-xs text-status-info">(Apify)</span>}
+                      {candidate.contact_source === "pearch" && <span className="text-xs text-lia-text-tertiary">(Pearch)</span>}
                     </div>
                     <Button
                       variant="ghost"
@@ -399,12 +403,12 @@ export function CandidateDetailSidebar({
                 )}
                 {!candidate.email && !candidate.phone && candidate.has_email && (
                   <p className="text-sm text-lia-text-primary italic">
-                    Email disponível via Busca Global (custo: 2 créditos)
+                    Email disponível via Apify ($0.01)
                   </p>
                 )}
                 {!candidate.phone && candidate.has_phone && (
                   <p className="text-sm text-lia-text-primary italic">
-                    Telefone disponível via Busca Global (custo: 14 créditos)
+                    Telefone disponível via Apify ($0.01)
                   </p>
                 )}
               </div>

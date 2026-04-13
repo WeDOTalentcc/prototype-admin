@@ -66,23 +66,21 @@ async def get_reveal_cost(
     reveal_type: str = Query(..., description="Tipo: 'email' ou 'phone'")
 ) -> RevealCostEstimate:
     """
-    Retorna o custo em créditos para revelar email ou telefone.
+    Retorna o custo para revelar email ou telefone.
     
-    Custos:
-    - Email: 2 créditos
-    - Telefone: 14 créditos
+    Fluxo: Apify primeiro ($0.01) → Pearch como fallback (2/14 créditos).
     """
     if reveal_type == "email":
         return RevealCostEstimate(
             reveal_type="email",
-            credits_required=2,
-            description="Revelar email do candidato"
+            credits_required=0,
+            description="Revelar email via Apify ($0.01) — fallback Pearch: 2 créditos"
         )
     elif reveal_type == "phone":
         return RevealCostEstimate(
             reveal_type="phone",
-            credits_required=14,
-            description="Revelar telefone do candidato"
+            credits_required=0,
+            description="Revelar telefone via Apify ($0.01) — fallback Pearch: 14 créditos"
         )
     else:
         raise HTTPException(status_code=400, detail="reveal_type deve ser 'email' ou 'phone'")
@@ -107,46 +105,114 @@ async def reveal_contact(
     try:
         enrichment_svc = get_contact_enrichment_service()
         
+        from uuid import UUID as _UUID
+        from sqlalchemy import select
+        from lia_models.candidate import Candidate
+
+        linkedin_url = None
         if request.linkedin_slug:
             linkedin_url = f"https://www.linkedin.com/in/{request.linkedin_slug}"
+        
+        cand_uuid = None
+        try:
+            cand_uuid = _UUID(request.candidate_id)
+        except (ValueError, AttributeError):
+            pass
+
+        if not linkedin_url and cand_uuid:
+            try:
+                result = await db.execute(
+                    select(Candidate.linkedin_url).where(Candidate.id == cand_uuid).limit(1)
+                )
+                db_url = result.scalar_one_or_none()
+                if db_url:
+                    linkedin_url = db_url
+                    _logger.info("[Reveal] Resolved LinkedIn URL from DB for %s", cand_uuid)
+            except Exception as e:
+                _logger.warning("[Reveal] DB LinkedIn URL lookup failed: %s", e)
+
+        if not cand_uuid and request.linkedin_slug:
+            try:
+                result = await db.execute(
+                    select(Candidate).where(
+                        Candidate.linkedin_url.ilike(f"%{request.linkedin_slug}%")
+                    ).limit(1)
+                )
+                local_cand = result.scalar_one_or_none()
+                if local_cand:
+                    cand_uuid = local_cand.id
+                    _logger.info("[Reveal] Resolved docid %s to UUID %s via LinkedIn slug", request.candidate_id, cand_uuid)
+            except Exception as lookup_err:
+                _logger.warning("[Reveal] LinkedIn lookup failed: %s", lookup_err)
+        
+        if linkedin_url:
             _logger.info("[Reveal] Trying Apify first for %s", request.candidate_id)
             
-            from uuid import UUID as _UUID
-            try:
-                cand_uuid = _UUID(request.candidate_id)
-                apify_result = await enrichment_svc.enrich_candidate_contact(
-                    db=db,
-                    candidate_id=cand_uuid,
-                    linkedin_url=linkedin_url,
-                    force=True,
-                )
-                
-                if apify_result.get("success") and apify_result.get("has_contact"):
-                    email = apify_result.get("email")
-                    phone = apify_result.get("phone")
+            if cand_uuid:
+                try:
+                    apify_result = await enrichment_svc.enrich_candidate_contact(
+                        db=db,
+                        candidate_id=cand_uuid,
+                        linkedin_url=linkedin_url,
+                        force=True,
+                    )
                     
-                    if request.reveal_type == "email" and email:
-                        return RevealContactResponse(
-                            success=True,
-                            candidate_id=request.candidate_id,
-                            reveal_type="email",
-                            email=email,
-                            emails=[email],
-                            credits_used=0,
-                            message="Email revelado via Apify ($0.01)",
-                        )
-                    elif request.reveal_type == "phone" and phone:
-                        return RevealContactResponse(
-                            success=True,
-                            candidate_id=request.candidate_id,
-                            reveal_type="phone",
-                            phone=phone,
-                            phones=[phone],
-                            credits_used=0,
-                            message="Telefone revelado via Apify ($0.01)",
-                        )
-            except Exception as apify_err:
-                _logger.warning("[Reveal] Apify failed, falling back to Pearch: %s", apify_err)
+                    if apify_result.get("success") and apify_result.get("has_contact"):
+                        email = apify_result.get("email")
+                        phone = apify_result.get("phone")
+                        
+                        if request.reveal_type == "email" and email:
+                            return RevealContactResponse(
+                                success=True,
+                                candidate_id=request.candidate_id,
+                                reveal_type="email",
+                                email=email,
+                                emails=[email],
+                                credits_used=0,
+                                message="Email revelado via Apify ($0.01)",
+                            )
+                        elif request.reveal_type == "phone" and phone:
+                            return RevealContactResponse(
+                                success=True,
+                                candidate_id=request.candidate_id,
+                                reveal_type="phone",
+                                phone=phone,
+                                phones=[phone],
+                                credits_used=0,
+                                message="Telefone revelado via Apify ($0.01)",
+                            )
+                except Exception as apify_err:
+                    _logger.warning("[Reveal] Apify via DB failed, falling back: %s", apify_err)
+            else:
+                _logger.info("[Reveal] Non-UUID candidate %s, trying Apify direct scrape", request.candidate_id)
+                try:
+                    apify_result = await enrichment_svc.enrich_by_linkedin_url(linkedin_url)
+                    if apify_result.get("success") and apify_result.get("has_contact"):
+                        email = apify_result.get("email")
+                        phone = apify_result.get("phone")
+
+                        if request.reveal_type == "email" and email:
+                            return RevealContactResponse(
+                                success=True,
+                                candidate_id=request.candidate_id,
+                                reveal_type="email",
+                                email=email,
+                                emails=[email],
+                                credits_used=0,
+                                message="Email revelado via Apify ($0.01)",
+                            )
+                        elif request.reveal_type == "phone" and phone:
+                            return RevealContactResponse(
+                                success=True,
+                                candidate_id=request.candidate_id,
+                                reveal_type="phone",
+                                phone=phone,
+                                phones=[phone],
+                                credits_used=0,
+                                message="Telefone revelado via Apify ($0.01)",
+                            )
+                except Exception as apify_err:
+                    _logger.warning("[Reveal] Apify direct scrape failed: %s", apify_err)
         
         _logger.info("[Reveal] Falling back to Pearch for %s", request.candidate_id)
         

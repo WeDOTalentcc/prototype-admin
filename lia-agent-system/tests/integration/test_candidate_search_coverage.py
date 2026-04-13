@@ -199,11 +199,11 @@ def test_estimate_credits_fast(client):
     assert resp.status_code in (200, 400, 422, 500)
 
 
-def test_estimate_credits_pro(client):
-    """POST /api/v1/search/candidates/estimate — pro type."""
+def test_estimate_credits_pro_rejected(client):
+    """POST /api/v1/search/candidates/estimate — pro type removed, should reject or fallback."""
     payload = {"query": "dev python", "pearch_type": "pro"}
     resp = client.post("/api/v1/search/candidates/estimate", json=payload)
-    assert resp.status_code in (200, 400, 422, 500)
+    assert resp.status_code in (400, 422, 500)
 
 
 def test_estimate_credits_invalid_type(client):

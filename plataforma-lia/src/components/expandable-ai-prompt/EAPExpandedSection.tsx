@@ -173,7 +173,7 @@ creditEstimate.canAfford ? 'text-status-success' : 'text-status-error'
                       )}
                       <div className="flex justify-between">
                         <span className="lia-text-muted">Tipo de busca:</span>
-                        <span className="font-medium">{pearchSearchType === 'fast' ? 'Rápida' : 'Profissional'}</span>
+                        <span className="font-medium">Rápida (1 crédito/candidato)</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="lia-text-muted" aria-live="polite" aria-atomic="true">Por candidato:</span>

@@ -58,6 +58,7 @@ export interface CandidateResult {
   mobile_phone?: string
   secondary_email?: string
   source:"local" |"pearch"
+  contact_source?: "local" | "pearch" | "apify" | null
   is_open_to_work?: boolean
   is_opentowork?: boolean
   is_decision_maker?: boolean
@@ -369,17 +370,25 @@ export function SearchResultsCard({
                     {candidate.has_email && (
                       <Tooltip>
                         <TooltipTrigger>
-                          <Mail className="h-4 w-4 text-lia-text-secondary" />
+                          <Mail className={`h-4 w-4 ${candidate.contact_source === "apify" ? "text-status-info" : "text-lia-text-secondary"}`} />
                         </TooltipTrigger>
-                        <TooltipContent>Email disponível</TooltipContent>
+                        <TooltipContent>
+                          Email disponível
+                          {candidate.contact_source === "apify" && " (enriquecido via Apify)"}
+                          {candidate.contact_source === "pearch" && " (via Pearch)"}
+                        </TooltipContent>
                       </Tooltip>
                     )}
                     {candidate.has_phone && (
                       <Tooltip>
                         <TooltipTrigger>
-                          <Phone className="h-4 w-4 text-lia-text-secondary" />
+                          <Phone className={`h-4 w-4 ${candidate.contact_source === "apify" ? "text-status-info" : "text-lia-text-secondary"}`} />
                         </TooltipTrigger>
-                        <TooltipContent>Telefone disponível</TooltipContent>
+                        <TooltipContent>
+                          Telefone disponível
+                          {candidate.contact_source === "apify" && " (enriquecido via Apify)"}
+                          {candidate.contact_source === "pearch" && " (via Pearch)"}
+                        </TooltipContent>
                       </Tooltip>
                     )}
                     {candidate.linkedin_url && (

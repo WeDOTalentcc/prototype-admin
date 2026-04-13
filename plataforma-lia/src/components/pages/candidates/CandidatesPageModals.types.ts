@@ -2,7 +2,7 @@ import type { Candidate } from "@/components/pages/candidates/types"
 import type { CommunicationType } from "@/components/modals/unified-communication-modal"
 import type { ParsedCVResponse } from "@/components/cv"
 export interface ModalPearchSearchOptions {
-  searchType?: string
+  searchType?: 'fast'
   limit?: number
   requireEmails: boolean
   requirePhoneNumbers: boolean
@@ -13,7 +13,7 @@ export interface ModalPearchSearchOptions {
 
 export interface ModalCreditEstimate {
   query: string
-  pearch_type: string
+  pearch_type: 'fast'
   limit: number
   base_cost: number
   insights_cost: number

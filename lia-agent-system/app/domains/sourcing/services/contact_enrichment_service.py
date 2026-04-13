@@ -158,6 +158,55 @@ class ContactEnrichmentService:
                 processed.append(r)
         return processed
 
+    async def enrich_by_linkedin_url(
+        self,
+        linkedin_url: str,
+    ) -> dict[str, Any]:
+        """
+        Enrich contact data from a LinkedIn URL without requiring a local DB candidate.
+        Uses dev_fusion/Linkedin-Profile-Scraper directly and extracts email/phone.
+        Returns dict with success, email, phone fields.
+        """
+        try:
+            profile_data = await self._enrichment_svc._scrape_linkedin_profile(
+                linkedin_url, "dev_fusion/Linkedin-Profile-Scraper"
+            )
+            if not profile_data or profile_data.get("error"):
+                return {"success": False, "error": profile_data.get("error", "No data")}
+
+            email = (
+                profile_data.get("email")
+                or profile_data.get("emailAddress")
+                or profile_data.get("personalEmail")
+                or profile_data.get("bestPersonalEmail")
+                or profile_data.get("businessEmail")
+                or profile_data.get("bestBusinessEmail")
+            )
+            personal_emails = profile_data.get("personalEmails") or []
+            if not email and personal_emails:
+                email = personal_emails[0]
+
+            phone = (
+                profile_data.get("phone")
+                or profile_data.get("phoneNumber")
+                or profile_data.get("mobilePhone")
+            )
+            phone_numbers = profile_data.get("phoneNumbers") or profile_data.get("phones") or []
+            if not phone and phone_numbers:
+                phone = phone_numbers[0] if isinstance(phone_numbers[0], str) else str(phone_numbers[0])
+
+            return {
+                "success": True,
+                "email": email,
+                "phone": phone,
+                "has_contact": bool(email or phone),
+                "source": "apify",
+                "cost_usd": APIFY_COST_USD,
+            }
+        except Exception as e:
+            logger.error("[ContactEnrichment] URL-only enrichment failed for %s: %s", linkedin_url, e)
+            return {"success": False, "error": str(e)}
+
     async def enrich_search_results_and_filter(
         self,
         db: AsyncSession,

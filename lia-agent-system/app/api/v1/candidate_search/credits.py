@@ -57,21 +57,13 @@ router = APIRouter()
 class CreditEstimateRequest(BaseModel):
     """Request completo para estimativa de créditos."""
     query: str = Field(..., description="Query de busca")
-    pearch_type: str = Field("fast", description="Tipo de busca (sempre fast)")
+    pearch_type: str = Field("fast", description="Tipo de busca (apenas fast)", pattern="^fast$")
     limit: int = Field(15, ge=1, le=50)
     
-    # Opções de qualidade
     insights: bool = Field(True, description="Incluir insights (+1 crédito)")
     high_freshness: bool = Field(False, description="Dados em tempo real (+2 créditos)")
     profile_scoring: bool = Field(True, description="Scoring (+1 crédito)")
     strict_filters: bool = Field(False, description="Filtros rigorosos")
-    
-    # Opções de contato
-    require_emails: bool = Field(False, description="Apenas com email (+1 crédito)")
-    show_emails: bool = Field(False, description="Mostrar emails (+2 créditos)")
-    require_phone_numbers: bool = Field(False, description="Apenas com telefone (+1 crédito)")
-    show_phone_numbers: bool = Field(False, description="Mostrar telefones (+14 créditos)")
-    require_phones_or_emails: bool = Field(False, description="Email OU telefone (+1 crédito)")
 
 
 class DetailedCreditEstimateDTO(BaseModel):
@@ -119,23 +111,26 @@ async def estimate_search_credits(request: CreditEstimateRequest,
         profile_scoring=request.profile_scoring,
         custom_filters=None,
         strict_filters=request.strict_filters,
-        require_emails=request.require_emails,
-        show_emails=request.show_emails,
-        require_phone_numbers=request.require_phone_numbers,
-        require_phones_or_emails=request.require_phones_or_emails,
-        show_phone_numbers=request.show_phone_numbers,
+        require_emails=False,
+        show_emails=False,
+        require_phone_numbers=False,
+        require_phones_or_emails=False,
+        show_phone_numbers=False,
         limit=request.limit
     )
     
     estimate = pearch_svc.estimate_credits(pearch_request)
-    confirmation = pearch_svc.create_confirmation_message(pearch_request)
     
-    # Gerar alertas de custo
     warnings = []
     if estimate.total_estimated > 100:
         warnings.append(f"Custo total estimado alto: {estimate.total_estimated} créditos")
-    if request.require_emails or request.require_phone_numbers:
-        warnings.append("Contatos serão enriquecidos via Apify ($0.01/candidato) quando não disponíveis no Pearch")
+    warnings.append("Contatos enriquecidos via Apify ($0.01/candidato) quando não disponíveis no Pearch")
+    
+    apify_note = f" + Apify ~$0.01/candidato para enriquecimento de contato"
+    confirmation_msg = (
+        f"Busca estimada em {estimate.total_estimated} créditos "
+        f"({estimate.total_per_candidate}/candidato x {request.limit}){apify_note}"
+    )
     
     return DetailedCreditEstimateDTO(
         query=request.query,
@@ -144,18 +139,18 @@ async def estimate_search_credits(request: CreditEstimateRequest,
         base_cost=estimate.base_cost,
         insights_cost=estimate.insights_cost,
         freshness_cost=estimate.freshness_cost,
-        email_cost=estimate.email_cost,
-        phone_cost=estimate.phone_cost,
+        email_cost=0,
+        phone_cost=0,
         cost_per_candidate=estimate.total_per_candidate,
         total_estimated=estimate.total_estimated,
         breakdown={
             "base": estimate.base_cost,
             "insights": estimate.insights_cost,
-            "emails": estimate.email_cost,
-            "phones": estimate.phone_cost,
+            "emails": 0,
+            "phones": 0,
             "freshness": estimate.freshness_cost
         },
-        confirmation_message=confirmation.confirmation_message,
+        confirmation_message=confirmation_msg,
         warnings=warnings
     )
 

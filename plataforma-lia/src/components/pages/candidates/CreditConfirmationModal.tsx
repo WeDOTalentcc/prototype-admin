@@ -1,6 +1,6 @@
 "use client"
 
-import { Zap, Mail, Phone, AlertCircle } from "lucide-react"
+import { Zap, Mail, AlertCircle } from "lucide-react"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -11,7 +11,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { Switch } from "@/components/ui/switch"
 import type { ModalPearchSearchOptions, ModalCreditEstimate } from "./CandidatesPageModals.types"
 
 interface CreditConfirmationModalProps {
@@ -59,54 +58,27 @@ export function CreditConfirmationModal({
                   <span className="font-medium">{pearchSearchOptions.limit ?? 20}</span>
                 </div>
 
-                {/* Filtros de Otimização de Créditos */}
-                <div className="border-t border-lia-border-subtle dark:border-lia-border-subtle pt-3 space-y-2">
-                  <span className="text-xs font-medium text-lia-text-tertiary uppercase tracking-wide">Filtros de Contato</span>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Mail className="w-4 h-4 text-lia-text-tertiary" />
-                      <span className="text-sm text-lia-text-primary">Apenas com Email</span>
-                      <span className="text-xs text-lia-text-tertiary">(+1 cr)</span>
-                    </div>
-                    <Switch
-                      checked={pearchSearchOptions.requireEmails}
-                      onCheckedChange={(checked) => onSearchOptionsChange({ ...pearchSearchOptions, requireEmails: checked })}
-                    />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Phone className="w-4 h-4 text-status-success" />
-                      <span className="text-sm text-lia-text-primary">Apenas com Telefone</span>
-                      <span className="text-xs text-lia-text-tertiary">(+1 cr)</span>
-                    </div>
-                    <Switch
-                      checked={pearchSearchOptions.requirePhoneNumbers}
-                      onCheckedChange={(checked) => onSearchOptionsChange({ ...pearchSearchOptions, requirePhoneNumbers: checked })}
-                    />
-                  </div>
-                  {(pearchSearchOptions.requireEmails || pearchSearchOptions.requirePhoneNumbers) && (
-                    <p className="text-xs text-status-success dark:text-status-success bg-status-success/10 dark:bg-status-success/20 p-2 rounded-md">
-                      Filtrando candidatos com contato disponível - você não gastará créditos com perfis sem dados de contato.
-                    </p>
-                  )}
-                </div>
-
                 <div className="flex justify-between items-center text-sm">
                   <span className="text-lia-text-primary">Custo base:</span>
                   <span className="font-medium">{creditEstimate.base_cost} créditos</span>
                 </div>
-                {creditEstimate.email_cost > 0 && (
+
+                <div className="border-t border-lia-border-subtle dark:border-lia-border-subtle pt-3 space-y-2">
+                  <span className="text-xs font-medium text-lia-text-tertiary uppercase tracking-wide">Enriquecimento de Contato</span>
+                  <p className="text-xs text-lia-text-primary">
+                    Candidatos sem email ou telefone são enriquecidos automaticamente via Apify.
+                  </p>
                   <div className="flex justify-between items-center text-sm">
-                    <span className="text-lia-text-primary">E-mails (+):</span>
-                    <span className="font-medium">{creditEstimate.email_cost} créditos</span>
+                    <div className="flex items-center gap-2">
+                      <Mail className="w-4 h-4 text-lia-text-tertiary" />
+                      <span className="text-lia-text-primary">Apify (email + telefone)</span>
+                    </div>
+                    <span className="font-medium text-status-success">$0.01/candidato</span>
                   </div>
-                )}
-                {creditEstimate.phone_cost > 0 && (
-                  <div className="flex justify-between items-center text-sm">
-                    <span className="text-lia-text-primary">Telefones (+):</span>
-                    <span className="font-medium">{creditEstimate.phone_cost} créditos</span>
-                  </div>
-                )}
+                  <p className="text-xs text-status-info dark:text-status-info bg-status-info/10 dark:bg-status-info/20 p-2 rounded-md">
+                    Candidatos sem contato após enriquecimento são filtrados dos resultados automaticamente.
+                  </p>
+                </div>
                 <div className="border-t border-lia-border-subtle dark:border-lia-border-subtle pt-2">
                   <div className="flex justify-between items-center">
                     <span className="font-medium">Total estimado:</span>

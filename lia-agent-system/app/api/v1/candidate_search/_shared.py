@@ -191,6 +191,7 @@ class CandidateSearchResultDTO(BaseModel):
     email: str | None = None
     phone: str | None = None
     source: str = 'local'
+    contact_source: str | None = None
     is_open_to_work: bool | None = None
     is_discovered: bool = False
     summary: str | None = None
@@ -575,38 +576,114 @@ async def enrich_and_filter_candidates(
     db: AsyncSession,
     candidates: list["CandidateSearchResultDTO"],
 ) -> list["CandidateSearchResultDTO"]:
+    from uuid import UUID as _UUID
+    from sqlalchemy import select
+    from lia_models.candidate import Candidate
+
     enrichment_svc = get_contact_enrichment_service()
 
-    needs_enrichment = []
+    uuid_enrichment = []
+    url_enrichment = []
+
     for cand in candidates:
-        has_email = bool(cand.email or cand.best_personal_email or cand.best_business_email)
+        has_email = bool(cand.email or getattr(cand, "best_personal_email", None) or getattr(cand, "best_business_email", None))
         has_phone = bool(getattr(cand, "phone", None) or getattr(cand, "phone_numbers", None))
         if not has_email and not has_phone:
-            linkedin = cand.linkedin_url or cand.linkedin_slug
+            linkedin = cand.linkedin_url or getattr(cand, "linkedin_slug", None)
             if linkedin and cand.id:
-                needs_enrichment.append({
-                    "id": str(cand.id),
-                    "linkedin_url": linkedin if str(linkedin).startswith("http") else f"https://www.linkedin.com/in/{linkedin}",
-                })
+                linkedin_full = linkedin if str(linkedin).startswith("http") else f"https://www.linkedin.com/in/{linkedin}"
+                try:
+                    _UUID(str(cand.id))
+                    uuid_enrichment.append({
+                        "id": str(cand.id),
+                        "linkedin_url": linkedin_full,
+                    })
+                except (ValueError, AttributeError):
+                    url_enrichment.append({
+                        "cand_id": str(cand.id),
+                        "linkedin_url": linkedin_full,
+                    })
 
-    if needs_enrichment:
-        logger.info("[EnrichHook] Enriching %d/%d candidates missing contact", len(needs_enrichment), len(candidates))
+    enriched_ids: set[str] = set()
+
+    if uuid_enrichment:
+        logger.info("[EnrichHook] Enriching %d UUID candidates via enrich_batch", len(uuid_enrichment))
         try:
-            await enrichment_svc.enrich_batch(db, needs_enrichment)
+            results = await enrichment_svc.enrich_batch(db, uuid_enrichment)
+            for item, res in zip(uuid_enrichment, results):
+                if isinstance(res, dict) and res.get("success"):
+                    enriched_ids.add(str(item["id"]))
         except Exception as e:
             logger.warning("[EnrichHook] Batch enrichment failed (non-fatal): %s", e)
 
-    enriched = []
+    if url_enrichment:
+        logger.info("[EnrichHook] Enriching %d non-UUID candidates via Apify direct", len(url_enrichment))
+        for item in url_enrichment:
+            try:
+                apify_result = await enrichment_svc.enrich_by_linkedin_url(
+                    item["linkedin_url"]
+                )
+                if apify_result.get("success") and apify_result.get("has_contact"):
+                    email = apify_result.get("email")
+                    phone = apify_result.get("phone")
+                    for cand in candidates:
+                        if str(cand.id) == item["cand_id"]:
+                            if email and not cand.email:
+                                cand.email = email
+                                cand.has_email = True
+                            if phone and not cand.phone:
+                                cand.phone = phone
+                                cand.has_phone = True
+                            cand.contact_source = "apify"
+                            enriched_ids.add(item["cand_id"])
+                            break
+            except Exception as e:
+                logger.warning("[EnrichHook] Apify direct failed for %s: %s", item["cand_id"], e)
+
+    uuid_enriched = {eid for eid in enriched_ids if eid not in {i["cand_id"] for i in url_enrichment}}
+    if uuid_enriched:
+        try:
+            uuid_ids = []
+            for eid in uuid_enriched:
+                try:
+                    uuid_ids.append(_UUID(eid))
+                except (ValueError, AttributeError):
+                    pass
+            if uuid_ids:
+                result = await db.execute(
+                    select(Candidate).where(Candidate.id.in_(uuid_ids))
+                )
+                db_candidates = {str(c.id): c for c in result.scalars().all()}
+                for cand in candidates:
+                    db_cand = db_candidates.get(str(cand.id))
+                    if db_cand:
+                        if db_cand.email and not cand.email:
+                            cand.email = db_cand.email
+                            cand.has_email = True
+                        if getattr(db_cand, "phone", None) and not cand.phone:
+                            cand.phone = db_cand.phone
+                            cand.has_phone = True
+        except Exception as e:
+            logger.warning("[EnrichHook] Failed to reload enriched contacts from DB: %s", e)
+
+    kept = []
     for cand in candidates:
-        has_email = bool(cand.email or cand.best_personal_email or cand.best_business_email)
+        has_email = bool(cand.email or getattr(cand, "best_personal_email", None) or getattr(cand, "best_business_email", None))
         has_phone = bool(getattr(cand, "phone", None) or getattr(cand, "phone_numbers", None))
         if has_email or has_phone:
-            enriched.append(cand)
+            if not cand.contact_source:
+                if str(cand.id) in enriched_ids:
+                    cand.contact_source = "apify"
+                elif cand.source == "pearch":
+                    cand.contact_source = "pearch"
+                else:
+                    cand.contact_source = "local"
+            kept.append(cand)
         else:
             logger.debug("[EnrichHook] Filtering candidate %s — no contact", cand.id)
 
-    filtered = len(candidates) - len(enriched)
+    filtered = len(candidates) - len(kept)
     if filtered > 0:
-        logger.info("[EnrichHook] Filtered %d candidates without contact. Returning %d/%d", filtered, len(enriched), len(candidates))
+        logger.info("[EnrichHook] Filtered %d candidates without contact. Returning %d/%d", filtered, len(kept), len(candidates))
 
-    return enriched
+    return kept

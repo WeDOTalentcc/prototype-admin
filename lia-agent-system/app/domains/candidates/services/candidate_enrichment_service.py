@@ -518,11 +518,12 @@ class CandidateEnrichmentService:
             candidate.mobile_phone = str(mobile_phone)
             updated_fields.append("mobile_phone")
 
-        phone_numbers = profile_data.get("phoneNumbers") or profile_data.get("phone_numbers") or []
+        phone_numbers = profile_data.get("phoneNumbers") or profile_data.get("phone_numbers") or profile_data.get("phones") or []
         if isinstance(phone_numbers, list) and phone_numbers:
             if not candidate.phone:
-                candidate.phone = str(phone_numbers[0])
-                updated_fields.append("phone")
+                candidate.phone = str(phone_numbers[0]) if not isinstance(phone_numbers[0], str) else phone_numbers[0]
+                if "phone" not in updated_fields:
+                    updated_fields.append("phone")
             if len(phone_numbers) > 1 and not candidate.mobile_phone:
                 candidate.mobile_phone = str(phone_numbers[1])
                 updated_fields.append("mobile_phone")
@@ -565,29 +566,33 @@ class CandidateEnrichmentService:
             
             company_info = exp.get("companyInfo") or exp.get("company_info") or {}
 
+            industries_raw = exp.get("industries") or exp.get("companyIndustries") or company_info.get("industries") or []
+            if isinstance(industries_raw, str):
+                industries_raw = [industries_raw]
+
             experience = CandidateExperience(
                 candidate_id=candidate.id,
                 company_name=company_name,
                 company_linkedin_url=exp.get("companyUrl") or exp.get("companyLinkedInUrl") or company_info.get("linkedin_url"),
-                company_domain=exp.get("companyDomain") or company_info.get("domain"),
+                company_domain=exp.get("companyDomain") or exp.get("domain") or company_info.get("domain"),
                 title=exp.get("title") or exp.get("position"),
                 start_date=self._parse_date(exp.get("startDate") or exp.get("start")),
                 end_date=self._parse_date(exp.get("endDate") or exp.get("end")),
                 is_current=exp.get("isCurrent") or exp.get("current") or False,
                 description=exp.get("description") or exp.get("summary"),
                 location=exp.get("location") or exp.get("locationName"),
-                industries=exp.get("industries") or company_info.get("industries") or [],
-                company_size=exp.get("companySize") or company_info.get("num_employees_range"),
-                company_size_range=exp.get("companySizeRange") or company_info.get("num_employees_range"),
+                industries=industries_raw if industries_raw else [],
+                company_size=exp.get("companySize") or exp.get("numEmployees") or company_info.get("num_employees_range"),
+                company_size_range=exp.get("companySizeRange") or exp.get("numEmployeesRange") or company_info.get("num_employees_range"),
                 technologies=exp.get("technologies") or company_info.get("technologies") or [],
                 is_startup=exp.get("isStartup") or company_info.get("is_startup"),
-                company_founded_year=exp.get("companyFoundedYear") or company_info.get("founded_in"),
+                company_founded_year=exp.get("companyFoundedYear") or exp.get("foundedYear") or company_info.get("founded_in"),
                 company_annual_revenue=exp.get("companyAnnualRevenue") or company_info.get("annual_revenue"),
                 funding_stage=exp.get("fundingStage") or exp.get("funding_stage") or company_info.get("funding_stage"),
                 company_tags=exp.get("companyTags") or exp.get("company_tags") or company_info.get("keywords") or [],
-                company_hq_city=exp.get("companyHqCity") or company_info.get("hq_city"),
-                company_hq_state=exp.get("companyHqState") or company_info.get("hq_state"),
-                company_hq_country=exp.get("companyHqCountry") or company_info.get("hq_country"),
+                company_hq_city=exp.get("companyHqCity") or exp.get("headquarterCity") or company_info.get("hq_city"),
+                company_hq_state=exp.get("companyHqState") or exp.get("headquarterState") or company_info.get("hq_state"),
+                company_hq_country=exp.get("companyHqCountry") or exp.get("headquarterCountry") or company_info.get("hq_country"),
                 sequence_order=i,
             )
 

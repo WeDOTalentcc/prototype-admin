@@ -175,43 +175,28 @@ class PearchService:
     
     def estimate_credits(self, request: PearchSearchRequest) -> CreditEstimate:
         """
-        Estima o custo em créditos para uma busca.
+        Estima o custo em créditos para uma busca (modo Fast apenas).
         
         Custos por candidato:
         - fast: 1 crédito base
-        - pro: 5 créditos base
         - insights: +1 crédito
         - profile_scoring: +1 crédito
         - high_freshness: +2 créditos
-        - require_emails: +1 crédito
-        - show_emails: +2 créditos (só cobra se tiver email)
-        - require_phone_numbers: +1 crédito
-        - show_phone_numbers: +14 créditos (só cobra se tiver telefone)
+        
+        Contatos são enriquecidos via Apify ($0.01/candidato), não via Pearch.
         """
         base = 1
         insights = 1 if request.insights else 0
         scoring = 1 if request.profile_scoring else 0
         freshness = 2 if request.high_freshness else 0
         
-        email_cost = 0
-        if request.require_emails:
-            email_cost += 1
-        if request.show_emails:
-            email_cost += 2
-        
-        phone_cost = 0
-        if request.require_phone_numbers:
-            phone_cost += 1
-        if request.show_phone_numbers:
-            phone_cost += 14
-        
-        per_candidate = base + insights + scoring + freshness + email_cost + phone_cost
+        per_candidate = base + insights + scoring + freshness
         
         return CreditEstimate(
             base_cost=base,
             insights_cost=insights + scoring,
-            email_cost=email_cost,
-            phone_cost=phone_cost,
+            email_cost=0,
+            phone_cost=0,
             freshness_cost=freshness,
             total_per_candidate=per_candidate,
             estimated_candidates=request.limit,

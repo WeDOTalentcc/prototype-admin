@@ -587,7 +587,7 @@ data: {"jsonrpc": "2.0", "id": "test-id", "result": {"actors": []}}
         client._http_client = mock_http_client
         
         result = await client.call_actor(
-            "dev_fusion/linkedin-profile-scraper",
+            "dev_fusion/Linkedin-Profile-Scraper",
             {"urls": ["https://linkedin.com/in/johndoe"]},
             wait_for_finish=True,
             timeout_secs=180

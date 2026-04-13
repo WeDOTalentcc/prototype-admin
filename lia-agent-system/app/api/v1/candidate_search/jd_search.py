@@ -249,11 +249,13 @@ async def search_local_only(
             for profile in profiles
         ]
         
+        candidates = await enrich_and_filter_candidates(db, candidates)
+        
         return SearchResponseDTO(
             query=query,
             candidates=candidates,
-            local_count=count,
-            total_count=count
+            local_count=len(candidates),
+            total_count=len(candidates)
         )
     
     except Exception as e:

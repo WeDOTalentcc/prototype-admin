@@ -105,10 +105,8 @@ describe("P1-E — useSearchSource", () => {
     expect(result.current.requirePhoneNumbers).toBe(true)
   })
 
-  it("9. pearchSearchType toggle entre fast e pro", () => {
+  it("9. pearchSearchType always fast", () => {
     const { result } = renderHook(() => useSearchSource())
     expect(result.current.pearchSearchType).toBe('fast')
-    act(() => { result.current.setPearchSearchType('pro') })
-    expect(result.current.pearchSearchType).toBe('pro')
   })
 })

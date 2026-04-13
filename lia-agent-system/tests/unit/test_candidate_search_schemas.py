@@ -92,9 +92,9 @@ class TestSearchRequestDTO:
         assert dto.local_limit == 50
         assert dto.pearch_limit == 30
 
-    def test_pro_pearch_type(self):
-        dto = SearchRequestDTO(query="test", pearch_type="pro")
-        assert dto.pearch_type == "pro"
+    def test_pearch_type_defaults_to_fast(self):
+        dto = SearchRequestDTO(query="test")
+        assert dto.pearch_type == "fast"
 
     def test_search_spec_optional(self):
         dto = SearchRequestDTO(query="test", search_spec={"location": "SP"})

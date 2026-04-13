@@ -361,10 +361,43 @@ class ApifyService:
             "location": "location",
             "industryName": "industry",
             "connectionCount": "connections",
+            "profilePicture": "picture_url",
+            "geoCountryName": "country",
+            "geoLocationName": "geo_location",
+            "followerCount": "follower_count",
+            "publicIdentifier": "public_identifier",
         }
         for src_key, dst_key in field_map.items():
             if result.get(src_key):
                 extracted[dst_key] = result[src_key]
+
+        emails = []
+        if result.get("email"):
+            emails.append(result["email"])
+        if result.get("emails") and isinstance(result["emails"], list):
+            emails.extend(result["emails"])
+        if result.get("emailAddress"):
+            emails.append(result["emailAddress"])
+        if emails:
+            extracted["emails"] = list(set(emails))
+
+        phones = []
+        if result.get("phone"):
+            phones.append(result["phone"])
+        if result.get("phones") and isinstance(result["phones"], list):
+            phones.extend(result["phones"])
+        if result.get("phoneNumbers") and isinstance(result["phoneNumbers"], list):
+            for pn in result["phoneNumbers"]:
+                if isinstance(pn, dict):
+                    num = pn.get("number") or pn.get("value") or pn.get("phone")
+                    if num:
+                        phones.append(str(num))
+                elif isinstance(pn, str):
+                    phones.append(pn)
+        if result.get("mobilePhone"):
+            phones.append(result["mobilePhone"])
+        if phones:
+            extracted["phones"] = list(set(phones))
 
         if result.get("experience"):
             experiences = result["experience"]
@@ -372,9 +405,14 @@ class ApifyService:
                 extracted["experience"] = [
                     {
                         "title": exp.get("title", ""),
-                        "company": exp.get("companyName", ""),
-                        "duration": exp.get("timePeriod", ""),
-                        "location": exp.get("locationName", ""),
+                        "companyName": exp.get("companyName", exp.get("company", "")),
+                        "company": exp.get("companyName", exp.get("company", "")),
+                        "duration": exp.get("timePeriod", exp.get("duration", "")),
+                        "location": exp.get("locationName", exp.get("location", "")),
+                        "description": exp.get("description", ""),
+                        "startDate": exp.get("startDate", exp.get("start", "")),
+                        "endDate": exp.get("endDate", exp.get("end", "")),
+                        "companyUrl": exp.get("companyUrl", exp.get("companyLinkedinUrl", "")),
                     }
                     for exp in experiences[:10]
                 ]
@@ -387,16 +425,21 @@ class ApifyService:
                     for s in skills[:30]
                 ]
 
-        if result.get("education"):
-            education = result["education"]
+        if result.get("education") or result.get("educations"):
+            education = result.get("education") or result.get("educations")
             if isinstance(education, list):
                 extracted["education"] = [
                     {
-                        "school": edu.get("schoolName", ""),
-                        "degree": edu.get("degreeName", ""),
-                        "field": edu.get("fieldOfStudy", ""),
+                        "schoolName": edu.get("schoolName", edu.get("school", "")),
+                        "school": edu.get("schoolName", edu.get("school", "")),
+                        "degree": edu.get("degreeName", edu.get("degree", "")),
+                        "degreeName": edu.get("degreeName", edu.get("degree", "")),
+                        "fieldOfStudy": edu.get("fieldOfStudy", edu.get("field", "")),
+                        "startDate": edu.get("startDate", edu.get("start", "")),
+                        "endDate": edu.get("endDate", edu.get("end", "")),
+                        "description": edu.get("description", edu.get("activities", "")),
                     }
-                    for edu in education[:5]
+                    for edu in education[:10]
                 ]
 
         if result.get("certifications"):
@@ -406,6 +449,26 @@ class ApifyService:
                     c.get("name", c) if isinstance(c, dict) else str(c)
                     for c in certs[:10]
                 ]
+
+        if result.get("languages"):
+            langs = result["languages"]
+            if isinstance(langs, list):
+                extracted["languages"] = [
+                    {
+                        "name": lang.get("name", lang) if isinstance(lang, dict) else str(lang),
+                        "proficiency": lang.get("proficiency", "") if isinstance(lang, dict) else "",
+                    }
+                    for lang in langs[:10]
+                ]
+
+        if result.get("volunteerExperiences"):
+            extracted["volunteer"] = result["volunteerExperiences"][:5]
+
+        if result.get("projects"):
+            extracted["projects"] = result["projects"][:5]
+
+        if result.get("honors") or result.get("honorsAndAwards"):
+            extracted["honors"] = (result.get("honors") or result.get("honorsAndAwards", []))[:5]
 
         extracted["source"] = "linkedin"
         return extracted

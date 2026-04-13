@@ -16,6 +16,7 @@ from ._shared import (
     SearchType,
     User,
     build_archetype_from_search,
+    enrich_and_filter_candidates,
     extract_tags_from_search_spec,
     get_current_user_or_demo,
     get_db,
@@ -951,6 +952,8 @@ async def search_by_archetype(
                 linkedin_url=profile.get_linkedin_url(),
                 has_email=profile.has_emails or False,
                 has_phone=profile.has_phone_numbers or False,
+                email=profile.best_personal_email or (profile.emails[0] if profile.emails else None),
+                phone=profile.phone_numbers[0] if profile.phone_numbers else None,
                 source="local",
                 is_open_to_work=profile.is_opentowork
             )
@@ -995,6 +998,8 @@ async def search_by_archetype(
                 linkedin_url=profile.get_linkedin_url(),
                 has_email=profile.has_emails or False,
                 has_phone=profile.has_phone_numbers or False,
+                email=profile.best_personal_email or (profile.emails[0] if profile.emails else None),
+                phone=profile.phone_numbers[0] if profile.phone_numbers else None,
                 source="pearch",
                 is_open_to_work=profile.is_opentowork
             )
@@ -1021,6 +1026,36 @@ async def search_by_archetype(
             
             candidates.append(candidate_dto)
         
+        candidates_as_dto = [
+            CandidateSearchResultDTO(
+                id=c.id,
+                name=c.name,
+                first_name=c.first_name,
+                last_name=c.last_name,
+                picture_url=c.picture_url,
+                headline=c.headline,
+                current_title=c.current_title,
+                current_company=c.current_company,
+                location=c.location,
+                total_experience_years=c.total_experience_years,
+                skills=c.skills,
+                score=c.score,
+                match_summary=c.match_summary,
+                linkedin_url=c.linkedin_url,
+                has_email=c.has_email,
+                has_phone=c.has_phone,
+                email=c.email,
+                phone=c.phone,
+                contact_source=c.contact_source,
+                source=c.source,
+                is_open_to_work=c.is_open_to_work,
+            )
+            for c in candidates
+        ]
+        filtered_dtos = await enrich_and_filter_candidates(db, candidates_as_dto)
+        filtered_ids = {dto.id for dto in filtered_dtos}
+        candidates = [c for c in candidates if c.id in filtered_ids]
+
         # Sort by LIA score if calculated
         if request.calculate_lia_score:
             candidates.sort(key=lambda x: x.lia_score or 0, reverse=True)
@@ -1046,9 +1081,9 @@ async def search_by_archetype(
             query=archetype.query,
             thread_id=search_result.thread_id,
             candidates=candidates,
-            local_count=search_result.local_count,
-            pearch_count=search_result.pearch_count,
-            total_count=search_result.total_count,
+            local_count=sum(1 for c in candidates if c.source == "local"),
+            pearch_count=sum(1 for c in candidates if c.source == "pearch"),
+            total_count=len(candidates),
             credits_remaining=search_result.pearch_credits_remaining,
             search_time_seconds=(search_result.local_search_time or 0) + (search_result.pearch_search_time or 0),
             warning_message=search_result.warning_message
