@@ -77,7 +77,7 @@ The platform uses Next.js, React, and TypeScript for the frontend, styled with R
 - **Config files**: src/i18n/config.ts, src/i18n/request.ts, src/i18n/routing.ts
 - **Message files**: messages/pt-BR.json, messages/en.json
 - **Route structure**: src/app/[locale]/ contains all page routes; src/app/api/ stays outside [locale]
-- **Localized pathnames**: /vagas↔/jobs, /funil↔/pipeline, /configuracoes↔/settings, etc. (defined in routing.ts)
+- **Localized pathnames**: Not yet implemented. All routes use same path under both locales (e.g., /pt/vagas, /en/vagas). Localized URL rewrites (vagas↔jobs, funil↔pipeline) deferred to future tasks when route structure is consolidated
 - **Middleware**: src/middleware.ts chains next-intl locale routing with existing JWT/WorkOS auth
 - **Sidebar**: Uses useTranslations('sidebar') — section labels, item labels, user menu, recent items all translated
 - **next.config.js**: Uses createNextIntlPlugin wrapping withBundleAnalyzer
