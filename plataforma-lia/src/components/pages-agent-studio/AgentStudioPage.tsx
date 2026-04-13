@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react"
 import { TwinsList, EvaluateWithTwinModal } from "@/components/pages-agent-studio/DigitalTwinComponents"
 import MultiStrategySearchPanel from "@/components/pages-agent-studio/MultiStrategySearchPanel"
 import CustomAgentsTab from "@/components/pages-agent-studio/CustomAgentsTab"
-import { TemplateGallery, AgentCard as CustomAgentCard, AgentCardSkeleton, AgentDetailsPanel, DeployDialog, ConversationalCreator, TestDebugPanel } from "@/components/pages-agent-studio/custom-agents"
+import { TemplateGallery, AgentCard as CustomAgentCard, AgentCardSkeleton, AgentDetailsPanel, DeployDialog, ConversationalCreator, TestDebugPanel, ApprovalsList } from "@/components/pages-agent-studio/custom-agents"
 import { useCustomAgents } from "@/hooks/agents"
 import { useAgentStudioStore } from "@/stores/agent-studio-store"
 import type { CustomAgent, AgentTemplate } from "@/components/pages-agent-studio/custom-agents/types"
@@ -466,6 +466,11 @@ export default function AgentStudioPage({
 
         {activeTab === "custom" && (
           <div className="space-y-6">
+            {/* Pending Approvals (admin only — hidden if empty or not admin) */}
+            <section>
+              <ApprovalsList onReviewed={() => mutateCustomAgents()} />
+            </section>
+
             {/* My Agents */}
             <section>
               <h3 className="text-sm font-semibold text-lia-text-primary mb-3">

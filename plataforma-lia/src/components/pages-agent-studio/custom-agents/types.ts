@@ -7,7 +7,22 @@ export type AgentCategory = "screening" | "sourcing" | "communication" | "analyt
 
 export type ContextLevel = "full" | "standard" | "minimal"
 
-export type AgentStatus = "draft" | "active" | "paused" | "archived"
+export type AgentStatus = "draft" | "pending_approval" | "active" | "paused" | "archived"
+
+export type ApprovalStatus = "pending" | "approved" | "rejected"
+
+export interface AgentApproval {
+  id: string
+  agent_id: string
+  company_id: string
+  requested_by: string
+  reviewed_by: string | null
+  status: ApprovalStatus
+  review_notes: string | null
+  requested_at: string | null
+  reviewed_at: string | null
+  agent_name?: string
+}
 
 export type DeploymentTargetType = "job" | "talent_pool" | "pipeline_stage" | "candidate_list"
 

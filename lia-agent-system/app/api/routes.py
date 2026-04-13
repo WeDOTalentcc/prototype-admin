@@ -221,6 +221,8 @@ from app.api.v1.sourcing_agents import router as sourcing_agents_router
 from app.api.v1.custom_agents import router as custom_agents_router
 from app.api.v1.agent_deployments import router as agent_deployments_router
 from app.api.v1.agent_deployments import target_router as agent_deployments_target_router
+from app.api.v1.agent_approvals import agent_router as agent_approvals_agent_router
+from app.api.v1.agent_approvals import approvals_router as agent_approvals_approvals_router
 from app.api.v1.custom_agents import marketplace_router as agent_marketplace_router
 from app.api.v1.custom_agents import admin_marketplace_router
 from app.api.v1.multi_strategy_search import router as multi_strategy_router
@@ -581,6 +583,8 @@ def register_all_routes(app: FastAPI) -> None:
     app.include_router(custom_agents_router, prefix="/api/v1", tags=["custom-agents"])
     app.include_router(agent_deployments_router, prefix="/api/v1")
     app.include_router(agent_deployments_target_router, prefix="/api/v1")
+    app.include_router(agent_approvals_agent_router, prefix="/api/v1")
+    app.include_router(agent_approvals_approvals_router, prefix="/api/v1")
     app.include_router(agent_marketplace_router, prefix="/api/v1", tags=["agent-marketplace"])
     app.include_router(admin_marketplace_router, prefix="/api/v1", tags=["admin-marketplace"])
     app.include_router(multi_strategy_router, prefix="/api/v1", tags=["multi-strategy"])
