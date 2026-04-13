@@ -69,22 +69,48 @@ def validate_rails_token(
         return None
 
 
+class RailsCompanyResolutionError(Exception):
+    """Raised when company_id cannot be resolved for a Rails user_id.
+
+    LIA-SEC-02 (PE-9): Callers MUST handle this exception and reject the request.
+    Do NOT fall back to a default company_id — that would break tenant isolation (RLS).
+    """
+
+
 async def resolve_company_from_rails_user(
     user_id: int,
     ats_client: "WeDOTalentATSClient",
-) -> str | None:
+) -> str:
     """
-    Resolve company_id/account from a Rails user_id.
-    Calls /v1/me to get the users account_id.
+    Resolve company_id/account from a Rails user_id via /v1/me.
+
+    Fail-closed: raises RailsCompanyResolutionError if resolution fails.
+    This prevents RLS bypass — if we cannot resolve the tenant, the request
+    MUST be rejected, not processed with a default/empty company_id.
+
+    Raises:
+        RailsCompanyResolutionError: when /v1/me fails or returns empty account_id.
     """
     try:
         user_info = await ats_client.get_current_user()
-        if user_info:
-            return str(user_info.get("account_id") or user_info.get("company_id") or "")
-        return None
     except Exception as e:
-        logger.warning("[RailsJWT] Failed to resolve company: %s", e)
-        return None
+        logger.error("[RailsJWT][PE-9] /v1/me call failed for user_id=%s: %s", user_id, e)
+        raise RailsCompanyResolutionError(
+            f"Cannot resolve company for Rails user {user_id}: /v1/me call failed"
+        ) from e
+
+    if not user_info:
+        raise RailsCompanyResolutionError(
+            f"Cannot resolve company for Rails user {user_id}: /v1/me returned empty"
+        )
+
+    company_id = user_info.get("account_id") or user_info.get("company_id")
+    if not company_id:
+        raise RailsCompanyResolutionError(
+            f"Cannot resolve company for Rails user {user_id}: /v1/me response missing account_id/company_id"
+        )
+
+    return str(company_id)
 
 
 def get_rails_jwt_secret() -> str | None:
