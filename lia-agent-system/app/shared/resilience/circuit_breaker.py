@@ -367,10 +367,10 @@ PEARCH_CIRCUIT = CircuitBreaker(
 APIFY_CIRCUIT = CircuitBreaker(
     "apify",
     CircuitBreakerConfig(
-        failure_threshold=5,
+        failure_threshold=3,
         recovery_timeout=60.0,
         success_threshold=2,
-        timeout=120.0,
+        timeout=30.0,
     )
 )
 
@@ -519,6 +519,7 @@ ALL_CIRCUITS: dict[str, CircuitBreaker] = {
     "openai": OPENAI_CIRCUIT,
     "gemini": GEMINI_CIRCUIT,
     "pearch": PEARCH_CIRCUIT,
+    "apify": APIFY_CIRCUIT,
     "workos": WORKOS_CIRCUIT,
     "merge": MERGE_CIRCUIT,
     "google_calendar": GOOGLE_CALENDAR_CIRCUIT,
@@ -565,6 +566,13 @@ CIRCUIT_BREAKER_SLOS: dict[str, dict[str, Any]] = {
         "error_budget_pct": 1.0,
         "tier": "high",
         "description": "Busca de candidatos — Pearch AI (190M+ perfis)",
+    },
+    "apify": {
+        "availability_target": 0.99,
+        "latency_p95_ms": 120000,
+        "error_budget_pct": 1.0,
+        "tier": "medium",
+        "description": "Enriquecimento de candidatos — Apify LinkedIn scraper",
     },
     "workos": {
         "availability_target": 0.999,
@@ -685,6 +693,10 @@ DEGRADED_MODE_RESPONSES: dict[str, str] = {
     "pearch": (
         "A busca de candidatos externos está temporariamente indisponível. "
         "Você pode buscar na base interna de candidatos enquanto isso."
+    ),
+    "apify": (
+        "O enriquecimento de perfis via LinkedIn está temporariamente indisponível. "
+        "Os dados já disponíveis na base continuam acessíveis."
     ),
     "workos": (
         "O serviço de autenticação está com instabilidades. "

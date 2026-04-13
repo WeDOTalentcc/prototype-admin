@@ -17,7 +17,7 @@ from lia_models.candidate import Candidate, CandidateEducation, CandidateExperie
 
 logger = logging.getLogger(__name__)
 
-LINKEDIN_PROFILE_ACTOR = "dev_fusion/linkedin-profile-scraper"
+LINKEDIN_PROFILE_ACTOR = "dev_fusion/Linkedin-Profile-Scraper"
 LINKEDIN_PROFILE_ACTOR_ALT = "curious_coder/linkedin-profile-scraper"
 
 
@@ -26,7 +26,7 @@ class CandidateEnrichmentService:
     Service for enriching candidate data from LinkedIn profiles using Apify.
     
     Supports two main actors:
-    - dev_fusion/linkedin-profile-scraper: Includes email discovery (no cookies required)
+    - dev_fusion/Linkedin-Profile-Scraper: Includes email discovery (no cookies required)
     - curious_coder/linkedin-profile-scraper: Basic profile scraper
     
     Fields that can be enriched:
@@ -191,6 +191,9 @@ class CandidateEnrichmentService:
         """
         Apply enrichment data to candidate record.
         
+        Maps ~40 fields from Apify dev_fusion/Linkedin-Profile-Scraper output
+        to Candidate, CandidateExperience, and CandidateEducation models.
+        
         Args:
             db: Database session
             candidate: Candidate model instance
@@ -202,69 +205,108 @@ class CandidateEnrichmentService:
             List of field names that were updated
         """
         updated_fields = []
-        
-        field_mappings = {
-            "name": ["firstName", "lastName"],
-            "avatar_url": ["profilePicture", "profilePic", "picture", "avatar"],
-            "headline": ["headline", "title"],
-            "current_title": ["currentTitle", "title", "headline"],
-            "current_company": ["currentCompany", "company"],
-            "self_introduction": ["summary", "about", "bio"],
-            "linkedin_url": ["linkedinUrl", "profileUrl", "url"],
-        }
-        
+
         if profile_data.get("firstName") and profile_data.get("lastName"):
-            full_name = f"{profile_data['firstName']} {profile_data['lastName']}".strip()
+            middle = profile_data.get("middleName") or profile_data.get("middle_name") or ""
+            parts = [profile_data["firstName"]]
+            if middle:
+                parts.append(middle)
+            parts.append(profile_data["lastName"])
+            full_name = " ".join(parts).strip()
             if full_name and (not candidate.name or candidate.name == ""):
                 candidate.name = full_name
                 updated_fields.append("name")
-        
-        for candidate_field, source_fields in field_mappings.items():
-            if candidate_field == "name":
-                continue
-            
+
+        simple_field_mappings: dict[str, list[str]] = {
+            "avatar_url": ["profilePicture", "profilePic", "picture", "avatar", "pictureUrl"],
+            "headline": ["headline", "title"],
+            "current_title": ["currentTitle", "title", "headline"],
+            "current_company": ["currentCompany", "company", "companyName"],
+            "self_introduction": ["summary", "about", "bio", "description"],
+            "linkedin_url": ["linkedinUrl", "profileUrl", "url"],
+            "github_url": ["githubUrl", "github"],
+            "portfolio_url": ["portfolioUrl", "website", "personalWebsite"],
+            "middle_name": ["middleName", "middle_name"],
+            "gender": ["gender"],
+        }
+
+        for candidate_field, source_fields in simple_field_mappings.items():
             current_value = getattr(candidate, candidate_field, None)
             if current_value:
                 continue
-            
             for source_field in source_fields:
                 value = profile_data.get(source_field)
                 if value:
                     setattr(candidate, candidate_field, value)
                     updated_fields.append(candidate_field)
                     break
-        
+
+        int_field_mappings: dict[str, list[str]] = {
+            "years_of_experience": ["totalExperienceYears", "yearsOfExperience", "total_experience_years"],
+            "estimated_age": ["estimatedAge", "estimated_age", "age"],
+        }
+        for candidate_field, source_fields in int_field_mappings.items():
+            current_value = getattr(candidate, candidate_field, None)
+            if current_value is not None:
+                continue
+            for source_field in source_fields:
+                value = profile_data.get(source_field)
+                if value is not None:
+                    try:
+                        setattr(candidate, candidate_field, int(float(value)))
+                        updated_fields.append(candidate_field)
+                    except (ValueError, TypeError):
+                        pass
+                    break
+
+        seniority = profile_data.get("seniorityLevel") or profile_data.get("seniority") or profile_data.get("seniority_level")
+        if seniority and not candidate.seniority_level:
+            candidate.seniority_level = seniority
+            updated_fields.append("seniority_level")
+
+        interests = profile_data.get("interests") or profile_data.get("volunteerExperiences") or []
+        if isinstance(interests, list) and interests and not (candidate.interests or []):
+            parsed = []
+            for item in interests:
+                if isinstance(item, str):
+                    parsed.append(item)
+                elif isinstance(item, dict):
+                    parsed.append(item.get("name") or item.get("cause") or str(item))
+            if parsed:
+                candidate.interests = parsed
+                updated_fields.append("interests")
+
+        expertise = profile_data.get("expertise") or []
+        if isinstance(expertise, list) and expertise and not (candidate.expertise or []):
+            candidate.expertise = [str(e) for e in expertise[:30]]
+            updated_fields.append("expertise")
+
         self._apply_location(candidate, profile_data, updated_fields)
-        
         self._apply_skills(candidate, profile_data, updated_fields)
-        
         self._apply_languages(candidate, profile_data, updated_fields)
-        
         self._apply_certifications(candidate, profile_data, updated_fields)
-        
         self._apply_social_metrics(candidate, profile_data, updated_fields)
-        
         self._apply_contact_info(candidate, profile_data, updated_fields)
-        
+        self._apply_phone_info(candidate, profile_data, updated_fields)
+
         if include_experiences:
             experiences_added = await self._add_experiences(db, candidate, profile_data)
             profile_data["_experiences_added"] = experiences_added
-        
+
         if include_education:
             education_added = await self._add_education(db, candidate, profile_data)
             profile_data["_education_added"] = education_added
-        
+
         candidate.updated_at = datetime.utcnow()
-        
-        if "enrichment" not in (candidate.additional_data or {}):
-            if candidate.additional_data is None:
-                candidate.additional_data = {}
-            candidate.additional_data["enrichment"] = {
-                "last_enriched_at": datetime.utcnow().isoformat(),
-                "source": "linkedin",
-                "fields_updated": updated_fields
-            }
-        
+
+        if candidate.additional_data is None:
+            candidate.additional_data = {}
+        candidate.additional_data["enrichment"] = {
+            "last_enriched_at": datetime.utcnow().isoformat(),
+            "source": "linkedin",
+            "fields_updated": updated_fields,
+        }
+
         return updated_fields
     
     def _apply_location(
@@ -418,32 +460,37 @@ class CandidateEnrichmentService:
         profile_data: dict[str, Any],
         updated_fields: list[str]
     ):
-        """Apply contact information (emails, phones)."""
+        """Apply contact information (emails)."""
         email = profile_data.get("email") or profile_data.get("emailAddress")
         if email and not candidate.email:
             candidate.email = email
             updated_fields.append("email")
-        
+
         personal_email = profile_data.get("personalEmail") or profile_data.get("bestPersonalEmail")
         if personal_email and not candidate.best_personal_email:
             candidate.best_personal_email = personal_email
             updated_fields.append("best_personal_email")
-        
+
         business_email = profile_data.get("businessEmail") or profile_data.get("bestBusinessEmail")
         if business_email and not candidate.best_business_email:
             candidate.best_business_email = business_email
             updated_fields.append("best_business_email")
-        
+
         personal_emails = profile_data.get("personalEmails") or []
         if personal_emails and not candidate.personal_emails:
             candidate.personal_emails = personal_emails
             updated_fields.append("personal_emails")
-        
+
         business_emails = profile_data.get("businessEmails") or []
         if business_emails and not candidate.business_emails:
             candidate.business_emails = business_emails
             updated_fields.append("business_emails")
-        
+
+        secondary_email = profile_data.get("secondaryEmail") or profile_data.get("secondary_email")
+        if secondary_email and not candidate.secondary_email:
+            candidate.secondary_email = secondary_email
+            updated_fields.append("secondary_email")
+
         if not candidate.email:
             if candidate.best_personal_email:
                 candidate.email = candidate.best_personal_email
@@ -453,6 +500,37 @@ class CandidateEnrichmentService:
                 candidate.email = candidate.best_business_email
                 if "email" not in updated_fields:
                     updated_fields.append("email")
+
+    def _apply_phone_info(
+        self,
+        candidate: Candidate,
+        profile_data: dict[str, Any],
+        updated_fields: list[str]
+    ):
+        """Apply phone number information."""
+        phone = profile_data.get("phone") or profile_data.get("phoneNumber")
+        if phone and not candidate.phone:
+            candidate.phone = str(phone)
+            updated_fields.append("phone")
+
+        mobile_phone = profile_data.get("mobilePhone") or profile_data.get("mobile")
+        if mobile_phone and not candidate.mobile_phone:
+            candidate.mobile_phone = str(mobile_phone)
+            updated_fields.append("mobile_phone")
+
+        phone_numbers = profile_data.get("phoneNumbers") or profile_data.get("phone_numbers") or []
+        if isinstance(phone_numbers, list) and phone_numbers:
+            if not candidate.phone:
+                candidate.phone = str(phone_numbers[0])
+                updated_fields.append("phone")
+            if len(phone_numbers) > 1 and not candidate.mobile_phone:
+                candidate.mobile_phone = str(phone_numbers[1])
+                updated_fields.append("mobile_phone")
+
+        phone_types = profile_data.get("phoneTypes") or profile_data.get("phone_types")
+        if phone_types and not candidate.phone_types:
+            candidate.phone_types = phone_types if isinstance(phone_types, dict) else {}
+            updated_fields.append("phone_types")
     
     async def _add_experiences(
         self,
@@ -485,20 +563,41 @@ class CandidateEnrichmentService:
             if existing.scalar_one_or_none():
                 continue
             
+            company_info = exp.get("companyInfo") or exp.get("company_info") or {}
+
             experience = CandidateExperience(
                 candidate_id=candidate.id,
                 company_name=company_name,
-                company_linkedin_url=exp.get("companyUrl") or exp.get("companyLinkedInUrl"),
+                company_linkedin_url=exp.get("companyUrl") or exp.get("companyLinkedInUrl") or company_info.get("linkedin_url"),
+                company_domain=exp.get("companyDomain") or company_info.get("domain"),
                 title=exp.get("title") or exp.get("position"),
                 start_date=self._parse_date(exp.get("startDate") or exp.get("start")),
                 end_date=self._parse_date(exp.get("endDate") or exp.get("end")),
                 is_current=exp.get("isCurrent") or exp.get("current") or False,
                 description=exp.get("description") or exp.get("summary"),
                 location=exp.get("location") or exp.get("locationName"),
-                sequence_order=i
+                industries=exp.get("industries") or company_info.get("industries") or [],
+                company_size=exp.get("companySize") or company_info.get("num_employees_range"),
+                company_size_range=exp.get("companySizeRange") or company_info.get("num_employees_range"),
+                technologies=exp.get("technologies") or company_info.get("technologies") or [],
+                is_startup=exp.get("isStartup") or company_info.get("is_startup"),
+                company_founded_year=exp.get("companyFoundedYear") or company_info.get("founded_in"),
+                company_annual_revenue=exp.get("companyAnnualRevenue") or company_info.get("annual_revenue"),
+                funding_stage=exp.get("fundingStage") or exp.get("funding_stage") or company_info.get("funding_stage"),
+                company_tags=exp.get("companyTags") or exp.get("company_tags") or company_info.get("keywords") or [],
+                company_hq_city=exp.get("companyHqCity") or company_info.get("hq_city"),
+                company_hq_state=exp.get("companyHqState") or company_info.get("hq_state"),
+                company_hq_country=exp.get("companyHqCountry") or company_info.get("hq_country"),
+                sequence_order=i,
             )
-            
-            if exp.get("duration"):
+
+            duration_years = exp.get("duration_years") or exp.get("durationYears")
+            if duration_years is not None:
+                try:
+                    experience.duration_years = round(float(duration_years), 1)
+                except (ValueError, TypeError):
+                    pass
+            elif exp.get("duration"):
                 try:
                     duration_str = exp.get("duration", "")
                     years = 0
@@ -513,10 +612,10 @@ class CandidateEnrichmentService:
                     experience.duration_years = round(years, 1)
                 except Exception:
                     pass
-            
+
             db.add(experience)
             added += 1
-        
+
         return added
     
     async def _add_education(
@@ -549,6 +648,11 @@ class CandidateEnrichmentService:
             if existing.scalar_one_or_none():
                 continue
             
+            is_completed = edu.get("isCompleted") or edu.get("is_completed")
+            if is_completed is None:
+                end = edu.get("endDate") or edu.get("end")
+                is_completed = end is not None
+
             education = CandidateEducation(
                 candidate_id=candidate.id,
                 institution=institution,
@@ -556,10 +660,18 @@ class CandidateEnrichmentService:
                 field_of_study=edu.get("fieldOfStudy") or edu.get("field"),
                 start_date=self._parse_date(edu.get("startDate") or edu.get("start")),
                 end_date=self._parse_date(edu.get("endDate") or edu.get("end")),
+                is_completed=bool(is_completed),
                 description=edu.get("description") or edu.get("activities"),
-                sequence_order=i
+                gpa=edu.get("gpa") or edu.get("grade"),
+                location=edu.get("location") or edu.get("locationName"),
+                institution_city=edu.get("institutionCity") or edu.get("institution_city"),
+                institution_state=edu.get("institutionState") or edu.get("institution_state"),
+                institution_country=edu.get("institutionCountry") or edu.get("institution_country"),
+                institution_ranking=edu.get("institutionRanking") or edu.get("institution_ranking"),
+                institution_tier=edu.get("institutionTier") or edu.get("institution_tier"),
+                sequence_order=i,
             )
-            
+
             db.add(education)
             added += 1
         

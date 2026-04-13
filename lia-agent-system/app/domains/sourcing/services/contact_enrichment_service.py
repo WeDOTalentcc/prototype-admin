@@ -65,6 +65,13 @@ class ContactEnrichmentService:
                 "source": "dedup_skip",
             }
 
+        if not force and await self._linkedin_url_recently_enriched(db, profile_url):
+            return {
+                "success": False,
+                "error": "Another candidate with this LinkedIn URL was recently enriched",
+                "source": "dedup_linkedin_skip",
+            }
+
         if APIFY_CIRCUIT.is_open:
             logger.warning("[ContactEnrichment] Apify circuit breaker is OPEN, skipping")
             return {"success": False, "error": "Apify circuit breaker open", "source": None}
@@ -94,6 +101,8 @@ class ContactEnrichmentService:
                 elapsed,
                 enrichment_result.get("fields_updated", []),
             )
+
+            await self._sync_to_rails(candidate, enrichment_result.get("fields_updated", []))
 
             return {
                 "success": enrichment_result.get("success", False),
@@ -220,6 +229,73 @@ class ContactEnrichmentService:
             return datetime.utcnow() - last_dt < timedelta(hours=DEDUP_WINDOW_HOURS)
         except (ValueError, TypeError):
             return False
+
+    async def _linkedin_url_recently_enriched(self, db: AsyncSession, linkedin_url: str) -> bool:
+        normalized = linkedin_url.strip().rstrip("/").split("?")[0]
+        result = await db.execute(
+            select(Candidate).where(
+                Candidate.linkedin_url.ilike(f"%{normalized.split('/in/')[-1]}%")
+            )
+        )
+        candidates = result.scalars().all()
+        for cand in candidates:
+            enrichment_data = (cand.additional_data or {}).get("enrichment", {})
+            last_enriched = enrichment_data.get("last_enriched_at")
+            if not last_enriched:
+                continue
+            try:
+                last_dt = datetime.fromisoformat(last_enriched)
+                if datetime.utcnow() - last_dt < timedelta(hours=DEDUP_WINDOW_HOURS):
+                    logger.debug(
+                        "[ContactEnrichment] LinkedIn URL %s already enriched via candidate %s",
+                        linkedin_url, cand.id,
+                    )
+                    return True
+            except (ValueError, TypeError):
+                continue
+        return False
+
+    async def _sync_to_rails(self, candidate: Candidate, fields_updated: list[str]) -> None:
+        if not fields_updated:
+            return
+        try:
+            from app.domains.integrations_hub.services.rails_adapter import (
+                CANDIDATE_FORK_TO_RAILS,
+                RailsAdapter,
+                RAILS_ENABLED,
+            )
+            if not RAILS_ENABLED:
+                return
+
+            sync_data: dict[str, Any] = {}
+            for fork_field in fields_updated:
+                rails_field = CANDIDATE_FORK_TO_RAILS.get(fork_field)
+                if rails_field:
+                    value = getattr(candidate, fork_field, None)
+                    if value is not None:
+                        sync_data[rails_field] = value
+
+            if not sync_data:
+                return
+
+            adapter = RailsAdapter()
+            await adapter.publish_event(
+                event_type="candidate.enriched",
+                entity_type="candidate",
+                entity_id=str(candidate.id),
+                data={
+                    "enriched_fields": sync_data,
+                    "source": "apify_linkedin",
+                },
+            )
+            logger.info(
+                "[ContactEnrichment] Rails sync event published for candidate %s (%d fields)",
+                candidate.id, len(sync_data),
+            )
+        except ImportError:
+            logger.debug("[ContactEnrichment] Rails adapter not available, skipping sync")
+        except Exception as e:
+            logger.warning("[ContactEnrichment] Rails sync failed for %s: %s", candidate.id, e)
 
 
 contact_enrichment_service = ContactEnrichmentService()

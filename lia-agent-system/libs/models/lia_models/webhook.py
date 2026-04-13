@@ -14,10 +14,32 @@ Eventos suportados:
 """
 import uuid
 
-from sqlalchemy import Boolean, Column, DateTime, Integer, String, Text, func
+from enum import Enum as PyEnum
+
+from sqlalchemy import Boolean, Column, DateTime, Enum, Integer, String, Text, func
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB, UUID
 
 from lia_config.database import Base
+
+
+class WebhookEvent(str, PyEnum):
+    AGENT_EXECUTION_COMPLETED = "agent.execution.completed"
+    AGENT_EXECUTION_FAILED = "agent.execution.failed"
+    AGENT_DEPLOYMENT_CREATED = "agent.deployment.created"
+    AGENT_DEPLOYMENT_PAUSED = "agent.deployment.paused"
+    AGENT_APPROVAL_REQUESTED = "agent.approval.requested"
+    AGENT_APPROVAL_REVIEWED = "agent.approval.reviewed"
+    CANDIDATE_ENRICHED = "candidate.enriched"
+
+
+class WebhookStatus(str, PyEnum):
+    PENDING = "pending"
+    DELIVERED = "delivered"
+    FAILED = "failed"
+    RETRYING = "retrying"
+
+
+WEBHOOK_EVENTS = [e.value for e in WebhookEvent]
 
 
 class Webhook(Base):
@@ -62,3 +84,18 @@ class Webhook(Base):
         if include_secret:
             result["secret"] = self.secret
         return result
+
+
+class WebhookLog(Base):
+    __tablename__ = "webhook_logs"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    webhook_id = Column(UUID(as_uuid=True), nullable=False, index=True)
+    event = Column(String(128), nullable=False)
+    status = Column(Enum(WebhookStatus), default=WebhookStatus.PENDING, nullable=False)
+    status_code = Column(Integer, nullable=True)
+    request_body = Column(JSONB, nullable=True)
+    response_body = Column(Text, nullable=True)
+    error = Column(Text, nullable=True)
+    attempt = Column(Integer, default=1, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())

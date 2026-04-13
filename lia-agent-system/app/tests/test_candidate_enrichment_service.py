@@ -476,7 +476,7 @@ class TestCandidateEnrichmentServiceIntegration:
         ) as mock_call:
             result = await service._scrape_linkedin_profile(
                 "https://linkedin.com/in/johndoe",
-                "dev_fusion/linkedin-profile-scraper"
+                "dev_fusion/Linkedin-Profile-Scraper"
             )
             
             assert result["firstName"] == "John"
@@ -497,8 +497,242 @@ class TestCandidateEnrichmentServiceIntegration:
         ):
             result = await service._scrape_linkedin_profile(
                 "https://linkedin.com/in/johndoe",
-                "dev_fusion/linkedin-profile-scraper"
+                "dev_fusion/Linkedin-Profile-Scraper"
             )
             
             assert "error" in result
             assert "Connection timeout" in result["error"]
+
+
+def _make_blank_candidate():
+    """Create a MagicMock Candidate with all enrichment-relevant fields set to None."""
+    candidate = MagicMock(spec=Candidate)
+    for field in [
+        "name", "avatar_url", "headline", "current_title", "current_company",
+        "self_introduction", "linkedin_url", "github_url", "portfolio_url",
+        "middle_name", "gender", "years_of_experience", "estimated_age",
+        "seniority_level", "interests", "expertise", "location_city",
+        "location_state", "location_country", "technical_skills", "languages",
+        "certifications", "linkedin_followers_count", "linkedin_connections_count",
+        "is_open_to_work", "email", "best_personal_email", "best_business_email",
+        "personal_emails", "business_emails", "secondary_email", "phone",
+        "mobile_phone", "phone_types", "additional_data", "updated_at",
+    ]:
+        setattr(candidate, field, None)
+    candidate.id = uuid4()
+    return candidate
+
+
+class TestEnhancedFieldMapping:
+    """Tests for enhanced field mapper (~40 fields)."""
+
+    def test_apply_phone_info(self):
+        service = CandidateEnrichmentService()
+        candidate = _make_blank_candidate()
+
+        profile_data = {
+            "phoneNumbers": ["+5511999887766", "+5511888776655"],
+            "phoneTypes": {"mobile": True, "work": True},
+        }
+        updated_fields = []
+
+        service._apply_phone_info(candidate, profile_data, updated_fields)
+
+        assert "phone" in updated_fields
+        assert "mobile_phone" in updated_fields
+        assert "phone_types" in updated_fields
+        assert candidate.phone == "+5511999887766"
+        assert candidate.mobile_phone == "+5511888776655"
+
+    def test_apply_phone_single(self):
+        service = CandidateEnrichmentService()
+        candidate = _make_blank_candidate()
+
+        profile_data = {"phone": "+5511111"}
+        updated_fields = []
+
+        service._apply_phone_info(candidate, profile_data, updated_fields)
+
+        assert "phone" in updated_fields
+        assert candidate.phone == "+5511111"
+
+    @pytest.mark.asyncio
+    async def test_apply_enrichment_full_mapping(self):
+        """Test _apply_enrichment with a rich profile covering ~40 fields."""
+        service = CandidateEnrichmentService()
+        candidate = _make_blank_candidate()
+
+        profile_data = {
+            "firstName": "John",
+            "middleName": "Robert",
+            "lastName": "Doe",
+            "headline": "Senior Software Engineer",
+            "currentCompany": "TechCorp",
+            "summary": "Experienced engineer",
+            "githubUrl": "https://github.com/johndoe",
+            "portfolioUrl": "https://johndoe.dev",
+            "totalExperienceYears": 8.5,
+            "estimatedAge": 32,
+            "seniorityLevel": "senior",
+            "location": "San Francisco, CA, USA",
+            "skills": ["Python", "Go"],
+            "languages": [{"name": "English", "proficiency": "native"}],
+            "certifications": [{"name": "AWS SA", "authority": "Amazon"}],
+            "followersCount": 1500,
+            "connectionsCount": "500+",
+            "isOpenToWork": True,
+            "email": "john@example.com",
+            "bestPersonalEmail": "john.personal@gmail.com",
+            "secondaryEmail": "john2@example.com",
+            "phoneNumbers": ["+1234567890"],
+            "interests": ["Open Source", "AI"],
+            "expertise": ["Backend", "Cloud"],
+        }
+
+        db = AsyncMock(spec=AsyncSession)
+
+        updated_fields = await service._apply_enrichment(
+            db, candidate, profile_data, False, False
+        )
+
+        assert "name" in updated_fields
+        assert candidate.name == "John Robert Doe"
+        assert "headline" in updated_fields
+        assert "github_url" in updated_fields
+        assert candidate.github_url == "https://github.com/johndoe"
+        assert "years_of_experience" in updated_fields
+        assert candidate.years_of_experience == 8
+        assert "estimated_age" in updated_fields
+        assert candidate.estimated_age == 32
+        assert "seniority_level" in updated_fields
+        assert candidate.seniority_level == "senior"
+        assert "email" in updated_fields
+        assert "best_personal_email" in updated_fields
+        assert "secondary_email" in updated_fields
+        assert "phone" in updated_fields
+        assert "interests" in updated_fields
+        assert "expertise" in updated_fields
+        assert "linkedin_followers_count" in updated_fields
+        assert "is_open_to_work" in updated_fields
+        assert candidate.additional_data["enrichment"]["source"] == "linkedin"
+
+    def test_apply_contact_info_secondary_email(self):
+        service = CandidateEnrichmentService()
+        candidate = _make_blank_candidate()
+        candidate.email = "primary@email.com"
+
+        profile_data = {"secondaryEmail": "secondary@email.com"}
+        updated_fields = []
+
+        service._apply_contact_info(candidate, profile_data, updated_fields)
+
+        assert "secondary_email" in updated_fields
+        assert candidate.secondary_email == "secondary@email.com"
+
+
+class TestExperienceMapperEnhanced:
+    """Tests for enhanced experience mapping with company enrichment fields."""
+
+    @pytest.mark.asyncio
+    async def test_experience_with_company_info(self):
+        service = CandidateEnrichmentService()
+
+        candidate = MagicMock(spec=Candidate)
+        candidate.id = uuid4()
+
+        db = AsyncMock(spec=AsyncSession)
+        existing_mock = MagicMock()
+        existing_mock.scalar_one_or_none.return_value = None
+        db.execute.return_value = existing_mock
+
+        profile_data = {
+            "experience": [
+                {
+                    "companyName": "TechCorp",
+                    "title": "Senior Dev",
+                    "companyInfo": {
+                        "industries": ["Technology"],
+                        "num_employees_range": "51-200",
+                        "technologies": ["Python", "React"],
+                        "is_startup": True,
+                        "founded_in": 2015,
+                        "funding_stage": "series_b",
+                        "hq_city": "San Francisco",
+                        "hq_state": "CA",
+                        "hq_country": "US",
+                        "domain": "techcorp.com",
+                        "keywords": ["saas", "ai"],
+                    },
+                    "duration_years": 3.5,
+                    "isCurrent": True,
+                    "location": "Remote",
+                }
+            ]
+        }
+
+        added = await service._add_experiences(db, candidate, profile_data)
+
+        assert added == 1
+        db.add.assert_called_once()
+
+        exp_obj = db.add.call_args[0][0]
+        assert exp_obj.company_name == "TechCorp"
+        assert exp_obj.industries == ["Technology"]
+        assert exp_obj.company_size == "51-200"
+        assert exp_obj.technologies == ["Python", "React"]
+        assert exp_obj.is_startup is True
+        assert exp_obj.company_founded_year == 2015
+        assert exp_obj.funding_stage == "series_b"
+        assert exp_obj.company_hq_city == "San Francisco"
+        assert exp_obj.company_domain == "techcorp.com"
+        assert exp_obj.company_tags == ["saas", "ai"]
+        assert exp_obj.duration_years == 3.5
+
+
+class TestEducationMapperEnhanced:
+    """Tests for enhanced education mapping."""
+
+    @pytest.mark.asyncio
+    async def test_education_with_institution_info(self):
+        service = CandidateEnrichmentService()
+
+        candidate = MagicMock(spec=Candidate)
+        candidate.id = uuid4()
+
+        db = AsyncMock(spec=AsyncSession)
+        existing_mock = MagicMock()
+        existing_mock.scalar_one_or_none.return_value = None
+        db.execute.return_value = existing_mock
+
+        profile_data = {
+            "education": [
+                {
+                    "schoolName": "MIT",
+                    "degree": "BS",
+                    "fieldOfStudy": "Computer Science",
+                    "startDate": "2010",
+                    "endDate": "2014",
+                    "gpa": "3.8",
+                    "institution_city": "Cambridge",
+                    "institution_state": "MA",
+                    "institution_country": "US",
+                    "institution_ranking": 1,
+                    "institution_tier": "tier1",
+                }
+            ]
+        }
+
+        added = await service._add_education(db, candidate, profile_data)
+
+        assert added == 1
+        db.add.assert_called_once()
+
+        edu_obj = db.add.call_args[0][0]
+        assert edu_obj.institution == "MIT"
+        assert edu_obj.gpa == "3.8"
+        assert edu_obj.institution_city == "Cambridge"
+        assert edu_obj.institution_country == "US"
+        assert edu_obj.institution_ranking == 1
+        assert edu_obj.institution_tier == "tier1"
+        assert edu_obj.is_completed is True
+
