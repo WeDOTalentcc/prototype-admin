@@ -10,6 +10,7 @@ DO NOT use this class in new code.
 import warnings as _lia_warnings
 
 import logging
+import os
 from typing import Any
 
 
@@ -424,9 +425,33 @@ class Orchestrator:
 
             messages.append(("human", "{message}"))
             prompt = ChatPromptTemplate.from_messages(messages)
-            chain = prompt | self.llm_service.get_audited_model()
+
+            # LIA-A04 (Fase 4): bind tools in fallback path so LIA can act, not just talk.
+            # ReAct agents already have tools via create_react_agent; this gives the
+            # _handle_directly fallback path the same agentic capability.
+            llm = self.llm_service.get_audited_model()
+            _bind_tools_enabled = os.environ.get("LIA_FALLBACK_BIND_TOOLS", "true").lower() in ("1", "true", "yes")
+            if _bind_tools_enabled:
+                try:
+                    from app.tools import get_all_tool_schemas
+                    tool_schemas = get_all_tool_schemas(agent_type="orchestrator", format="claude")
+                    if tool_schemas:
+                        llm = llm.bind_tools(tool_schemas)
+                        logger.debug("[LIA-A04] _handle_directly bound %d tools", len(tool_schemas))
+                except Exception as _bind_exc:
+                    logger.warning("[LIA-A04] bind_tools failed (continuing without): %s", _bind_exc)
+
+            chain = prompt | llm
             response = await chain.ainvoke({"message": message})
-            return {"message": response.content, "success": True, "data": {},
+
+            # Extract content (string) from response (which may have tool_calls)
+            response_content = response.content if hasattr(response, "content") else str(response)
+            response_tools_used = []
+            if hasattr(response, "tool_calls") and response.tool_calls:
+                response_tools_used = [tc.get("name") if isinstance(tc, dict) else getattr(tc, "name", "") for tc in response.tool_calls]
+                logger.info("[LIA-A04] _handle_directly LLM requested %d tool(s): %s", len(response_tools_used), response_tools_used)
+
+            return {"message": response_content, "success": True, "data": {"tool_calls_requested": response_tools_used},
                     "requires_user_input": True, "suggested_prompts": [], "next_actions": [],
                     "agent_used": "LIA Orchestrator", "agent_type": "orchestrator"}
         except Exception:
