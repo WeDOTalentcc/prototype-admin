@@ -818,6 +818,10 @@ GOOGLE_CLOUD_PROJECT=wedotalent-prod
 MICROSOFT_APP_ID=246eb1e7-a437-4cb2-a231-0325b567be5f
 MICROSOFT_APP_PASSWORD=<secret>
 AZURE_TENANT_ID=bd25f438-71ab-4f63-a88f-abc8da37a1f6
+# Teams-specific (obrigatório para aquisição de token do Bot)
+TEAMS_APP_TENANT_ID=bd25f438-71ab-4f63-a88f-abc8da37a1f6
+# URL pública da plataforma (usada pelo manifest do Teams e deep links)
+WEDOTALENT_PLATFORM_URL=https://ai.wedotalent.cc
 
 # Cache e filas
 REDIS_URL=redis://<cloud-redis-ip>:6379/0

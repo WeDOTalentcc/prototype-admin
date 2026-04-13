@@ -282,20 +282,82 @@ curl -X POST http://localhost:8000/api/v1/calendar/schedule-interview \
 
 ## 4. Teams Bot (Manifest e Comandos)
 
+### 4.0 Setup de Produção (ai.wedotalent.cc) — Checklist Rápido
+
+**App Registration:** `LIA-Teams-Bot` (`246eb1e7-a437-4cb2-a231-0325b567be5f`)
+
+**Variáveis de ambiente obrigatórias no Cloud Run (backend):**
+
+```bash
+MICROSOFT_APP_ID=246eb1e7-a437-4cb2-a231-0325b567be5f
+MICROSOFT_APP_PASSWORD=<client-secret-do-bot>
+TEAMS_APP_TENANT_ID=bd25f438-71ab-4f63-a88f-abc8da37a1f6   # tenant do LIA-Teams-Bot
+WEDOTALENT_PLATFORM_URL=https://ai.wedotalent.cc
+```
+
+**Messaging Endpoint no Azure Bot:**
+```
+https://ai.wedotalent.cc/api/v1/teams/messages
+```
+
+**Verificar saúde do bot (deve retornar "healthy"):**
+```bash
+curl https://ai.wedotalent.cc/api/v1/teams/health
+# Resposta esperada: {"status":"healthy","service":"teams-bot","bot_configured":true}
+```
+
+**Ícones do app (acessíveis publicamente):**
+```
+https://ai.wedotalent.cc/teams-icons/wedo-color.png
+https://ai.wedotalent.cc/teams-icons/wedo-outline.png
+```
+
+---
+
 ### 4.1 Instalar Bot no Teams
 
-#### Método 1: Direct Link (Mais rápido)
-1. No Azure Bot, vá em **"Channels"** → **Microsoft Teams**
+#### Método Rápido: Download ZIP Completo (Recomendado)
+
+O backend gera automaticamente um pacote ZIP pronto para upload:
+
+```
+https://ai.wedotalent.cc/api/v1/teams/manifest-zip
+```
+
+Este ZIP contém:
+- `manifest.json` — gerado dinamicamente com o bot ID, domínio e comandos corretos
+- `wedo-color.png` — ícone colorido 192x192
+- `wedo-outline.png` — ícone de contorno 32x32
+
+**Como fazer upload no Teams Admin Center:**
+
+1. Acesse: https://admin.teams.microsoft.com
+2. No menu esquerdo: **Teams apps** → **Manage apps**
+3. Clique em **"Upload new app"** (canto superior direito)
+4. Selecione **"Upload an app"** → faça upload do arquivo `wedo-teams-app.zip`
+5. O app aparecerá com status **"Custom app"**
+6. Clique no app → **"Publish"** para disponibilizá-lo para a organização
+
+**Alternativa: Sideload para testes individuais:**
+
+1. No Microsoft Teams, clique em **"Apps"** (barra lateral esquerda)
+2. Clique em **"Manage your apps"** → **"Upload an app"**
+3. Selecione **"Upload a custom app"**
+4. Faça upload do ZIP baixado
+5. O bot WeDO aparecerá para instalação
+
+#### Método Alternativo: Manifest JSON + Ícones Manuais
+
+1. Baixe o manifest: `https://ai.wedotalent.cc/api/v1/teams/manifest`
+2. Baixe os ícones de `https://ai.wedotalent.cc/teams-icons/`
+3. Crie um ZIP com os 3 arquivos: `manifest.json`, `wedo-color.png`, `wedo-outline.png`
+4. Faça upload conforme os passos acima
+
+#### Método Legado: Direct Link do Azure Bot
+1. No Azure Bot (`LIA-Teams-Bot`), vá em **"Channels"** → **Microsoft Teams**
 2. Copie o link em **"Add to Microsoft Teams"**
 3. Abra o link em seu navegador
 4. Teams abrirá e solicitará instalação do bot
-
-#### Método 2: Teams App Studio
-1. Abra Microsoft Teams
-2. Na barra lateral, clique em **"Apps"**
-3. Busque por **"App Studio"** e instale
-4. No App Studio, vá em **"Manifest editor"** → **"Import an existing app"**
-5. Faça upload do manifest (template abaixo)
 
 ### 4.2 Teams App Manifest (manifest.json)
 

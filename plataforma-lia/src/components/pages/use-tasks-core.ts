@@ -295,11 +295,15 @@ const RETRYABLE_STATUSES = new Set([401, 502, 503, 504, 429])
 async function fetchEndpointWithRetry(url: string, retries = 3, baseDelayMs = 2000): Promise<Response> {
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
+      console.debug(`[useTasksCore] fetch attempt ${attempt}/${retries}: ${url}`)
       const res = await fetch(url, { signal: AbortSignal.timeout(30000) })
+      console.debug(`[useTasksCore] fetch result: ${url} → ${res.status}`)
       if (res.ok || attempt === retries || !RETRYABLE_STATUSES.has(res.status)) {
         return res
       }
+      console.debug(`[useTasksCore] retryable status ${res.status}, will retry`)
     } catch (err) {
+      console.warn(`[useTasksCore] fetch error attempt ${attempt}: ${url}`, (err as Error)?.message)
       if (attempt === retries) throw err
     }
     const delay = Math.min(baseDelayMs * Math.pow(1.5, attempt), 15000)
@@ -357,6 +361,8 @@ export function useTasksCore(onNavigate?: (page: string) => void) {
     setLoading(true)
     setError(null)
 
+    console.log('[useTasksCore] fetchAllData starting, userId:', currentUserId)
+
     try {
       const [tasksRes, summaryRes, alertsRes, jobsRes] = await Promise.allSettled([
         fetchEndpointWithRetry(`${API_BASE}/tasks?limit=50&status=pending`),
@@ -364,6 +370,12 @@ export function useTasksCore(onNavigate?: (page: string) => void) {
         fetchEndpointWithRetry(`${API_BASE}/alerts?limit=20&status=active`),
         fetchEndpointWithRetry(`${API_BASE}/job-vacancies?limit=20`),
       ])
+      console.log('[useTasksCore] responses:', {
+        tasks: tasksRes.status === 'fulfilled' ? tasksRes.value.status : 'rejected',
+        summary: summaryRes.status === 'fulfilled' ? summaryRes.value.status : 'rejected',
+        alerts: alertsRes.status === 'fulfilled' ? alertsRes.value.status : 'rejected',
+        jobs: jobsRes.status === 'fulfilled' ? jobsRes.value.status : 'rejected',
+      })
 
       if (!mountedRef.current) return
 

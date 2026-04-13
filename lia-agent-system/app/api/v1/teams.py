@@ -1190,7 +1190,7 @@ async def get_teams_manifest():
             "privacyUrl": f"{platform_url}/privacy",
             "termsOfUseUrl": f"{platform_url}/terms",
         },
-        "icons": {"color": f"{platform_url}/teams-icons/wedo-color.png", "outline": f"{platform_url}/teams-icons/wedo-outline.png"},
+        "icons": {"color": "wedo-color.png", "outline": "wedo-outline.png"},
         "name": {"short": "WeDO", "full": "WeDOTalent — Recrutamento Inteligente"},
         "description": {
             "short": "Plataforma de recrutamento com IA",
@@ -1198,7 +1198,7 @@ async def get_teams_manifest():
         },
         "accentColor": "#000000",
         "bots": [{
-            "botId": os.environ.get("TEAMS_BOT_APP_ID", os.environ.get("TEAMS_APP_ID", "")),
+            "botId": os.environ.get("TEAMS_BOT_APP_ID", os.environ.get("TEAMS_APP_ID", os.environ.get("MICROSOFT_APP_ID", ""))),
             "scopes": ["personal", "team", "groupChat"],
             "supportsFiles": True,
             "isNotificationOnly": False,
@@ -1247,6 +1247,115 @@ async def get_teams_manifest():
     return JSONResponse(
         content=manifest,
         headers={"Content-Disposition": "attachment; filename=manifest.json"},
+    )
+
+
+@router.get("/manifest-zip", response_model=None)
+async def download_teams_manifest_zip():
+    """
+    Download a ready-to-upload Teams app ZIP package.
+
+    Contains:
+    - manifest.json  (generated dynamically from env vars)
+    - wedo-color.png  (192x192 color icon)
+    - wedo-outline.png (32x32 outline icon)
+
+    Upload the downloaded ZIP to:
+    Teams Admin Center → Teams apps → Manage apps → Upload an app
+    """
+    import io
+    import os
+    import uuid
+    import zipfile
+
+    from fastapi.responses import StreamingResponse
+
+    platform_url = os.environ.get("WEDOTALENT_PLATFORM_URL", "https://ai.wedotalent.cc").rstrip("/")
+    try:
+        from urllib.parse import urlparse
+        platform_domain = urlparse(platform_url).netloc
+    except Exception:
+        platform_domain = "ai.wedotalent.cc"
+
+    bot_id = os.environ.get("TEAMS_BOT_APP_ID", os.environ.get("TEAMS_APP_ID", os.environ.get("MICROSOFT_APP_ID", "")))
+    app_id = os.environ.get("TEAMS_APP_ID", str(uuid.uuid4()))
+    azure_client_id = os.environ.get("AZURE_CLIENT_ID", "")
+
+    manifest = {
+        "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.17/MicrosoftTeams.schema.json",
+        "manifestVersion": "1.17",
+        "version": "1.0.0",
+        "id": app_id,
+        "packageName": "com.wedotalent.wedo",
+        "developer": {
+            "name": "WeDOTalent",
+            "websiteUrl": platform_url,
+            "privacyUrl": f"{platform_url}/privacy",
+            "termsOfUseUrl": f"{platform_url}/terms",
+        },
+        "icons": {"color": "wedo-color.png", "outline": "wedo-outline.png"},
+        "name": {"short": "WeDO", "full": "WeDOTalent — Recrutamento Inteligente"},
+        "description": {
+            "short": "Plataforma de recrutamento com IA",
+            "full": "WeDOTalent conecta recrutadores à LIA, a assistente de IA para busca de candidatos, triagem, agendamento e relatórios — direto no Teams.",
+        },
+        "accentColor": "#000000",
+        "bots": [{
+            "botId": bot_id,
+            "scopes": ["personal", "team", "groupChat"],
+            "supportsFiles": True,
+            "isNotificationOnly": False,
+            "commandLists": [{
+                "scopes": ["personal", "team", "groupChat"],
+                "commands": [
+                    {"title": "ajuda",      "description": "Ver todas as funcionalidades da LIA"},
+                    {"title": "buscar",     "description": "Buscar candidatos para uma vaga"},
+                    {"title": "triagem",    "description": "Ver candidatos aguardando triagem WSI"},
+                    {"title": "relatorio",  "description": "Gerar relatório semanal de recrutamento"},
+                    {"title": "pipeline",   "description": "Ver saúde do pipeline de recrutamento"},
+                    {"title": "vagas",      "description": "Ver vagas ativas e seus status"},
+                    {"title": "candidatos", "description": "Ver candidatos aguardando retorno"},
+                    {"title": "resumo",     "description": "Resumo das atividades do dia"},
+                ],
+            }],
+        }],
+        "permissions": ["identity", "messageTeamMembers"],
+        "validDomains": [platform_domain, "token.botframework.com", "login.microsoftonline.com"],
+    }
+
+    if azure_client_id:
+        manifest["webApplicationInfo"] = {
+            "id": azure_client_id,
+            "resource": f"api://{platform_domain}/{azure_client_id}",
+        }
+
+    import json as _json
+
+    zip_buffer = io.BytesIO()
+    with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zf:
+        zf.writestr("manifest.json", _json.dumps(manifest, indent=2, ensure_ascii=False))
+
+        _this_dir = os.path.dirname(__file__)
+        icons_candidates = [
+            os.path.normpath(os.path.join(_this_dir, "..", "..", "..", "..", "..", "plataforma-lia", "public", "teams-icons")),
+            os.path.normpath(os.path.join(_this_dir, "..", "..", "static", "teams-icons")),
+        ]
+        icons_base = next((p for p in icons_candidates if os.path.isdir(p)), None)
+
+        for icon_filename in ("wedo-color.png", "wedo-outline.png"):
+            if icons_base:
+                icon_path = os.path.join(icons_base, icon_filename)
+                if os.path.exists(icon_path):
+                    with open(icon_path, "rb") as f:
+                        zf.writestr(icon_filename, f.read())
+                    continue
+            logger.warning(f"[Teams Manifest ZIP] Icon not found: {icon_filename}")
+
+    zip_buffer.seek(0)
+    return StreamingResponse(
+        zip_buffer,
+        media_type="application/zip",
+        headers={"Content-Disposition": "attachment; filename=wedo-teams-app.zip"},
     )
 
 

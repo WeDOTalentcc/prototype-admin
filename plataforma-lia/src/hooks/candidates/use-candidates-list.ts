@@ -61,11 +61,16 @@ export function useCandidatesList(initialFilters?: CandidatesListFilters): UseCa
       const maxRetries = 4
       const baseDelay = 2000
 
+      console.log('[useCandidatesList] fetching:', url)
+
       for (let attempt = 0; attempt <= maxRetries; attempt++) {
         try {
+          console.debug(`[useCandidatesList] attempt ${attempt}/${maxRetries}`)
           const response = await fetch(url, {
             headers: { 'Content-Type': 'application/json' },
           })
+
+          console.debug(`[useCandidatesList] response status: ${response.status}`)
 
           if (!response.ok) {
             throw new Error(`Backend retornou ${response.status}`)

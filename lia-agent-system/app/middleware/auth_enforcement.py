@@ -130,6 +130,7 @@ PUBLIC_PREFIXES = (
     "/static/",
     "/_next/",
     "/ws/",
+    "/teams-icons/",
 )
 
 

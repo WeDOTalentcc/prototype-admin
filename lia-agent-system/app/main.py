@@ -518,6 +518,26 @@ from app.api.routes import register_all_routes
 
 register_all_routes(app)  # includes: admin_dlq_router, health, sourcing, etc.
 
+# Serve Teams icons from the Next.js public folder (or a local fallback).
+# Required so Teams can fetch color/outline icons when validating the app manifest.
+try:
+    import os as _os
+    from fastapi.staticfiles import StaticFiles
+    _teams_icons_candidates = [
+        _os.path.join(_os.path.dirname(__file__), "..", "..", "..", "plataforma-lia", "public", "teams-icons"),
+        _os.path.join(_os.path.dirname(__file__), "static", "teams-icons"),
+    ]
+    for _icons_dir in _teams_icons_candidates:
+        _icons_dir = _os.path.normpath(_icons_dir)
+        if _os.path.isdir(_icons_dir):
+            app.mount("/teams-icons", StaticFiles(directory=_icons_dir), name="teams-icons")
+            logger.info(f"✅ Teams icons served at /teams-icons from {_icons_dir}")
+            break
+    else:
+        logger.warning("⚠️  Teams icons directory not found — /teams-icons/ will return 404")
+except Exception as _e:
+    logger.warning(f"⚠️  Could not mount Teams icons static files: {_e}")
+
 
 # Root-level health check redirects to comprehensive system health
 from fastapi.responses import RedirectResponse
