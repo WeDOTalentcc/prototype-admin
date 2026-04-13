@@ -76,6 +76,45 @@ class ConsumptionTrackingService:
         return record
 
     @staticmethod
+    async def record_apify_search_call(
+        db: AsyncSession,
+        company_id: str,
+        user_id: str | None,
+        operation: str,
+        cost_usd: float,
+        success: bool,
+        pipeline_id: str | None = None,
+        result_status: str = "success",
+        response_time_ms: int = 0,
+        error_message: str | None = None,
+    ) -> ExternalApiConsumption:
+        rate = APIFY_USD_TO_BRL_RATE
+        record = ExternalApiConsumption(
+            company_id=company_id,
+            user_id=user_id,
+            provider="apify",
+            operation=operation,
+            credits_consumed=0,
+            cost_usd=cost_usd,
+            cost_brl=round(cost_usd * rate, 4),
+            exchange_rate=rate,
+            success=success,
+            result_status=result_status if success else (result_status if result_status != "success" else "fail"),
+            error_message=error_message,
+            response_time_ms=response_time_ms,
+        )
+        db.add(record)
+        await db.flush()
+
+        logger.info(
+            "[ConsumptionTracking] Apify search %s recorded: company=%s pipeline=%s cost=$%.4f status=%s",
+            operation, company_id, pipeline_id, cost_usd, record.result_status,
+        )
+
+        await ConsumptionTrackingService._check_budget_alert(db, company_id)
+        return record
+
+    @staticmethod
     async def record_pearch_call(
         db: AsyncSession,
         company_id: str,

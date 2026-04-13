@@ -19,6 +19,9 @@ class ExternalApiOperation(str, enum.Enum):
     SEARCH = "search"
     REVEAL_EMAIL = "reveal_email"
     REVEAL_PHONE = "reveal_phone"
+    APIFY_SEARCH = "apify_search"
+    PROFILE_SCRAPE = "profile_scrape"
+    EMAIL_FINDER = "email_finder"
 
 
 class ExternalApiConsumption(Base):

@@ -374,6 +374,16 @@ APIFY_CIRCUIT = CircuitBreaker(
     )
 )
 
+APIFY_SEARCH_CIRCUIT = CircuitBreaker(
+    "apify_search",
+    CircuitBreakerConfig(
+        failure_threshold=3,
+        recovery_timeout=120.0,
+        success_threshold=2,
+        timeout=300.0,
+    )
+)
+
 WORKOS_CIRCUIT = CircuitBreaker(
     "workos",
     CircuitBreakerConfig(
@@ -520,6 +530,7 @@ ALL_CIRCUITS: dict[str, CircuitBreaker] = {
     "gemini": GEMINI_CIRCUIT,
     "pearch": PEARCH_CIRCUIT,
     "apify": APIFY_CIRCUIT,
+    "apify_search": APIFY_SEARCH_CIRCUIT,
     "workos": WORKOS_CIRCUIT,
     "merge": MERGE_CIRCUIT,
     "google_calendar": GOOGLE_CALENDAR_CIRCUIT,
@@ -573,6 +584,13 @@ CIRCUIT_BREAKER_SLOS: dict[str, dict[str, Any]] = {
         "error_budget_pct": 1.0,
         "tier": "medium",
         "description": "Enriquecimento de candidatos — Apify LinkedIn scraper",
+    },
+    "apify_search": {
+        "availability_target": 0.95,
+        "latency_p95_ms": 180000,
+        "error_budget_pct": 5.0,
+        "tier": "low",
+        "description": "Busca de candidatos fallback — Apify LinkedIn People Search (3-step pipeline)",
     },
     "workos": {
         "availability_target": 0.999,
@@ -697,6 +715,10 @@ DEGRADED_MODE_RESPONSES: dict[str, str] = {
     "apify": (
         "O enriquecimento de perfis via LinkedIn está temporariamente indisponível. "
         "Os dados já disponíveis na base continuam acessíveis."
+    ),
+    "apify_search": (
+        "A busca de candidatos via Apify (fallback) está temporariamente indisponível. "
+        "Tente novamente em alguns minutos ou aguarde a recuperação do serviço principal (Pearch)."
     ),
     "workos": (
         "O serviço de autenticação está com instabilidades. "
