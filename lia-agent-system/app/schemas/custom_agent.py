@@ -84,6 +84,9 @@ class TestCustomAgentResponse(BaseModel):
     confidence: float = 0.0
     tool_calls: list[str] = []
     execution_time_ms: int = 0
+    tokens_input: int = 0
+    tokens_output: int = 0
+    model_used: str = ""
 
 
 class PublishToMarketplaceRequest(BaseModel):
@@ -169,6 +172,9 @@ class ExecuteCustomAgentResponse(BaseModel):
     tool_calls: list[str] = []
     credits_consumed: int = 0
     execution_time_ms: int = 0
+    tokens_input: int = 0
+    tokens_output: int = 0
+    model_used: str = ""
     metadata: dict[str, Any] = {}
 
 

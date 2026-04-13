@@ -582,6 +582,27 @@ async def trigger_automation_event(
         if request.event_type == "job_created":
             agents_notified = ["job_planner", "sourcing"]
             logger.info(f"📋 [JOB_CREATED] Notifying agents: {agents_notified}")
+
+            # === Studio Agent Deployments: fire agents bound to this job ===
+            try:
+                from app.services.agent_deployment_service import agent_deployment_service
+                job_id = request.entity_id
+                if job_id and request.company_id:
+                    job_deployments = await agent_deployment_service.find_active_deployments_for_trigger(
+                        db=db,
+                        company_id=request.company_id,
+                        target_type="job",
+                        target_id=job_id,
+                        trigger_mode="on_new_candidate",
+                    )
+                    for dep in job_deployments:
+                        agents_notified.append(f"studio:{dep.agent_id}")
+                        logger.info(
+                            "[DEPLOY_TRIGGER] job event → agent=%s deployment=%s",
+                            dep.agent_id, dep.id,
+                        )
+            except Exception as _deploy_err:
+                logger.warning("[DEPLOY_TRIGGER] job hook failed: %s", _deploy_err)
         
         elif request.event_type == "screening_completed":
             agents_notified = ["cv_screening"]
@@ -629,6 +650,27 @@ async def trigger_automation_event(
         elif request.event_type == "stage_changed":
             agents_notified = ["orchestrator", "task_planner"]
             logger.info(f"➡️ [STAGE_CHANGED] Notifying agents: {agents_notified}")
+
+            # === Studio Agent Deployments: fire agents bound to this stage ===
+            try:
+                from app.services.agent_deployment_service import agent_deployment_service
+                stage_id = request.metadata.get("stage_id") if request.metadata else None
+                if stage_id and request.company_id:
+                    stage_deployments = await agent_deployment_service.find_active_deployments_for_trigger(
+                        db=db,
+                        company_id=request.company_id,
+                        target_type="pipeline_stage",
+                        target_id=stage_id,
+                        trigger_mode="on_stage_change",
+                    )
+                    for dep in stage_deployments:
+                        agents_notified.append(f"studio:{dep.agent_id}")
+                        logger.info(
+                            "[DEPLOY_TRIGGER] stage_changed → agent=%s deployment=%s",
+                            dep.agent_id, dep.id,
+                        )
+            except Exception as _deploy_err:
+                logger.warning("[DEPLOY_TRIGGER] stage_changed hook failed: %s", _deploy_err)
         
         logger.info(
             f"✅ [TRIGGER_EVENT] Event '{request.event_type}' processed, "

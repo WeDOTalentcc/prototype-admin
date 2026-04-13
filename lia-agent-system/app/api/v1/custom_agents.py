@@ -194,6 +194,7 @@ async def test_custom_agent(
 
         tool_calls = [a.params.get("tool", "") for a in (output.actions or [])]
 
+        _meta = output.metadata or {}
         return TestCustomAgentResponse(
             agent_id=str(agent.id),
             message=body.message,
@@ -201,6 +202,9 @@ async def test_custom_agent(
             confidence=output.confidence,
             tool_calls=tool_calls,
             execution_time_ms=elapsed_ms,
+            tokens_input=_meta.get("tokens_input", 0),
+            tokens_output=_meta.get("tokens_output", 0),
+            model_used=_meta.get("model_used", ""),
         )
     except Exception as e:
         logger.error("Error testing custom agent: %s", e, exc_info=True)
@@ -293,10 +297,36 @@ async def execute_custom_agent(
             company_id=current_user.company_id,
             credits_consumed=credits_consumed,
         )
+
+        # Persist execution log (GAP B2)
+        try:
+            from lia_models.agent_execution_log import AgentExecutionLog
+            from uuid import uuid4
+            _meta = output.metadata or {}
+            db.add(AgentExecutionLog(
+                id=uuid4(),
+                agent_id=agent.id,
+                company_id=current_user.company_id,
+                user_id=str(current_user.id),
+                input_message=body.message[:2000],
+                output_message=(output.message or "")[:5000],
+                confidence=output.confidence,
+                tokens_input=_meta.get("tokens_input", 0),
+                tokens_output=_meta.get("tokens_output", 0),
+                model_used=_meta.get("model_used", ""),
+                latency_ms=elapsed_ms,
+                credits_consumed=credits_consumed,
+                tool_calls=tool_calls,
+                compliance_status="pass",
+            ))
+        except Exception as _log_err:
+            logger.warning("[Studio] Execution log persist failed: %s", _log_err)
+
         await db.commit()
 
         tool_calls = [a.params.get("tool", "") for a in (output.actions or [])]
 
+        _meta = output.metadata or {}
         return ExecuteCustomAgentResponse(
             agent_id=str(agent.id),
             agent_name=agent.name,
@@ -305,7 +335,10 @@ async def execute_custom_agent(
             tool_calls=tool_calls,
             credits_consumed=credits_consumed,
             execution_time_ms=elapsed_ms,
-            metadata=output.metadata or {},
+            tokens_input=_meta.get("tokens_input", 0),
+            tokens_output=_meta.get("tokens_output", 0),
+            model_used=_meta.get("model_used", ""),
+            metadata=_meta,
         )
     except Exception as e:
         await db.rollback()
@@ -490,6 +523,42 @@ async def review_listing(
         await db.rollback()
         logger.error("Error reviewing listing: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail="Failed to review listing")
+
+
+@router.get("/{agent_id}/executions", summary="Get execution history for an agent")
+async def get_agent_executions(
+    agent_id: str,
+    limit: int = Query(20, ge=1, le=100),
+    offset: int = Query(0, ge=0),
+    current_user=Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Paginated execution history for a specific agent."""
+    from sqlalchemy import select, and_, func
+    from lia_models.agent_execution_log import AgentExecutionLog
+
+    base_filter = and_(
+        AgentExecutionLog.agent_id == agent_id,
+        AgentExecutionLog.company_id == current_user.company_id,
+    )
+
+    total = await db.scalar(select(func.count(AgentExecutionLog.id)).where(base_filter))
+
+    result = await db.execute(
+        select(AgentExecutionLog)
+        .where(base_filter)
+        .order_by(AgentExecutionLog.created_at.desc())
+        .limit(limit)
+        .offset(offset)
+    )
+    logs = result.scalars().all()
+
+    return {
+        "executions": [log.to_dict() for log in logs],
+        "total": total or 0,
+        "limit": limit,
+        "offset": offset,
+    }
 
 
 @router.get("/studio/consumption", summary="Get Studio agent consumption breakdown")
