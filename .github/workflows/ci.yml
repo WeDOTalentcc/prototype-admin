@@ -66,7 +66,7 @@ jobs:
         run: python -c "from app.config.langsmith import configure_langsmith, is_langsmith_enabled; print('LangSmith enabled:', is_langsmith_enabled())"
         env:
           LANGSMITH_API_KEY: ${{ secrets.LANGSMITH_API_KEY }}
-        continue-on-error: true
+        # continue-on-error: intentionally kept — LangSmith API key is optional in CI
 
       - name: Run tests
         # Coverage gate: 27% (13/03/2026 — realinhado com pytest.ini). Progressão: 25%→29%→32%→27%→34%→40%→80%.
