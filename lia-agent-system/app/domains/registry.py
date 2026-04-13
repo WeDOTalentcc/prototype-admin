@@ -41,16 +41,22 @@ def register_domain(cls: type[DomainPrompt]) -> type[DomainPrompt]:
             f"Overwriting with {cls.__name__}."
         )
     
-    # LIA-C01: Enforce ComplianceDomainPrompt inheritance
+    # LIA-C01: Enforce ComplianceDomainPrompt inheritance (BLOCKING as of 2026-04-13)
+    # Escape hatch: LIA_ALLOW_NON_COMPLIANT_DOMAINS=1 for emergency rollback only.
+    import os as _os
     _ComplianceBase = _get_compliance_base()
     if _ComplianceBase is not None and not issubclass(cls, _ComplianceBase):
-        logger.error(
-            "[LIA-C01] Domain %s does NOT extend ComplianceDomainPrompt — "
-            "compliance bypass detected. This will be BLOCKED in future versions. "
-            "(class=%s)",
-            cls.domain_id,
-            cls.__name__,
+        _msg = (
+            f"[LIA-C01] Domain '{cls.domain_id}' (class={cls.__name__}) does NOT extend "
+            f"ComplianceDomainPrompt. All domains MUST inherit from ComplianceDomainPrompt "
+            f"to guarantee FairnessGuard + PII + PromptInjection + FactCheck enforcement. "
+            f"See app/domains/compliance_base.py."
         )
+        if _os.environ.get("LIA_ALLOW_NON_COMPLIANT_DOMAINS") == "1":
+            logger.error("%s — BYPASS via LIA_ALLOW_NON_COMPLIANT_DOMAINS=1", _msg)
+        else:
+            logger.error(_msg)
+            raise TypeError(_msg)
 
     _DOMAIN_REGISTRY[cls.domain_id] = cls
     logger.info(f"Domain registered: {cls.domain_id} ({cls.__name__})")
