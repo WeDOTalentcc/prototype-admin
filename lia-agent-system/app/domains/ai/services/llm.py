@@ -427,8 +427,10 @@ class LLMService:
         Returns:
             ToolCallResponse with either text or tool calls
         """
-        # E6: PII stripping
-        strip_pii_for_llm_prompt(prompt)
+        # E6: PII stripping on message content
+        for _msg in messages:
+            if isinstance(_msg.get("content"), str):
+                _msg["content"] = strip_pii_for_llm_prompt(_msg["content"])
 
         if provider == "claude":
             return await self._generate_with_tools_claude(
