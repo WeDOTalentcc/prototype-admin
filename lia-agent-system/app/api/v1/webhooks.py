@@ -1,281 +1,136 @@
 """
-Webhooks API endpoints.
-
-Provides CRUD operations for external webhook management.
+REST API for webhook management.
 """
 import logging
-from typing import Any
 
-from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
-from pydantic import BaseModel
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.auth.dependencies import get_current_user, require_role
+from app.auth.models import UserRole
 from app.core.database import get_db
-from app.domains.communication.services.webhook_service import webhook_service
+from app.schemas.webhook import (
+    ALLOWED_EVENTS,
+    CreateWebhookRequest,
+    UpdateWebhookRequest,
+    WebhookListResponse,
+    WebhookResponse,
+)
+from app.services.webhook_dispatcher import webhook_service
 
 logger = logging.getLogger(__name__)
 
-
-def get_user_from_headers(
-    x_company_id: str | None = Header(None, alias="X-Company-ID"),
-    x_user_id: str | None = Header(None, alias="X-User-ID"),
-    x_user_role: str | None = Header(None, alias="X-User-Role")
-) -> dict[str, Any]:
-    """
-    Get user context from request headers.
-    Used for development and internal API calls.
-    """
-    if not x_company_id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Company ID required. Please provide X-Company-ID header."
-        )
-    
-    return {
-        "company_id": x_company_id,
-        "user_id": x_user_id or "system",
-        "role": x_user_role or "user",
-        "is_admin": x_user_role == "admin"
-    }
-
-router = APIRouter(prefix="/webhooks", tags=["webhooks"])
+router = APIRouter(prefix="/webhooks", tags=["Webhooks"])
 
 
-class WebhookCreate(BaseModel):
-    """Request model for creating a webhook."""
-    name: str
-    description: str | None = None
-    url: str
-    events: list[str]
-    secret_key: str | None = None
-    headers: dict[str, str] | None = None
-    retry_count: int = 3
-    timeout_seconds: int = 30
+@router.get("/events", summary="List allowed webhook event types")
+async def list_allowed_events():
+    """Return the catalog of webhook event types clients can subscribe to."""
+    return {"events": ALLOWED_EVENTS}
 
 
-class WebhookUpdate(BaseModel):
-    """Request model for updating a webhook."""
-    name: str | None = None
-    description: str | None = None
-    url: str | None = None
-    events: list[str] | None = None
-    headers: dict[str, str] | None = None
-    is_active: bool | None = None
-    retry_count: int | None = None
-    timeout_seconds: int | None = None
-
-
-@router.get("", response_model=None)
-async def list_webhooks(
-    is_active: bool | None = Query(None, description="Filter by active status"),
-    event: str | None = Query(None, description="Filter by subscribed event"),
-    limit: int = Query(50, le=100),
-    offset: int = Query(0, ge=0),
-    current_user: dict[str, Any] = Depends(get_user_from_headers),
-    db: AsyncSession = Depends(get_db)
-):
-    """
-    List all webhooks for the company.
-    
-    Returns webhooks with their configuration and statistics.
-    """
-    company_id = current_user.get("company_id")
-    
-    result = await webhook_service.list_webhooks(
-        company_id=company_id,
-        is_active=is_active,
-        event_filter=event,
-        limit=limit,
-        offset=offset,
-        db=db
-    )
-    
-    if not result.get("success"):
-        raise HTTPException(status_code=500, detail=result.get("error"))
-    
-    return result
-
-
-@router.get("/events", response_model=None)
-async def list_available_events():
-    """
-    List all available webhook events.
-    
-    Returns event types with descriptions and payload examples.
-    """
-    return {
-        "events": webhook_service.get_available_events()
-    }
-
-
-@router.get("/{webhook_id}", response_model=None)
-async def get_webhook(
-    webhook_id: str,
-    current_user: dict[str, Any] = Depends(get_user_from_headers),
-    db: AsyncSession = Depends(get_db)
-):
-    """
-    Get a specific webhook by ID.
-    """
-    company_id = current_user.get("company_id")
-    
-    result = await webhook_service.get_webhook(
-        webhook_id=webhook_id,
-        company_id=company_id,
-        db=db
-    )
-    
-    if not result.get("success"):
-        if "not found" in result.get("error", "").lower():
-            raise HTTPException(status_code=404, detail=result.get("error"))
-        raise HTTPException(status_code=500, detail=result.get("error"))
-    
-    return result
-
-
-@router.post("", response_model=None)
+@router.post("", response_model=WebhookResponse, status_code=201)
 async def create_webhook(
-    webhook_data: WebhookCreate,
-    current_user: dict[str, Any] = Depends(get_user_from_headers),
-    db: AsyncSession = Depends(get_db)
+    body: CreateWebhookRequest,
+    current_user=Depends(require_role([UserRole.admin])),
+    db: AsyncSession = Depends(get_db),
 ):
-    """
-    Create a new webhook.
-    
-    The webhook will be triggered when subscribed events occur.
-    A secret key is generated if not provided for signing payloads.
-    """
-    company_id = current_user.get("company_id")
-    user_id = current_user.get("id", current_user.get("user_id"))
-    
-    result = await webhook_service.register_webhook(
-        company_id=company_id,
-        name=webhook_data.name,
-        url=webhook_data.url,
-        events=webhook_data.events,
-        description=webhook_data.description,
-        secret_key=webhook_data.secret_key,
-        headers=webhook_data.headers,
-        retry_count=webhook_data.retry_count,
-        timeout_seconds=webhook_data.timeout_seconds,
-        created_by=user_id,
-        db=db
+    """Create a new webhook subscription. Returns secret ONCE on creation."""
+    try:
+        webhook = await webhook_service.create(
+            db=db,
+            company_id=current_user.company_id,
+            created_by=str(current_user.id),
+            data=body.model_dump(),
+        )
+        await db.commit()
+        # Include secret only on create
+        return WebhookResponse(**webhook.to_dict(include_secret=True))
+    except ValueError as e:
+        await db.rollback()
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        await db.rollback()
+        logger.error("Error creating webhook: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail="Failed to create webhook")
+
+
+@router.get("", response_model=WebhookListResponse)
+async def list_webhooks(
+    current_user=Depends(require_role([UserRole.admin])),
+    db: AsyncSession = Depends(get_db),
+):
+    """List all webhooks for the current company."""
+    webhooks = await webhook_service.list_for_company(db, current_user.company_id)
+    return WebhookListResponse(
+        webhooks=[WebhookResponse(**w.to_dict()) for w in webhooks],
+        total=len(webhooks),
     )
-    
-    if not result.get("success"):
-        if "Invalid event" in result.get("error", ""):
-            raise HTTPException(status_code=400, detail=result.get("error"))
-        raise HTTPException(status_code=500, detail=result.get("error"))
-    
-    return result
 
 
-@router.put("/{webhook_id}", response_model=None)
+@router.patch("/{webhook_id}", response_model=WebhookResponse)
 async def update_webhook(
     webhook_id: str,
-    webhook_data: WebhookUpdate,
-    current_user: dict[str, Any] = Depends(get_user_from_headers),
-    db: AsyncSession = Depends(get_db)
+    body: UpdateWebhookRequest,
+    current_user=Depends(require_role([UserRole.admin])),
+    db: AsyncSession = Depends(get_db),
 ):
-    """
-    Update an existing webhook.
-    """
-    company_id = current_user.get("company_id")
-    
-    updates = webhook_data.model_dump(exclude_none=True)
-    
-    result = await webhook_service.update_webhook(
+    """Update webhook (URL, events, active state)."""
+    webhook = await webhook_service.update(
+        db=db,
         webhook_id=webhook_id,
-        company_id=company_id,
-        updates=updates,
-        db=db
+        company_id=current_user.company_id,
+        data=body.model_dump(exclude_none=True),
     )
-    
-    if not result.get("success"):
-        if "not found" in result.get("error", "").lower():
-            raise HTTPException(status_code=404, detail=result.get("error"))
-        raise HTTPException(status_code=500, detail=result.get("error"))
-    
-    return result
+    if not webhook:
+        raise HTTPException(status_code=404, detail="Webhook not found")
+    await db.commit()
+    return WebhookResponse(**webhook.to_dict())
 
 
-@router.delete("/{webhook_id}", response_model=None)
+@router.delete("/{webhook_id}", status_code=204)
 async def delete_webhook(
     webhook_id: str,
-    current_user: dict[str, Any] = Depends(get_user_from_headers),
-    db: AsyncSession = Depends(get_db)
+    current_user=Depends(require_role([UserRole.admin])),
+    db: AsyncSession = Depends(get_db),
 ):
-    """
-    Delete a webhook.
-    """
-    company_id = current_user.get("company_id")
-    
-    result = await webhook_service.delete_webhook(
-        webhook_id=webhook_id,
-        company_id=company_id,
-        db=db
+    """Delete a webhook subscription."""
+    deleted = await webhook_service.delete(
+        db=db, webhook_id=webhook_id, company_id=current_user.company_id
     )
-    
-    if not result.get("success"):
-        if "not found" in result.get("error", "").lower():
-            raise HTTPException(status_code=404, detail=result.get("error"))
-        raise HTTPException(status_code=500, detail=result.get("error"))
-    
-    return result
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Webhook not found")
+    await db.commit()
 
 
-@router.post("/{webhook_id}/test", response_model=None)
+@router.post("/{webhook_id}/test", summary="Send test event to webhook")
 async def test_webhook(
     webhook_id: str,
-    current_user: dict[str, Any] = Depends(get_user_from_headers),
-    db: AsyncSession = Depends(get_db)
+    current_user=Depends(require_role([UserRole.admin])),
+    db: AsyncSession = Depends(get_db),
 ):
-    """
-    Send a test event to a webhook.
-    
-    This sends a test payload to verify the webhook endpoint is working correctly.
-    """
-    company_id = current_user.get("company_id")
-    
-    result = await webhook_service.test_webhook(
-        webhook_id=webhook_id,
-        company_id=company_id,
-        db=db
-    )
-    
-    if not result.get("success"):
-        if "not found" in result.get("error", "").lower():
-            raise HTTPException(status_code=404, detail=result.get("error"))
-    
-    return result
+    """Send a test event to verify webhook URL is reachable and responding."""
+    webhook = await webhook_service.get(db, webhook_id, current_user.company_id)
+    if not webhook:
+        raise HTTPException(status_code=404, detail="Webhook not found")
 
+    test_payload = {
+        "test": True,
+        "webhook_id": str(webhook.id),
+        "company_id": current_user.company_id,
+        "message": "This is a test event from WeDOTalent Studio webhooks",
+    }
 
-@router.get("/{webhook_id}/logs", response_model=None)
-async def get_webhook_logs(
-    webhook_id: str,
-    status: str | None = Query(None, description="Filter by status (success, failed, pending)"),
-    limit: int = Query(50, le=100),
-    offset: int = Query(0, ge=0),
-    current_user: dict[str, Any] = Depends(get_user_from_headers),
-    db: AsyncSession = Depends(get_db)
-):
-    """
-    Get delivery logs for a webhook.
-    
-    Shows history of webhook delivery attempts with status and response details.
-    """
-    company_id = current_user.get("company_id")
-    
-    result = await webhook_service.get_webhook_logs(
-        webhook_id=webhook_id,
-        company_id=company_id,
-        status_filter=status,
-        limit=limit,
-        offset=offset,
-        db=db
-    )
-    
-    if not result.get("success"):
-        raise HTTPException(status_code=500, detail=result.get("error"))
-    
-    return result
+    try:
+        from app.jobs.webhook_tasks import deliver_webhook_task
+        deliver_webhook_task.delay(
+            webhook_id=str(webhook.id),
+            url=webhook.url,
+            secret=webhook.secret,
+            event="webhook.test",
+            payload=test_payload,
+        )
+        return {"queued": True, "message": "Test event queued for delivery"}
+    except Exception as e:
+        logger.error("Error queueing test webhook: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail="Failed to queue test event")

@@ -62,6 +62,22 @@ async def request_agent_approval(
         except Exception as _notif_err:
             logger.warning("[StudioNotif] approval request notify failed: %s", _notif_err)
 
+        # P2.5b: External webhook dispatch (non-blocking)
+        try:
+            from app.services.webhook_dispatcher import webhook_service
+            await webhook_service.dispatch(
+                db=db,
+                company_id=current_user.company_id,
+                event="agent.approval.requested",
+                payload={
+                    "approval_id": str(approval.id),
+                    "agent_id": str(approval.agent_id),
+                    "requested_by": approval.requested_by,
+                },
+            )
+        except Exception as _wh_err:
+            logger.warning("[Webhook] approval request dispatch failed: %s", _wh_err)
+
         return ApprovalResponse(**approval.to_dict())
     except ValueError as e:
         await db.rollback()
@@ -141,6 +157,24 @@ async def review_approval(
                 await db.commit()
         except Exception as _notif_err:
             logger.warning("[StudioNotif] approval review notify failed: %s", _notif_err)
+
+        # P2.5b: External webhook dispatch (non-blocking)
+        try:
+            from app.services.webhook_dispatcher import webhook_service
+            await webhook_service.dispatch(
+                db=db,
+                company_id=current_user.company_id,
+                event="agent.approval.reviewed",
+                payload={
+                    "approval_id": str(approval.id),
+                    "agent_id": str(approval.agent_id),
+                    "action": body.action,
+                    "reviewer_id": str(current_user.id),
+                    "review_notes": body.notes,
+                },
+            )
+        except Exception as _wh_err:
+            logger.warning("[Webhook] approval review dispatch failed: %s", _wh_err)
 
         return ApprovalResponse(**approval.to_dict())
     except ValueError as e:

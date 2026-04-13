@@ -1,0 +1,318 @@
+"use client"
+
+import React, { useState } from "react"
+import { Webhook as WebhookIcon, Plus, Trash2, Send, Loader2, Copy, CheckCircle2, AlertCircle, X } from "lucide-react"
+import { cn } from "@/lib/utils"
+import { Card, CardContent } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
+import { textStyles, cardStyles, buttonStyles, badgeStyles } from "@/lib/design-tokens"
+import { toast } from "@/lib/toast"
+import { useWebhooks } from "@/hooks/agents"
+import { WEBHOOK_EVENTS, type Webhook } from "@/components/pages-agent-studio/custom-agents/webhook-types"
+
+const EVENT_LABELS: Record<string, string> = {
+  "agent.execution.completed": "Execucao concluida",
+  "agent.execution.failed": "Execucao falhou",
+  "agent.deployment.created": "Vinculo criado",
+  "agent.deployment.paused": "Vinculo pausado",
+  "agent.approval.requested": "Aprovacao solicitada",
+  "agent.approval.reviewed": "Aprovacao revisada",
+}
+
+export function WebhooksManager() {
+  const { webhooks, isLoading, mutate } = useWebhooks()
+  const [creating, setCreating] = useState(false)
+  const [newName, setNewName] = useState("")
+  const [newUrl, setNewUrl] = useState("")
+  const [newEvents, setNewEvents] = useState<string[]>([])
+  const [submitting, setSubmitting] = useState(false)
+  const [showSecret, setShowSecret] = useState<{ id: string; secret: string } | null>(null)
+  const [testingId, setTestingId] = useState<string | null>(null)
+
+  const handleCreate = async () => {
+    if (!newName.trim() || !newUrl.trim() || newEvents.length === 0) return
+    setSubmitting(true)
+    try {
+      const token = localStorage.getItem("auth_token")
+      const res = await fetch("/api/backend-proxy/webhooks", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ name: newName, url: newUrl, events: newEvents }),
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ detail: "Erro" }))
+        throw new Error(err.detail || "Erro ao criar")
+      }
+      const created: Webhook = await res.json()
+      toast.success(`Webhook "${newName}" criado!`, "Copie o secret abaixo (so e exibido uma vez)")
+      if (created.secret) {
+        setShowSecret({ id: created.id, secret: created.secret })
+      }
+      setCreating(false)
+      setNewName("")
+      setNewUrl("")
+      setNewEvents([])
+      mutate()
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Erro ao criar webhook")
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const handleDelete = async (id: string, name: string) => {
+    if (!confirm(`Remover webhook "${name}"?`)) return
+    try {
+      const token = localStorage.getItem("auth_token")
+      const res = await fetch(`/api/backend-proxy/webhooks/${id}`, {
+        method: "DELETE",
+        headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+      })
+      if (!res.ok && res.status !== 204) throw new Error("Erro")
+      toast.success("Webhook removido")
+      mutate()
+    } catch {
+      toast.error("Erro ao remover")
+    }
+  }
+
+  const handleTest = async (id: string) => {
+    setTestingId(id)
+    try {
+      const token = localStorage.getItem("auth_token")
+      const res = await fetch(`/api/backend-proxy/webhooks/${id}/test`, {
+        method: "POST",
+        headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+      })
+      if (!res.ok) throw new Error("Erro")
+      toast.success("Evento de teste enviado", "Verifique seu endpoint receptor")
+      setTimeout(() => mutate(), 3000)
+    } catch {
+      toast.error("Erro ao enviar teste")
+    } finally {
+      setTestingId(null)
+    }
+  }
+
+  const toggleEvent = (event: string) => {
+    setNewEvents((prev) =>
+      prev.includes(event) ? prev.filter((e) => e !== event) : [...prev, event],
+    )
+  }
+
+  const copySecret = async (secret: string) => {
+    try {
+      await navigator.clipboard.writeText(secret)
+      toast.success("Secret copiado")
+    } catch {
+      toast.error("Erro ao copiar")
+    }
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <WebhookIcon className="w-5 h-5 text-wedo-cyan-dark" />
+          <h2 className={textStyles.title}>Webhooks externos</h2>
+        </div>
+        <Button onClick={() => setCreating(true)} className={buttonStyles.primary}>
+          <Plus className="w-4 h-4 mr-1" /> Novo webhook
+        </Button>
+      </div>
+
+      <p className={textStyles.description}>
+        Receba eventos do Agent Studio em sistemas externos (Zapier, Slack, seu CRM).
+        Cada delivery e assinada com HMAC-SHA256 via header X-WeDO-Signature.
+      </p>
+
+      {isLoading && (
+        <div className="flex items-center gap-2 py-8 justify-center text-xs text-lia-text-disabled">
+          <Loader2 className="w-3.5 h-3.5 animate-spin" /> Carregando webhooks...
+        </div>
+      )}
+
+      {!isLoading && webhooks.length === 0 && (
+        <Card className={cardStyles.default}>
+          <CardContent className="py-8 text-center">
+            <WebhookIcon className="w-10 h-10 text-lia-text-disabled mx-auto mb-2" />
+            <p className={textStyles.subtitle}>Nenhum webhook configurado</p>
+            <p className="text-xs text-lia-text-disabled mt-1">
+              Crie um webhook para receber eventos dos seus agents em sistemas externos
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
+      <div className="space-y-2">
+        {webhooks.map((wh) => (
+          <Card key={wh.id} className={cardStyles.default}>
+            <CardContent className="p-4">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-sm font-semibold text-lia-text-primary">{wh.name}</span>
+                    <Badge className={wh.is_active ? badgeStyles.success : badgeStyles.default}>
+                      {wh.is_active ? "Ativo" : "Pausado"}
+                    </Badge>
+                    {wh.last_status_code && (
+                      <Badge
+                        className={
+                          wh.last_status_code >= 200 && wh.last_status_code < 300
+                            ? badgeStyles.success
+                            : badgeStyles.error
+                        }
+                      >
+                        Ultimo: {wh.last_status_code}
+                      </Badge>
+                    )}
+                  </div>
+                  <p className="text-xs text-lia-text-secondary truncate font-mono">{wh.url}</p>
+                  <div className="flex flex-wrap gap-1 mt-2">
+                    {wh.events.map((e) => (
+                      <span key={e} className={cn(badgeStyles.default, "text-[10px]")}>
+                        {EVENT_LABELS[e] || e}
+                      </span>
+                    ))}
+                  </div>
+                  <div className="flex items-center gap-3 mt-2 text-[10px] text-lia-text-disabled">
+                    <span>{wh.total_deliveries} entrega(s)</span>
+                    {wh.total_failures > 0 && <span className="text-status-error">{wh.total_failures} falha(s)</span>}
+                  </div>
+                </div>
+                <div className="flex items-center gap-1 shrink-0">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleTest(wh.id)}
+                    disabled={testingId === wh.id}
+                  >
+                    {testingId === wh.id ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <Send className="w-3.5 h-3.5" />
+                    )}
+                  </Button>
+                  <Button variant="ghost" size="sm" onClick={() => handleDelete(wh.id, wh.name)}>
+                    <Trash2 className="w-3.5 h-3.5 text-status-error" />
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {/* Create dialog */}
+      <Dialog open={creating} onOpenChange={(v) => !v && setCreating(false)}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Novo webhook</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            <div>
+              <label className="text-xs font-semibold text-lia-text-primary mb-1 block">Nome</label>
+              <input
+                type="text"
+                value={newName}
+                onChange={(e) => setNewName(e.target.value)}
+                placeholder="Ex: Slack notifications"
+                className="w-full border border-lia-border-subtle rounded-md px-3 py-2 text-sm bg-lia-bg-secondary text-lia-text-primary focus:outline-none focus:ring-2 focus:ring-wedo-cyan/30"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-lia-text-primary mb-1 block">URL (HTTPS obrigatorio)</label>
+              <input
+                type="text"
+                value={newUrl}
+                onChange={(e) => setNewUrl(e.target.value)}
+                placeholder="https://hooks.zapier.com/..."
+                className="w-full border border-lia-border-subtle rounded-md px-3 py-2 text-sm bg-lia-bg-secondary text-lia-text-primary focus:outline-none focus:ring-2 focus:ring-wedo-cyan/30 font-mono"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-lia-text-primary mb-2 block">Eventos</label>
+              <div className="space-y-1.5">
+                {WEBHOOK_EVENTS.map((event) => (
+                  <label key={event} className="flex items-center gap-2 text-xs cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={newEvents.includes(event)}
+                      onChange={() => toggleEvent(event)}
+                      className="rounded"
+                    />
+                    <span className="text-lia-text-primary">{EVENT_LABELS[event]}</span>
+                    <span className="text-lia-text-disabled font-mono text-[10px]">({event})</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setCreating(false)}>Cancelar</Button>
+            <Button
+              onClick={handleCreate}
+              disabled={submitting || !newName || !newUrl || newEvents.length === 0}
+              className={buttonStyles.primary}
+            >
+              {submitting ? "Criando..." : "Criar webhook"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Show secret dialog (one-time display) */}
+      <Dialog open={!!showSecret} onOpenChange={(v) => !v && setShowSecret(null)}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+              Webhook criado!
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            <div className={cn(cardStyles.flat, "p-3 border border-status-warning/30")}>
+              <div className="flex items-start gap-2">
+                <AlertCircle className="w-4 h-4 text-status-warning mt-0.5" />
+                <div className="text-xs">
+                  <p className="font-semibold text-lia-text-primary mb-1">Guarde este secret agora</p>
+                  <p className="text-lia-text-secondary">
+                    Por seguranca, ele NAO sera exibido novamente. Use para validar a assinatura HMAC-SHA256.
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-lia-text-primary mb-1 block">Secret</label>
+              <div className="flex gap-1">
+                <input
+                  type="text"
+                  readOnly
+                  value={showSecret?.secret || ""}
+                  className="flex-1 border border-lia-border-subtle rounded-md px-3 py-2 text-xs bg-lia-bg-tertiary text-lia-text-primary font-mono"
+                />
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => showSecret && copySecret(showSecret.secret)}
+                >
+                  <Copy className="w-3.5 h-3.5" />
+                </Button>
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button onClick={() => setShowSecret(null)} className={buttonStyles.primary}>
+              Entendi
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  )
+}

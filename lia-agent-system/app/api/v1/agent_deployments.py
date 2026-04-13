@@ -62,6 +62,26 @@ async def create_deployment(
         except Exception as _notif_err:
             logger.warning("[StudioNotif] deployment notify failed: %s", _notif_err)
 
+        # P2.5b: External webhook dispatch (non-blocking)
+        try:
+            from app.services.webhook_dispatcher import webhook_service
+            await webhook_service.dispatch(
+                db=db,
+                company_id=current_user.company_id,
+                event="agent.deployment.created",
+                payload={
+                    "deployment_id": str(deployment.id),
+                    "agent_id": str(deployment.agent_id),
+                    "target_type": deployment.target_type,
+                    "target_id": str(deployment.target_id),
+                    "target_name": deployment.target_name,
+                    "trigger_mode": deployment.trigger_mode,
+                    "user_id": str(current_user.id),
+                },
+            )
+        except Exception as _wh_err:
+            logger.warning("[Webhook] deployment dispatch failed: %s", _wh_err)
+
         return DeploymentResponse(**deployment.to_dict())
     except ValueError as e:
         await db.rollback()

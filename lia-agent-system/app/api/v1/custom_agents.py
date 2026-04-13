@@ -365,6 +365,26 @@ async def execute_custom_agent(
         except Exception as _notif_err:
             logger.warning("[StudioNotif] execute notify failed: %s", _notif_err)
 
+        # P2.5b: External webhook dispatch (non-blocking)
+        try:
+            from app.services.webhook_dispatcher import webhook_service
+            await webhook_service.dispatch(
+                db=db,
+                company_id=current_user.company_id,
+                event="agent.execution.completed",
+                payload={
+                    "agent_id": str(agent.id),
+                    "agent_name": agent.name,
+                    "execution_time_ms": elapsed_ms,
+                    "tokens_input": _meta.get("tokens_input", 0) if "_meta" in dir() else 0,
+                    "tokens_output": _meta.get("tokens_output", 0) if "_meta" in dir() else 0,
+                    "confidence": output.confidence,
+                    "user_id": str(current_user.id),
+                },
+            )
+        except Exception as _wh_err:
+            logger.warning("[Webhook] execute dispatch failed: %s", _wh_err)
+
         tool_calls = [a.params.get("tool", "") for a in (output.actions or [])]
 
         _meta = output.metadata or {}
