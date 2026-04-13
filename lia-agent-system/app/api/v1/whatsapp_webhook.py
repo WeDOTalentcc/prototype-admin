@@ -21,10 +21,21 @@ TWILIO_AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN", "")
 
 
 def verify_twilio_signature(request_url: str, params: dict, signature: str) -> bool:
-    """Verify Twilio webhook signature to prevent spoofing."""
+    """Verify Twilio webhook signature to prevent spoofing.
+
+    LIA-SEC-03: Fail-closed in prod/staging. In dev, unset token returns True
+    (allows local testing) with a loud warning.
+    """
     if not TWILIO_AUTH_TOKEN:
-        logger.warning("[WhatsApp] No TWILIO_AUTH_TOKEN set — skipping signature check")
-        return True  # Allow in dev
+        env = os.getenv("ENVIRONMENT", "development")
+        if env in ("production", "staging"):
+            logger.error(
+                "[WhatsApp] LIA-SEC-03 TWILIO_AUTH_TOKEN not set in %s — REJECTING webhook. "
+                "Configure env var or webhooks will continue to fail.", env,
+            )
+            return False
+        logger.warning("[WhatsApp] No TWILIO_AUTH_TOKEN set (env=%s) — skipping signature check", env)
+        return True  # Allow in dev only
 
     # Build data string: URL + sorted params
     data = request_url

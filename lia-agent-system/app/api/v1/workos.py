@@ -112,6 +112,12 @@ def verify_internal_auth(x_internal_auth: str = Header(None, alias="X-Internal-A
     These endpoints are called by the Next.js frontend after it validates WorkOS signatures.
     """
     if not INTERNAL_API_SECRET:
+        env = os.getenv("ENVIRONMENT", "development")
+        if env in ("production", "staging"):
+            logger.error(
+                "LIA-SEC-03 INTERNAL_API_SECRET not configured in %s — rejecting WorkOS endpoint call", env,
+            )
+            raise HTTPException(status_code=503, detail="Internal auth not configured")
         logger.warning("INTERNAL_API_SECRET not configured - WorkOS endpoints unprotected in development")
         return True
 
@@ -145,6 +151,12 @@ async def verify_scim_webhook(request: Request):
     The raw body is cached by FastAPI/Starlette, so Pydantic can still parse it afterward.
     """
     if not WORKOS_WEBHOOK_SECRET:
+        env = os.getenv("ENVIRONMENT", "development")
+        if env in ("production", "staging"):
+            logger.error(
+                "LIA-SEC-03 WORKOS_WEBHOOK_SECRET not configured in %s — rejecting SCIM webhook", env,
+            )
+            raise HTTPException(status_code=503, detail="Webhook secret not configured")
         logger.warning("WORKOS_WEBHOOK_SECRET not configured - SCIM webhook signature validation disabled (development mode)")
         return True
 
@@ -1277,6 +1289,12 @@ async def scim_webhook(
     sig_header = request.headers.get("WorkOS-Signature") or request.headers.get("workos-signature")
 
     if not WORKOS_WEBHOOK_SECRET:
+        env = os.getenv("ENVIRONMENT", "development")
+        if env in ("production", "staging"):
+            logger.error(
+                "LIA-SEC-03 WORKOS_WEBHOOK_SECRET not configured in %s — rejecting webhook", env,
+            )
+            raise HTTPException(status_code=503, detail="Webhook secret not configured")
         logger.warning("WORKOS_WEBHOOK_SECRET not configured - webhook signature validation skipped in development")
     elif not verify_workos_webhook_signature(payload, sig_header, WORKOS_WEBHOOK_SECRET):
         logger.warning("Invalid WorkOS webhook signature")
