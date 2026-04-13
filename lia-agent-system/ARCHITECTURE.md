@@ -140,3 +140,62 @@ Before every PR:
 ---
 
 *Last updated: 2026-04-06 | See REFACTOR_PLAN.md for phase-by-phase execution plan*
+
+---
+
+## ADR-008: API Response Envelope (2026-04-13) [LIA-E01, LIA-E02]
+
+**Rule:** New API endpoints SHOULD return `APIResponse<T>` from `app.schemas.api_envelope`.
+
+Existing endpoints continue to work. Migrate progressively using:
+- Direct usage: `return APIResponse.ok(data=result)`
+- Decorator: `@api_envelope` wraps any return value
+
+**Error envelope** (already enforced in main.py):
+```json
+{"error": true, "status_code": 400, "message": "...", "request_id": "..."}
+```
+
+**Success envelope** (new):
+```json
+{"success": true, "message": "...", "data": {...}, "metadata": {...}, "errors": null}
+```
+
+---
+
+## ADR-009: Event Versioning (2026-04-13) [LIA-E03]
+
+**Rule:** All Rails-bound events MUST include `event_version` field.
+
+Registry: `EVENT_VERSIONS` in `app/shared/messaging/rails_event_schemas.py`
+
+**Compatibility:** MAJOR version must match (e.g., 1.0 and 1.1 OK, 1.x and 2.0 NOT OK).
+Use `validate_event_version()` before processing incoming events.
+
+---
+
+## ADR-010: Unified Event Publisher (2026-04-13) [LIA-E04]
+
+**Rule:** New code publishing events to Rails MUST use `unified_event_publisher.publish()`.
+
+Legacy paths (RailsAdapter.publish_event, direct RabbitMQ) continue to work but are deprecated.
+
+Features:
+- Retry with exponential backoff (3 attempts, 1-4s)
+- Timeout per attempt (10s)
+- Audit logging (LIA-E04 tag)
+- Fail-safe (returns bool, never raises)
+
+---
+
+## ADR-011: WebSocket Message Schema (2026-04-13) [LIA-E05]
+
+**Rule:** WebSocket messages SHOULD use `WSMessage` from `app.schemas.ws_messages`.
+
+Standard types: `user.message`, `assistant.message`, `system.error`, `stream.*`.
+
+Existing raw dict messages continue to work but should migrate.
+
+---
+
+*Last updated: 2026-04-13 | Phase 6 Batch 1: API contract infrastructure*

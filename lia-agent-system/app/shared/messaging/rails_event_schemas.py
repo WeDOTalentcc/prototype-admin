@@ -120,3 +120,33 @@ EVENT_REGISTRY = {
     "candidate.enriched": CandidateEnrichedEvent,
     "pipeline.moved": PipelineMovedEvent,
 }
+
+
+# ---------------------------------------------------------------------------
+# LIA-E03: Event version registry for forward/backward compat
+# ---------------------------------------------------------------------------
+
+EVENT_VERSIONS = {
+    "screening.completed": "1.0",
+    "interview.scheduled": "1.0",
+    "interview.completed": "1.0",
+    "offer.sent": "1.0",
+    "candidate.enriched": "1.0",
+    "pipeline.moved": "1.0",
+}
+
+
+def validate_event_version(event_type: str, received_version: str) -> bool:
+    """Check if a received event version is compatible with the current schema.
+
+    Simple MAJOR version compat: "1.0" and "1.1" are compatible, "2.0" is not.
+    """
+    current = EVENT_VERSIONS.get(event_type)
+    if not current:
+        return False  # Unknown event type
+    try:
+        current_major = int(current.split(".")[0])
+        received_major = int(received_version.split(".")[0])
+        return current_major == received_major
+    except (ValueError, IndexError):
+        return False
