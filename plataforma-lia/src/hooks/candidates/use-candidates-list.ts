@@ -123,6 +123,15 @@ export function useCandidatesList(initialFilters?: CandidatesListFilters): UseCa
   }, [])
 
   useEffect(() => {
+    if (error) {
+      const timer = setTimeout(() => {
+        setFetchTrigger(prev => prev + 1)
+      }, 5000)
+      return () => clearTimeout(timer)
+    }
+  }, [error])
+
+  useEffect(() => {
     const onFocus = () => {
       if (error) {
         setFetchTrigger(prev => prev + 1)

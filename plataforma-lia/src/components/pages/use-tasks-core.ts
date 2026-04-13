@@ -337,9 +337,14 @@ export function useTasksCore(onNavigate?: (page: string) => void) {
 
   const currentUserId = user?.id || user?.email || 'default_user'
 
+  const retryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
   useEffect(() => {
     mountedRef.current = true
-    return () => { mountedRef.current = false }
+    return () => {
+      mountedRef.current = false
+      if (retryTimerRef.current) clearTimeout(retryTimerRef.current)
+    }
   }, [])
 
   useEffect(() => {
@@ -423,12 +428,24 @@ export function useTasksCore(onNavigate?: (page: string) => void) {
       )
       if (failedRequests.length === 4) {
         setError('Não foi possível conectar ao servidor. Verifique sua conexão.')
+        if (retryTimerRef.current) clearTimeout(retryTimerRef.current)
+        retryTimerRef.current = setTimeout(() => {
+          if (mountedRef.current) fetchAllData()
+        }, 5000)
       } else if (failedRequests.length > 0) {
         setError('Alguns dados podem estar incompletos.')
+        if (retryTimerRef.current) clearTimeout(retryTimerRef.current)
+        retryTimerRef.current = setTimeout(() => {
+          if (mountedRef.current) fetchAllData()
+        }, 8000)
       }
     } catch {
       if (!mountedRef.current) return
       setError('Erro ao carregar dados. Tente novamente.')
+      if (retryTimerRef.current) clearTimeout(retryTimerRef.current)
+      retryTimerRef.current = setTimeout(() => {
+        if (mountedRef.current) fetchAllData()
+      }, 5000)
     } finally {
       if (mountedRef.current) {
         setLoading(false)

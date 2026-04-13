@@ -144,6 +144,11 @@ export async function middleware(request: NextRequest) {
 
       const response = NextResponse.next({ request: { headers: requestHeaders } })
 
+      if (pathname.startsWith('/api/')) {
+        response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate')
+        response.headers.set('Pragma', 'no-cache')
+      }
+
       response.cookies.set('lia_access_token', token, {
         path: '/',
         maxAge: 60 * 60 * 24 * 7,
