@@ -40,14 +40,14 @@ export function useUserManagement() {
   const effectiveCompanyId = tenantId || companyId
 
   const fetchUsers = useCallback(async () => {
-    if (!effectiveCompanyId) return
     setIsLoading(true)
     setError(null)
     try {
-      const response = await fetch(`/api/backend-proxy/company/users?company_id=${effectiveCompanyId}`)
+      const cid = effectiveCompanyId || 'demo_company'
+      const response = await fetch(`/api/backend-proxy/company/users?company_id=${cid}`)
       if (!response.ok) throw new Error('Failed to fetch users')
       const data = await response.json()
-      const usersData = data.data || data.users || data || []
+      const usersData = Array.isArray(data) ? data : (data.data || data.users || [])
       const mappedUsers = (Array.isArray(usersData) ? usersData : []).map((u: Record<string, unknown>) => ({
         id: u.id,
         name: u.name || '',
@@ -57,7 +57,7 @@ export function useUserManagement() {
         role: u.role === 'admin' ? 'Administrador' : u.role === 'recruiter' ? 'Recrutador' : u.role === 'manager' ? 'Gestor' : 'Visualizador',
         department: 'Talent Acquisition',
         position: u.role,
-        status: u.status === 'active' ? 'ativo' : u.status === 'inactive' ? 'inativo' : 'pendente',
+        status: u.status === 'active' || !u.status ? 'ativo' : u.status === 'inactive' ? 'inativo' : 'pendente',
         permissions: Array.isArray(u.permissions) && (u.permissions as unknown[]).length > 0 ? u.permissions as string[] : [],
         emailSignature: '',
         location: '',
@@ -76,10 +76,8 @@ export function useUserManagement() {
   }, [effectiveCompanyId])
 
   useEffect(() => {
-    if (effectiveCompanyId) {
-      fetchUsers()
-    }
-  }, [effectiveCompanyId, fetchUsers])
+    fetchUsers()
+  }, [fetchUsers])
 
   const filteredUsers = useMemo(() => {
     return users.filter(user => {
