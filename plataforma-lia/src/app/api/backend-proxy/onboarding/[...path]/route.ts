@@ -13,8 +13,15 @@
 
 import { NextRequest, NextResponse } from "next/server"
 
-const RAILS_URL = process.env.RAILS_BACKEND_URL || "http://localhost:3000"
+const RAILS_URL = process.env.RAILS_BACKEND_URL
 const FASTAPI_URL = process.env.BACKEND_URL || "http://localhost:8000"
+
+function railsUnavailable(service: string) {
+  return NextResponse.json(
+    { error: "Backend not configured", service },
+    { status: 503 }
+  )
+}
 
 export async function GET(request: NextRequest, { params: pRaw }: { params: Promise<{ path: string[] }> }) {
   const { path: pathSegments } = await pRaw;
@@ -28,6 +35,8 @@ export async function GET(request: NextRequest, { params: pRaw }: { params: Prom
   }
 
   // Rails routes: status, settings (use auth token, no user_id in path)
+  if (!RAILS_URL) return railsUnavailable("onboarding")
+
   const railsPath = mapToRailsPath(path)
   const url = `${RAILS_URL}${railsPath}${request.nextUrl.search}`
   const resp = await fetch(url, { headers })
@@ -51,6 +60,8 @@ export async function POST(request: NextRequest, { params: pRaw }: { params: Pro
   }
 
   // Rails routes
+  if (!RAILS_URL) return railsUnavailable("onboarding")
+
   const railsPath = mapToRailsPath(path)
   const resp = await fetch(`${RAILS_URL}${railsPath}`, {
     method: "POST",
@@ -65,6 +76,8 @@ export async function PATCH(request: NextRequest, { params: pRaw }: { params: Pr
   const path = pathSegments?.join("/") || ""
   const headers = buildHeaders(request)
   const body = await request.text()
+
+  if (!RAILS_URL) return railsUnavailable("onboarding")
 
   const railsPath = mapToRailsPath(path)
   const resp = await fetch(`${RAILS_URL}${railsPath}`, {
