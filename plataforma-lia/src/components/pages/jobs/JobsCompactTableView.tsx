@@ -1,6 +1,7 @@
 "use client"
 
 import React from"react"
+import { useTranslations } from 'next-intl'
 import { SCREENING_STATUS_LABELS, type ScreeningStatus } from"@/types/screening"
 import { Badge } from"@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
@@ -50,23 +51,27 @@ interface JobsCompactTableViewProps {
   onColumnResize: (column: string, e: React.MouseEvent) => void
 }
 
-const jobsColumnConfig: Record<string, { label: string; sortable: boolean; align: 'left' | 'center' | 'right' }> = {
-  checkbox: { label: '', sortable: false, align: 'center' },
-  id: { label: 'ID', sortable: true, align: 'left' },
-  vaga: { label: 'Vaga', sortable: true, align: 'left' },
-  candidatos: { label: 'Candidatos', sortable: true, align: 'center' },
-  performance: { label: 'Performance LIA Triagens', sortable: false, align: 'left' },
-  status: { label: 'Status', sortable: true, align: 'left' },
-  screeningStatus: { label: 'Triagem', sortable: true, align: 'center' },
-  recrutador: { label: 'Recrutador(a)', sortable: true, align: 'left' },
-  gestor: { label: 'Gestor', sortable: true, align: 'left' },
-  prazoTriagem: { label: 'Prazo Triagem', sortable: true, align: 'center' },
-  prazoShortlist: { label: 'Prazo Short List', sortable: true, align: 'center' },
-  prazoEncerramento: { label: 'Prazo Encerramento', sortable: true, align: 'center' },
-  acoes: { label: 'Ações', sortable: false, align: 'center' }
+const columnSortAlign: Record<string, { sortable: boolean; align: 'left' | 'center' | 'right'; labelKey: string }> = {
+  checkbox: { sortable: false, align: 'center', labelKey: '' },
+  id: { sortable: true, align: 'left', labelKey: 'id' },
+  vaga: { sortable: true, align: 'left', labelKey: 'job' },
+  candidatos: { sortable: true, align: 'center', labelKey: 'candidates' },
+  performance: { sortable: false, align: 'left', labelKey: 'performance' },
+  status: { sortable: true, align: 'left', labelKey: 'status' },
+  screeningStatus: { sortable: true, align: 'center', labelKey: 'screening' },
+  recrutador: { sortable: true, align: 'left', labelKey: 'recruiter' },
+  gestor: { sortable: true, align: 'left', labelKey: 'manager' },
+  prazoTriagem: { sortable: true, align: 'center', labelKey: 'screeningDeadline' },
+  prazoShortlist: { sortable: true, align: 'center', labelKey: 'shortlistDeadline' },
+  prazoEncerramento: { sortable: true, align: 'center', labelKey: 'closingDeadline' },
+  acoes: { sortable: false, align: 'center', labelKey: 'actions' }
 }
 
 export function JobsCompactTableView(props: JobsCompactTableViewProps) {
+  const t = useTranslations('jobs')
+  const tc = useTranslations('jobs.tableColumns')
+  const ta = useTranslations('jobs.tableActions')
+  const tf = useTranslations('jobs.tableFunnel')
   const {
     isLoading,
     filteredJobs,
@@ -197,7 +202,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
         <div className="flex items-center justify-center py-6 text-sm text-lia-text-primary">
           <div className="flex items-center gap-2">
             <div className="w-5 h-5 rounded-full animate-spin motion-reduce:animate-none bg-lia-border-medium" />
-            <span>Carregando vagas...</span>
+            <span>{t('loadingJobs')}</span>
           </div>
         </div>
       </div>
@@ -215,8 +220,9 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
               if (!hookId) return true
               return visibleColumnIds.includes(hookId)
             }).map((columnId) => {
-              const config = jobsColumnConfig[columnId]
-              if (!config) return null
+              const colMeta = columnSortAlign[columnId]
+              if (!colMeta) return null
+              const config = { label: colMeta.labelKey ? tc(colMeta.labelKey as any) : '', sortable: colMeta.sortable, align: colMeta.align }
 
               if (columnId === 'checkbox') {
                 return (
@@ -250,7 +256,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                     className="text-center py-3 px-3 text-xs font-semibold text-lia-text-primary"
                     style={{width: jobsColumnWidths.acoes}} /* dynamic */
                   >
-                    <span className="sr-only">Ações</span>
+                    <span className="sr-only">{tc('actionsScreenReader')}</span>
                     <MoreVertical className="w-4 h-4 text-lia-text-primary mx-auto" aria-hidden="true" />
                   </th>
                 )
@@ -366,22 +372,22 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                                       onJobClick(job)
                                     }}
                                     className="text-left hover:underline hover:text-wedo-cyan dark:hover:text-wedo-cyan cursor-pointer transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wedo-cyan focus-visible:ring-offset-1 rounded-sm"
-                                    title={`Abrir vaga: ${job.title}`}
+                                    title={ta('openJob', { title: job.title })}
                                   >
                                     {job.title}
                                   </button>
                                   {(job.visibility === 'confidential' || job.isConfidential) && (
-                                    <span title="Vaga Confidencial" className="flex items-center">
+                                    <span title={ta('confidentialJob')} className="flex items-center">
                                       <Shield className="w-3.5 h-3.5 text-wedo-orange" />
                                     </span>
                                   )}
                                   {job.visibility === 'internal' && (
-                                    <span title="Vaga Interna" className="flex items-center">
+                                    <span title={ta('internalJob')} className="flex items-center">
                                       <Building className="w-3.5 h-3.5 text-lia-text-secondary" />
                                     </span>
                                   )}
                                   {job.visibility === 'hidden' && (
-                                    <span title="Vaga Oculta" className="flex items-center">
+                                    <span title={ta('hiddenJob')} className="flex items-center">
                                       <Lock className="w-3.5 h-3.5 text-lia-text-secondary" />
                                     </span>
                                   )}
@@ -415,32 +421,32 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                                   </TooltipTrigger>
                                   <TooltipContent side="top" className="min-w-[180px] p-0">
                                     <div className="px-3 py-2 text-xs">
-                                      <div className="font-semibold mb-2">Funil de Candidatos</div>
+                                      <div className="font-semibold mb-2">{tf('candidateFunnel')}</div>
                                       <div className="space-y-1.5 mb-2">
                                         <div className="flex items-center justify-between gap-4">
-                                          <span className="text-lia-text-primary/60">Total</span>
+                                          <span className="text-lia-text-primary/60">{tf('total')}</span>
                                           <span className="font-semibold">{job.funnel.total}</span>
                                         </div>
                                         <div className="flex items-center justify-between gap-4">
-                                          <span className="text-lia-text-primary/60">Triagem</span>
+                                          <span className="text-lia-text-primary/60">{tf('screening')}</span>
                                           <span className="font-semibold">
                                             {job.funnel.screening} ({job.funnel.total > 0 ? Math.round((job.funnel.screening / job.funnel.total) * 100) : 0}%)
                                           </span>
                                         </div>
                                         <div className="flex items-center justify-between gap-4">
-                                          <span className="text-lia-text-primary/60">Entrevistas</span>
+                                          <span className="text-lia-text-primary/60">{tf('interviews')}</span>
                                           <span className="font-semibold">
                                             {job.funnel.interview} ({job.funnel.total > 0 ? Math.round((job.funnel.interview / job.funnel.total) * 100) : 0}%)
                                           </span>
                                         </div>
                                         <div className="flex items-center justify-between gap-4">
-                                          <span className="text-lia-text-primary/60">Finalistas</span>
+                                          <span className="text-lia-text-primary/60">{tf('finalists')}</span>
                                           <span className="font-semibold">
                                             {job.funnel.final} ({job.funnel.total > 0 ? Math.round((job.funnel.final / job.funnel.total) * 100) : 0}%)
                                           </span>
                                         </div>
                                         <div className="flex items-center justify-between gap-4 pt-1 border-t border-lia-border-default">
-                                          <span className="text-lia-text-primary/60">✓ Contratados</span>
+                                          <span className="text-lia-text-primary/60">{tf('hired')}</span>
                                           <span className="font-bold">
                                             {job.funnel.hired} ({job.funnel.total > 0 ? Math.round((job.funnel.hired / job.funnel.total) * 100) : 0}%)
                                           </span>
@@ -448,7 +454,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                                       </div>
                                       <div className="pt-1.5 border-t border-lia-border-default">
                                         <div className="flex items-center justify-between gap-4">
-                                          <span className="text-lia-text-primary/60">Taxa conversão</span>
+                                          <span className="text-lia-text-primary/60">{tf('conversionRate')}</span>
                                           <span className={`${
                                             job.funnel.total > 0 && (job.funnel.hired / job.funnel.total) * 100 >= 10 ? 'font-bold' :
                                             job.funnel.total > 0 && (job.funnel.hired / job.funnel.total) * 100 >= 5 ? 'font-semibold' :
@@ -507,9 +513,9 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                                       <div className="bg-lia-bg-inverse text-lia-text-on-inverse px-3 py-2 rounded-xl whitespace-nowrap text-xs">
                                         <div className="font-semibold mb-1 flex items-center gap-1">
                                           <Brain className="w-3 h-3 text-wedo-cyan" />
-                                          Pipeline LIA
+                                          {tf('pipelineLIA')}
                                         </div>
-                                        <div className="text-xs text-lia-text-tertiary">{liaTriages.pipeline} candidatos contatados</div>
+                                        <div className="text-xs text-lia-text-tertiary">{tf('candidatesContacted', { count: liaTriages.pipeline })}</div>
                                         <div className="absolute top-full left-1/2 -translate-x-1/2 bg-lia-bg-inverse"></div>
                                       </div>
                                     </div>
@@ -526,8 +532,8 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                                     </div>
                                     <div className="absolute bottom-full mb-2 hidden group-hover:block z-50">
                                       <div className="bg-lia-bg-inverse text-lia-text-on-inverse px-3 py-2 rounded-xl whitespace-nowrap text-xs">
-                                        <div className="font-semibold mb-1">Triagens Agendadas</div>
-                                        <div className="text-xs text-lia-text-tertiary">{liaTriages.agendadas} triagens marcadas</div>
+                                        <div className="font-semibold mb-1">{tf('screeningsScheduled')}</div>
+                                        <div className="text-xs text-lia-text-tertiary">{tf('screeningsScheduledDesc', { count: liaTriages.agendadas })}</div>
                                         <div className="absolute top-full left-1/2 -translate-x-1/2 bg-lia-bg-inverse"></div>
                                       </div>
                                     </div>
@@ -544,8 +550,8 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                                     </div>
                                     <div className="absolute bottom-full mb-2 hidden group-hover:block z-50">
                                       <div className="bg-lia-bg-inverse text-lia-text-on-inverse px-3 py-2 rounded-xl whitespace-nowrap text-xs">
-                                        <div className="font-semibold mb-1">Triagens Completas</div>
-                                        <div className="text-xs text-lia-text-tertiary">{liaTriages.realizadas} triagens finalizadas</div>
+                                        <div className="font-semibold mb-1">{tf('screeningsCompleted')}</div>
+                                        <div className="text-xs text-lia-text-tertiary">{tf('screeningsCompletedDesc', { count: liaTriages.realizadas })}</div>
                                         <div className="absolute top-full left-1/2 -translate-x-1/2 bg-lia-bg-inverse"></div>
                                       </div>
                                     </div>
@@ -562,8 +568,8 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                                     </div>
                                     <div className="absolute bottom-full mb-2 hidden group-hover:block z-50">
                                       <div className="bg-lia-bg-inverse text-lia-text-on-inverse px-3 py-2 rounded-xl whitespace-nowrap text-xs">
-                                        <div className="font-semibold mb-1">Entrevistas Agendadas</div>
-                                        <div className="text-xs text-lia-text-tertiary">{liaTriages.entrevistasAgendadas} entrevistas marcadas</div>
+                                        <div className="font-semibold mb-1">{tf('interviewsScheduled')}</div>
+                                        <div className="text-xs text-lia-text-tertiary">{tf('interviewsScheduledDesc', { count: liaTriages.entrevistasAgendadas })}</div>
                                         <div className="absolute top-full left-1/2 -translate-x-1/2 bg-lia-bg-inverse"></div>
                                       </div>
                                     </div>
@@ -611,7 +617,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                                   onJobPreview(job)
                                 }}
                               >
-                                {statusLabels[status] || 'Não Configurada'}
+                                {statusLabels[status] || ta('notConfigured')}
                               </Badge>
                             </td>
                           )
@@ -690,7 +696,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                                     e.stopPropagation()
                                     onToggleUrgent(job.id)
                                   }}
-                                  title={isUrgent ?"Remover urgência" :"Marcar como urgente"}
+                                  title={isUrgent ? ta('removeUrgency') : ta('markUrgent')}
                                 >
                                   <AlertTriangle className={`w-3.5 h-3.5 transition-colors motion-reduce:transition-none ${
                                     isUrgent 
@@ -711,7 +717,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                                     e.stopPropagation()
                                     onTogglePin(job.id)
                                   }}
-                                  title={isPinned ?"Desafixar vaga" :"Fixar vaga"}
+                                  title={isPinned ? ta('unpinJob') : ta('pinJob')}
                                 >
                                   <Pin className={`w-3 h-3 transition-colors motion-reduce:transition-none ${
                                     isPinned 
@@ -732,7 +738,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                                     e.stopPropagation()
                                     onToggleFavorite(job.id)
                                   }}
-                                  title={isFavorite ?"Remover dos favoritos" :"Adicionar aos favoritos"}
+                                  title={isFavorite ? ta('removeFavorite') : ta('addFavorite')}
                                 >
                                   <Star className={`w-3 h-3 transition-colors motion-reduce:transition-none ${
                                     isFavorite 
@@ -753,17 +759,17 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                                       if (result.success) {
                                         const fullUrl = `${window.location.origin}${result.public_url}`
                                         await navigator.clipboard.writeText(fullUrl)
-                                        toast.success("Link copiado!", {
-                                          description:"O link público da vaga foi copiado para a área de transferência."
+                                        toast.success(ta('linkCopied'), {
+                                          description: ta('linkCopiedDesc')
                                         })
                                       }
                                     } catch (error) {
-                                      toast.error("Erro ao gerar link", {
-                                        description:"Não foi possível gerar o link público. Tente novamente."
+                                      toast.error(ta('linkError'), {
+                                        description: ta('linkErrorDesc')
                                       })
                                     }
                                   }}
-                                  title="Compartilhar vaga (copiar link público)"
+                                  title={ta('shareJob')}
                                 >
                                   <Share2 className="w-3.5 h-3.5 text-lia-text-primary" />
                                 </Button>
@@ -777,7 +783,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                                     e.preventDefault()
                                     onJobClick(job)
                                   }}
-                                  title="Abrir Kanban da vaga"
+                                  title={ta('openKanban')}
                                 >
                                   <ChevronRight className="w-4 h-4 text-lia-text-primary" />
                                 </Button>

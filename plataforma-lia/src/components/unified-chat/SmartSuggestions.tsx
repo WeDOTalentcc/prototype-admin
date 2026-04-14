@@ -118,7 +118,11 @@ export function SmartSuggestions({ contextPage, mode, onSuggestionClick }: Props
   )
 }
 
-export const HELP_RESPONSE = `**O que a LIA pode fazer:**
+export function getHelpResponse(t: ReturnType<typeof useTranslations>) {
+  return t('helpResponse')
+}
+
+export const HELP_RESPONSE_FALLBACK = `**O que a LIA pode fazer:**
 
 **Criar vagas**
 - Criar vaga com enriquecimento automatico do JD

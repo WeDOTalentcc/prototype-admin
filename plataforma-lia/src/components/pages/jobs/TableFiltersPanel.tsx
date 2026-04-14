@@ -1,6 +1,7 @@
 "use client"
 
 import { memo } from 'react'
+import { useTranslations } from 'next-intl'
 
 import {
   Target, X, Search, Zap, CheckCircle, Globe, Users,
@@ -65,6 +66,8 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
   onRenameSavedSearch,
   onDeleteSavedSearch,
 }: TableFiltersPanelProps) {
+  const tf = useTranslations('jobs.tableFilters')
+
   if (!isOpen) return null
 
   const activeCount = getActiveFiltersCount()
@@ -79,12 +82,12 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
               <Target className="w-4 h-4 text-lia-text-secondary" />
               <div>
                 <h3 className="text-sm font-semibold text-lia-text-primary">
-                  Filtros Avançados
+                  {tf('advancedFilters')}
                 </h3>
                 <p className={textStyles.bodySmall}>
                   {activeCount > 0
-                    ? `${activeCount} filtro${activeCount > 1 ? 's' : ''} ativo${activeCount > 1 ? 's' : ''}`
-                    : 'Refine os resultados exibidos'}
+                    ? tf('activeFiltersCount', { count: activeCount })
+                    : tf('refineResults')}
                 </p>
               </div>
             </div>
@@ -105,7 +108,7 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-lia-text-primary" />
             <input
               type="text"
-              placeholder="Buscar por título, ID, departamento..."
+              placeholder={tf('searchPlaceholder')}
               value={searchTerm}
               onChange={(e) => onSearchTermChange(e.target.value)}
               className="w-full pl-9 pr-8 py-2 text-xs rounded-xl border focus:outline-none focus:border-lia-text-primary transition-colors motion-reduce:transition-none border border-lia-border-subtle bg-lia-bg-secondary"
@@ -124,11 +127,11 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
         {/* Filters - scrollable */}
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
 
-          {/* Filtros Rápidos */}
+          {/* Quick Filters */}
           <div className="space-y-2">
             <h4 className="text-xs font-semibold text-lia-text-primary flex items-center gap-1.5">
               <Zap className="w-3.5 h-3.5 text-lia-text-secondary" />
-              Filtros Rápidos
+              {tf('quickFilters')}
             </h4>
             <div className="grid grid-cols-2 gap-2">
               <Button
@@ -138,7 +141,7 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
                 className={`h-8 text-xs justify-start ${jobFilters.status?.statuses?.includes('Ativa') ? 'bg-lia-bg-tertiary border-lia-text-primary text-lia-text-primary font-semibold dark:bg-lia-bg-secondary' : ''}`}
               >
                 <CheckCircle className="w-3 h-3 mr-1.5" />
-                Ativas
+                {tf('active')}
               </Button>
               <Button
                 variant="outline"
@@ -147,7 +150,7 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
                 className={`h-8 text-xs justify-start ${jobFilters.status?.priorities?.includes('alta') ? 'bg-status-error/10 border-status-error/30 text-status-error font-semibold' : ''}`}
               >
                 <AlertTriangle className="w-3 h-3 mr-1.5" />
-                Urgentes
+                {tf('urgent')}
               </Button>
               <Button
                 variant="outline"
@@ -156,7 +159,7 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
                 className={`h-8 text-xs justify-start ${jobFilters.position?.workModels?.includes('remoto') ? 'bg-lia-bg-tertiary border-lia-text-primary text-lia-text-primary font-semibold' : ''}`}
               >
                 <Globe className="w-3 h-3 mr-1.5" />
-                Remotas
+                {tf('remote')}
               </Button>
               <Button
                 variant="outline"
@@ -165,7 +168,7 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
                 className={`h-8 text-xs justify-start ${jobFilters.funnel?.emptyPipeline ? 'bg-lia-bg-tertiary border-lia-border-subtle text-lia-text-secondary font-semibold' : ''}`}
               >
                 <Users className="w-3 h-3 mr-1.5" />
-                Sem Candidatos
+                {tf('noCandidates')}
               </Button>
             </div>
           </div>
@@ -174,7 +177,7 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
           <div className="space-y-2">
             <h4 className="text-xs font-semibold text-lia-text-primary flex items-center gap-1.5">
               <Target className="w-3.5 h-3.5" />
-              Status da Vaga
+              {tf('jobStatus')}
             </h4>
             <div className="flex flex-wrap gap-1.5">
               {['Ativa', 'Rascunho', 'Paralisada', 'Aguardando aprovação', 'Fechada (preenchida)', 'Cancelada'].map(status => (
@@ -194,11 +197,11 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
             </div>
           </div>
 
-          {/* Etapa do Processo */}
+          {/* Process Stage */}
           <div className="space-y-2">
             <h4 className="text-xs font-semibold text-lia-text-primary flex items-center gap-1.5">
               <Layers3 className="w-3.5 h-3.5" />
-              Etapa do Processo
+              {tf('processStage')}
             </h4>
             <div className="flex flex-wrap gap-1.5">
               {['Planejamento', 'Aprovação', 'Publicada', 'Triagem', 'Entrevistas', 'Finalização', 'Encerrada'].map(stage => (
@@ -218,17 +221,17 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
             </div>
           </div>
 
-          {/* Prioridade */}
+          {/* Priority */}
           <div className="space-y-2">
             <h4 className="text-xs font-semibold text-lia-text-primary flex items-center gap-1.5">
               <AlertCircle className="w-3.5 h-3.5" />
-              Prioridade
+              {tf('priority')}
             </h4>
             <div className="flex gap-2">
               {[
-                { value: 'alta', label: 'Alta', color: 'bg-status-error/15 border-status-error/30 text-status-error' },
-                { value: 'média', label: 'Média', color: 'bg-status-warning/15 border-status-warning/30 text-status-warning' },
-                { value: 'baixa', label: 'Baixa', color: 'bg-status-success/15 border-status-success/30 text-status-success' },
+                { value: 'alta', label: tf('high'), color: 'bg-status-error/15 border-status-error/30 text-status-error' },
+                { value: 'média', label: tf('medium'), color: 'bg-status-warning/15 border-status-warning/30 text-status-warning' },
+                { value: 'baixa', label: tf('low'), color: 'bg-status-success/15 border-status-success/30 text-status-success' },
               ].map(priority => (
                 <Badge
                   key={priority.value}
@@ -246,11 +249,11 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
             </div>
           </div>
 
-          {/* Modelo de Trabalho */}
+          {/* Work Model */}
           <div className="space-y-2">
             <h4 className="text-xs font-semibold text-lia-text-primary flex items-center gap-1.5">
               <Building className="w-3.5 h-3.5" />
-              Modelo de Trabalho
+              {tf('workModel')}
             </h4>
             <div className="flex gap-2">
               {['presencial', 'híbrido', 'remoto'].map(model => (
@@ -270,11 +273,11 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
             </div>
           </div>
 
-          {/* Senioridade */}
+          {/* Seniority */}
           <div className="space-y-2">
             <h4 className="text-xs font-semibold text-lia-text-primary flex items-center gap-1.5">
               <UserCheck className="w-3.5 h-3.5" />
-              Senioridade
+              {tf('seniority')}
             </h4>
             <div className="flex flex-wrap gap-1.5">
               {['Estágio', 'Júnior', 'Pleno', 'Sênior', 'Especialista', 'Coordenador', 'Gerente', 'Diretor'].map(level => (
@@ -294,11 +297,11 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
             </div>
           </div>
 
-          {/* Localização */}
+          {/* Location */}
           <div className="space-y-2">
             <h4 className="text-xs font-semibold text-lia-text-primary flex items-center gap-1.5">
               <MapPin className="w-3.5 h-3.5" />
-              Localização
+              {tf('location')}
             </h4>
             <div className="flex flex-wrap gap-1.5">
               {['São Paulo, SP', 'Rio de Janeiro, RJ', 'Belo Horizonte, MG', 'Curitiba, PR', 'Porto Alegre, RS', 'Brasília, DF', 'Remoto'].map(loc => (
@@ -318,11 +321,11 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
             </div>
           </div>
 
-          {/* Departamento */}
+          {/* Department */}
           <div className="space-y-2">
             <h4 className="text-xs font-semibold text-lia-text-primary flex items-center gap-1.5">
               <Briefcase className="w-3.5 h-3.5" />
-              Departamento
+              {tf('department')}
             </h4>
             <div className="flex flex-wrap gap-1.5">
               {['Tecnologia', 'Design', 'Produto', 'Marketing', 'Vendas', 'RH', 'Financeiro', 'Operações'].map(dept => (
@@ -342,11 +345,11 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
             </div>
           </div>
 
-          {/* Publicação */}
+          {/* Publishing */}
           <div className="space-y-2">
             <h4 className="text-xs font-semibold text-lia-text-primary flex items-center gap-1.5">
               <Share2 className="w-3.5 h-3.5" />
-              Publicação
+              {tf('publishing')}
             </h4>
             <div className="flex flex-wrap gap-1.5">
               {[
@@ -377,16 +380,16 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
                 }`}
                 onClick={() => onToggleFilter('publishing', 'unpublished', !jobFilters.publishing?.unpublished)}
               >
-                Não Publicadas
+                {tf('unpublished')}
               </Badge>
             </div>
           </div>
 
-          {/* Métricas */}
+          {/* Metrics */}
           <div className="space-y-2">
             <h4 className="text-xs font-semibold text-lia-text-primary flex items-center gap-1.5">
               <BarChart3 className="w-3.5 h-3.5" />
-              Métricas
+              {tf('metrics')}
             </h4>
             <div className="space-y-2">
               <label className="flex items-center gap-2 cursor-pointer text-xs p-2 hover:bg-lia-interactive-hover rounded-xl bg-lia-bg-secondary">
@@ -396,7 +399,7 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
                   checked={jobFilters.funnel?.emptyPipeline || false}
                   onChange={(e) => onToggleFilter('funnel', 'emptyPipeline', e.target.checked)}
                 />
-                <span className="text-lia-text-secondary">Pipeline vazio (sem candidatos)</span>
+                <span className="text-lia-text-secondary">{tf('emptyPipeline')}</span>
               </label>
               <label className="flex items-center gap-2 cursor-pointer text-xs p-2 hover:bg-lia-interactive-hover rounded-xl bg-lia-bg-secondary">
                 <input
@@ -405,30 +408,30 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
                   checked={jobFilters.metrics?.lowConversion || false}
                   onChange={(e) => onToggleFilter('metrics', 'lowConversion', e.target.checked)}
                 />
-                <span className="text-lia-text-secondary">Baixa conversão</span>
+                <span className="text-lia-text-secondary">{tf('lowConversion')}</span>
               </label>
             </div>
           </div>
 
-          {/* Buscas Salvas */}
+          {/* Saved Searches */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <h4 className="text-xs font-semibold text-lia-text-primary flex items-center gap-1.5">
                 <Bookmark className="w-3.5 h-3.5" />
-                Buscas Salvas
+                {tf('savedSearches')}
               </h4>
               {hasActiveFilters() && (
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => {
-                    const name = prompt("Nome da busca:")
+                    const name = prompt(tf('searchNamePrompt'))
                     if (name) onSaveSearch(name)
                   }}
                   className="h-6 text-xs px-2 text-lia-text-secondary hover:text-lia-text-primary dark:hover:text-lia-text-inverse"
                 >
                   <Plus className="w-3 h-3 mr-1" />
-                  Salvar Busca
+                  {tf('saveSearch')}
                 </Button>
               )}
             </div>
@@ -458,11 +461,11 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
                         size="sm"
                         onClick={(e) => {
                           e.stopPropagation()
-                          const newName = prompt("Novo nome:", search.name)
+                          const newName = prompt(tf('renamePrompt'), search.name)
                           if (newName) onRenameSavedSearch(search.id, newName)
                         }}
                         className="h-6 w-6 p-0"
-                        title="Renomear"
+                        title={tf('rename')}
                       >
                         <Edit2 className="w-3 h-3 text-lia-text-secondary" />
                       </Button>
@@ -474,7 +477,7 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
                           onDeleteSavedSearch(search.id)
                         }}
                         className="h-6 w-6 p-0"
-                        title="Remover"
+                        title={tf('remove')}
                       >
                         <Trash2 className="w-3 h-3 text-status-error" />
                       </Button>
@@ -485,8 +488,8 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
             ) : (
               <div className="text-center py-3 bg-lia-bg-secondary rounded-xl">
                 <Bookmark className="w-5 h-5 text-lia-text-secondary mx-auto mb-1" />
-                <p className="text-xs text-lia-text-tertiary">Nenhuma busca salva</p>
-                <p className="text-micro text-lia-text-secondary mt-0.5">Aplique filtros e clique em"Salvar Busca"</p>
+                <p className="text-xs text-lia-text-tertiary">{tf('noSavedSearches')}</p>
+                <p className="text-micro text-lia-text-secondary mt-0.5">{tf('noSavedSearchesHint')}</p>
               </div>
             )}
           </div>
@@ -496,7 +499,7 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
         <div className="flex-shrink-0 p-3 border-t border-lia-border-subtle bg-lia-bg-secondary">
           <div className="flex items-center justify-between">
             <span className={textStyles.bodySmall}>
-              {activeCount > 0 ? `${activeCount} filtro${activeCount > 1 ? 's' : ''}` : 'Nenhum filtro'}
+              {tf('filterCount', { count: activeCount })}
             </span>
             {activeCount > 0 && (
               <Button
@@ -506,7 +509,7 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
                 className="h-7 text-xs text-lia-text-primary hover:text-lia-text-primary"
               >
                 <X className="w-3 h-3 mr-1" />
-                Limpar
+                {tf('clear')}
               </Button>
             )}
           </div>

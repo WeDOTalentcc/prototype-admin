@@ -277,7 +277,7 @@ const MenuItem = React.memo(({
             : "text-lia-text-primary font-normal",
           isCollapsed && !shouldShowContent ? "justify-center px-1.5" : ""
         )}
-        title={isCollapsed && !shouldShowContent ? `${itemLabelKeys[item.label] ? t(itemLabelKeys[item.label]) : item.label}${item.isBeta ? " (BETA)" : ""}` : undefined}
+        title={isCollapsed && !shouldShowContent ? `${itemLabelKeys[item.label] ? t(itemLabelKeys[item.label]) : item.label}${item.isBeta ? ` (${t('labels.beta')})` : ""}` : undefined}
         disabled={isLocked || false}
       >
         <div className="flex items-center gap-1">
@@ -290,7 +290,7 @@ const MenuItem = React.memo(({
               <span className="text-base-ui">{itemLabelKeys[item.label] ? t(itemLabelKeys[item.label]) : item.label}</span>
               {item.isBeta && (
                 <span className="text-[10px] font-semibold bg-lia-info-light text-lia-info-color border border-lia-info-color px-1.5 py-0.5 rounded-full leading-none">
-                  BETA
+                  {t('labels.beta')}
                 </span>
               )}
             </div>
@@ -300,7 +300,7 @@ const MenuItem = React.memo(({
               )}
               {isLocked && (
                 <span className="text-xs bg-lia-interactive-active px-1.5 py-0.5 rounded-full">
-                  Premium
+                  {t('labels.premium')}
                 </span>
               )}
               {hasSubItems && (
@@ -356,7 +356,7 @@ const MenuItem = React.memo(({
                   )}
                   {subIsLocked && (
                     <span className="text-xs bg-lia-interactive-active px-1 py-0.5 rounded-full">
-                      Premium
+                      {t('labels.premium')}
                     </span>
                   )}
                 </div>
