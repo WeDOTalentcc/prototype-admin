@@ -284,6 +284,13 @@ async def lifespan(app: FastAPI):
     except Exception:
         pass
 
+    # Stop WebSocket manager (Redis pub/sub cleanup)
+    try:
+        from app.shared.websocket.ws_manager import ws_manager
+        await ws_manager.shutdown()
+    except Exception:
+        pass
+
     # Stop Automation Scheduler
     try:
         automation_scheduler.stop()
