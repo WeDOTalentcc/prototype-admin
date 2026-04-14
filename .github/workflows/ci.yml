@@ -62,6 +62,17 @@ jobs:
       - name: Architectural fitness functions
         run: pytest tests/fitness/ -v --timeout=30 --no-cov
 
+      - name: "Eval: unit (blocking)"
+        run: python -m tests.eval.runner --suite unit
+
+      - name: "Eval: bias probes validation (blocking)"
+        run: python -m tests.eval.runner --suite bias --dry-run
+
+      - name: "Eval: golden scenarios (non-blocking)"
+        run: python -m tests.eval.runner --suite golden --dry-run
+        continue-on-error: true
+        # TODO: remove --dry-run when ANTHROPIC_API_KEY secret is configured for LLM-as-judge
+
       - name: Type check with mypy
         run: mypy app/ --ignore-missing-imports --no-error-summary
 
