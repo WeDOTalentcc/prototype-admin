@@ -453,6 +453,143 @@ class AuditService:
             }
 
 
+    # ------------------------------------------------------------------
+    # Unified facade methods (P35-061 — Audit Consolidation)
+    # These accept trace_id to correlate events across all 7 audit mechanisms.
+    # ------------------------------------------------------------------
+
+    async def log_action(
+        self,
+        *,
+        trace_id: str,
+        company_id: str,
+        action_type: str,
+        actor: str,
+        target_id: str | None = None,
+        target_type: str | None = None,
+        metadata: dict[str, Any] | None = None,
+    ) -> None:
+        """Log an action (email sent, candidate moved, job published).
+
+        Unified entry point — delegates to AuditLog with trace_id.
+        """
+        try:
+            async with AsyncSessionLocal() as session:
+                log = AuditLog(
+                    id=str(uuid.uuid4()),
+                    company_id=company_id,
+                    agent_name=actor,
+                    decision_type=action_type,
+                    action=action_type,
+                    decision="executed",
+                    reasoning=[],
+                    criteria_used=[],
+                    criteria_ignored=[],
+                    candidate_id=target_id if target_type == "candidate" else None,
+                    job_vacancy_id=target_id if target_type == "job" else None,
+                    session_id=trace_id,
+                    retention_until=datetime.utcnow() + timedelta(days=730),
+                )
+                session.add(log)
+                await session.commit()
+        except Exception as exc:
+            logger.debug("[AuditService] log_action failed (non-blocking): %s", exc)
+
+    async def log_compliance(
+        self,
+        *,
+        trace_id: str,
+        company_id: str,
+        check_type: str,
+        result: str,
+        details: dict[str, Any] | None = None,
+        candidate_id: str | None = None,
+    ) -> None:
+        """Log a compliance check (fairness, consent, bias).
+
+        Unified entry point for compliance audit events.
+        """
+        try:
+            async with AsyncSessionLocal() as session:
+                log = AuditLog(
+                    id=str(uuid.uuid4()),
+                    company_id=company_id,
+                    agent_name="compliance_check",
+                    decision_type=check_type,
+                    action=check_type,
+                    decision=result,
+                    reasoning=[str(details)] if details else [],
+                    criteria_used=[],
+                    criteria_ignored=list(PROTECTED_CRITERIA),
+                    candidate_id=candidate_id,
+                    session_id=trace_id,
+                    retention_until=datetime.utcnow() + timedelta(days=1825),
+                )
+                session.add(log)
+                await session.commit()
+        except Exception as exc:
+            logger.debug("[AuditService] log_compliance failed (non-blocking): %s", exc)
+
+    async def log_error(
+        self,
+        *,
+        trace_id: str,
+        company_id: str,
+        error_type: str,
+        error_message: str,
+        agent: str = "system",
+        metadata: dict[str, Any] | None = None,
+    ) -> None:
+        """Log an error with context for debugging."""
+        try:
+            async with AsyncSessionLocal() as session:
+                log = AuditLog(
+                    id=str(uuid.uuid4()),
+                    company_id=company_id,
+                    agent_name=agent,
+                    decision_type="error",
+                    action=error_type,
+                    decision="error",
+                    reasoning=[error_message],
+                    criteria_used=[],
+                    criteria_ignored=[],
+                    session_id=trace_id,
+                    retention_until=datetime.utcnow() + timedelta(days=365),
+                )
+                session.add(log)
+                await session.commit()
+        except Exception as exc:
+            logger.debug("[AuditService] log_error failed (non-blocking): %s", exc)
+
+    async def get_trail(
+        self,
+        trace_id: str,
+        company_id: str | None = None,
+    ) -> list[dict[str, Any]]:
+        """Reconstruct the full audit trail for a request/session.
+
+        Queries AuditLog by session_id (= trace_id) and returns all events
+        in chronological order. This correlates decisions, actions, compliance
+        checks, and errors that happened during a single request.
+        """
+        try:
+            async with AsyncSessionLocal() as session:
+                conditions = [AuditLog.session_id == trace_id]
+                if company_id:
+                    conditions.append(AuditLog.company_id == company_id)
+
+                result = await session.execute(
+                    select(AuditLog)
+                    .where(and_(*conditions))
+                    .order_by(AuditLog.created_at)
+                )
+                logs = result.scalars().all()
+                return [log.to_dict() for log in logs]
+        except Exception as exc:
+            logger.warning("[AuditService] get_trail failed: %s", exc)
+            return []
+
+
 audit_service = AuditService()
 
 # FastAPI dependency injection factory
