@@ -9,12 +9,14 @@ import {
 } from "lucide-react"
 import { textStyles, cardStyles, badgeStyles, buttonStyles } from '@/lib/design-tokens'
 import type { UseGoalsPlanningHubReturn } from "./useGoalsPlanningHub"
+import { useTranslations } from "next-intl"
 
 interface AlertsSectionProps {
   hub: UseGoalsPlanningHubReturn
 }
 
 export function AlertsSection({ hub }: AlertsSectionProps) {
+  const t = useTranslations('settings.alerts')
   const {
     alerts, briefingFrequency, setBriefingFrequency,
     saving, error, successMessage,
@@ -43,10 +45,10 @@ export function AlertsSection({ hub }: AlertsSectionProps) {
             <div>
               <CardTitle className={`${textStyles.h3} flex items-center gap-2`}>
                 <Bell className="w-3.5 h-3.5 text-lia-text-secondary" />
-                Configuração de Alertas
+                {t('title')}
               </CardTitle>
               <p className={`${textStyles.description} mt-1`}>
-                A LIA aprende com seus padrões e ajusta os alertas automaticamente
+                {t('description')}
               </p>
             </div>
             {!isEditingAlerts ? (
@@ -55,7 +57,7 @@ export function AlertsSection({ hub }: AlertsSectionProps) {
                 className={buttonStyles.outline}
               >
                 <Edit className="w-3 h-3" />
-                Editar
+                {t('edit')}
               </button>
             ) : (
               <div className="flex items-center gap-2">
@@ -63,7 +65,7 @@ export function AlertsSection({ hub }: AlertsSectionProps) {
                   onClick={() => setIsEditingAlerts(false)}
                   className={buttonStyles.secondary}
                 >
-                  Cancelar
+                  {t('cancel')}
                 </button>
                 <button
                   onClick={async () => {
@@ -74,7 +76,7 @@ export function AlertsSection({ hub }: AlertsSectionProps) {
                   className={buttonStyles.primary}
                 >
                   {saving ? <Loader2 className="w-3 h-3 animate-spin motion-reduce:animate-none" /> : <Save className="w-3 h-3" />}
-                  Salvar Alterações
+                  {t('saveChanges')}
                 </button>
               </div>
             )}
@@ -115,9 +117,9 @@ export function AlertsSection({ hub }: AlertsSectionProps) {
                     disabled={!isEditingAlerts || !alert.enabled}
                     className={`${textStyles.caption} border border-lia-border-subtle rounded-md px-2 py-1 bg-lia-bg-primary dark:bg-lia-bg-elevated disabled:bg-lia-bg-secondary dark:disabled:bg-lia-btn-primary-hover disabled:text-lia-text-secondary dark:disabled:text-lia-text-tertiary dark:border-lia-border-default`}
                   >
-                    <option value="email">Email</option>
-                    <option value="teams">Teams</option>
-                    <option value="both">Ambos</option>
+                    <option value="email">{t('channelEmail')}</option>
+                    <option value="teams">{t('channelTeams')}</option>
+                    <option value="both">{t('channelBoth')}</option>
                   </select>
                   <button
                     onClick={() => isEditingAlerts && handleToggleAlert(alert.id)}
@@ -139,7 +141,7 @@ export function AlertsSection({ hub }: AlertsSectionProps) {
         <CardHeader className="pb-2">
           <CardTitle className={`${textStyles.h3} flex items-center gap-2`}>
             <MessageSquare className="w-3.5 h-3.5 text-lia-text-secondary" />
-            Frequência do Briefing da LIA
+            {t('briefingTitle')}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-2">
@@ -150,8 +152,8 @@ export function AlertsSection({ hub }: AlertsSectionProps) {
               disabled={!isEditingAlerts}
               onClick={() => setBriefingFrequency('twice_daily')}
               icon={<RefreshCw className="w-3 h-3 text-lia-text-secondary" />}
-              label="2x ao Dia"
-              description="Resumo às 8h e às 14h"
+              label={t('twiceDaily')}
+              description={t('twiceDailyDesc')}
             />
             <BriefingOption
               value="daily"
@@ -159,8 +161,8 @@ export function AlertsSection({ hub }: AlertsSectionProps) {
               disabled={!isEditingAlerts}
               onClick={() => setBriefingFrequency('daily')}
               icon={<Clock className="w-3 h-3 text-lia-text-secondary" />}
-              label="Diário"
-              description="Resumo todas as manhãs às 8h"
+              label={t('daily')}
+              description={t('dailyDesc')}
             />
             <BriefingOption
               value="weekly"
@@ -168,8 +170,8 @@ export function AlertsSection({ hub }: AlertsSectionProps) {
               disabled={!isEditingAlerts}
               onClick={() => setBriefingFrequency('weekly')}
               icon={<Calendar className="w-3 h-3 text-lia-text-secondary" />}
-              label="Semanal"
-              description="Resumo toda segunda-feira"
+              label={t('weekly')}
+              description={t('weeklyDesc')}
             />
             <BriefingOption
               value="monthly"
@@ -177,8 +179,8 @@ export function AlertsSection({ hub }: AlertsSectionProps) {
               disabled={!isEditingAlerts}
               onClick={() => setBriefingFrequency('monthly')}
               icon={<Calendar className="w-3 h-3 text-lia-text-secondary" />}
-              label="Mensal"
-              description="Resumo no 1º dia útil do mês"
+              label={t('monthly')}
+              description={t('monthlyDesc')}
             />
           </div>
 
@@ -186,10 +188,9 @@ export function AlertsSection({ hub }: AlertsSectionProps) {
             <div className="flex items-start gap-2">
               <Brain className="w-3.5 h-3.5 flex-shrink-0 mt-0.5 text-wedo-cyan" />
               <div>
-                <p className={`${textStyles.subtitle} text-lia-text-primary`}>A LIA aprende com você</p>
+                <p className={`${textStyles.subtitle} text-lia-text-primary`}>{t('liaLearns')}</p>
                 <p className={`${textStyles.description} mt-0.5`}>
-                  Quanto mais você interage, melhor ela entende quais alertas são relevantes.
-                  Alertas ignorados consistentemente serão automaticamente desativados.
+                  {t('liaLearnsDesc')}
                 </p>
               </div>
             </div>

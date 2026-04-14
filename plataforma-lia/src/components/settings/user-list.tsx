@@ -1,14 +1,15 @@
 "use client"
 
-import { Button } from"@/components/ui/button"
-import { Card, CardContent } from"@/components/ui/card"
-import { Badge } from"@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
   Edit, Trash2, Mail, MapPin, Users, Shield, Loader2, Send
-} from"lucide-react"
+} from "lucide-react"
 import { textStyles, badgeStyles } from '@/lib/design-tokens'
 import type { UserData } from './user-management-types'
+import { useTranslations } from "next-intl"
 
 interface UserListProps {
   filteredUsers: UserData[]
@@ -31,14 +32,16 @@ export function UserList({
   onDeleteUser,
   onResendInvitation,
 }: UserListProps) {
+  const t = useTranslations('settings.users')
+
   if (filteredUsers.length === 0) {
     return (
       <Card className="rounded-md">
         <CardContent className="p-4 text-center">
           <div className="text-lia-text-secondary">
             <Users className="w-10 h-10 mx-auto mb-3 opacity-50" />
-            <h3 className={textStyles.subtitle}>Nenhum usuário encontrado</h3>
-            <p className={textStyles.description +" mt-1"}>Ajuste os filtros ou crie um novo usuário</p>
+            <h3 className={textStyles.subtitle}>{t('noUsersFound')}</h3>
+            <p className={textStyles.description + " mt-1"}>{t('noUsersHint')}</p>
           </div>
         </CardContent>
       </Card>
@@ -82,7 +85,7 @@ export function UserList({
                       size="sm"
                       onClick={() => onEditUser(user)}
                       className="h-7 w-7 p-0"
-                      title="Editar"
+                      title={t('editTooltip')}
                     >
                       <Edit className="w-3.5 h-3.5" />
                     </Button>
@@ -91,7 +94,7 @@ export function UserList({
                       size="sm"
                       onClick={() => onDeleteUser(user.id)}
                       className="h-7 w-7 p-0 text-status-error dark:text-status-error hover:bg-status-error/10 dark:hover:bg-status-error/30"
-                      title="Excluir"
+                      title={t('deleteTooltip')}
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </Button>
@@ -114,7 +117,7 @@ export function UserList({
                 {user.isManager && (
                   <Badge className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-primary border border-lia-border-subtle dark:border-lia-border-subtle text-micro">
                     <Users className="w-3 h-3 mr-1" />
-                    Gestor
+                    {t('manager')}
                   </Badge>
                 )}
 
@@ -129,12 +132,12 @@ export function UserList({
                     {resendingInvite === user.id ? (
                       <>
                         <Loader2 className="w-3 h-3 animate-spin motion-reduce:animate-none" />
-                        Enviando...
+                        {t('sending')}
                       </>
                     ) : (
                       <>
                         <Send className="w-3 h-3" />
-                        Reenviar Convite
+                        {t('resendInvite')}
                       </>
                     )}
                   </Button>
@@ -155,17 +158,17 @@ export function UserList({
             <thead className="bg-lia-bg-secondary dark:bg-lia-bg-secondary">
               <tr>
                 <th className="px-2 py-2.5 text-left text-micro font-medium text-lia-text-secondary uppercase tracking-wider">
-                  Usuário
+                  {t('tableUser')}
                 </th>
                 <th className="px-2 py-2.5 text-left text-micro font-medium text-lia-text-secondary uppercase tracking-wider">
-                  Cargo
+                  {t('tableRole')}
                 </th>
                 <th className="px-2 py-2.5 text-left text-micro font-medium text-lia-text-secondary uppercase tracking-wider">
-                  Status
+                  {t('tableStatus')}
                 </th>
                 {!isSCIMEnabled && (
                   <th className="px-2 py-2.5 text-center text-micro font-medium text-lia-text-secondary uppercase tracking-wider">
-                    Ações
+                    {t('tableActions')}
                   </th>
                 )}
               </tr>
@@ -212,7 +215,7 @@ export function UserList({
                           size="sm"
                           onClick={() => onEditUser(user)}
                           className="h-7 w-7 p-0"
-                          title="Editar"
+                          title={t('editTooltip')}
                         >
                           <Edit className="w-3.5 h-3.5" />
                         </Button>
@@ -221,7 +224,7 @@ export function UserList({
                           size="sm"
                           onClick={() => onDeleteUser(user.id)}
                           className="h-7 w-7 p-0 text-status-error dark:text-status-error hover:bg-status-error/10 dark:hover:bg-status-error/30"
-                          title="Excluir"
+                          title={t('deleteTooltip')}
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </Button>

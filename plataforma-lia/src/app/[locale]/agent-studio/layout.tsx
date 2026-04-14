@@ -1,8 +1,11 @@
-import type { Metadata } from 'next'
+import { getTranslations } from 'next-intl/server'
 
-export const metadata: Metadata = {
-  title: 'Agent Studio',
-  description: 'Crie e gerencie agentes de sourcing inteligentes',
+export async function generateMetadata() {
+  const t = await getTranslations('agents.metadata')
+  return {
+    title: 'Agent Studio',
+    description: t('layoutDescription'),
+  }
 }
 
 export default function Layout({ children }: { children: React.ReactNode }) {

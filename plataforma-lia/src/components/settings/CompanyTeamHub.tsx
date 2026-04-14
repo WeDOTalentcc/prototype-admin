@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Building, Users, Network, Code } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { CompanyDataSection } from './CompanyDataSection';
 import { UserManagement } from "./user-management";
 import { BenefitsTab } from "./BenefitsTab";
@@ -19,6 +20,7 @@ export function CompanyTeamHub({
   onUserUpdate,
   onGoalUpdate,
 }: CompanyTeamHubProps) {
+  const t = useTranslations("settings");
   const [activeTab, setActiveTab] = useState(
     activeSubsection || "company-data",
   );
@@ -33,11 +35,11 @@ export function CompanyTeamHub({
   });
 
   const tabs = [
-    { id: "company-data", label: "Dados da Empresa", icon: Building },
-    { id: "departments", label: "Departamentos", icon: Network },
-    { id: "tech-stack", label: "Tech Stack", icon: Code },
-    { id: "benefits", label: "Benefícios", icon: Gift },
-    { id: "users", label: "Usuários", icon: Users },
+    { id: "company-data", label: t("companyTabs.companyData"), icon: Building },
+    { id: "departments", label: t("companyTabs.departments"), icon: Network },
+    { id: "tech-stack", label: t("companyTabs.techStack"), icon: Code },
+    { id: "benefits", label: t("companyTabs.benefits"), icon: Gift },
+    { id: "users", label: t("companyTabs.users"), icon: Users },
   ];
 
   const renderCompanyData = () => {

@@ -2,18 +2,12 @@
 
 import React from "react"
 import { Bot, Play, Pause, MoreVertical, Link2, TestTube2 } from "lucide-react"
+import { useTranslations } from "next-intl"
 import { cn } from "@/lib/utils"
 import { cardStyles, badgeStyles, textStyles } from "@/lib/design-tokens"
 import { BetaBadge } from "@/components/ui/beta-badge"
 import type { CustomAgent } from "./types"
 import { CATEGORY_LABELS } from "./types"
-
-const STATUS_STYLES: Record<string, { label: string; badge: string }> = {
-  draft: { label: "Rascunho", badge: badgeStyles.default },
-  active: { label: "Ativo", badge: badgeStyles.success },
-  paused: { label: "Pausado", badge: badgeStyles.warning },
-  archived: { label: "Arquivado", badge: badgeStyles.error },
-}
 
 interface AgentCardProps {
   agent: CustomAgent
@@ -23,6 +17,16 @@ interface AgentCardProps {
 }
 
 export function AgentCard({ agent, onTest, onDeploy, onToggleStatus }: AgentCardProps) {
+  const t = useTranslations('agents.card')
+  const tStatus = useTranslations('agents.status')
+
+  const STATUS_STYLES: Record<string, { label: string; badge: string }> = {
+    draft: { label: tStatus('draft'), badge: badgeStyles.default },
+    active: { label: tStatus('active'), badge: badgeStyles.success },
+    paused: { label: tStatus('paused'), badge: badgeStyles.warning },
+    archived: { label: tStatus('archived'), badge: badgeStyles.error },
+  }
+
   const statusStyle = STATUS_STYLES[agent.status] || STATUS_STYLES.draft
   const category = (agent.domain || "general") as keyof typeof CATEGORY_LABELS
   const categoryLabel = CATEGORY_LABELS[category] || agent.domain
@@ -57,12 +61,12 @@ export function AgentCard({ agent, onTest, onDeploy, onToggleStatus }: AgentCard
       <div className="flex items-center gap-4 text-xs">
         <div>
           <span className="font-bold text-lia-text-primary font-inter">{agent.total_executions}</span>
-          <span className="text-lia-text-disabled ml-1">execucoes</span>
+          <span className="text-lia-text-disabled ml-1">{t('executions')}</span>
         </div>
         {agent.avg_confidence > 0 && (
           <div>
             <span className="font-bold text-lia-text-primary font-inter">{(agent.avg_confidence * 100).toFixed(0)}%</span>
-            <span className="text-lia-text-disabled ml-1">confianca</span>
+            <span className="text-lia-text-disabled ml-1">{t('confidence')}</span>
           </div>
         )}
       </div>
@@ -74,14 +78,14 @@ export function AgentCard({ agent, onTest, onDeploy, onToggleStatus }: AgentCard
           onClick={() => onTest(agent)}
           className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium text-lia-text-secondary hover:bg-lia-bg-tertiary transition-colors"
         >
-          <TestTube2 className="w-3.5 h-3.5" /> Testar
+          <TestTube2 className="w-3.5 h-3.5" /> {t('test')}
         </button>
         <button
           type="button"
           onClick={() => onDeploy(agent)}
           className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium text-wedo-cyan-dark hover:bg-wedo-cyan/10 transition-colors"
         >
-          <Link2 className="w-3.5 h-3.5" /> Vincular
+          <Link2 className="w-3.5 h-3.5" /> {t('link')}
         </button>
         <button
           type="button"
@@ -89,9 +93,9 @@ export function AgentCard({ agent, onTest, onDeploy, onToggleStatus }: AgentCard
           className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium text-lia-text-secondary hover:bg-lia-bg-tertiary transition-colors ml-auto"
         >
           {agent.status === "active" ? (
-            <><Pause className="w-3.5 h-3.5" /> Pausar</>
+            <><Pause className="w-3.5 h-3.5" /> {t('pause')}</>
           ) : (
-            <><Play className="w-3.5 h-3.5" /> Ativar</>
+            <><Play className="w-3.5 h-3.5" /> {t('activate')}</>
           )}
         </button>
       </div>

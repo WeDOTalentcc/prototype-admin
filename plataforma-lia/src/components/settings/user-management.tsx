@@ -10,8 +10,10 @@ import { useUserManagement } from './use-user-management'
 import { UserForm } from './user-form'
 import { UserList } from './user-list'
 import type { UserManagementProps } from './user-management-types'
+import { useTranslations } from "next-intl"
 
 export function UserManagement(_props: UserManagementProps) {
+  const t = useTranslations('settings.users')
   const {
     filteredUsers,
     isCreating,
@@ -48,7 +50,7 @@ export function UserManagement(_props: UserManagementProps) {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center p-6">
-        <div className="text-xs text-lia-text-secondary">Carregando usuários...</div>
+        <div className="text-xs text-lia-text-secondary">{t('loading')}</div>
       </div>
     )
   }
@@ -57,7 +59,7 @@ export function UserManagement(_props: UserManagementProps) {
     return (
       <div className="flex flex-col items-center justify-center p-6 gap-3">
         <div className="text-xs text-status-error">{error}</div>
-        <Button onClick={fetchUsers} size="sm">Tentar novamente</Button>
+        <Button onClick={fetchUsers} size="sm">{t('retryButton')}</Button>
       </div>
     )
   }
@@ -82,11 +84,10 @@ export function UserManagement(_props: UserManagementProps) {
             <Info className="w-4 h-4 text-wedo-cyan-dark dark:text-wedo-cyan-dark flex-shrink-0 mt-0.5" />
             <div className="flex-1">
               <p className={textStyles.subtitle}>
-                Provisionamento automático ativo via {scimConfig?.directoryName || 'SSO Enterprise'}
+                {t('scimActiveTitle', { provider: scimConfig?.directoryName || 'SSO Enterprise' })}
               </p>
               <p className={textStyles.description + " mt-1"}>
-                Os usuários são gerenciados automaticamente pelo seu provedor de identidade corporativo.
-                Adicione ou remova usuários diretamente no Azure AD, Okta ou Google Workspace.
+                {t('scimActiveDescription')}
               </p>
             </div>
             <a
@@ -96,7 +97,7 @@ export function UserManagement(_props: UserManagementProps) {
               className="text-wedo-cyan-dark dark:text-wedo-cyan-dark hover:text-wedo-cyan-dark dark:hover:text-wedo-cyan-dark flex items-center gap-1 text-xs flex-shrink-0"
             >
               <ExternalLink className="w-3 h-3" />
-              Saiba mais
+              {t('scimLearnMore')}
             </a>
           </CardContent>
         </Card>
@@ -121,18 +122,18 @@ export function UserManagement(_props: UserManagementProps) {
 
       <div className="flex items-center justify-between">
         <div>
-          <h3 className={textStyles.h3}>Gestão de Usuários</h3>
+          <h3 className={textStyles.h3}>{t('title')}</h3>
           <p className={textStyles.description}>
             {isSCIMEnabled 
-              ? 'Usuários sincronizados automaticamente via provedor de identidade'
-              : 'Cadastro e gestão dos recrutadores da plataforma'
+              ? t('descriptionScim')
+              : t('description')
             }
           </p>
         </div>
         {!isSCIMEnabled && (
           <Button onClick={handleCreateUser} size="sm" className="gap-1.5">
             <UserPlus className="w-3.5 h-3.5" />
-            Novo Usuário
+            {t('newUser')}
           </Button>
         )}
       </div>
@@ -141,19 +142,19 @@ export function UserManagement(_props: UserManagementProps) {
         <Card className="rounded-md">
           <CardContent className="p-3 text-center">
             <div className={textStyles.metricLarge}>{stats.total}</div>
-            <div className={textStyles.description}>Total de Usuários</div>
+            <div className={textStyles.description}>{t('totalUsers')}</div>
           </CardContent>
         </Card>
         <Card className="rounded-md">
           <CardContent className="p-3 text-center">
             <div className="text-2xl font-semibold text-status-success dark:text-status-success">{stats.active}</div>
-            <div className={textStyles.description}>Usuários Ativos</div>
+            <div className={textStyles.description}>{t('activeUsers')}</div>
           </CardContent>
         </Card>
         <Card className="rounded-md">
           <CardContent className="p-3 text-center">
             <div className="text-2xl font-semibold text-wedo-purple dark:text-wedo-purple">{stats.managers}</div>
-            <div className={textStyles.description}>Gestores</div>
+            <div className={textStyles.description}>{t('managers')}</div>
           </CardContent>
         </Card>
       </div>
@@ -163,7 +164,7 @@ export function UserManagement(_props: UserManagementProps) {
           <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 transform -translate-y-1/2 text-lia-text-secondary" />
           <input
             type="text"
-            placeholder="Buscar usuários..."
+            placeholder={t('searchPlaceholder')}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-8 pr-3 py-1.5 text-xs border border-lia-border-default rounded-xl focus:ring-1 focus:ring-lia-btn-primary-bg/10 focus:border-lia-btn-primary-bg dark:bg-lia-bg-elevated dark:border-lia-border-default"
@@ -175,7 +176,7 @@ export function UserManagement(_props: UserManagementProps) {
           onChange={(e) => setDepartmentFilter(e.target.value)}
           className="px-2 py-1.5 text-xs border border-lia-border-default rounded-xl focus:ring-1 focus:ring-lia-btn-primary-bg/10 focus:border-lia-btn-primary-bg dark:bg-lia-bg-elevated dark:border-lia-border-default"
         >
-          <option value="all">Todos os Departamentos</option>
+          <option value="all">{t('allDepartments')}</option>
           {departments.map(dept => (
             <option key={dept} value={dept}>{dept}</option>
           ))}
@@ -186,10 +187,10 @@ export function UserManagement(_props: UserManagementProps) {
           onChange={(e) => setStatusFilter(e.target.value)}
           className="px-2 py-1.5 text-xs border border-lia-border-default rounded-xl focus:ring-1 focus:ring-lia-btn-primary-bg/10 focus:border-lia-btn-primary-bg dark:bg-lia-bg-elevated dark:border-lia-border-default"
         >
-          <option value="all">Todos os Status</option>
-          <option value="ativo">Ativo</option>
-          <option value="inativo">Inativo</option>
-          <option value="pendente">Pendente</option>
+          <option value="all">{t('allStatuses')}</option>
+          <option value="ativo">{t('statusActive')}</option>
+          <option value="inativo">{t('statusInactive')}</option>
+          <option value="pendente">{t('statusPending')}</option>
         </select>
 
         <div className="flex bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-xl p-0.5">
@@ -201,7 +202,7 @@ export function UserManagement(_props: UserManagementProps) {
                 : 'text-lia-text-secondary hover:text-lia-text-primary'
             }`}
           >
-            Cards
+            {t('viewCards')}
           </button>
           <button
             onClick={() => setViewMode('table')}
@@ -211,7 +212,7 @@ export function UserManagement(_props: UserManagementProps) {
                 : 'text-lia-text-secondary hover:text-lia-text-primary'
             }`}
           >
-            Tabela
+            {t('viewTable')}
           </button>
         </div>
       </div>

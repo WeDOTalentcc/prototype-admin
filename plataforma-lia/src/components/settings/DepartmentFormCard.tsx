@@ -12,6 +12,7 @@ import {
   COLOR_OPTIONS,
 } from './companyTeamHub.types';
 import { MemberSection } from './MemberSection';
+import { useTranslations } from "next-intl";
 
 export interface DepartmentFormCardProps {
   editingDepartment: Department | null;
@@ -58,12 +59,14 @@ export function DepartmentFormCard({
   handleEditMember,
   handleDeleteMember,
 }: DepartmentFormCardProps) {
+  const t = useTranslations('settings.departments');
+
   return (
     <Card className="border border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 rounded-xl">
       <CardContent className="p-3 space-y-2">
         <div className="flex items-center justify-between mb-2">
           <h4 className="text-xs font-semibold text-lia-text-primary">
-            {editingDepartment ? "Editar Departamento" : "Novo Departamento"}
+            {editingDepartment ? t("editDepartment") : t("newDepartment")}
           </h4>
           <Button
             variant="ghost"
@@ -77,7 +80,7 @@ export function DepartmentFormCard({
         <div className="grid grid-cols-2 gap-2">
           <div>
             <label className="block text-micro font-medium text-lia-text-secondary mb-1">
-              Nome
+              {t('formName')}
             </label>
             <input
               type="text"
@@ -86,12 +89,12 @@ export function DepartmentFormCard({
                 setNewDepartment((prev) => ({ ...prev, name: e.target.value }))
               }
               className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-xl bg-lia-bg-primary focus:ring-2 focus:ring-lia-border-subtle focus:border-lia-border-medium dark:focus:ring-lia-border-strong dark:focus:border-lia-border-medium transition-colors motion-reduce:transition-none"
-              placeholder="Ex: Engenharia"
+              placeholder={t('formNamePlaceholder')}
             />
           </div>
           <div>
             <label className="block text-micro font-medium text-lia-text-secondary mb-1">
-              Gestor
+              {t('formManager')}
             </label>
             <input
               type="text"
@@ -100,14 +103,14 @@ export function DepartmentFormCard({
                 setNewDepartment((prev) => ({ ...prev, manager: e.target.value }))
               }
               className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-xl bg-lia-bg-primary focus:ring-2 focus:ring-lia-border-subtle focus:border-lia-border-medium dark:focus:ring-lia-border-strong dark:focus:border-lia-border-medium transition-colors motion-reduce:transition-none"
-              placeholder="Nome do gestor"
+              placeholder={t('formManagerPlaceholder')}
             />
           </div>
         </div>
         <div className="grid grid-cols-3 gap-2">
           <div>
             <label className="block text-micro font-medium text-lia-text-secondary mb-1">
-              Cargo do Gestor
+              {t('formManagerTitle')}
             </label>
             <input
               type="text"
@@ -116,12 +119,12 @@ export function DepartmentFormCard({
                 setNewDepartment((prev) => ({ ...prev, manager_title: e.target.value }))
               }
               className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-xl bg-lia-bg-primary focus:ring-2 focus:ring-lia-border-subtle focus:border-lia-border-medium dark:focus:ring-lia-border-strong dark:focus:border-lia-border-medium transition-colors motion-reduce:transition-none"
-              placeholder="Ex: Diretor de Engenharia"
+              placeholder={t('formManagerTitlePlaceholder')}
             />
           </div>
           <div>
             <label className="block text-micro font-medium text-lia-text-secondary mb-1">
-              Email do Gestor
+              {t('formManagerEmail')}
             </label>
             <input
               type="email"
@@ -130,12 +133,12 @@ export function DepartmentFormCard({
                 setNewDepartment((prev) => ({ ...prev, manager_email: e.target.value }))
               }
               className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-xl bg-lia-bg-primary focus:ring-2 focus:ring-lia-border-subtle focus:border-lia-border-medium dark:focus:ring-lia-border-strong dark:focus:border-lia-border-medium transition-colors motion-reduce:transition-none"
-              placeholder="gestor@empresa.com"
+              placeholder={t('formManagerEmailPlaceholder')}
             />
           </div>
           <div>
             <label className="block text-micro font-medium text-lia-text-secondary mb-1">
-              Telefone/WhatsApp
+              {t('formManagerPhone')}
             </label>
             <input
               type="text"
@@ -144,13 +147,13 @@ export function DepartmentFormCard({
                 setNewDepartment((prev) => ({ ...prev, manager_phone: e.target.value }))
               }
               className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-xl bg-lia-bg-primary focus:ring-2 focus:ring-lia-border-subtle focus:border-lia-border-medium dark:focus:ring-lia-border-strong dark:focus:border-lia-border-medium transition-colors motion-reduce:transition-none"
-              placeholder="+55 11 99999-0000"
+              placeholder={t('formManagerPhonePlaceholder')}
             />
           </div>
         </div>
         <div>
           <label className="block text-micro font-medium text-lia-text-secondary mb-1">
-            Descrição
+            {t('formDescription')}
           </label>
           <textarea
             value={newDepartment.description}
@@ -159,12 +162,12 @@ export function DepartmentFormCard({
             }
             className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-xl bg-lia-bg-primary focus:ring-2 focus:ring-lia-border-subtle focus:border-lia-border-medium dark:focus:ring-lia-border-strong dark:focus:border-lia-border-medium transition-colors motion-reduce:transition-none"
             rows={2}
-            placeholder="Descrição do departamento"
+            placeholder={t('formDescriptionPlaceholder')}
           />
         </div>
         <div>
           <label className="block text-micro font-medium text-lia-text-secondary mb-1">
-            Cor
+            {t('formColor')}
           </label>
           <div className="flex gap-2">
             {COLOR_OPTIONS.map((color) => (
@@ -207,7 +210,7 @@ export function DepartmentFormCard({
             onClick={handleCancelDepartmentForm}
             className="py-1.5 px-2 text-xs rounded-full"
           >
-            Cancelar
+            {t('cancel')}
           </Button>
           <Button
             size="sm"
@@ -215,7 +218,7 @@ export function DepartmentFormCard({
             className="py-1.5 px-2 text-xs rounded-full bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
           >
             <Save className="w-3.5 h-3.5 mr-1" />
-            {editingDepartment ? "Atualizar" : "Salvar"}
+            {editingDepartment ? t("formUpdate") : t("formSave")}
           </Button>
         </div>
       </CardContent>

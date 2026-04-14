@@ -25,6 +25,7 @@ import { ApproverSection } from "./ApproverSection";
 import { DepartmentFormCard } from "./DepartmentFormCard";
 import { DepartmentGrid } from "./DepartmentGrid";
 import { OrgChartDialog } from "./OrgChartDialog";
+import { useTranslations } from "next-intl";
 
 export interface DepartmentsTabProps {
   companyData: CompanyData;
@@ -135,13 +136,15 @@ export function DepartmentsTab({
   handleSaveApprover,
   handleDeleteApprover,
 }: DepartmentsTabProps) {
+  const t = useTranslations('settings.departments');
+
   return (
     <>
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <div>
             <h3 className="flex items-center gap-2 text-base-ui font-semibold text-lia-text-primary">
-              Departamentos
+              {t('title')}
               <LiaFieldToggle
                 fieldKey="departments"
                 isActive={companyData.lia_field_toggles?.departments ?? true}
@@ -153,7 +156,7 @@ export function DepartmentsTab({
               />
             </h3>
             <p className="text-xs text-lia-text-secondary">
-              Gerencie a estrutura organizacional da empresa
+              {t('description')}
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -166,7 +169,7 @@ export function DepartmentsTab({
                 className={actionButtonStyles.smOutline}
               >
                 <Edit className={actionButtonStyles.icon} />
-                Editar
+                {t('edit')}
               </button>
             ) : (
               <>
@@ -180,7 +183,7 @@ export function DepartmentsTab({
                   disabled={saving}
                   className={actionButtonStyles.smSecondary}
                 >
-                  Cancelar
+                  {t('cancel')}
                 </button>
                 <button
                   onClick={async () => {
@@ -193,12 +196,12 @@ export function DepartmentsTab({
                   {saving ? (
                     <>
                       <Loader2 className={`${actionButtonStyles.icon} animate-spin motion-reduce:animate-none`} />
-                      Salvando...
+                      {t('saving')}
                     </>
                   ) : (
                     <>
                       <Save className={actionButtonStyles.icon} />
-                      Salvar Alterações
+                      {t('saveChanges')}
                     </>
                   )}
                 </button>
@@ -208,7 +211,7 @@ export function DepartmentsTab({
                   className="gap-1.5 py-1.5 px-2 text-xs rounded-full bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
                 >
                   <Plus className="w-3.5 h-3.5" />
-                  Novo Departamento
+                  {t('newDepartment')}
                 </Button>
               </>
             )}

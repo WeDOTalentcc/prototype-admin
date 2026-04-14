@@ -2,6 +2,7 @@
 
 import React from "react"
 import { Calendar } from "lucide-react"
+import { useTranslations } from "next-intl"
 import { GoalsManagement } from "./goals-management"
 import { SmartImportZone } from "./SmartImportZone"
 import { tabStyles } from '@/lib/design-tokens'
@@ -14,18 +15,19 @@ interface GoalsPlanningHubProps {
   activeSubsection?: string
 }
 
-const tabs = [
-  { id: 'workforce', label: 'Planejamento de Contratações', icon: Calendar }
-]
-
 export function GoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection }: GoalsPlanningHubProps) {
+  const t = useTranslations('settings.goals')
   const hub = useGoalsPlanningHub({ users, onGoalUpdate, activeSubsection })
+
+  const tabs = [
+    { id: 'workforce', label: t('tabWorkforce'), icon: Calendar }
+  ]
 
   const renderGoals = () => (
     <div className="space-y-4">
       <SmartImportZone
-        title="Importar Metas"
-        description="Importe metas mensais ou trimestrais por recrutador via planilha. A LIA identifica período, responsável e valores automaticamente."
+        title={t('importGoalsTitle')}
+        description={t('importGoalsDescription')}
         importEndpoint="/api/backend-proxy/goals/import"
         templateDownloadEndpoint="/api/backend-proxy/goals/import/template"
         expectedFields={["user_id", "name", "target", "period", "category"]}

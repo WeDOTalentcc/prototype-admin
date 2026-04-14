@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState, useEffect, useCallback } from "react"
+import { useTranslations } from "next-intl"
 import { cn } from "@/lib/utils"
 import {
   Brain,
@@ -45,67 +46,69 @@ const MODULE_ICONS: Record<string, React.ElementType> = {
   predictive_analytics: BarChart3,
 }
 
-const MODULE_FEATURES: Record<string, string[]> = {
+const MODULE_FEATURE_KEYS: Record<string, string[]> = {
   talent_intelligence_pro: [
-    "Ontologia de Competências com O*NET",
-    "Análise de Lacunas por competências",
-    "Inteligência de Mercado e análise comparativa",
-    "Recomendação de competências adjacentes",
-    "Snapshot de mercado por cargo",
+    "features.talentIntelligence.onet",
+    "features.talentIntelligence.gapAnalysis",
+    "features.talentIntelligence.marketIntelligence",
+    "features.talentIntelligence.adjacentSkills",
+    "features.talentIntelligence.marketSnapshot",
   ],
   internal_mobility: [
-    "Correspondência de talentos internos",
-    "Nota de prontidão por posição",
-    "Plano de desenvolvimento individual",
-    "Mapeamento de sucessão",
+    "features.internalMobility.talentMatching",
+    "features.internalMobility.readinessScore",
+    "features.internalMobility.developmentPlan",
+    "features.internalMobility.successionMapping",
   ],
   interview_intelligence: [
-    "Transcrição automática de entrevistas",
-    "Análise de viés do entrevistador",
-    "Parecer estruturado WSI",
-    "Score de aderência ao perfil",
+    "features.interviewIntelligence.autoTranscription",
+    "features.interviewIntelligence.biasAnalysis",
+    "features.interviewIntelligence.wsiReport",
+    "features.interviewIntelligence.profileScore",
   ],
   workforce_planning: [
-    "Previsão de demanda de contratação",
-    "Cenários de crescimento do time",
-    "Dashboard de capacidade",
-    "Alerta de gargalos no funil",
+    "features.workforcePlanning.demandForecast",
+    "features.workforcePlanning.growthScenarios",
+    "features.workforcePlanning.capacityDashboard",
+    "features.workforcePlanning.funnelBottlenecks",
   ],
   candidate_nurture: [
-    "Sequências automatizadas de contato",
-    "Rastreamento de engajamento",
-    "CRM de candidatos passivos",
-    "Templates personalizáveis",
+    "features.candidateNurture.autoSequences",
+    "features.candidateNurture.engagementTracking",
+    "features.candidateNurture.passiveCRM",
+    "features.candidateNurture.customTemplates",
   ],
   onboarding_suite: [
-    "Workflow pós-contratação",
-    "Checklist de documentos",
-    "Integração com HRIS",
-    "Acompanhamento do período de experiência",
+    "features.onboarding.postHireWorkflow",
+    "features.onboarding.documentChecklist",
+    "features.onboarding.hrisIntegration",
+    "features.onboarding.probationTracking",
   ],
   predictive_analytics: [
-    "Previsão de risco de turnover",
-    "Análise de padrões de saída",
-    "Nota de retenção por equipe",
-    "Alertas proativos de rotatividade",
+    "features.predictiveAnalytics.turnoverRisk",
+    "features.predictiveAnalytics.exitPatterns",
+    "features.predictiveAnalytics.retentionScore",
+    "features.predictiveAnalytics.proactiveAlerts",
   ],
 }
 
-const STATUS_DISPLAY: Record<ModuleStatusType, { label: string; variant: "lilac" | "success" | "info" | "default" | "secondary"; icon: React.ElementType }> = {
-  beta: { label: "BETA", variant: "lilac", icon: Sparkles },
-  trial: { label: "Teste", variant: "info", icon: Clock },
-  active: { label: "Ativo", variant: "success", icon: CheckCircle },
-  expired: { label: "Expirado", variant: "default", icon: Clock },
-  disabled: { label: "Desabilitado", variant: "secondary", icon: Lock },
-  coming_soon: { label: "Em Breve", variant: "secondary", icon: Clock },
+const STATUS_DISPLAY: Record<ModuleStatusType, { labelKey: string; variant: "lilac" | "success" | "info" | "default" | "secondary"; icon: React.ElementType }> = {
+  beta: { labelKey: "status.beta", variant: "lilac", icon: Sparkles },
+  trial: { labelKey: "status.trial", variant: "info", icon: Clock },
+  active: { labelKey: "status.active", variant: "success", icon: CheckCircle },
+  expired: { labelKey: "status.expired", variant: "default", icon: Clock },
+  disabled: { labelKey: "status.disabled", variant: "secondary", icon: Lock },
+  coming_soon: { labelKey: "status.comingSoon", variant: "secondary", icon: Clock },
 }
 
 function ModuleCard({ module }: { module: ModuleInfo }) {
+  const t = useTranslations('modules')
   const statusConfig = STATUS_DISPLAY[module.status]
   const isBeta = module.status === "beta"
   const isComingSoon = module.status === "coming_soon"
   const isAccessible = ["beta", "trial", "active"].includes(module.status)
   const Icon = module.icon
+  const featureKeys = MODULE_FEATURE_KEYS[module.module_name] || []
 
   return (
     <div
@@ -142,7 +145,7 @@ function ModuleCard({ module }: { module: ModuleInfo }) {
           {isBeta ? (
             <BetaBadge size="md" />
           ) : (
-            <Badge variant={statusConfig.variant}>{statusConfig.label}</Badge>
+            <Badge variant={statusConfig.variant}>{t(statusConfig.labelKey)}</Badge>
           )}
         </div>
 
@@ -155,14 +158,14 @@ function ModuleCard({ module }: { module: ModuleInfo }) {
 
         <div className="flex-1">
           <p className="text-[10px] font-semibold uppercase tracking-wider text-lia-text-disabled mb-2">
-            Funcionalidades
+            {t('featuresLabel')}
           </p>
           <ul className="space-y-1.5">
-            {module.features.map((feature, idx) => (
+            {featureKeys.map((key, idx) => (
               <li key={idx} className="flex items-start gap-1.5">
                 <CheckCircle className="w-3 h-3 text-lia-text-disabled flex-shrink-0 mt-0.5" />
                 <span className="text-[11px] text-lia-text-secondary leading-tight">
-                  {feature}
+                  {t(key)}
                 </span>
               </li>
             ))}
@@ -174,14 +177,14 @@ function ModuleCard({ module }: { module: ModuleInfo }) {
         {isBeta && (
           <div className="flex items-center justify-between">
             <span className="text-[10px] text-wedo-purple font-medium">
-              Gratuito durante o BETA
+              {t('card.freeDuringBeta')}
             </span>
             <Button
               size="sm"
               variant="ghost"
               className="h-7 text-xs gap-1 text-wedo-purple hover:text-wedo-purple hover:bg-wedo-purple/10"
             >
-              Explorar
+              {t('card.explore')}
               <ArrowRight className="w-3 h-3" />
             </Button>
           </div>
@@ -189,14 +192,14 @@ function ModuleCard({ module }: { module: ModuleInfo }) {
         {module.status === "active" && (
           <div className="flex items-center justify-between">
             <span className="text-[10px] text-lia-text-secondary font-medium">
-              Módulo ativo
+              {t('card.activeModule')}
             </span>
             <Button
               size="sm"
               variant="ghost"
               className="h-7 text-xs gap-1 text-lia-text-primary"
             >
-              Gerenciar
+              {t('card.manage')}
               <ArrowRight className="w-3 h-3" />
             </Button>
           </div>
@@ -204,14 +207,14 @@ function ModuleCard({ module }: { module: ModuleInfo }) {
         {module.status === "trial" && (
           <div className="flex items-center justify-between">
             <span className="text-[10px] text-lia-text-secondary font-medium">
-              Período de avaliação
+              {t('card.trialPeriod')}
             </span>
             <Button
               size="sm"
               variant="ghost"
               className="h-7 text-xs gap-1 text-wedo-cyan hover:text-wedo-cyan-dark hover:bg-wedo-cyan/10"
             >
-              Ativar
+              {t('card.activate')}
               <ArrowRight className="w-3 h-3" />
             </Button>
           </div>
@@ -219,21 +222,21 @@ function ModuleCard({ module }: { module: ModuleInfo }) {
         {isComingSoon && (
           <div className="flex items-center justify-center">
             <span className="text-[10px] text-lia-text-disabled font-medium">
-              Em desenvolvimento
+              {t('card.inDevelopment')}
             </span>
           </div>
         )}
         {(module.status === "expired" || module.status === "disabled") && (
           <div className="flex items-center justify-between">
             <span className="text-[10px] text-lia-text-disabled font-medium">
-              Acesso indisponível
+              {t('card.accessUnavailable')}
             </span>
             <Button
               size="sm"
               variant="ghost"
               className="h-7 text-xs gap-1 text-lia-text-secondary"
             >
-              Reativar
+              {t('card.reactivate')}
               <ArrowRight className="w-3 h-3" />
             </Button>
           </div>
@@ -243,67 +246,28 @@ function ModuleCard({ module }: { module: ModuleInfo }) {
   )
 }
 
-const FALLBACK_MODULES: ModuleInfo[] = [
-  {
-    module_name: "talent_intelligence_pro",
-    label: "Inteligência de Talentos Pro",
-    description: "Ontologia de Competências + Análise de Lacunas + Inteligência de Mercado",
-    status: "beta",
-    features: MODULE_FEATURES.talent_intelligence_pro,
-    icon: Brain,
-  },
-  {
-    module_name: "internal_mobility",
-    label: "Mobilidade Interna",
-    description: "Correspondência interna + Nota de prontidão",
-    status: "beta",
-    features: MODULE_FEATURES.internal_mobility,
-    icon: Users,
-  },
-  {
-    module_name: "interview_intelligence",
-    label: "Inteligência de Entrevista Pro",
-    description: "Análise WSI de entrevista + viés + parecer",
-    status: "beta",
-    features: MODULE_FEATURES.interview_intelligence,
-    icon: Mic,
-  },
-  {
-    module_name: "workforce_planning",
-    label: "Planejamento de Equipe",
-    description: "Previsão + cenários + dashboard",
-    status: "beta",
-    features: MODULE_FEATURES.workforce_planning,
-    icon: TrendingUp,
-  },
-  {
-    module_name: "candidate_nurture",
-    label: "Nutrição de Candidatos / CRM",
-    description: "Sequências + engajamento + CRM",
-    status: "beta",
-    features: MODULE_FEATURES.candidate_nurture,
-    icon: Heart,
-  },
-  {
-    module_name: "onboarding_suite",
-    label: "Inteligência de Integração",
-    description: "Workflow pós-contratação completo",
-    status: "coming_soon",
-    features: MODULE_FEATURES.onboarding_suite,
-    icon: Rocket,
-  },
-  {
-    module_name: "predictive_analytics",
-    label: "Previsão de Rotatividade",
-    description: "Previsão de risco de turnover com ML",
-    status: "coming_soon",
-    features: MODULE_FEATURES.predictive_analytics,
-    icon: BarChart3,
-  },
+const FALLBACK_MODULE_DEFS = [
+  { module_name: "talent_intelligence_pro", labelKey: "catalog.talentIntelligence.label", descKey: "catalog.talentIntelligence.description", status: "beta" as ModuleStatusType, icon: Brain },
+  { module_name: "internal_mobility", labelKey: "catalog.internalMobility.label", descKey: "catalog.internalMobility.description", status: "beta" as ModuleStatusType, icon: Users },
+  { module_name: "interview_intelligence", labelKey: "catalog.interviewIntelligence.label", descKey: "catalog.interviewIntelligence.description", status: "beta" as ModuleStatusType, icon: Mic },
+  { module_name: "workforce_planning", labelKey: "catalog.workforcePlanning.label", descKey: "catalog.workforcePlanning.description", status: "beta" as ModuleStatusType, icon: TrendingUp },
+  { module_name: "candidate_nurture", labelKey: "catalog.candidateNurture.label", descKey: "catalog.candidateNurture.description", status: "beta" as ModuleStatusType, icon: Heart },
+  { module_name: "onboarding_suite", labelKey: "catalog.onboarding.label", descKey: "catalog.onboarding.description", status: "coming_soon" as ModuleStatusType, icon: Rocket },
+  { module_name: "predictive_analytics", labelKey: "catalog.predictiveAnalytics.label", descKey: "catalog.predictiveAnalytics.description", status: "coming_soon" as ModuleStatusType, icon: BarChart3 },
 ]
 
 export function ModulesPage() {
-  const [modules, setModules] = useState<ModuleInfo[]>(FALLBACK_MODULES)
+  const t = useTranslations('modules')
+  const fallbackModules: ModuleInfo[] = FALLBACK_MODULE_DEFS.map(def => ({
+    module_name: def.module_name,
+    label: t(def.labelKey),
+    description: t(def.descKey),
+    status: def.status,
+    features: (MODULE_FEATURE_KEYS[def.module_name] || []).map(k => t(k)),
+    icon: def.icon,
+  }))
+
+  const [modules, setModules] = useState<ModuleInfo[]>(fallbackModules)
   const [isLoading, setIsLoading] = useState(true)
   const { user } = useAuth()
   const companyId = user?.company || "demo_company"
@@ -325,7 +289,7 @@ export function ModulesPage() {
               status: (m.status as ModuleStatusType) || "beta",
               tier: m.tier as string | undefined,
               features:
-                MODULE_FEATURES[m.module_name as string] || [],
+                (MODULE_FEATURE_KEYS[m.module_name as string] || []).map(k => t(k)),
               icon:
                 MODULE_ICONS[m.module_name as string] || Brain,
             }),
@@ -334,9 +298,9 @@ export function ModulesPage() {
           return
         }
       }
-      setModules(FALLBACK_MODULES)
+      setModules(fallbackModules)
     } catch {
-      setModules(FALLBACK_MODULES)
+      setModules(fallbackModules)
     } finally {
       setIsLoading(false)
     }
@@ -365,10 +329,10 @@ export function ModulesPage() {
           </div>
           <div>
             <h1 className="text-lg font-semibold text-lia-text-primary">
-              Módulos
+              {t('title')}
             </h1>
             <p className="text-xs text-lia-text-secondary">
-              Expanda as capacidades da LIA com módulos especializados
+              {t('subtitle')}
             </p>
           </div>
         </div>
@@ -380,7 +344,7 @@ export function ModulesPage() {
             <div className="flex flex-col items-center gap-3">
               <Loader2 className="w-6 h-6 animate-spin text-lia-text-disabled" />
               <span className="text-xs text-lia-text-secondary">
-                Carregando módulos...
+                {t('loading')}
               </span>
             </div>
           </div>
@@ -391,10 +355,10 @@ export function ModulesPage() {
                 <div className="flex items-center gap-2 mb-4">
                   <Sparkles className="w-4 h-4 text-wedo-purple" />
                   <h2 className="text-sm font-semibold text-lia-text-primary">
-                    Disponíveis em BETA
+                    {t('sections.availableInBeta')}
                   </h2>
                   <span className="text-[10px] text-wedo-purple bg-wedo-purple/10 px-2 py-0.5 rounded-full font-medium">
-                    Gratuito
+                    {t('sections.free')}
                   </span>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -410,7 +374,7 @@ export function ModulesPage() {
                 <div className="flex items-center gap-2 mb-4">
                   <CheckCircle className="w-4 h-4 text-wedo-green" />
                   <h2 className="text-sm font-semibold text-lia-text-primary">
-                    Módulos Ativos
+                    {t('sections.activeModules')}
                   </h2>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -426,7 +390,7 @@ export function ModulesPage() {
                 <div className="flex items-center gap-2 mb-4">
                   <Clock className="w-4 h-4 text-lia-text-disabled" />
                   <h2 className="text-sm font-semibold text-lia-text-primary">
-                    Em Breve
+                    {t('sections.comingSoon')}
                   </h2>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -442,7 +406,7 @@ export function ModulesPage() {
                 <div className="flex items-center gap-2 mb-4">
                   <Lock className="w-4 h-4 text-lia-text-disabled" />
                   <h2 className="text-sm font-semibold text-lia-text-primary">
-                    Outros
+                    {t('sections.others')}
                   </h2>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

@@ -2,6 +2,7 @@
 
 import React from "react"
 import * as Icons from "lucide-react"
+import { useTranslations } from "next-intl"
 import { cn } from "@/lib/utils"
 import { cardStyles, badgeStyles, textStyles } from "@/lib/design-tokens"
 import type { AgentTemplate } from "./types"
@@ -13,6 +14,7 @@ interface TemplateCardProps {
 }
 
 export function TemplateCard({ template, onSelect }: TemplateCardProps) {
+  const t = useTranslations('agents.customAgents')
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const IconComponent = ((Icons as any)[template.icon] || Icons.Bot) as React.ComponentType<{ className?: string }>
 
@@ -30,7 +32,7 @@ export function TemplateCard({ template, onSelect }: TemplateCardProps) {
           <IconComponent className="w-4 h-4 text-wedo-cyan-dark" />
         </div>
         {template.tags.includes("popular") && (
-          <span className={badgeStyles.cyan}>Popular</span>
+          <span className={badgeStyles.cyan}>{t('popular')}</span>
         )}
       </div>
 
@@ -48,7 +50,7 @@ export function TemplateCard({ template, onSelect }: TemplateCardProps) {
           {CATEGORY_LABELS[template.category]}
         </span>
         <span className={cn(badgeStyles.default, "text-[10px]")}>
-          {template.allowed_tools.length} ferramentas
+          {t('toolsCount', { count: template.allowed_tools.length })}
         </span>
       </div>
     </button>

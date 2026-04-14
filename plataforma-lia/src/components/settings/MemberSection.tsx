@@ -16,6 +16,7 @@ import {
   type NewMemberForm,
   DEFAULT_NEW_MEMBER,
 } from './companyTeamHub.types';
+import { useTranslations } from "next-intl";
 
 export interface MemberSectionProps {
   departmentMembers: DepartmentMember[];
@@ -52,11 +53,14 @@ export function MemberSection({
   handleEditMember,
   handleDeleteMember,
 }: MemberSectionProps) {
+  const t = useTranslations('settings.members');
+  const td = useTranslations('settings.departments');
+
   return (
     <div className="border-t border-lia-border-subtle dark:border-lia-border-subtle pt-3 mt-3">
       <div className="flex items-center justify-between mb-2">
         <h5 className="text-xs font-semibold text-lia-text-primary">
-          Colaboradores do Departamento
+          {t('title')}
         </h5>
         <Button
           variant="outline"
@@ -70,14 +74,14 @@ export function MemberSection({
           className={`py-1 px-2 text-micro rounded-full border-lia-border-subtle dark:border-lia-border-subtle text-lia-text-primary hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse ${!isEditingDepartments ? 'opacity-50 cursor-not-allowed' : ''}`}
         >
           <Plus className="w-3 h-3 mr-1" />
-          Adicionar
+          {t('add')}
         </Button>
       </div>
 
       <div className="space-y-2 max-h-chart-sm overflow-y-auto">
         {departmentMembers.length === 0 ? (
           <p className="text-micro text-lia-text-secondary text-center py-3">
-            Nenhum colaborador cadastrado
+            {t('noMembers')}
           </p>
         ) : (
           departmentMembers.map((member) => (
@@ -96,7 +100,7 @@ export function MemberSection({
                     {member.name}
                   </p>
                   <p className="text-micro text-lia-text-secondary">
-                    {member.title || "Sem cargo"} • {member.level}
+                    {member.title || td("noTitle")} • {member.level}
                   </p>
                 </div>
               </div>
@@ -128,12 +132,12 @@ export function MemberSection({
       {showMemberForm && (
         <div className="mt-2 p-2 border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary">
           <h6 className="text-micro font-medium text-lia-text-secondary mb-2">
-            {editingMember ? "Editar Colaborador" : "Novo Colaborador"}
+            {editingMember ? t("editMember") : t("newMember")}
           </h6>
           <div className="grid grid-cols-2 gap-2 mb-2">
             <input
               type="text"
-              placeholder="Nome"
+              placeholder={t('namePlaceholder')}
               value={newMember.name}
               onChange={(e) =>
                 setNewMember((prev) => ({ ...prev, name: e.target.value }))
@@ -142,7 +146,7 @@ export function MemberSection({
             />
             <input
               type="text"
-              placeholder="Cargo"
+              placeholder={t('titlePlaceholder')}
               value={newMember.title}
               onChange={(e) =>
                 setNewMember((prev) => ({ ...prev, title: e.target.value }))
@@ -151,7 +155,7 @@ export function MemberSection({
             />
             <input
               type="email"
-              placeholder="Email"
+              placeholder={t('emailPlaceholder')}
               value={newMember.email}
               onChange={(e) =>
                 setNewMember((prev) => ({ ...prev, email: e.target.value }))
@@ -160,7 +164,7 @@ export function MemberSection({
             />
             <input
               type="text"
-              placeholder="Telefone"
+              placeholder={t('phonePlaceholder')}
               value={newMember.phone}
               onChange={(e) =>
                 setNewMember((prev) => ({ ...prev, phone: e.target.value }))
@@ -169,7 +173,7 @@ export function MemberSection({
             />
             <input
               type="url"
-              placeholder="LinkedIn URL"
+              placeholder={t('linkedinPlaceholder')}
               value={newMember.linkedin_url}
               onChange={(e) =>
                 setNewMember((prev) => ({ ...prev, linkedin_url: e.target.value }))
@@ -183,17 +187,17 @@ export function MemberSection({
               }
               className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-xl bg-lia-bg-primary focus:ring-2 focus:ring-lia-border-subtle focus:border-lia-border-medium dark:focus:ring-lia-border-strong dark:focus:border-lia-border-medium transition-colors motion-reduce:transition-none col-span-2"
             >
-              <option value="ceo">CEO</option>
-              <option value="vp">VP</option>
-              <option value="diretor">Diretor</option>
-              <option value="gerente_senior">Gerente Sênior</option>
-              <option value="gerente">Gerente</option>
-              <option value="lider">Líder</option>
-              <option value="supervisor">Supervisor</option>
-              <option value="especialista">Especialista</option>
-              <option value="analista">Analista</option>
-              <option value="estagiario">Estagiário</option>
-              <option value="outros">Outros</option>
+              <option value="ceo">{t('levelCeo')}</option>
+              <option value="vp">{t('levelVp')}</option>
+              <option value="diretor">{t('levelDirector')}</option>
+              <option value="gerente_senior">{t('levelSeniorManager')}</option>
+              <option value="gerente">{t('levelManager')}</option>
+              <option value="lider">{t('levelLead')}</option>
+              <option value="supervisor">{t('levelSupervisor')}</option>
+              <option value="especialista">{t('levelSpecialist')}</option>
+              <option value="analista">{t('levelAnalyst')}</option>
+              <option value="estagiario">{t('levelIntern')}</option>
+              <option value="outros">{t('levelOther')}</option>
             </select>
           </div>
           {memberError && (
@@ -221,7 +225,7 @@ export function MemberSection({
               className="py-1 px-2 text-micro rounded-full"
               disabled={savingMember}
             >
-              Cancelar
+              {t('cancel')}
             </Button>
             <Button
               size="sm"
@@ -232,10 +236,10 @@ export function MemberSection({
               {savingMember ? (
                 <>
                   <Loader2 className="w-3 h-3 mr-1 animate-spin motion-reduce:animate-none" />
-                  Salvando...
+                  {t('saving')}
                 </>
               ) : (
-                "Salvar"
+                t('save')
               )}
             </Button>
           </div>

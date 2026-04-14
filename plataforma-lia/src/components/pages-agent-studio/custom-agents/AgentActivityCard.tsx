@@ -2,6 +2,7 @@
 
 import React from "react"
 import { Bot, Zap } from "lucide-react"
+import { useTranslations } from "next-intl"
 import { cn } from "@/lib/utils"
 import { cardStyles, badgeStyles } from "@/lib/design-tokens"
 import { BetaBadge } from "@/components/ui/beta-badge"
@@ -23,6 +24,7 @@ export function AgentActivityCard({
   isActive,
   onViewDetails,
 }: AgentActivityCardProps) {
+  const t = useTranslations('agents.customAgents')
   const progress = totalCandidates > 0 ? Math.round((candidatesProcessed / totalCandidates) * 100) : 0
 
   return (
@@ -39,9 +41,9 @@ export function AgentActivityCard({
       </div>
 
       <p className="text-[10px] text-lia-text-secondary">
-        Triou <span className="font-bold font-inter">{candidatesProcessed}</span> CVs
+        {t('screened')} <span className="font-bold font-inter">{candidatesProcessed}</span> {t('cvs')}
         {" · "}
-        <span className="font-bold font-inter text-emerald-600">{candidatesFit}</span> fit
+        <span className="font-bold font-inter text-emerald-600">{candidatesFit}</span> {t('fit')}
       </p>
 
       {/* Progress bar */}
@@ -52,14 +54,14 @@ export function AgentActivityCard({
         />
       </div>
       <div className="flex items-center justify-between">
-        <span className="text-[9px] text-lia-text-disabled">{progress}% processado</span>
+        <span className="text-[9px] text-lia-text-disabled">{progress}% {t('processed')}</span>
         {onViewDetails && (
           <button
             type="button"
             onClick={onViewDetails}
             className="text-[10px] text-wedo-cyan-dark hover:underline"
           >
-            Ver detalhes
+            {t('viewDetailsShort')}
           </button>
         )}
       </div>

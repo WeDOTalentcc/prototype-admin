@@ -2,6 +2,7 @@
 
 import React from "react"
 import { Bot, Activity, Clock, Zap } from "lucide-react"
+import { useTranslations } from "next-intl"
 import { cn } from "@/lib/utils"
 import { cardStyles, badgeStyles } from "@/lib/design-tokens"
 import { BetaBadge } from "@/components/ui/beta-badge"
@@ -15,6 +16,7 @@ interface AgentChatCardProps {
 }
 
 export function AgentChatCard({ agent, deploymentCount = 0, onViewDetails }: AgentChatCardProps) {
+  const t = useTranslations('agents.customAgents')
   const domainLabel = CATEGORY_LABELS[agent.domain as keyof typeof CATEGORY_LABELS] || agent.domain
   const statusBadge = agent.status === "active" ? badgeStyles.success :
                       agent.status === "paused" ? badgeStyles.warning :
@@ -46,19 +48,19 @@ export function AgentChatCard({ agent, deploymentCount = 0, onViewDetails }: Age
         <div className="flex items-center gap-1">
           <Activity className="w-3 h-3 text-lia-text-disabled" />
           <span className="font-bold font-inter text-lia-text-primary">{agent.total_executions}</span>
-          <span className="text-[10px] text-lia-text-disabled">exec</span>
+          <span className="text-[10px] text-lia-text-disabled">{t('execLabel')}</span>
         </div>
         <div className="flex items-center gap-1">
           <Zap className="w-3 h-3 text-lia-text-disabled" />
           <span className="font-bold font-inter text-lia-text-primary">{deploymentCount}</span>
-          <span className="text-[10px] text-lia-text-disabled">vinc</span>
+          <span className="text-[10px] text-lia-text-disabled">{t('vinc')}</span>
         </div>
         <div className="flex items-center gap-1">
           <Clock className="w-3 h-3 text-lia-text-disabled" />
           <span className="font-bold font-inter text-lia-text-primary">
             {agent.avg_confidence > 0 ? `${(agent.avg_confidence * 100).toFixed(0)}%` : "-"}
           </span>
-          <span className="text-[10px] text-lia-text-disabled">conf</span>
+          <span className="text-[10px] text-lia-text-disabled">{t('conf')}</span>
         </div>
       </div>
 
@@ -68,7 +70,7 @@ export function AgentChatCard({ agent, deploymentCount = 0, onViewDetails }: Age
           onClick={onViewDetails}
           className="w-full text-[11px] text-wedo-cyan-dark hover:underline text-left pt-1"
         >
-          Ver detalhes completos →
+          {t('viewDetails')}
         </button>
       )}
     </div>
@@ -95,42 +97,43 @@ export function MetricsSummaryCard({
   active_agents,
   top_agents,
 }: MetricsSummaryCardProps) {
+  const t = useTranslations('agents.customAgents')
   return (
     <div className={cn(cardStyles.default, "p-3 space-y-3 max-w-md")}>
       <div className="flex items-center gap-2">
         <Activity className="w-4 h-4 text-wedo-cyan-dark" />
-        <p className="text-sm font-semibold text-lia-text-primary">Metricas dos ultimos {period_days} dias</p>
+        <p className="text-sm font-semibold text-lia-text-primary">{t('metricsTitle', { days: period_days })}</p>
         <BetaBadge size="sm" />
       </div>
 
       <div className="grid grid-cols-2 gap-2">
         <div className={cn(cardStyles.flat, "p-2")}>
-          <p className="text-[10px] text-lia-text-disabled uppercase">Execucoes</p>
+          <p className="text-[10px] text-lia-text-disabled uppercase">{t('executionsMetric')}</p>
           <p className="text-lg font-bold font-inter text-lia-text-primary">{total_executions}</p>
         </div>
         <div className={cn(cardStyles.flat, "p-2")}>
-          <p className="text-[10px] text-lia-text-disabled uppercase">Agents ativos</p>
+          <p className="text-[10px] text-lia-text-disabled uppercase">{t('activeAgentsMetric')}</p>
           <p className="text-lg font-bold font-inter text-lia-text-primary">{active_agents}</p>
         </div>
         <div className={cn(cardStyles.flat, "p-2")}>
-          <p className="text-[10px] text-lia-text-disabled uppercase">Tokens</p>
+          <p className="text-[10px] text-lia-text-disabled uppercase">{t('tokensMetric')}</p>
           <p className="text-lg font-bold font-inter text-lia-text-primary">{total_tokens.toLocaleString("pt-BR")}</p>
         </div>
         <div className={cn(cardStyles.flat, "p-2")}>
-          <p className="text-[10px] text-lia-text-disabled uppercase">Custo estimado</p>
+          <p className="text-[10px] text-lia-text-disabled uppercase">{t('estimatedCost')}</p>
           <p className="text-lg font-bold font-inter text-lia-text-primary">R${estimated_cost_brl.toFixed(4)}</p>
         </div>
       </div>
 
       {top_agents.length > 0 && (
         <div>
-          <p className="text-[10px] text-lia-text-disabled uppercase mb-1.5">Top agents</p>
+          <p className="text-[10px] text-lia-text-disabled uppercase mb-1.5">{t('topAgents')}</p>
           <div className="space-y-1">
             {top_agents.map((a, i) => (
               <div key={a.agent_id} className="flex items-center justify-between text-xs">
                 <span className="text-lia-text-primary">{i + 1}. {a.agent_name}</span>
                 <span className="text-[10px] text-lia-text-disabled">
-                  {a.execution_count} exec · {a.total_tokens.toLocaleString("pt-BR")} tkn
+                  {a.execution_count} {t('execLabel')} · {a.total_tokens.toLocaleString("pt-BR")} tkn
                 </span>
               </div>
             ))}
@@ -140,7 +143,7 @@ export function MetricsSummaryCard({
 
       {avg_confidence > 0 && (
         <p className="text-[10px] text-lia-text-disabled">
-          Confianca media: {(avg_confidence * 100).toFixed(0)}%
+          {t('avgConfidence')}: {(avg_confidence * 100).toFixed(0)}%
         </p>
       )}
     </div>

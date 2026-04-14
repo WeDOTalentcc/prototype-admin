@@ -2,6 +2,7 @@
 
 import React, { useState } from "react"
 import { ShieldCheck, Loader2 } from "lucide-react"
+import { useTranslations } from "next-intl"
 import { cn } from "@/lib/utils"
 import { buttonStyles } from "@/lib/design-tokens"
 import { toast } from "@/lib/toast"
@@ -13,6 +14,8 @@ interface RequestApprovalButtonProps {
 }
 
 export function RequestApprovalButton({ agent, onRequested }: RequestApprovalButtonProps) {
+  const t = useTranslations('agents.customAgents')
+  const tToast = useTranslations('agents.toast')
   const [isRequesting, setIsRequesting] = useState(false)
 
   const handleRequest = async () => {
@@ -25,12 +28,12 @@ export function RequestApprovalButton({ agent, onRequested }: RequestApprovalBut
       })
       if (!res.ok) {
         const err = await res.json().catch(() => ({ detail: "Erro" }))
-        throw new Error(err.detail || "Erro ao solicitar aprovacao")
+        throw new Error(err.detail || tToast('approvalRequestError'))
       }
-      toast.success("Aprovacao solicitada", "O administrador sera notificado.")
+      toast.success(tToast('approvalRequested'), tToast('approvalRequestedDesc'))
       onRequested?.()
     } catch (e: unknown) {
-      toast.error(e instanceof Error ? e.message : "Erro ao solicitar aprovacao")
+      toast.error(e instanceof Error ? e.message : tToast('approvalRequestError'))
     } finally {
       setIsRequesting(false)
     }
@@ -50,7 +53,7 @@ export function RequestApprovalButton({ agent, onRequested }: RequestApprovalBut
       ) : (
         <ShieldCheck className="w-3.5 h-3.5" />
       )}
-      Solicitar aprovacao
+      {t('requestApproval')}
     </button>
   )
 }

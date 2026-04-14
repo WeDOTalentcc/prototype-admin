@@ -2,6 +2,7 @@
 
 import React, { useState } from "react"
 import { Wand2, Loader2, Check, ChevronDown, ChevronUp } from "lucide-react"
+import { useTranslations } from "next-intl"
 import { cn } from "@/lib/utils"
 import { cardStyles, buttonStyles, textStyles, inputStyles, badgeStyles } from "@/lib/design-tokens"
 import { toast } from "@/lib/toast"
@@ -26,6 +27,8 @@ interface ConversationalCreatorProps {
 }
 
 export function ConversationalCreator({ onAgentCreated }: ConversationalCreatorProps) {
+  const t = useTranslations('agents.customAgents')
+  const tToast = useTranslations('agents.toast')
   const [description, setDescription] = useState("")
   const [isGenerating, setIsGenerating] = useState(false)
   const [config, setConfig] = useState<GeneratedConfig | null>(null)
@@ -48,12 +51,12 @@ export function ConversationalCreator({ onAgentCreated }: ConversationalCreatorP
       })
       if (!res.ok) {
         const err = await res.json().catch(() => ({ detail: "Erro" }))
-        throw new Error(err.detail || "Erro ao gerar")
+        throw new Error(err.detail || tToast('errorGenerating'))
       }
       const data = await res.json()
       setConfig(data)
     } catch (e: unknown) {
-      toast.error(e instanceof Error ? e.message : "Erro ao gerar configuracao")
+      toast.error(e instanceof Error ? e.message : tToast('errorGenerating'))
     } finally {
       setIsGenerating(false)
     }
@@ -82,13 +85,13 @@ export function ConversationalCreator({ onAgentCreated }: ConversationalCreatorP
           temperature: config.suggested_temperature,
         }),
       })
-      if (!res.ok) throw new Error("Erro ao criar agente")
-      toast.success(`Agente "${config.suggested_name}" criado!`, "Agora vincule a uma vaga ou banco de talentos.")
+      if (!res.ok) throw new Error(tToast('errorCreatingAgent'))
+      toast.success(tToast('agentCreated', { name: config.suggested_name }), tToast('agentCreatedDesc'))
       setConfig(null)
       setDescription("")
       onAgentCreated()
     } catch {
-      toast.error("Erro ao criar agente")
+      toast.error(tToast('errorCreatingAgent'))
     } finally {
       setIsCreating(false)
     }
@@ -100,12 +103,12 @@ export function ConversationalCreator({ onAgentCreated }: ConversationalCreatorP
     <div className={cn(cardStyles.default, "p-5")}>
       <div className="flex items-center gap-2 mb-3">
         <Wand2 className="w-4 h-4 text-wedo-cyan-dark" />
-        <h3 className={cn(textStyles.subtitle, "text-sm font-semibold")}>Criar com IA</h3>
+        <h3 className={cn(textStyles.subtitle, "text-sm font-semibold")}>{t('createWithAI')}</h3>
         <BetaBadge size="sm" />
       </div>
 
       <p className={cn(textStyles.caption, "mb-3 text-xs")}>
-        Descreva o que voce precisa e a LIA configura o agente automaticamente
+        {t('describeNeed')}
       </p>
 
       {/* Input */}
@@ -113,7 +116,7 @@ export function ConversationalCreator({ onAgentCreated }: ConversationalCreatorP
         <textarea
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          placeholder="Ex: Preciso de um agente que filtre candidatos Python com 3+ anos de experiencia em cloud AWS e classifique por senioridade..."
+          placeholder={t('aiPlaceholder')}
           rows={2}
           className={cn(inputStyles.default, "flex-1 text-sm resize-none")}
         />
@@ -123,7 +126,7 @@ export function ConversationalCreator({ onAgentCreated }: ConversationalCreatorP
           disabled={isGenerating || description.length < 10}
           className={cn(buttonStyles.primary, "px-4 py-2 text-xs self-end shrink-0")}
         >
-          {isGenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : "Gerar"}
+          {isGenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : t('generate')}
         </button>
       </div>
 
@@ -133,7 +136,7 @@ export function ConversationalCreator({ onAgentCreated }: ConversationalCreatorP
           <div className="flex items-center gap-2">
             <Check className="w-4 h-4 text-emerald-500" />
             <span className={cn(textStyles.subtitle, "text-sm font-semibold")}>
-              Configuracao sugerida
+              {t('suggestedConfig')}
             </span>
           </div>
 
@@ -153,9 +156,9 @@ export function ConversationalCreator({ onAgentCreated }: ConversationalCreatorP
             </div>
 
             <div className="flex items-center gap-3 pt-1 text-[10px] text-lia-text-disabled">
-              <span>Contexto: {config.suggested_context_level}</span>
-              <span>Steps: {config.suggested_max_steps}</span>
-              <span>Temp: {config.suggested_temperature}</span>
+              <span>{t('context')}: {config.suggested_context_level}</span>
+              <span>{t('steps')}: {config.suggested_max_steps}</span>
+              <span>{t('temp')}: {config.suggested_temperature}</span>
             </div>
 
             {config.reasoning && (
@@ -171,7 +174,7 @@ export function ConversationalCreator({ onAgentCreated }: ConversationalCreatorP
               className="flex items-center gap-1 text-[10px] text-lia-text-disabled hover:text-lia-text-secondary pt-1"
             >
               {showPrompt ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-              {showPrompt ? "Ocultar prompt" : "Ver prompt completo"}
+              {showPrompt ? t('hidePrompt') : t('viewFullPrompt')}
             </button>
             {showPrompt && (
               <pre className="text-[10px] text-lia-text-secondary bg-lia-bg-tertiary rounded-md p-3 overflow-auto max-h-32 whitespace-pre-wrap font-mono">
@@ -187,14 +190,14 @@ export function ConversationalCreator({ onAgentCreated }: ConversationalCreatorP
               disabled={isCreating}
               className={cn(buttonStyles.primary, "text-xs px-4 py-1.5")}
             >
-              {isCreating ? "Criando..." : "Criar agente"}
+              {isCreating ? t('creatingAgent') : t('createAgentBtn')}
             </button>
             <button
               type="button"
               onClick={() => { setConfig(null); setDescription("") }}
               className={cn(buttonStyles.ghost, "text-xs px-3 py-1.5")}
             >
-              Recomecar
+              {t('startOver')}
             </button>
           </div>
         </div>

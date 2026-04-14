@@ -2,30 +2,10 @@
 
 import React from "react"
 import { Minimize2, Layers, Maximize2 } from "lucide-react"
+import { useTranslations } from "next-intl"
 import { cn } from "@/lib/utils"
 import { cardStyles } from "@/lib/design-tokens"
 import type { ContextLevel } from "./types"
-
-const LEVELS: { value: ContextLevel; label: string; desc: string; icon: React.ReactNode }[] = [
-  {
-    value: "minimal",
-    label: "Minimo",
-    desc: "Persona + instrucoes customizadas. Rapido e focado.",
-    icon: <Minimize2 className="w-4 h-4" />,
-  },
-  {
-    value: "standard",
-    label: "Padrao",
-    desc: "Persona + tenant + usuario + instrucoes. Equilibrado.",
-    icon: <Layers className="w-4 h-4" />,
-  },
-  {
-    value: "full",
-    label: "Completo",
-    desc: "Tudo: persona + tenant + usuario + historico + few-shot.",
-    icon: <Maximize2 className="w-4 h-4" />,
-  },
-]
 
 interface ContextLevelSelectProps {
   value: ContextLevel
@@ -33,10 +13,33 @@ interface ContextLevelSelectProps {
 }
 
 export function ContextLevelSelect({ value, onChange }: ContextLevelSelectProps) {
+  const t = useTranslations('agents.customAgents')
+
+  const LEVELS: { value: ContextLevel; label: string; desc: string; icon: React.ReactNode }[] = [
+    {
+      value: "minimal",
+      label: t('minimal'),
+      desc: t('minimalDesc'),
+      icon: <Minimize2 className="w-4 h-4" />,
+    },
+    {
+      value: "standard",
+      label: t('standard'),
+      desc: t('standardDesc'),
+      icon: <Layers className="w-4 h-4" />,
+    },
+    {
+      value: "full",
+      label: t('full'),
+      desc: t('fullDesc'),
+      icon: <Maximize2 className="w-4 h-4" />,
+    },
+  ]
+
   return (
     <div>
       <label className="text-xs font-semibold text-lia-text-primary mb-2 block">
-        Nivel de contexto
+        {t('contextLevel')}
       </label>
       <div className="grid grid-cols-3 gap-2">
         {LEVELS.map((level) => (

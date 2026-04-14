@@ -1,10 +1,13 @@
-import type { Metadata } from "next"
+import { getTranslations } from "next-intl/server"
 import AgentStudioClient from "./AgentStudioClient"
 import { ErrorBoundarySection } from "@/components/ui/error-boundary-section"
 
-export const metadata: Metadata = {
-  title: "Agent Studio | LIA — WeDo Talent",
-  description: "Crie agentes de sourcing a partir de templates por setor. Configure calibração e automação.",
+export async function generateMetadata() {
+  const t = await getTranslations('agents.metadata')
+  return {
+    title: t('title'),
+    description: t('description'),
+  }
 }
 
 export default function AgentStudioPage() {

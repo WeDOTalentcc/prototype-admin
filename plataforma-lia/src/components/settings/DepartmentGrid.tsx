@@ -1,9 +1,9 @@
 "use client";
 
-import React from"react";
-import { Button } from"@/components/ui/button";
-import { Card, CardContent } from"@/components/ui/card";
-import { Badge } from"@/components/ui/badge";
+import React from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import {
   Users,
   Network,
@@ -11,7 +11,7 @@ import {
   Trash2,
   Building2,
   Maximize2,
-} from"lucide-react";
+} from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,8 +21,9 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from"@/components/ui/alert-dialog";
+} from "@/components/ui/alert-dialog";
 import { type Department } from './companyTeamHub.types';
+import { useTranslations } from "next-intl";
 
 export interface DepartmentGridProps {
   departments: Department[];
@@ -45,6 +46,8 @@ export function DepartmentGrid({
   handleDeleteDepartment,
   handleOpenOrgChart,
 }: DepartmentGridProps) {
+  const t = useTranslations('settings.departments');
+
   return (
     <>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -52,10 +55,10 @@ export function DepartmentGrid({
           <div className="col-span-2 text-center py-8 text-lia-text-secondary">
             <Network className="w-12 h-12 mx-auto mb-3 opacity-30" />
             <p className="text-xs font-medium text-lia-text-primary">
-              Nenhum departamento cadastrado
+              {t('noDepartments')}
             </p>
             <p className="text-xs mt-1 text-lia-text-secondary">
-              Clique em"Novo Departamento" ou importe uma planilha para começar
+              {t('noDepartmentsHint')}
             </p>
           </div>
         ) : (
@@ -87,7 +90,7 @@ export function DepartmentGrid({
                       size="sm"
                       className="h-7 w-7 p-0 rounded-xl hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse"
                       onClick={() => handleOpenOrgChart(dept)}
-                      title="Ver organograma"
+                      title={t('viewOrgChart')}
                     >
                       <Maximize2 className="w-3.5 h-3.5 text-lia-text-secondary" />
                     </Button>
@@ -114,7 +117,7 @@ export function DepartmentGrid({
                 <div className="mt-2 pt-2 border-t border-lia-border-subtle dark:border-lia-border-strong flex items-center justify-between">
                   <div className="flex items-center gap-2 text-micro text-lia-text-secondary">
                     <Users className="w-3 h-3" />
-                    <span>{dept.headcount} colaboradores</span>
+                    <span>{dept.headcount} {t('employees')}</span>
                   </div>
                   {dept.manager && (
                     <Badge
@@ -138,16 +141,15 @@ export function DepartmentGrid({
         <AlertDialogContent className="rounded-md">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-sm font-semibold text-lia-text-primary">
-              Excluir Departamento
+              {t('deleteDepartmentTitle')}
             </AlertDialogTitle>
             <AlertDialogDescription>
-              Tem certeza que deseja excluir o departamento"
-              {departmentToDelete?.name}"? Esta ação não pode ser desfeita.
+              {t('deleteDepartmentConfirm', { name: departmentToDelete?.name || '' })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel className="rounded-md text-xs">
-              Cancelar
+              {t('cancel')}
             </AlertDialogCancel>
             <AlertDialogAction
               className="rounded-md text-xs bg-status-error hover:bg-status-error"
@@ -156,7 +158,7 @@ export function DepartmentGrid({
                 handleDeleteDepartment(departmentToDelete.id)
               }
             >
-              Excluir
+              {t('deleteButton')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

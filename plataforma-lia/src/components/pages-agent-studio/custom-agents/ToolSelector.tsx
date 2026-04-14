@@ -1,6 +1,7 @@
 "use client"
 
 import React from "react"
+import { useTranslations } from "next-intl"
 import { cn } from "@/lib/utils"
 import { cardStyles } from "@/lib/design-tokens"
 import { TOOL_LABELS } from "./types"
@@ -13,7 +14,8 @@ interface ToolSelectorProps {
   label?: string
 }
 
-export function ToolSelector({ selectedTools, onChange, label = "Ferramentas" }: ToolSelectorProps) {
+export function ToolSelector({ selectedTools, onChange, label }: ToolSelectorProps) {
+  const t = useTranslations('agents.customAgents')
   const toggle = (tool: string) => {
     onChange(
       selectedTools.includes(tool)
@@ -25,7 +27,7 @@ export function ToolSelector({ selectedTools, onChange, label = "Ferramentas" }:
   return (
     <div>
       <label className="text-xs font-semibold text-lia-text-primary mb-2 block">
-        {label}
+        {label || t('tools')}
         <span className="font-normal text-lia-text-disabled ml-1">
           ({selectedTools.length}/{ALL_TOOLS.length})
         </span>

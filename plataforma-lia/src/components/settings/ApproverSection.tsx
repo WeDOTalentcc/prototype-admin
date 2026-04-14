@@ -1,10 +1,10 @@
 "use client";
 
-import React from"react";
-import { Button } from"@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card";
-import { Badge } from"@/components/ui/badge";
-import { Avatar, AvatarFallback } from"@/components/ui/avatar";
+import React from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   Plus,
   Edit,
@@ -13,11 +13,12 @@ import {
   CheckCircle,
   AlertCircle,
   Crown,
-} from"lucide-react";
+} from "lucide-react";
 import {
   type Approver,
   type NewApproverForm,
-} from"./companyTeamHub.types";
+} from "./companyTeamHub.types";
+import { useTranslations } from "next-intl";
 
 export interface ApproverSectionProps {
   approvers: Approver[];
@@ -46,6 +47,8 @@ export const ApproverSection = React.memo(function ApproverSection({
   handleSaveApprover,
   handleDeleteApprover,
 }: ApproverSectionProps) {
+  const t = useTranslations('settings.approvers');
+
   return (
     <div className="space-y-3">
       {successMessage && (
@@ -67,10 +70,10 @@ export const ApproverSection = React.memo(function ApproverSection({
             <div>
               <CardTitle className="text-base-ui font-semibold flex items-center gap-2">
                 <Crown className="w-3.5 h-3.5 text-lia-text-secondary" />
-                Fluxo de Aprovação de Vagas
+                {t('title')}
               </CardTitle>
               <p className="text-xs text-lia-text-secondary mt-1" aria-live="polite" aria-atomic="true">
-                Configure os níveis de aprovação para abertura de vagas
+                {t('description')}
               </p>
             </div>
             <Button
@@ -79,16 +82,16 @@ export const ApproverSection = React.memo(function ApproverSection({
               className="gap-1.5 py-1.5 px-2 text-xs rounded-full border-lia-border-subtle dark:border-lia-border-subtle text-lia-text-primary hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse"
               onClick={() => {
                 setNewApprover({
-                  userName:"",
-                  email:"",
-                  role:"",
+                  userName: "",
+                  email: "",
+                  role: "",
                   level: approvers.length + 1,
                 });
                 setShowApproverForm(true);
               }}
             >
               <Plus className="w-3.5 h-3.5" />
-              Adicionar Nível
+              {t('addLevel')}
             </Button>
           </div>
         </CardHeader>
@@ -97,17 +100,17 @@ export const ApproverSection = React.memo(function ApproverSection({
             <Card className="border border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 rounded-xl mb-3">
               <CardContent className="p-3 space-y-2">
                 <h4 className="text-xs font-semibold">
-                  {editingApprover ?"Editar Aprovador" :"Novo Aprovador"}
+                  {editingApprover ? t("editApprover") : t("newApprover")}
                 </h4>
                 <div className="grid grid-cols-2 gap-2">
                   <div>
                     <label className="block text-micro font-medium text-lia-text-secondary mb-1">
-                      Nome
+                      {t('name')}
                     </label>
                     <input
                       type="text"
                       className="w-full px-2 py-1.5 rounded-full border border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary text-xs"
-                      placeholder="Nome do aprovador"
+                      placeholder={t('namePlaceholder')}
                       value={editingApprover ? editingApprover.userName : newApprover.userName}
                       onChange={(e) =>
                         editingApprover
@@ -118,12 +121,12 @@ export const ApproverSection = React.memo(function ApproverSection({
                   </div>
                   <div>
                     <label className="block text-micro font-medium text-lia-text-secondary mb-1">
-                      Email
+                      {t('email')}
                     </label>
                     <input
                       type="email"
                       className="w-full px-2 py-1.5 rounded-full border border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary text-xs"
-                      placeholder="email@empresa.com"
+                      placeholder={t('emailPlaceholder')}
                       value={editingApprover ? editingApprover.email : newApprover.email}
                       onChange={(e) =>
                         editingApprover
@@ -134,12 +137,12 @@ export const ApproverSection = React.memo(function ApproverSection({
                   </div>
                   <div>
                     <label className="block text-micro font-medium text-lia-text-secondary mb-1">
-                      Cargo
+                      {t('role')}
                     </label>
                     <input
                       type="text"
                       className="w-full px-2 py-1.5 rounded-full border border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary text-xs"
-                      placeholder="Ex: Gerente de RH"
+                      placeholder={t('rolePlaceholder')}
                       value={editingApprover ? editingApprover.role : newApprover.role}
                       onChange={(e) =>
                         editingApprover
@@ -150,7 +153,7 @@ export const ApproverSection = React.memo(function ApproverSection({
                   </div>
                   <div>
                     <label className="block text-micro font-medium text-lia-text-secondary mb-1">
-                      Nível de Aprovação
+                      {t('approvalLevel')}
                     </label>
                     <input
                       type="number"
@@ -175,7 +178,7 @@ export const ApproverSection = React.memo(function ApproverSection({
                     }}
                     className="py-1.5 px-2 text-xs rounded-full"
                   >
-                    Cancelar
+                    {t('cancel')}
                   </Button>
                   <Button
                     size="sm"
@@ -183,7 +186,7 @@ export const ApproverSection = React.memo(function ApproverSection({
                     className="py-1.5 px-2 text-xs rounded-full bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
                   >
                     <Save className="w-3.5 h-3.5 mr-1" />
-                    Salvar
+                    {t('save')}
                   </Button>
                 </div>
               </CardContent>
@@ -194,10 +197,10 @@ export const ApproverSection = React.memo(function ApproverSection({
             <div className="text-center py-6 text-lia-text-secondary">
               <Crown className="w-10 h-10 mx-auto mb-2 opacity-30" />
               <p className="text-xs">
-                Nenhum aprovador configurado
+                {t('noApprovers')}
               </p>
               <p className="text-micro mt-1">
-                Clique em"Adicionar Nível" para criar um fluxo de aprovação
+                {t('noApproversHint')}
               </p>
             </div>
           ) : (
@@ -237,10 +240,10 @@ export const ApproverSection = React.memo(function ApproverSection({
                         </div>
                         <div className="flex items-center gap-1">
                           <Badge
-                            variant={approver.isActive ?"default" :"outline"}
+                            variant={approver.isActive ? "default" : "outline"}
                             
                           >
-                            {approver.isActive ?"Ativo" :"Inativo"}
+                            {approver.isActive ? t("active") : t("inactive")}
                           </Badge>
                           <Button
                             variant="ghost"
@@ -271,12 +274,10 @@ export const ApproverSection = React.memo(function ApproverSection({
               <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5 text-lia-text-secondary" />
               <div>
                 <p className="text-xs font-semibold text-lia-text-primary">
-                  Fluxo de Aprovação
+                  {t('flowTitle')}
                 </p>
                 <p className="text-micro mt-0.5 text-lia-text-secondary" aria-live="polite" aria-atomic="true">
-                  Vagas serão enviadas para aprovação sequencial, do nível 1 ao
-                  nível final. Cada aprovador receberá notificação por email e
-                  pode aprovar diretamente na plataforma.
+                  {t('flowDescription')}
                 </p>
               </div>
             </div>

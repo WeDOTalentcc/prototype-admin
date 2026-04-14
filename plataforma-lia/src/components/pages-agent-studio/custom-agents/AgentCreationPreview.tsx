@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react"
 import { Wand2, Check, X, Loader2, ChevronDown, ChevronUp } from "lucide-react"
+import { useTranslations } from "next-intl"
 import { cn } from "@/lib/utils"
 import { cardStyles, badgeStyles, textStyles, buttonStyles } from "@/lib/design-tokens"
 import { BetaBadge } from "@/components/ui/beta-badge"
@@ -28,6 +29,8 @@ interface AgentCreationPreviewProps {
 }
 
 export function AgentCreationPreview({ description, onClose, onCreated }: AgentCreationPreviewProps) {
+  const t = useTranslations('agents.customAgents')
+  const tToast = useTranslations('agents.toast')
   const [config, setConfig] = useState<GeneratedConfig | null>(null)
   const [isGenerating, setIsGenerating] = useState(true)
   const [isCreating, setIsCreating] = useState(false)
@@ -49,12 +52,12 @@ export function AgentCreationPreview({ description, onClose, onCreated }: AgentC
         })
         if (!res.ok) {
           const err = await res.json().catch(() => ({ detail: "Erro" }))
-          throw new Error(err.detail || "Erro ao gerar")
+          throw new Error(err.detail || tToast('errorGenerating'))
         }
         const data = await res.json()
         if (!cancelled) setConfig(data)
       } catch (e: unknown) {
-        if (!cancelled) setError(e instanceof Error ? e.message : "Erro ao gerar configuracao")
+        if (!cancelled) setError(e instanceof Error ? e.message : tToast('errorGenerating'))
       } finally {
         if (!cancelled) setIsGenerating(false)
       }
@@ -86,13 +89,13 @@ export function AgentCreationPreview({ description, onClose, onCreated }: AgentC
           temperature: config.suggested_temperature,
         }),
       })
-      if (!res.ok) throw new Error("Erro ao criar")
+      if (!res.ok) throw new Error(tToast('errorCreatingAgent'))
       const agent = await res.json()
-      toast.success(`Agente "${config.suggested_name}" criado!`, "Agora vincule a uma vaga ou pool.")
+      toast.success(tToast('agentCreated', { name: config.suggested_name }), tToast('agentCreatedDesc'))
       onCreated?.(agent.id)
       onClose()
     } catch {
-      toast.error("Erro ao criar agente")
+      toast.error(tToast('errorCreatingAgent'))
     } finally {
       setIsCreating(false)
     }
@@ -106,7 +109,7 @@ export function AgentCreationPreview({ description, onClose, onCreated }: AgentC
       <div className="flex items-center justify-between p-4 border-b border-lia-border-subtle">
         <div className="flex items-center gap-2">
           <Wand2 className="w-4 h-4 text-wedo-cyan-dark" />
-          <h3 className={cn(textStyles.subtitle, "text-sm font-semibold")}>Novo Agente</h3>
+          <h3 className={cn(textStyles.subtitle, "text-sm font-semibold")}>{t('newAgent')}</h3>
           <BetaBadge size="sm" />
         </div>
         <button type="button" onClick={onClose} className="text-lia-text-disabled hover:text-lia-text-secondary">
@@ -117,14 +120,14 @@ export function AgentCreationPreview({ description, onClose, onCreated }: AgentC
       {/* Body */}
       <div className="flex-1 overflow-auto p-4 space-y-3">
         <div className={cn(cardStyles.flat, "p-3")}>
-          <p className="text-[10px] text-lia-text-disabled uppercase font-semibold">Sua solicitacao</p>
+          <p className="text-[10px] text-lia-text-disabled uppercase font-semibold">{t('yourRequest')}</p>
           <p className="text-xs text-lia-text-secondary mt-1">{description}</p>
         </div>
 
         {isGenerating && (
           <div className="flex items-center gap-2 py-8 justify-center">
             <Loader2 className="w-4 h-4 animate-spin text-wedo-cyan-dark" />
-            <span className="text-xs text-lia-text-secondary">LIA esta configurando o agente...</span>
+            <span className="text-xs text-lia-text-secondary">{t('liaConfiguring')}</span>
           </div>
         )}
 
@@ -138,7 +141,7 @@ export function AgentCreationPreview({ description, onClose, onCreated }: AgentC
           <>
             <div className="flex items-center gap-2">
               <Check className="w-4 h-4 text-emerald-500" />
-              <span className={cn(textStyles.subtitle, "text-sm font-semibold")}>Configuracao sugerida</span>
+              <span className={cn(textStyles.subtitle, "text-sm font-semibold")}>{t('suggestedConfig')}</span>
             </div>
 
             <div className={cn(cardStyles.default, "p-4 space-y-2")}>
@@ -157,9 +160,9 @@ export function AgentCreationPreview({ description, onClose, onCreated }: AgentC
               </div>
 
               <div className="flex items-center gap-3 pt-1 text-[10px] text-lia-text-disabled">
-                <span>Contexto: {config.suggested_context_level}</span>
-                <span>Steps: {config.suggested_max_steps}</span>
-                <span>Temp: {config.suggested_temperature}</span>
+                <span>{t('context')}: {config.suggested_context_level}</span>
+                <span>{t('steps')}: {config.suggested_max_steps}</span>
+                <span>{t('temp')}: {config.suggested_temperature}</span>
               </div>
 
               {config.reasoning && (
@@ -174,7 +177,7 @@ export function AgentCreationPreview({ description, onClose, onCreated }: AgentC
                 className="flex items-center gap-1 text-[10px] text-lia-text-disabled hover:text-lia-text-secondary pt-1"
               >
                 {showPrompt ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-                {showPrompt ? "Ocultar prompt" : "Ver prompt completo"}
+                {showPrompt ? t('hidePrompt') : t('viewFullPrompt')}
               </button>
               {showPrompt && (
                 <pre className="text-[10px] text-lia-text-secondary bg-lia-bg-tertiary rounded-md p-3 overflow-auto max-h-32 whitespace-pre-wrap font-mono">
@@ -195,14 +198,14 @@ export function AgentCreationPreview({ description, onClose, onCreated }: AgentC
             disabled={isCreating}
             className={cn(buttonStyles.primary, "flex-1 text-xs px-4 py-2")}
           >
-            {isCreating ? "Criando..." : "Criar agente"}
+            {isCreating ? t('creatingAgent') : t('createAgentBtn')}
           </button>
           <button
             type="button"
             onClick={onClose}
             className={cn(buttonStyles.ghost, "text-xs px-3 py-2")}
           >
-            Cancelar
+            {t('cancelBtn')}
           </button>
         </div>
       )}

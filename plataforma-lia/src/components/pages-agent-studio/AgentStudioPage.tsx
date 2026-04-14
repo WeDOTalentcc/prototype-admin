@@ -23,6 +23,7 @@ import { Button } from "@/components/ui/button"
 import { BetaBadge } from "@/components/ui/beta-badge"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
 import { PageTabNavigation } from "@/components/ui/page-tab-navigation"
+import { useTranslations } from "next-intl"
 
 interface SourcingAgent {
   id: string
@@ -62,17 +63,17 @@ const SECTOR_COLORS: Record<string, { bg: string; text: string; accent: string; 
   truck: { bg: "bg-emerald-50 dark:bg-emerald-950/20", text: "text-emerald-700 dark:text-emerald-400", accent: "bg-emerald-500", glow: "shadow-emerald-200/50 dark:shadow-emerald-900/30" },
 }
 
-const STATUS_CONFIG = {
-  active: { label: "Ativo", dot: "bg-emerald-500", bg: "bg-emerald-50 dark:bg-emerald-950/30", text: "text-emerald-700 dark:text-emerald-400", pulse: true },
-  paused: { label: "Pausado", dot: "bg-amber-500", bg: "bg-amber-50 dark:bg-amber-950/30", text: "text-amber-700 dark:text-amber-400", pulse: false },
-  completed: { label: "Concluído", dot: "bg-lia-text-disabled", bg: "bg-lia-bg-tertiary", text: "text-lia-text-secondary", pulse: false },
+const STATUS_CONFIG_STYLES = {
+  active: { labelKey: "studio.status.active" as const, dot: "bg-emerald-500", bg: "bg-emerald-50 dark:bg-emerald-950/30", text: "text-emerald-700 dark:text-emerald-400", pulse: true },
+  paused: { labelKey: "studio.status.paused" as const, dot: "bg-amber-500", bg: "bg-amber-50 dark:bg-amber-950/30", text: "text-amber-700 dark:text-amber-400", pulse: false },
+  completed: { labelKey: "studio.status.completed" as const, dot: "bg-lia-text-disabled", bg: "bg-lia-bg-tertiary", text: "text-lia-text-secondary", pulse: false },
 }
 
-const FLOW_STEPS = [
-  { icon: Target, title: "Escolha um perfil", desc: "Selecione o setor ou tipo de profissional que você busca", color: "text-cyan-600 dark:text-cyan-400", bg: "bg-cyan-50 dark:bg-cyan-950/30" },
-  { icon: Wand2, title: "Configure o agente", desc: "Defina preferências, skills e vincule a uma vaga ou banco de talentos", color: "text-violet-600 dark:text-violet-400", bg: "bg-violet-50 dark:bg-violet-950/30" },
-  { icon: GraduationCap, title: "Ensine avaliando", desc: "Avalie 3+ perfis para o agente aprender seus critérios de seleção", color: "text-amber-600 dark:text-amber-400", bg: "bg-amber-50 dark:bg-amber-950/30" },
-  { icon: Zap, title: "Receba candidatos", desc: "O agente busca e filtra candidatos 24/7, você só avalia os melhores", color: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-50 dark:bg-emerald-950/30" },
+const FLOW_STEPS_CONFIG = [
+  { icon: Target, titleKey: "studio.flowSteps.chooseProfile" as const, descKey: "studio.flowSteps.chooseProfileDesc" as const, color: "text-cyan-600 dark:text-cyan-400", bg: "bg-cyan-50 dark:bg-cyan-950/30" },
+  { icon: Wand2, titleKey: "studio.flowSteps.configureAgent" as const, descKey: "studio.flowSteps.configureAgentDesc" as const, color: "text-violet-600 dark:text-violet-400", bg: "bg-violet-50 dark:bg-violet-950/30" },
+  { icon: GraduationCap, titleKey: "studio.flowSteps.teachByEvaluating" as const, descKey: "studio.flowSteps.teachByEvaluatingDesc" as const, color: "text-amber-600 dark:text-amber-400", bg: "bg-amber-50 dark:bg-amber-950/30" },
+  { icon: Zap, titleKey: "studio.flowSteps.receiveCandidates" as const, descKey: "studio.flowSteps.receiveCandidatesDesc" as const, color: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-50 dark:bg-emerald-950/30" },
 ]
 
 interface AgentStudioPageProps {
@@ -86,6 +87,7 @@ export default function AgentStudioPage({
   onNavigateToJob,
   onStartCalibration,
 }: AgentStudioPageProps) {
+  const t = useTranslations("agents")
   const [agents, setAgents] = useState<SourcingAgent[]>([])
   const [templates, setTemplates] = useState<SectorTemplate[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -134,11 +136,11 @@ export default function AgentStudioPage({
       if (!res.ok) {
         throw new Error(`Erro ${res.status}`)
       }
-      toast.success(action === "pause" ? "Agente pausado" : "Agente retomado")
+      toast.success(action === "pause" ? t("studio.toast.agentPaused") : t("studio.toast.agentResumed"))
       loadData()
     } catch (err) {
       console.error("Failed to toggle agent:", err)
-      toast.error("Erro ao alterar status do agente", "Tente novamente em alguns instantes.")
+      toast.error(t("studio.toast.errorToggleStatus"), t("studio.toast.tryAgain"))
     }
   }
 
@@ -167,13 +169,13 @@ export default function AgentStudioPage({
           excluded_tools: template.excluded_tools,
         }),
       })
-      if (!res.ok) throw new Error("Erro ao criar agente")
-      toast.success(`Agente "${template.name}" criado!`, "Agora vincule a uma vaga ou banco de talentos.")
+      if (!res.ok) throw new Error(t("studio.toast.errorCreating"))
+      toast.success(t("studio.toast.agentCreated", { name: template.name }), t("studio.toast.agentCreatedDesc"))
       mutateCustomAgents()
       resetStudio()
       setActiveTab("custom")
     } catch {
-      toast.error("Erro ao criar agente", "Tente novamente.")
+      toast.error(t("studio.toast.errorCreating"), t("studio.toast.tryAgainShort"))
     }
   }
 
@@ -189,10 +191,10 @@ export default function AgentStudioPage({
         },
         body: JSON.stringify({ status: newStatus }),
       })
-      toast.success(newStatus === "active" ? "Agente ativado" : "Agente pausado")
+      toast.success(newStatus === "active" ? t("studio.toast.agentActivated") : t("studio.toast.agentPaused"))
       mutateCustomAgents()
     } catch {
-      toast.error("Erro ao alterar status")
+      toast.error(t("studio.toast.errorStatus"))
     }
   }
 
@@ -205,7 +207,7 @@ export default function AgentStudioPage({
       <div className="flex-shrink-0 px-4 pt-3 pb-0">
         <div className="flex items-center justify-between mb-2">
           <h1 className="text-lg font-semibold text-lia-text-primary">
-            Agent Studio
+            {t("studio.title")}
           </h1>
           <div className="flex items-center gap-2">
             <Button
@@ -222,18 +224,18 @@ export default function AgentStudioPage({
               className="gap-2 bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover"
             >
               <Plus className="w-4 h-4" />
-              Criar Agente
+              {t("studio.createAgent")}
             </Button>
           </div>
         </div>
 
         <PageTabNavigation
           tabs={[
-            { id: "agents", label: "Sourcing Agents", icon: Bot, count: agents.length },
-            { id: "custom", label: "Custom Agents", icon: Wand2 },
-            { id: "marketplace", label: "Marketplace", icon: Store },
-            { id: "twins", label: "Digital Twins", icon: Users },
-            { id: "search", label: "Busca Inteligente", icon: Search },
+            { id: "agents", label: t("studio.tabs.sourcingAgents"), icon: Bot, count: agents.length },
+            { id: "custom", label: t("studio.tabs.customAgents"), icon: Wand2 },
+            { id: "marketplace", label: t("studio.tabs.marketplace"), icon: Store },
+            { id: "twins", label: t("studio.tabs.digitalTwins"), icon: Users },
+            { id: "search", label: t("studio.tabs.smartSearch"), icon: Search },
           ]}
           activeTab={activeTab}
           onTabChange={(id) => setActiveTab(id as typeof activeTab)}
@@ -244,26 +246,26 @@ export default function AgentStudioPage({
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
               <span className="text-xs font-medium text-lia-text-secondary">
-                {activeCount} agente{activeCount !== 1 ? "s" : ""} ativo{activeCount !== 1 ? "s" : ""}
+                {t("studio.stats.activeAgents", { count: activeCount })}
               </span>
             </div>
             <div className="flex items-center gap-1.5">
               <Eye className="w-3.5 h-3.5 text-lia-text-disabled" />
               <span className="text-xs text-lia-text-secondary">
-                <span className="font-semibold text-lia-text-primary">{totalViewed}</span> perfis analisados
+                <span className="font-semibold text-lia-text-primary">{totalViewed}</span> {t("studio.stats.profilesAnalyzed")}
               </span>
             </div>
             <div className="flex items-center gap-1.5">
               <ThumbsUp className="w-3.5 h-3.5 text-emerald-500" />
               <span className="text-xs text-lia-text-secondary">
-                <span className="font-semibold text-lia-text-primary">{totalApproved}</span> aprovados
+                <span className="font-semibold text-lia-text-primary">{totalApproved}</span> {t("studio.stats.approved")}
               </span>
             </div>
             {totalViewed > 0 && (
               <div className="flex items-center gap-1.5">
                 <BarChart3 className="w-3.5 h-3.5 text-lia-text-disabled" />
                 <span className="text-xs text-lia-text-secondary">
-                  <span className="font-semibold text-lia-text-primary">{Math.round((totalApproved / totalViewed) * 100)}%</span> taxa de aprovação
+                  <span className="font-semibold text-lia-text-primary">{Math.round((totalApproved / totalViewed) * 100)}%</span> {t("studio.stats.approvalRate")}
                 </span>
               </div>
             )}
@@ -282,30 +284,29 @@ export default function AgentStudioPage({
                   <div className="flex items-center gap-2 mb-1">
                     <Brain className="w-4 h-4 text-wedo-cyan" />
                     <span className="text-xs font-semibold uppercase tracking-wider text-wedo-cyan">
-                      O que é um Agente?
+                      {t("studio.whatIsAgent")}
                     </span>
                   </div>
                   <h2 className="text-base font-semibold text-lia-text-primary mb-2">
-                    Um recrutador virtual que trabalha para você
+                    {t("studio.virtualRecruiter")}
                   </h2>
                   <p className="text-sm text-lia-text-secondary mb-6 max-w-2xl">
-                    Agentes são robôs de IA que buscam, filtram e classificam candidatos automaticamente
-                    com base nos seus critérios. Você ensina uma vez, e ele trabalha 24 horas por dia.
+                    {t("studio.virtualRecruiterDesc")}
                   </p>
 
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-                    {FLOW_STEPS.map((step, i) => (
+                    {FLOW_STEPS_CONFIG.map((step, i) => (
                       <div key={i} className="flex items-start gap-3">
                         <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0", step.bg)}>
                           <step.icon className={cn("w-5 h-5", step.color)} />
                         </div>
                         <div className="min-w-0">
                           <div className="flex items-center gap-1.5 mb-0.5">
-                            <span className="text-[10px] font-bold text-lia-text-disabled uppercase">Passo {i + 1}</span>
+                            <span className="text-[10px] font-bold text-lia-text-disabled uppercase">{t("studio.flowSteps.step")} {i + 1}</span>
                             {i < 3 && <ArrowRight className="w-3 h-3 text-lia-text-disabled hidden md:block" />}
                           </div>
-                          <p className="text-xs font-semibold text-lia-text-primary">{step.title}</p>
-                          <p className="text-[11px] text-lia-text-secondary leading-relaxed">{step.desc}</p>
+                          <p className="text-xs font-semibold text-lia-text-primary">{t(step.titleKey)}</p>
+                          <p className="text-[11px] text-lia-text-secondary leading-relaxed">{t(step.descKey)}</p>
                         </div>
                       </div>
                     ))}
@@ -319,10 +320,10 @@ export default function AgentStudioPage({
               <div className="flex items-center justify-between mb-3">
                 <div>
                   <h2 className="text-sm font-semibold text-lia-text-primary">
-                    {agents.length === 0 ? "Comece escolhendo um perfil" : "Criar novo agente"}
+                    {agents.length === 0 ? t("studio.templates.startChoosing") : t("studio.templates.createNew")}
                   </h2>
                   <p className="text-xs text-lia-text-secondary mt-0.5">
-                    Templates pré-configurados com critérios de avaliação específicos por setor
+                    {t("studio.templates.preConfigured")}
                   </p>
                 </div>
               </div>
@@ -363,8 +364,8 @@ export default function AgentStudioPage({
                 >
                   <Brain className="w-6 h-6 text-wedo-cyan transition-transform group-hover:scale-110" />
                   <div className="text-center">
-                    <p className="text-xs font-semibold text-lia-text-primary">Personalizado</p>
-                    <p className="text-[10px] text-lia-text-secondary mt-0.5">Criar do zero</p>
+                    <p className="text-xs font-semibold text-lia-text-primary">{t("studio.templates.custom")}</p>
+                    <p className="text-[10px] text-lia-text-secondary mt-0.5">{t("studio.templates.createFromScratch")}</p>
                   </div>
                 </button>
               </div>
@@ -374,7 +375,7 @@ export default function AgentStudioPage({
             <section>
               <div className="flex items-center justify-between mb-3">
                 <h2 className="text-sm font-semibold text-lia-text-primary">
-                  Meus Agentes
+                  {t("studio.myAgents")}
                   {agents.length > 0 && (
                     <span className="ml-2 px-2 py-0.5 rounded-full text-[10px] font-bold bg-lia-interactive-active text-lia-text-primary">
                       {agents.length}
@@ -387,7 +388,7 @@ export default function AgentStudioPage({
                 <div className="flex items-center justify-center py-16">
                   <div className="flex flex-col items-center gap-3 text-lia-text-secondary">
                     <Loader2 className="w-6 h-6 animate-spin" />
-                    <span className="text-xs">Carregando agentes...</span>
+                    <span className="text-xs">{t("studio.loading")}</span>
                   </div>
                 </div>
               ) : agents.length === 0 ? (
@@ -395,9 +396,9 @@ export default function AgentStudioPage({
                   <div className="w-14 h-14 rounded-2xl bg-lia-bg-tertiary flex items-center justify-center mb-3">
                     <Bot className="w-7 h-7 text-lia-text-disabled" />
                   </div>
-                  <p className="text-sm font-medium text-lia-text-secondary">Nenhum agente criado ainda</p>
+                  <p className="text-sm font-medium text-lia-text-secondary">{t("studio.noAgentsYet")}</p>
                   <p className="text-xs text-lia-text-disabled mt-1 mb-4">
-                    Escolha um template acima para criar seu primeiro agente de sourcing
+                    {t("studio.chooseTemplateAbove")}
                   </p>
                   <Button
                     size="sm"
@@ -405,7 +406,7 @@ export default function AgentStudioPage({
                     className="gap-2 bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover"
                   >
                     <Plus className="w-3.5 h-3.5" />
-                    Criar primeiro agente
+                    {t("studio.createFirstAgent")}
                   </Button>
                 </div>
               ) : (
@@ -423,8 +424,8 @@ export default function AgentStudioPage({
                           onNavigateToJob?.(agent.job_id)
                         } else {
                           toast.warning(
-                            "Agente sem vínculo",
-                            "Este agente não está vinculado a uma vaga ou banco de talentos. Vincule-o para poder navegar."
+                            t("studio.toast.noLinkTitle"),
+                            t("studio.toast.noLinkDesc")
                           )
                         }
                       }}
@@ -439,18 +440,18 @@ export default function AgentStudioPage({
               <section className="rounded-xl border border-lia-border-subtle bg-lia-bg-secondary p-5">
                 <div className="flex items-center gap-2 mb-4">
                   <Brain className="w-4 h-4 text-wedo-cyan" />
-                  <h2 className="text-sm font-semibold text-lia-text-primary">Como funciona</h2>
+                  <h2 className="text-sm font-semibold text-lia-text-primary">{t("studio.howItWorks")}</h2>
                 </div>
                 <div className="flex items-start gap-2">
-                  {FLOW_STEPS.map((step, i) => (
+                  {FLOW_STEPS_CONFIG.map((step, i) => (
                     <React.Fragment key={i}>
                       <div className="flex-1 flex items-start gap-2.5">
                         <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0", step.bg)}>
                           <step.icon className={cn("w-4 h-4", step.color)} />
                         </div>
                         <div>
-                          <p className="text-xs font-semibold text-lia-text-primary">{step.title}</p>
-                          <p className="text-[10px] text-lia-text-secondary leading-relaxed">{step.desc}</p>
+                          <p className="text-xs font-semibold text-lia-text-primary">{t(step.titleKey)}</p>
+                          <p className="text-[10px] text-lia-text-secondary leading-relaxed">{t(step.descKey)}</p>
                         </div>
                       </div>
                       {i < 3 && (
@@ -474,13 +475,13 @@ export default function AgentStudioPage({
             {/* My Agents */}
             <section>
               <h3 className="text-sm font-semibold text-lia-text-primary mb-3">
-                Meus Agentes {customAgents.length > 0 && `(${customAgents.length})`}
+                {t("studio.myAgents")} {customAgents.length > 0 && `(${customAgents.length})`}
               </h3>
               {customAgents.length === 0 ? (
                 <div className="text-center py-8">
                   <Bot className="w-8 h-8 text-lia-text-disabled mx-auto mb-2" />
-                  <p className="text-sm text-lia-text-secondary">Nenhum agente criado ainda</p>
-                  <p className="text-xs text-lia-text-disabled mt-1">Escolha um template abaixo ou descreva para a LIA o que voce precisa</p>
+                  <p className="text-sm text-lia-text-secondary">{t("studio.noAgentsYet")}</p>
+                  <p className="text-xs text-lia-text-disabled mt-1">{t("studio.chooseTemplateOrDescribe")}</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -534,7 +535,7 @@ export default function AgentStudioPage({
             {/* Legacy form for advanced editing */}
             <details className="mt-4">
               <summary className="text-xs text-lia-text-disabled cursor-pointer hover:text-lia-text-secondary">
-                Formulario avancado (modo tecnico)
+                {t("studio.advancedForm")}
               </summary>
               <div className="mt-3">
                 <CustomAgentsTab />
@@ -554,10 +555,9 @@ export default function AgentStudioPage({
                 <Users className="w-4 h-4 text-wedo-cyan" />
                 <span className="text-xs font-semibold uppercase tracking-wider text-wedo-cyan">Digital Twins</span>
               </div>
-              <h2 className="text-base font-semibold text-lia-text-primary mb-1">Clone o raciocínio dos seus melhores avaliadores</h2>
+              <h2 className="text-base font-semibold text-lia-text-primary mb-1">{t("studio.twins.cloneReasoning")}</h2>
               <p className="text-sm text-lia-text-secondary max-w-2xl">
-                Capture como um especialista da equipe avalia candidatos. O Digital Twin aprende
-                os critérios e funciona como uma "segunda opinião" automática na triagem.
+                {t("studio.twins.cloneDesc")}
               </p>
             </div>
             <TwinsList onEvaluate={(id) => setEvaluatingTwinId(id)} />
@@ -569,12 +569,11 @@ export default function AgentStudioPage({
             <div className="rounded-xl border border-lia-border-subtle bg-lia-bg-secondary p-5 mb-4">
               <div className="flex items-center gap-2 mb-1">
                 <Search className="w-4 h-4 text-wedo-cyan" />
-                <span className="text-xs font-semibold uppercase tracking-wider text-wedo-cyan">Busca Multi-Estratégia</span>
+                <span className="text-xs font-semibold uppercase tracking-wider text-wedo-cyan">{t("studio.search.multiStrategy")}</span>
               </div>
-              <h2 className="text-base font-semibold text-lia-text-primary mb-1">4 estratégias de busca em paralelo</h2>
+              <h2 className="text-base font-semibold text-lia-text-primary mb-1">{t("studio.search.fourStrategies")}</h2>
               <p className="text-sm text-lia-text-secondary max-w-2xl">
-                Busca direta, perfis adjacentes, finalistas anteriores e reengajamento — tudo ao mesmo tempo
-                para maximizar suas chances de encontrar o candidato ideal.
+                {t("studio.search.searchDesc")}
               </p>
             </div>
             <MultiStrategySearchPanel />
@@ -616,7 +615,8 @@ function AgentCard({
   onCalibrate: () => void
   onNavigate: () => void
 }) {
-  const status = STATUS_CONFIG[agent.status]
+  const t = useTranslations("agents")
+  const status = STATUS_CONFIG_STYLES[agent.status]
   const strategy = agent.search_strategy as { required_skills?: string[]; exclusions?: string[] }
   const totalReviewed = agent.profiles_approved + agent.profiles_rejected
   const approvalRate = totalReviewed > 0 ? Math.round((agent.profiles_approved / totalReviewed) * 100) : 0
@@ -652,7 +652,7 @@ function AgentCard({
           </div>
           <div className={cn("flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-semibold", status.bg, status.text)}>
             <div className={cn("w-1.5 h-1.5 rounded-full", status.dot, status.pulse && "animate-pulse")} />
-            {status.label}
+            {t(status.labelKey)}
           </div>
         </div>
 
@@ -676,15 +676,15 @@ function AgentCard({
         <div className="grid grid-cols-3 gap-2 mb-4">
           <div className="flex flex-col items-center p-2 rounded-lg bg-lia-bg-primary">
             <span className="text-xs font-bold text-lia-text-primary">{agent.profiles_viewed}</span>
-            <span className="text-[9px] text-lia-text-disabled uppercase tracking-wider">Analisados</span>
+            <span className="text-[9px] text-lia-text-disabled uppercase tracking-wider">{t("studio.stats.analyzed")}</span>
           </div>
           <div className="flex flex-col items-center p-2 rounded-lg bg-lia-bg-primary">
             <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">{agent.profiles_approved}</span>
-            <span className="text-[9px] text-lia-text-disabled uppercase tracking-wider">Aprovados</span>
+            <span className="text-[9px] text-lia-text-disabled uppercase tracking-wider">{t("studio.stats.approved")}</span>
           </div>
           <div className="flex flex-col items-center p-2 rounded-lg bg-lia-bg-primary">
             <span className="text-xs font-bold text-lia-text-primary">{approvalRate}%</span>
-            <span className="text-[9px] text-lia-text-disabled uppercase tracking-wider">Taxa</span>
+            <span className="text-[9px] text-lia-text-disabled uppercase tracking-wider">{t("studio.stats.rate")}</span>
           </div>
         </div>
 
@@ -694,19 +694,19 @@ function AgentCard({
             {agent.talent_pool_id ? (
               <>
                 <Database className="w-3 h-3 text-lia-text-disabled" />
-                <span className="text-[10px] text-lia-text-secondary">Vinculado a Banco de Talentos</span>
+                <span className="text-[10px] text-lia-text-secondary">{t("studio.card.linkedToPool")}</span>
               </>
             ) : (
               <>
                 <Briefcase className="w-3 h-3 text-lia-text-disabled" />
-                <span className="text-[10px] text-lia-text-secondary">Vinculado a Vaga</span>
+                <span className="text-[10px] text-lia-text-secondary">{t("studio.card.linkedToJob")}</span>
               </>
             )}
           </div>
         ) : (
           <div className="flex items-center gap-1.5 mb-3 px-2.5 py-1.5 rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800">
             <Brain className="w-3 h-3 text-amber-500" />
-            <span className="text-[10px] text-amber-700 dark:text-amber-400">Sem vínculo — vincule a uma vaga ou banco</span>
+            <span className="text-[10px] text-amber-700 dark:text-amber-400">{t("studio.card.noLink")}</span>
           </div>
         )}
 
@@ -718,7 +718,7 @@ function AgentCard({
               "flex items-center justify-center w-8 h-8 rounded-lg border border-lia-border-subtle",
               "hover:bg-lia-bg-tertiary transition-colors"
             )}
-            title={agent.status === "active" ? "Pausar" : "Retomar"}
+            title={agent.status === "active" ? t("studio.card.pause") : t("studio.card.resume")}
           >
             {agent.status === "active" ? (
               <Pause className="w-3.5 h-3.5 text-lia-text-secondary" />
@@ -731,13 +731,13 @@ function AgentCard({
             className="flex-1 flex items-center justify-center gap-1.5 h-8 rounded-lg border border-lia-border-subtle text-xs font-medium text-lia-text-secondary hover:bg-lia-bg-tertiary hover:text-lia-text-primary transition-colors"
           >
             <Activity className="w-3.5 h-3.5" />
-            Recalibrar
+            {t("studio.card.recalibrate")}
           </button>
           <button
             onClick={onNavigate}
             className="flex items-center justify-center gap-1 h-8 px-3 rounded-lg bg-lia-btn-primary-bg text-lia-btn-primary-text text-xs font-medium hover:bg-lia-btn-primary-hover transition-colors"
           >
-            Ver
+            {t("studio.card.view")}
             <ChevronRight className="w-3 h-3" />
           </button>
         </div>
@@ -751,7 +751,8 @@ function CreateAgentModal({ initialTemplate, onClose, onCreated }: {
   onClose: () => void
   onCreated: (agentId: string) => void
 }) {
-  const [agentName, setAgentName] = useState(initialTemplate ? `Agente ${initialTemplate.display_name}` : "")
+  const t = useTranslations("agents")
+  const [agentName, setAgentName] = useState(initialTemplate ? `${initialTemplate.display_name}` : "")
   const [linkType, setLinkType] = useState<"job" | "pool" | "none">("none")
   const [linkId, setLinkId] = useState("")
   const [candidatesPerDay, setCandidatesPerDay] = useState(20)
@@ -805,7 +806,7 @@ function CreateAgentModal({ initialTemplate, onClose, onCreated }: {
       if (data?.agent_id) onCreated(data.agent_id)
       else onCreated(data?.id || "")
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Erro ao criar agente"
+      const msg = err instanceof Error ? err.message : t("studio.toast.errorCreating")
       setCreateError(msg)
       console.error("Failed to create agent:", err)
     } finally {
@@ -821,30 +822,30 @@ function CreateAgentModal({ initialTemplate, onClose, onCreated }: {
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-500/10 to-violet-500/10 flex items-center justify-center">
               <Bot className="w-4 h-4 text-wedo-cyan" />
             </div>
-            {initialTemplate ? `Criar Agente — ${initialTemplate.display_name}` : "Criar Agente"}
+            {initialTemplate ? t("studio.modal.createTitleWithTemplate", { name: initialTemplate.display_name }) : t("studio.modal.createTitle")}
           </DialogTitle>
-          <DialogDescription className="sr-only">Configure o nome e parâmetros do novo agente de sourcing</DialogDescription>
+          <DialogDescription className="sr-only">{t("studio.modal.configureDesc")}</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-5 py-4">
           <div>
-            <label className="text-xs font-semibold text-lia-text-primary mb-1.5 block">Nome do agente</label>
+            <label className="text-xs font-semibold text-lia-text-primary mb-1.5 block">{t("studio.modal.agentName")}</label>
             <input
               type="text"
               value={agentName}
               onChange={e => setAgentName(e.target.value)}
-              placeholder="Ex: Agente Backend Sênior SP"
+              placeholder={t("studio.modal.agentNamePlaceholder")}
               className="w-full border border-lia-border-subtle rounded-lg px-3 py-2.5 text-sm bg-lia-bg-secondary text-lia-text-primary placeholder:text-lia-text-disabled focus:outline-none focus:ring-2 focus:ring-wedo-cyan/30 focus:border-wedo-cyan/50"
             />
           </div>
 
           <div>
-            <label className="text-xs font-semibold text-lia-text-primary mb-1.5 block">Vincular a</label>
+            <label className="text-xs font-semibold text-lia-text-primary mb-1.5 block">{t("studio.modal.linkTo")}</label>
             <div className="flex gap-2">
               {[
-                { id: "none" as const, label: "Nenhum", icon: Brain },
-                { id: "job" as const, label: "Vaga", icon: Briefcase },
-                { id: "pool" as const, label: "Banco de Talentos", icon: Database },
+                { id: "none" as const, label: t("studio.modal.none"), icon: Brain },
+                { id: "job" as const, label: t("studio.modal.job"), icon: Briefcase },
+                { id: "pool" as const, label: t("studio.modal.talentPool"), icon: Database },
               ].map(opt => (
                 <button
                   key={opt.id}
@@ -864,7 +865,7 @@ function CreateAgentModal({ initialTemplate, onClose, onCreated }: {
             {linkType === "none" && (
               <div className="mt-2 px-3 py-2 rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800">
                 <p className="text-xs text-amber-700 dark:text-amber-400">
-                  Sem vínculo, o agente funcionará com capacidades limitadas. Vincule a uma vaga ou banco de talentos para melhores resultados.
+                  {t("studio.modal.noLinkWarning")}
                 </p>
               </div>
             )}
@@ -873,14 +874,14 @@ function CreateAgentModal({ initialTemplate, onClose, onCreated }: {
                 type="text"
                 value={linkId}
                 onChange={e => setLinkId(e.target.value)}
-                placeholder={linkType === "job" ? "ID da vaga" : "ID do banco de talentos"}
+                placeholder={linkType === "job" ? t("studio.modal.jobIdPlaceholder") : t("studio.modal.poolIdPlaceholder")}
                 className="mt-2 w-full border border-lia-border-subtle rounded-lg px-3 py-2 text-sm bg-lia-bg-secondary text-lia-text-primary placeholder:text-lia-text-disabled focus:outline-none focus:ring-2 focus:ring-wedo-cyan/30"
               />
             )}
           </div>
 
           <div>
-            <label className="text-xs font-semibold text-lia-text-primary mb-1.5 block">Candidatos por dia</label>
+            <label className="text-xs font-semibold text-lia-text-primary mb-1.5 block">{t("studio.modal.candidatesPerDay")}</label>
             <div className="flex gap-2">
               {[10, 20, 30, 50].map(n => (
                 <button
@@ -900,12 +901,12 @@ function CreateAgentModal({ initialTemplate, onClose, onCreated }: {
           </div>
 
           <div>
-            <label className="text-xs font-semibold text-lia-text-primary mb-1.5 block">Frequência de notificação</label>
+            <label className="text-xs font-semibold text-lia-text-primary mb-1.5 block">{t("studio.modal.notificationFrequency")}</label>
             <div className="flex gap-2">
               {[
-                { id: "realtime", label: "A cada candidato" },
-                { id: "daily", label: "Resumo diário" },
-                { id: "weekly", label: "Resumo semanal" },
+                { id: "realtime", label: t("studio.modal.perCandidate") },
+                { id: "daily", label: t("studio.modal.dailySummary") },
+                { id: "weekly", label: t("studio.modal.weeklySummary") },
               ].map(opt => (
                 <button
                   key={opt.id}
@@ -936,7 +937,7 @@ function CreateAgentModal({ initialTemplate, onClose, onCreated }: {
             onClick={onClose}
             className="border-lia-border-subtle text-lia-text-secondary hover:bg-lia-bg-secondary"
           >
-            Cancelar
+            {t("studio.modal.cancel")}
           </Button>
           <Button
             onClick={handleCreate}
@@ -946,12 +947,12 @@ function CreateAgentModal({ initialTemplate, onClose, onCreated }: {
             {isCreating ? (
               <>
                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                Criando...
+                {t("studio.modal.creating")}
               </>
             ) : (
               <>
                 <Zap className="w-3.5 h-3.5" />
-                Criar e Calibrar
+                {t("studio.modal.createAndCalibrate")}
               </>
             )}
           </Button>

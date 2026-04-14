@@ -12,6 +12,7 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from"@/components/ui/select"
+import { useTranslations } from "next-intl"
 import { textStyles } from"@/lib/design-tokens"
 import { EditableCell, GoalsStatsCards, getCategoryIcon, getCategoryColor } from"./goals"
 import { ApplyAllModal, DeleteConfirmModal } from"./goals"

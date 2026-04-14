@@ -2,6 +2,7 @@
 
 import React, { useState } from "react"
 import { Check, X, Clock, Loader2, ShieldCheck } from "lucide-react"
+import { useTranslations } from "next-intl"
 import { cn } from "@/lib/utils"
 import { cardStyles, badgeStyles, textStyles, buttonStyles } from "@/lib/design-tokens"
 import { toast } from "@/lib/toast"
@@ -12,6 +13,8 @@ interface ApprovalsListProps {
 }
 
 export function ApprovalsList({ onReviewed }: ApprovalsListProps) {
+  const t = useTranslations('agents.customAgents')
+  const tToast = useTranslations('agents.toast')
   const { approvals, isLoading, mutate } = usePendingApprovals()
   const [reviewingId, setReviewingId] = useState<string | null>(null)
   const [notes, setNotes] = useState<Record<string, string>>({})
@@ -30,13 +33,13 @@ export function ApprovalsList({ onReviewed }: ApprovalsListProps) {
       })
       if (!res.ok) {
         const err = await res.json().catch(() => ({ detail: "Erro" }))
-        throw new Error(err.detail || "Erro ao revisar")
+        throw new Error(err.detail || tToast('reviewError'))
       }
-      toast.success(action === "approve" ? "Agente aprovado" : "Agente rejeitado")
+      toast.success(action === "approve" ? tToast('agentApproved') : tToast('agentRejected'))
       mutate()
       onReviewed?.()
     } catch (e: unknown) {
-      toast.error(e instanceof Error ? e.message : "Erro ao revisar")
+      toast.error(e instanceof Error ? e.message : tToast('reviewError'))
     } finally {
       setReviewingId(null)
     }
@@ -45,7 +48,7 @@ export function ApprovalsList({ onReviewed }: ApprovalsListProps) {
   if (isLoading) {
     return (
       <div className="flex items-center gap-2 py-4 text-xs text-lia-text-disabled">
-        <Loader2 className="w-3.5 h-3.5 animate-spin" /> Carregando aprovacoes...
+        <Loader2 className="w-3.5 h-3.5 animate-spin" /> {t('loadingApprovals')}
       </div>
     )
   }
@@ -54,7 +57,7 @@ export function ApprovalsList({ onReviewed }: ApprovalsListProps) {
     return (
       <div className={cn(cardStyles.flat, "p-4 text-center")}>
         <ShieldCheck className="w-6 h-6 text-lia-text-disabled mx-auto mb-1.5" />
-        <p className="text-xs text-lia-text-secondary">Nenhuma aprovacao pendente</p>
+        <p className="text-xs text-lia-text-secondary">{t('noApprovals')}</p>
       </div>
     )
   }
@@ -64,7 +67,7 @@ export function ApprovalsList({ onReviewed }: ApprovalsListProps) {
       <div className="flex items-center gap-1.5 mb-2">
         <Clock className="w-3.5 h-3.5 text-amber-500" />
         <h4 className={cn(textStyles.subtitle, "text-xs font-semibold")}>
-          Aprovacoes pendentes ({approvals.length})
+          {t('pendingApprovals', { count: approvals.length })}
         </h4>
       </div>
 
@@ -78,16 +81,16 @@ export function ApprovalsList({ onReviewed }: ApprovalsListProps) {
                   {approval.agent_name || "Agent"}
                 </p>
                 <p className="text-[10px] text-lia-text-disabled">
-                  Solicitado por: {approval.requested_by}
+                  {t('requestedBy', { name: approval.requested_by })}
                 </p>
               </div>
-              <span className={cn(badgeStyles.warning, "text-[10px]")}>Pendente</span>
+              <span className={cn(badgeStyles.warning, "text-[10px]")}>{t('pending')}</span>
             </div>
 
             <textarea
               value={notes[approval.id] || ""}
               onChange={(e) => setNotes({ ...notes, [approval.id]: e.target.value })}
-              placeholder="Notas da revisao (opcional)"
+              placeholder={t('reviewNotes')}
               rows={2}
               className="w-full text-xs border border-lia-border-subtle rounded-md px-2 py-1.5 bg-lia-bg-secondary text-lia-text-primary placeholder:text-lia-text-disabled focus:outline-none focus:ring-2 focus:ring-wedo-cyan/30 resize-none"
               disabled={isReviewing}
@@ -100,7 +103,7 @@ export function ApprovalsList({ onReviewed }: ApprovalsListProps) {
                 disabled={isReviewing}
                 className="flex-1 inline-flex items-center justify-center gap-1 px-3 py-1.5 rounded-md text-xs font-medium bg-emerald-500 text-white hover:bg-emerald-600 transition-colors disabled:opacity-50"
               >
-                <Check className="w-3.5 h-3.5" /> Aprovar
+                <Check className="w-3.5 h-3.5" /> {t('approveBtn')}
               </button>
               <button
                 type="button"
@@ -108,7 +111,7 @@ export function ApprovalsList({ onReviewed }: ApprovalsListProps) {
                 disabled={isReviewing}
                 className={cn(buttonStyles.outline, "flex-1 text-xs px-3 py-1.5")}
               >
-                <X className="w-3.5 h-3.5 mr-1" /> Rejeitar
+                <X className="w-3.5 h-3.5 mr-1" /> {t('rejectBtn')}
               </button>
             </div>
           </div>

@@ -2,6 +2,7 @@
 
 import React from "react"
 import * as Icons from "lucide-react"
+import { useTranslations } from "next-intl"
 import { cn } from "@/lib/utils"
 import { buttonStyles, textStyles } from "@/lib/design-tokens"
 import { AGENT_TEMPLATES, TEMPLATE_CATEGORIES } from "@/lib/agent-templates-data"
@@ -15,6 +16,7 @@ interface TemplateGalleryProps {
 }
 
 export function TemplateGallery({ onTemplateSelect, onCreateManual }: TemplateGalleryProps) {
+  const t = useTranslations('agents.customAgents')
   const { activeCategory, setActiveCategory } = useAgentStudioStore()
 
   const filtered = activeCategory === "all"
@@ -26,9 +28,9 @@ export function TemplateGallery({ onTemplateSelect, onCreateManual }: TemplateGa
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h3 className={cn(textStyles.title, "text-lg")}>Comece com um template</h3>
+          <h3 className={cn(textStyles.title, "text-lg")}>{t('startWithTemplate')}</h3>
           <p className={cn(textStyles.caption, "mt-0.5")}>
-            Escolha um modelo pronto ou descreva para a LIA o que voce precisa no chat
+            {t('templateHint')}
           </p>
         </div>
         <button
@@ -37,7 +39,7 @@ export function TemplateGallery({ onTemplateSelect, onCreateManual }: TemplateGa
           className={cn(buttonStyles.outline, "text-xs px-3 py-1.5")}
         >
           <Icons.Plus className="w-3.5 h-3.5 mr-1.5" />
-          Criar do zero
+          {t('createFromScratch')}
         </button>
       </div>
 
@@ -80,7 +82,7 @@ export function TemplateGallery({ onTemplateSelect, onCreateManual }: TemplateGa
       {filtered.length === 0 && (
         <div className="text-center py-10">
           <Icons.SearchX className="w-8 h-8 mx-auto text-lia-text-disabled mb-2" />
-          <p className={textStyles.caption}>Nenhum template nesta categoria</p>
+          <p className={textStyles.caption}>{t('noTemplateInCategory')}</p>
         </div>
       )}
     </div>
