@@ -54,7 +54,7 @@ class VindiProvider(BillingProviderBase):
     @circuit_breaker_decorator(VINDI_CIRCUIT)
     async def create_customer(self, customer: CustomerData) -> BillingResult:
         """Create a customer in Vindi."""
-        logger.info(f"[Vindi] Creating customer: {customer.email}")
+        logger.info(f"[Vindi] Creating customer: {customer.id}")
         
         if not self.api_key:
             return BillingResult(

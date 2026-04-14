@@ -200,7 +200,7 @@ async def bulk_update_candidate_status(
     Uses atomic transaction - all updates succeed or all fail.
     Requires authentication.
     """
-    logger.info(f"Bulk update status by {current_user.email}: {len(request.candidate_ids)} candidates to '{request.new_status}'")
+    logger.info(f"Bulk update status by {current_user.id}: {len(request.candidate_ids)} candidates to '{request.new_status}'")
 
     errors: list[BulkOperationError] = []
     processed_ids: list[str] = []
@@ -274,7 +274,7 @@ async def bulk_assign_to_job(
     Updates candidate's additional_data with job assignment info and optionally adds notes.
     Requires authentication.
     """
-    logger.info(f"Bulk assign job by {current_user.email}: {len(request.candidate_ids)} candidates to job {request.job_vacancy_id}")
+    logger.info(f"Bulk assign job by {current_user.id}: {len(request.candidate_ids)} candidates to job {request.job_vacancy_id}")
 
     errors: list[BulkOperationError] = []
     processed_ids: list[str] = []
@@ -369,7 +369,7 @@ async def bulk_send_email(
     (name, email) are automatically substituted.
     Requires authentication.
     """
-    logger.info(f"Bulk send email by {current_user.email}: {len(request.candidate_ids)} candidates with template {request.template_id}")
+    logger.info(f"Bulk send email by {current_user.id}: {len(request.candidate_ids)} candidates with template {request.template_id}")
 
     errors: list[BulkOperationError] = []
     processed_ids: list[str] = []
@@ -488,7 +488,7 @@ async def bulk_start_screening(
     unless override_saturation is True (manual recruiter approval).
     Requires authentication.
     """
-    logger.info(f"Bulk start screening by {current_user.email}: {len(request.candidate_ids)} candidates for job {request.job_vacancy_id}")
+    logger.info(f"Bulk start screening by {current_user.id}: {len(request.candidate_ids)} candidates for job {request.job_vacancy_id}")
 
     errors: list[BulkOperationError] = []
     processed_ids: list[str] = []
@@ -527,7 +527,7 @@ async def bulk_start_screening(
                     },
                 )
         else:
-            logger.info(f"Saturation override active for bulk screening job {request.job_vacancy_id} by {current_user.email}")
+            logger.info(f"Saturation override active for bulk screening job {request.job_vacancy_id} by {current_user.id}")
 
         for candidate_id in request.candidate_ids:
             try:
@@ -618,7 +618,7 @@ async def bulk_export_candidates(
     Returns a downloadable file with candidate information.
     Requires admin or recruiter role.
     """
-    logger.info(f"Bulk export by {current_user.email}: {len(request.candidate_ids)} candidates to {request.format}")
+    logger.info(f"Bulk export by {current_user.id}: {len(request.candidate_ids)} candidates to {request.format}")
 
     try:
         candidates_data = []
@@ -779,7 +779,7 @@ async def bulk_delete_candidates(
     Set permanent=True for hard delete (use with caution).
     Requires admin or recruiter role.
     """
-    logger.info(f"Bulk delete by {current_user.email}: {len(request.candidate_ids)} candidates (permanent={request.permanent})")
+    logger.info(f"Bulk delete by {current_user.id}: {len(request.candidate_ids)} candidates (permanent={request.permanent})")
 
     errors: list[BulkOperationError] = []
     processed_ids: list[str] = []
@@ -852,7 +852,7 @@ async def bulk_add_tags(
     if len(candidate_ids) > MAX_BULK_ITEMS:
         raise HTTPException(status_code=400, detail=f"Maximum {MAX_BULK_ITEMS} items per operation")
 
-    logger.info(f"Bulk add tags by {current_user.email}: {len(candidate_ids)} candidates, tags: {tags}")
+    logger.info(f"Bulk add tags by {current_user.id}: {len(candidate_ids)} candidates, tags: {tags}")
 
     errors: list[BulkOperationError] = []
     processed_ids: list[str] = []
@@ -920,7 +920,7 @@ async def bulk_remove_tags(
     if len(candidate_ids) > MAX_BULK_ITEMS:
         raise HTTPException(status_code=400, detail=f"Maximum {MAX_BULK_ITEMS} items per operation")
 
-    logger.info(f"Bulk remove tags by {current_user.email}: {len(candidate_ids)} candidates, tags: {tags}")
+    logger.info(f"Bulk remove tags by {current_user.id}: {len(candidate_ids)} candidates, tags: {tags}")
 
     errors: list[BulkOperationError] = []
     processed_ids: list[str] = []

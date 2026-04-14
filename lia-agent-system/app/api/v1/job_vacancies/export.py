@@ -47,7 +47,7 @@ async def export_job_vacancy_pdf(
             )
             filename = f"relatorio_analitico_{job_id}.pdf"
 
-        logger.info(f"PDF report exported for job {job_id} by {current_user.email}")
+        logger.info(f"PDF report exported for job {job_id} by {current_user.id}")
 
         return StreamingResponse(
             buffer,
@@ -98,7 +98,7 @@ async def export_job_vacancy_excel(
             )
             filename = f"relatorio_analitico_{job_id}.xlsx"
 
-        logger.info(f"Excel report exported for job {job_id} by {current_user.email}")
+        logger.info(f"Excel report exported for job {job_id} by {current_user.id}")
 
         return StreamingResponse(
             buffer,

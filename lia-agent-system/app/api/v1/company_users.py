@@ -168,7 +168,7 @@ async def create_user(
             variables={"user_name": user.name, "invitation_link": invitation_link},
         )
 
-        logger.info(f"Created user with invitation: {user.email} for company {resolved_company_id}")
+        logger.info(f"Created user with invitation: {user.id} for company {resolved_company_id}")
         return user
     except HTTPException:
         raise
@@ -203,7 +203,7 @@ async def update_user(
         update_data['updated_at'] = datetime.utcnow()
 
         user = await user_repo.update(user_uuid, update_data)
-        logger.info(f"Updated user: {user.email} with permissions: {user.permissions}")
+        logger.info(f"Updated user: {user.id} with permissions: {user.permissions}")
         return user
     except HTTPException:
         raise
@@ -271,7 +271,7 @@ async def resend_invitation(
             variables={"user_name": user.name, "invitation_link": invitation_link},
         )
 
-        logger.info(f"Resent invitation to user: {user.email}")
+        logger.info(f"Resent invitation to user: {user.id}")
         return {"success": True, "message": "Invitation email resent successfully"}
     except HTTPException:
         raise

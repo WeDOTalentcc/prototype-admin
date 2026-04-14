@@ -496,7 +496,7 @@ async def list_conversations_authenticated(
                     status_code=403,
                     detail="Access denied: You can only view conversations for your own company"
                 )
-            logger.info(f"[AUDIT] Admin {user.email} accessing conversations for company {company_id}")
+            logger.info(f"[AUDIT] Admin {user.id} accessing conversations for company {company_id}")
     else:
         if not company_id:
             raise HTTPException(status_code=400, detail="company_id is required")

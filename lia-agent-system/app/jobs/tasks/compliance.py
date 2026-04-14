@@ -268,7 +268,7 @@ def pii_backfill_encrypt_existing_task(
                 summary["tables"]["candidates_cpf"] = {"encrypted": cpf_encrypted_count}
 
             except Exception as exc:
-                logger.error("pii.backfill_encrypt_existing: error on candidates.cpf: %s", exc)
+                logger.error("pii.backfill_encrypt_existing: error on candidates PII field: %s", exc)
                 summary["errors"].append(f"candidates_cpf: {exc}")
 
         return summary

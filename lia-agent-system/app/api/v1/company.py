@@ -135,7 +135,7 @@ async def resolve_tenant(
         if current_user and hasattr(current_user, 'company_id') and current_user.company_id:
             user_company = str(current_user.company_id)
             if client_account_id and client_account_id != user_company:
-                logger.warning(f"Cross-tenant access attempt: user {current_user.email} (company={user_company}) tried to resolve tenant {client_account_id}")
+                logger.warning(f"Cross-tenant access attempt: user {current_user.id} (company={user_company}) tried to resolve tenant {client_account_id}")
                 raise HTTPException(status_code=403, detail="Access denied: cross-tenant resolution not allowed")
 
         client = await tenant_repo.get_client_account(resolved_client_id)
@@ -561,7 +561,7 @@ async def get_company_profile(
             user_company = str(current_user.company_id)
             profile = await profile_repo.get_by_id(company_uuid)
             if profile and profile.client_account_id and str(profile.client_account_id) != user_company:
-                logger.warning(f"Cross-tenant access denied: user {current_user.email} (company={user_company}) tried to access profile {effective_company_id}")
+                logger.warning(f"Cross-tenant access denied: user {current_user.id} (company={user_company}) tried to access profile {effective_company_id}")
                 raise HTTPException(status_code=403, detail="Access denied: this profile belongs to a different tenant")
             if profile:
                 return profile

@@ -108,7 +108,7 @@ async def generate_screening_questions(
 ) -> ScreeningQuestionResponse:
     try:
         company_id = get_user_company_id(current_user)
-        logger.info(f"Generating screening questions for: {request.title} ({request.seniority}) - company: {company_id}, user: {current_user.email}")
+        logger.info(f"Generating screening questions for: {request.title} ({request.seniority}) - company: {company_id}, user: {current_user.id}")
 
         mode = "full" if request.question_count > 10 else "compact"
         wsi_questions = await wsi_svc.generate_from_simple_inputs(
@@ -145,7 +145,7 @@ async def regenerate_questions(
 ) -> list[ScreeningQuestion]:
     try:
         company_id = get_user_company_id(current_user)
-        logger.info(f"Regenerating questions for: {request.context.title} - company: {company_id}, user: {current_user.email}")
+        logger.info(f"Regenerating questions for: {request.context.title} - company: {company_id}, user: {current_user.id}")
 
         wsi_questions = await wsi_svc.generate_from_simple_inputs(
             skills=request.context.skills or [],

@@ -139,7 +139,7 @@ class TestProtectedAttributesSSoT:
 _PII_IN_LOG_PATTERN = re.compile(
     r'(?:logger\.\w+|logging\.\w+|print)\s*\('
     r'[^)]*'
-    r'(?:\.email[^_]|\.cpf|\.phone[^_]|\.mobile_phone|\.secondary_phone'
+    r'(?:\.email[^_\.]|\.cpf[^_\.]|\.phone[^_\.]|\.mobile_phone|\.secondary_phone'
     r'|\.full_name|\.nome_completo|candidate_email=|candidate_phone=)',
     re.IGNORECASE,
 )

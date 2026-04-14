@@ -117,14 +117,14 @@ async def accept_invitation(
             )
 
         if user.status != ClientUserStatus.PENDING.value:
-            logger.warning(f"Attempt to accept invitation for non-pending user: {user.email}")
+            logger.warning(f"Attempt to accept invitation for non-pending user: {user.id}")
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="This invitation has already been accepted",
             )
 
         if not user.is_invitation_valid():
-            logger.warning(f"Expired invitation token for user: {user.email}")
+            logger.warning(f"Expired invitation token for user: {user.id}")
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="This invitation has expired. Please request a new invitation.",
@@ -145,7 +145,7 @@ async def accept_invitation(
         await repo.refresh(user)
 
         redirect_url = f"{FRONTEND_URL}/login?invitation_accepted=true"
-        logger.info(f"Invitation accepted: {user.email} (ID: {user.id})")
+        logger.info(f"Invitation accepted: {user.id} (ID: {user.id})")
 
         return AcceptInvitationResponse(
             success=True,
@@ -401,7 +401,7 @@ async def create_client_user(
         await repo.commit()
         await repo.refresh(user)
 
-        logger.info(f"Created/invited user: {user.email} for client {client.name} (ID: {user.id}, email_sent: {email_sent})")
+        logger.info(f"Created/invited user: {user.id} for client {client.name} (ID: {user.id}, email_sent: {email_sent})")
 
         return {
             "success": True,
@@ -475,7 +475,7 @@ async def update_client_user(
         await repo.commit()
         await repo.refresh(user)
 
-        logger.info(f"Updated user: {user.email} (ID: {user.id})")
+        logger.info(f"Updated user: {user.id} (ID: {user.id})")
 
         return {
             "success": True,
@@ -537,7 +537,7 @@ async def delete_client_user(
 
         await repo.commit()
 
-        logger.info(f"Deleted user: {user.email} (ID: {user.id})")
+        logger.info(f"Deleted user: {user.id} (ID: {user.id})")
 
         return {"success": True, "message": "User deleted successfully"}
 
@@ -619,7 +619,7 @@ async def resend_invite(
         await repo.commit()
         await repo.refresh(user)
 
-        logger.info(f"Resent invitation to user: {user.email} (ID: {user.id}, email_sent: {email_sent})")
+        logger.info(f"Resent invitation to user: {user.id} (ID: {user.id}, email_sent: {email_sent})")
 
         return {
             "success": True,
@@ -691,7 +691,7 @@ async def update_user_role(
         await repo.commit()
         await repo.refresh(user)
 
-        logger.info(f"Updated user role: {user.email} from {old_role} to {data.role}")
+        logger.info(f"Updated user role: {user.id} from {old_role} to {data.role}")
 
         return {
             "success": True,

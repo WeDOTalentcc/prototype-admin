@@ -1264,7 +1264,7 @@ class ConversationManager:
             
             parsed_cv = await cv_parser.parse_cv(pseudo_file)
             
-            logger.info(f"[CV PARSE] Successfully parsed CV for: {parsed_cv.full_name}")
+            logger.info("[CV PARSE] Successfully parsed CV (candidate data extracted)")
             
             experiences_summary = None
             if parsed_cv.experiences:

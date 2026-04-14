@@ -76,7 +76,7 @@ async def register(
         "updated_at": datetime.utcnow(),
     })
 
-    logger.info(f"User registered: {user.email}")
+    logger.info(f"User registered: {user.id}")
 
     return UserResponse(
         id=user.id,
@@ -139,7 +139,7 @@ async def login(
     )
     refresh_token = create_refresh_token(subject=str(user.id))
 
-    logger.info(f"User logged in: {user.email}")
+    logger.info(f"User logged in: {user.id}")
 
     try:
         _company = getattr(user, "company_id", None)
@@ -222,7 +222,7 @@ async def refresh_token(
     )
     new_refresh_token = create_refresh_token(subject=str(user.id))
 
-    logger.info(f"Token refreshed for user: {user.email}")
+    logger.info(f"Token refreshed for user: {user.id}")
 
     return TokenResponse(
         access_token=access_token,
@@ -275,7 +275,7 @@ async def update_current_user_profile(
     if not updated_user:
         raise HTTPException(status_code=404, detail="Usuário não encontrado")
 
-    logger.info(f"Profile updated for user: {current_user.email}")
+    logger.info(f"Profile updated for user: {current_user.id}")
 
     return UserResponse(
         id=updated_user.id,
@@ -316,7 +316,7 @@ async def change_password(
     new_hash = get_password_hash(data.new_password)
     await repo.update(current_user.id, {"password_hash": new_hash})
 
-    logger.info(f"Password changed for user: {current_user.email}")
+    logger.info(f"Password changed for user: {current_user.id}")
     return {"message": "Senha alterada com sucesso"}
 
 
@@ -364,7 +364,7 @@ async def public_register(
         }
     )
 
-    logger.info(f"User registered via public registration: {user.email}")
+    logger.info(f"User registered via public registration: {user.id}")
 
     return UserResponse(
         id=user.id,
@@ -410,7 +410,7 @@ async def forgot_password(
             }
         )
 
-        logger.info(f"Password reset requested for: {user.email}")
+        logger.info(f"Password reset requested for: {user.id}")
 
     return {"message": "Se o email existir em nosso sistema, você receberá um link para redefinir sua senha."}
 
@@ -444,7 +444,7 @@ async def reset_password(
         "updated_at": datetime.utcnow(),
     })
 
-    logger.info(f"Password reset completed for: {user.email}")
+    logger.info(f"Password reset completed for: {user.id}")
 
     return {"message": "Senha redefinida com sucesso. Você já pode fazer login."}
 
@@ -479,7 +479,7 @@ async def verify_email(
         "updated_at": datetime.utcnow(),
     })
 
-    logger.info(f"Email verified for: {user.email}")
+    logger.info(f"Email verified for: {user.id}")
 
     return {"message": "Email verificado com sucesso!"}
 
@@ -516,7 +516,7 @@ async def resend_verification(
             }
         )
 
-        logger.info(f"Verification email resent to: {user.email}")
+        logger.info(f"Verification email resent to: {user.id}")
 
     return {"message": "Se o email existir e não estiver verificado, você receberá um novo link de verificação."}
 
@@ -589,6 +589,6 @@ async def accept_invitation(
         "updated_at": datetime.utcnow(),
     })
 
-    logger.info(f"Invitation accepted for: {user.email}")
+    logger.info(f"Invitation accepted for: {user.id}")
 
     return {"message": "Conta ativada com sucesso! Você já pode fazer login."}

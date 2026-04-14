@@ -52,7 +52,7 @@ class IuguProvider(BillingProviderBase):
     @circuit_breaker_decorator(IUGU_CIRCUIT)
     async def create_customer(self, customer: CustomerData) -> BillingResult:
         """Create a customer in Iugu."""
-        logger.info(f"[Iugu] Creating customer: {customer.email}")
+        logger.info(f"[Iugu] Creating customer: {customer.id}")
         
         if not self.api_key:
             return BillingResult(

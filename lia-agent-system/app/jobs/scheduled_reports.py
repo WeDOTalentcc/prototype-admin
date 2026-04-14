@@ -233,7 +233,7 @@ class ScheduledReportJob:
                         
                         if result.get("email_sent"):
                             results["emails_sent"] += 1
-                            logger.info(f"✅ Daily briefing sent to {recipient.email}")
+                            logger.info(f"Daily briefing sent to recipient_id={recipient.id}")
                         else:
                             results["emails_failed"] += 1
                             if result.get("email_error"):
