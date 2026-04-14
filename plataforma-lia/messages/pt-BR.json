@@ -1355,6 +1355,16 @@
     },
     "access": {
       "talentPipelineAndPipeline": "Funil de talentos e pipeline"
+    },
+    "filters": {
+      "statusNew": "Novo",
+      "statusScreening": "Em triagem",
+      "statusApproved": "Aprovado",
+      "statusRejected": "Reprovado",
+      "seniorityJunior": "Júnior",
+      "seniorityMid": "Pleno",
+      "senioritySenior": "Sênior",
+      "senioritySpecialist": "Especialista"
     }
   },
   "common": {
@@ -1980,6 +1990,11 @@
       "actionExecuted": "Ação executada",
       "suggestions": "Sugestões",
       "fallbackError": "Estou com dificuldade para processar essa solicitação no momento. Pode tentar novamente em alguns segundos?"
+    },
+    "viewComposition": {
+      "searchSaved": "Busca salva",
+      "candidatesFound": "{count} candidatos encontrados",
+      "searchNamePrefix": "Busca"
     }
   },
   "screening": {
@@ -2224,6 +2239,18 @@
           "bothSuccess": "✅ Convite enviado por email e WhatsApp!",
           "bothSuccessDesc": "Email enviado e WhatsApp aberto para {name}{mock}",
           "devMode": " (modo desenvolvimento)"
+        },
+        "defaultQuestions": {
+          "q1": "Descreva uma situação onde você precisou resolver um problema complexo. Como você abordou?",
+          "q2": "Como você se mantém atualizado com as novidades da sua área de atuação?",
+          "q3": "Conte sobre um projeto que você liderou ou teve grande participação. Qual foi seu papel?",
+          "q4": "Como você lida com prazos apertados e múltiplas demandas simultâneas?",
+          "q5": "Quais são suas expectativas para os próximos anos em sua carreira?",
+          "cat1": "Resolução de Problemas",
+          "cat2": "Aprendizado Contínuo",
+          "cat3": "Experiência Prática",
+          "cat4": "Gestão de Tempo",
+          "cat5": "Objetivos"
         }
       },
       "textScreening": {

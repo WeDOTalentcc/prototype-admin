@@ -20,29 +20,34 @@ import type { CandidateLocal } from"@/services/lia-api"
 import { cn } from"@/lib/utils"
 import { LoadingFallback } from"@/components/ui/loading"
 
+function DynamicLoadingFallback({ textKey }: { textKey: string }) {
+  const t = useTranslations('pipeline')
+  return <LoadingFallback height="h-40" text={t(textKey)} />
+}
+
 const FavoritesTab = dynamic(
   () => import("@/components/talent-funnel-tabs/favorites-tab").then(m => ({ default: m.FavoritesTab })),
-  { ssr: false, loading: () => <LoadingFallback height="h-40" text="Carregando favoritos..." /> }
+  { ssr: false, loading: () => <DynamicLoadingFallback textKey="loading.favorites" /> }
 )
 
 const ListsTab = dynamic(
   () => import("@/components/talent-funnel-tabs/lists-tab").then(m => ({ default: m.ListsTab })),
-  { ssr: false, loading: () => <LoadingFallback height="h-40" text="Carregando listas..." /> }
+  { ssr: false, loading: () => <DynamicLoadingFallback textKey="loading.lists" /> }
 )
 
 const SavedSearchesTab = dynamic(
   () => import("@/components/talent-funnel-tabs/saved-searches-tab").then(m => ({ default: m.SavedSearchesTab })),
-  { ssr: false, loading: () => <LoadingFallback height="h-40" text="Carregando buscas salvas..." /> }
+  { ssr: false, loading: () => <DynamicLoadingFallback textKey="loading.savedSearches" /> }
 )
 
 const HistoryTab = dynamic(
   () => import("@/components/talent-funnel-tabs/history-tab").then(m => ({ default: m.HistoryTab })),
-  { ssr: false, loading: () => <LoadingFallback height="h-40" text="Carregando histórico..." /> }
+  { ssr: false, loading: () => <DynamicLoadingFallback textKey="loading.history" /> }
 )
 
 const TalentPoolsTab = dynamic(
   () => import("@/components/pages-candidates/TalentPoolsTab"),
-  { ssr: false, loading: () => <LoadingFallback height="h-40" text="Carregando bancos de talentos..." /> }
+  { ssr: false, loading: () => <DynamicLoadingFallback textKey="loading.talentPools" /> }
 )
 
 const ShareSearchModal = dynamic(
@@ -164,11 +169,25 @@ export default function FunilDeTalentosPage() {
 
   // Filtros rápidos
   
-const STATUS_COLORS: Record<string, { active: string; inactive: string }> = {"Novo": { active:"bg-cyan-50 dark:bg-cyan-950/30 text-cyan-700 dark:text-cyan-400 border-cyan-200 dark:border-cyan-800", inactive:"bg-lia-bg-primary dark:bg-lia-bg-primary text-lia-text-secondary dark:text-lia-text-tertiary border-lia-border-subtle dark:border-lia-border-subtle hover:border-cyan-300" },"Em triagem": { active:"bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800", inactive:"bg-lia-bg-primary dark:bg-lia-bg-primary text-lia-text-secondary dark:text-lia-text-tertiary border-lia-border-subtle dark:border-lia-border-subtle hover:border-amber-300" },"Aprovado": { active:"bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800", inactive:"bg-lia-bg-primary dark:bg-lia-bg-primary text-lia-text-secondary dark:text-lia-text-tertiary border-lia-border-subtle dark:border-lia-border-subtle hover:border-emerald-300" },"Reprovado": { active:"bg-rose-50 dark:bg-rose-950/30 text-rose-700 dark:text-rose-400 border-rose-200 dark:border-rose-800", inactive:"bg-lia-bg-primary dark:bg-lia-bg-primary text-lia-text-secondary dark:text-lia-text-tertiary border-lia-border-subtle dark:border-lia-border-subtle hover:border-rose-300" },
+const STATUS_COLORS: Record<string, { active: string; inactive: string }> = {
+  "Novo": { active:"bg-cyan-50 dark:bg-cyan-950/30 text-cyan-700 dark:text-cyan-400 border-cyan-200 dark:border-cyan-800", inactive:"bg-lia-bg-primary dark:bg-lia-bg-primary text-lia-text-secondary dark:text-lia-text-tertiary border-lia-border-subtle dark:border-lia-border-subtle hover:border-cyan-300" },
+  "Em triagem": { active:"bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800", inactive:"bg-lia-bg-primary dark:bg-lia-bg-primary text-lia-text-secondary dark:text-lia-text-tertiary border-lia-border-subtle dark:border-lia-border-subtle hover:border-amber-300" },
+  "Aprovado": { active:"bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800", inactive:"bg-lia-bg-primary dark:bg-lia-bg-primary text-lia-text-secondary dark:text-lia-text-tertiary border-lia-border-subtle dark:border-lia-border-subtle hover:border-emerald-300" },
+  "Reprovado": { active:"bg-rose-50 dark:bg-rose-950/30 text-rose-700 dark:text-rose-400 border-rose-200 dark:border-rose-800", inactive:"bg-lia-bg-primary dark:bg-lia-bg-primary text-lia-text-secondary dark:text-lia-text-tertiary border-lia-border-subtle dark:border-lia-border-subtle hover:border-rose-300" },
 }
 
-const STATUS_OPTIONS = ["Novo","Em triagem","Aprovado","Reprovado"]
-  const SENIORITY_OPTIONS = ["Júnior","Pleno","Sênior","Especialista"]
+const STATUS_OPTIONS = [
+  { value: "Novo", labelKey: "filters.statusNew" },
+  { value: "Em triagem", labelKey: "filters.statusScreening" },
+  { value: "Aprovado", labelKey: "filters.statusApproved" },
+  { value: "Reprovado", labelKey: "filters.statusRejected" },
+] as const
+const SENIORITY_OPTIONS = [
+  { value: "Júnior", labelKey: "filters.seniorityJunior" },
+  { value: "Pleno", labelKey: "filters.seniorityMid" },
+  { value: "Sênior", labelKey: "filters.senioritySenior" },
+  { value: "Especialista", labelKey: "filters.senioritySpecialist" },
+] as const
 
   return (
     <div className="min-h-screen bg-lia-bg-primary dark:bg-lia-bg-primary">
@@ -258,29 +277,29 @@ const STATUS_OPTIONS = ["Novo","Em triagem","Aprovado","Reprovado"]
               <div className="flex flex-wrap gap-2">
                 {STATUS_OPTIONS.map(s => (
                   <button
-                    key={s}
-                    onClick={() => updateFilter("status", filters.status === s ? undefined : s)}
+                    key={s.value}
+                    onClick={() => updateFilter("status", filters.status === s.value ? undefined : s.value)}
                     className={cn("px-2.5 py-1 text-xs rounded-md border transition-colors",
-                      filters.status === s
-                        ? (STATUS_COLORS[s]?.active ||"bg-lia-btn-primary-bg dark:bg-lia-bg-secondary text-white dark:text-lia-text-primary border-lia-btn-primary-bg dark:border-lia-border-subtle")
-                        : (STATUS_COLORS[s]?.inactive ||"bg-lia-bg-primary dark:bg-lia-bg-primary text-lia-text-secondary dark:text-lia-text-tertiary border-lia-border-subtle dark:border-lia-border-subtle hover:border-lia-border-medium")
+                      filters.status === s.value
+                        ? (STATUS_COLORS[s.value]?.active ||"bg-lia-btn-primary-bg dark:bg-lia-bg-secondary text-white dark:text-lia-text-primary border-lia-btn-primary-bg dark:border-lia-border-subtle")
+                        : (STATUS_COLORS[s.value]?.inactive ||"bg-lia-bg-primary dark:bg-lia-bg-primary text-lia-text-secondary dark:text-lia-text-tertiary border-lia-border-subtle dark:border-lia-border-subtle hover:border-lia-border-medium")
                     )}
                   >
-                    {s}
+                    {t(s.labelKey)}
                   </button>
                 ))}
                 <div className="w-px h-5 bg-lia-border-subtle self-center" />
                 {SENIORITY_OPTIONS.map(s => (
                   <button
-                    key={s}
-                    onClick={() => updateFilter("seniority", filters.seniority === s ? undefined : s)}
+                    key={s.value}
+                    onClick={() => updateFilter("seniority", filters.seniority === s.value ? undefined : s.value)}
                     className={cn("px-2.5 py-1 text-xs rounded-md border transition-colors",
-                      filters.seniority === s
+                      filters.seniority === s.value
                         ?"bg-lia-btn-primary-bg dark:bg-lia-bg-secondary text-white dark:text-lia-text-primary border-lia-btn-primary-bg dark:border-lia-border-subtle"
                         :"bg-lia-bg-primary dark:bg-lia-bg-primary text-lia-text-secondary dark:text-lia-text-tertiary border-lia-border-subtle dark:border-lia-border-subtle hover:border-lia-border-medium"
                     )}
                   >
-                    {s}
+                    {t(s.labelKey)}
                   </button>
                 ))}
               </div>

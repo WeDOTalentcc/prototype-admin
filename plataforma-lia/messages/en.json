@@ -1355,6 +1355,16 @@
     },
     "access": {
       "talentPipelineAndPipeline": "Talent pipeline and pipeline"
+    },
+    "filters": {
+      "statusNew": "New",
+      "statusScreening": "In Screening",
+      "statusApproved": "Approved",
+      "statusRejected": "Rejected",
+      "seniorityJunior": "Junior",
+      "seniorityMid": "Mid-level",
+      "senioritySenior": "Senior",
+      "senioritySpecialist": "Specialist"
     }
   },
   "common": {
@@ -1980,6 +1990,11 @@
       "actionExecuted": "Action executed",
       "suggestions": "Suggestions",
       "fallbackError": "I'm having trouble processing this request right now. Could you try again in a few seconds?"
+    },
+    "viewComposition": {
+      "searchSaved": "Search saved",
+      "candidatesFound": "{count} candidates found",
+      "searchNamePrefix": "Search"
     }
   },
   "screening": {
@@ -2224,6 +2239,18 @@
           "bothSuccess": "✅ Invite sent via email and WhatsApp!",
           "bothSuccessDesc": "Email sent and WhatsApp opened for {name}{mock}",
           "devMode": " (development mode)"
+        },
+        "defaultQuestions": {
+          "q1": "Describe a situation where you needed to solve a complex problem. How did you approach it?",
+          "q2": "How do you stay up to date with developments in your field?",
+          "q3": "Tell us about a project you led or had significant participation in. What was your role?",
+          "q4": "How do you handle tight deadlines and multiple simultaneous demands?",
+          "q5": "What are your expectations for the coming years in your career?",
+          "cat1": "Problem Solving",
+          "cat2": "Continuous Learning",
+          "cat3": "Practical Experience",
+          "cat4": "Time Management",
+          "cat5": "Goals"
         }
       },
       "textScreening": {

@@ -81,13 +81,15 @@ interface WSITriagemInviteModalProps {
   screeningChannels?: ScreeningChannelConfig
 }
 
-const DEFAULT_SCREENING_QUESTIONS: ScreeningQuestion[] = [
-  { id: '1', question: 'Descreva uma situação onde você precisou resolver um problema complexo. Como você abordou?', category: 'Resolução de Problemas', bloomLevel: 4 },
-  { id: '2', question: 'Como você se mantém atualizado com as novidades da sua área de atuação?', category: 'Aprendizado Contínuo', bloomLevel: 3 },
-  { id: '3', question: 'Conte sobre um projeto que você liderou ou teve grande participação. Qual foi seu papel?', category: 'Experiência Prática', bloomLevel: 5 },
-  { id: '4', question: 'Como você lida com prazos apertados e múltiplas demandas simultâneas?', category: 'Gestão de Tempo', bloomLevel: 3 },
-  { id: '5', question: 'Quais são suas expectativas para os próximos anos em sua carreira?', category: 'Objetivos', bloomLevel: 2 }
-]
+function getDefaultScreeningQuestions(t: (key: string) => string): ScreeningQuestion[] {
+  return [
+    { id: '1', question: t('invite.defaultQuestions.q1'), category: t('invite.defaultQuestions.cat1'), bloomLevel: 4 },
+    { id: '2', question: t('invite.defaultQuestions.q2'), category: t('invite.defaultQuestions.cat2'), bloomLevel: 3 },
+    { id: '3', question: t('invite.defaultQuestions.q3'), category: t('invite.defaultQuestions.cat3'), bloomLevel: 5 },
+    { id: '4', question: t('invite.defaultQuestions.q4'), category: t('invite.defaultQuestions.cat4'), bloomLevel: 3 },
+    { id: '5', question: t('invite.defaultQuestions.q5'), category: t('invite.defaultQuestions.cat5'), bloomLevel: 2 },
+  ]
+}
 
 export function WSITriagemInviteModal({
   isOpen,
@@ -95,12 +97,13 @@ export function WSITriagemInviteModal({
   candidate,
   jobTitle: jobTitleProp,
   jobId,
-  screeningQuestions = DEFAULT_SCREENING_QUESTIONS,
+  screeningQuestions: screeningQuestionsProp,
   onSend,
   companyId,
   screeningChannels,
 }: WSITriagemInviteModalProps) {
   const t = useTranslations('screening.wsi')
+  const screeningQuestions = screeningQuestionsProp ?? getDefaultScreeningQuestions(t)
   const locale = useLocale()
   const PIPELINE_STAGES = usePipelineStages()
   const jobTitle = jobTitleProp || t('invite.jobDefault')
@@ -586,7 +589,7 @@ useEffect(() => {
                 <span className={textStyles.subtitle}>{t('invite.messagePreview')}</span>
               </div>
               <Badge variant="outline" className="text-micro">
-                {channel === 'email' ? t('invite.email') : channel === 'whatsapp' ? t('invite.whatsapp') : channel === 'both' ? 'Email + WhatsApp' : t('invite.phone')}
+                {channel === 'email' ? t('invite.email') : channel === 'whatsapp' ? t('invite.whatsapp') : channel === 'both' ? t('invite.both') : t('invite.phone')}
               </Badge>
             </div>
 

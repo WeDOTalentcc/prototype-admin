@@ -172,6 +172,7 @@ export interface UseCandidatesViewCompositionParams {
 export function useCandidatesViewComposition(params: UseCandidatesViewCompositionParams) {
   const columnConfigHook = useCandidatesColumnConfig()
   const tCells = useTranslations('candidates.cells')
+  const tView = useTranslations('candidates.viewComposition')
 
   const renderCellValue = createCellRenderer({
     searchFeedbacks: params.searchFeedbacks,
@@ -387,10 +388,10 @@ export function useCandidatesViewComposition(params: UseCandidatesViewCompositio
   const saveCurrentSearch = () => {
     sessionStorage.setItem(
       'current-search-data',
-      JSON.stringify({ name: `Busca ${new Date().toLocaleDateString()}`, searchTerm: params.searchTerm, quickFilters: Array.from(params.quickFilters), timestamp: new Date().toISOString() })
+      JSON.stringify({ name: `${tView('searchNamePrefix')} ${new Date().toLocaleDateString()}`, searchTerm: params.searchTerm, quickFilters: Array.from(params.quickFilters), timestamp: new Date().toISOString() })
     )
     params.setActiveTab('saved-searches')
-    toast.success('Busca salva', { description: `${filterSort.sortedCandidates.length} candidatos encontrados` })
+    toast.success(tView('searchSaved'), { description: tView('candidatesFound', { count: filterSort.sortedCandidates.length }) })
   }
 
   const getScoreColor = (score: number) => {
