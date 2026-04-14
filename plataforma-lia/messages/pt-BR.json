@@ -419,7 +419,49 @@
       "noSavedSearches": "Nenhuma busca salva",
       "noSavedSearchesHint": "Aplique filtros e clique em \"Salvar Busca\"",
       "filterCount": "{count, plural, =0 {Nenhum filtro} one {# filtro} other {# filtros}}",
-      "clear": "Limpar"
+      "clear": "Limpar",
+      "statusValues": {
+        "Ativa": "Ativa",
+        "Rascunho": "Rascunho",
+        "Paralisada": "Paralisada",
+        "Aguardando aprovação": "Aguardando aprovação",
+        "Fechada (preenchida)": "Fechada (preenchida)",
+        "Cancelada": "Cancelada"
+      },
+      "stageValues": {
+        "Planejamento": "Planejamento",
+        "Aprovação": "Aprovação",
+        "Publicada": "Publicada",
+        "Triagem": "Triagem",
+        "Entrevistas": "Entrevistas",
+        "Finalização": "Finalização",
+        "Encerrada": "Encerrada"
+      },
+      "workModelValues": {
+        "presencial": "Presencial",
+        "híbrido": "Híbrido",
+        "remoto": "Remoto"
+      },
+      "seniorityValues": {
+        "Estágio": "Estágio",
+        "Júnior": "Júnior",
+        "Pleno": "Pleno",
+        "Sênior": "Sênior",
+        "Especialista": "Especialista",
+        "Coordenador": "Coordenador",
+        "Gerente": "Gerente",
+        "Diretor": "Diretor"
+      },
+      "departmentValues": {
+        "Tecnologia": "Tecnologia",
+        "Design": "Design",
+        "Produto": "Produto",
+        "Marketing": "Marketing",
+        "Vendas": "Vendas",
+        "RH": "RH",
+        "Financeiro": "Financeiro",
+        "Operações": "Operações"
+      }
     },
     "statuses": {
       "Ativa": "Ativa",

@@ -1,7 +1,7 @@
 "use client"
 
 import React from"react"
-import { useTranslations } from 'next-intl'
+import { useTranslations, useLocale } from 'next-intl'
 import { SCREENING_STATUS_LABELS, type ScreeningStatus } from"@/types/screening"
 import { Badge } from"@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
@@ -72,6 +72,35 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
   const tc = useTranslations('jobs.tableColumns')
   const ta = useTranslations('jobs.tableActions')
   const tf = useTranslations('jobs.tableFunnel')
+  const locale = useLocale()
+  const columnLabels: Record<string, string> = {
+    id: tc('id'),
+    vaga: tc('job'),
+    candidatos: tc('candidates'),
+    performance: tc('performance'),
+    status: tc('status'),
+    screeningStatus: tc('screening'),
+    recrutador: tc('recruiter'),
+    gestor: tc('manager'),
+    prazoTriagem: tc('screeningDeadline'),
+    prazoShortlist: tc('shortlistDeadline'),
+    prazoEncerramento: tc('closingDeadline'),
+    acoes: tc('actions'),
+  }
+  const statusLabels: Record<string, string> = {
+    'Ativa': t('statuses.Ativa'),
+    'Aprovada': t('statuses.Aprovada'),
+    'Aguardando aprovação': t('statuses.Aguardando aprovação'),
+    'Reaberta': t('statuses.Reaberta'),
+    'Paralisada': t('statuses.Paralisada'),
+    'Interna': t('statuses.Interna'),
+    'Rascunho': t('statuses.Rascunho'),
+    'Fechada (preenchida)': t('statuses.Fechada (preenchida)'),
+    'Fechada (expirada)': t('statuses.Fechada (expirada)'),
+    'Cancelada': t('statuses.Cancelada'),
+    'Concluída': t('statuses.Concluída'),
+    'Arquivada': t('statuses.Arquivada'),
+  }
   const {
     isLoading,
     filteredJobs,
@@ -222,7 +251,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
             }).map((columnId) => {
               const colMeta = columnSortAlign[columnId]
               if (!colMeta) return null
-              const config = { label: colMeta.labelKey ? tc(colMeta.labelKey as any) : '', sortable: colMeta.sortable, align: colMeta.align }
+              const config = { label: columnLabels[columnId] || '', sortable: colMeta.sortable, align: colMeta.align }
 
               if (columnId === 'checkbox') {
                 return (
@@ -589,7 +618,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                                   className="border-0 text-xs font-normal px-2 py-0.5 text-lia-text-primary"
                                   style={{backgroundColor: getStatusColor(job.status)}} /* dynamic */
                                 >
-                                  {job.status}
+                                  {statusLabels[job.status] || job.status}
                                 </Badge>
                               </div>
                             </td>
@@ -656,7 +685,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                             <td key={columnId} className="py-2 px-3 text-center" style={{width: `${width}px`}} /* dynamic */>
                               <span className="text-xs font-normal text-lia-text-primary">
                                 {job.openDate 
-                                  ? new Date(job.openDate).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })
+                                  ? new Date(job.openDate).toLocaleDateString(locale, { day: '2-digit', month: '2-digit' })
                                   : '—'}
                               </span>
                             </td>
@@ -668,7 +697,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                             <td key={columnId} className="py-2 px-3 text-center" style={{width: `${width}px`}} /* dynamic */>
                               <span className="text-xs font-normal text-lia-text-primary">
                                 {job.deadline 
-                                  ? new Date(job.deadline).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })
+                                  ? new Date(job.deadline).toLocaleDateString(locale, { day: '2-digit', month: '2-digit' })
                                   : '—'}
                               </span>
                             </td>

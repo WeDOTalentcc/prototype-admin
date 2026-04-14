@@ -1,7 +1,7 @@
 "use client"
 
 import { memo } from 'react'
-import { useTranslations } from 'next-intl'
+import { useTranslations, useLocale } from 'next-intl'
 
 import {
   Target, X, Search, Zap, CheckCircle, Globe, Users,
@@ -67,6 +67,49 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
   onDeleteSavedSearch,
 }: TableFiltersPanelProps) {
   const tf = useTranslations('jobs.tableFilters')
+  const locale = useLocale()
+  const statusLabels: Record<string, string> = {
+    'Ativa': tf('statusValues.Ativa'),
+    'Rascunho': tf('statusValues.Rascunho'),
+    'Paralisada': tf('statusValues.Paralisada'),
+    'Aguardando aprovação': tf('statusValues.Aguardando aprovação'),
+    'Fechada (preenchida)': tf('statusValues.Fechada (preenchida)'),
+    'Cancelada': tf('statusValues.Cancelada'),
+  }
+  const stageLabels: Record<string, string> = {
+    'Planejamento': tf('stageValues.Planejamento'),
+    'Aprovação': tf('stageValues.Aprovação'),
+    'Publicada': tf('stageValues.Publicada'),
+    'Triagem': tf('stageValues.Triagem'),
+    'Entrevistas': tf('stageValues.Entrevistas'),
+    'Finalização': tf('stageValues.Finalização'),
+    'Encerrada': tf('stageValues.Encerrada'),
+  }
+  const workModelLabels: Record<string, string> = {
+    'presencial': tf('workModelValues.presencial'),
+    'híbrido': tf('workModelValues.híbrido'),
+    'remoto': tf('workModelValues.remoto'),
+  }
+  const seniorityLabels: Record<string, string> = {
+    'Estágio': tf('seniorityValues.Estágio'),
+    'Júnior': tf('seniorityValues.Júnior'),
+    'Pleno': tf('seniorityValues.Pleno'),
+    'Sênior': tf('seniorityValues.Sênior'),
+    'Especialista': tf('seniorityValues.Especialista'),
+    'Coordenador': tf('seniorityValues.Coordenador'),
+    'Gerente': tf('seniorityValues.Gerente'),
+    'Diretor': tf('seniorityValues.Diretor'),
+  }
+  const deptLabels: Record<string, string> = {
+    'Tecnologia': tf('departmentValues.Tecnologia'),
+    'Design': tf('departmentValues.Design'),
+    'Produto': tf('departmentValues.Produto'),
+    'Marketing': tf('departmentValues.Marketing'),
+    'Vendas': tf('departmentValues.Vendas'),
+    'RH': tf('departmentValues.RH'),
+    'Financeiro': tf('departmentValues.Financeiro'),
+    'Operações': tf('departmentValues.Operações'),
+  }
 
   if (!isOpen) return null
 
@@ -191,7 +234,7 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
                   }`}
                   onClick={() => onToggleFilter('status', 'statuses', status)}
                 >
-                  {status}
+                  {statusLabels[status] || status}
                 </Badge>
               ))}
             </div>
@@ -215,7 +258,7 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
                   }`}
                   onClick={() => onToggleFilter('status', 'stages', stage)}
                 >
-                  {stage}
+                  {stageLabels[stage] || stage}
                 </Badge>
               ))}
             </div>
@@ -260,14 +303,14 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
                 <Badge
                   key={model}
                   variant="outline"
-                  className={`text-xs cursor-pointer hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none capitalize ${
+                  className={`text-xs cursor-pointer hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none ${
                     jobFilters.position?.workModels?.includes(model)
                       ? 'bg-lia-bg-tertiary border-lia-text-primary text-lia-text-primary font-medium dark:bg-lia-bg-secondary'
                       : 'bg-lia-bg-primary text-lia-text-primary'
                   }`}
                   onClick={() => onToggleFilter('position', 'workModels', model)}
                 >
-                  {model}
+                  {workModelLabels[model] || model}
                 </Badge>
               ))}
             </div>
@@ -291,7 +334,7 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
                   }`}
                   onClick={() => onToggleFilter('position', 'levels', level)}
                 >
-                  {level}
+                  {seniorityLabels[level] || level}
                 </Badge>
               ))}
             </div>
@@ -339,7 +382,7 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
                   }`}
                   onClick={() => onToggleFilter('team', 'departments', dept)}
                 >
-                  {dept}
+                  {deptLabels[dept] || dept}
                 </Badge>
               ))}
             </div>
@@ -451,7 +494,7 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
                         </span>
                       </div>
                       <p className="text-micro text-lia-text-secondary mt-0.5 truncate">
-                        {new Date(search.createdAt).toLocaleDateString('pt-BR')}
+                        {new Date(search.createdAt).toLocaleDateString(locale)}
                         {search.query && ` -"${search.query}"`}
                       </p>
                     </div>
