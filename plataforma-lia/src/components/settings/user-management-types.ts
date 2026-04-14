@@ -8,7 +8,7 @@ export interface UserData {
   department: string
   position: string
   avatar?: string
-  status: 'ativo' | 'inativo' | 'pendente'
+  status: 'active' | 'inactive' | 'pending'
   permissions: string[]
   emailSignature: string
   location: string

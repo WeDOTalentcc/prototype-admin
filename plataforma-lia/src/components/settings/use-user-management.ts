@@ -27,7 +27,7 @@ const EMPTY_FORM: Partial<UserData> = {
   emailSignature: '',
   location: '',
   permissions: [],
-  status: 'ativo'
+  status: 'active'
 }
 
 export function useUserManagement() {
@@ -68,7 +68,7 @@ export function useUserManagement() {
         role: u.role === 'admin' ? t('users.roleAdmin') : u.role === 'recruiter' ? t('users.roleRecruiter') : u.role === 'manager' ? t('users.roleManager') : t('users.roleViewer'),
         department: 'Talent Acquisition',
         position: u.role,
-        status: u.status === 'active' || !u.status ? 'ativo' : u.status === 'inactive' ? 'inativo' : 'pendente',
+        status: u.status === 'active' || !u.status ? 'active' : u.status === 'inactive' ? 'inactive' : 'pending',
         permissions: Array.isArray(u.permissions) && (u.permissions as unknown[]).length > 0 ? u.permissions as string[] : [],
         emailSignature: '',
         location: '',
@@ -104,7 +104,7 @@ export function useUserManagement() {
 
   const stats = useMemo(() => {
     const total = users.length
-    const active = users.filter(u => u.status === 'ativo').length
+    const active = users.filter(u => u.status === 'active').length
     const managers = users.filter(u => u.isManager).length
     return { total, active, managers }
   }, [users])
@@ -161,7 +161,7 @@ export function useUserManagement() {
           body: JSON.stringify({
             name: formData.name,
             role: mapRoleToApi(formData.role),
-            status: formData.status === 'ativo' ? 'active' : 'inactive',
+            status: formData.status === 'active' ? 'active' : 'inactive',
             permissions: formData.permissions || []
           })
         })
@@ -214,9 +214,9 @@ export function useUserManagement() {
 
   const getStatusColor = useCallback((status: string) => {
     switch (status) {
-      case 'ativo': return `${badgeStyles.success} border-status-success/30`
-      case 'inativo': return `${badgeStyles.error} border-status-error/30`
-      case 'pendente': return `${badgeStyles.warning} border-status-warning/30`
+      case 'active': return `${badgeStyles.success} border-status-success/30`
+      case 'inactive': return `${badgeStyles.error} border-status-error/30`
+      case 'pending': return `${badgeStyles.warning} border-status-warning/30`
       default: return `${badgeStyles.default} border-lia-border-subtle`
     }
   }, [])

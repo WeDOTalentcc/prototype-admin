@@ -188,9 +188,9 @@ export function UserManagement(_props: UserManagementProps) {
           className="px-2 py-1.5 text-xs border border-lia-border-default rounded-xl focus:ring-1 focus:ring-lia-btn-primary-bg/10 focus:border-lia-btn-primary-bg dark:bg-lia-bg-elevated dark:border-lia-border-default"
         >
           <option value="all">{t('allStatuses')}</option>
-          <option value="ativo">{t('statusActive')}</option>
-          <option value="inativo">{t('statusInactive')}</option>
-          <option value="pendente">{t('statusPending')}</option>
+          <option value="active">{t('statusActive')}</option>
+          <option value="inactive">{t('statusInactive')}</option>
+          <option value="pending">{t('statusPending')}</option>
         </select>
 
         <div className="flex bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-xl p-0.5">

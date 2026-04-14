@@ -147,13 +147,13 @@ export function UserForm({ isCreating, formData, setFormData, onSave, onCancel }
               <div>
                 <label className={textStyles.label + " block mb-1.5"}>{t('status')}</label>
                 <select
-                  value={formData.status || 'ativo'}
+                  value={formData.status || 'active'}
                   onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value as typeof prev.status }))}
                   className={inputClass}
                 >
-                  <option value="ativo">{t('statusActive')}</option>
-                  <option value="inativo">{t('statusInactive')}</option>
-                  <option value="pendente">{t('statusPending')}</option>
+                  <option value="active">{t('statusActive')}</option>
+                  <option value="inactive">{t('statusInactive')}</option>
+                  <option value="pending">{t('statusPending')}</option>
                 </select>
               </div>
 

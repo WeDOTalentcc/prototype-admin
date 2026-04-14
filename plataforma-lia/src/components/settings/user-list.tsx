@@ -67,7 +67,7 @@ export function UserList({
                     <p className={textStyles.description}>{user.role}</p>
                     <div className="flex items-center gap-1.5 mt-1">
                       <Badge className={`text-micro ${getStatusColor(user.status)}`}>
-                        {user.status}
+                        {user.status === 'active' ? t('statusActive') : user.status === 'inactive' ? t('statusInactive') : t('statusPending')}
                       </Badge>
                       {user.isScimManaged && (
                         <Badge className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-primary border-lia-border-subtle dark:border-lia-border-subtle text-micro">
@@ -121,7 +121,7 @@ export function UserList({
                   </Badge>
                 )}
 
-                {user.status === 'inativo' && (
+                {user.status === 'inactive' && (
                   <Button
                     variant="outline"
                     size="sm"
@@ -197,7 +197,7 @@ export function UserList({
                   <td className="px-2 py-1.5 whitespace-nowrap">
                     <div className="flex items-center gap-1.5">
                       <Badge className={`${getStatusColor(user.status)} text-micro`}>
-                        {user.status}
+                        {user.status === 'active' ? t('statusActive') : user.status === 'inactive' ? t('statusInactive') : t('statusPending')}
                       </Badge>
                       {user.isScimManaged && (
                         <Badge className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-primary border-lia-border-subtle dark:border-lia-border-subtle text-micro">
