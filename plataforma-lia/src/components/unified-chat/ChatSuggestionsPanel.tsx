@@ -26,12 +26,9 @@ export function ChatSuggestionsPanel({
   const [activeCategory, setActiveCategory] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
 
-  const queryKeyMap: Record<string, string> = Object.fromEntries(
-    QUERY_EXAMPLES.map(q => [q.id, tq(q.id as `q${number}`)])
-  )
   const translatedQueries = QUERY_EXAMPLES.map(q => ({
     ...q,
-    question: queryKeyMap[q.id] ?? q.question,
+    question: tq(q.id as `q${number}`),
   }))
 
   const filteredQueries = translatedQueries.filter(query => {

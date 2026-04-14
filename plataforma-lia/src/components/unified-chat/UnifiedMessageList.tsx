@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useRef, useEffect } from "react"
+import { useTranslations } from "next-intl"
 import { Copy, Plus, ThumbsUp, ThumbsDown, Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { PlanProgressCard, type ExecutionPlanData } from "@/components/chat/plan-progress-card"
@@ -41,12 +42,13 @@ function MessageActions({
   content: string
   conversationId?: string | null
 }) {
+  const t = useTranslations('chat.messageActions')
   return (
     <div className="flex items-center gap-0.5 mt-1 opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none">
       <button
         className="p-1 rounded hover:bg-lia-interactive-hover text-lia-text-disabled hover:text-lia-text-secondary"
-        title="Copiar"
-        aria-label="Copiar resposta"
+        title={t('copyTitle')}
+        aria-label={t('copyAriaLabel')}
         onClick={() => {
           navigator.clipboard.writeText(content)
         }}
@@ -55,8 +57,8 @@ function MessageActions({
       </button>
       <button
         className="p-1 rounded hover:bg-lia-interactive-hover text-lia-text-disabled hover:text-lia-text-secondary"
-        title="Inserir"
-        aria-label="Inserir na conversa"
+        title={t('insertTitle')}
+        aria-label={t('insertAriaLabel')}
         onClick={() => {
           window.dispatchEvent(
             new CustomEvent("lia:prefill-message", {
@@ -69,8 +71,8 @@ function MessageActions({
       </button>
       <button
         className="p-1 rounded hover:bg-lia-interactive-hover text-lia-text-disabled hover:text-lia-text-secondary"
-        title="Útil"
-        aria-label="Marcar como útil"
+        title={t('helpfulTitle')}
+        aria-label={t('helpfulAriaLabel')}
         onClick={() => {
           if (conversationId) {
             submitThumbsFeedback(conversationId, messageId, "up")
@@ -81,8 +83,8 @@ function MessageActions({
       </button>
       <button
         className="p-1 rounded hover:bg-lia-interactive-hover text-lia-text-disabled hover:text-lia-text-secondary"
-        title="Não útil"
-        aria-label="Marcar como não útil"
+        title={t('notHelpfulTitle')}
+        aria-label={t('notHelpfulAriaLabel')}
         onClick={() => {
           if (conversationId) {
             submitThumbsFeedback(conversationId, messageId, "down")

@@ -108,6 +108,16 @@
     "wrongPassword": "Senha incorreta. Verifique suas credenciais."
   },
   "chat": {
+    "messageActions": {
+      "copyTitle": "Copiar",
+      "copyAriaLabel": "Copiar resposta",
+      "insertTitle": "Inserir",
+      "insertAriaLabel": "Inserir na conversa",
+      "helpfulTitle": "Útil",
+      "helpfulAriaLabel": "Marcar como útil",
+      "notHelpfulTitle": "Não útil",
+      "notHelpfulAriaLabel": "Marcar como não útil"
+    },
     "workflowReels": {
       "scrollLeft": "Rolar para esquerda",
       "scrollRight": "Rolar para direita",
@@ -725,7 +735,8 @@
     "fileAnalysisReady": "A análise será enviada junto com sua próxima mensagem",
     "pending": "Pendência",
     "modulePremium": "Módulo Premium",
-    "modulePremiumDescription": "Esta funcionalidade requer um módulo premium"
+    "modulePremiumDescription": "Esta funcionalidade requer um módulo premium",
+    "defaultUserName": "Usuário"
   },
   "metadata": {
     "title": "Plataforma LIA — WeDoTalent",

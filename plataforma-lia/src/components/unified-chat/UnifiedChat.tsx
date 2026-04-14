@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState, useCallback, useRef, useEffect } from "react"
+import { useTranslations } from "next-intl"
 import { cn } from "@/lib/utils"
 import { useLiaFloat, useLiaChatContext } from "@/contexts/lia-float-context"
 import { useAuthStore } from "@/stores/auth-store"
@@ -88,7 +89,8 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
   }, [isResizing])
 
   const authUser = useAuthStore((s) => s.user)
-  const userName = authUser?.name || authUser?.email || "Usuário"
+  const tc = useTranslations('common')
+  const userName = authUser?.name || authUser?.email || tc('defaultUserName')
 
   const {
     isOpen,
