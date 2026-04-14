@@ -145,21 +145,29 @@ class ComplianceDomainPrompt(DomainPrompt):
     })
 
     @staticmethod
-    def _load_compliance_block() -> dict:
-        """Load compliance block YAML. Cached after first load."""
-        if not hasattr(ComplianceDomainPrompt, "_compliance_block_cache"):
+    def _load_yaml_block(filename: str, cache_attr: str) -> dict:
+        """Load a YAML block file from prompts/shared/. Cached after first load."""
+        if not hasattr(ComplianceDomainPrompt, cache_attr):
             import os
             try:
                 import yaml
                 path = os.path.join(
-                    os.path.dirname(__file__), "..", "prompts", "shared", "compliance_block.yaml"
+                    os.path.dirname(__file__), "..", "prompts", "shared", filename
                 )
                 with open(path) as f:
-                    ComplianceDomainPrompt._compliance_block_cache = yaml.safe_load(f) or {}
+                    setattr(ComplianceDomainPrompt, cache_attr, yaml.safe_load(f) or {})
             except Exception as exc:
-                logger.warning("[Compliance] compliance_block.yaml not found: %s", exc)
-                ComplianceDomainPrompt._compliance_block_cache = {}
-        return ComplianceDomainPrompt._compliance_block_cache
+                logger.warning("[Compliance] %s not found: %s", filename, exc)
+                setattr(ComplianceDomainPrompt, cache_attr, {})
+        return getattr(ComplianceDomainPrompt, cache_attr)
+
+    @staticmethod
+    def _load_compliance_block() -> dict:
+        return ComplianceDomainPrompt._load_yaml_block("compliance_block.yaml", "_compliance_block_cache")
+
+    @staticmethod
+    def _load_guardrails_block() -> dict:
+        return ComplianceDomainPrompt._load_yaml_block("guardrails_block.yaml", "_guardrails_block_cache")
 
     def _get_agent_type(self) -> str:
         """Determine agent type for compliance block variant selection."""
@@ -215,10 +223,20 @@ class ComplianceDomainPrompt(DomainPrompt):
                 "(CLT Art. 373-A, Lei 9.029/95)."
             )
 
-        # Assemble prompt
+        # Load guardrails from YAML
+        guardrails_yaml = self._load_guardrails_block()
+        universal = guardrails_yaml.get("universal", {})
+        autonomy_variant = guardrails_yaml.get("autonomy", {}).get(agent_type, "")
+        escalation_block = guardrails_yaml.get("escalation", "")
+        error_block = guardrails_yaml.get("error_handling", "")
+        data_safety_block = guardrails_yaml.get("data_safety", "")
+
+        # Assemble prompt: compliance blocks + guardrails + interaction patterns
         parts = []
         if base_prompt:
             parts.append(base_prompt)
+
+        # --- Compliance (from compliance_block.yaml) ---
         if lgpd_block:
             parts.append(lgpd_block)
         if fairness_block:
@@ -229,6 +247,22 @@ class ComplianceDomainPrompt(DomainPrompt):
             parts.append(audit_block)
         if defensive_block:
             parts.append(defensive_block)
+
+        # --- Guardrails (from guardrails_block.yaml) ---
+        for key in ("identity", "hallucination", "prompt_security", "multi_tenancy", "negation"):
+            block = universal.get(key, "")
+            if block:
+                parts.append(block)
+        if autonomy_variant:
+            parts.append(autonomy_variant)
+        if escalation_block:
+            parts.append(escalation_block)
+        if error_block:
+            parts.append(error_block)
+        if data_safety_block:
+            parts.append(data_safety_block)
+
+        # --- Interaction patterns (from Python — anti-sycophancy, already centralized) ---
         if ANTI_SYCOPHANCY_BLOCK:
             parts.append(f"\n{ANTI_SYCOPHANCY_BLOCK}")
 
