@@ -39,7 +39,9 @@
       "helpTips": "Help & LIA Tips",
       "mainMenu": "Main menu",
       "beta": "BETA",
-      "premium": "Premium"
+      "premium": "Premium",
+      "logoAlt": "WeDo Talent",
+      "logoSmallAlt": "WeDo"
     },
     "user": {
       "admin": "Administrator",
@@ -616,6 +618,20 @@
         "RH": "HR",
         "Financeiro": "Finance",
         "Operações": "Operations"
+      },
+      "locationValues": {
+        "São Paulo, SP": "São Paulo, SP",
+        "Rio de Janeiro, RJ": "Rio de Janeiro, RJ",
+        "Belo Horizonte, MG": "Belo Horizonte, MG",
+        "Curitiba, PR": "Curitiba, PR",
+        "Porto Alegre, RS": "Porto Alegre, RS",
+        "Brasília, DF": "Brasília, DF",
+        "Remoto": "Remote"
+      },
+      "publishingValues": {
+        "linkedin": "LinkedIn",
+        "website": "Website",
+        "indeed": "Indeed"
       }
     },
     "statuses": {

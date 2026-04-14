@@ -110,6 +110,20 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
     'Financeiro': tf('departmentValues.Financeiro'),
     'Operações': tf('departmentValues.Operações'),
   }
+  const locLabels: Record<string, string> = {
+    'São Paulo, SP': tf('locationValues.São Paulo, SP'),
+    'Rio de Janeiro, RJ': tf('locationValues.Rio de Janeiro, RJ'),
+    'Belo Horizonte, MG': tf('locationValues.Belo Horizonte, MG'),
+    'Curitiba, PR': tf('locationValues.Curitiba, PR'),
+    'Porto Alegre, RS': tf('locationValues.Porto Alegre, RS'),
+    'Brasília, DF': tf('locationValues.Brasília, DF'),
+    'Remoto': tf('locationValues.Remoto'),
+  }
+  const pubLabels: Record<string, string> = {
+    'linkedin': tf('publishingValues.linkedin'),
+    'website': tf('publishingValues.website'),
+    'indeed': tf('publishingValues.indeed'),
+  }
 
   if (!isOpen) return null
 
@@ -358,7 +372,7 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
                   }`}
                   onClick={() => onToggleFilter('position', 'locations', loc)}
                 >
-                  {loc}
+                  {locLabels[loc] || loc}
                 </Badge>
               ))}
             </div>
@@ -396,9 +410,9 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
             </h4>
             <div className="flex flex-wrap gap-1.5">
               {[
-                { value: 'linkedin', label: 'LinkedIn', Icon: Linkedin },
-                { value: 'website', label: 'Website', Icon: Globe },
-                { value: 'indeed', label: 'Indeed', Icon: Briefcase },
+                { value: 'linkedin', Icon: Linkedin },
+                { value: 'website', Icon: Globe },
+                { value: 'indeed', Icon: Briefcase },
               ].map(channel => (
                 <Badge
                   key={channel.value}
@@ -411,7 +425,7 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
                   onClick={() => onToggleFilter('publishing', 'channels', channel.value)}
                 >
                   <channel.Icon className="w-3 h-3" />
-                  {channel.label}
+                  {pubLabels[channel.value] || channel.value}
                 </Badge>
               ))}
               <Badge

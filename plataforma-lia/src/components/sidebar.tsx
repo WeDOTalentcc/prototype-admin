@@ -662,7 +662,7 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
           {shouldShowContent ? (
             <Image
               src="/logos/wedo-logo.png"
-              alt="WeDo Talent"
+              alt={t('labels.logoAlt')}
               width={120}
               height={40}
               className="dark:invert w-auto h-auto"
@@ -671,7 +671,7 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
           ) : (
             <Image
               src="/logos/we-logo.png"
-              alt="we"
+              alt={t('labels.logoSmallAlt')}
               width={40}
               height={40}
               className="dark:invert w-auto h-auto"
