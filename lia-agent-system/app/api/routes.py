@@ -216,6 +216,7 @@ from app.api.v1.agent_chat_ws import router as agent_chat_ws_router
 from app.api.v1.agent_chat_sse import router as agent_chat_sse_router
 from app.api.v1.agent_memory import router as agent_memory_router
 from app.api.v1.agent_quality import router as agent_quality_router
+from app.api.v1.agent_quality_dashboard import router as agent_quality_dashboard_router
 from app.api.v1.agent_templates import router as agent_templates_router
 from app.api.v1.sector_templates import router as sector_templates_router
 from app.api.v1.sourcing_agents import router as sourcing_agents_router
@@ -477,6 +478,7 @@ def register_all_routes(app: FastAPI) -> None:
     app.include_router(agent_memory_router, prefix="/api/v1")
     app.include_router(agent_explainability.router, prefix="/api/v1", tags=["agent-explainability"])
     app.include_router(agent_quality_router, prefix="/api/v1", tags=["agent-quality"])
+    app.include_router(agent_quality_dashboard_router, prefix="/api/v1", tags=["agent-quality-dashboard"])
     app.include_router(agent_chat_ws_router)
     app.include_router(agent_chat_sse_router, prefix="/api/v1")
 
