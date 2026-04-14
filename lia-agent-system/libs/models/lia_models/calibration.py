@@ -117,12 +117,14 @@ class CalibrationEvent(Base):
     Calibration event model for tracking recruiter feedback on LIA's evaluations.
     """
     __tablename__ = "calibration_events"
-    
+
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
-    
+
+    company_id = Column(String, nullable=True, index=True)  # multi-tenant isolation
+
     feedback_type = Column(SQLEnum(FeedbackType), nullable=False)
     status = Column(SQLEnum(CalibrationStatus), default=CalibrationStatus.PENDING)
-    
+
     candidate_id = Column(String, nullable=False)
     job_id = Column(String, nullable=True)
     user_id = Column(String, nullable=True)
@@ -151,6 +153,7 @@ class CalibrationEvent(Base):
         """Convert event to dictionary."""
         return {
             "id": self.id,
+            "company_id": self.company_id,
             "feedback_type": self.feedback_type.value if self.feedback_type else None,
             "status": self.status.value if self.status else None,
             "candidate_id": self.candidate_id,

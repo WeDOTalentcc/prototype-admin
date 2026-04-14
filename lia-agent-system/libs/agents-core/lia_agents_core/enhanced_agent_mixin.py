@@ -437,6 +437,69 @@ class EnhancedAgentMixin:
             from app.core.agent_model_config import DEFAULT_MODEL
             return DEFAULT_MODEL
 
+    async def _record_calibration_event(
+        self,
+        state: ReActState,
+        company_id: str,
+        context: Dict[str, Any] | None = None,
+    ) -> None:
+        """Record a CalibrationEvent capturing the agent's scoring decision.
+
+        Automatically captures: domain, weights used, confidence, decision type.
+        This is the LIA side of the calibration loop — recruiter feedback
+        (explicit/implicit) comes from the CalibrationService API endpoints.
+
+        Fail-open: errors are logged but never block the agent response.
+        """
+        try:
+            from app.core.database import AsyncSessionLocal
+            from lia_models.calibration import CalibrationEvent, FeedbackType, CalibrationStatus
+
+            # Extract scoring info from state
+            ctx = context or {}
+            candidate_id = ctx.get("candidate_id", "")
+            job_id = ctx.get("job_id")
+            lia_score = getattr(state, "confidence_score", None)
+
+            # Only record if there's meaningful scoring data
+            if not candidate_id:
+                return
+
+            event_context = {
+                "domain": self._enhanced_domain,
+                "weights_used": dict(self._calibration_weights),
+                "model_id": self.model_id,
+                "tool_calls_count": len(getattr(state, "tool_calls", [])),
+            }
+
+            async with AsyncSessionLocal() as db:
+                import uuid as _uuid
+                event = CalibrationEvent(
+                    id=str(_uuid.uuid4()),
+                    company_id=company_id,
+                    feedback_type=FeedbackType.EXPLICIT_AGREE,  # LIA self-report
+                    status=CalibrationStatus.PENDING,
+                    candidate_id=candidate_id,
+                    job_id=job_id,
+                    lia_score=lia_score,
+                    lia_recommendation=ctx.get("recommendation"),
+                    context=event_context,
+                )
+                db.add(event)
+                await db.commit()
+
+            logger.debug(
+                "[%s] CalibrationEvent recorded: candidate=%s score=%s",
+                self._enhanced_domain, candidate_id, lia_score,
+            )
+
+        except Exception as exc:
+            # Fail-open: calibration logging never blocks the agent
+            logger.debug(
+                "[%s] CalibrationEvent record failed (fail-open): %s",
+                self._enhanced_domain, exc,
+            )
+
     async def _post_loop_learning(
         self,
         state: ReActState,
@@ -446,6 +509,8 @@ class EnhancedAgentMixin:
     ) -> None:
         """Extract learnings from completed ReAct loop and save to long-term memory.
 
+        Also records CalibrationEvent for the scoring feedback loop.
+
         Args:
             state: Completed ReAct loop state.
             company_id: Company ID for storage.
@@ -453,6 +518,10 @@ class EnhancedAgentMixin:
             context: Optional additional context for extraction.
         """
         self._record_confidence(state)  # D2 — Prometheus confidence histogram
+
+        # Record calibration event (async, fail-open)
+        await self._record_calibration_event(state, company_id, context)
+
         try:
             learnings = self._learning_extractor.extract(
                 state=state,
