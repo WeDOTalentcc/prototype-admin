@@ -6,6 +6,7 @@ import {
   Plus, MoreHorizontal, ChevronDown, Pencil, Trash2, ArrowRightLeft
 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { useTranslations } from 'next-intl'
 import type { ChatMode } from "./unified-chat-types"
 import type { TransportMode } from "@/hooks/chat/lia-chat-connection-types"
 import { TransportModeIndicator } from "./TransportModeIndicator"
@@ -24,13 +25,6 @@ interface Props {
   onDelete?: () => void
 }
 
-const MODE_OPTIONS: { mode: ChatMode; icon: React.ElementType; label: string }[] = [
-  { mode: "sidebar", icon: PanelRight, label: "Lateral" },
-  { mode: "floating", icon: MessageSquare, label: "Flutuante" },
-  { mode: "fullscreen", icon: Maximize2, label: "Tela cheia" },
-  { mode: "minimized", icon: Minimize2, label: "Minimizar" },
-]
-
 export function UnifiedChatHeader({
   mode,
   onModeChange,
@@ -44,13 +38,21 @@ export function UnifiedChatHeader({
   onRename,
   onDelete,
 }: Props) {
+  const t = useTranslations('chat.header')
   const [showModeMenu, setShowModeMenu] = useState(false)
   const [showOptionsMenu, setShowOptionsMenu] = useState(false)
   const [isRenaming, setIsRenaming] = useState(false)
   const [renameValue, setRenameValue] = useState("")
   const renameInputRef = useRef<HTMLInputElement>(null)
 
-  const title = conversationTitle || "Nova conversa"
+  const MODE_OPTIONS: { mode: ChatMode; icon: React.ElementType; label: string }[] = [
+    { mode: "sidebar", icon: PanelRight, label: t('modeSidebar') },
+    { mode: "floating", icon: MessageSquare, label: t('modeFloating') },
+    { mode: "fullscreen", icon: Maximize2, label: t('modeFullscreen') },
+    { mode: "minimized", icon: Minimize2, label: t('modeMinimize') },
+  ]
+
+  const title = conversationTitle || t('newConversation')
 
   useEffect(() => {
     if (isRenaming && renameInputRef.current) {
@@ -85,7 +87,7 @@ export function UnifiedChatHeader({
 
   const handleDelete = () => {
     setShowOptionsMenu(false)
-    if (window.confirm("Tem certeza que deseja excluir esta conversa?")) {
+    if (window.confirm(t('deleteConfirm'))) {
       onDelete?.()
     }
   }
@@ -100,7 +102,7 @@ export function UnifiedChatHeader({
           onBlur={handleFinishRename}
           onKeyDown={handleRenameKeyDown}
           className="text-sm font-medium text-lia-text-primary bg-lia-bg-secondary border border-lia-border-subtle rounded px-1.5 py-0.5 max-w-[200px] outline-none focus:border-wedo-cyan"
-          aria-label="Renomear conversa"
+          aria-label={t('renameLabel')}
         />
       )
     }
@@ -109,12 +111,10 @@ export function UnifiedChatHeader({
 
   return (
     <div className="flex items-center justify-between px-4 py-2.5 flex-shrink-0 bg-lia-bg-primary">
-      {/* Left: LIA branding + conversation title */}
       <div className="flex items-center gap-2 min-w-0">
         <Brain className="w-4 h-4 text-wedo-cyan flex-shrink-0" strokeWidth={2} />
 
         {mode === "fullscreen" ? (
-          /* Fullscreen: breadcrumb style like Notion */
           <div className="flex items-center gap-1 min-w-0">
             <span className="text-sm text-lia-text-secondary">
               LIA
@@ -135,7 +135,6 @@ export function UnifiedChatHeader({
             )}
           </div>
         ) : (
-          /* Sidebar/Floating: compact title */
           isRenaming ? (
             renderTitle()
           ) : (
@@ -152,44 +151,40 @@ export function UnifiedChatHeader({
         )}
 
         {isConnected && (
-          <span className="w-1.5 h-1.5 rounded-full bg-status-success flex-shrink-0" title="Conectado" />
+          <span className="w-1.5 h-1.5 rounded-full bg-status-success flex-shrink-0" title={t('connected')} />
         )}
         {transportMode && (
           <TransportModeIndicator transportMode={transportMode} isReconnecting={isReconnecting} />
         )}
       </div>
 
-      {/* Right: actions */}
       <div className="flex items-center gap-0.5">
-        {/* New chat */}
         <button
           onClick={onNewChat}
           className="p-1.5 rounded-md text-lia-border-strong hover:text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none"
-          title="Nova conversa"
-          aria-label="Nova conversa"
+          title={t('newChat')}
+          aria-label={t('newChat')}
         >
           <Plus className="w-4 h-4" />
         </button>
 
-        {/* Switch Task */}
         {onSwitchTask && (
           <button
             onClick={onSwitchTask}
             className="p-1.5 rounded-md text-lia-border-strong hover:text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none"
-            title="Trocar conversa (⌘K)"
-            aria-label="Trocar conversa"
+            title={t('switchChat', { shortcut: '\u2318K' })}
+            aria-label={t('switchChatLabel')}
           >
             <ArrowRightLeft className="w-4 h-4" />
           </button>
         )}
 
-        {/* Mode switcher */}
         <div className="relative">
           <button
             onClick={() => setShowModeMenu(!showModeMenu)}
             className="p-1.5 rounded-md text-lia-border-strong hover:text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none"
-            title="Mudar modo de exibição"
-            aria-label="Modo de exibição"
+            title={t('displayMode')}
+            aria-label={t('displayModeLabel')}
           >
             {mode === "sidebar" && <PanelRight className="w-4 h-4" />}
             {mode === "floating" && <MessageSquare className="w-4 h-4" />}
@@ -218,7 +213,7 @@ export function UnifiedChatHeader({
                     <opt.icon className="w-4 h-4" />
                     <span>{opt.label}</span>
                     {mode === opt.mode && (
-                      <span className="ml-auto text-wedo-cyan text-xs">✓</span>
+                      <span className="ml-auto text-wedo-cyan text-xs">{'\u2713'}</span>
                     )}
                   </button>
                 ))}
@@ -227,25 +222,23 @@ export function UnifiedChatHeader({
           )}
         </div>
 
-        {/* Close (sidebar/floating only) or minimize (fullscreen) */}
         {mode !== "fullscreen" && (
           <button
             onClick={onClose}
             className="p-1.5 rounded-md text-lia-border-strong hover:text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none"
-            title="Fechar"
-            aria-label="Fechar chat"
+            title={t('close')}
+            aria-label={t('closeChat')}
           >
             <X className="w-4 h-4" />
           </button>
         )}
 
-        {/* Options menu (three dots) */}
         <div className="relative">
           <button
             onClick={() => setShowOptionsMenu(!showOptionsMenu)}
             className="p-1.5 rounded-md text-lia-border-strong hover:text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none"
-            title="Opções"
-            aria-label="Opções da conversa"
+            title={t('options')}
+            aria-label={t('optionsLabel')}
           >
             <MoreHorizontal className="w-4 h-4" />
           </button>
@@ -259,7 +252,7 @@ export function UnifiedChatHeader({
                   className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-lia-text-secondary hover:bg-lia-bg-secondary"
                 >
                   <Pencil className="w-3.5 h-3.5" />
-                  Renomear
+                  {t('rename')}
                 </button>
                 <div className="my-1 border-t border-lia-border-subtle" />
                 <button
@@ -267,7 +260,7 @@ export function UnifiedChatHeader({
                   className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-status-error hover:bg-lia-bg-secondary"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
-                  Excluir
+                  {t('delete')}
                 </button>
               </div>
             </>

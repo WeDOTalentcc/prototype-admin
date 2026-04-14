@@ -3,6 +3,7 @@
 import React, { useState } from "react"
 import { Search, X } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { useTranslations } from 'next-intl'
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { QUERY_EXAMPLES, CATEGORY_INFO } from "./chat-suggestions-data"
 
@@ -19,10 +20,18 @@ export function ChatSuggestionsPanel({
   onSelectQuery,
   mode,
 }: ChatSuggestionsPanelProps) {
+  const t = useTranslations('chat.suggestionsPanel')
+  const tq = useTranslations('chat.queries')
+  const tc = useTranslations('chat.queryCategories')
   const [activeCategory, setActiveCategory] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
 
-  const filteredQueries = QUERY_EXAMPLES.filter(query => {
+  const translatedQueries = QUERY_EXAMPLES.map(q => ({
+    ...q,
+    question: tq(q.id as any),
+  }))
+
+  const filteredQueries = translatedQueries.filter(query => {
     const matchesCategory = !activeCategory || query.category === activeCategory
     const searchLower = searchTerm.toLowerCase()
     const matchesSearch = !searchTerm ||
@@ -57,11 +66,11 @@ export function ChatSuggestionsPanel({
       panelHeight
     )}>
       <div className="flex items-center justify-between px-3 py-2 border-b border-lia-border-subtle">
-        <span className="text-xs font-medium text-lia-text-secondary uppercase tracking-wide">Sugestões de consulta</span>
+        <span className="text-xs font-medium text-lia-text-secondary uppercase tracking-wide">{t('title')}</span>
         <button
           onClick={handleClose}
           className="p-0.5 rounded hover:bg-lia-interactive-hover text-lia-text-tertiary hover:text-lia-text-secondary transition-colors motion-reduce:transition-none"
-          aria-label="Fechar sugestões"
+          aria-label={t('closeLabel')}
         >
           <X className="w-3.5 h-3.5" />
         </button>
@@ -72,7 +81,7 @@ export function ChatSuggestionsPanel({
           <Search className="w-3.5 h-3.5 text-lia-text-tertiary flex-shrink-0" />
           <input
             type="text"
-            placeholder="Buscar consulta..."
+            placeholder={t('searchPlaceholder')}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="flex-1 bg-transparent text-xs outline-none placeholder:text-lia-text-tertiary text-lia-text-primary"
@@ -82,7 +91,7 @@ export function ChatSuggestionsPanel({
             <button
               onClick={() => setSearchTerm('')}
               className="p-0.5 rounded-full hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none"
-              aria-label="Limpar busca"
+              aria-label={t('clearSearch')}
             >
               <X className="w-3 h-3 text-lia-text-tertiary" />
             </button>
@@ -100,9 +109,9 @@ export function ChatSuggestionsPanel({
               : "bg-lia-bg-tertiary text-lia-text-secondary hover:bg-lia-interactive-hover border border-lia-border-subtle"
           )}
         >
-          Todas
+          {t('all')}
         </button>
-        {Object.entries(CATEGORY_INFO).map(([key, { label, icon: Icon }]) => (
+        {Object.entries(CATEGORY_INFO).map(([key, { icon: Icon }]) => (
           <button
             key={key}
             onClick={() => setActiveCategory(activeCategory === key ? null : key)}
@@ -114,7 +123,7 @@ export function ChatSuggestionsPanel({
             )}
           >
             <Icon className="w-2.5 h-2.5" />
-            {label}
+            {tc(key as any)}
           </button>
         ))}
       </div>
@@ -144,7 +153,7 @@ export function ChatSuggestionsPanel({
                 <Search className="w-3.5 h-3.5 text-lia-text-tertiary" />
               </div>
               <p className="text-xs text-lia-text-tertiary">
-                Nenhuma consulta encontrada
+                {t('noResults')}
               </p>
             </div>
           )}
@@ -153,7 +162,7 @@ export function ChatSuggestionsPanel({
 
       <div className="px-3 py-1.5 border-t border-lia-border-subtle bg-lia-bg-secondary">
         <p className="text-[10px] text-lia-text-tertiary text-center">
-          Clique para inserir no prompt
+          {t('hint')}
         </p>
       </div>
     </div>

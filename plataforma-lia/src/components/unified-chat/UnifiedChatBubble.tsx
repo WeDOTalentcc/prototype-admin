@@ -4,6 +4,7 @@ import React, { useState, useRef, useCallback, useEffect } from "react"
 import { Brain } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useLiaChatContext } from "@/contexts/lia-float-context"
+import { useTranslations } from 'next-intl'
 
 const POSITION_STORAGE_KEY = "lia-bubble-position"
 const DRAG_THRESHOLD = 4
@@ -31,6 +32,7 @@ function getStoredPosition(): { x: number; y: number } | null {
 
 export function UnifiedChatBubble({ onOpen }: Props) {
   const { chatIsConnected } = useLiaChatContext()
+  const t = useTranslations('chat.bubble')
   const [position, setPosition] = useState<{ x: number; y: number } | null>(getStoredPosition)
   const isDragging = useRef(false)
   const dragStart = useRef<{ x: number; y: number; bx: number; by: number } | null>(null)
@@ -132,8 +134,8 @@ export function UnifiedChatBubble({ onOpen }: Props) {
         "group"
       )}
       style={style}
-      title="Abrir LIA (⌘⇧K)"
-      aria-label="Abrir chat com a LIA"
+      title={t('openLia', { shortcut: '\u2318\u21E7K' })}
+      aria-label={t('openLiaLabel')}
     >
       <Brain
         className="w-7 h-7 text-white drop-shadow-sm group-hover:drop-shadow-md transition-all motion-reduce:transition-none"

@@ -3,6 +3,7 @@
 import { X } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { useTranslations } from 'next-intl'
 
 interface ColumnDef {
   id: string
@@ -30,19 +31,6 @@ interface ColumnConfigPanelProps {
   onToast?: (message: string) => void
 }
 
-const CATEGORY_CONFIG: Record<string, string> = {
-  principais: 'Colunas Principais',
-  informacoes: 'Informações da Vaga',
-  prazos: 'Prazos',
-  responsaveis: 'Responsáveis',
-  localizacao: 'Localização e Modelo',
-  remuneracao: 'Remuneração e Budget',
-  divulgacao: 'Divulgação',
-  requisitos: 'Requisitos',
-  targeting: 'Segmentação',
-  metricas: 'Métricas',
-}
-
 export function ColumnConfigPanel({
   open,
   onClose,
@@ -56,19 +44,33 @@ export function ColumnConfigPanel({
   resetColumnsToDefault,
   onToast,
 }: ColumnConfigPanelProps) {
+  const t = useTranslations('jobs.columnConfig')
+  const categoryLabels: Record<string, string> = {
+    principais: t('categories.principais'),
+    informacoes: t('categories.informacoes'),
+    prazos: t('categories.prazos'),
+    responsaveis: t('categories.responsaveis'),
+    localizacao: t('categories.localizacao'),
+    remuneracao: t('categories.remuneracao'),
+    divulgacao: t('categories.divulgacao'),
+    requisitos: t('categories.requisitos'),
+    targeting: t('categories.targeting'),
+    metricas: t('categories.metricas'),
+  }
+
   if (!open) return null
 
   const handleSaveView = () => {
-    const name = prompt("Nome da visualização:")
+    const name = prompt(t('viewNamePrompt'))
     if (name) {
       saveColumnView(name)
-      onToast?.(`Visualização "${name}" salva!`)
+      onToast?.(t('viewSaved', { name }))
     }
   }
 
   const handleResetColumns = () => {
     resetColumnsToDefault()
-    onToast?.("Colunas resetadas para o padrão")
+    onToast?.(t('columnsReset'))
   }
 
   return (
@@ -76,7 +78,7 @@ export function ColumnConfigPanel({
       <Card className="h-full flex flex-col overflow-hidden bg-lia-bg-primary dark:bg-lia-bg-primary rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle">
         <div className="flex-shrink-0 p-4 dark:border-lia-border-subtle">
           <div className="flex items-center justify-between">
-            <h3 className="font-semibold text-sm text-lia-text-primary">Configurar Colunas</h3>
+            <h3 className="font-semibold text-sm text-lia-text-primary">{t('title')}</h3>
             <Button
               variant="ghost"
               size="sm"
@@ -87,7 +89,7 @@ export function ColumnConfigPanel({
             </Button>
           </div>
           <p className="text-xs text-lia-text-primary mt-1">
-            Selecione as colunas visíveis na tabela ({visibleColumnIds.length} ativas)
+            {t('description', { count: visibleColumnIds.length })}
           </p>
         </div>
 
@@ -95,7 +97,7 @@ export function ColumnConfigPanel({
           {savedColumnViews.length > 0 && (
             <div className="mb-4 pb-3 dark:border-lia-border-subtle">
               <h4 className="text-xs font-semibold text-lia-text-primary mb-2">
-                Visualizações Salvas
+                {t('savedViews')}
               </h4>
               <div className="space-y-1">
                 {savedColumnViews.map(view => (
@@ -121,13 +123,13 @@ export function ColumnConfigPanel({
           )}
 
           <div className="space-y-3">
-            {Object.entries(CATEGORY_CONFIG).map(([categoryKey, categoryLabel]) => {
+            {Object.keys(categoryLabels).map((categoryKey) => {
               const categoryColumns = columnConfig.filter(col => col.category === categoryKey)
               if (categoryColumns.length === 0) return null
               return (
                 <div key={categoryKey}>
                   <h4 className="text-xs font-semibold text-lia-text-primary mb-2">
-                    {categoryLabel}
+                    {categoryLabels[categoryKey]}
                   </h4>
                   <div className="space-y-1">
                     {categoryColumns.map(col => (
@@ -156,7 +158,7 @@ export function ColumnConfigPanel({
               className="h-8 text-xs"
               onClick={handleSaveView}
             >
-              Salvar Visualização
+              {t('saveView')}
             </Button>
             <Button
               variant="outline"
@@ -164,7 +166,7 @@ export function ColumnConfigPanel({
               className="h-8 text-xs"
               onClick={handleResetColumns}
             >
-              Resetar Padrão
+              {t('resetDefault')}
             </Button>
           </div>
         </div>

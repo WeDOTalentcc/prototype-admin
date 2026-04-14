@@ -3,6 +3,7 @@
 import React, { useRef, useCallback, useEffect, useState } from "react"
 import { Send, Plus, Loader2, SlidersHorizontal, Paperclip, FileText, XCircle, AtSign, Briefcase, Users, Lightbulb } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { useTranslations } from 'next-intl'
 import { AudioRecordButton } from "@/components/ui/audio-record-button"
 import { ChatSuggestionsPanel } from "./ChatSuggestionsPanel"
 import { ContextConfigPanel } from "./ContextConfigPanel"
@@ -39,6 +40,7 @@ export function UnifiedChatInput({
   onFileButtonClick,
   onFileAttach,
 }: Props) {
+  const t = useTranslations('chat.input')
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const [showPlusMenu, setShowPlusMenu] = useState(false)
   const [showSuggestions, setShowSuggestions] = useState(false)
@@ -106,7 +108,7 @@ export function UnifiedChatInput({
       {/* Drag overlay */}
       {isDragOver && (
         <div className="absolute inset-0 z-10 flex items-center justify-center rounded-xl border-2 border-dashed border-wedo-cyan bg-wedo-cyan/5">
-          <p className="text-sm font-medium text-wedo-cyan">Solte o arquivo aqui</p>
+          <p className="text-sm font-medium text-wedo-cyan">{t('dropFileHere')}</p>
         </div>
       )}
       {/* Attached file indicator */}
@@ -119,7 +121,7 @@ export function UnifiedChatInput({
           <button
             onClick={() => setAttachedFile(null)}
             className="p-0.5 rounded hover:bg-lia-interactive-hover text-lia-text-tertiary hover:text-lia-text-secondary"
-            aria-label="Remover arquivo"
+            aria-label={t('removeFile')}
           >
             <XCircle className="w-3 h-3" />
           </button>
@@ -157,7 +159,7 @@ export function UnifiedChatInput({
           value={inputText}
           onChange={(e) => setInputText(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Faça qualquer coisa com a LIA..."
+          placeholder={t('placeholder')}
           disabled={isBusy}
           rows={1}
           className={cn(
@@ -167,7 +169,7 @@ export function UnifiedChatInput({
             "",
             showContext ? "pt-1.5" : ""
           )}
-          aria-label="Mensagem para a LIA"
+          aria-label={t('messageLabel')}
         />
 
         {/* Bottom toolbar */}
@@ -180,8 +182,8 @@ export function UnifiedChatInput({
                 onClick={() => setShowPlusMenu(!showPlusMenu)}
                 disabled={isBusy}
                 className="p-1.5 rounded-md text-lia-text-disabled hover:text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none disabled:opacity-40"
-                title="Adicionar"
-                aria-label="Menu de adição"
+                title={t('addMenu')}
+                aria-label={t('addMenuLabel')}
               >
                 <Plus className="w-4 h-4" />
               </button>
@@ -198,7 +200,7 @@ export function UnifiedChatInput({
                       className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-lia-text-secondary hover:bg-lia-bg-secondary"
                     >
                       <Paperclip className="w-4 h-4" />
-                      Anexar PDF, DOCX ou CSV
+                      {t('attachFile')}
                     </button>
                     <button
                       onClick={() => {
@@ -209,7 +211,7 @@ export function UnifiedChatInput({
                       className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-lia-text-secondary hover:bg-lia-bg-secondary"
                     >
                       <AtSign className="w-4 h-4" />
-                      Mencionar vaga ou candidato
+                      {t('mentionJobCandidate')}
                     </button>
                   </div>
                 </>
@@ -235,8 +237,8 @@ export function UnifiedChatInput({
                   ? "text-wedo-cyan bg-wedo-cyan/10"
                   : "text-lia-text-disabled hover:text-lia-text-secondary hover:bg-lia-interactive-hover"
               )}
-              title="Sugestões de consulta"
-              aria-label="Abrir sugestões de consulta"
+              title={t('suggestionsTitle')}
+              aria-label={t('suggestionsLabel')}
             >
               <Lightbulb className="w-4 h-4" />
             </button>
@@ -253,8 +255,8 @@ export function UnifiedChatInput({
                     ? "text-wedo-cyan bg-wedo-cyan/10"
                     : "text-lia-text-disabled hover:text-lia-text-secondary hover:bg-lia-interactive-hover"
                 )}
-                title="Configurações de contexto"
-                aria-label="Configurações de conversa"
+                title={t('contextConfig')}
+                aria-label={t('contextConfigLabel')}
               >
                 <SlidersHorizontal className="w-4 h-4" />
               </button>
@@ -270,7 +272,7 @@ export function UnifiedChatInput({
           <div className="flex items-center gap-1">
             {/* Auto label (like Notion) */}
             <span className="text-xs text-lia-text-disabled mr-1">
-              Auto
+              {t('auto')}
             </span>
 
             {/* Voice */}
@@ -290,7 +292,7 @@ export function UnifiedChatInput({
                   ? "text-wedo-cyan hover:bg-wedo-cyan/10"
                   : "text-lia-text-disabled"
               )}
-              aria-label="Enviar mensagem"
+              aria-label={t('sendLabel')}
             >
               {isBusy
                 ? <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none" />

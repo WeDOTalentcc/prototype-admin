@@ -5,6 +5,7 @@ import { Button } from"@/components/ui/button"
 import { Badge } from"@/components/ui/badge"
 import { Tabs, TabsList, TabsTrigger } from"@/components/ui/tabs"
 import { Briefcase, Plus, LayoutGrid, List, Kanban } from"lucide-react"
+import { useTranslations } from 'next-intl'
 import type { JobMetrics } from"./types"
 
 interface JobsHeaderProps {
@@ -24,25 +25,29 @@ const JobsHeader = memo(function JobsHeader({
   onViewModeChange,
   onCreateJob,
 }: JobsHeaderProps) {
+  const t = useTranslations('jobs')
+  const tt = useTranslations('jobs.headerTabs')
+  const tb = useTranslations('jobs.headerBadges')
+
   return (
     <div className="space-y-4 px-6 py-4" data-testid="jobs-header">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
             <Briefcase className="h-5 w-5 text-lia-text-disabled" />
-            <h1 className="text-lg font-semibold text-lia-text-primary">Vagas</h1>
+            <h1 className="text-lg font-semibold text-lia-text-primary">{t('pageTitle')}</h1>
           </div>
           
           {metrics && (
             <div className="flex items-center gap-2">
               <Badge variant="outline" className="border-lia-border-default dark:border-lia-border-default text-lia-text-secondary">
-                {metrics.totalJobs} total
+                {tb('total', { count: metrics.totalJobs })}
               </Badge>
               <Badge variant="success" >
-                {metrics.activeJobs} ativas
+                {tb('active', { count: metrics.activeJobs })}
               </Badge>
               <Badge variant="warning" >
-                {metrics.draftJobs} rascunhos
+                {tb('drafts', { count: metrics.draftJobs })}
               </Badge>
             </div>
           )}
@@ -81,7 +86,7 @@ const JobsHeader = memo(function JobsHeader({
             className="bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:bg-lia-bg-secondary dark:hover:bg-lia-interactive-active"
           >
             <Plus className="h-4 w-4 mr-2" />
-            Nova Vaga
+            {t('newJob')}
           </Button>
         </div>
       </div>
@@ -92,25 +97,25 @@ const JobsHeader = memo(function JobsHeader({
             value="all" 
             className="data-[state=active]:bg-lia-bg-primary dark:data-[state=active]:bg-lia-bg-inverse data-[state=active]:text-lia-text-primary dark:data-[state=active]:text-lia-text-inverse"
           >
-            Todas
+            {tt('all')}
           </TabsTrigger>
           <TabsTrigger 
             value="active"
             className="data-[state=active]:bg-lia-bg-primary dark:data-[state=active]:bg-lia-bg-inverse data-[state=active]:text-lia-text-primary dark:data-[state=active]:text-lia-text-inverse"
           >
-            Ativas
+            {tt('active')}
           </TabsTrigger>
           <TabsTrigger 
             value="drafts"
             className="data-[state=active]:bg-lia-bg-primary dark:data-[state=active]:bg-lia-bg-inverse data-[state=active]:text-lia-text-primary dark:data-[state=active]:text-lia-text-inverse"
           >
-            Rascunhos
+            {tt('drafts')}
           </TabsTrigger>
           <TabsTrigger 
             value="closed"
             className="data-[state=active]:bg-lia-bg-primary dark:data-[state=active]:bg-lia-bg-inverse data-[state=active]:text-lia-text-primary dark:data-[state=active]:text-lia-text-inverse"
           >
-            Encerradas
+            {tt('closed')}
           </TabsTrigger>
         </TabsList>
       </Tabs>

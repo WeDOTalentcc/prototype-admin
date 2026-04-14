@@ -2,6 +2,7 @@
 
 import React from "react"
 import { Shield, X } from "lucide-react"
+import { useTranslations } from 'next-intl'
 
 interface Props {
   isOpen: boolean
@@ -10,25 +11,19 @@ interface Props {
   onCancel: () => void
 }
 
-/**
- * LgpdConsentDialog — C.3 LGPD compliance.
- *
- * Shown before processing CVs to ensure candidate data consent.
- * Required by LGPD Art. 7 (legal basis for data processing).
- * Design follows lia-* token system.
- */
 export function LgpdConsentDialog({ isOpen, fileName, onConfirm, onCancel }: Props) {
+  const t = useTranslations('chat.lgpd')
+
   if (!isOpen) return null
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
       <div className="bg-lia-bg-primary rounded-xl border border-lia-border-subtle w-[400px] max-w-[90vw] overflow-hidden">
-        {/* Header */}
         <div className="flex items-center justify-between px-5 py-3.5">
           <div className="flex items-center gap-2">
             <Shield className="w-4.5 h-4.5 text-wedo-cyan" />
             <h3 className="text-sm font-semibold text-lia-text-primary">
-              Consentimento LGPD
+              {t('title')}
             </h3>
           </div>
           <button
@@ -39,48 +34,44 @@ export function LgpdConsentDialog({ isOpen, fileName, onConfirm, onCancel }: Pro
           </button>
         </div>
 
-        {/* Content */}
         <div className="px-5 py-4 space-y-3">
           <p className="text-sm text-lia-text-primary leading-relaxed">
-            O arquivo <strong>{fileName}</strong> foi identificado como curriculo.
+            {t('fileIdentified', { fileName })}
           </p>
           <p className="text-xs text-lia-text-secondary leading-relaxed">
-            De acordo com a LGPD (Lei 13.709/2018), o processamento de dados pessoais
-            de candidatos requer base legal. Ao prosseguir, voce confirma que:
+            {t('legalBasis')}
           </p>
           <ul className="space-y-1.5 ml-4">
             <li className="text-xs text-lia-text-secondary list-disc">
-              O candidato autorizou o uso do curriculo para esta vaga
+              {t('consent1')}
             </li>
             <li className="text-xs text-lia-text-secondary list-disc">
-              Os dados serao usados exclusivamente para triagem
+              {t('consent2')}
             </li>
             <li className="text-xs text-lia-text-secondary list-disc">
-              O candidato pode solicitar exclusao a qualquer momento
+              {t('consent3')}
             </li>
           </ul>
 
           <div className="p-2.5 rounded-xl bg-wedo-cyan/5 border border-wedo-cyan/20">
             <p className="text-[10px] text-wedo-cyan">
-              Os dados serao processados pela IA para triagem e descartados apos o periodo
-              de retencao configurado nas politicas da empresa.
+              {t('retentionNote')}
             </p>
           </div>
         </div>
 
-        {/* Footer */}
         <div className="flex items-center gap-2 px-5 py-3 border-t border-lia-border-subtle">
           <button
             onClick={onCancel}
             className="flex-1 px-3 py-2 rounded-xl border border-lia-border-subtle text-sm font-medium text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none"
           >
-            Cancelar
+            {t('cancel')}
           </button>
           <button
             onClick={onConfirm}
             className="flex-1 px-3 py-2 rounded-md bg-wedo-cyan text-white text-sm font-medium hover:bg-wedo-cyan/90 transition-colors motion-reduce:transition-none"
           >
-            Confirmar e processar
+            {t('confirmProcess')}
           </button>
         </div>
       </div>

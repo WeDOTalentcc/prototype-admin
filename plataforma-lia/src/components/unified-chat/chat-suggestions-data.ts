@@ -14,14 +14,14 @@ export interface QueryExample {
   category: 'metricas' | 'candidatos' | 'vagas' | 'pipeline' | 'analise' | 'previsao' | 'comparacao'
 }
 
-export const CATEGORY_INFO = {
-  metricas: { label: 'Métricas', icon: BarChart3 },
-  candidatos: { label: 'Candidatos', icon: Users },
-  vagas: { label: 'Vagas', icon: Briefcase },
-  pipeline: { label: 'Pipeline', icon: Filter },
-  analise: { label: 'Análise', icon: Brain },
-  previsao: { label: 'Previsões', icon: TrendingUp },
-  comparacao: { label: 'Comparar', icon: Target },
+export const CATEGORY_INFO: Record<string, { icon: React.ElementType }> = {
+  metricas: { icon: BarChart3 },
+  candidatos: { icon: Users },
+  vagas: { icon: Briefcase },
+  pipeline: { icon: Filter },
+  analise: { icon: Brain },
+  previsao: { icon: TrendingUp },
+  comparacao: { icon: Target },
 }
 
 export const QUERY_EXAMPLES: QueryExample[] = [

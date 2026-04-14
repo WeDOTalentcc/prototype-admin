@@ -3,6 +3,7 @@
 import React, { useMemo } from "react"
 import { Briefcase, Users, X, MessageSquare, ChevronRight, HelpCircle } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { useTranslations } from 'next-intl'
 import { useLiaFloat } from "@/contexts/lia-float-context"
 import { useRecentItemsStore } from "@/stores/recent-items-store"
 import type { ChatMode } from "./unified-chat-types"
@@ -13,30 +14,31 @@ interface Props {
   mode: ChatMode
 }
 
-const CONTEXT_MODES = [
-  {
-    type: "general" as const,
-    label: "Conversa Geral",
-    description: "Pergunte sobre qualquer tema",
-    icon: MessageSquare,
-  },
-  {
-    type: "job_chat" as const,
-    label: "Foco em Vaga",
-    description: "A LIA responde usando dados da vaga selecionada",
-    icon: Briefcase,
-  },
-  {
-    type: "talent_chat" as const,
-    label: "Foco em Candidato",
-    description: "A LIA responde usando dados do candidato selecionado",
-    icon: Users,
-  },
-]
-
 export function ContextConfigPanel({ isOpen, onClose, mode }: Props) {
+  const t = useTranslations('chat.contextPanel')
   const { chatContextType, switchChatContext, entityContext, setEntityContext } = useLiaFloat()
   const recentItems = useRecentItemsStore((s) => s.items)
+
+  const CONTEXT_MODES = [
+    {
+      type: "general" as const,
+      label: t('modeGeneral'),
+      description: t('modeGeneralDesc'),
+      icon: MessageSquare,
+    },
+    {
+      type: "job_chat" as const,
+      label: t('modeJob'),
+      description: t('modeJobDesc'),
+      icon: Briefcase,
+    },
+    {
+      type: "talent_chat" as const,
+      label: t('modeCandidate'),
+      description: t('modeCandidateDesc'),
+      icon: Users,
+    },
+  ]
 
   const recentJobs = useMemo(
     () => recentItems.filter((i) => i.type === "vaga").slice(0, 5),
@@ -51,7 +53,7 @@ export function ContextConfigPanel({ isOpen, onClose, mode }: Props) {
   if (!isOpen) return null
 
   const activeEntity = entityContext?.type
-    ? `${entityContext.type === "job" ? "Vaga" : "Candidato"}: ${entityContext.name || entityContext.id}`
+    ? `${entityContext.type === "job" ? t('entityJob') : t('entityCandidate')}: ${entityContext.name || entityContext.id}`
     : null
 
   const handleSelectMode = (type: typeof chatContextType) => {
@@ -98,7 +100,7 @@ export function ContextConfigPanel({ isOpen, onClose, mode }: Props) {
       >
         <div className="flex items-center justify-between px-3 pt-3 pb-2">
           <span className="text-xs font-medium text-lia-text-secondary uppercase tracking-wide">
-            Contexto da Conversa
+            {t('title')}
           </span>
           <button
             onClick={onClose}
@@ -111,7 +113,7 @@ export function ContextConfigPanel({ isOpen, onClose, mode }: Props) {
         <div className="mx-3 mb-2 flex items-start gap-2 px-2.5 py-2 rounded-lg bg-lia-bg-secondary">
           <HelpCircle className="w-3.5 h-3.5 flex-shrink-0 text-lia-text-tertiary mt-px" />
           <p className="text-[11px] text-lia-text-tertiary leading-relaxed">
-            Defina o foco da conversa. No modo Vaga ou Candidato, a LIA usa os dados específicos para responder com mais precisão.
+            {t('helpText')}
           </p>
         </div>
 
@@ -122,7 +124,7 @@ export function ContextConfigPanel({ isOpen, onClose, mode }: Props) {
               onClick={handleClearContext}
               className="text-xs text-lia-text-tertiary hover:text-lia-text-secondary whitespace-nowrap"
             >
-              Limpar
+              {t('clearContext')}
             </button>
           </div>
         )}
@@ -155,7 +157,7 @@ export function ContextConfigPanel({ isOpen, onClose, mode }: Props) {
         {(chatContextType === "job_chat" || chatContextType === "general") && recentJobs.length > 0 && (
           <div className="border-t border-lia-border-subtle px-1.5 pt-1.5 pb-1.5">
             <span className="px-2.5 text-[11px] font-medium text-lia-text-tertiary uppercase tracking-wide">
-              Vagas Recentes
+              {t('recentJobs')}
             </span>
             {recentJobs.map((job) => (
               <button
@@ -174,7 +176,7 @@ export function ContextConfigPanel({ isOpen, onClose, mode }: Props) {
         {(chatContextType === "talent_chat" || chatContextType === "general") && recentCandidates.length > 0 && (
           <div className="border-t border-lia-border-subtle px-1.5 pt-1.5 pb-1.5">
             <span className="px-2.5 text-[11px] font-medium text-lia-text-tertiary uppercase tracking-wide">
-              Candidatos Recentes
+              {t('recentCandidates')}
             </span>
             {recentCandidates.map((cand) => (
               <button
@@ -193,7 +195,7 @@ export function ContextConfigPanel({ isOpen, onClose, mode }: Props) {
         {recentJobs.length === 0 && recentCandidates.length === 0 && (
           <div className="border-t border-lia-border-subtle px-3 py-3">
             <p className="text-xs text-lia-text-tertiary text-center">
-              Navegue por vagas ou candidatos para que apareçam aqui como atalhos.
+              {t('emptyHint')}
             </p>
           </div>
         )}
