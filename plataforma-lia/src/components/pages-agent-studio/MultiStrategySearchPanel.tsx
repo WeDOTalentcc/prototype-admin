@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState } from"react"
+import { useTranslations } from "next-intl"
 import {
   Search, Zap, CheckCircle, Loader2, AlertCircle,
   Users, ArrowRight, Plus, Database, Briefcase, Heart
@@ -13,8 +14,6 @@ import {
   textStyles, cardStyles, badgeStyles, buttonStyles
 } from"@/lib/design-tokens"
 import CandidateOriginBadge from"./CandidateOriginBadge"
-
-// ---------- Types ----------
 
 interface StrategyResult {
   strategy_id: string
@@ -29,45 +28,38 @@ interface MultiStrategyCandidate {
   name: string
   current_title: string
   current_company: string
-  location: string
   avatar_url: string | null
   skills: string[]
-  years_of_experience: number
-  lia_score: number | null
   multi_strategy_score: number
   found_via: string
-  found_via_strategies: string[]
-  match_summary: string | null
+  found_via_strategies?: string[]
 }
 
 interface MultiStrategySearchResult {
   total_unique: number
-  candidates: MultiStrategyCandidate[]
-  strategy_results: StrategyResult[]
   elapsed_ms: number
+  strategy_results: StrategyResult[]
+  candidates: MultiStrategyCandidate[]
 }
-
-// ---------- Constants ----------
 
 const STRATEGY_CONFIG: Record<string, { icon: string; color: string }> = {
-  direct: { icon:"🎯", color:"bg-blue-50 text-blue-700" },
-  adjacent: { icon:"🔄", color:"bg-purple-50 text-purple-700" },
-  silver: { icon:"🥈", color:"bg-yellow-50 text-yellow-700" },
-  reengagement: { icon:"♻️", color:"bg-green-50 text-green-700" },
+  direct: { icon: "🎯", color: "bg-blue-100 text-blue-800" },
+  adjacent: { icon: "🔀", color: "bg-purple-100 text-purple-800" },
+  silver: { icon: "🥈", color: "bg-gray-100 text-gray-800" },
+  reengagement: { icon: "💚", color: "bg-green-100 text-green-800" },
 }
 
-// ---------- Main Component ----------
-
 interface MultiStrategySearchPanelProps {
-  onAddToJob?: (candidateIds: string[], jobId: string) => void
-  onAddToPool?: (candidateIds: string[], poolId: string) => void
-  onAddToList?: (candidateIds: string[]) => void
+  onAddToJob?: (ids: string[], jobId: string) => void
+  onAddToPool?: (ids: string[], poolId: string) => void
+  onAddToList?: (ids: string[]) => void
   onAddToWorkflowRail?: (query: string, count: number) => void
 }
 
 export default function MultiStrategySearchPanel({
   onAddToJob, onAddToPool, onAddToList, onAddToWorkflowRail,
 }: MultiStrategySearchPanelProps) {
+  const t = useTranslations('agents.multiStrategy')
   const [jobTitle, setJobTitle] = useState("")
   const [skills, setSkills] = useState("")
   const [location, setLocation] = useState("")
@@ -122,19 +114,18 @@ export default function MultiStrategySearchPanel({
 
   return (
     <div className="space-y-4">
-      {/* Search form */}
       <Card className={cardStyles.default}>
         <CardContent className="p-4">
           <div className="flex items-center gap-2 mb-3">
             <Zap className="w-5 h-5 text-yellow-500" />
-            <h3 className={textStyles.h4}>Busca Inteligente Multi-Estratégia</h3>
+            <h3 className={textStyles.h4}>{t('title')}</h3>
           </div>
           <div className="flex gap-3">
             <input
               type="text"
               value={jobTitle}
               onChange={e => setJobTitle(e.target.value)}
-              placeholder="Título da vaga (ex: Senior Backend Engineer)"
+              placeholder={t('jobTitlePlaceholder')}
               className="flex-1 border border-lia-border-default rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
               onKeyDown={e => e.key ==="Enter" && handleSearch()}
             />
@@ -142,25 +133,24 @@ export default function MultiStrategySearchPanel({
               type="text"
               value={skills}
               onChange={e => setSkills(e.target.value)}
-              placeholder="Skills (Python, Go, Kafka)"
+              placeholder={t('skillsPlaceholder')}
               className="w-48 border border-lia-border-default rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
             />
             <input
               type="text"
               value={location}
               onChange={e => setLocation(e.target.value)}
-              placeholder="Local"
+              placeholder={t('locationPlaceholder')}
               className="w-36 border border-lia-border-default rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
             />
             <Button className={buttonStyles.primary} onClick={handleSearch} disabled={isSearching || !jobTitle.trim()}>
               <Search className="w-4 h-4 mr-1" />
-              {isSearching ?"Buscando..." :"Buscar"}
+              {isSearching ? t('searching') : t('search')}
             </Button>
           </div>
         </CardContent>
       </Card>
 
-      {/* Strategy progress */}
       {(isSearching || result) && (
         <div className="flex gap-3">
           {["direct","adjacent","silver","reengagement"].map(sid => {
@@ -183,10 +173,10 @@ export default function MultiStrategySearchPanel({
                   </div>
                   <p className={textStyles.caption}>{sr?.strategy_name || sid}</p>
                   {sr && !sr.error && (
-                    <p className={textStyles.metricSmall}>{sr.count} candidatos</p>
+                    <p className={textStyles.metricSmall}>{t('candidatesCount', { count: sr.count })}</p>
                   )}
                   {sr?.error && (
-                    <p className="text-xs text-red-500">Erro</p>
+                    <p className="text-xs text-red-500">{t('error')}</p>
                   )}
                   {sr && (
                     <p className="text-[10px] text-lia-text-tertiary">{sr.elapsed_ms}ms</p>
@@ -198,35 +188,33 @@ export default function MultiStrategySearchPanel({
         </div>
       )}
 
-      {/* Results summary */}
       {result && (
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <span className={textStyles.subtitle}>
-              {result.total_unique} candidatos únicos encontrados
+              {t('uniqueCandidatesFound', { count: result.total_unique })}
             </span>
             <span className={textStyles.caption}>
-              em {result.elapsed_ms}ms
+              {t('inMs', { ms: result.elapsed_ms })}
             </span>
           </div>
           {selectedIds.size > 0 && (
             <div className="flex items-center gap-2">
-              <span className={textStyles.caption}>{selectedIds.size} selecionados</span>
+              <span className={textStyles.caption}>{t('selected', { count: selectedIds.size })}</span>
               <Button className={buttonStyles.outline} onClick={() => { if (onAddToJob) onAddToJob(Array.from(selectedIds),"") }}>
-                <Briefcase className="w-3.5 h-3.5 mr-1" /> + Vaga
+                <Briefcase className="w-3.5 h-3.5 mr-1" /> + {t('job')}
               </Button>
               <Button className={buttonStyles.outline} onClick={() => { if (onAddToPool) onAddToPool(Array.from(selectedIds),"") }}>
                 <Database className="w-3.5 h-3.5 mr-1" /> + Pool
               </Button>
               <Button className={buttonStyles.outline} onClick={() => { if (onAddToList) onAddToList(Array.from(selectedIds)) }}>
-                <Heart className="w-3.5 h-3.5 mr-1" /> + Lista
+                <Heart className="w-3.5 h-3.5 mr-1" /> + {t('list')}
               </Button>
             </div>
           )}
         </div>
       )}
 
-      {/* Candidate table */}
       {result && result.candidates.length > 0 && (
         <div className="overflow-auto max-h-[500px]">
           <table className="w-full">
@@ -243,9 +231,9 @@ export default function MultiStrategySearchPanel({
                     className="rounded border-lia-border-default"
                   />
                 </th>
-                <th className={`py-2 px-3 text-left ${textStyles.labelSmall}`}>Candidato</th>
-                <th className={`py-2 px-3 text-left ${textStyles.labelSmall}`}> Nota</th>
-                <th className={`py-2 px-3 text-left ${textStyles.labelSmall}`}>Estratégia</th>
+                <th className={`py-2 px-3 text-left ${textStyles.labelSmall}`}>{t('candidate')}</th>
+                <th className={`py-2 px-3 text-left ${textStyles.labelSmall}`}>{t('score')}</th>
+                <th className={`py-2 px-3 text-left ${textStyles.labelSmall}`}>{t('strategy')}</th>
                 <th className={`py-2 px-3 text-left ${textStyles.labelSmall}`}>Skills</th>
               </tr>
             </thead>

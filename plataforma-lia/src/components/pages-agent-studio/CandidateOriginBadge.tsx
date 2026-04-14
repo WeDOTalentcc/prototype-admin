@@ -1,75 +1,33 @@
 "use client"
 
 import React from "react"
+import { useTranslations } from "next-intl"
 import { Bot, User, RefreshCw, Search, Download } from "lucide-react"
 import { textStyles } from "@/lib/design-tokens"
 
-/**
- * CandidateOriginBadge — shows how a candidate entered the pipeline.
- *
- * Usage in kanban card or table row:
- *   <CandidateOriginBadge origin="agent" detail="Agente Backend v3" date="2026-04-05" />
- *
- * Follows design system: lucide-react icons + design tokens.
- * Tooltips mandatory per plan requirements.
- */
-
 interface CandidateOriginBadgeProps {
   origin: "agent" | "direct" | "pool" | "search" | "import" | "manual"
-  detail?: string   // e.g. "Agente Backend v3" or "Pool Motoristas SP"
-  date?: string     // ISO date
+  detail?: string
+  date?: string
   size?: "sm" | "md"
 }
 
-const ORIGIN_CONFIG = {
-  agent: {
-    icon: Bot,
-    label: "Agente",
-    bgColor: "bg-purple-50",
-    textColor: "text-purple-700",
-    buildTooltip: (detail?: string, date?: string) =>
-      `Sourciado pelo ${detail || "Agente"}${date ? ` em ${formatDate(date)}` : ""}`,
-  },
-  direct: {
-    icon: User,
-    label: "Direto",
-    bgColor: "bg-lia-bg-secondary",
-    textColor: "text-lia-text-secondary",
-    buildTooltip: (_detail?: string, date?: string) =>
-      `Aplicou diretamente${date ? ` em ${formatDate(date)}` : ""}`,
-  },
-  pool: {
-    icon: RefreshCw,
-    label: "Pool",
-    bgColor: "bg-blue-50",
-    textColor: "text-blue-700",
-    buildTooltip: (detail?: string, date?: string) =>
-      `Migrado do ${detail || "Banco de Talentos"}${date ? ` em ${formatDate(date)}` : ""}`,
-  },
-  search: {
-    icon: Search,
-    label: "Busca",
-    bgColor: "bg-green-50",
-    textColor: "text-green-700",
-    buildTooltip: (_detail?: string, date?: string) =>
-      `Encontrado via busca${date ? ` em ${formatDate(date)}` : ""}`,
-  },
-  import: {
-    icon: Download,
-    label: "Importado",
-    bgColor: "bg-yellow-50",
-    textColor: "text-yellow-700",
-    buildTooltip: (_detail?: string, date?: string) =>
-      `Importado${date ? ` em ${formatDate(date)}` : ""}`,
-  },
-  manual: {
-    icon: User,
-    label: "Manual",
-    bgColor: "bg-lia-bg-secondary",
-    textColor: "text-lia-text-secondary",
-    buildTooltip: (_detail?: string, date?: string) =>
-      `Adicionado manualmente${date ? ` em ${formatDate(date)}` : ""}`,
-  },
+const ORIGIN_ICON = {
+  agent: Bot,
+  direct: User,
+  pool: RefreshCw,
+  search: Search,
+  import: Download,
+  manual: User,
+}
+
+const ORIGIN_STYLE = {
+  agent: { bgColor: "bg-purple-50", textColor: "text-purple-700" },
+  direct: { bgColor: "bg-lia-bg-secondary", textColor: "text-lia-text-secondary" },
+  pool: { bgColor: "bg-blue-50", textColor: "text-blue-700" },
+  search: { bgColor: "bg-green-50", textColor: "text-green-700" },
+  import: { bgColor: "bg-yellow-50", textColor: "text-yellow-700" },
+  manual: { bgColor: "bg-lia-bg-secondary", textColor: "text-lia-text-secondary" },
 }
 
 function formatDate(iso: string): string {
@@ -83,18 +41,21 @@ function formatDate(iso: string): string {
 export default function CandidateOriginBadge({
   origin, detail, date, size = "sm",
 }: CandidateOriginBadgeProps) {
-  const config = ORIGIN_CONFIG[origin] || ORIGIN_CONFIG.manual
-  const Icon = config.icon
-  const tooltip = config.buildTooltip(detail, date)
+  const t = useTranslations('agents.candidateOrigin')
+  const style = ORIGIN_STYLE[origin] || ORIGIN_STYLE.manual
+  const Icon = ORIGIN_ICON[origin] || ORIGIN_ICON.manual
+  const label = t(`origins.${origin}.label`)
+  const tooltipBase = t(`origins.${origin}.tooltip`, { detail: detail || t(`origins.${origin}.defaultDetail`), date: date ? formatDate(date) : "" })
+  const tooltip = date ? tooltipBase : tooltipBase.replace(/\s*em\s*$/, "").replace(/\s*on\s*$/, "")
   const iconSize = size === "sm" ? "w-3.5 h-3.5" : "w-4 h-4"
 
   return (
     <span
-      className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded ${config.bgColor} ${config.textColor}`}
+      className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded ${style.bgColor} ${style.textColor}`}
       title={tooltip}
     >
       <Icon className={iconSize} />
-      {size === "md" && <span className={textStyles.caption}>{config.label}</span>}
+      {size === "md" && <span className={textStyles.caption}>{label}</span>}
     </span>
   )
 }

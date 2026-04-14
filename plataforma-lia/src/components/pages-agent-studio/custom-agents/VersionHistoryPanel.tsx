@@ -30,7 +30,7 @@ export function VersionHistoryPanel({ agentId, currentVersion, onReverted }: Ver
         headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
       })
       if (!res.ok) {
-        const err = await res.json().catch(() => ({ detail: "Erro" }))
+        const err = await res.json().catch(() => ({ detail: "Error" }))
         throw new Error(err.detail || tToast('revertError'))
       }
       toast.success(tToast('revertedTo', { version }))

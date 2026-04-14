@@ -134,7 +134,7 @@ export default function AgentStudioPage({
     try {
       const res = await fetch(`/api/backend-proxy/sourcing-agents/${agentId}/${action}`, { method: "PATCH" })
       if (!res.ok) {
-        throw new Error(`Erro ${res.status}`)
+        throw new Error(`Error ${res.status}`)
       }
       toast.success(action === "pause" ? t("studio.toast.agentPaused") : t("studio.toast.agentResumed"))
       loadData()
@@ -800,7 +800,7 @@ function CreateAgentModal({ initialTemplate, onClose, onCreated }: {
       })
       if (!res.ok) {
         const errData = await res.json().catch(() => ({ detail: res.statusText }))
-        throw new Error(errData?.detail || `Erro ${res.status}`)
+        throw new Error(errData?.detail || `Error ${res.status}`)
       }
       const data = await res.json()
       if (data?.agent_id) onCreated(data.agent_id)

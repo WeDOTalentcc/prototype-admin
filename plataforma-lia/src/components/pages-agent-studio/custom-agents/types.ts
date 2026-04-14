@@ -119,46 +119,48 @@ export interface CreateDeploymentRequest {
   config_overrides?: Record<string, unknown>
 }
 
-/** Human-readable labels for category display */
-export const CATEGORY_LABELS: Record<AgentCategory, string> = {
-  screening: "Triagem",
-  sourcing: "Captação",
-  communication: "Comunicacao",
-  analytics: "Analise",
-  job_management: "Vagas",
-  automation: "Automacao",
+/** i18n key suffixes for category display — use with t(`categories.${key}`) */
+export const CATEGORY_KEYS: Record<AgentCategory, string> = {
+  screening: "screening",
+  sourcing: "sourcing",
+  communication: "communication",
+  analytics: "analytics",
+  job_management: "jobManagement",
+  automation: "automation",
 }
 
-/** Human-readable labels for tools */
-export const TOOL_LABELS: Record<string, string> = {
-  search_candidates: "Buscar candidatos",
-  list_jobs: "Listar vagas",
-  get_job_details: "Ver detalhes da vaga",
-  get_candidate_details: "Ver detalhes do candidato",
-  get_pipeline_summary: "Resumo do funil",
-  search_talent_pool: "Buscar no banco de talentos",
-  get_analytics_summary: "Resumo de analytics",
-  get_company_culture: "Cultura da empresa",
-  get_evaluation_criteria: "Criterios de avaliacao",
-  summarize_context: "Resumir contexto",
-  clarify_request: "Pedir esclarecimento",
-  move_candidate: "Mover candidato",
-  send_email: "Enviar email",
-  update_candidate_field: "Atualizar candidato",
-  schedule_interview: "Agendar entrevista",
-  create_note: "Criar anotacao",
+/** i18n key suffixes for tools — use with t(`tools.${key}`) */
+export const TOOL_KEYS: string[] = [
+  "search_candidates",
+  "list_jobs",
+  "get_job_details",
+  "get_candidate_details",
+  "get_pipeline_summary",
+  "search_talent_pool",
+  "get_analytics_summary",
+  "get_company_culture",
+  "get_evaluation_criteria",
+  "summarize_context",
+  "clarify_request",
+  "move_candidate",
+  "send_email",
+  "update_candidate_field",
+  "schedule_interview",
+  "create_note",
+]
+
+/** i18n key suffixes for trigger modes — use with t(`triggers.${key}`) */
+export const TRIGGER_KEYS: Record<TriggerMode, string> = {
+  manual: "manual",
+  on_new_candidate: "onNewCandidate",
+  on_stage_change: "onStageChange",
+  scheduled: "scheduled",
 }
 
-export const TRIGGER_LABELS: Record<TriggerMode, string> = {
-  manual: "Manual",
-  on_new_candidate: "A cada novo candidato",
-  on_stage_change: "Ao mudar de etapa",
-  scheduled: "Agendado",
-}
-
-export const TARGET_LABELS: Record<DeploymentTargetType, string> = {
-  job: "Vaga",
-  talent_pool: "Banco de Talentos",
-  pipeline_stage: "Etapa do Funil",
-  candidate_list: "Lista de Candidatos",
+/** i18n key suffixes for deployment targets — use with t(`targets.${key}`) */
+export const TARGET_KEYS: Record<DeploymentTargetType, string> = {
+  job: "job",
+  talent_pool: "talentPool",
+  pipeline_stage: "pipelineStage",
+  candidate_list: "candidateList",
 }

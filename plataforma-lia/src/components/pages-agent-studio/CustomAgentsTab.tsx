@@ -69,7 +69,7 @@ export default function CustomAgentsTab() {
   useEffect(() => { loadAgents() }, [loadAgents])
 
   const handleDelete = async (agentId: string) => {
-    if (!confirm("Tem certeza que deseja excluir este agente?")) return
+    if (!confirm(t('confirmDeleteAgent'))) return
     try {
       await fetch(`/api/backend-proxy/custom-agents/${agentId}`, { method: "DELETE" })
       loadAgents()
@@ -107,7 +107,7 @@ export default function CustomAgentsTab() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-sm font-semibold text-lia-text-primary">
-            Agentes Customizados
+            {t('customAgentsTitle')}
             {total > 0 && (
               <span className="ml-2 px-2 py-0.5 rounded-full text-[10px] font-bold bg-lia-interactive-active text-lia-text-primary">
                 {total}
@@ -115,7 +115,7 @@ export default function CustomAgentsTab() {
             )}
           </h2>
           <p className="text-xs text-lia-text-secondary mt-0.5">
-            Crie agentes com prompt, tools e comportamento personalizado
+            {t('customAgentsSubtitle')}
           </p>
         </div>
         <Button
@@ -124,7 +124,7 @@ export default function CustomAgentsTab() {
           className="gap-2 bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover"
         >
           <Plus className="w-4 h-4" />
-          Novo Agente Custom
+          {t('newCustomAgent')}
         </Button>
       </div>
 
@@ -143,7 +143,7 @@ export default function CustomAgentsTab() {
             className="gap-2 bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover"
           >
             <Plus className="w-3.5 h-3.5" />
-            Criar primeiro agente
+            {t('createFirstAgent')}
           </Button>
         </div>
       ) : (
@@ -222,14 +222,14 @@ export default function CustomAgentsTab() {
                       className="flex items-center justify-center gap-1.5 h-8 px-3 rounded-lg border border-lia-border-subtle text-xs font-medium text-lia-text-secondary hover:bg-lia-bg-tertiary transition-colors"
                     >
                       <TestTube2 className="w-3.5 h-3.5" />
-                      Testar
+                      {t('test')}
                     </button>
                     <button
                       onClick={() => { setEditingAgent(agent); setShowCreateModal(true) }}
                       className="flex items-center justify-center gap-1.5 h-8 px-3 rounded-lg border border-lia-border-subtle text-xs font-medium text-lia-text-secondary hover:bg-lia-bg-tertiary transition-colors"
                     >
                       <Edit3 className="w-3.5 h-3.5" />
-                      Editar
+                      {t('edit')}
                     </button>
                     {agent.status === "active" ? (
                       <button
@@ -338,7 +338,7 @@ function CreateCustomAgentModal({
 
       if (!res.ok) {
         const errData = await res.json().catch(() => ({ detail: res.statusText }))
-        throw new Error(errData?.detail || `Erro ${res.status}`)
+        throw new Error(errData?.detail || `Error ${res.status}`)
       }
 
       onSaved()
@@ -394,16 +394,16 @@ function CreateCustomAgentModal({
             <textarea
               value={systemPrompt} onChange={e => setSystemPrompt(e.target.value)}
               rows={6}
-              placeholder="Instruções de comportamento do agente..."
+              placeholder={t('systemPromptPlaceholder') as string}
               className="w-full border border-lia-border-subtle rounded-lg px-3 py-2 text-sm bg-lia-bg-secondary text-lia-text-primary placeholder:text-lia-text-disabled focus:outline-none focus:ring-2 focus:ring-wedo-cyan/30 resize-none font-mono"
             />
           </div>
 
           <div>
             <label className="text-xs font-semibold text-lia-text-primary mb-1 block">
-              Tools permitidas
+              {t('allowedTools')}
               {availableTools.length > 0 && (
-                <span className="font-normal text-lia-text-disabled ml-1">({availableTools.length} disponíveis)</span>
+                <span className="font-normal text-lia-text-disabled ml-1">({availableTools.length} {t('available')})</span>
               )}
             </label>
             <input
@@ -523,7 +523,7 @@ function TestAgentModal({ agent, onClose }: { agent: CustomAgent; onClose: () =>
         <DialogHeader>
           <DialogTitle className="text-base font-semibold text-lia-text-primary flex items-center gap-2">
             <TestTube2 className="w-4 h-4 text-wedo-cyan" />
-            Testar: {agent.name}
+            {t('testAgent')}: {agent.name}
           </DialogTitle>
           <DialogDescription className="sr-only">{t('testAgent')}</DialogDescription>
         </DialogHeader>
@@ -534,7 +534,7 @@ function TestAgentModal({ agent, onClose }: { agent: CustomAgent; onClose: () =>
             <textarea
               value={message} onChange={e => setMessage(e.target.value)}
               rows={3}
-              placeholder="Digite uma mensagem para testar o agente..."
+              placeholder={t('typeMessage') as string}
               className="w-full border border-lia-border-subtle rounded-lg px-3 py-2 text-sm bg-lia-bg-secondary text-lia-text-primary placeholder:text-lia-text-disabled focus:outline-none focus:ring-2 focus:ring-wedo-cyan/30 resize-none"
               onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleTest() } }}
             />
@@ -546,7 +546,7 @@ function TestAgentModal({ agent, onClose }: { agent: CustomAgent; onClose: () =>
             className="w-full bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover"
           >
             {isRunning ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Play className="w-4 h-4 mr-2" />}
-            Executar Teste
+            {t('runTest')}
           </Button>
 
           {response && (

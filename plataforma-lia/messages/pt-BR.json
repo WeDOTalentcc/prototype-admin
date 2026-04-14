@@ -1808,7 +1808,17 @@
       "weekly": "Semanal",
       "back": "Voltar",
       "activateAndCalibrate": "Ativar e Calibrar",
-      "calibrationNote": "Após publicar a vaga, o Big Card de calibração aparecerá para você avaliar 3+ perfis."
+      "calibrationNote": "Após publicar a vaga, o Big Card de calibração aparecerá para você avaliar 3+ perfis.",
+      "automaticSourcingDesc": "Quer que um agente busque candidatos automaticamente para esta vaga? Ele aprende com seu feedback e melhora a cada ciclo.",
+      "activateSourcing": "Sim, ativar sourcing",
+      "searchManually": "Nao, vou buscar manualmente",
+      "chooseTemplateHint": "Escolha um template e ajuste as preferencias.",
+      "notifyOptions": {
+        "realtime": "Tempo real",
+        "dailySummary": "Resumo diario",
+        "weekly": "Semanal"
+      },
+      "calibrationHint": "Apos publicar a vaga, o Big Card de calibracao aparecera para voce avaliar 3+ perfis."
     },
     "customTab": {
       "title": "Agentes Customizados",
@@ -1874,7 +1884,13 @@
         "get_analytics_summary": "Resumo de analytics",
         "get_company_culture": "Cultura da empresa",
         "get_evaluation_criteria": "Critérios de avaliação",
-        "summarize_context": "Resumir contexto"
+        "summarize_context": "Resumir contexto",
+        "clarify_request": "Pedir esclarecimento",
+        "move_candidate": "Mover candidato",
+        "send_email": "Enviar email",
+        "update_candidate_field": "Atualizar candidato",
+        "schedule_interview": "Agendar entrevista",
+        "create_note": "Criar anotacao"
       },
       "viewDetails": "Ver detalhes completos →",
       "metricsTitle": "Metricas dos ultimos {days} dias",
@@ -1992,19 +2008,25 @@
         "communication": "Comunicação",
         "analytics": "Análise",
         "job_management": "Vagas",
-        "automation": "Automação"
+        "automation": "Automação",
+        "jobManagement": "Vagas"
       },
       "triggers": {
         "manual": "Manual",
         "on_new_candidate": "A cada novo candidato",
         "on_stage_change": "Ao mudar de etapa",
-        "scheduled": "Agendado"
+        "scheduled": "Agendado",
+        "onNewCandidate": "A cada novo candidato",
+        "onStageChange": "Ao mudar de etapa"
       },
       "targets": {
         "job": "Vaga",
         "talent_pool": "Banco de Talentos",
         "pipeline_stage": "Etapa do Funil",
-        "candidate_list": "Lista de Candidatos"
+        "candidate_list": "Lista de Candidatos",
+        "talentPool": "Banco de Talentos",
+        "pipelineStage": "Etapa do Funil",
+        "candidateList": "Lista de Candidatos"
       },
       "errors": {
         "errorSaving": "Erro ao salvar",
@@ -2093,7 +2115,18 @@
       "createAgent": "Criar Agente",
       "createCustomHint": "Crie um agente personalizado com prompt, tools e domínio de atuação",
       "typeMessage": "Digite uma mensagem...",
-      "sendTestMessage": "Envie uma mensagem para testar o agente"
+      "sendTestMessage": "Envie uma mensagem para testar o agente",
+      "customAgentsTitle": "Agentes Customizados",
+      "customAgentsSubtitle": "Crie agentes com prompt, tools e comportamento personalizado",
+      "newCustomAgent": "Novo Agente Custom",
+      "createFirstAgent": "Criar primeiro agente",
+      "confirmDeleteAgent": "Tem certeza que deseja excluir este agente?",
+      "test": "Testar",
+      "edit": "Editar",
+      "systemPromptPlaceholder": "Instruções de comportamento do agente...",
+      "allowedTools": "Tools permitidas",
+      "available": "disponíveis",
+      "runTest": "Executar Teste"
     },
     "digitalTwin": {
       "active": "Ativo",
@@ -2121,6 +2154,81 @@
       "manage": "Gerenciar",
       "digitalTwinEvaluation": "Avaliação Digital Twin",
       "reevaluate": "Reavaliar"
+    },
+    "candidateOrigin": {
+      "origins": {
+        "agent": {
+          "label": "Agente",
+          "tooltip": "Sourciado pelo {detail} em {date}",
+          "defaultDetail": "Agente"
+        },
+        "direct": {
+          "label": "Direto",
+          "tooltip": "Aplicou diretamente em {date}",
+          "defaultDetail": "Direto"
+        },
+        "pool": {
+          "label": "Pool",
+          "tooltip": "Migrado do {detail} em {date}",
+          "defaultDetail": "Banco de Talentos"
+        },
+        "search": {
+          "label": "Busca",
+          "tooltip": "Encontrado via busca em {date}",
+          "defaultDetail": "Busca"
+        },
+        "import": {
+          "label": "Importado",
+          "tooltip": "Importado em {date}",
+          "defaultDetail": "Importação"
+        },
+        "manual": {
+          "label": "Manual",
+          "tooltip": "Adicionado manualmente em {date}",
+          "defaultDetail": "Manual"
+        }
+      }
+    },
+    "voiceScreening": {
+      "startVoiceScreening": "Iniciar triagem por voz",
+      "voiceScreeningShort": "Triagem Voz",
+      "voiceScreeningTitle": "Triagem por Voz",
+      "chooseChannel": "Escolha o canal para a triagem por voz:",
+      "channelWeb": "Chat Web",
+      "channelWebDesc": "Candidato responde pelo navegador",
+      "channelWhatsapp": "WhatsApp",
+      "channelWhatsappDesc": "LIA envia perguntas por WhatsApp",
+      "channelPhone": "Ligacao",
+      "channelPhoneDesc": "LIA liga para o candidato",
+      "cancel": "Cancelar",
+      "starting": "Iniciando...",
+      "startScreening": "Iniciar Triagem",
+      "screeningComplete": "Triagem concluida!",
+      "candidateMovedToScreened": "Candidato movido para \"Triado\" no pool.",
+      "close": "Fechar",
+      "questionProgress": "Pergunta {current}/{total}",
+      "awaitingResponse": "Aguardando resposta do candidato via {channel}...",
+      "phoneLabel": "telefone",
+      "candidateResponsePlaceholder": "Resposta do candidato...",
+      "send": "Enviar"
+    },
+    "multiStrategy": {
+      "title": "Busca Inteligente Multi-Estrategia",
+      "jobTitlePlaceholder": "Titulo da vaga (ex: Senior Backend Engineer)",
+      "skillsPlaceholder": "Skills (Python, Go, Kafka)",
+      "locationPlaceholder": "Local",
+      "searching": "Buscando...",
+      "search": "Buscar",
+      "candidatesCount": "{count} candidatos",
+      "error": "Erro",
+      "uniqueCandidatesFound": "{count} candidatos unicos encontrados",
+      "inMs": "em {ms}ms",
+      "selected": "{count} selecionados",
+      "job": "Vaga",
+      "list": "Lista",
+      "candidate": "Candidato",
+      "score": "Nota",
+      "strategy": "Estrategia"
     }
   },
   "common": {

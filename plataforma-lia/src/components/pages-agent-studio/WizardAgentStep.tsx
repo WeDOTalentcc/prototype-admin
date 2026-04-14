@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState } from "react"
+import { useTranslations } from "next-intl"
 import { Bot, ChevronRight, Zap } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -8,22 +9,6 @@ import { Badge } from "@/components/ui/badge"
 import {
   textStyles, cardStyles, badgeStyles, buttonStyles
 } from "@/lib/design-tokens"
-
-/**
- * WizardAgentStep — Step 3 of the Job Wizard.
- *
- * Offers the recruiter the option to activate a sourcing agent for the job.
- * If accepted, shows quick preferences and triggers calibration after wizard completes.
- *
- * Integration:
- *   In the job wizard, render this as step 3 (after WSI + screening questions):
- *
- *   <WizardAgentStep
- *     jobTitle="Backend Sênior"
- *     onActivate={(config) => { setSourcingConfig(config); goToNextStep(); }}
- *     onSkip={() => goToNextStep()}
- *   />
- */
 
 interface WizardAgentStepProps {
   jobTitle: string
@@ -40,70 +25,68 @@ interface AgentWizardConfig {
   shouldCalibrate: boolean
 }
 
-const SECTOR_OPTIONS = [
-  { id: "technology", label: "Tecnologia", icon: "💻" },
-  { id: "manufacturing", label: "Manufatura", icon: "🏭" },
-  { id: "healthcare", label: "Saúde", icon: "🏥" },
-  { id: "retail", label: "Varejo", icon: "🛒" },
-  { id: "transportation", label: "Transporte", icon: "🚛" },
-]
+const SECTOR_KEYS = ["technology", "manufacturing", "healthcare", "retail", "transportation"] as const
+const SECTOR_ICONS: Record<string, string> = {
+  technology: "💻",
+  manufacturing: "🏭",
+  healthcare: "🏥",
+  retail: "🛒",
+  transportation: "🚛",
+}
 
 export default function WizardAgentStep({ jobTitle, onActivate, onSkip }: WizardAgentStepProps) {
+  const t = useTranslations('agents.wizard')
   const [wantsAgent, setWantsAgent] = useState<boolean | null>(null)
   const [sectorTemplate, setSectorTemplate] = useState<string | null>(null)
   const [candidatesPerDay, setCandidatesPerDay] = useState(20)
   const [notifyFrequency, setNotifyFrequency] = useState("daily")
 
   if (wantsAgent === null) {
-    // Initial prompt
     return (
       <div className="space-y-6">
         <div className="text-center">
           <Bot className="w-12 h-12 text-lia-text-tertiary mx-auto mb-3" />
-          <h3 className={textStyles.h3}>Sourcing Automático</h3>
+          <h3 className={textStyles.h3}>{t('automaticSourcing')}</h3>
           <p className={`${textStyles.body} mt-2 max-w-md mx-auto`}>
-            Quer que um agente busque candidatos automaticamente para esta vaga?
-            Ele aprende com seu feedback e melhora a cada ciclo.
+            {t('automaticSourcingDesc')}
           </p>
         </div>
 
         <div className="flex justify-center gap-4">
           <Button className={buttonStyles.primary} onClick={() => setWantsAgent(true)}>
             <Zap className="w-4 h-4 mr-1" />
-            Sim, ativar sourcing
+            {t('activateSourcing')}
           </Button>
           <Button className={buttonStyles.secondary} onClick={onSkip}>
-            Não, vou buscar manualmente
+            {t('searchManually')}
           </Button>
         </div>
       </div>
     )
   }
 
-  // Configuration
   return (
     <div className="space-y-6 max-w-lg mx-auto">
       <div>
-        <h3 className={textStyles.h3}>Configurar Agente — {jobTitle}</h3>
-        <p className={textStyles.caption}>Escolha um template e ajuste as preferências.</p>
+        <h3 className={textStyles.h3}>{t('configureAgent')} — {jobTitle}</h3>
+        <p className={textStyles.caption}>{t('chooseTemplateHint')}</p>
       </div>
 
-      {/* Sector template selection */}
       <div>
-        <label className={textStyles.label}>Template de setor</label>
+        <label className={textStyles.label}>{t('sectorTemplate')}</label>
         <div className="grid grid-cols-3 gap-2 mt-2">
-          {SECTOR_OPTIONS.map(s => (
+          {SECTOR_KEYS.map(s => (
             <button
-              key={s.id}
-              onClick={() => setSectorTemplate(s.id === sectorTemplate ? null : s.id)}
+              key={s}
+              onClick={() => setSectorTemplate(s === sectorTemplate ? null : s)}
               className={`p-3 rounded-md border text-center text-sm transition-colors ${
-                sectorTemplate === s.id
+                sectorTemplate === s
                   ? "border-lia-text-primary bg-lia-bg-secondary text-lia-text-primary"
                   : "border-lia-border-subtle text-lia-text-secondary hover:bg-lia-bg-secondary"
               }`}
             >
-              <span className="text-lg">{s.icon}</span>
-              <p className="mt-1">{s.label}</p>
+              <span className="text-lg">{SECTOR_ICONS[s]}</span>
+              <p className="mt-1">{t(`sectors.${s}`)}</p>
             </button>
           ))}
           <button
@@ -120,9 +103,8 @@ export default function WizardAgentStep({ jobTitle, onActivate, onSkip }: Wizard
         </div>
       </div>
 
-      {/* Candidates per day */}
       <div>
-        <label className={textStyles.label}>Candidatos por dia</label>
+        <label className={textStyles.label}>{t('candidatesPerDay')}</label>
         <div className="flex gap-2 mt-2">
           {[10, 20, 30, 50].map(n => (
             <button
@@ -140,14 +122,13 @@ export default function WizardAgentStep({ jobTitle, onActivate, onSkip }: Wizard
         </div>
       </div>
 
-      {/* Notify frequency */}
       <div>
-        <label className={textStyles.label}>Notificações</label>
+        <label className={textStyles.label}>{t('notifications')}</label>
         <div className="flex gap-2 mt-2">
           {[
-            { id: "realtime", label: "Tempo real" },
-            { id: "daily", label: "Resumo diário" },
-            { id: "weekly", label: "Semanal" },
+            { id: "realtime", labelKey: "realtime" },
+            { id: "daily", labelKey: "dailySummary" },
+            { id: "weekly", labelKey: "weekly" },
           ].map(opt => (
             <button
               key={opt.id}
@@ -158,16 +139,15 @@ export default function WizardAgentStep({ jobTitle, onActivate, onSkip }: Wizard
                   : "border-lia-border-subtle text-lia-text-secondary hover:bg-lia-bg-secondary"
               }`}
             >
-              {opt.label}
+              {t(`notifyOptions.${opt.labelKey}`)}
             </button>
           ))}
         </div>
       </div>
 
-      {/* Actions */}
       <div className="flex justify-between pt-4 border-t border-lia-border-subtle">
         <Button className={buttonStyles.secondary} onClick={() => setWantsAgent(null)}>
-          Voltar
+          {t('back')}
         </Button>
         <Button
           className={buttonStyles.primary}
@@ -180,12 +160,12 @@ export default function WizardAgentStep({ jobTitle, onActivate, onSkip }: Wizard
             shouldCalibrate: true,
           })}
         >
-          Ativar e Calibrar <ChevronRight className="w-4 h-4 ml-1" />
+          {t('activateAndCalibrate')} <ChevronRight className="w-4 h-4 ml-1" />
         </Button>
       </div>
 
       <p className={`${textStyles.caption} text-center`}>
-        Após publicar a vaga, o Big Card de calibração aparecerá para você avaliar 3+ perfis.
+        {t('calibrationHint')}
       </p>
     </div>
   )

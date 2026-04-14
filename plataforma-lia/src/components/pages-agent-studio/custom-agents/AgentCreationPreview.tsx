@@ -50,7 +50,7 @@ export function AgentCreationPreview({ description, onClose, onCreated }: AgentC
           body: JSON.stringify({ description }),
         })
         if (!res.ok) {
-          const err = await res.json().catch(() => ({ detail: "Erro" }))
+          const err = await res.json().catch(() => ({ detail: "Error" }))
           throw new Error(err.detail || tToast('errorGenerating'))
         }
         const data = await res.json()

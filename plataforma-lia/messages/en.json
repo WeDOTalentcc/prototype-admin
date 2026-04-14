@@ -1808,7 +1808,17 @@
       "weekly": "Weekly",
       "back": "Back",
       "activateAndCalibrate": "Activate and Calibrate",
-      "calibrationNote": "After publishing the job, the calibration Big Card will appear for you to evaluate 3+ profiles."
+      "calibrationNote": "After publishing the job, the calibration Big Card will appear for you to evaluate 3+ profiles.",
+      "automaticSourcingDesc": "Want an agent to automatically search candidates for this job? It learns from your feedback and improves each cycle.",
+      "activateSourcing": "Yes, activate sourcing",
+      "searchManually": "No, I will search manually",
+      "chooseTemplateHint": "Choose a template and adjust preferences.",
+      "notifyOptions": {
+        "realtime": "Real-time",
+        "dailySummary": "Daily summary",
+        "weekly": "Weekly"
+      },
+      "calibrationHint": "After publishing the job, the calibration Big Card will appear for you to evaluate 3+ profiles."
     },
     "customTab": {
       "title": "Custom Agents",
@@ -1874,7 +1884,13 @@
         "get_analytics_summary": "Analytics summary",
         "get_company_culture": "Company culture",
         "get_evaluation_criteria": "Evaluation criteria",
-        "summarize_context": "Summarize context"
+        "summarize_context": "Summarize context",
+        "clarify_request": "Ask clarification",
+        "move_candidate": "Move candidate",
+        "send_email": "Send email",
+        "update_candidate_field": "Update candidate",
+        "schedule_interview": "Schedule interview",
+        "create_note": "Create note"
       },
       "viewDetails": "View full details →",
       "metricsTitle": "Metrics for the last {days} days",
@@ -1992,19 +2008,25 @@
         "communication": "Communication",
         "analytics": "Analytics",
         "job_management": "Jobs",
-        "automation": "Automation"
+        "automation": "Automation",
+        "jobManagement": "Jobs"
       },
       "triggers": {
         "manual": "Manual",
         "on_new_candidate": "On new candidate",
         "on_stage_change": "On stage change",
-        "scheduled": "Scheduled"
+        "scheduled": "Scheduled",
+        "onNewCandidate": "On new candidate",
+        "onStageChange": "On stage change"
       },
       "targets": {
         "job": "Job",
         "talent_pool": "Talent Pool",
         "pipeline_stage": "Pipeline Stage",
-        "candidate_list": "Candidate List"
+        "candidate_list": "Candidate List",
+        "talentPool": "Talent Pool",
+        "pipelineStage": "Pipeline Stage",
+        "candidateList": "Candidate List"
       },
       "errors": {
         "errorSaving": "Error saving",
@@ -2093,7 +2115,18 @@
       "createAgent": "Create Agent",
       "createCustomHint": "Create a custom agent with prompt, tools and domain",
       "typeMessage": "Type a message...",
-      "sendTestMessage": "Send a message to test the agent"
+      "sendTestMessage": "Send a message to test the agent",
+      "customAgentsTitle": "Custom Agents",
+      "customAgentsSubtitle": "Create agents with custom prompts, tools and behavior",
+      "newCustomAgent": "New Custom Agent",
+      "createFirstAgent": "Create first agent",
+      "confirmDeleteAgent": "Are you sure you want to delete this agent?",
+      "test": "Test",
+      "edit": "Edit",
+      "systemPromptPlaceholder": "Agent behavior instructions...",
+      "allowedTools": "Allowed tools",
+      "available": "available",
+      "runTest": "Run Test"
     },
     "digitalTwin": {
       "active": "Active",
@@ -2121,6 +2154,81 @@
       "manage": "Manage",
       "digitalTwinEvaluation": "Digital Twin Evaluation",
       "reevaluate": "Re-evaluate"
+    },
+    "candidateOrigin": {
+      "origins": {
+        "agent": {
+          "label": "Agent",
+          "tooltip": "Sourced by {detail} on {date}",
+          "defaultDetail": "Agent"
+        },
+        "direct": {
+          "label": "Direct",
+          "tooltip": "Applied directly on {date}",
+          "defaultDetail": "Direct"
+        },
+        "pool": {
+          "label": "Pool",
+          "tooltip": "Migrated from {detail} on {date}",
+          "defaultDetail": "Talent Pool"
+        },
+        "search": {
+          "label": "Search",
+          "tooltip": "Found via search on {date}",
+          "defaultDetail": "Search"
+        },
+        "import": {
+          "label": "Imported",
+          "tooltip": "Imported on {date}",
+          "defaultDetail": "Import"
+        },
+        "manual": {
+          "label": "Manual",
+          "tooltip": "Added manually on {date}",
+          "defaultDetail": "Manual"
+        }
+      }
+    },
+    "voiceScreening": {
+      "startVoiceScreening": "Start voice screening",
+      "voiceScreeningShort": "Voice Screening",
+      "voiceScreeningTitle": "Voice Screening",
+      "chooseChannel": "Choose the channel for voice screening:",
+      "channelWeb": "Web Chat",
+      "channelWebDesc": "Candidate responds via browser",
+      "channelWhatsapp": "WhatsApp",
+      "channelWhatsappDesc": "LIA sends questions via WhatsApp",
+      "channelPhone": "Phone Call",
+      "channelPhoneDesc": "LIA calls the candidate",
+      "cancel": "Cancel",
+      "starting": "Starting...",
+      "startScreening": "Start Screening",
+      "screeningComplete": "Screening complete!",
+      "candidateMovedToScreened": "Candidate moved to \"Screened\" in pool.",
+      "close": "Close",
+      "questionProgress": "Question {current}/{total}",
+      "awaitingResponse": "Awaiting candidate response via {channel}...",
+      "phoneLabel": "phone",
+      "candidateResponsePlaceholder": "Candidate response...",
+      "send": "Send"
+    },
+    "multiStrategy": {
+      "title": "Intelligent Multi-Strategy Search",
+      "jobTitlePlaceholder": "Job title (e.g.: Senior Backend Engineer)",
+      "skillsPlaceholder": "Skills (Python, Go, Kafka)",
+      "locationPlaceholder": "Location",
+      "searching": "Searching...",
+      "search": "Search",
+      "candidatesCount": "{count} candidates",
+      "error": "Error",
+      "uniqueCandidatesFound": "{count} unique candidates found",
+      "inMs": "in {ms}ms",
+      "selected": "{count} selected",
+      "job": "Job",
+      "list": "List",
+      "candidate": "Candidate",
+      "score": "Score",
+      "strategy": "Strategy"
     }
   },
   "common": {

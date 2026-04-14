@@ -32,7 +32,7 @@ export function ApprovalsList({ onReviewed }: ApprovalsListProps) {
         body: JSON.stringify({ action, notes: notes[approvalId] || null }),
       })
       if (!res.ok) {
-        const err = await res.json().catch(() => ({ detail: "Erro" }))
+        const err = await res.json().catch(() => ({ detail: "Error" }))
         throw new Error(err.detail || tToast('reviewError'))
       }
       toast.success(action === "approve" ? tToast('agentApproved') : tToast('agentRejected'))
