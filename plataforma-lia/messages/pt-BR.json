@@ -1441,7 +1441,8 @@
       "chooseTemplateOrDescribe": "Escolha um template abaixo ou descreva para a LIA o que você precisa",
       "twins": {
         "cloneReasoning": "Clone o raciocínio dos seus melhores avaliadores",
-        "cloneDesc": "Capture como um especialista da equipe avalia candidatos. O Digital Twin aprende os critérios e funciona como uma \"segunda opinião\" automática na triagem."
+        "cloneDesc": "Capture como um especialista da equipe avalia candidatos. O Digital Twin aprende os critérios e funciona como uma \"segunda opinião\" automática na triagem.",
+        "label": "Digital Twins"
       },
       "search": {
         "multiStrategy": "Busca Multi-Estratégia",

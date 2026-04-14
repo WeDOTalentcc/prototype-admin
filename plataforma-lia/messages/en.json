@@ -1441,7 +1441,8 @@
       "chooseTemplateOrDescribe": "Choose a template below or describe to LIA what you need",
       "twins": {
         "cloneReasoning": "Clone the reasoning of your best evaluators",
-        "cloneDesc": "Capture how a team specialist evaluates candidates. The Digital Twin learns the criteria and works as an automatic 'second opinion' in screening."
+        "cloneDesc": "Capture how a team specialist evaluates candidates. The Digital Twin learns the criteria and works as an automatic 'second opinion' in screening.",
+        "label": "Digital Twins"
       },
       "search": {
         "multiStrategy": "Multi-Strategy Search",

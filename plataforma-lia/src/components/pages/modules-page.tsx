@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useEffect, useCallback } from "react"
+import React, { useState, useEffect, useCallback, useMemo } from "react"
 import { useTranslations } from "next-intl"
 import { cn } from "@/lib/utils"
 import {
@@ -258,14 +258,14 @@ const FALLBACK_MODULE_DEFS = [
 
 export function ModulesPage() {
   const t = useTranslations('modules')
-  const fallbackModules: ModuleInfo[] = FALLBACK_MODULE_DEFS.map(def => ({
+  const fallbackModules: ModuleInfo[] = useMemo(() => FALLBACK_MODULE_DEFS.map(def => ({
     module_name: def.module_name,
     label: t(def.labelKey),
     description: t(def.descKey),
     status: def.status,
     features: (MODULE_FEATURE_KEYS[def.module_name] || []).map(k => t(k)),
     icon: def.icon,
-  }))
+  })), [t])
 
   const [modules, setModules] = useState<ModuleInfo[]>(fallbackModules)
   const [isLoading, setIsLoading] = useState(true)
@@ -304,7 +304,7 @@ export function ModulesPage() {
     } finally {
       setIsLoading(false)
     }
-  }, [companyId])
+  }, [companyId, t, fallbackModules])
 
   useEffect(() => {
     loadModules()
