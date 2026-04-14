@@ -890,26 +890,34 @@ class LIAScoreService:
         calibration_data: dict[str, Any] | None = None
     ) -> float:
         """
-        Get calibration adjustment from CalibrationService.
+        Get calibration adjustment from pre-fetched data + search feedback.
 
-        This is a synchronous wrapper that uses pre-fetched calibration data
-        or returns 0.0 if no calibration data is available.
+        Sources (combined):
+        1. calibration_data dict (passed by caller, e.g. from CalibrationService)
+        2. _search_feedback_cache (loaded by load_search_feedback_for_ranking)
 
-        The calibration adjustment is a value between -5 and +5 that
-        adjusts the final score based on recruiter feedback patterns.
-
-        Args:
-            candidate_id: Candidate ID for candidate-specific adjustments
-            job_id: Job ID for job-specific adjustments
-            calibration_data: Pre-fetched calibration weights/adjustments
+        The adjustment is a value between -5 and +5 that adjusts the final
+        score based on recruiter feedback patterns.
 
         Returns:
             Calibration adjustment value (-5 to +5)
         """
-        if calibration_data is None:
-            return 0.0
+        adjustment = 0.0
 
-        adjustment = calibration_data.get("adjustment", 0.0)
+        # Source 1: pre-fetched calibration data
+        if calibration_data:
+            adjustment += calibration_data.get("adjustment", 0.0)
+
+        # Source 2: search feedback (like/dislike history)
+        if candidate_id and hasattr(self, "_search_feedback_cache"):
+            fb = self._search_feedback_cache.get(candidate_id)
+            if fb:
+                # like = +2.5 boost, dislike = -2.5 penalty (configurable via weight)
+                weight = getattr(self, "_feedback_boost_weight", 2.5)
+                if fb == "like":
+                    adjustment += weight
+                elif fb == "dislike":
+                    adjustment -= weight
 
         return max(-5.0, min(5.0, adjustment))
 
@@ -1263,6 +1271,71 @@ class LIAScoreService:
             reasoning=reasoning,
         )
     
+    async def load_search_feedback_for_ranking(
+        self,
+        candidate_ids: list[str],
+        job_id: str | None = None,
+        company_id: str | None = None,
+        user_id: str | None = None,
+        feedback_boost_weight: float = 2.5,
+    ) -> None:
+        """
+        Pre-load SearchFeedback for a batch of candidates before ranking.
+
+        Populates self._search_feedback_cache: {candidate_id: "like"|"dislike"}
+        Called once before rank_candidates() to avoid N+1 queries.
+
+        Args:
+            candidate_ids: List of candidate IDs in the ranking batch.
+            job_id: Filter feedback by job (optional — broader if None).
+            company_id: Tenant isolation (required in production).
+            user_id: Filter by specific recruiter (optional — broader if None).
+            feedback_boost_weight: Points to add/subtract per feedback (default 2.5).
+        """
+        self._search_feedback_cache: dict[str, str] = {}
+        self._feedback_boost_weight = feedback_boost_weight
+
+        if not candidate_ids:
+            return
+
+        try:
+            from app.core.database import AsyncSessionLocal
+            from sqlalchemy import and_, select
+
+            async with AsyncSessionLocal() as db:
+                from lia_models.search_feedback import SearchFeedback
+
+                conditions = [SearchFeedback.candidate_id.in_(candidate_ids)]
+                if job_id:
+                    conditions.append(SearchFeedback.job_id == job_id)
+                if user_id:
+                    conditions.append(SearchFeedback.user_id == user_id)
+
+                query = select(
+                    SearchFeedback.candidate_id,
+                    SearchFeedback.feedback_type,
+                ).where(and_(*conditions)).order_by(SearchFeedback.created_at.desc())
+
+                result = await db.execute(query)
+                rows = result.all()
+
+                # Most recent feedback per candidate wins
+                for cid, fb_type in rows:
+                    if cid not in self._search_feedback_cache:
+                        self._search_feedback_cache[cid] = fb_type
+
+            if self._search_feedback_cache:
+                likes = sum(1 for v in self._search_feedback_cache.values() if v == "like")
+                dislikes = sum(1 for v in self._search_feedback_cache.values() if v == "dislike")
+                logger.info(
+                    "[LIAScore] Loaded search feedback for %d candidates: %d likes, %d dislikes (job=%s)",
+                    len(self._search_feedback_cache), likes, dislikes, job_id,
+                )
+
+        except Exception as exc:
+            logger.warning("[LIAScore] Failed to load search feedback (no boost applied): %s", exc)
+            self._search_feedback_cache = {}
+
     def rank_candidates(
         self,
         candidates: list[dict[str, Any]],
