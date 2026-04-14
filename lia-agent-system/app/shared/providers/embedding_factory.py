@@ -136,7 +136,12 @@ class EmbeddingProviderFactory:
                     "[EmbeddingFactory] Provider '%s' failed: %s", provider_name, exc
                 )
 
-        raise Exception(f"All embedding providers failed: {errors}")
+        from app.shared.errors import LIALLMError
+        raise LIALLMError(
+            message=f"Todos os provedores de embedding falharam: {errors}",
+            code="EMBEDDING_ALL_PROVIDERS_FAILED",
+            details={"errors": errors},
+        )
 
     @classmethod
     async def generate_with_fallback(
@@ -196,7 +201,12 @@ class EmbeddingProviderFactory:
                     "[EmbeddingFactory] Batch provider '%s' failed: %s", provider_name, exc
                 )
 
-        raise Exception(f"All embedding providers failed for batch: {errors}")
+        from app.shared.errors import LIALLMError
+        raise LIALLMError(
+            message=f"Todos os provedores de embedding falharam para batch: {errors}",
+            code="EMBEDDING_BATCH_ALL_PROVIDERS_FAILED",
+            details={"errors": errors},
+        )
 
     # ------------------------------------------------------------------
     # Internal helpers

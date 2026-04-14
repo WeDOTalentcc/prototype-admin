@@ -221,7 +221,12 @@ class MicrosoftGraphService:
             
             if response.status_code != 200:
                 logger.error(f"Failed to get access token: {response.text}")
-                raise Exception(f"Token request failed: {response.status_code}")
+                from app.shared.errors import LIAIntegrationError
+                raise LIAIntegrationError(
+                    message=f"Falha na autenticação Microsoft Graph: {response.status_code}",
+                    code="GRAPH_TOKEN_FAILED",
+                    details={"status_code": response.status_code},
+                )
             
             token_data = response.json()
             self._access_token = token_data["access_token"]
@@ -484,7 +489,11 @@ class MicrosoftGraphService:
             TeamsOnlineMeeting object with meeting details and join URL
         """
         if not self.is_configured:
-            raise Exception("Microsoft Graph service not configured")
+            from app.shared.errors import LIAIntegrationError
+            raise LIAIntegrationError(
+                message="Microsoft Graph não configurado para este tenant",
+                code="GRAPH_NOT_CONFIGURED",
+            )
 
         delegated_token: str | None = None
         if company_id:
@@ -586,7 +595,11 @@ class MicrosoftGraphService:
             Dictionary with meeting details including joinWebUrl
         """
         if not self.is_configured:
-            raise Exception("Microsoft Graph service not configured")
+            from app.shared.errors import LIAIntegrationError
+            raise LIAIntegrationError(
+                message="Microsoft Graph não configurado para este tenant",
+                code="GRAPH_NOT_CONFIGURED",
+            )
         
         end_time = start_time + timedelta(minutes=duration_minutes)
         

@@ -429,7 +429,11 @@ class CandidateFeedbackService:
         )
         
         if not success:
-            raise Exception("Email provider returned failure")
+            from app.shared.errors import LIAIntegrationError
+            raise LIAIntegrationError(
+                message="Provedor de email retornou falha no envio",
+                code="EMAIL_SEND_FAILED",
+            )
         
         return True
     

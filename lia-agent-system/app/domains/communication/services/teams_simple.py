@@ -63,7 +63,12 @@ class SimpleTeamsBot:
             
             if response.status_code != 200:
                 logger.error(f"Failed to get access token: {response.text}")
-                raise Exception("Failed to get Teams access token")
+                from app.shared.errors import LIAIntegrationError
+                raise LIAIntegrationError(
+                    message="Falha ao obter token de acesso do Teams",
+                    code="TEAMS_TOKEN_FAILED",
+                    details={"status_code": response.status_code},
+                )
             
             token_data = response.json()
             self._access_token = token_data["access_token"]

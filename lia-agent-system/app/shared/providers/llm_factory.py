@@ -160,7 +160,12 @@ class LLMProviderFactory:
                 errors.append(f"{provider_name}: {type(e).__name__}: {e}")
                 logger.warning("[LLMFactory] Provider '%s' failed: %s", provider_name, e)
 
-        raise Exception(f"All LLM providers failed: {errors}")
+        from app.shared.errors import LIALLMError
+        raise LIALLMError(
+            message=f"Todos os provedores de LLM falharam: {errors}",
+            code="LLM_ALL_PROVIDERS_FAILED",
+            details={"errors": errors},
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -346,8 +351,11 @@ class ProviderContainer:
                         self._tenant_id, provider_name, e,
                     )
 
-        raise Exception(
-            f"All LLM providers failed for tenant={self._tenant_id}: {errors}"
+        from app.shared.errors import LIALLMError
+        raise LIALLMError(
+            message=f"Todos os provedores de LLM falharam para tenant={self._tenant_id}",
+            code="LLM_ALL_PROVIDERS_FAILED",
+            details={"tenant_id": self._tenant_id, "errors": errors},
         )
 
     def __repr__(self) -> str:

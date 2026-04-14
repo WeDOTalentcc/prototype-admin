@@ -69,7 +69,12 @@ class GraphAPIClient:
         if "access_token" not in result:
             error = result.get("error_description", result.get("error", "Unknown error"))
             logger.error(f"Failed to acquire Graph API token: {error}")
-            raise Exception(f"Failed to acquire Graph API token: {error}")
+            from app.shared.errors import LIAIntegrationError
+            raise LIAIntegrationError(
+                message=f"Falha ao obter token Graph API: {error}",
+                code="GRAPH_TOKEN_FAILED",
+                details={"error": error},
+            )
         
         self._access_token = result["access_token"]
         expires_in = result.get("expires_in", 3600)
@@ -119,7 +124,12 @@ class GraphAPIClient:
             if response.status_code >= 400:
                 error_data = response.json() if response.content else {}
                 logger.error(f"Graph API error: {response.status_code} - {error_data}")
-                raise Exception(f"Graph API error: {response.status_code} - {error_data}")
+                from app.shared.errors import LIAIntegrationError
+                raise LIAIntegrationError(
+                    message=f"Graph API error: {response.status_code}",
+                    code="GRAPH_API_ERROR",
+                    details={"status_code": response.status_code, "error": error_data},
+                )
             
             return response.json() if response.content else {}
     

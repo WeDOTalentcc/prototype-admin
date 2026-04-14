@@ -106,7 +106,12 @@ class TeamsRecordingService:
             if response.status_code >= 400:
                 error_data = response.json() if response.content else {}
                 logger.error(f"Graph API error: {response.status_code} - {error_data}")
-                raise Exception(f"Graph API error: {response.status_code} - {error_data}")
+                from app.shared.errors import LIAIntegrationError
+                raise LIAIntegrationError(
+                    message=f"Graph API error: {response.status_code}",
+                    code="GRAPH_API_ERROR",
+                    details={"status_code": response.status_code, "error": error_data},
+                )
             
             if not response.content:
                 return {}
