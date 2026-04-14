@@ -537,15 +537,15 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
   const handlePasswordChange = async () => {
     setPasswordError("")
     if (!currentPassword || !newPassword || !confirmPassword) {
-      setPasswordError("Todos os campos são obrigatórios")
+      setPasswordError(t("password.errorFillAll"))
       return
     }
     if (newPassword.length < 8) {
-      setPasswordError("A nova senha deve ter no mínimo 8 caracteres")
+      setPasswordError(t("password.errorMinLength"))
       return
     }
     if (newPassword !== confirmPassword) {
-      setPasswordError("As senhas não coincidem")
+      setPasswordError(t("password.errorMismatch"))
       return
     }
     setIsChangingPassword(true)
@@ -557,12 +557,12 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
       })
       if (!res.ok) {
         const data = await res.json().catch(() => ({}))
-        throw new Error(data.error || "Erro ao alterar senha")
+        throw new Error(data.error || t("password.errorGeneric"))
       }
       setPasswordSuccess(true)
       setTimeout(() => { handleClosePasswordModal() }, 2000)
     } catch (err) {
-      setPasswordError(err instanceof Error ? err.message : "Erro ao alterar senha")
+      setPasswordError(err instanceof Error ? err.message : t("password.errorGeneric"))
     } finally {
       setIsChangingPassword(false)
     }
@@ -683,7 +683,7 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
           size="sm"
           onClick={toggleCollapse}
           className="h-7 w-7 p-0 text-lia-text-primary hover:bg-lia-interactive-hover"
-          title={`${isCollapsed ? "Expandir" : "Retrair"} menu (Ctrl+B)`}
+          title={isCollapsed ? t("labels.expandMenu") : t("labels.collapseMenu")}
         >
           {isCollapsed ? <ChevronRight className="w-3.5 h-3.5" /> : <ChevronLeft className="w-3.5 h-3.5" />}
         </Button>
@@ -740,7 +740,7 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
                 className="flex items-center gap-1.5 mt-2 px-2 py-1 text-xs text-lia-text-disabled hover:text-lia-text-secondary transition-colors motion-reduce:transition-none duration-200"
               >
                 <Trash2 className="w-3 h-3" />
-                Limpar recentes
+                {t("labels.clearRecentItems")}
               </button>
             )}
           </div>
@@ -759,7 +759,7 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
             size="sm"
             onClick={() => onShowSearch?.()}
             className="h-6 w-6 p-0 text-lia-text-primary hover:bg-lia-interactive-hover"
-            title="Busca Global"
+            title={t("labels.globalSearch")}
           >
             <Search className="w-3 h-3" />
           </Button>
@@ -769,7 +769,7 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
             size="sm"
             onClick={() => onNavigate("Configurações")}
             className="h-6 w-6 p-0 text-lia-text-primary hover:bg-lia-interactive-hover"
-            title="Configurações"
+            title={t("labels.settings")}
           >
             <Settings className="w-3 h-3" />
           </Button>
@@ -785,7 +785,7 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
             size="sm"
             onClick={handleShowTipsModal}
             className="h-6 w-6 p-0 text-lia-text-primary hover:bg-lia-interactive-hover"
-            title="Ajuda e Dicas LIA"
+            title={t("labels.helpTips")}
           >
             <HelpCircle className="w-3 h-3" />
           </Button>
@@ -868,7 +868,7 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
                   onClick={handleNavigateToNotifications}
                 >
                   <Bell className="w-3.5 h-3.5 mr-2" />
-                  Preferências de Notificação
+                  {t("labels.notificationPreferences")}
                 </DropdownMenuItem>
               </div>
 
@@ -897,7 +897,7 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
             isResizing ? "bg-lia-border-medium w-1.5" : "bg-transparent hover:bg-lia-border-medium"
           )}
           onMouseDown={startResize}
-          title="Arrastar para redimensionar sidebar"
+          title={t("labels.resizeSidebar")}
         >
           {/* Indicador visual mais sutil */}
           <div className="absolute inset-y-0 right-0 w-px bg-lia-interactive-active group-hover:bg-lia-border-medium transition-colors motion-reduce:transition-none duration-200" />
@@ -942,10 +942,10 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <KeyRound className="w-5 h-5 text-lia-text-secondary" />
-              Alterar Senha
+              {t("password.title")}
             </DialogTitle>
             <DialogDescription>
-              Digite sua senha atual e a nova senha para alterá-la.
+              {t("password.description")}
             </DialogDescription>
           </DialogHeader>
 
@@ -954,20 +954,20 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
               <div className="w-16 h-16 rounded-full bg-status-success/15 flex items-center justify-center mb-4">
                 <Check className="w-8 h-8 text-status-success" />
               </div>
-              <p className="text-lg font-medium text-status-success">Senha alterada com sucesso!</p>
+              <p className="text-lg font-medium text-status-success">{t("password.success")}</p>
             </div>
           ) : (
             <>
               <div className="grid gap-4 py-4">
                 <div className="space-y-2">
-                  <Label htmlFor="current-password-sb">Senha Atual</Label>
+                  <Label htmlFor="current-password-sb">{t("password.currentPassword")}</Label>
                   <div className="relative">
                     <Input
                       id="current-password-sb"
                       type={showCurrentPassword ? "text" : "password"}
                       value={currentPassword}
                       onChange={(e) => setCurrentPassword(e.target.value)}
-                      placeholder="Digite sua senha atual"
+                      placeholder={t("password.currentPlaceholder")}
                       className="pr-10"
                     />
                     <Button
@@ -987,14 +987,14 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="new-password-sb">Nova Senha</Label>
+                  <Label htmlFor="new-password-sb">{t("password.newPassword")}</Label>
                   <div className="relative">
                     <Input
                       id="new-password-sb"
                       type={showNewPassword ? "text" : "password"}
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
-                      placeholder="Digite a nova senha (mín. 8 caracteres)"
+                      placeholder={t("password.newPlaceholder")}
                       className="pr-10"
                     />
                     <Button
@@ -1014,14 +1014,14 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="confirm-password-sb">Confirmar Nova Senha</Label>
+                  <Label htmlFor="confirm-password-sb">{t("password.confirmPassword")}</Label>
                   <div className="relative">
                     <Input
                       id="confirm-password-sb"
                       type={showConfirmPassword ? "text" : "password"}
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
-                      placeholder="Confirme a nova senha"
+                      placeholder={t("password.confirmPlaceholder")}
                       className="pr-10"
                     />
                     <Button
@@ -1050,7 +1050,7 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
 
               <DialogFooter>
                 <Button variant="outline" onClick={handleClosePasswordModal}>
-                  Cancelar
+                  {t("password.cancel")}
                 </Button>
                 <Button
                   onClick={handlePasswordChange}
@@ -1058,7 +1058,7 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
                   className="text-lia-btn-primary-text hover:opacity-90 bg-lia-btn-primary-bg"
                 >
                   {isChangingPassword && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                  Alterar Senha
+                  {t("password.change")}
                 </Button>
               </DialogFooter>
             </>

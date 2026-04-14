@@ -6,11 +6,12 @@ import {
   Briefcase, Search, BarChart2, Users, FileText, Sparkles,
   Brain, Calendar, MessageCircle, HelpCircle, Zap,
 } from "lucide-react"
+import { useTranslations } from 'next-intl'
 
 interface Suggestion {
   icon: React.ElementType
-  label: string
-  prompt: string
+  labelKey: string
+  promptKey: string
   category: "criar" | "buscar" | "analisar" | "comunicar" | "ajuda"
 }
 
@@ -20,39 +21,22 @@ interface Props {
   onSuggestionClick: (prompt: string) => void
 }
 
-/**
- * SmartSuggestions — C.2 Feature Discovery.
- *
- * Dynamic suggestions based on context page and time of day.
- * Progressive disclosure: shows most relevant first.
- * Replaces static UnifiedChatEmptyState suggestions.
- */
-
 const ALL_SUGGESTIONS: Suggestion[] = [
-  // Criar
-  { icon: Briefcase, label: "Criar nova vaga", prompt: "Criar uma vaga de Product Manager Senior", category: "criar" },
-  { icon: FileText, label: "Enriquecer JD", prompt: "Tenho um JD que precisa ser melhorado", category: "criar" },
-  { icon: Brain, label: "Gerar perguntas WSI", prompt: "Gerar perguntas de triagem para a vaga", category: "criar" },
-
-  // Buscar
-  { icon: Search, label: "Buscar candidatos", prompt: "Buscar desenvolvedores Python senior em Sao Paulo", category: "buscar" },
-  { icon: Users, label: "Talent pool", prompt: "Mostrar talent pools ativos", category: "buscar" },
-  { icon: Zap, label: "Sourcing automatico", prompt: "Iniciar sourcing automatico para vagas abertas", category: "buscar" },
-
-  // Analisar
-  { icon: BarChart2, label: "Relatorio semanal", prompt: "Gerar relatorio semanal de recrutamento", category: "analisar" },
-  { icon: BarChart2, label: "Saúde do Funil", prompt: "Como esta a saude do funil?", category: "analisar" },
-  { icon: Sparkles, label: "Analytics de vagas", prompt: "Analytics das vagas abertas", category: "analisar" },
-
-  // Comunicar
-  { icon: MessageCircle, label: "Feedback candidatos", prompt: "Enviar feedback para candidatos rejeitados", category: "comunicar" },
-  { icon: Calendar, label: "Agendar entrevista", prompt: "Agendar entrevista tecnica", category: "comunicar" },
-
-  // Ajuda
-  { icon: HelpCircle, label: "O que posso fazer?", prompt: "/ajuda", category: "ajuda" },
+  { icon: Briefcase, labelKey: "createJob", promptKey: "createJob", category: "criar" },
+  { icon: FileText, labelKey: "enrichJD", promptKey: "enrichJD", category: "criar" },
+  { icon: Brain, labelKey: "generateWSI", promptKey: "generateWSI", category: "criar" },
+  { icon: Search, labelKey: "searchCandidates", promptKey: "searchCandidates", category: "buscar" },
+  { icon: Users, labelKey: "talentPool", promptKey: "talentPool", category: "buscar" },
+  { icon: Zap, labelKey: "autoSourcing", promptKey: "autoSourcing", category: "buscar" },
+  { icon: BarChart2, labelKey: "weeklyReport", promptKey: "weeklyReport", category: "analisar" },
+  { icon: BarChart2, labelKey: "funnelHealth", promptKey: "funnelHealth", category: "analisar" },
+  { icon: Sparkles, labelKey: "jobAnalytics", promptKey: "jobAnalytics", category: "analisar" },
+  { icon: MessageCircle, labelKey: "candidateFeedback", promptKey: "candidateFeedback", category: "comunicar" },
+  { icon: Calendar, labelKey: "scheduleInterview", promptKey: "scheduleInterview", category: "comunicar" },
+  { icon: HelpCircle, labelKey: "whatCanIDo", promptKey: "whatCanIDo", category: "ajuda" },
 ]
 
-// Page-specific priority
+
 const PAGE_PRIORITIES: Record<string, string[]> = {
   "jobs": ["criar", "analisar"],
   "candidates": ["buscar", "comunicar"],
@@ -61,15 +45,18 @@ const PAGE_PRIORITIES: Record<string, string[]> = {
   "agent-studio": ["buscar", "criar"],
 }
 
-// Time-based greeting
-function getGreeting(): string {
+function useGreeting(): string {
+  const t = useTranslations('chat')
   const hour = new Date().getHours()
-  if (hour < 12) return "Bom dia"
-  if (hour < 18) return "Boa tarde"
-  return "Boa noite"
+  if (hour < 12) return t("greetingMorning")
+  if (hour < 18) return t("greetingAfternoon")
+  return t("greetingEvening")
 }
 
 export function SmartSuggestions({ contextPage, mode, onSuggestionClick }: Props) {
+  const t = useTranslations('chat')
+  const greeting = useGreeting()
+
   const suggestions = useMemo(() => {
     const priorities = PAGE_PRIORITIES[contextPage || ""] || ["criar", "buscar"]
     const sorted = [...ALL_SUGGESTIONS].sort((a, b) => {
@@ -79,7 +66,6 @@ export function SmartSuggestions({ contextPage, mode, onSuggestionClick }: Props
       const bPri = bIdx >= 0 ? bIdx : 99
       return aPri - bPri
     })
-    // Show 4 in compact, 6 in fullscreen
     return sorted.slice(0, mode === "fullscreen" ? 6 : 4)
   }, [contextPage, mode])
 
@@ -87,7 +73,6 @@ export function SmartSuggestions({ contextPage, mode, onSuggestionClick }: Props
 
   return (
     <div className="flex flex-col items-center justify-center flex-1 px-4 py-8">
-      {/* Greeting */}
       <div className="text-center mb-6">
         <div className="w-10 h-10 rounded-full bg-wedo-cyan/10 flex items-center justify-center mx-auto mb-3">
           <Sparkles className="w-5 h-5 text-wedo-cyan" />
@@ -96,14 +81,13 @@ export function SmartSuggestions({ contextPage, mode, onSuggestionClick }: Props
           "font-semibold text-lia-text-primary",
           isCompact ? "text-sm" : "text-lg",
         )}>
-          {getGreeting()}! Sou a LIA.
+          {greeting}! {t("iAmLia")}
         </h3>
         <p className="text-xs text-lia-text-secondary mt-1">
-          Como posso ajudar você hoje?
+          {t("greetingFull")}
         </p>
       </div>
 
-      {/* Suggestion grid */}
       <div className={cn(
         "w-full max-w-md gap-2",
         isCompact ? "flex flex-col" : "grid grid-cols-2",
@@ -113,13 +97,13 @@ export function SmartSuggestions({ contextPage, mode, onSuggestionClick }: Props
           return (
             <button
               key={i}
-              onClick={() => onSuggestionClick(s.prompt)}
+              onClick={() => onSuggestionClick(t(`smartPrompts.${s.promptKey}`))}
               className="flex items-start gap-2.5 px-3 py-2.5 rounded-xl border border-lia-border-subtle bg-lia-bg-primary text-left hover:border-wedo-cyan/40 hover:bg-wedo-cyan/5 transition-colors motion-reduce:transition-none group"
             >
               <Icon className="w-4 h-4 text-lia-text-disabled group-hover:text-wedo-cyan flex-shrink-0 mt-0.5 transition-colors" />
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-lia-text-primary">
-                  {s.label}
+                  {t(`smartSuggestions.${s.labelKey}`)}
                 </p>
               </div>
             </button>
@@ -127,18 +111,13 @@ export function SmartSuggestions({ contextPage, mode, onSuggestionClick }: Props
         })}
       </div>
 
-      {/* Progressive disclosure hint */}
       <p className="text-[10px] text-lia-text-tertiary mt-4">
-        Digite /ajuda para ver todas as funcionalidades
+        {t("helpHint")}
       </p>
     </div>
   )
 }
 
-/**
- * /ajuda command response — full capabilities list.
- * Called when user types /ajuda in chat.
- */
 export const HELP_RESPONSE = `**O que a LIA pode fazer:**
 
 **Criar vagas**

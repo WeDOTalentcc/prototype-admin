@@ -14,6 +14,7 @@ import { useJobsPageCore } from "./jobs/hooks/useJobsPageCore"
 import { ErrorBoundarySection } from "@/components/ui/error-boundary-section"
 import { JobsListContent } from "./JobsListContent"
 import type { Job } from "@/components/jobs"
+import { useTranslations } from 'next-intl'
 
 const JobsModalsSection = dynamic(() => import("@/components/pages/jobs/JobsModalsSection").then(m => ({ default: m.JobsModalsSection })), { ssr: false, loading: () => null })
 const ExpandedChatModal = dynamic(() => import("@/components/expanded-chat-modal").then(m => ({ default: m.ExpandedChatModal })), { ssr: false, loading: () => <JobsLoadingModal /> })
@@ -30,6 +31,7 @@ interface JobsPageProps {
 export function JobsPage(props: JobsPageProps) {
   const { onAddRecentItem } = props
   const state = useJobsPageCore(props)
+  const t = useTranslations('jobs')
 
   const { statusOrder, groupedJobs } = useMemo(() => {
     const order = [
@@ -48,7 +50,7 @@ export function JobsPage(props: JobsPageProps) {
         <div className="h-full flex items-center justify-center bg-lia-bg-primary dark:bg-lia-bg-primary">
           <div className="text-center">
             <div className="w-8 h-8 border-2 border-lia-border-default border-t-lia-border-medium rounded-full animate-spin motion-reduce:animate-none mx-auto mb-3" />
-            <p className="text-base-ui text-lia-text-tertiary">Carregando vaga...</p>
+            <p className="text-base-ui text-lia-text-tertiary">{t("loadingJob")}</p>
           </div>
         </div>
       )
@@ -118,7 +120,7 @@ export function JobsPage(props: JobsPageProps) {
             onClose={closeChat}
             initialMessage={inlineChatInitialMessage}
             initialMessages={liaInlineMessages}
-            contextTitle="Criação de Vaga"
+            contextTitle={t("jobCreation")}
             inline={true}
             mode="job-creation"
             onJobCreated={() => { returnToGeneralChat() }}
@@ -132,14 +134,14 @@ export function JobsPage(props: JobsPageProps) {
       <div className={`flex-shrink-0 px-4 pt-3 pb-0 bg-lia-bg-primary dark:bg-lia-bg-primary ${chatMode === 'job-creation' && isChatFullscreen ? 'hidden' : ''}`}>
         <div className="flex items-center justify-between mb-2">
           <h1 className="text-lg font-semibold text-lia-text-primary">
-            Gestão de Vagas
+            {t("title")}
           </h1>
           <Button
             className="gap-2 h-8 px-3 bg-lia-btn-primary-hover"
             onClick={() => setShowCreateJobModal(true)}
           >
             <Plus className="w-4 h-4" />
-            Nova Vaga
+            {t("newJob")}
           </Button>
         </div>
 
@@ -170,20 +172,20 @@ export function JobsPage(props: JobsPageProps) {
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
               <span className="text-xs text-lia-text-secondary">
-                <span className="font-semibold text-lia-text-primary">{(dashboardStats as Record<string, number>).noFunil || 0}</span> no funil
+                <span className="font-semibold text-lia-text-primary">{(dashboardStats as Record<string, number>).noFunil || 0}</span> {t("inFunnel")}
               </span>
             </div>
             <div className="flex items-center gap-1.5">
               <Users className="w-3.5 h-3.5 text-wedo-cyan" />
               <span className="text-xs text-lia-text-secondary">
-                <span className="font-semibold text-lia-text-primary">{(dashboardStats as Record<string, number>).entrevistasRecentes || 0}</span> entrevistas
+                <span className="font-semibold text-lia-text-primary">{(dashboardStats as Record<string, number>).entrevistasRecentes || 0}</span> {t("interviews")}
               </span>
             </div>
             {((dashboardStats as Record<string, number>).taxaConversao || 0) > 0 && (
               <div className="flex items-center gap-1.5">
                 <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
                 <span className="text-xs text-lia-text-secondary">
-                  <span className="font-semibold text-lia-text-primary">{(dashboardStats as Record<string, number>).taxaConversao}%</span> conversão
+                  <span className="font-semibold text-lia-text-primary">{(dashboardStats as Record<string, number>).taxaConversao}%</span> {t("conversion")}
                 </span>
               </div>
             )}
@@ -191,7 +193,7 @@ export function JobsPage(props: JobsPageProps) {
               <div className="flex items-center gap-1.5">
                 <AlertTriangle className="w-3.5 h-3.5 text-rose-500" />
                 <span className="text-xs text-lia-text-secondary">
-                  <span className="font-semibold text-rose-600">{(dashboardStats as Record<string, number>).atRisco}</span> em risco
+                  <span className="font-semibold text-rose-600">{(dashboardStats as Record<string, number>).atRisco}</span> {t("atRisk")}
                 </span>
               </div>
             )}
@@ -279,17 +281,17 @@ export function JobsPage(props: JobsPageProps) {
                 if (!job.backendId) continue
                 await liaApi.updateJobVacancy(job.backendId, { status: "Ativa", published_website: channels.includes("portal") })
                 if (channels.includes("linkedin")) {
-                  try { const r = await liaApi.publishToLinkedIn(job.backendId); if ((r as Record<string, unknown>)?.mock) toast.info("Publicação simulada no LinkedIn") } catch {}
+                  try { const r = await liaApi.publishToLinkedIn(job.backendId); if ((r as Record<string, unknown>)?.mock) toast.info(t("linkedinSimulated")) } catch {}
                 }
                 if (channels.includes("indeed")) {
-                  try { const r = await liaApi.publishToIndeed(job.backendId); if ((r as Record<string, unknown>)?.note) toast.info("Publicação simulada no Indeed") } catch {}
+                  try { const r = await liaApi.publishToIndeed(job.backendId); if ((r as Record<string, unknown>)?.note) toast.info(t("indeedSimulated")) } catch {}
                 }
               }
-              toast.success("Vagas publicadas com sucesso")
+              toast.success(t("publishedSuccess"))
               setShowPublishModal(false)
               deselectAllJobs()
               loadBackendJobs()
-            } catch { toast.error("Erro ao publicar vagas. Tente novamente.") }
+            } catch { toast.error(t("publishError")) }
           }}
           onUnpublish={async (jobIds, options) => {
             try {
@@ -300,15 +302,15 @@ export function JobsPage(props: JobsPageProps) {
                 if (job.publishedIndeed) { try { await liaApi.unpublishFromPlatform(job.backendId, "indeed") } catch {} }
                 if (options?.freezeJob) { try { await liaApi.updateJobVacancy(job.backendId, { status: "Paralisada" }) } catch {} }
               }
-              toast.success("Vagas despublicadas com sucesso")
+              toast.success(t("unpublishedSuccess"))
               setShowPublishModal(false)
               deselectAllJobs()
               loadBackendJobs()
-            } catch { toast.error("Erro ao despublicar vagas. Tente novamente.") }
+            } catch { toast.error(t("unpublishError")) }
           }}
           onOpenCommunicationModal={(jobIds, templateCategory) => {
             const titles = allJobs.filter(job => jobIds.includes(String(job.id))).map(j => j.title).join(", ")
-            toast.info(`Comunicação para: ${titles}`, { duration: 8000 })
+            toast.info(t("communicationFor", { titles }), { duration: 8000 })
           }}
         />
       </div>

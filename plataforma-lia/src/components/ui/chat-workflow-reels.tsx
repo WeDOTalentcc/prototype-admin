@@ -1,11 +1,12 @@
 "use client"
 
-import React, { useState, useRef, useEffect, useCallback } from "react"
+import React, { useState, useRef, useEffect, useCallback, useMemo } from "react"
 import {
   Briefcase, Search, UserCheck, Calendar, FileText,
   TrendingUp, ChevronRight, ChevronLeft, BarChart3,
   Sparkles, Settings
 } from "lucide-react"
+import { useTranslations } from 'next-intl'
 
 export interface WorkflowReelSuggestion {
   id: string
@@ -450,13 +451,35 @@ function useDragToScroll(scrollRef: React.RefObject<HTMLDivElement | null>) {
   return { onMouseDown, grabbing, wasDragging }
 }
 
+function safeTrans(t: (key: string) => string, key: string, fallback: string): string {
+  const result = t(key)
+  return result === key || result.startsWith("chat.") ? fallback : result
+}
+
+function useTranslatedStages(stages: WorkflowReelStage[], t: (key: string) => string): WorkflowReelStage[] {
+  return useMemo(() => stages.map(stage => ({
+    ...stage,
+    label: safeTrans(t, `stages.${stage.id}.label`, stage.label),
+    shortLabel: safeTrans(t, `stages.${stage.id}.shortLabel`, stage.shortLabel || stage.label),
+    suggestions: stage.suggestions.map(s => ({
+      ...s,
+      title: safeTrans(t, `suggestions.${s.id}.title`, s.title),
+      description: safeTrans(t, `suggestions.${s.id}.description`, s.description),
+      command: safeTrans(t, `suggestions.${s.id}.command`, s.command),
+    })),
+  })), [stages, t])
+}
+
 export function ChatWorkflowReels({
   onSelect,
   compact = false,
   stages = RECRUITMENT_STAGES,
   utilityNodes = UTILITY_NODES,
 }: ChatWorkflowReelsProps) {
-  const allNodes = [...stages, ...utilityNodes]
+  const t = useTranslations('chat')
+  const translatedStages = useTranslatedStages(stages, t)
+  const translatedUtility = useTranslatedStages(utilityNodes, t)
+  const allNodes = [...translatedStages, ...translatedUtility]
   const nodesWithSuggestions = allNodes.filter((s) => s.suggestions.length > 0)
   const firstWithSuggestions = nodesWithSuggestions[0]?.id ?? null
 
@@ -511,8 +534,8 @@ export function ChatWorkflowReels({
   if (compact) {
     return (
       <CompactReels
-        stages={stages}
-        utilityNodes={utilityNodes}
+        stages={translatedStages}
+        utilityNodes={translatedUtility}
         onSelect={onSelect}
       />
     )
@@ -527,7 +550,7 @@ export function ChatWorkflowReels({
           <button
             onClick={() => scroll("left")}
             className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1 z-10 w-6 h-6 rounded-full flex items-center justify-center bg-lia-bg-primary/80 border border-lia-border-subtle shadow-sm hover:bg-lia-bg-tertiary transition-colors opacity-60 hover:opacity-100"
-            aria-label="Scroll left"
+            aria-label={t("scrollLeft")}
           >
             <ChevronLeft className="w-3.5 h-3.5 text-lia-text-secondary" />
           </button>
@@ -536,7 +559,7 @@ export function ChatWorkflowReels({
           <button
             onClick={() => scroll("right")}
             className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1 z-10 w-6 h-6 rounded-full flex items-center justify-center bg-lia-bg-primary/80 border border-lia-border-subtle shadow-sm hover:bg-lia-bg-tertiary transition-colors opacity-60 hover:opacity-100"
-            aria-label="Scroll right"
+            aria-label={t("scrollRight")}
           >
             <ChevronRight className="w-3.5 h-3.5 text-lia-text-secondary" />
           </button>
@@ -556,7 +579,7 @@ export function ChatWorkflowReels({
           onMouseDown={onMouseDown}
         >
           <div className="flex items-end gap-0 min-w-max px-1 pt-8 pb-2">
-            {stages.map((stage, idx) => {
+            {translatedStages.map((stage, idx) => {
               const currentIndex = nodeIndex++
               return (
                 <React.Fragment key={stage.id}>
@@ -568,11 +591,11 @@ export function ChatWorkflowReels({
                     onClick={() => handleNodeClick(stage.id, stage.suggestions.length > 0)}
                     scale={getScale(currentIndex, nodeRefs)}
                   />
-                  {idx < stages.length - 1 && (
+                  {idx < translatedStages.length - 1 && (
                     <div
                       className="h-px w-6 flex-shrink-0 transition-colors self-center"
                       style={{
-                        backgroundColor: stage.suggestions.length > 0 && stages[idx + 1].suggestions.length > 0
+                        backgroundColor: stage.suggestions.length > 0 && translatedStages[idx + 1].suggestions.length > 0
                           ? "var(--lia-border-default)"
                           : "var(--lia-border-subtle)",
                       }}
@@ -582,10 +605,10 @@ export function ChatWorkflowReels({
               )
             })}
 
-            {utilityNodes.length > 0 && (
+            {translatedUtility.length > 0 && (
               <>
                 <div className="flex-shrink-0 w-px h-8 mx-3 bg-lia-border-subtle self-center" />
-                {utilityNodes.map((node, idx) => {
+                {translatedUtility.map((node, idx) => {
                   const currentIndex = nodeIndex++
                   return (
                     <React.Fragment key={node.id}>
@@ -596,7 +619,7 @@ export function ChatWorkflowReels({
                         onClick={() => handleNodeClick(node.id, node.suggestions.length > 0)}
                         scale={getScale(currentIndex, nodeRefs)}
                       />
-                      {idx < utilityNodes.length - 1 && (
+                      {idx < translatedUtility.length - 1 && (
                         <div className="w-3 flex-shrink-0" />
                       )}
                     </React.Fragment>
@@ -665,6 +688,7 @@ const StageNode = React.forwardRef<
     scale?: number
   }
 >(function StageNode({ stage, isActive, pulseCount, onClick, scale = 1 }, ref) {
+  const t = useTranslations('chat')
   const Icon = stage.icon
   const hasSuggestions = stage.suggestions.length > 0
   const showPulse = pulseCount !== undefined && pulseCount > 0
@@ -680,7 +704,7 @@ const StageNode = React.forwardRef<
       onClick={onClick}
       disabled={!hasSuggestions}
       className="flex flex-col items-center gap-1.5 group px-2 disabled:cursor-default origin-bottom motion-reduce:!transition-none"
-      title={hasSuggestions ? `${stage.label} — ${stage.suggestions.length} sugestão` : stage.label}
+      title={hasSuggestions ? t("suggestionCount", { label: stage.label, count: stage.suggestions.length }) : stage.label}
       style={{
         transform: scale !== 1 ? `scale(${scale})` : undefined,
         transition: "transform 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
@@ -733,7 +757,7 @@ const StageNode = React.forwardRef<
           className="text-xs font-bold cursor-pointer rounded-full px-1.5 py-0.5"
           style={{ backgroundColor: stage.color.accentBg, color: stage.color.accent }}
           onClick={handlePulseClick}
-          title={`${pulseCount} candidatos — ver pipeline`}
+          title={t("pulseBadge", { count: pulseCount })}
         >
           {pulseCount}
         </span>

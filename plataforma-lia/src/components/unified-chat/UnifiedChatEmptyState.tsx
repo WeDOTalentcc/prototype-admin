@@ -5,6 +5,7 @@ import { Brain } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { ChatMode } from "./unified-chat-types"
 import { ChatWorkflowReels } from "@/components/ui/chat-workflow-reels"
+import { useTranslations } from 'next-intl'
 
 interface Props {
   mode: ChatMode
@@ -13,6 +14,7 @@ interface Props {
 
 export function UnifiedChatEmptyState({ mode, onSuggestionClick }: Props) {
   const isCompact = mode === "sidebar" || mode === "floating"
+  const t = useTranslations('chat')
 
   return (
     <div className={cn(
@@ -33,7 +35,7 @@ export function UnifiedChatEmptyState({ mode, onSuggestionClick }: Props) {
         "font-semibold text-lia-text-primary text-center",
         isCompact ? "text-base" : "text-xl"
       )}>
-        Como posso ajudar hoje?
+        {t("greeting")}
       </h2>
 
       <div className={cn(

@@ -28,7 +28,15 @@
       "seeAll": "See all",
       "recent": "Recent",
       "clearRecent": "Clear",
-      "removeFromRecent": "Remove from recent"
+      "removeFromRecent": "Remove from recent",
+      "clearRecentItems": "Clear recent items",
+      "notificationPreferences": "Notification Preferences",
+      "expandMenu": "Expand menu (Ctrl+B)",
+      "collapseMenu": "Collapse menu (Ctrl+B)",
+      "resizeSidebar": "Drag to resize sidebar",
+      "globalSearch": "Global Search",
+      "settings": "Settings",
+      "helpTips": "Help & LIA Tips"
     },
     "user": {
       "admin": "Administrator",
@@ -44,19 +52,274 @@
     },
     "password": {
       "title": "Change Password",
-      "description": "Your new password must be at least 8 characters",
+      "description": "Enter your current password and new password to change it.",
       "currentPassword": "Current Password",
       "newPassword": "New Password",
       "confirmPassword": "Confirm New Password",
+      "currentPlaceholder": "Enter your current password",
+      "newPlaceholder": "Enter new password (min. 8 characters)",
+      "confirmPlaceholder": "Confirm your new password",
       "cancel": "Cancel",
       "changing": "Changing...",
       "change": "Change Password",
       "success": "Password changed successfully!",
-      "errorFillAll": "Please fill in all fields",
+      "errorFillAll": "All fields are required",
       "errorMinLength": "New password must be at least 8 characters",
       "errorMismatch": "Passwords do not match",
       "errorGeneric": "Error changing password. Please check your current password.",
       "ssoNotAllowed": "Password managed by corporate SSO"
+    }
+  },
+  "login": {
+    "tagline": "Agentic AI for Recruitment",
+    "heroTitle": "Sign in. <bold>LIA</bold> is already<br/>working for you.",
+    "heroTitlePlain": "Sign in. LIA is already working for you.",
+    "heroSubtitle": "Global sourcing · Smart screening · Automatic scheduling",
+    "heroRecruitment": "Recruitment {accent}",
+    "accentSimple": "simplified",
+    "atsConnect": "Connects to your ATS",
+    "atsOrFull": "Or we handle the full workflow.",
+    "companyDescription": "WeDoTalent is a Brazilian HRTech company developing advanced technology solutions for the future of HR.",
+    "copyright": "© 2025 WeDoTalent. All rights reserved.",
+    "copyrightShort": "© 2025 LIA by WeDoTalent",
+    "enterPlatform": "Sign in to the platform",
+    "emailLabel": "Email",
+    "emailPlaceholder": "your@email.com",
+    "enterButton": "Sign in",
+    "passwordLabel": "Password",
+    "passwordPlaceholder": "••••••••",
+    "changeEmail": "Change",
+    "rememberMe": "Remember me",
+    "forgotPassword": "Forgot password?",
+    "submitting": "Signing in...",
+    "confirmButton": "Confirm",
+    "orDivider": "or",
+    "continueWithMicrosoft": "Continue with Microsoft",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "invalidEmail": "Please enter a valid email.",
+    "wrongPassword": "Incorrect password. Please check your credentials."
+  },
+  "chat": {
+    "greeting": "How can I help today?",
+    "greetingFull": "How can I help you today?",
+    "greetingMorning": "Good morning",
+    "greetingAfternoon": "Good afternoon",
+    "greetingEvening": "Good evening",
+    "iAmLia": "I'm LIA.",
+    "helpHint": "Type /help to see all features",
+    "scrollLeft": "Scroll left",
+    "scrollRight": "Scroll right",
+    "suggestionCount": "{label} — {count} suggestion",
+    "pulseBadge": "{count} candidates — view pipeline",
+    "stages": {
+      "definir-vaga": {
+        "label": "Define Job",
+        "shortLabel": "Job"
+      },
+      "sourcing": {
+        "label": "Sourcing",
+        "shortLabel": "Sourcing"
+      },
+      "triagem": {
+        "label": "Screening",
+        "shortLabel": "Screening"
+      },
+      "entrevista": {
+        "label": "Interview",
+        "shortLabel": "Interview"
+      },
+      "oferta": {
+        "label": "Offer",
+        "shortLabel": "Offer"
+      },
+      "contratacao": {
+        "label": "Hiring",
+        "shortLabel": "Hiring"
+      },
+      "analytics": {
+        "label": "Analytics",
+        "shortLabel": "Analytics"
+      },
+      "ia-automacoes": {
+        "label": "AI & Automations",
+        "shortLabel": "AI"
+      },
+      "configuracoes": {
+        "label": "Settings",
+        "shortLabel": "Settings"
+      }
+    },
+    "suggestions": {
+      "create-job": {
+        "title": "Create new job",
+        "description": "Set up requirements with detailed description",
+        "command": "Create a new job"
+      },
+      "job-template": {
+        "title": "Use job template",
+        "description": "Start from an existing template",
+        "command": "Create job from template"
+      },
+      "search-candidates": {
+        "title": "Search candidates",
+        "description": "Find profiles by skills or experience",
+        "command": "Search candidates"
+      },
+      "add-candidate": {
+        "title": "Add candidate",
+        "description": "Register new profile in talent pool",
+        "command": "Add new candidate"
+      },
+      "talent-pool": {
+        "title": "Talent pool",
+        "description": "Manage pools and candidate short lists",
+        "command": "Show my talent pools"
+      },
+      "candidate-info": {
+        "title": "Query candidate",
+        "description": "Get specific and complete history",
+        "command": "Query candidate information"
+      },
+      "update-status": {
+        "title": "Update status",
+        "description": "Change position in pipeline",
+        "command": "Update candidate status"
+      },
+      "schedule-interview": {
+        "title": "Schedule interview",
+        "description": "Set time and notify participants",
+        "command": "Schedule an interview"
+      },
+      "reschedule-interview": {
+        "title": "Reschedule interview",
+        "description": "Change existing interview time",
+        "command": "Reschedule an interview"
+      },
+      "send-offer": {
+        "title": "Send offer",
+        "description": "Generate and send salary proposal to candidate",
+        "command": "Send offer to candidate"
+      },
+      "compare-candidates": {
+        "title": "Compare finalists",
+        "description": "Side-by-side analysis of final candidates",
+        "command": "Compare finalist candidates"
+      },
+      "register-hire": {
+        "title": "Register hire",
+        "description": "Finalize the process and update status",
+        "command": "Register candidate hire"
+      },
+      "close-vacancy": {
+        "title": "Close job",
+        "description": "Close the job and notify candidates",
+        "command": "Close job"
+      },
+      "job-report": {
+        "title": "Job report",
+        "description": "Metrics and selection process status",
+        "command": "Generate job report"
+      },
+      "daily-briefing": {
+        "title": "Daily briefing",
+        "description": "Day summary with alerts and pending items",
+        "command": "Give me today's briefing"
+      },
+      "hiring-predictions": {
+        "title": "Predictions",
+        "description": "Timeline and pipeline conversion estimates",
+        "command": "Show hiring predictions"
+      },
+      "configure-automations": {
+        "title": "Configure automations",
+        "description": "Automatic screening and transition rules",
+        "command": "Configure recruitment automations"
+      },
+      "wsi-screening": {
+        "title": "WSI Screening",
+        "description": "Intelligent assessment with WSI methodology",
+        "command": "Start WSI screening for candidates"
+      },
+      "ai-suggestions": {
+        "title": "LIA suggestions",
+        "description": "Recommendations based on history",
+        "command": "What do you suggest for my jobs?"
+      },
+      "ai-credits": {
+        "title": "AI Credits",
+        "description": "Check balance and credit usage",
+        "command": "Check my AI credits"
+      },
+      "hiring-policy": {
+        "title": "Hiring policy",
+        "description": "Adjust rules and automation level",
+        "command": "Configure hiring policy"
+      },
+      "email-templates": {
+        "title": "Email templates",
+        "description": "Manage communication templates",
+        "command": "Manage email templates"
+      }
+    },
+    "smartSuggestions": {
+      "createJob": "Create new job",
+      "enrichJD": "Enrich JD",
+      "generateWSI": "Generate WSI questions",
+      "searchCandidates": "Search candidates",
+      "talentPool": "Talent pool",
+      "autoSourcing": "Auto sourcing",
+      "weeklyReport": "Weekly report",
+      "funnelHealth": "Funnel Health",
+      "jobAnalytics": "Job analytics",
+      "candidateFeedback": "Candidate feedback",
+      "scheduleInterview": "Schedule interview",
+      "whatCanIDo": "What can I do?"
+    },
+    "smartPrompts": {
+      "createJob": "Create a Senior Product Manager position",
+      "enrichJD": "I have a JD that needs improvement",
+      "generateWSI": "Generate screening questions for the job",
+      "searchCandidates": "Search senior Python developers in Sao Paulo",
+      "talentPool": "Show active talent pools",
+      "autoSourcing": "Start automatic sourcing for open positions",
+      "weeklyReport": "Generate weekly recruitment report",
+      "funnelHealth": "How is the pipeline health?",
+      "jobAnalytics": "Analytics for open positions",
+      "candidateFeedback": "Send feedback to rejected candidates",
+      "scheduleInterview": "Schedule technical interview",
+      "whatCanIDo": "/help"
+    }
+  },
+  "jobs": {
+    "title": "Job Management",
+    "newJob": "New Job",
+    "loadingJob": "Loading job...",
+    "jobCreation": "Job Creation",
+    "inFunnel": "in pipeline",
+    "interviews": "interviews",
+    "conversion": "conversion",
+    "atRisk": "at risk",
+    "publishedSuccess": "Jobs published successfully",
+    "publishError": "Error publishing jobs. Please try again.",
+    "unpublishedSuccess": "Jobs unpublished successfully",
+    "unpublishError": "Error unpublishing jobs. Please try again.",
+    "communicationFor": "Communication for: {titles}",
+    "linkedinSimulated": "Simulated LinkedIn publication",
+    "indeedSimulated": "Simulated Indeed publication",
+    "statuses": {
+      "Ativa": "Active",
+      "Aprovada": "Approved",
+      "Aguardando aprovação": "Awaiting approval",
+      "Reaberta": "Reopened",
+      "Paralisada": "Paused",
+      "Interna": "Internal",
+      "Rascunho": "Draft",
+      "Fechada (preenchida)": "Closed (filled)",
+      "Fechada (expirada)": "Closed (expired)",
+      "Cancelada": "Cancelled",
+      "Concluída": "Completed",
+      "Arquivada": "Archived"
     }
   },
   "common": {
@@ -77,7 +340,26 @@
     "no": "No",
     "beta": "BETA",
     "premium": "Premium",
-    "skipToContent": "Skip to main content"
+    "skipToContent": "Skip to main content",
+    "or": "or",
+    "remove": "Remove",
+    "play": "Play",
+    "newMessage": "New message",
+    "newChat": "New chat",
+    "clearMessages": "Clear messages",
+    "searchInConversation": "Search in conversation",
+    "controlCenter": "Control Center",
+    "searchInConversationPlaceholder": "Search in conversation...",
+    "invalidFile": "Invalid file",
+    "acceptedFormats": "Accepted formats: PDF, DOC, DOCX, TXT, CSV, XLSX, PNG, JPG (max. {maxSize}MB)",
+    "recording": "Recording... {time}s",
+    "audioRecorded": "Audio recorded ({time}s)",
+    "audioReadyToSend": "Ready to send with your message",
+    "fileAnalyzed": "File analyzed: {filename}",
+    "fileAnalysisReady": "The analysis will be sent with your next message",
+    "pending": "Pending",
+    "modulePremium": "Premium Module",
+    "modulePremiumDescription": "This feature requires a premium module"
   },
   "metadata": {
     "title": "LIA Platform — WeDoTalent",

@@ -10,6 +10,7 @@ import {
   Eye, EyeOff, Mail, Lock, Loader2, AlertCircle, Pencil, Globe, Linkedin
 } from "lucide-react"
 import CloudsBackground from "@/components/clouds-background"
+import { useTranslations } from 'next-intl'
 
 function getSafeRedirectUrl(next: string | null): string {
   if (!next) return "/login/welcome"
@@ -20,6 +21,7 @@ function getSafeRedirectUrl(next: string | null): string {
 export default function LoginPage() {
   const router = useRouter()
   const { login, isLoading: authLoading } = useJWTAuth()
+  const t = useTranslations('login')
 
   useEffect(() => {
     if (process.env.NODE_ENV !== 'production') {
@@ -42,7 +44,7 @@ export default function LoginPage() {
     e.preventDefault()
     setError("")
     if (!email || !email.includes("@") || !email.includes(".")) {
-      setError("Insira um email válido.")
+      setError(t("invalidEmail"))
       return
     }
     setStep("password")
@@ -56,7 +58,7 @@ export default function LoginPage() {
       await login(email, password)
       router.push(getSafeRedirectUrl(null))
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Senha incorreta. Verifique suas credenciais.")
+      setError(err instanceof Error ? err.message : t("wrongPassword"))
     } finally {
       setIsSubmitting(false)
     }
@@ -102,19 +104,29 @@ export default function LoginPage() {
           <div className="mb-7">
             <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-wedo-cyan/40 bg-wedo-cyan/10 text-lia-text-secondary dark:text-lia-text-secondary text-sm font-medium">
               <span className="text-wedo-cyan text-base leading-none">»</span>
-              IA Agêntica para Recrutamento
+              {t("tagline")}
             </span>
           </div>
           <h1 className="text-5xl text-lia-text-primary dark:text-lia-text-primary font-light leading-tight mb-7">
-            Entre. A <span className="font-['Source_Serif_4',serif] font-bold">LIA</span> já está<br />
-            trabalhando por você.
+            {t.rich("heroTitle", {
+              bold: (chunks) => <span className="font-['Source_Serif_4',serif] font-bold">{chunks}</span>,
+              br: () => <br />,
+            })}
           </h1>
           <p className="text-base text-lia-text-secondary dark:text-lia-text-secondary font-normal leading-relaxed">
-            Sourcing global&nbsp;·&nbsp;Triagem inteligente&nbsp;·&nbsp;Agendamentos automáticos<br />
-            Recrutamento <span className="text-wedo-cyan font-semibold">simples</span>
+            {t("heroSubtitle")}<br />
+            {t.rich("heroRecruitment", {
+              accent: t("accentSimple"),
+            }).toString().split(t("accentSimple")).map((part, i, arr) =>
+              i < arr.length - 1 ? (
+                <span key={i}>{part}<span className="text-wedo-cyan font-semibold">{t("accentSimple")}</span></span>
+              ) : (
+                <span key={i}>{part}</span>
+              )
+            )}
           </p>
           <p className="mt-5 text-[13px] text-lia-text-tertiary dark:text-lia-text-tertiary tracking-wide border-l-2 border-wedo-cyan/50 pl-3">
-            <span className="font-bold">Conecta ao seu ATS</span>&nbsp;&nbsp;·&nbsp;&nbsp;Ou fazemos o trabalho completo.
+            <span className="font-bold">{t("atsConnect")}</span>&nbsp;&nbsp;·&nbsp;&nbsp;{t("atsOrFull")}
           </p>
         </div>
 
@@ -141,12 +153,12 @@ export default function LoginPage() {
             <a
               href="mailto:tech@wedotalent.cc"
               className="text-lia-text-tertiary dark:text-lia-text-tertiary hover:text-lia-text-secondary dark:hover:text-lia-text-secondary transition-colors"
-              title="Contato"
+              title={t("emailLabel")}
             >
               <Mail className="w-4 h-4" />
             </a>
           </div>
-          <p className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary">© 2025 <span className="font-['Source_Serif_4',serif] font-bold">LIA</span> by WeDoTalent</p>
+          <p className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary">{t("copyrightShort")}</p>
         </div>
 
       </div>
@@ -168,7 +180,7 @@ export default function LoginPage() {
 
           <div className="mb-6 text-center">
             <h2 className="text-xl font-semibold text-lia-text-primary dark:text-lia-text-primary">
-              Entrar na plataforma
+              {t("enterPlatform")}
             </h2>
           </div>
 
@@ -183,7 +195,7 @@ export default function LoginPage() {
             <form onSubmit={handleEmailStep} className="space-y-4">
               <div>
                 <label htmlFor="login-email" className="block text-xs font-medium text-lia-text-primary dark:text-lia-text-secondary mb-1.5">
-                  Email
+                  {t("emailLabel")}
                 </label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-lia-text-tertiary dark:text-lia-text-tertiary w-4 h-4" aria-hidden="true" />
@@ -193,7 +205,7 @@ export default function LoginPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="w-full pl-9 pr-3 py-2.5 text-sm border border-lia-border-subtle dark:border-lia-border-default rounded-xl bg-white dark:bg-lia-input-bg text-lia-text-primary dark:text-lia-input-text placeholder:text-lia-text-tertiary dark:placeholder:text-lia-input-placeholder focus:outline-none focus:ring-2 focus:ring-lia-text-primary/20 dark:focus:ring-lia-input-focus-ring focus:border-lia-border-strong dark:focus:border-lia-input-border-focus transition-colors"
-                    placeholder="seu@email.com"
+                    placeholder={t("emailPlaceholder")}
                     required
                     autoFocus
                     autoComplete="email"
@@ -205,7 +217,7 @@ export default function LoginPage() {
                 type="submit"
                 className="w-full h-10 bg-lia-bg-inverse hover:bg-lia-bg-inverse dark:bg-lia-btn-primary-bg dark:hover:bg-lia-btn-primary-hover text-white dark:text-lia-btn-primary-text text-sm font-medium"
               >
-                Entrar
+                {t("enterButton")}
               </Button>
             </form>
           )}
@@ -223,13 +235,13 @@ export default function LoginPage() {
                   className="flex items-center gap-1 text-xs text-lia-text-tertiary dark:text-lia-text-tertiary hover:text-lia-text-primary dark:hover:text-lia-text-primary transition-colors ml-2 shrink-0"
                 >
                   <Pencil className="w-3 h-3" />
-                  Alterar
+                  {t("changeEmail")}
                 </button>
               </div>
 
               <div>
                 <label htmlFor="login-password" className="block text-xs font-medium text-lia-text-primary dark:text-lia-text-secondary mb-1.5">
-                  Senha
+                  {t("passwordLabel")}
                 </label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-lia-text-tertiary dark:text-lia-text-tertiary w-4 h-4" aria-hidden="true" />
@@ -239,7 +251,7 @@ export default function LoginPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className="w-full pl-9 pr-10 py-2.5 text-sm border border-lia-border-subtle dark:border-lia-border-default rounded-xl bg-white dark:bg-lia-input-bg text-lia-text-primary dark:text-lia-input-text placeholder:text-lia-text-tertiary dark:placeholder:text-lia-input-placeholder focus:outline-none focus:ring-2 focus:ring-lia-text-primary/20 dark:focus:ring-lia-input-focus-ring focus:border-lia-border-strong dark:focus:border-lia-input-border-focus transition-colors"
-                    placeholder="••••••••"
+                    placeholder={t("passwordPlaceholder")}
                     required
                     autoFocus
                     disabled={isSubmitting}
@@ -249,7 +261,7 @@ export default function LoginPage() {
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-lia-text-tertiary dark:text-lia-text-tertiary hover:text-lia-text-secondary dark:hover:text-lia-text-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wedo-cyan rounded-sm"
-                    aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
+                    aria-label={showPassword ? t("hidePassword") : t("showPassword")}
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" aria-hidden="true" /> : <Eye className="w-4 h-4" aria-hidden="true" />}
                   </button>
@@ -264,13 +276,13 @@ export default function LoginPage() {
                     onChange={(e) => setRememberMe(e.target.checked)}
                     className="rounded border-lia-border-default dark:border-lia-border-default focus:ring-lia-text-primary/20 dark:focus:ring-lia-input-focus-ring"
                   />
-                  <span className="text-lia-text-secondary dark:text-lia-text-secondary">Lembrar de mim</span>
+                  <span className="text-lia-text-secondary dark:text-lia-text-secondary">{t("rememberMe")}</span>
                 </label>
                 <Link
                   href="/forgot-password"
                   className="text-lia-text-secondary dark:text-lia-text-secondary hover:text-wedo-cyan font-medium transition-colors"
                 >
-                  Esqueceu a senha?
+                  {t("forgotPassword")}
                 </Link>
               </div>
 
@@ -282,10 +294,10 @@ export default function LoginPage() {
                 {isSubmitting ? (
                   <span className="flex items-center gap-2">
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    Entrando...
+                    {t("submitting")}
                   </span>
                 ) : (
-                  "Confirmar"
+                  t("confirmButton")
                 )}
               </Button>
 
@@ -294,7 +306,7 @@ export default function LoginPage() {
                   <div className="w-full border-t border-lia-border-subtle dark:border-lia-border-default" />
                 </div>
                 <div className="relative flex justify-center text-xs">
-                  <span className="px-3 bg-white dark:bg-lia-bg-inverse text-lia-text-tertiary dark:text-lia-text-tertiary">ou</span>
+                  <span className="px-3 bg-white dark:bg-lia-bg-inverse text-lia-text-tertiary dark:text-lia-text-tertiary">{t("orDivider")}</span>
                 </div>
               </div>
 
@@ -313,7 +325,7 @@ export default function LoginPage() {
                   <rect x="1" y="11" width="9" height="9" fill="#00A4EF"/>
                   <rect x="11" y="11" width="9" height="9" fill="#FFB900"/>
                 </svg>
-                Continuar com Microsoft
+                {t("continueWithMicrosoft")}
               </Button>
             </form>
           )}
@@ -323,9 +335,9 @@ export default function LoginPage() {
 
         <div className="absolute bottom-0 left-0 right-0 pb-8 px-12 text-lia-text-tertiary dark:text-lia-text-tertiary text-xs space-y-1 text-center flex flex-col items-center">
           <p className="max-w-md">
-            A WeDoTalent é uma HRTech brasileira que desenvolve soluções avançadas de tecnologia para o RH do futuro.
+            {t("companyDescription")}
           </p>
-          <p className="max-w-md">© 2025 WeDoTalent. Todos os direitos reservados.</p>
+          <p className="max-w-md">{t("copyright")}</p>
         </div>
       </div>
     </div>
