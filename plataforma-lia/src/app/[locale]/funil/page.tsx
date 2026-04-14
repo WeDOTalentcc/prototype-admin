@@ -1,10 +1,14 @@
 import type { Metadata } from "next"
+import { getTranslations } from "next-intl/server"
 import { DashboardApp } from "@/components/dashboard-app"
 import { ErrorBoundarySection } from "@/components/ui/error-boundary-section"
 
-export const metadata: Metadata = {
-  title: "Funil de Candidatos | LIA — WeDo Talent",
-  description: "Visualize e gerencie candidatos no funil Kanban de recrutamento. Mova candidatos entre etapas e acompanhe o pipeline de seleção.",
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations('pipeline')
+  return {
+    title: `${t('funnelTitle')} | LIA — WeDo Talent`,
+    description: t('funnelMetaDescription'),
+  }
 }
 
 export default function FunilPage() {

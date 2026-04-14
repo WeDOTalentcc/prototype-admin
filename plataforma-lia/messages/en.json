@@ -1304,6 +1304,59 @@
     },
     "categoryTriagem": "Screening"
   },
+  "pipeline": {
+    "title": "Talent Pipeline",
+    "metaDescription": "Manage your talent pool, candidate lists, and saved searches. Find the best profiles for your jobs with smart filters.",
+    "funnelTitle": "Candidate Pipeline",
+    "funnelMetaDescription": "View and manage candidates in the recruitment Kanban pipeline. Move candidates between stages and track the selection pipeline.",
+    "layoutDescription": "View and manage the candidate recruitment pipeline",
+    "funnelLayoutDescription": "Kanban pipeline for candidate management",
+    "shareSearch": "Share Search",
+    "tabs": {
+      "search": "Search",
+      "favorites": "Favorites",
+      "lists": "Lists",
+      "savedSearches": "Saved Searches",
+      "talentPools": "Talent Pools",
+      "history": "History"
+    },
+    "stats": {
+      "candidates": "candidates",
+      "favorites": "favorites"
+    },
+    "searchPlaceholder": "Search by name, position, company, or skill...",
+    "searchAriaLabel": "Search candidates",
+    "bulkActions": {
+      "moveStage": "Move Stage",
+      "message": "Message",
+      "shareSelection": "Share Selection"
+    },
+    "emptyState": {
+      "noResults": "No candidates found. Try different filters.",
+      "searchPrompt": "Search candidates by name, skill, or position"
+    },
+    "pagination": {
+      "page": "Page {current} of {total}",
+      "previousPage": "Previous page",
+      "nextPage": "Next page"
+    },
+    "shareModal": {
+      "searchTitle": "Search — {query}",
+      "allCandidates": "All candidates",
+      "selectionTitle": "Selection of {count} candidates"
+    },
+    "loading": {
+      "favorites": "Loading favorites...",
+      "lists": "Loading lists...",
+      "savedSearches": "Loading saved searches...",
+      "history": "Loading history...",
+      "talentPools": "Loading talent pools...",
+      "pipeline": "Loading talent pipeline..."
+    },
+    "access": {
+      "talentPipelineAndPipeline": "Talent pipeline and pipeline"
+    }
+  },
   "common": {
     "save": "Save",
     "cancel": "Cancel",

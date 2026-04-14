@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from"react"
 import dynamic from "next/dynamic"
+import { useTranslations } from "next-intl"
 import { Button } from"@/components/ui/button"
 import { Input } from"@/components/ui/input"
 import { Badge } from"@/components/ui/badge"
@@ -86,6 +87,7 @@ function toCandidateTableRow(c: CandidateLocal): Candidate {
 
 // ── Componente ─────────────────────────────────────────────────────────────────
 export default function FunilDeTalentosPage() {
+  const t = useTranslations('pipeline')
   const {
     candidates: rawCandidates,
     loading,
@@ -181,9 +183,9 @@ const STATUS_OPTIONS = ["Novo","Em triagem","Aprovado","Reprovado"]
           onSelectAll={handleSelectAll}
           onDeselectAll={clearSelection}
           actions={[
-            { id:"move_stage", label:"Mover Etapa", icon: <Users className="w-3.5 h-3.5" />, onClick: () => handleBulkAction("move_stage") },
-            { id:"send_message", label:"Mensagem", icon: <Share2 className="w-3.5 h-3.5" />, onClick: () => handleBulkAction("send_message") },
-            { id:"share_search", label:"Compartilhar Seleção", icon: <Share2 className="w-3.5 h-3.5" />, onClick: () => handleBulkAction("share_search") },
+            { id:"move_stage", label: t('bulkActions.moveStage'), icon: <Users className="w-3.5 h-3.5" />, onClick: () => handleBulkAction("move_stage") },
+            { id:"send_message", label: t('bulkActions.message'), icon: <Share2 className="w-3.5 h-3.5" />, onClick: () => handleBulkAction("send_message") },
+            { id:"share_search", label: t('bulkActions.shareSelection'), icon: <Share2 className="w-3.5 h-3.5" />, onClick: () => handleBulkAction("share_search") },
           ]}
         />
       )}
@@ -191,7 +193,7 @@ const STATUS_OPTIONS = ["Novo","Em triagem","Aprovado","Reprovado"]
       <div className="max-w-screen-2xl mx-auto px-4 pt-3 pb-0 space-y-0">
         <div className="flex items-center justify-between mb-2">
           <h1 className="text-lg font-semibold text-lia-text-primary">
-            Funil de Talentos
+            {t('title')}
           </h1>
           <Button
             variant="outline"
@@ -201,7 +203,7 @@ const STATUS_OPTIONS = ["Novo","Em triagem","Aprovado","Reprovado"]
             disabled={candidates.length === 0}
           >
             <Share2 className="w-4 h-4 mr-1.5" />
-            Compartilhar Busca
+            {t('shareSearch')}
           </Button>
         </div>
 
@@ -209,31 +211,31 @@ const STATUS_OPTIONS = ["Novo","Em triagem","Aprovado","Reprovado"]
           <TabsList className="bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-lg">
             <TabsTrigger value="todos" className="rounded-lg text-xs">
               <Search className="w-3.5 h-3.5 mr-1" />
-              Busca
+              {t('tabs.search')}
               {activeTab ==="todos" && total > 0 && (
                 <Badge className="ml-1.5 h-4 px-1.5 text-micro  dark:bg-wedo-cyan/20 dark:text-wedo-cyan">
                   {total}
                 </Badge>
               )}
             </TabsTrigger>
-            <TabsTrigger value="favoritos" className="rounded-lg text-xs"><Heart className="w-3.5 h-3.5 mr-1" />Favoritos</TabsTrigger>
-            <TabsTrigger value="listas" className="rounded-lg text-xs"><List className="w-3.5 h-3.5 mr-1" />Listas</TabsTrigger>
-            <TabsTrigger value="buscas" className="rounded-lg text-xs"><Bookmark className="w-3.5 h-3.5 mr-1" />Buscas Salvas</TabsTrigger>
-            <TabsTrigger value="bancos-vivos" className="rounded-lg text-xs"><Database className="w-3.5 h-3.5 mr-1" />Bancos de Talentos</TabsTrigger>
-            <TabsTrigger value="historico" className="rounded-lg text-xs"><Clock className="w-3.5 h-3.5 mr-1" />Histórico</TabsTrigger>
+            <TabsTrigger value="favoritos" className="rounded-lg text-xs"><Heart className="w-3.5 h-3.5 mr-1" />{t('tabs.favorites')}</TabsTrigger>
+            <TabsTrigger value="listas" className="rounded-lg text-xs"><List className="w-3.5 h-3.5 mr-1" />{t('tabs.lists')}</TabsTrigger>
+            <TabsTrigger value="buscas" className="rounded-lg text-xs"><Bookmark className="w-3.5 h-3.5 mr-1" />{t('tabs.savedSearches')}</TabsTrigger>
+            <TabsTrigger value="bancos-vivos" className="rounded-lg text-xs"><Database className="w-3.5 h-3.5 mr-1" />{t('tabs.talentPools')}</TabsTrigger>
+            <TabsTrigger value="historico" className="rounded-lg text-xs"><Clock className="w-3.5 h-3.5 mr-1" />{t('tabs.history')}</TabsTrigger>
           </TabsList>
 
           <div className="flex items-center gap-6 mt-2 mb-1">
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-wedo-cyan animate-pulse" />
               <span className="text-xs text-lia-text-secondary">
-                <span className="font-semibold text-lia-text-primary">{total.toLocaleString("pt-BR")}</span> candidatos
+                <span className="font-semibold text-lia-text-primary">{total.toLocaleString()}</span> {t('stats.candidates')}
               </span>
             </div>
             <div className="flex items-center gap-1.5">
               <Heart className="w-3.5 h-3.5 text-rose-500" />
               <span className="text-xs text-lia-text-secondary">
-                <span className="font-semibold text-lia-text-primary">{favoriteIds.size}</span> favoritos
+                <span className="font-semibold text-lia-text-primary">{favoriteIds.size}</span> {t('stats.favorites')}
               </span>
             </div>
           </div>
@@ -246,8 +248,8 @@ const STATUS_OPTIONS = ["Novo","Em triagem","Aprovado","Reprovado"]
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-lia-text-tertiary" aria-hidden="true" />
                 <Input
                   id="funil-search"
-                  aria-label="Buscar candidatos"
-                  placeholder="Buscar por nome, cargo, empresa ou habilidade..."
+                  aria-label={t('searchAriaLabel')}
+                  placeholder={t('searchPlaceholder')}
                   value={filters.search ??""}
                   onChange={e => updateFilter("search", e.target.value)}
                   className="pl-9 text-xs rounded-xl border-lia-border-subtle dark:border-lia-border-subtle bg-transparent focus:border-wedo-cyan/40 transition-colors"
@@ -299,8 +301,8 @@ const STATUS_OPTIONS = ["Novo","Em triagem","Aprovado","Reprovado"]
                   <Users className="h-10 w-10 text-lia-text-disabled dark:text-lia-text-secondary mb-3" />
                   <p className="text-sm font-medium text-lia-text-secondary dark:text-lia-text-tertiary" aria-live="polite" aria-atomic="true">
                     {filters.search || filters.status || filters.seniority
-                      ?"Nenhum candidato encontrado. Tente outros filtros."
-                      :"Busque candidatos por nome, habilidade ou cargo"}
+                      ? t('emptyState.noResults')
+                      : t('emptyState.searchPrompt')}
                   </p>
                 </div>
               ) : (
@@ -321,7 +323,7 @@ const STATUS_OPTIONS = ["Novo","Em triagem","Aprovado","Reprovado"]
             {totalPages > 1 && (
               <div className="flex items-center justify-between bg-lia-bg-primary dark:bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl px-4 py-2.5">
                 <span className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
-                  Página {currentPage} de {totalPages}
+                  {t('pagination.page', { current: currentPage, total: totalPages })}
                 </span>
                 <div className="flex items-center gap-1">
                   <Button
@@ -329,7 +331,7 @@ const STATUS_OPTIONS = ["Novo","Em triagem","Aprovado","Reprovado"]
                     size="sm"
                     onClick={() => goToPage(currentPage - 1)}
                     disabled={currentPage <= 1}
-                    aria-label="Página anterior"
+                    aria-label={t('pagination.previousPage')}
                     className="h-7 w-7 p-0 rounded-xl border-lia-border-subtle dark:border-lia-border-subtle"
                   >
                     <ChevronLeft className="h-4 w-4" />
@@ -359,7 +361,7 @@ const STATUS_OPTIONS = ["Novo","Em triagem","Aprovado","Reprovado"]
                     size="sm"
                     onClick={() => goToPage(currentPage + 1)}
                     disabled={currentPage >= totalPages}
-                    aria-label="Próxima página"
+                    aria-label={t('pagination.nextPage')}
                     className="h-7 w-7 p-0 rounded-xl border-lia-border-subtle dark:border-lia-border-subtle"
                   >
                     <ChevronRight className="h-4 w-4" />
@@ -442,7 +444,7 @@ const STATUS_OPTIONS = ["Novo","Em triagem","Aprovado","Reprovado"]
           open={shareModalOpen}
           onClose={() => setShareModalOpen(false)}
           shareType="search"
-          title={`Busca — ${filters.search ||"Todos os candidatos"}`}
+          title={t('shareModal.searchTitle', { query: filters.search || t('shareModal.allCandidates') })}
           candidateIds={candidates.map(c => c.id)}
           candidateCount={candidates.length}
           sourceQuery={JSON.stringify(filters)}
@@ -458,7 +460,7 @@ const STATUS_OPTIONS = ["Novo","Em triagem","Aprovado","Reprovado"]
             clearSelection()
           }}
           shareType="list"
-          title={`Seleção de ${selectedCount} candidatos`}
+          title={t('shareModal.selectionTitle', { count: selectedCount })}
           candidateIds={selectedIdsArray}
           candidateCount={selectedCount}
         />

@@ -1,8 +1,12 @@
 import type { Metadata } from 'next'
+import { getTranslations } from 'next-intl/server'
 
-export const metadata: Metadata = {
-  title: 'Funil de Talentos',
-  description: 'Visualize e gerencie o funil de recrutamento de candidatos',
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations('pipeline')
+  return {
+    title: t('title'),
+    description: t('layoutDescription'),
+  }
 }
 
 export default function Layout({ children }: { children: React.ReactNode }) {

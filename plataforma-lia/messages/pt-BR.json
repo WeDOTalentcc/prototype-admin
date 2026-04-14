@@ -1304,6 +1304,59 @@
     },
     "categoryTriagem": "Triagem"
   },
+  "pipeline": {
+    "title": "Funil de Talentos",
+    "metaDescription": "Gerencie seu banco de talentos, listas de candidatos e buscas salvas. Encontre os melhores perfis para suas vagas com filtros inteligentes.",
+    "funnelTitle": "Funil de Candidatos",
+    "funnelMetaDescription": "Visualize e gerencie candidatos no funil Kanban de recrutamento. Mova candidatos entre etapas e acompanhe o pipeline de seleção.",
+    "layoutDescription": "Visualize e gerencie o funil de recrutamento de candidatos",
+    "funnelLayoutDescription": "Funil Kanban de gestão de candidatos",
+    "shareSearch": "Compartilhar Busca",
+    "tabs": {
+      "search": "Busca",
+      "favorites": "Favoritos",
+      "lists": "Listas",
+      "savedSearches": "Buscas Salvas",
+      "talentPools": "Bancos de Talentos",
+      "history": "Histórico"
+    },
+    "stats": {
+      "candidates": "candidatos",
+      "favorites": "favoritos"
+    },
+    "searchPlaceholder": "Buscar por nome, cargo, empresa ou habilidade...",
+    "searchAriaLabel": "Buscar candidatos",
+    "bulkActions": {
+      "moveStage": "Mover Etapa",
+      "message": "Mensagem",
+      "shareSelection": "Compartilhar Seleção"
+    },
+    "emptyState": {
+      "noResults": "Nenhum candidato encontrado. Tente outros filtros.",
+      "searchPrompt": "Busque candidatos por nome, habilidade ou cargo"
+    },
+    "pagination": {
+      "page": "Página {current} de {total}",
+      "previousPage": "Página anterior",
+      "nextPage": "Próxima página"
+    },
+    "shareModal": {
+      "searchTitle": "Busca — {query}",
+      "allCandidates": "Todos os candidatos",
+      "selectionTitle": "Seleção de {count} candidatos"
+    },
+    "loading": {
+      "favorites": "Carregando favoritos...",
+      "lists": "Carregando listas...",
+      "savedSearches": "Carregando buscas salvas...",
+      "history": "Carregando histórico...",
+      "talentPools": "Carregando bancos de talentos...",
+      "pipeline": "Carregando funil de talentos..."
+    },
+    "access": {
+      "talentPipelineAndPipeline": "Funil de talentos e pipeline"
+    }
+  },
   "common": {
     "save": "Salvar",
     "cancel": "Cancelar",

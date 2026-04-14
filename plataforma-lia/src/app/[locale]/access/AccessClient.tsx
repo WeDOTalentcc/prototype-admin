@@ -1,12 +1,14 @@
 "use client"
 
 import React from "react"
+import { useTranslations } from "next-intl"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Building, Users, ArrowRight, Shield, Zap } from "lucide-react"
 import Link from "next/link"
 
 export default function AccessPage() {
+  const t = useTranslations('pipeline')
   return (
     <div className="min-h-screen flex items-center justify-center p-8 bg-lia-btn-primary-bg dark:bg-lia-bg-primary">
       <div className="w-full max-w-5xl">
@@ -66,7 +68,7 @@ export default function AccessPage() {
                         Gestão de Vagas
                       </p>
                       <p className="text-xs text-lia-text-tertiary dark:text-lia-text-secondary">
-                        Funil de talentos e pipeline
+                        {t('access.talentPipelineAndPipeline')}
                       </p>
                     </div>
                   </div>
