@@ -350,11 +350,25 @@ async def run_cleanup(dry_run: bool = True) -> dict:
             except Exception as exc:
                 logger.warning("LGPD TTL: table %s not found or error: %s", table, exc)
 
+        # 8. Propagate deletion to secondary stores for deleted candidate IDs
+        if not dry_run and candidates_to_delete:
+            deleted_ids = [str(row.id) for row in candidates_to_delete]
+            propagation = await _propagate_deletion_to_secondary_stores(
+                db, deleted_ids, dry_run=False
+            )
+            summary.update(propagation)
+        elif dry_run and candidates_to_delete:
+            deleted_ids = [str(row.id) for row in candidates_to_delete]
+            propagation = await _propagate_deletion_to_secondary_stores(
+                db, deleted_ids, dry_run=True
+            )
+            summary.update(propagation)
+
     mode = "DRY-RUN" if dry_run else "REAL"
     logger.info(
         "LGPD cleanup [%s] complete — candidates: %d, vacancy_candidates: %d, "
         "ai_consumption: %d, chat_messages: %d, interview_notes: %d, "
-        "screening_logs: %d, ai_decision_logs: %d, errors: %d",
+        "screening_logs: %d, ai_decision_logs: %d, secondary_stores: %s, errors: %d",
         mode,
         summary["candidates_deleted"],
         summary["vacancy_candidates_deleted"],
@@ -363,9 +377,137 @@ async def run_cleanup(dry_run: bool = True) -> dict:
         summary["interview_notes_deleted"],
         summary["screening_logs_deleted"],
         summary["ai_decision_logs_deleted"],
+        {k: v for k, v in summary.items() if k.startswith("propagation_")},
         len(summary["errors"]),
     )
     return summary
+
+
+# Secondary stores that hold candidate PII and must be cleaned on deletion.
+# Each entry: (table_name, candidate_id_column)
+_SECONDARY_PII_TABLES: list[tuple[str, str]] = [
+    ("communication_history", "candidate_id"),
+    ("lgpd_consents", "candidate_id"),
+    ("candidate_consent_grants", "candidate_id"),
+    ("conversation_memories", "user_id"),  # user_id stores candidate_id in chat context
+    ("query_embeddings", "cache_key"),     # cleaned by pattern match, not direct FK
+]
+
+# Tables safe for parameterized deletion (extends _ALLOWED_TTL_TABLES)
+_ALLOWED_PROPAGATION_TABLES = frozenset([
+    "communication_history", "lgpd_consents", "candidate_consent_grants",
+    "conversation_memories",
+])
+
+
+async def _propagate_deletion_to_secondary_stores(
+    db: AsyncSession,
+    candidate_ids: list[str],
+    dry_run: bool = True,
+) -> dict:
+    """
+    Delete candidate PII from secondary stores after primary candidate deletion.
+
+    Each store is attempted independently — failure in one does not block others.
+    Returns a dict with counts per store for the cleanup summary.
+    """
+    result: dict = {}
+
+    if not candidate_ids:
+        return result
+
+    # --- DB tables with candidate_id FK ---
+    for table_name, id_col in _SECONDARY_PII_TABLES:
+        if table_name == "query_embeddings":
+            continue  # handled separately below
+        if table_name not in _ALLOWED_PROPAGATION_TABLES:
+            continue
+        if not _SAFE_TABLE_RE.match(table_name):
+            continue
+
+        try:
+            count_q = await db.execute(
+                text(f"SELECT COUNT(*) FROM {table_name} WHERE {id_col} = ANY(:ids)"),
+                {"ids": candidate_ids},
+            )
+            count = count_q.scalar_one() or 0
+
+            if count > 0:
+                logger.info(
+                    "LGPD propagation%s: %s — %d rows for %d candidates",
+                    " (dry-run)" if dry_run else "",
+                    table_name, count, len(candidate_ids),
+                )
+                if not dry_run:
+                    await db.execute(
+                        text(f"DELETE FROM {table_name} WHERE {id_col} = ANY(:ids)"),
+                        {"ids": candidate_ids},
+                    )
+                    await db.commit()
+
+            result[f"propagation_{table_name}"] = count
+        except Exception as exc:
+            logger.warning(
+                "LGPD propagation: %s failed (continuing): %s", table_name, exc
+            )
+            try:
+                await db.rollback()
+            except Exception:
+                pass
+            result[f"propagation_{table_name}"] = f"error: {exc}"
+
+    # --- Redis cache flush for deleted candidates ---
+    try:
+        redis_cleaned = await _flush_redis_candidate_cache(candidate_ids, dry_run)
+        result["propagation_redis"] = redis_cleaned
+    except Exception as exc:
+        logger.warning("LGPD propagation: Redis flush failed: %s", exc)
+        result["propagation_redis"] = f"error: {exc}"
+
+    return result
+
+
+async def _flush_redis_candidate_cache(
+    candidate_ids: list[str],
+    dry_run: bool = True,
+) -> int:
+    """
+    Delete Redis keys containing candidate PII.
+
+    Key patterns:
+      - toon:{company_id}:{candidate_id}:*
+      - candidate_list:* (cannot target by candidate_id — TTL handles this)
+
+    Returns count of keys deleted.
+    """
+    try:
+        from app.core.redis_client import get_redis
+        redis = await get_redis()
+        if redis is None:
+            return 0
+
+        deleted = 0
+        for cid in candidate_ids:
+            # TOON card cache: toon:*:{candidate_id}:*
+            pattern = f"toon:*:{cid}:*"
+            keys = []
+            async for key in redis.scan_iter(match=pattern, count=100):
+                keys.append(key)
+
+            if keys:
+                logger.info(
+                    "LGPD Redis%s: %d keys matching pattern %s",
+                    " (dry-run)" if dry_run else "",
+                    len(keys), pattern,
+                )
+                if not dry_run:
+                    await redis.delete(*keys)
+                deleted += len(keys)
+
+        return deleted
+    except Exception as exc:
+        logger.warning("Redis candidate cache flush failed: %s", exc)
+        return 0
 
 
 async def run_conversation_ttl_cleanup(dry_run: bool = False) -> dict:
