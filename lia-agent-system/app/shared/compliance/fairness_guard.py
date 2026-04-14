@@ -513,16 +513,21 @@ def _ensure_compiled() -> None:
 
 
 # F1-02: campos que NUNCA devem gerar padrões de aprendizado (atributos protegidos)
-_LEARNING_PROTECTED_FIELDS: frozenset = frozenset({
-    "gender", "genero", "gênero", "sex", "sexo",
-    "race", "raca", "raça", "ethnicity", "etnia",
-    "age", "idade", "birth_date", "data_nascimento",
-    "religion", "religiao", "religião",
-    "disability", "deficiencia", "deficiência", "pcd",
-    "nationality", "nacionalidade",
-    "marital_status", "estado_civil",
-    "skin_color", "cor_pele",
-})
+# Source of truth: config/protected_attributes.yaml via protected_attributes module.
+try:
+    from app.shared.compliance.protected_attributes import LEARNING_PROTECTED_FIELDS as _LEARNING_PROTECTED_FIELDS
+except Exception:
+    # Fallback if YAML not available (e.g. during tests without full app context)
+    _LEARNING_PROTECTED_FIELDS: frozenset = frozenset({
+        "gender", "genero", "gênero", "sex", "sexo",
+        "race", "raca", "raça", "ethnicity", "etnia",
+        "age", "idade", "birth_date", "data_nascimento",
+        "religion", "religiao", "religião",
+        "disability", "deficiencia", "deficiência", "pcd",
+        "nationality", "nacionalidade",
+        "marital_status", "estado_civil",
+        "skin_color", "cor_pele",
+    })
 
 
 @dataclass
