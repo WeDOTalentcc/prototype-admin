@@ -1706,7 +1706,10 @@
       "approvedLabel": "Aprovados",
       "rejectedLabel": "Rejeitados",
       "minAbbr": "mín.",
-      "noCandidateFoundDesc": "Não encontramos candidatos compatíveis com a estratégia deste agente no momento. Tente ajustar os critérios de busca ou aguarde novos perfis serem adicionados ao banco."
+      "noCandidateFoundDesc": "Não encontramos candidatos compatíveis com a estratégia deste agente no momento. Tente ajustar os critérios de busca ou aguarde novos perfis serem adicionados ao banco.",
+      "matchGood": "Boa Correspondencia",
+      "matchPartial": "Correspondencia Parcial",
+      "matchNo": "Sem Correspondencia"
     },
     "twins": {
       "title": "Digital Twins",

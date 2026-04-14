@@ -51,10 +51,15 @@ interface CalibrationCandidate {
 
 // ---------- Constants ----------
 
-const MATCH_BADGE: Record<string, { label: string; style: string }> = {
-  good: { label:"Good Match", style: badgeStyles.success },
-  partial: { label:"Partial Match", style: badgeStyles.warning },
-  no: { label:"No Match", style: badgeStyles.error },
+const MATCH_BADGE_STYLES: Record<string, string> = {
+  good: badgeStyles.success,
+  partial: badgeStyles.warning,
+  no: badgeStyles.error,
+}
+const MATCH_BADGE_KEYS: Record<string, string> = {
+  good: "matchGood",
+  partial: "matchPartial",
+  no: "matchNo",
 }
 
 const REJECTION_REASON_KEYS = ["differentTechStack","insufficientSeniority","crudOnly","incompatibleLocation","irrelevantExperience"] as const
@@ -350,11 +355,12 @@ export default function CalibrationCardModal({
 
                 <div className="space-y-4">
                   {candidate.match_criteria?.map((mc, i) => {
-                    const badge = MATCH_BADGE[mc.match]
+                    const badgeStyle = MATCH_BADGE_STYLES[mc.match] || badgeStyles.info
+                    const badgeKey = MATCH_BADGE_KEYS[mc.match] || "matchGood"
                     return (
                       <div key={i} className="space-y-1">
                         <div className="flex items-center gap-2">
-                          <Badge className={badge.style}>{badge.label}</Badge>
+                          <Badge className={badgeStyle}>{t(badgeKey)}</Badge>
                         </div>
                         <p className={textStyles.subtitle}>{mc.criterion}</p>
                         <p className={textStyles.bodySmall}>{mc.explanation}</p>
