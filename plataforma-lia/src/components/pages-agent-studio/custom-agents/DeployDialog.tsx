@@ -2,6 +2,7 @@
 
 import React, { useState } from "react"
 import { Briefcase, Database, GitBranch, List, Zap, Calendar, MousePointer } from "lucide-react"
+import { useTranslations } from "next-intl"
 import { cn } from "@/lib/utils"
 import { cardStyles, buttonStyles, textStyles, inputStyles } from "@/lib/design-tokens"
 import {
@@ -9,13 +10,12 @@ import {
 } from "@/components/ui/dialog"
 import { toast } from "@/lib/toast"
 import type { CustomAgent, DeploymentTargetType, TriggerMode } from "./types"
-import { TARGET_LABELS, TRIGGER_LABELS } from "./types"
 
-const TARGET_OPTIONS: { type: DeploymentTargetType; icon: React.ReactNode; desc: string }[] = [
-  { type: "job", icon: <Briefcase className="w-4 h-4" />, desc: "Atuar nos candidatos de uma vaga" },
-  { type: "talent_pool", icon: <Database className="w-4 h-4" />, desc: "Atuar num banco de talentos" },
-  { type: "pipeline_stage", icon: <GitBranch className="w-4 h-4" />, desc: "Atuar quando candidato chegar numa etapa" },
-  { type: "candidate_list", icon: <List className="w-4 h-4" />, desc: "Atuar numa lista especifica de candidatos" },
+const TARGET_OPTIONS: { type: DeploymentTargetType; icon: React.ReactNode; descKey: string }[] = [
+  { type: "job", icon: <Briefcase className="w-4 h-4" />, descKey: "targetDescJob" },
+  { type: "talent_pool", icon: <Database className="w-4 h-4" />, descKey: "targetDescPool" },
+  { type: "pipeline_stage", icon: <GitBranch className="w-4 h-4" />, descKey: "targetDescStage" },
+  { type: "candidate_list", icon: <List className="w-4 h-4" />, descKey: "targetDescList" },
 ]
 
 const TRIGGER_OPTIONS: { mode: TriggerMode; icon: React.ReactNode }[] = [
@@ -33,6 +33,7 @@ interface DeployDialogProps {
 }
 
 export function DeployDialog({ agent, open, onClose, onDeployed }: DeployDialogProps) {
+  const t = useTranslations('agents.customAgents')
   const [targetType, setTargetType] = useState<DeploymentTargetType>("job")
   const [targetId, setTargetId] = useState("")
   const [targetName, setTargetName] = useState("")
@@ -58,14 +59,14 @@ export function DeployDialog({ agent, open, onClose, onDeployed }: DeployDialogP
         }),
       })
       if (!res.ok) {
-        const err = await res.json().catch(() => ({ detail: "Erro ao vincular" }))
-        throw new Error(err.detail || "Erro ao vincular")
+        const err = await res.json().catch(() => ({ detail: t('errors.errorBinding') }))
+        throw new Error(err.detail || t('errors.errorBinding'))
       }
-      toast.success(`Agente vinculado com sucesso!`)
+      toast.success(t('agentLinkedSuccess'))
       onDeployed()
       onClose()
     } catch (e: unknown) {
-      toast.error(e instanceof Error ? e.message : "Erro ao vincular agente")
+      toast.error(e instanceof Error ? e.message : t('errors.errorBinding'))
     } finally {
       setIsDeploying(false)
     }
@@ -78,18 +79,17 @@ export function DeployDialog({ agent, open, onClose, onDeployed }: DeployDialogP
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle className={textStyles.title}>
-            Vincular &ldquo;{agent.name}&rdquo;
+            {t('deployTitle', { name: agent.name })}
           </DialogTitle>
           <p className={cn(textStyles.caption, "mt-1")}>
-            Escolha onde e quando o agente vai atuar
+            {t('deployDesc')}
           </p>
         </DialogHeader>
 
         <div className="space-y-5 py-2">
-          {/* Target Type */}
           <div>
             <label className="text-xs font-semibold text-lia-text-primary mb-2 block">
-              Onde vai atuar?
+              {t('whereLabel')}
             </label>
             <div className="grid grid-cols-2 gap-2">
               {TARGET_OPTIONS.map((opt) => (
@@ -105,47 +105,45 @@ export function DeployDialog({ agent, open, onClose, onDeployed }: DeployDialogP
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-wedo-cyan-dark">{opt.icon}</span>
                     <span className="text-xs font-semibold text-lia-text-primary">
-                      {TARGET_LABELS[opt.type]}
+                      {t('targets.' + opt.type)}
                     </span>
                   </div>
-                  <p className="text-[10px] text-lia-text-disabled leading-tight">{opt.desc}</p>
+                  <p className="text-[10px] text-lia-text-disabled leading-tight">{t(opt.descKey)}</p>
                 </button>
               ))}
             </div>
           </div>
 
-          {/* Target ID + Name */}
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="text-xs font-semibold text-lia-text-primary mb-1 block">
-                ID do {TARGET_LABELS[targetType]}
+                {t('targetIdLabel', { target: t('targets.' + targetType) })}
               </label>
               <input
                 type="text"
                 value={targetId}
                 onChange={(e) => setTargetId(e.target.value)}
-                placeholder="UUID ou identificador"
+                placeholder={t('idPlaceholder')}
                 className={cn(inputStyles.default, "text-xs")}
               />
             </div>
             <div>
               <label className="text-xs font-semibold text-lia-text-primary mb-1 block">
-                Nome (opcional)
+                {t('nameOptional')}
               </label>
               <input
                 type="text"
                 value={targetName}
                 onChange={(e) => setTargetName(e.target.value)}
-                placeholder="Ex: Vaga Dev Python Sr"
+                placeholder={t('namePlaceholder')}
                 className={cn(inputStyles.default, "text-xs")}
               />
             </div>
           </div>
 
-          {/* Trigger Mode */}
           <div>
             <label className="text-xs font-semibold text-lia-text-primary mb-2 block">
-              Quando ativar?
+              {t('whenLabel')}
             </label>
             <div className="flex flex-wrap gap-1.5">
               {TRIGGER_OPTIONS.map((opt) => (
@@ -161,7 +159,7 @@ export function DeployDialog({ agent, open, onClose, onDeployed }: DeployDialogP
                   )}
                 >
                   {opt.icon}
-                  {TRIGGER_LABELS[opt.mode]}
+                  {t('triggers.' + opt.mode)}
                 </button>
               ))}
             </div>
@@ -170,7 +168,7 @@ export function DeployDialog({ agent, open, onClose, onDeployed }: DeployDialogP
 
         <DialogFooter>
           <button type="button" onClick={onClose} className={cn(buttonStyles.ghost, "text-xs px-3 py-1.5")}>
-            Cancelar
+            {t('cancelBtn')}
           </button>
           <button
             type="button"
@@ -178,7 +176,7 @@ export function DeployDialog({ agent, open, onClose, onDeployed }: DeployDialogP
             disabled={!targetId.trim() || isDeploying}
             className={cn(buttonStyles.primary, "text-xs px-4 py-1.5")}
           >
-            {isDeploying ? "Vinculando..." : "Vincular e Ativar"}
+            {isDeploying ? t('linkingBtn') : t('linkAndActivate')}
           </button>
         </DialogFooter>
       </DialogContent>

@@ -12,7 +12,6 @@ import {
 import { useAgentDeployments } from "@/hooks/agents"
 import { VersionHistoryPanel } from "./VersionHistoryPanel"
 import type { CustomAgent } from "./types"
-import { CATEGORY_LABELS, TARGET_LABELS, TRIGGER_LABELS, TOOL_LABELS } from "./types"
 import type { AgentCategory } from "./types"
 
 const TRIGGER_ICONS: Record<string, React.ReactNode> = {
@@ -45,7 +44,7 @@ export function AgentDetailsPanel({ agent, open, onClose, onDeploy, onTest }: Ag
         method: "POST",
         headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
       })
-      if (!res.ok) throw new Error("Erro ao clonar")
+      if (!res.ok) throw new Error(t('errors.errorCloning'))
       onClose()
     } catch {
       // toast handled by caller
@@ -56,7 +55,7 @@ export function AgentDetailsPanel({ agent, open, onClose, onDeploy, onTest }: Ag
 
   if (!agent) return null
 
-  const domainLabel = CATEGORY_LABELS[agent.domain as AgentCategory] || agent.domain
+  const domainLabel = t('categories.' + (agent.domain as AgentCategory)) || agent.domain
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
@@ -77,13 +76,13 @@ export function AgentDetailsPanel({ agent, open, onClose, onDeploy, onTest }: Ag
             )}
             <div className="flex flex-wrap gap-1.5">
               <span className={badgeStyles.cyan}>{domainLabel}</span>
-              <span className={badgeStyles.default}>context: {agent.context_level}</span>
-              <span className={badgeStyles.default}>{agent.max_steps} steps</span>
+              <span className={badgeStyles.default}>{t('contextLabel')}: {agent.context_level}</span>
+              <span className={badgeStyles.default}>{agent.max_steps} {t('stepsLabel')}</span>
             </div>
             <div className="flex flex-wrap gap-1 pt-1">
-              {agent.allowed_tools.slice(0, 6).map((t) => (
-                <span key={t} className={cn(badgeStyles.default, "text-[10px]")}>
-                  {TOOL_LABELS[t] || t}
+              {agent.allowed_tools.slice(0, 6).map((tool) => (
+                <span key={tool} className={cn(badgeStyles.default, "text-[10px]")}>
+                  {t('tools.' + tool) || tool}
                 </span>
               ))}
               {agent.allowed_tools.length > 6 && (
@@ -146,10 +145,10 @@ export function AgentDetailsPanel({ agent, open, onClose, onDeploy, onTest }: Ag
                       {TRIGGER_ICONS[dep.trigger_mode] || <Zap className="w-3 h-3" />}
                       <div>
                         <p className="text-xs font-medium text-lia-text-primary">
-                          {dep.target_name || TARGET_LABELS[dep.target_type as keyof typeof TARGET_LABELS]}
+                          {dep.target_name || t('targets.' + dep.target_type) || dep.target_type}
                         </p>
                         <p className="text-[10px] text-lia-text-disabled">
-                          {TRIGGER_LABELS[dep.trigger_mode as keyof typeof TRIGGER_LABELS]} · {dep.execution_count} {t('exec')}
+                          {t('triggers.' + dep.trigger_mode) || dep.trigger_mode} · {dep.execution_count} {t('exec')}
                         </p>
                       </div>
                     </div>

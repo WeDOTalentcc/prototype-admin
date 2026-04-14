@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState, useEffect, useCallback } from "react"
+import { useTranslations } from "next-intl"
 import {
   Store, Download, Search, Star, Loader2,
   Package, CreditCard, Trash2, Check, X,
@@ -43,17 +44,10 @@ interface Installation {
   agent_name: string | null
 }
 
-const CATEGORIES = [
-  { value: "", label: "Todos" },
-  { value: "sourcing", label: "Captação" },
-  { value: "pipeline", label: "Pipeline" },
-  { value: "analytics", label: "Analytics" },
-  { value: "communication", label: "Comunicação" },
-  { value: "screening", label: "Triagem" },
-  { value: "general", label: "Geral" },
-]
+const CATEGORY_KEYS = ["", "sourcing", "pipeline", "analytics", "communication", "screening", "general"] as const
 
 export default function MarketplaceTab() {
+  const t = useTranslations('agents.marketplace')
   const [activeView, setActiveView] = useState<"browse" | "installed" | "billing">("browse")
 
   return (
@@ -62,17 +56,17 @@ export default function MarketplaceTab() {
         <div>
           <h2 className="text-sm font-semibold text-lia-text-primary flex items-center gap-2">
             <Store className="w-4 h-4 text-violet-500" />
-            Marketplace de Agentes
+            {t('title')}
           </h2>
           <p className="text-xs text-lia-text-secondary mt-0.5">
-            Descubra e instale agentes criados por outras empresas
+            {t('subtitle')}
           </p>
         </div>
         <div className="flex gap-1 p-1 bg-lia-bg-secondary rounded-lg">
           {[
-            { id: "browse" as const, label: "Explorar", icon: Search },
-            { id: "installed" as const, label: "Instalados", icon: Package },
-            { id: "billing" as const, label: "Consumo", icon: CreditCard },
+            { id: "browse" as const, label: t('browse'), icon: Search },
+            { id: "installed" as const, label: t('installed'), icon: Package },
+            { id: "billing" as const, label: t('billing'), icon: CreditCard },
           ].map(tab => (
             <button
               key={tab.id}
@@ -99,6 +93,7 @@ export default function MarketplaceTab() {
 }
 
 function BrowseMarketplace() {
+  const t = useTranslations('agents.marketplace')
   const [listings, setListings] = useState<MarketplaceListing[]>([])
   const [total, setTotal] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
@@ -140,11 +135,11 @@ function BrowseMarketplace() {
       if (res.ok) {
         loadListings()
       } else {
-        const err = await res.json().catch(() => ({ detail: "Erro" }))
-        alert(err.detail || "Erro ao instalar")
+        const err = await res.json().catch(() => ({ detail: t('errorGeneric') }))
+        alert(err.detail || t('errorInstalling'))
       }
     } catch {
-      alert("Erro de conexão")
+      alert(t('connectionError'))
     } finally {
       setInstalling(null)
     }
@@ -157,23 +152,23 @@ function BrowseMarketplace() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-lia-text-disabled" />
           <input
             type="text" value={search} onChange={e => setSearch(e.target.value)}
-            placeholder="Buscar agentes..."
+            placeholder={t('searchPlaceholder') as string}
             className="w-full pl-10 pr-3 py-2 border border-lia-border-subtle rounded-lg text-sm bg-lia-bg-secondary text-lia-text-primary placeholder:text-lia-text-disabled focus:outline-none focus:ring-2 focus:ring-wedo-cyan/30"
           />
         </div>
         <div className="flex gap-1">
-          {CATEGORIES.map(cat => (
+          {CATEGORY_KEYS.map(key => (
             <button
-              key={cat.value}
-              onClick={() => setCategory(cat.value)}
+              key={key}
+              onClick={() => setCategory(key)}
               className={cn(
                 "px-3 py-2 rounded-lg text-xs font-medium transition-all",
-                category === cat.value
+                category === key
                   ? "bg-violet-100 dark:bg-violet-950/30 text-violet-700 dark:text-violet-400"
                   : "text-lia-text-secondary hover:bg-lia-bg-tertiary"
               )}
             >
-              {cat.label}
+              {t(key || 'all')}
             </button>
           ))}
         </div>
@@ -186,9 +181,9 @@ function BrowseMarketplace() {
       ) : listings.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12 rounded-xl border border-dashed border-lia-border-subtle bg-lia-bg-secondary/50">
           <Store className="w-10 h-10 text-lia-text-disabled mb-3" />
-          <p className="text-sm font-medium text-lia-text-secondary">Nenhum agente disponível</p>
+          <p className="text-sm font-medium text-lia-text-secondary">{t('noAgentsAvailable')}</p>
           <p className="text-xs text-lia-text-disabled mt-1">
-            {search ? "Tente outro termo de busca" : "O marketplace ainda não tem agentes publicados"}
+            {search ? t('tryAnotherSearch') : t('noAgentsPublished')}
           </p>
         </div>
       ) : (
@@ -228,7 +223,7 @@ function BrowseMarketplace() {
                 <div className="flex items-center gap-4 mb-3 text-[10px] text-lia-text-secondary">
                   <span className="flex items-center gap-1">
                     <Download className="w-3 h-3" />
-                    {listing.install_count} instalações
+                    {t('installations', { count: listing.install_count })}
                   </span>
                   {listing.avg_rating > 0 && (
                     <span className="flex items-center gap-1">
@@ -238,7 +233,7 @@ function BrowseMarketplace() {
                   )}
                   <span className="flex items-center gap-1">
                     <CreditCard className="w-3 h-3" />
-                    {listing.is_free ? "Grátis" : `${listing.credits_per_execution} créditos/exec`}
+                    {listing.is_free ? t('free') : t('creditsPerExec', { credits: listing.credits_per_execution })}
                   </span>
                 </div>
 
@@ -253,7 +248,7 @@ function BrowseMarketplace() {
                   ) : (
                     <Download className="w-3.5 h-3.5" />
                   )}
-                  Instalar
+                  {t('install')}
                 </Button>
               </div>
             </div>
@@ -265,6 +260,7 @@ function BrowseMarketplace() {
 }
 
 function InstalledAgents() {
+  const t = useTranslations('agents.marketplace')
   const [installations, setInstallations] = useState<Installation[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
@@ -286,7 +282,7 @@ function InstalledAgents() {
   useEffect(() => { load() }, [load])
 
   const handleUninstall = async (installationId: string) => {
-    if (!confirm("Tem certeza que deseja desinstalar este agente?")) return
+    if (!confirm(t('confirmUninstall'))) return
     try {
       await fetch(`/api/backend-proxy/agent-marketplace/installations/${installationId}`, {
         method: "DELETE",
@@ -309,9 +305,9 @@ function InstalledAgents() {
     return (
       <div className="flex flex-col items-center justify-center py-12 rounded-xl border border-dashed border-lia-border-subtle bg-lia-bg-secondary/50">
         <Package className="w-10 h-10 text-lia-text-disabled mb-3" />
-        <p className="text-sm font-medium text-lia-text-secondary">Nenhum agente instalado</p>
+        <p className="text-sm font-medium text-lia-text-secondary">{t('noInstalledAgents')}</p>
         <p className="text-xs text-lia-text-disabled mt-1">
-          Explore o marketplace para encontrar agentes úteis
+          {t('exploreMarketplace')}
         </p>
       </div>
     )
@@ -329,13 +325,13 @@ function InstalledAgents() {
               <Package className="w-5 h-5 text-violet-500" />
             </div>
             <div>
-              <p className="text-sm font-semibold text-lia-text-primary">{inst.agent_name || "Agente"}</p>
+              <p className="text-sm font-semibold text-lia-text-primary">{inst.agent_name || t('agent')}</p>
               <div className="flex items-center gap-3 mt-0.5 text-[10px] text-lia-text-secondary">
-                <span>{inst.total_executions} execuções</span>
-                <span>{inst.total_credits_consumed} créditos</span>
+                <span>{t('executions', { count: inst.total_executions })}</span>
+                <span>{t('credits', { count: inst.total_credits_consumed })}</span>
                 {inst.installed_at && (
                   <span>
-                    Instalado em {new Date(inst.installed_at).toLocaleDateString("pt-BR")}
+                    {t('installedOn', { date: new Date(inst.installed_at).toLocaleDateString() })}
                   </span>
                 )}
               </div>
@@ -346,7 +342,7 @@ function InstalledAgents() {
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors"
           >
             <Trash2 className="w-3.5 h-3.5" />
-            Desinstalar
+            {t('uninstall')}
           </button>
         </div>
       ))}
@@ -355,6 +351,7 @@ function InstalledAgents() {
 }
 
 function BillingView() {
+  const t = useTranslations('agents.marketplace')
   const [billing, setBilling] = useState<Array<{
     agent_id: string
     agent_name: string
@@ -386,11 +383,11 @@ function BillingView() {
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
         <div className="rounded-xl border border-lia-border-subtle bg-lia-bg-secondary p-4">
-          <p className="text-xs text-lia-text-secondary mb-1">Total de Créditos</p>
+          <p className="text-xs text-lia-text-secondary mb-1">{t('totalCredits')}</p>
           <p className="text-2xl font-semibold text-lia-text-primary">{totalCredits.toLocaleString()}</p>
         </div>
         <div className="rounded-xl border border-lia-border-subtle bg-lia-bg-secondary p-4">
-          <p className="text-xs text-lia-text-secondary mb-1">Total de Execuções</p>
+          <p className="text-xs text-lia-text-secondary mb-1">{t('totalExecutions')}</p>
           <p className="text-2xl font-semibold text-lia-text-primary">{totalExecs.toLocaleString()}</p>
         </div>
       </div>
@@ -398,16 +395,16 @@ function BillingView() {
       {billing.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-8 text-lia-text-disabled">
           <TrendingUp className="w-8 h-8 mb-2" />
-          <p className="text-sm">Nenhum consumo registrado</p>
+          <p className="text-sm">{t('noUsageRecorded')}</p>
         </div>
       ) : (
         <div className="rounded-xl border border-lia-border-subtle overflow-hidden">
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-lia-bg-secondary">
-                <th className="text-left px-4 py-3 text-xs font-semibold text-lia-text-secondary">Agente</th>
-                <th className="text-right px-4 py-3 text-xs font-semibold text-lia-text-secondary">Execuções</th>
-                <th className="text-right px-4 py-3 text-xs font-semibold text-lia-text-secondary">Créditos</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-lia-text-secondary">{t('agentColumn')}</th>
+                <th className="text-right px-4 py-3 text-xs font-semibold text-lia-text-secondary">{t('executionsColumn')}</th>
+                <th className="text-right px-4 py-3 text-xs font-semibold text-lia-text-secondary">{t('creditsColumn')}</th>
               </tr>
             </thead>
             <tbody>

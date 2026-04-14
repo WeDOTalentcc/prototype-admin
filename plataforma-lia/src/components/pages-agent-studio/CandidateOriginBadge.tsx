@@ -74,7 +74,7 @@ const ORIGIN_CONFIG = {
 
 function formatDate(iso: string): string {
   try {
-    return new Date(iso).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" })
+    return new Date(iso).toLocaleDateString(undefined, { day: "2-digit", month: "2-digit" })
   } catch {
     return iso
   }

@@ -6,7 +6,6 @@ import { useTranslations } from "next-intl"
 import { cn } from "@/lib/utils"
 import { cardStyles, badgeStyles, textStyles } from "@/lib/design-tokens"
 import type { AgentTemplate } from "./types"
-import { CATEGORY_LABELS } from "./types"
 
 interface TemplateCardProps {
   template: AgentTemplate
@@ -47,7 +46,7 @@ export function TemplateCard({ template, onSelect }: TemplateCardProps) {
 
       <div className="flex items-center gap-1.5 mt-auto pt-1">
         <span className={cn(badgeStyles.default, "text-[10px]")}>
-          {CATEGORY_LABELS[template.category]}
+          {t('categories.' + template.category) || template.category}
         </span>
         <span className={cn(badgeStyles.default, "text-[10px]")}>
           {t('toolsCount', { count: template.allowed_tools.length })}

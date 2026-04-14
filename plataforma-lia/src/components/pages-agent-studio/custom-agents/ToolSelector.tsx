@@ -4,9 +4,11 @@ import React from "react"
 import { useTranslations } from "next-intl"
 import { cn } from "@/lib/utils"
 import { cardStyles } from "@/lib/design-tokens"
-import { TOOL_LABELS } from "./types"
-
-const ALL_TOOLS = Object.keys(TOOL_LABELS)
+const ALL_TOOLS = [
+  "search_candidates", "list_jobs", "get_job_details", "get_candidate_details",
+  "get_pipeline_summary", "search_talent_pool", "get_analytics_summary",
+  "get_company_culture", "get_evaluation_criteria", "summarize_context"
+]
 
 interface ToolSelectorProps {
   selectedTools: string[]
@@ -51,7 +53,7 @@ export function ToolSelector({ selectedTools, onChange, label }: ToolSelectorPro
                 onChange={() => toggle(tool)}
                 className="w-3.5 h-3.5 rounded border-lia-border-default text-wedo-cyan focus:ring-wedo-cyan/30"
               />
-              {TOOL_LABELS[tool] || tool}
+              {t('tools.' + tool) || tool}
             </label>
           )
         })}

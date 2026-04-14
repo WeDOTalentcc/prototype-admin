@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState, useEffect, useCallback } from "react"
+import { useTranslations } from "next-intl"
 import {
   Bot, Plus, Play, Pause, Trash2, Edit3, TestTube2,
   Loader2, Settings, Wand2, Copy, ExternalLink,
@@ -33,14 +34,15 @@ interface CustomAgent {
   temperature?: number
 }
 
-const STATUS_CONFIG: Record<string, { label: string; dot: string; bg: string; text: string }> = {
-  draft: { label: "Rascunho", dot: "bg-lia-text-disabled", bg: "bg-lia-bg-secondary dark:bg-lia-bg-inverse/30", text: "text-lia-text-secondary dark:text-lia-text-tertiary" },
-  active: { label: "Ativo", dot: "bg-emerald-500", bg: "bg-emerald-50 dark:bg-emerald-950/30", text: "text-emerald-700 dark:text-emerald-400" },
-  paused: { label: "Pausado", dot: "bg-amber-500", bg: "bg-amber-50 dark:bg-amber-950/30", text: "text-amber-700 dark:text-amber-400" },
-  archived: { label: "Arquivado", dot: "bg-red-400", bg: "bg-red-50 dark:bg-red-950/30", text: "text-red-600 dark:text-red-400" },
+const STATUS_CONFIG: Record<string, { labelKey: string; dot: string; bg: string; text: string }> = {
+  draft: { labelKey: "statusDraft", dot: "bg-lia-text-disabled", bg: "bg-lia-bg-secondary dark:bg-lia-bg-inverse/30", text: "text-lia-text-secondary dark:text-lia-text-tertiary" },
+  active: { labelKey: "statusActive", dot: "bg-emerald-500", bg: "bg-emerald-50 dark:bg-emerald-950/30", text: "text-emerald-700 dark:text-emerald-400" },
+  paused: { labelKey: "statusPaused", dot: "bg-amber-500", bg: "bg-amber-50 dark:bg-amber-950/30", text: "text-amber-700 dark:text-amber-400" },
+  archived: { labelKey: "statusArchived", dot: "bg-red-400", bg: "bg-red-50 dark:bg-red-950/30", text: "text-red-600 dark:text-red-400" },
 }
 
 export default function CustomAgentsTab() {
+  const t = useTranslations('agents.customAgents')
   const [agents, setAgents] = useState<CustomAgent[]>([])
   const [total, setTotal] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
@@ -94,7 +96,7 @@ export default function CustomAgentsTab() {
       <div className="flex items-center justify-center py-16">
         <div className="flex flex-col items-center gap-3 text-lia-text-secondary">
           <Loader2 className="w-6 h-6 animate-spin" />
-          <span className="text-xs">Carregando agentes custom...</span>
+          <span className="text-xs">{t('loadingCustomAgents')}</span>
         </div>
       </div>
     )
@@ -131,9 +133,9 @@ export default function CustomAgentsTab() {
           <div className="w-14 h-14 rounded-2xl bg-lia-bg-tertiary flex items-center justify-center mb-3">
             <Wand2 className="w-7 h-7 text-lia-text-disabled" />
           </div>
-          <p className="text-sm font-medium text-lia-text-secondary">Nenhum agente custom criado</p>
+          <p className="text-sm font-medium text-lia-text-secondary">{t('noCustomAgents')}</p>
           <p className="text-xs text-lia-text-disabled mt-1 mb-4">
-            Crie um agente personalizado com prompt, tools e domínio de atuação
+            {t('createCustomHint')}
           </p>
           <Button
             size="sm"
@@ -169,7 +171,7 @@ export default function CustomAgentsTab() {
                     </div>
                     <div className={cn("flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-semibold", statusConf.bg, statusConf.text)}>
                       <div className={cn("w-1.5 h-1.5 rounded-full", statusConf.dot)} />
-                      {statusConf.label}
+                      {t(statusConf.labelKey)}
                     </div>
                   </div>
 
@@ -195,22 +197,22 @@ export default function CustomAgentsTab() {
                   <div className="grid grid-cols-3 gap-2 mb-3">
                     <div className="flex flex-col items-center p-2 rounded-lg bg-lia-bg-primary">
                       <span className="text-xs font-bold text-lia-text-primary">{agent.total_executions}</span>
-                      <span className="text-[9px] text-lia-text-disabled uppercase">Execuções</span>
+                      <span className="text-[9px] text-lia-text-disabled uppercase">{t('executions')}</span>
                     </div>
                     <div className="flex flex-col items-center p-2 rounded-lg bg-lia-bg-primary">
                       <span className="text-xs font-bold text-lia-text-primary">v{agent.version}</span>
-                      <span className="text-[9px] text-lia-text-disabled uppercase">Versão</span>
+                      <span className="text-[9px] text-lia-text-disabled uppercase">{t('version')}</span>
                     </div>
                     <div className="flex flex-col items-center p-2 rounded-lg bg-lia-bg-primary">
                       <span className="text-xs font-bold text-lia-text-primary">{agent.domain}</span>
-                      <span className="text-[9px] text-lia-text-disabled uppercase">Domínio</span>
+                      <span className="text-[9px] text-lia-text-disabled uppercase">{t('domain')}</span>
                     </div>
                   </div>
 
                   {agent.is_marketplace_published && (
                     <div className="flex items-center gap-1.5 mb-3 px-2.5 py-1.5 rounded-lg bg-violet-50 dark:bg-violet-950/20 border border-violet-200 dark:border-violet-800">
                       <Store className="w-3 h-3 text-violet-500" />
-                      <span className="text-[10px] text-violet-700 dark:text-violet-400 font-medium">Publicado no Marketplace</span>
+                      <span className="text-[10px] text-violet-700 dark:text-violet-400 font-medium">{t('publishedMarketplace')}</span>
                     </div>
                   )}
 
@@ -233,7 +235,7 @@ export default function CustomAgentsTab() {
                       <button
                         onClick={() => handleStatusChange(agent.id, "paused")}
                         className="flex items-center justify-center w-8 h-8 rounded-lg border border-lia-border-subtle hover:bg-lia-bg-tertiary transition-colors"
-                        title="Pausar"
+                        title={t('pause')}
                       >
                         <Pause className="w-3.5 h-3.5 text-amber-500" />
                       </button>
@@ -241,7 +243,7 @@ export default function CustomAgentsTab() {
                       <button
                         onClick={() => handleStatusChange(agent.id, "active")}
                         className="flex items-center justify-center w-8 h-8 rounded-lg border border-lia-border-subtle hover:bg-lia-bg-tertiary transition-colors"
-                        title="Ativar"
+                        title={t('activate')}
                       >
                         <Play className="w-3.5 h-3.5 text-emerald-500" />
                       </button>
@@ -249,7 +251,7 @@ export default function CustomAgentsTab() {
                     <button
                       onClick={() => handleDelete(agent.id)}
                       className="flex items-center justify-center w-8 h-8 rounded-lg border border-lia-border-subtle hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors ml-auto"
-                      title="Excluir"
+                      title={t('deleteAgent')}
                     >
                       <Trash2 className="w-3.5 h-3.5 text-red-400" />
                     </button>
@@ -286,6 +288,7 @@ function CreateCustomAgentModal({
   onClose: () => void
   onSaved: () => void
 }) {
+  const t = useTranslations('agents.customAgents')
   const isEditing = !!agent
   const [name, setName] = useState(agent?.name || "")
   const [role, setRole] = useState(agent?.role || "")
@@ -340,7 +343,7 @@ function CreateCustomAgentModal({
 
       onSaved()
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro ao salvar")
+      setError(err instanceof Error ? err.message : t('errors.errorSaving'))
     } finally {
       setIsSaving(false)
     }
@@ -352,42 +355,42 @@ function CreateCustomAgentModal({
         <DialogHeader>
           <DialogTitle className="text-base font-semibold text-lia-text-primary flex items-center gap-2">
             <Wand2 className="w-4 h-4 text-wedo-cyan" />
-            {isEditing ? "Editar Agente Custom" : "Criar Agente Custom"}
+            {isEditing ? t('editCustomAgent') : t('createCustomAgent')}
           </DialogTitle>
-          <DialogDescription className="sr-only">Configure o agente customizado</DialogDescription>
+          <DialogDescription className="sr-only">{t('configureAgent')}</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-2">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-xs font-semibold text-lia-text-primary mb-1 block">Nome</label>
+              <label className="text-xs font-semibold text-lia-text-primary mb-1 block">{t('name')}</label>
               <input
                 type="text" value={name} onChange={e => setName(e.target.value)}
-                placeholder="Ex: Agente Triagem Cultural"
+                placeholder={t('namePlaceholder')}
                 className="w-full border border-lia-border-subtle rounded-lg px-3 py-2 text-sm bg-lia-bg-secondary text-lia-text-primary placeholder:text-lia-text-disabled focus:outline-none focus:ring-2 focus:ring-wedo-cyan/30"
               />
             </div>
             <div>
-              <label className="text-xs font-semibold text-lia-text-primary mb-1 block">Role</label>
+              <label className="text-xs font-semibold text-lia-text-primary mb-1 block">{t('role')}</label>
               <input
                 type="text" value={role} onChange={e => setRole(e.target.value)}
-                placeholder="Ex: Analista de Fit Cultural"
+                placeholder={t('rolePlaceholder')}
                 className="w-full border border-lia-border-subtle rounded-lg px-3 py-2 text-sm bg-lia-bg-secondary text-lia-text-primary placeholder:text-lia-text-disabled focus:outline-none focus:ring-2 focus:ring-wedo-cyan/30"
               />
             </div>
           </div>
 
           <div>
-            <label className="text-xs font-semibold text-lia-text-primary mb-1 block">Descrição</label>
+            <label className="text-xs font-semibold text-lia-text-primary mb-1 block">{t('description')}</label>
             <input
               type="text" value={description} onChange={e => setDescription(e.target.value)}
-              placeholder="Breve descrição do que o agente faz"
+              placeholder={t('descriptionPlaceholder')}
               className="w-full border border-lia-border-subtle rounded-lg px-3 py-2 text-sm bg-lia-bg-secondary text-lia-text-primary placeholder:text-lia-text-disabled focus:outline-none focus:ring-2 focus:ring-wedo-cyan/30"
             />
           </div>
 
           <div>
-            <label className="text-xs font-semibold text-lia-text-primary mb-1 block">System Prompt</label>
+            <label className="text-xs font-semibold text-lia-text-primary mb-1 block">{t('systemPrompt')}</label>
             <textarea
               value={systemPrompt} onChange={e => setSystemPrompt(e.target.value)}
               rows={6}
@@ -431,21 +434,21 @@ function CreateCustomAgentModal({
 
           <div className="grid grid-cols-3 gap-4">
             <div>
-              <label className="text-xs font-semibold text-lia-text-primary mb-1 block">Domínio</label>
+              <label className="text-xs font-semibold text-lia-text-primary mb-1 block">{t('domainLabel')}</label>
               <select
                 value={domain} onChange={e => setDomain(e.target.value)}
                 className="w-full border border-lia-border-subtle rounded-lg px-3 py-2 text-sm bg-lia-bg-secondary text-lia-text-primary focus:outline-none focus:ring-2 focus:ring-wedo-cyan/30"
               >
-                <option value="general">Geral</option>
-                <option value="sourcing">Sourcing</option>
-                <option value="pipeline">Pipeline</option>
-                <option value="analytics">Análises</option>
-                <option value="communication">Comunicação</option>
-                <option value="screening">Triagem</option>
+                <option value="general">{t('domainGeneral')}</option>
+                <option value="sourcing">{t('domainSourcing')}</option>
+                <option value="pipeline">{t('domainPipeline')}</option>
+                <option value="analytics">{t('domainAnalytics')}</option>
+                <option value="communication">{t('domainCommunication')}</option>
+                <option value="screening">{t('domainScreening')}</option>
               </select>
             </div>
             <div>
-              <label className="text-xs font-semibold text-lia-text-primary mb-1 block">Max Steps</label>
+              <label className="text-xs font-semibold text-lia-text-primary mb-1 block">{t('maxSteps')}</label>
               <input
                 type="number" value={maxSteps} onChange={e => setMaxSteps(Number(e.target.value))}
                 min={1} max={20}
@@ -453,7 +456,7 @@ function CreateCustomAgentModal({
               />
             </div>
             <div>
-              <label className="text-xs font-semibold text-lia-text-primary mb-1 block">Temperatura</label>
+              <label className="text-xs font-semibold text-lia-text-primary mb-1 block">{t('temperature')}</label>
               <input
                 type="number" value={temperature} onChange={e => setTemperature(Number(e.target.value))}
                 min={0} max={2} step={0.1}
@@ -470,14 +473,14 @@ function CreateCustomAgentModal({
         </div>
 
         <DialogFooter>
-          <Button variant="ghost" onClick={onClose} disabled={isSaving}>Cancelar</Button>
+          <Button variant="ghost" onClick={onClose} disabled={isSaving}>{t('cancel')}</Button>
           <Button
             onClick={handleSave}
             disabled={isSaving || !name || !role || !systemPrompt}
             className="bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover"
           >
             {isSaving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-            {isEditing ? "Salvar Alterações" : "Criar Agente"}
+            {isEditing ? t('saveChanges') : t('createAgent')}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -486,6 +489,7 @@ function CreateCustomAgentModal({
 }
 
 function TestAgentModal({ agent, onClose }: { agent: CustomAgent; onClose: () => void }) {
+  const t = useTranslations('agents.customAgents')
   const [message, setMessage] = useState("")
   const [response, setResponse] = useState("")
   const [isRunning, setIsRunning] = useState(false)
@@ -502,12 +506,12 @@ function TestAgentModal({ agent, onClose }: { agent: CustomAgent; onClose: () =>
       })
       if (res.ok) {
         const data = await res.json()
-        setResponse(data.response || "Sem resposta")
+        setResponse(data.response || t('noResponse'))
       } else {
-        setResponse("Erro ao testar o agente")
+        setResponse(t('errorTestAgent'))
       }
     } catch {
-      setResponse("Erro de conexão")
+      setResponse(t('connectionError'))
     } finally {
       setIsRunning(false)
     }
@@ -521,12 +525,12 @@ function TestAgentModal({ agent, onClose }: { agent: CustomAgent; onClose: () =>
             <TestTube2 className="w-4 h-4 text-wedo-cyan" />
             Testar: {agent.name}
           </DialogTitle>
-          <DialogDescription className="sr-only">Teste o agente com uma mensagem</DialogDescription>
+          <DialogDescription className="sr-only">{t('testAgent')}</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-2">
           <div>
-            <label className="text-xs font-semibold text-lia-text-primary mb-1 block">Mensagem de teste</label>
+            <label className="text-xs font-semibold text-lia-text-primary mb-1 block">{t('testMessage')}</label>
             <textarea
               value={message} onChange={e => setMessage(e.target.value)}
               rows={3}
@@ -549,7 +553,7 @@ function TestAgentModal({ agent, onClose }: { agent: CustomAgent; onClose: () =>
             <div className="rounded-lg border border-lia-border-subtle bg-lia-bg-secondary p-4">
               <div className="flex items-center gap-1.5 mb-2">
                 <Bot className="w-3.5 h-3.5 text-wedo-cyan" />
-                <span className="text-[10px] font-semibold text-lia-text-secondary uppercase">Resposta do agente</span>
+                <span className="text-[10px] font-semibold text-lia-text-secondary uppercase">{t('agentResponse')}</span>
               </div>
               <p className="text-sm text-lia-text-primary whitespace-pre-wrap">{response}</p>
             </div>

@@ -7,7 +7,6 @@ import { cn } from "@/lib/utils"
 import { cardStyles, badgeStyles, textStyles, buttonStyles } from "@/lib/design-tokens"
 import { BetaBadge } from "@/components/ui/beta-badge"
 import { toast } from "@/lib/toast"
-import { CATEGORY_LABELS, TOOL_LABELS } from "./types"
 import type { AgentCategory } from "./types"
 
 interface GeneratedConfig {
@@ -101,7 +100,7 @@ export function AgentCreationPreview({ description, onClose, onCreated }: AgentC
     }
   }
 
-  const domainLabel = config ? (CATEGORY_LABELS[config.suggested_domain as AgentCategory] || config.suggested_domain) : ""
+  const domainLabel = config ? (t('categories.' + (config.suggested_domain as AgentCategory)) || config.suggested_domain) : ""
 
   return (
     <div className="h-full flex flex-col">
@@ -154,7 +153,7 @@ export function AgentCreationPreview({ description, onClose, onCreated }: AgentC
               <div className="flex flex-wrap gap-1 pt-1">
                 {config.suggested_tools.map((tool) => (
                   <span key={tool} className={cn(badgeStyles.default, "text-[10px]")}>
-                    {TOOL_LABELS[tool] || tool}
+                    {t('tools.' + tool) || tool}
                   </span>
                 ))}
               </div>

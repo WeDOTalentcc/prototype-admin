@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState, useEffect } from"react"
+import { useTranslations } from "next-intl"
 import {
   Brain, Upload, Plus, Star, Users, Activity,
   ThumbsUp, ThumbsDown, HelpCircle, ChevronRight, X
@@ -51,6 +52,7 @@ interface TwinCardProps {
 }
 
 export function TwinCard({ twin, onEvaluate, onManageTwin }: TwinCardProps) {
+  const t = useTranslations('agents.digitalTwin')
   const initials = twin.twin_name.split("").map(w => w[0]).join("").slice(0, 2).toUpperCase()
 
   return (
@@ -66,7 +68,7 @@ export function TwinCard({ twin, onEvaluate, onManageTwin }: TwinCardProps) {
             <div className="flex items-center gap-2">
               <p className={textStyles.subtitle}>{twin.twin_name}</p>
               <Badge className={twin.is_active ? badgeStyles.success : badgeStyles.warning}>
-                {twin.is_active ?"Ativo" :"Inativo"}
+                {twin.is_active ? t('active') : t('inactive')}
               </Badge>
             </div>
             {twin.specialties.length > 0 && (
@@ -81,11 +83,11 @@ export function TwinCard({ twin, onEvaluate, onManageTwin }: TwinCardProps) {
 
         {/* Stats */}
         <div className="flex items-center gap-4 mt-3 text-sm text-lia-text-secondary">
-          <span title="Decisões indexadas">
+          <span title={t('indexedDecisions')}>
             <Brain className="w-3.5 h-3.5 inline mr-1" />{twin.decision_count}
           </span>
           {twin.accuracy_pct != null && (
-            <span title="Precisão">
+            <span title={t('accuracy')}>
               <Star className="w-3.5 h-3.5 inline mr-1" />{twin.accuracy_pct}%
             </span>
           )}
@@ -95,12 +97,12 @@ export function TwinCard({ twin, onEvaluate, onManageTwin }: TwinCardProps) {
         <div className="flex gap-2 mt-3 pt-3 border-t border-lia-border-subtle">
           {onEvaluate && (
             <Button className={buttonStyles.primary} onClick={() => onEvaluate(twin.id)}>
-              Avaliar candidato
+              {t('evaluateCandidate')}
             </Button>
           )}
           {onManageTwin && (
             <Button className={buttonStyles.outline} onClick={() => onManageTwin(twin.id)}>
-              Gerenciar <ChevronRight className="w-3.5 h-3.5 ml-1" />
+              {t('manage')} <ChevronRight className="w-3.5 h-3.5 ml-1" />
             </Button>
           )}
         </div>
@@ -124,6 +126,7 @@ interface EvaluateWithTwinModalProps {
 export function EvaluateWithTwinModal({
   twinId, candidateProfile, jobContext, isOpen, onClose,
 }: EvaluateWithTwinModalProps) {
+  const t = useTranslations('agents.digitalTwin')
   const [evaluation, setEvaluation] = useState<TwinEvaluation | null>(null)
   const [isLoading, setIsLoading] = useState(false)
 
@@ -155,9 +158,9 @@ export function EvaluateWithTwinModal({
   if (!isOpen) return null
 
   const decisionConfig = {
-    approved: { icon: ThumbsUp, color:"text-green-600", bg:"bg-green-50", label:"Aprovado" },
-    rejected: { icon: ThumbsDown, color:"text-red-600", bg:"bg-red-50", label:"Rejeitado" },
-    maybe: { icon: HelpCircle, color:"text-yellow-600", bg:"bg-yellow-50", label:"Talvez" },
+    approved: { icon: ThumbsUp, color:"text-green-600", bg:"bg-green-50", label: t('approved') },
+    rejected: { icon: ThumbsDown, color:"text-red-600", bg:"bg-red-50", label: t('rejected') },
+    maybe: { icon: HelpCircle, color:"text-yellow-600", bg:"bg-yellow-50", label: t('maybe') },
   }
 
   return (
@@ -166,16 +169,16 @@ export function EvaluateWithTwinModal({
         <DialogHeader>
           <DialogTitle className={textStyles.h3}>
             <Brain className="w-5 h-5 inline mr-2 text-purple-600" />
-            Avaliação Digital Twin
+            {t('digitalTwinEvaluation')}
           </DialogTitle>
-          <DialogDescription className="sr-only">Resultado da avaliação do candidato pelo Digital Twin</DialogDescription>
+          <DialogDescription className="sr-only">{t('evaluationResultDesc')}</DialogDescription>
         </DialogHeader>
 
         {isLoading ? (
           <div className="flex flex-col items-center py-8">
             <Brain className="w-10 h-10 text-purple-300 animate-pulse mb-3" />
-            <p className={textStyles.body}>Analisando com base no histórico do especialista...</p>
-            <p className={textStyles.caption}>Buscando decisões similares e gerando avaliação</p>
+            <p className={textStyles.body}>{t('analyzingHistory')}</p>
+            <p className={textStyles.caption}>{t('searchingSimilarDecisions')}</p>
           </div>
         ) : evaluation ? (
           <div className="space-y-4 py-4">
@@ -188,7 +191,7 @@ export function EvaluateWithTwinModal({
               </Avatar>
               <div>
                 <p className={textStyles.subtitle}>{evaluation.twin_name}</p>
-                <p className={textStyles.caption}>Digital Twin</p>
+                <p className={textStyles.caption}>{t('digitalTwin')}</p>
               </div>
             </div>
 
@@ -202,7 +205,7 @@ export function EvaluateWithTwinModal({
                     <Icon className={`w-6 h-6 ${dc.color}`} />
                     <div>
                       <p className={`${textStyles.h4} ${dc.color}`}>{dc.label}</p>
-                      <p className={textStyles.caption}>Decisão do Twin</p>
+                      <p className={textStyles.caption}>{t('twinDecision')}</p>
                     </div>
                   </div>
                   <div className="text-right">
@@ -216,7 +219,7 @@ export function EvaluateWithTwinModal({
             {/* Confidence */}
             <div>
               <div className="flex items-center justify-between mb-1">
-                <span className={textStyles.label}>Confiança</span>
+                <span className={textStyles.label}>{t('confidence')}</span>
                 <span className={textStyles.caption}>{(evaluation.confidence * 100).toFixed(0)}%</span>
               </div>
               <Progress value={evaluation.confidence * 100} className="h-1.5" />
@@ -224,7 +227,7 @@ export function EvaluateWithTwinModal({
 
             {/* Reasoning (in first person, SME style) */}
             <div>
-              <p className={textStyles.label}>Raciocínio</p>
+              <p className={textStyles.label}>{t('reasoning')}</p>
               <blockquote className="mt-1 border-l-2 border-purple-300 pl-3 italic text-lia-text-secondary">"{evaluation.reasoning}"
               </blockquote>
             </div>
@@ -232,7 +235,7 @@ export function EvaluateWithTwinModal({
             {/* Supporting examples */}
             {evaluation.supporting_examples.length > 0 && (
               <div>
-                <p className={`${textStyles.label} mb-2`}>Decisões que embasaram</p>
+                <p className={`${textStyles.label} mb-2`}>{t('supportingDecisions')}</p>
                 <div className="space-y-2 max-h-32 overflow-y-auto">
                   {evaluation.supporting_examples.map((ex, i) => (
                     <div key={i} className="flex items-start gap-2 text-sm">
@@ -241,7 +244,7 @@ export function EvaluateWithTwinModal({
                       </Badge>
                       <div className="min-w-0">
                         <p className={textStyles.bodySmall}>{ex.reasoning}</p>
-                        <p className={textStyles.caption}>Similaridade: {(ex.similarity * 100).toFixed(0)}%</p>
+                        <p className={textStyles.caption}>{t('similarity')}: {(ex.similarity * 100).toFixed(0)}%</p>
                       </div>
                     </div>
                   ))}
@@ -251,15 +254,15 @@ export function EvaluateWithTwinModal({
           </div>
         ) : (
           <div className="flex flex-col items-center py-8">
-            <p className={textStyles.body}>Erro ao avaliar. Tente novamente.</p>
+            <p className={textStyles.body}>{t('errorEvaluating')}</p>
           </div>
         )}
 
         <DialogFooter>
-          <Button className={buttonStyles.secondary} onClick={onClose}>Fechar</Button>
+          <Button className={buttonStyles.secondary} onClick={onClose}>{t('close')}</Button>
           {evaluation && (
             <Button className={buttonStyles.outline} onClick={runEvaluation}>
-              Reavaliar
+              {t('reevaluate')}
             </Button>
           )}
         </DialogFooter>
@@ -275,6 +278,7 @@ interface TwinsListProps {
 }
 
 export function TwinsList({ onEvaluate }: TwinsListProps) {
+  const t = useTranslations('agents.digitalTwin')
   const [twins, setTwins] = useState<DigitalTwin[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
@@ -292,14 +296,14 @@ export function TwinsList({ onEvaluate }: TwinsListProps) {
     }
   }
 
-  if (isLoading) return <p className={textStyles.caption}>Carregando twins...</p>
+  if (isLoading) return <p className={textStyles.caption}>{t('loadingTwins')}</p>
   if (twins.length === 0) {
     return (
       <Card className={cardStyles.flat}>
         <CardContent className="flex flex-col items-center py-8">
           <Brain className="w-10 h-10 text-lia-text-disabled mb-2" />
-          <p className={textStyles.body}>Nenhum Digital Twin criado</p>
-          <p className={textStyles.caption}>Capture o raciocínio de um especialista para criar um twin.</p>
+          <p className={textStyles.body}>{t('noTwinsCreated')}</p>
+          <p className={textStyles.caption}>{t('captureExpertReasoning')}</p>
         </CardContent>
       </Card>
     )

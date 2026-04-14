@@ -76,7 +76,7 @@ export function VersionHistoryPanel({ agentId, currentVersion, onReverted }: Ver
       <div className="space-y-1.5 max-h-64 overflow-auto">
         {versions.map((v) => {
           const isReverting = revertingVersion === v.version
-          const date = v.created_at ? new Date(v.created_at).toLocaleString("pt-BR", {
+          const date = v.created_at ? new Date(v.created_at).toLocaleString(undefined, {
             day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit",
           }) : ""
 

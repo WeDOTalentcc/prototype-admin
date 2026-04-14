@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState } from "react"
+import { useTranslations } from "next-intl"
 import { Send, Loader2, Wrench, BarChart3, ShieldCheck, DollarSign } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { cardStyles, buttonStyles, textStyles, inputStyles, badgeStyles } from "@/lib/design-tokens"
@@ -9,7 +10,6 @@ import {
 } from "@/components/ui/dialog"
 import { BetaBadge } from "@/components/ui/beta-badge"
 import type { CustomAgent } from "./types"
-import { TOOL_LABELS } from "./types"
 
 interface TestResult {
   response: string
@@ -28,6 +28,7 @@ interface TestDebugPanelProps {
 }
 
 export function TestDebugPanel({ agent, open, onClose }: TestDebugPanelProps) {
+  const t = useTranslations('agents.customAgents')
   const [message, setMessage] = useState("")
   const [isTesting, setIsTesting] = useState(false)
   const [results, setResults] = useState<TestResult[]>([])
@@ -50,12 +51,12 @@ export function TestDebugPanel({ agent, open, onClose }: TestDebugPanelProps) {
         },
         body: JSON.stringify({ message: userMsg }),
       })
-      if (!res.ok) throw new Error("Teste falhou")
+      if (!res.ok) throw new Error("Test failed")
       const data: TestResult = await res.json()
       setResults((prev) => [...prev, data])
       setMessages((prev) => [...prev, { role: "agent", text: data.response }])
     } catch {
-      setMessages((prev) => [...prev, { role: "agent", text: "Erro ao executar teste." }])
+      setMessages((prev) => [...prev, { role: "agent", text: t('errors.errorRunningTest') }])
     } finally {
       setIsTesting(false)
     }
@@ -73,7 +74,7 @@ export function TestDebugPanel({ agent, open, onClose }: TestDebugPanelProps) {
       <DialogContent className="sm:max-w-4xl max-h-[80vh]">
         <DialogHeader>
           <DialogTitle className={cn(textStyles.title, "flex items-center gap-2")}>
-            Testar: {agent.name}
+            {t('testAgent')}: {agent.name}
             <BetaBadge size="sm" />
           </DialogTitle>
         </DialogHeader>
@@ -85,7 +86,7 @@ export function TestDebugPanel({ agent, open, onClose }: TestDebugPanelProps) {
             <div className="flex-1 overflow-auto p-3 space-y-3">
               {messages.length === 0 && (
                 <p className={cn(textStyles.caption, "text-center py-8")}>
-                  Envie uma mensagem para testar o agente
+                  {t('sendTestMessage')}
                 </p>
               )}
               {messages.map((msg, i) => (
@@ -103,7 +104,7 @@ export function TestDebugPanel({ agent, open, onClose }: TestDebugPanelProps) {
               ))}
               {isTesting && (
                 <div className="flex items-center gap-2 text-xs text-lia-text-disabled">
-                  <Loader2 className="w-3 h-3 animate-spin" /> Processando...
+                  <Loader2 className="w-3 h-3 animate-spin" /> {t('processing')}
                 </div>
               )}
             </div>
@@ -115,7 +116,7 @@ export function TestDebugPanel({ agent, open, onClose }: TestDebugPanelProps) {
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleTest()}
-                placeholder="Digite uma mensagem para testar..."
+                placeholder={t('typeMessage') as string}
                 className={cn(inputStyles.default, "flex-1 text-sm")}
                 disabled={isTesting}
               />
@@ -136,18 +137,18 @@ export function TestDebugPanel({ agent, open, onClose }: TestDebugPanelProps) {
             <div className={cn(cardStyles.flat, "p-3")}>
               <div className="flex items-center gap-1.5 mb-2">
                 <Wrench className="w-3.5 h-3.5 text-lia-text-disabled" />
-                <span className="text-xs font-semibold text-lia-text-primary">Ferramentas chamadas</span>
+                <span className="text-xs font-semibold text-lia-text-primary">{t('toolsCalled')}</span>
               </div>
               {lastResult?.tool_calls.length ? (
                 <div className="flex flex-wrap gap-1">
                   {lastResult.tool_calls.map((tool, i) => (
                     <span key={i} className={cn(badgeStyles.cyan, "text-[10px]")}>
-                      {TOOL_LABELS[tool] || tool}
+                      {t('tools.' + tool) || tool}
                     </span>
                   ))}
                 </div>
               ) : (
-                <p className="text-[10px] text-lia-text-disabled">Nenhuma ferramenta chamada ainda</p>
+                <p className="text-[10px] text-lia-text-disabled">{t('noToolsCalled')}</p>
               )}
             </div>
 
@@ -155,23 +156,23 @@ export function TestDebugPanel({ agent, open, onClose }: TestDebugPanelProps) {
             <div className={cn(cardStyles.flat, "p-3")}>
               <div className="flex items-center gap-1.5 mb-2">
                 <BarChart3 className="w-3.5 h-3.5 text-lia-text-disabled" />
-                <span className="text-xs font-semibold text-lia-text-primary">Metricas</span>
+                <span className="text-xs font-semibold text-lia-text-primary">{t('metrics')}</span>
               </div>
               <div className="grid grid-cols-2 gap-2 text-xs">
                 <div>
-                  <span className="text-lia-text-disabled">Tokens in</span>
+                  <span className="text-lia-text-disabled">{t('tokensIn')}</span>
                   <p className="font-bold font-inter text-lia-text-primary">{lastResult?.tokens_input || 0}</p>
                 </div>
                 <div>
-                  <span className="text-lia-text-disabled">Tokens out</span>
+                  <span className="text-lia-text-disabled">{t('tokensOut')}</span>
                   <p className="font-bold font-inter text-lia-text-primary">{lastResult?.tokens_output || 0}</p>
                 </div>
                 <div>
-                  <span className="text-lia-text-disabled">Latencia</span>
+                  <span className="text-lia-text-disabled">{t('latency')}</span>
                   <p className="font-bold font-inter text-lia-text-primary">{lastResult?.execution_time_ms || 0}ms</p>
                 </div>
                 <div>
-                  <span className="text-lia-text-disabled">Confianca</span>
+                  <span className="text-lia-text-disabled">{t('confidenceMetric')}</span>
                   <p className="font-bold font-inter text-lia-text-primary">{lastResult ? (lastResult.confidence * 100).toFixed(0) + "%" : "-"}</p>
                 </div>
               </div>
@@ -184,23 +185,23 @@ export function TestDebugPanel({ agent, open, onClose }: TestDebugPanelProps) {
             <div className={cn(cardStyles.flat, "p-3")}>
               <div className="flex items-center gap-1.5 mb-2">
                 <DollarSign className="w-3.5 h-3.5 text-lia-text-disabled" />
-                <span className="text-xs font-semibold text-lia-text-primary">Consumo da sessao</span>
+                <span className="text-xs font-semibold text-lia-text-primary">{t('sessionUsage')}</span>
               </div>
               <div className="grid grid-cols-2 gap-2 text-xs">
                 <div>
-                  <span className="text-lia-text-disabled">Total tokens</span>
+                  <span className="text-lia-text-disabled">{t('totalTokens')}</span>
                   <p className="font-bold font-inter text-lia-text-primary">{totalTokens}</p>
                 </div>
                 <div>
-                  <span className="text-lia-text-disabled">Custo estimado</span>
+                  <span className="text-lia-text-disabled">{t('estimatedCost')}</span>
                   <p className="font-bold font-inter text-lia-text-primary">~R${estimatedCost}</p>
                 </div>
                 <div>
-                  <span className="text-lia-text-disabled">Latencia total</span>
+                  <span className="text-lia-text-disabled">{t('totalLatency')}</span>
                   <p className="font-bold font-inter text-lia-text-primary">{(totalLatency / 1000).toFixed(1)}s</p>
                 </div>
                 <div>
-                  <span className="text-lia-text-disabled">Interacoes</span>
+                  <span className="text-lia-text-disabled">{t('interactions')}</span>
                   <p className="font-bold font-inter text-lia-text-primary">{results.length}</p>
                 </div>
               </div>
@@ -210,7 +211,7 @@ export function TestDebugPanel({ agent, open, onClose }: TestDebugPanelProps) {
             <div className={cn(cardStyles.flat, "p-3")}>
               <div className="flex items-center gap-1.5 mb-1">
                 <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
-                <span className="text-xs font-semibold text-lia-text-primary">Compliance</span>
+                <span className="text-xs font-semibold text-lia-text-primary">{t('compliance')}</span>
               </div>
               <div className="flex flex-wrap gap-1">
                 <span className={cn(badgeStyles.success, "text-[10px]")}>FairnessGuard OK</span>

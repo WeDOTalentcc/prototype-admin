@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState, useEffect } from"react"
+import { useTranslations } from "next-intl"
 import {
   ChevronLeft, ChevronRight, ThumbsUp, ThumbsDown, MessageSquare,
   X, CheckCircle, Edit3, Loader2, Users
@@ -56,8 +57,7 @@ const MATCH_BADGE: Record<string, { label: string; style: string }> = {
   no: { label:"No Match", style: badgeStyles.error },
 }
 
-const REJECTION_REASONS = ["Stack técnica diferente do necessário","Senioridade insuficiente","Apenas experiência com CRUD/e-commerce","Localização incompatível","Experiência não relevante para a posição",
-]
+const REJECTION_REASON_KEYS = ["differentTechStack","insufficientSeniority","crudOnly","incompatibleLocation","irrelevantExperience"] as const
 
 // ---------- Main Component ----------
 
@@ -71,6 +71,7 @@ interface CalibrationCardModalProps {
 export default function CalibrationCardModal({
   agentId, isOpen, onClose, onCalibrationComplete,
 }: CalibrationCardModalProps) {
+  const t = useTranslations('agents.calibration')
   const [candidates, setCandidates] = useState<CalibrationCandidate[]>([])
   const [currentIdx, setCurrentIdx] = useState(0)
   const [approvedCount, setApprovedCount] = useState(0)
@@ -95,13 +96,13 @@ export default function CalibrationCardModal({
     try {
       const res = await fetch(`/api/backend-proxy/sourcing-agents/${agentId}/calibration-candidates?limit=15`)
       if (!res.ok) {
-        throw new Error(`Erro ${res.status}: ${res.statusText}`)
+        throw new Error(`Error ${res.status}: ${res.statusText}`)
       }
       const data = await res.json()
       setCandidates(data?.candidates || [])
     } catch (err) {
       console.error("Failed to load calibration candidates:", err)
-      setLoadError(err instanceof Error ? err.message : "Erro ao carregar candidatos")
+      setLoadError(err instanceof Error ? err.message : t('errorLoading'))
     } finally {
       setIsLoading(false)
     }
@@ -111,7 +112,7 @@ export default function CalibrationCardModal({
 
   const handleApprove = async () => {
     if (!candidate || isSubmitting) return
-    const ok = await submitFeedback("positive","Perfil aprovado para o funil")
+    const ok = await submitFeedback("positive", t('profileApproved'))
     if (ok) {
       setApprovedCount(prev => prev + 1)
       advanceOrComplete()
@@ -143,12 +144,12 @@ export default function CalibrationCardModal({
         }),
       })
       if (!res.ok) {
-        throw new Error(`Erro ${res.status}`)
+        throw new Error(`Error ${res.status}`)
       }
       return true
     } catch (err) {
       console.error("Feedback failed:", err)
-      toast.error("Erro ao enviar feedback", "O feedback não foi salvo. Tente novamente.")
+      toast.error(t('errorSendingFeedback'), t('feedbackNotSaved'))
       return false
     } finally {
       setIsSubmitting(false)
@@ -172,22 +173,22 @@ export default function CalibrationCardModal({
     return (
       <Dialog open onOpenChange={onClose}>
         <DialogContent className="max-w-md">
-          <DialogTitle className="sr-only">Calibração concluída</DialogTitle>
-          <DialogDescription className="sr-only">Resultado da calibração do agente</DialogDescription>
+          <DialogTitle className="sr-only">{t('calibrationCompleteTitle')}</DialogTitle>
+          <DialogDescription className="sr-only">{t('calibrationResultDesc')}</DialogDescription>
           <div className="flex flex-col items-center py-8">
             <CheckCircle className="w-16 h-16 text-green-500 mb-4" />
-            <h3 className={textStyles.h3}>Calibração concluída!</h3>
+            <h3 className={textStyles.h3}>{t('calibrationComplete')}</h3>
             <p className={`${textStyles.body} text-center mt-2`}>
-              {approvedCount} aprovados · {rejectedCount} rejeitados
+              {approvedCount} {t('approvedCount')} · {rejectedCount} {t('rejectedCount')}
             </p>
             <p className={`${textStyles.caption} text-center mt-1`}>
-              O agente aprendeu seu critério e vai buscar candidatos similares aos aprovados.
+              {t('agentLearnedCriteria')}
             </p>
             <Button
               className={`${buttonStyles.primary} mt-6`}
               onClick={() => onCalibrationComplete(agentId)}
             >
-              Fechar e aguardar candidatos
+              {t('closeAndWait')}
             </Button>
           </div>
         </DialogContent>
@@ -198,15 +199,15 @@ export default function CalibrationCardModal({
   return (
     <Dialog open onOpenChange={onClose}>
       <DialogContent className="max-w-5xl max-h-[90vh] overflow-hidden p-0">
-        <DialogTitle className="sr-only">Calibração de candidatos</DialogTitle>
-        <DialogDescription className="sr-only">Avalie candidatos para calibrar o agente de sourcing</DialogDescription>
+        <DialogTitle className="sr-only">{t('candidateCalibration')}</DialogTitle>
+        <DialogDescription className="sr-only">{t('evaluateCandidatesDesc')}</DialogDescription>
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-3">
           <button onClick={onClose} className="flex items-center gap-1 text-sm text-lia-text-secondary hover:text-lia-text-primary">
-            <ChevronLeft className="w-4 h-4" /> Voltar
+            <ChevronLeft className="w-4 h-4" /> {t('back')}
           </button>
           <span className={textStyles.caption}>
-            Perfil {currentIdx + 1}/{candidates.length}
+            {t('profile')} {currentIdx + 1}/{candidates.length}
           </span>
           <div className="flex items-center gap-3">
             {currentIdx > 0 && (
@@ -226,20 +227,20 @@ export default function CalibrationCardModal({
         {isLoading ? (
           <div className="flex flex-col items-center justify-center h-96 gap-3">
             <Loader2 className="w-8 h-8 animate-spin text-lia-text-disabled" />
-            <p className={textStyles.caption}>Carregando perfis para calibração...</p>
+            <p className={textStyles.caption}>{t('loadingProfiles')}</p>
           </div>
         ) : loadError ? (
           <div className="flex flex-col items-center justify-center h-96 gap-3 px-8">
             <div className="w-12 h-12 rounded-full bg-red-50 dark:bg-red-950/30 flex items-center justify-center">
               <X className="w-6 h-6 text-red-500" />
             </div>
-            <p className="text-sm font-medium text-lia-text-primary">Erro ao carregar candidatos</p>
+            <p className="text-sm font-medium text-lia-text-primary">{t('errorLoadingCandidates')}</p>
             <p className="text-xs text-lia-text-secondary text-center">{loadError}</p>
             <button
               onClick={loadCandidates}
               className="mt-2 px-4 py-2 rounded-lg text-xs font-medium bg-lia-bg-tertiary text-lia-text-primary hover:bg-lia-bg-secondary border border-lia-border-subtle"
             >
-              Tentar novamente
+              {t('tryAgain')}
             </button>
           </div>
         ) : candidates.length === 0 ? (
@@ -247,20 +248,20 @@ export default function CalibrationCardModal({
             <div className="w-12 h-12 rounded-full bg-amber-50 dark:bg-amber-950/30 flex items-center justify-center">
               <Users className="w-6 h-6 text-amber-500" />
             </div>
-            <p className="text-sm font-medium text-lia-text-primary">Nenhum candidato encontrado</p>
+            <p className="text-sm font-medium text-lia-text-primary">{t('noCandidateFound')}</p>
             <p className="text-xs text-lia-text-secondary text-center">
-              Não encontramos candidatos compatíveis com a estratégia deste agente no momento. Tente ajustar os critérios de busca ou aguarde novos perfis serem adicionados ao banco.
+              {t('noCandidateFoundDesc')}
             </p>
             <button
               onClick={onClose}
               className="mt-2 px-4 py-2 rounded-lg text-xs font-medium bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover"
             >
-              Fechar
+              {t('close')}
             </button>
           </div>
         ) : !candidate ? (
           <div className="flex items-center justify-center h-96">
-            <p className={textStyles.caption}>Carregando perfil...</p>
+            <p className={textStyles.caption}>{t('loadingProfile')}</p>
           </div>
         ) : (
           <div className="flex h-[70vh]">
@@ -297,20 +298,20 @@ export default function CalibrationCardModal({
               {/* Experience stats */}
               <div className="flex gap-6 mb-4 py-3 border-y border-lia-border-subtle">
                 <div>
-                  <p className={textStyles.caption}>Total experiência</p>
+                  <p className={textStyles.caption}>{t('totalExperience')}</p>
                   <p className={textStyles.subtitle}>{candidate.total_experience_years}a</p>
                 </div>
               </div>
 
               {/* Experiences */}
               <div>
-                <h4 className={`${textStyles.label} mb-2`}>Experiências</h4>
+                <h4 className={`${textStyles.label} mb-2`}>{t('experiences')}</h4>
                 <div className="space-y-3">
                   {candidate.experiences?.slice(0, 4).map((exp, i) => (
                     <div key={i} className="border-l-2 border-lia-border-subtle pl-3">
                       <p className={textStyles.subtitle}>{exp.title}</p>
                       <p className={textStyles.caption}>
-                        {exp.company} · {exp.start_date} – {exp.end_date ||"Atual"}
+                        {exp.company} · {exp.start_date} – {exp.end_date || t('current')}
                         {exp.duration_years > 0 && ` · ${exp.duration_years}a`}
                       </p>
                       {exp.description && (
@@ -326,7 +327,7 @@ export default function CalibrationCardModal({
               {/* Education */}
               {candidate.education?.length > 0 && (
                 <div className="mt-4">
-                  <h4 className={`${textStyles.label} mb-2`}>Educação</h4>
+                  <h4 className={`${textStyles.label} mb-2`}>{t('education')}</h4>
                   {candidate.education.slice(0, 2).map((edu, i) => (
                     <div key={i} className="mb-1">
                       <p className={textStyles.body}>{edu.degree} — {edu.field}</p>
@@ -341,9 +342,9 @@ export default function CalibrationCardModal({
             <div className="w-1/2 flex flex-col">
               <div className="flex-1 overflow-y-auto p-6">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className={textStyles.h4}>Por que combinamos este perfil</h3>
+                  <h3 className={textStyles.h4}>{t('whyWeMatched')}</h3>
                   <button className="text-sm text-lia-text-tertiary hover:text-lia-text-secondary flex items-center gap-1">
-                    <Edit3 className="w-3.5 h-3.5" /> Editar Critérios
+                    <Edit3 className="w-3.5 h-3.5" /> {t('editCriteria')}
                   </button>
                 </div>
 
@@ -371,28 +372,28 @@ export default function CalibrationCardModal({
                   disabled={isSubmitting}
                 >
                   {isSubmitting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <ThumbsUp className="w-4 h-4 mr-2" />}
-                  Aprovar
+                  {t('approve')}
                 </Button>
                 <Button
                   className={`w-full ${buttonStyles.outline} border-red-300 text-red-600 hover:bg-red-50`}
                   onClick={() => setShowRejectModal(true)}
                   disabled={isSubmitting}
                 >
-                  <ThumbsDown className="w-4 h-4 mr-2" /> Rejeitar
+                  <ThumbsDown className="w-4 h-4 mr-2" /> {t('reject')}
                 </Button>
                 {!showCommentInput ? (
                   <button
                     onClick={() => setShowCommentInput(true)}
                     className="w-full flex items-center justify-center gap-1 text-sm text-lia-text-tertiary hover:text-lia-text-secondary py-1"
                   >
-                    <MessageSquare className="w-3.5 h-3.5" /> Adicionar comentário
+                    <MessageSquare className="w-3.5 h-3.5" /> {t('addComment')}
                   </button>
                 ) : (
                   <div>
                     <textarea
                       value={comment}
                       onChange={e => setComment(e.target.value)}
-                      placeholder="Comentário para o agente aprender..."
+                      placeholder={t('commentPlaceholder') as string}
                       rows={2}
                       className="w-full border border-lia-border-default rounded-xl px-3 py-2 text-sm resize-none"
                     />
@@ -407,10 +408,10 @@ export default function CalibrationCardModal({
         <div className="flex items-center justify-between px-6 py-3 border-t border-lia-border-subtle bg-lia-bg-secondary">
           <div className="flex items-center gap-4">
             <span className={textStyles.caption}>
-              Aprovados: <strong>{approvedCount}/{MIN_APPROVALS} mín.</strong>
+              {t('approvedLabel')}: <strong>{approvedCount}/{MIN_APPROVALS} {t('minAbbr')}</strong>
             </span>
             <span className={textStyles.caption}>
-              Rejeitados: {rejectedCount}
+              {t('rejectedLabel')}: {rejectedCount}
             </span>
           </div>
           <div className="flex items-center gap-2">
@@ -418,14 +419,14 @@ export default function CalibrationCardModal({
               onClick={onClose}
               className="text-sm text-lia-text-tertiary hover:text-lia-text-secondary"
             >
-              Pular calibração
+              {t('skipCalibration')}
             </button>
             {canFinish && (
               <Button
                 className={buttonStyles.primary}
                 onClick={() => onCalibrationComplete(agentId)}
               >
-                Fechar e aguardar ✓
+                {t('closeAndWaitCheck')}
               </Button>
             )}
           </div>
@@ -452,23 +453,24 @@ function RejectReasonModal({
   onSelect: (reason: string) => void
   onClose: () => void
 }) {
+  const t = useTranslations('agents.calibration')
   const [customReason, setCustomReason] = useState("")
 
   return (
     <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-[60]">
       <div className="bg-white rounded-lg shadow-xl max-w-sm w-full p-5">
-        <h4 className={textStyles.h4}>Por que rejeitar?</h4>
+        <h4 className={textStyles.h4}>{t('whyReject')}</h4>
         <p className={`${textStyles.caption} mb-3`}>
-          Sua resposta ajuda o agente a melhorar as próximas buscas.
+          {t('helpImproveSearches')}
         </p>
         <div className="space-y-2">
-          {REJECTION_REASONS.map(reason => (
+          {REJECTION_REASON_KEYS.map(key => (
             <button
-              key={reason}
-              onClick={() => onSelect(reason)}
+              key={key}
+              onClick={() => onSelect(t(`rejectionReasons.${key}`))}
               className="w-full text-left px-3 py-2 rounded-xl text-sm hover:bg-lia-bg-tertiary border border-lia-border-subtle transition-colors"
             >
-              {reason}
+              {t(`rejectionReasons.${key}`)}
             </button>
           ))}
           <div className="pt-2">
@@ -476,7 +478,7 @@ function RejectReasonModal({
               type="text"
               value={customReason}
               onChange={e => setCustomReason(e.target.value)}
-              placeholder="Outro motivo..."
+              placeholder={t('otherReason') as string}
               className="w-full border border-lia-border-default rounded-xl px-3 py-2 text-sm"
               onKeyDown={e => e.key ==="Enter" && customReason.trim() && onSelect(customReason.trim())}
             />
@@ -484,7 +486,7 @@ function RejectReasonModal({
         </div>
         <div className="flex justify-end mt-3">
           <button onClick={onClose} className="text-sm text-lia-text-tertiary hover:text-lia-text-secondary">
-            Cancelar
+            {t('cancel')}
           </button>
         </div>
       </div>

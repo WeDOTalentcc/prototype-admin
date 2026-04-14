@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState, useEffect } from"react"
+import { useTranslations } from "next-intl"
 import {
   Bot, Play, Pause, Settings, RefreshCw, Search as SearchIcon,
   ThumbsUp, ThumbsDown, AlertCircle
@@ -45,10 +46,10 @@ interface TimelineEvent {
 
 // ---------- Constants ----------
 
-const STATUS_CONFIG = {
-  active: { label:"Ativo", style: badgeStyles.success },
-  paused: { label:"Pausado", style: badgeStyles.warning },
-  completed: { label:"Concluído", style: badgeStyles.error },
+const STATUS_CONFIG_KEYS = {
+  active: { labelKey: "statusActive" as const, style: badgeStyles.success },
+  paused: { labelKey: "statusPaused" as const, style: badgeStyles.warning },
+  completed: { labelKey: "statusCompleted" as const, style: badgeStyles.error },
 }
 
 // ---------- Main Component ----------
@@ -63,6 +64,7 @@ interface AgentsTabProps {
 export default function AgentsTab({
   jobId, talentPoolId, onStartCalibration, onCreateAgent,
 }: AgentsTabProps) {
+  const t = useTranslations('agents.agentsTab')
   const [agents, setAgents] = useState<SourcingAgent[]>([])
   const [timelines, setTimelines] = useState<Record<string, TimelineEvent[]>>({})
   const [isLoading, setIsLoading] = useState(true)
@@ -106,17 +108,17 @@ export default function AgentsTab({
   }
 
   if (isLoading) {
-    return <div className="flex items-center justify-center h-32"><p className={textStyles.caption}>Carregando agentes...</p></div>
+    return <div className="flex items-center justify-center h-32"><p className={textStyles.caption}>{t('loadingAgents')}</p></div>
   }
 
   if (agents.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-48">
         <Bot className="w-10 h-10 text-lia-text-disabled mb-3" />
-        <p className={textStyles.body}>Nenhum agente configurado</p>
-        <p className={textStyles.caption}>Crie um agente para buscar candidatos automaticamente.</p>
+        <p className={textStyles.body}>{t('noAgentsConfigured')}</p>
+        <p className={textStyles.caption}>{t('createAgentHint')}</p>
         <Button className={`${buttonStyles.primary} mt-4`} onClick={onCreateAgent}>
-          Criar Agente de Sourcing
+          {t('createSourcingAgent')}
         </Button>
       </div>
     )
@@ -147,7 +149,8 @@ function AgentPanel({
   onToggle: () => void
   onRecalibrate: () => void
 }) {
-  const status = STATUS_CONFIG[agent.status]
+  const t = useTranslations('agents.agentsTab')
+  const statusCfg = STATUS_CONFIG_KEYS[agent.status]
   const strategy = agent.search_strategy
 
   return (
@@ -158,15 +161,15 @@ function AgentPanel({
           <div className="flex items-center gap-2">
             <Bot className="w-5 h-5 text-lia-text-secondary" />
             <span className={textStyles.subtitle}>{agent.agent_name}</span>
-            <Badge className={status.style}>{status.label}</Badge>
+            <Badge className={statusCfg.style}>{t(statusCfg.labelKey)}</Badge>
             <span className={textStyles.caption}>v{agent.calibration_v}</span>
           </div>
           <div className="flex items-center gap-2">
-            <Button className={buttonStyles.outline} onClick={onToggle} title={agent.status ==="active" ?"Pausar" :"Retomar"}>
+            <Button className={buttonStyles.outline} onClick={onToggle} title={agent.status ==="active" ? t('pause') : t('resume')}>
               {agent.status ==="active" ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
             </Button>
             <Button className={buttonStyles.outline} onClick={onRecalibrate}>
-              <RefreshCw className="w-3.5 h-3.5 mr-1" /> Recalibrar
+              <RefreshCw className="w-3.5 h-3.5 mr-1" /> {t('recalibrate')}
             </Button>
           </div>
         </div>
@@ -185,15 +188,15 @@ function AgentPanel({
 
         {/* Stats */}
         <div className="flex items-center gap-6 text-sm text-lia-text-secondary mb-3 py-2 border-y border-lia-border-subtle">
-          <span title="Perfis analisados"><SearchIcon className="w-3.5 h-3.5 inline mr-1" />{agent.profiles_viewed}</span>
-          <span title="Aprovados"><ThumbsUp className="w-3.5 h-3.5 inline mr-1" />{agent.profiles_approved}</span>
-          <span title="Rejeitados"><ThumbsDown className="w-3.5 h-3.5 inline mr-1" />{agent.profiles_rejected}</span>
+          <span title={t('profilesAnalyzed')}><SearchIcon className="w-3.5 h-3.5 inline mr-1" />{agent.profiles_viewed}</span>
+          <span title={t('approved')}><ThumbsUp className="w-3.5 h-3.5 inline mr-1" />{agent.profiles_approved}</span>
+          <span title={t('rejected')}><ThumbsDown className="w-3.5 h-3.5 inline mr-1" />{agent.profiles_rejected}</span>
         </div>
 
         {/* Timeline */}
         {timeline.length > 0 && (
           <div>
-            <h4 className={`${textStyles.label} mb-2`}>Atividade recente</h4>
+            <h4 className={`${textStyles.label} mb-2`}>{t('recentActivity')}</h4>
             <div className="space-y-2 max-h-48 overflow-y-auto">
               {timeline.map(event => (
                 <div key={event.id} className="flex items-start gap-2 text-sm">
@@ -202,12 +205,12 @@ function AgentPanel({
                     <p className={textStyles.bodySmall}>{event.reason}</p>
                     {event.criteria.length > 0 && (
                       <p className={textStyles.caption}>
-                        Critérios: {event.criteria.join(",")}
+                        {t('criteria')}: {event.criteria.join(",")}
                       </p>
                     )}
                     {event.created_at && (
                       <p className={textStyles.caption}>
-                        {new Date(event.created_at).toLocaleDateString("pt-BR", { day:"2-digit", month:"2-digit", hour:"2-digit", minute:"2-digit" })}
+                        {new Date(event.created_at).toLocaleDateString(undefined, { day:"2-digit", month:"2-digit", hour:"2-digit", minute:"2-digit" })}
                       </p>
                     )}
                   </div>

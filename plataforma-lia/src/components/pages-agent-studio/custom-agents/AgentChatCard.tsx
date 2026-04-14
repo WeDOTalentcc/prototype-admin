@@ -7,7 +7,6 @@ import { cn } from "@/lib/utils"
 import { cardStyles, badgeStyles } from "@/lib/design-tokens"
 import { BetaBadge } from "@/components/ui/beta-badge"
 import type { CustomAgent } from "./types"
-import { CATEGORY_LABELS } from "./types"
 
 interface AgentChatCardProps {
   agent: CustomAgent
@@ -17,7 +16,7 @@ interface AgentChatCardProps {
 
 export function AgentChatCard({ agent, deploymentCount = 0, onViewDetails }: AgentChatCardProps) {
   const t = useTranslations('agents.customAgents')
-  const domainLabel = CATEGORY_LABELS[agent.domain as keyof typeof CATEGORY_LABELS] || agent.domain
+  const domainLabel = t('categories.' + agent.domain) || agent.domain
   const statusBadge = agent.status === "active" ? badgeStyles.success :
                       agent.status === "paused" ? badgeStyles.warning :
                       badgeStyles.default
@@ -33,7 +32,7 @@ export function AgentChatCard({ agent, deploymentCount = 0, onViewDetails }: Age
             <p className="text-sm font-semibold text-lia-text-primary">{agent.name}</p>
             <div className="flex items-center gap-1.5 mt-0.5">
               <span className={cn(badgeStyles.default, "text-[10px]")}>{domainLabel}</span>
-              <span className={cn(statusBadge, "text-[10px]")}>{agent.status}</span>
+              <span className={cn(statusBadge, "text-[10px]")}>{t('statuses.' + agent.status) || agent.status}</span>
             </div>
           </div>
         </div>
@@ -117,7 +116,7 @@ export function MetricsSummaryCard({
         </div>
         <div className={cn(cardStyles.flat, "p-2")}>
           <p className="text-[10px] text-lia-text-disabled uppercase">{t('tokensMetric')}</p>
-          <p className="text-lg font-bold font-inter text-lia-text-primary">{total_tokens.toLocaleString("pt-BR")}</p>
+          <p className="text-lg font-bold font-inter text-lia-text-primary">{total_tokens.toLocaleString()}</p>
         </div>
         <div className={cn(cardStyles.flat, "p-2")}>
           <p className="text-[10px] text-lia-text-disabled uppercase">{t('estimatedCost')}</p>
@@ -133,7 +132,7 @@ export function MetricsSummaryCard({
               <div key={a.agent_id} className="flex items-center justify-between text-xs">
                 <span className="text-lia-text-primary">{i + 1}. {a.agent_name}</span>
                 <span className="text-[10px] text-lia-text-disabled">
-                  {a.execution_count} {t('execLabel')} · {a.total_tokens.toLocaleString("pt-BR")} tkn
+                  {a.execution_count} {t('execLabel')} · {a.total_tokens.toLocaleString()} tkn
                 </span>
               </div>
             ))}
