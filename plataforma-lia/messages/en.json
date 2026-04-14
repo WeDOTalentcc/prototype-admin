@@ -2970,7 +2970,18 @@
       "permAdmin": "Administrator",
       "permAnalytics": "Analytics",
       "createUser": "Create User",
-      "saveChanges": "Save Changes"
+      "saveChanges": "Save Changes",
+      "roleAdmin": "Administrator",
+      "roleRecruiter": "Recruiter",
+      "roleManager": "Manager",
+      "roleViewer": "Viewer",
+      "errorLoadUsers": "Error loading users",
+      "userCreatedSuccess": "User created successfully! An invitation email has been sent to {email} with instructions to activate the account.",
+      "inviteResentSuccess": "Invitation resent successfully to {email}!",
+      "errorSaveUser": "Error saving user",
+      "errorResendInvite": "Error resending invitation",
+      "confirmDeleteUser": "Are you sure you want to delete this user?",
+      "errorDeleteUser": "Error deleting user"
     },
     "departments": {
       "title": "Departments",

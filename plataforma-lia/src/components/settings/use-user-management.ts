@@ -1,10 +1,20 @@
 "use client"
 
 import { useState, useMemo, useEffect, useCallback } from "react"
+import { useTranslations } from "next-intl"
 import { useSCIMConfig } from '@/hooks/company/use-scim-config'
 import { useCurrentCompany } from '@/hooks/company/use-current-company'
 import { badgeStyles } from '@/lib/design-tokens'
 import type { UserData } from './user-management-types'
+
+function mapRoleToApi(role?: string): string {
+  if (!role) return 'viewer'
+  const lower = role.toLowerCase()
+  if (lower === 'admin' || lower.includes('admin')) return 'admin'
+  if (lower === 'manager' || lower.includes('gestor') || lower.includes('manager')) return 'manager'
+  if (lower === 'recruiter' || lower.includes('recrut') || lower.includes('recruit')) return 'recruiter'
+  return 'viewer'
+}
 
 const EMPTY_FORM: Partial<UserData> = {
   name: '',
@@ -21,6 +31,7 @@ const EMPTY_FORM: Partial<UserData> = {
 }
 
 export function useUserManagement() {
+  const t = useTranslations("settings")
   const [users, setUsers] = useState<UserData[]>([])
   const [selectedUser, setSelectedUser] = useState<UserData | null>(null)
   const [isCreating, setIsCreating] = useState(false)
@@ -54,7 +65,7 @@ export function useUserManagement() {
         email: u.email || '',
         phone: '',
         whatsapp: '',
-        role: u.role === 'admin' ? 'Administrador' : u.role === 'recruiter' ? 'Recrutador' : u.role === 'manager' ? 'Gestor' : 'Visualizador',
+        role: u.role === 'admin' ? t('users.roleAdmin') : u.role === 'recruiter' ? t('users.roleRecruiter') : u.role === 'manager' ? t('users.roleManager') : t('users.roleViewer'),
         department: 'Talent Acquisition',
         position: u.role,
         status: u.status === 'active' || !u.status ? 'ativo' : u.status === 'inactive' ? 'inativo' : 'pendente',
@@ -69,11 +80,11 @@ export function useUserManagement() {
       }))
       setUsers(mappedUsers as UserData[])
     } catch {
-      setError('Erro ao carregar usuários')
+      setError(t('users.errorLoadUsers'))
     } finally {
       setIsLoading(false)
     }
-  }, [effectiveCompanyId])
+  }, [effectiveCompanyId, t])
 
   useEffect(() => {
     fetchUsers()
@@ -132,9 +143,7 @@ export function useUserManagement() {
           body: JSON.stringify({
             email: formData.email,
             name: formData.name,
-            role: formData.role?.toLowerCase().includes('admin') ? 'admin' : 
-                  formData.role?.toLowerCase().includes('gestor') ? 'manager' :
-                  formData.role?.toLowerCase().includes('recrutador') ? 'recruiter' : 'viewer',
+            role: mapRoleToApi(formData.role),
             permissions: formData.permissions || []
           })
         })
@@ -143,7 +152,7 @@ export function useUserManagement() {
           throw new Error(error.detail || error.details?.detail || 'Failed to create user')
         }
         await fetchUsers()
-        setSuccessMessage(`Usuário criado com sucesso! Um email de convite foi enviado para ${formData.email} com instruções para ativar a conta.`)
+        setSuccessMessage(t('users.userCreatedSuccess', { email: formData.email || '' }))
         setTimeout(() => setSuccessMessage(null), 8000)
       } else if (selectedUser) {
         const response = await fetch(`/api/backend-proxy/company/users/${selectedUser.id}?company_id=${cid}`, {
@@ -151,9 +160,7 @@ export function useUserManagement() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             name: formData.name,
-            role: formData.role?.toLowerCase().includes('admin') ? 'admin' : 
-                  formData.role?.toLowerCase().includes('gestor') ? 'manager' :
-                  formData.role?.toLowerCase().includes('recrutador') ? 'recruiter' : 'viewer',
+            role: mapRoleToApi(formData.role),
             status: formData.status === 'ativo' ? 'active' : 'inactive',
             permissions: formData.permissions || []
           })
@@ -165,9 +172,9 @@ export function useUserManagement() {
       setIsEditing(false)
       setSelectedUser(null)
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : 'Erro ao salvar usuário')
+      alert(err instanceof Error ? err.message : t('users.errorSaveUser'))
     }
-  }, [effectiveCompanyId, isCreating, formData, selectedUser, fetchUsers])
+  }, [effectiveCompanyId, isCreating, formData, selectedUser, fetchUsers, t])
 
   const handleResendInvitation = useCallback(async (userId: string, userEmail: string) => {
     const cid = effectiveCompanyId || 'demo_company'
@@ -181,18 +188,18 @@ export function useUserManagement() {
         const error = await response.json()
         throw new Error(error.detail || error.details?.detail || 'Failed to resend invitation')
       }
-      setSuccessMessage(`Convite reenviado com sucesso para ${userEmail}!`)
+      setSuccessMessage(t('users.inviteResentSuccess', { email: userEmail }))
       setTimeout(() => setSuccessMessage(null), 5000)
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : 'Erro ao reenviar convite')
+      alert(err instanceof Error ? err.message : t('users.errorResendInvite'))
     } finally {
       setResendingInvite(null)
     }
-  }, [effectiveCompanyId])
+  }, [effectiveCompanyId, t])
 
   const handleDeleteUser = useCallback(async (userId: string) => {
     const cid = effectiveCompanyId || 'demo_company'
-    if (confirm('Tem certeza que deseja excluir este usuário?')) {
+    if (confirm(t('users.confirmDeleteUser'))) {
       try {
         const response = await fetch(`/api/backend-proxy/company/users/${userId}?company_id=${cid}`, {
           method: 'DELETE'
@@ -200,10 +207,10 @@ export function useUserManagement() {
         if (!response.ok) throw new Error('Failed to delete user')
         await fetchUsers()
       } catch {
-        alert('Erro ao excluir usuário')
+        alert(t('users.errorDeleteUser'))
       }
     }
-  }, [effectiveCompanyId, fetchUsers])
+  }, [effectiveCompanyId, fetchUsers, t])
 
   const getStatusColor = useCallback((status: string) => {
     switch (status) {

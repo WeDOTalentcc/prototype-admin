@@ -2970,7 +2970,18 @@
       "permAdmin": "Administrador",
       "permAnalytics": "Analytics",
       "createUser": "Criar Usuário",
-      "saveChanges": "Salvar Alterações"
+      "saveChanges": "Salvar Alterações",
+      "roleAdmin": "Administrador",
+      "roleRecruiter": "Recrutador",
+      "roleManager": "Gestor",
+      "roleViewer": "Visualizador",
+      "errorLoadUsers": "Erro ao carregar usuários",
+      "userCreatedSuccess": "Usuário criado com sucesso! Um email de convite foi enviado para {email} com instruções para ativar a conta.",
+      "inviteResentSuccess": "Convite reenviado com sucesso para {email}!",
+      "errorSaveUser": "Erro ao salvar usuário",
+      "errorResendInvite": "Erro ao reenviar convite",
+      "confirmDeleteUser": "Tem certeza que deseja excluir este usuário?",
+      "errorDeleteUser": "Erro ao excluir usuário"
     },
     "departments": {
       "title": "Departamentos",
