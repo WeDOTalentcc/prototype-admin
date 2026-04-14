@@ -50,6 +50,26 @@ interface AgentControlCenterProps {
   className?: string
 }
 
+// ML Predictions types
+interface PredictionVacancy {
+  job_id: string
+  title: string
+  seniority: string
+  days_open: number
+  predicted_ttf_days: number
+  confidence: number
+  source: string
+  factors: string[]
+  is_overdue: boolean
+}
+interface MLPredictions {
+  vacancies: PredictionVacancy[]
+  company_avg_ttf: number
+  market_avg_ttf: number
+  total_open: number
+  overdue_count: number
+}
+
 // Quality dashboard types
 interface QualityAgent {
   agent_id: string
@@ -77,6 +97,7 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
   const [proactiveAlerts, setProactiveAlerts] = useState<ProactiveAlert[]>([])
   const [qualityData, setQualityData] = useState<QualityDashboard | null>(null)
   const [qualityPeriod, setQualityPeriod] = useState<'7d' | '30d' | '90d'>('7d')
+  const [predictions, setPredictions] = useState<MLPredictions | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
   const [selectedAgent, setSelectedAgent] = useState<AgentSummary | null>(null)
@@ -98,6 +119,17 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
       // non-blocking
     }
   }, [qualityPeriod])
+
+  const fetchPredictions = useCallback(async () => {
+    try {
+      const res = await fetch('/api/backend-proxy/analytics/ml-predictions')
+      if (res.ok) {
+        setPredictions(await res.json())
+      }
+    } catch {
+      // non-blocking
+    }
+  }, [])
 
   const fetchData = useCallback(async () => {
     setIsLoading(true)
@@ -127,6 +159,7 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
   useEffect(() => {
     fetchData()
     fetchQualityData()
+    fetchPredictions()
     const interval = setInterval(fetchData, 30000)
     return () => clearInterval(interval)
   }, [fetchData, fetchQualityData])
@@ -352,6 +385,68 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
                 </table>
               </div>
             )}
+          </div>
+        )}
+
+        {/* ML Predictions Section */}
+        {predictions && predictions.vacancies.length > 0 && (
+          <div className="mb-6">
+            <h3 className="text-sm font-medium text-lia-text-secondary flex items-center gap-2 mb-3">
+              <Clock className="w-4 h-4" />
+              Previsão Time-to-Fill
+            </h3>
+            <div className="grid grid-cols-3 gap-3 mb-4">
+              <MetricCard
+                icon={<Target className="w-4 h-4" />}
+                title="Média da Empresa"
+                value={`${predictions.company_avg_ttf}d`}
+                accentColor="var(--wedo-cyan)"
+              />
+              <MetricCard
+                icon={<Users className="w-4 h-4" />}
+                title="Média de Mercado"
+                value={`${predictions.market_avg_ttf}d`}
+                accentColor="var(--lia-text-secondary)"
+              />
+              <MetricCard
+                icon={<AlertTriangle className="w-4 h-4" />}
+                title="Vagas Atrasadas"
+                value={predictions.overdue_count}
+                accentColor={predictions.overdue_count > 0 ? 'var(--status-error)' : 'var(--wedo-green-bright)'}
+              />
+            </div>
+            <div className="rounded-lg border border-lia-border-subtle overflow-hidden">
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="bg-lia-bg-secondary dark:bg-lia-bg-tertiary">
+                    <th className="text-left p-2 font-medium text-lia-text-disabled">Vaga</th>
+                    <th className="text-right p-2 font-medium text-lia-text-disabled">Dias Abertos</th>
+                    <th className="text-right p-2 font-medium text-lia-text-disabled">Previsão</th>
+                    <th className="text-right p-2 font-medium text-lia-text-disabled">Confiança</th>
+                    <th className="text-center p-2 font-medium text-lia-text-disabled">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-lia-border-subtle">
+                  {predictions.vacancies.slice(0, 10).map(v => (
+                    <tr key={v.job_id} className={`hover:bg-lia-bg-secondary/50 ${v.is_overdue ? 'bg-status-error/5' : ''}`}>
+                      <td className="p-2">
+                        <div className="font-medium text-lia-text-primary truncate max-w-[200px]">{v.title}</div>
+                        <div className="text-lia-text-disabled">{v.seniority}</div>
+                      </td>
+                      <td className="p-2 text-right text-lia-text-secondary">{v.days_open}d</td>
+                      <td className="p-2 text-right text-lia-text-secondary">{v.predicted_ttf_days}d</td>
+                      <td className="p-2 text-right text-lia-text-secondary">{(v.confidence * 100).toFixed(0)}%</td>
+                      <td className="p-2 text-center">
+                        {v.is_overdue
+                          ? <span className="text-status-error font-medium">Atrasada</span>
+                          : <span className="text-wedo-green-bright">No prazo</span>
+                        }
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
 
