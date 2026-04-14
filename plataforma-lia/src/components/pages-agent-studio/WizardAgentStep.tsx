@@ -98,7 +98,7 @@ export default function WizardAgentStep({ jobTitle, onActivate, onSkip }: Wizard
             }`}
           >
             <span className="text-lg">✨</span>
-            <p className="mt-1">Auto</p>
+            <p className="mt-1">{t('sectors.auto')}</p>
           </button>
         </div>
       </div>

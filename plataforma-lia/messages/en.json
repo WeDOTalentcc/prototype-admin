@@ -1798,7 +1798,8 @@
         "manufacturing": "Manufacturing",
         "healthcare": "Healthcare",
         "retail": "Retail",
-        "transportation": "Transportation"
+        "transportation": "Transportation",
+        "auto": "Auto"
       },
       "auto": "Auto",
       "candidatesPerDay": "Candidates per day",
@@ -2126,7 +2127,12 @@
       "systemPromptPlaceholder": "Agent behavior instructions...",
       "allowedTools": "Allowed tools",
       "available": "available",
-      "runTest": "Run Test"
+      "runTest": "Run Test",
+      "model": "Model",
+      "fairnessGuardOk": "FairnessGuard OK",
+      "piiStripOk": "PII Strip OK",
+      "auditLogOk": "Audit Log OK",
+      "agentFallback": "Agent"
     },
     "digitalTwin": {
       "active": "Active",
@@ -2210,7 +2216,8 @@
       "awaitingResponse": "Awaiting candidate response via {channel}...",
       "phoneLabel": "phone",
       "candidateResponsePlaceholder": "Candidate response...",
-      "send": "Send"
+      "send": "Send",
+      "score": "Score"
     },
     "multiStrategy": {
       "title": "Intelligent Multi-Strategy Search",
@@ -2228,7 +2235,9 @@
       "list": "List",
       "candidate": "Candidate",
       "score": "Score",
-      "strategy": "Strategy"
+      "strategy": "Strategy",
+      "skills": "Skills",
+      "pool": "Pool"
     }
   },
   "common": {

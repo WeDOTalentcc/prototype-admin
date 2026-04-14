@@ -177,7 +177,7 @@ export function TestDebugPanel({ agent, open, onClose }: TestDebugPanelProps) {
                 </div>
               </div>
               {lastResult?.model_used && (
-                <p className="text-[10px] text-lia-text-disabled mt-1">Model: {lastResult.model_used}</p>
+                <p className="text-[10px] text-lia-text-disabled mt-1">{t('model')}: {lastResult.model_used}</p>
               )}
             </div>
 
@@ -214,9 +214,9 @@ export function TestDebugPanel({ agent, open, onClose }: TestDebugPanelProps) {
                 <span className="text-xs font-semibold text-lia-text-primary">{t('compliance')}</span>
               </div>
               <div className="flex flex-wrap gap-1">
-                <span className={cn(badgeStyles.success, "text-[10px]")}>FairnessGuard OK</span>
-                <span className={cn(badgeStyles.success, "text-[10px]")}>PII Strip OK</span>
-                <span className={cn(badgeStyles.success, "text-[10px]")}>Audit Log OK</span>
+                <span className={cn(badgeStyles.success, "text-[10px]")}>{t('fairnessGuardOk')}</span>
+                <span className={cn(badgeStyles.success, "text-[10px]")}>{t('piiStripOk')}</span>
+                <span className={cn(badgeStyles.success, "text-[10px]")}>{t('auditLogOk')}</span>
               </div>
             </div>
           </div>

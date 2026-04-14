@@ -205,7 +205,7 @@ export default function MultiStrategySearchPanel({
                 <Briefcase className="w-3.5 h-3.5 mr-1" /> + {t('job')}
               </Button>
               <Button className={buttonStyles.outline} onClick={() => { if (onAddToPool) onAddToPool(Array.from(selectedIds),"") }}>
-                <Database className="w-3.5 h-3.5 mr-1" /> + Pool
+                <Database className="w-3.5 h-3.5 mr-1" /> + {t('pool')}
               </Button>
               <Button className={buttonStyles.outline} onClick={() => { if (onAddToList) onAddToList(Array.from(selectedIds)) }}>
                 <Heart className="w-3.5 h-3.5 mr-1" /> + {t('list')}
@@ -234,7 +234,7 @@ export default function MultiStrategySearchPanel({
                 <th className={`py-2 px-3 text-left ${textStyles.labelSmall}`}>{t('candidate')}</th>
                 <th className={`py-2 px-3 text-left ${textStyles.labelSmall}`}>{t('score')}</th>
                 <th className={`py-2 px-3 text-left ${textStyles.labelSmall}`}>{t('strategy')}</th>
-                <th className={`py-2 px-3 text-left ${textStyles.labelSmall}`}>Skills</th>
+                <th className={`py-2 px-3 text-left ${textStyles.labelSmall}`}>{t('skills')}</th>
               </tr>
             </thead>
             <tbody>

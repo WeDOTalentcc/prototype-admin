@@ -78,7 +78,7 @@ export function ApprovalsList({ onReviewed }: ApprovalsListProps) {
             <div className="flex items-start justify-between">
               <div>
                 <p className="text-sm font-semibold text-lia-text-primary">
-                  {approval.agent_name || "Agent"}
+                  {approval.agent_name || t('agentFallback')}
                 </p>
                 <p className="text-[10px] text-lia-text-disabled">
                   {t('requestedBy', { name: approval.requested_by })}

@@ -153,7 +153,7 @@ export default function VoiceScreeningButton({
                 <CheckCircle className="w-12 h-12 text-green-500 mb-3" />
                 <p className={textStyles.h4}>{t('screeningComplete')}</p>
                 <p className={`${textStyles.body} mt-1`}>
-                  Score: <strong>{score}/100</strong>
+                  {t('score')}: <strong>{score}/100</strong>
                 </p>
                 <p className={textStyles.caption}>
                   {t('candidateMovedToScreened')}
