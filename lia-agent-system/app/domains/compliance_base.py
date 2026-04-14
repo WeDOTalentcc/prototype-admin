@@ -135,46 +135,85 @@ class ComplianceDomainPrompt(DomainPrompt):
     # LIA-P02: get_system_prompt com auto-injeção de blocos de compliance
     # ------------------------------------------------------------------
 
+    # Agent type classification for compliance block variant selection
+    _DECISION_DOMAINS = frozenset({
+        "pipeline", "pipeline_transition", "cv_screening", "sourcing",
+        "autonomous", "talent_pool", "recruiter_assistant",
+    })
+    _COMMUNICATION_DOMAINS = frozenset({
+        "communication", "onboarding",
+    })
+
+    @staticmethod
+    def _load_compliance_block() -> dict:
+        """Load compliance block YAML. Cached after first load."""
+        if not hasattr(ComplianceDomainPrompt, "_compliance_block_cache"):
+            import os
+            try:
+                import yaml
+                path = os.path.join(
+                    os.path.dirname(__file__), "..", "prompts", "shared", "compliance_block.yaml"
+                )
+                with open(path) as f:
+                    ComplianceDomainPrompt._compliance_block_cache = yaml.safe_load(f) or {}
+            except Exception as exc:
+                logger.warning("[Compliance] compliance_block.yaml not found: %s", exc)
+                ComplianceDomainPrompt._compliance_block_cache = {}
+        return ComplianceDomainPrompt._compliance_block_cache
+
+    def _get_agent_type(self) -> str:
+        """Determine agent type for compliance block variant selection."""
+        if self.domain_id in self._DECISION_DOMAINS:
+            return "decision"
+        if self.domain_id in self._COMMUNICATION_DOMAINS:
+            return "communication"
+        return "operational"
+
     def get_system_prompt(self, base_prompt: str = "") -> str:
         """
         Retorna o system prompt do domínio com blocos de compliance injetados automaticamente.
 
-        Blocos injetados:
-        - LGPD_COMPLIANCE_BLOCK: informações sobre processamento de dados
-        - NON_DISCRIMINATION_BLOCK: proibição de filtros discriminatórios
-        - DEFENSIVE_BLOCK: defesa contra jailbreak/prompt injection
-        - ANTI_SYCOPHANCY_BLOCK: prevenção de concordância acrítica
+        Loads compliance blocks from app/prompts/shared/compliance_block.yaml.
+        Selects variant (decision/communication/operational) based on domain_id.
+        Falls back to hardcoded blocks if YAML unavailable.
 
         LIA-P02: Auto-injeção garante que todos os domínios que herdam
         ComplianceDomainPrompt recebam blocos de compliance sem opt-in manual.
         Referência: EU AI Act Art. 13 — sistemas de alto risco devem ser
         transparentes sobre suas capacidades e limitações.
         """
-        required_blocks = self.get_required_prompt_blocks()
-
         try:
             from app.shared.prompts.interaction_patterns import (
                 ANTI_SYCOPHANCY_BLOCK,
-                DEFENSIVE_BLOCK,
             )
         except ImportError:
             ANTI_SYCOPHANCY_BLOCK = ""
-            DEFENSIVE_BLOCK = ""
 
-        # Build LGPD compliance block text
-        lgpd_block = (
-            "\n[COMPLIANCE LGPD/EU AI Act]\n"
-            "Este sistema processa dados pessoais em conformidade com a LGPD (Lei 13.709/2020) "
-            "e o EU AI Act 2024. Não colete ou exponha dados pessoais desnecessariamente. "
-            "Em decisões automatizadas de alto impacto, apresente explicação ao candidato (Art. 20 LGPD)."
-        ) if "LGPD_COMPLIANCE" in required_blocks else ""
+        # Load compliance blocks from YAML
+        yaml_blocks = self._load_compliance_block()
+        agent_type = self._get_agent_type()
+        variant = yaml_blocks.get(agent_type, {})
 
-        non_discrim_block = (
-            "\n[NÃO DISCRIMINAÇÃO]\n"
-            "Decisões de recrutamento devem ser baseadas em competências e fit cultural. "
-            "É proibido usar filtros de gênero, raça, cor, origem, religião ou idade "
-            "(CLT Art. 373-A, Lei 9.029/95, EU AI Act Annex III item 4)."
-        ) if "NON_DISCRIMINATION" in required_blocks else ""
+        lgpd_block = variant.get("lgpd", "")
+        fairness_block = variant.get("fairness", "")
+        bias_block = variant.get("bias", "")
+        audit_block = variant.get("audit", "")
+        defensive_block = yaml_blocks.get("defensive", "")
+
+        # Fallback if YAML not loaded
+        if not lgpd_block:
+            lgpd_block = (
+                "\n[COMPLIANCE LGPD/EU AI Act]\n"
+                "Este sistema processa dados pessoais em conformidade com a LGPD (Lei 13.709/2020) "
+                "e o EU AI Act 2024. Não colete ou exponha dados pessoais desnecessariamente."
+            )
+        if not fairness_block:
+            fairness_block = (
+                "\n[NÃO DISCRIMINAÇÃO]\n"
+                "Decisões de recrutamento devem ser baseadas em competências. "
+                "É proibido usar filtros de gênero, raça, cor, origem, religião ou idade "
+                "(CLT Art. 373-A, Lei 9.029/95)."
+            )
 
         # Assemble prompt
         parts = []
@@ -182,10 +221,14 @@ class ComplianceDomainPrompt(DomainPrompt):
             parts.append(base_prompt)
         if lgpd_block:
             parts.append(lgpd_block)
-        if non_discrim_block:
-            parts.append(non_discrim_block)
-        if DEFENSIVE_BLOCK:
-            parts.append(f"\n{DEFENSIVE_BLOCK}")
+        if fairness_block:
+            parts.append(fairness_block)
+        if bias_block:
+            parts.append(bias_block)
+        if audit_block:
+            parts.append(audit_block)
+        if defensive_block:
+            parts.append(defensive_block)
         if ANTI_SYCOPHANCY_BLOCK:
             parts.append(f"\n{ANTI_SYCOPHANCY_BLOCK}")
 
