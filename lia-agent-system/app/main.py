@@ -409,6 +409,41 @@ from pydantic import ValidationError as PydanticValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 
+# ---------------------------------------------------------------------------
+# LIAError handler — unified error hierarchy (P35-060)
+# ---------------------------------------------------------------------------
+from app.shared.errors import LIAError, LIAComplianceError
+
+
+@app.exception_handler(LIAComplianceError)
+async def lia_compliance_error_handler(request: FastAPIRequest, exc: LIAComplianceError):
+    """Compliance errors return 451 (Unavailable For Legal Reasons). Never silenced."""
+    request_id = getattr(request.state, "request_id", "unknown")
+    logger.warning(
+        "LIAComplianceError: code=%s message=%s [request_id=%s]",
+        exc.code, exc.message, request_id,
+    )
+    return JSONResponse(
+        status_code=451,
+        content={**exc.to_dict(), "request_id": request_id},
+    )
+
+
+@app.exception_handler(LIAError)
+async def lia_error_handler(request: FastAPIRequest, exc: LIAError):
+    """LIA platform errors return structured JSON with appropriate status code."""
+    request_id = getattr(request.state, "request_id", "unknown")
+    status = 400 if exc.recoverable else 500
+    logger.warning(
+        "LIAError: code=%s recoverable=%s [request_id=%s]",
+        exc.code, exc.recoverable, request_id,
+    )
+    return JSONResponse(
+        status_code=status,
+        content={**exc.to_dict(), "request_id": request_id},
+    )
+
+
 @app.exception_handler(StarletteHTTPException)
 async def http_exception_handler(request: FastAPIRequest, exc: StarletteHTTPException):
     request_id = getattr(request.state, "request_id", "unknown")
