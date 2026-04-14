@@ -180,8 +180,14 @@ function applyAuthHeaders(request: NextRequest, token: string): NextResponse {
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  if (pathname === '/') {
-    return intlMiddleware(request)
+  if (pathname === '/' || pathname.startsWith('/en/') || pathname === '/en') {
+    const base = getBaseUrl(request)
+    const ptPath = pathname === '/' || pathname === '/en'
+      ? '/pt/'
+      : '/pt/' + pathname.slice(4)
+    const response = NextResponse.redirect(new URL(ptPath, base))
+    response.cookies.set('NEXT_LOCALE', 'pt', { path: '/', maxAge: 60 * 60 * 24 * 365 })
+    return response
   }
 
   if (isStaticOrApiPath(pathname)) {
