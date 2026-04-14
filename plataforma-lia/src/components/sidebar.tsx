@@ -447,6 +447,7 @@ const RecentItemRow = React.memo(({
   onClick: (item: RecentItem) => void
   onRemove: (id: string, type: RecentItem['type']) => void
 }) => {
+  const t = useTranslations('sidebar')
   const config = RECENT_TYPE_CONFIG[item.type]
   const Icon = config.icon
 
@@ -466,7 +467,7 @@ const RecentItemRow = React.memo(({
           onRemove(item.id, item.type)
         }}
         className="absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none duration-150 p-0.5 rounded-md hover:bg-lia-interactive-active"
-        title="Remover dos recentes"
+        title={t("labels.removeFromRecent")}
       >
         <X className="w-3 h-3 text-lia-text-disabled" />
       </button>
@@ -643,7 +644,7 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
   return (
     <nav
       data-sidebar="true"
-      aria-label="Menu principal"
+      aria-label={t("labels.mainMenu")}
       className={cn(
  "bg-lia-bg-primary min-h-screen flex flex-col border-r border-lia-border-subtle relative font-sans",
         isTemporaryExpanded && "z-50"

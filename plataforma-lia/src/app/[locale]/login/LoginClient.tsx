@@ -137,7 +137,7 @@ export default function LoginPage() {
               target="_blank"
               rel="noopener noreferrer"
               className="text-lia-text-tertiary dark:text-lia-text-tertiary hover:text-lia-text-secondary dark:hover:text-lia-text-secondary transition-colors"
-              title="Website"
+              title={t("websiteLink")}
             >
               <Globe className="w-4 h-4" />
             </a>
@@ -146,7 +146,7 @@ export default function LoginPage() {
               target="_blank"
               rel="noopener noreferrer"
               className="text-lia-text-tertiary dark:text-lia-text-tertiary hover:text-lia-text-secondary dark:hover:text-lia-text-secondary transition-colors"
-              title="LinkedIn"
+              title={t("linkedinLink")}
             >
               <Linkedin className="w-4 h-4" />
             </a>
