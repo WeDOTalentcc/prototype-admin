@@ -275,7 +275,8 @@ class CommunicationService:
     ) -> dict[str, Any]:
         """
         Validate if a message can be sent to a candidate.
-        
+
+        Checks (in order): LGPD consent → opt-out → quarantine → rate limit → hours.
         Returns validation result with details about any blocking issues.
         """
         async with _get_db(db) as db:
@@ -285,7 +286,30 @@ class CommunicationService:
                 "warnings": [],
                 "blocks": []
             }
-            
+
+            # --- LGPD Consent Gate (fail-closed) ---
+            from app.domains.communication.services.consent_gate import CommunicationConsentGate
+
+            consent_gate = CommunicationConsentGate(db)
+            is_marketing = message_type.value in (
+                "initial_contact", "follow_up", "general",
+            )
+            consent_result = await consent_gate.check(
+                candidate_id, company_id, channel, is_marketing=is_marketing,
+            )
+            if not consent_result.allowed:
+                result["can_send"] = False
+                result["blocks"].append({
+                    "type": "lgpd_consent",
+                    "message": (
+                        f"Candidato não tem consentimento LGPD para {channel.value} "
+                        f"(motivo: {consent_result.reason})"
+                    ),
+                    "consent_type": consent_result.consent_type,
+                    "reason": consent_result.reason,
+                })
+                return result  # Consent block is final — skip remaining checks
+
             is_opted_out, opt_out = await self._check_opt_out(
                 candidate_id, company_id, channel, db
             )
@@ -296,7 +320,7 @@ class CommunicationService:
                     "message": f"Candidato optou por não receber comunicações via {channel.value}",
                     "opt_out_date": opt_out.opted_out_at.isoformat() if opt_out else None
                 })
-            
+
             is_in_quarantine, quarantine = await self._check_quarantine(
                 candidate_id, company_id, db
             )
@@ -308,7 +332,7 @@ class CommunicationService:
                     "quarantine_end": quarantine.quarantine_end.isoformat() if quarantine else None,
                     "reason": quarantine.reason if quarantine else None
                 })
-            
+
             is_within_limit, messages_today = await self._check_rate_limit(
                 candidate_id, company_id, db
             )
@@ -324,7 +348,7 @@ class CommunicationService:
                     "type": "approaching_limit",
                     "message": f"Aproximando do limite diário ({messages_today}/{self.MAX_MESSAGES_PER_DAY})"
                 })
-            
+
             if not self._is_within_sending_hours():
                 next_window = self._get_next_sending_window()
                 result["warnings"].append({
@@ -333,7 +357,7 @@ class CommunicationService:
                     "next_window": next_window.isoformat(),
                     "will_queue": True
                 })
-            
+
             return result
     
     async def create_approval_request(

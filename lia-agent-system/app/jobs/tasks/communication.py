@@ -27,10 +27,30 @@ def send_bulk_email_task(self, email_data: dict, company_id: str) -> dict:
     from app.core.database import AsyncSessionLocal
 
     async def _run() -> dict:
+        from app.domains.communication.services.consent_gate import CommunicationConsentGate
+        from app.enums.communication import MessageChannel
         from app.shared.channels.adapters.email_adapter import email_adapter
+
         async with AsyncSessionLocal() as db:
+            # LGPD: check consent per candidate, skip those without
+            gate = CommunicationConsentGate(db)
+            recipients = email_data.get("recipients", [])
+            allowed, blocked, skipped = await gate.check_batch(
+                [{"candidate_id": r.get("candidate_id", r.get("id", "")), **r} for r in recipients],
+                company_id,
+                MessageChannel.EMAIL,
+                is_marketing=True,
+            )
+            if skipped:
+                logger.warning(
+                    "[BulkEmail] %d/%d recipients blocked by consent gate (company=%s)",
+                    skipped, len(recipients), company_id,
+                )
+            if not allowed:
+                return {"sent": 0, "failed": 0, "skipped_consent": skipped, "message_ids": []}
+
             return await email_adapter.send_bulk(
-                recipients=email_data["recipients"],
+                recipients=allowed,
                 template_id=email_data.get("template_id"),
                 subject=email_data.get("subject", ""),
                 body=email_data.get("body", ""),

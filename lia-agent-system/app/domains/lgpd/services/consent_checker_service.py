@@ -155,14 +155,16 @@ class ConsentCheckerService:
             )
 
         except Exception as e:
-            # Em caso de erro ao verificar consent, soft_warning e continua
+            # FAIL-CLOSED: error checking consent = block (LGPD Art. 7)
+            # Never allow communication when we can't verify consent status.
             logger.error(
-                f"[LGPD] Erro ao verificar consentimento: candidate={candidate_id}, "
-                f"purpose={purpose}: {e}"
+                "[LGPD] FAIL-CLOSED: Consent check error — blocking operation. "
+                "candidate=%s, purpose=%s: %s",
+                candidate_id, purpose, e,
             )
             return ConsentCheckResult(
-                allowed=True,
-                soft_warning=True,
+                allowed=False,
+                soft_warning=False,
                 reason="check_error",
                 consent_type=consent_type,
             )
