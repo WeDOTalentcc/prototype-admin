@@ -42,6 +42,7 @@ interface GoalsManagementProps {
 }
 
 export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
+  const t = useTranslations("settings")
   const { state, actions } = useGoalsManagement(users, onGoalUpdate)
   const {
     selectedUser, showTemplates, showCustomGoal, editingGoal, searchTerm,
@@ -86,10 +87,10 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
           <div>
             <h3 className={`${textStyles.titleLarge} flex items-center gap-2`}>
               <Target className="w-5 h-5 text-lia-text-primary" />
-              Gestão de Metas - {selectedYear}
+              {t("goals.title", { year: selectedYear })}
             </h3>
             <p className={textStyles.description}>
-              Configure e acompanhe as metas de performance da equipe
+              {t("goals.description")}
             </p>
           </div>
         </div>
@@ -111,7 +112,7 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
             disabled={users.length === 0 || isLoading}
           >
             <Plus className="w-3.5 h-3.5" />
-            Aplicar Template
+            {t("goals.applyTemplate")}
           </Button>
           <Button 
             onClick={() => {
@@ -126,7 +127,7 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
             disabled={users.length === 0 || isLoading}
           >
             <Target className="w-3.5 h-3.5" />
-            Nova Meta
+            {t("goals.newGoal")}
           </Button>
         </div>
       </div>
@@ -142,7 +143,7 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
       <Card className="border border-lia-border-subtle dark:border-lia-border-strong">
         <CardHeader className="py-3 dark:border-lia-border-strong">
           <CardTitle className={`${textStyles.h4} flex items-center justify-between`}>
-            <span>Metas por Categoria</span>
+            <span>{t("goals.goalsByCategory")}</span>
             {isLoading && <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none" />}
           </CardTitle>
         </CardHeader>
@@ -150,22 +151,22 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
           {users.length === 0 ? (
             <div className="text-center py-8 text-lia-text-primary">
               <Users className="w-12 h-12 mx-auto mb-4 opacity-50" />
-              <h3 className={`${textStyles.titleLarge} mb-2`}>Nenhum usuário cadastrado</h3>
-              <p className={textStyles.body}>Primeiro cadastre usuários na aba"Usuários" para poder configurar metas</p>
+              <h3 className={`${textStyles.titleLarge} mb-2`}>{t("goals.noUsersTitle")}</h3>
+              <p className={textStyles.body}>{t("goals.noUsersDesc")}</p>
             </div>
           ) : activeTemplatesWithUsers.length === 0 ? (
             <div className="text-center py-8 text-lia-text-secondary">
               <Target className="w-12 h-12 mx-auto mb-4 opacity-50" />
-              <h3 className={`${textStyles.titleLarge} mb-2 !text-lia-text-primary`}>Nenhuma meta configurada</h3>
+              <h3 className={`${textStyles.titleLarge} mb-2 !text-lia-text-primary`}>{t("goals.noGoalsTitle")}</h3>
               <p className={`${textStyles.body} mb-4`}>
-                Clique em"Aplicar Template" para adicionar metas aos usuários
+                {t("goals.noGoalsDesc")}
               </p>
               <Button 
                 onClick={() => setShowTemplates(true)}
                 className="gap-2 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
               >
                 <Plus className="w-4 h-4" />
-                Aplicar Template
+                {t("goals.applyTemplate")}
               </Button>
             </div>
           ) : (
@@ -213,7 +214,7 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
                           }}
                         >
                           <Settings className="w-3 h-3" />
-                          Aplicar para Todos
+                          {t("goals.applyForAll")}
                         </Button>
                       </div>
                     </div>
@@ -225,7 +226,7 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
                           <thead>
                             <tr className="border-b border-lia-border-subtle dark:border-lia-border-subtle">
                               <th className="text-left p-2 min-w-[140px] sticky left-0 bg-lia-bg-secondary dark:bg-lia-bg-secondary font-medium text-lia-text-secondary border-r border-lia-border-subtle dark:border-lia-border-subtle">
-                                Usuário
+                                {t("goals.userColumn")}
                               </th>
                               {MONTHS.map((month) => (
                                 <th 
@@ -236,7 +237,7 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
                                 </th>
                               ))}
                               <th className="text-center p-2 min-w-[50px] font-semibold text-lia-text-primary">
-                                Total
+                                {t("goals.totalColumn")}
                               </th>
                             </tr>
                           </thead>
@@ -275,7 +276,7 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
                             ))}
                             <tr className="border-t-2 border-lia-border-default dark:border-lia-border-default bg-lia-bg-tertiary dark:bg-lia-bg-secondary">
                               <td className="p-2 font-semibold text-lia-text-primary sticky left-0 bg-lia-bg-tertiary border-r border-lia-border-subtle">
-                                TOTAL EQUIPE
+                                {t("goals.teamTotal")}
                               </td>
                               {MONTHS.map((month) => (
                                 <td 
@@ -301,7 +302,7 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
                             disabled={isSaving}
                           >
                             <Plus className="w-3 h-3" />
-                            Adicionar Usuário
+                            {t("goals.addUser")}
                           </Button>
                         </div>
                       </div>

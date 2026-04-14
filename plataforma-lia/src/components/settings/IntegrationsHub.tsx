@@ -14,6 +14,7 @@ import {
   Code,
   Plug,
 } from "lucide-react"
+import { useTranslations } from "next-intl"
 import {
   categories,
   integrations,
@@ -57,6 +58,7 @@ interface IntegrationsHubProps {
 }
 
 export function IntegrationsHub({ activeSubsection }: IntegrationsHubProps) {
+  const t = useTranslations("settings")
   const [activeTab, setActiveTab] = useState(activeSubsection || "all")
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedIntegration, setSelectedIntegration] = useState<Integration | null>(null)
@@ -135,13 +137,13 @@ export function IntegrationsHub({ activeSubsection }: IntegrationsHubProps) {
       const res = await fetch(`/api/backend-proxy/calendar/google/auth-url?company_id=${companyId}`)
       if (!res.ok) {
         const data = await res.json()
-        throw new Error(data.detail || "Erro ao obter URL de autorização")
+        throw new Error(data.detail || t("integrations.authUrlError"))
       }
       const { auth_url } = await res.json()
       window.location.href = auth_url
     } catch (err) {
       setGoogleStatus("error")
-      setErrorMsg(err instanceof Error ? err.message : "Erro ao conectar com Google")
+      setErrorMsg(err instanceof Error ? err.message : t("integrations.googleConnectError"))
     }
   }
 
@@ -246,13 +248,13 @@ export function IntegrationsHub({ activeSubsection }: IntegrationsHubProps) {
   }
 
   const tabs = [
-    { id: "all", label: "Todas", icon: Plug },
-    { id: "ai-models", label: "Modelos de IA", icon: Brain },
-    { id: "ats", label: "ATS", icon: Briefcase },
-    { id: "calendar", label: "Calendário", icon: Calendar },
-    { id: "communication", label: "Comunicação", icon: MessageCircle },
-    { id: "crm-hris", label: "CRM & HRIS", icon: Building },
-    { id: "mcps-apis", label: "MCPs & APIs", icon: Code },
+    { id: "all", label: t("integrations.tabAll"), icon: Plug },
+    { id: "ai-models", label: t("integrations.tabAiModels"), icon: Brain },
+    { id: "ats", label: t("integrations.tabAts"), icon: Briefcase },
+    { id: "calendar", label: t("integrations.tabCalendar"), icon: Calendar },
+    { id: "communication", label: t("integrations.tabCommunication"), icon: MessageCircle },
+    { id: "crm-hris", label: t("integrations.tabCrmHris"), icon: Building },
+    { id: "mcps-apis", label: t("integrations.tabMcpsApis"), icon: Code },
   ]
 
   return (
@@ -274,14 +276,14 @@ export function IntegrationsHub({ activeSubsection }: IntegrationsHubProps) {
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-lia-text-tertiary" />
           <Input
-            placeholder="Buscar integrações..."
+            placeholder={t("integrations.searchPlaceholder")}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-9 h-9 text-xs"
           />
         </div>
         <p className={textStyles.caption}>
-          {connectedCount} de {totalCount} conectadas
+          {t("integrations.connectedCount", { connected: connectedCount, total: totalCount })}
         </p>
       </div>
 
@@ -289,10 +291,10 @@ export function IntegrationsHub({ activeSubsection }: IntegrationsHubProps) {
         <div className="flex flex-col items-center justify-center py-16 text-center">
           <Search className="w-8 h-8 text-lia-text-tertiary mb-3" />
           <p className={textStyles.subtitle}>
-            Nenhuma integração encontrada
+            {t("integrations.noResults")}
           </p>
           <p className={cn(textStyles.description, "mt-1")}>
-            Tente buscar com outros termos
+            {t("integrations.noResultsHint")}
           </p>
         </div>
       ) : (

@@ -1371,7 +1371,8 @@
     "metadata": {
       "title": "Agent Studio | LIA — WeDo Talent",
       "description": "Crie agentes de sourcing a partir de templates por setor. Configure calibração e automação.",
-      "layoutDescription": "Crie e gerencie agentes de sourcing inteligentes"
+      "layoutDescription": "Crie e gerencie agentes de sourcing inteligentes",
+      "layoutTitle": "Agent Studio"
     },
     "studio": {
       "title": "Agent Studio",
@@ -3124,7 +3125,7 @@
       "goalCreatedForAll": "A meta será criada para todos os {count} usuários",
       "goalName": "Nome da Meta *",
       "goalNamePlaceholder": "Ex: Aumentar taxa de conversão",
-      "description": "Descrição",
+      "description": "Configure e acompanhe as metas de performance da equipe",
       "descriptionPlaceholder": "Descreva a meta...",
       "target": "Meta *",
       "targetLabel": "Meta",
@@ -3203,7 +3204,14 @@
       "monthlyFreq": "Mensal",
       "monthlyFreqDesc": "Resumo no 1º dia útil do mês",
       "liaLearns": "A LIA aprende com você",
-      "liaLearnsDesc": "Quanto mais você interage, melhor ela entende quais alertas são relevantes. Alertas ignorados consistentemente serão automaticamente desativados."
+      "liaLearnsDesc": "Quanto mais você interage, melhor ela entende quais alertas são relevantes. Alertas ignorados consistentemente serão automaticamente desativados.",
+      "title": "Gestão de Metas - {year}",
+      "noUsersTitle": "Nenhum usuário cadastrado",
+      "noUsersDesc": "Primeiro cadastre usuários na aba \"Usuários\" para poder configurar metas",
+      "noGoalsTitle": "Nenhuma meta configurada",
+      "noGoalsDesc": "Clique em \"Aplicar Template\" para adicionar metas aos usuários",
+      "userColumn": "Usuário",
+      "totalColumn": "Total"
     },
     "benefits": {
       "title": "Benefícios da Empresa",
@@ -3808,7 +3816,10 @@
         "dataRequestConfig": "Data Request Settings",
         "liaInstructionsConfig": "Instructions for LIA",
         "newStage": "New Stage"
-      }
+      },
+      "tabPipeline": "Pipeline",
+      "tabScreening": "Perguntas de Elegibilidade",
+      "tabHiringPolicies": "Políticas de Recrutamento"
     },
     "communication": {
       "tabs": {
@@ -3942,7 +3953,12 @@
         "createError": "Error creating experiment",
         "newExperimentTitle": "New Experiment",
         "variantCount": "{count} variant(s)"
-      }
+      },
+      "tabTemplates": "Templates",
+      "tabSignature": "Assinatura",
+      "tabSchedule": "Horários LGPD",
+      "tabAlerts": "Alertas",
+      "tabAbTesting": "A/B Testing"
     },
     "integrations": {
       "tabs": {
@@ -3954,8 +3970,8 @@
         "crmHris": "CRM & HRIS",
         "mcpsApis": "MCPs & APIs"
       },
-      "searchPlaceholder": "Search integrations...",
-      "connectedCount": "{connected} of {total} connected",
+      "searchPlaceholder": "Buscar integrações...",
+      "connectedCount": "{connected} de {total} conectadas",
       "noIntegrationFound": "No integration found",
       "tryOtherTerms": "Try searching with other terms",
       "card": {
@@ -4070,7 +4086,18 @@
         "loadError": "Error loading data",
         "total": "Total",
         "blockedLine": "Blocked"
-      }
+      },
+      "tabAll": "Todas",
+      "tabAiModels": "Modelos de IA",
+      "tabAts": "ATS",
+      "tabCalendar": "Calendário",
+      "tabCommunication": "Comunicação",
+      "tabCrmHris": "CRM & HRIS",
+      "tabMcpsApis": "MCPs & APIs",
+      "noResults": "Nenhuma integração encontrada",
+      "noResultsHint": "Tente buscar com outros termos",
+      "authUrlError": "Erro ao obter URL de autorização",
+      "googleConnectError": "Erro ao conectar com Google"
     },
     "page": {
       "title": "Configurações",

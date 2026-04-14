@@ -1371,7 +1371,8 @@
     "metadata": {
       "title": "Agent Studio | LIA — WeDo Talent",
       "description": "Create sourcing agents from sector templates. Configure calibration and automation.",
-      "layoutDescription": "Create and manage intelligent sourcing agents"
+      "layoutDescription": "Create and manage intelligent sourcing agents",
+      "layoutTitle": "Agent Studio"
     },
     "studio": {
       "title": "Agent Studio",
@@ -1480,7 +1481,7 @@
         "none": "None",
         "job": "Job",
         "talentPool": "Talent Pool",
-        "noLinkWarning": "Without a link, the agent will operate with limited capabilities. Link to a job or talent pool for better results.",
+        "noLinkWarning": "Without a link, the agent will operate with limited capabilities. Link to a job or talent pool for best results.",
         "jobIdPlaceholder": "Job ID",
         "poolIdPlaceholder": "Talent pool ID",
         "candidatesPerDay": "Candidates per day",
@@ -3124,7 +3125,7 @@
       "goalCreatedForAll": "The goal will be created for all {count} users",
       "goalName": "Goal Name *",
       "goalNamePlaceholder": "E.g.: Increase conversion rate",
-      "description": "Description",
+      "description": "Configure and track team performance goals",
       "descriptionPlaceholder": "Describe the goal...",
       "target": "Target *",
       "targetLabel": "Target",
@@ -3203,7 +3204,14 @@
       "monthlyFreq": "Monthly",
       "monthlyFreqDesc": "Summary on the 1st business day of the month",
       "liaLearns": "LIA learns from you",
-      "liaLearnsDesc": "The more you interact, the better she understands which alerts are relevant. Consistently ignored alerts will be automatically disabled."
+      "liaLearnsDesc": "The more you interact, the better she understands which alerts are relevant. Consistently ignored alerts will be automatically disabled.",
+      "title": "Goals Management - {year}",
+      "noUsersTitle": "No users registered",
+      "noUsersDesc": "First register users in the \"Users\" tab to configure goals",
+      "noGoalsTitle": "No goals configured",
+      "noGoalsDesc": "Click \"Apply Template\" to add goals to users",
+      "userColumn": "User",
+      "totalColumn": "Total"
     },
     "benefits": {
       "title": "Company Benefits",
@@ -3808,7 +3816,10 @@
         "dataRequestConfig": "Data Request Settings",
         "liaInstructionsConfig": "Instructions for LIA",
         "newStage": "New Stage"
-      }
+      },
+      "tabPipeline": "Pipeline",
+      "tabScreening": "Eligibility Questions",
+      "tabHiringPolicies": "Hiring Policies"
     },
     "communication": {
       "tabs": {
@@ -3942,7 +3953,12 @@
         "createError": "Error creating experiment",
         "newExperimentTitle": "New Experiment",
         "variantCount": "{count} variant(s)"
-      }
+      },
+      "tabTemplates": "Templates",
+      "tabSignature": "Signature",
+      "tabSchedule": "LGPD Schedule",
+      "tabAlerts": "Alerts",
+      "tabAbTesting": "A/B Testing"
     },
     "integrations": {
       "tabs": {
@@ -4070,7 +4086,18 @@
         "loadError": "Error loading data",
         "total": "Total",
         "blockedLine": "Blocked"
-      }
+      },
+      "tabAll": "All",
+      "tabAiModels": "AI Models",
+      "tabAts": "ATS",
+      "tabCalendar": "Calendar",
+      "tabCommunication": "Communication",
+      "tabCrmHris": "CRM & HRIS",
+      "tabMcpsApis": "MCPs & APIs",
+      "noResults": "No integrations found",
+      "noResultsHint": "Try searching with other terms",
+      "authUrlError": "Error getting authorization URL",
+      "googleConnectError": "Error connecting with Google"
     },
     "page": {
       "title": "Settings",

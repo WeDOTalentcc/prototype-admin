@@ -2,6 +2,7 @@
 
 import React, { useEffect } from "react"
 import { Mail, Clock, PenTool, Bell, FlaskConical } from "lucide-react"
+import { useTranslations } from "next-intl"
 import { tabStyles } from '@/lib/design-tokens'
 import type { CommunicationHubProps } from './communication-hub/CommunicationHub.types'
 import { useCommunicationHub } from './communication-hub/useCommunicationHub'
@@ -12,6 +13,7 @@ import { AlertsTab } from './communication-hub/AlertsTab'
 import { ABTestingTab } from './communication-hub/ABTestingTab'
 
 export function CommunicationHub({ activeSubsection }: CommunicationHubProps) {
+  const t = useTranslations("settings")
   const hub = useCommunicationHub(activeSubsection)
 
   useEffect(() => {
@@ -20,11 +22,11 @@ export function CommunicationHub({ activeSubsection }: CommunicationHubProps) {
   }, [])
 
   const tabs = [
-    { id: 'templates', label: 'Templates', icon: Mail },
-    { id: 'signature', label: 'Assinatura', icon: PenTool },
-    { id: 'schedule', label: 'Horários LGPD', icon: Clock },
-    { id: 'alerts', label: 'Alertas', icon: Bell },
-    { id: 'abtesting', label: 'A/B Testing', icon: FlaskConical },
+    { id: 'templates', label: t("communication.tabTemplates"), icon: Mail },
+    { id: 'signature', label: t("communication.tabSignature"), icon: PenTool },
+    { id: 'schedule', label: t("communication.tabSchedule"), icon: Clock },
+    { id: 'alerts', label: t("communication.tabAlerts"), icon: Bell },
+    { id: 'abtesting', label: t("communication.tabAbTesting"), icon: FlaskConical },
   ]
 
   const renderContent = () => {

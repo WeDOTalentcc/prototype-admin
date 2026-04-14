@@ -4,6 +4,7 @@ import React from "react"
 import {
   Workflow, MessageSquare, ShieldCheck,
 } from "lucide-react"
+import { useTranslations } from "next-intl"
 import { HiringPoliciesHub } from './HiringPoliciesHub'
 import { tabStyles } from '@/lib/design-tokens'
 import { useRecruitmentHub } from './useRecruitmentHub'
@@ -15,12 +16,13 @@ interface RecruitmentHubProps {
 }
 
 export function RecruitmentHub({ activeSubsection }: RecruitmentHubProps) {
+  const t = useTranslations("settings")
   const hub = useRecruitmentHub(activeSubsection)
 
   const tabs = [
-    { id: 'pipeline', label: 'Pipeline', icon: Workflow },
-    { id: 'screening', label: 'Perguntas de Elegibilidade', icon: MessageSquare },
-    { id: 'hiring-policies', label: 'Políticas de Recrutamento', icon: ShieldCheck },
+    { id: 'pipeline', label: t("recruitment.tabPipeline"), icon: Workflow },
+    { id: 'screening', label: t("recruitment.tabScreening"), icon: MessageSquare },
+    { id: 'hiring-policies', label: t("recruitment.tabHiringPolicies"), icon: ShieldCheck },
   ]
 
   return (

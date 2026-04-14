@@ -3,7 +3,7 @@ import { getTranslations } from 'next-intl/server'
 export async function generateMetadata() {
   const t = await getTranslations('agents.metadata')
   return {
-    title: 'Agent Studio',
+    title: t('layoutTitle'),
     description: t('layoutDescription'),
   }
 }
