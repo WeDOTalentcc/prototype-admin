@@ -179,6 +179,16 @@ class InterviewGraph:
         if self._compiled is None:
             self._compiled = self._build_langgraph()
 
+        # PII masking: sanitize messages before LLM processing (P35-059)
+        try:
+            from app.shared.pii_masking import strip_pii_for_llm_prompt
+            msgs = state.get("messages", [])
+            for msg in msgs:
+                if hasattr(msg, "content") and isinstance(msg.content, str):
+                    msg.content = strip_pii_for_llm_prompt(msg.content)
+        except Exception:
+            pass  # fail-open: PII masking failure doesn't block scheduling
+
         session_id = state.get("session_id", "unknown")
         if audit_callback:
             audit_callback.on_chain_start_manual()

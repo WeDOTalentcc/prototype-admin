@@ -258,6 +258,31 @@ class JobWizardGraph:
         if self._compiled_lg is None:
             self._compiled_lg = self._build_langgraph()
 
+        # PII masking: sanitize messages before LLM processing (P35-059)
+        try:
+            from app.shared.pii_masking import strip_pii_for_llm_prompt
+            msgs = state.get("messages", [])
+            for msg in msgs:
+                if hasattr(msg, "content") and isinstance(msg.content, str):
+                    msg.content = strip_pii_for_llm_prompt(msg.content)
+        except Exception:
+            pass  # fail-open
+
+        # FairnessGuard: check user input for discriminatory job requirements (P35-059)
+        try:
+            from app.shared.compliance.fairness_guard import FairnessGuard
+            user_msg = state.get("user_message", "")
+            if user_msg:
+                fg_result = FairnessGuard().check(user_msg)
+                if fg_result.is_blocked:
+                    state["error"] = fg_result.educational_message or (
+                        "Requisito detectado como potencialmente discriminatório. Reformule com base em competências."
+                    )
+                    state["fairness_blocked"] = True
+                    return state
+        except Exception:
+            pass  # fail-open
+
         session_id = state.get("session_id", f"system:{uuid4()}")
         if audit_callback:
             audit_callback.on_chain_start_manual()
