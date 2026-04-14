@@ -81,4 +81,5 @@ The platform uses Next.js, React, and TypeScript for the frontend, styled with R
 - **Middleware**: src/middleware.ts chains next-intl locale routing with existing JWT/WorkOS auth
 - **Sidebar**: Uses useTranslations('sidebar') — section labels, item labels, user menu, recent items all translated
 - **next.config.js**: Uses createNextIntlPlugin wrapping withBundleAnalyzer
-- **Translation status**: Sidebar fully translated. Main content (DashboardApp, chat, pipeline, etc.) still hardcoded PT — will be translated in future tasks (#191-#194)
+- **Locale detection**: Disabled (`localeDetection: false` in routing.ts) — forces Portuguese regardless of browser language
+- **Translation status**: All namespaces fully translated (sidebar, chat, jobs, candidates, screening, kanban, agents, settings). ~785 keys translated from English to Portuguese. Remaining ~195 untranslated keys are brand/proper names (WhatsApp, LinkedIn, Score WSI, etc.) intentionally identical in both languages
