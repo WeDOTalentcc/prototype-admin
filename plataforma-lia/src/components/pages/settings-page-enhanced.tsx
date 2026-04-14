@@ -41,6 +41,7 @@ const IntegrationsHub = dynamic(() => import("@/components/settings/Integrations
 const FairnessComplianceHub = dynamic(() => import("@/components/settings/FairnessComplianceHub").then(m => ({ default: m.FairnessComplianceHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando compliance..." /> })
 
 import { textStyles, cardStyles, badgeStyles } from '@/lib/design-tokens'
+import { useHoverDebounce } from '@/lib/sidebar/useHoverDebounce'
 import { ErrorBoundarySection } from"@/components/ui/error-boundary-section"
 import { useCompanyId } from"@/hooks/company/useCompanyId"
 
@@ -267,6 +268,18 @@ export default function SettingsPageEnhanced() {
   
   const [isCollapsed, setIsCollapsed] = useState(true)
   const [isLocked, setIsLocked] = useState(false)
+
+  const expandSettings = useCallback(() => setIsCollapsed(false), [])
+  const collapseSettings = useCallback(() => setIsCollapsed(true), [])
+
+  const {
+    handleMouseEnter: handleSettingsMouseEnter,
+    handleMouseLeave: handleSettingsMouseLeave,
+  } = useHoverDebounce({
+    onExpand: expandSettings,
+    onCollapse: collapseSettings,
+    isEnabled: !isLocked,
+  })
 
 
   const [showTemplateSelector, setShowTemplateSelector] = useState(false)
@@ -501,11 +514,11 @@ export default function SettingsPageEnhanced() {
       <aside 
         className={`
           ${isCollapsed && !isLocked ? 'w-16' : 'w-64'}
-          transition-colors duration-200
+          transition-[width,colors] duration-300 ease-in-out motion-reduce:transition-none
           flex-shrink-0
         `}
-        onMouseEnter={() => !isLocked && setIsCollapsed(false)}
-        onMouseLeave={() => !isLocked && setIsCollapsed(true)}
+        onMouseEnter={handleSettingsMouseEnter}
+        onMouseLeave={handleSettingsMouseLeave}
       >
         <Card className="h-full m-3 border border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary backdrop-blur-sm rounded-xl overflow-hidden flex flex-col">
           <div className={`p-4 dark:border-lia-border-subtle ${isCollapsed && !isLocked ? 'px-2' : ''}`}>

@@ -626,6 +626,7 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
     isTemporaryExpanded,
     sidebarWidth,
     isResizing,
+    reducedMotion,
     shouldShowContent,
     dynamicWidth,
     toggleCollapse,
@@ -649,7 +650,12 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
  "bg-lia-bg-primary min-h-screen flex flex-col border-r border-lia-border-subtle relative font-sans",
         isTemporaryExpanded && "z-50"
       )}
-      style={{width: dynamicWidth}}
+      style={{
+        width: dynamicWidth,
+        transition: isResizing || reducedMotion
+          ? 'none'
+          : 'width 250ms cubic-bezier(0.4, 0, 0.2, 1)',
+      }}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >

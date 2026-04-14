@@ -23,11 +23,12 @@ import {
   SIDEBAR_DEFAULTS,
 } from "./sidebar.types"
 import { useUIPreferencesStore } from "@/stores/ui-preferences-store"
+import { useHoverDebounce } from "./useHoverDebounce"
 
 // ─── Return type ──────────────────────────────────────────────────────────────
 
 export interface UseSidebarStateReturn extends SidebarState, SidebarComputed {
-  // Actions
+  reducedMotion: boolean
   toggleCollapse: () => void
   handleMouseEnter: () => void
   handleMouseLeave: () => void
@@ -127,19 +128,30 @@ export function useSidebarState(): UseSidebarStateReturn {
     document.body.style.userSelect = "none"
   }, [setStoredWidth])
 
+  useEffect(() => {
+    if (!isCollapsed) {
+      setIsTemporaryExpanded(false)
+    }
+  }, [isCollapsed])
+
   // ── Actions ────────────────────────────────────────────────────────────────
   const toggleCollapse = useCallback(() => {
     setIsCollapsed((prev) => !prev)
-    // Store sync is handled by the isCollapsed → store useEffect above.
   }, [])
 
-  const handleMouseEnter = useCallback(() => {
-    if (isCollapsed) setIsTemporaryExpanded(true)
-  }, [isCollapsed])
+  const expandOnHover = useCallback(() => {
+    setIsTemporaryExpanded(true)
+  }, [])
 
-  const handleMouseLeave = useCallback(() => {
+  const collapseOnHover = useCallback(() => {
     setIsTemporaryExpanded(false)
   }, [])
+
+  const { handleMouseEnter, handleMouseLeave, reducedMotion } = useHoverDebounce({
+    onExpand: expandOnHover,
+    onCollapse: collapseOnHover,
+    isEnabled: isCollapsed,
+  })
 
   const handleShowTipsModal = useCallback(() => {
     setShowTipsModal(true)
@@ -171,6 +183,7 @@ export function useSidebarState(): UseSidebarStateReturn {
     isTemporaryExpanded,
     sidebarWidth,
     isResizing,
+    reducedMotion,
     // Computed
     shouldShowContent,
     dynamicWidth,
