@@ -250,8 +250,9 @@ class MainOrchestrator:
 
             # Enriquecer contexto com informações do tenant
             try:
+                _job_id = ctx.entity_id if getattr(ctx, "entity_type", None) == "job" else None
                 _tenant_ctx = await self._tenant_context_service.get_context(
-                    company_id=str(ctx.company_id), db=db
+                    company_id=str(ctx.company_id), db=db, job_id=_job_id,
                 )
                 ctx.tenant_context_snippet = _tenant_ctx.to_prompt_snippet()
             except Exception as _tc_exc:
