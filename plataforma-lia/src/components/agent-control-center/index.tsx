@@ -50,11 +50,33 @@ interface AgentControlCenterProps {
   className?: string
 }
 
+// Quality dashboard types
+interface QualityAgent {
+  agent_id: string
+  total_executions: number
+  avg_confidence: number
+  error_rate: number
+  human_intervention_rate: number
+  calibration_events?: number
+  fairness_checks?: number
+  fairness_blocks?: number
+  fairness_warning_rate?: number
+  avg_lia_score?: number
+  trend: 'improving' | 'stable' | 'degrading' | 'insufficient_data'
+}
+interface QualityDashboard {
+  agents: QualityAgent[]
+  overall: { total_executions: number; avg_confidence: number; error_rate: number; fairness_score: number }
+  period: string
+}
+
 export function AgentControlCenter({ className }: AgentControlCenterProps) {
   const [globalMetrics, setGlobalMetrics] = useState<GlobalMetrics | null>(null)
   const [agents, setAgents] = useState<AgentSummary[]>([])
   const [activities, setActivities] = useState<ActivityEvent[]>([])
   const [proactiveAlerts, setProactiveAlerts] = useState<ProactiveAlert[]>([])
+  const [qualityData, setQualityData] = useState<QualityDashboard | null>(null)
+  const [qualityPeriod, setQualityPeriod] = useState<'7d' | '30d' | '90d'>('7d')
   const [isLoading, setIsLoading] = useState(true)
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
   const [selectedAgent, setSelectedAgent] = useState<AgentSummary | null>(null)
@@ -65,6 +87,17 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
   const [selectedAgentFilter, setSelectedAgentFilter] = useState<string[]>([])
   const [selectedStatusFilter, setSelectedStatusFilter] = useState<string[]>([])
   const [filterPeriod, setFilterPeriod] = useState<'today' | 'week'>('today')
+
+  const fetchQualityData = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/backend-proxy/analytics/agent-quality-dashboard?period=${qualityPeriod}`)
+      if (res.ok) {
+        setQualityData(await res.json())
+      }
+    } catch {
+      // non-blocking
+    }
+  }, [qualityPeriod])
 
   const fetchData = useCallback(async () => {
     setIsLoading(true)
@@ -79,7 +112,7 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
         }),
         agentMonitoringService.getProactiveAlerts()
       ])
-      
+
       setGlobalMetrics(metricsData)
       setAgents(agentsData)
       setActivities(feedData)
@@ -93,9 +126,10 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
 
   useEffect(() => {
     fetchData()
+    fetchQualityData()
     const interval = setInterval(fetchData, 30000)
     return () => clearInterval(interval)
-  }, [fetchData])
+  }, [fetchData, fetchQualityData])
 
   const handleAgentClick = (agent: AgentSummary) => {
     setSelectedAgent(agent)
@@ -229,6 +263,97 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
             accentColor={globalMetrics.proactive_alerts > 0 ? 'var(--status-warning)' : 'var(--wedo-green-bright)'}
           />
         </div>
+
+        {/* Quality Metrics Section */}
+        {qualityData && (
+          <div className="mb-6">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-medium text-lia-text-secondary flex items-center gap-2">
+                <Target className="w-4 h-4" />
+                Qualidade dos Agentes
+              </h3>
+              <div className="flex items-center gap-1">
+                {(['7d', '30d', '90d'] as const).map(p => (
+                  <Button
+                    key={p}
+                    variant="ghost"
+                    size="sm"
+                    className={`text-xs px-2 py-1 ${qualityPeriod === p ? 'bg-lia-interactive-active' : 'text-lia-text-tertiary'}`}
+                    onClick={() => setQualityPeriod(p)}
+                  >
+                    {p}
+                  </Button>
+                ))}
+              </div>
+            </div>
+            <div className="grid grid-cols-4 gap-3 mb-4">
+              <MetricCard
+                icon={<Brain className="w-4 h-4" />}
+                title="Confiança Média"
+                value={`${(qualityData.overall.avg_confidence * 100).toFixed(0)}%`}
+                accentColor="var(--wedo-cyan)"
+              />
+              <MetricCard
+                icon={<CheckCircle className="w-4 h-4" />}
+                title="Taxa de Erro"
+                value={`${(qualityData.overall.error_rate * 100).toFixed(1)}%`}
+                accentColor={qualityData.overall.error_rate < 0.05 ? 'var(--wedo-green-bright)' : 'var(--status-error)'}
+              />
+              <MetricCard
+                icon={<Activity className="w-4 h-4" />}
+                title="Fairness Score"
+                value={`${(qualityData.overall.fairness_score * 100).toFixed(0)}%`}
+                accentColor={qualityData.overall.fairness_score >= 0.95 ? 'var(--wedo-green-bright)' : 'var(--status-warning)'}
+              />
+              <MetricCard
+                icon={<Zap className="w-4 h-4" />}
+                title="Execuções"
+                value={qualityData.overall.total_executions.toLocaleString()}
+                accentColor="var(--lia-text-secondary)"
+              />
+            </div>
+            {/* Per-agent quality table */}
+            {qualityData.agents.length > 0 && (
+              <div className="rounded-lg border border-lia-border-subtle overflow-hidden">
+                <table className="w-full text-xs">
+                  <thead>
+                    <tr className="bg-lia-bg-secondary dark:bg-lia-bg-tertiary">
+                      <th className="text-left p-2 font-medium text-lia-text-disabled">Agente</th>
+                      <th className="text-right p-2 font-medium text-lia-text-disabled">Execuções</th>
+                      <th className="text-right p-2 font-medium text-lia-text-disabled">Confiança</th>
+                      <th className="text-right p-2 font-medium text-lia-text-disabled">Erros</th>
+                      <th className="text-right p-2 font-medium text-lia-text-disabled">Fairness</th>
+                      <th className="text-center p-2 font-medium text-lia-text-disabled">Trend</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-lia-border-subtle">
+                    {qualityData.agents.slice(0, 8).map(a => (
+                      <tr key={a.agent_id} className="hover:bg-lia-bg-secondary/50">
+                        <td className="p-2 font-medium text-lia-text-primary">{a.agent_id}</td>
+                        <td className="p-2 text-right text-lia-text-secondary">{a.total_executions}</td>
+                        <td className="p-2 text-right text-lia-text-secondary">{(a.avg_confidence * 100).toFixed(0)}%</td>
+                        <td className="p-2 text-right">
+                          <span className={a.error_rate > 0.05 ? 'text-status-error' : 'text-lia-text-secondary'}>
+                            {(a.error_rate * 100).toFixed(1)}%
+                          </span>
+                        </td>
+                        <td className="p-2 text-right text-lia-text-secondary">
+                          {a.fairness_checks ? `${a.fairness_checks} checks` : '—'}
+                        </td>
+                        <td className="p-2 text-center">
+                          {a.trend === 'improving' && <span className="text-wedo-green-bright">▲</span>}
+                          {a.trend === 'stable' && <span className="text-lia-text-disabled">━</span>}
+                          {a.trend === 'degrading' && <span className="text-status-error">▼</span>}
+                          {a.trend === 'insufficient_data' && <span className="text-lia-text-disabled">?</span>}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Proactive Alerts */}
         {proactiveAlerts.length > 0 && (
