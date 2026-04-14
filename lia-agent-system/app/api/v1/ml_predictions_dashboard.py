@@ -116,26 +116,40 @@ async def get_ml_predictions(
             seniority = (row.seniority_level or "pleno").strip().lower()
             days_open = (now - row.created_at).days if row.created_at else 0
 
-            # Lookup: tenant data → market default → global
-            tenant_data = tenant_avgs.get(seniority)
-            if tenant_data and tenant_data["sample_size"] >= 3:
-                predicted_ttf = tenant_data["avg_days"]
-                confidence = min(0.5 + tenant_data["sample_size"] * 0.05, 0.90)
-                source = "heuristic"
-                factors = [
-                    f"senioridade: {seniority}",
-                    f"histórico empresa: {predicted_ttf:.0f}d média ({tenant_data['sample_size']} vagas)",
-                ]
-            else:
-                predicted_ttf = _MARKET_DEFAULTS.get(seniority, 35)
-                confidence = 0.40
-                source = "market_default"
-                factors = [
-                    f"senioridade: {seniority}",
-                    f"default mercado BR: {predicted_ttf}d",
-                ]
-                if tenant_data:
-                    factors.append(f"dados insuficientes do tenant ({tenant_data['sample_size']} vagas)")
+            # Try ML model first, then tenant heuristic, then market default
+            try:
+                from app.shared.ml.ttf_predictor import ttf_predictor
+                ml_result = ttf_predictor.predict({
+                    "seniority_level": seniority,
+                    "work_model": getattr(row, "work_model", None) or "presencial",
+                    "urgency_level": getattr(row, "urgency_level", 3) or 3,
+                })
+                if ml_result.source == "ml_model":
+                    predicted_ttf = ml_result.predicted_days
+                    confidence = ml_result.confidence
+                    source = "ml_model"
+                    factors = [f"modelo ML v{ml_result.model_version}"] + ml_result.features_used
+                else:
+                    raise ValueError("ML model not available")
+            except Exception:
+                # Fallback to tenant heuristic → market default
+                tenant_data = tenant_avgs.get(seniority)
+                if tenant_data and tenant_data["sample_size"] >= 3:
+                    predicted_ttf = tenant_data["avg_days"]
+                    confidence = min(0.5 + tenant_data["sample_size"] * 0.05, 0.90)
+                    source = "heuristic"
+                    factors = [
+                        f"senioridade: {seniority}",
+                        f"histórico empresa: {predicted_ttf:.0f}d média ({tenant_data['sample_size']} vagas)",
+                    ]
+                else:
+                    predicted_ttf = _MARKET_DEFAULTS.get(seniority, 35)
+                    confidence = 0.40
+                    source = "market_default"
+                    factors = [
+                        f"senioridade: {seniority}",
+                        f"default mercado BR: {predicted_ttf}d",
+                    ]
 
             if row.target_sector:
                 factors.append(f"setor: {row.target_sector}")
