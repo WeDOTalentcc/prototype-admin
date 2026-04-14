@@ -98,12 +98,12 @@ async def predict_time_to_fill(
 ):
     """
     Predict time to fill for a job vacancy.
-    
+
     Uses historical data and job features to estimate
     the number of days to fill the position.
     """
     predictor = OutcomePredictor()
-    
+
     try:
         prediction = await predictor.predict_time_to_fill(
             db=db,
@@ -111,14 +111,16 @@ async def predict_time_to_fill(
             company_id=request.company_id,
             company_data=request.company_data
         )
-        
+
         registry = get_model_registry()
+        await registry.ensure_loaded(db)
         default_model = registry.get_default_model("time_to_fill_predictor")
         if default_model:
             registry.record_prediction(
                 model_id=default_model.model_id,
                 predicted_value=prediction.predicted_days
             )
+            await registry.flush_pending(db)
         
         return TimeToFillResponse(
             predicted_days=prediction.predicted_days,
@@ -193,12 +195,14 @@ async def predict_optimal_salary(
         )
         
         registry = get_model_registry()
+        await registry.ensure_loaded(db)
         default_model = registry.get_default_model("salary_predictor")
         if default_model:
             registry.record_prediction(
                 model_id=default_model.model_id,
                 predicted_value=prediction.predicted_value
             )
+            await registry.flush_pending(db)
         
         return SalaryPredictionResponse(
             suggested_min=prediction.suggested_min,
@@ -237,12 +241,14 @@ async def predict_skill_success(
         )
         
         registry = get_model_registry()
+        await registry.ensure_loaded(db)
         default_model = registry.get_default_model("skill_success_predictor")
         if default_model:
             registry.record_prediction(
                 model_id=default_model.model_id,
                 predicted_value=prediction.success_probability
             )
+            await registry.flush_pending(db)
         
         return SkillSuccessResponse(
             skill_name=prediction.skill_name,
@@ -291,15 +297,17 @@ async def get_hiring_insights(
 @router.get("/models", response_model=None)
 async def list_models(
     model_name: str | None = None,
-    active_only: bool = True
+    active_only: bool = True,
+    db: AsyncSession = Depends(get_db),
 ):
     """
     List registered ML models.
-    
+
     Returns metadata about available models including
     version, performance metrics, and status.
     """
     registry = get_model_registry()
+    await registry.ensure_loaded(db)
     models = registry.list_models(model_name=model_name, active_only=active_only)
     
     return {
@@ -309,11 +317,15 @@ async def list_models(
 
 
 @router.get("/models/{model_id}/performance", response_model=None)
-async def get_model_performance(model_id: str):
+async def get_model_performance(
+    model_id: str,
+    db: AsyncSession = Depends(get_db),
+):
     """
     Get performance metrics for a specific model.
     """
     registry = get_model_registry()
+    await registry.ensure_loaded(db)
     performance = registry.get_performance(model_id)
     
     if not performance:
@@ -329,11 +341,15 @@ async def get_model_performance(model_id: str):
 
 
 @router.post("/models/compare", response_model=None)
-async def compare_models(model_ids: list[str]):
+async def compare_models(
+    model_ids: list[str],
+    db: AsyncSession = Depends(get_db),
+):
     """
     Compare performance of multiple models.
     """
     registry = get_model_registry()
+    await registry.ensure_loaded(db)
     comparison = registry.compare_models(model_ids)
     
     return {

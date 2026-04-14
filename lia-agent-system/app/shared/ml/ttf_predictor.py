@@ -72,6 +72,7 @@ class TTFPredictor:
         self._model = None
         self._encoder = None
         self._model_loaded = False
+        self._registered_in_registry = False
         self._load_model()
 
     def _load_model(self):
@@ -87,10 +88,34 @@ class TTFPredictor:
                 self._encoder = joblib.load(_FEATURE_ENCODER_PATH)
             self._model_loaded = True
             logger.info("[TTFPredictor] ML model loaded from %s", _MODEL_PATH)
+            self._register_in_model_registry()
         except Exception as exc:
             logger.warning("[TTFPredictor] Failed to load model: %s — using heuristic", exc)
             self._model = None
             self._model_loaded = False
+
+    def _register_in_model_registry(self):
+        """Register the loaded ML model in ModelRegistry."""
+        if self._registered_in_registry:
+            return
+        try:
+            from app.services.ml.model_registry import get_model_registry
+            registry = get_model_registry()
+            registry.register_model(
+                model_name="time_to_fill_predictor",
+                version="2.0.0",
+                description="XGBoost time-to-fill predictor trained on historical data",
+                metrics={"type": "xgboost"},
+                parameters={"features": 6, "model_path": str(_MODEL_PATH)},
+                created_by="ttf_training_script",
+                set_as_default=True,
+                model_path=str(_MODEL_PATH),
+                features=["seniority", "work_model", "urgency", "candidates", "stages", "salary"],
+            )
+            self._registered_in_registry = True
+            logger.info("[TTFPredictor] ML model v2.0.0 registered in ModelRegistry")
+        except Exception as exc:
+            logger.warning("[TTFPredictor] Failed to register in ModelRegistry: %s", exc)
 
     def predict(self, features: dict[str, Any]) -> TTFPrediction:
         """
