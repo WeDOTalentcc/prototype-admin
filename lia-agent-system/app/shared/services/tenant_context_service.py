@@ -31,6 +31,8 @@ class TenantContext:
     timezone: str = "America/Sao_Paulo"
     communication_templates_count: int = 0
     ml_models_active: list[str] | None = None  # ["wsi_scoring", "time_to_fill"]
+    pipeline_stages: list[str] | None = None  # ["Triagem", "Entrevista RH", "Proposta"]
+    custom_persona: str | None = None  # tenant-specific LIA persona override
 
     def to_prompt_snippet(self) -> str:
         parts = [
@@ -68,14 +70,34 @@ class TenantContext:
             models_str = ", ".join(self.ml_models_active)
             parts.append(f"Modelos ML ativos: {models_str}.")
 
+        # Pipeline stages of current job (if available)
+        if self.pipeline_stages:
+            stages_str = " → ".join(self.pipeline_stages)
+            parts.append(f"Pipeline desta vaga: {stages_str}.")
+
+        # Custom persona
+        if self.custom_persona:
+            parts.append(f"Persona customizada do tenant: {self.custom_persona}")
+
         return "\n".join(parts)
 
 
 class TenantContextService:
     """Busca contexto rico do tenant para personalizar respostas da LIA."""
 
-    async def get_context(self, company_id: str, db: AsyncSession) -> TenantContext:
-        """Retorna contexto do tenant. Fail-safe: retorna defaults se falhar."""
+    async def get_context(
+        self,
+        company_id: str,
+        db: AsyncSession,
+        job_id: str | None = None,
+    ) -> TenantContext:
+        """Retorna contexto do tenant. Fail-safe: retorna defaults se falhar.
+
+        Args:
+            company_id: Tenant ID.
+            db: AsyncSession.
+            job_id: Optional — if provided, includes pipeline stages for this job.
+        """
         try:
             from lia_models.company import Company
             from lia_models.job_vacancy import JobVacancy
@@ -124,6 +146,30 @@ class TenantContextService:
             # Detect ML models
             ml_models = self._detect_ml_models(company)
 
+            # Fetch pipeline stages for the current job (if job_id provided)
+            pipeline_stages = None
+            if job_id:
+                try:
+                    from lia_models.selective_process import SelectiveProcess
+                    sp_result = await db.execute(
+                        select(SelectiveProcess.name)
+                        .where(
+                            SelectiveProcess.job_id == job_id,
+                            SelectiveProcess.company_id == company_id,
+                        )
+                        .order_by(SelectiveProcess.position)
+                    )
+                    stages = [row[0] for row in sp_result.all() if row[0]]
+                    if stages:
+                        pipeline_stages = stages
+                except Exception:
+                    pass  # selective_process table may not exist
+
+            # Custom persona from company settings
+            custom_persona = None
+            if company:
+                custom_persona = getattr(company, "lia_persona_override", None)
+
             if company:
                 return TenantContext(
                     company_id=company_id,
@@ -136,6 +182,8 @@ class TenantContextService:
                     timezone=getattr(company, "timezone", "America/Sao_Paulo"),
                     communication_templates_count=templates_count,
                     ml_models_active=ml_models,
+                    pipeline_stages=pipeline_stages,
+                    custom_persona=custom_persona,
                 )
         except Exception as exc:
             logger.debug("[TenantContextService] fallback defaults: %s", exc)
