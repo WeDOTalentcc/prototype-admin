@@ -50,6 +50,23 @@ interface AgentControlCenterProps {
   className?: string
 }
 
+// Calibration dashboard types
+interface CalibrationDomain {
+  domain: string
+  total_events: number
+  agree_count: number
+  disagree_count: number
+  agreement_rate: number
+  avg_lia_score: number
+  needs_calibration: boolean
+}
+interface CalibrationDashboard {
+  overall: { total_events: number; agreement_rate: number; avg_lia_score: number; agree_count: number; disagree_count: number }
+  domains: CalibrationDomain[]
+  weights: { dimension: string; base_weight: number; adjusted_weight: number }[]
+  pending_suggestions: number
+}
+
 // ML Predictions types
 interface PredictionVacancy {
   job_id: string
@@ -98,6 +115,7 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
   const [qualityData, setQualityData] = useState<QualityDashboard | null>(null)
   const [qualityPeriod, setQualityPeriod] = useState<'7d' | '30d' | '90d'>('7d')
   const [predictions, setPredictions] = useState<MLPredictions | null>(null)
+  const [calibration, setCalibration] = useState<CalibrationDashboard | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
   const [selectedAgent, setSelectedAgent] = useState<AgentSummary | null>(null)
@@ -125,6 +143,17 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
       const res = await fetch('/api/backend-proxy/analytics/ml-predictions')
       if (res.ok) {
         setPredictions(await res.json())
+      }
+    } catch {
+      // non-blocking
+    }
+  }, [])
+
+  const fetchCalibration = useCallback(async () => {
+    try {
+      const res = await fetch('/api/backend-proxy/analytics/calibration-dashboard?days=30')
+      if (res.ok) {
+        setCalibration(await res.json())
       }
     } catch {
       // non-blocking
@@ -160,6 +189,7 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
     fetchData()
     fetchQualityData()
     fetchPredictions()
+    fetchCalibration()
     const interval = setInterval(fetchData, 30000)
     return () => clearInterval(interval)
   }, [fetchData, fetchQualityData])
@@ -447,6 +477,75 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
                 </tbody>
               </table>
             </div>
+          </div>
+        )}
+
+        {/* Calibration Dashboard Section */}
+        {calibration && calibration.overall.total_events > 0 && (
+          <div className="mb-6">
+            <h3 className="text-sm font-medium text-lia-text-secondary flex items-center gap-2 mb-3">
+              <Activity className="w-4 h-4" />
+              Calibração LIA vs. Recrutador
+            </h3>
+            <div className="grid grid-cols-4 gap-3 mb-4">
+              <MetricCard
+                icon={<CheckCircle className="w-4 h-4" />}
+                title="Taxa de Concordância"
+                value={`${(calibration.overall.agreement_rate * 100).toFixed(0)}%`}
+                accentColor={calibration.overall.agreement_rate >= 0.75 ? 'var(--wedo-green-bright)' : 'var(--status-warning)'}
+              />
+              <MetricCard
+                icon={<Zap className="w-4 h-4" />}
+                title="Total Eventos"
+                value={calibration.overall.total_events}
+                accentColor="var(--lia-text-secondary)"
+              />
+              <MetricCard
+                icon={<Brain className="w-4 h-4" />}
+                title="Score Médio LIA"
+                value={`${calibration.overall.avg_lia_score}`}
+                accentColor="var(--wedo-cyan)"
+              />
+              <MetricCard
+                icon={<AlertTriangle className="w-4 h-4" />}
+                title="Sugestões Pendentes"
+                value={calibration.pending_suggestions}
+                accentColor={calibration.pending_suggestions > 0 ? 'var(--status-warning)' : 'var(--wedo-green-bright)'}
+              />
+            </div>
+            {calibration.domains.length > 0 && (
+              <div className="rounded-lg border border-lia-border-subtle overflow-hidden">
+                <table className="w-full text-xs">
+                  <thead>
+                    <tr className="bg-lia-bg-secondary dark:bg-lia-bg-tertiary">
+                      <th className="text-left p-2 font-medium text-lia-text-disabled">Domínio</th>
+                      <th className="text-right p-2 font-medium text-lia-text-disabled">Eventos</th>
+                      <th className="text-right p-2 font-medium text-lia-text-disabled">Concordam</th>
+                      <th className="text-right p-2 font-medium text-lia-text-disabled">Divergem</th>
+                      <th className="text-right p-2 font-medium text-lia-text-disabled">Taxa</th>
+                      <th className="text-center p-2 font-medium text-lia-text-disabled">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-lia-border-subtle">
+                    {calibration.domains.map(d => (
+                      <tr key={d.domain} className={`hover:bg-lia-bg-secondary/50 ${d.needs_calibration ? 'bg-status-warning/5' : ''}`}>
+                        <td className="p-2 font-medium text-lia-text-primary">{d.domain}</td>
+                        <td className="p-2 text-right text-lia-text-secondary">{d.total_events}</td>
+                        <td className="p-2 text-right text-wedo-green-bright">{d.agree_count}</td>
+                        <td className="p-2 text-right text-status-error">{d.disagree_count}</td>
+                        <td className="p-2 text-right text-lia-text-secondary">{(d.agreement_rate * 100).toFixed(0)}%</td>
+                        <td className="p-2 text-center">
+                          {d.needs_calibration
+                            ? <span className="text-status-warning font-medium">Calibrar</span>
+                            : <span className="text-wedo-green-bright">OK</span>
+                          }
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         )}
 
