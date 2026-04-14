@@ -59,274 +59,47 @@ function usePipelinePulse() {
   return { pulse, loading }
 }
 
-const RECRUITMENT_STAGES: WorkflowReelStage[] = [
-  {
-    id: "definir-vaga",
-    label: "Definir Vaga",
-    shortLabel: "Vaga",
-    icon: Briefcase,
-    color: {
-      accent: "var(--wedo-cyan, #60BED1)",
-      accentBg: "rgba(96, 190, 209, 0.10)",
-      nodeBorder: "var(--wedo-cyan, #60BED1)",
-      cardBorder: "rgba(96, 190, 209, 0.25)",
-    },
-    suggestions: [
-      {
-        id: "create-job",
-        title: "Criar nova vaga",
-        description: "Configure requisitos com descrição detalhada",
-        command: "Criar uma nova vaga",
-      },
-      {
-        id: "job-template",
-        title: "Usar modelo de vaga",
-        description: "Comece a partir de um modelo existente",
-        command: "Criar vaga a partir de template",
-      },
-    ],
-  },
-  {
-    id: "sourcing",
-    label: "Captação",
-    shortLabel: "Captação",
-    icon: Search,
-    pulseStageId: "sourcing",
-    color: {
-      accent: "var(--wedo-green, #5DA47A)",
-      accentBg: "rgba(93, 164, 122, 0.10)",
-      nodeBorder: "var(--wedo-green, #5DA47A)",
-      cardBorder: "rgba(93, 164, 122, 0.25)",
-    },
-    suggestions: [
-      {
-        id: "search-candidates",
-        title: "Buscar candidatos",
-        description: "Encontre perfis por skills ou experiência",
-        command: "Buscar candidatos",
-      },
-      {
-        id: "add-candidate",
-        title: "Adicionar candidato",
-        description: "Cadastre novo perfil no banco de talentos",
-        command: "Adicione novo candidato",
-      },
-      {
-        id: "talent-pool",
-        title: "Banco de talentos",
-        description: "Gerencie pools e short lists de candidatos",
-        command: "Mostrar meus bancos de talentos",
-      },
-    ],
-  },
-  {
-    id: "triagem",
-    label: "Triagem",
-    shortLabel: "Triagem",
-    icon: UserCheck,
-    pulseStageId: "triagem",
-    color: {
-      accent: "var(--wedo-green, #5DA47A)",
-      accentBg: "rgba(93, 164, 122, 0.10)",
-      nodeBorder: "var(--wedo-green, #5DA47A)",
-      cardBorder: "rgba(93, 164, 122, 0.25)",
-    },
-    suggestions: [
-      {
-        id: "candidate-info",
-        title: "Consultar candidato",
-        description: "Obtenha histórico específico e completo",
-        command: "Consulte informações sobre candidato",
-      },
-      {
-        id: "update-status",
-        title: "Atualizar status",
-        description: "Modifique situação no funil",
-        command: "Atualize status do candidato",
-      },
-    ],
-  },
-  {
-    id: "entrevista",
-    label: "Entrevista",
-    shortLabel: "Entrevista",
-    icon: Calendar,
-    pulseStageId: "entrevista",
-    color: {
-      accent: "var(--wedo-orange, #D19960)",
-      accentBg: "rgba(209, 153, 96, 0.10)",
-      nodeBorder: "var(--wedo-orange, #D19960)",
-      cardBorder: "rgba(209, 153, 96, 0.25)",
-    },
-    suggestions: [
-      {
-        id: "schedule-interview",
-        title: "Agendar entrevista",
-        description: "Marque horário e notifique participantes",
-        command: "Agendar uma entrevista",
-      },
-      {
-        id: "reschedule-interview",
-        title: "Reagendar entrevista",
-        description: "Altere horário de entrevista existente",
-        command: "Reagende uma entrevista",
-      },
-    ],
-  },
-  {
-    id: "oferta",
-    label: "Oferta",
-    shortLabel: "Oferta",
-    icon: FileText,
-    pulseStageId: "oferta",
-    color: {
-      accent: "var(--wedo-purple, #9860D1)",
-      accentBg: "rgba(152, 96, 209, 0.10)",
-      nodeBorder: "var(--wedo-purple, #9860D1)",
-      cardBorder: "rgba(152, 96, 209, 0.25)",
-    },
-    suggestions: [
-      {
-        id: "send-offer",
-        title: "Enviar proposta",
-        description: "Gere e envie proposta salarial ao candidato",
-        command: "Enviar proposta para candidato",
-      },
-      {
-        id: "compare-candidates",
-        title: "Comparar finalistas",
-        description: "Análise lado a lado dos candidatos finais",
-        command: "Comparar candidatos finalistas",
-      },
-    ],
-  },
-  {
-    id: "contratacao",
-    label: "Contratação",
-    shortLabel: "Contratação",
-    icon: TrendingUp,
-    pulseStageId: "contratacao",
-    color: {
-      accent: "var(--wedo-purple, #9860D1)",
-      accentBg: "rgba(152, 96, 209, 0.10)",
-      nodeBorder: "var(--wedo-purple, #9860D1)",
-      cardBorder: "rgba(152, 96, 209, 0.25)",
-    },
-    suggestions: [
-      {
-        id: "register-hire",
-        title: "Registrar contratação",
-        description: "Finalize o processo e atualize o status",
-        command: "Registrar contratação de candidato",
-      },
-      {
-        id: "close-vacancy",
-        title: "Encerrar vaga",
-        description: "Feche a vaga e notifique candidatos",
-        command: "Encerrar vaga",
-      },
-    ],
-  },
+interface StageStructure {
+  id: string
+  icon: React.ElementType
+  pulseStageId?: string
+  color: { accent: string; accentBg: string; nodeBorder: string; cardBorder: string }
+  suggestionIds: string[]
+}
+
+const STAGE_STRUCTURES: StageStructure[] = [
+  { id: "definir-vaga", icon: Briefcase, color: { accent: "var(--wedo-cyan, #60BED1)", accentBg: "rgba(96, 190, 209, 0.10)", nodeBorder: "var(--wedo-cyan, #60BED1)", cardBorder: "rgba(96, 190, 209, 0.25)" }, suggestionIds: ["create-job", "job-template"] },
+  { id: "sourcing", icon: Search, pulseStageId: "sourcing", color: { accent: "var(--wedo-green, #5DA47A)", accentBg: "rgba(93, 164, 122, 0.10)", nodeBorder: "var(--wedo-green, #5DA47A)", cardBorder: "rgba(93, 164, 122, 0.25)" }, suggestionIds: ["search-candidates", "add-candidate", "talent-pool"] },
+  { id: "triagem", icon: UserCheck, pulseStageId: "triagem", color: { accent: "var(--wedo-green, #5DA47A)", accentBg: "rgba(93, 164, 122, 0.10)", nodeBorder: "var(--wedo-green, #5DA47A)", cardBorder: "rgba(93, 164, 122, 0.25)" }, suggestionIds: ["candidate-info", "update-status"] },
+  { id: "entrevista", icon: Calendar, pulseStageId: "entrevista", color: { accent: "var(--wedo-orange, #D19960)", accentBg: "rgba(209, 153, 96, 0.10)", nodeBorder: "var(--wedo-orange, #D19960)", cardBorder: "rgba(209, 153, 96, 0.25)" }, suggestionIds: ["schedule-interview", "reschedule-interview"] },
+  { id: "oferta", icon: FileText, pulseStageId: "oferta", color: { accent: "var(--wedo-purple, #9860D1)", accentBg: "rgba(152, 96, 209, 0.10)", nodeBorder: "var(--wedo-purple, #9860D1)", cardBorder: "rgba(152, 96, 209, 0.25)" }, suggestionIds: ["send-offer", "compare-candidates"] },
+  { id: "contratacao", icon: TrendingUp, pulseStageId: "contratacao", color: { accent: "var(--wedo-purple, #9860D1)", accentBg: "rgba(152, 96, 209, 0.10)", nodeBorder: "var(--wedo-purple, #9860D1)", cardBorder: "rgba(152, 96, 209, 0.25)" }, suggestionIds: ["register-hire", "close-vacancy"] },
 ]
 
-const UTILITY_NODES: WorkflowReelStage[] = [
-  {
-    id: "analytics",
-    label: "Análises",
-    shortLabel: "Análises",
-    icon: BarChart3,
-    color: {
-      accent: "var(--wedo-amber, #D1A960)",
-      accentBg: "rgba(209, 169, 96, 0.10)",
-      nodeBorder: "var(--wedo-amber, #D1A960)",
-      cardBorder: "rgba(209, 169, 96, 0.25)",
-    },
-    suggestions: [
-      {
-        id: "job-report",
-        title: "Relatório da vaga",
-        description: "Métricas e status do processo seletivo",
-        command: "Gerar relatório da vaga",
-      },
-      {
-        id: "daily-briefing",
-        title: "Briefing diário",
-        description: "Resumo do dia com alertas e pendências",
-        command: "Me dê o briefing de hoje",
-      },
-      {
-        id: "hiring-predictions",
-        title: "Previsões",
-        description: "Estimativas de prazo e conversão do funil",
-        command: "Mostrar previsões de contratação",
-      },
-    ],
-  },
-  {
-    id: "ia-automacoes",
-    label: "IA & Automações",
-    shortLabel: "IA",
-    icon: Sparkles,
-    color: {
-      accent: "var(--wedo-cyan, #60BED1)",
-      accentBg: "rgba(96, 190, 209, 0.10)",
-      nodeBorder: "var(--wedo-cyan, #60BED1)",
-      cardBorder: "rgba(96, 190, 209, 0.25)",
-    },
-    suggestions: [
-      {
-        id: "configure-automations",
-        title: "Configurar automações",
-        description: "Regras automáticas de triagem e transição",
-        command: "Configurar automações de recrutamento",
-      },
-      {
-        id: "wsi-screening",
-        title: "Triagem WSI",
-        description: "Avaliação inteligente com metodologia WSI",
-        command: "Iniciar triagem WSI para candidatos",
-      },
-      {
-        id: "ai-suggestions",
-        title: "Sugestões da LIA",
-        description: "Recomendações baseadas no histórico",
-        command: "O que você sugere para minhas vagas?",
-      },
-    ],
-  },
-  {
-    id: "configuracoes",
-    label: "Configurações",
-    shortLabel: "Config",
-    icon: Settings,
-    color: {
-      accent: "var(--lia-text-secondary, #8A8F98)",
-      accentBg: "rgba(138, 143, 152, 0.10)",
-      nodeBorder: "var(--lia-text-secondary, #8A8F98)",
-      cardBorder: "rgba(138, 143, 152, 0.25)",
-    },
-    suggestions: [
-      {
-        id: "ai-credits",
-        title: "Créditos IA",
-        description: "Consulte saldo e consumo de créditos",
-        command: "Verificar meus créditos de IA",
-      },
-      {
-        id: "hiring-policy",
-        title: "Política de contratação",
-        description: "Ajuste regras e nível de automação",
-        command: "Configurar política de contratação",
-      },
-      {
-        id: "email-templates",
-        title: "Templates de email",
-        description: "Gerencie modelos de comunicação",
-        command: "Gerenciar templates de email",
-      },
-    ],
-  },
+const UTILITY_STRUCTURES: StageStructure[] = [
+  { id: "analytics", icon: BarChart3, color: { accent: "var(--wedo-amber, #D1A960)", accentBg: "rgba(209, 169, 96, 0.10)", nodeBorder: "var(--wedo-amber, #D1A960)", cardBorder: "rgba(209, 169, 96, 0.25)" }, suggestionIds: ["job-report", "daily-briefing", "hiring-predictions"] },
+  { id: "ia-automacoes", icon: Sparkles, color: { accent: "var(--wedo-cyan, #60BED1)", accentBg: "rgba(96, 190, 209, 0.10)", nodeBorder: "var(--wedo-cyan, #60BED1)", cardBorder: "rgba(96, 190, 209, 0.25)" }, suggestionIds: ["configure-automations", "wsi-screening", "ai-suggestions"] },
+  { id: "configuracoes", icon: Settings, color: { accent: "var(--lia-text-secondary, #8A8F98)", accentBg: "rgba(138, 143, 152, 0.10)", nodeBorder: "var(--lia-text-secondary, #8A8F98)", cardBorder: "rgba(138, 143, 152, 0.25)" }, suggestionIds: ["ai-credits", "hiring-policy", "email-templates"] },
 ]
+
+function useTranslatedStages(structures: StageStructure[]): WorkflowReelStage[] {
+  const ts = useTranslations('chat.workflowReels.stages')
+  const tsg = useTranslations('chat.workflowReels.suggestions')
+  return useMemo(() => structures.map(s => ({
+    id: s.id,
+    label: ts(`${s.id}.label` as `definir-vaga.label`),
+    shortLabel: ts(`${s.id}.shortLabel` as `definir-vaga.shortLabel`),
+    icon: s.icon,
+    pulseStageId: s.pulseStageId,
+    color: s.color,
+    suggestions: s.suggestionIds.map(sid => ({
+      id: sid,
+      title: tsg(`${sid}.title` as `create-job.title`),
+      description: tsg(`${sid}.description` as `create-job.description`),
+      command: tsg(`${sid}.command` as `create-job.command`),
+    })),
+  })), [ts, tsg, structures])
+}
 
 interface ChatWorkflowReelsProps {
   onSelect: (command: string) => void
@@ -451,34 +224,20 @@ function useDragToScroll(scrollRef: React.RefObject<HTMLDivElement | null>) {
   return { onMouseDown, grabbing, wasDragging }
 }
 
-function safeTrans(t: (key: string) => string, key: string, fallback: string): string {
-  const result = t(key)
-  return result === key || result.startsWith("chat.") ? fallback : result
-}
-
-function useTranslatedStages(stages: WorkflowReelStage[], t: (key: string) => string): WorkflowReelStage[] {
-  return useMemo(() => stages.map(stage => ({
-    ...stage,
-    label: safeTrans(t, `stages.${stage.id}.label`, stage.label),
-    shortLabel: safeTrans(t, `stages.${stage.id}.shortLabel`, stage.shortLabel || stage.label),
-    suggestions: stage.suggestions.map(s => ({
-      ...s,
-      title: safeTrans(t, `suggestions.${s.id}.title`, s.title),
-      description: safeTrans(t, `suggestions.${s.id}.description`, s.description),
-      command: safeTrans(t, `suggestions.${s.id}.command`, s.command),
-    })),
-  })), [stages, t])
-}
 
 export function ChatWorkflowReels({
   onSelect,
   compact = false,
-  stages = RECRUITMENT_STAGES,
-  utilityNodes = UTILITY_NODES,
+  stages: stagesProp,
+  utilityNodes: utilityNodesProp,
 }: ChatWorkflowReelsProps) {
-  const t = useTranslations('chat')
-  const translatedStages = useTranslatedStages(stages, t)
-  const translatedUtility = useTranslatedStages(utilityNodes, t)
+  const t = useTranslations('chat.workflowReels')
+  const defaultStages = useTranslatedStages(STAGE_STRUCTURES)
+  const defaultUtility = useTranslatedStages(UTILITY_STRUCTURES)
+  const stages = stagesProp ?? defaultStages
+  const utilityNodes = utilityNodesProp ?? defaultUtility
+  const translatedStages = stages
+  const translatedUtility = utilityNodes
   const allNodes = [...translatedStages, ...translatedUtility]
   const nodesWithSuggestions = allNodes.filter((s) => s.suggestions.length > 0)
   const firstWithSuggestions = nodesWithSuggestions[0]?.id ?? null

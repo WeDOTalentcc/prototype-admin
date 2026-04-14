@@ -122,32 +122,3 @@ export function getHelpResponse(t: ReturnType<typeof useTranslations>) {
   return t('helpResponse')
 }
 
-export const HELP_RESPONSE_FALLBACK = `**O que a LIA pode fazer:**
-
-**Criar vagas**
-- Criar vaga com enriquecimento automatico do JD
-- Gerar perguntas de triagem WSI (CBI/Bloom/Dreyfus)
-- Configurar elegibilidade e publicar
-
-**Buscar candidatos**
-- Sourcing automatico (local/global/hibrido)
-- Busca por skills, experiencia, localizacao
-- Talent pools e listas
-
-**Analisar**
-- Pipeline health e gargalos
-- Analytics por vaga (funil, velocidade, qualidade)
-- Relatorios semanais/mensais
-
-**Comunicar**
-- Agendar entrevistas (direto ou self-scheduling)
-- Enviar feedback (aprovacao/rejeicao)
-- Email e WhatsApp
-
-**Atalhos**
-- @nome — mencionar candidato ou vaga
-- /criar vaga — iniciar wizard
-- /buscar — buscar candidatos
-- /pipeline — ver pipeline
-- /relatorio — gerar relatorio
-- Arrastar PDF — auto-detecta CV ou JD`

@@ -108,6 +108,45 @@
     "wrongPassword": "Senha incorreta. Verifique suas credenciais."
   },
   "chat": {
+    "workflowReels": {
+      "scrollLeft": "Rolar para esquerda",
+      "scrollRight": "Rolar para direita",
+      "stages": {
+        "definir-vaga": { "label": "Definir Vaga", "shortLabel": "Vaga" },
+        "sourcing": { "label": "Captação", "shortLabel": "Captação" },
+        "triagem": { "label": "Triagem", "shortLabel": "Triagem" },
+        "entrevista": { "label": "Entrevista", "shortLabel": "Entrevista" },
+        "oferta": { "label": "Oferta", "shortLabel": "Oferta" },
+        "contratacao": { "label": "Contratação", "shortLabel": "Contratação" },
+        "analytics": { "label": "Análises", "shortLabel": "Análises" },
+        "ia-automacoes": { "label": "IA & Automações", "shortLabel": "IA" },
+        "configuracoes": { "label": "Configurações", "shortLabel": "Config" }
+      },
+      "suggestions": {
+        "create-job": { "title": "Criar nova vaga", "description": "Configure requisitos com descrição detalhada", "command": "Criar uma nova vaga" },
+        "job-template": { "title": "Usar modelo de vaga", "description": "Comece a partir de um modelo existente", "command": "Criar vaga a partir de template" },
+        "search-candidates": { "title": "Buscar candidatos", "description": "Encontre perfis por skills ou experiência", "command": "Buscar candidatos" },
+        "add-candidate": { "title": "Adicionar candidato", "description": "Cadastre novo perfil no banco de talentos", "command": "Adicione novo candidato" },
+        "talent-pool": { "title": "Banco de talentos", "description": "Gerencie pools e short lists de candidatos", "command": "Mostrar meus bancos de talentos" },
+        "candidate-info": { "title": "Consultar candidato", "description": "Obtenha histórico específico e completo", "command": "Consulte informações sobre candidato" },
+        "update-status": { "title": "Atualizar status", "description": "Modifique situação no funil", "command": "Atualize status do candidato" },
+        "schedule-interview": { "title": "Agendar entrevista", "description": "Marque horário e notifique participantes", "command": "Agendar uma entrevista" },
+        "reschedule-interview": { "title": "Reagendar entrevista", "description": "Altere horário de entrevista existente", "command": "Reagende uma entrevista" },
+        "send-offer": { "title": "Enviar proposta", "description": "Gere e envie proposta salarial ao candidato", "command": "Enviar proposta para candidato" },
+        "compare-candidates": { "title": "Comparar finalistas", "description": "Análise lado a lado dos candidatos finais", "command": "Comparar candidatos finalistas" },
+        "register-hire": { "title": "Registrar contratação", "description": "Finalize o processo e atualize o status", "command": "Registrar contratação de candidato" },
+        "close-vacancy": { "title": "Encerrar vaga", "description": "Feche a vaga e notifique candidatos", "command": "Encerrar vaga" },
+        "job-report": { "title": "Relatório da vaga", "description": "Métricas e status do processo seletivo", "command": "Gerar relatório da vaga" },
+        "daily-briefing": { "title": "Briefing diário", "description": "Resumo do dia com alertas e pendências", "command": "Me dê o briefing de hoje" },
+        "hiring-predictions": { "title": "Previsões", "description": "Estimativas de prazo e conversão do funil", "command": "Mostrar previsões de contratação" },
+        "configure-automations": { "title": "Configurar automações", "description": "Regras automáticas de triagem e transição", "command": "Configurar automações de recrutamento" },
+        "wsi-screening": { "title": "Triagem WSI", "description": "Avaliação inteligente com metodologia WSI", "command": "Iniciar triagem WSI para candidatos" },
+        "ai-suggestions": { "title": "Sugestões da LIA", "description": "Recomendações baseadas no histórico", "command": "O que você sugere para minhas vagas?" },
+        "ai-credits": { "title": "Créditos IA", "description": "Consulte saldo e consumo de créditos", "command": "Verificar meus créditos de IA" },
+        "hiring-policy": { "title": "Política de contratação", "description": "Ajuste regras e nível de automação", "command": "Configurar política de contratação" },
+        "email-templates": { "title": "Templates de email", "description": "Gerencie modelos de comunicação", "command": "Gerenciar templates de email" }
+      }
+    },
     "greeting": "Como posso ajudar hoje?",
     "greetingFull": "Como posso ajudar você hoje?",
     "greetingMorning": "Bom dia",

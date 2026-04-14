@@ -26,9 +26,12 @@ export function ChatSuggestionsPanel({
   const [activeCategory, setActiveCategory] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
 
+  const queryKeyMap: Record<string, string> = Object.fromEntries(
+    QUERY_EXAMPLES.map(q => [q.id, tq(q.id as `q${number}`)])
+  )
   const translatedQueries = QUERY_EXAMPLES.map(q => ({
     ...q,
-    question: tq(q.id as any),
+    question: queryKeyMap[q.id] ?? q.question,
   }))
 
   const filteredQueries = translatedQueries.filter(query => {
@@ -111,21 +114,24 @@ export function ChatSuggestionsPanel({
         >
           {t('all')}
         </button>
-        {Object.entries(CATEGORY_INFO).map(([key, { icon: Icon }]) => (
-          <button
-            key={key}
-            onClick={() => setActiveCategory(activeCategory === key ? null : key)}
-            className={cn(
-              "inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-medium transition-colors whitespace-nowrap",
-              activeCategory === key
-                ? "bg-lia-btn-primary-bg text-lia-btn-primary-text"
-                : "bg-lia-bg-tertiary text-lia-text-secondary hover:bg-lia-interactive-hover border border-lia-border-subtle"
-            )}
-          >
-            <Icon className="w-2.5 h-2.5" />
-            {tc(key as any)}
-          </button>
-        ))}
+        {(Object.keys(CATEGORY_INFO) as Array<'metricas' | 'candidatos' | 'vagas' | 'pipeline' | 'analise' | 'previsao' | 'comparacao'>).map((key) => {
+          const { icon: Icon } = CATEGORY_INFO[key]
+          return (
+            <button
+              key={key}
+              onClick={() => setActiveCategory(activeCategory === key ? null : key)}
+              className={cn(
+                "inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-medium transition-colors whitespace-nowrap",
+                activeCategory === key
+                  ? "bg-lia-btn-primary-bg text-lia-btn-primary-text"
+                  : "bg-lia-bg-tertiary text-lia-text-secondary hover:bg-lia-interactive-hover border border-lia-border-subtle"
+              )}
+            >
+              <Icon className="w-2.5 h-2.5" />
+              {tc(key)}
+            </button>
+          )
+        })}
       </div>
 
       <ScrollArea className={cn(

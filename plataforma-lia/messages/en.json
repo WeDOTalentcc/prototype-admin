@@ -108,6 +108,45 @@
     "wrongPassword": "Incorrect password. Please check your credentials."
   },
   "chat": {
+    "workflowReels": {
+      "scrollLeft": "Scroll left",
+      "scrollRight": "Scroll right",
+      "stages": {
+        "definir-vaga": { "label": "Define Job", "shortLabel": "Job" },
+        "sourcing": { "label": "Sourcing", "shortLabel": "Sourcing" },
+        "triagem": { "label": "Screening", "shortLabel": "Screening" },
+        "entrevista": { "label": "Interview", "shortLabel": "Interview" },
+        "oferta": { "label": "Offer", "shortLabel": "Offer" },
+        "contratacao": { "label": "Hiring", "shortLabel": "Hiring" },
+        "analytics": { "label": "Analytics", "shortLabel": "Analytics" },
+        "ia-automacoes": { "label": "AI & Automations", "shortLabel": "AI" },
+        "configuracoes": { "label": "Settings", "shortLabel": "Config" }
+      },
+      "suggestions": {
+        "create-job": { "title": "Create new job", "description": "Configure requirements with detailed description", "command": "Create a new job" },
+        "job-template": { "title": "Use job template", "description": "Start from an existing template", "command": "Create job from template" },
+        "search-candidates": { "title": "Search candidates", "description": "Find profiles by skills or experience", "command": "Search candidates" },
+        "add-candidate": { "title": "Add candidate", "description": "Register new profile in the talent pool", "command": "Add new candidate" },
+        "talent-pool": { "title": "Talent pool", "description": "Manage pools and candidate short lists", "command": "Show my talent pools" },
+        "candidate-info": { "title": "Query candidate", "description": "Get full and specific history", "command": "Query candidate information" },
+        "update-status": { "title": "Update status", "description": "Change pipeline status", "command": "Update candidate status" },
+        "schedule-interview": { "title": "Schedule interview", "description": "Set time and notify participants", "command": "Schedule an interview" },
+        "reschedule-interview": { "title": "Reschedule interview", "description": "Change existing interview time", "command": "Reschedule an interview" },
+        "send-offer": { "title": "Send offer", "description": "Generate and send salary offer to candidate", "command": "Send offer to candidate" },
+        "compare-candidates": { "title": "Compare finalists", "description": "Side-by-side analysis of final candidates", "command": "Compare finalist candidates" },
+        "register-hire": { "title": "Register hire", "description": "Finalize the process and update status", "command": "Register candidate hire" },
+        "close-vacancy": { "title": "Close job", "description": "Close the job and notify candidates", "command": "Close job" },
+        "job-report": { "title": "Job report", "description": "Metrics and selection process status", "command": "Generate job report" },
+        "daily-briefing": { "title": "Daily briefing", "description": "Day summary with alerts and pending items", "command": "Give me today's briefing" },
+        "hiring-predictions": { "title": "Predictions", "description": "Time estimates and pipeline conversion", "command": "Show hiring predictions" },
+        "configure-automations": { "title": "Configure automations", "description": "Automatic screening and transition rules", "command": "Configure recruitment automations" },
+        "wsi-screening": { "title": "WSI Screening", "description": "Intelligent assessment with WSI methodology", "command": "Start WSI screening for candidates" },
+        "ai-suggestions": { "title": "LIA Suggestions", "description": "Recommendations based on history", "command": "What do you suggest for my jobs?" },
+        "ai-credits": { "title": "AI Credits", "description": "Check balance and credit usage", "command": "Check my AI credits" },
+        "hiring-policy": { "title": "Hiring policy", "description": "Adjust rules and automation level", "command": "Configure hiring policy" },
+        "email-templates": { "title": "Email templates", "description": "Manage communication templates", "command": "Manage email templates" }
+      }
+    },
     "greeting": "How can I help today?",
     "greetingFull": "How can I help you today?",
     "greetingMorning": "Good morning",
