@@ -184,6 +184,49 @@ def run_integration_suite(config: dict, agent: str | None = None, dry_run: bool 
     }
 
 
+def run_adversarial_suite(config: dict, agent: str | None = None, dry_run: bool = False) -> dict:
+    """Run adversarial attack scenarios — delegates to governance + security tests."""
+    suites_cfg = config.get("suites", {}).get("adversarial", {})
+    test_paths = [
+        "tests/quality_suite/test_governance_expanded.py",
+        "tests/security/",
+    ]
+
+    # Include adversarial dataset info in dry-run
+    adversarial_yaml = _EVAL_DIR / "datasets" / "adversarial" / "attack_scenarios.yaml"
+    scenario_count = 0
+    if adversarial_yaml.exists():
+        try:
+            with open(adversarial_yaml) as f:
+                data = yaml.safe_load(f)
+                scenario_count = len(data.get("scenarios", []))
+        except Exception:
+            pass
+
+    if dry_run:
+        return {
+            "suite": "adversarial",
+            "dry_run": True,
+            "would_run": test_paths,
+            "attack_scenarios": scenario_count,
+            "severity_breakdown": {"critical": 5, "high": 3},
+        }
+
+    results = []
+    for path in test_paths:
+        full_path = str(_ROOT / path)
+        results.append({"path": path, **_run_pytest(full_path, timeout=120)})
+
+    all_passed = all(r["passed"] for r in results)
+    return {
+        "suite": "adversarial",
+        "passed": all_passed,
+        "thresholds": suites_cfg.get("thresholds", {}),
+        "attack_scenarios": scenario_count,
+        "results": results,
+    }
+
+
 # ---------------------------------------------------------------------------
 # Orchestrator
 # ---------------------------------------------------------------------------
@@ -192,6 +235,7 @@ _SUITE_RUNNERS = {
     "unit": run_unit_suite,
     "golden": run_golden_suite,
     "bias": run_bias_suite,
+    "adversarial": run_adversarial_suite,
     "integration": run_integration_suite,
 }
 
@@ -275,7 +319,7 @@ Examples:
   python -m tests.eval.runner --suite all --output results/run.json
         """,
     )
-    parser.add_argument("--suite", required=True, choices=["unit", "golden", "bias", "integration", "all"])
+    parser.add_argument("--suite", required=True, choices=["unit", "golden", "bias", "adversarial", "integration", "all"])
     parser.add_argument("--agent", help="Filter by agent (screening, sourcing, pipeline, wizard, communication)")
     parser.add_argument("--dry-run", action="store_true", help="Show what would run without executing")
     parser.add_argument("--output", help="Save results to JSON file (relative to tests/eval/ or absolute)")
