@@ -16,6 +16,7 @@ import {
   QuestionCategory,
   EligibilityQuestionTemplate,
 } from"@/components/settings/eligibility-questions-bank"
+import { useTranslations } from "next-intl"
 import { textStyles, actionButtonStyles } from '@/lib/design-tokens'
 import { ScreeningQuestion, NewQuestionForm } from './useRecruitmentHub'
 
@@ -58,6 +59,7 @@ export function RecruitmentScreeningTab({
   onToggleCategory, onToggleBankQuestion, onAddFromBank,
   getQuestionsByCategory, isQuestionAlreadyAdded,
 }: RecruitmentScreeningTabProps) {
+  const t = useTranslations("settings")
   return (
     <div className="space-y-6">
       {error && (
@@ -75,7 +77,7 @@ export function RecruitmentScreeningTab({
 
       <div className="px-3 py-2.5 rounded-xl bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 border border-lia-border-subtle dark:border-lia-border-subtle">
         <p className={`${textStyles.caption} text-lia-text-secondary`}>
-          <span className="font-semibold text-lia-text-primary">Perguntas automáticas</span> (modelo de trabalho, localização, idiomas, regime de contratação) são geradas automaticamente pela LIA a partir dos campos de cada vaga — não precisam ser configuradas aqui.
+          <span className="font-semibold text-lia-text-primary">{t("recruitment.screening.autoQuestionsNote")}</span> {t("recruitment.screening.autoQuestionsDesc")}
         </p>
       </div>
 
@@ -85,10 +87,10 @@ export function RecruitmentScreeningTab({
             <div>
               <CardTitle className={`${textStyles.h4} flex items-center gap-2`}>
                 <MessageSquare className="w-3.5 h-3.5 text-lia-text-primary" />
-                Catálogo de Perguntas de Elegibilidade
+                {t("recruitment.screening.catalogTitle")}
               </CardTitle>
               <p className={`${textStyles.description} mt-1`} aria-live="polite" aria-atomic="true">
-                Perguntas padrão da empresa — aparecem ativas em todas as vagas por padrão. O recrutador pode desativar individualmente em cada vaga.
+                {t("recruitment.screening.catalogDesc")}
               </p>
             </div>
             <div className="flex items-center gap-2">
@@ -96,25 +98,25 @@ export function RecruitmentScreeningTab({
                 <>
                   <button onClick={() => setShowQuestionBank(!showQuestionBank)} className={actionButtonStyles.smOutline}>
                     <Library className={actionButtonStyles.icon} />
-                    Banco de Perguntas
+                    {t("recruitment.screening.questionBank")}
                   </button>
                   <button onClick={() => setShowQuestionForm(true)} className={actionButtonStyles.smOutline}>
                     <Plus className={actionButtonStyles.icon} />
-                    Nova Pergunta
+                    {t("recruitment.screening.newQuestion")}
                   </button>
                   <button onClick={onCancelEditQuestions} disabled={savingQuestions} className={actionButtonStyles.smSecondary}>
-                    Cancelar
+                    {t("recruitment.screening.cancel")}
                   </button>
                   <button onClick={onSaveQuestions} disabled={savingQuestions} className={actionButtonStyles.smPrimary}>
                     {savingQuestions ? (
                       <>
                         <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none" />
-                        Salvando...
+                        {t("recruitment.screening.saving")}
                       </>
                     ) : (
                       <>
                         <Save className="w-3.5 h-3.5" />
-                        Salvar Alterações
+                        {t("recruitment.screening.saveChanges")}
                       </>
                     )}
                   </button>
@@ -122,7 +124,7 @@ export function RecruitmentScreeningTab({
               ) : (
                 <button onClick={onStartEditQuestions} className={actionButtonStyles.smOutline}>
                   <Pencil className={actionButtonStyles.icon} />
-                  Editar
+                  {t("recruitment.screening.edit")}
                 </button>
               )}
             </div>
@@ -172,18 +174,18 @@ export function RecruitmentScreeningTab({
                   </p>
                   <div className="flex items-center gap-2 mt-1">
                     <Badge variant="outline" className={`text-micro py-0 px-1.5 ${!isEditingQuestions ? 'opacity-60' : ''}`}>
-                      {q.type === 'text' ? 'Texto' : q.type === 'yesno' ? 'Sim/Não' : 'Escala'}
+                      {q.type === 'text' ? t("recruitment.screening.typeText") : q.type === 'yesno' ? t("recruitment.screening.typeYesNo") : t("recruitment.screening.typeScale")}
                     </Badge>
                     {q.required && (
-                      <Badge className={`text-micro py-0 px-1.5 bg-lia-btn-primary-bg text-lia-btn-primary-text ${!isEditingQuestions ? 'opacity-60' : ''}`}>Obrigatória</Badge>
+                      <Badge className={`text-micro py-0 px-1.5 bg-lia-btn-primary-bg text-lia-btn-primary-text ${!isEditingQuestions ? 'opacity-60' : ''}`}>{t("recruitment.screening.required")}</Badge>
                     )}
                     {q.is_eliminatory && (
                       <Badge className={`text-micro py-0 px-1.5  border border-status-error/30 ${!isEditingQuestions ? 'opacity-60' : ''}`}>
-                        Eliminatória {q.expected_answer && `(${q.expected_answer})`}
+                        {t("recruitment.screening.eliminatory")} {q.expected_answer && `(${q.expected_answer})`}
                       </Badge>
                     )}
                     {q.isDefault && (
-                      <span className="text-micro text-lia-text-tertiary">Padrão</span>
+                      <span className="text-micro text-lia-text-tertiary">{t("recruitment.screening.default")}</span>
                     )}
                   </div>
                 </div>
@@ -222,20 +224,21 @@ function QuestionBankSection({
   onClose, onToggleCategory, onToggleBankQuestion, onAddFromBank,
   getQuestionsByCategory, isQuestionAlreadyAdded,
 }: QuestionBankSectionProps) {
+  const t = useTranslations("settings")
   return (
     <Card className="border-2 border-dashed border-lia-border-default bg-lia-bg-secondary/30 dark:bg-lia-bg-secondary/10 rounded-xl">
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Brain className="w-4 h-4 text-wedo-cyan" />
-            <span className={textStyles.h4}>Banco de Perguntas Sugeridas</span>
-            <Badge variant="outline" className="text-micro">{ELIGIBILITY_QUESTIONS_BANK.length} perguntas</Badge>
+            <span className={textStyles.h4}>{t("recruitment.screening.suggestedBankTitle")}</span>
+            <Badge variant="outline" className="text-micro">{t("recruitment.screening.questionsCount", { count: ELIGIBILITY_QUESTIONS_BANK.length })}</Badge>
           </div>
           <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={onClose}>
             <X className="w-3.5 h-3.5" />
           </Button>
         </div>
-        <p className={`${textStyles.caption} mt-1`}>Selecione perguntas pré-definidas organizadas por categoria</p>
+        <p className={`${textStyles.caption} mt-1`}>{t("recruitment.screening.selectByCategory")}</p>
       </CardHeader>
       <CardContent className="pt-0 space-y-2 max-h-content-lg overflow-y-auto">
         {(Object.keys(QUESTION_CATEGORIES) as QuestionCategory[]).filter(cat => cat !== 'general').map(category => {
@@ -280,11 +283,11 @@ function QuestionBankSection({
                           <p className={textStyles.bodySmall}>{q.question}</p>
                           <div className="flex items-center gap-1.5 mt-1">
                             <Badge variant="outline" className="text-micro py-0 px-1">
-                              {q.type === 'text' ? 'Texto' : q.type === 'yesno' ? 'Sim/Não' : q.type === 'scale' ? 'Escala' : 'Múltipla'}
+                              {q.type === 'text' ? t("recruitment.screening.typeText") : q.type === 'yesno' ? t("recruitment.screening.typeYesNo") : q.type === 'scale' ? t("recruitment.screening.typeScale") : t("recruitment.screening.typeMultiple")}
                             </Badge>
                             <span className={textStyles.caption}>{q.contextHint}</span>
                             {isAdded && (
-                              <Badge className="text-micro py-0 px-1">Já adicionada</Badge>
+                              <Badge className="text-micro py-0 px-1">{t("recruitment.screening.alreadyAdded")}</Badge>
                             )}
                           </div>
                         </div>
@@ -305,7 +308,7 @@ function QuestionBankSection({
               className={`w-full gap-1.5 rounded-md py-2 bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover dark:hover:bg-lia-interactive-active ${textStyles.label}`}
             >
               <Plus className="w-3.5 h-3.5" />
-              Adicionar {selectedBankQuestions.size} pergunta{selectedBankQuestions.size > 1 ? 's' : ''} selecionada{selectedBankQuestions.size > 1 ? 's' : ''}
+              {t("recruitment.screening.addSelected", { count: selectedBankQuestions.size })}
             </Button>
           </div>
         )}
@@ -322,70 +325,71 @@ interface QuestionFormSectionProps {
 }
 
 function QuestionFormSection({ newQuestion, setNewQuestion, onAdd, onCancel }: QuestionFormSectionProps) {
+  const t = useTranslations("settings")
   return (
     <Card className="border border-lia-border-subtle/50 dark:border-lia-border-subtle/50 bg-lia-bg-primary/80 dark:bg-lia-bg-secondary/80 backdrop-blur-sm rounded-xl">
       <CardContent className="p-3 space-y-4">
         <div>
-          <label className={`block mb-1.5 ${textStyles.labelSmall}`}>Pergunta</label>
+          <label className={`block mb-1.5 ${textStyles.labelSmall}`}>{t("recruitment.screening.questionLabel")}</label>
           <input
             type="text"
             value={newQuestion.question}
             onChange={(e) => setNewQuestion(prev => ({ ...prev, question: e.target.value }))}
             className={`w-full px-2 py-1.5 border border-lia-border-subtle rounded-md bg-lia-bg-primary ${textStyles.body}`}
-            placeholder="Digite a pergunta..."
+            placeholder={t("recruitment.screening.questionPlaceholder")}
           />
         </div>
         <div className="flex gap-3">
           <div className="flex-1">
-            <label className={`block mb-1.5 ${textStyles.labelSmall}`}>Tipo</label>
+            <label className={`block mb-1.5 ${textStyles.labelSmall}`}>{t("recruitment.screening.typeLabel")}</label>
             <select
               value={newQuestion.type}
               onChange={(e) => setNewQuestion(prev => ({ ...prev, type: e.target.value as 'text' | 'yesno' | 'scale' | 'multiple' }))}
               className={`w-full px-2 py-1.5 border border-lia-border-subtle rounded-md bg-lia-bg-primary ${textStyles.body}`}
             >
-              <option value="text">Texto livre</option>
-              <option value="yesno">Sim/Não</option>
-              <option value="scale">Escala 1-5</option>
+              <option value="text">{t("recruitment.screening.freeText")}</option>
+              <option value="yesno">{t("recruitment.screening.yesNo")}</option>
+              <option value="scale">{t("recruitment.screening.scale15")}</option>
             </select>
           </div>
           <div className="flex items-end gap-4">
             <label className={`flex items-center gap-2 ${textStyles.description}`}>
               <input type="checkbox" checked={newQuestion.required} onChange={(e) => setNewQuestion(prev => ({ ...prev, required: e.target.checked }))} className="rounded-md" />
-              Obrigatória
+              {t("recruitment.screening.requiredCheckbox")}
             </label>
             <label className={`flex items-center gap-2 ${textStyles.description} text-status-error`}>
               <input type="checkbox" checked={newQuestion.is_eliminatory} onChange={(e) => setNewQuestion(prev => ({ ...prev, is_eliminatory: e.target.checked }))} className="rounded-md border-status-error/30" />
-              Eliminatória
+              {t("recruitment.screening.eliminatoryCheckbox")}
             </label>
           </div>
         </div>
         {newQuestion.is_eliminatory && newQuestion.type === 'yesno' && (
           <div className="p-3 bg-status-error/10 border border-status-error/30 rounded-xl">
             <label className={`block mb-1.5 ${textStyles.labelSmall} text-status-error`}>
-              Resposta esperada (candidato será avisado se não atender)
+              {t("recruitment.screening.expectedAnswer")}
             </label>
             <div className="flex gap-3">
               <label className={`flex items-center gap-2 ${textStyles.description}`}>
                 <input type="radio" name="expected_answer" value="Sim" checked={newQuestion.expected_answer === 'Sim'} onChange={(e) => setNewQuestion(prev => ({ ...prev, expected_answer: e.target.value }))} className="border-lia-border-default" />
-                Sim
+                {t("recruitment.screening.yes")}
               </label>
               <label className={`flex items-center gap-2 ${textStyles.description}`}>
                 <input type="radio" name="expected_answer" value="Não" checked={newQuestion.expected_answer === 'Não'} onChange={(e) => setNewQuestion(prev => ({ ...prev, expected_answer: e.target.value }))} className="border-lia-border-default" />
-                Não
+                {t("recruitment.screening.no")}
               </label>
             </div>
             <p className={`${textStyles.caption} text-status-error mt-2`} aria-live="polite" aria-atomic="true">
-              Se o candidato responder diferente, será avisado e poderá reconsiderar ou ir para o banco de talentos.
+              {t("recruitment.screening.eliminatoryWarning")}
             </p>
           </div>
         )}
         <div className="flex justify-end gap-2">
           <Button variant="ghost" size="sm" className={`py-1.5 px-2 ${textStyles.label}`} onClick={onCancel}>
-            Cancelar
+            {t("recruitment.screening.cancel")}
           </Button>
           <Button size="sm" className={`py-1.5 px-2 bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover dark:hover:bg-lia-interactive-active ${textStyles.label}`} onClick={onAdd}>
             <Save className="w-3.5 h-3.5 mr-1" />
-            Salvar
+            {t("recruitment.screening.save")}
           </Button>
         </div>
       </CardContent>

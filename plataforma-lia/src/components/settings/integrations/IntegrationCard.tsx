@@ -5,6 +5,7 @@ import { Button } from"@/components/ui/button"
 import { cn } from"@/lib/utils"
 import { cardStyles, textStyles } from"@/lib/design-tokens"
 import { CheckCircle2, Clock, Settings, ExternalLink, Info } from"lucide-react"
+import { useTranslations } from "next-intl"
 import type { Integration } from"./integration-data"
 
 interface IntegrationCardProps {
@@ -13,14 +14,15 @@ interface IntegrationCardProps {
 }
 
 export function IntegrationCard({ integration, onClick }: IntegrationCardProps) {
+  const t = useTranslations("settings")
   const isComingSoon = integration.status ==="coming_soon"
   const isConnected = integration.status ==="connected"
 
   const actionLabel = isConnected
-    ?"Detalhes"
+    ? t("integrations.card.details")
     : isComingSoon
-      ?"Saiba mais"
-      :"Conectar"
+      ? t("integrations.card.learnMore")
+      : t("integrations.card.connect")
 
   const ActionIcon = isConnected ? Info : isComingSoon ? Clock : ExternalLink
 
@@ -50,7 +52,7 @@ export function IntegrationCard({ integration, onClick }: IntegrationCardProps) 
               </h3>
               {integration.isActiveProvider && (
                 <Badge variant="info" className="text-[10px] px-1.5 py-0 flex-shrink-0">
-                  Ativo
+                  {t("integrations.card.active")}
                 </Badge>
               )}
             </div>
@@ -58,17 +60,17 @@ export function IntegrationCard({ integration, onClick }: IntegrationCardProps) 
               {isConnected ? (
                 <Badge variant="success" className="text-[10px] gap-1 px-2 py-0.5">
                   <CheckCircle2 className="w-3 h-3" />
-                  Conectado
+                  {t("integrations.card.connected")}
                 </Badge>
               ) : isComingSoon ? (
                 <Badge variant="secondary" className="text-[10px] gap-1 px-2 py-0.5">
                   <Clock className="w-3 h-3" />
-                  Em breve
+                  {t("integrations.card.comingSoon")}
                 </Badge>
               ) : (
                 <Badge variant="outline" className="text-[10px] gap-1 px-2 py-0.5 text-lia-text-secondary">
                   <Settings className="w-3 h-3" />
-                  Não configurado
+                  {t("integrations.card.notConfigured")}
                 </Badge>
               )}
             </div>

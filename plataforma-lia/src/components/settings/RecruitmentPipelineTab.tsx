@@ -11,6 +11,7 @@ import {
   RecruitmentJourneyConfig,
   RecruitmentStage,
 } from"@/components/settings/RecruitmentJourneyConfig"
+import { useTranslations } from "next-intl"
 import { textStyles, actionButtonStyles } from '@/lib/design-tokens'
 
 interface RecruitmentPipelineTabProps {
@@ -33,6 +34,7 @@ export function RecruitmentPipelineTab({
   recruitmentStages, isEditingPipeline, hasStageChanges, savingStages,
   onStagesChange, onStartEdit, onCancelEdit, onSave, onToggleSubStatus,
 }: RecruitmentPipelineTabProps) {
+  const t = useTranslations("settings")
   if (loading) {
     return (
       <div className="space-y-6">
@@ -71,7 +73,7 @@ export function RecruitmentPipelineTab({
         <div className="flex items-center gap-2">
           {isEditingPipeline && hasStageChanges && (
             <Badge variant="outline" className="bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-subtle text-micro">
-              Alterações não salvas
+              {t("recruitment.pipeline.unsavedChanges")}
             </Badge>
           )}
         </div>
@@ -83,7 +85,7 @@ export function RecruitmentPipelineTab({
                 disabled={savingStages}
                 className={actionButtonStyles.smSecondary}
               >
-                Cancelar
+                {t("recruitment.pipeline.cancel")}
               </button>
               <button
                 onClick={onSave}
@@ -93,12 +95,12 @@ export function RecruitmentPipelineTab({
                 {savingStages ? (
                   <>
                     <Loader2 className={`${actionButtonStyles.icon} animate-spin motion-reduce:animate-none`} />
-                    Salvando...
+                    {t("recruitment.pipeline.saving")}
                   </>
                 ) : (
                   <>
                     <Save className={actionButtonStyles.icon} />
-                    Salvar Alterações
+                    {t("recruitment.pipeline.saveChanges")}
                   </>
                 )}
               </button>
@@ -109,7 +111,7 @@ export function RecruitmentPipelineTab({
               className={actionButtonStyles.smOutline}
             >
               <Pencil className={actionButtonStyles.icon} />
-              Editar
+              {t("recruitment.pipeline.edit")}
             </button>
           )}
         </div>
