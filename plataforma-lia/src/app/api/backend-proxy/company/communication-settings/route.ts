@@ -1,72 +1,60 @@
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from 'next/server'
-import { validateBody } from '@/lib/api/validate'
-import { z } from 'zod'
+import { getAuthHeaders } from '@/lib/api/auth-headers'
 
 const BACKEND_URL = process.env.BACKEND_URL || 'http://127.0.0.1:8001'
 
 export async function GET(request: NextRequest) {
   try {
     const backendUrl = `${BACKEND_URL}/api/v1/company/communication-settings`
+    const authHeaders = getAuthHeaders(request)
+    const companyId = request.headers.get('X-Company-ID')
     
     const headers: HeadersInit = {
-      'Content-Type': 'application/json',
+      ...authHeaders,
+      ...(companyId ? { 'X-Company-ID': companyId } : {}),
     }
-    
-    const companyId = request.headers.get('X-Company-ID')
-    if (companyId) {
-      headers['X-Company-ID'] = companyId
-    }
-    
+
     const response = await fetch(backendUrl, {
       method: 'GET',
       headers,
+      signal: AbortSignal.timeout(15000),
     })
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({ detail: 'Unknown error' }))
-      return NextResponse.json({ 
-        error: 'Erro ao buscar configurações de comunicação', 
-        details: errorData,
-        status: response.status 
-      }, { status: response.status })
+      return NextResponse.json(
+        { signature: '', sending_hours_start: 8, sending_hours_end: 20, respect_holidays: true, respect_weekends: true, max_messages_per_day: 3 },
+        { status: 200 }
+      )
     }
 
     const data = await response.json()
     return NextResponse.json(data)
-  } catch (error) {
-    return NextResponse.json({ 
-      error: 'Erro ao conectar com o backend',
-      status: 500 
-    }, { status: 500 })
+  } catch {
+    return NextResponse.json(
+      { signature: '', sending_hours_start: 8, sending_hours_end: 20, respect_holidays: true, respect_weekends: true, max_messages_per_day: 3 },
+      { status: 200 }
+    )
   }
 }
 
-const _bodySchema = z.record(z.string(), z.unknown())
-
 export async function PUT(request: NextRequest) {
   try {
-    const bodyResult = await validateBody(request, _bodySchema)
-
-    if (!bodyResult.success) return bodyResult.response
-
-    const body = bodyResult.data
-    
+    const body = await request.json()
     const backendUrl = `${BACKEND_URL}/api/v1/company/communication-settings`
-    
-    const headers: HeadersInit = {
-      'Content-Type': 'application/json',
-    }
-    
+    const authHeaders = getAuthHeaders(request)
     const companyId = request.headers.get('X-Company-ID')
-    if (companyId) {
-      headers['X-Company-ID'] = companyId
+
+    const headers: HeadersInit = {
+      ...authHeaders,
+      ...(companyId ? { 'X-Company-ID': companyId } : {}),
     }
-    
+
     const response = await fetch(backendUrl, {
       method: 'PUT',
       headers,
       body: JSON.stringify(body),
+      signal: AbortSignal.timeout(15000),
     })
 
     if (!response.ok) {
@@ -79,7 +67,7 @@ export async function PUT(request: NextRequest) {
 
     const data = await response.json()
     return NextResponse.json(data)
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: 'Erro ao conectar com o backend' },
       { status: 500 }
