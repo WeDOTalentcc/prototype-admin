@@ -1,8 +1,7 @@
 "use client"
 
-import { useState, useCallback, useEffect } from "react"
+import { useState, useCallback, useEffect, useRef } from "react"
 import type { CandidateLocal } from "@/services/lia-api"
-import { ensureServerReady } from "@/lib/backend-ready"
 
 const BACKEND_URL = '/api/backend-proxy'
 const PER_PAGE = 20
@@ -39,67 +38,61 @@ export function useCandidatesList(initialFilters?: CandidatesListFilters): UseCa
   const [currentPage, setCurrentPage] = useState(1)
   const [filters, setFiltersState] = useState<CandidatesListFilters>(initialFilters ?? {})
   const [fetchTrigger, setFetchTrigger] = useState(0)
+  const requestIdRef = useRef(0)
 
   useEffect(() => {
-    let cancelled = false
+    const thisRequestId = ++requestIdRef.current
 
-    async function doFetch() {
-      setLoading(true)
-      setError(null)
+    const query = new URLSearchParams()
+    if (filters.search) query.set('search', filters.search)
+    if (filters.status) query.set('status', filters.status)
+    if (filters.tags) query.set('tags', filters.tags)
+    if (filters.seniority) query.set('seniority', filters.seniority)
+    if (filters.sort_by) query.set('sort_by', filters.sort_by)
+    if (filters.sort_order) query.set('sort_order', filters.sort_order)
+    query.set('limit', String(PER_PAGE))
+    query.set('offset', String((currentPage - 1) * PER_PAGE))
 
-      await ensureServerReady()
-      if (cancelled) return
+    const qs = query.toString()
+    const url = `${BACKEND_URL}/candidates${qs ? `?${qs}` : ''}`
 
-      const query = new URLSearchParams()
-      if (filters.search) query.set('search', filters.search)
-      if (filters.status) query.set('status', filters.status)
-      if (filters.tags) query.set('tags', filters.tags)
-      if (filters.seniority) query.set('seniority', filters.seniority)
-      if (filters.sort_by) query.set('sort_by', filters.sort_by)
-      if (filters.sort_order) query.set('sort_order', filters.sort_order)
-      query.set('limit', String(PER_PAGE))
-      query.set('offset', String((currentPage - 1) * PER_PAGE))
+    setLoading(true)
+    setError(null)
 
-      const qs = query.toString()
-      const url = `${BACKEND_URL}/candidates${qs ? `?${qs}` : ''}`
-      const maxRetries = 2
-      const baseDelay = 2000
+    let retryCount = 0
+    const maxRetries = 2
+    const baseDelay = 1500
 
-      for (let attempt = 0; attempt <= maxRetries; attempt++) {
-        if (cancelled) return
-        try {
-          const response = await fetch(url, {
-            headers: { 'Content-Type': 'application/json' },
-            signal: AbortSignal.timeout(12000),
-          })
-
-          if (!response.ok) {
-            throw new Error(`Backend retornou ${response.status}`)
+    function doFetch() {
+      fetch(url, {
+        headers: { 'Content-Type': 'application/json' },
+        signal: AbortSignal.timeout(35000),
+      })
+        .then(response => {
+          if (!response.ok) throw new Error(`Backend retornou ${response.status}`)
+          return response.json()
+        })
+        .then(data => {
+          if (requestIdRef.current !== thisRequestId) return
+          setCandidates(data.items || data.candidates || [])
+          setTotal(data.total ?? 0)
+          setLoading(false)
+        })
+        .catch(err => {
+          if (requestIdRef.current !== thisRequestId) return
+          if (retryCount < maxRetries) {
+            retryCount++
+            const delay = baseDelay * Math.pow(1.5, retryCount - 1)
+            setTimeout(doFetch, delay)
+            return
           }
-
-          const data = await response.json()
-
-          if (!cancelled) {
-            setCandidates(data.candidates || data.items || [])
-            setTotal(data.total ?? 0)
-            setLoading(false)
-          }
-          return
-        } catch (err) {
-          if (cancelled) return
-          if (attempt < maxRetries) {
-            const delay = baseDelay * Math.pow(2, attempt)
-            await new Promise(r => setTimeout(r, delay))
-          } else {
-            setError("Erro ao carregar candidatos. Tente novamente.")
-            setLoading(false)
-          }
-        }
-      }
+          console.error('[useCandidatesList] fetch error:', err)
+          setError("Erro ao carregar candidatos. Tente novamente.")
+          setLoading(false)
+        })
     }
 
     doFetch()
-    return () => { cancelled = true }
   }, [filters, currentPage, fetchTrigger])
 
   const setFilters = useCallback(

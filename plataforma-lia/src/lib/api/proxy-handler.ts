@@ -151,7 +151,7 @@ export function createProxyHandlers<M extends HttpMethod = "GET">(
           }
         }
 
-        const response = await fetch(url, { ...fetchOptions, signal: AbortSignal.timeout(15000) })
+        const response = await fetch(url, { ...fetchOptions, signal: AbortSignal.timeout(30000) })
 
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}))
