@@ -4,11 +4,8 @@ import React from "react"
 import { useTranslations } from "next-intl"
 import { cn } from "@/lib/utils"
 import { cardStyles } from "@/lib/design-tokens"
-const ALL_TOOLS = [
-  "search_candidates", "list_jobs", "get_job_details", "get_candidate_details",
-  "get_pipeline_summary", "search_talent_pool", "get_analytics_summary",
-  "get_company_culture", "get_evaluation_criteria", "summarize_context"
-]
+import { TOOL_KEYS } from "./types"
+const ALL_TOOLS = TOOL_KEYS
 
 interface ToolSelectorProps {
   selectedTools: string[]
