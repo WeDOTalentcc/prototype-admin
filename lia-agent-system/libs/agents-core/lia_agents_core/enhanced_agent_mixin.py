@@ -46,14 +46,25 @@ class EnhancedAgentMixin:
     _autonomy_engine: AutonomyEngine
     _learning_extractor: LearningExtractor
     _enhanced_domain: str
-    
+    _calibration_weights: Dict[str, float]
+    _calibration_cache_ts: float
+
+    # Default weights used when CalibrationWeight has no data for the tenant/domain.
+    _DEFAULT_WEIGHTS: Dict[str, float] = {
+        "technical": 0.70,
+        "behavioral": 0.30,
+    }
+    _CALIBRATION_CACHE_TTL: float = 300.0  # 5 minutes
+
     def _setup_enhanced(self, domain: str) -> None:
         """Initialize enhanced capabilities.
-        
+
         Args:
             domain: The agent domain name (pipeline, sourcing, wizard, etc.)
         """
         self._enhanced_domain = domain
+        self._calibration_weights = dict(self._DEFAULT_WEIGHTS)
+        self._calibration_cache_ts = 0.0
         wm = WorkingMemoryService()
         ltm = LongTermMemoryService()
         self._memory_integration = MemoryIntegration(
@@ -96,12 +107,96 @@ class EnhancedAgentMixin:
             )
             return ""
     
+    @property
+    def calibration_weights(self) -> Dict[str, float]:
+        """Current calibration weights for this agent's domain.
+
+        Returns cached weights loaded by load_calibration_weights().
+        If never loaded, returns defaults (technical=0.70, behavioral=0.30).
+        """
+        return self._calibration_weights
+
+    async def load_calibration_weights(
+        self,
+        company_id: str,
+        job_id: str | None = None,
+    ) -> Dict[str, float]:
+        """Load CalibrationWeight from DB for this tenant/domain.
+
+        Cached for _CALIBRATION_CACHE_TTL seconds. Falls back to defaults
+        when no calibrated weights exist (graceful — never breaks scoring).
+
+        Call this in agent process() before scoring/ranking operations:
+            weights = await self.load_calibration_weights(company_id, job_id)
+            technical_weight = weights.get("technical", 0.70)
+
+        Args:
+            company_id: Tenant ID for multi-tenant isolation.
+            job_id: Optional job-specific weights (falls back to global).
+
+        Returns:
+            Dict[dimension_name, adjusted_weight]
+        """
+        import time
+
+        now = time.time()
+        if (now - self._calibration_cache_ts) < self._CALIBRATION_CACHE_TTL:
+            return self._calibration_weights
+
+        try:
+            from app.core.database import AsyncSessionLocal
+            from sqlalchemy import and_, select
+            from lia_models.calibration import CalibrationWeight
+
+            async with AsyncSessionLocal() as db:
+                # Try job-specific weights first
+                query = select(CalibrationWeight).where(
+                    and_(
+                        CalibrationWeight.company_id == company_id,
+                        CalibrationWeight.is_active == True,
+                    )
+                )
+                if job_id:
+                    query = query.where(CalibrationWeight.job_id == job_id)
+                else:
+                    query = query.where(CalibrationWeight.job_id.is_(None))
+
+                result = await db.execute(query)
+                weights = result.scalars().all()
+
+                if weights:
+                    self._calibration_weights = {
+                        w.dimension: w.adjusted_weight for w in weights
+                    }
+                    logger.info(
+                        "[%s] Loaded %d calibration weights (company=%s, job=%s)",
+                        self._enhanced_domain, len(weights), company_id, job_id,
+                    )
+                else:
+                    self._calibration_weights = dict(self._DEFAULT_WEIGHTS)
+                    logger.debug(
+                        "[%s] No calibration weights found, using defaults (company=%s)",
+                        self._enhanced_domain, company_id,
+                    )
+
+                self._calibration_cache_ts = now
+
+        except Exception as exc:
+            logger.warning(
+                "[%s] CalibrationWeight load failed (using defaults): %s",
+                self._enhanced_domain, exc,
+            )
+            self._calibration_weights = dict(self._DEFAULT_WEIGHTS)
+            self._calibration_cache_ts = now
+
+        return self._calibration_weights
+
     async def _resolve_guardrails(self, company_id: str) -> List[str]:
         """Resolve dynamic guardrails based on company autonomy policy.
-        
+
         Args:
             company_id: Company ID to look up policy.
-            
+
         Returns:
             List of tool names requiring user confirmation.
         """

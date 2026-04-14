@@ -182,7 +182,9 @@ class CalibrationWeight(Base):
     __tablename__ = "calibration_weights"
     
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
-    
+
+    company_id = Column(String, nullable=True, index=True)  # multi-tenant isolation
+
     job_id = Column(String, nullable=True)
     job_category = Column(String(100), nullable=True)
     
@@ -206,6 +208,7 @@ class CalibrationWeight(Base):
         """Convert weight to dictionary."""
         return {
             "id": self.id,
+            "company_id": self.company_id,
             "job_id": self.job_id,
             "job_category": self.job_category,
             "dimension": self.dimension,
