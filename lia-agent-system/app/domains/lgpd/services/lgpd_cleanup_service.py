@@ -390,7 +390,6 @@ _SECONDARY_PII_TABLES: list[tuple[str, str]] = [
     ("lgpd_consents", "candidate_id"),
     ("candidate_consent_grants", "candidate_id"),
     ("conversation_memories", "user_id"),  # user_id stores candidate_id in chat context
-    ("query_embeddings", "cache_key"),     # cleaned by pattern match, not direct FK
 ]
 
 # Tables safe for parameterized deletion (extends _ALLOWED_TTL_TABLES)
@@ -418,8 +417,6 @@ async def _propagate_deletion_to_secondary_stores(
 
     # --- DB tables with candidate_id FK ---
     for table_name, id_col in _SECONDARY_PII_TABLES:
-        if table_name == "query_embeddings":
-            continue  # handled separately below
         if table_name not in _ALLOWED_PROPAGATION_TABLES:
             continue
         if not _SAFE_TABLE_RE.match(table_name):
@@ -456,6 +453,14 @@ async def _propagate_deletion_to_secondary_stores(
                 pass
             result[f"propagation_{table_name}"] = f"error: {exc}"
 
+    # --- query_embeddings: queries may contain candidate names ---
+    try:
+        qe_count = await _cleanup_query_embeddings_for_candidates(db, candidate_ids, dry_run)
+        result["propagation_query_embeddings"] = qe_count
+    except Exception as exc:
+        logger.warning("LGPD propagation: query_embeddings failed: %s", exc)
+        result["propagation_query_embeddings"] = f"error: {exc}"
+
     # --- Redis cache flush for deleted candidates ---
     try:
         redis_cleaned = await _flush_redis_candidate_cache(candidate_ids, dry_run)
@@ -465,6 +470,60 @@ async def _propagate_deletion_to_secondary_stores(
         result["propagation_redis"] = f"error: {exc}"
 
     return result
+
+
+async def _cleanup_query_embeddings_for_candidates(
+    db: AsyncSession,
+    candidate_ids: list[str],
+    dry_run: bool = True,
+) -> int:
+    """
+    Delete query_embeddings rows whose query_text contains candidate identifiers.
+
+    query_embeddings stores search queries that may include candidate names or IDs
+    (e.g. "Find candidates named João Silva"). We search query_text for each
+    candidate_id and delete matching rows.
+    """
+    if not candidate_ids:
+        return 0
+
+    total = 0
+    try:
+        for cid in candidate_ids:
+            count_q = await db.execute(
+                text(
+                    "SELECT COUNT(*) FROM query_embeddings "
+                    "WHERE query_text ILIKE :pattern OR cache_key ILIKE :pattern"
+                ),
+                {"pattern": f"%{cid}%"},
+            )
+            count = count_q.scalar_one() or 0
+            if count > 0:
+                logger.info(
+                    "LGPD propagation%s: query_embeddings — %d rows matching candidate %s",
+                    " (dry-run)" if dry_run else "",
+                    count, cid,
+                )
+                if not dry_run:
+                    await db.execute(
+                        text(
+                            "DELETE FROM query_embeddings "
+                            "WHERE query_text ILIKE :pattern OR cache_key ILIKE :pattern"
+                        ),
+                        {"pattern": f"%{cid}%"},
+                    )
+                total += count
+
+        if total > 0 and not dry_run:
+            await db.commit()
+    except Exception as exc:
+        logger.warning("LGPD propagation: query_embeddings cleanup failed: %s", exc)
+        try:
+            await db.rollback()
+        except Exception:
+            pass
+
+    return total
 
 
 async def _flush_redis_candidate_cache(
