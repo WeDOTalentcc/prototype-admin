@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect } from "react"
 import type { CandidateLocal } from "@/services/lia-api"
+import { ensureServerReady } from "@/lib/backend-ready"
 
 const BACKEND_URL = '/api/backend-proxy'
 const PER_PAGE = 20
@@ -45,6 +46,9 @@ export function useCandidatesList(initialFilters?: CandidatesListFilters): UseCa
     async function doFetch() {
       setLoading(true)
       setError(null)
+
+      await ensureServerReady()
+      if (cancelled) return
 
       const query = new URLSearchParams()
       if (filters.search) query.set('search', filters.search)

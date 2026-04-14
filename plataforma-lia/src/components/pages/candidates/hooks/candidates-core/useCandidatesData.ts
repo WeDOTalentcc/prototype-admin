@@ -10,41 +10,7 @@ import { useBulkCandidateDataRequests } from "@/hooks/candidates/use-candidate-d
 import { mapCandidateToInternal as _mapCandidateToInternal } from "@/components/pages/candidates/hooks/useCandidatesExecuteSearch"
 import type { Candidate } from "@/components/pages/candidates/types"
 import type { JobVacancy, EmailTemplate } from "@/services/lia-api"
-
-async function waitForServer(maxWaitMs = 20_000): Promise<boolean> {
-  const start = Date.now()
-  while (Date.now() - start < maxWaitMs) {
-    try {
-      const r = await fetch('/api/backend-proxy/health', { signal: AbortSignal.timeout(5000) })
-      if (r.ok) return true
-    } catch {}
-    await new Promise(r => setTimeout(r, 3000))
-  }
-  return false
-}
-
-let serverReady = false
-
-async function fetchWithRetry<T>(
-  fn: () => Promise<T>,
-  retries = 3,
-  baseDelayMs = 2000,
-): Promise<T> {
-  if (!serverReady) {
-    serverReady = await waitForServer(20_000)
-  }
-
-  for (let attempt = 0; attempt <= retries; attempt++) {
-    try {
-      return await fn()
-    } catch (err) {
-      if (attempt === retries) throw err
-      const delay = Math.min(baseDelayMs * Math.pow(1.5, attempt), 15000)
-      await new Promise(r => setTimeout(r, delay))
-    }
-  }
-  throw new Error("unreachable")
-}
+import { fetchWithRetry } from "@/lib/backend-ready"
 
 interface UseCandidatesDataOptions {
   /** Propagate the new Set of viewed candidate IDs upward */
@@ -52,6 +18,8 @@ interface UseCandidatesDataOptions {
   /** Sync candidates into the parent state (overridden by search results) */
   onCandidatesChange: (candidates: Candidate[]) => void
   onLoadingChange: (loading: boolean) => void
+  /** Propagate fetch error upward so the page can show an error state */
+  onErrorChange?: (error: string | null) => void
   candidateIds: string[]
   candidatesEnabled: boolean
 }
@@ -60,6 +28,7 @@ export function useCandidatesData({
   onViewedIdsChange,
   onCandidatesChange,
   onLoadingChange,
+  onErrorChange,
   candidateIds,
   candidatesEnabled,
 }: UseCandidatesDataOptions) {
@@ -69,7 +38,8 @@ export function useCandidatesData({
   useEffect(() => {
     onCandidatesChange(candidatesListHook.candidates)
     onLoadingChange(candidatesListHook.loading)
-  }, [candidatesListHook.candidates, candidatesListHook.loading, onCandidatesChange, onLoadingChange])
+    onErrorChange?.(candidatesListHook.error)
+  }, [candidatesListHook.candidates, candidatesListHook.loading, candidatesListHook.error, onCandidatesChange, onLoadingChange, onErrorChange])
 
   // ── Bulk data requests for visible candidates ─────────────────────────────
   const { dataRequestsMap, getDataRequestForCandidate } = useBulkCandidateDataRequests({
@@ -184,5 +154,6 @@ export function useCandidatesData({
     getDataRequestForCandidate,
     markCandidateAsViewed,
     refreshCandidates,
+    refreshCandidatesList: candidatesListHook.refresh,
   }
 }

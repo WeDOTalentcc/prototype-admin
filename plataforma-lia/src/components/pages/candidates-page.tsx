@@ -71,6 +71,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
     setUserArchetypes, setUserCollapsedLIA, setViewingList, showCrossTabBanner, showEditQueryModal, showExpandedLIA,
     showGlobalExpansionConfirm, showSaveAsArchetypeModal, showSearchResults, sortBy, sortOrder, viewingList,
     showCandidatePage, showCandidatePreview,
+    candidatesError, refreshCandidatesList,
     tabs,
   } = useCandidatesPageCore({ onAddRecentItem, pendingCandidateOpen, onCandidateOpened })
 
@@ -261,6 +262,8 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
             setShowEditQueryModal={setShowEditQueryModal}
             setShowAddToVacancyModal={setShowAddToVacancyModal}
             isEnrichingContacts={searchResults?.isEnrichingContacts}
+            error={candidatesError}
+            onRetry={refreshCandidatesList}
           />
         )}
 

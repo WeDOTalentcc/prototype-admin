@@ -16,6 +16,8 @@ export interface CandidatesTableAreaProps {
   sortedCandidates: Candidate[]
   selectedCandidatesForBatch: Set<string>
   isLoading: boolean
+  error?: string | null
+  onRetry?: () => void
   visibleCandidates: Candidate[]
   visibleTableColumns: TableColumn[]
   columnWidths: Record<string, number>
@@ -51,6 +53,8 @@ export function CandidatesTableArea({
   sortedCandidates,
   selectedCandidatesForBatch,
   isLoading,
+  error,
+  onRetry,
   visibleCandidates,
   visibleTableColumns,
   columnWidths,
@@ -262,7 +266,24 @@ export function CandidatesTableArea({
               </div>
             )}
 
-            {!isLoading && sortedCandidates.length === 0 && (
+            {!isLoading && sortedCandidates.length === 0 && error && (
+              <div className="bg-lia-bg-primary dark:bg-lia-bg-primary rounded-xl p-8 text-center">
+                <Users className="w-12 h-12 text-status-error mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-lia-text-primary mb-2">
+                  Erro ao carregar candidatos
+                </h3>
+                <p className="text-lia-text-primary mb-4">
+                  {error}
+                </p>
+                {onRetry && (
+                  <Button variant="outline" onClick={onRetry}>
+                    Tentar novamente
+                  </Button>
+                )}
+              </div>
+            )}
+
+            {!isLoading && sortedCandidates.length === 0 && !error && (
               <div className="bg-lia-bg-primary dark:bg-lia-bg-primary rounded-xl p-8 text-center">
                 <Users className="w-12 h-12 text-lia-text-primary mx-auto mb-4" />
                 <h3 className="text-lg font-medium text-lia-text-primary mb-2">

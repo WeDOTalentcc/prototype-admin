@@ -109,6 +109,8 @@ export interface CandidateSearchResultsViewProps {
   isLoadingMore: boolean
   onLoadMore: () => void
   isEnrichingContacts?: boolean
+  error?: string | null
+  onRetry?: () => void
   // Column config
   columnSearchTerm: string
   setColumnSearchTerm: (value: string) => void
@@ -256,6 +258,8 @@ export function CandidateSearchResultsView({
   setShowEditQueryModal,
   setShowAddToVacancyModal,
   isEnrichingContacts,
+  error,
+  onRetry,
 }: CandidateSearchResultsViewProps) {
 
   return (
@@ -453,6 +457,8 @@ export function CandidateSearchResultsView({
           isLoadingMore={isLoadingMore}
           onLoadMore={onLoadMore}
           isEnrichingContacts={isEnrichingContacts}
+          error={error}
+          onRetry={onRetry}
         />
 
         {/* Column Configuration Sidebar */}

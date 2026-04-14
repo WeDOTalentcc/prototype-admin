@@ -154,14 +154,17 @@ export function useCandidatesPageCore({
     },
   } = useCandidatesViewState()
 
+  const [candidatesError, setCandidatesError] = useState<string | null>(null)
+
   const {
     candidateListsForModal, setCandidateListsForModal,
     bulkJobVacancies, bulkEmailTemplates,
-    markCandidateAsViewed, refreshCandidates,
+    markCandidateAsViewed, refreshCandidates, refreshCandidatesList,
   } = useCandidatesData({
     onViewedIdsChange: setViewedCandidateIds,
     onCandidatesChange: setCandidates,
     onLoadingChange: setIsLoading,
+    onErrorChange: setCandidatesError,
     candidateIds: candidates.map(c => c.id),
     candidatesEnabled: candidates.length > 0,
   })
@@ -507,5 +510,6 @@ export function useCandidatesPageCore({
     setUserArchetypes, setUserCollapsedLIA, setViewingList, showCrossTabBanner, showEditQueryModal, showExpandedLIA,
     showGlobalExpansionConfirm, showSaveAsArchetypeModal, showSearchResults, sortBy, sortOrder, viewingList,
     showCandidatePage, showCandidatePreview,
+    candidatesError, refreshCandidatesList,
   }
 }
