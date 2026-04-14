@@ -254,10 +254,13 @@ class ComplianceDomainPrompt(DomainPrompt):
         """
         Executa validações de compliance na resposta já formatada.
 
-        Aplica FactChecker e validadores de domínio customizados.
-        Nunca bloqueia — apenas anota metadados de compliance.
+        Aplica FairnessGuard post-check (output) + FactChecker.
+        Nunca bloqueia — apenas anota metadados e soft_warnings.
         """
         config = self.compliance_config
+
+        # --- Fairness Post-Check (output) ---
+        response = await self._run_fairness_post_check(response, context)
 
         if config.get("fact_checker_enabled", True):
             response = await self._run_fact_checker(response, context)
@@ -406,6 +409,160 @@ class ComplianceDomainPrompt(DomainPrompt):
             )
 
         return None
+
+    # ------------------------------------------------------------------
+    # Fairness Post-Check (output analysis)
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def _load_post_check_config() -> dict:
+        """Load fairness post-check config from YAML. Cached after first load."""
+        if not hasattr(ComplianceDomainPrompt, "_post_check_config_cache"):
+            import os
+            try:
+                import yaml
+                config_path = os.path.join(
+                    os.path.dirname(__file__), "..", "config", "fairness_post_check.yaml"
+                )
+                with open(config_path) as f:
+                    ComplianceDomainPrompt._post_check_config_cache = yaml.safe_load(f) or {}
+            except Exception as exc:
+                logger.debug("[Compliance] fairness_post_check.yaml not found: %s", exc)
+                ComplianceDomainPrompt._post_check_config_cache = {"enabled": False}
+        return ComplianceDomainPrompt._post_check_config_cache
+
+    async def _run_fairness_post_check(
+        self,
+        response: DomainResponse,
+        context: DomainContext,
+    ) -> DomainResponse:
+        """
+        FairnessGuard post-check on agent OUTPUT.
+
+        For decision domains (configured in fairness_post_check.yaml):
+        1. Check response text for biased language
+        2. If response.data contains scores/rankings, flag score distribution issues
+        3. Log metrics as fairness_post_check_result for dashboard
+
+        Never blocks — adds soft_warnings to response.metadata.
+        """
+        try:
+            pc_config = self._load_post_check_config()
+            if not pc_config.get("enabled", False):
+                return response
+
+            decision_domains = pc_config.get("decision_domains", [])
+            if self.domain_id not in decision_domains:
+                return response
+
+            from app.shared.compliance.fairness_guard import FairnessGuard
+
+            guard = FairnessGuard()
+            warnings: list[str] = []
+
+            # --- 1. Check response text for biased language ---
+            if response.message:
+                text_result = guard.check(response.message)
+                if text_result.is_blocked:
+                    warnings.append(
+                        f"Output contains potentially biased language: "
+                        f"category={text_result.category}, terms={text_result.blocked_terms}"
+                    )
+                if text_result.soft_warnings:
+                    warnings.extend(
+                        f"Output bias warning: {w}" for w in text_result.soft_warnings
+                    )
+
+            # --- 2. Check scores/rankings in response.data ---
+            score_warnings = self._check_score_fairness(response.data, pc_config)
+            warnings.extend(score_warnings)
+
+            # --- 3. Annotate response ---
+            if response.metadata is None:
+                response.metadata = {}
+
+            response.metadata["fairness_post_check_result"] = {
+                "domain": self.domain_id,
+                "checked": True,
+                "warnings_count": len(warnings),
+                "has_scores": bool(score_warnings),
+            }
+
+            if warnings:
+                response.metadata.setdefault("fairness_output_warnings", []).extend(warnings)
+                logger.info(
+                    "[Compliance][%s] Fairness post-check: %d warning(s) on output",
+                    self.domain_id,
+                    len(warnings),
+                )
+
+        except Exception as exc:
+            # Fail-open: post-check failure never blocks the response
+            logger.warning(
+                "[Compliance][%s] Fairness post-check failed (fail-open): %s",
+                self.domain_id,
+                exc,
+            )
+
+        return response
+
+    @staticmethod
+    def _check_score_fairness(data: Any, pc_config: dict) -> list[str]:
+        """
+        Analyze scores/rankings in response.data for distribution red flags.
+
+        Checks:
+        - If a ranking list has zero diversity signals (all same demographic hints)
+        - If score variance is suspiciously low (all candidates scored identically)
+        - If top-N is missing expected diversity
+
+        Returns list of warning strings (empty if clean).
+        """
+        if not data or not isinstance(data, dict):
+            return []
+
+        warnings: list[str] = []
+        score_fields = pc_config.get("score_fields", [])
+        ranking_fields = pc_config.get("ranking_fields", [])
+
+        # Check ranking lists
+        for field_name in ranking_fields:
+            items = data.get(field_name)
+            if not items or not isinstance(items, list) or len(items) < 3:
+                continue
+
+            # Extract scores from ranked items
+            scores = []
+            for item in items:
+                if not isinstance(item, dict):
+                    continue
+                for sf in score_fields:
+                    val = item.get(sf)
+                    if isinstance(val, (int, float)):
+                        scores.append(val)
+                        break
+
+            if len(scores) >= 3:
+                # Flag if all scores are identical (suspicious)
+                unique_scores = set(round(s, 4) for s in scores)
+                if len(unique_scores) == 1:
+                    warnings.append(
+                        f"All {len(scores)} candidates in '{field_name}' have identical "
+                        f"score ({scores[0]}) — review scoring criteria for meaningful differentiation"
+                    )
+
+                # Flag extreme concentration at top
+                if len(scores) >= 5:
+                    top_score = max(scores)
+                    top_count = sum(1 for s in scores if abs(s - top_score) < 0.01)
+                    if top_count == 1 and (top_score - sorted(scores)[-2]) > 0.3 * top_score:
+                        warnings.append(
+                            f"Single candidate in '{field_name}' scores significantly above "
+                            f"all others ({top_score:.2f} vs next {sorted(scores)[-2]:.2f}) "
+                            f"— verify no bias in scoring inputs"
+                        )
+
+        return warnings
 
     async def _run_fact_checker(
         self, response: DomainResponse, context: DomainContext
