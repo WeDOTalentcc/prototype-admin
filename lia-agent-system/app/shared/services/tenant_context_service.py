@@ -26,14 +26,49 @@ class TenantContext:
     open_vacancies: int
     autonomy_level: str  # "high" | "medium" | "low"
     plan: str
+    # Platform awareness fields (P35-044)
+    active_channels: list[str] | None = None  # ["email", "whatsapp", "teams"]
+    timezone: str = "America/Sao_Paulo"
+    communication_templates_count: int = 0
+    ml_models_active: list[str] | None = None  # ["wsi_scoring", "time_to_fill"]
 
     def to_prompt_snippet(self) -> str:
-        return (
+        parts = [
             f"Você está assistindo **{self.company_name}**, empresa do setor "
             f"**{self.sector}** com **{self.open_vacancies}** vagas abertas. "
             f"Nível de autonomia configurado: **{self.autonomy_level}**. "
-            f"Plano: {self.plan}."
-        )
+            f"Plano: {self.plan}.",
+        ]
+
+        # Platform awareness: active channels
+        if self.active_channels:
+            channels_str = ", ".join(self.active_channels)
+            parts.append(
+                f"Canais de comunicação ATIVOS: {channels_str}. "
+                "Só ofereça envio pelos canais listados acima."
+            )
+        else:
+            parts.append(
+                "Canais de comunicação: não configurados. "
+                "Informe o recrutador que precisa configurar em Configurações."
+            )
+
+        # Timezone
+        if self.timezone != "America/Sao_Paulo":
+            parts.append(f"Fuso horário do tenant: {self.timezone}.")
+
+        # Communication templates
+        if self.communication_templates_count > 0:
+            parts.append(
+                f"Templates de comunicação disponíveis: {self.communication_templates_count}."
+            )
+
+        # ML models
+        if self.ml_models_active:
+            models_str = ", ".join(self.ml_models_active)
+            parts.append(f"Modelos ML ativos: {models_str}.")
+
+        return "\n".join(parts)
 
 
 class TenantContextService:
@@ -69,6 +104,26 @@ class TenantContextService:
             except Exception:
                 pass
 
+            # Detect active communication channels
+            active_channels = self._detect_active_channels(company)
+
+            # Count communication templates
+            templates_count = 0
+            try:
+                from lia_models.communication_settings import CommunicationTemplate
+                tpl_result = await db.execute(
+                    select(func.count()).select_from(CommunicationTemplate).where(
+                        CommunicationTemplate.company_id == company_id,
+                        CommunicationTemplate.is_active == True,
+                    )
+                )
+                templates_count = tpl_result.scalar() or 0
+            except Exception:
+                pass  # table may not exist yet
+
+            # Detect ML models
+            ml_models = self._detect_ml_models(company)
+
             if company:
                 return TenantContext(
                     company_id=company_id,
@@ -77,6 +132,10 @@ class TenantContextService:
                     open_vacancies=open_vacancies,
                     autonomy_level=autonomy_level,
                     plan=getattr(company, "plan", "standard"),
+                    active_channels=active_channels,
+                    timezone=getattr(company, "timezone", "America/Sao_Paulo"),
+                    communication_templates_count=templates_count,
+                    ml_models_active=ml_models,
                 )
         except Exception as exc:
             logger.debug("[TenantContextService] fallback defaults: %s", exc)
@@ -89,3 +148,30 @@ class TenantContextService:
             autonomy_level="medium",
             plan="standard",
         )
+
+    @staticmethod
+    def _detect_active_channels(company) -> list[str]:
+        """Detect which communication channels are configured for the tenant."""
+        channels = []
+        # Email is always available if company exists
+        channels.append("email")
+        # WhatsApp: check if Twilio is configured
+        import os
+        if os.getenv("TWILIO_ACCOUNT_SID") and os.getenv("ENVIRONMENT") == "production":
+            channels.append("whatsapp")
+        # Teams: check if Microsoft Bot is configured
+        if os.getenv("MICROSOFT_APP_ID") and os.getenv("MICROSOFT_APP_PASSWORD"):
+            channels.append("teams")
+        return channels
+
+    @staticmethod
+    def _detect_ml_models(company) -> list[str]:
+        """Detect which ML models are active for the tenant."""
+        models = ["wsi_scoring"]  # always available (deterministic fallback)
+        try:
+            from app.shared.services.ml_feedback_service import ml_feedback_service
+            if ml_feedback_service and hasattr(ml_feedback_service, "is_trained"):
+                models.append("time_to_fill_prediction")
+        except Exception:
+            pass
+        return models
