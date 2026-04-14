@@ -1,6 +1,7 @@
 "use client"
 
 import React from"react"
+import { useTranslations } from"next-intl"
 import {
   Popover, PopoverContent, PopoverTrigger,
 } from"@/components/ui/popover"
@@ -39,6 +40,7 @@ interface KanbanJobHeaderProps {
 }
 
 export const KanbanJobHeader = React.memo(function KanbanJobHeader(props: KanbanJobHeaderProps) {
+  const t = useTranslations('kanban')
   const {
     onBack, router, currentJob, jobEditForm, setJobEditForm,
     setJobStatusModalMode, setShowJobStatusModal, setShowCloseVacancyModal,
@@ -55,7 +57,7 @@ export const KanbanJobHeader = React.memo(function KanbanJobHeader(props: Kanban
             <div className="flex items-start gap-3 flex-1 min-w-0">
               <Button variant="ghost" size="sm" onClick={() => onBack ? onBack() : router.back()} className="gap-2 mt-1 flex-shrink-0">
                 <ArrowLeft className="w-4 h-4" />
-                Voltar
+                {t('back')}
               </Button>
               <div className="h-8 w-px bg-lia-border-default mt-1 flex-shrink-0"></div>
               <div className="flex-1 min-w-0">
@@ -82,14 +84,14 @@ export const KanbanJobHeader = React.memo(function KanbanJobHeader(props: Kanban
                             onClick={() => { setJobStatusModalMode('pause'); setShowJobStatusModal(true) }}
                           >
                             <PauseCircle className="w-3.5 h-3.5 text-status-warning" />
-                            Pausar vaga
+                            {t('pauseJob')}
                           </button>
                           <button
                             className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs text-status-error hover:bg-status-error/10 transition-colors motion-reduce:transition-none"
                             onClick={() => setShowCloseVacancyModal(true)}
                           >
                             <Archive className="w-3.5 h-3.5" />
-                            Fechar vaga
+                            {t('closeJob')}
                           </button>
                         </>
                       ) : (
@@ -99,14 +101,14 @@ export const KanbanJobHeader = React.memo(function KanbanJobHeader(props: Kanban
                             onClick={() => { setJobStatusModalMode('activate'); setShowJobStatusModal(true) }}
                           >
                             <PlayCircle className="w-3.5 h-3.5" />
-                            Reativar vaga
+                            {t('reactivateJob')}
                           </button>
                           <button
                             className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs text-status-error hover:bg-status-error/10 transition-colors motion-reduce:transition-none"
                             onClick={() => setShowCloseVacancyModal(true)}
                           >
                             <Archive className="w-3.5 h-3.5" />
-                            Fechar vaga
+                            {t('closeJob')}
                           </button>
                         </>
                       )}
@@ -115,7 +117,7 @@ export const KanbanJobHeader = React.memo(function KanbanJobHeader(props: Kanban
                   {(() => {
                     const scrStatus = currentJob.screeningStatus || 'not_configured'
                     const scrLabels = Object.fromEntries(
-                      Object.entries(SCREENING_STATUS_LABELS).map(([k, v]) => [k, `Triagem: ${v}`])
+                      Object.entries(SCREENING_STATUS_LABELS).map(([k, v]) => [k, `${t('screeningPrefix')}: ${v}`])
                     ) as Record<string, string>
                     const scrStyles: Record<string, string> = {
                       not_configured: 'bg-lia-bg-tertiary text-lia-text-secondary border border-lia-border-default',
@@ -129,14 +131,14 @@ export const KanbanJobHeader = React.memo(function KanbanJobHeader(props: Kanban
                       try {
                         await liaApi.updateJobVacancy(jobId, { screeningStatus: newStatus } as Record<string, unknown>)
                         setJobEditForm((prev: Record<string, unknown>) => ({ ...prev, screeningStatus: newStatus }))
-                        toast.success(`Triagem ${newStatus === 'active' ? 'ativada' : newStatus === 'paused' ? 'pausada' : 'atualizada'}`)
+                        toast.success(newStatus === 'active' ? t('screeningActivated') : newStatus === 'paused' ? t('screeningPaused') : t('screeningUpdated'))
                       } catch {
-                        toast.error('Erro ao atualizar triagem')
+                        toast.error(t('screeningUpdateError'))
                       }
                     }
                     const badge = (
                       <Badge className={`font-semibold whitespace-nowrap text-xs px-2 py-0.5 cursor-pointer hover:opacity-80 transition-opacity motion-reduce:transition-none select-none ${(scrStyles as Record<string, string>)[scrStatus as string] || scrStyles.not_configured}`}>
-                        {(scrLabels as Record<string, string>)[scrStatus as string] || 'Triagem: N/C'}
+                        {(scrLabels as Record<string, string>)[scrStatus as string] || t('screeningNA')}
                       </Badge>
                     )
                     if ((scrStatus as string) === 'completed') return badge
@@ -150,7 +152,7 @@ export const KanbanJobHeader = React.memo(function KanbanJobHeader(props: Kanban
                               onClick={() => setActiveTab('edit')}
                             >
                               <Settings className="w-3.5 h-3.5 text-lia-text-tertiary" />
-                              Configurar Triagem
+                              {t('configureScreening')}
                             </button>
                           )}
                           {scrStatus === 'not_started' && (
@@ -160,14 +162,14 @@ export const KanbanJobHeader = React.memo(function KanbanJobHeader(props: Kanban
                                 onClick={() => handleScreeningStatusChange('active')}
                               >
                                 <PlayCircle className="w-3.5 h-3.5" />
-                                Iniciar Triagem
+                                {t('startScreening')}
                               </button>
                               <button
                                 className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none"
                                 onClick={() => setActiveTab('edit')}
                               >
                                 <Settings className="w-3.5 h-3.5 text-lia-text-tertiary" />
-                                Configurar
+                                {t('configure')}
                               </button>
                             </>
                           )}
@@ -177,7 +179,7 @@ export const KanbanJobHeader = React.memo(function KanbanJobHeader(props: Kanban
                               onClick={() => handleScreeningStatusChange('paused')}
                             >
                               <PauseCircle className="w-3.5 h-3.5" />
-                              Pausar Triagem
+                              {t('pauseScreening')}
                             </button>
                           )}
                           {scrStatus === 'paused' && (
@@ -187,14 +189,14 @@ export const KanbanJobHeader = React.memo(function KanbanJobHeader(props: Kanban
                                 onClick={() => handleScreeningStatusChange('active')}
                               >
                                 <PlayCircle className="w-3.5 h-3.5" />
-                                Retomar Triagem
+                                {t('resumeScreening')}
                               </button>
                               <button
                                 className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none"
                                 onClick={() => setActiveTab('edit')}
                               >
                                 <Settings className="w-3.5 h-3.5 text-lia-text-tertiary" />
-                                Configurar
+                                {t('configure')}
                               </button>
                             </>
                           )}
@@ -206,7 +208,7 @@ export const KanbanJobHeader = React.memo(function KanbanJobHeader(props: Kanban
                 <div className="flex items-center gap-1.5 flex-wrap mt-1">
                   {(currentJob.status as string) === 'Rascunho' && (
                     <Badge className="bg-status-warning/10 dark:bg-status-warning/20 border border-status-warning/30 dark:border-status-warning/30 text-status-warning dark:text-status-warning font-semibold whitespace-nowrap text-micro px-1.5 py-0">
-                      Rascunho
+                      {t('draft')}
                     </Badge>
                   )}
                   <Badge className="bg-lia-bg-tertiary border border-lia-border-subtle text-lia-text-primary font-semibold whitespace-nowrap text-micro px-1.5 py-0">
@@ -231,7 +233,7 @@ export const KanbanJobHeader = React.memo(function KanbanJobHeader(props: Kanban
                   )}
                   {!!(currentJob.publishedLinkedIn) && (
                     <Badge className="bg-lia-bg-tertiary border border-lia-border-subtle text-lia-text-primary font-medium whitespace-nowrap text-micro px-1.5 py-0">
-                      Publicada
+                      {t('published')}
                     </Badge>
                   )}
                   <span className="text-micro text-lia-text-disabled mx-0.5">|</span>
@@ -247,31 +249,31 @@ export const KanbanJobHeader = React.memo(function KanbanJobHeader(props: Kanban
                     const isLate = days > 30
                     return (
                       <span className={`text-micro font-semibold whitespace-nowrap ${isLate ? 'text-status-error' : 'text-lia-text-secondary'}`}>
-                        {days}d {isLate ? 'de atraso' : 'aberta'}
+                        {days}d {isLate ? t('late') : t('open')}
                       </span>
                     )
                   })()}
                   {!!(currentJob.updatedAt) && (
                     <span className="text-micro text-lia-text-secondary whitespace-nowrap">
-                      Atualizada: {new Date(currentJob.updatedAt as string).toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' })}
+                      {t('updated')}: {new Date(currentJob.updatedAt as string).toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' })}
                     </span>
                   )}
                   {!!(currentJob.deadlineScreening) && (
                     <Badge className="bg-lia-bg-tertiary border border-lia-border-subtle text-lia-text-primary font-medium whitespace-nowrap text-micro px-1.5 py-0">
                       <Calendar className="w-3 h-3 mr-0.5" />
-                      Prazo triagem: {new Date(currentJob.deadlineScreening as string).toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' })}
+                      {t('screeningDeadline')}: {new Date(currentJob.deadlineScreening as string).toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' })}
                     </Badge>
                   )}
                   {!!(currentJob.deadlineShortlist) && (
                     <Badge className="bg-lia-bg-tertiary border border-lia-border-subtle text-lia-text-primary font-medium whitespace-nowrap text-micro px-1.5 py-0">
                       <Calendar className="w-3 h-3 mr-0.5" />
-                      Prazo short: {new Date(currentJob.deadlineShortlist as string).toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' })}
+                      {t('shortlistDeadline')}: {new Date(currentJob.deadlineShortlist as string).toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' })}
                     </Badge>
                   )}
                   {!!(currentJob.deadlineClosing) && (
                     <Badge className="bg-lia-bg-tertiary border border-lia-border-subtle text-lia-text-primary font-medium whitespace-nowrap text-micro px-1.5 py-0">
                       <Calendar className="w-3 h-3 mr-0.5" />
-                      Encerramento: {new Date(currentJob.deadlineClosing as string).toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' })}
+                      {t('closing')}: {new Date(currentJob.deadlineClosing as string).toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' })}
                     </Badge>
                   )}
                   {computedSuggestions.length > 0 && (
@@ -283,7 +285,7 @@ export const KanbanJobHeader = React.memo(function KanbanJobHeader(props: Kanban
                       }}
                     >
                       <Lightbulb className="w-3 h-3 mr-1" />
-                      {computedSuggestions.length} sugestão{computedSuggestions.length > 1 ? 'ões' : ''} da LIA
+                      {t('liaSuggestions', { count: computedSuggestions.length })}
                     </Badge>
                   )}
                 </div>
@@ -293,25 +295,25 @@ export const KanbanJobHeader = React.memo(function KanbanJobHeader(props: Kanban
             {/* Right: Action Buttons */}
             <div className="flex items-center gap-2 pt-1 flex-shrink-0">
               <Button variant="outline" size="sm" className="gap-2 h-8" onClick={() => {
-                toast.success("Em breve", { description:"Em breve: Configuração de etapas do funil" })
+                toast.success(t('comingSoon'), { description: t('comingSoonStages') })
               }}>
                 <Settings className="w-3.5 h-3.5" />
-                Configurar Etapas
+                {t('configureStages')}
               </Button>
               <Button variant="outline" size="sm" className="gap-2 h-8" onClick={handleShowReport}>
                 <FileText className="w-3.5 h-3.5" />
-                Relatório
+                {t('report')}
               </Button>
               <Button variant="outline" size="sm" className="gap-2 h-8" onClick={() => {
                 if (selectedCandidates.size > 0) {
                   setShowShareGestorModal(true)
                 } else {
                   setSelectedCandidates(new Set((allTableCandidates as Array<Record<string, unknown>>).map(c => String(c.id))))
-                  toast.success("Modo Compartilhamento", { description:"Todos os candidatos foram selecionados. Ajuste a seleção e clique em Compartilhar na barra de ações." })
+                  toast.success(t('shareMode'), { description: t('shareModeDescription') })
                 }
               }}>
                 <Share2 className="w-3.5 h-3.5" />
-                Compartilhar
+                {t('share')}
               </Button>
             </div>
           </div>
@@ -327,7 +329,7 @@ export const KanbanJobHeader = React.memo(function KanbanJobHeader(props: Kanban
               }`}
             >
               <Layers3 className="w-3.5 h-3.5" />
-              Gestão da Vaga
+              {t('jobManagement')}
               <Badge className={`text-micro px-1.5 py-0 ml-1 ${
                 activeTab === 'management'
                   ? 'bg-lia-interactive-active text-lia-text-secondary'
@@ -345,20 +347,20 @@ export const KanbanJobHeader = React.memo(function KanbanJobHeader(props: Kanban
               }`}
             >
               <Settings className="w-3.5 h-3.5" />
-              Configurações
+              {t('settings')}
             </button>
             <div className="ml-auto flex items-center gap-2">
               {pipelineInheritance.isCustomized ? (
                 <>
                   <span className="inline-flex items-center gap-1 text-micro text-status-warning dark:text-status-warning">
                     <Settings className="w-3 h-3" />
-                    Pipeline personalizado
+                    {t('customPipeline')}
                   </span>
                   <button
                     onClick={async () => {
                       const success = await pipelineInheritance.resetToCompanyDefault()
                       if (success) {
-                        toast.success('Pipeline resetado', { description: 'Pipeline restaurado para o padrão da empresa.' })
+                        toast.success(t('pipelineReset'), { description: t('pipelineResetDescription') })
                         window.location.reload()
                       }
                     }}
@@ -367,13 +369,13 @@ export const KanbanJobHeader = React.memo(function KanbanJobHeader(props: Kanban
                    
                   >
                     <RotateCcw className="w-3 h-3" />
-                    Resetar para padrão
+                    {t('resetToDefault')}
                   </button>
                 </>
               ) : (
                 <span className="inline-flex items-center gap-1 text-micro text-lia-text-disabled">
                   <Link2 className="w-3 h-3" />
-                  Herdado da empresa
+                  {t('inheritedFromCompany')}
                 </span>
               )}
             </div>

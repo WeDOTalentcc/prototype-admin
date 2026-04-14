@@ -4,6 +4,7 @@ import { X, Gauge, TrendingUp, FileText, Brain, Code, Globe } from "lucide-react
 import { getPercentageScoreVar, getPercentageScoreBgVar, getPercentageScoreLabel } from "@/lib/score-utils"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
+import { useTranslations } from "next-intl"
 
 interface GeneralScoreModalProps {
   isOpen: boolean
@@ -12,37 +13,14 @@ interface GeneralScoreModalProps {
 }
 
 const SCORE_COMPONENTS = [
-  { 
-    id: 'cv_fit', 
-    label: 'CV / Fit Score', 
-    weight: 25, 
-    icon: FileText,
-    description: 'Aderência do currículo ao perfil da vaga'
-  },
-  { 
-    id: 'triagem_lia', 
-    label: 'Triagem LIA', 
-    weight: 30, 
-    icon: Brain,
-    description: 'Avaliação da conversa de triagem com a LIA'
-  },
-  { 
-    id: 'teste_tecnico', 
-    label: 'Teste Técnico', 
-    weight: 25, 
-    icon: Code,
-    description: 'Desempenho no teste técnico aplicado'
-  },
-  { 
-    id: 'teste_ingles', 
-    label: 'Teste de Inglês', 
-    weight: 20, 
-    icon: Globe,
-    description: 'Nível de proficiência em inglês'
-  },
+  { id: 'cv_fit', weight: 25, icon: FileText },
+  { id: 'triagem_lia', weight: 30, icon: Brain },
+  { id: 'teste_tecnico', weight: 25, icon: Code },
+  { id: 'teste_ingles', weight: 20, icon: Globe },
 ]
 
 export function GeneralScoreModal({ isOpen, onClose, candidate }: GeneralScoreModalProps) {
+  const t = useTranslations('candidates.scoreModal')
   if (!isOpen) return null
 
   const scores = {
@@ -99,13 +77,13 @@ export function GeneralScoreModal({ isOpen, onClose, candidate }: GeneralScoreMo
                 className="text-sm font-semibold text-lia-text-primary"
                
               >
-                Nota Geral LIA
+                {t('title')}
               </h2>
               <p 
                 className="text-xs text-lia-text-secondary"
                
               >
-                Metodologia de cálculo do score
+                {t('subtitle')}
               </p>
             </div>
           </div>
@@ -126,7 +104,7 @@ export function GeneralScoreModal({ isOpen, onClose, candidate }: GeneralScoreMo
                 className="text-micro uppercase tracking-wide mb-1 text-lia-text-secondary"
                
               >
-                Nota Final
+                {t('finalScore')}
               </p>
               <div className="flex items-baseline gap-2">
                 <span 
@@ -159,7 +137,7 @@ export function GeneralScoreModal({ isOpen, onClose, candidate }: GeneralScoreMo
               className="text-xs font-semibold mb-3 text-lia-text-primary"
              
             >
-              Composição do Score (Média Ponderada)
+              {t('composition')}
             </p>
 
             <div className="space-y-3">
@@ -180,12 +158,12 @@ export function GeneralScoreModal({ isOpen, onClose, candidate }: GeneralScoreMo
                           className="text-xs font-medium text-lia-text-primary"
                          
                         >
-                          {component.label}
+                          {t(`components.${component.id}.label`)}
                         </span>
                         <span 
                           className="text-micro px-1.5 py-0.5 rounded-full text-lia-text-secondary bg-lia-interactive-active"
                         >
-                          Peso: {component.weight}%
+                          {t('weight', { weight: component.weight })}
                         </span>
                       </div>
                       <span 
@@ -203,7 +181,7 @@ export function GeneralScoreModal({ isOpen, onClose, candidate }: GeneralScoreMo
                       className="text-micro mt-1.5 text-lia-text-secondary"
                      
                     >
-                      {component.description}
+                      {t(`components.${component.id}.description`)}
                     </p>
                   </div>
                 )
@@ -218,13 +196,13 @@ export function GeneralScoreModal({ isOpen, onClose, candidate }: GeneralScoreMo
               className="text-micro font-medium mb-1 text-lia-text-secondary"
              
             >
-              Fórmula do cálculo:
+              {t('formulaTitle')}
             </p>
             <p 
               className="text-micro text-lia-text-secondary"
              
             >
-              Score = (CV × 0.25) + (Triagem × 0.30) + (Técnico × 0.25) + (Inglês × 0.20)
+              {t('formulaBody')}
             </p>
           </div>
         </div>
@@ -237,7 +215,7 @@ export function GeneralScoreModal({ isOpen, onClose, candidate }: GeneralScoreMo
             size="sm"
             className="h-9 px-4 text-xs font-medium bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
           >
-            Entendido
+            {t('understood')}
           </Button>
         </div>
       </div>

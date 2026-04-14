@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button"
 import { ChevronDown, Loader2 } from "lucide-react"
+import { useTranslations } from "next-intl"
 
 interface CandidatesLoadMoreFooterProps {
   showSearchResults: boolean
@@ -18,6 +19,7 @@ export function CandidatesLoadMoreFooter({
   isLoadingMore,
   onLoadMore,
 }: CandidatesLoadMoreFooterProps) {
+  const t = useTranslations('candidates')
   return (
     <>
       {showSearchResults && displayedResultsCount < sortedCandidatesLength && (
@@ -35,17 +37,17 @@ export function CandidatesLoadMoreFooter({
               ) : (
                 <ChevronDown className="w-4 h-4" />
               )}
-              {isLoadingMore ? "Carregando..." : "Carregar mais 10 candidatos"}
+              {isLoadingMore ? t('loadMore.loading') : t('loadMore.loadMoreCandidates')}
             </Button>
             <span className="text-xs text-lia-text-tertiary" aria-live="polite" aria-atomic="true">
-              {Math.min(displayedResultsCount, sortedCandidatesLength)} de {sortedCandidatesLength} candidatos
+              {t('loadMore.showingOf', { displayed: Math.min(displayedResultsCount, sortedCandidatesLength), total: sortedCandidatesLength })}
             </span>
           </div>
         </div>
       )}
       {showSearchResults && displayedResultsCount >= sortedCandidatesLength && sortedCandidatesLength > 10 && (
         <p className="flex-shrink-0 text-center text-sm text-lia-text-tertiary py-3" aria-live="polite" aria-atomic="true">
-          Todos os {sortedCandidatesLength} candidatos carregados
+          {t('loadMore.allLoaded', { total: sortedCandidatesLength })}
         </p>
       )}
     </>

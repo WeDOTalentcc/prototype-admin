@@ -1,6 +1,7 @@
 "use client"
 
 import React from "react"
+import { useTranslations } from "next-intl"
 import { useKanbanPageCore } from "@/components/pages/job-kanban/hooks/useKanbanPageCore"
 import { KanbanJobHeader } from "@/components/pages/job-kanban/KanbanJobHeader"
 import { KanbanPageModals } from "@/components/pages/job-kanban/KanbanPageModals"
@@ -9,14 +10,15 @@ import { ErrorBoundarySection } from "@/components/ui/error-boundary-section"
 import { VagaProgressBar } from "@/components/workflow-rail"
 
 export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, onBack?: () => void }) {
+  const t = useTranslations('kanban')
   const state = useKanbanPageCore({ job, onBack })
 
   if (!state.isClient) {
     return (
-      <div className="flex items-center justify-center h-screen bg-lia-bg-primary" role="status" aria-live="polite" aria-label="Carregando...">
-        <div className="flex flex-col items-center gap-4" role="status" aria-live="polite" aria-label="Carregando...">
-          <div className="animate-spin motion-reduce:animate-none rounded-full h-8 w-8 border-b-2 border-lia-border-medium" role="status" aria-live="polite" aria-label="Carregando..."></div>
-          <span className="text-sm text-lia-text-tertiary">Carregando...</span>
+      <div className="flex items-center justify-center h-screen bg-lia-bg-primary" role="status" aria-live="polite" aria-label={t('loading')}>
+        <div className="flex flex-col items-center gap-4" role="status" aria-live="polite" aria-label={t('loading')}>
+          <div className="animate-spin motion-reduce:animate-none rounded-full h-8 w-8 border-b-2 border-lia-border-medium" role="status" aria-live="polite" aria-label={t('loading')}></div>
+          <span className="text-sm text-lia-text-tertiary">{t('loading')}</span>
         </div>
       </div>
     )
@@ -101,7 +103,7 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
               <button
                 onClick={() => state.dismissInsight(insight.id)}
                 className="flex-shrink-0 opacity-50 hover:opacity-100"
-                aria-label="Dispensar"
+                aria-label={t('dismiss')}
               >
                 ×
               </button>

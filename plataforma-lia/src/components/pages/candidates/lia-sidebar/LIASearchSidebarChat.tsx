@@ -1,6 +1,7 @@
 "use client"
 
 import React from "react"
+import { useTranslations } from "next-intl"
 import { useAuthStore } from "@/stores/auth-store"
 import { Button } from "@/components/ui/button"
 import { LIAIcon } from "@/components/ui/lia-icon"
@@ -123,8 +124,9 @@ export function LIASearchSidebarChat({
   onCalibrationLike,
   onCalibrationDislike,
 }: LIASearchSidebarChatProps) {
+  const t = useTranslations('candidates.liaSidebar')
   const authUser = useAuthStore((s) => s.user)
-  const userDisplayName = authUser?.name || authUser?.email || "Usuário"
+  const userDisplayName = authUser?.name || authUser?.email || t('defaultUser')
   const userInitials = userDisplayName.charAt(0).toUpperCase()
 
   return (
@@ -152,26 +154,26 @@ export function LIASearchSidebarChat({
               {/* Resumo dos resultados */}
               <div className="p-3 rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary">
                 <p className="text-xs font-medium text-lia-text-primary mb-2">
-                  Encontrei <span className="text-lia-text-secondary" aria-live="polite" aria-atomic="true">{searchResults.localCount + (searchResults.showGlobalResults ? searchResults.globalCount : 0)} candidato{(searchResults.localCount + (searchResults.showGlobalResults ? searchResults.globalCount : 0)) > 1 ? 's' : ''}</span> para sua busca:
+                  {t('foundCandidates', { count: searchResults.localCount + (searchResults.showGlobalResults ? searchResults.globalCount : 0) })}
                 </p>
                 <div className="flex items-center gap-3 text-xs mb-2">
                   {searchResults.localCount > 0 && (
                     <div className="flex items-center gap-1 text-status-success">
                       <Home className="w-3 h-3" />
-                      <span className="font-medium">{searchResults.localCount} base local</span>
+                      <span className="font-medium">{t('localBase', { count: searchResults.localCount })}</span>
                     </div>
                   )}
                   {searchResults.showGlobalResults && searchResults.globalCount > 0 && (
                     <div className="flex items-center gap-1 text-lia-text-secondary">
                       <Globe className="w-3 h-3" />
-                      <span className="font-medium">{searchResults.globalCount} busca global</span>
+                      <span className="font-medium">{t('globalSearch', { count: searchResults.globalCount })}</span>
                     </div>
                   )}
                 </div>
                 <div className="flex items-center justify-between mt-2">
                   <p className="text-xs text-lia-text-primary flex items-center gap-1">
                     <TrendingUp className="w-3 h-3" />
-                    Ordenados por aderência ao perfil
+                    {t('sortedByFit')}
                   </p>
                   <button
                     onClick={() => {
@@ -180,7 +182,7 @@ export function LIASearchSidebarChat({
                     className="flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full border border-lia-btn-primary-bg dark:border-lia-border-medium text-lia-text-secondary hover:bg-lia-bg-tertiary dark:bg-lia-bg-secondary transition-[width,height]"
                   >
                     <Bookmark className="w-3 h-3" />
-                    Salvar Arquétipo
+                    {t('saveArchetype')}
                   </button>
                 </div>
               </div>
@@ -191,7 +193,7 @@ export function LIASearchSidebarChat({
                   <div className="flex items-center gap-2">
                     <Home className="w-3.5 h-3.5 text-lia-text-secondary" />
                     <p className="text-xs text-lia-text-primary">
-                      <span className="font-semibold" aria-live="polite" aria-atomic="true">{searchResults.localCount} candidatos</span> da base local exibidos na tabela
+                      {t('localCandidatesInTable', { count: searchResults.localCount })}
                     </p>
                   </div>
                 </div>
@@ -205,10 +207,10 @@ export function LIASearchSidebarChat({
                       <Globe className="w-4 h-4 text-lia-text-secondary" />
                       <div>
                         <p className="text-xs font-medium text-wedo-cyan-dark dark:text-wedo-cyan-dark">
-                          Expandir para Busca Global?
+                          {t('expandGlobalTitle')}
                         </p>
                         <p className="text-xs text-lia-text-secondary" aria-live="polite" aria-atomic="true">
-                          Acesse +800M de perfis (1 cred + $0.01 Apify/cand)
+                          {t('expandGlobalDesc')}
                         </p>
                       </div>
                     </div>
@@ -222,7 +224,7 @@ export function LIASearchSidebarChat({
                         }}
                       >
                         <X className="w-3 h-3 mr-1" />
-                        Manter local
+                        {t('keepLocal')}
                       </Button>
                       <Button
                         size="sm"
@@ -230,7 +232,7 @@ export function LIASearchSidebarChat({
                         onClick={() => setShowGlobalExpansionConfirm(true)}
                       >
                         <Globe className="w-3 h-3 mr-1" />
-                        Expandir Busca
+                        {t('expandSearch')}
                       </Button>
                     </div>
                   </div>
@@ -244,14 +246,14 @@ export function LIASearchSidebarChat({
                     <div className="flex items-center gap-2">
                       <Globe className="w-3.5 h-3.5 text-lia-text-primary" />
                       <p className="text-xs text-lia-text-primary">
-                        Busca global disponível
+                        {t('globalAvailable')}
                       </p>
                     </div>
                     <button
                       onClick={() => setSearchResults(prev => ({ ...prev, globalDismissed: false }))}
                       className="text-xs text-lia-text-secondary hover:text-lia-text-primary hover:underline"
                     >
-                      Expandir busca
+                      {t('expandSearchLink')}
                     </button>
                   </div>
                 </div>
@@ -263,7 +265,7 @@ export function LIASearchSidebarChat({
                   <div className="flex items-center gap-2">
                     <Globe className="w-3.5 h-3.5 text-lia-text-secondary" />
                     <p className="text-xs text-wedo-cyan-dark">
-                      <span className="font-semibold" aria-live="polite" aria-atomic="true">{searchResults.globalCount} candidatos</span> globais adicionados à tabela
+                      {t('globalCandidatesAdded', { count: searchResults.globalCount })}
                     </p>
                   </div>
                 </div>
@@ -302,10 +304,10 @@ export function LIASearchSidebarChat({
                   </div>
                   <div>
                     <p className="text-xs font-medium text-lia-text-primary">
-                      LIA está buscando...
+                      {t('liaSearching')}
                     </p>
                     <p className="text-xs text-lia-text-primary">
-                      Analisando perfis compatíveis
+                      {t('analyzingProfiles')}
                     </p>
                   </div>
                 </div>
@@ -318,17 +320,17 @@ export function LIASearchSidebarChat({
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                       </svg>
                     </div>
-                    <span>Interpretando critérios</span>
+                    <span>{t('interpretingCriteria')}</span>
                   </div>
                   <div className="flex items-center gap-2 text-xs text-lia-text-primary" role="status" aria-live="polite" aria-label="Carregando...">
                     <div className="w-4 h-4 rounded-full bg-lia-btn-primary-bg dark:bg-lia-btn-primary-bg flex items-center justify-center animate-spin motion-reduce:animate-none" role="status" aria-live="polite" aria-label="Carregando...">
                       <div className="w-2 h-2 border border-white border-t-transparent rounded-full" />
                     </div>
-                    <span aria-live="polite" aria-atomic="true">Buscando na base de candidatos</span>
+                    <span aria-live="polite" aria-atomic="true">{t('searchingDatabase')}</span>
                   </div>
                   <div className="flex items-center gap-2 text-xs text-lia-text-primary">
                     <div className="w-4 h-4 rounded-full bg-lia-interactive-active dark:bg-lia-bg-elevated" />
-                    <span>Rankeando por compatibilidade</span>
+                    <span>{t('rankingCompatibility')}</span>
                   </div>
                 </div>
               </div>
@@ -358,7 +360,7 @@ export function LIASearchSidebarChat({
               >
                 <div className="flex items-center gap-1.5 mb-0.5">
                   <span className="text-micro font-bold text-lia-text-primary">{userDisplayName}</span>
-                  <span className="text-micro text-lia-text-tertiary">agora</span>
+                  <span className="text-micro text-lia-text-tertiary">{t('now')}</span>
                 </div>
                 <p className="text-xs text-lia-text-primary leading-relaxed">{msg.content}</p>
               </div>
@@ -378,7 +380,7 @@ export function LIASearchSidebarChat({
                   <LIAIcon size="xs" />
                 </div>
                 <p className="text-xs text-lia-text-primary" aria-live="polite" aria-atomic="true">
-                  Vou mostrar alguns candidatos para entender melhor o perfil que você busca:
+                  {t('calibrationPrompt')}
                 </p>
               </div>
               <div className="space-y-2 pl-8">

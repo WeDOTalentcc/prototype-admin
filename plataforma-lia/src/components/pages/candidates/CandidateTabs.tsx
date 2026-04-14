@@ -2,6 +2,7 @@
 
 import { memo } from 'react'
 import { tabStyles } from "@/lib/design-tokens"
+import { useTranslations } from "next-intl"
 
 interface Tab {
   id: string
@@ -16,6 +17,7 @@ interface CandidateTabsProps {
 }
 
 const CandidateTabs = memo(function CandidateTabs({ tabs, activeTab, onTabChange }: CandidateTabsProps) {
+  const t = useTranslations('candidates')
   return (
     <div data-testid="candidate-tabs" className="mb-0">
       <nav data-testid="candidate-tabs-nav" className="flex gap-1 p-1 bg-lia-bg-secondary rounded-lg w-fit" aria-label="Tabs" role="tablist">
@@ -35,7 +37,7 @@ const CandidateTabs = memo(function CandidateTabs({ tabs, activeTab, onTabChange
             {tab.label}
             {tab.comingSoon && (
               <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-lia-interactive-active text-lia-text-secondary dark:bg-lia-bg-secondary">
-                Em Breve
+                {t('tabs.comingSoon')}
               </span>
             )}
           </button>

@@ -1,6 +1,7 @@
 "use client"
 
 import React from"react"
+import { useTranslations } from "next-intl"
 import { Badge } from"@/components/ui/badge"
 import { Button } from"@/components/ui/button"
 import { X } from"lucide-react"
@@ -20,6 +21,7 @@ export function ActiveFiltersBadge({
   selectedCandidatesForBatch,
   deselectAllCandidates,
 }: ActiveFiltersBadgeProps) {
+  const t = useTranslations('candidates')
   const hasActiveFilters = quickFilters.size > 0 || !!searchTerm || getActiveAdvancedFiltersCount() > 0
 
   if (!hasActiveFilters) return null
@@ -27,7 +29,7 @@ export function ActiveFiltersBadge({
   return (
     <div data-testid="active-filters-badge" className="mb-1.5 flex items-center gap-2">
       <Badge data-testid="active-filters-indicator" className="text-xs bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary border-0">
-        filtros ativos
+        {t('activeFiltersBadge.activeFilters')}
       </Badge>
       {selectedCandidatesForBatch.size > 0 && (
         <Button
@@ -38,7 +40,7 @@ export function ActiveFiltersBadge({
           className="h-6 px-2 text-xs text-lia-text-primary hover:text-lia-text-primary"
         >
           <X className="w-3 h-3 mr-1" />
-          Limpar seleção
+          {t('activeFiltersBadge.clearSelection')}
         </Button>
       )}
     </div>

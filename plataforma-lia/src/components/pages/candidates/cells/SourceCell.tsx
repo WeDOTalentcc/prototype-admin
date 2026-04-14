@@ -3,9 +3,11 @@ import { Home, Globe, CheckCircle, DollarSign, Loader2 } from "lucide-react"
 import { getSourceDetails } from "@/lib/utils/source-detection"
 import type { Candidate } from "@/components/pages/candidates/types"
 
-function getEnrichmentBadge(enrichmentSource: string | null | undefined, isEnriching?: boolean) {
+type TranslateFn = (key: string, values?: Record<string, unknown>) => string
+
+function getEnrichmentBadge(enrichmentSource: string | null | undefined, isEnriching?: boolean, t?: TranslateFn) {
   if (isEnriching) {
-    return { label: "Enriquecendo...", className: "bg-status-warning/15 text-status-warning", icon: <Loader2 className="w-2.5 h-2.5 animate-spin" /> }
+    return { label: t ? t('enriching') : "Enriquecendo...", className: "bg-status-warning/15 text-status-warning", icon: <Loader2 className="w-2.5 h-2.5 animate-spin" /> }
   }
   if (!enrichmentSource) return null
   const src = enrichmentSource.toLowerCase()
@@ -15,11 +17,11 @@ function getEnrichmentBadge(enrichmentSource: string | null | undefined, isEnric
   return { label: enrichmentSource, className: "bg-lia-bg-tertiary text-lia-text-secondary", icon: null }
 }
 
-export function renderSourceCell(candidate: Candidate): React.ReactNode {
+export function renderSourceCell(candidate: Candidate, t?: TranslateFn): React.ReactNode {
   const hasPearchId = !!candidate.pearch_profile_id
   const sourceInfo = getSourceDetails(candidate.source, hasPearchId)
   const isLocal = sourceInfo.isLocal
-  const enrichBadge = getEnrichmentBadge(candidate.enrichment_source, candidate.is_enriching)
+  const enrichBadge = getEnrichmentBadge(candidate.enrichment_source, candidate.is_enriching, t)
 
   return (
     <div data-testid="source-cell" className="relative group flex items-center gap-1.5 justify-center cursor-help">
@@ -40,7 +42,6 @@ export function renderSourceCell(candidate: Candidate): React.ReactNode {
           {enrichBadge.label}
         </span>
       )}
-      {/* Tooltip dinâmico com informações de créditos */}
       <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-50 pointer-events-none">
         <div className="px-3 py-2 rounded-md text-xs min-w-[180px] text-white bg-lia-btn-primary-bg">
           <div className="font-semibold mb-1 flex items-center gap-1.5">
@@ -55,14 +56,14 @@ export function renderSourceCell(candidate: Candidate): React.ReactNode {
           {isLocal ? (
             <div className="text-xs font-medium flex items-center gap-1 mt-1.5 pt-1.5 border-t border-lia-border-strong text-wedo-green-light">
               <CheckCircle className="w-3 h-3" />
-              Sem consumo de créditos
+              {t ? t('noCredits') : "Sem consumo de créditos"}
             </div>
           ) : (
             <div
               className="text-xs font-medium flex items-center gap-1 mt-1.5 pt-1.5 border-t border-lia-border-strong text-status-warning"
             >
               <DollarSign className="w-3 h-3" />
-              {sourceInfo.credits || "1 cred + $0.01 Apify/cand"}
+              {sourceInfo.credits || (t ? t('defaultCredits') : "1 cred + $0.01 Apify/cand")}
             </div>
           )}
           <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-lia-btn-primary-bg"></div>

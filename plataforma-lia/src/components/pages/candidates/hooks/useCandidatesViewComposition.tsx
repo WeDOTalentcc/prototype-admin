@@ -2,6 +2,7 @@
 
 import React from "react"
 import type { Dispatch, SetStateAction } from "react"
+import { useTranslations } from "next-intl"
 import { ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react"
 import { toast } from "sonner"
 import type { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime"
@@ -170,6 +171,7 @@ export interface UseCandidatesViewCompositionParams {
 
 export function useCandidatesViewComposition(params: UseCandidatesViewCompositionParams) {
   const columnConfigHook = useCandidatesColumnConfig()
+  const tCells = useTranslations('candidates.cells')
 
   const renderCellValue = createCellRenderer({
     searchFeedbacks: params.searchFeedbacks,
@@ -186,6 +188,7 @@ export function useCandidatesViewComposition(params: UseCandidatesViewCompositio
         else newSet.add(candidateId)
         return newSet
       }),
+    t: tCells,
   })
 
   const filterSort = useCandidatesFilterSort({

@@ -1,6 +1,7 @@
 "use client"
 
 import React, { memo } from "react"
+import { useTranslations } from "next-intl"
 import { cn } from "@/lib/utils"
 
 type ScoreFormat = "percent" | "decimal" | "wsi"
@@ -39,6 +40,7 @@ const CandidateScoreBadge = memo(function CandidateScoreBadge({
   size = "sm",
   className,
 }: CandidateScoreBadgeProps) {
+  const t = useTranslations('candidates.profile')
   if (score == null) return null
 
   const colorClass = getScoreColor(score, format)

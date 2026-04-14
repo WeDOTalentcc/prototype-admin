@@ -1,6 +1,7 @@
 "use client"
 
 import React from "react"
+import { useTranslations } from "next-intl"
 import dynamic from "next/dynamic"
 import type { Candidate } from "./types"
 
@@ -58,6 +59,7 @@ export function CandidatePreviewSidePanel({
   onSendFeedback,
   setPreviewCandidate,
 }: CandidatePreviewSidePanelProps) {
+  const t = useTranslations('candidates.preview')
   if (!showCandidatePreview || !previewCandidate) return null
 
   return (
@@ -65,7 +67,7 @@ export function CandidatePreviewSidePanel({
       <div
         className="absolute left-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-lia-border-medium dark:hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none z-10 group"
         onMouseDown={onPreviewResize}
-        title="Arraste para redimensionar"
+        title={t('dragToResize')}
       >
         <div className="absolute inset-0 -left-1 -right-1"></div>
         <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-12 bg-lia-border-default dark:bg-lia-bg-elevated group-hover:bg-lia-border-medium dark:group-hover:bg-lia-bg-secondary rounded-full transition-colors motion-reduce:transition-none"></div>

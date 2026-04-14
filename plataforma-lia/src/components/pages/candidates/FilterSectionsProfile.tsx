@@ -1,6 +1,7 @@
 "use client"
 
 import React from "react"
+import { useTranslations } from "next-intl"
 import { Input } from "@/components/ui/input"
 import { Switch } from "@/components/ui/switch"
 import { MapPin, DollarSign, Crown, Globe, Bookmark, Building, Layers, CheckCircle, Github } from "lucide-react"
@@ -21,15 +22,17 @@ export function FilterSectionsProfile({
   setTableFilters,
   onToggleFilter,
 }: FilterSectionsProfileProps) {
+  const t = useTranslations('candidates.filters')
+
   return (
     <>
       <div data-testid="filter-sections-profile" className="mb-5">
         <h4 className="text-xs font-semibold uppercase tracking-wider text-lia-text-primary mb-3 flex items-center gap-1.5">
           <MapPin className="w-3 h-3" />
-          Localização
+          {t('location')}
         </h4>
         <TagInput
-          placeholder="Digite cidade ou estado..."
+          placeholder={t('locationPlaceholder')}
           tags={tableFilters.locations}
           onAdd={(v) => setTableFilters((prev) => ({ ...prev, locations: [...prev.locations, v] }))}
           onRemove={(v) =>
@@ -41,11 +44,11 @@ export function FilterSectionsProfile({
       <div className="mb-5">
         <h4 className="text-xs font-semibold uppercase tracking-wider text-lia-text-primary mb-3 flex items-center gap-1.5">
           <DollarSign className="w-3 h-3" />
-          Faixa Salarial
+          {t('salaryRange')}
         </h4>
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <label htmlFor="filter-min-salary" className={`${textStyles.label} mb-1 block`}>Mín. ({CURRENCY_SYMBOL})</label>
+            <label htmlFor="filter-min-salary" className={`${textStyles.label} mb-1 block`}>{t('minSalary', { currency: CURRENCY_SYMBOL })}</label>
             <Input
               id="filter-min-salary"
               type="number"
@@ -62,7 +65,7 @@ export function FilterSectionsProfile({
             />
           </div>
           <div>
-            <label htmlFor="filter-max-salary" className={`${textStyles.label} mb-1 block`}>Máx. ({CURRENCY_SYMBOL})</label>
+            <label htmlFor="filter-max-salary" className={`${textStyles.label} mb-1 block`}>{t('maxSalary', { currency: CURRENCY_SYMBOL })}</label>
             <Input
               id="filter-max-salary"
               type="number"
@@ -84,14 +87,14 @@ export function FilterSectionsProfile({
       <div className="mb-5">
         <h4 className="text-xs font-semibold uppercase tracking-wider text-lia-text-primary mb-3 flex items-center gap-1.5">
           <Crown className="w-3 h-3" />
-          Indicadores de Perfil
+          {t('profileIndicators')}
         </h4>
         <div className="space-y-2">
           {[
-            { key: "isOpenToWork" as const, label: "Aberto a Propostas" },
-            { key: "isDecisionMaker" as const, label: "Decision Maker" },
-            { key: "isTopUniversities" as const, label: "Top Universidades" },
-            { key: "isStartup" as const, label: "Trabalha em Startup" },
+            { key: "isOpenToWork" as const, label: t('openToProposals') },
+            { key: "isDecisionMaker" as const, label: t('decisionMaker') },
+            { key: "isTopUniversities" as const, label: t('topUniversities') },
+            { key: "isStartup" as const, label: t('worksAtStartup') },
           ].map(({ key, label }) => (
             <div key={key} className="flex items-center justify-between py-1.5">
               <span className="text-xs text-lia-text-primary">{label}</span>
@@ -110,17 +113,23 @@ export function FilterSectionsProfile({
       <div className="mb-5">
         <h4 className="text-xs font-semibold uppercase tracking-wider text-lia-text-primary mb-3 flex items-center gap-1.5">
           <Globe className="w-3 h-3" />
-          Fonte do Candidato
+          {t('candidateSource')}
         </h4>
         <div className="space-y-1.5">
-          {["Base Global", "Base Local", "LinkedIn", "Indicação", "Site Carreiras"].map((source) => {
-            const isChecked = tableFilters.sources.includes(source)
+          {[
+            { value: "Base Global", label: t('globalBase') },
+            { value: "Base Local", label: t('localBase') },
+            { value: "LinkedIn", label: t('linkedIn') },
+            { value: "Indicação", label: t('referral') },
+            { value: "Site Carreiras", label: t('careerSite') },
+          ].map((source) => {
+            const isChecked = tableFilters.sources.includes(source.value)
             return (
               <CheckableItem
-                key={source}
-                label={source}
+                key={source.value}
+                label={source.label}
                 checked={isChecked}
-                onClick={() => onToggleFilter("sources", source)}
+                onClick={() => onToggleFilter("sources", source.value)}
               />
             )
           })}
@@ -130,10 +139,10 @@ export function FilterSectionsProfile({
       <div className="mb-5">
         <h4 className="text-xs font-semibold uppercase tracking-wider text-lia-text-primary mb-3 flex items-center gap-1.5">
           <Bookmark className="w-3 h-3" />
-          Tags
+          {t('tags')}
         </h4>
         <TagInput
-          placeholder="Digite uma tag..."
+          placeholder={t('tagsPlaceholder')}
           tags={tableFilters.tags}
           onAdd={(v) => setTableFilters((prev) => ({ ...prev, tags: [...prev.tags, v] }))}
           onRemove={(v) =>
@@ -145,10 +154,10 @@ export function FilterSectionsProfile({
       <div className="mb-5">
         <h4 className="text-xs font-semibold uppercase tracking-wider text-lia-text-primary mb-3 flex items-center gap-1.5">
           <Building className="w-3 h-3" />
-          Empresa
+          {t('company')}
         </h4>
         <TagInput
-          placeholder="Digite nome da empresa..."
+          placeholder={t('companyPlaceholder')}
           tags={tableFilters.companies}
           onAdd={(v) => setTableFilters((prev) => ({ ...prev, companies: [...prev.companies, v] }))}
           onRemove={(v) =>
@@ -160,10 +169,10 @@ export function FilterSectionsProfile({
       <div className="mb-5">
         <h4 className="text-xs font-semibold uppercase tracking-wider text-lia-text-primary mb-3 flex items-center gap-1.5">
           <Layers className="w-3 h-3" />
-          Setor/Indústria
+          {t('sectorIndustry')}
         </h4>
         <TagInput
-          placeholder="Digite o setor..."
+          placeholder={t('sectorPlaceholder')}
           tags={tableFilters.industries}
           onAdd={(v) => setTableFilters((prev) => ({ ...prev, industries: [...prev.industries, v] }))}
           onRemove={(v) =>
@@ -178,10 +187,10 @@ export function FilterSectionsProfile({
       <div className="mb-5">
         <h4 className="text-xs font-semibold uppercase tracking-wider text-lia-text-primary mb-3 flex items-center gap-1.5">
           <Globe className="w-3 h-3" />
-          Idiomas
+          {t('languages')}
         </h4>
         <TagInput
-          placeholder="Digite um idioma..."
+          placeholder={t('languagesPlaceholder')}
           tags={tableFilters.languages}
           onAdd={(v) => setTableFilters((prev) => ({ ...prev, languages: [...prev.languages, v] }))}
           onRemove={(v) =>
@@ -196,16 +205,16 @@ export function FilterSectionsProfile({
       <div className="mb-5">
         <h4 className="text-xs font-semibold uppercase tracking-wider text-lia-text-primary mb-3 flex items-center gap-1.5">
           <CheckCircle className="w-3 h-3" />
-          Status
+          {t('status')}
         </h4>
         <div className="space-y-1.5">
           {[
-            { value: "novo", label: "Novo" },
-            { value: "em_analise", label: "Em Análise" },
-            { value: "entrevista", label: "Entrevista" },
-            { value: "aprovado", label: "Aprovado" },
-            { value: "reprovado", label: "Reprovado" },
-            { value: "contratado", label: "Contratado" },
+            { value: "novo", label: t('statusNew') },
+            { value: "em_analise", label: t('statusInReview') },
+            { value: "entrevista", label: t('statusInterview') },
+            { value: "aprovado", label: t('statusApproved') },
+            { value: "reprovado", label: t('statusRejected') },
+            { value: "contratado", label: t('statusHired') },
           ].map((status) => {
             const isChecked = tableFilters.statuses.includes(status.value)
             return (
@@ -223,12 +232,12 @@ export function FilterSectionsProfile({
       <div className="mb-5">
         <h4 className="text-xs font-semibold uppercase tracking-wider text-lia-text-primary mb-3 flex items-center gap-1.5">
           <Github className="w-3 h-3" />
-          Presença Online
+          {t('onlinePresence')}
         </h4>
         <div className="space-y-2">
           {[
-            { key: "hasGithub" as const, label: "Com Github" },
-            { key: "hasPortfolio" as const, label: "Com Portfólio" },
+            { key: "hasGithub" as const, label: t('withGithub') },
+            { key: "hasPortfolio" as const, label: t('withPortfolio') },
           ].map(({ key, label }) => (
             <div key={key} className="flex items-center justify-between py-1.5">
               <span className="text-xs text-lia-text-primary">{label}</span>

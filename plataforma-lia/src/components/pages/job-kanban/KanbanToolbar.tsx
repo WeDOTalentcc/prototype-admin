@@ -1,6 +1,7 @@
 "use client"
 
 import React from "react"
+import { useTranslations } from "next-intl"
 import {
   Layers3, ListChecks, Search,
   Target, X, ChevronsLeftRight, CheckCircle, XCircle
@@ -61,6 +62,7 @@ export function KanbanToolbar({
   kanbanWorkModelFilter,
   kanbanOriginFilter,
 }: KanbanToolbarProps) {
+  const t = useTranslations('kanban')
   const getVisibleCandidates = () => {
     let visibleCandidates = allTableCandidates
     if (viewMode === "kanban") {
@@ -138,17 +140,17 @@ export function KanbanToolbar({
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-lia-text-secondary" />
             <Input
               type="text"
-              placeholder="Buscar..."
+              placeholder={t('searchPlaceholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-9 pr-3 py-1.5 text-sm w-48"
-              aria-label="Buscar candidatos"
+              aria-label={t('searchCandidatesAria')}
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery("")}
                 className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-lia-bg-tertiary rounded-xl"
-                aria-label="Limpar busca"
+                aria-label={t('clearSearchAria')}
               >
                 <X className="w-3 h-3 text-lia-text-primary" aria-hidden="true" />
               </button>
@@ -167,7 +169,7 @@ export function KanbanToolbar({
             >
               <div className="flex items-center gap-1.5">
                 <Layers3 className="w-3.5 h-3.5" />
-                Kanban
+                {t('kanbanView')}
               </div>
             </button>
             <button
@@ -180,7 +182,7 @@ export function KanbanToolbar({
             >
               <div className="flex items-center gap-1.5">
                 <ListChecks className="w-3.5 h-3.5" />
-                Tabela
+                {t('tableView')}
               </div>
             </button>
           </div>
@@ -193,12 +195,12 @@ export function KanbanToolbar({
             {allSelected ? (
               <>
                 <XCircle className="w-4 h-4 text-lia-text-tertiary" />
-                Desmarcar Todos
+                {t('deselectAll')}
               </>
             ) : (
               <>
                 <CheckCircle className="w-4 h-4 text-lia-text-tertiary" />
-                Selecionar Todos ({visibleCandidates.length})
+                {t('selectAllCount', { count: visibleCandidates.length })}
               </>
             )}
           </button>
@@ -219,13 +221,13 @@ export function KanbanToolbar({
             }`}
           >
             <Target className="w-4 h-4" />
-            Filtros
+            {t('filters')}
           </button>
 
           {viewMode === "table" && (
             <button
               onClick={() => setShowColumnConfig(!showColumnConfig)}
-              title="Configurar colunas da tabela"
+              title={t('configureTableColumns')}
               className={`inline-flex items-center gap-2 px-4 py-2 text-xs font-medium rounded-full transition-colors motion-reduce:transition-none ${
                 showColumnConfig
                   ? 'bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover dark:bg-lia-bg-secondary dark:hover:bg-lia-interactive-active'
@@ -233,7 +235,7 @@ export function KanbanToolbar({
               }`}
             >
               <ChevronsLeftRight className="w-4 h-4" />
-              Colunas
+              {t('columns')}
               <span className={`text-xs font-medium ${showColumnConfig ? 'text-lia-text-disabled' : 'text-lia-text-tertiary'}`} aria-live="polite" aria-atomic="true">
                 {tableColumns.filter(col => col.visible).length}
               </span>

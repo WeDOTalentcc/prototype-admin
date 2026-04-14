@@ -1,6 +1,7 @@
 "use client"
 
 import React from "react"
+import { useTranslations } from "next-intl"
 
 export interface TriStateButtonsProps {
   value: boolean | null
@@ -8,10 +9,12 @@ export interface TriStateButtonsProps {
 }
 
 export function TriStateButtons({ value, onChange }: TriStateButtonsProps) {
+  const t = useTranslations('candidates.filters')
+
   const options = [
-    { value: null, label: "Todos" },
-    { value: true, label: "Sim" },
-    { value: false, label: "Não" },
+    { value: null, label: t('all') },
+    { value: true, label: t('yes') },
+    { value: false, label: t('no') },
   ]
   return (
     <div data-testid="tri-state-buttons" className="flex gap-1.5">

@@ -1,5 +1,6 @@
 "use client"
 import React, { useState } from "react"
+import { useTranslations } from "next-intl"
 import { Users, Loader2, Lightbulb } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { type ChatMessage, type SearchResults } from "./lia-sidebar-types"
@@ -33,6 +34,7 @@ export const TabSimilar = React.memo(function TabSimilar({
   setShowSearchResults,
   setDisplayedResultsCount,
 }: TabSimilarProps) {
+  const t = useTranslations('candidates.liaSidebar')
   const [similarProfileUrl, setSimilarProfileUrl] = useState("")
   const [isSearchingSimilar, setIsSearchingSimilar] = useState(false)
 
@@ -43,8 +45,8 @@ export const TabSimilar = React.memo(function TabSimilar({
     const userMsg: ChatMessage = {
       id: `user-similar-${Date.now()}`, type: 'user', timestamp: new Date(),
       content: isLinkedInUrl
-        ? `Buscar candidatos similares ao perfil: ${similarProfileUrl}`
-        : `Buscar candidatos similares: ${similarProfileUrl}`
+        ? t('searchSimilarUrl', { url: similarProfileUrl })
+        : t('searchSimilarGeneric', { input: similarProfileUrl })
     }
     setChatMessages(prev => [...prev, userMsg])
     try {
@@ -60,7 +62,7 @@ export const TabSimilar = React.memo(function TabSimilar({
       })
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
-        throw new Error(errorData.detail || 'Erro na busca')
+        throw new Error(errorData.detail || t('searchError'))
       }
       const data = await response.json()
       if (data.candidates && data.candidates.length > 0) {
@@ -78,35 +80,35 @@ export const TabSimilar = React.memo(function TabSimilar({
           isLoading: false, showGlobalResults: showGlobal, globalDismissed: prev.globalDismissed,
           isEnrichingContacts: prev.isEnrichingContacts }))
         const refInfo = data.reference_profile
-          ? `\n\n**Perfil de refer\u00eancia:** ${data.reference_profile.name || data.reference_profile.linkedin_url || 'ID: ' + data.reference_profile.id}`
+          ? t('referenceProfile', { name: data.reference_profile.name || data.reference_profile.linkedin_url || 'ID: ' + data.reference_profile.id })
           : ''
         const localCount = data.local_count || local.length
         setChatMessages(prev => [...prev, {
           id: `lia-similar-result-${Date.now()}`, type: 'lia', timestamp: new Date(),
-          content: `**Busca de perfis similares conclu\u00edda!**${refInfo}\n\nQuery gerada: "${data.query_generated}"\n\nEncontrei **${localCount} candidato${localCount > 1 ? 's' : ''} similar${localCount > 1 ? 'es' : ''}** na sua base local.`,
+          content: t('similarSearchComplete', { refInfo, query: data.query_generated, count: localCount }),
           searchResults: { localCount, globalCount: 0, query: data.query_generated || '' }
         }])
       } else {
         setChatMessages(prev => [...prev, { id: `lia-similar-noresult-${Date.now()}`, type: 'lia', timestamp: new Date(),
-          content: `N\u00e3o encontrei candidatos similares ao perfil informado.\n\nVerifique se o link do LinkedIn est\u00e1 correto ou tente com outro perfil de refer\u00eancia.` }])
+          content: t('similarNoResults') }])
       }
     } catch (error: unknown) {
       setChatMessages(prev => [...prev, { id: `lia-similar-error-${Date.now()}`, type: 'lia', timestamp: new Date(),
-        content: `Erro ao buscar candidatos similares: ${error instanceof Error ? error.message : 'Por favor, tente novamente.'}` }])
+        content: t('similarError', { error: error instanceof Error ? error.message : t('similarErrorDefault') }) }])
     } finally { setIsSearchingSimilar(false) }
   }
 
   return (
     <div data-testid="tab-similar" className="space-y-4 overflow-y-auto flex-1 p-4">
       <p className="text-xs text-lia-text-tertiary" aria-live="polite" aria-atomic="true">
-        Encontre candidatos similares a um perfil espec\u00edfico
+        {t('similarDescription')}
       </p>
       <div className="relative">
         <input
           type="text"
           value={similarProfileUrl}
           onChange={(e) => setSimilarProfileUrl(e.target.value)}
-          placeholder="Cole o link do LinkedIn ou nome do candidato..."
+          placeholder={t('similarPlaceholder')}
           className="w-full p-3 text-xs rounded-xl border focus:outline-none transition-colors motion-reduce:transition-none bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary border border-lia-border-subtle"
         />
       </div>
@@ -114,7 +116,7 @@ export const TabSimilar = React.memo(function TabSimilar({
         <div className="flex items-start gap-2">
           <Lightbulb className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-lia-text-secondary" />
           <p className="text-xs text-lia-text-secondary">
-            <strong>Dica:</strong> Cole o link do LinkedIn de um candidato que voc\u00ea considera ideal para encontrar perfis similares.
+            <strong>{t('booleanTipLabel')}</strong> {t('similarTip')}
           </p>
         </div>
       </div>
@@ -124,9 +126,9 @@ export const TabSimilar = React.memo(function TabSimilar({
         disabled={!similarProfileUrl.trim() || isSearchingSimilar}
       >
         {isSearchingSimilar ? (
-          <><Loader2 className="w-4 h-4 mr-2 animate-spin motion-reduce:animate-none" />Buscando...</>
+          <><Loader2 className="w-4 h-4 mr-2 animate-spin motion-reduce:animate-none" />{t('searching')}</>
         ) : (
-          <><Users className="w-4 h-4 mr-2" />Encontrar Similares</>
+          <><Users className="w-4 h-4 mr-2" />{t('findSimilar')}</>
         )}
       </Button>
     </div>

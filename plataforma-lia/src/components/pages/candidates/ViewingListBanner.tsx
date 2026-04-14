@@ -1,5 +1,6 @@
 "use client"
 
+import { useTranslations } from "next-intl"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { List, X, ArrowLeft } from "lucide-react"
@@ -23,6 +24,7 @@ export function ViewingListBanner({
   setLastSearchQuery,
   setActiveTab,
 }: ViewingListBannerProps) {
+  const t = useTranslations('candidates')
   if (!viewingList) return null
 
   return (
@@ -37,10 +39,12 @@ export function ViewingListBanner({
           </div>
           <div className="flex-1">
             <h3 className="font-medium text-lia-text-primary mb-1">
-              📋 Visualizando Lista: {viewingList.name}
+              {t('viewingListBanner.viewingList', { name: viewingList.name })}
             </h3>
             <p className="text-sm text-lia-text-primary" aria-live="polite" aria-atomic="true">
-              {candidates.length} {candidates.length === 1 ? 'candidato' : 'candidatos'} nesta lista
+              {candidates.length === 1
+                ? t('viewingListBanner.candidateInList', { count: candidates.length })
+                : t('viewingListBanner.candidatesInList', { count: candidates.length })}
             </p>
           </div>
           <div className="flex gap-2">
@@ -55,7 +59,7 @@ export function ViewingListBanner({
               }}
             >
               <X className="w-3 h-3 mr-1" />
-              Fechar Lista
+              {t('viewingListBanner.closeList')}
             </Button>
             <Button
               variant="outline"
@@ -63,7 +67,7 @@ export function ViewingListBanner({
               onClick={() => setActiveTab('lists')}
             >
               <ArrowLeft className="w-3 h-3 mr-1" />
-              Voltar às Listas
+              {t('viewingListBanner.backToLists')}
             </Button>
           </div>
         </div>

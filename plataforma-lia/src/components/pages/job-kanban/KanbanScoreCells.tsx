@@ -6,6 +6,7 @@ import {
 } from "lucide-react"
 import { formatScorePercent } from "@/lib/design-tokens"
 import type { KanbanCandidate } from "./KanbanTableCellRenderer.types"
+import { useTranslations } from "next-intl"
 
 interface ScoreCellsProps {
   calculateNotaLiaGeral: (candidate: KanbanCandidate) => number | null
@@ -19,7 +20,8 @@ interface ScoreCellsProps {
 export function renderScoreCell(
   candidate: KanbanCandidate,
   columnId: string,
-  props: ScoreCellsProps
+  props: ScoreCellsProps,
+  t: (key: string, params?: Record<string, unknown>) => string
 ): React.ReactNode | undefined {
   const {
     calculateNotaLiaGeral,
@@ -51,7 +53,7 @@ export function renderScoreCell(
               onSetActiveModal('scoreGeral')
             }
           }}
-          title={hasNotaGeral ? 'Clique para ver detalhes' : 'Não avaliado'}
+          title={hasNotaGeral ? t('clickDetails') : t('notEvaluated')}
         >
           <Gauge className={`w-3.5 h-3.5 ${hasNotaGeral ? 'text-lia-btn-primary-bg' : 'text-lia-text-tertiary'}`} strokeWidth={2} />
           <span className={`text-xs font-semibold ${hasNotaGeral ? 'text-lia-text-primary' : 'text-lia-text-disabled'}`}>
@@ -73,7 +75,7 @@ export function renderScoreCell(
               onOpenTriagem(candidate)
             }
           }}
-          title={hasTriagem ? 'Clique para ver Triagem LIA' : 'Não avaliado'}
+          title={hasTriagem ? t('clickLIAScreening') : t('notEvaluated')}
         >
           <Brain className={`w-3.5 h-3.5 ${hasTriagem ? 'text-wedo-cyan' : 'text-lia-text-disabled'}`} strokeWidth={2} />
           <span className={`text-xs font-semibold ${hasTriagem ? 'text-lia-text-primary' : 'text-lia-text-disabled'}`}>
@@ -95,7 +97,7 @@ export function renderScoreCell(
               onOpenAnalysis(candidate)
             }
           }}
-          title={hasFitScore ? 'Clique para ver Análise CV vs Vaga' : 'Não avaliado'}
+          title={hasFitScore ? t('clickCVAnalysis') : t('notEvaluated')}
         >
           <Target className={`w-3.5 h-3.5 ${hasFitScore ? 'text-lia-btn-primary-bg' : 'text-lia-text-tertiary'}`} strokeWidth={2} />
           <span className={`text-xs font-semibold ${hasFitScore ? 'text-lia-text-primary' : 'text-lia-text-disabled'}`}>
@@ -117,7 +119,7 @@ export function renderScoreCell(
               onSetActiveModal('testeTecnico')
             }
           }}
-          title={hasTechnical ? 'Clique para ver detalhes' : 'Não realizado'}
+          title={hasTechnical ? t('clickDetails') : t('notCompleted')}
         >
           <Code className={`w-3.5 h-3.5 ${hasTechnical ? 'text-lia-text-secondary' : 'text-lia-text-tertiary'}`} strokeWidth={2} />
           {hasTechnical && (
@@ -141,7 +143,7 @@ export function renderScoreCell(
               onSetActiveModal('testeIngles')
             }
           }}
-          title={hasEnglish ? 'Clique para ver detalhes' : 'Não realizado'}
+          title={hasEnglish ? t('clickDetails') : t('notCompleted')}
         >
           <Globe className={`w-3.5 h-3.5 ${hasEnglish ? 'text-lia-text-secondary' : 'text-lia-text-tertiary'}`} strokeWidth={2} />
           {hasEnglish && (
@@ -168,7 +170,7 @@ export function renderScoreCell(
               onSetShowBigFiveModal(true)
             }
           }}
-          title={hasBigFive ? 'Clique para ver relatório Big Five completo' : 'Não realizado'}
+          title={hasBigFive ? t('clickBigFiveReport') : t('notCompleted')}
         >
           <Fingerprint className={`w-3.5 h-3.5 ${hasBigFive ? 'text-lia-text-secondary' : 'text-lia-text-tertiary'}`} strokeWidth={2} />
           <span className={`text-xs font-semibold ${hasBigFive ? 'text-lia-text-primary' : 'text-lia-text-disabled'}`}>

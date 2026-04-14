@@ -11,6 +11,7 @@ import {
   Mic, Video, Brain, Target, FileText, ChevronRight
 } from"lucide-react"
 import { textStyles } from"@/lib/design-tokens"
+import { useTranslations } from "next-intl"
 
 export interface ScreeningQuestion {
   id: number
@@ -68,6 +69,7 @@ export function ScreeningMediaModal({
   onDownload,
   onOpenFullEvaluation
 }: ScreeningMediaModalProps) {
+  const t = useTranslations('screening')
   const [isPlaying, setIsPlaying] = useState(false)
   const [isMuted, setIsMuted] = useState(false)
   const [currentTime, setCurrentTime] = useState(0)
@@ -153,7 +155,7 @@ export function ScreeningMediaModal({
             </DialogTitle>
             <VisuallyHidden>
               <DialogDescription>
-                Modal para reprodução de {type === 'audio' ? 'áudio de triagem' : 'vídeo de entrevista'} com transcrição e análise da LIA
+                {type === 'audio' ? t('media.dialogDescriptionAudio') : t('media.dialogDescriptionVideo')}
               </DialogDescription>
             </VisuallyHidden>
           </div>
@@ -161,7 +163,7 @@ export function ScreeningMediaModal({
             {onDownload && (
               <Button variant="outline" size="sm" onClick={onDownload} className="gap-1.5">
                 <Download className="w-4 h-4" />
-                Baixar
+                {t('media.download')}
               </Button>
             )}
             <Button variant="ghost" size="sm" onClick={onClose} className="h-8 w-8 p-0">
@@ -180,7 +182,7 @@ export function ScreeningMediaModal({
                   <Video className="w-10 h-10 text-wedo-purple" />
                 )}
               </div>
-              <p className={`${textStyles.body} text-lia-text-secondary mb-1`}>Clique para reproduzir</p>
+              <p className={`${textStyles.body} text-lia-text-secondary mb-1`}>{t('media.clickToPlay')}</p>
               {fileName && <p className={`${textStyles.bodySmall} text-lia-text-tertiary`}>{fileName}</p>}
 
               {type === 'audio' ? (
@@ -250,7 +252,7 @@ export function ScreeningMediaModal({
             <div className="space-y-4">
               <h3 className={`${textStyles.title} flex items-center gap-2`}>
                 <FileText className="w-4 h-4 text-lia-text-secondary" />
-                Perguntas de Triagem
+                {t('media.screeningQuestions')}
               </h3>
               <div className="space-y-2">
                 {questions.map((q, idx) => (
@@ -272,7 +274,7 @@ export function ScreeningMediaModal({
                   onClick={onOpenFullEvaluation}
                 >
                   <Target className="w-4 h-4" />
-                  Ver Avaliação WSI Completa
+                  {t('media.viewFullWSI')}
                   <ChevronRight className="w-4 h-4 ml-auto" />
                 </Button>
               </div>
@@ -282,14 +284,14 @@ export function ScreeningMediaModal({
           <div className="w-[380px] bg-lia-bg-secondary p-4 flex flex-col min-h-0">
             <h3 className={`${textStyles.title} flex items-center gap-2 mb-3`}>
               <FileText className="w-4 h-4 text-lia-text-secondary" />
-              Transcrição
+              {t('media.transcription')}
             </h3>
             
             <div className="mb-3">
               <Badge variant="outline" className="bg-lia-bg-tertiary text-lia-text-secondary border-lia-border-default">
-                {type === 'audio' ? 'Áudio de Triagem' : 'Vídeo de Entrevista'}
+                {type === 'audio' ? t('media.audioScreening') : t('media.videoInterview')}
               </Badge>
-              <span className={`${textStyles.caption} ml-2`}>Duração: {duration}</span>
+              <span className={`${textStyles.caption} ml-2`}>{t('media.duration', { duration })}</span>
             </div>
 
             <ScrollArea className="flex-1">
@@ -311,7 +313,7 @@ export function ScreeningMediaModal({
                       <div className="flex items-center gap-2 mb-1">
                         <span className="text-micro font-medium text-lia-text-secondary">{q.timestamp || `${idx}:00`}</span>
                         <span className="text-micro text-lia-text-tertiary">•</span>
-                        <span className="text-micro font-medium text-lia-text-primary">Candidato</span>
+                        <span className="text-micro font-medium text-lia-text-primary">{t('media.candidate')}</span>
                       </div>
                       <p className={`${textStyles.bodySmall} text-lia-text-primary`}>"{q.transcription}"</p>
                     </div>
@@ -319,7 +321,7 @@ export function ScreeningMediaModal({
                 ) : (
                   <div className="text-center py-8 text-lia-text-tertiary">
                     <FileText className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                    <p className={textStyles.bodySmall}>Transcrição não disponível</p>
+                    <p className={textStyles.bodySmall}>{t('media.transcriptionUnavailable')}</p>
                   </div>
                 )}
               </div>
@@ -329,7 +331,7 @@ export function ScreeningMediaModal({
               <div className="mt-4 pt-4 border-t border-lia-border-subtle">
                 <h4 className={`${textStyles.label} flex items-center gap-1 mb-2`}>
                   <Brain className="w-3 h-3 text-wedo-cyan" />
-                  Highlights da LIA
+                  {t('media.liaHighlights')}
                 </h4>
                 <div className="space-y-1">
                   {highlights.map((h, idx) => (

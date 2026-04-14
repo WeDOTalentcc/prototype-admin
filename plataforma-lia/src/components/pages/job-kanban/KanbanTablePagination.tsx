@@ -1,6 +1,7 @@
 "use client"
 
 import React from "react"
+import { useTranslations } from "next-intl"
 import { Button } from "@/components/ui/button"
 
 interface PaginatedResult {
@@ -22,6 +23,7 @@ export function KanbanTablePagination({
   getPaginatedCandidates,
   onCurrentPageChange,
 }: KanbanTablePaginationProps) {
+  const t = useTranslations('kanban')
   const paginated = getPaginatedCandidates()
   if (paginated.totalPages <= 1) return null
   return (
@@ -31,7 +33,7 @@ export function KanbanTablePagination({
   <div className="bg-lia-bg-primary dark:bg-lia-bg-primary rounded-xl p-3">
     <div className="flex items-center justify-between">
       <div className="text-sm text-lia-text-secondary">
-        Mostrando {((currentPage - 1) * itemsPerPage) + 1} - {Math.min(currentPage * itemsPerPage, getPaginatedCandidates().total)} de {getPaginatedCandidates().total} candidatos
+        {t('paginationShowing', { start: String(((currentPage - 1) * itemsPerPage) + 1), end: String(Math.min(currentPage * itemsPerPage, getPaginatedCandidates().total)), total: String(getPaginatedCandidates().total) })}
       </div>
       <div className="flex items-center gap-2">
         <Button
@@ -41,7 +43,7 @@ export function KanbanTablePagination({
           disabled={currentPage === 1}
           className="h-8 hover:bg-lia-interactive-hover transition-colors cursor-pointer"
         >
-          Primeira
+          {t('paginationFirst')}
         </Button>
         <Button
           variant="outline"
@@ -50,7 +52,7 @@ export function KanbanTablePagination({
           disabled={currentPage === 1}
           className="h-8 hover:bg-lia-interactive-hover transition-colors cursor-pointer"
         >
-          Anterior
+          {t('paginationPrevious')}
         </Button>
 
         {/* Page numbers */}
@@ -88,7 +90,7 @@ export function KanbanTablePagination({
           disabled={currentPage === getPaginatedCandidates().totalPages}
           className="h-8 hover:bg-lia-interactive-hover transition-colors cursor-pointer"
         >
-          Próxima
+          {t('paginationNext')}
         </Button>
         <Button
           variant="outline"
@@ -97,7 +99,7 @@ export function KanbanTablePagination({
           disabled={currentPage === getPaginatedCandidates().totalPages}
           className="h-8 hover:bg-lia-interactive-hover transition-colors cursor-pointer"
         >
-          Última
+          {t('paginationLast')}
         </Button>
       </div>
     </div>

@@ -3,6 +3,7 @@
 import { Button } from"@/components/ui/button"
 import { Badge } from"@/components/ui/badge"
 import { BarChart3, Brain, RefreshCw, Target, Wand2, X } from"lucide-react"
+import { useTranslations } from "next-intl"
 
 interface LIAQuestionsPanelProps {
   open: boolean
@@ -10,19 +11,17 @@ interface LIAQuestionsPanelProps {
 }
 
 export function LIAQuestionsPanel({ open, onClose }: LIAQuestionsPanelProps) {
+  const t = useTranslations('kanban')
   if (!open) return null
 
   return (
     <>
-      {/* Overlay para fechar o painel ao clicar fora */}
       <div
         className="fixed inset-0 z-40 bg-black/20 backdrop-blur-sm"
         onClick={onClose}
       />
 
-      {/* Painel Lateral */}
       <div className="fixed right-0 top-0 h-full z-50 w-[450px] bg-lia-bg-primary dark:bg-lia-bg-primary">
-        {/* Header */}
         <div className="bg-wedo-purple p-4 text-white">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -30,8 +29,8 @@ export function LIAQuestionsPanel({ open, onClose }: LIAQuestionsPanelProps) {
                 <Wand2 className="w-5 h-5" />
               </div>
               <div>
-                <h2 className="text-lg font-semibold">Sugestões de Perguntas da LIA</h2>
-                <p className="text-wedo-purple text-xs">Baseadas no perfil da vaga</p>
+                <h2 className="text-lg font-semibold">{t('liaQuestionSuggestions')}</h2>
+                <p className="text-wedo-purple text-xs">{t('basedOnJobProfile')}</p>
               </div>
             </div>
             <button
@@ -43,47 +42,45 @@ export function LIAQuestionsPanel({ open, onClose }: LIAQuestionsPanelProps) {
           </div>
         </div>
 
-        {/* Conteúdo */}
         <div className="p-4 overflow-y-auto h-[calc(100vh-80px)]">
           <div className="mb-3">
             <div className="flex items-center gap-2 mb-1">
               <Brain className="w-4 h-4 text-wedo-cyan" />
               <h3 className="text-sm font-semibold text-lia-text-primary">
-                Perguntas Recomendadas para UX Design
+                {t('recommendedUXQuestions')}
               </h3>
             </div>
             <p className="text-xs text-lia-text-secondary">
-              Clique em"Substituir" para trocar a pergunta selecionada
+              {t('clickReplaceInstruction')}
             </p>
           </div>
 
           <div className="space-y-3">
-            {/* Sugestão 1 */}
             <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl p-4 border border-lia-border-subtle dark:border-lia-border-subtle hover:border-lia-border-medium dark:hover:border-lia-border-medium cursor-pointer transition-colors motion-reduce:transition-none group">
               <div className="flex items-start justify-between mb-2">
                 <h4 className="text-sm font-medium text-lia-text-primary group-hover:text-lia-text-primary">
-                  Qual método de pesquisa seria mais apropriado para validar a usabilidade de um protótipo em fase inicial?
+                  {t('questionUX1')}
                 </h4>
                 <div className="flex items-center gap-2">
-                  <Badge className="bg-lia-interactive-active text-lia-text-primary dark:bg-lia-bg-elevated text-xs">Recomendada</Badge>
+                  <Badge className="bg-lia-interactive-active text-lia-text-primary dark:bg-lia-bg-elevated text-xs">{t('recommendedBadge')}</Badge>
                   <Badge className="bg-lia-bg-tertiary text-lia-text-primary text-xs">2 min</Badge>
                 </div>
               </div>
               <div className="space-y-1 ml-2 text-xs text-lia-text-secondary">
-                <p>A) Teste A/B com grande amostra</p>
-                <p>B) Card sorting</p>
-                <p className="text-lia-text-primary font-bold">C) Teste de usabilidade moderado ✓</p>
-                <p>D) Analytics quantitativo</p>
+                <p>{t('questionUX1optA')}</p>
+                <p>{t('questionUX1optB')}</p>
+                <p className="text-lia-text-primary font-bold">{t('questionUX1optC')}</p>
+                <p>{t('questionUX1optD')}</p>
               </div>
               <div className="mt-3 flex items-center justify-between">
                 <div className="flex items-center gap-4 text-xs text-lia-text-primary">
                   <span className="flex items-center gap-1">
                     <Target className="w-3 h-3" />
-                    Avalia: Métodos de Pesquisa
+                    {t('evaluatesResearchMethods')}
                   </span>
                   <span className="flex items-center gap-1">
                     <BarChart3 className="w-3 h-3" />
-                    Dificuldade: Médio
+                    {t('difficultyMedium')}
                   </span>
                 </div>
                 <Button
@@ -92,37 +89,36 @@ export function LIAQuestionsPanel({ open, onClose }: LIAQuestionsPanelProps) {
                   onClick={onClose}
                 >
                   <RefreshCw className="w-3 h-3 mr-1" />
-                  Substituir
+                  {t('replaceAction')}
                 </Button>
               </div>
             </div>
 
-            {/* Sugestão 2 */}
             <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl p-4 border border-lia-border-subtle dark:border-lia-border-subtle hover:border-lia-border-medium dark:hover:border-lia-border-medium cursor-pointer transition-colors motion-reduce:transition-none group">
               <div className="flex items-start justify-between mb-2">
                 <h4 className="text-sm font-medium text-lia-text-primary group-hover:text-lia-text-primary">
-                  Como você priorizaria funcionalidades em um MVP usando a matriz de esforço vs impacto?
+                  {t('questionUX2')}
                 </h4>
                 <div className="flex items-center gap-2">
-                  <Badge className="bg-lia-btn-primary-bg text-lia-btn-primary-text dark:bg-lia-bg-tertiary text-xs">Alta Relevância</Badge>
+                  <Badge className="bg-lia-btn-primary-bg text-lia-btn-primary-text dark:bg-lia-bg-tertiary text-xs">{t('highRelevanceBadge')}</Badge>
                   <Badge className="bg-lia-bg-tertiary text-lia-text-primary text-xs">3 min</Badge>
                 </div>
               </div>
               <div className="space-y-1 ml-2 text-xs text-lia-text-secondary">
-                <p className="text-lia-text-primary font-bold">A) Alto impacto e baixo esforço primeiro ✓</p>
-                <p>B) Alto esforço e alto impacto primeiro</p>
-                <p>C) Baixo esforço independente do impacto</p>
-                <p>D) Todas as funcionalidades igualmente</p>
+                <p className="text-lia-text-primary font-bold">{t('questionUX2optA')}</p>
+                <p>{t('questionUX2optB')}</p>
+                <p>{t('questionUX2optC')}</p>
+                <p>{t('questionUX2optD')}</p>
               </div>
               <div className="mt-3 flex items-center justify-between">
                 <div className="flex items-center gap-4 text-xs text-lia-text-primary">
                   <span className="flex items-center gap-1">
                     <Target className="w-3 h-3" />
-                    Avalia: Priorização
+                    {t('evaluatesPrioritization')}
                   </span>
                   <span className="flex items-center gap-1">
                     <BarChart3 className="w-3 h-3" />
-                    Dificuldade: Fácil
+                    {t('difficultyEasy')}
                   </span>
                 </div>
                 <Button
@@ -131,37 +127,36 @@ export function LIAQuestionsPanel({ open, onClose }: LIAQuestionsPanelProps) {
                   onClick={onClose}
                 >
                   <RefreshCw className="w-3 h-3 mr-1" />
-                  Substituir
+                  {t('replaceAction')}
                 </Button>
               </div>
             </div>
 
-            {/* Sugestão 3 */}
             <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl p-4 border border-lia-border-subtle dark:border-lia-border-subtle hover:border-lia-border-medium dark:hover:border-lia-border-medium cursor-pointer transition-colors motion-reduce:transition-none group">
               <div className="flex items-start justify-between mb-2">
                 <h4 className="text-sm font-medium text-lia-text-primary group-hover:text-lia-text-primary">
-                  Qual é a diferença fundamental entre Design System e Style Guide?
+                  {t('questionUX3')}
                 </h4>
                 <div className="flex items-center gap-2">
-                  <Badge className="bg-lia-interactive-active text-lia-text-primary dark:bg-lia-bg-elevated text-xs">Conceitual</Badge>
+                  <Badge className="bg-lia-interactive-active text-lia-text-primary dark:bg-lia-bg-elevated text-xs">{t('conceptualBadge')}</Badge>
                   <Badge className="bg-lia-bg-tertiary text-lia-text-primary text-xs">2 min</Badge>
                 </div>
               </div>
               <div className="space-y-1 ml-2 text-xs text-lia-text-secondary">
-                <p>A) Não há diferença, são sinônimos</p>
-                <p className="text-lia-text-primary font-bold">B) Design System inclui componentes e padrões, Style Guide foca em visual ✓</p>
-                <p>C) Style Guide é mais completo que Design System</p>
-                <p>D) Design System é apenas para desenvolvedores</p>
+                <p>{t('questionUX3optA')}</p>
+                <p className="text-lia-text-primary font-bold">{t('questionUX3optB')}</p>
+                <p>{t('questionUX3optC')}</p>
+                <p>{t('questionUX3optD')}</p>
               </div>
               <div className="mt-3 flex items-center justify-between">
                 <div className="flex items-center gap-4 text-xs text-lia-text-primary">
                   <span className="flex items-center gap-1">
                     <Target className="w-3 h-3" />
-                    Avalia: Conhecimento Técnico
+                    {t('evaluatesTechnicalKnowledge')}
                   </span>
                   <span className="flex items-center gap-1">
                     <BarChart3 className="w-3 h-3" />
-                    Dificuldade: Médio
+                    {t('difficultyMedium')}
                   </span>
                 </div>
                 <Button
@@ -170,27 +165,25 @@ export function LIAQuestionsPanel({ open, onClose }: LIAQuestionsPanelProps) {
                   onClick={onClose}
                 >
                   <RefreshCw className="w-3 h-3 mr-1" />
-                  Substituir
+                  {t('replaceAction')}
                 </Button>
               </div>
             </div>
 
-            {/* Botão para gerar mais sugestões */}
             <div className="mt-4 pt-4 border-t border-lia-border-subtle dark:border-lia-border-subtle">
               <Button variant="outline" className="w-full text-sm">
                 <Brain className="w-4 h-4 mr-2 text-wedo-cyan" />
-                Gerar Mais Sugestões
+                {t('generateMore')}
               </Button>
             </div>
           </div>
         </div>
 
-        {/* Footer */}
         <div className="absolute bottom-0 left-0 right-0 border-t border-lia-border-subtle dark:border-lia-border-subtle p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary">
           <div className="flex items-center justify-between">
             <p className="text-xs text-lia-text-primary">
               <Brain className="w-3 h-3 inline mr-1 text-wedo-cyan" />
-              Baseado em 500+ testes
+              {t('basedOnTestsCount')}
             </p>
             <Button
               variant="outline"
@@ -198,7 +191,7 @@ export function LIAQuestionsPanel({ open, onClose }: LIAQuestionsPanelProps) {
               onClick={onClose}
               className="text-xs"
             >
-              Fechar Painel
+              {t('closePanel')}
             </Button>
           </div>
         </div>

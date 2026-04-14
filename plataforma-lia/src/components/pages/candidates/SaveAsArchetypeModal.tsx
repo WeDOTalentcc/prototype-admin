@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useTranslations } from "next-intl"
 import { Bookmark } from "lucide-react"
 import {
   AlertDialog,
@@ -53,12 +54,13 @@ export function SaveAsArchetypeModal({
   onClose,
   onSave,
 }: SaveAsArchetypeModalProps) {
+  const t = useTranslations('candidates.modals')
   const [nameInput, setNameInput] = useState('')
   const [emojiInput, setEmojiInput] = useState('🎯')
 
   const queryToDisplay = isCreatingArchetype && newArchetypeData.query
     ? newArchetypeData.query
-    : (currentQuery || 'Nenhuma busca realizada')
+    : (currentQuery || t('noSearchPerformed'))
 
   const handleOpenChange = (open: boolean) => {
     onOpenChange(open)
@@ -96,7 +98,7 @@ export function SaveAsArchetypeModal({
     const liaMessage: ChatMessage = {
       id: `lia-archetype-saved-${Date.now()}`,
       type: 'lia',
-      content: `✅ Arquétipo "${nameInput.trim()}" salvo com sucesso! Você pode encontrá-lo na aba Arquétipos.`,
+      content: `✅ ${t('archetypeSavedMessage', { name: nameInput.trim() })}`,
       timestamp: new Date(),
     }
 
@@ -111,18 +113,18 @@ export function SaveAsArchetypeModal({
         <AlertDialogHeader>
           <AlertDialogTitle className="flex items-center gap-2 text-sm font-semibold">
             <Bookmark className="w-5 h-5 text-lia-text-secondary" />
-            Salvar como Arquétipo
+            {t('saveAsArchetype')}
           </AlertDialogTitle>
           <AlertDialogDescription asChild>
             <div className="space-y-4 pt-2">
               <p className="text-xs text-lia-text-primary">
-                Transforme esta busca em um arquétipo reutilizável para encontrar candidatos similares rapidamente.
+                {t('saveArchetypeDescription')}
               </p>
 
               {/* Query atual */}
               <div className="p-3 rounded-xl bg-lia-bg-secondary dark:bg-lia-bg-secondary">
                 <p className="text-xs font-medium text-lia-text-primary mb-1">
-                  {isCreatingArchetype ? 'Descrição do perfil:' : 'Busca atual:'}
+                  {isCreatingArchetype ? t('profileDescription') : t('currentSearchLabel')}
                 </p>
                 <p className="text-xs text-lia-text-primary line-clamp-3">
                   {queryToDisplay}
@@ -131,7 +133,7 @@ export function SaveAsArchetypeModal({
 
               {/* Seletor de Emoji */}
               <div>
-                <label className="text-xs font-medium mb-1.5 block">Ícone</label>
+                <label className="text-xs font-medium mb-1.5 block">{t('iconLabel')}</label>
                 <div className="flex gap-2 flex-wrap">
                   {EMOJI_OPTIONS.map((emoji) => (
                     <button
@@ -151,11 +153,11 @@ export function SaveAsArchetypeModal({
 
               {/* Nome do Arquétipo */}
               <div>
-                <label className="text-xs font-medium mb-1.5 block">Nome do Arquétipo</label>
+                <label className="text-xs font-medium mb-1.5 block">{t('archetypeName')}</label>
                 <Input
                   value={nameInput}
                   onChange={(e) => setNameInput(e.target.value)}
-                  placeholder="Ex: DevOps Sênior Cloud"
+                  placeholder={t('archetypeNamePlaceholder')}
                   className="text-sm"
                 />
               </div>
@@ -164,7 +166,7 @@ export function SaveAsArchetypeModal({
         </AlertDialogHeader>
         <AlertDialogFooter className="mt-4">
           <AlertDialogCancel onClick={handleCancel}>
-            Cancelar
+            {t('cancel')}
           </AlertDialogCancel>
           <AlertDialogAction
             onClick={handleSave}
@@ -172,7 +174,7 @@ export function SaveAsArchetypeModal({
             className="text-white bg-lia-btn-primary-bg"
           >
             <Bookmark className="w-4 h-4 mr-1" />
-            Salvar Arquétipo
+            {t('saveArchetype')}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

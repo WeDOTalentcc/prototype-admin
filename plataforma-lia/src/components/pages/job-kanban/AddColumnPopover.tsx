@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useTranslations } from "next-intl"
 import { X } from "lucide-react"
 
 interface DynamicStage {
@@ -30,14 +31,14 @@ interface AddColumnPopoverProps {
 }
 
 const CATALOG_STAGES = [
-  { name: 'Teste Técnico', behavior: 'evaluation', color: 'var(--lia-border-default)' },
-  { name: 'Teste de Inglês', behavior: 'evaluation', color: 'var(--lia-border-default)' },
-  { name: 'Entrevista Técnica', behavior: 'scheduling', color: 'var(--status-warning)' },
-  { name: 'Entrevista Gestor', behavior: 'scheduling', color: 'var(--status-success)' },
-  { name: 'Entrevista Final', behavior: 'scheduling', color: 'var(--lia-border-subtle)' },
-  { name: 'Dinâmica de Grupo', behavior: 'scheduling', color: 'var(--wedo-purple)' },
-  { name: 'Referências', behavior: 'verification', color: 'var(--lia-border-subtle)' },
-  { name: 'Case / Estudo', behavior: 'evaluation', color: 'var(--lia-border-default)' },
+  { nameKey: 'catalogTesteTecnico', behavior: 'evaluation', color: 'var(--lia-border-default)' },
+  { nameKey: 'catalogTesteIngles', behavior: 'evaluation', color: 'var(--lia-border-default)' },
+  { nameKey: 'catalogEntrevistaTecnica', behavior: 'scheduling', color: 'var(--status-warning)' },
+  { nameKey: 'catalogEntrevistaGestor', behavior: 'scheduling', color: 'var(--status-success)' },
+  { nameKey: 'catalogEntrevistaFinal', behavior: 'scheduling', color: 'var(--lia-border-subtle)' },
+  { nameKey: 'catalogDinamicaGrupo', behavior: 'scheduling', color: 'var(--wedo-purple)' },
+  { nameKey: 'catalogReferencias', behavior: 'verification', color: 'var(--lia-border-subtle)' },
+  { nameKey: 'catalogCaseEstudo', behavior: 'evaluation', color: 'var(--lia-border-default)' },
 ]
 
 function toStageName(displayName: string) {
@@ -52,6 +53,7 @@ export function AddColumnPopover({
   onSetIsAddingColumn,
   onAddStage,
 }: AddColumnPopoverProps) {
+  const t = useTranslations('kanban')
   const [columnName, setColumnName] = useState('')
   const [inferredBehavior, setInferredBehavior] = useState<InferredBehavior | null>(null)
 
@@ -117,7 +119,8 @@ export function AddColumnPopover({
   const handleAddCatalog = async (cat: typeof CATALOG_STAGES[number]) => {
     if (isAddingColumn) return
     onSetIsAddingColumn(true)
-    const stageName = toStageName(cat.name).replace(/\//g, '')
+    const displayName = t(cat.nameKey)
+    const stageName = toStageName(displayName).replace(/\//g, '')
 
     try {
       const response = await fetch('/api/backend-proxy/recruitment-stages/stages', {
@@ -125,7 +128,7 @@ export function AddColumnPopover({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: stageName,
-          display_name: cat.name,
+          display_name: displayName,
           stage_order: maxOrder + 1,
           action_behavior: cat.behavior || 'passive',
           color: cat.color,
@@ -137,7 +140,7 @@ export function AddColumnPopover({
       const newStage: DynamicStage = {
         id: result?.id || `catalog_${Date.now()}_${stageName}`,
         name: stageName,
-        displayName: cat.name,
+        displayName: displayName,
         order: maxOrder + 1,
         color: cat.color,
         stageType: 'active',
@@ -150,7 +153,7 @@ export function AddColumnPopover({
       const newStage: DynamicStage = {
         id: `catalog_${Date.now()}_${stageName}`,
         name: stageName,
-        displayName: cat.name,
+        displayName: displayName,
         order: maxOrder + 1,
         color: cat.color,
         stageType: 'active',
@@ -180,7 +183,7 @@ export function AddColumnPopover({
   }
 
   const availableCatalog = CATALOG_STAGES.filter(
-    cat => !dynamicStages.some(ds => ds.displayName === cat.name)
+    cat => !dynamicStages.some(ds => ds.displayName === t(cat.nameKey))
   )
 
   return (
@@ -193,19 +196,19 @@ export function AddColumnPopover({
         onClick={e => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-semibold text-lia-text-primary">Adicionar Coluna ao Pipeline</h3>
+          <h3 className="text-sm font-semibold text-lia-text-primary">{t('addColumnToPipeline')}</h3>
           <button onClick={onClose} className="p-1 rounded-xl hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover">
             <X className="w-4 h-4 text-lia-text-disabled" />
           </button>
         </div>
 
         <div className="space-y-3 mb-4">
-          <label className="text-xs font-medium text-lia-text-secondary">Nome da Etapa</label>
+          <label className="text-xs font-medium text-lia-text-secondary">{t('stageName')}</label>
           <input
             type="text"
             value={columnName}
             onChange={(e) => { setColumnName(e.target.value); setInferredBehavior(null) }}
-            placeholder="Ex: Teste de Lógica, Entrevista Cultural..."
+            placeholder={t('stageNamePlaceholder')}
             className="w-full px-3 py-2 text-sm border border-lia-border-subtle dark:border-lia-border-subtle dark:bg-lia-bg-secondary rounded-xl focus:outline-none focus:ring-1 focus:ring-lia-border-medium focus:border-lia-border-medium transition-colors motion-reduce:transition-none"
           />
           {columnName.length >= 3 && !inferredBehavior && (
@@ -213,7 +216,7 @@ export function AddColumnPopover({
               onClick={handleInferBehavior}
               className="text-xs px-3 py-2 rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover text-lia-text-secondary transition-colors motion-reduce:transition-none"
             >
-              Sugerir tipo de ação
+              {t('suggestActionType')}
             </button>
           )}
           {inferredBehavior && (
@@ -222,7 +225,7 @@ export function AddColumnPopover({
                 {inferredBehavior.suggested_behavior}
               </span>
               <span className="text-micro text-lia-text-disabled">
-                {Math.round(inferredBehavior.confidence * 100)}% confiança
+                {t('confidenceLabel', { percent: Math.round(inferredBehavior.confidence * 100) })}
               </span>
             </div>
           )}
@@ -233,22 +236,22 @@ export function AddColumnPopover({
           onClick={handleAddCustom}
           className={`w-full py-2.5 rounded-md text-sm font-medium text-white transition-opacity motion-reduce:transition-none disabled:opacity-40 disabled:cursor-not-allowed ${columnName.length >= 2 && !isAddingColumn ? 'bg-lia-btn-primary-bg' : 'bg-lia-text-tertiary'}`}
         >
-          {isAddingColumn ? 'Adicionando...' : 'Adicionar Coluna'}
+          {isAddingColumn ? t('adding') : t('addColumnButton')}
         </button>
 
         {availableCatalog.length > 0 && (
           <div className="mt-4 pt-4 border-t border-lia-border-subtle dark:border-lia-border-subtle">
-            <label className="text-xs font-medium text-lia-text-tertiary mb-2 block">Ou escolha do catálogo:</label>
+            <label className="text-xs font-medium text-lia-text-tertiary mb-2 block">{t('orChooseFromCatalog')}</label>
             <div className="grid grid-cols-2 gap-2">
               {availableCatalog.map(cat => (
                 <button
-                  key={cat.name}
+                  key={cat.nameKey}
                   disabled={isAddingColumn}
                   onClick={() => handleAddCatalog(cat)}
                   className="flex items-center gap-2 p-2 rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle hover:border-lia-border-medium hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover transition-colors motion-reduce:transition-none text-left disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <div className="w-3 h-3 rounded-full flex-shrink-0" style={{backgroundColor: cat.color}} />
-                  <span className="text-xs text-lia-text-secondary font-medium">{cat.name}</span>
+                  <span className="text-xs text-lia-text-secondary font-medium">{t(cat.nameKey)}</span>
                 </button>
               ))}
             </div>

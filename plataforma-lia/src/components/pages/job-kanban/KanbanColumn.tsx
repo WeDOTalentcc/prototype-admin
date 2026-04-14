@@ -1,6 +1,7 @@
 "use client"
 
 import React from"react"
+import { useTranslations } from"next-intl"
 import { Badge } from"@/components/ui/badge"
 import { Button } from"@/components/ui/button"
 import { ScrollArea } from"@/components/ui/scroll-area"
@@ -25,6 +26,7 @@ export function KanbanColumn({
   onAddCandidate,
   isDragDisabled = false,
 }: KanbanColumnProps) {
+  const t = useTranslations('kanban')
   return (
     <div 
       className="flex flex-col w-panel-sm min-w-panel-sm bg-lia-bg-secondary dark:bg-lia-bg-primary rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle"
@@ -74,7 +76,7 @@ export function KanbanColumn({
         >
           {candidates.length === 0 ? (
             <EmptyState
-              title="Arraste candidatos aqui"
+              title={t('dragCandidatesHere')}
               className="h-[100px] py-4"
             />
           ) : (

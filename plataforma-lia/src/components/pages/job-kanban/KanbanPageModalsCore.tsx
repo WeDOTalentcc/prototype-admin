@@ -3,6 +3,7 @@
 import React from "react"
 import dynamic from "next/dynamic"
 import { LoadingModal } from "@/components/ui/loading"
+import { useTranslations } from "next-intl"
 import type { KanbanPageCoreState } from "./hooks/useKanbanPageCore"
 
 const CandidatePage = dynamic(() => import("@/components/candidate-page").then(m => ({ default: m.CandidatePage })), { ssr: false, loading: () => <LoadingModal /> })
@@ -24,6 +25,7 @@ const BigFiveModal = dynamic(() => import("@/components/big-five-modal").then(m 
 const CandidateDecisionFlowModal = dynamic(() => import("@/components/candidate-decision-flow-modal").then(m => ({ default: m.CandidateDecisionFlowModal })), { ssr: false, loading: () => <LoadingModal /> })
 
 export function KanbanPageModalsCore(state: KanbanPageCoreState) {
+  const t = useTranslations('kanban')
   const {
     showCandidatePage, previewCandidate, handleCloseCandidatePage,
     isTriagemOpen, triagemCandidate, handleCloseTriagem, handleTriagemApprove, handleTriagemReject,
@@ -105,7 +107,7 @@ export function KanbanPageModalsCore(state: KanbanPageCoreState) {
           candidate={{
             id: String(emailCandidate.id),
             name: (emailCandidate.name as string) || '',
-            email: (emailCandidate.email as string | undefined) || `${((emailCandidate.name as string) || 'candidato')?.toLowerCase().replace(/\s+/g, '.')}@email.com`,
+            email: (emailCandidate.email as string | undefined) || `${((emailCandidate.name as string) || t('candidateFallback'))?.toLowerCase().replace(/\s+/g, '.')}@email.com`,
             current_title: (emailCandidate.role as string | undefined) || (emailCandidate.current_title as string | undefined) || '',
             current_company: (emailCandidate.currentCompany as string | undefined) || (emailCandidate.current_company as string | undefined) || '',
             location_city: (emailCandidate.location as string | undefined)?.split(',')[0]?.trim() || (emailCandidate.location_city as string | undefined) || '',
@@ -153,7 +155,7 @@ export function KanbanPageModalsCore(state: KanbanPageCoreState) {
                 const candidate = allCandidates.find(c => c.id === id)
                 return {
                   id,
-                  name: (candidate?.name as string | undefined) || 'Candidato',
+                  name: (candidate?.name as string | undefined) || t('candidateFallback'),
                   email: candidate?.email as string | undefined,
                   phone: candidate?.phone as string | undefined,
                   avatar: candidate?.avatar as string | undefined
@@ -170,7 +172,7 @@ export function KanbanPageModalsCore(state: KanbanPageCoreState) {
         onSuccess={() => {
           setShowAddToListModal(false)
           setSelectedCandidates(new Set())
-          toast.success("Sucesso", { description: "Candidatos adicionados à lista com sucesso!" })
+          toast.success(t('candidatesAddedToListSuccess'), { description: t('candidatesAddedToListDesc') })
         }}
       />
 
@@ -201,24 +203,24 @@ export function KanbanPageModalsCore(state: KanbanPageCoreState) {
             ? (currentJob.screening_questions as Record<string, unknown>[]).map((q: Record<string, unknown>, idx: number) => ({
                 id: (q.id as string | undefined) || `q-${idx}`,
                 question: ((q.question || q.text) as string | undefined) || '',
-                category: ((q.category || q.type) as string | undefined) || 'Triagem',
+                category: ((q.category || q.type) as string | undefined) || t('categoryTriagem'),
                 bloomLevel: (q.bloom_level || q.bloomLevel) as string | undefined
               }))
             : [
                 ...perguntasEliminatorias.map((q, idx) => ({
                   id: `elim-${idx}`,
                   question: q,
-                  category: 'Eliminatória'
+                  category: t('categoryEliminatoria')
                 })),
                 ...perguntasInformativas.map((q, idx) => ({
                   id: `info-${idx}`,
                   question: q,
-                  category: 'Informativa'
+                  category: t('categoryInformativa')
                 })),
                 ...perguntasTecnicasAvaliacao.map((q, idx) => ({
                   id: `tech-${idx}`,
                   question: q,
-                  category: 'Técnica/Avaliação'
+                  category: t('categoryTecnicaAvaliacao')
                 }))
               ]
         }
@@ -241,7 +243,7 @@ export function KanbanPageModalsCore(state: KanbanPageCoreState) {
         candidateNames={candidateForVacancy ? [(candidateForVacancy.name as string) || ''] : []}
         currentRecruiterEmail={user?.email}
         onSuccess={() => {
-          toast.success("Candidato adicionado", { description: "Candidato adicionado à vaga com sucesso" })
+          toast.success(t('candidateAddedTitle'), { description: t('candidateAddedToJobDesc') })
         }}
       />
 

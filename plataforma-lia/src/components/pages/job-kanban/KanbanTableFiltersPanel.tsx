@@ -1,5 +1,6 @@
 "use client"
 import React from "react"
+import { useTranslations } from "next-intl"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Filter, X } from "lucide-react"
@@ -25,6 +26,7 @@ export const KanbanTableFiltersPanel = React.memo(function KanbanTableFiltersPan
   tableStageFilter,
   onTableStageFilterChange,
 }: KanbanTableFiltersPanelProps) {
+  const t = useTranslations('kanban')
   return (
     <div className="flex-shrink-0 w-72 transition-colors motion-reduce:transition-none duration-300">
       <Card className="h-[calc(100vh-12rem)] flex flex-col overflow-hidden border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl">
@@ -34,7 +36,7 @@ export const KanbanTableFiltersPanel = React.memo(function KanbanTableFiltersPan
             <div className="flex items-center gap-2">
               <Filter className="w-4 h-4 text-lia-text-secondary" />
               <h3 className={textStyles.title}>
-                Filtros Avançados
+                {t('advancedFilters')}
               </h3>
             </div>
             <Button
@@ -47,7 +49,7 @@ export const KanbanTableFiltersPanel = React.memo(function KanbanTableFiltersPan
             </Button>
           </div>
           <p className={`${textStyles.description} mt-1`}>
-            Refine os candidatos exibidos
+            {t('refineCandidates')}
           </p>
         </div>
 
@@ -56,7 +58,7 @@ export const KanbanTableFiltersPanel = React.memo(function KanbanTableFiltersPan
           {/* Filtro por Etapa */}
           <div className="space-y-2">
             <label className="text-xs font-medium text-lia-text-primary">
-              Etapa do Pipeline
+              {t('pipelineStage')}
             </label>
             <div className="space-y-1.5">
               {dynamicStages.map((stage) => (
@@ -84,7 +86,7 @@ export const KanbanTableFiltersPanel = React.memo(function KanbanTableFiltersPan
           {/* Filtro por Score LIA */}
           <div className="space-y-2">
             <label className="text-xs font-medium text-lia-text-primary">
-              Score LIA Mínimo
+              {t('minLIAScore')}
             </label>
             <div className="flex items-center gap-2">
               <input
@@ -101,10 +103,10 @@ export const KanbanTableFiltersPanel = React.memo(function KanbanTableFiltersPan
           {/* Filtro por Status */}
           <div className="space-y-2">
             <label className="text-xs font-medium text-lia-text-primary">
-              Status
+              {t('statusLabel')}
             </label>
             <div className="space-y-1.5">
-              {['Novo', 'Em análise', 'Aguardando aprovação', 'Triado aprovado', 'Negociação'].map((status) => (
+              {[t('statusNew'), t('statusInAnalysis'), t('statusAwaitingApproval'), t('statusScreenedApproved'), t('statusNegotiation')].map((status) => (
                 <label key={status} className="flex items-center gap-2 cursor-pointer">
                   <input
                     type="checkbox"
@@ -121,10 +123,10 @@ export const KanbanTableFiltersPanel = React.memo(function KanbanTableFiltersPan
           {/* Filtro por Modelo de Trabalho */}
           <div className="space-y-2">
             <label className="text-xs font-medium text-lia-text-primary">
-              Modelo de Trabalho
+              {t('workModel')}
             </label>
             <div className="space-y-1.5">
-              {['Remoto', 'Híbrido', 'Presencial'].map((modelo) => (
+              {[t('workModelRemote'), t('workModelHybrid'), t('workModelOnsite')].map((modelo) => (
                 <label key={modelo} className="flex items-center gap-2 cursor-pointer">
                   <input
                     type="checkbox"
@@ -148,13 +150,13 @@ export const KanbanTableFiltersPanel = React.memo(function KanbanTableFiltersPan
               }}
               className="flex-1 px-3 py-2 text-xs font-medium text-lia-text-secondary bg-lia-bg-primary border border-lia-border-subtle rounded-xl hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none"
             >
-              Limpar
+              {t('clear')}
             </button>
             <button
               onClick={() => onShowTableFiltersPanelChange(false)}
               className="flex-1 px-3 py-2 text-xs font-medium text-white rounded-md transition-colors motion-reduce:transition-none bg-lia-btn-primary-hover"
             >
-              Aplicar
+              {t('applyFilters')}
             </button>
           </div>
         </div>

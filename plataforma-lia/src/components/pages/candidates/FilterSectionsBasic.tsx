@@ -1,6 +1,7 @@
 "use client"
 
 import React from "react"
+import { useTranslations } from "next-intl"
 import { cn } from "@/lib/utils"
 import { Input } from "@/components/ui/input"
 import { Switch } from "@/components/ui/switch"
@@ -24,21 +25,23 @@ export function FilterSectionsBasic({
   onSortChange,
   onToggleFilter,
 }: FilterSectionsBasicProps) {
+  const t = useTranslations('candidates.filters')
+
   return (
     <div data-testid="filter-sections-basic">
       <div className="mb-5">
         <h4 className="text-xs font-semibold uppercase tracking-wider text-lia-text-primary mb-3 flex items-center gap-1.5">
           <ArrowUpDown className="w-3 h-3" />
-          Ordenação
+          {t('sorting')}
         </h4>
         <RadioGroup value={searchSortBy} onValueChange={onSortChange} className="space-y-1.5">
           {[
-            { value: "relevance", label: "Relevância" },
-            { value: "score_desc", label: "Maior Nota" },
-            { value: "score_asc", label: "Menor Nota" },
-            { value: "name_asc", label: "Nome (A-Z)" },
-            { value: "name_desc", label: "Nome (Z-A)" },
-            { value: "experience_desc", label: "Maior Experiência" },
+            { value: "relevance", label: t('relevance') },
+            { value: "score_desc", label: t('highestScore') },
+            { value: "score_asc", label: t('lowestScore') },
+            { value: "name_asc", label: t('nameAZ') },
+            { value: "name_desc", label: t('nameZA') },
+            { value: "experience_desc", label: t('mostExperience') },
           ].map((option) => (
             <label
               key={option.value}
@@ -62,14 +65,14 @@ export function FilterSectionsBasic({
       <div className="mb-5">
         <h4 className="text-xs font-semibold uppercase tracking-wider text-lia-text-primary mb-3 flex items-center gap-1.5">
           <Zap className="w-3 h-3" />
-          Filtros Rápidos
+          {t('quickFilters')}
         </h4>
         <div className="space-y-2">
           {[
-            { key: "hasEmail" as const, label: "Apenas com E-mail" },
-            { key: "hasPhone" as const, label: "Apenas com Telefone" },
-            { key: "hasLinkedin" as const, label: "Apenas com LinkedIn" },
-            { key: "remoteOnly" as const, label: "Apenas Remoto" },
+            { key: "hasEmail" as const, label: t('emailOnly') },
+            { key: "hasPhone" as const, label: t('phoneOnly') },
+            { key: "hasLinkedin" as const, label: t('linkedinOnly') },
+            { key: "remoteOnly" as const, label: t('remoteOnly') },
           ].map(({ key, label }) => (
             <div key={key} className="flex items-center justify-between py-1.5">
               <span className="text-xs text-lia-text-primary">{label}</span>
@@ -88,11 +91,11 @@ export function FilterSectionsBasic({
       <div className="mb-5">
         <h4 className="text-xs font-semibold uppercase tracking-wider text-lia-text-primary mb-3 flex items-center gap-1.5">
           <Briefcase className="w-3 h-3" />
-          Experiência
+          {t('experience')}
         </h4>
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <label htmlFor="filter-min-experience" className="text-xs text-lia-text-primary mb-1 block">Mín. Anos</label>
+            <label htmlFor="filter-min-experience" className="text-xs text-lia-text-primary mb-1 block">{t('minYears')}</label>
             <Input
               id="filter-min-experience"
               type="number"
@@ -110,7 +113,7 @@ export function FilterSectionsBasic({
             />
           </div>
           <div>
-            <label htmlFor="filter-max-experience" className="text-xs text-lia-text-primary mb-1 block">Máx. Anos</label>
+            <label htmlFor="filter-max-experience" className="text-xs text-lia-text-primary mb-1 block">{t('maxYears')}</label>
             <Input
               id="filter-max-experience"
               type="number"
@@ -133,11 +136,11 @@ export function FilterSectionsBasic({
       <div className="mb-5">
         <h4 className="text-xs font-semibold uppercase tracking-wider text-lia-text-primary mb-3 flex items-center gap-1.5">
           <Star className="w-3 h-3" />
-          Score LIA
+          {t('scoreLia')}
         </h4>
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <label htmlFor="filter-min-score" className="text-xs text-lia-text-primary mb-1 block">Mín. Score</label>
+            <label htmlFor="filter-min-score" className="text-xs text-lia-text-primary mb-1 block">{t('minScore')}</label>
             <Input
               id="filter-min-score"
               type="number"
@@ -155,7 +158,7 @@ export function FilterSectionsBasic({
             />
           </div>
           <div>
-            <label htmlFor="filter-max-score" className="text-xs text-lia-text-primary mb-1 block">Máx. Score</label>
+            <label htmlFor="filter-max-score" className="text-xs text-lia-text-primary mb-1 block">{t('maxScore')}</label>
             <Input
               id="filter-max-score"
               type="number"
@@ -178,15 +181,15 @@ export function FilterSectionsBasic({
       <div className="mb-5">
         <h4 className="text-xs font-semibold uppercase tracking-wider text-lia-text-primary mb-3 flex items-center gap-1.5">
           <Crown className="w-3 h-3" />
-          Senioridade
+          {t('seniority')}
         </h4>
         <div className="space-y-1.5">
           {[
-            { value: "junior", label: "Júnior" },
-            { value: "pleno", label: "Pleno" },
-            { value: "senior", label: "Sênior" },
-            { value: "especialista", label: "Especialista" },
-            { value: "lideranca", label: "Liderança" },
+            { value: "junior", label: t('junior') },
+            { value: "pleno", label: t('midLevel') },
+            { value: "senior", label: t('senior') },
+            { value: "especialista", label: t('specialist') },
+            { value: "lideranca", label: t('leadership') },
           ].map((level) => {
             const isChecked = tableFilters.seniorityLevels.includes(level.value)
             return (
@@ -204,13 +207,13 @@ export function FilterSectionsBasic({
       <div className="mb-5">
         <h4 className="text-xs font-semibold uppercase tracking-wider text-lia-text-primary mb-3 flex items-center gap-1.5">
           <MapPin className="w-3 h-3" />
-          Modelo de Trabalho
+          {t('workModel')}
         </h4>
         <div className="space-y-1.5">
           {[
-            { value: "remote", label: "Remoto" },
-            { value: "hybrid", label: "Híbrido" },
-            { value: "onsite", label: "Presencial" },
+            { value: "remote", label: t('remote') },
+            { value: "hybrid", label: t('hybrid') },
+            { value: "onsite", label: t('onsite') },
           ].map((model) => {
             const isChecked = tableFilters.workModels.includes(model.value)
             return (
@@ -228,7 +231,7 @@ export function FilterSectionsBasic({
       <div className="mb-5">
         <h4 className="text-xs font-semibold uppercase tracking-wider text-lia-text-primary mb-3 flex items-center gap-1.5">
           <FileText className="w-3 h-3" />
-          Tipo de Contrato
+          {t('contractType')}
         </h4>
         <div className="space-y-1.5">
           {["CLT", "PJ", "Freelancer"].map((contract) => {

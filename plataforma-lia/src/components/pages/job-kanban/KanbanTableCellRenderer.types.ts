@@ -68,6 +68,7 @@ export interface DynamicStageItem {
 }
 
 export interface KanbanTableCellRendererProps {
+  t: (key: string, values?: Record<string, string>) => string
   dynamicStages: DynamicStageItem[]
   jobVacancyId?: string
   viewedCandidateIds: Set<string>

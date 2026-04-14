@@ -1,5 +1,6 @@
 "use client"
 
+import { useTranslations } from "next-intl"
 import { Button } from"@/components/ui/button"
 import { Badge } from"@/components/ui/badge"
 import {
@@ -18,17 +19,17 @@ interface TestPreviewModalProps {
 }
 
 export function TestPreviewModal({ open, onClose }: TestPreviewModalProps) {
+  const t = useTranslations('kanban')
   if (!open) return null
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-lia-overlay backdrop-blur-sm">
       <div className="bg-lia-bg-primary dark:bg-lia-bg-primary rounded-xl w-full max-w-4xl max-h-[90vh] overflow-hidden animate-fadeIn">
-        {/* Header do Modal */}
         <div className="bg-wedo-purple p-6 text-white">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-2xl font-semibold mb-2">Teste Técnico - UX Design</h2>
-              <p className="text-wedo-purple text-sm">Vaga: UX Designer • Sodexo</p>
+              <h2 className="text-2xl font-semibold mb-2">{t('testPreview.title')}</h2>
+              <p className="text-wedo-purple text-sm">{t('testPreview.jobInfo')}</p>
             </div>
             <button
               onClick={onClose}
@@ -39,53 +40,48 @@ export function TestPreviewModal({ open, onClose }: TestPreviewModalProps) {
           </div>
         </div>
 
-        {/* Conteúdo do Modal */}
         <div className="overflow-y-auto max-h-[calc(90vh-120px)]">
-          {/* Informações do Teste */}
           <div className="p-6 dark:border-lia-border-subtle">
             <div className="grid grid-cols-3 gap-4 mb-4">
               <div className="flex items-center gap-2">
                 <Clock className="w-4 h-4 text-lia-text-primary" />
                 <div>
-                  <p className="text-xs text-lia-text-primary">Tempo Total</p>
-                  <p className="text-sm font-semibold text-lia-text-primary">14 minutos</p>
+                  <p className="text-xs text-lia-text-primary">{t('testPreview.totalTime')}</p>
+                  <p className="text-sm font-semibold text-lia-text-primary">{t('testPreview.totalTimeValue')}</p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
                 <ListChecks className="w-4 h-4 text-lia-text-primary" />
                 <div>
-                  <p className="text-xs text-lia-text-primary">Total de Questões</p>
-                  <p className="text-sm font-semibold text-lia-text-primary">5 questões</p>
+                  <p className="text-xs text-lia-text-primary">{t('testPreview.totalQuestions')}</p>
+                  <p className="text-sm font-semibold text-lia-text-primary">{t('testPreview.totalQuestionsValue')}</p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
                 <Target className="w-4 h-4 text-lia-text-primary" />
                 <div>
-                  <p className="text-xs text-lia-text-primary">Pontuação Mínima</p>
+                  <p className="text-xs text-lia-text-primary">{t('testPreview.minimumScore')}</p>
                   <p className="text-sm font-semibold text-lia-text-primary">70%</p>
                 </div>
               </div>
             </div>
 
-            {/* Instruções */}
             <div className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary/20 rounded-xl p-4">
               <h3 className="text-sm font-semibold text-lia-text-primary mb-2 flex items-center gap-2">
                 <AlertCircle className="w-4 h-4" />
-                Instruções Importantes
+                {t('testPreview.importantInstructions')}
               </h3>
               <ul className="text-sm text-lia-text-primary space-y-1">
-                <li>• Leia cada questão com atenção antes de responder</li>
-                <li>• Cada questão tem um tempo limite individual (2-4 minutos)</li>
-                <li>• Você pode navegar entre as questões antes de finalizar</li>
-                <li>• O teste será enviado automaticamente ao final do tempo</li>
-                <li>• Certifique-se de ter uma conexão estável com a internet</li>
+                <li>• {t('testPreview.instructionRead')}</li>
+                <li>• {t('testPreview.instructionTimeLimit')}</li>
+                <li>• {t('testPreview.instructionNavigate')}</li>
+                <li>• {t('testPreview.instructionAutoSubmit')}</li>
+                <li>• {t('testPreview.instructionConnection')}</li>
               </ul>
             </div>
           </div>
 
-          {/* Questões do Teste - Visão do Candidato */}
           <div className="p-6 space-y-6">
-            {/* Questão 1 */}
             <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl p-5">
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-start gap-3">
@@ -94,12 +90,12 @@ export function TestPreviewModal({ open, onClose }: TestPreviewModalProps) {
                   </div>
                   <div className="flex-1">
                     <p className="text-lia-text-primary font-medium">
-                      Qual é a principal heurística de Nielsen violada quando um site não fornece feedback após uma ação do usuário?
+                      {t('testPreview.question1')}
                     </p>
                     <div className="flex items-center gap-2 mt-2">
                       <div className="flex items-center gap-1 text-xs text-lia-text-primary">
                         <Clock className="w-3 h-3" />
-                        <span className="font-medium">Tempo limite: 3:00</span>
+                        <span className="font-medium">{t('testPreview.timeLimitLabel', { time: '3:00' })}</span>
                       </div>
                       <div className="flex-1 bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-full h-1.5 max-w-sidebar-content">
                         <div className="bg-lia-bg-inverse dark:bg-lia-text-secondary h-1.5 rounded-full animate-pulse motion-reduce:animate-none"></div>
@@ -107,14 +103,14 @@ export function TestPreviewModal({ open, onClose }: TestPreviewModalProps) {
                     </div>
                   </div>
                 </div>
-                <Badge className="bg-lia-interactive-active dark:bg-lia-bg-elevated text-lia-text-secondary">10 pontos</Badge>
+                <Badge className="bg-lia-interactive-active dark:bg-lia-bg-elevated text-lia-text-secondary">{t('testPreview.points', { count: 10 })}</Badge>
               </div>
               <div className="ml-11 space-y-2">
                 {[
-                  'Prevenção de erros',
-                  'Controle e liberdade do usuário',
-                  'Visibilidade do status do sistema',
-                  'Consistência e padrões'
+                  t('testPreview.option1_1'),
+                  t('testPreview.option1_2'),
+                  t('testPreview.option1_3'),
+                  t('testPreview.option1_4')
                 ].map((option, idx) => (
                   <label key={idx} className="flex items-center gap-3 p-3 bg-lia-bg-primary dark:bg-lia-bg-primary rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle hover:border-lia-border-medium dark:hover:border-lia-border-medium cursor-pointer transition-colors motion-reduce:transition-none group">
                     <input
@@ -130,7 +126,6 @@ export function TestPreviewModal({ open, onClose }: TestPreviewModalProps) {
               </div>
             </div>
 
-            {/* Questão 2 */}
             <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl p-5">
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-start gap-3">
@@ -139,24 +134,24 @@ export function TestPreviewModal({ open, onClose }: TestPreviewModalProps) {
                   </div>
                   <div className="flex-1">
                     <p className="text-lia-text-primary font-medium">
-                      No processo de Design Thinking, qual etapa vem imediatamente após a fase de"Definir"?
+                      {t('testPreview.question2')}
                     </p>
                     <div className="flex items-center gap-2 mt-2">
                       <div className="flex items-center gap-1 text-xs text-lia-text-primary">
                         <CheckCircle className="w-3 h-3" />
-                        <span className="font-medium">Respondida em 0:45</span>
+                        <span className="font-medium">{t('testPreview.answeredIn', { time: '0:45' })}</span>
                       </div>
                     </div>
                   </div>
                 </div>
-                <Badge className="bg-lia-interactive-active dark:bg-lia-bg-elevated text-lia-text-secondary">10 pontos</Badge>
+                <Badge className="bg-lia-interactive-active dark:bg-lia-bg-elevated text-lia-text-secondary">{t('testPreview.points', { count: 10 })}</Badge>
               </div>
               <div className="ml-11 space-y-2">
                 {[
-                  'Empatizar',
-                  'Idear',
-                  'Prototipar',
-                  'Testar'
+                  t('testPreview.option2_1'),
+                  t('testPreview.option2_2'),
+                  t('testPreview.option2_3'),
+                  t('testPreview.option2_4')
                 ].map((option, idx) => (
                   <label key={idx} className="flex items-center gap-3 p-3 bg-lia-bg-primary dark:bg-lia-bg-primary rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle hover:border-lia-border-medium dark:hover:border-lia-border-medium cursor-pointer transition-colors motion-reduce:transition-none group">
                     <input
@@ -172,7 +167,6 @@ export function TestPreviewModal({ open, onClose }: TestPreviewModalProps) {
               </div>
             </div>
 
-            {/* Questão 3 */}
             <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl p-5">
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-start gap-3">
@@ -181,24 +175,24 @@ export function TestPreviewModal({ open, onClose }: TestPreviewModalProps) {
                   </div>
                   <div className="flex-1">
                     <p className="text-lia-text-primary font-medium">
-                      Qual métrica é mais adequada para medir a facilidade de uso de uma interface?
+                      {t('testPreview.question3')}
                     </p>
                     <div className="flex items-center gap-2 mt-2">
                       <div className="flex items-center gap-1 text-xs text-lia-text-primary">
                         <CheckCircle className="w-3 h-3" />
-                        <span className="font-medium">Respondida em 1:23</span>
+                        <span className="font-medium">{t('testPreview.answeredIn', { time: '1:23' })}</span>
                       </div>
                     </div>
                   </div>
                 </div>
-                <Badge className="bg-lia-interactive-active dark:bg-lia-bg-elevated text-lia-text-secondary">10 pontos</Badge>
+                <Badge className="bg-lia-interactive-active dark:bg-lia-bg-elevated text-lia-text-secondary">{t('testPreview.points', { count: 10 })}</Badge>
               </div>
               <div className="ml-11 space-y-2">
                 {[
-                  'Taxa de conversão',
-                  'Tempo médio de sessão',
-                  'System Usability Scale (SUS)',
-                  'Net Promoter Score (NPS)'
+                  t('testPreview.option3_1'),
+                  t('testPreview.option3_2'),
+                  t('testPreview.option3_3'),
+                  t('testPreview.option3_4')
                 ].map((option, idx) => (
                   <label key={idx} className="flex items-center gap-3 p-3 bg-lia-bg-primary dark:bg-lia-bg-primary rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle hover:border-lia-border-medium dark:hover:border-lia-border-medium cursor-pointer transition-colors motion-reduce:transition-none group">
                     <input
@@ -214,10 +208,9 @@ export function TestPreviewModal({ open, onClose }: TestPreviewModalProps) {
               </div>
             </div>
 
-            {/* Indicador de Progresso */}
             <div className="flex items-center justify-between pt-4 border-t border-lia-border-subtle dark:border-lia-border-subtle">
               <div className="flex items-center gap-2">
-                <span className="text-sm text-lia-text-primary">Progresso:</span>
+                <span className="text-sm text-lia-text-primary">{t('testPreview.progressLabel')}</span>
                 <div className="flex gap-1">
                   {[1, 2, 3, 4, 5].map(num => (
                     <div
@@ -229,28 +222,27 @@ export function TestPreviewModal({ open, onClose }: TestPreviewModalProps) {
                   ))}
                 </div>
               </div>
-              <span className="text-sm text-lia-text-primary">3 de 5 questões respondidas</span>
+              <span className="text-sm text-lia-text-primary">{t('testPreview.questionsAnswered', { answered: 3, total: 5 })}</span>
             </div>
           </div>
         </div>
 
-        {/* Footer do Modal */}
         <div className="border-t border-lia-border-subtle dark:border-lia-border-subtle p-4 bg-lia-bg-secondary dark:bg-lia-bg-secondary">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-3 bg-lia-bg-tertiary dark:bg-lia-bg-secondary/20 px-3 py-1.5 rounded-xl">
                 <Clock className="w-4 h-4 text-lia-text-primary" />
                 <div>
-                  <span className="text-xs text-lia-text-secondary">Tempo total:</span>
+                  <span className="text-xs text-lia-text-secondary">{t('testPreview.totalTimeLabel')}</span>
                   <span className="text-sm font-bold text-lia-text-primary ml-1">11:32</span>
                   <span className="text-xs text-lia-text-primary mx-2">|</span>
-                  <span className="text-xs text-lia-text-secondary">Questão atual:</span>
+                  <span className="text-xs text-lia-text-secondary">{t('testPreview.currentQuestionLabel')}</span>
                   <span className="text-sm font-bold text-lia-text-primary ml-1">2:15</span>
                 </div>
               </div>
               <div className="text-sm text-lia-text-primary">
                 <CheckCircle className="w-3 h-3 inline text-lia-text-primary mr-1" />
-                Salvamento automático
+                {t('testPreview.autoSave')}
               </div>
             </div>
             <div className="flex gap-2">
@@ -258,11 +250,11 @@ export function TestPreviewModal({ open, onClose }: TestPreviewModalProps) {
                 variant="outline"
                 onClick={onClose}
               >
-                Fechar Preview
+                {t('testPreview.closePreview')}
               </Button>
               <Button className="bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover dark:bg-lia-bg-secondary dark:hover:bg-lia-interactive-active text-white">
                 <Send className="w-4 h-4 mr-2" />
-                Enviar Teste
+                {t('testPreview.sendTest')}
               </Button>
             </div>
           </div>

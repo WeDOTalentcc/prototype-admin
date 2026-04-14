@@ -1,6 +1,7 @@
 "use client"
 
 import React from"react"
+import { useTranslations } from "next-intl"
 import { Button } from"@/components/ui/button"
 import { Badge } from"@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
@@ -30,6 +31,7 @@ export type { DynamicStageItem, QueryInsight } from"./KanbanTableCellRenderer.ty
 
 export function createKanbanCellRenderer(props: KanbanTableCellRendererProps) {
   const {
+    t,
     dynamicStages,
     jobVacancyId,
     viewedCandidateIds,
@@ -102,7 +104,7 @@ export function createKanbanCellRenderer(props: KanbanTableCellRendererProps) {
                   }
                 }}
                 className="w-7 h-7 rounded-full flex items-center justify-center hover:opacity-80 transition-opacity motion-reduce:transition-none bg-lia-btn-primary-hover"
-                title="Aprovar candidato"
+                title={t('approveCandidate')}
               >
                 <ThumbsUp className="w-3.5 h-3.5 text-white" strokeWidth={2} />
               </button>
@@ -116,7 +118,7 @@ export function createKanbanCellRenderer(props: KanbanTableCellRendererProps) {
                   }
                 }}
                 className="w-7 h-7 rounded-full flex items-center justify-center hover:opacity-80 transition-opacity motion-reduce:transition-none bg-wedo-coral"
-                title="Reprovar candidato"
+                title={t('rejectCandidate')}
               >
                 <XCircle className="w-3.5 h-3.5 text-white" strokeWidth={2} />
               </button>
@@ -139,7 +141,7 @@ export function createKanbanCellRenderer(props: KanbanTableCellRendererProps) {
                 <AvatarFallback>{(candidate.name as string || '').split(' ').map((n: string) => n[0]).join('')}</AvatarFallback>
               </Avatar>
               {viewedCandidateIds.has(candidate.id) && (
-                <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-lia-border-default rounded-full flex items-center justify-center border border-white" title="Perfil visualizado">
+                <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-lia-border-default rounded-full flex items-center justify-center border border-white" title={t('profileViewed')}>
                   <Eye className="w-2.5 h-2.5 text-white" />
                 </div>
               )}
@@ -256,13 +258,13 @@ export function createKanbanCellRenderer(props: KanbanTableCellRendererProps) {
                   e.stopPropagation()
                   const stage = (candidate.stageId as string | undefined) || (candidate.stage as string | undefined) || 'interview_hr'
                   const dateStr = (candidate.interviewDate as string | undefined) || new Date(candidate.agendada as string).toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })
-                  onSetTransitionInitialPrompt(`O recrutador quer gerenciar a entrevista de ${candidate.name as string} agendada para ${dateStr}. Pergunte se quer alterar o horário (peça nova data/hora) ou cancelar. Se cancelar, pergunte para qual etapa quer mover o candidato.`)
+                  onSetTransitionInitialPrompt(t('manageInterviewPrompt', { name: candidate.name as string, date: dateStr }))
                   onSetTransitionAllowStageSelection(true)
                   onSetTransitionInterviewAlert({ name: candidate.name as string, date: dateStr })
                   openTransition([candidate], stage, stage)
                 }}
                 className="w-5 h-5 rounded-md flex items-center justify-center text-wedo-cyan-dark hover:bg-wedo-cyan/10 dark:hover:bg-wedo-cyan-dark/20 transition-colors motion-reduce:transition-none flex-shrink-0"
-                title={`Gerenciar entrevista — ${(candidate.interviewDate as string | undefined) || new Date(candidate.agendada as string).toLocaleDateString('pt-BR')}`}
+                title={t('manageInterviewTitle', { date: (candidate.interviewDate as string | undefined) || new Date(candidate.agendada as string).toLocaleDateString('pt-BR') })}
               >
                 <Video className="w-3 h-3" />
               </button>
@@ -281,7 +283,7 @@ export function createKanbanCellRenderer(props: KanbanTableCellRendererProps) {
               variant="ghost"
               size="sm"
               className={`h-7 w-7 p-0 ${hasAnalysisData ? 'text-lia-text-secondary hover:text-lia-text-primary hover:bg-lia-bg-tertiary' : 'text-lia-text-disabled cursor-not-allowed'}`}
-              title={hasAnalysisData ?"Ver Análise CV vs Vaga" :"Análise pendente"}
+              title={hasAnalysisData ? t('viewCVAnalysis') : t('analysisPending')}
               onClick={(e) => {
                 e.stopPropagation()
                 if (hasAnalysisData) onOpenAnalysis(candidate)
@@ -294,7 +296,7 @@ export function createKanbanCellRenderer(props: KanbanTableCellRendererProps) {
               variant="ghost"
               size="sm"
               className={`h-7 w-7 p-0 ${hasTriagemData ? 'text-lia-text-secondary hover:text-lia-text-primary hover:bg-lia-bg-tertiary' : 'text-lia-text-disabled cursor-not-allowed'}`}
-              title={hasTriagemData ?"Ver Detalhes da Triagem" :"Triagem pendente"}
+              title={hasTriagemData ? t('viewScreeningDetails') : t('screeningPending')}
               onClick={(e) => {
                 e.stopPropagation()
                 if (hasTriagemData) onOpenTriagem(candidate)
@@ -316,7 +318,7 @@ export function createKanbanCellRenderer(props: KanbanTableCellRendererProps) {
                 <button
                   onClick={(e) => e.stopPropagation()}
                   className="p-1.5 rounded-xl hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover transition-colors motion-reduce:transition-none"
-                  title="Mais ações"
+                  title={t('moreActions')}
                 >
                   <MoreVertical className="w-4 h-4 text-lia-text-tertiary" />
                 </button>
@@ -330,7 +332,7 @@ export function createKanbanCellRenderer(props: KanbanTableCellRendererProps) {
                   className="w-full flex items-center gap-2 px-3 py-2 text-sm text-lia-text-primary hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover rounded-xl"
                 >
                   <Eye className="w-4 h-4" />
-                  Ver perfil completo
+                  {t('viewFullProfile')}
                 </button>
                 <button
                   onClick={(e) => {
@@ -340,7 +342,7 @@ export function createKanbanCellRenderer(props: KanbanTableCellRendererProps) {
                   className="w-full flex items-center gap-2 px-3 py-2 text-sm text-lia-text-primary hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover rounded-xl"
                 >
                   <Brain className="w-4 h-4 text-wedo-cyan" />
-                  Ver triagem LIA
+                  {t('viewLIAScreening')}
                 </button>
                 <button
                   onClick={(e) => {
@@ -351,7 +353,7 @@ export function createKanbanCellRenderer(props: KanbanTableCellRendererProps) {
                   className="w-full flex items-center gap-2 px-3 py-2 text-sm text-lia-text-primary hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover rounded-xl"
                 >
                   <Fingerprint className="w-4 h-4 text-lia-text-secondary" />
-                  Ver BigFive
+                  {t('viewBigFive')}
                 </button>
                 <div className="my-1 border-t border-lia-border-subtle dark:border-lia-border-subtle" />
                 <button
@@ -367,7 +369,7 @@ export function createKanbanCellRenderer(props: KanbanTableCellRendererProps) {
                   className="w-full flex items-center gap-2 px-3 py-2 text-sm text-lia-text-primary hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover rounded-xl"
                 >
                   <ThumbsUp className="w-4 h-4" />
-                  Aprovar
+                  {t('approve')}
                 </button>
                 <button
                   onClick={(e) => {
@@ -382,7 +384,7 @@ export function createKanbanCellRenderer(props: KanbanTableCellRendererProps) {
                   className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-status-error/10 dark:hover:bg-status-error/20 rounded-md text-wedo-coral"
                 >
                   <XCircle className="w-4 h-4" />
-                  Reprovar
+                  {t('reject')}
                 </button>
               </PopoverContent>
             </Popover>

@@ -1,6 +1,7 @@
 "use client"
 
 import React from "react"
+import { useTranslations } from "next-intl"
 import { ScoreIconButton } from "@/components/ui/score-icon-button"
 import { ScoreBreakdownBadgeLazy } from "@/components/score/ScoreBreakdownBadge"
 import { formatScorePercent } from "@/lib/design-tokens"
@@ -30,6 +31,7 @@ export function KanbanCardScores({
   _jobIdForSL,
   onOpenScoreModal,
 }: KanbanCardScoresProps) {
+  const t = useTranslations('kanban')
   return (
     <>
 {/* Scores - Todos os 6 indicadores (Geral, Triagem, CV, Técnico, Inglês, B5) */}
@@ -50,12 +52,12 @@ export function KanbanCardScores({
     : null
 
   const scores = [
-    { id: "geral", icon: Gauge, value: geralScore, label: "Geral", alwaysClickable: false },
-    { id: "triagem", icon: BrainCircuit, value: triagemScore, label: "Triagem", alwaysClickable: true },
-    { id: "cv", icon: Target, value: cvScore, label: "CV", alwaysClickable: true },
-    { id: "tecnico", icon: Code, value: tecnicoScore, label: "Técnico", alwaysClickable: false },
-    { id: "ingles", icon: Globe, value: inglesScore, label: "Inglês", alwaysClickable: false },
-    { id: "b5", icon: Fingerprint, value: b5Score, label: "B5", alwaysClickable: false },
+    { id: "geral", icon: Gauge, value: geralScore, label: t('scoreGeral'), alwaysClickable: false },
+    { id: "triagem", icon: BrainCircuit, value: triagemScore, label: t('scoreTriagem'), alwaysClickable: true },
+    { id: "cv", icon: Target, value: cvScore, label: t('scoreCV'), alwaysClickable: true },
+    { id: "tecnico", icon: Code, value: tecnicoScore, label: t('scoreTecnico'), alwaysClickable: false },
+    { id: "ingles", icon: Globe, value: inglesScore, label: t('scoreIngles'), alwaysClickable: false },
+    { id: "b5", icon: Fingerprint, value: b5Score, label: t('scoreB5'), alwaysClickable: false },
   ]
 
   return (

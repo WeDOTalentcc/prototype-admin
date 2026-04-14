@@ -1,5 +1,6 @@
 "use client"
 
+import { useTranslations } from "next-intl"
 import { Building2, Code, Users, Briefcase } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
@@ -31,12 +32,13 @@ interface ProfileExperienceSectionProps {
 }
 
 export function ProfileExperienceSection({ experiences, formatDateShort }: ProfileExperienceSectionProps) {
+  const t = useTranslations('candidates.profile')
   return (
     <Card className="border-lia-border-subtle">
       <CardHeader className="py-2.5 px-4">
         <CardTitle className="text-sm font-semibold text-lia-text-primary flex items-center gap-2">
           <Briefcase className="w-4 h-4 text-lia-text-secondary" />
-          Experiência Profissional
+          {t('experienceTitle')}
         </CardTitle>
       </CardHeader>
       <CardContent className="px-4 pb-4 space-y-4">
@@ -46,7 +48,7 @@ export function ProfileExperienceSection({ experiences, formatDateShort }: Profi
             const company = exp.company || exp.company_name || ""
             const location = exp.location || ""
             const startDate = exp.start_date || exp.startDate || ""
-            const endDate = exp.is_current ? "Atual" : (exp.end_date || exp.endDate || "")
+            const endDate = exp.is_current ? t('current') : (exp.end_date || exp.endDate || "")
             const description = exp.description || ""
             const industries = Array.isArray(exp.industries) ? exp.industries : []
             const technologies = Array.isArray(exp.technologies) ? exp.technologies : []
@@ -61,20 +63,20 @@ export function ProfileExperienceSection({ experiences, formatDateShort }: Profi
                 <div className="flex items-start justify-between gap-2 mb-1">
                   <div>
                     <h5 className="text-sm font-medium text-lia-text-primary">
-                      {title || "Cargo não informado"}
+                      {title || t('positionNotProvided')}
                     </h5>
                     <p className="text-sm text-lia-text-secondary">
-                      {company || "Empresa não informada"}
+                      {company || t('companyNotProvided')}
                       {location && <span className="text-lia-text-tertiary"> · {location}</span>}
                       {exp.duration_years != null && (
-                        <span className="text-lia-text-tertiary ml-1">({exp.duration_years.toFixed(1)} anos)</span>
+                        <span className="text-lia-text-tertiary ml-1">({t('durationYears', { years: exp.duration_years.toFixed(1) })})</span>
                       )}
                     </p>
                   </div>
                   <span className="text-xs text-lia-text-secondary whitespace-nowrap">
                     {formatDateShort(startDate)}
                     {startDate && endDate ? " - " : ""}
-                    {endDate === "Atual" ? "Atual" : formatDateShort(endDate)}
+                    {endDate === t('current') ? t('current') : formatDateShort(endDate)}
                   </span>
                 </div>
 
@@ -105,7 +107,7 @@ export function ProfileExperienceSection({ experiences, formatDateShort }: Profi
                   <div className="flex flex-wrap gap-1 mb-2">
                     <span className="text-micro text-lia-text-tertiary flex items-center gap-0.5">
                       <Code className="w-2.5 h-2.5" />
-                      Stack:
+                      {t('techStack')}:
                     </span>
                     {technologies.slice(0, 6).map((tech: string) => (
                       <span
@@ -128,7 +130,7 @@ export function ProfileExperienceSection({ experiences, formatDateShort }: Profi
             )
           })
         ) : (
-          <p className="text-sm text-lia-text-secondary italic">Não informado</p>
+          <p className="text-sm text-lia-text-secondary italic">{t('notProvided')}</p>
         )}
       </CardContent>
     </Card>

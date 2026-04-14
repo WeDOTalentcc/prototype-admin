@@ -1,6 +1,7 @@
 "use client"
 
 import React, { memo } from "react"
+import { useTranslations } from "next-intl"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { cn } from "@/lib/utils"
 
@@ -40,6 +41,7 @@ const CandidateAvatar = memo(function CandidateAvatar({
   className,
   showRing = false,
 }: CandidateAvatarProps) {
+  const t = useTranslations('candidates.profile')
   return (
     <Avatar
       className={cn(
@@ -49,7 +51,7 @@ const CandidateAvatar = memo(function CandidateAvatar({
         className
       )}
     >
-      <AvatarImage src={avatarUrl || undefined} alt={name} />
+      <AvatarImage src={avatarUrl || undefined} alt={t('avatarAlt', { name })} />
       <AvatarFallback
         className={cn(
           "font-semibold bg-lia-bg-tertiary text-lia-text-primary",

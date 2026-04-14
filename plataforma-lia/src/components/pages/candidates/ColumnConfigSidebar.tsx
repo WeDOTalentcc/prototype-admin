@@ -1,6 +1,7 @@
 "use client"
 
 import React from "react"
+import { useTranslations } from "next-intl"
 import { Button } from "@/components/ui/button"
 import { X, Search, Check, Globe } from "lucide-react"
 
@@ -33,27 +34,29 @@ export function ColumnConfigSidebar({
   setColumnSearchTerm,
   setShowColumnConfig,
 }: ColumnConfigSidebarProps) {
+  const t = useTranslations('candidates.columns')
+
   if (!showColumnConfig) return null
 
   const categoryLabels: Record<string, string> = {
-    basico: "Identificação Básica",
-    contato: "Contato",
-    pessoal: "Informações Pessoais",
-    profissional: "Perfil Profissional",
-    competencias: "Competências",
-    localizacao: "Localização",
-    endereco: "Endereço Completo",
-    preferencias: "Preferências de Trabalho",
-    salario: "Salário e Expectativas",
-    documentos: "Currículo e Documentos",
-    origem: "Origem e Integração",
-    busca_global: "Busca Global",
-    ia: "Insights LIA / IA",
-    status: "Status e Workflow",
-    comunicacao: "Comunicação",
-    cadastro: "Status de Cadastro",
-    adicional: "Informações Adicionais",
-    datas: "Datas e Timestamps",
+    basico: t('basico'),
+    contato: t('contato'),
+    pessoal: t('pessoal'),
+    profissional: t('profissional'),
+    competencias: t('competencias'),
+    localizacao: t('localizacao'),
+    endereco: t('endereco'),
+    preferencias: t('preferencias'),
+    salario: t('salario'),
+    documentos: t('documentos'),
+    origem: t('origem'),
+    busca_global: t('busca_global'),
+    ia: t('ia'),
+    status: t('status'),
+    comunicacao: t('comunicacao'),
+    cadastro: t('cadastro'),
+    adicional: t('adicional'),
+    datas: t('datas'),
   }
 
   const categoryOrder = [
@@ -81,15 +84,16 @@ export function ColumnConfigSidebar({
   return (
     <div data-testid="column-config-sidebar" className="flex-shrink-0 w-80 transition-colors motion-reduce:transition-none duration-300">
       <div className="bg-lia-bg-primary rounded-xl h-[calc(100vh-6rem)] overflow-hidden">
-        {/* Header */}
         <div className="p-4 flex items-center justify-between">
           <div>
             <h3 className="text-sm font-semibold text-lia-text-primary">
-              Configurar Colunas
+              {t('configureColumns')}
             </h3>
             <p className="text-xs mt-0.5 text-lia-text-primary">
-              {tableColumns.filter((c) => c.visible && c.id !== "acoes").length} de{" "}
-              {tableColumns.filter((c) => c.id !== "acoes").length} colunas ativas
+              {t('columnsActive', {
+                visible: tableColumns.filter((c) => c.visible && c.id !== "acoes").length,
+                total: tableColumns.filter((c) => c.id !== "acoes").length
+              })}
             </p>
           </div>
           <button
@@ -100,13 +104,12 @@ export function ColumnConfigSidebar({
           </button>
         </div>
 
-        {/* Search and Actions */}
         <div className="p-3 space-y-3">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-lia-text-primary" />
             <input
               type="text"
-              placeholder="Buscar coluna..."
+              placeholder={t('searchColumn')}
               value={columnSearchTerm}
               onChange={(e) => setColumnSearchTerm(e.target.value)}
               className="w-full pl-9 pr-3 py-2 text-xs rounded-md bg-lia-bg-secondary placeholder-lia-text-tertiary focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20 text-lia-text-primary"
@@ -125,7 +128,7 @@ export function ColumnConfigSidebar({
                 )
               }}
             >
-              Restaurar Padrão
+              {t('restoreDefault')}
             </button>
             <button
               className="text-xs h-8 px-4 rounded-xl bg-lia-bg-secondary hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none text-lia-text-secondary"
@@ -133,12 +136,11 @@ export function ColumnConfigSidebar({
                 setTableColumns((prev) => prev.map((col) => ({ ...col, visible: true })))
               }}
             >
-              Todas
+              {t('showAll')}
             </button>
           </div>
         </div>
 
-        {/* Column List */}
         <div className="overflow-y-auto h-[calc(100%-160px)] p-3">
           {categoryOrder.map((category) => {
             const columns = groupedColumns[category]

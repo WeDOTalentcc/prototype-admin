@@ -2,6 +2,7 @@
 
 import React from "react"
 import dynamic from "next/dynamic"
+import { useTranslations } from "next-intl"
 import { LoadingModal } from "@/components/ui/loading"
 import {
   ArrowRight, FileText, Mail, Star, XCircle, X,
@@ -24,6 +25,7 @@ interface KanbanContentAreaProps {
 }
 
 export function KanbanContentArea({ state }: KanbanContentAreaProps) {
+  const t = useTranslations('kanban')
   const {
     viewMode, setViewMode,
     showSuperChat, setShowSuperChat,
@@ -89,7 +91,7 @@ export function KanbanContentArea({ state }: KanbanContentAreaProps) {
                   className="h-6 text-micro gap-1 flex-shrink-0 px-2"
                 >
                   <X className="w-3 h-3" />
-                  Limpar
+                  {t('clear')}
                 </Button>
               )}
               <PipelineStagesCarousel
@@ -129,49 +131,49 @@ export function KanbanContentArea({ state }: KanbanContentAreaProps) {
             actions={[
               {
                 id: 'move_stage',
-                label: 'Mover Etapa',
+                label: t('moveStage'),
                 icon: <ArrowRight className="w-3.5 h-3.5 text-lia-text-secondary" />,
                 onClick: () => handleBulkAction('move_stage' as BulkActionType | string),
               },
               {
                 id: 'add_to_list',
-                label: 'Lista',
+                label: t('list'),
                 icon: <List className="w-3.5 h-3.5 text-lia-text-secondary" />,
                 onClick: () => handleBulkAction('add_to_list' as BulkActionType | string),
               },
               {
                 id: 'share_search',
-                label: 'Compartilhar',
+                label: t('shareLabel'),
                 icon: <Share2 className="w-3.5 h-3.5 text-lia-text-secondary" />,
                 onClick: () => handleBulkAction('share_search' as BulkActionType | string),
               },
               {
                 id: 'wsi_screening',
-                label: 'Triagem WSI',
+                label: t('wsiScreeningBulk'),
                 icon: <Fingerprint className="w-3.5 h-3.5 text-lia-text-secondary" />,
                 onClick: () => handleBulkAction('wsi_screening' as BulkActionType | string),
               },
               {
                 id: 'request_data',
-                label: 'Solicitar Dados',
+                label: t('requestData'),
                 icon: <FileText className="w-3.5 h-3.5 text-lia-text-secondary" />,
                 onClick: () => handleBulkAction('request_data' as BulkActionType | string),
               },
               {
                 id: 'send_message',
-                label: 'Mensagem',
+                label: t('messageAction'),
                 icon: <Mail className="w-3.5 h-3.5 text-lia-text-secondary" />,
                 onClick: () => handleBulkAction('send_message' as BulkActionType | string),
               },
               {
                 id: 'favorites',
-                label: 'Favoritos',
+                label: t('favorites'),
                 icon: <Star className="w-3.5 h-3.5 text-status-warning" />,
                 onClick: () => handleBulkAction('favorites' as BulkActionType | string),
               },
               {
                 id: 'reject',
-                label: 'Reprovar',
+                label: t('rejectBulk'),
                 icon: <XCircle className="w-3.5 h-3.5" />,
                 onClick: () => handleBulkAction('reject' as BulkActionType | string),
                 variant: 'destructive' as const,
@@ -229,7 +231,7 @@ export function KanbanContentArea({ state }: KanbanContentAreaProps) {
                   content: msg.content,
                   timestamp: new Date(msg.timestamp)
                 }))}
-                contextTitle="Análise de Candidatos"
+                contextTitle={t('candidateAnalysis')}
                 inline={true}
                 mode="general"
                 onReturnToLateral={returnToExpandedPrompt}
@@ -246,7 +248,7 @@ export function KanbanContentArea({ state }: KanbanContentAreaProps) {
                 size="sm"
                 onClick={() => setShowSuperChat(false)}
                 className="h-8 w-8 p-0 rounded-md hover:bg-lia-bg-tertiary"
-                title="Expandir visualização"
+                title={t('expandView')}
               >
                 <ChevronRight className="w-4 h-4 text-lia-text-tertiary" />
               </Button>
@@ -275,7 +277,7 @@ export function KanbanContentArea({ state }: KanbanContentAreaProps) {
                 <span 
                   className="text-micro font-medium text-lia-text-secondary tracking-wide [writing-mode:vertical-rl] [text-orientation:mixed]"
                  aria-live="polite" aria-atomic="true">
-                  Candidatos ({Object.values(candidatesData).flat().length})
+                  {t('candidatesCount', { count: Object.values(candidatesData).flat().length })}
                 </span>
               </div>
             </div>
@@ -288,9 +290,9 @@ export function KanbanContentArea({ state }: KanbanContentAreaProps) {
             <LiaChatShell
               mode="inline-left"
               contextChips={[
-                { id: "rankear", label: "Rankear", prompt: "Rankear candidatos desta vaga", icon: <Star className="w-2.5 h-2.5" /> },
-                { id: "comparar", label: "Comparar", prompt: "Comparar os melhores candidatos", icon: <Users className="w-2.5 h-2.5" /> },
-                { id: "triagem", label: "Triagem", prompt: "Iniciar triagem dos candidatos pendentes", icon: <Brain className="w-2.5 h-2.5" /> },
+                { id: "rankear", label: t('chipRankLabel'), prompt: t('chipRankPrompt'), icon: <Star className="w-2.5 h-2.5" /> },
+                { id: "comparar", label: t('chipCompareLabel'), prompt: t('chipComparePrompt'), icon: <Users className="w-2.5 h-2.5" /> },
+                { id: "triagem", label: t('chipScreeningLabel'), prompt: t('chipScreeningPrompt'), icon: <Brain className="w-2.5 h-2.5" /> },
               ]}
               onClose={() => { setShowExpandedLIA(false); setUserCollapsedLIA(true) }}
               width="100%"

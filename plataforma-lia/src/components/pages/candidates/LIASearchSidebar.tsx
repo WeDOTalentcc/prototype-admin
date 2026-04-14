@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState } from "react"
+import { useTranslations } from "next-intl"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
@@ -80,6 +81,7 @@ export function LIASearchSidebar({
   onLIAChatMessage, onAICommand, onQuickAction,
   onCalibrationLike, onCalibrationDislike, onClose, chatScrollRef,
 }: LIASearchSidebarProps) {
+  const t = useTranslations('candidates.liaSidebar')
   const [superChatWidth, setSuperChatWidth] = useState(600)
 
   const sharedSearchProps = {
@@ -103,9 +105,9 @@ export function LIASearchSidebar({
                 <Brain className="w-6 h-6 text-wedo-cyan" strokeWidth={2.5} />
               </div>
               <div className="min-w-0 flex-1">
-                <h3 className="text-sm font-semibold leading-tight truncate text-lia-text-primary">Ol&aacute;! Sou a Lia.</h3>
+                <h3 className="text-sm font-semibold leading-tight truncate text-lia-text-primary">{t('greeting')}</h3>
                 <p className="text-xs leading-tight truncate mt-0.5 text-lia-text-tertiary" aria-live="polite" aria-atomic="true">
-                  Posso criar vagas, buscar candidatos, analisar m&eacute;tricas e muito mais!
+                  {t('subtitle')}
                 </p>
               </div>
             </div>
@@ -121,7 +123,7 @@ export function LIASearchSidebar({
                       {isLiaSuperChat ? <PanelLeftClose className="w-4 h-4 text-lia-text-secondary" /> : <Maximize2 className="w-4 h-4 text-lia-text-tertiary" />}
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent><p className="text-xs">{isLiaSuperChat ? 'Retrair chat' : 'Expandir para Superchat'}</p></TooltipContent>
+                  <TooltipContent><p className="text-xs">{isLiaSuperChat ? t('collapseChat') : t('expandSuperchat')}</p></TooltipContent>
                 </Tooltip>
               </TooltipProvider>
               <Button variant="ghost" size="sm" onClick={onClose} className="h-7 w-7 p-0 rounded-full hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none flex-shrink-0">
@@ -168,7 +170,7 @@ export function LIASearchSidebar({
       {/* Resize Handle */}
       <div
         className={`absolute -right-1.5 top-1/2 -translate-y-1/2 w-3 cursor-ew-resize hover:scale-125 transition-transform motion-reduce:transition-none z-10 flex items-center justify-center ${isLiaSuperChat ? 'h-full' : 'h-12'}`}
-        title="Arraste para ajustar a largura"
+        title={t('dragToResize')}
         onMouseDown={(e) => {
           e.preventDefault()
           setIsResizingLIA(true)

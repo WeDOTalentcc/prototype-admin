@@ -6,6 +6,7 @@
 "use client"
 
 import React from "react"
+import { useTranslations } from "next-intl"
 import { Brain } from "lucide-react"
 import { ThinkingDots } from "@/components/ui/thinking-dots"
 import { LIAToolbarBrainButton } from "@/components/ui/lia-toolbar-brain-button"
@@ -22,6 +23,7 @@ export interface CompactLIAPromptProps {
 export function CompactLIAPrompt({
   isLIAThinking,
 }: CompactLIAPromptProps) {
+  const t = useTranslations('candidates.compactLia')
   const { open } = useLiaFloat()
 
   return (
@@ -35,7 +37,7 @@ export function CompactLIAPrompt({
       {isLIAThinking && (
         <div className="flex items-center gap-2 text-xs px-3 py-1.5 rounded-xl animate-fade-in bg-lia-interactive-active/30 border border-wedo-cyan/20">
           <Brain className="w-3 h-3 animate-pulse motion-reduce:animate-none text-wedo-cyan" />
-          <span className="font-medium text-lia-text-primary">LIA está pensando</span>
+          <span className="font-medium text-lia-text-primary">{t('liaThinking')}</span>
           <div className="flex gap-0.5">
             <ThinkingDots dotClassName="bg-lia-border-medium" size="sm" />
           </div>

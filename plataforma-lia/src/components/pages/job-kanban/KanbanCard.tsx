@@ -1,6 +1,8 @@
 "use client"
 
 import React from"react"
+import { useTranslations } from"next-intl"
+import { useLocale } from"next-intl"
 import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
 import { Badge } from"@/components/ui/badge"
 import { Card, CardContent } from"@/components/ui/card"
@@ -23,6 +25,8 @@ export const KanbanCard = React.memo(function KanbanCard({
   onClick,
   isDragDisabled = false,
 }: KanbanCardProps) {
+  const t = useTranslations('kanban')
+  const locale = useLocale()
   const getScoreColor = (score?: number) => {
     if (!score) return"text-lia-text-disabled"
     return getPercentageScoreColorClass(score)
@@ -139,7 +143,7 @@ export const KanbanCard = React.memo(function KanbanCard({
                     <Clock className="h-3 w-3 text-status-warning" />
                   </TooltipTrigger>
                   <TooltipContent side="top" className="text-xs">
-                    Parado há {candidate.days_in_stage} dias — considere avançar ou dar retorno
+                    {t('staleTooltip', { days: candidate.days_in_stage })}
                   </TooltipContent>
                 </Tooltip>
               )}
@@ -149,7 +153,7 @@ export const KanbanCard = React.memo(function KanbanCard({
                     <TrendingUp className="h-3 w-3 text-status-success" />
                   </TooltipTrigger>
                   <TooltipContent side="top" className="text-xs">
-                    Score WSI alto ({Math.round(candidate.lia_score!)}) — considere priorizar
+                    {t('highScoreTooltip', { score: Math.round(candidate.lia_score!) })}
                   </TooltipContent>
                 </Tooltip>
               )}
@@ -159,7 +163,7 @@ export const KanbanCard = React.memo(function KanbanCard({
                     <AlertTriangle className="h-3 w-3 text-status-error" />
                   </TooltipTrigger>
                   <TooltipContent side="top" className="text-xs">
-                    Score WSI baixo ({Math.round(candidate.lia_score!)}) — avaliar permanência
+                    {t('lowScoreTooltip', { score: Math.round(candidate.lia_score!) })}
                   </TooltipContent>
                 </Tooltip>
               )}
@@ -167,7 +171,7 @@ export const KanbanCard = React.memo(function KanbanCard({
           </TooltipProvider>
           
           <span className="text-micro text-lia-text-tertiary">
-            {new Date(candidate.addedAt).toLocaleDateString("pt-BR", {
+            {new Date(candidate.addedAt).toLocaleDateString(locale, {
               day:"2-digit",
               month:"short"
             })}

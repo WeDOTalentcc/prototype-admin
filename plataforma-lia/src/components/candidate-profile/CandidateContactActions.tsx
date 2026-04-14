@@ -1,6 +1,7 @@
 "use client"
 
 import React, { memo, useCallback } from "react"
+import { useTranslations } from "next-intl"
 import { Mail, Phone, Linkedin } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
@@ -31,6 +32,7 @@ const CandidateContactActions = memo(function CandidateContactActions({
   onSendWhatsApp,
   onOpenLinkedIn,
 }: CandidateContactActionsProps) {
+  const t = useTranslations('candidates.profile')
   const iconSize = size === "sm" ? "w-3.5 h-3.5" : "w-4 h-4"
   const buttonSize = size === "sm" ? "h-6 w-6 p-0" : "h-7 w-7 p-0"
 
@@ -84,7 +86,7 @@ const CandidateContactActions = memo(function CandidateContactActions({
           </Button>
         </TooltipTrigger>
         <TooltipContent side="bottom" className="text-xs">
-          Email
+          {t('contactEmail')}
         </TooltipContent>
       </Tooltip>
 
@@ -109,7 +111,7 @@ const CandidateContactActions = memo(function CandidateContactActions({
           </Button>
         </TooltipTrigger>
         <TooltipContent side="bottom" className="text-xs">
-          WhatsApp
+          {t('contactWhatsApp')}
         </TooltipContent>
       </Tooltip>
 
@@ -134,7 +136,7 @@ const CandidateContactActions = memo(function CandidateContactActions({
             </Button>
           </TooltipTrigger>
           <TooltipContent side="bottom" className="text-xs">
-            LinkedIn
+            {t('contactLinkedIn')}
           </TooltipContent>
         </Tooltip>
       )}

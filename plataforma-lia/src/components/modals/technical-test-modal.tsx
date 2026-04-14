@@ -4,6 +4,8 @@ import { X, Code, Clock, Trophy, Users, CheckCircle, Loader2, AlertCircle, Trend
 import { getPercentageScoreVar } from "@/lib/score-utils"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
+import { useTranslations } from "next-intl"
+import { useLocale } from "next-intl"
 
 interface TestCategory {
   name: string
@@ -31,21 +33,21 @@ type TestStatus = 'pending' | 'in_progress' | 'completed'
 
 const STATUS_CONFIG = {
   pending: {
-    label: 'Pendente',
+    labelKey: 'statusPending' as const,
     icon: AlertCircle,
     color: 'var(--lia-text-tertiary)',
     bgColor: 'var(--lia-bg-tertiary)',
     borderColor: 'var(--lia-border-default)'
   },
   in_progress: {
-    label: 'Em andamento',
+    labelKey: 'statusInProgress' as const,
     icon: Loader2,
     color: 'var(--status-warning)',
     bgColor: 'var(--status-warning-bg)',
     borderColor: 'var(--status-warning-border)'
   },
   completed: {
-    label: 'Concluído',
+    labelKey: 'statusCompleted' as const,
     icon: CheckCircle,
     color: 'var(--status-success)',
     bgColor: 'var(--status-success-bg)',
@@ -54,6 +56,8 @@ const STATUS_CONFIG = {
 }
 
 export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTestModalProps) {
+  const t = useTranslations('candidates.technicalTestModal')
+  const locale = useLocale()
   if (!isOpen) return null
 
   const testData: TestData = (candidate?.technicalTest as TestData) ?? {
@@ -87,9 +91,9 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
 
   const getComparisonLabel = (candidateScore: number, avgScore: number) => {
     const diff = candidateScore - avgScore
-    if (diff > 0) return `+${diff} acima da média`
-    if (diff < 0) return `${diff} abaixo da média`
-    return 'Na média'
+    if (diff > 0) return t('aboveAverage', { diff })
+    if (diff < 0) return t('belowAverage', { diff })
+    return t('atAverage')
   }
 
   return (
@@ -115,13 +119,13 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
                 className="text-base-ui font-semibold text-lia-text-primary"
                
               >
-                Teste Técnico
+                {t('title')}
               </h2>
               <p 
                 className="text-xs text-lia-text-secondary"
                
                aria-live="polite" aria-atomic="true">
-                {String(candidate?.name ?? 'Candidato')}
+                {String(candidate?.name ?? t('defaultCandidate'))}
               </p>
             </div>
           </div>
@@ -147,14 +151,14 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
                 className="text-xs font-medium"
                 style={{color: statusConfig.color}}
               >
-                {statusConfig.label}
+                {t(statusConfig.labelKey)}
               </span>
             </div>
             {testData.completedAt && status === 'completed' && (
               <span 
                 className="text-micro text-lia-text-secondary"
               >
-                Concluído em {new Date(testData.completedAt).toLocaleDateString('pt-BR')}
+                {t('completedAt', { date: new Date(testData.completedAt).toLocaleDateString(locale) })}
               </span>
             )}
           </div>
@@ -166,7 +170,7 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
                   <div className="flex items-center gap-2 mb-1">
                     <Trophy className="w-3.5 h-3.5 text-lia-text-secondary" />
                     <span className="text-micro text-lia-text-secondary">
-                      Score Geral
+                      {t('overallScore')}
                     </span>
                   </div>
                   <span 
@@ -184,7 +188,7 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
                   <div className="flex items-center gap-2 mb-1">
                     <Clock className="w-3.5 h-3.5 text-lia-text-secondary" />
                     <span className="text-micro text-lia-text-secondary">
-                      Tempo de Conclusão
+                      {t('completionTime')}
                     </span>
                   </div>
                   <span className="text-2xl font-semibold text-lia-text-primary">
@@ -201,7 +205,7 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
                 <span 
                   className="text-xs text-lia-text-secondary"
                   aria-live="polite" aria-atomic="true">
-                  Comparação com outros candidatos:
+                  {t('comparison')}
                 </span>
                 <span 
                   className={`text-xs font-semibold ml-auto ${(testData.score ?? 0) >= (testData.averageScore ?? 0) ? 'text-status-success' : 'text-status-error'}`}
@@ -212,7 +216,7 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
 
               <div className="mb-4">
                 <p className="text-xs font-semibold mb-3 text-lia-text-primary">
-                  Breakdown por Categoria
+                  {t('categoryBreakdown')}
                 </p>
 
                 <div className="space-y-2.5">
@@ -249,7 +253,7 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
                         <span 
                           className="text-micro text-lia-text-secondary"
                           aria-live="polite" aria-atomic="true">
-                          Média dos candidatos: {category.avgScore}
+                          {t('candidateAvg', { score: category.avgScore })}
                         </span>
                         <span 
                           className={`text-micro ${category.score >= category.avgScore ? 'text-status-success' : 'text-status-error'}`}
@@ -273,12 +277,12 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
                 className="text-xs font-medium mb-1 text-lia-text-tertiary"
                
               >
-                Teste ainda não iniciado
+                {t('notStarted')}
               </p>
               <p 
                 className="text-micro text-center text-lia-text-disabled"
                 aria-live="polite" aria-atomic="true">
-                O candidato receberá um convite para realizar o teste técnico.
+                {t('notStartedDesc')}
               </p>
             </div>
           )}
@@ -293,13 +297,13 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
                 className="text-xs font-medium mb-1 text-lia-text-tertiary"
                
               >
-                Teste em andamento
+                {t('inProgress')}
               </p>
               <p 
                 className="text-micro text-center text-lia-text-disabled"
                
                aria-live="polite" aria-atomic="true">
-                O candidato está realizando o teste técnico neste momento.
+                {t('inProgressDesc')}
               </p>
             </div>
           )}
@@ -314,7 +318,7 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
             className="h-9 px-4 text-xs font-medium bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text"
            
           >
-            Fechar
+            {t('close')}
           </Button>
         </div>
       </div>

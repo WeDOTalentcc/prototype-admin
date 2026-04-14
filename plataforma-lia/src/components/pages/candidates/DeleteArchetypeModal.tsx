@@ -2,6 +2,7 @@
 
 import { toast } from "sonner"
 import { useState } from "react"
+import { useTranslations } from "next-intl"
 import { AlertCircle, Loader2 } from "lucide-react"
 import {
   AlertDialog,
@@ -25,6 +26,7 @@ interface DeleteArchetypeModalProps {
 }
 
 export function DeleteArchetypeModal({ archetypeToDelete, onClose, onDeleted }: DeleteArchetypeModalProps) {
+  const t = useTranslations('candidates.modals')
   const [isDeletingArchetype, setIsDeletingArchetype] = useState(false)
 const handleDelete = async () => {
     if (!archetypeToDelete) return
@@ -39,10 +41,10 @@ const handleDelete = async () => {
       }
 
       onDeleted(archetypeToDelete.id)
-      toast.success("Arquétipo excluído", { description: `"${archetypeToDelete.name}" foi removido dos seus arquétipos.` })
+      toast.success(t('archetypeDeleted'), { description: t('archetypeRemovedDescription', { name: archetypeToDelete.name }) })
     } catch (error) {
       onDeleted(archetypeToDelete.id)
-      toast.success("Arquétipo excluído", { description: `"${archetypeToDelete.name}" foi removido dos seus arquétipos.` })
+      toast.success(t('archetypeDeleted'), { description: t('archetypeRemovedDescription', { name: archetypeToDelete.name }) })
     } finally {
       setIsDeletingArchetype(false)
       onClose()
@@ -55,15 +57,15 @@ const handleDelete = async () => {
         <AlertDialogHeader>
           <AlertDialogTitle className="flex items-center gap-2 text-base">
             <AlertCircle className="w-5 h-5 text-status-error" />
-            Excluir Arquétipo
+            {t('deleteArchetype')}
           </AlertDialogTitle>
           <AlertDialogDescription className="text-base-ui text-lia-text-tertiary">
-            Tem certeza que deseja excluir o arquétipo <strong>"{archetypeToDelete?.name}"</strong>? Esta ação não pode ser desfeita.
+            {t('deleteArchetypeConfirmation', { name: archetypeToDelete?.name || '' })}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel data-testid="delete-archetype-cancel-btn" onClick={onClose}>
-            Cancelar
+            {t('cancel')}
           </AlertDialogCancel>
           <AlertDialogAction
             data-testid="delete-archetype-confirm-btn"
@@ -74,10 +76,10 @@ const handleDelete = async () => {
             {isDeletingArchetype ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin motion-reduce:animate-none" />
-                Excluindo...
+                {t('deleting')}
               </>
             ) : (
-              'Excluir'
+              t('delete')
             )}
           </AlertDialogAction>
         </AlertDialogFooter>

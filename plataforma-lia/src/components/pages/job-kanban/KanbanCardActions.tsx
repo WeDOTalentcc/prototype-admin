@@ -1,6 +1,7 @@
 "use client"
 
 import React from "react"
+import { useTranslations } from "next-intl"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -50,6 +51,7 @@ export function KanbanCardActions({
   onToggleShortList,
   onToggleFavorite,
 }: KanbanCardActionsProps) {
+  const t = useTranslations('kanban')
   return (
     <>
 {/* Ações rápidas - Posicionadas no canto direito */}
@@ -60,8 +62,8 @@ export function KanbanCardActions({
       <button
         className="p-1 hover:bg-lia-bg-tertiary rounded-xl transition-opacity motion-reduce:transition-none bg-lia-bg-primary/80"
         onClick={(e) => e.stopPropagation()}
-        title="Mais opções"
-        aria-label="Mais opções do candidato"
+        title={t('moreOptions')}
+        aria-label={t('moreOptionsCandidateAria')}
       >
         <MoreVertical className="w-3 h-3 text-lia-text-secondary" aria-hidden="true" />
       </button>
@@ -75,7 +77,7 @@ export function KanbanCardActions({
         className="text-xs text-lia-text-primary hover:bg-lia-bg-secondary cursor-pointer"
       >
         <Mail className="w-3.5 h-3.5 mr-2 text-lia-text-tertiary" />
-        Enviar Email
+        {t('sendEmail')}
       </DropdownMenuItem>
       <DropdownMenuItem
         onClick={(e) => {
@@ -85,7 +87,7 @@ export function KanbanCardActions({
         className="text-xs text-lia-text-primary hover:bg-lia-bg-secondary cursor-pointer"
       >
         <MessageCircle className="w-3.5 h-3.5 mr-2 text-lia-text-tertiary" />
-        Enviar WhatsApp
+        {t('sendWhatsApp')}
       </DropdownMenuItem>
       <DropdownMenuItem
         onClick={(e) => {
@@ -95,7 +97,7 @@ export function KanbanCardActions({
         className="text-xs text-lia-text-primary hover:bg-lia-bg-secondary cursor-pointer"
       >
         <Calendar className="w-3.5 h-3.5 mr-2 text-lia-text-tertiary" />
-        Agendar Entrevista
+        {t('scheduleInterview')}
       </DropdownMenuItem>
       <DropdownMenuItem
         onClick={(e) => {
@@ -105,7 +107,7 @@ export function KanbanCardActions({
         className="text-xs text-lia-text-primary hover:bg-lia-bg-secondary cursor-pointer"
       >
         <ClipboardList className="w-3.5 h-3.5 mr-2 text-lia-text-tertiary" />
-        Triagem WSI
+        {t('wsiScreening')}
       </DropdownMenuItem>
       <DropdownMenuItem
         onClick={(e) => {
@@ -115,7 +117,7 @@ export function KanbanCardActions({
         className="text-xs text-lia-text-primary hover:bg-lia-bg-secondary cursor-pointer"
       >
         <MessageSquareText className="w-3.5 h-3.5 mr-2 text-lia-text-tertiary" />
-        Enviar Feedback
+        {t('sendFeedback')}
       </DropdownMenuItem>
       <DropdownMenuSeparator />
       <DropdownMenuItem
@@ -133,8 +135,8 @@ export function KanbanCardActions({
           }`}
         />
         {shortListedCandidateIds.has(candidate.id)
-          ? "Remover da Short List"
-          : "Adicionar à Short List"}
+          ? t('removeFromShortList')
+          : t('addToShortList')}
       </DropdownMenuItem>
       <DropdownMenuItem
         onClick={(e) => {
@@ -151,8 +153,8 @@ export function KanbanCardActions({
           }`}
         />
         {favoriteCandidates.has(candidate.id)
-          ? "Remover dos Favoritos"
-          : "Adicionar a Favoritos"}
+          ? t('removeFromFavorites')
+          : t('addToFavorites')}
       </DropdownMenuItem>
     </DropdownMenuContent>
   </DropdownMenu>

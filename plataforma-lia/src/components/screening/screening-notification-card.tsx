@@ -2,6 +2,7 @@
 
 import React from "react"
 import { Brain, ChevronRight } from "lucide-react"
+import { useTranslations } from "next-intl"
 
 interface ScreeningNotificationCardProps {
   candidateName: string
@@ -26,24 +27,26 @@ export function ScreeningNotificationCard({
   onViewDetails,
   className = "",
 }: ScreeningNotificationCardProps) {
+  const t = useTranslations('screening')
+
   const recommendationConfig = {
     aprovado: {
       borderColor: "border-l-emerald-500",
       badgeBg: "bg-status-success/10 dark:bg-status-success/10/20",
       badgeText: "text-status-success dark:text-status-success",
-      label: "Aprovado",
+      label: t('notification.approved'),
     },
     reprovado: {
       borderColor: "border-l-red-500",
       badgeBg: "bg-status-error/10 dark:bg-status-error/10/20",
       badgeText: "text-status-error dark:text-status-error",
-      label: "Reprovado",
+      label: t('notification.rejected'),
     },
     avaliação_manual: {
       borderColor: "border-l-amber-500",
       badgeBg: "bg-status-warning/10 dark:bg-status-warning/10/20",
       badgeText: "text-status-warning dark:text-status-warning",
-      label: "Avaliação Manual",
+      label: t('notification.manualReview'),
     },
   }
 
@@ -59,20 +62,20 @@ export function ScreeningNotificationCard({
             <Brain className="w-4 h-4 text-wedo-cyan" />
           </div>
           <h3 className="text-sm font-semibold text-lia-text-primary">
-            Triagem Automática Concluída
+            {t('notification.title')}
           </h3>
         </div>
 
         <div className="space-y-3">
           <div>
-            <p className="text-xs text-lia-text-tertiary">Candidato</p>
+            <p className="text-xs text-lia-text-tertiary">{t('notification.candidate')}</p>
             <p className="text-sm font-medium text-lia-text-primary">
               {candidateName}
             </p>
           </div>
 
           <div>
-            <p className="text-xs text-lia-text-tertiary">Vaga</p>
+            <p className="text-xs text-lia-text-tertiary">{t('notification.job')}</p>
             <p className="text-sm font-medium text-lia-text-primary">
               {jobTitle}
             </p>
@@ -82,7 +85,7 @@ export function ScreeningNotificationCard({
             <div>
               <div className="flex items-center justify-between mb-1">
                 <p className="text-xs text-lia-text-tertiary">
-                  Pontuação WSI
+                  {t('notification.wsiScore')}
                 </p>
                 <p className="font-['Inter',sans-serif] text-sm font-semibold text-lia-text-primary">
                   {wsiScore}/100
@@ -106,7 +109,7 @@ export function ScreeningNotificationCard({
           {wsiBlocks && wsiBlocks.length > 0 && (
             <div>
               <p className="text-xs text-lia-text-tertiary mb-2">
-                Dimensões
+                {t('notification.dimensions')}
               </p>
               <div className="grid grid-cols-2 gap-2">
                 {wsiBlocks.map((block, index) => (
@@ -136,7 +139,7 @@ export function ScreeningNotificationCard({
 
           <div className="pt-2 border-t border-lia-border-subtle dark:border-lia-border-subtle">
             <p className="text-micro text-lia-text-tertiary">
-              Triagem automática via inscrição pelo website
+              {t('notification.autoScreeningViaWebsite')}
             </p>
           </div>
         </div>
@@ -148,7 +151,7 @@ export function ScreeningNotificationCard({
             onClick={onViewDetails}
             className="flex items-center gap-1.5 text-sm font-medium text-wedo-cyan-dark dark:text-wedo-cyan hover:text-wedo-cyan-dark dark:hover:text-wedo-cyan transition-colors motion-reduce:transition-none"
           >
-            Ver Detalhes
+            {t('notification.viewDetails')}
             <ChevronRight className="w-3.5 h-3.5" />
           </button>
         </div>

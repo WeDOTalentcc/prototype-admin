@@ -1,6 +1,7 @@
 "use client"
 
 import React, { memo, useMemo, useCallback } from "react"
+import { useTranslations } from "next-intl"
 import { Button } from "@/components/ui/button"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Eye, Mail, Linkedin, Star, Clock } from "lucide-react"
@@ -22,23 +23,6 @@ interface CandidatesTableProps {
   onSearchFeedback?: (candidateId: string, feedback: 'like' | 'dislike' | null) => void
 }
 
-function formatRelativeDate(dateStr?: string): string {
-  if (!dateStr) return "—"
-  const date = new Date(dateStr)
-  const now = new Date()
-  const diffMs = now.getTime() - date.getTime()
-  const diffMins = Math.floor(diffMs / 60000)
-  const diffHours = Math.floor(diffMs / 3600000)
-  const diffDays = Math.floor(diffMs / 86400000)
-
-  if (diffMins < 1) return "Agora"
-  if (diffMins < 60) return `${diffMins}min atrás`
-  if (diffHours < 24) return `${diffHours}h atrás`
-  if (diffDays < 7) return `${diffDays}d atrás`
-  if (diffDays < 30) return `${Math.floor(diffDays / 7)}sem atrás`
-  return date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })
-}
-
 const CandidatesTableComponent = memo(function CandidatesTable({
   candidates,
   selectedIds,
@@ -51,6 +35,24 @@ const CandidatesTableComponent = memo(function CandidatesTable({
   searchFeedbacks,
   onSearchFeedback,
 }: CandidatesTableProps) {
+  const t = useTranslations('candidates.table')
+
+  const formatRelativeDate = useCallback((dateStr?: string): string => {
+    if (!dateStr) return "—"
+    const date = new Date(dateStr)
+    const now = new Date()
+    const diffMs = now.getTime() - date.getTime()
+    const diffMins = Math.floor(diffMs / 60000)
+    const diffHours = Math.floor(diffMs / 3600000)
+    const diffDays = Math.floor(diffMs / 86400000)
+
+    if (diffMins < 1) return t('now')
+    if (diffMins < 60) return t('minAgo', { min: diffMins })
+    if (diffHours < 24) return t('hoursAgo', { hours: diffHours })
+    if (diffDays < 7) return t('daysAgo', { days: diffDays })
+    if (diffDays < 30) return t('weeksAgo', { weeks: Math.floor(diffDays / 7) })
+    return date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })
+  }, [t])
 
   const tableCandidates = useMemo<TableCandidate[]>(() => {
     return candidates.map(c => ({
@@ -76,14 +78,14 @@ const CandidatesTableComponent = memo(function CandidatesTable({
   }, [candidates])
 
   const columns = useMemo<TableColumn[]>(() => [
-    { id: 'name', label: 'Candidato', visible: true, sortable: true, width: 280 },
-    { id: 'current_title', label: 'Cargo Atual', visible: true, sortable: true, width: 200 },
-    { id: 'location', label: 'Localização', visible: true, sortable: true, width: 180 },
-    { id: 'lia_score', label: 'Score LIA', visible: true, sortable: true, width: 100, align: 'center' as const },
-    { id: 'skills', label: 'Skills', visible: true, sortable: false, width: 200 },
+    { id: 'name', label: t('candidate'), visible: true, sortable: true, width: 280 },
+    { id: 'current_title', label: t('currentPosition'), visible: true, sortable: true, width: 200 },
+    { id: 'location', label: t('location'), visible: true, sortable: true, width: 180 },
+    { id: 'lia_score', label: t('scoreLia'), visible: true, sortable: true, width: 100, align: 'center' as const },
+    { id: 'skills', label: t('skills'), visible: true, sortable: false, width: 200 },
     {
       id: 'activity',
-      label: 'Atividade',
+      label: t('activity'),
       visible: true,
       sortable: true,
       width: 120,
@@ -101,9 +103,9 @@ const CandidatesTableComponent = memo(function CandidatesTable({
                 </div>
               </TooltipTrigger>
               <TooltipContent>
-                <p>Última atividade: {dateStr
-                  ? new Date(dateStr).toLocaleString('pt-BR')
-                  : 'Não registrada'}</p>
+                <p>{dateStr
+                  ? t('lastActivity', { date: new Date(dateStr).toLocaleString('pt-BR') })
+                  : t('notRegistered')}</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
@@ -112,7 +114,7 @@ const CandidatesTableComponent = memo(function CandidatesTable({
     },
     {
       id: 'actions',
-      label: 'Ações',
+      label: t('actions'),
       visible: true,
       sortable: false,
       width: 180,
@@ -136,7 +138,7 @@ const CandidatesTableComponent = memo(function CandidatesTable({
                     <Eye className="h-4 w-4" />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>Ver perfil</TooltipContent>
+                <TooltipContent>{t('viewProfile')}</TooltipContent>
               </Tooltip>
 
               <Tooltip>
@@ -145,7 +147,7 @@ const CandidatesTableComponent = memo(function CandidatesTable({
                     <Mail className="h-4 w-4" />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>Enviar email</TooltipContent>
+                <TooltipContent>{t('sendEmail')}</TooltipContent>
               </Tooltip>
 
               {candidate.linkedin_url && (
@@ -160,7 +162,7 @@ const CandidatesTableComponent = memo(function CandidatesTable({
                       <Linkedin className="h-4 w-4" />
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent>Ver LinkedIn</TooltipContent>
+                  <TooltipContent>{t('viewLinkedin')}</TooltipContent>
                 </Tooltip>
               )}
 
@@ -170,14 +172,14 @@ const CandidatesTableComponent = memo(function CandidatesTable({
                     <Star className="h-4 w-4" />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>Favoritar</TooltipContent>
+                <TooltipContent>{t('favorite')}</TooltipContent>
               </Tooltip>
             </TooltipProvider>
           </div>
         )
       }
     },
-  ], [searchFeedbacks, onSearchFeedback])
+  ], [searchFeedbacks, onSearchFeedback, t, formatRelativeDate])
 
   const handleSortChange = useCallback((config: { field: string; direction: 'asc' | 'desc' }) => {
     onSort(config.field)
@@ -205,8 +207,8 @@ const CandidatesTableComponent = memo(function CandidatesTable({
   if (candidates.length === 0 && !isLoading) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-lia-text-secondary bg-lia-bg-primary dark:bg-lia-bg-primary">
-        <p className="text-lg">Nenhum candidato encontrado</p>
-        <p className="text-sm mt-2">Tente ajustar os filtros ou fazer uma nova busca</p>
+        <p className="text-lg">{t('noCandidatesFound')}</p>
+        <p className="text-sm mt-2">{t('adjustFilters')}</p>
       </div>
     )
   }
@@ -223,7 +225,7 @@ const CandidatesTableComponent = memo(function CandidatesTable({
       } : undefined}
       isLoading={isLoading}
       showCheckboxes={true}
-      emptyMessage="Nenhum candidato encontrado"
+      emptyMessage={t('noCandidatesFound')}
       onCandidateClick={handleCandidateClick}
       onSelectionChange={handleSelectionChange}
       onSortChange={handleSortChange}

@@ -3,6 +3,7 @@
 import { LoadingModal } from "@/components/ui/loading"
 import dynamic from "next/dynamic"
 import { toast } from "sonner"
+import { useTranslations } from "next-intl"
 import { liaApi } from "@/services/lia-api"
 import type { CandidatesPageModalsProps } from "./CandidatesPageModals.types"
 
@@ -73,6 +74,7 @@ type CandidatesCoreModalsProps = Pick<CandidatesPageModalsProps,
 >
 
 export function CandidatesCoreModals(props: CandidatesCoreModalsProps) {
+  const t = useTranslations('candidates.modals')
   const {
     showComparisonModal,
     setShowComparisonModal,
@@ -243,7 +245,7 @@ export function CandidatesCoreModals(props: CandidatesCoreModalsProps) {
           }}
           jobVacancy={{
             id: 'default-vacancy',
-            title: wsiCandidateForScreening.position || 'Vaga atual'
+            title: wsiCandidateForScreening.position || t('defaultJobTitle')
           }}
           onComplete={handleWSIScreeningComplete}
         />
@@ -263,7 +265,7 @@ export function CandidatesCoreModals(props: CandidatesCoreModalsProps) {
           }}
           jobVacancy={{
             id: 'default-vacancy',
-            title: wsiCandidateForScreening.position || 'Vaga atual'
+            title: wsiCandidateForScreening.position || t('defaultJobTitle')
           }}
           onComplete={handleWSIScreeningComplete}
           autoStart={true}
@@ -285,7 +287,7 @@ export function CandidatesCoreModals(props: CandidatesCoreModalsProps) {
           location: wsiInviteCandidate.location,
           avatar: wsiInviteCandidate.avatar
         } : null}
-        jobTitle={wsiInviteCandidate?.position || 'Vaga'}
+        jobTitle={wsiInviteCandidate?.position || t('job')}
         onSend={async (data) => {
           try {
             if (data.channel === 'email' && wsiInviteCandidate?.email) {
@@ -294,11 +296,11 @@ export function CandidatesCoreModals(props: CandidatesCoreModalsProps) {
                 recipient_email: wsiInviteCandidate.email,
                 recipient_name: wsiInviteCandidate.name,
                 candidate_id: wsiInviteCandidate.id,
-                subject_override: sendData.subject || `Convite para Triagem - ${wsiInviteCandidate.position || 'Vaga'}`,
+                subject_override: sendData.subject || t('screeningInviteSubject', { position: wsiInviteCandidate.position || t('job') }),
                 body_override: sendData.message,
                 variables: {
                   candidate_name: wsiInviteCandidate.name,
-                  job_title: wsiInviteCandidate.position || 'Vaga'
+                  job_title: wsiInviteCandidate.position || t('job')
                 }
               })
             }
@@ -323,13 +325,13 @@ export function CandidatesCoreModals(props: CandidatesCoreModalsProps) {
         candidateName={rubricCandidate?.name}
         jobId=""
         onApprove={async () => {
-          toast.success("Candidato aprovado", { description: `${rubricCandidate?.name} foi aprovado com sucesso` })
+          toast.success(t('candidateApproved'), { description: t('approvedSuccess', { name: rubricCandidate?.name || '' }) })
           setShowRubricModal(false)
           setRubricCandidate(null)
           setRubricEvaluationData(null)
         }}
         onReject={async () => {
-          toast.success("Candidato reprovado", { description: `${rubricCandidate?.name} foi reprovado` })
+          toast.success(t('candidateRejected'), { description: t('rejectedDescription', { name: rubricCandidate?.name || '' }) })
           setShowRubricModal(false)
           setRubricCandidate(null)
           setRubricEvaluationData(null)

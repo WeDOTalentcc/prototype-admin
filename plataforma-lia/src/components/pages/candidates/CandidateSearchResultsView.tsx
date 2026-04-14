@@ -1,6 +1,7 @@
 "use client"
 
 import React from "react"
+import { useTranslations } from "next-intl"
 import { SearchResultsHeader } from "./SearchResultsHeader"
 import { CrossTabFilterBanner } from "./CrossTabFilterBanner"
 import { ViewingListBanner } from "./ViewingListBanner"
@@ -261,10 +262,10 @@ export function CandidateSearchResultsView({
   error,
   onRetry,
 }: CandidateSearchResultsViewProps) {
+  const t = useTranslations('candidates')
 
   return (
     <div data-testid="candidate-search-results-view" className="flex flex-col h-[calc(100vh-9rem)] gap-2">
-      {/* Toolbar unificado: Busca realizada + Editar Filtros + Selecionar Todos/Filtros/Colunas */}
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2 min-w-0 flex-1">
           <SearchResultsHeader
@@ -293,7 +294,6 @@ export function CandidateSearchResultsView({
         />
       </div>
 
-      {/* Bulk Actions Bar - Ações para candidatos selecionados */}
       <BulkActionsBar
         selectedCount={selectedCandidatesForBatch.size}
         onDeselectAll={deselectAllCandidates}
@@ -301,26 +301,26 @@ export function CandidateSearchResultsView({
         actions={[
           {
             id: 'add_to_vacancy',
-            label: 'Vaga',
+            label: t('results.vacancy'),
             icon: <Briefcase className="w-3.5 h-3.5 text-lia-text-secondary" />,
             onClick: () => setShowAddToVacancyModal(true),
           },
           {
             id: 'add_to_list',
-            label: isAddingToList ? 'Importando...' : 'Lista',
+            label: isAddingToList ? t('results.importing') : t('results.list'),
             icon: <List className="w-3.5 h-3.5 text-lia-text-secondary" />,
             onClick: onAddToList,
             disabled: isAddingToList,
             loading: isAddingToList,
-            loadingLabel: 'Importando...',
+            loadingLabel: t('results.importing'),
           },
           {
             id: 'share_search',
-            label: 'Compartilhar',
+            label: t('results.share'),
             icon: <Share2 className="w-3.5 h-3.5 text-lia-text-secondary" />,
             onClick: () => {
               const selectedList = candidates.filter(c => selectedCandidatesForBatch.has(c.id))
-              const searchTitle = lastSearchQuery || `Busca - ${new Date().toLocaleDateString('pt-BR')}`
+              const searchTitle = lastSearchQuery || t('results.searchTitle', { date: new Date().toLocaleDateString('pt-BR') })
               setShareSearchCandidates(selectedList.map(c => ({
                 id: c.id,
                 name: c.name,
@@ -335,38 +335,38 @@ export function CandidateSearchResultsView({
           },
           {
             id: 'send_message',
-            label: 'Mensagem',
+            label: t('results.message'),
             icon: <Mail className="w-3.5 h-3.5 text-lia-text-secondary" />,
             onClick: onBulkEmail,
           },
           {
             id: 'wsi_screening',
-            label: 'Triagem WSI',
+            label: t('results.wsiScreening'),
             icon: <ClipboardCheck className="w-3.5 h-3.5 text-lia-text-secondary" />,
             onClick: onBulkWSIScreening,
           },
           {
             id: 'favorites',
-            label: 'Favoritos',
+            label: t('results.favorites'),
             icon: <Star className="w-3.5 h-3.5 text-status-warning" />,
             onClick: () => {
               selectedCandidatesForBatch.forEach(id => talentFunnel.toggleFavoriteCandidate(id))
-              toast.success("Favoritos atualizados", { description: `${selectedCandidatesForBatch.size} candidato(s) adicionado(s) aos favoritos` })
+              toast.success(t('results.favoritesUpdated'), { description: t('results.favoritesUpdatedDesc', { count: selectedCandidatesForBatch.size }) })
             },
           },
           {
             id: 'hide',
-            label: 'Ocultar',
+            label: t('results.hide'),
             icon: <EyeOff className="w-3.5 h-3.5 text-lia-text-secondary" />,
             onClick: () => {
               selectedCandidatesForBatch.forEach(id => talentFunnel.hideCandidate(id))
-              toast.success("Candidatos ocultos", { description: `${selectedCandidatesForBatch.size} candidato(s) oculto(s) da pesquisa` })
+              toast.success(t('results.candidatesHidden'), { description: t('results.candidatesHiddenDesc', { count: selectedCandidatesForBatch.size }) })
               deselectAllCandidates()
             },
           },
           {
             id: 'save_to_base',
-            label: `Salvar na Base (${selectedPearchCount})`,
+            label: t('results.saveToBase', { count: selectedPearchCount }),
             icon: <Database className="w-3.5 h-3.5 text-lia-text-secondary" />,
             onClick: onSaveToLocalBase,
             disabled: isSavingToBase,

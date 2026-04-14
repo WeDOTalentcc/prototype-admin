@@ -1,5 +1,6 @@
 "use client"
 
+import { useTranslations } from "next-intl"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Building, Target, X } from "lucide-react"
@@ -15,6 +16,7 @@ export function CrossTabFilterBanner({
   crossTabFilter,
   clearCrossTabFilter,
 }: CrossTabFilterBannerProps) {
+  const t = useTranslations('candidates')
   const cf = crossTabFilter as { type?: string; company?: string; companies?: string[]; filter?: string }
   if (!showCrossTabBanner || !crossTabFilter) return null
 
@@ -31,17 +33,17 @@ export function CrossTabFilterBanner({
           </div>
           <div className="flex-1">
             <h3 className="font-medium text-lia-text-primary mb-1">
-              Filtro Aplicado: {cf.type === 'company' ? 'Empresa' : 'Inteligência Competitiva'}
+              {t('crossTabBanner.filterApplied')} {cf.type === 'company' ? t('crossTabBanner.company') : t('crossTabBanner.competitiveIntelligence')}
             </h3>
             <p className="text-sm text-lia-text-primary mb-3" aria-live="polite" aria-atomic="true">
               {cf.type === 'company' && cf.company && (
-                <span>Mostrando candidatos da empresa &ldquo;{cf.company}&rdquo; mapeada</span>
+                <span>{t('crossTabBanner.showingCompany', { company: cf.company })}</span>
               )}
               {cf.type === 'company' && cf.companies && (
-                <span>Mostrando candidatos das empresas: {cf.companies.join(', ')}</span>
+                <span>{t('crossTabBanner.showingCompanies', { companies: cf.companies.join(', ') })}</span>
               )}
               {cf.filter === 'discontented_talents' && (
-                <span>Talentos com indicações de descontentamento detectadas pela LIA</span>
+                <span>{t('crossTabBanner.discontentedTalents')}</span>
               )}
             </p>
             <div className="flex gap-2">
@@ -52,7 +54,7 @@ export function CrossTabFilterBanner({
                 onClick={clearCrossTabFilter}
               >
                 <X className="w-3 h-3 mr-1" />
-                Limpar Filtro
+                {t('crossTabBanner.clearFilter')}
               </Button>
             </div>
           </div>

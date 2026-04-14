@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useTranslations } from "next-intl"
 import { Columns, X, Search } from "lucide-react"
 import { CheckCircle } from "lucide-react"
 import { Card } from "@/components/ui/card"
@@ -16,25 +17,25 @@ interface KanbanColumnConfigPanelProps {
   onResetColumns: () => void
 }
 
-const CATEGORY_LABELS: Record<string, string> = {
-  basico: 'Identificação Básica',
-  contato: 'Contato',
-  pessoal: 'Informações Pessoais',
-  profissional: 'Perfil Profissional',
-  competencias: 'Competências',
-  localizacao: 'Localização',
-  endereco: 'Endereço Completo',
-  preferencias: 'Preferências de Trabalho',
-  salario: 'Salário e Expectativas',
-  documentos: 'Currículo e Documentos',
-  origem: 'Origem e Integração',
-  busca_global: 'Busca Global',
-  ia: 'Insights LIA / IA',
-  status: 'Status e Workflow',
-  comunicacao: 'Comunicação',
-  cadastro: 'Status de Cadastro',
-  adicional: 'Informações Adicionais',
-  datas: 'Datas e Timestamps',
+const CATEGORY_KEYS: Record<string, string> = {
+  basico: 'categoryBasico',
+  contato: 'categoryContato',
+  pessoal: 'categoryPessoal',
+  profissional: 'categoryProfissional',
+  competencias: 'categoryCompetencias',
+  localizacao: 'categoryLocalizacao',
+  endereco: 'categoryEndereco',
+  preferencias: 'categoryPreferencias',
+  salario: 'categorySalario',
+  documentos: 'categoryDocumentos',
+  origem: 'categoryOrigem',
+  busca_global: 'categoryBuscaGlobal',
+  ia: 'categoryIA',
+  status: 'categoryStatus',
+  comunicacao: 'categoryComunicacao',
+  cadastro: 'categoryCadastro',
+  adicional: 'categoryAdicional',
+  datas: 'categoryDatas',
 }
 
 const CATEGORY_ORDER = ['basico', 'contato', 'pessoal', 'profissional', 'competencias', 'localizacao', 'endereco', 'preferencias', 'salario', 'documentos', 'origem', 'busca_global', 'ia', 'status', 'comunicacao', 'cadastro', 'adicional', 'datas']
@@ -46,6 +47,7 @@ export function KanbanColumnConfigPanel({
   onTableColumnsChange,
   onResetColumns,
 }: KanbanColumnConfigPanelProps) {
+  const t = useTranslations('kanban')
   const [searchTerm, setSearchTerm] = useState('')
 
   if (!open) return null
@@ -80,7 +82,7 @@ export function KanbanColumnConfigPanel({
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <Columns className="w-4 h-4 text-lia-text-secondary" />
-              <h3 className={textStyles.title}>Configurar Colunas</h3>
+              <h3 className={textStyles.title}>{t('configureColumnsTitle')}</h3>
             </div>
             <Button
               variant="ghost"
@@ -97,7 +99,7 @@ export function KanbanColumnConfigPanel({
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-lia-text-secondary" />
               <input
                 type="text"
-                placeholder="Buscar coluna..."
+                placeholder={t('searchColumnPlaceholder')}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-9 pr-3 py-2 text-xs rounded-md bg-lia-bg-secondary dark:bg-lia-bg-secondary placeholder-lia-text-tertiary focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 text-lia-text-primary"
@@ -108,13 +110,13 @@ export function KanbanColumnConfigPanel({
                 className="flex-1 text-xs h-8 rounded-xl bg-lia-bg-secondary hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none text-lia-text-secondary"
                 onClick={onResetColumns}
               >
-                Restaurar Padrão
+                {t('restoreDefault')}
               </button>
               <button
                 className="text-xs h-8 px-4 rounded-xl bg-lia-bg-secondary hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none text-lia-text-secondary"
                 onClick={showAll}
               >
-                Todas
+                {t('showAll')}
               </button>
             </div>
           </div>
@@ -132,7 +134,7 @@ export function KanbanColumnConfigPanel({
               <div key={category} className="mb-5">
                 <div className="flex items-center justify-between mb-2 px-1">
                   <h4 className="text-xs font-semibold uppercase tracking-wider text-lia-text-secondary">
-                    {CATEGORY_LABELS[category] || category}
+                    {CATEGORY_KEYS[category] ? t(CATEGORY_KEYS[category]) : category}
                   </h4>
                   <span
                     className={`text-xs px-2 py-0.5 rounded-full ${visibleCount > 0 ? 'bg-lia-btn-primary-bg/10 text-lia-text-primary' : 'bg-lia-interactive-active text-lia-text-disabled'}`}

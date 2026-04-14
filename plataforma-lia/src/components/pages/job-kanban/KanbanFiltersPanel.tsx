@@ -1,30 +1,31 @@
 "use client"
 
+import { useTranslations } from "next-intl"
 import { Filter, X } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { textStyles } from "@/lib/design-tokens"
 
-const STATUS_OPTIONS = [
-  { value: 'novo', label: 'Novo' },
-  { value: 'em_analise', label: 'Em análise' },
-  { value: 'aguardando_aprovacao', label: 'Aguardando aprovação' },
-  { value: 'triado_aprovado', label: 'Triado aprovado' },
-  { value: 'negociacao', label: 'Negociação' },
-]
+const STATUS_KEYS = [
+  { value: 'novo', key: 'statusNew' },
+  { value: 'em_analise', key: 'statusInAnalysis' },
+  { value: 'aguardando_aprovacao', key: 'statusAwaitingApproval' },
+  { value: 'triado_aprovado', key: 'statusScreenedApproved' },
+  { value: 'negociacao', key: 'statusNegotiation' },
+] as const
 
-const ORIGIN_OPTIONS = [
+const ORIGIN_KEYS = [
   { value: 'web', label: 'Web' },
   { value: 'whatsapp', label: 'WhatsApp' },
-  { value: 'sourcing', label: 'Busca Ativa' },
+  { value: 'sourcing', key: 'originActiveSourcing' },
   { value: 'ats', label: 'ATS' },
-]
+] as const
 
-const WORK_MODEL_OPTIONS = [
-  { value: 'remoto', label: 'Remoto' },
-  { value: 'hibrido', label: 'Híbrido' },
-  { value: 'presencial', label: 'Presencial' },
-]
+const WORK_MODEL_KEYS = [
+  { value: 'remoto', key: 'workModelRemote' },
+  { value: 'hibrido', key: 'workModelHybrid' },
+  { value: 'presencial', key: 'workModelOnsite' },
+] as const
 
 interface KanbanFiltersPanelProps {
   open: boolean
@@ -51,6 +52,7 @@ export function KanbanFiltersPanel({
   workModelFilter,
   onWorkModelFilterChange,
 }: KanbanFiltersPanelProps) {
+  const t = useTranslations('kanban')
   if (!open) return null
 
   const handleClear = () => {
@@ -72,7 +74,7 @@ export function KanbanFiltersPanel({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Filter className="w-4 h-4 text-lia-text-secondary" />
-              <h3 className={textStyles.title}>Filtros Avançados</h3>
+              <h3 className={textStyles.title}>{t('advancedFilters')}</h3>
             </div>
             <Button
               variant="ghost"
@@ -83,7 +85,7 @@ export function KanbanFiltersPanel({
               <X className="w-4 h-4 text-lia-text-secondary" />
             </Button>
           </div>
-          <p className={`${textStyles.description} mt-1`}>Refine os candidatos exibidos</p>
+          <p className={`${textStyles.description} mt-1`}>{t('refineCandidates')}</p>
         </div>
 
         {/* Filtros - Scrollable */}
@@ -91,7 +93,7 @@ export function KanbanFiltersPanel({
           {/* Score LIA */}
           <div className="space-y-2">
             <label className="text-xs font-medium text-lia-text-primary">
-              Score LIA Mínimo
+              {t('minLIAScore')}
             </label>
             <div className="flex items-center gap-2">
               <input
@@ -108,9 +110,9 @@ export function KanbanFiltersPanel({
 
           {/* Status */}
           <div className="space-y-2">
-            <label className="text-xs font-medium text-lia-text-primary">Status</label>
+            <label className="text-xs font-medium text-lia-text-primary">{t('statusLabel')}</label>
             <div className="space-y-1.5">
-              {STATUS_OPTIONS.map(({ value, label }) => (
+              {STATUS_KEYS.map(({ value, key }) => (
                 <label key={value} className="flex items-center gap-2 cursor-pointer">
                   <input
                     type="checkbox"
@@ -118,7 +120,7 @@ export function KanbanFiltersPanel({
                     onChange={() => toggleItem(statusFilter, value, onStatusFilterChange)}
                     className="w-3.5 h-3.5 rounded-xl border-lia-border-default text-lia-text-primary focus:ring-lia-btn-primary-bg/20"
                   />
-                  <span className="text-xs text-lia-text-secondary">{label}</span>
+                  <span className="text-xs text-lia-text-secondary">{t(key)}</span>
                 </label>
               ))}
             </div>
@@ -126,17 +128,17 @@ export function KanbanFiltersPanel({
 
           {/* Origem */}
           <div className="space-y-2">
-            <label className="text-xs font-medium text-lia-text-primary">Origem</label>
+            <label className="text-xs font-medium text-lia-text-primary">{t('originLabel')}</label>
             <div className="space-y-1.5">
-              {ORIGIN_OPTIONS.map(({ value, label }) => (
-                <label key={value} className="flex items-center gap-2 cursor-pointer">
+              {ORIGIN_KEYS.map((opt) => (
+                <label key={opt.value} className="flex items-center gap-2 cursor-pointer">
                   <input
                     type="checkbox"
-                    checked={originFilter.includes(value)}
-                    onChange={() => toggleItem(originFilter, value, onOriginFilterChange)}
+                    checked={originFilter.includes(opt.value)}
+                    onChange={() => toggleItem(originFilter, opt.value, onOriginFilterChange)}
                     className="w-3.5 h-3.5 rounded-xl border-lia-border-default text-lia-text-primary focus:ring-lia-btn-primary-bg/20"
                   />
-                  <span className="text-xs text-lia-text-secondary">{label}</span>
+                  <span className="text-xs text-lia-text-secondary">{'key' in opt ? t(opt.key) : opt.label}</span>
                 </label>
               ))}
             </div>
@@ -144,9 +146,9 @@ export function KanbanFiltersPanel({
 
           {/* Modelo de Trabalho */}
           <div className="space-y-2">
-            <label className="text-xs font-medium text-lia-text-primary">Modelo de Trabalho</label>
+            <label className="text-xs font-medium text-lia-text-primary">{t('workModel')}</label>
             <div className="space-y-1.5">
-              {WORK_MODEL_OPTIONS.map(({ value, label }) => (
+              {WORK_MODEL_KEYS.map(({ value, key }) => (
                 <label key={value} className="flex items-center gap-2 cursor-pointer">
                   <input
                     type="checkbox"
@@ -154,7 +156,7 @@ export function KanbanFiltersPanel({
                     onChange={() => toggleItem(workModelFilter, value, onWorkModelFilterChange)}
                     className="w-3.5 h-3.5 rounded-xl border-lia-border-default text-lia-text-primary focus:ring-lia-btn-primary-bg/20"
                   />
-                  <span className="text-xs text-lia-text-secondary">{label}</span>
+                  <span className="text-xs text-lia-text-secondary">{t(key)}</span>
                 </label>
               ))}
             </div>
@@ -168,13 +170,13 @@ export function KanbanFiltersPanel({
               onClick={handleClear}
               className="flex-1 px-3 py-2 text-xs font-medium text-lia-text-secondary bg-lia-bg-primary border border-lia-border-subtle rounded-xl hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none"
             >
-              Limpar
+              {t('clear')}
             </button>
             <button
               onClick={onClose}
               className="flex-1 px-3 py-2 text-xs font-medium text-white rounded-md transition-colors motion-reduce:transition-none bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover"
             >
-              Aplicar
+              {t('applyFilters')}
             </button>
           </div>
         </div>

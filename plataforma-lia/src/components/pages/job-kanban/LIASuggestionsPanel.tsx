@@ -3,6 +3,7 @@
 import { Button } from"@/components/ui/button"
 import { Badge } from"@/components/ui/badge"
 import { Brain, RefreshCw, Target, Wand2, X } from"lucide-react"
+import { useTranslations } from "next-intl"
 
 interface LIASuggestionsPanelProps {
   open: boolean
@@ -11,33 +12,31 @@ interface LIASuggestionsPanelProps {
 }
 
 export function LIASuggestionsPanel({ open, onClose, selectedTriagemQuestion }: LIASuggestionsPanelProps) {
+  const t = useTranslations('kanban')
   if (!open) return null
 
   const suggestions = selectedTriagemQuestion?.includes('tech') ? [
-    'Como você estrutura um Design System escalável para múltiplas plataformas?',
-    'Descreva sua experiência com métodos de pesquisa de usuário e como os aplica',
-    'Como você mede o ROI de iniciativas de UX em produtos digitais?',
-    'Qual sua abordagem para design responsivo e acessibilidade?',
-    'Como você colabora com desenvolvedores para garantir a implementação fiel do design?'
+    t('suggestionTech1'),
+    t('suggestionTech2'),
+    t('suggestionTech3'),
+    t('suggestionTech4'),
+    t('suggestionTech5')
   ] : [
-    'Como você lida com prazos apertados e múltiplas entregas simultâneas?',
-    'Descreva uma situação de conflito em equipe que você resolveu com sucesso',
-    'Como você se mantém atualizado com as tendências e tecnologias da área?',
-    'Qual foi seu maior desafio profissional e como o superou?',
-    'Como você prioriza múltiplas demandas de diferentes stakeholders?'
+    t('suggestionSoft1'),
+    t('suggestionSoft2'),
+    t('suggestionSoft3'),
+    t('suggestionSoft4'),
+    t('suggestionSoft5')
   ]
 
   return (
     <>
-      {/* Overlay para fechar o painel ao clicar fora */}
       <div
         className="fixed inset-0 z-40 bg-black/20 backdrop-blur-sm"
         onClick={onClose}
       />
 
-      {/* Painel Lateral */}
       <div className="fixed right-0 top-0 h-full z-50 w-[450px] bg-lia-bg-primary dark:bg-lia-bg-primary animate-slideInRight">
-        {/* Header */}
         <div className="bg-wedo-purple p-4 text-white">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -45,8 +44,8 @@ export function LIASuggestionsPanel({ open, onClose, selectedTriagemQuestion }: 
                 <Wand2 className="w-5 h-5" />
               </div>
               <div>
-                <h2 className="text-lg font-semibold">Sugestões de Perguntas da LIA</h2>
-                <p className="text-wedo-purple text-xs">Para Triagem - {selectedTriagemQuestion}</p>
+                <h2 className="text-lg font-semibold">{t('liaQuestionSuggestions')}</h2>
+                <p className="text-wedo-purple text-xs">{t('forScreeningLabel', { question: selectedTriagemQuestion || '' })}</p>
               </div>
             </div>
             <button
@@ -58,17 +57,16 @@ export function LIASuggestionsPanel({ open, onClose, selectedTriagemQuestion }: 
           </div>
         </div>
 
-        {/* Conteúdo */}
         <div className="p-4 overflow-y-auto h-[calc(100vh-80px)]">
           <div className="mb-3">
             <div className="flex items-center gap-2 mb-1">
               <Brain className="w-4 h-4 text-wedo-cyan" />
               <h3 className="text-sm font-semibold text-lia-text-primary">
-                Perguntas Recomendadas para Triagem
+                {t('recommendedScreeningQuestions')}
               </h3>
             </div>
             <p className="text-xs text-lia-text-secondary">
-              Clique em"Substituir" para trocar a pergunta selecionada
+              {t('clickReplaceInstruction')}
             </p>
           </div>
 
@@ -80,14 +78,14 @@ export function LIASuggestionsPanel({ open, onClose, selectedTriagemQuestion }: 
                     {pergunta}
                   </h4>
                   <Badge className="bg-lia-interactive-active text-lia-text-primary dark:bg-lia-bg-elevated text-xs">
-                    {index === 0 ? 'Recomendada' : index === 1 ? 'Popular' : 'Sugerida'}
+                    {index === 0 ? t('recommendedBadge') : index === 1 ? t('popularBadge') : t('suggestedBadge')}
                   </Badge>
                 </div>
                 <div className="mt-3 flex items-center justify-between">
                   <div className="flex items-center gap-4 text-xs text-lia-text-primary">
                     <span className="flex items-center gap-1">
                       <Target className="w-3 h-3" />
-                      Relevância: {index === 0 ? 'Muito Alta' : index < 3 ? 'Alta' : 'Média'}
+                      {index === 0 ? t('relevanceVeryHigh') : index < 3 ? t('relevanceHigh') : t('relevanceMedium')}
                     </span>
                   </div>
                   <Button
@@ -96,31 +94,29 @@ export function LIASuggestionsPanel({ open, onClose, selectedTriagemQuestion }: 
                     onClick={onClose}
                   >
                     <RefreshCw className="w-3 h-3 mr-1" />
-                    Substituir
+                    {t('replaceAction')}
                   </Button>
                 </div>
               </div>
             ))}
 
-            {/* Botão para gerar mais sugestões */}
             <div className="mt-4 pt-4 border-t border-lia-border-subtle dark:border-lia-border-subtle">
               <Button
                 variant="outline"
                 className="w-full text-sm"
               >
                 <Brain className="w-4 h-4 mr-2 text-wedo-cyan" />
-                Gerar Mais Sugestões
+                {t('generateMore')}
               </Button>
             </div>
           </div>
         </div>
 
-        {/* Footer */}
         <div className="absolute bottom-0 left-0 right-0 border-t border-lia-border-subtle dark:border-lia-border-subtle p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary">
           <div className="flex items-center justify-between">
             <p className="text-xs text-lia-text-primary">
               <Brain className="w-3 h-3 inline mr-1 text-wedo-cyan" />
-              Baseado no perfil da vaga
+              {t('basedOnJobProfile')}
             </p>
             <Button
               variant="outline"
@@ -128,7 +124,7 @@ export function LIASuggestionsPanel({ open, onClose, selectedTriagemQuestion }: 
               onClick={onClose}
               className="text-xs"
             >
-              Fechar Painel
+              {t('closePanel')}
             </Button>
           </div>
         </div>

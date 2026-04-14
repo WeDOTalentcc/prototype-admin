@@ -17,6 +17,8 @@ import { textStyles, cardStyles, badgeStyles } from"@/lib/design-tokens"
 import { MessageComposer } from"@/components/communication"
 import { sanitizeHtml } from"@/lib/sanitize"
 import { toast } from"sonner"
+import { useTranslations } from "next-intl"
+import { useLocale } from "next-intl"
 import type { ScreeningChannelConfig, ScreeningChannelKey } from"@/hooks/recruitment/useScreeningConfig"
 
 type ContactChannel = 'email' | 'whatsapp' | 'telefone' | 'both'
@@ -56,13 +58,16 @@ interface JobVacancy {
   status?: string
 }
 
-const PIPELINE_STAGES = [
-  { value: 'novo', label: 'Novo' },
-  { value: 'triagem', label: 'Triagem' },
-  { value: 'entrevista', label: 'Entrevista' },
-  { value: 'avaliacao', label: 'Avaliação' },
-  { value: 'oferta', label: 'Oferta' }
-]
+function usePipelineStages() {
+  const t = useTranslations('screening.wsi')
+  return [
+    { value: 'novo', label: t('invite.stageNew') },
+    { value: 'triagem', label: t('invite.stageScreening') },
+    { value: 'entrevista', label: t('invite.stageInterview') },
+    { value: 'avaliacao', label: t('invite.stageEvaluation') },
+    { value: 'oferta', label: t('invite.stageOffer') }
+  ]
+}
 
 interface WSITriagemInviteModalProps {
   isOpen: boolean
@@ -88,13 +93,17 @@ export function WSITriagemInviteModal({
   isOpen,
   onClose,
   candidate,
-  jobTitle = 'a vaga',
+  jobTitle: jobTitleProp,
   jobId,
   screeningQuestions = DEFAULT_SCREENING_QUESTIONS,
   onSend,
   companyId,
   screeningChannels,
 }: WSITriagemInviteModalProps) {
+  const t = useTranslations('screening.wsi')
+  const locale = useLocale()
+  const PIPELINE_STAGES = usePipelineStages()
+  const jobTitle = jobTitleProp || t('invite.jobDefault')
   const defaultChannel: ContactChannel = screeningChannels?.primary_channel
     ? screeningChannelToContact(screeningChannels.primary_channel)
     : 'email'
@@ -149,26 +158,8 @@ useEffect(() => {
 
   const generatePhoneScript = useCallback(() => {
     if (!candidate) return ''
-    return `📞 SCRIPT DE LIGAÇÃO - LIA
-
-[Início da chamada]"Olá, bom dia/tarde! Eu sou a LIA, assistente virtual da equipe de recrutamento da [Empresa].
-
-Estou ligando para ${candidate.name} referente ao processo seletivo para a posição de ${jobTitle}.
-
-[Se a pessoa confirmar que é ela]
-
-Que ótimo falar com você! Gostaria de realizar uma triagem rápida, que leva aproximadamente 15 a 20 minutos. Posso prosseguir agora ou prefere que eu retorne em outro momento?
-
-[Se sim, prosseguir]
-
-Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada para fins de avaliação, conforme nossa política de privacidade. Você concorda em prosseguir?
-
-[Após confirmação]
-
-Ótimo! Vou fazer algumas perguntas sobre sua experiência e forma de trabalhar. Pode responder com calma, não há resposta certa ou errada.
-
-[Iniciar perguntas de triagem]"`
-  }, [candidate, jobTitle])
+    return t('invite.phoneScriptTemplate', { name: candidate.name, job: jobTitle })
+  }, [candidate, jobTitle, t])
 
   useEffect(() => {
     if (isOpen && candidate && channel === 'telefone') {
@@ -196,17 +187,17 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
     if (!candidate) return
     
     if (linkToVacancy && !selectedVacancyId) {
-      toast.error("Selecione uma vaga", { description:"Para vincular o candidato, você precisa selecionar uma vaga." })
+      toast.error(t('invite.toasts.selectJob'), { description: t('invite.toasts.selectJobDesc') })
       return
     }
     
     if ((channel === 'email' || channel === 'both') && !candidate.email) {
-      toast.error("Email não informado", { description:"O candidato não possui email cadastrado." })
+      toast.error(t('invite.toasts.emailNotInformed'), { description: t('invite.toasts.emailNotInformedDesc') })
       return
     }
     
     if ((channel === 'whatsapp' || channel === 'both') && !candidate.phone) {
-      toast.error("Telefone não informado", { description:"O candidato não possui telefone cadastrado." })
+      toast.error(t('invite.toasts.phoneNotInformed'), { description: t('invite.toasts.phoneNotInformedDesc') })
       return
     }
     
@@ -227,7 +218,7 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
           if (!response.ok) {
           } else {
             const selectedVacancy = vacancies.find(v => v.id === selectedVacancyId)
-            toast.success("Candidato vinculado à vaga", { description: `${candidate.name} foi adicionado à vaga"${selectedVacancy?.title || 'selecionada'}"` })
+            toast.success(t('invite.toasts.candidateLinked'), { description: t('invite.toasts.candidateLinkedDesc', { name: candidate.name, job: selectedVacancy?.title || '' }) })
           }
         } catch (error) {
         }
@@ -258,7 +249,7 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
       const inviteData = await inviteResponse.json()
       
       if (!inviteResponse.ok || !inviteData.success) {
-        toast.error("Erro ao enviar convite", { description: inviteData.error ||"Não foi possível enviar o convite. Tente novamente." })
+        toast.error(t('invite.toasts.inviteError'), { description: inviteData.error || t('invite.toasts.inviteErrorGeneric') })
         return
       }
       
@@ -267,22 +258,23 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
         window.open(whatsappUrl, '_blank')
       }
       
+      const mockSuffix = inviteData.mock ? t('invite.toasts.devMode') : ''
       const successMessages: Record<string, { title: string; description: string }> = {
         email: {
-          title:"✅ Convite enviado com sucesso!",
-          description: `Email de triagem enviado para ${candidate.name}${inviteData.mock ? ' (modo desenvolvimento)' : ''}`
+          title: t('invite.toasts.emailSuccess'),
+          description: t('invite.toasts.emailSuccessDesc', { name: candidate.name, mock: mockSuffix })
         },
         whatsapp: {
-          title:"✅ Convite registrado!",
-          description: `WhatsApp aberto para ${candidate.name}. Convite registrado no sistema.`
+          title: t('invite.toasts.whatsappSuccess'),
+          description: t('invite.toasts.whatsappSuccessDesc', { name: candidate.name })
         },
         telefone: {
-          title:"✅ Script de ligação preparado!",
-          description: `Script para ${candidate.name} está pronto. Inicie a ligação quando desejar.`
+          title: t('invite.toasts.phoneSuccess'),
+          description: t('invite.toasts.phoneSuccessDesc', { name: candidate.name })
         },
         both: {
-          title:"✅ Convite enviado por email e WhatsApp!",
-          description: `Email enviado e WhatsApp aberto para ${candidate.name}${inviteData.mock ? ' (modo desenvolvimento)' : ''}`
+          title: t('invite.toasts.bothSuccess'),
+          description: t('invite.toasts.bothSuccessDesc', { name: candidate.name, mock: mockSuffix })
         }
       }
       
@@ -303,7 +295,7 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
       
       onClose()
     } catch (error) {
-      toast.error("Erro ao enviar", { description:"Erro de conexão. Verifique sua internet e tente novamente." })
+      toast.error(t('invite.toasts.sendError'), { description: t('invite.toasts.sendErrorDesc') })
     } finally {
       setIsSending(false)
     }
@@ -338,7 +330,7 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
             </div>
             <div>
               <h2 className={textStyles.titleLarge}>
-                Enviar Convite de Triagem WSI
+                {t('invite.title')}
               </h2>
               <p className={textStyles.description}>
                 {candidate.name} • {candidate.role || jobTitle}
@@ -360,7 +352,7 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
             {/* Canal de Contato */}
             <div>
               <label className={`${textStyles.subtitle} mb-2 block`}>
-                Canal de Contato
+                {t('invite.contactChannel')}
               </label>
               <div className="flex flex-col gap-2">
                 <button
@@ -373,8 +365,8 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
                 >
                   <Mail className={`w-4 h-4 ${channel === 'email' ? 'text-lia-text-secondary' : 'text-lia-text-tertiary'}`} />
                   <div className="flex-1">
-                    <div className={textStyles.subtitle}>Email</div>
-                    <div className={textStyles.caption}>{candidate.email || 'Não informado'}</div>
+                    <div className={textStyles.subtitle}>{t('invite.email')}</div>
+                    <div className={textStyles.caption}>{candidate.email || t('invite.notInformed')}</div>
                   </div>
                 </button>
                 
@@ -388,8 +380,8 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
                 >
                   <MessageSquare className={`w-4 h-4 ${channel === 'whatsapp' ? 'text-lia-text-secondary' : 'text-lia-text-tertiary'}`} />
                   <div className="flex-1">
-                    <div className={textStyles.subtitle}>WhatsApp</div>
-                    <div className={textStyles.caption}>{candidate.phone || 'Não informado'}</div>
+                    <div className={textStyles.subtitle}>{t('invite.whatsapp')}</div>
+                    <div className={textStyles.caption}>{candidate.phone || t('invite.notInformed')}</div>
                   </div>
                 </button>
                 
@@ -403,8 +395,8 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
                 >
                   <Phone className={`w-4 h-4 ${channel === 'telefone' ? 'text-lia-text-secondary' : 'text-lia-text-tertiary'}`} />
                   <div className="flex-1">
-                    <div className={textStyles.subtitle}>Telefone (Ligação)</div>
-                    <div className={textStyles.caption}>{candidate.phone || 'Não informado'}</div>
+                    <div className={textStyles.subtitle}>{t('invite.phone')}</div>
+                    <div className={textStyles.caption}>{candidate.phone || t('invite.notInformed')}</div>
                   </div>
                 </button>
                 
@@ -421,8 +413,8 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
                     <MessageSquare className={`w-3.5 h-3.5 ${channel === 'both' ? 'text-lia-text-secondary' : 'text-lia-text-tertiary'}`} />
                   </div>
                   <div className="flex-1">
-                    <div className={textStyles.subtitle}>Ambos (Email + WhatsApp)</div>
-                    <div className={textStyles.caption}>Email + WA simultâneo</div>
+                    <div className={textStyles.subtitle}>{t('invite.both')}</div>
+                    <div className={textStyles.caption}>{t('invite.bothSimultaneous')}</div>
                   </div>
                 </button>
               </div>
@@ -452,13 +444,13 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
             ) : (
               <div>
                 <label className="text-xs font-medium text-lia-text-primary mb-2 block">
-                  Script de Abordagem
+                  {t('invite.scriptLabel')}
                 </label>
                 <Textarea
                   ref={messageTextareaRef}
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
-                  placeholder="Script para ligação..."
+                  placeholder={t('invite.scriptPlaceholder')}
                   className="min-h-card-lg text-xs focus:ring-1 focus:ring-lia-btn-primary-bg/20 focus:border-lia-border-medium resize-none border-lia-border-subtle"
                 />
               </div>
@@ -470,8 +462,8 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
                 <div className="flex items-center gap-2">
                   <Briefcase className="w-4 h-4 text-lia-text-secondary" />
                   <div>
-                    <span className={textStyles.subtitle} aria-live="polite" aria-atomic="true">Vincular à Vaga</span>
-                    <span className={`${textStyles.description} ml-2`}>(opcional)</span>
+                    <span className={textStyles.subtitle} aria-live="polite" aria-atomic="true">{t('invite.linkToJob')}</span>
+                    <span className={`${textStyles.description} ml-2`}>{t('invite.optional')}</span>
                   </div>
                 </div>
                 <Switch
@@ -482,18 +474,18 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
               
               {linkToVacancy && (
                 <div className="p-3 space-y-3 border-t border-lia-border-subtle">
-                  <div role="status" aria-live="polite" aria-label="Carregando...">
+                  <div role="status" aria-live="polite" aria-label={t('invite.loadingJobs')}>
                     <label className={`${textStyles.subtitle} mb-1.5 block`}>
-                      Selecione a Vaga
+                      {t('invite.selectJob')}
                     </label>
                     {isLoadingVacancies ? (
-                      <div className="flex items-center gap-2 text-xs text-lia-text-secondary py-2" role="status" aria-live="polite" aria-label="Carregando...">
+                      <div className="flex items-center gap-2 text-xs text-lia-text-secondary py-2" role="status" aria-live="polite" aria-label={t('invite.loadingJobs')}>
                         <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none" />
-                        Carregando vagas...
+                        {t('invite.loadingJobs')}
                       </div>
                     ) : vacancies.length === 0 ? (
                       <div className="text-xs text-lia-text-secondary py-2">
-                        Nenhuma vaga disponível
+                        {t('invite.noJobsAvailable')}
                       </div>
                     ) : (
                       <select
@@ -501,7 +493,7 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
                         onChange={(e) => setSelectedVacancyId(e.target.value || null)}
                         className="w-full text-xs border border-lia-border-subtle rounded-xl px-3 py-2 bg-lia-bg-primary focus:ring-1 focus:ring-lia-btn-primary-bg/20 focus:border-lia-border-medium"
                       >
-                        <option value="">Selecione uma vaga...</option>
+                        <option value="">{t('invite.selectAJob')}</option>
                         {vacancies.map((vacancy) => (
                           <option key={vacancy.id} value={vacancy.id}>
                             {vacancy.title}
@@ -515,7 +507,7 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
                   
                   <div>
                     <label className={`${textStyles.subtitle} mb-1.5 block`}>
-                      Etapa do Pipeline
+                      {t('invite.pipelineStage')}
                     </label>
                     <select
                       value={selectedStage}
@@ -532,9 +524,7 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
                   
                   {selectedVacancyId && (
                     <div className="p-2 bg-lia-bg-secondary/50 rounded-xl border border-lia-border-default">
-                      <p className="text-xs text-lia-text-secondary">
-                        Ao enviar, o candidato será automaticamente adicionado à vaga selecionada na etapa <strong className="text-lia-text-secondary">{PIPELINE_STAGES.find(s => s.value === selectedStage)?.label}</strong>
-                      </p>
+                      <p className="text-xs text-lia-text-secondary" dangerouslySetInnerHTML={{ __html: sanitizeHtml(t('invite.addToJobOnSend', { stage: PIPELINE_STAGES.find(s => s.value === selectedStage)?.label || '' })) }} />
                     </div>
                   )}
                 </div>
@@ -550,7 +540,7 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
                 <div className="flex items-center gap-2">
                   <ListChecks className="w-4 h-4 text-lia-text-secondary" />
                   <span className={textStyles.subtitle}>
-                    Roteiro de Triagem ({screeningQuestions.length} perguntas)
+                    {t('invite.screeningScript', { count: screeningQuestions.length })}
                   </span>
                 </div>
                 {showQuestions ? (
@@ -593,10 +583,10 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 <Eye className="w-4 h-4 text-lia-text-secondary" />
-                <span className={textStyles.subtitle}>Preview da Mensagem</span>
+                <span className={textStyles.subtitle}>{t('invite.messagePreview')}</span>
               </div>
               <Badge variant="outline" className="text-micro">
-                {channel === 'email' ? 'Email' : channel === 'whatsapp' ? 'WhatsApp' : channel === 'both' ? 'Email + WhatsApp' : 'Telefone'}
+                {channel === 'email' ? t('invite.email') : channel === 'whatsapp' ? t('invite.whatsapp') : channel === 'both' ? 'Email + WhatsApp' : t('invite.phone')}
               </Badge>
             </div>
 
@@ -615,12 +605,12 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
                         </AvatarFallback>
                       </Avatar>
                       <div>
-                        <div className={textStyles.subtitle}>Equipe de Recrutamento</div>
+                        <div className={textStyles.subtitle}>{t('invite.recruitmentTeam')}</div>
                         <div className={textStyles.caption}>recrutamento@empresa.com</div>
                       </div>
                     </div>
                     <div className={`mt-2 ${textStyles.bodySmall}`}>
-                      Para: {candidate.email || 'email@candidato.com'}
+                      {t('invite.to')}: {candidate.email || 'email@candidate.com'}
                     </div>
                   </div>
                   {/* Email Subject */}
@@ -635,7 +625,7 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
                   <div className="p-4">
                     <div 
                       className={`${textStyles.body} leading-relaxed`}
-                      dangerouslySetInnerHTML={{ __html: sanitizeHtml(formatPreviewMessage(message) || '<span class="lia-text-secondary">A mensagem aparecerá aqui...</span>') }}
+                      dangerouslySetInnerHTML={{ __html: sanitizeHtml(formatPreviewMessage(message) || `<span class="lia-text-secondary">${t('invite.messageWillAppear')}</span>`) }}
                     />
                   </div>
                 </>
@@ -646,17 +636,17 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
                     <div className="bg-whatsapp-bubble rounded-md p-3 max-w-[85%]">
                       <div 
                         className="text-xs text-lia-text-primary leading-relaxed whitespace-pre-wrap"
-                        dangerouslySetInnerHTML={{ __html: sanitizeHtml(formatPreviewMessage(message) || '<span class="lia-text-secondary">A mensagem aparecerá aqui...</span>') }}
+                        dangerouslySetInnerHTML={{ __html: sanitizeHtml(formatPreviewMessage(message) || `<span class="lia-text-secondary">${t('invite.messageWillAppear')}</span>`) }}
                       />
                       <div className="text-micro text-lia-text-secondary text-right mt-1">
-                        {new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })} ✓✓
+                        {new Date().toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })} ✓✓
                       </div>
                     </div>
                   </div>
                   {/* WhatsApp Info */}
                   <div className="text-center mt-3">
                     <span className="text-micro text-lia-text-secondary bg-lia-bg-primary/60 rounded-full py-1 px-3">
-                      Será aberto o WhatsApp Web/App
+                      {t('invite.whatsappWebWillOpen')}
                     </span>
                   </div>
                 </div>
@@ -669,8 +659,8 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
                         <Phone className="w-4 h-4 text-status-warning" />
                       </div>
                       <div>
-                        <div className={textStyles.subtitle}>Script de Ligação</div>
-                        <div className={textStyles.caption}>LIA realizará a chamada</div>
+                        <div className={textStyles.subtitle}>{t('invite.callScript')}</div>
+                        <div className={textStyles.caption}>{t('invite.liaWillCall')}</div>
                       </div>
                     </div>
                   </div>
@@ -678,7 +668,7 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
                   <div className="p-4">
                     <div 
                       className="text-xs text-lia-text-primary leading-relaxed font-mono bg-lia-bg-secondary p-3 rounded-xl border border-lia-border-subtle"
-                      dangerouslySetInnerHTML={{ __html: sanitizeHtml(formatPreviewMessage(message) || '<span class="lia-text-secondary">O script aparecerá aqui...</span>') }}
+                      dangerouslySetInnerHTML={{ __html: sanitizeHtml(formatPreviewMessage(message) || `<span class="lia-text-secondary">${t('invite.scriptWillAppear')}</span>`) }}
                     />
                   </div>
                 </>
@@ -691,13 +681,13 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
                 <div className="flex items-start gap-2">
                   <Info className="w-4 h-4 text-lia-text-secondary mt-0.5" />
                   <div>
-                    <div className={textStyles.label}>{channel === 'both' ? 'Envio Simultâneo:' : 'Após Confirmação:'}</div>
+                    <div className={textStyles.label}>{channel === 'both' ? t('invite.simultaneousSending') : t('invite.afterConfirmation')}</div>
                     <ul className={`${textStyles.caption} mt-1 space-y-0.5`}>
-                      {channel === 'both' && <li>• Email será enviado via sistema + WhatsApp Web será aberto</li>}
-                      <li>• Candidato escolhe canal preferido (Chat ou WhatsApp)</li>
-                      <li>• Recebe termos LGPD para aceite</li>
-                      <li>• LIA inicia triagem automaticamente</li>
-                      <li>• Você recebe notificação ao concluir</li>
+                      {channel === 'both' && <li>• {t('invite.infoEmailBoth.emailSentPlusWA')}</li>}
+                      <li>• {t('invite.infoEmailBoth.candidateChoosesChannel')}</li>
+                      <li>• {t('invite.infoEmailBoth.receivesLGPD')}</li>
+                      <li>• {t('invite.infoEmailBoth.liaStartsScreening')}</li>
+                      <li>• {t('invite.infoEmailBoth.youGetNotified')}</li>
                     </ul>
                   </div>
                 </div>
@@ -709,12 +699,12 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
                 <div className="flex items-start gap-2">
                   <MessageSquare className="w-4 h-4 text-status-success mt-0.5" />
                   <div>
-                    <div className={textStyles.label}>Fluxo WhatsApp:</div>
+                    <div className={textStyles.label}>{t('invite.infoWhatsapp.title')}</div>
                     <ul className={`${textStyles.caption} mt-1 space-y-0.5`}>
-                      <li>• Candidato responde"SIM" para iniciar</li>
-                      <li>• LIA apresenta termos LGPD</li>
-                      <li>• Triagem WSI inicia automaticamente</li>
-                      <li>• Você recebe notificação ao concluir</li>
+                      <li>• {t('invite.infoWhatsapp.candidateRepliesYes')}</li>
+                      <li>• {t('invite.infoWhatsapp.liaPresentsLGPD')}</li>
+                      <li>• {t('invite.infoWhatsapp.wsiStartsAuto')}</li>
+                      <li>• {t('invite.infoWhatsapp.youGetNotified')}</li>
                     </ul>
                   </div>
                 </div>
@@ -726,12 +716,12 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
                 <div className="flex items-start gap-2">
                   <Phone className="w-4 h-4 text-status-warning mt-0.5" />
                   <div>
-                    <div className={textStyles.label}>Ligação com LIA:</div>
+                    <div className={textStyles.label}>{t('invite.infoPhone.title')}</div>
                     <ul className={`${textStyles.caption} mt-1 space-y-0.5`}>
-                      <li>• LIA realizará a ligação no horário agendado</li>
-                      <li>• Conversa gravada para análise</li>
-                      <li>• Transcrição disponível após chamada</li>
-                      <li>• Score WSI calculado automaticamente</li>
+                      <li>• {t('invite.infoPhone.liaWillCallScheduled')}</li>
+                      <li>• {t('invite.infoPhone.conversationRecorded')}</li>
+                      <li>• {t('invite.infoPhone.transcriptionAvailable')}</li>
+                      <li>• {t('invite.infoPhone.wsiAutoCalculated')}</li>
                     </ul>
                   </div>
                 </div>
@@ -745,12 +735,12 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
           <div className={`flex items-center gap-2 ${textStyles.description}`}>
             <Mail className="w-3.5 h-3.5" />
             {channel === 'email' 
-              ? 'Email será enviado via sistema' 
+              ? t('invite.emailSentViaSystem') 
               : channel === 'whatsapp'
-              ? 'WhatsApp será aberto no navegador'
+              ? t('invite.whatsappOpenInBrowser')
               : channel === 'both'
-              ? 'Email enviado via sistema + WhatsApp aberto no navegador'
-              : 'Script para ligação com LIA'}
+              ? t('invite.emailPlusWhatsapp')
+              : t('invite.scriptForLiaCall')}
           </div>
           <div className="flex items-center gap-3">
             <Button
@@ -758,7 +748,7 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
               variant="outline"
               className="h-9 px-4 text-xs font-medium border-lia-border-subtle text-lia-text-secondary hover:bg-lia-interactive-hover"
             >
-              Cancelar
+              {t('invite.cancel')}
             </Button>
             <Button
               onClick={handleSend}
@@ -768,15 +758,15 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
               {isSending ? (
                 <>
                   <Loader2 className="w-3.5 h-3.5 mr-2 animate-spin motion-reduce:animate-none" />
-                  Enviando...
+                  {t('invite.sending')}
                 </>
               ) : (
                 <>
                   <Send className="w-3.5 h-3.5 mr-2" />
-                  {channel === 'email' ? 'Enviar Email' : 
-                   channel === 'whatsapp' ? 'Enviar WhatsApp' : 
-                   channel === 'both' ? 'Enviar Email + WhatsApp' :
-                   'Iniciar Ligação'}
+                  {channel === 'email' ? t('invite.sendEmail') : 
+                   channel === 'whatsapp' ? t('invite.sendWhatsapp') : 
+                   channel === 'both' ? t('invite.sendBoth') :
+                   t('invite.startCall')}
                 </>
               )}
             </Button>

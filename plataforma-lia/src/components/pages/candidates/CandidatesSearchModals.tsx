@@ -1,6 +1,7 @@
 "use client"
 
 import { LoadingModal } from "@/components/ui/loading"
+import { useTranslations } from "next-intl"
 import { GlobalExpansionConfirmModal } from "@/components/pages/candidates/GlobalExpansionConfirmModal"
 import { SourceChangeConfirmModal } from "@/components/pages/candidates/SourceChangeConfirmModal"
 import { ContactFilterConfirmModal } from "@/components/pages/candidates/ContactFilterConfirmModal"
@@ -114,6 +115,7 @@ type CandidatesSearchModalsProps = Pick<CandidatesPageModalsProps,
 >
 
 export function CandidatesSearchModals(props: CandidatesSearchModalsProps) {
+  const t = useTranslations('candidates.modals')
   const p = props
   return (
     <>
@@ -199,7 +201,7 @@ export function CandidatesSearchModals(props: CandidatesSearchModalsProps) {
         onClose={() => { p.setShowAddToListModal(false); p.setAddToListCandidateIds([]); p.setAddToListCandidateNames([]) }}
         candidateIds={p.addToListCandidateIds}
         candidateNames={p.addToListCandidateNames}
-        onSuccess={() => { toast.success("Sucesso", { description: "Candidatos adicionados à lista" }) }}
+        onSuccess={() => { toast.success(t('success'), { description: t('candidatesAddedToList') }) }}
       />
 
       <ShareSearchModal
@@ -219,7 +221,7 @@ export function CandidatesSearchModals(props: CandidatesSearchModalsProps) {
           listId={p.selectedListForVacancies.id}
           listName={p.selectedListForVacancies.name}
           candidateCount={p.selectedListForVacancies.candidateCount}
-          onSuccess={() => { toast.success("Sucesso", { description: "Candidatos adicionados às vagas selecionadas" }) }}
+          onSuccess={() => { toast.success(t('success'), { description: t('candidatesAddedToSelectedJobs') }) }}
         />
       )}
 
@@ -229,7 +231,7 @@ export function CandidatesSearchModals(props: CandidatesSearchModalsProps) {
         candidateIds={Array.from(p.selectedCandidatesForBatch)}
         candidateNames={p.candidates.filter(c => p.selectedCandidatesForBatch.has(c.id)).map(c => c.name)}
         currentRecruiterEmail={p.user?.email}
-        onSuccess={() => { p.setSelectedCandidatesForBatch(new Set()); toast.success("Sucesso", { description: "Candidatos adicionados à vaga" }) }}
+        onSuccess={() => { p.setSelectedCandidatesForBatch(new Set()); toast.success(t('success'), { description: t('candidatesAddedToJob') }) }}
       />
 
       <UnsavedPearchWarningModal

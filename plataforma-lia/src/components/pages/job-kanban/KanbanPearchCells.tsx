@@ -5,10 +5,12 @@ import { Badge } from"@/components/ui/badge"
 import { Copy } from"lucide-react"
 import { textStyles, badgeStyles } from"@/lib/design-tokens"
 import type { KanbanCandidate, QueryInsight } from"./KanbanTableCellRenderer.types"
+import { useTranslations } from "next-intl"
 
 export function renderPearchCell(
   candidate: KanbanCandidate,
-  columnId: string
+  columnId: string,
+  t: (key: string, params?: Record<string, unknown>) => string
 ): React.ReactNode | undefined {
   switch (columnId) {
     case 'is_open_to_work': {
@@ -30,7 +32,7 @@ export function renderPearchCell(
 
     case 'is_hiring':
       return candidate.is_hiring ? (
-        <Badge className="text-xs">Contratando</Badge>
+        <Badge className="text-xs">{t('pearchHiring')}</Badge>
       ) : <span className="text-xs text-lia-text-disabled">—</span>
 
     case 'headline':
@@ -61,7 +63,7 @@ export function renderPearchCell(
               navigator.clipboard.writeText(candidate.outreach_message as string)
             }}
             className="p-0.5 hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover rounded-xl"
-            title="Copiar mensagem"
+            title={t('copyMessage')}
           >
             <Copy className="w-3 h-3 text-lia-text-tertiary" />
           </button>
@@ -87,7 +89,7 @@ export function renderPearchCell(
 
     case 'estimated_age':
       return candidate.estimated_age ? (
-        <span className="text-xs text-lia-text-primary">{candidate.estimated_age as number} anos</span>
+        <span className="text-xs text-lia-text-primary">{t('yearsOld', { age: candidate.estimated_age as number })}</span>
       ) : <span className="text-xs text-lia-text-disabled">—</span>
 
     case 'match_reasoning':
@@ -127,7 +129,7 @@ export function renderPearchCell(
             </div>
           ))}
           {queryInsightsData.length > 2 && (
-            <span className={textStyles.caption}>+{queryInsightsData.length - 2} mais</span>
+            <span className={textStyles.caption}>{t('moreCount', { count: queryInsightsData.length - 2 })}</span>
           )}
         </div>
       )

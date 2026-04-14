@@ -1,6 +1,7 @@
 "use client"
 
 import React, { memo } from"react"
+import { useTranslations } from "next-intl"
 import { Badge } from"@/components/ui/badge"
 import { cn } from"@/lib/utils"
 
@@ -19,6 +20,7 @@ const CandidateSkillsList = memo(function CandidateSkillsList({
   className,
   onOverflowClick,
 }: CandidateSkillsListProps) {
+  const t = useTranslations('candidates.profile')
   if (!skills || skills.length === 0) return null
 
   const visible = skills.slice(0, maxVisible)

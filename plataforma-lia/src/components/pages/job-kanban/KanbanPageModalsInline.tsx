@@ -16,9 +16,11 @@ import {
 } from"lucide-react"
 import { formatScorePercent } from"@/lib/design-tokens"
 import { calculateNotaLiaGeral } from"@/components/pages/job-kanban/utils/kanbanHelpers"
+import { useTranslations } from "next-intl"
 import type { KanbanPageCoreState } from"./hooks/useKanbanPageCore"
 
 export function KanbanPageModalsInline(state: KanbanPageCoreState) {
+  const t = useTranslations('kanban')
   const {
     statusModalOpen, pendingMove, cancelMove, getStageDisplayName,
     getSuggestedSubStatus, selectedSubStatus, setSelectedSubStatus, getAvailableSubStatuses, getSubStatusColor, confirmMove,
@@ -43,10 +45,10 @@ export function KanbanPageModalsInline(state: KanbanPageCoreState) {
                 </div>
                 <div>
                   <h2 className="text-lg font-semibold text-lia-text-primary">
-                    Confirmar Movimentação
+                    {t('confirmMovement')}
                   </h2>
                   <p className="text-sm text-lia-text-secondary">
-                    Selecione o status detalhado
+                    {t('selectDetailedStatus')}
                   </p>
                 </div>
               </div>
@@ -66,7 +68,7 @@ export function KanbanPageModalsInline(state: KanbanPageCoreState) {
                 </Avatar>
                 <div>
                   <p className="font-medium text-lia-text-primary">{pendingMove.candidate.name as string}</p>
-                  <p className="text-sm text-lia-text-secondary">{((pendingMove.candidate.role as string | undefined) || (pendingMove.candidate.cargo as string | undefined) || 'Candidato')}</p>
+                  <p className="text-sm text-lia-text-secondary">{((pendingMove.candidate.role as string | undefined) || (pendingMove.candidate.cargo as string | undefined) || t('candidateFallback'))}</p>
                 </div>
               </div>
 
@@ -88,7 +90,7 @@ export function KanbanPageModalsInline(state: KanbanPageCoreState) {
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-lia-text-secondary flex items-center gap-2">
                     <Brain className="w-4 h-4 text-wedo-cyan" />
-                    Status Sugerido pela LIA
+                    {t('suggestedStatusByLIA')}
                   </label>
                   <div 
                     className={`p-3 rounded-md border-2 cursor-pointer transition-colors motion-reduce:transition-none ${
@@ -109,14 +111,14 @@ export function KanbanPageModalsInline(state: KanbanPageCoreState) {
 
               <div className="space-y-2">
                 <label className="text-sm font-medium text-lia-text-secondary">
-                  Selecionar outro status
+                  {t('selectOtherStatus')}
                 </label>
                 <Select 
                   value={selectedSubStatus} 
                   onValueChange={setSelectedSubStatus}
                 >
                   <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Selecione um status" />
+                    <SelectValue placeholder={t('selectAStatus')} />
                   </SelectTrigger>
                   <SelectContent className="max-h-60">
                     {getAvailableSubStatuses(pendingMove.toColumn).map((status) => {
@@ -144,7 +146,7 @@ export function KanbanPageModalsInline(state: KanbanPageCoreState) {
                 onClick={cancelMove}
                 className="px-4"
               >
-                Cancelar
+                {t('cancelAction')}
               </Button>
               <Button
                 onClick={confirmMove}
@@ -152,7 +154,7 @@ export function KanbanPageModalsInline(state: KanbanPageCoreState) {
                 className="px-4 text-lia-btn-primary-text bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover"
               >
                 <CheckCircle className="w-4 h-4 mr-2" />
-                Confirmar
+                {t('approve').replace(/ar$/, 'ar') === t('approve') ? t('confirmMovement').split(' ')[0] : t('approve')}
               </Button>
             </div>
           </div>
@@ -180,10 +182,10 @@ export function KanbanPageModalsInline(state: KanbanPageCoreState) {
                 {activeModal === 'testeIngles' && <Languages className="w-5 h-5 text-lia-text-secondary" />}
                 <div>
                   <h2 className="text-lg font-semibold text-lia-text-primary">
-                    {activeModal === 'scoreGeral' && 'Nota Geral'}
-                    {activeModal === 'triagem' && 'Nota Triagem'}
-                    {activeModal === 'testeTecnico' && 'Teste Técnico'}
-                    {activeModal === 'testeIngles' && 'Teste Inglês'}
+                    {activeModal === 'scoreGeral' && t('overallScoreTitle')}
+                    {activeModal === 'triagem' && t('screeningScoreTitle')}
+                    {activeModal === 'testeTecnico' && t('technicalTestTitle')}
+                    {activeModal === 'testeIngles' && t('englishTestTitle')}
                   </h2>
                   <p className="text-sm text-lia-text-secondary">{selectedCandidateForModal.name as string}</p>
                 </div>
@@ -208,23 +210,23 @@ export function KanbanPageModalsInline(state: KanbanPageCoreState) {
                         {calculateNotaLiaGeral(selectedCandidateForModal as unknown as Parameters<typeof calculateNotaLiaGeral>[0])}
                       </span>
                     </div>
-                    <p className="text-sm text-lia-text-secondary">Pontuação Geral do Candidato</p>
+                    <p className="text-sm text-lia-text-secondary">{t('overallCandidateScore')}</p>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="p-4 bg-lia-bg-secondary rounded-xl">
-                      <p className="text-xs text-lia-text-tertiary mb-1">Nota Triagem</p>
+                      <p className="text-xs text-lia-text-tertiary mb-1">{t('screeningScoreLabel')}</p>
                       <p className="text-lg font-semibold text-lia-text-primary">
                         {formatScorePercent((selectedCandidateForModal.liaScore ?? selectedCandidateForModal.score) as number | null | undefined, 0)}
                       </p>
                     </div>
                     <div className="p-4 bg-lia-bg-secondary rounded-xl">
-                      <p className="text-xs text-lia-text-tertiary mb-1">Nota CV</p>
+                      <p className="text-xs text-lia-text-tertiary mb-1">{t('cvScoreLabel')}</p>
                       <p className="text-lg font-semibold text-lia-text-primary">
                         {formatScorePercent((selectedCandidateForModal.skillsMatch as number | undefined) || (selectedCandidateForModal.fitScore as number | undefined) || 0, 0)}
                       </p>
                     </div>
                     <div className="p-4 bg-lia-bg-secondary rounded-xl">
-                      <p className="text-xs text-lia-text-tertiary mb-1">Teste Técnico</p>
+                      <p className="text-xs text-lia-text-tertiary mb-1">{t('technicalTestScoreLabel')}</p>
                       <p className="text-lg font-semibold text-lia-text-primary">
                         {(selectedCandidateForModal.technicalTestScore as number | null | undefined) !== null && selectedCandidateForModal.technicalTestScore !== undefined
                           ? formatScorePercent(selectedCandidateForModal.technicalTestScore as number, 0)
@@ -232,7 +234,7 @@ export function KanbanPageModalsInline(state: KanbanPageCoreState) {
                       </p>
                     </div>
                     <div className="p-4 bg-lia-bg-secondary rounded-xl">
-                      <p className="text-xs text-lia-text-tertiary mb-1">Teste Inglês</p>
+                      <p className="text-xs text-lia-text-tertiary mb-1">{t('englishTestScoreLabel')}</p>
                       <p className="text-lg font-semibold text-lia-text-primary">
                         {(selectedCandidateForModal.englishTestScore as number | null | undefined) !== null && selectedCandidateForModal.englishTestScore !== undefined
                           ? formatScorePercent(selectedCandidateForModal.englishTestScore as number, 0)
@@ -253,14 +255,12 @@ export function KanbanPageModalsInline(state: KanbanPageCoreState) {
                         {formatScorePercent((selectedCandidateForModal.liaScore ?? selectedCandidateForModal.score) as number | null | undefined, 0)}
                       </span>
                     </div>
-                    <p className="text-sm text-lia-text-secondary">Score de Triagem LIA</p>
+                    <p className="text-sm text-lia-text-secondary">{t('liaScreeningScore')}</p>
                   </div>
                   <div className="p-4 bg-lia-bg-secondary rounded-xl">
-                    <h4 className="text-sm font-semibold text-lia-text-primary mb-3">Análise da LIA</h4>
+                    <h4 className="text-sm font-semibold text-lia-text-primary mb-3">{t('liaAnalysisTitle')}</h4>
                     <p className="text-sm text-lia-text-secondary leading-relaxed">
-                      Candidato avaliado automaticamente pela LIA com base em critérios de experiência, 
-                      competências e aderência ao perfil da vaga. A triagem considera fatores como 
-                      histórico profissional, formação acadêmica e habilidades técnicas declaradas.
+                      {t('liaAnalysisText')}
                     </p>
                   </div>
                 </div>
@@ -276,14 +276,12 @@ export function KanbanPageModalsInline(state: KanbanPageCoreState) {
                         {formatScorePercent(selectedCandidateForModal.technicalTestScore as number | null | undefined, 0)}
                       </span>
                     </div>
-                    <p className="text-sm text-lia-text-secondary">Resultado do Teste Técnico</p>
+                    <p className="text-sm text-lia-text-secondary">{t('technicalTestResult')}</p>
                   </div>
                   <div className="p-4 bg-lia-bg-secondary rounded-xl">
-                    <h4 className="text-sm font-semibold text-lia-text-primary mb-3">Detalhes do Teste</h4>
+                    <h4 className="text-sm font-semibold text-lia-text-primary mb-3">{t('testDetailsTitle')}</h4>
                     <p className="text-sm text-lia-text-secondary leading-relaxed">
-                      Avaliação técnica realizada através de teste prático com foco nas competências 
-                      técnicas requeridas para a posição. Inclui análise de código, resolução de 
-                      problemas e conhecimento de ferramentas específicas.
+                      {t('testDetailsText')}
                     </p>
                   </div>
                 </div>
@@ -299,13 +297,12 @@ export function KanbanPageModalsInline(state: KanbanPageCoreState) {
                         {formatScorePercent(selectedCandidateForModal.englishTestScore as number | null | undefined, 0)}
                       </span>
                     </div>
-                    <p className="text-sm text-lia-text-secondary">Resultado do Teste de Inglês</p>
+                    <p className="text-sm text-lia-text-secondary">{t('englishTestResult')}</p>
                   </div>
                   <div className="p-4 bg-lia-bg-secondary rounded-xl">
-                    <h4 className="text-sm font-semibold text-lia-text-primary mb-3">Nível de Proficiência</h4>
+                    <h4 className="text-sm font-semibold text-lia-text-primary mb-3">{t('proficiencyLevelTitle')}</h4>
                     <p className="text-sm text-lia-text-secondary leading-relaxed">
-                      Avaliação de proficiência em inglês cobrindo compreensão escrita, 
-                      expressão oral e vocabulário técnico relevante para a posição.
+                      {t('proficiencyText')}
                     </p>
                   </div>
                 </div>
@@ -321,7 +318,7 @@ export function KanbanPageModalsInline(state: KanbanPageCoreState) {
                 }}
                 className="px-4 py-2 text-sm font-medium text-lia-text-primary bg-lia-bg-secondary border border-lia-border-default rounded-xl hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none"
               >
-                Fechar
+                {t('closePanel')}
               </button>
             </div>
           </div>

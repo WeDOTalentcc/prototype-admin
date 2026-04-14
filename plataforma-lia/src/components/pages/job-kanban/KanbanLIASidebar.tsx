@@ -8,6 +8,7 @@ import { AudioRecordButton } from"@/components/ui/audio-record-button"
 import { CandidateQueriesGuide } from"@/components/ui/candidate-queries-guide"
 import { LIASuggestionsPanel } from"@/components/pages/job-kanban/LIASuggestionsPanel"
 import { ActionResultCard } from"@/components/chat/action-result-card"
+import { useTranslations } from "next-intl"
 import {
   Brain,
   RotateCcw,
@@ -100,13 +101,13 @@ export function KanbanLIASidebar({
   handleAICommand,
   handleLiaUiAction,
 }: KanbanLIASidebarProps) {
+  const t = useTranslations('kanban')
   return (
     <div
       className="flex-shrink-0 transition-colors motion-reduce:transition-none duration-300 pl-4 py-4 pr-0 relative"
       style={{width: `${liaExpandedWidth}px`}}
     >
       <Card className="h-[calc(100vh-16rem)] flex flex-col overflow-hidden border border-lia-border-default bg-lia-bg-primary dark:bg-lia-bg-secondary max-h-[calc(100vh-16rem)]">
-        {/* Mensagem de Apresentação da LIA */}
         <div className="flex-shrink-0 px-4 py-3 bg-lia-bg-primary dark:bg-lia-bg-secondary">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -117,10 +118,10 @@ export function KanbanLIASidebar({
               </div>
               <div className="min-w-0 flex-1">
                 <h3 className="text-sm font-semibold leading-tight truncate text-lia-text-primary">
-                  Olá! Sou a Lia.
+                  {t('helloLia')}
                 </h3>
                 <p className="text-xs leading-tight truncate mt-0.5 text-lia-text-tertiary">
-                  Como posso te ajudar hoje?
+                  {t('howCanIHelp')}
                 </p>
               </div>
             </div>
@@ -130,7 +131,7 @@ export function KanbanLIASidebar({
                   variant="ghost"
                   size="sm"
                   onClick={() => setLiaMessages([])}
-                  title="Nova conversa"
+                  title={t('newConversationBtn')}
                   className="h-7 w-7 p-0 rounded-full hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none flex-shrink-0"
                 >
                   <RotateCcw className="w-3.5 h-3.5 text-lia-text-disabled" />
@@ -140,7 +141,7 @@ export function KanbanLIASidebar({
                 variant="ghost"
                 size="sm"
                 onClick={() => openSuperChat()}
-                title="Expandir chat"
+                title={t('expandChat')}
                 className="h-7 w-7 p-0 rounded-full hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none flex-shrink-0"
               >
                 <Maximize2 className="w-4 h-4 text-lia-text-tertiary" />
@@ -160,13 +161,12 @@ export function KanbanLIASidebar({
           </div>
         </div>
 
-        {/* Indicador de candidatos selecionados - Estilo padronizado */}
         {selectedCandidates.size > 0 && (
           <div className="flex-shrink-0 px-4 py-2">
             <div className="px-3 py-2 bg-lia-bg-tertiary rounded-xl border border-lia-border-subtle flex items-center gap-2">
               <Users className="w-3.5 h-3.5 text-lia-text-secondary flex-shrink-0" />
               <span className="text-xs text-lia-text-secondary font-medium" aria-live="polite" aria-atomic="true">
-                {selectedCandidates.size} candidato{selectedCandidates.size > 1 ? 's' : ''} selecionado{selectedCandidates.size > 1 ? 's' : ''}
+                {t('candidatesSelectedCount', { count: selectedCandidates.size })}
               </span>
               <button
                 onClick={() => setSelectedCandidates(new Set())}
@@ -178,7 +178,6 @@ export function KanbanLIASidebar({
           </div>
         )}
 
-        {/* Sugestões Proativas da LIA */}
         {computedSuggestions.length > 0 && (
           <div className="flex-shrink-0 px-4 py-2">
             <button
@@ -187,7 +186,7 @@ export function KanbanLIASidebar({
             >
               <div className="flex items-center gap-2">
                 <Lightbulb className="w-3.5 h-3.5 text-wedo-cyan" />
-                <span className="text-xs font-semibold text-lia-text-secondary">Sugestões da LIA</span>
+                <span className="text-xs font-semibold text-lia-text-secondary">{t('liaSuggestionsTitle')}</span>
                 <Badge className="bg-wedo-cyan text-white border-0 text-micro px-1.5 py-0 h-4 min-w-[18px] flex items-center justify-center">
                   {computedSuggestions.length}
                 </Badge>
@@ -223,7 +222,7 @@ export function KanbanLIASidebar({
                           }}
                           className="text-wedo-cyan"
                         >
-                          Ver
+                          {t('viewAction')}
                         </button>
                       </div>
                     </div>
@@ -234,7 +233,6 @@ export function KanbanLIASidebar({
           </div>
         )}
 
-        {/* Área de Mensagens do Chat - Só aparece quando há mensagens */}
         {liaMessages.length > 0 ? (
           <div className="flex-1 overflow-y-auto px-3 py-2 space-y-3">
             {liaMessages.map((msg) => (
@@ -298,7 +296,7 @@ export function KanbanLIASidebar({
                             className="mt-2 px-3 py-1.5 text-xs font-medium text-white bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover rounded-md transition-colors motion-reduce:transition-none"
                             
                           >
-                            Abrir manualmente
+                            {t('openManually')}
                           </button>
                         )}
                       </div>
@@ -309,12 +307,12 @@ export function KanbanLIASidebar({
             ))}
 
             {isLiaLoading && (
-              <div className="flex justify-start" role="status" aria-live="polite" aria-label="Carregando...">
-                <div className="inline-flex items-center gap-2 px-3 py-2 rounded-md bg-lia-bg-tertiary dark:bg-lia-bg-secondary" role="status" aria-live="polite" aria-label="Carregando...">
-                  <div className="w-5 h-5 rounded-xl bg-lia-bg-primary flex items-center justify-center" role="status" aria-live="polite" aria-label="Carregando...">
+              <div className="flex justify-start" role="status" aria-live="polite" aria-label={t('loadingAriaLabelShort')}>
+                <div className="inline-flex items-center gap-2 px-3 py-2 rounded-md bg-lia-bg-tertiary dark:bg-lia-bg-secondary" role="status" aria-live="polite" aria-label={t('loadingAriaLabelShort')}>
+                  <div className="w-5 h-5 rounded-xl bg-lia-bg-primary flex items-center justify-center" role="status" aria-live="polite" aria-label={t('loadingAriaLabelShort')}>
                     <Loader2 className="w-3 h-3 animate-spin motion-reduce:animate-none text-lia-text-secondary" />
                   </div>
-                  <span className="text-micro text-lia-text-tertiary">Pensando...</span>
+                  <span className="text-micro text-lia-text-tertiary">{t('thinkingStatus')}</span>
                 </div>
               </div>
             )}
@@ -322,17 +320,14 @@ export function KanbanLIASidebar({
             <div ref={chatScrollRef} />
           </div>
         ) : (
-          /* Espaço flexível vazio quando não há mensagens - empurra conteúdo para baixo */
           <div className="flex-1" />
         )}
 
-        {/* Input Area - Fixo na parte inferior */}
         <div className="flex-shrink-0 px-4 pb-4 pt-2">
-          {/* Campo de Input */}
           <div className="flex items-center gap-2 p-2 rounded-xl border border-lia-border-subtle bg-lia-bg-primary">
             <input
               type="text"
-              placeholder="Envie mensagem para a LIA..."
+              placeholder={t('sendMessagePlaceholder')}
               value={liaPromptValue}
               onChange={(e) => setLiaPromptValue(e.target.value)}
               onKeyDown={(e) => {
@@ -363,22 +358,21 @@ export function KanbanLIASidebar({
             </button>
           </div>
 
-          {/* Sugestões de Análises - Abaixo do input */}
           <div className="flex items-center gap-1.5 mt-2">
-            <span className="text-micro font-medium text-lia-text-tertiary">Sugestões:</span>
+            <span className="text-micro font-medium text-lia-text-tertiary">{t('suggestionsPrefix')}</span>
             <button
-              onClick={() => setLiaPromptValue('Rankear candidatos desta vaga')}
+              onClick={() => setLiaPromptValue(t('chipRankPrompt'))}
               className="inline-flex items-center gap-1 px-2 py-0.5 text-micro font-medium text-lia-text-secondary bg-lia-bg-tertiary rounded-full hover:bg-lia-interactive-active transition-[width,height]"
             >
               <Star className="w-2.5 h-2.5 text-lia-text-tertiary" />
-              Rankear
+              {t('chipRankLabel')}
             </button>
             <button
-              onClick={() => setLiaPromptValue('Comparar os melhores candidatos')}
+              onClick={() => setLiaPromptValue(t('chipComparePrompt'))}
               className="inline-flex items-center gap-1 px-2 py-0.5 text-micro font-medium text-lia-text-secondary bg-lia-bg-tertiary rounded-full hover:bg-lia-interactive-active transition-[width,height]"
             >
               <Users className="w-2.5 h-2.5 text-lia-text-tertiary" />
-              Comparar
+              {t('chipCompareLabel')}
             </button>
             <CandidateQueriesGuide
               onSelectQuery={(query) => setLiaPromptValue(query)}
@@ -387,7 +381,6 @@ export function KanbanLIASidebar({
           </div>
         </div>
       </Card>
-      {/* Barra de redimensionamento */}
       <div
         className="absolute right-0 top-0 w-2 h-full cursor-ew-resize group flex items-center justify-center z-10"
         onMouseDown={(e) => {

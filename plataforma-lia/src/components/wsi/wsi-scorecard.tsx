@@ -11,6 +11,8 @@ import {
   Star, AlertCircle, FileText, Loader2
 } from"lucide-react"
 import { liaApi, WSIResultsResponse } from"@/services/lia-api"
+import { useTranslations } from "next-intl"
+import { useLocale } from "next-intl"
 
 interface WSIScorecardProps {
   candidateId: string
@@ -27,32 +29,6 @@ interface ScoreDisplay {
   bgColor: string
 }
 
-const WSI_CLASSIFICATION_CONFIG: Record<string, { label: string; color: string; bgColor: string; textColor: string }> = {
-  excepcional:    { label: 'Excepcional',      color: 'text-status-success', bgColor: 'bg-status-success/15', textColor: 'var(--status-success)' },
-  excelente:      { label: 'Excelente',         color: 'text-status-success',   bgColor: 'bg-status-success/15',   textColor: 'var(--status-success)' },
-  alto:           { label: 'Alto',               color: 'text-wedo-cyan-dark',   bgColor: 'bg-wedo-cyan/15',    textColor: 'var(--lia-text-secondary)' },
-  medio:          { label: 'Médio',              color: 'text-status-warning',  bgColor: 'bg-status-warning/15',   textColor: 'var(--status-warning)' },
-  abaixo_da_media:{ label: 'Abaixo da média',   color: 'text-wedo-orange', bgColor: 'bg-wedo-orange/15',  textColor: 'var(--status-warning)' },
-  regular:        { label: 'Regular / Baixo',   color: 'text-status-error',    bgColor: 'bg-status-error/15',     textColor: 'var(--status-error)' },
-}
-
-const getClassificationConfig = (classification: string) =>
-  WSI_CLASSIFICATION_CONFIG[classification] ?? WSI_CLASSIFICATION_CONFIG.medio
-
-const getScoreDisplay = (score: number): ScoreDisplay => {
-  if (score >= 4.5) return { value: score, label: 'Excepcional',    color: 'text-status-success', bgColor: 'bg-status-success/15' }
-  if (score >= 4.0) return { value: score, label: 'Excelente',      color: 'text-status-success',   bgColor: 'bg-status-success/15' }
-  if (score >= 3.5) return { value: score, label: 'Alto',            color: 'text-wedo-cyan-dark',    bgColor: 'bg-wedo-cyan/15' }
-  if (score >= 3.0) return { value: score, label: 'Médio',           color: 'text-status-warning',  bgColor: 'bg-status-warning/15' }
-  if (score >= 2.25) return { value: score, label: 'Abaixo da média',color: 'text-wedo-orange', bgColor: 'bg-wedo-orange/15' }
-  return { value: score, label: 'Regular / Baixo', color: 'text-status-error', bgColor: 'bg-status-error/15' }
-}
-
-const getClassificationBadge = (classification: string) => {
-  const cfg = getClassificationConfig(classification)
-  return { color: cfg.color, bgColor: cfg.bgColor }
-}
-
 export function WSIScorecard({
   candidateId,
   candidateName,
@@ -60,10 +36,38 @@ export function WSIScorecard({
   showHistory = false,
   onViewDetails
 }: WSIScorecardProps) {
+  const t = useTranslations('screening.wsi')
+  const locale = useLocale()
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [results, setResults] = useState<WSIResultsResponse | null>(null)
   const [expanded, setExpanded] = useState(!compact)
+
+  const WSI_CLASSIFICATION_CONFIG: Record<string, { label: string; color: string; bgColor: string; textColor: string }> = {
+    excepcional:    { label: t('classification.excepcional'),      color: 'text-status-success', bgColor: 'bg-status-success/15', textColor: 'var(--status-success)' },
+    excelente:      { label: t('classification.excelente'),         color: 'text-status-success',   bgColor: 'bg-status-success/15',   textColor: 'var(--status-success)' },
+    alto:           { label: t('classification.alto'),               color: 'text-wedo-cyan-dark',   bgColor: 'bg-wedo-cyan/15',    textColor: 'var(--lia-text-secondary)' },
+    medio:          { label: t('classification.medio'),              color: 'text-status-warning',  bgColor: 'bg-status-warning/15',   textColor: 'var(--status-warning)' },
+    abaixo_da_media:{ label: t('classification.abaixoDaMedia'),   color: 'text-wedo-orange', bgColor: 'bg-wedo-orange/15',  textColor: 'var(--status-warning)' },
+    regular:        { label: t('classification.regular'),   color: 'text-status-error',    bgColor: 'bg-status-error/15',     textColor: 'var(--status-error)' },
+  }
+
+  const getClassificationConfig = (classification: string) =>
+    WSI_CLASSIFICATION_CONFIG[classification] ?? WSI_CLASSIFICATION_CONFIG.medio
+
+  const getScoreDisplay = (score: number): ScoreDisplay => {
+    if (score >= 4.5) return { value: score, label: t('classification.excepcional'),    color: 'text-status-success', bgColor: 'bg-status-success/15' }
+    if (score >= 4.0) return { value: score, label: t('classification.excelente'),      color: 'text-status-success',   bgColor: 'bg-status-success/15' }
+    if (score >= 3.5) return { value: score, label: t('classification.alto'),            color: 'text-wedo-cyan-dark',    bgColor: 'bg-wedo-cyan/15' }
+    if (score >= 3.0) return { value: score, label: t('classification.medio'),           color: 'text-status-warning',  bgColor: 'bg-status-warning/15' }
+    if (score >= 2.25) return { value: score, label: t('classification.abaixoDaMedia'),color: 'text-wedo-orange', bgColor: 'bg-wedo-orange/15' }
+    return { value: score, label: t('classification.regular'), color: 'text-status-error', bgColor: 'bg-status-error/15' }
+  }
+
+  const getClassificationBadge = (classification: string) => {
+    const cfg = getClassificationConfig(classification)
+    return { color: cfg.color, bgColor: cfg.bgColor }
+  }
 
    
   useEffect(() => {
@@ -78,7 +82,7 @@ export function WSIScorecard({
       const data = await liaApi.wsiGetCandidateResults(candidateId)
       setResults(data)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao carregar resultados')
+      setError(err instanceof Error ? err.message : t('scorecard.errorLoadingResults'))
     } finally {
       setLoading(false)
     }
@@ -89,7 +93,7 @@ export function WSIScorecard({
       <Card className="border-dashed">
         <CardContent className="py-6 flex items-center justify-center">
           <Loader2 className="w-5 h-5 animate-spin motion-reduce:animate-none text-lia-text-tertiary" />
-          <span className="ml-2 text-sm text-lia-text-tertiary">Carregando WSI...</span>
+          <span className="ml-2 text-sm text-lia-text-tertiary">{t('scorecard.loadingWSI')}</span>
         </CardContent>
       </Card>
     )
@@ -112,7 +116,7 @@ export function WSIScorecard({
         <CardContent className="py-6 text-center">
           <Brain className="w-8 h-8 text-wedo-cyan mx-auto mb-2" />
           <p className="text-sm text-lia-text-tertiary">
-            Nenhuma triagem WSI realizada
+            {t('scorecard.noScreening')}
           </p>
         </CardContent>
       </Card>
@@ -139,13 +143,13 @@ export function WSIScorecard({
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="font-medium text-sm">Score WSI</span>
+                  <span className="font-medium text-sm">{t('scorecard.scoreWSI')}</span>
                   <Badge className={`${classificationBadge.bgColor} ${classificationBadge.color} text-xs`}>
                     {latestResult.classification}
                   </Badge>
                 </div>
                 <p className="text-xs text-lia-text-tertiary">
-                  {latestResult.screening_type === 'voice' ? 'Triagem por Voz' : 'Triagem por Texto'}
+                  {latestResult.screening_type === 'voice' ? t('scorecard.voiceScreening') : t('scorecard.textScreening')}
                 </p>
               </div>
             </div>
@@ -162,7 +166,7 @@ export function WSIScorecard({
         <div className="flex items-center justify-between">
           <CardTitle className="text-sm font-medium flex items-center gap-2">
             <Brain className="w-4 h-4 text-wedo-cyan" />
-            Score WSI
+            {t('scorecard.scoreWSI')}
             {candidateName && (
               <span className="text-lia-text-tertiary font-normal">• {candidateName}</span>
             )}
@@ -185,14 +189,14 @@ export function WSIScorecard({
             <span className={`text-2xl font-semibold ${scoreDisplay.color}`}>
               {latestResult.overall_wsi.toFixed(1)}
             </span>
-            <span className="text-xs text-lia-text-tertiary">de 5.0</span>
+            <span className="text-xs text-lia-text-tertiary">{t('scorecard.of5')}</span>
           </div>
 
           <div className="flex-1 space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-sm text-lia-text-tertiary flex items-center gap-1">
                 <Target className="w-3 h-3" />
-                Técnico
+                {t('scorecard.technical')}
               </span>
               <span className="font-medium">{latestResult.technical_wsi.toFixed(1)}</span>
             </div>
@@ -204,7 +208,7 @@ export function WSIScorecard({
             <div className="flex items-center justify-between mt-2">
               <span className="text-sm text-lia-text-tertiary flex items-center gap-1">
                 <MessageSquare className="w-3 h-3" />
-                Comportamental
+                {t('scorecard.behavioral')}
               </span>
               <span className="font-medium">{latestResult.behavioral_wsi.toFixed(1)}</span>
             </div>
@@ -224,11 +228,11 @@ export function WSIScorecard({
           <div className="flex items-center gap-2 text-xs text-lia-text-tertiary">
             {latestResult.screening_type === 'voice' ? (
               <Badge variant="outline" className="text-xs">
-                🎤 Voz
+                {t('scorecard.voice')}
               </Badge>
             ) : (
               <Badge variant="outline" className="text-xs">
-                💬 Texto
+                {t('scorecard.text')}
               </Badge>
             )}
             {latestResult.percentile && (
@@ -243,7 +247,7 @@ export function WSIScorecard({
         {showHistory && results.total_screenings > 1 && (
           <div className="pt-2 border-t">
             <p className="text-xs text-lia-text-tertiary mb-2">
-              Histórico ({results.total_screenings} triagens)
+              {t('scorecard.history', { count: results.total_screenings })}
             </p>
             <div className="space-y-2">
               {results.results.slice(1, 4).map((result, idx) => (
@@ -257,7 +261,7 @@ export function WSIScorecard({
                       {result.overall_wsi.toFixed(1)}
                     </div>
                     <span className="text-xs text-lia-text-tertiary">
-                      {new Date(result.created_at).toLocaleDateString('pt-BR')}
+                      {new Date(result.created_at).toLocaleDateString(locale)}
                     </span>
                   </div>
                   <Badge variant="outline" className="text-xs">
@@ -277,7 +281,7 @@ export function WSIScorecard({
             onClick={() => onViewDetails(latestResult.result_id)}
           >
             <FileText className="w-3 h-3" />
-            Ver Relatório Completo
+            {t('scorecard.viewFullReport')}
           </Button>
         )}
       </CardContent>
@@ -286,8 +290,28 @@ export function WSIScorecard({
 }
 
 export function WSIScoreBadge({ score, classification }: { score: number; classification: string }) {
+  const t = useTranslations('screening.wsi')
+
+  const WSI_CLASSIFICATION_CONFIG: Record<string, { label: string; color: string; bgColor: string }> = {
+    excepcional:    { label: t('classification.excepcional'),      color: 'text-status-success', bgColor: 'bg-status-success/15' },
+    excelente:      { label: t('classification.excelente'),         color: 'text-status-success',   bgColor: 'bg-status-success/15' },
+    alto:           { label: t('classification.alto'),               color: 'text-wedo-cyan-dark',   bgColor: 'bg-wedo-cyan/15' },
+    medio:          { label: t('classification.medio'),              color: 'text-status-warning',  bgColor: 'bg-status-warning/15' },
+    abaixo_da_media:{ label: t('classification.abaixoDaMedia'),   color: 'text-wedo-orange', bgColor: 'bg-wedo-orange/15' },
+    regular:        { label: t('classification.regular'),   color: 'text-status-error',    bgColor: 'bg-status-error/15' },
+  }
+
+  const getScoreDisplay = (s: number) => {
+    if (s >= 4.5) return { color: 'text-status-success', bgColor: 'bg-status-success/15' }
+    if (s >= 4.0) return { color: 'text-status-success', bgColor: 'bg-status-success/15' }
+    if (s >= 3.5) return { color: 'text-wedo-cyan-dark', bgColor: 'bg-wedo-cyan/15' }
+    if (s >= 3.0) return { color: 'text-status-warning', bgColor: 'bg-status-warning/15' }
+    if (s >= 2.25) return { color: 'text-wedo-orange', bgColor: 'bg-wedo-orange/15' }
+    return { color: 'text-status-error', bgColor: 'bg-status-error/15' }
+  }
+
   const display = getScoreDisplay(score)
-  const badge = getClassificationBadge(classification)
+  const badge = WSI_CLASSIFICATION_CONFIG[classification] ?? WSI_CLASSIFICATION_CONFIG.medio
 
   return (
     <div className="inline-flex items-center gap-1.5">
@@ -302,6 +326,17 @@ export function WSIScoreBadge({ score, classification }: { score: number; classi
 }
 
 export function WSIMiniScore({ score }: { score: number }) {
+  const t = useTranslations('screening.wsi')
+
+  const getScoreDisplay = (s: number) => {
+    if (s >= 4.5) return { label: t('classification.excepcional'), color: 'text-status-success', bgColor: 'bg-status-success/15' }
+    if (s >= 4.0) return { label: t('classification.excelente'), color: 'text-status-success', bgColor: 'bg-status-success/15' }
+    if (s >= 3.5) return { label: t('classification.alto'), color: 'text-wedo-cyan-dark', bgColor: 'bg-wedo-cyan/15' }
+    if (s >= 3.0) return { label: t('classification.medio'), color: 'text-status-warning', bgColor: 'bg-status-warning/15' }
+    if (s >= 2.25) return { label: t('classification.abaixoDaMedia'), color: 'text-wedo-orange', bgColor: 'bg-wedo-orange/15' }
+    return { label: t('classification.regular'), color: 'text-status-error', bgColor: 'bg-status-error/15' }
+  }
+
   const display = getScoreDisplay(score)
 
   return (

@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button"
 import { Plus, Search, Bookmark } from "lucide-react"
 import { PageTabNavigation } from "@/components/ui/page-tab-navigation"
+import { useTranslations } from "next-intl"
 
 interface Tab {
   id: string
@@ -37,24 +38,23 @@ export function CandidatesPageHeader({
   onNewSearch,
   onSaveCurrentSearch,
 }: CandidatesPageHeaderProps) {
+  const t = useTranslations('candidates')
   return (
     <div data-testid="candidates-page-header" className="flex-shrink-0 px-4 pt-3 pb-0 bg-lia-bg-primary dark:bg-lia-bg-primary">
       <div className="flex items-center justify-between mb-2">
         <h1 className="text-lg font-semibold text-lia-text-primary">
-          Funil de Talentos
+          {t('header.title')}
         </h1>
         <div className="flex gap-2">
-          {/* Botão Novo Candidato - visível em todas as abas */}
           <Button
             data-testid="new-candidate-btn"
             className="gap-2 h-8 px-3 font-medium hover:bg-lia-interactive-hover transition-colors cursor-pointer"
             onClick={onAddCandidate}
           >
             <Plus className="w-4 h-4" />
-            Novo Candidato
+            {t('header.newCandidate')}
           </Button>
 
-          {/* Botões específicos por aba */}
           {activeTab === 'search' && showSearchResults && (
             <>
               <Button
@@ -64,20 +64,19 @@ export function CandidatesPageHeader({
                 onClick={onNewSearch}
               >
                 <Search className="w-4 h-4" />
-                Nova Busca
+                {t('header.newSearch')}
               </Button>
 
-              {/* Botão para salvar busca atual */}
               {(searchTerm || quickFilters.size > 0 || getActiveAdvancedFiltersCount() > 0) && (
                 <Button
                   data-testid="save-search-btn"
                   variant="outline"
                   className="gap-2 h-8 px-3 hover:bg-lia-interactive-hover transition-colors cursor-pointer"
                   onClick={onSaveCurrentSearch}
-                  title="Salvar esta busca para reutilizar"
+                  title={t('header.saveSearchTitle')}
                 >
                   <Bookmark className="w-4 h-4" />
-                  Salvar Busca
+                  {t('header.saveSearch')}
                 </Button>
               )}
             </>
@@ -90,7 +89,7 @@ export function CandidatesPageHeader({
               onClick={onNewSearch}
             >
               <Search className="w-4 h-4" />
-              Nova Busca
+              {t('header.newSearch')}
             </Button>
           )}
         </div>

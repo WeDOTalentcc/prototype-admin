@@ -1,6 +1,7 @@
 "use client"
 
 import React, { memo } from "react"
+import { useTranslations } from "next-intl"
 import {
   Search,
   ArrowLeft,
@@ -30,6 +31,7 @@ const SearchResultsHeader = memo(function SearchResultsHeader({
   onOpenEditQueryModal,
   onOpenAdvancedSearch,
 }: SearchResultsHeaderProps) {
+  const t = useTranslations('candidates')
   // DS v4.2.1: Tailwind tokens — sem hex hardcoded
   const pillStyles: Record<string, { pill: string; icon: string }> = {
     job_title:        { pill: 'bg-lia-bg-tertiary text-lia-text-secondary',      icon: 'text-lia-text-secondary' },
@@ -51,7 +53,7 @@ const SearchResultsHeader = memo(function SearchResultsHeader({
   }
 
   const renderQueryWithPills = () => {
-    const query = lastSearchQuery || 'Busca realizada'
+    const query = lastSearchQuery || t('searchResultsHeader.searchPerformed')
 
     if (
       !lastSearchEntities ||
@@ -185,7 +187,7 @@ const SearchResultsHeader = memo(function SearchResultsHeader({
             </button>
           </TooltipTrigger>
           <TooltipContent side="left" className="!animate-none">
-            <p className="text-xs font-bold">Voltar para Busca Inteligente</p>
+            <p className="text-xs font-bold">{t('searchResultsHeader.backToSearch')}</p>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
@@ -213,7 +215,7 @@ const SearchResultsHeader = memo(function SearchResultsHeader({
                   </button>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="!animate-none">
-                  <p className="text-xs font-bold">Editar query de busca</p>
+                  <p className="text-xs font-bold">{t('searchResultsHeader.editQuery')}</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -222,7 +224,7 @@ const SearchResultsHeader = memo(function SearchResultsHeader({
               onClick={onOpenAdvancedSearch}
               className="text-xs text-lia-text-secondary hover:text-lia-text-primary dark:hover:text-lia-text-inverse font-bold inline-flex items-center gap-1 transition-colors motion-reduce:transition-none ml-2 font-sans"
             >
-              Editar Filtros
+              {t('searchResultsHeader.editFilters')}
               <ChevronRight className="w-3 h-3" />
             </button>
           </div>

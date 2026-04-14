@@ -1,6 +1,7 @@
 "use client"
 
 import React from "react"
+import { useTranslations } from "next-intl"
 import { AudioRecordButton } from "@/components/ui/audio-record-button"
 import { LiaSearchQueriesGuide } from "@/components/ui/lia-search-queries-guide"
 import {
@@ -59,6 +60,7 @@ export function LIASearchSidebarInput({
   onLIAChatMessage,
   onAICommand,
 }: LIASearchSidebarInputProps) {
+  const t = useTranslations('candidates.liaSidebar')
   const handleSend = () => {
     if (!liaPromptValue.trim()) return
 
@@ -79,7 +81,7 @@ export function LIASearchSidebarInput({
         const liaResponse: ChatMessage = {
           id: `lia-extraction-${Date.now()}`,
           type: 'lia',
-          content: `✅ Analisei sua descrição e identifiquei os critérios principais.\n\n**Arquétipo sugerido:** ${extractedName}\n\nClique em "Salvar Arquétipo" abaixo para confirmar, ou continue descrevendo para refinar.`,
+          content: t('archetypeAnalyzed', { name: extractedName }),
           timestamp: new Date()
         }
         setChatMessages(prev => [...prev, liaResponse])
@@ -108,7 +110,7 @@ export function LIASearchSidebarInput({
           <div className="flex items-center gap-2">
             <Target className="w-4 h-4 text-lia-text-secondary" />
             <span className="text-xs font-medium text-lia-text-secondary">
-              Criando novo arquétipo...
+              {t('creatingArchetype')}
             </span>
           </div>
           <button
@@ -117,7 +119,7 @@ export function LIASearchSidebarInput({
               setArchetypeCreationStep('initial')
             }}
             className="p-1 hover:bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-xl"
-            aria-label="Cancelar criação de arquétipo"
+            aria-label={t('cancelArchetypeCreation')}
           >
             <X className="w-3 h-3 text-lia-text-secondary" aria-hidden="true" />
           </button>
@@ -128,10 +130,10 @@ export function LIASearchSidebarInput({
         <input
           type="text"
           placeholder={isCreatingArchetype
-            ? "Cole a descrição da vaga ou descreva o perfil ideal..."
-            : "Envie mensagem para a LIA..."
+            ? t('archetypePlaceholder')
+            : t('messagePlaceholder')
           }
-          aria-label={isCreatingArchetype ? "Descrição do perfil ideal para arquétipo" : "Mensagem para a LIA"}
+          aria-label={isCreatingArchetype ? t('archetypeInputLabel') : t('messageInputLabel')}
           value={liaPromptValue}
           onChange={(e) => setLiaPromptValue(e.target.value)}
           onKeyDown={(e) => {
@@ -158,20 +160,20 @@ export function LIASearchSidebarInput({
 
       {/* Sugestões - abaixo do input conforme design specs */}
       <div className="flex items-center gap-1.5 mt-1.5">
-        <span className="text-micro font-medium text-lia-text-tertiary">Sugestões:</span>
+        <span className="text-micro font-medium text-lia-text-tertiary">{t('suggestionsLabel')}</span>
         <button
           onClick={() => onAICommand('Top 5 candidatos')}
           className="inline-flex items-center gap-1 px-2 py-0.5 text-micro font-medium text-lia-text-secondary bg-lia-bg-tertiary rounded-full hover:bg-lia-interactive-active transition-colors motion-reduce:transition-none dark:bg-lia-bg-secondary dark:hover:bg-lia-bg-inverse"
         >
           <Star className="w-2.5 h-2.5 text-lia-text-tertiary" />
-          Top 5
+          {t('top5')}
         </button>
         <button
           onClick={() => onAICommand('Resumir esta busca')}
           className="inline-flex items-center gap-1 px-2 py-0.5 text-micro font-medium text-lia-text-secondary bg-lia-bg-tertiary rounded-full hover:bg-lia-interactive-active transition-colors motion-reduce:transition-none dark:bg-lia-bg-secondary dark:hover:bg-lia-bg-inverse"
         >
           <FileText className="w-2.5 h-2.5 text-lia-text-tertiary" />
-          Resumir busca
+          {t('summarizeSearch')}
         </button>
         <LiaSearchQueriesGuide
           onSelectQuery={(query) => onAICommand(query)}

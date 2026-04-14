@@ -1,6 +1,7 @@
 "use client"
 
 import React from "react"
+import { useTranslations } from "next-intl"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Checkbox } from "@/components/ui/checkbox"
 import { ScoreIconButton } from "@/components/ui/score-icon-button"
@@ -275,6 +276,7 @@ export function KanbanColumnRenderer({
   rejectSuggestion,
   openTransition,
 }: KanbanColumnRendererProps) {
+  const t = useTranslations('kanban')
   const dynamicStage = dynamicStages.find((s) => s.id === stageId)
   const stageInfo = getStageByName(stageId)
   const displayTitle = dynamicStage?.displayName || stageInfo?.displayName || stageId
@@ -387,7 +389,7 @@ export function KanbanColumnRenderer({
                 }
               }}
               className="w-3.5 h-3.5 data-[state=checked]:bg-lia-btn-primary-bg data-[state=checked]:border-lia-btn-primary-bg"
-              title={`Selecionar todos da etapa ${displayTitle}`}
+              title={t('selectAllInStage', { stage: displayTitle })}
             />
           )}
         </div>
@@ -432,7 +434,7 @@ export function KanbanColumnRenderer({
               <div className="px-2 py-1 bg-lia-bg-tertiary">
                 <div className="flex items-center gap-1">
                   <Flag className="w-3 h-3 text-status-warning" />
-                  <span className="text-micro font-bold text-lia-text-tertiary">Ação Necessária</span>
+                  <span className="text-micro font-bold text-lia-text-tertiary">{t('actionRequired')}</span>
                 </div>
               </div>
             )}
@@ -460,7 +462,7 @@ export function KanbanColumnRenderer({
                   type="checkbox"
                   checked={selectedCandidates.has(candidate.id)}
                   className="w-3 h-3 rounded-xl cursor-pointer flex-shrink-0 border border-lia-border-subtle hover:bg-lia-interactive-hover transition-colors"
-                  aria-label={`Selecionar candidato ${candidate.name}`}
+                  aria-label={t('selectCandidate', { name: candidate.name })}
                   onClick={(e) => {
                     e.stopPropagation()
                     const newSelected = new Set(selectedCandidates)
@@ -491,11 +493,11 @@ export function KanbanColumnRenderer({
                     })
                   }}
                   onClick={(e) => e.stopPropagation()}
-                  aria-label={`Selecionar ${candidate.name} para comparação`}
+                  aria-label={t('selectForComparison', { name: candidate.name })}
                   title={
                     selectedForCompare.size >= 4 && !selectedForCompare.has(candidate.id)
-                      ? "Máximo de 4 candidatos para comparação"
-                      : "Comparar candidato"
+                      ? t('maxCandidatesComparison')
+                      : t('compareCandidate')
                   }
                 />
 
@@ -522,7 +524,7 @@ export function KanbanColumnRenderer({
                   {viewedCandidateIds.has(candidate.id) && (
                     <div
                       className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-lia-border-default rounded-full flex items-center justify-center border border-white"
-                      title="Perfil visualizado"
+                      title={t('profileViewed')}
                     >
                       <Eye className="w-2 h-2 text-white" />
                     </div>
@@ -565,11 +567,11 @@ export function KanbanColumnRenderer({
               <div className="space-y-0 mb-1.5">
                 <div className="flex items-center gap-1 text-xs text-lia-text-secondary">
                   <Briefcase className="w-2.5 h-2.5 flex-shrink-0" />
-                  <span className="truncate">{candidate.role || "Não disponível"}</span>
+                  <span className="truncate">{candidate.role || t('notAvailable')}</span>
                 </div>
                 <div className="flex items-center gap-1 text-xs text-lia-text-secondary">
                   <Building className="w-2.5 h-2.5 flex-shrink-0" />
-                  <span className="truncate">{candidate.currentCompany || "Não disponível"}</span>
+                  <span className="truncate">{candidate.currentCompany || t('notAvailable')}</span>
                 </div>
                 {candidate.location ? (
                   <div className="flex items-center gap-1 text-xs text-lia-text-secondary">
@@ -579,7 +581,7 @@ export function KanbanColumnRenderer({
                 ) : (
                   <div className="flex items-center gap-1 text-xs text-lia-text-disabled">
                     <MapPin className="w-2.5 h-2.5 flex-shrink-0" />
-                    <span className="truncate">Não disponível</span>
+                    <span className="truncate">{t('notAvailable')}</span>
                   </div>
                 )}
               </div>

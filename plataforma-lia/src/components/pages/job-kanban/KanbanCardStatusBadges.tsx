@@ -1,6 +1,8 @@
 "use client"
 
 import React from "react"
+import { useTranslations } from "next-intl"
+import { useLocale } from "next-intl"
 import {
   StatusBadge,
   ChannelBadge,
@@ -89,6 +91,8 @@ export function KanbanCardStatusBadges({
   approveSuggestion,
   rejectSuggestion,
 }: KanbanCardStatusBadgesProps) {
+  const t = useTranslations('kanban')
+  const locale = useLocale()
   return (
     <>
 {/* Tags de Status Compactas */}
@@ -120,19 +124,19 @@ export function KanbanCardStatusBadges({
         icon={User}
         label={
           candidate.source === "linkedin"
-            ? "Aplicou via LinkedIn"
+            ? t('appliedViaLinkedin')
             : candidate.source === "website"
-            ? "Aplicou no site"
+            ? t('appliedOnWebsite')
             : candidate.source === "lia_database"
-            ? "Mapeado pela LIA"
-            : "Adicionado manual"
+            ? t('mappedByLIA')
+            : t('addedManually')
         }
       />
       <StatusBadge
         stageId={stageId}
         variant="accent"
         icon={BrainCircuit}
-        label="LIA iniciará triagem"
+        label={t('liaWillStartScreening')}
         pulse
       />
     </>
@@ -147,16 +151,16 @@ export function KanbanCardStatusBadges({
             stageId={stageId}
             variant="dark"
             icon={CheckCircle}
-            label="Triagem concluída"
+            label={t('screeningCompleted')}
           />
           <StatusBadge
             stageId={stageId}
             variant="accent"
             icon={Target}
-            label="Decisão pendente"
+            label={t('pendingDecision')}
             pulse
             onClick={() => onOpenAnalysis(candidate)}
-            title="Clique para ver análise completa"
+            title={t('clickToSeeFullAnalysis')}
           />
         </>
       ) : (
@@ -166,8 +170,8 @@ export function KanbanCardStatusBadges({
           icon={MessageCircle}
           label={
             candidate.liatriagem === "respondendo"
-              ? "Respondendo agora"
-              : "Conversa em andamento"
+              ? t('respondingNow')
+              : t('conversationInProgress')
           }
         />
       )}
@@ -186,7 +190,7 @@ export function KanbanCardStatusBadges({
             stageId={stageId}
             variant="scheduled"
             icon={CalendarCheck}
-            label="Entrevista confirmada"
+            label={t('interviewConfirmed')}
           />
           {candidate.interviewDate && (
             <DateTimeBadge date={candidate.interviewDate} />
@@ -198,7 +202,7 @@ export function KanbanCardStatusBadges({
           stageId={stageId}
           variant="accent"
           icon={Clock}
-          label="Aguardando agendamento"
+          label={t('awaitingScheduling')}
           pulse
         />
       )}
@@ -207,7 +211,7 @@ export function KanbanCardStatusBadges({
           stageId={stageId}
           variant="accent"
           icon={Clock}
-          label="Feedback pendente"
+          label={t('pendingFeedback')}
           pulse
         />
       )}
@@ -217,21 +221,21 @@ export function KanbanCardStatusBadges({
   {/* FINAL */}
   {stageId === "offer" && (
     <>
-      <StatusBadge stageId={stageId} variant="standard" icon={Star} label="Finalista" />
+      <StatusBadge stageId={stageId} variant="standard" icon={Star} label={t('finalist')} />
       {candidate.proposal ? (
         <>
           <StatusBadge
             stageId={stageId}
             variant="dark"
             icon={FileText}
-            label="Proposta enviada"
+            label={t('proposalSent')}
           />
           {!candidate.proposalResponse && (
             <StatusBadge
               stageId={stageId}
               variant="accent"
               icon={Clock}
-              label="Aguardando resposta"
+              label={t('awaitingResponse')}
               pulse
             />
           )}
@@ -241,7 +245,7 @@ export function KanbanCardStatusBadges({
           stageId={stageId}
           variant="accent"
           icon={Clock}
-          label="Aguardando aprovação"
+          label={t('awaitingApproval')}
           pulse
         />
       )}
@@ -250,7 +254,7 @@ export function KanbanCardStatusBadges({
           stageId={stageId}
           variant="outlined"
           icon={MessageCircle}
-          label="Em negociação"
+          label={t('inNegotiation')}
         />
       )}
     </>
@@ -259,16 +263,16 @@ export function KanbanCardStatusBadges({
   {/* CONTRATADOS */}
   {stageId === "hired" && (
     <>
-      <StatusBadge stageId={stageId} variant="hired" icon={Trophy} label="Contratado" />
+      <StatusBadge stageId={stageId} variant="hired" icon={Trophy} label={t('hiredStatus')} />
       {candidate.startDate && (
         <StatusBadge
           stageId={stageId}
           variant="standard"
           icon={Calendar}
-          label={`Início: ${new Date(candidate.startDate).toLocaleDateString("pt-BR", {
+          label={t('startDateLabel', { date: new Date(candidate.startDate).toLocaleDateString(locale, {
             day: "2-digit",
             month: "2-digit",
-          })}`}
+          }) })}
         />
       )}
       {candidate.sub_status && (
@@ -286,12 +290,12 @@ export function KanbanCardStatusBadges({
         icon={XCircle}
         label={
           candidate.rejectionReason === "withdrew"
-            ? "Desistiu"
+            ? t('withdrew')
             : candidate.rejectionStage === "screening"
-            ? "Reprovado triagem"
+            ? t('rejectedScreening')
             : candidate.rejectionStage === "interview"
-            ? "Reprovado entrevista"
-            : "Reprovado"
+            ? t('rejectedInterview')
+            : t('rejectedStatus')
         }
       />
       {candidate.feedbackSent && (
@@ -299,7 +303,7 @@ export function KanbanCardStatusBadges({
           stageId={stageId}
           variant="dark"
           icon={CheckCircle}
-          label="Feedback enviado"
+          label={t('feedbackSent')}
         />
       )}
     </>
@@ -312,14 +316,14 @@ export function KanbanCardStatusBadges({
         stageId={stageId}
         variant="rejected"
         icon={XCircle}
-        label="Proposta recusada"
+        label={t('proposalDeclined')}
       />
       {candidate.feedbackSent && (
         <StatusBadge
           stageId={stageId}
           variant="dark"
           icon={CheckCircle}
-          label="Feedback enviado"
+          label={t('feedbackSent')}
         />
       )}
     </>

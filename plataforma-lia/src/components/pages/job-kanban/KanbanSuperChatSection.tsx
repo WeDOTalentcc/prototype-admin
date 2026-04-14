@@ -7,6 +7,7 @@
 
 import React from "react"
 import dynamic from "next/dynamic"
+import { useTranslations } from "next-intl"
 import { LoadingModal } from "@/components/ui/loading"
 import { Button } from "@/components/ui/button"
 import { ChevronRight, Brain, Users } from "lucide-react"
@@ -19,6 +20,7 @@ interface KanbanSuperChatSectionProps {
 }
 
 export function KanbanSuperChatSection({ state }: KanbanSuperChatSectionProps) {
+  const t = useTranslations('kanban')
   const {
     liaPromptValue, liaMessages, candidatesData,
     setShowSuperChat, setUserCollapsedLIA,
@@ -45,7 +47,7 @@ export function KanbanSuperChatSection({ state }: KanbanSuperChatSectionProps) {
               content: msg.content,
               timestamp: new Date(msg.timestamp)
             }))}
-            contextTitle="Análise de Candidatos"
+            contextTitle={t('candidateAnalysis')}
             inline={true}
             mode="general"
             onReturnToLateral={returnToExpandedPrompt}
@@ -62,7 +64,7 @@ export function KanbanSuperChatSection({ state }: KanbanSuperChatSectionProps) {
             size="sm"
             onClick={() => setShowSuperChat(false)}
             className="h-8 w-8 p-0 rounded-md hover:bg-lia-bg-tertiary"
-            title="Expandir visualização"
+            title={t('expandView')}
           >
             <ChevronRight className="w-4 h-4 text-lia-text-tertiary" />
           </Button>
@@ -92,7 +94,7 @@ export function KanbanSuperChatSection({ state }: KanbanSuperChatSectionProps) {
               className="text-micro font-medium text-lia-text-secondary tracking-wide"
               style={{ writingMode: 'vertical-rl', textOrientation: 'mixed' }}
               aria-live="polite" aria-atomic="true">
-              Candidatos ({Object.values(candidatesData).flat().length})
+              {t('candidatesCount', { count: Object.values(candidatesData).flat().length })}
             </span>
           </div>
         </div>

@@ -17,6 +17,7 @@ import {
   Clock, Brain, Mic, Volume2, X, RefreshCw
 } from"lucide-react"
 import { liaApi, VoiceScreeningStatusResponse, WSICompetency, StartVoiceScreeningRequest } from"@/services/lia-api"
+import { useTranslations } from "next-intl"
 
 interface WSIVoiceScreeningStatusProps {
   isOpen: boolean
@@ -40,62 +41,6 @@ interface WSIVoiceScreeningStatusProps {
 
 type VoiceStatus = 'idle' | 'initiating' | 'calling' | 'in_progress' | 'processing' | 'completed' | 'failed'
 
-const STATUS_CONFIG: Record<VoiceStatus, { 
-  icon: React.ElementType
-  label: string
-  color: string
-  bgColor: string
-  animate?: boolean
-}> = {
-  idle: {
-    icon: Phone,
-    label: 'Pronto para iniciar',
-    color: 'text-lia-text-primary',
-    bgColor: 'bg-lia-bg-tertiary'
-  },
-  initiating: {
-    icon: Loader2,
-    label: 'Iniciando chamada...',
-    color: 'text-lia-text-secondary',
-    bgColor: 'bg-lia-bg-tertiary',
-    animate: true
-  },
-  calling: {
-    icon: PhoneCall,
-    label: 'Chamando candidato...',
-    color: 'text-status-warning',
-    bgColor: 'bg-status-warning/10 dark:bg-status-warning/20',
-    animate: true
-  },
-  in_progress: {
-    icon: Mic,
-    label: 'Triagem em andamento',
-    color: 'text-status-success',
-    bgColor: 'bg-status-success/10 dark:bg-status-success/20',
-    animate: true
-  },
-  processing: {
-    icon: Brain,
-    label: 'Processando respostas...',
-    color: 'text-wedo-purple',
-    bgColor: 'bg-wedo-purple/10 dark:bg-wedo-purple/20',
-    animate: true
-  },
-  completed: {
-    icon: CheckCircle,
-    label: 'Triagem concluída',
-    color: 'text-status-success',
-    bgColor: 'bg-status-success/15 dark:bg-status-success/30'
-  },
-  failed: {
-    icon: AlertCircle,
-    label: 'Erro na triagem',
-    color: 'text-status-error',
-    bgColor: 'bg-status-error/10 dark:bg-status-error/20'
-  }
-}
-
-
 interface WSIScreeningResult {
   overall_wsi: number
   technical_wsi: number
@@ -115,6 +60,7 @@ export function WSIVoiceScreeningStatus({
   autoStart = false,
   voipSessionId,
 }: WSIVoiceScreeningStatusProps) {
+  const t = useTranslations('screening.wsi')
   const isVoipMode = Boolean(voipSessionId)
   const [status, setStatus] = useState<VoiceStatus>(
     voipSessionId ? 'in_progress' : 'idle'
@@ -127,6 +73,61 @@ export function WSIVoiceScreeningStatus({
   const [result, setResult] = useState<WSIScreeningResult | null>(null)
   const [elapsedTime, setElapsedTime] = useState(0)
   const [questionsCount, setQuestionsCount] = useState(0)
+
+  const STATUS_CONFIG: Record<VoiceStatus, { 
+    icon: React.ElementType
+    label: string
+    color: string
+    bgColor: string
+    animate?: boolean
+  }> = {
+    idle: {
+      icon: Phone,
+      label: t('voiceScreening.statusIdle'),
+      color: 'text-lia-text-primary',
+      bgColor: 'bg-lia-bg-tertiary'
+    },
+    initiating: {
+      icon: Loader2,
+      label: t('voiceScreening.statusInitiating'),
+      color: 'text-lia-text-secondary',
+      bgColor: 'bg-lia-bg-tertiary',
+      animate: true
+    },
+    calling: {
+      icon: PhoneCall,
+      label: t('voiceScreening.statusCalling'),
+      color: 'text-status-warning',
+      bgColor: 'bg-status-warning/10 dark:bg-status-warning/20',
+      animate: true
+    },
+    in_progress: {
+      icon: Mic,
+      label: t('voiceScreening.statusInProgress'),
+      color: 'text-status-success',
+      bgColor: 'bg-status-success/10 dark:bg-status-success/20',
+      animate: true
+    },
+    processing: {
+      icon: Brain,
+      label: t('voiceScreening.statusProcessing'),
+      color: 'text-wedo-purple',
+      bgColor: 'bg-wedo-purple/10 dark:bg-wedo-purple/20',
+      animate: true
+    },
+    completed: {
+      icon: CheckCircle,
+      label: t('voiceScreening.statusCompleted'),
+      color: 'text-status-success',
+      bgColor: 'bg-status-success/15 dark:bg-status-success/30'
+    },
+    failed: {
+      icon: AlertCircle,
+      label: t('voiceScreening.statusFailed'),
+      color: 'text-status-error',
+      bgColor: 'bg-status-error/10 dark:bg-status-error/20'
+    }
+  }
 
   useEffect(() => {
     if (voipSessionId && voipSessionId !== sessionId) {
@@ -162,12 +163,12 @@ export function WSIVoiceScreeningStatus({
           break
         case 'failed':
           setStatus('failed')
-          setError('A chamada falhou ou foi encerrada')
+          setError(t('voiceScreening.callFailed'))
           break
       }
     } catch (err) {
     }
-  }, [sessionId, onComplete])
+  }, [sessionId, onComplete, t])
 
   useEffect(() => {
     let intervalId: NodeJS.Timeout | null = null
@@ -208,7 +209,7 @@ export function WSIVoiceScreeningStatus({
     }
 
     if (!candidate.phone) {
-      setError('Candidato não possui telefone cadastrado')
+      setError(t('voiceScreening.noPhoneRegistered'))
       setStatus('failed')
       return
     }
@@ -243,7 +244,7 @@ export function WSIVoiceScreeningStatus({
       setQuestionsCount(response.questions_generated)
       setStatus('calling')
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao iniciar chamada')
+      setError(err instanceof Error ? err.message : t('voiceScreening.errorStartingCall'))
       setStatus('failed')
     }
   }
@@ -277,7 +278,7 @@ export function WSIVoiceScreeningStatus({
               ? <Volume2 className="w-5 h-5 text-lia-text-secondary" />
               : <Phone className="w-5 h-5 text-lia-text-secondary" />
             }
-            Triagem por Voz WSI
+            {t('voiceScreening.title')}
             {isVoipMode && (
               <span className="text-xs font-normal text-lia-text-tertiary bg-lia-bg-tertiary px-1.5 py-0.5 rounded">
                 VoIP
@@ -310,7 +311,7 @@ export function WSIVoiceScreeningStatus({
                       </div>
                       {questionsCount > 0 && (
                         <p className="text-xs text-lia-text-tertiary">
-                          {questionsCount} perguntas preparadas
+                          {t('voiceScreening.questionsReady', { count: questionsCount })}
                         </p>
                       )}
                     </div>
@@ -318,13 +319,13 @@ export function WSIVoiceScreeningStatus({
 
                   {status === 'calling' && !isVoipMode && (
                     <p className="text-sm text-lia-text-tertiary mt-2">
-                      Ligando para {candidate.phone}...
+                      {t('voiceScreening.callingPhone', { phone: candidate.phone })}
                     </p>
                   )}
 
                   {isVoipMode && status === 'in_progress' && (
                     <p className="text-sm text-lia-text-tertiary mt-2">
-                      Candidato conectado via navegador (VoIP)
+                      {t('voiceScreening.candidateConnectedVoIP')}
                     </p>
                   )}
 
@@ -332,7 +333,7 @@ export function WSIVoiceScreeningStatus({
                     <div className="mt-3 w-48">
                       <Progress value={75} className="h-1.5" />
                       <p className="text-xs text-lia-text-tertiary mt-1">
-                        Analisando respostas com IA
+                        {t('voiceScreening.analyzingWithAI')}
                       </p>
                     </div>
                   )}
@@ -368,11 +369,11 @@ export function WSIVoiceScreeningStatus({
                     <div className="grid grid-cols-2 gap-3">
                       <div className="p-2 bg-lia-bg-primary rounded-xl text-center">
                         <div className="text-lg font-semibold">{result.technical_wsi.toFixed(1)}</div>
-                        <div className="text-xs text-lia-text-tertiary">Técnico</div>
+                        <div className="text-xs text-lia-text-tertiary">{t('voiceScreening.technical')}</div>
                       </div>
                       <div className="p-2 bg-lia-bg-primary rounded-xl text-center">
                         <div className="text-lg font-semibold">{result.behavioral_wsi.toFixed(1)}</div>
-                        <div className="text-xs text-lia-text-tertiary">Comportamental</div>
+                        <div className="text-xs text-lia-text-tertiary">{t('voiceScreening.behavioral')}</div>
                       </div>
                     </div>
                   </div>
@@ -386,27 +387,27 @@ export function WSIVoiceScreeningStatus({
           {status === 'idle' && !isVoipMode && (
             <Button onClick={startVoiceScreening} className="flex-1 gap-2 hover:bg-lia-interactive-hover transition-colors cursor-pointer">
               <PhoneCall className="w-4 h-4" />
-              Iniciar Chamada
+              {t('voiceScreening.startCall')}
             </Button>
           )}
 
           {status === 'failed' && !isVoipMode && (
             <Button onClick={startVoiceScreening} variant="outline" className="flex-1 gap-2 hover:bg-lia-interactive-hover transition-colors cursor-pointer">
               <RefreshCw className="w-4 h-4" />
-              Tentar novamente
+              {t('voiceScreening.tryAgain')}
             </Button>
           )}
 
           {['initiating', 'calling', 'in_progress', 'processing'].includes(status) && (
             <Button variant="destructive" onClick={handleClose} className="flex-1 gap-2 hover:bg-lia-interactive-hover transition-colors cursor-pointer">
               <PhoneOff className="w-4 h-4" />
-              Cancelar
+              {t('voiceScreening.cancel')}
             </Button>
           )}
 
           {status === 'completed' && (
             <Button onClick={handleClose} className="flex-1 hover:bg-lia-interactive-hover transition-colors cursor-pointer">
-              Fechar
+              {t('voiceScreening.close')}
             </Button>
           )}
 

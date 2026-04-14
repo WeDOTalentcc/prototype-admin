@@ -19,6 +19,7 @@ import {
   ChevronRight, MessageSquare, Target, X, 
   BarChart3, FileText, User, TrendingUp, Award
 } from"lucide-react"
+import { useTranslations } from "next-intl"
 
 interface WSITextScreeningModalProps {
   isOpen: boolean
@@ -97,31 +98,6 @@ const BLOOM_COLORS: Record<number, string> = {
   6: ''
 }
 
-const BLOOM_NAMES: Record<number, string> = {
-  1: 'Lembrar',
-  2: 'Compreender',
-  3: 'Aplicar',
-  4: 'Analisar',
-  5: 'Avaliar',
-  6: 'Criar'
-}
-
-const DREYFUS_NAMES: Record<number, string> = {
-  1: 'Novato',
-  2: 'Iniciante Avançado',
-  3: 'Competente',
-  4: 'Proficiente',
-  5: 'Expert'
-}
-
-const BIG_FIVE_LABELS: Record<string, { label: string; color?: string }> = {
-  openness: { label: 'Abertura' },
-  conscientiousness: { label: 'Conscienciosidade' },
-  extraversion: { label: 'Extroversão', color: 'var(--status-success)' },
-  agreeableness: { label: 'Amabilidade', color: 'var(--wedo-orange)' },
-  neuroticism: { label: 'Estabilidade', color: 'var(--status-error)' }
-}
-
 export function WSITextScreeningModal({
   isOpen,
   onClose,
@@ -131,10 +107,36 @@ export function WSITextScreeningModal({
   jobTitle,
   onComplete
 }: WSITextScreeningModalProps) {
-  // Normalize jobVacancy - support both object and separate props
+  const t = useTranslations('screening.wsi')
+
+  const BLOOM_NAMES: Record<number, string> = {
+    1: t('textScreening.bloomNames.1'),
+    2: t('textScreening.bloomNames.2'),
+    3: t('textScreening.bloomNames.3'),
+    4: t('textScreening.bloomNames.4'),
+    5: t('textScreening.bloomNames.5'),
+    6: t('textScreening.bloomNames.6')
+  }
+
+  const DREYFUS_NAMES: Record<number, string> = {
+    1: t('textScreening.dreyfusNames.1'),
+    2: t('textScreening.dreyfusNames.2'),
+    3: t('textScreening.dreyfusNames.3'),
+    4: t('textScreening.dreyfusNames.4'),
+    5: t('textScreening.dreyfusNames.5')
+  }
+
+  const BIG_FIVE_LABELS: Record<string, { label: string; color?: string }> = {
+    openness: { label: t('textScreening.bigFiveLabels.openness') },
+    conscientiousness: { label: t('textScreening.bigFiveLabels.conscientiousness') },
+    extraversion: { label: t('textScreening.bigFiveLabels.extraversion'), color: 'var(--status-success)' },
+    agreeableness: { label: t('textScreening.bigFiveLabels.agreeableness'), color: 'var(--wedo-orange)' },
+    neuroticism: { label: t('textScreening.bigFiveLabels.neuroticism'), color: 'var(--status-error)' }
+  }
+
   const effectiveJobVacancy = jobVacancy || {
     id: jobVacancyId || '',
-    title: jobTitle || 'Vaga',
+    title: jobTitle || t('textScreening.jobDefault'),
     requirements: [],
     skills: []
   }
@@ -188,7 +190,7 @@ export function WSITextScreeningModal({
       setQuestions(data.questions)
       setStep('questions')
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao iniciar triagem')
+      setError(err instanceof Error ? err.message : t('textScreening.errorStarting'))
       setStep('error')
     }
   }
@@ -209,7 +211,7 @@ export function WSITextScreeningModal({
         await completeScreening()
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao enviar resposta')
+      setError(err instanceof Error ? err.message : t('textScreening.errorSendingResponse'))
     } finally {
       setIsSubmitting(false)
     }
@@ -245,7 +247,7 @@ export function WSITextScreeningModal({
       setStep('completed')
       onComplete?.(wsiResult)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao calcular score')
+      setError(err instanceof Error ? err.message : t('textScreening.errorCalculatingScore'))
       setStep('error')
     }
   }
@@ -280,7 +282,7 @@ export function WSITextScreeningModal({
       <div className="bg-lia-bg-primary rounded-xl p-4 border border-lia-border-subtle">
         <h4 className="text-sm font-medium mb-3 flex items-center gap-2">
           <BarChart3 className="w-4 h-4 text-lia-text-secondary" />
-          Matriz Bloom × Dreyfus
+          {t('textScreening.bloomDreyfusMatrix')}
         </h4>
         <div className="grid grid-cols-6 gap-1 text-micro">
           {[5, 4, 3, 2, 1].map(d => (
@@ -314,8 +316,8 @@ export function WSITextScreeningModal({
           </div>
         </div>
         <div className="flex justify-between text-micro text-lia-text-secondary mt-2">
-          <span>Cognitivo: {result.cognitive_level.name_pt}</span>
-          <span>Proficiência: {result.proficiency_level.name_pt}</span>
+          <span>{t('textScreening.cognitive', { name: result.cognitive_level.name_pt })}</span>
+          <span>{t('textScreening.proficiencyLabel', { name: result.proficiency_level.name_pt })}</span>
         </div>
       </div>
     )
@@ -331,7 +333,7 @@ export function WSITextScreeningModal({
       <div className="bg-lia-bg-primary rounded-xl p-4 border border-lia-border-subtle">
         <h4 className="text-sm font-medium mb-3 flex items-center gap-2">
           <User className="w-4 h-4 text-lia-text-secondary" />
-          Perfil Big Five
+          {t('textScreening.bigFiveProfile')}
         </h4>
         <div className="space-y-2">
           {traitEntries.map(([key, value]) => {
@@ -363,7 +365,7 @@ export function WSITextScreeningModal({
       <div className="bg-lia-bg-primary rounded-xl p-4 border border-lia-border-subtle">
         <h4 className="text-sm font-medium mb-3 flex items-center gap-2">
           <Award className="w-4 h-4 text-lia-text-secondary" />
-          Arquétipos Identificados
+          {t('textScreening.archetypesIdentified')}
         </h4>
         <div className="space-y-2">
           {result.archetype_indicators.slice(0, 3).map((arch, idx) => (
@@ -396,7 +398,7 @@ export function WSITextScreeningModal({
               </div>
               <div>
                 <DialogTitle className="text-sm font-semibold text-lia-text-primary flex items-center gap-2">
-                  Triagem WSI (Texto)
+                  {t('textScreening.title')}
                   <Badge variant="outline" className="text-micro font-normal">
                     Bloom + Dreyfus + Big Five
                   </Badge>
@@ -408,7 +410,7 @@ export function WSITextScreeningModal({
             </div>
             {step === 'questions' && (
               <Badge className="bg-lia-bg-tertiary text-lia-text-primary border-lia-border-subtle">
-                {currentQuestionIndex + 1} de {questions.length}
+                {t('textScreening.ofQuestions', { current: currentQuestionIndex + 1, total: questions.length })}
               </Badge>
             )}
           </div>
@@ -428,7 +430,7 @@ export function WSITextScreeningModal({
             <div className="flex flex-col items-center justify-center py-12 space-y-4" role="status" aria-live="polite" aria-label="Carregando...">
               <Loader2 className="w-8 h-8 text-lia-text-secondary animate-spin motion-reduce:animate-none" />
               <p className="text-sm text-lia-text-primary">
-                Gerando perguntas baseadas em Bloom's Taxonomy...
+                {t('textScreening.generatingQuestions')}
               </p>
             </div>
           )}
@@ -437,14 +439,14 @@ export function WSITextScreeningModal({
             <div className="flex flex-col items-center justify-center py-12 space-y-4">
               <AlertCircle className="w-12 h-12 text-status-error" />
               <div className="text-center">
-                <p className="font-medium text-status-error">Erro na triagem</p>
+                <p className="font-medium text-status-error">{t('textScreening.screeningError')}</p>
                 <p className="text-sm text-lia-text-primary mt-1">{error}</p>
               </div>
               <Button 
                 onClick={initializeScreening} 
                 className="border border-lia-border-subtle bg-lia-bg-primary text-lia-text-primary hover:bg-lia-interactive-hover"
               >
-                Tentar novamente
+                {t('textScreening.tryAgain')}
               </Button>
             </div>
           )}
@@ -504,9 +506,9 @@ export function WSITextScreeningModal({
                 <Brain className="w-5 h-5 text-status-warning absolute -top-1 -right-1 animate-pulse motion-reduce:animate-none" />
               </div>
               <div className="text-center">
-                <p className="font-medium text-lia-text-primary">Analisando com Claude AI...</p>
+                <p className="font-medium text-lia-text-primary">{t('textScreening.analyzingWithAI')}</p>
                 <p className="text-sm text-lia-text-primary mt-1">
-                  Avaliando níveis Bloom, Dreyfus e indicadores Big Five
+                  {t('textScreening.evaluatingLevels')}
                 </p>
               </div>
             </div>
@@ -516,7 +518,7 @@ export function WSITextScreeningModal({
             <div className="space-y-4">
               <div className="text-center py-4">
                 <CheckCircle className="w-12 h-12 text-status-success mx-auto mb-3" />
-                <h3 className="text-sm font-semibold text-lia-text-primary">Triagem WSI Concluída</h3>
+                <h3 className="text-sm font-semibold text-lia-text-primary">{t('textScreening.screeningCompleted')}</h3>
               </div>
 
               <Card className="bg-lia-bg-primary border-lia-border-subtle">
@@ -544,12 +546,12 @@ export function WSITextScreeningModal({
                     <div className="text-center p-3 bg-lia-bg-primary rounded-xl border border-lia-border-subtle">
                       <Target className="w-5 h-5 text-lia-text-secondary mx-auto mb-1" />
                       <div className="text-lg font-semibold text-lia-text-primary">{BLOOM_NAMES[result.cognitive_level.level]}</div>
-                      <div className="text-xs text-lia-text-primary">Nível Cognitivo (B{result.cognitive_level.level})</div>
+                      <div className="text-xs text-lia-text-primary">{t('textScreening.cognitiveLevel', { level: result.cognitive_level.level })}</div>
                     </div>
                     <div className="text-center p-3 bg-lia-bg-primary rounded-xl border border-lia-border-subtle">
                       <TrendingUp className="w-5 h-5 text-lia-text-secondary mx-auto mb-1" />
                       <div className="text-lg font-semibold text-lia-text-primary">{DREYFUS_NAMES[result.proficiency_level.level]}</div>
-                      <div className="text-xs text-lia-text-primary">Proficiência (D{result.proficiency_level.level})</div>
+                      <div className="text-xs text-lia-text-primary">{t('textScreening.proficiency', { level: result.proficiency_level.level })}</div>
                     </div>
                   </div>
                 </CardContent>
@@ -564,7 +566,7 @@ export function WSITextScreeningModal({
                   <CardContent className="p-4">
                     <h4 className="text-sm font-medium mb-2 flex items-center gap-2 text-lia-text-primary">
                       <MessageSquare className="w-4 h-4 text-lia-text-secondary" />
-                      Resumo da Avaliação
+                      {t('textScreening.evaluationSummary')}
                     </h4>
                     <p className="text-sm text-lia-text-primary">
                       {result.summary}
@@ -576,7 +578,7 @@ export function WSITextScreeningModal({
               {result.recommendations?.length > 0 && (
                 <Card className="bg-lia-bg-primary border border-lia-border-subtle">
                   <CardContent className="p-4">
-                    <h4 className="text-sm font-medium mb-2 text-lia-text-primary">Recomendações</h4>
+                    <h4 className="text-sm font-medium mb-2 text-lia-text-primary">{t('textScreening.recommendations')}</h4>
                     <ul className="text-sm text-lia-text-primary space-y-1">
                       {result.recommendations.map((rec, idx) => (
                         <li key={idx} className="flex items-start gap-2">
@@ -598,7 +600,7 @@ export function WSITextScreeningModal({
               <Textarea
                 value={currentAnswer}
                 onChange={(e) => setCurrentAnswer(e.target.value)}
-                placeholder="Digite a resposta do candidato..."
+                placeholder={t('textScreening.candidateResponsePlaceholder')}
                 className="min-h-20 resize-none border-lia-border-subtle focus:border-lia-border-medium focus:ring-lia-btn-primary-bg/20"
                 disabled={isSubmitting}
                 onKeyDown={(e) => {
@@ -610,7 +612,7 @@ export function WSITextScreeningModal({
             </div>
             <div className="flex items-center justify-between mt-3">
               <span className="text-xs text-lia-text-secondary">
-                Ctrl + Enter para enviar
+                {t('textScreening.ctrlEnterToSend')}
               </span>
               <Button 
                 onClick={handleSubmitAnswer}
@@ -621,12 +623,12 @@ export function WSITextScreeningModal({
                   <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none" />
                 ) : currentQuestionIndex === questions.length - 1 ? (
                   <>
-                    Finalizar e Analisar
+                    {t('textScreening.finalizeAndAnalyze')}
                     <Brain className="w-4 h-4 text-wedo-cyan" />
                   </>
                 ) : (
                   <>
-                    Próxima
+                    {t('textScreening.next')}
                     <ChevronRight className="w-4 h-4" />
                   </>
                 )}
@@ -641,7 +643,7 @@ export function WSITextScreeningModal({
               onClick={handleClose} 
               className="w-full h-9 px-4 text-xs font-medium bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text"
             >
-              Fechar
+              {t('textScreening.close')}
             </Button>
           </div>
         )}

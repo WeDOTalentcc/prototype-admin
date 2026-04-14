@@ -10,6 +10,7 @@
 import React, { lazy, Suspense } from "react"
 import { FileUp, Loader2 } from "lucide-react"
 import { LiaPromptHeader } from "@/components/ui/lia-prompt-header"
+import { useTranslations } from "next-intl"
 import type { ParsedEntities } from "@/components/search/smart-search-input"
 import type { SearchMode, SearchSource, SearchMetadata } from "@/components/search/smart-search-input"
 
@@ -73,43 +74,40 @@ export function CandidateSearchBar({
   onRequireEmailsChange,
   onRequirePhoneNumbersChange,
 }: CandidateSearchBarProps) {
+  const t = useTranslations('candidates')
   return (
     <div data-testid="candidate-search-bar" className="min-h-[60vh] flex flex-col items-center justify-center py-8">
       <div className="w-full max-w-3xl mx-auto flex flex-col">
         <LiaPromptHeader
-          title={isSearchActive ? 'LIA está buscando...' : 'Vamos buscar de forma inteligente?'}
+          title={isSearchActive ? t('searchBar.searchingTitle') : t('searchBar.defaultTitle')}
           isAnimating={isSearchActive}
         />
 
-        {/* Loading Animation */}
         <Suspense fallback={null}>
           <SearchLoadingAnimation isActive={isSearchActive} />
         </Suspense>
 
-        {/* Smart Search Input com CV Dropzone */}
         <div
           className="w-full relative"
           onDrop={onDrop}
           onDragOver={onDragOver}
           onDragLeave={onDragLeave}
         >
-          {/* CV Drop Overlay */}
           {isDroppingCV && (
             <div className="absolute inset-0 z-50 bg-lia-btn-primary-bg/10 border-2 border-dashed border-lia-btn-primary-bg dark:border-lia-border-subtle rounded-xl flex items-center justify-center">
               <div className="text-center">
                 <FileUp className="w-12 h-12 text-lia-text-primary mx-auto mb-2" />
-                <p className="text-sm font-medium text-lia-text-primary">Solte o CV aqui</p>
-                <p className="text-xs text-lia-text-primary">PDF, DOC, DOCX ou TXT</p>
+                <p className="text-sm font-medium text-lia-text-primary">{t('searchBar.dropCvHere')}</p>
+                <p className="text-xs text-lia-text-primary">{t('searchBar.fileFormats')}</p>
               </div>
             </div>
           )}
 
-          {/* CV Upload Loading */}
           {cvUploadLoading && (
-            <div className="absolute inset-0 z-50 bg-lia-bg-primary/90 dark:bg-lia-bg-primary/90 rounded-xl flex items-center justify-center" role="status" aria-live="polite" aria-label="Carregando...">
-              <div className="text-center" role="status" aria-live="polite" aria-label="Carregando...">
+            <div className="absolute inset-0 z-50 bg-lia-bg-primary/90 dark:bg-lia-bg-primary/90 rounded-xl flex items-center justify-center" role="status" aria-live="polite" aria-label={t('table.loadingAriaLabel')}>
+              <div className="text-center" role="status" aria-live="polite" aria-label={t('table.loadingAriaLabel')}>
                 <Loader2 className="w-8 h-8 text-lia-text-primary mx-auto mb-2 animate-spin motion-reduce:animate-none" />
-                <p className="text-sm font-medium text-lia-text-primary">Analisando CV...</p>
+                <p className="text-sm font-medium text-lia-text-primary">{t('searchBar.analyzingCv')}</p>
               </div>
             </div>
           )}
@@ -123,7 +121,7 @@ export function CandidateSearchBar({
               onOpenFilters={onOpenFilters}
               onGoToResults={onGoToResults}
               isLoading={isLoading}
-              placeholder="Ex: Desenvolvedores Python com 5+ anos em São Paulo..."
+              placeholder={t('searchBar.searchPlaceholder')}
               activeFiltersCount={activeFiltersCount}
               searchSource={searchSource}
               onSearchSourceChange={onSearchSourceChange}

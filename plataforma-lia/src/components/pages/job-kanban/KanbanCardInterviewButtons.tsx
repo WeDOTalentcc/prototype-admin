@@ -1,6 +1,8 @@
 "use client"
 
 import React from "react"
+import { useTranslations } from "next-intl"
+import { useLocale } from "next-intl"
 import {
   ThumbsUp,
   XCircle,
@@ -46,6 +48,8 @@ export function KanbanCardInterviewButtons({
   onRejectFromScreening,
   openTransition,
 }: KanbanCardInterviewButtonsProps) {
+  const t = useTranslations('kanban')
+  const locale = useLocale()
   return (
     <>
   {/* Container de Ações */}
@@ -65,7 +69,7 @@ export function KanbanCardInterviewButtons({
             }}
           >
             <ThumbsUp className="w-3 h-3" aria-hidden="true" />
-            <span>Aprovar</span>
+            <span>{t('approve')}</span>
           </button>
           <button
             className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 bg-status-error hover:bg-status-error text-white rounded-full text-micro font-medium transition-colors motion-reduce:transition-none"
@@ -75,7 +79,7 @@ export function KanbanCardInterviewButtons({
             }}
           >
             <XCircle className="w-3 h-3" aria-hidden="true" />
-            <span>Reprovar</span>
+            <span>{t('reject')}</span>
           </button>
         </div>
       )}
@@ -91,7 +95,7 @@ export function KanbanCardInterviewButtons({
             }}
           >
             <ThumbsUp className="w-3 h-3" aria-hidden="true" />
-            <span>Aprovar</span>
+            <span>{t('approve')}</span>
           </button>
           <button
             className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 bg-status-error hover:bg-status-error text-white rounded-full text-micro font-medium transition-colors motion-reduce:transition-none"
@@ -101,7 +105,7 @@ export function KanbanCardInterviewButtons({
             }}
           >
             <XCircle className="w-3 h-3" aria-hidden="true" />
-            <span>Reprovar</span>
+            <span>{t('reject')}</span>
           </button>
         </div>
       )}
@@ -124,15 +128,13 @@ export function KanbanCardInterviewButtons({
                   }
                   window.open(teamsUrl, "_blank")
                 }}
-                title={`Entrar na reunião - ${
-                  candidate.interviewDate ||
-                  new Date(String(candidate.agendada)).toLocaleDateString("pt-BR")
-                }`}
+                title={t('joinMeeting', { date: candidate.interviewDate ||
+                  new Date(String(candidate.agendada)).toLocaleDateString(locale) })}
               >
                 <Video className="w-3 h-3 text-lia-text-secondary" />
                 <span>
                   {candidate.interviewDate ||
-                    new Date(String(candidate.agendada)).toLocaleDateString("pt-BR", {
+                    new Date(String(candidate.agendada)).toLocaleDateString(locale, {
                       day: "numeric",
                       month: "short",
                       hour: "2-digit",
@@ -146,22 +148,22 @@ export function KanbanCardInterviewButtons({
                   e.stopPropagation()
                   const dateStr =
                     candidate.interviewDate ||
-                    new Date(String(candidate.agendada)).toLocaleDateString("pt-BR", {
+                    new Date(String(candidate.agendada)).toLocaleDateString(locale, {
                       day: "numeric",
                       month: "long",
                       hour: "2-digit",
                       minute: "2-digit",
                     })
                   setTransitionInitialPrompt(
-                    `O recrutador quer alterar o horário da entrevista de ${candidate.name} agendada para ${dateStr}. Peça a nova data e horário preferido e confirme o reagendamento com o candidato.`
+                    t('reschedulePrompt', { name: candidate.name, date: dateStr })
                   )
                   setTransitionInterviewAlert({ name: candidate.name, date: dateStr })
                   openTransition([candidate], stageId, stageId)
                 }}
-                title="Alterar horário da entrevista"
+                title={t('rescheduleInterview')}
               >
                 <Calendar className="w-3 h-3" />
-                <span>Alterar</span>
+                <span>{t('reschedule')}</span>
               </button>
               <button
                 className="flex-shrink-0 flex items-center justify-center gap-1 px-2 py-1.5 bg-status-error/10 hover:bg-status-error/15 text-status-error border border-status-error/30 rounded-full text-micro font-medium transition-colors motion-reduce:transition-none"
@@ -169,23 +171,23 @@ export function KanbanCardInterviewButtons({
                   e.stopPropagation()
                   const dateStr =
                     candidate.interviewDate ||
-                    new Date(String(candidate.agendada)).toLocaleDateString("pt-BR", {
+                    new Date(String(candidate.agendada)).toLocaleDateString(locale, {
                       day: "numeric",
                       month: "long",
                       hour: "2-digit",
                       minute: "2-digit",
                     })
                   setTransitionInitialPrompt(
-                    `O recrutador quer cancelar a entrevista de ${candidate.name} agendada para ${dateStr}. Pergunte para qual etapa ele quer mover o candidato (ou se mantém na mesma) e confirme o cancelamento.`
+                    t('cancelPrompt', { name: candidate.name, date: dateStr })
                   )
                   setTransitionAllowStageSelection(true)
                   setTransitionInterviewAlert({ name: candidate.name, date: dateStr })
                   openTransition([candidate], stageId, stageId)
                 }}
-                title="Cancelar entrevista"
+                title={t('cancelInterview')}
               >
                 <XCircle className="w-3 h-3" />
-                <span>Cancelar</span>
+                <span>{t('cancelAction')}</span>
               </button>
             </>
           ) : (
@@ -200,7 +202,7 @@ export function KanbanCardInterviewButtons({
                 }}
               >
                 <AlertCircle className="w-3 h-3" />
-                <span>Urgência</span>
+                <span>{t('urgency')}</span>
               </button>
               <button
                 className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:bg-lia-btn-primary-bg dark:hover:bg-lia-btn-primary-hover rounded-full text-micro font-medium transition-colors motion-reduce:transition-none"
@@ -212,7 +214,7 @@ export function KanbanCardInterviewButtons({
                 }}
               >
                 <Calendar className="w-3 h-3" />
-                <span>Alterar Horário</span>
+                <span>{t('rescheduleTime')}</span>
               </button>
             </>
           )}
@@ -227,7 +229,7 @@ export function KanbanCardInterviewButtons({
           }}
         >
           <FileText className="w-3 h-3" />
-          <span>Gerenciar Proposta</span>
+          <span>{t('manageProposal')}</span>
         </button>
       )}
     </div>

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from"react"
+import { useTranslations } from "next-intl"
 import { Brain, X, Plus, Loader2, Edit, Bookmark, Search } from"lucide-react"
 import {
   Dialog,
@@ -48,6 +49,7 @@ export function PreviewSuggestionModal({
   onSetLiaPromptValue,
   onSetActiveSearchTab,
 }: PreviewSuggestionModalProps) {
+  const t = useTranslations('candidates.modals')
 const [previewTags, setPreviewTags] = useState<string[]>([])
   const [newPreviewTag, setNewPreviewTag] = useState("")
   const [isSavingPreviewArchetype, setIsSavingPreviewArchetype] = useState(false)
@@ -78,7 +80,7 @@ const [previewTags, setPreviewTags] = useState<string[]>([])
         <div className="space-y-4 py-2">
           <div>
             <label className="text-xs font-medium mb-2 block">
-              Critérios de busca
+              {t('searchCriteria')}
             </label>
             <div className="flex flex-wrap gap-2">
               {previewTags.map((tag, index) => (
@@ -101,7 +103,7 @@ const [previewTags, setPreviewTags] = useState<string[]>([])
 
           <div>
             <label className="text-xs font-medium mb-2 block">
-              Adicionar critério
+              {t('addCriteria')}
             </label>
             <div className="flex gap-2">
               <Input
@@ -114,7 +116,7 @@ const [previewTags, setPreviewTags] = useState<string[]>([])
                     setNewPreviewTag("")
                   }
                 }}
-                placeholder="Digite e pressione Enter..."
+                placeholder={t('typeAndPressEnter')}
                 className="text-sm"
               />
               <Button
@@ -140,14 +142,14 @@ const [previewTags, setPreviewTags] = useState<string[]>([])
             onClick={onClose}
             className="w-full sm:w-auto order-3 sm:order-1"
           >
-            Cancelar
+            {t('cancel')}
           </Button>
           <Button
             variant="outline"
             onClick={async () => {
               if (!previewSuggestion) return
               if (previewTags.length === 0) {
-                toast.error("Nenhum critério", { description:"Adicione pelo menos um critério de busca para salvar o arquétipo." })
+                toast.error(t('noCriteria'), { description: t('addAtLeastOneCriteriaSave') })
                 return
               }
               setIsSavingPreviewArchetype(true)
@@ -183,7 +185,7 @@ const [previewTags, setPreviewTags] = useState<string[]>([])
                     filters: editedFilters,
                     tags: previewTags,
                   })
-                  toast.success("Arquétipo atualizado", { description: `"${previewSuggestion.name}" foi atualizado com sucesso.` })
+                  toast.success(t('archetypeUpdated'), { description: t('archetypeUpdatedDescription', { name: previewSuggestion.name }) })
                 } else {
                   const response = await fetch('/api/backend-proxy/search/archetypes/', {
                     method: 'POST',
@@ -218,11 +220,11 @@ const [previewTags, setPreviewTags] = useState<string[]>([])
                     createdAt: new Date()
                   }
                   onSaveArchetype(newArchetype)
-                  toast.success("Arquétipo salvo", { description: `"${previewSuggestion.name}" foi adicionado aos seus arquétipos.` })
+                  toast.success(t('archetypeSaved'), { description: t('archetypeSavedDescription', { name: previewSuggestion.name }) })
                 }
                 onClose()
               } catch {
-                toast.error("Erro ao salvar", { description:"Não foi possível salvar o arquétipo. Tente novamente." })
+                toast.error(t('saveError'), { description: t('saveErrorDescription') })
               } finally {
                 setIsSavingPreviewArchetype(false)
               }
@@ -233,17 +235,17 @@ const [previewTags, setPreviewTags] = useState<string[]>([])
             {isSavingPreviewArchetype ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin motion-reduce:animate-none" />
-                {previewingUserArchetype ? 'Atualizando...' : 'Salvando...'}
+                {previewingUserArchetype ? t('updating') : t('saving')}
               </>
             ) : previewingUserArchetype ? (
               <>
                 <Edit className="w-4 h-4 mr-2" />
-                Atualizar Arquétipo
+                {t('updateArchetype')}
               </>
             ) : (
               <>
                 <Bookmark className="w-4 h-4 mr-2" />
-                Salvar como Meu Arquétipo
+                {t('saveAsMyArchetype')}
               </>
             )}
           </Button>
@@ -251,7 +253,7 @@ const [previewTags, setPreviewTags] = useState<string[]>([])
             onClick={async () => {
               if (!previewSuggestion) return
               if (previewTags.length === 0) {
-                toast.error("Nenhum critério", { description:"Adicione pelo menos um critério de busca para executar." })
+                toast.error(t('noCriteria'), { description: t('addAtLeastOneCriteriaExecute') })
                 return
               }
               const editedFilters = buildFiltersFromTags(previewTags)
@@ -265,7 +267,7 @@ const [previewTags, setPreviewTags] = useState<string[]>([])
             className="w-full sm:w-auto order-1 sm:order-3 bg-lia-btn-primary-bg"
           >
             <Search className="w-4 h-4 mr-2" />
-            Usar Busca
+            {t('useSearch')}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -2,6 +2,7 @@
 
 import React from "react"
 import dynamic from "next/dynamic"
+import { useTranslations } from "next-intl"
 import { LoadingModal } from "@/components/ui/loading"
 import { Plus, Users } from "lucide-react"
 import { EmptyState } from "@/components/ui/empty-state"
@@ -17,6 +18,7 @@ interface KanbanBoardSectionProps {
 }
 
 export function KanbanBoardSection({ state }: KanbanBoardSectionProps) {
+  const t = useTranslations('kanban')
   const {
     dynamicStages, setDynamicStages, candidatesData, setCandidatesData,
     isLoadingCandidates, hasMounted, searchQuery,
@@ -149,7 +151,7 @@ export function KanbanBoardSection({ state }: KanbanBoardSectionProps) {
                     </div>
                   </div>
                   <div className="flex-1 flex items-center justify-center">
-                    <div className="animate-pulse motion-reduce:animate-none text-lia-text-disabled text-xs" suppressHydrationWarning>Carregando...</div>
+                    <div className="animate-pulse motion-reduce:animate-none text-lia-text-disabled text-xs" suppressHydrationWarning>{t('loadingEllipsis')}</div>
                   </div>
                 </div>
               ))}
@@ -162,10 +164,10 @@ export function KanbanBoardSection({ state }: KanbanBoardSectionProps) {
               return (
                 <EmptyState
                   icon={<Users />}
-                  title="Nenhum candidato neste funil ainda"
-                  description="Adicione candidatos ou busque no banco de talentos para iniciar o processo."
+                  title={t('emptyTitle')}
+                  description={t('emptyDescription')}
                   action={{
-                    label: "Buscar candidatos",
+                    label: t('searchCandidates'),
                     onClick: () => setShowAddToVacancyModal(true),
                   }}
                   className="h-64"
@@ -192,7 +194,7 @@ export function KanbanBoardSection({ state }: KanbanBoardSectionProps) {
                     <Plus className="w-5 h-5 text-lia-text-disabled group-hover:text-lia-text-secondary" />
                   </div>
                   <span className="text-xs text-lia-text-disabled group-hover:text-lia-text-secondary font-medium transition-colors motion-reduce:transition-none">
-                    Adicionar Coluna
+                    {t('addColumn')}
                   </span>
                 </div>
               </div>

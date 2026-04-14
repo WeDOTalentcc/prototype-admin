@@ -1,6 +1,7 @@
 "use client"
 
-import React, { useState } from"react"
+import React, { useState } from "react"
+import { useTranslations } from "next-intl"
 import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
 import { Badge } from"@/components/ui/badge"
 import { Button } from"@/components/ui/button"
@@ -11,14 +12,15 @@ import { textStyles, badgeStyles, formatScore, formatScorePercent } from"@/lib/d
 import type { Candidate } from"@/components/pages/candidates/types"
 
 export function CandidatePreviewPanel({ candidate, onClose }: { candidate: Candidate; onClose: () => void }) {
+    const t = useTranslations('candidates.preview')
 
     const [activeTab, setActiveTab] = useState('overview')
 
     const tabs = [
-      { id: 'overview', label: 'Visão Geral', icon: User },
-      { id: 'experience', label: 'Experiência', icon: Briefcase },
-      { id: 'skills', label: 'Habilidades', icon: Star },
-      { id: 'contact', label: 'Contato', icon: MessageSquare }
+      { id: 'overview', label: t('tabs.overview'), icon: User },
+      { id: 'experience', label: t('tabs.experience'), icon: Briefcase },
+      { id: 'skills', label: t('tabs.skills'), icon: Star },
+      { id: 'contact', label: t('tabs.contact'), icon: MessageSquare }
     ]
 
     const renderTabContent = () => {
@@ -27,37 +29,37 @@ export function CandidatePreviewPanel({ candidate, onClose }: { candidate: Candi
           return (
             <div className="space-y-6">
               <div>
-                <h4 className="text-xs font-semibold text-lia-text-primary mb-2">Informações Básicas</h4>
+                <h4 className="text-xs font-semibold text-lia-text-primary mb-2">{t('basicInfo')}</h4>
                 <div className="space-y-2">
                   <div className="flex justify-between items-center p-2 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl">
-                    <span className={`${textStyles.bodySmall}`}>Cargo:</span>
+                    <span className={`${textStyles.bodySmall}`}>{t('position')}</span>
                     <span className={`${textStyles.label} text-lia-text-primary`}>{candidate.position}</span>
                   </div>
                   <div className="flex justify-between items-center p-2 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl">
-                    <span className={`${textStyles.bodySmall}`}>Localização:</span>
+                    <span className={`${textStyles.bodySmall}`}>{t('locationLabel')}</span>
                     <span className={`${textStyles.label} text-lia-text-primary`}>{candidate.location}</span>
                   </div>
                   <div className="flex justify-between items-center p-2 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl">
-                    <span className={`${textStyles.bodySmall}`}>Status:</span>
+                    <span className={`${textStyles.bodySmall}`}>{t('statusLabel')}</span>
                     <Badge className={`${
                       candidate.status === 'active' ? badgeStyles.success :
                       candidate.status === 'prospect' ? badgeStyles.info :
                       candidate.status === 'interview' ? badgeStyles.warning :
                       badgeStyles.default
                     } px-2 py-0.5`}>
-                      {candidate.status === 'active' ? 'Ativo' :
-                       candidate.status === 'prospect' ? 'Prospect' :
-                       candidate.status === 'interview' ? 'Entrevista' : 'Contratado'}
+                      {candidate.status === 'active' ? t('statusActive') :
+                       candidate.status === 'prospect' ? t('statusProspect') :
+                       candidate.status === 'interview' ? t('statusInterview') : t('statusHired')}
                     </Badge>
                   </div>
                 </div>
               </div>
 
               <div>
-                <h4 className="text-xs font-semibold text-lia-text-primary mb-2">Score LIA</h4>
+                <h4 className="text-xs font-semibold text-lia-text-primary mb-2">{t('scoreLia')}</h4>
                 <div className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary p-3 rounded-xl">
                   <div className="flex items-center justify-between mb-2">
-                    <span className={`${textStyles.label}`}>Compatibilidade</span>
+                    <span className={`${textStyles.label}`}>{t('compatibility')}</span>
                     <span className="text-base font-bold text-lia-text-primary">{formatScorePercent(candidate.score)}</span>
                   </div>
                   <div className="w-full bg-lia-interactive-active rounded-full h-1.5">
@@ -67,7 +69,7 @@ export function CandidatePreviewPanel({ candidate, onClose }: { candidate: Candi
                     ></div>
                   </div>
                   <div className={`${textStyles.description} mt-1`}>
-                    Score baseado em habilidades, experiência e aderência cultural
+                    {t('scoreDescription')}
                   </div>
                   <div className="mt-3 pt-2 border-t border-lia-border-subtle dark:border-lia-border-subtle">
                     <LIAFeedbackWidget
@@ -87,17 +89,17 @@ export function CandidatePreviewPanel({ candidate, onClose }: { candidate: Candi
           return (
             <div className="space-y-4">
               <div>
-                <h4 className="text-xs font-semibold text-lia-text-primary mb-2">Experiência Profissional</h4>
+                <h4 className="text-xs font-semibold text-lia-text-primary mb-2">{t('professionalExperience')}</h4>
                 <div className="space-y-3">
                   <div className="border-l-4 border-wedo-green pl-3 py-2 bg-wedo-green/10 dark:bg-wedo-green/20 rounded-r-lg">
                     <div className={`${textStyles.label} text-lia-text-primary`}>
                       Senior Developer
                     </div>
                     <div className={`${textStyles.bodySmall} text-wedo-green dark:text-wedo-green`}>
-                      Tech Corp • 2021 - Atual
+                      Tech Corp • 2021 - {t('current')}
                     </div>
                     <div className={`${textStyles.bodySmall} mt-1`}>
-                      Desenvolvimento de aplicações web com React, Node.js e PostgreSQL
+                      {t('expDesc1')}
                     </div>
                   </div>
                   <div className="border-l-4 border-lia-border-default pl-3 py-2 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-r-lg">
@@ -108,7 +110,7 @@ export function CandidatePreviewPanel({ candidate, onClose }: { candidate: Candi
                       Startup XYZ • 2019 - 2021
                     </div>
                     <div className={`${textStyles.bodySmall} mt-1`}>
-                      Desenvolvimento fullstack e arquitetura de sistemas
+                      {t('expDesc2')}
                     </div>
                   </div>
                 </div>
@@ -120,7 +122,7 @@ export function CandidatePreviewPanel({ candidate, onClose }: { candidate: Candi
           return (
             <div className="space-y-4">
               <div>
-                <h4 className="text-xs font-semibold text-lia-text-primary mb-2">Habilidades Técnicas</h4>
+                <h4 className="text-xs font-semibold text-lia-text-primary mb-2">{t('technicalSkills')}</h4>
                 <div className="space-y-3">
                   <div>
                     <h5 className={`${textStyles.label} mb-1`}>Frontend</h5>
@@ -143,10 +145,10 @@ export function CandidatePreviewPanel({ candidate, onClose }: { candidate: Candi
                     </div>
                   </div>
                   <div>
-                    <h5 className="text-xs font-medium text-lia-text-primary mb-2">Soft Skills</h5>
+                    <h5 className="text-xs font-medium text-lia-text-primary mb-2">{t('softSkills')}</h5>
                     <div className="flex flex-wrap gap-2">
-                      {['Liderança', 'Comunicação', 'Trabalho em equipe', 'Resolução de problemas'].map((skill, index) => (
-                        <Badge key={skill} className="text-xs  border-0">
+                      {[t('skillLeadership'), t('skillCommunication'), t('skillTeamwork'), t('skillProblemSolving')].map((skill, index) => (
+                        <Badge key={index} className="text-xs  border-0">
                           {skill}
                         </Badge>
                       ))}
@@ -161,40 +163,40 @@ export function CandidatePreviewPanel({ candidate, onClose }: { candidate: Candi
           return (
             <div className="space-y-6">
               <div>
-                <h4 className="text-sm font-semibold text-lia-text-primary mb-3">Informações de Contato</h4>
+                <h4 className="text-sm font-semibold text-lia-text-primary mb-3">{t('contactInfo')}</h4>
                 <div className="space-y-3">
                   <div className="flex items-center gap-3 p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl">
                     <Mail className="w-4 h-4 text-lia-text-primary" />
                     <div>
                       <div className="text-sm font-medium text-lia-text-primary">{candidate.email}</div>
-                      <div className="text-xs text-lia-text-primary">Email principal</div>
+                      <div className="text-xs text-lia-text-primary">{t('primaryEmail')}</div>
                     </div>
                   </div>
                   <div className="flex items-center gap-3 p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl">
                     <Phone className="w-4 h-4 text-lia-text-primary" />
                     <div>
                       <div className="text-sm font-medium text-lia-text-primary">{candidate.phone}</div>
-                      <div className="text-xs text-lia-text-primary">Telefone/WhatsApp</div>
+                      <div className="text-xs text-lia-text-primary">{t('phoneWhatsapp')}</div>
                     </div>
                   </div>
                   <div className="flex items-center gap-3 p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl">
                     <Linkedin className="w-4 h-4 text-lia-text-secondary" />
                     <div>
-                      <div className="text-sm font-medium text-lia-text-primary">Ver perfil LinkedIn</div>
-                      <div className="text-xs text-lia-text-primary">Perfil profissional</div>
+                      <div className="text-sm font-medium text-lia-text-primary">{t('viewLinkedinProfile')}</div>
+                      <div className="text-xs text-lia-text-primary">{t('professionalProfile')}</div>
                     </div>
                   </div>
                 </div>
               </div>
 
               <div>
-                <h4 className="text-sm font-semibold text-lia-text-primary mb-3">Histórico de Interações</h4>
+                <h4 className="text-sm font-semibold text-lia-text-primary mb-3">{t('interactionHistory')}</h4>
                 <div className="space-y-2">
                   <div className="text-xs text-lia-text-primary p-2 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-xl">
-                    📧 Email enviado há 2 dias
+                    {t('emailSent2Days')}
                   </div>
                   <div className="text-xs text-lia-text-primary p-2 bg-status-success/10 dark:bg-status-success/20 rounded-md">
-                    📞 Ligação agendada para amanhã às 14h
+                    {t('callScheduledTomorrow')}
                   </div>
                 </div>
               </div>
@@ -238,14 +240,14 @@ export function CandidatePreviewPanel({ candidate, onClose }: { candidate: Candi
           <div className="grid grid-cols-3 gap-2 text-xs">
             <div className="text-center p-2 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl">
               <div className="font-semibold text-lia-text-primary">{formatScorePercent(candidate.score)}</div>
-              <div className="text-lia-text-primary">Score LIA</div>
+              <div className="text-lia-text-primary">{t('scoreLia')}</div>
             </div>
             <div className="text-center p-2 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl">
               <div className="font-semibold text-lia-text-primary flex items-center justify-center gap-1">
                 <Star className="w-3 h-3 text-status-warning" />
                 4.8
               </div>
-              <div className="text-lia-text-primary">Avaliação</div>
+              <div className="text-lia-text-primary">{t('evaluation')}</div>
             </div>
             <div className="text-center p-2 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl">
               <Badge className={`text-xs ${
@@ -254,9 +256,9 @@ export function CandidatePreviewPanel({ candidate, onClose }: { candidate: Candi
                 candidate.status === 'interview' ? 'bg-status-warning/15 dark:bg-status-warning/30 text-status-warning dark:text-status-warning' :
                 'bg-lia-interactive-active dark:bg-lia-bg-elevated text-lia-text-primary'
               }`}>
-                {candidate.status === 'active' ? 'Ativo' :
-                 candidate.status === 'prospect' ? 'Prospect' :
-                 candidate.status === 'interview' ? 'Entrevista' : 'Contratado'}
+                {candidate.status === 'active' ? t('statusActive') :
+                 candidate.status === 'prospect' ? t('statusProspect') :
+                 candidate.status === 'interview' ? t('statusInterview') : t('statusHired')}
               </Badge>
             </div>
           </div>
@@ -291,7 +293,7 @@ export function CandidatePreviewPanel({ candidate, onClose }: { candidate: Candi
             onClick={() => {}}
           >
             <Calendar className="w-4 h-4" />
-            Agendar Entrevista
+            {t('scheduleInterview')}
           </Button>
           <div className="grid grid-cols-2 gap-2">
             <Button

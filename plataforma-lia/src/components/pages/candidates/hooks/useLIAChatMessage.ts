@@ -9,6 +9,7 @@ import type { SearchFilters } from "@/components/search/advanced-filters-modal"
 import { useCompanyId } from "@/hooks/company/useCompanyId"
 import { useLiaChatContext } from "@/contexts/lia-float-context"
 import { formatMessageTime } from "@/hooks/chat/lia-chat-connection-types"
+import { useTranslations } from "next-intl"
 
 type SearchTab = 'ia-natural' | 'similar' | 'job-description' | 'boolean' | 'arquetipos' | 'filtros'
 
@@ -18,6 +19,7 @@ export function useLIAChatMessage(
   handleTalentUIAction: (action: string, params?: Record<string, unknown>) => void,
 ) {
   const { companyId: resolvedCompanyId } = useCompanyId()
+  const t = useTranslations('candidates.liaChatMessage')
 
   const {
     switchChatContext,
@@ -128,7 +130,7 @@ export function useLIAChatMessage(
 
       if (response.action_executed && response.action_result) {
         const { toast } = await import("sonner")
-        toast.success("Ação executada", { description: response.action_type ? `${response.action_type}` : undefined })
+        toast.success(t('actionExecuted'), { description: response.action_type ? `${response.action_type}` : undefined })
       }
 
       return response
@@ -186,7 +188,7 @@ export function useLIAChatMessage(
               addChatMessage({
                 id: `lia-suggestions-${Date.now()}`,
                 sender: 'lia',
-                content: `💡 **Sugestões:**\n${response.suggested_prompts.slice(0, 3).map(p => `• ${p}`).join('\n')}`,
+                content: `💡 **${t('suggestions')}:**\n${response.suggested_prompts.slice(0, 3).map(p => `• ${p}`).join('\n')}`,
                 timestamp: formatMessageTime(),
               })
             }, 500)
@@ -196,7 +198,7 @@ export function useLIAChatMessage(
         }
       } catch (error) {
 
-        const fallbackContent = "Estou com dificuldade para processar essa solicitação no momento. Pode tentar novamente em alguns segundos?"
+        const fallbackContent = t('fallbackError')
 
         addChatMessage({
           id: `lia-response-${Date.now()}`,

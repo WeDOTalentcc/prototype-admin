@@ -1,6 +1,7 @@
 "use client"
 
 import React from "react"
+import { useTranslations } from "next-intl"
 import { X, ArrowRight, List, Share2, Fingerprint, FileText, Mail, Star, XCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { BulkActionsBar, type BulkActionType } from "@/components/ui/bulk-actions-bar"
@@ -19,6 +20,7 @@ interface KanbanPageContentProps {
 }
 
 export function KanbanPageContent({ state }: KanbanPageContentProps) {
+  const t = useTranslations('kanban')
   const {
     viewMode, activeTab, currentJob, jobEditForm, setJobEditForm,
     handleSaveJobSection, savingJobSection, companyDefaults,
@@ -108,7 +110,7 @@ export function KanbanPageContent({ state }: KanbanPageContentProps) {
                   className="h-6 text-micro gap-1 flex-shrink-0 px-2 hover:bg-lia-interactive-hover transition-colors cursor-pointer"
                 >
                   <X className="w-3 h-3" />
-                  Limpar
+                  {t('clear')}
                 </Button>
               )}
               <PipelineStagesCarousel
@@ -148,49 +150,49 @@ export function KanbanPageContent({ state }: KanbanPageContentProps) {
             actions={[
               {
                 id: 'move_stage',
-                label: 'Mover Etapa',
+                label: t('moveStage'),
                 icon: <ArrowRight className="w-3.5 h-3.5 text-lia-text-secondary" />,
                 onClick: () => handleBulkAction('move_stage' as BulkActionType | string),
               },
               {
                 id: 'add_to_list',
-                label: 'Lista',
+                label: t('list'),
                 icon: <List className="w-3.5 h-3.5 text-lia-text-secondary" />,
                 onClick: () => handleBulkAction('add_to_list' as BulkActionType | string),
               },
               {
                 id: 'share_search',
-                label: 'Compartilhar',
+                label: t('shareLabel'),
                 icon: <Share2 className="w-3.5 h-3.5 text-lia-text-secondary" />,
                 onClick: () => handleBulkAction('share_search' as BulkActionType | string),
               },
               {
                 id: 'wsi_screening',
-                label: 'Triagem WSI',
+                label: t('wsiScreeningBulk'),
                 icon: <Fingerprint className="w-3.5 h-3.5 text-lia-text-secondary" />,
                 onClick: () => handleBulkAction('wsi_screening' as BulkActionType | string),
               },
               {
                 id: 'request_data',
-                label: 'Solicitar Dados',
+                label: t('requestData'),
                 icon: <FileText className="w-3.5 h-3.5 text-lia-text-secondary" />,
                 onClick: () => handleBulkAction('request_data' as BulkActionType | string),
               },
               {
                 id: 'send_message',
-                label: 'Mensagem',
+                label: t('messageAction'),
                 icon: <Mail className="w-3.5 h-3.5 text-lia-text-secondary" />,
                 onClick: () => handleBulkAction('send_message' as BulkActionType | string),
               },
               {
                 id: 'favorites',
-                label: 'Favoritos',
+                label: t('favorites'),
                 icon: <Star className="w-3.5 h-3.5 text-status-warning" />,
                 onClick: () => handleBulkAction('favorites' as BulkActionType | string),
               },
               {
                 id: 'reject',
-                label: 'Reprovar',
+                label: t('rejectBulk'),
                 icon: <XCircle className="w-3.5 h-3.5" />,
                 onClick: () => handleBulkAction('reject' as BulkActionType | string),
                 variant: 'destructive' as const,

@@ -1,5 +1,6 @@
 "use client"
 import React from "react"
+import { useTranslations } from "next-intl"
 import { Filter, Check, Lightbulb } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
@@ -16,6 +17,7 @@ export const TabFiltros = React.memo(function TabFiltros({
   showTableFiltersPanel,
   setShowTableFiltersPanel,
 }: TabFiltrosProps) {
+  const t = useTranslations('candidates.liaSidebar')
   const hasActiveFilters = Object.values(activeSearchFilters).some(category =>
     Object.values(category as Record<string, unknown>).some(v => v === true || (typeof v === 'string' && v.length > 0))
   )
@@ -26,7 +28,7 @@ export const TabFiltros = React.memo(function TabFiltros({
         <div className="flex items-start gap-2">
           <Lightbulb className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-lia-text-secondary" />
           <p className="text-xs text-lia-text-secondary">
-            <strong>Dica:</strong> Use os filtros avan\u00e7ados para refinar sua busca por localiza\u00e7\u00e3o, experi\u00eancia, competências, idiomas e muito mais.
+            <strong>{t('filtersTipLabel')}</strong> {t('filtersTip')}
           </p>
         </div>
       </div>
@@ -35,7 +37,7 @@ export const TabFiltros = React.memo(function TabFiltros({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Check className="w-4 h-4 text-status-success" />
-              <span className="text-xs font-medium text-status-success">Filtros ativos</span>
+              <span className="text-xs font-medium text-status-success">{t('activeFilters')}</span>
             </div>
             <button
               onClick={() => setActiveSearchFilters({
@@ -44,7 +46,7 @@ export const TabFiltros = React.memo(function TabFiltros({
               })}
               className="text-xs text-lia-text-primary hover:text-status-error transition-colors motion-reduce:transition-none"
             >
-              Limpar todos
+              {t('clearAll')}
             </button>
           </div>
         </div>
@@ -54,11 +56,11 @@ export const TabFiltros = React.memo(function TabFiltros({
         onClick={() => setShowTableFiltersPanel(!showTableFiltersPanel)}
       >
         <Filter className="w-4 h-4 mr-2" />
-        {showTableFiltersPanel ? 'Fechar Filtros' : 'Abrir Filtros Avan\u00e7ados'}
+        {showTableFiltersPanel ? t('closeFilters') : t('openAdvancedFilters')}
       </Button>
       {!showTableFiltersPanel && (
         <p className="text-xs text-lia-text-primary text-center mt-2" aria-live="polite" aria-atomic="true">
-          Os filtros aparecer\u00e3o ao lado da tabela de candidatos
+          {t('filtersAppearNote')}
         </p>
       )}
     </div>

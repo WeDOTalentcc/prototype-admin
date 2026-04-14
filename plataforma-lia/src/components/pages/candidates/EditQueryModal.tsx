@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useTranslations } from "next-intl"
 import { Search } from "lucide-react"
 import dynamic from "next/dynamic"
 
@@ -40,6 +41,7 @@ export function EditQueryModal({
   onSubmitNatural,
   onSubmitAI,
 }: EditQueryModalProps) {
+  const t = useTranslations('candidates.modals')
   const [value, setValue] = useState(initialValue)
 
   useEffect(() => {
@@ -73,10 +75,10 @@ export function EditQueryModal({
         <div className="flex-shrink-0 p-6 pb-4">
           <h2 className="text-sm font-semibold text-lia-text-primary flex items-center gap-2">
             <Search className="w-4 h-4 text-lia-text-secondary" />
-            Editar sua busca
+            {t('editYourSearch')}
           </h2>
           <p className="text-xs text-lia-text-tertiary mt-1">
-            Refine sua busca com linguagem natural. A LIA irá analisar e sugerir melhorias.
+            {t('editSearchDescription')}
           </p>
         </div>
 
@@ -96,7 +98,7 @@ export function EditQueryModal({
               onClose()
               onOpenFilters()
             }}
-            placeholder="Ex: desenvolvedor python com 5 anos de experiência em machine learning"
+            placeholder={t('searchPlaceholder')}
             activeFiltersCount={activeFiltersCount}
             searchSource={searchSource as any}
             onSearchSourceChange={onSearchSourceChange}
@@ -113,13 +115,13 @@ export function EditQueryModal({
             onClick={onClose}
             className="px-4 py-2 text-sm text-lia-text-primary hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover rounded-xl transition-colors motion-reduce:transition-none border border-lia-border-subtle dark:border-lia-border-subtle"
           >
-            Cancelar
+            {t('cancel')}
           </button>
           <button
             onClick={handleSaveAndSearch}
             className="px-4 py-2 text-sm text-white rounded-xl transition-colors motion-reduce:transition-none bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover"
           >
-            Salvar e Buscar
+            {t('saveAndSearch')}
           </button>
         </div>
       </div>

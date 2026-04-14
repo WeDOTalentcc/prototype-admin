@@ -1,6 +1,7 @@
 "use client"
 
 import React from "react"
+import { useTranslations } from "next-intl"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -231,10 +232,12 @@ export function KanbanTableView({
   onSendFeedback,
   candidatesData,
 }: KanbanTableViewProps) {
+  const t = useTranslations('kanban')
   const itemsPerPage = 50
 
 
   const renderCustomCell = createKanbanCellRenderer(({
+    t,
     dynamicStages,
     jobVacancyId,
     viewedCandidateIds,
@@ -284,19 +287,19 @@ export function KanbanTableView({
         const companyCol = getColumnDefinition('currentCompany')
 
         const unifiedColumns: TableColumn[] = [
-          { id: 'quickActions', label: 'Aprovação', visible: true, sortable: false, align: 'center', width: 120 },
+          { id: 'quickActions', label: t('tableColApproval'), visible: true, sortable: false, align: 'center', width: 120 },
           { id: 'id', label: 'ID', visible: true, sortable: false, width: 55 },
-          { id: 'score', label: 'Geral', visible: true, sortable: true, width: 70 },
-          { id: 'liaScore', label: 'Triagem', visible: true, sortable: true, width: 80 },
-          { id: 'fitScore', label: 'CV', visible: true, sortable: true, width: 60 },
-          { id: 'technicalTestScore', label: 'Técnico', visible: true, sortable: true, width: 75 },
-          { id: 'englishTestScore', label: 'Inglês', visible: true, sortable: true, width: 70 },
-          { id: 'bigFive', label: 'B5', visible: true, sortable: false, width: 55 },
-          { id: 'name', label: nameCol?.label || 'Candidato', visible: true, sortable: nameCol?.sortable ?? true, width: 280 },
-          { id: 'role', label: titleCol?.label || 'Cargo', visible: true, sortable: titleCol?.sortable ?? false, width: 150 },
-          { id: 'currentCompany', label: companyCol?.label || 'Empresa', visible: true, sortable: companyCol?.sortable ?? false, width: companyCol?.width || 130 },
-          { id: 'stage', label: 'Etapa', visible: true, sortable: true, width: 85 },
-          { id: 'status', label: 'Status', visible: true, sortable: false, width: 85 }
+          { id: 'score', label: t('scoreGeral'), visible: true, sortable: true, width: 70 },
+          { id: 'liaScore', label: t('scoreTriagem'), visible: true, sortable: true, width: 80 },
+          { id: 'fitScore', label: t('scoreCV'), visible: true, sortable: true, width: 60 },
+          { id: 'technicalTestScore', label: t('scoreTecnico'), visible: true, sortable: true, width: 75 },
+          { id: 'englishTestScore', label: t('scoreIngles'), visible: true, sortable: true, width: 70 },
+          { id: 'bigFive', label: t('scoreB5'), visible: true, sortable: false, width: 55 },
+          { id: 'name', label: nameCol?.label || t('tableColCandidate'), visible: true, sortable: nameCol?.sortable ?? true, width: 280 },
+          { id: 'role', label: titleCol?.label || t('tableColRole'), visible: true, sortable: titleCol?.sortable ?? false, width: 150 },
+          { id: 'currentCompany', label: companyCol?.label || t('tableColCompany'), visible: true, sortable: companyCol?.sortable ?? false, width: companyCol?.width || 130 },
+          { id: 'stage', label: t('tableColStage'), visible: true, sortable: true, width: 85 },
+          { id: 'status', label: t('tableColStatus'), visible: true, sortable: false, width: 85 }
         ]
 
         return (
@@ -309,7 +312,7 @@ export function KanbanTableView({
               direction: tableSortDirection
             } : undefined}
             showCheckboxes={true}
-            emptyMessage="Nenhum candidato nesta etapa"
+            emptyMessage={t('tableEmptyMessage')}
             enableVirtualScroll={getPaginatedCandidates().candidates.length > 50}
             enableColumnResize={true}
             isInteractive={true}
@@ -335,7 +338,7 @@ export function KanbanTableView({
                             ? 'text-status-error bg-status-error/10 border border-status-error/30'
                             : 'text-status-warning bg-status-warning/10 border border-status-warning/30'
                         }`}
-                        title={`Pipeline ${saturationData.is_saturated ? 'Saturado' : 'Quase saturado'} (${saturationData.approved_count}/${saturationData.saturation_threshold})`}
+                        title={t('pipelineSaturationTitle', { status: saturationData.is_saturated ? t('pipelineSaturated') : t('pipelineAlmostSaturated'), count: String(saturationData.approved_count), threshold: String(saturationData.saturation_threshold) })}
                       >
                         <AlertTriangle className="w-2.5 h-2.5" />
                         {saturationData.approved_count}/{saturationData.saturation_threshold}
@@ -362,20 +365,20 @@ export function KanbanTableView({
                         variant="ghost"
                         size="sm"
                         className="h-6 px-2 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:bg-lia-bg-secondary dark:hover:bg-lia-interactive-active rounded-full text-micro font-semibold"
-                        title="Aprovar candidato"
+                        title={t('approveCandidate')}
                         onClick={(e) => {
                           e.stopPropagation()
                           onApproveCandidate(candidate)
                         }}
                       >
                         <ThumbsUp className="w-3 h-3 mr-0.5" />
-                        Aprovar
+                        {t('approve')}
                       </Button>
                       <Button
                         variant="ghost"
                         size="sm"
                         className="h-6 px-2 bg-status-error hover:bg-status-error text-white rounded-full text-micro font-semibold"
-                        title="Reprovar candidato"
+                        title={t('rejectCandidate')}
                         onClick={(e) => {
                           e.stopPropagation()
                           const rejectStage = stage as string
@@ -387,7 +390,7 @@ export function KanbanTableView({
                         }}
                       >
                         <XCircle className="w-3 h-3 mr-0.5" />
-                        Reprovar
+                        {t('reject')}
                       </Button>
                     </>
                   )}
@@ -400,20 +403,20 @@ export function KanbanTableView({
                     <DropdownMenuContent align="end" className="w-48">
                       <DropdownMenuItem onClick={() => onCandidateClick(candidate)}>
                         <Eye className="w-4 h-4 mr-2" />
-                        Ver Perfil
+                        {t('viewProfile')}
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => onOpenAnalysis(candidate)}>
                         <Target className="w-4 h-4 mr-2" />
-                        Análise CV
+                        {t('cvAnalysis')}
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => onOpenTriagem(candidate)}>
                         <Brain className="w-4 h-4 mr-2 text-wedo-cyan" />
-                        Ver Triagem
+                        {t('viewScreening')}
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem onClick={() => onApproveCandidate(candidate)}>
                         <ThumbsUp className="w-4 h-4 mr-2" />
-                        Aprovar
+                        {t('approve')}
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => {
                         if (stage === 'screening' || stage === 'triagem') {
@@ -423,7 +426,7 @@ export function KanbanTableView({
                         }
                       }} className="text-wedo-coral">
                         <XCircle className="w-4 h-4 mr-2" />
-                        Reprovar
+                        {t('reject')}
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>

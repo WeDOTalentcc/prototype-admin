@@ -1,6 +1,7 @@
 "use client"
 
 import React from "react"
+import { useTranslations } from "next-intl"
 import { Users } from "lucide-react"
 import { EmptyState } from "@/components/ui/empty-state"
 
@@ -9,13 +10,14 @@ interface KanbanEmptyStateProps {
 }
 
 export const KanbanEmptyState = React.memo(function KanbanEmptyState({ onAddCandidates }: KanbanEmptyStateProps) {
+  const t = useTranslations('kanban')
   return (
     <EmptyState
       icon={<Users />}
-      title="Nenhum candidato neste funil ainda"
-      description="Adicione candidatos ou busque no banco de talentos para iniciar o processo."
+      title={t('emptyTitle')}
+      description={t('emptyDescription')}
       action={{
-        label: "Buscar candidatos",
+        label: t('searchCandidates'),
         onClick: onAddCandidates,
       }}
       className="h-64 hover:bg-lia-interactive-hover transition-colors cursor-pointer"

@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { useTranslations } from "next-intl"
 import type { Candidate } from "../types"
 import type { ParsedEntities, SearchMode } from "@/components/search/smart-search-input"
 import { toast } from "sonner"
@@ -76,6 +77,7 @@ export function useCandidatesArchetypes(params: UseCandidatesArchetypesParams) {
     setLiaPromptValue, setChatMessages,
   } = params
 
+  const t = useTranslations('candidates.archetypes')
   const [backendArchetypes, setBackendArchetypes] = useState<BackendArchetype[]>([])
   const [isLoadingArchetypes, setIsLoadingArchetypes] = useState(false)
   const [archetypesLoadError, setArchetypesLoadError] = useState<string | null>(null)
@@ -209,7 +211,7 @@ export function useCandidatesArchetypes(params: UseCandidatesArchetypesParams) {
         const liaMessage = {
           id: `lia-arch-${Date.now()}`,
           type: 'lia' as const,
-          content: `🎯 Busca por arquétipo "${archetype.name}" concluída!\n\nEncontrei **${localCount} candidato${localCount > 1 ? 's' : ''}** na sua base local.${data.credits_remaining !== undefined ? `\n\n💳 Créditos restantes: ${data.credits_remaining}` : ''}`,
+          content: `🎯 ${t('searchComplete', { name: archetype.name })}\n\n${t('foundCandidates', { count: localCount })}${data.credits_remaining !== undefined ? `\n\n💳 ${t('creditsRemaining', { count: data.credits_remaining })}` : ''}`,
           timestamp: new Date(),
           searchResults: {
             localCount: localCount,
@@ -219,12 +221,12 @@ export function useCandidatesArchetypes(params: UseCandidatesArchetypesParams) {
         }
         setChatMessages(prev => [...prev, liaMessage])
         
-        toast.success("Busca por arquétipo concluída", { description: `${mappedCandidates.length} candidato(s) encontrado(s) para "${archetype.name}"` })
+        toast.success(t('toastSearchComplete'), { description: t('toastFoundCount', { count: mappedCandidates.length, name: archetype.name }) })
       } else {
-        toast.error("Nenhum candidato encontrado", { description: `A busca por "${archetype.name}" não retornou resultados` })
+        toast.error(t('toastNoneFound'), { description: t('toastNoneFoundDesc', { name: archetype.name }) })
       }
     } catch (error) {
-      toast.error("Erro na busca", { description: error instanceof Error ? error.message : 'Erro ao buscar por arquétipo' })
+      toast.error(t('toastSearchError'), { description: error instanceof Error ? error.message : t('toastSearchErrorDesc') })
     } finally {
       setIsSearchingByArchetype(false)
     }

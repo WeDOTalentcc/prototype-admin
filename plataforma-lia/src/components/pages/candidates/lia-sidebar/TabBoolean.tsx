@@ -1,15 +1,17 @@
 "use client"
 import React, { useState } from "react"
+import { useTranslations } from "next-intl"
 import { Code, Lightbulb } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 export const TabBoolean = React.memo(function TabBoolean() {
+  const t = useTranslations('candidates.liaSidebar')
   const [booleanSearchValue, setBooleanSearchValue] = useState("")
 
   return (
     <div data-testid="tab-boolean" className="space-y-4 overflow-y-auto flex-1 p-4">
       <p className="text-xs text-lia-text-tertiary">
-        Use operadores booleanos para buscas avan\u00e7adas
+        {t('booleanDescription')}
       </p>
       <div className="flex flex-wrap gap-1 mb-2">
         {['AND', 'OR', 'NOT', '"..."', '(...)'].map((op) => (
@@ -25,14 +27,14 @@ export const TabBoolean = React.memo(function TabBoolean() {
       <textarea
         value={booleanSearchValue}
         onChange={(e) => setBooleanSearchValue(e.target.value)}
-        placeholder={'Ex: ("Node.js" OR "Python") AND "s\u00eanior" NOT "j\u00fanior"'}
+        placeholder={t('booleanPlaceholder')}
         className="w-full h-32 p-3 text-xs rounded-xl border focus:outline-none transition-colors motion-reduce:transition-none resize-none bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary font-mono border border-lia-border-subtle"
       />
       <div className="p-2.5 rounded-xl bg-white border border-lia-border-subtle">
         <div className="flex items-start gap-2">
           <Lightbulb className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-lia-text-secondary" />
           <p className="text-xs text-lia-text-secondary">
-            <strong>Dica:</strong> Use aspas para termos exatos e par\u00eanteses para agrupar condi\u00e7\u00f5es.
+            <strong>{t('booleanTipLabel')}</strong> {t('booleanTip')}
           </p>
         </div>
       </div>
@@ -42,7 +44,7 @@ export const TabBoolean = React.memo(function TabBoolean() {
         disabled={!booleanSearchValue.trim()}
       >
         <Code className="w-4 h-4 mr-2" />
-        Buscar com Boolean
+        {t('searchBoolean')}
       </Button>
     </div>
   )

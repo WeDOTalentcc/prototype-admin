@@ -9,6 +9,7 @@ import type { TableCandidate } from"@/components/tables"
 import { CandidatesLoadMoreFooter } from"./CandidatesLoadMoreFooter"
 import type { Candidate } from"./types"
 import type { TableColumn } from"./CandidateSearchResultsView.types"
+import { useTranslations } from "next-intl"
 
 export interface CandidatesTableAreaProps {
   isLiaSuperChat: boolean
@@ -83,6 +84,7 @@ export function CandidatesTableArea({
   onLoadMore,
   isEnrichingContacts,
 }: CandidatesTableAreaProps) {
+  const t = useTranslations('candidates')
   return (
     <div data-testid="candidates-table-area" className={`bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md transition-colors motion-reduce:transition-none duration-300 ${
       isLiaSuperChat
@@ -96,7 +98,7 @@ export function CandidatesTableArea({
             size="sm"
             onClick={() => setIsLiaSuperChat(false)}
             className="h-10 w-10 p-0 rounded-xl hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse"
-            title="Expandir tabela de candidatos"
+            title={t('table.expandTable')}
           >
             <ChevronRight className="w-5 h-5 text-lia-text-primary" />
           </Button>
@@ -109,7 +111,7 @@ export function CandidatesTableArea({
               aria-live="polite"
               aria-atomic="true"
             >
-              Candidatos ({sortedCandidates.length})
+              {t('table.candidatesCount', { count: sortedCandidates.length })}
             </span>
           </div>
 
@@ -127,17 +129,17 @@ export function CandidatesTableArea({
                 className="flex items-center justify-center h-full absolute inset-0 z-20 bg-lia-bg-primary dark:bg-lia-bg-primary"
                 role="status"
                 aria-live="polite"
-                aria-label="Carregando..."
+                aria-label={t('table.loadingAriaLabel')}
               >
-                <div className="text-center" role="status" aria-live="polite" aria-label="Carregando...">
+                <div className="text-center" role="status" aria-live="polite" aria-label={t('table.loadingAriaLabel')}>
                   <div
                     className="animate-spin motion-reduce:animate-none rounded-full h-10 w-10 border-b-2 border-wedo-cyan/30 mx-auto mb-4"
                     role="status"
                     aria-live="polite"
-                    aria-label="Carregando..."
+                    aria-label={t('table.loadingAriaLabel')}
                   ></div>
                   <p className="text-lia-text-primary text-sm" aria-live="polite" aria-atomic="true">
-                    Carregando candidatos...
+                    {t('table.loadingCandidates')}
                   </p>
                 </div>
               </div>
@@ -146,7 +148,7 @@ export function CandidatesTableArea({
             {isEnrichingContacts && (
               <div className="flex items-center gap-2 px-4 py-2 bg-status-info/10 border border-status-info/20 rounded-lg mx-2 mt-2">
                 <Loader2 className="h-4 w-4 animate-spin text-status-info" />
-                <span className="text-sm text-status-info font-medium">Enriquecendo contatos via Apify ($0.01/candidato)...</span>
+                <span className="text-sm text-status-info font-medium">{t('table.enrichingContacts')}</span>
               </div>
             )}
 
@@ -169,7 +171,7 @@ export function CandidatesTableArea({
                 favoriteIds={favorites}
                 sortConfig={sortBy ? { field: sortBy, direction: sortOrder } : undefined}
                 isLoading={false}
-                emptyMessage="Nenhum candidato encontrado"
+                emptyMessage={t('table.emptyMessage')}
                 showCheckboxes={true}
                 showPagination={false}
                 enableColumnResize={true}
@@ -200,13 +202,11 @@ export function CandidatesTableArea({
               <div className="bg-lia-bg-primary dark:bg-lia-bg-primary rounded-xl p-3 mt-2">
                 <div className="flex items-center justify-between">
                   <div className="text-sm text-lia-text-primary">
-                    Mostrando {((currentPage - 1) * itemsPerPage) + 1} -{' '}
-                    {Math.min(currentPage * itemsPerPage, getPaginatedCandidates().total)} de{' '}
-                    {getPaginatedCandidates().total} candidatos
+                    {t('table.showingPagination', { start: ((currentPage - 1) * itemsPerPage) + 1, end: Math.min(currentPage * itemsPerPage, getPaginatedCandidates().total), total: getPaginatedCandidates().total })}
                   </div>
                   <div className="flex items-center gap-2">
                     <Button variant="outline" size="sm" onClick={() => setCurrentPage(1)} disabled={currentPage === 1} className="h-8">
-                      Primeira
+                      {t('table.first')}
                     </Button>
                     <Button
                       variant="outline"
@@ -215,7 +215,7 @@ export function CandidatesTableArea({
                       disabled={currentPage === 1}
                       className="h-8"
                     >
-                      Anterior
+                      {t('table.previous')}
                     </Button>
 
                     <div className="flex items-center gap-1">
@@ -250,7 +250,7 @@ export function CandidatesTableArea({
                       disabled={currentPage === getPaginatedCandidates().totalPages}
                       className="h-8"
                     >
-                      Próxima
+                      {t('table.next')}
                     </Button>
                     <Button
                       variant="outline"
@@ -259,7 +259,7 @@ export function CandidatesTableArea({
                       disabled={currentPage === getPaginatedCandidates().totalPages}
                       className="h-8"
                     >
-                      Última
+                      {t('table.last')}
                     </Button>
                   </div>
                 </div>
@@ -270,14 +270,14 @@ export function CandidatesTableArea({
               <div className="bg-lia-bg-primary dark:bg-lia-bg-primary rounded-xl p-8 text-center">
                 <Users className="w-12 h-12 text-status-error mx-auto mb-4" />
                 <h3 className="text-lg font-medium text-lia-text-primary mb-2">
-                  Erro ao carregar candidatos
+                  {t('table.errorTitle')}
                 </h3>
                 <p className="text-lia-text-primary mb-4">
                   {error}
                 </p>
                 {onRetry && (
                   <Button variant="outline" onClick={onRetry}>
-                    Tentar novamente
+                    {t('table.tryAgain')}
                   </Button>
                 )}
               </div>
@@ -287,13 +287,13 @@ export function CandidatesTableArea({
               <div className="bg-lia-bg-primary dark:bg-lia-bg-primary rounded-xl p-8 text-center">
                 <Users className="w-12 h-12 text-lia-text-primary mx-auto mb-4" />
                 <h3 className="text-lg font-medium text-lia-text-primary mb-2">
-                  Nenhum candidato encontrado
+                  {t('table.emptyTitle')}
                 </h3>
                 <p className="text-lia-text-primary mb-4">
-                  Tente ajustar os filtros ou termos de busca
+                  {t('table.emptyDescription')}
                 </p>
                 <Button variant="outline" onClick={clearAllFilters}>
-                  Limpar filtros
+                  {t('table.clearFilters')}
                 </Button>
               </div>
             )}

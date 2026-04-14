@@ -1,6 +1,7 @@
 "use client"
 
 import React from "react"
+import { useTranslations } from "next-intl"
 import { X } from "lucide-react"
 import { FilterSectionsBasic } from "./FilterSectionsBasic"
 import { FilterSectionsProfile } from "./FilterSectionsProfile"
@@ -21,24 +22,28 @@ export function CandidatesFilterPanel({
   onClearAll,
   onClose,
 }: CandidatesFilterPanelProps) {
+  const t = useTranslations('candidates.filters')
+
   return (
     <div data-testid="candidates-filter-panel" className="flex-shrink-0 w-80 transition-colors motion-reduce:transition-none duration-300">
       <div className="bg-lia-bg-primary rounded-xl h-[calc(100vh-9rem)] overflow-hidden">
         <div className="p-4 flex items-center justify-between">
           <div>
             <h3 className="text-sm font-semibold text-lia-text-primary">
-              Refinar Resultados
+              {t('refineResults')}
             </h3>
             <p className="text-xs mt-0.5 text-lia-text-primary">
               {activeFiltersCount > 0
-                ? `${activeFiltersCount} filtro${activeFiltersCount > 1 ? "s" : ""} ativo${activeFiltersCount > 1 ? "s" : ""}`
-                : "Filtre os resultados exibidos"}
+                ? (activeFiltersCount > 1
+                    ? t('activeFiltersPlural', { count: activeFiltersCount })
+                    : t('activeFiltersSingular', { count: activeFiltersCount }))
+                : t('filterHint')}
             </p>
           </div>
           <button
             onClick={onClose}
             className="h-8 w-8 rounded-md flex items-center justify-center transition-colors motion-reduce:transition-none text-lia-text-primary hover:text-lia-text-primary hover:bg-lia-bg-tertiary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wedo-cyan"
-            aria-label="Fechar painel de filtros"
+            aria-label={t('closePanel')}
             data-dismiss="true"
           >
             <X className="w-4 h-4" aria-hidden="true" />

@@ -17,6 +17,7 @@ import { Label } from"@/components/ui/label"
 import { Brain, ArrowRight, Check } from"lucide-react"
 import { LIAIcon } from"@/components/ui/lia-icon"
 import { textStyles, buttonStyles, cardStyles, badgeStyles } from"@/lib/design-tokens"
+import { useTranslations } from "next-intl"
 import type { MoveAction, LIASuggestion, KanbanStage } from"./types"
 
 interface MoveConfirmationModalProps {
@@ -36,6 +37,7 @@ export function MoveConfirmationModal({
   stages,
   liaSuggestions,
 }: MoveConfirmationModalProps) {
+  const t = useTranslations('kanban')
   const [selectedSubstatus, setSelectedSubstatus] = useState<string>("")
   const [reason, setReason] = useState("")
 
@@ -63,10 +65,10 @@ export function MoveConfirmationModal({
       <DialogContent className="bg-lia-bg-primary dark:bg-lia-bg-primary border-lia-border-subtle dark:border-lia-border-subtle max-w-md rounded-xl">
         <DialogHeader className="dark:border-lia-border-subtle pb-4">
           <DialogTitle className="text-lia-text-primary flex items-center gap-2">
-            Confirmar Movimentação
+            {t('confirmMoveTitle')}
           </DialogTitle>
           <DialogDescription className="text-lia-text-secondary">
-            Mover candidato para uma nova etapa do processo
+            {t('moveToNewStage')}
           </DialogDescription>
         </DialogHeader>
 
@@ -95,7 +97,7 @@ export function MoveConfirmationModal({
             <div className="space-y-2">
               <div className="flex items-center gap-2 text-sm text-lia-text-secondary">
                 <LIAIcon className="h-4 w-4 text-lia-text-secondary" />
-                <span>LIA sugere:</span>
+                <span>{t('liaSuggests')}</span>
               </div>
               
               <RadioGroup 
@@ -134,7 +136,7 @@ export function MoveConfirmationModal({
 
           {toStage.substatuses && toStage.substatuses.length > 0 && (
             <div className="space-y-2">
-              <Label className="text-sm text-lia-text-secondary">Sub-status disponíveis:</Label>
+              <Label className="text-sm text-lia-text-secondary">{t('availableSubstatuses')}</Label>
               <RadioGroup 
                 value={selectedSubstatus} 
                 onValueChange={setSelectedSubstatus}
@@ -164,13 +166,13 @@ export function MoveConfirmationModal({
 
           <div className="space-y-2">
             <Label htmlFor="reason" className="text-sm text-lia-text-secondary">
-              Motivo (opcional)
+              {t('reasonOptional')}
             </Label>
             <Textarea
               id="reason"
               value={reason}
               onChange={(e) => setReason(e.target.value)}
-              placeholder="Ex: Entrevista marcada para próxima terça..."
+              placeholder={t('reasonPlaceholder')}
               className="bg-lia-bg-secondary dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-subtle text-lia-text-primary placeholder:text-lia-text-tertiary dark:placeholder:text-lia-text-tertiary min-h-20"
             />
           </div>
@@ -182,14 +184,14 @@ export function MoveConfirmationModal({
             onClick={handleClose}
             className="text-lia-text-secondary hover:text-lia-text-primary dark:hover:text-lia-text-inverse"
           >
-            Cancelar
+            {t('cancelAction')}
           </Button>
           <Button
             onClick={handleConfirm}
             className="bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover dark:bg-lia-bg-secondary dark:hover:bg-lia-interactive-active text-white"
           >
             <Check className="h-4 w-4 mr-2" />
-            Confirmar
+            {t('confirmMovement')}
           </Button>
         </DialogFooter>
       </DialogContent>

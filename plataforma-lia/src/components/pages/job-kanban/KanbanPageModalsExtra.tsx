@@ -5,6 +5,7 @@ import dynamic from "next/dynamic"
 import { Copy } from "lucide-react"
 import { LoadingModal } from "@/components/ui/loading"
 import { toast } from "sonner"
+import { useTranslations } from "next-intl"
 import type { KanbanPageCoreState } from "./hooks/useKanbanPageCore"
 import { useCompanyId } from "@/hooks/company/useCompanyId"
 
@@ -20,6 +21,7 @@ const ShareSearchModal = dynamic(() => import("@/components/modals/share-search-
 const BulkActionModal = dynamic(() => import("@/components/modals/bulk-action-modal").then(m => ({ default: m.BulkActionModal })), { ssr: false, loading: () => <LoadingModal /> })
 
 export function KanbanPageModalsExtra(state: KanbanPageCoreState) {
+  const t = useTranslations('kanban')
   const { companyId: resolvedCompanyId } = useCompanyId()
   const {
     showGeneralScoreModal, setShowGeneralScoreModal,
@@ -81,12 +83,12 @@ export function KanbanPageModalsExtra(state: KanbanPageCoreState) {
               setSelectedForCompare(new Set())
             }}
           >
-            <span>Comparar ({selectedForCompare.size})</span>
+            <span>{t('compareCountBtn', { count: selectedForCompare.size })}</span>
           </button>
           <button
             className="bg-lia-bg-primary border border-lia-border-subtle text-lia-text-secondary px-3 py-2 rounded-xl text-sm hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none shadow-lia-md"
             onClick={() => setSelectedForCompare(new Set())}
-            aria-label="Limpar seleção de comparação"
+            aria-label={t('clearComparisonAria')}
           >
             ✕
           </button>
@@ -179,7 +181,7 @@ export function KanbanPageModalsExtra(state: KanbanPageCoreState) {
             .flatMap(([stageId, cands]: [string, Record<string, unknown>[]]) =>
               (cands as Record<string, unknown>[]).map((c: Record<string, unknown>) => ({
                 id: String(c.id),
-                name: (c.name as string | undefined) || 'Candidato',
+                name: (c.name as string | undefined) || t('candidateFallback'),
                 email: c.email as string | undefined,
                 phone: c.phone as string | undefined,
                 stage: stageId,
@@ -189,7 +191,7 @@ export function KanbanPageModalsExtra(state: KanbanPageCoreState) {
           mode={jobStatusModalMode}
           onStatusChange={(_jobIds, newStatus) => {
             setJobEditForm((prev: Record<string, unknown>) => ({ ...prev, status: newStatus }))
-            toast.success(newStatus === 'Paralisada' ? 'Vaga pausada com sucesso' : 'Vaga reativada com sucesso')
+            toast.success(newStatus === 'Paralisada' ? t('jobPausedSuccess') : t('jobReactivatedSuccess'))
             setShowJobStatusModal(false)
           }}
         />
@@ -198,14 +200,14 @@ export function KanbanPageModalsExtra(state: KanbanPageCoreState) {
       {showCloseVacancyModal && (() => {
         const hiredList: Record<string, unknown>[] = candidatesData.hired || []
         const hiredCandidate = hiredList[0]
-          ? { id: String(hiredList[0].id), name: (hiredList[0].name as string | undefined) || 'Candidato', email: hiredList[0].email as string | undefined, phone: hiredList[0].phone as string | undefined }
+          ? { id: String(hiredList[0].id), name: (hiredList[0].name as string | undefined) || t('candidateFallback'), email: hiredList[0].email as string | undefined, phone: hiredList[0].phone as string | undefined }
           : { id: '', name: '—', email: undefined as string | undefined, phone: undefined as string | undefined }
         const otherCandidates = Object.entries(candidatesData)
           .filter(([stageId]) => stageId !== 'hired')
           .flatMap(([stageId, cands]: [string, Record<string, unknown>[]]) =>
             (cands as Record<string, unknown>[]).map((c: Record<string, unknown>) => ({
               id: String(c.id),
-              name: (c.name as string | undefined) || 'Candidato',
+              name: (c.name as string | undefined) || t('candidateFallback'),
               email: c.email as string | undefined,
               phone: c.phone as string | undefined,
               stage: stageId,
@@ -224,7 +226,7 @@ export function KanbanPageModalsExtra(state: KanbanPageCoreState) {
             otherCandidates={otherCandidates}
             onConfirm={async () => {
               setJobEditForm((prev: Record<string, unknown>) => ({ ...prev, status: 'Encerrada' }))
-              toast.success('Vaga encerrada com sucesso')
+              toast.success(t('jobClosedSuccess'))
               setShowCloseVacancyModal(false)
             }}
           />
@@ -236,12 +238,12 @@ export function KanbanPageModalsExtra(state: KanbanPageCoreState) {
           <div className="bg-lia-bg-secondary rounded-xl shadow-lia-lg w-full max-w-sm mx-4 animate-in fade-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
             <div className="px-6 py-4">
               <h3 className="text-base font-semibold text-lia-text-primary">
-                Vaga Publicada!
+                {t('jobPublishedTitle')}
               </h3>
             </div>
             <div className="px-6 py-4 space-y-4">
               <p className="text-sm text-lia-text-secondary">
-                A vaga está ativa. Compartilhe o link abaixo com candidatos:
+                {t('jobPublishedDesc')}
               </p>
               <div className="flex items-center gap-2">
                 <input
@@ -255,13 +257,13 @@ export function KanbanPageModalsExtra(state: KanbanPageCoreState) {
                   onClick={() => {
                     try {
                       navigator.clipboard.writeText(publicLink)
-                      toast.success("Link copiado!", { description: "O link foi copiado para a área de transferência." })
+                      toast.success(t('linkCopied'), { description: t('linkCopiedDesc') })
                     } catch {
-                      toast.error("Não foi possível copiar", { description: "Selecione o link manualmente e copie." })
+                      toast.error(t('copyFailed'), { description: t('copyFailedDesc') })
                     }
                   }}
                   className="p-2 rounded-md bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover transition-colors motion-reduce:transition-none flex-shrink-0"
-                  title="Copiar link"
+                  title={t('copyLink')}
                 >
                   <Copy className="w-4 h-4" />
                 </button>
@@ -272,7 +274,7 @@ export function KanbanPageModalsExtra(state: KanbanPageCoreState) {
                 onClick={() => setShowPublishSuccess(false)}
                 className="px-4 py-2 text-sm font-medium rounded-xl bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover transition-colors motion-reduce:transition-none"
               >
-                Fechar
+                {t('closePanel')}
               </button>
             </div>
           </div>
@@ -285,7 +287,7 @@ export function KanbanPageModalsExtra(state: KanbanPageCoreState) {
           setShowShareGestorModal(false)
         }}
         shareType="list"
-        title={`Candidatos — ${currentJob?.title ?? "Vaga"}`}
+        title={t('candidatesShareTitle', { title: currentJob?.title ?? t('jobFallback') })}
         candidateIds={selectedCandidates.size > 0 ? Array.from(selectedCandidates) : allCandidateIds}
         candidateCount={selectedCandidates.size > 0 ? selectedCandidates.size : allCandidateIds.length}
         onSuccess={() => {

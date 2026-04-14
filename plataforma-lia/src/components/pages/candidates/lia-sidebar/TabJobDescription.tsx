@@ -1,5 +1,6 @@
 "use client"
 import React, { useState } from "react"
+import { useTranslations } from "next-intl"
 import { Brain, Loader2, Paperclip, Mic } from "lucide-react"
 import { type ChatMessage, type SearchResults } from "./lia-sidebar-types"
 import { mapApiCandidates } from "./mapCandidates"
@@ -32,6 +33,7 @@ export const TabJobDescription = React.memo(function TabJobDescription({
   setShowSearchResults,
   setDisplayedResultsCount,
 }: TabJobDescriptionProps) {
+  const t = useTranslations('candidates.liaSidebar')
   const [jobDescriptionText, setJobDescriptionText] = useState("")
   const [isSearchingJD, setIsSearchingJD] = useState(false)
   const [extractedJDCriteria, setExtractedJDCriteria] = useState<{
@@ -45,7 +47,7 @@ export const TabJobDescription = React.memo(function TabJobDescription({
     setExtractedJDCriteria(null)
     const userMsg: ChatMessage = {
       id: `user-jd-${Date.now()}`, type: 'user', timestamp: new Date(),
-      content: `Buscar candidatos pela descri\u00e7\u00e3o da vaga:\n\n"${jobDescriptionText.substring(0, 200)}${jobDescriptionText.length > 200 ? '...' : ''}"`
+      content: t('searchByJd', { description: `${jobDescriptionText.substring(0, 200)}${jobDescriptionText.length > 200 ? '...' : ''}` })
     }
     setChatMessages(prev => [...prev, userMsg])
     try {
@@ -54,7 +56,7 @@ export const TabJobDescription = React.memo(function TabJobDescription({
         body: JSON.stringify({ job_description: jobDescriptionText.trim(), limit: 20,
           search_pearch: searchSource !== 'local', pearch_type: pearchSearchOptions.searchType })
       })
-      if (!response.ok) throw new Error('Erro na busca')
+      if (!response.ok) throw new Error(t('searchError'))
       const data = await response.json()
       if (data.extracted_criteria) {
         setExtractedJDCriteria({
@@ -80,27 +82,27 @@ export const TabJobDescription = React.memo(function TabJobDescription({
         const localCount = data.local_count || local.length
         setChatMessages(prev => [...prev, {
           id: `lia-jd-result-${Date.now()}`, type: 'lia', timestamp: new Date(),
-          content: `**Busca por Job Description conclu\u00edda!**\n\nQuery gerada: "${data.query_generated}"\n\nEncontrei **${localCount} candidato${localCount > 1 ? 's' : ''}** na sua base local.`,
+          content: t('jdSearchComplete', { query: data.query_generated, count: localCount }),
           searchResults: { localCount, globalCount: 0, query: data.query_generated || '' }
         }])
       } else {
         setChatMessages(prev => [...prev, { id: `lia-jd-noresult-${Date.now()}`, type: 'lia', timestamp: new Date(),
-          content: `N\u00e3o encontrei candidatos com os crit\u00e9rios extra\u00eddos da descri\u00e7\u00e3o da vaga.\n\nTente ajustar a descri\u00e7\u00e3o ou usar a busca por IA Natural com termos mais espec\u00edficos.` }])
+          content: t('jdNoResults') }])
       }
     } catch {
       setChatMessages(prev => [...prev, { id: `lia-jd-error-${Date.now()}`, type: 'lia', timestamp: new Date(),
-        content: `Erro ao buscar candidatos pela descri\u00e7\u00e3o da vaga. Por favor, tente novamente.` }])
+        content: t('jdError') }])
     } finally { setIsSearchingJD(false) }
   }
 
   return (
     <div data-testid="tab-job-description" className="space-y-4 overflow-y-auto flex-1 p-4">
       <p className="text-xs text-lia-text-tertiary" aria-live="polite" aria-atomic="true">
-        Cole sua descri\u00e7\u00e3o de vaga e a IA extra\u00edr\u00e1 os crit\u00e9rios automaticamente
+        {t('jdDescription')}
       </p>
       <div className="relative">
         <textarea
-          placeholder="Cole aqui a descri\u00e7\u00e3o da vaga completa..."
+          placeholder={t('jdPlaceholder')}
           value={jobDescriptionText}
           onChange={(e) => setJobDescriptionText(e.target.value)}
           className="w-full h-48 p-4 pb-12 text-xs rounded-xl border focus:outline-none transition-colors motion-reduce:transition-none resize-none bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary border border-lia-border-subtle"
@@ -108,10 +110,10 @@ export const TabJobDescription = React.memo(function TabJobDescription({
           onBlur={(e) => e.target.style.borderColor = 'var(--lia-bg-secondary)'}
         />
         <div className="absolute bottom-3 right-3 flex gap-2">
-          <button type="button" className="p-2 rounded-xl hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none" title="Anexar documento" onClick={() => {}}>
+          <button type="button" className="p-2 rounded-xl hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none" title={t('attachDocument')} onClick={() => {}}>
             <Paperclip className="w-4 h-4 text-lia-text-primary" />
           </button>
-          <button type="button" className="p-2 rounded-xl hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none" title="Gravar \u00e1udio" onClick={() => {}}>
+          <button type="button" className="p-2 rounded-xl hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none" title={t('recordAudio')} onClick={() => {}}>
             <Mic className="w-4 h-4 text-lia-text-primary" />
           </button>
         </div>
@@ -120,13 +122,13 @@ export const TabJobDescription = React.memo(function TabJobDescription({
         <div className="p-3 rounded-xl border bg-wedo-cyan/[0.06] border-wedo-cyan/30">
           <div className="flex items-center gap-2 mb-2">
             <Brain className="w-4 h-4 text-wedo-cyan" />
-            <span className="text-xs font-medium text-lia-text-primary">Crit\u00e9rios Extra\u00eddos</span>
+            <span className="text-xs font-medium text-lia-text-primary">{t('extractedCriteria')}</span>
           </div>
           <div className="flex flex-wrap gap-1.5">
             {extractedJDCriteria.job_title && <span className="px-2 py-1 text-xs rounded-full bg-lia-bg-tertiary text-lia-text-secondary dark:bg-lia-bg-elevated">{extractedJDCriteria.job_title}</span>}
             {extractedJDCriteria.seniority && <span className="px-2 py-1 text-xs rounded-full bg-lia-bg-tertiary text-lia-text-secondary dark:bg-lia-bg-elevated">{extractedJDCriteria.seniority}</span>}
             {extractedJDCriteria.skills.map((skill, idx) => <span key={idx} className="px-2 py-1 text-xs rounded-full bg-lia-bg-tertiary text-lia-text-secondary dark:bg-lia-bg-elevated">{skill}</span>)}
-            {extractedJDCriteria.experience_years && <span className="px-2 py-1 text-xs rounded-full bg-lia-bg-tertiary text-lia-text-secondary dark:bg-lia-bg-elevated">{extractedJDCriteria.experience_years}+ anos</span>}
+            {extractedJDCriteria.experience_years && <span className="px-2 py-1 text-xs rounded-full bg-lia-bg-tertiary text-lia-text-secondary dark:bg-lia-bg-elevated">{t('yearsPlus', { years: extractedJDCriteria.experience_years })}</span>}
             {extractedJDCriteria.location && <span className="px-2 py-1 text-xs rounded-full bg-lia-bg-tertiary text-lia-text-secondary dark:bg-lia-bg-elevated">{extractedJDCriteria.location}</span>}
           </div>
         </div>
@@ -137,13 +139,13 @@ export const TabJobDescription = React.memo(function TabJobDescription({
         disabled={!jobDescriptionText.trim() || jobDescriptionText.length < 50 || isSearchingJD}
       >
         {isSearchingJD ? (
-          <><Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none" />Analisando...</>
+          <><Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none" />{t('analyzing')}</>
         ) : (
-          <><span className="flex items-center justify-center w-5 h-5 rounded-md bg-lia-btn-primary-bg"><Brain className="w-3 h-3 text-white" /></span>Extrair e Buscar</>
+          <><span className="flex items-center justify-center w-5 h-5 rounded-md bg-lia-btn-primary-bg"><Brain className="w-3 h-3 text-white" /></span>{t('extractAndSearch')}</>
         )}
       </button>
       {jobDescriptionText.length > 0 && jobDescriptionText.length < 50 && (
-        <p className="text-xs text-status-warning">A descri\u00e7\u00e3o precisa ter pelo menos 50 caracteres para an\u00e1lise adequada.</p>
+        <p className="text-xs text-status-warning">{t('jdMinChars')}</p>
       )}
     </div>
   )

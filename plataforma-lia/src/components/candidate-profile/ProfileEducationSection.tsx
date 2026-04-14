@@ -1,5 +1,6 @@
 "use client"
 
+import { useTranslations } from "next-intl"
 import { GraduationCap } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
@@ -22,12 +23,13 @@ interface ProfileEducationSectionProps {
 }
 
 export function ProfileEducationSection({ education }: ProfileEducationSectionProps) {
+  const t = useTranslations('candidates.profile')
   return (
     <Card className="border-lia-border-subtle">
       <CardHeader className="py-2.5 px-4">
         <CardTitle className="text-sm font-semibold text-lia-text-primary flex items-center gap-2">
           <GraduationCap className="w-4 h-4 text-lia-text-secondary" />
-          Formação Acadêmica
+          {t('educationTitle')}
         </CardTitle>
       </CardHeader>
       <CardContent className="px-4 pb-4 space-y-3">
@@ -39,12 +41,12 @@ export function ProfileEducationSection({ education }: ProfileEducationSectionPr
             >
               <div>
                 <h5 className="text-sm font-medium text-lia-text-primary">
-                  {edu.degree || edu.title || "Formação"}
+                  {edu.degree || edu.title || t('educationDegreeDefault')}
                   {(edu.field_of_study || edu.fieldOfStudy) &&
-                    ` em ${edu.field_of_study || edu.fieldOfStudy}`}
+                    ` ${t('educationFieldIn')} ${edu.field_of_study || edu.fieldOfStudy}`}
                 </h5>
                 <p className="text-sm text-lia-text-secondary">
-                  {edu.school || edu.institution || "Instituição não informada"}
+                  {edu.school || edu.institution || t('institutionNotProvided')}
                 </p>
               </div>
               <span className="text-xs text-lia-text-secondary whitespace-nowrap">
@@ -55,7 +57,7 @@ export function ProfileEducationSection({ education }: ProfileEducationSectionPr
             </div>
           ))
         ) : (
-          <p className="text-sm text-lia-text-secondary italic">Não informado</p>
+          <p className="text-sm text-lia-text-secondary italic">{t('notProvided')}</p>
         )}
       </CardContent>
     </Card>
