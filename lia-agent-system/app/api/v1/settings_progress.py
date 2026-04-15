@@ -166,7 +166,7 @@ async def _calc_integracoes(repo: SettingsProgressRepository, company_uuid) -> t
 
 @router.get("/progress", response_model=None)
 async def get_settings_progress(
-    company_id: str = Query(default=None, description="Company ID (optional, uses default if not provided)"),
+    company_id: str = Query(default=None, description="Company ID (uses default company if not provided)"),
     db: AsyncSession = Depends(get_db)
 ) -> dict[str, Any]:
     try:
