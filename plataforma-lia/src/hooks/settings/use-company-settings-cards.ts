@@ -42,27 +42,51 @@ interface BenefitItem {
 interface PipelineRules {
   min_interviews_before_offer?: number
   manager_approval_for_offer?: boolean
+  max_days_in_stage?: Record<string, number>
+}
+
+interface SchedulingRules {
+  allowed_days?: string[]
+  allowed_hours?: { start?: string; end?: string }
+  default_duration_minutes?: number
+  self_scheduling_enabled?: boolean
 }
 
 interface CommunicationRules {
   auto_rejection_feedback?: boolean
+  rejection_feedback_deadline_hours?: number
+  preferred_channel?: string
+  lia_tone?: string
+}
+
+interface AutomationRules {
+  auto_screening?: boolean
+  auto_scheduling?: boolean
+  auto_stage_advance?: boolean
+  autonomy_level?: string
 }
 
 interface HiringPolicyData {
   pipeline_rules?: PipelineRules
+  scheduling_rules?: SchedulingRules
   communication_rules?: CommunicationRules
+  automation_rules?: AutomationRules
   setup_progress?: number
   [key: string]: unknown
 }
 
+const ACTION_FIELD_KEYS = new Set(["import_spreadsheet", "handbook", "org_chart"])
+
 function computeBlockStatus(fields: CardField[]): "configured" | "partial" | "pending" {
-  const filled = fields.filter(f => {
+  const dataFields = fields.filter(f => !ACTION_FIELD_KEYS.has(f.key))
+  if (dataFields.length === 0) return "pending"
+  const filled = dataFields.filter(f => {
     if (f.value === null || f.value === undefined || f.value === "") return false
     if (Array.isArray(f.value) && f.value.length === 0) return false
     return true
   }).length
   if (filled === 0) return "pending"
-  if (filled === fields.length) return "configured"
+  if (filled === dataFields.length) return "configured"
   return "partial"
 }
 
@@ -122,7 +146,13 @@ function buildBlocks(
   const policyFields: CardField[] = hiringPolicy ? [
     { key: "min_interviews_before_offer", label: "Min. Entrevistas p/ Oferta", value: hiringPolicy.pipeline_rules?.min_interviews_before_offer, type: "number", editable: false, block: "policy" },
     { key: "manager_approval_for_offer", label: "Aprovacao Gestor", value: hiringPolicy.pipeline_rules?.manager_approval_for_offer, type: "boolean", editable: false, block: "policy" },
+    { key: "self_scheduling_enabled", label: "Auto-agendamento", value: hiringPolicy.scheduling_rules?.self_scheduling_enabled, type: "boolean", editable: false, block: "policy" },
+    { key: "default_duration_minutes", label: "Duracao Padrao (min)", value: hiringPolicy.scheduling_rules?.default_duration_minutes, type: "number", editable: false, block: "policy" },
     { key: "auto_rejection_feedback", label: "Feedback Auto Rejeicao", value: hiringPolicy.communication_rules?.auto_rejection_feedback, type: "boolean", editable: false, block: "policy" },
+    { key: "preferred_channel", label: "Canal Preferido", value: hiringPolicy.communication_rules?.preferred_channel, type: "text", editable: false, block: "policy" },
+    { key: "auto_screening", label: "Triagem Automatica", value: hiringPolicy.automation_rules?.auto_screening, type: "boolean", editable: false, block: "policy" },
+    { key: "auto_stage_advance", label: "Avanco Automatico Etapas", value: hiringPolicy.automation_rules?.auto_stage_advance, type: "boolean", editable: false, block: "policy" },
+    { key: "autonomy_level", label: "Nivel de Autonomia LIA", value: hiringPolicy.automation_rules?.autonomy_level, type: "text", editable: false, block: "policy" },
     { key: "setup_progress", label: "Progresso Configuracao", value: hiringPolicy.setup_progress ? `${hiringPolicy.setup_progress}%` : null, type: "text", editable: false, block: "policy" },
   ] : [
     { key: "policy_status", label: "Status", value: null, type: "text", editable: false, block: "policy" },
