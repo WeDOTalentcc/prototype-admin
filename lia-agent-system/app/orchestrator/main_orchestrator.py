@@ -313,8 +313,13 @@ class MainOrchestrator:
                     pending_response.fairness_warnings = _soft_warnings
                 return pending_response
 
+            # Contexts with dedicated domain agents — skip generic phases (1, 1.5)
+            _DOMAIN_SPECIFIC_CONTEXTS = {"company_settings", "hiring_policy"}
+
             # ── Phase 1: ActionExecutor ────────────────────────────────────
-            action_response = await self._try_action_executor(ctx, conv_id)
+            action_response = None
+            if ctx.context_type not in _DOMAIN_SPECIFIC_CONTEXTS:
+                action_response = await self._try_action_executor(ctx, conv_id)
             if action_response is not None:
                 # LIA-M02: Persist Phase 1 response to conversation memory
                 if conv and not ctx.skip_memory_persist:
@@ -329,8 +334,9 @@ class MainOrchestrator:
             # ── Phase 1.5: Agentic Tool Calling (LIA-A04) ──────────────────
             # If Phase 1 did not match, let the LLM decide whether to call tools
             # via function calling. Feature-flagged: LIA_AGENTIC_LOOP=true
+            _skip_agentic = ctx.context_type in _DOMAIN_SPECIFIC_CONTEXTS
             import os as _os_flag
-            if _os_flag.getenv("LIA_AGENTIC_LOOP", "true").lower() not in ("false", "0"):
+            if not _skip_agentic and _os_flag.getenv("LIA_AGENTIC_LOOP", "true").lower() not in ("false", "0"):
                 try:
                     from app.orchestrator.agentic_loop import agentic_loop
 

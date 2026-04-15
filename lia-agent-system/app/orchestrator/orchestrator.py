@@ -126,7 +126,24 @@ class Orchestrator:
                 state = self.state_manager.get_state(conversation_id)
                 if state:
                     ctx.update({k: state.get(k) for k in ("last_agent", "current_job", "current_candidate")})
-            route = await self._cascaded_router.route(sanitized, ctx, session_id=conversation_id)
+
+            _ctx_type = ctx.get("context_type", "")
+            _CONTEXT_TYPE_DOMAIN_OVERRIDE = {
+                "company_settings": "company_settings",
+                "hiring_policy": "hiring_policy",
+            }
+            _domain_override = _CONTEXT_TYPE_DOMAIN_OVERRIDE.get(_ctx_type)
+            if _domain_override:
+                from app.orchestrator.cascaded_router import RouteResult
+                route = RouteResult(
+                    domain_id=_domain_override,
+                    confidence=1.0,
+                    source="context_type_override",
+                    intent_details={"raw_intent": _domain_override},
+                )
+                logger.info("[Orchestrator] context_type override: %s → domain=%s", _ctx_type, _domain_override)
+            else:
+                route = await self._cascaded_router.route(sanitized, ctx, session_id=conversation_id)
             domain_id, confidence = route.domain_id, route.confidence
             intent = (route.intent_details or {}).get("raw_intent") or route.domain_id
             if intent in self._cacheable_intents and self._response_cache.is_enabled():
