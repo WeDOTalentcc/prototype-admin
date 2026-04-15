@@ -4573,6 +4573,30 @@
         "studioDesc": "Conformidade dos agentes do Estúdio",
         "export": "Exportar",
         "exportDesc": "Relatórios para auditores"
+      },
+      "minhaEmpresa": {
+        "title": "Minha Empresa",
+        "description": "Dados, cultura, benefícios e políticas"
+      },
+      "pipeline": {
+        "title": "Pipeline",
+        "description": "Etapas do processo seletivo"
+      },
+      "screening": {
+        "title": "Screening",
+        "description": "Perguntas de elegibilidade via WhatsApp"
+      },
+      "templatesAssinatura": {
+        "title": "Templates & Assinatura",
+        "description": "Modelos de comunicação e assinatura de email"
+      },
+      "comunicacaoAlertas": {
+        "title": "Comunicação & Alertas",
+        "description": "Horários LGPD, alertas e notificações da LIA"
+      },
+      "usuariosDepartamentos": {
+        "title": "Usuários & Departamentos",
+        "description": "Recrutadores, permissões e estrutura organizacional"
       }
     },
     "status": {
