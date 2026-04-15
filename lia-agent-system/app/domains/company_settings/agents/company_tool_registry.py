@@ -503,31 +503,31 @@ async def _wrap_get_company_completion(**kwargs: Any) -> dict[str, Any]:
     completion = data.get("completion", {})
 
     sections_status = {
-        "institutional": {"label": "Dados Institucionais", "filled": 0, "total": 8},
-        "culture": {"label": "Cultura & EVP", "filled": 0, "total": 10},
-        "tech_stack": {"label": "Tech Stack", "filled": 0, "total": 3},
-        "benefits": {"label": "Beneficios", "filled": 0, "total": 1},
-        "seniority": {"label": "Niveis & Remuneracao", "filled": 0, "total": 3},
-        "workforce": {"label": "Planejamento", "filled": 0, "total": 1},
+        "dados_basicos": {"label": "Dados Basicos", "filled": 0, "total": 8, "menu": "minha-empresa"},
+        "cultura_evp": {"label": "Cultura & EVP", "filled": 0, "total": 10, "menu": "minha-empresa"},
+        "tech_stack": {"label": "Tech Stack", "filled": 0, "total": 3, "menu": "minha-empresa"},
+        "beneficios": {"label": "Beneficios", "filled": 0, "total": 1, "menu": "minha-empresa"},
+        "niveis_remuneracao": {"label": "Niveis & Remuneracao", "filled": 0, "total": 3, "menu": "minha-empresa"},
+        "planejamento": {"label": "Planejamento", "filled": 0, "total": 1, "menu": "minha-empresa"},
     }
 
     profile = data.get("profile", {})
     inst_fields = ["name", "cnpj", "website", "hr_email", "hr_phone", "industry", "company_size", "employee_count"]
-    sections_status["institutional"]["filled"] = sum(1 for f in inst_fields if profile.get(f))
+    sections_status["dados_basicos"]["filled"] = sum(1 for f in inst_fields if profile.get(f))
 
     culture = data.get("culture", {})
     culture_fields = ["mission", "vision", "values", "core_competencies", "evp_bullets",
                       "work_model", "employment_types", "team_dynamics", "leadership_style", "dei_initiatives"]
-    sections_status["culture"]["filled"] = sum(1 for f in culture_fields if culture.get(f))
+    sections_status["cultura_evp"]["filled"] = sum(1 for f in culture_fields if culture.get(f))
 
     tech_fields = ["tech_stack", "engineering_culture", "default_languages"]
     sections_status["tech_stack"]["filled"] = sum(1 for f in tech_fields if culture.get(f))
 
     benefits = data.get("benefits", [])
-    sections_status["benefits"]["filled"] = 1 if benefits else 0
+    sections_status["beneficios"]["filled"] = 1 if benefits else 0
 
     sen_fields = ["seniority_levels", "default_behavioral_competencies", "default_salary_ranges"]
-    sections_status["seniority"]["filled"] = sum(1 for f in sen_fields if culture.get(f))
+    sections_status["niveis_remuneracao"]["filled"] = sum(1 for f in sen_fields if culture.get(f))
 
     pending = [s["label"] for s in sections_status.values() if s["filled"] < s["total"]]
 
@@ -537,6 +537,15 @@ async def _wrap_get_company_completion(**kwargs: Any) -> dict[str, Any]:
             "overall": completion,
             "sections": sections_status,
             "pending_sections": pending,
+            "menu_mapping": {
+                "minha-empresa": "Minha Empresa",
+                "pipeline": "Pipeline",
+                "screening": "Screening",
+                "templates-assinatura": "Templates & Assinatura",
+                "comunicacao-alertas": "Comunicacao & Alertas",
+                "usuarios-departamentos": "Usuarios & Departamentos",
+                "integracoes": "Integracoes",
+            },
         },
         "message": f"Completude: {completion.get('percentage', 0)}%. Pendentes: {', '.join(pending) if pending else 'nenhum'}.",
     }

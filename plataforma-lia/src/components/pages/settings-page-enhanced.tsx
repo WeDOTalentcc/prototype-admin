@@ -237,13 +237,13 @@ export default function SettingsPageEnhanced() {
       if (data.sections) {
         setSectionCompletion(prev => ({
           ...prev,
-          'minha-empresa': data.sections['minha-empresa'] ?? data.sections['company-team'] ?? prev['minha-empresa'],
-          'pipeline': data.sections['pipeline'] ?? data.sections['recruitment'] ?? prev['pipeline'],
+          'minha-empresa': data.sections['minha-empresa'] ?? prev['minha-empresa'],
+          'pipeline': data.sections['pipeline'] ?? prev['pipeline'],
           'screening': data.sections['screening'] ?? prev['screening'],
-          'templates-assinatura': data.sections['templates-assinatura'] ?? data.sections['communication'] ?? prev['templates-assinatura'],
-          'comunicacao-alertas': data.sections['comunicacao-alertas'] ?? data.sections['communication'] ?? prev['comunicacao-alertas'],
+          'templates-assinatura': data.sections['templates-assinatura'] ?? prev['templates-assinatura'],
+          'comunicacao-alertas': data.sections['comunicacao-alertas'] ?? prev['comunicacao-alertas'],
           'usuarios-departamentos': data.sections['usuarios-departamentos'] ?? prev['usuarios-departamentos'],
-          'integrations': data.sections['integrations'] ?? prev['integrations'],
+          'integrations': data.sections['integracoes'] ?? data.sections['integrations'] ?? prev['integrations'],
         }))
       }
       

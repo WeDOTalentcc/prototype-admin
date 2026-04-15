@@ -1,8 +1,12 @@
 """SettingsProgressRepository — multi-model DB queries for settings progress calculation.
 
-Extracted from app/api/v1/settings_progress.py as part of Phase 2 refactor.
 Aggregates data from Company, Department, Benefit, Approver, RecruitmentTemplate,
-RecruitmentSLA, RecruitmentAutomation, and GlobalSearchSettings.
+RecruitmentSLA, RecruitmentAutomation, RecruitmentStage, ScreeningQuestion,
+IntegrationConnection, AlertConfig, and GlobalSearchSettings.
+
+Section IDs aligned with the 7-item settings menu (Task #210):
+  minha-empresa, pipeline, screening, templates-assinatura,
+  comunicacao-alertas, usuarios-departamentos, integracoes
 """
 import logging
 from typing import Any
@@ -21,7 +25,6 @@ class SettingsProgressRepository:
         self.db = db
 
     async def get_default_company(self) -> CompanyProfile | None:
-        """Get the default company or the first available."""
         result = await self.db.execute(
             select(CompanyProfile).where(CompanyProfile.is_default).limit(1)
         )
@@ -91,19 +94,25 @@ class SettingsProgressRepository:
     async def get_culture_profile(self, company_id) -> dict[str, Any] | None:
         try:
             result = await self.db.execute(
-                text("SELECT additional_data FROM company_culture_profiles WHERE company_id = :cid LIMIT 1"),
+                text("""
+                    SELECT mission, vision, values, core_competencies, evp_bullets,
+                           work_model, tech_stack, engineering_culture, default_languages,
+                           seniority_levels, default_salary_ranges,
+                           additional_data
+                    FROM company_culture_profiles
+                    WHERE company_id = :cid LIMIT 1
+                """),
                 {"cid": str(company_id)},
             )
             row = result.mappings().first()
             if row:
-                return {"additional_data": row.get("additional_data")}
+                return dict(row)
             return None
         except Exception as exc:
             logger.warning("get_culture_profile query failed for company_id=%s: %s", company_id, exc)
             return None
 
     async def get_global_search_settings(self, company_id) -> GlobalSearchSettings | None:
-        """Fetch GlobalSearchSettings for a company."""
         try:
             company_id_str = str(company_id)
             result = await self.db.execute(
@@ -115,3 +124,102 @@ class SettingsProgressRepository:
         except Exception as e:
             logger.error(f"Error checking global search settings: {e}")
             return None
+
+    async def count_active_stages(self, company_id) -> int:
+        try:
+            result = await self.db.execute(
+                text("""
+                    SELECT COUNT(*) FROM recruitment_stages
+                    WHERE company_id = :cid AND is_active = true
+                """),
+                {"cid": str(company_id)},
+            )
+            return result.scalar() or 0
+        except Exception as exc:
+            logger.warning("count_active_stages failed: %s", exc)
+            return 0
+
+    async def count_active_screening_questions(self, company_id) -> int:
+        try:
+            result = await self.db.execute(
+                text("""
+                    SELECT COUNT(*) FROM company_screening_questions
+                    WHERE company_id = :cid AND is_active = true
+                """),
+                {"cid": str(company_id)},
+            )
+            return result.scalar() or 0
+        except Exception as exc:
+            logger.warning("count_active_screening_questions failed: %s", exc)
+            return 0
+
+    async def has_email_signature(self, company_id) -> bool:
+        try:
+            result = await self.db.execute(
+                text("""
+                    SELECT COUNT(*) FROM company_culture_profiles
+                    WHERE company_id = :cid
+                    AND additional_data IS NOT NULL
+                    AND additional_data->>'email_signature' IS NOT NULL
+                    AND additional_data->>'email_signature' != ''
+                """),
+                {"cid": str(company_id)},
+            )
+            return (result.scalar() or 0) > 0
+        except Exception:
+            return False
+
+    async def count_active_alert_configs(self, company_id) -> int:
+        try:
+            result = await self.db.execute(
+                text("""
+                    SELECT COUNT(*) FROM alert_configs
+                    WHERE company_id = :cid AND is_active = true
+                """),
+                {"cid": str(company_id)},
+            )
+            return result.scalar() or 0
+        except Exception:
+            return 0
+
+    async def has_lgpd_schedule(self, company_id) -> bool:
+        try:
+            result = await self.db.execute(
+                text("""
+                    SELECT COUNT(*) FROM company_culture_profiles
+                    WHERE company_id = :cid
+                    AND additional_data IS NOT NULL
+                    AND additional_data->>'communication_schedule' IS NOT NULL
+                """),
+                {"cid": str(company_id)},
+            )
+            return (result.scalar() or 0) > 0
+        except Exception:
+            return False
+
+    async def count_active_users(self, company_id) -> int:
+        try:
+            result = await self.db.execute(
+                text("""
+                    SELECT COUNT(*) FROM users
+                    WHERE company_id = :cid AND is_active = true
+                """),
+                {"cid": str(company_id)},
+            )
+            return result.scalar() or 0
+        except Exception as exc:
+            logger.warning("count_active_users failed: %s", exc)
+            return 0
+
+    async def count_active_integrations(self, company_id) -> int:
+        try:
+            result = await self.db.execute(
+                text("""
+                    SELECT COUNT(*) FROM integration_connections
+                    WHERE company_id = :cid AND is_active = true
+                """),
+                {"cid": str(company_id)},
+            )
+            return result.scalar() or 0
+        except Exception:
+            return 0
