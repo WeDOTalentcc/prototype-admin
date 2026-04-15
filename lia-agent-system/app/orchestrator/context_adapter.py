@@ -24,6 +24,9 @@ PAGE_TO_CONTEXT_TYPE: dict[str, str] = {
     "vacancies": "job_management",
     "wizard": "job_management",
     "analytics": "analytics",
+    "settings": "company_settings",
+    "settings_config": "company_settings",
+    "company_settings": "company_settings",
     "global": "general",
     "general": "general",
 }

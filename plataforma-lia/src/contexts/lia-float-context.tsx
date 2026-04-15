@@ -58,6 +58,7 @@ export type ChatContextType =
   | "talent_chat"
   | "kanban_chat"
   | "candidates_chat"
+  | "settings_config"
 
 interface LiaFloatState {
   isOpen: boolean
