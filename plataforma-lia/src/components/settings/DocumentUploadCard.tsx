@@ -81,8 +81,11 @@ export function DocumentUploadCard() {
   const [fairnessWarnings, setFairnessWarnings] = useState<string[]>([])
   const [uploadedDocs, setUploadedDocs] = useState<UploadedDoc[]>(loadUploadedDocs)
   const [progressPercent, setProgressPercent] = useState(0)
+  const [isDragOver, setIsDragOver] = useState(false)
+  const [pendingDocType, setPendingDocType] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const progressTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const dropZoneRef = useRef<HTMLDivElement>(null)
   const { sendChatMessage } = useLiaFloat()
 
   useEffect(() => {
@@ -107,31 +110,20 @@ export function DocumentUploadCard() {
   const resetState = useCallback(() => {
     setUploadState("idle")
     setActiveDocType(null)
+    setPendingDocType(null)
     setErrorMessage(null)
     setFairnessWarnings([])
     setProgressPercent(0)
+    setIsDragOver(false)
     if (progressTimerRef.current) clearInterval(progressTimerRef.current)
     if (fileInputRef.current) fileInputRef.current.value = ""
   }, [])
 
-  const handleSelectDocType = (docTypeId: string) => {
-    setActiveDocType(docTypeId)
-    fileInputRef.current?.click()
-  }
-
-  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file || !activeDocType) return
-
-    const validTypes = [
-      "application/pdf",
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-      "text/plain",
-    ]
+  const processFile = useCallback(async (file: File, docType: string) => {
     const validExts = [".pdf", ".docx", ".txt"]
     const ext = file.name.substring(file.name.lastIndexOf(".")).toLowerCase()
 
-    if (!validTypes.includes(file.type) && !validExts.includes(ext)) {
+    if (!validExts.includes(ext)) {
       setErrorMessage("Formato não suportado. Use PDF, DOCX ou TXT.")
       setUploadState("error")
       setTimeout(resetState, 4000)
@@ -145,6 +137,7 @@ export function DocumentUploadCard() {
       return
     }
 
+    setActiveDocType(docType)
     setUploadState("uploading")
     setProgressPercent(0)
     animateProgress(STATE_PROGRESS.uploading)
@@ -154,7 +147,7 @@ export function DocumentUploadCard() {
     try {
       const formData = new FormData()
       formData.append("file", file)
-      formData.append("document_type", activeDocType)
+      formData.append("document_type", docType)
 
       setUploadState("extracting")
       animateProgress(STATE_PROGRESS.extracting)
@@ -181,24 +174,22 @@ export function DocumentUploadCard() {
       setUploadState("sending")
       animateProgress(STATE_PROGRESS.sending)
 
-      const docTypeLabel = DOCUMENT_TYPES.find(d => d.id === activeDocType)?.label || activeDocType
-
-      let warningNotice = ""
-      if (warnings.length > 0) {
-        warningNotice = `\n\n⚠️ FairnessGuard detectou termos sensíveis: ${warnings.join(", ")}. Revise antes de confirmar.`
-      }
+      const docTypeLabel = DOCUMENT_TYPES.find(d => d.id === docType)?.label || docType
 
       const chatMessage = [
-        `[Upload de documento: ${docTypeLabel}]`,
-        `Arquivo: ${file.name}`,
-        `Tipo: ${activeDocType}`,
-        `Caracteres extraídos: ${extractedText.length}`,
-        warningNotice,
-        `\nTexto extraído:\n\n${extractedText.substring(0, 8000)}`,
-        `\n\n---`,
-        `Analisei o documento "${file.name}" (${docTypeLabel}).`,
-        `Posso usar as informações extraídas para preencher os campos da empresa?`,
-        `Responda "sim" para confirmar ou indique quais campos deseja preencher.`,
+        `[TOOL:process_uploaded_document]`,
+        `[document_type:${docType}]`,
+        `[file_name:${file.name}]`,
+        `[text_length:${extractedText.length}]`,
+        ``,
+        `Recebi o upload do documento "${file.name}" (${docTypeLabel}).`,
+        `Por favor, use a ferramenta process_uploaded_document com document_type="${docType}" para analisar o texto abaixo.`,
+        `Após analisar, liste os campos que encontrou e PEÇA MINHA CONFIRMAÇÃO antes de preencher qualquer campo.`,
+        `Exemplo: "Encontrei missão, 5 valores e modelo de trabalho híbrido. Posso preencher esses campos?"`,
+        ``,
+        `--- TEXTO DO DOCUMENTO ---`,
+        extractedText.substring(0, 8000),
+        `--- FIM DO TEXTO ---`,
       ].join("\n")
 
       await sendChatMessage(chatMessage, "company_settings")
@@ -206,7 +197,7 @@ export function DocumentUploadCard() {
       animateProgress(100)
 
       const newDoc: UploadedDoc = {
-        documentType: activeDocType,
+        documentType: docType,
         fileName: file.name,
         uploadedAt: new Date().toISOString(),
         textLength: extractedText.length,
@@ -224,6 +215,45 @@ export function DocumentUploadCard() {
       setProgressPercent(0)
       setTimeout(resetState, 5000)
     }
+  }, [animateProgress, resetState, sendChatMessage])
+
+  const handleSelectDocType = (docTypeId: string) => {
+    setPendingDocType(docTypeId)
+    setActiveDocType(docTypeId)
+    fileInputRef.current?.click()
+  }
+
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    const docType = pendingDocType || activeDocType
+    if (!file || !docType) return
+    await processFile(file, docType)
+  }
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragOver(true)
+  }
+
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (dropZoneRef.current && !dropZoneRef.current.contains(e.relatedTarget as Node)) {
+      setIsDragOver(false)
+    }
+  }
+
+  const handleDrop = async (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragOver(false)
+
+    const file = e.dataTransfer?.files?.[0]
+    if (!file) return
+
+    const docType = pendingDocType || "handbook"
+    await processFile(file, docType)
   }
 
   const getDocUploadInfo = (docTypeId: string): UploadedDoc | undefined => {
@@ -234,6 +264,30 @@ export function DocumentUploadCard() {
 
   return (
     <div className="space-y-3">
+      <div
+        ref={dropZoneRef}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+        className={`relative border-2 border-dashed rounded-lg p-4 text-center transition-colors motion-reduce:transition-none ${
+          isDragOver
+            ? "border-lia-btn-primary-bg bg-lia-btn-primary-bg/5"
+            : "border-lia-border-subtle hover:border-lia-border-medium"
+        } ${isProcessing ? "pointer-events-none opacity-60" : "cursor-pointer"}`}
+        onClick={() => {
+          if (!isProcessing) {
+            setPendingDocType("handbook")
+            fileInputRef.current?.click()
+          }
+        }}
+      >
+        <Upload className={`w-6 h-6 mx-auto mb-1.5 ${isDragOver ? "text-lia-btn-primary-bg" : "text-lia-text-tertiary"}`} />
+        <p className={`${textStyles.labelSmall} ${isDragOver ? "text-lia-btn-primary-bg" : "text-lia-text-secondary"}`}>
+          {isDragOver ? "Solte o arquivo aqui" : "Arraste um arquivo ou clique para selecionar"}
+        </p>
+        <p className="text-micro text-lia-text-tertiary mt-0.5">PDF, DOCX ou TXT — máx. 10MB</p>
+      </div>
+
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         {DOCUMENT_TYPES.map((docType) => {
           const uploaded = getDocUploadInfo(docType.id)
@@ -333,7 +387,7 @@ export function DocumentUploadCard() {
       {uploadState === "done" && (
         <div className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs bg-status-success/10 text-status-success border border-status-success/30">
           <CheckCircle className="w-3.5 h-3.5 flex-shrink-0" />
-          <span>Documento enviado! A LIA perguntará antes de preencher os campos.</span>
+          <span>Documento enviado! A LIA analisará e pedirá sua confirmação antes de preencher os campos.</span>
         </div>
       )}
 
@@ -350,6 +404,9 @@ export function DocumentUploadCard() {
             <AlertTriangle className="w-3.5 h-3.5 text-status-warning" />
             <span className="font-medium text-status-warning">FairnessGuard — Termos sensíveis detectados</span>
           </div>
+          <p className="text-micro text-lia-text-secondary mb-1.5">
+            Verificação preliminar. A LIA fará análise completa via FairnessGuard do backend.
+          </p>
           <div className="flex flex-wrap gap-1">
             {fairnessWarnings.map((warning, i) => (
               <Badge
@@ -374,7 +431,7 @@ export function DocumentUploadCard() {
 
       <p className={`${textStyles.caption} text-center`}>
         <FileText className="w-3 h-3 inline mr-1" />
-        PDF, DOCX ou TXT — máx. 10MB. A LIA analisará e pedirá confirmação antes de preencher.
+        A LIA processará com FairnessGuard e pedirá confirmação antes de preencher.
       </p>
     </div>
   )
