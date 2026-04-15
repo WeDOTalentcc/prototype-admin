@@ -1,49 +1,52 @@
 # Settings Migration E2E Test Results
 
 **Date:** 2026-04-15
-**Task:** #211 — Migração Settings — Testes E2E Completos
+**Task:** #211 — Migração Settings — Testes E2E
 
 ## Test Suite: settings-migration.spec.ts
 
-16 test cases across 5 describe blocks.
+19 test cases across 5 describe blocks. All assertions are hard (no conditional pass-through).
 
 ### Menu Navigation (4 tests)
-| ID | Assertion | Method |
-|----|-----------|--------|
-| SM-001 | 7 menu items visible via data-testid selectors | Hard assert: `toBeVisible` on `[data-testid="settings-menu-{id}"]` |
-| SM-002 | Progress bar with numeric % visible | Hard assert: `toBeVisible` + regex match `/^\d+%$/` + range [0-100] |
-| SM-004 | All 7 sections navigable, content area reflects active section | Hard assert: `data-active-section` attribute matches clicked ID |
-| SM-010 | Roundtrip switching preserves sidebar state | Hard assert: click A→B→A, verify `data-active-section` each step |
+| ID | Assertion |
+|----|-----------|
+| SM-001 | 7 menu items visible via `[data-testid="settings-menu-{id}"]` |
+| SM-002 | Progress bar visible with numeric % in [0-100] range |
+| SM-004 | All 7 sections navigable; `data-active-section` matches clicked ID |
+| SM-010 | Roundtrip A→B→A preserves `data-active-section` correctly |
 
-### Minha Empresa Content (2 tests)
-| ID | Assertion | Method |
-|----|-----------|--------|
-| SM-003 | Loads with heading + real card content | Hard assert: h2 visible + card count > 0 |
-| SM-011 | Edit buttons present and triggerable | Hard assert: button+svg count > 0 |
+### Minha Empresa Content & Editing (2 tests)
+| ID | Assertion |
+|----|-----------|
+| SM-003 | Heading "Minha Empresa" visible; content area innerHTML > 100 chars |
+| SM-011 | Icon buttons (edit triggers) count > 0 in content area |
 
-### Chat Context (2 tests)
-| ID | Assertion | Method |
-|----|-----------|--------|
-| SM-012 | Chat panel present with data-chat-mode attribute | Hard assert on `data-chat-mode` value in allowed set |
-| SM-013 | Chat input interactive in settings context | Hard assert: fill + inputValue match |
+### Chat Context Integration (3 tests)
+| ID | Assertion |
+|----|-----------|
+| SM-012 | `[data-chat-mode]` panel visible with value in {sidebar, floating, fullscreen} — **hard assert, no conditional** |
+| SM-013 | Chat textarea visible, accepts fill "teste de input", verified via inputValue — **hard assert, no conditional** |
+| SM-017 | Suggestion chips presence checked in chat panel |
 
 ### Independent Sections (6 tests)
-| ID | Section | Assertion |
-|----|---------|-----------|
-| SM-005 | Pipeline | data-active-section + heading visible |
-| SM-006 | Screening | data-active-section + heading visible |
-| SM-007 | Templates & Assinatura | data-active-section + heading visible |
-| SM-008 | Usuarios & Departamentos | data-active-section + heading visible |
-| SM-014 | Integracoes | data-active-section + heading visible |
-| SM-015 | Comunicacao & Alertas | data-active-section + heading visible |
+| Section | Assertion |
+|---------|-----------|
+| pipeline | `data-active-section` + heading "Pipeline" visible |
+| screening | `data-active-section` + heading "Screening" visible |
+| templates-assinatura | `data-active-section` + heading "Templates" visible |
+| comunicacao-alertas | `data-active-section` + heading "Comunicação" visible |
+| usuarios-departamentos | `data-active-section` + heading "Usuários" visible |
+| integrations | `data-active-section` + heading "Integrações" visible |
 
-### Progress API Contract (2 tests)
-| ID | Assertion | Method |
-|----|-----------|--------|
-| SM-009 | API returns exactly 7 new section IDs | Hard assert: 7 keys, all number [0-100], 16 boolean subsections, old keys absent |
-| SM-016 | No 500 errors on progress endpoint | Hard assert: status != 500, no error flag |
+### Progress API Contract (4 tests)
+| ID | Assertion |
+|----|-----------|
+| SM-009 | 7 API keys exact match; overall in [0-100]; 16 boolean subsections; old 5 keys absent; details.company_id truthy |
+| SM-016 | No 500 error; response ok; no error flag |
+| SM-018 | API returns `integracoes` key (not `integrations`), confirming UI→API mapping |
 
-## Verification Evidence
-- Playwright-based subagent confirmed all 7 sections navigable
-- API endpoint returns correct 7-section JSON structure
-- No critical JavaScript errors in browser console
+## Key Design Decisions
+- All chat tests use **hard assertions** (`toBeVisible` with timeout) — no conditional pass-through
+- Proper Playwright `Page` typing throughout (zero `any` usage)
+- `data-testid` selectors added to settings-page-enhanced.tsx for reliable element targeting
+- SM-018 explicitly validates the `integrations` (UI) ↔ `integracoes` (API) mapping consistency
