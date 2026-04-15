@@ -119,7 +119,7 @@ export function pageToUrl(page: string | null): string | null {
   if (!page) return null
   const map: Record<string, string> = {
     "Vagas": "/jobs",
-    "Funil de Talentos": "/funil",
+    "Funil de Talentos": "/funil-de-talentos",
     "Tarefas": "/tasks",
     "Configurações": "/configuracoes",
     "Indicadores": "/indicadores",

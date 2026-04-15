@@ -22,10 +22,6 @@ import { resolveScopeFromPathname } from "../company/use-current-scope"
 describe("resolveScopeFromPathname — mapeamento de URL para PromptScope", () => {
 
   describe("TALENT_FUNNEL — rotas de candidatos/funil", () => {
-    it("/funil → talent_funnel", () => {
-      expect(resolveScopeFromPathname("/funil")).toBe("talent_funnel")
-    })
-
     it("/funil-de-talentos → talent_funnel", () => {
       expect(resolveScopeFromPathname("/funil-de-talentos")).toBe("talent_funnel")
     })
@@ -97,7 +93,7 @@ const mockUsePathname = usePathname as ReturnType<typeof vi.fn>
 
 describe("useCurrentScope — hook com usePathname mockado", () => {
   it("retorna scope e scopeName corretos para /funil", () => {
-    mockUsePathname.mockReturnValue("/funil")
+    mockUsePathname.mockReturnValue("/funil-de-talentos")
     const { result } = renderHook(() => useCurrentScope())
     expect(result.current.scope).toBe("talent_funnel")
     expect(result.current.scopeName).toBe("Funil de Talentos")

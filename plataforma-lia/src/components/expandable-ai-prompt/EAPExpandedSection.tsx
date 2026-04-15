@@ -255,7 +255,7 @@ activeSearchTab === 'filtros' ? 'lia-pill-active' : 'lia-pill'
             <Tooltip>
               <TooltipTrigger asChild>
                 <Link
-                  href="/funil?expandedSearch=true"
+                  href="/funil-de-talentos?expandedSearch=true"
                   className="ml-1 p-1.5 rounded-xl hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none border border-lia-border-subtle"
                 >
                   <Table2 className="w-3.5 h-3.5 text-lia-text-secondary" />

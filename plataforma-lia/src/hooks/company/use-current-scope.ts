@@ -38,10 +38,7 @@ export function resolveScopeFromPathname(pathname: string): PromptScope {
   if (!pathname) return "global"
 
   // Funil de talentos / candidatos
-  if (
-    pathname.startsWith("/funil") ||
-    pathname.startsWith("/funil-de-talentos")
-  ) {
+  if (pathname.startsWith("/funil-de-talentos")) {
     return "talent_funnel"
   }
 

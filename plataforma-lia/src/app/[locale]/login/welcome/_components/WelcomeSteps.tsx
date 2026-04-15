@@ -83,7 +83,7 @@ export function WelcomeSteps() {
 
     const welcomeDismissed = useOnboardingStore.getState().welcomeDismissed
     if (welcomeDismissed) {
-      router.push("/funil")
+      router.push("/funil-de-talentos")
       return
     }
 
@@ -216,7 +216,7 @@ export function WelcomeSteps() {
     if (dontShowAgain) {
       useOnboardingStore.getState().setWelcomeDismissed(true)
     }
-    router.push("/funil")
+    router.push("/funil-de-talentos")
   }
 
   if (isLoading) {
