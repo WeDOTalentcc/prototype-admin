@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback, useRef } from "react"
+import { useState, useEffect, useCallback, useRef, useMemo } from "react"
 import { useLiaChatContext } from "@/contexts/lia-float-context"
 import type { CompanyData } from "@/components/settings/companyTeamHub.types"
 
@@ -33,6 +33,28 @@ interface CompanySettingsCardsState {
   isSavingField: boolean
 }
 
+interface BenefitItem {
+  id?: string
+  name?: string
+  is_active?: boolean
+}
+
+interface PipelineRules {
+  min_interviews_before_offer?: number
+  manager_approval_for_offer?: boolean
+}
+
+interface CommunicationRules {
+  auto_rejection_feedback?: boolean
+}
+
+interface HiringPolicyData {
+  pipeline_rules?: PipelineRules
+  communication_rules?: CommunicationRules
+  setup_progress?: number
+  [key: string]: unknown
+}
+
 function computeBlockStatus(fields: CardField[]): "configured" | "partial" | "pending" {
   const filled = fields.filter(f => {
     if (f.value === null || f.value === undefined || f.value === "") return false
@@ -46,9 +68,9 @@ function computeBlockStatus(fields: CardField[]): "configured" | "partial" | "pe
 
 function buildBlocks(
   company: CompanyData | null,
-  benefits: unknown[],
+  benefits: BenefitItem[],
   departments: unknown[],
-  hiringPolicy: Record<string, unknown> | null,
+  hiringPolicy: HiringPolicyData | null,
 ): CardBlock[] {
   if (!company) return []
 
@@ -85,7 +107,7 @@ function buildBlocks(
 
   const benefitsFields: CardField[] = [
     { key: "benefits_count", label: "Total de Beneficios", value: benefits.length > 0 ? `${benefits.length} cadastrado(s)` : null, type: "text", editable: false, block: "benefits" },
-    { key: "benefits_active", label: "Beneficios Ativos", value: benefits.filter((b: any) => b.is_active !== false).length || null, type: "number", editable: false, block: "benefits" },
+    { key: "benefits_active", label: "Beneficios Ativos", value: benefits.filter((b) => b.is_active !== false).length || null, type: "number", editable: false, block: "benefits" },
   ]
 
   const deptFields: CardField[] = [
@@ -93,12 +115,28 @@ function buildBlocks(
   ]
 
   const policyFields: CardField[] = hiringPolicy ? [
-    { key: "min_interviews_before_offer", label: "Min. Entrevistas p/ Oferta", value: (hiringPolicy.pipeline_rules as any)?.min_interviews_before_offer, type: "number", editable: false, block: "policy" },
-    { key: "manager_approval_for_offer", label: "Aprovacao Gestor", value: (hiringPolicy.pipeline_rules as any)?.manager_approval_for_offer, type: "boolean", editable: false, block: "policy" },
-    { key: "auto_rejection_feedback", label: "Feedback Auto Rejeicao", value: (hiringPolicy.communication_rules as any)?.auto_rejection_feedback, type: "boolean", editable: false, block: "policy" },
+    { key: "min_interviews_before_offer", label: "Min. Entrevistas p/ Oferta", value: hiringPolicy.pipeline_rules?.min_interviews_before_offer, type: "number", editable: false, block: "policy" },
+    { key: "manager_approval_for_offer", label: "Aprovacao Gestor", value: hiringPolicy.pipeline_rules?.manager_approval_for_offer, type: "boolean", editable: false, block: "policy" },
+    { key: "auto_rejection_feedback", label: "Feedback Auto Rejeicao", value: hiringPolicy.communication_rules?.auto_rejection_feedback, type: "boolean", editable: false, block: "policy" },
     { key: "setup_progress", label: "Progresso Configuracao", value: hiringPolicy.setup_progress ? `${hiringPolicy.setup_progress}%` : null, type: "text", editable: false, block: "policy" },
   ] : [
     { key: "policy_status", label: "Status", value: null, type: "text", editable: false, block: "policy" },
+  ]
+
+  const additionalData = company.additional_data
+  const workforceFields: CardField[] = [
+    { key: "hiring_volume", label: "Volume de Contratacao", value: additionalData?.hiring_volume, type: "number", editable: false, block: "workforce" },
+    { key: "job_types", label: "Tipos de Vaga", value: additionalData?.job_types, type: "list", editable: false, block: "workforce" },
+    { key: "current_ats", label: "ATS Atual", value: additionalData?.current_ats, type: "text", editable: false, block: "workforce" },
+    { key: "main_challenges", label: "Principais Desafios", value: additionalData?.main_challenges, type: "list", editable: false, block: "workforce" },
+    { key: "main_priority", label: "Prioridade Principal", value: additionalData?.main_priority, type: "text", editable: false, block: "workforce" },
+  ]
+
+  const documentFields: CardField[] = [
+    { key: "onboarding_completed", label: "Onboarding Concluido", value: additionalData?.onboarding_completed_at ? "Sim" : null, type: "text", editable: false, block: "documents" },
+    { key: "additional_notes", label: "Notas Adicionais", value: additionalData?.additional_notes, type: "text", editable: false, block: "documents" },
+    { key: "responsible_name", label: "Responsavel", value: additionalData?.responsible_name, type: "text", editable: false, block: "documents" },
+    { key: "responsible_position", label: "Cargo do Responsavel", value: additionalData?.responsible_position, type: "text", editable: false, block: "documents" },
   ]
 
   const blocks: CardBlock[] = [
@@ -108,16 +146,28 @@ function buildBlocks(
     { key: "benefits", title: "Beneficios", iconName: "Gift", fields: benefitsFields, status: computeBlockStatus(benefitsFields) },
     { key: "departments", title: "Departamentos", iconName: "Network", fields: deptFields, status: computeBlockStatus(deptFields) },
     { key: "policy", title: "Politicas de Recrutamento", iconName: "GitBranch", fields: policyFields, status: computeBlockStatus(policyFields) },
+    { key: "workforce", title: "Workforce Planning", iconName: "BarChart3", fields: workforceFields, status: computeBlockStatus(workforceFields) },
+    { key: "documents", title: "Documentos & Onboarding", iconName: "FileText", fields: documentFields, status: computeBlockStatus(documentFields) },
   ]
 
   return blocks
 }
 
+function snapshotFieldValues(blocks: CardBlock[]): Map<string, string> {
+  const snap = new Map<string, string>()
+  for (const block of blocks) {
+    for (const field of block.fields) {
+      snap.set(field.key, JSON.stringify(field.value))
+    }
+  }
+  return snap
+}
+
 export function useCompanySettingsCards() {
   const [companyData, setCompanyData] = useState<CompanyData | null>(null)
-  const [benefits, setBenefits] = useState<unknown[]>([])
+  const [benefits, setBenefits] = useState<BenefitItem[]>([])
   const [departments, setDepartments] = useState<unknown[]>([])
-  const [hiringPolicy, setHiringPolicy] = useState<Record<string, unknown> | null>(null)
+  const [hiringPolicy, setHiringPolicy] = useState<HiringPolicyData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
@@ -130,6 +180,7 @@ export function useCompanySettingsCards() {
 
   const { chatMessages, chatContextType, switchChatContext } = useLiaChatContext()
   const prevMessageCountRef = useRef(0)
+  const prevFieldSnapshotRef = useRef<Map<string, string>>(new Map())
 
   const fetchCompanyProfile = useCallback(async () => {
     try {
@@ -139,7 +190,7 @@ export function useCompanySettingsCards() {
         setCompanyId(data.id || null)
         return data
       }
-    } catch {}
+    } catch { /* handled by caller */ }
     return null
   }, [])
 
@@ -147,7 +198,7 @@ export function useCompanySettingsCards() {
     try {
       const res = await fetch(`/api/backend-proxy/company/culture-profile?company_id=${cid}`)
       if (res.ok) return await res.json()
-    } catch {}
+    } catch { /* handled by caller */ }
     return null
   }, [])
 
@@ -158,7 +209,7 @@ export function useCompanySettingsCards() {
         const data = await res.json()
         return Array.isArray(data) ? data : data.items || []
       }
-    } catch {}
+    } catch { /* handled by caller */ }
     return []
   }, [])
 
@@ -166,15 +217,20 @@ export function useCompanySettingsCards() {
     try {
       const res = await fetch("/api/backend-proxy/company/departments")
       if (res.ok) return await res.json()
-    } catch {}
+    } catch { /* handled by caller */ }
     return []
   }, [])
 
-  const fetchHiringPolicy = useCallback(async () => {
+  const fetchHiringPolicy = useCallback(async (cid: string) => {
     try {
-      const res = await fetch("/api/backend-proxy/hiring-policy")
+      const res = await fetch(`/api/backend-proxy/hiring-policy/${cid}`)
       if (res.ok) return await res.json()
-    } catch {}
+    } catch {
+      try {
+        const fallback = await fetch("/api/backend-proxy/hiring-policy")
+        if (fallback.ok) return await fallback.json()
+      } catch { /* handled by caller */ }
+    }
     return null
   }, [])
 
@@ -185,7 +241,7 @@ export function useCompanySettingsCards() {
         const data = await res.json()
         setOverallProgress(data.overall ?? 0)
       }
-    } catch {}
+    } catch { /* handled by caller */ }
   }, [])
 
   const loadAll = useCallback(async () => {
@@ -199,7 +255,7 @@ export function useCompanySettingsCards() {
         cid ? fetchCultureProfile(cid) : null,
         cid ? fetchBenefits(cid) : [],
         fetchDepartments(),
-        fetchHiringPolicy(),
+        cid ? fetchHiringPolicy(cid) : null,
       ])
 
       const merged: CompanyData = {
@@ -235,6 +291,7 @@ export function useCompanySettingsCards() {
         tech_stack: culture?.tech_stack || [],
         engineering_culture: culture?.engineering_culture || "",
         default_languages: culture?.default_languages || [],
+        additional_data: culture?.additional_data || profile?.additional_data || undefined,
       }
 
       setCompanyData(merged)
@@ -243,7 +300,7 @@ export function useCompanySettingsCards() {
       setHiringPolicy(policyData)
 
       await fetchProgress()
-    } catch (err) {
+    } catch {
       setError("Erro ao carregar dados da empresa")
     } finally {
       setLoading(false)
@@ -253,6 +310,31 @@ export function useCompanySettingsCards() {
   useEffect(() => {
     loadAll()
   }, [loadAll])
+
+  const blocks = useMemo(
+    () => buildBlocks(companyData, benefits, departments, hiringPolicy),
+    [companyData, benefits, departments, hiringPolicy]
+  )
+
+  useEffect(() => {
+    if (blocks.length === 0) return
+    const currentSnapshot = snapshotFieldValues(blocks)
+    const prevSnapshot = prevFieldSnapshotRef.current
+
+    if (prevSnapshot.size > 0) {
+      const changedKeys = new Set<string>()
+      for (const [key, val] of currentSnapshot) {
+        if (prevSnapshot.get(key) !== val) {
+          changedKeys.add(key)
+        }
+      }
+      if (changedKeys.size > 0) {
+        setRecentlyUpdated(changedKeys)
+        setTimeout(() => setRecentlyUpdated(new Set()), 2500)
+      }
+    }
+    prevFieldSnapshotRef.current = currentSnapshot
+  }, [blocks])
 
   useEffect(() => {
     if (chatContextType !== "settings_config") {
@@ -278,8 +360,6 @@ export function useCompanySettingsCards() {
       switchChatContext("general")
     }
   }, [switchChatContext])
-
-  const blocks = buildBlocks(companyData, benefits, departments, hiringPolicy)
 
   const toggleBlock = useCallback((blockKey: string) => {
     setExpandedBlocks(prev => {
@@ -354,8 +434,6 @@ export function useCompanySettingsCards() {
         throw new Error(errorData.detail || errorData.error || "Falha ao salvar campo")
       }
 
-      setRecentlyUpdated(new Set([field]))
-      setTimeout(() => setRecentlyUpdated(new Set()), 2000)
       setSuccessMessage("Campo atualizado com sucesso!")
       setTimeout(() => setSuccessMessage(null), 3000)
       await loadAll()

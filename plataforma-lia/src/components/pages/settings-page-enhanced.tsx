@@ -20,7 +20,7 @@ import {
 } from"lucide-react"
 
 const SECTION_ICON_COLORS: Record<string, string> = {
-  'company-team': 'text-wedo-cyan',
+  'minha-empresa': 'text-wedo-cyan',
   'recruitment': 'text-emerald-500',
   'communication': 'text-violet-500',
   'goals-planning': 'text-amber-500',
@@ -88,7 +88,7 @@ interface SectionProgress {
 
 const getDefaultSections = (): SettingsSection[] => [
   {
-    id: 'company-team',
+    id: 'minha-empresa',
     title: 'Minha Empresa',
     description: 'Dados, cultura, beneficios e politicas — conversacional',
     icon: Building,
@@ -113,7 +113,7 @@ const getDefaultSections = (): SettingsSection[] => [
     priority: 'high',
     category: 'advanced',
     estimatedTime: 20,
-    dependencies: ['company-team'],
+    dependencies: ['minha-empresa'],
     subsections: [
       { id: 'pipeline', title: 'Pipeline', description: 'Etapas do processo (configurado pelo CS)', fields: ['stages', 'flow'] },
       { id: 'screening', title: 'Perguntas de Elegibilidade', description: 'Perguntas iniciais via WhatsApp', fields: ['screening_questions'] },
@@ -129,7 +129,7 @@ const getDefaultSections = (): SettingsSection[] => [
     priority: 'medium',
     category: 'advanced',
     estimatedTime: 15,
-    dependencies: ['company-team'],
+    dependencies: ['minha-empresa'],
     subsections: [
       { id: 'templates', title: 'Templates', description: 'Modelos de email', fields: ['email_templates'] },
       { id: 'signature', title: 'Assinatura', description: 'Assinatura padrão', fields: ['signature'] },
@@ -212,9 +212,9 @@ const getCompletionBadgeColor = (percentage: number): string => {
 
 export default function SettingsPageEnhanced() {
   const { companyId, tenantInfo, isLoading: isTenantLoading } = useCompanyId()
-  const [activeSection, setActiveSection] = useState<string>('company-team')
+  const [activeSection, setActiveSection] = useState<string>('minha-empresa')
   const [activeSubsection, setActiveSubsection] = useState<string>('')
-  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['company-team']))
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['minha-empresa']))
 
   useEffect(() => {
     const handler = (e: Event) => {
@@ -232,7 +232,7 @@ export default function SettingsPageEnhanced() {
   const [goals, setGoals] = useState<Record<string, unknown[]>>({})
   
   const [sectionCompletion, setSectionCompletion] = useState<Record<string, number>>({
-    'company-team': 0,
+    'minha-empresa': 0,
     'recruitment': 0,
     'communication': 0,
     'goals-planning': 0,
@@ -312,7 +312,7 @@ export default function SettingsPageEnhanced() {
       if (data.sections) {
         setSectionCompletion(prev => ({
           ...prev,
-          'company-team': data.sections['company-team'] ?? prev['company-team'],
+          'minha-empresa': data.sections['minha-empresa'] ?? data.sections['company-team'] ?? prev['minha-empresa'],
           'recruitment': data.sections['recruitment'] ?? prev['recruitment'],
           'communication': data.sections['communication'] ?? prev['communication'],
           'hiring-policies': data.sections['hiring-policies'] ?? prev['hiring-policies'],
@@ -434,7 +434,7 @@ export default function SettingsPageEnhanced() {
 
   const renderSectionContent = () => {
     switch (activeSection) {
-      case 'company-team':
+      case 'minha-empresa':
         return (
           <ErrorBoundarySection>
             <MinhaEmpresaHub />
