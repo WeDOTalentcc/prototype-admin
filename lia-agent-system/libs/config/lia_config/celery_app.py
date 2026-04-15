@@ -235,6 +235,12 @@ celery_app.conf.update(
             "schedule": crontab(hour=9, minute=0),  # 06h Brasília / UTC-3
             "options": {"expires": 3600},
         },
+        # P37-073: Golden scenario qualitative drift (after quantitative drift)
+        "golden-drift-check-daily": {
+            "task": "golden_drift.run_check",
+            "schedule": crontab(hour=10, minute=0),  # 07h Brasília — runs after drift.run_batch
+            "options": {"expires": 7200, "queue": "evaluation_normal"},
+        },
         # Lifecycle policy de auditoria: 1º de cada mês às 03h (Brasília = UTC-3 → 06h UTC)
         "audit-lifecycle-monthly": {
             "task": "audit.apply_lifecycle_policy",

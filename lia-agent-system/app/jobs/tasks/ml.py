@@ -211,6 +211,39 @@ def process_ml_feedback_weights_task(self, company_id: str, job_id: str) -> dict
             _emit_dlq_push("ml.feedback.process_weights", exc)
         raise self.retry(exc=exc, countdown=120)
 
+@celery_app.task(name="golden_drift.run_check", bind=True, max_retries=1, queue="evaluation_normal")
+def run_golden_drift_check(self) -> dict:
+    """
+    Qualitative drift detection via golden scenarios — P37-073 (item 11.3).
+
+    Runs golden eval suite, compares with saved baseline, classifies drift
+    as STABLE/WARNING/CRITICAL, and dispatches Sentry alerts.
+
+    Scheduled daily via Celery Beat (after quantitative drift at 9h UTC).
+    """
+    span = _celery_span("celery.task_start", "golden_drift.run_check")
+
+    try:
+        from app.services.golden_drift_monitor import golden_drift_detector, dispatch_drift_alerts
+        from dataclasses import asdict
+
+        report = golden_drift_detector.run_check()
+        dispatch_drift_alerts(report)
+
+        logger.info(
+            "[Celery] golden_drift: status=%s agents=%d errors=%d",
+            report.overall_status, len(report.agents), len(report.eval_errors),
+        )
+        _finish_celery_success(span, "golden_drift.run_check")
+        return asdict(report)
+    except Exception as exc:
+        _finish_celery_failure(span, "golden_drift.run_check", exc)
+        logger.error("golden_drift.run_check failed: %s", exc)
+        if self.request.retries >= self.max_retries:
+            _emit_dlq_push("golden_drift.run_check", exc)
+        raise self.retry(exc=exc, countdown=600)
+
+
 @celery_app.task(name="agents.registry.check_reload")
 def check_agent_registry_reload():
     """Verifica se agents_registry.yaml foi modificado e recarrega o registry.

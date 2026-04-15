@@ -26,6 +26,52 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/analytics", tags=["analytics"])
 
 
+async def _get_drift_status(company_id: str, db: AsyncSession) -> dict[str, Any]:
+    """Aggregate drift status from quantitative + qualitative monitors."""
+    result: dict[str, Any] = {"quantitative": None, "qualitative": None, "overall": "unknown"}
+
+    # Quantitative drift (existing ModelDriftService)
+    try:
+        from app.domains.ai.services.model_drift_service import ModelDriftService
+        svc = ModelDriftService()
+        status = await svc.evaluate(db, company_id)
+        result["quantitative"] = {
+            "alert_level": status.alert_level,
+            "triggers": [
+                {"name": t.name, "delta": round(t.delta, 4), "triggered": t.triggered}
+                for t in status.triggers
+            ],
+        }
+    except Exception as exc:
+        logger.debug("[AgentQualityDashboard] drift quantitative failed: %s", exc)
+
+    # Qualitative drift (golden scenarios — reads last saved report)
+    try:
+        from app.services.golden_drift_monitor import BaselineManager
+        bm = BaselineManager()
+        if bm.has_baseline():
+            baselines = bm.load()
+            result["qualitative"] = {
+                "has_baseline": True,
+                "agents": {name: round(b.pass_rate, 3) for name, b in baselines.items()},
+            }
+        else:
+            result["qualitative"] = {"has_baseline": False}
+    except Exception as exc:
+        logger.debug("[AgentQualityDashboard] drift qualitative failed: %s", exc)
+
+    # Overall: worst of both
+    quant_level = (result.get("quantitative") or {}).get("alert_level", "ok")
+    if quant_level == "critical":
+        result["overall"] = "critical"
+    elif quant_level == "warning":
+        result["overall"] = "warning"
+    else:
+        result["overall"] = "stable"
+
+    return result
+
+
 @router.get("/agent-quality-dashboard")
 async def get_agent_quality_dashboard(
     period: str = Query("7d", regex="^(7d|30d|90d)$"),
@@ -161,6 +207,9 @@ async def get_agent_quality_dashboard(
         else:
             agent["trend"] = "degrading"
 
+    # Enrich with drift status from quantitative + qualitative monitors (P37-073)
+    drift_status = await _get_drift_status(company_id, db)
+
     total_execs = sum(a.get("total_executions", 0) for a in agents_list)
     total_errors = sum(a.get("error_count", 0) for a in agents_list)
     total_fairness = sum(a.get("fairness_checks", 0) for a in agents_list)
@@ -178,6 +227,7 @@ async def get_agent_quality_dashboard(
             "error_rate": round(total_errors / max(total_execs, 1), 3),
             "fairness_score": round(1 - (total_blocks / max(total_fairness, 1)), 3) if total_fairness else 1.0,
         },
+        "drift_status": drift_status,
         "period": period,
         "company_id": company_id,
         "generated_at": datetime.utcnow().isoformat(),
