@@ -81,6 +81,67 @@ class PersonalizationContext:
     defaults: PersonalizedDefaults = dataclass_field(default_factory=PersonalizedDefaults)
     field_preferences: dict[str, RecruiterFieldPreference] = dataclass_field(default_factory=dict)
 
+    def to_prompt_snippet(self) -> str:
+        """Format personalization context as a prompt snippet for SystemPromptBuilder.
+
+        Returns a human-readable block injected into the system prompt under
+        '### Preferências do Recrutador'. When no meaningful personalization
+        exists, returns an empty string (prompt builder ignores empty context).
+        """
+        if self.personalization_level in ("none", "disabled"):
+            return ""
+
+        lines: list[str] = []
+
+        # Response style from wizard_mode / flow_config
+        if self.flow_config.show_detailed_explanations:
+            lines.append("- Prefere respostas: detalhadas, com análise completa")
+        elif self.profile and self.profile.prefers_quick_flow:
+            lines.append("- Prefere respostas: curtas e diretas, sem detalhamento extenso")
+        else:
+            lines.append("- Prefere respostas: padrão, com contexto relevante")
+
+        # Priority criteria from profile
+        if self.profile:
+            seniorities = self.profile.preferred_seniorities or []
+            if seniorities:
+                lines.append(f"- Senioridades frequentes: {', '.join(seniorities[:5])}")
+
+            departments = self.profile.preferred_departments or []
+            if departments:
+                lines.append(f"- Departamentos frequentes: {', '.join(departments[:5])}")
+
+            corrections = self.profile.correction_patterns or {}
+            if corrections:
+                top_corrections = sorted(corrections.items(), key=lambda x: x[1], reverse=True)[:3]
+                fields_str = ", ".join(f"{k} ({v}x)" for k, v in top_corrections)
+                lines.append(f"- Campos que costuma corrigir: {fields_str}")
+
+            if self.profile.total_jobs_created:
+                lines.append(f"- Experiência: {self.profile.total_jobs_created} vagas criadas")
+
+        # Defaults when personalization has inferred values
+        if self.defaults.seniority:
+            lines.append(f"- Default de senioridade: {self.defaults.seniority}")
+        if self.defaults.department:
+            lines.append(f"- Default de departamento: {self.defaults.department}")
+
+        # Confidence settings from PersonalizationSettings
+        if self.settings:
+            if self.settings.auto_approve_high_confidence:
+                threshold = self.settings.high_confidence_threshold or 0.90
+                lines.append(f"- Auto-aprova com confiança ≥ {threshold:.0%}")
+            if not self.settings.explain_suggestions:
+                lines.append("- Não quer explicações detalhadas das sugestões")
+
+        # Personalization level indicator
+        lines.append(f"- Nível de personalização: {self.personalization_level}")
+
+        if not lines:
+            return ""
+
+        return "\n".join(lines)
+
 
 class RecruiterPersonalizationService:
     """
@@ -553,3 +614,38 @@ class RecruiterPersonalizationService:
 
 
 recruiter_personalization_service = RecruiterPersonalizationService()
+
+
+async def get_recruiter_prompt_context(
+    recruiter_id: str,
+    company_id: str,
+) -> str:
+    """Convenience helper: load PersonalizationContext and format as prompt snippet.
+
+    Call from any agent/caller that builds system prompts:
+
+        recruiter_ctx = await get_recruiter_prompt_context(user_id, company_id)
+        prompt = SystemPromptBuilder.build(recruiter_context=recruiter_ctx, ...)
+
+    Returns empty string when personalization is disabled/unavailable,
+    so callers don't need to handle the absent case.
+    """
+    from app.core.database import AsyncSessionLocal
+
+    try:
+        async with AsyncSessionLocal() as db:
+            ctx = await recruiter_personalization_service.get_personalization_context(
+                db=db,
+                recruiter_id=recruiter_id,
+                company_id=company_id,
+            )
+            snippet = ctx.to_prompt_snippet()
+            if snippet:
+                logger.info(
+                    "[Personalization] Loaded prompt context for recruiter=%s level=%s",
+                    recruiter_id, ctx.personalization_level,
+                )
+            return snippet
+    except Exception as exc:
+        logger.warning("[Personalization] Failed to load context: %s", exc)
+        return ""
