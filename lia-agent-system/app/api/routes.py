@@ -482,6 +482,9 @@ def register_all_routes(app: FastAPI) -> None:
 
     from app.api.v1 import decision_explanation
     app.include_router(decision_explanation.router, prefix="/api/v1", tags=["decision-explanation"])
+
+    from app.api.v1 import ai_config
+    app.include_router(ai_config.router, prefix="/api/v1", tags=["ai-configuration"])
     app.include_router(agent_quality_router, prefix="/api/v1", tags=["agent-quality"])
     app.include_router(agent_quality_dashboard_router, prefix="/api/v1", tags=["agent-quality-dashboard"])
     app.include_router(ml_predictions_router, prefix="/api/v1", tags=["ml-predictions"])

@@ -1,5 +1,6 @@
 # API v1
 from app.api.v1 import (
+    ai_config,
     audit_logs,
     billing,
     cache,
