@@ -211,6 +211,14 @@ const nextConfig = {
         destination: `${BACKEND_URL}/api/v1/chat/stream`,
       },
       {
+        source: '/api/backend-proxy/chat',
+        destination: `${BACKEND_URL}/api/v1/chat`,
+      },
+      {
+        source: '/api/backend-proxy/chat/:path*',
+        destination: `${BACKEND_URL}/api/v1/chat/:path*`,
+      },
+      {
         source: '/ws/:path*',
         destination: `${BACKEND_URL}/ws/:path*`,
       },
