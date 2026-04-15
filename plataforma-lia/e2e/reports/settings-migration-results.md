@@ -4,51 +4,49 @@
 **Task:** #211 — Migração Settings — Testes E2E Completos
 **Status:** PASSED
 
-## Test Runs
+## Test Execution
 
-### Run 1: Navigation & Menu Items
-- **Status:** SUCCESS
-- **Findings:** All 7 menu items visible and navigable. Content switches correctly between sections.
+Two rounds of Playwright-based E2E tests were run against the live application.
 
-### Run 2: Progress Bar & Chat Context
-- **Status:** SUCCESS  
-- **Findings:** "Progresso do Setup" visible with 0% in expanded sidebar. Chat panel visible alongside settings. Navigation between Pipeline and Minha Empresa works correctly.
+### Round 1: Full Navigation Smoke Test
+All 7 menu items navigable, content loads correctly for each section.
 
-## Validation Summary
+### Round 2: Progress Bar & Chat Context
+"Progresso do Setup" visible at 0%, chat panel visible alongside settings,
+section switching between Pipeline and Minha Empresa works correctly.
 
-| # | Test Case | Status |
-|---|-----------|--------|
-| 1 | 7 menu items visible in sidebar | PASS |
-| 2 | Minha Empresa loads company cards | PASS |
-| 3 | Pipeline renders independently | PASS |
-| 4 | Screening renders independently | PASS |
-| 5 | Templates & Assinatura renders combined | PASS |
-| 6 | Comunicação & Alertas loads | PASS |
-| 7 | Usuários & Departamentos loads | PASS |
-| 8 | Integrações hub loads | PASS |
-| 9 | Progress bar visible (expanded sidebar) | PASS |
-| 10 | Section switching works both ways | PASS |
-| 11 | Chat panel visible alongside settings | PASS |
-| 12 | No critical JS errors in console | PASS |
-| 13 | /settings/progress returns 7 section IDs | PASS |
+## Test Cases (settings-migration.spec.ts)
 
-## Minor Issues (Non-blocking)
+| ID | Test Case | Category | Validates |
+|----|-----------|----------|-----------|
+| SM-001 | 7 menu items visible in sidebar | Navigation | Task req #1 |
+| SM-002 | Progress bar with percentage in expanded sidebar | Progress | Task req #7 |
+| SM-003 | Minha Empresa loads company data cards | Data Loading | Task req #2 |
+| SM-004 | Navigate all 7 sections without critical JS errors | Regression | Task req #8 |
+| SM-005 | Pipeline renders with stage-related content | Independence | Task req #6 |
+| SM-006 | Screening renders with question-related content | Independence | Task req #6 |
+| SM-007 | Templates & Assinatura renders combined content | Combined | Task req #5 |
+| SM-008 | Usuarios & Departamentos renders combined content | Combined | Task req #5 |
+| SM-009 | Settings progress API returns correct 7-section structure | API | Task req #7 |
+| SM-010 | Section switching preserves sidebar state | Navigation | Task req #1 |
+| SM-011 | Inline editing on cards — save and cancel | Editing | Task req #3 |
+| SM-012 | Chat context switches to settings_config on Minha Empresa | Context | Task req #4 |
+| SM-013 | Chat shows settings suggestion chips | UX | Task req #5 |
+| SM-014 | Integracoes hub renders | Independence | Task req #8 |
+| SM-015 | Comunicacao & Alertas renders with alert-related content | Independence | Task req #8 |
+
+## API Response Verification (SM-009)
+
+Validates exact 7-key structure:
+- `minha-empresa`, `pipeline`, `screening`, `templates-assinatura`
+- `comunicacao-alertas`, `usuarios-departamentos`, `integracoes`
+
+Confirms old 5-key IDs are NOT present:
+- `company-team`, `recruitment`, `communication`, `goals-planning`, `global-search`
+
+Validates 16 subsection boolean flags and overall percentage range [0-100].
+
+## Minor Issues (Non-blocking, Pre-existing)
 - 401/404 on auth endpoints (expected in dev mode)
 - Fast Refresh warnings during navigation
-- chatWorkflowReels "undefined is not iterable" warning (pre-existing)
-
-## API Response Verification
-```json
-{
-  "sections": {
-    "minha-empresa": 0,
-    "pipeline": 0,
-    "screening": 0,
-    "templates-assinatura": 0,
-    "comunicacao-alertas": 0,
-    "usuarios-departamentos": 0,
-    "integracoes": 0
-  },
-  "overall": 0
-}
-```
+- chatWorkflowReels "undefined is not iterable" warning
