@@ -177,6 +177,7 @@ async def _wrap_save_company_field(**kwargs: Any) -> dict[str, Any]:
         return {"success": False, "data": {}, "message": f"Campo '{field}' nao e valido para cultura."}
 
     if field in TIER_1_FIELDS:
+        is_admin = kwargs.get("is_admin", False)
         async with AsyncSessionLocal() as check_session:
             existing_row = await check_session.execute(
                 text("SELECT name FROM company_profiles WHERE id::text = :cid LIMIT 1"),
@@ -185,21 +186,28 @@ async def _wrap_save_company_field(**kwargs: Any) -> dict[str, Any]:
             row = existing_row.mappings().first()
             is_post_setup = row is not None and row.get("name") is not None
 
-        if is_post_setup and not confirmed:
-            return {
-                "success": False,
-                "data": {
-                    "requires_confirmation": True,
-                    "tier": 1,
-                    "field": field,
-                    "proposed_value": value,
-                },
-                "message": (
-                    f"Campo '{field}' e CRITICO (TIER 1). "
-                    "A empresa ja foi configurada — alteracao requer confirmacao explicita do administrador. "
-                    "Chame novamente com confirmed=true para prosseguir."
-                ),
-            }
+        if is_post_setup:
+            if not is_admin:
+                return {
+                    "success": False,
+                    "data": {"tier": 1, "field": field, "requires_admin": True},
+                    "message": f"Campo '{field}' e CRITICO (TIER 1). Apenas administradores podem alterar este campo apos o setup inicial.",
+                }
+            if not confirmed:
+                return {
+                    "success": False,
+                    "data": {
+                        "requires_confirmation": True,
+                        "tier": 1,
+                        "field": field,
+                        "proposed_value": value,
+                    },
+                    "message": (
+                        f"Campo '{field}' e CRITICO (TIER 1). "
+                        "Administrador autenticado — confirmacao explicita necessaria. "
+                        "Chame novamente com confirmed=true para prosseguir."
+                    ),
+                }
 
     tier_warning = None
     if field in TIER_2_FIELDS:
@@ -267,6 +275,7 @@ async def _wrap_save_company_section(**kwargs: Any) -> dict[str, Any]:
     company_id = kwargs.get("company_id", "")
     section = kwargs.get("section", "profile")
     data = kwargs.get("data", {})
+    user_id = kwargs.get("user_id", "system")
 
     if not data or not isinstance(data, dict):
         return {"success": False, "data": {}, "message": "Dados vazios ou invalidos."}
@@ -285,7 +294,7 @@ async def _wrap_save_company_section(**kwargs: Any) -> dict[str, Any]:
     failed_fields: dict[str, str] = {}
     for field, value in data.items():
         result = await _wrap_save_company_field(
-            company_id=company_id, section=section, field=field, value=value
+            company_id=company_id, section=section, field=field, value=value, user_id=user_id
         )
         if result["success"]:
             saved_fields.append(field)
@@ -362,6 +371,7 @@ async def _wrap_process_uploaded_document(**kwargs: Any) -> dict[str, Any]:
     company_id = kwargs.get("company_id", "")
     document_text = kwargs.get("document_text", "")
     document_type = kwargs.get("document_type", "general")
+    user_id = kwargs.get("user_id", "system")
 
     if not document_text:
         return {"success": False, "data": {}, "message": "Texto do documento esta vazio."}
@@ -382,7 +392,7 @@ async def _wrap_process_uploaded_document(**kwargs: Any) -> dict[str, Any]:
     }
     expected_fields = extraction_hints.get(document_type, extraction_hints["general"])
 
-    await _audit_log(company_id, "process_document", metadata={"document_type": document_type, "text_length": len(document_text)})
+    await _audit_log(company_id, "process_document", metadata={"document_type": document_type, "text_length": len(document_text), "user_id": user_id})
 
     return {
         "success": True,
@@ -405,6 +415,7 @@ async def _wrap_process_uploaded_document(**kwargs: Any) -> dict[str, Any]:
 async def _wrap_import_workforce_plan(**kwargs: Any) -> dict[str, Any]:
     company_id = kwargs.get("company_id", "")
     plan_data = kwargs.get("plan_data", [])
+    user_id = kwargs.get("user_id", "system")
 
     if not plan_data or not isinstance(plan_data, list):
         return {
@@ -448,7 +459,7 @@ async def _wrap_import_workforce_plan(**kwargs: Any) -> dict[str, Any]:
 
         await session.commit()
 
-    await _audit_log(company_id, "import_workforce_plan", metadata={"total_hires": total_hires, "departments": departments})
+    await _audit_log(company_id, "import_workforce_plan", metadata={"total_hires": total_hires, "departments": departments, "user_id": user_id, "items_count": len(plan_data)})
 
     return {
         "success": True,
@@ -536,6 +547,7 @@ def get_company_settings_tools() -> list[ToolDefinition]:
                     "field": {"type": "string", "description": "Nome do campo"},
                     "value": {"description": "Valor a salvar"},
                     "confirmed": {"type": "boolean", "description": "Confirmacao explicita para campos TIER 1 (cnpj, name) pos-setup. Default false."},
+                    "is_admin": {"type": "boolean", "description": "Se o usuario solicitante e administrador. Obrigatorio para TIER 1 pos-setup."},
                     "user_id": {"type": "string", "description": "ID do usuario que solicitou a alteracao"},
                 },
                 "required": ["company_id", "section", "field", "value"],

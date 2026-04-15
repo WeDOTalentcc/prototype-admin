@@ -5,6 +5,7 @@ Aggregates data from Company, Department, Benefit, Approver, RecruitmentTemplate
 RecruitmentSLA, RecruitmentAutomation, and GlobalSearchSettings.
 """
 import logging
+from typing import Any
 
 from sqlalchemy import func, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -87,7 +88,7 @@ class SettingsProgressRepository:
         )
         return result.scalar() or 0
 
-    async def get_culture_profile(self, company_id):
+    async def get_culture_profile(self, company_id) -> dict[str, Any] | None:
         try:
             result = await self.db.execute(
                 text("SELECT additional_data FROM company_culture_profiles WHERE company_id = :cid LIMIT 1"),
@@ -95,12 +96,10 @@ class SettingsProgressRepository:
             )
             row = result.mappings().first()
             if row:
-                class _Row:
-                    additional_data = row.get("additional_data")
-                return _Row()
+                return {"additional_data": row.get("additional_data")}
             return None
-        except Exception as e:
-            logger.debug("get_culture_profile failed: %s", e)
+        except Exception as exc:
+            logger.warning("get_culture_profile query failed for company_id=%s: %s", company_id, exc)
             return None
 
     async def get_global_search_settings(self, company_id) -> GlobalSearchSettings | None:

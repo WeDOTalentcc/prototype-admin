@@ -123,8 +123,8 @@ async def get_settings_progress(
         culture_profile = await repo.get_culture_profile(company_uuid) if company_uuid else None
         has_workforce_plan = bool(
             culture_profile
-            and isinstance(getattr(culture_profile, "additional_data", None), dict)
-            and culture_profile.additional_data.get("workforce_plan")
+            and isinstance(culture_profile.get("additional_data"), dict)
+            and culture_profile["additional_data"].get("workforce_plan")
         ) if culture_profile else False
         goals_planning_score = 100 if has_workforce_plan else 0
 
