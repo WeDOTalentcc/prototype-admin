@@ -106,6 +106,7 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
     setChatMessages,
     chatConversationId,
     setChatConversationId,
+    chatContextType,
     switchChatContext,
     sendChatMessage,
     sendApproval,
@@ -286,6 +287,7 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
           <UnifiedChatEmptyState
             mode={effectiveMode}
             onSuggestionClick={handleSuggestionClick}
+            contextType={chatContextType}
           />
         )}
 

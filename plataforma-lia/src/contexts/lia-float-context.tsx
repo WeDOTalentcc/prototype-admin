@@ -185,6 +185,9 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
       msg.executionPlan = executionPlan
     }
     setChatMessages(prev => [...prev, msg])
+    if (chatContextTypeRef.current === "settings_config" && typeof window !== "undefined") {
+      window.dispatchEvent(new CustomEvent("lia:settings-updated", { detail: { content } }))
+    }
   }, [])
 
   const handlePanelUpdate = useCallback((event: PanelUpdateEvent) => {
@@ -256,13 +259,21 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
   }, [connection])
 
   const sendChatMessage = useCallback(async (content: string, domain?: string, scope?: string) => {
+    const CONTEXT_DOMAIN_MAP: Partial<Record<ChatContextType, string>> = {
+      settings_config: "company_settings",
+      job_chat: "wizard",
+      kanban_chat: "kanban",
+      talent_chat: "talent",
+      candidates_chat: "sourcing",
+    }
+    const effectiveDomain = domain || CONTEXT_DOMAIN_MAP[chatContextTypeRef.current] || ""
     addChatMessage({
       id: `user-${Date.now()}`,
       sender: "user",
       content,
       timestamp: formatMessageTime(),
     })
-    await connection.sendMessage(content, domain, scope)
+    await connection.sendMessage(content, effectiveDomain, scope)
   }, [connection, addChatMessage])
 
   const sendOrchestratedMessage = useCallback(async (

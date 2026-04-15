@@ -396,6 +396,14 @@ export function useCompanySettingsCards() {
     }
   }, [switchChatContext])
 
+  useEffect(() => {
+    const handler = () => {
+      setTimeout(() => loadAll(), 1500)
+    }
+    window.addEventListener("lia:settings-updated", handler)
+    return () => window.removeEventListener("lia:settings-updated", handler)
+  }, [loadAll])
+
   const toggleBlock = useCallback((blockKey: string) => {
     setExpandedBlocks(prev => {
       const next = new Set(prev)
