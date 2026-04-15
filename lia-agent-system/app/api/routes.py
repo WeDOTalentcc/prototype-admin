@@ -479,6 +479,9 @@ def register_all_routes(app: FastAPI) -> None:
     app.include_router(proactive_actions_router, prefix="/api/v1")
     app.include_router(agent_memory_router, prefix="/api/v1")
     app.include_router(agent_explainability.router, prefix="/api/v1", tags=["agent-explainability"])
+
+    from app.api.v1 import decision_explanation
+    app.include_router(decision_explanation.router, prefix="/api/v1", tags=["decision-explanation"])
     app.include_router(agent_quality_router, prefix="/api/v1", tags=["agent-quality"])
     app.include_router(agent_quality_dashboard_router, prefix="/api/v1", tags=["agent-quality-dashboard"])
     app.include_router(ml_predictions_router, prefix="/api/v1", tags=["ml-predictions"])

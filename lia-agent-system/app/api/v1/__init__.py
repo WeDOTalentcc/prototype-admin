@@ -8,6 +8,7 @@ from app.api.v1 import (
     consent_management,
     dashboard_data,
     data_subject_requests,
+    decision_explanation,
     default_templates,
     global_policies,
     jd_import,
