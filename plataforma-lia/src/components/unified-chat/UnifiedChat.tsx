@@ -63,6 +63,7 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [sidebarWidthPx, setSidebarWidthPx] = useState(getStoredWidth)
   const [isResizing, setIsResizing] = useState(false)
+  const [titlesByConversation, setTitlesByConversation] = useState<Record<string, string>>({})
   const widthRef = useRef(sidebarWidthPx)
 
   useEffect(() => {
@@ -217,8 +218,31 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
     if (e.target) e.target.value = ""
   }, [])
 
-  const conversationTitle = chatMessages.find(m => m.sender === "user")?.content?.slice(0, 40) || null
+  const autoTitle = chatMessages.find(m => m.sender === "user")?.content?.slice(0, 40) || null
+  const customTitle = chatConversationId ? titlesByConversation[chatConversationId] : null
+  const conversationTitle = customTitle || autoTitle
   const hasMessages = chatMessages.length > 0
+
+  const handleDeleteConversation = useCallback(() => {
+    if (chatConversationId) {
+      setTitlesByConversation(prev => {
+        const next = { ...prev }
+        delete next[chatConversationId]
+        return next
+      })
+    }
+    switchChatContext("general", { conversationId: null })
+    setChatMessages([])
+    setInputText("")
+    setAttachedFile(null)
+  }, [switchChatContext, setChatMessages, chatConversationId])
+
+  const handleRenameConversation = useCallback((newTitle: string) => {
+    if (chatConversationId) {
+      setTitlesByConversation(prev => ({ ...prev, [chatConversationId]: newTitle }))
+    }
+  }, [chatConversationId])
+
   const hasDynamicPanel = !!dynamicPanel
 
   if (renderMode === "overlay" && !isOpen && mode !== "fullscreen") return null
@@ -270,6 +294,9 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
           isConnected={chatIsConnected}
           transportMode={chatTransportMode}
           isReconnecting={chatIsReconnecting}
+          onDelete={handleDeleteConversation}
+          onRename={handleRenameConversation}
+          hasMessages={hasMessages}
         />
 
         {/* Content area */}

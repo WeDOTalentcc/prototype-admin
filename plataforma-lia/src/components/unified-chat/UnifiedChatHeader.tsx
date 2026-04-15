@@ -10,6 +10,16 @@ import { useTranslations } from 'next-intl'
 import type { ChatMode } from "./unified-chat-types"
 import type { TransportMode } from "@/hooks/chat/lia-chat-connection-types"
 import { TransportModeIndicator } from "./TransportModeIndicator"
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogFooter,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogAction,
+  AlertDialogCancel,
+} from "@/components/ui/alert-dialog"
 
 interface Props {
   mode: ChatMode
@@ -23,6 +33,7 @@ interface Props {
   isReconnecting?: boolean
   onRename?: (newTitle: string) => void
   onDelete?: () => void
+  hasMessages?: boolean
 }
 
 export function UnifiedChatHeader({
@@ -37,11 +48,13 @@ export function UnifiedChatHeader({
   isReconnecting,
   onRename,
   onDelete,
+  hasMessages,
 }: Props) {
   const t = useTranslations('chat.header')
   const [showModeMenu, setShowModeMenu] = useState(false)
   const [showOptionsMenu, setShowOptionsMenu] = useState(false)
   const [isRenaming, setIsRenaming] = useState(false)
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [renameValue, setRenameValue] = useState("")
   const renameInputRef = useRef<HTMLInputElement>(null)
 
@@ -87,9 +100,12 @@ export function UnifiedChatHeader({
 
   const handleDelete = () => {
     setShowOptionsMenu(false)
-    if (window.confirm(t('deleteConfirm'))) {
-      onDelete?.()
-    }
+    setShowDeleteDialog(true)
+  }
+
+  const handleConfirmDelete = () => {
+    setShowDeleteDialog(false)
+    onDelete?.()
   }
 
   const renderTitle = () => {
@@ -243,7 +259,7 @@ export function UnifiedChatHeader({
             <MoreHorizontal className="w-4 h-4" />
           </button>
 
-          {showOptionsMenu && (
+          {showOptionsMenu && hasMessages && (
             <>
               <div className="fixed inset-0 z-40" onClick={() => setShowOptionsMenu(false)} />
               <div className="absolute right-0 top-full mt-1 z-50 w-44 rounded-xl border border-lia-border-subtle bg-lia-bg-primary py-1">
@@ -267,6 +283,30 @@ export function UnifiedChatHeader({
           )}
         </div>
       </div>
+
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent className="sm:max-w-[420px] bg-lia-bg-primary rounded-xl dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-sm font-semibold">
+              {t('deleteTitle')}
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-sm text-lia-text-secondary">
+              {t('deleteDescription')}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="text-xs h-8">
+              {t('deleteCancel')}
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmDelete}
+              className="bg-status-error hover:bg-status-error/90 text-white text-xs h-8"
+            >
+              {t('deleteAction')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
