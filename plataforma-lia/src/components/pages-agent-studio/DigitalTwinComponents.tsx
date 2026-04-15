@@ -3,12 +3,12 @@
 import React, { useState, useEffect } from "react"
 import { useTranslations } from "next-intl"
 import {
-  Brain, Upload, Plus, Star, Users, Activity,
+  Brain, Upload, Plus, Star, Users,
   ThumbsUp, ThumbsDown, HelpCircle, ChevronRight, X,
-  UserCheck, BookOpen, Lightbulb, CheckCircle2, Sparkles,
-  FileText, Target, ArrowRight, Info, Loader2
+  UserCheck, BookOpen, Lightbulb,
+  FileText, ArrowRight, Info, Loader2
 } from "lucide-react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
