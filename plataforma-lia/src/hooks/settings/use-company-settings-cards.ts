@@ -218,8 +218,7 @@ export function useCompanySettingsCards() {
   const [isSavingField, setIsSavingField] = useState(false)
   const [companyId, setCompanyId] = useState<string | null>(null)
 
-  const { chatMessages, chatContextType, switchChatContext } = useLiaChatContext()
-  const prevMessageCountRef = useRef(0)
+  const { switchChatContext } = useLiaChatContext()
   const prevFieldSnapshotRef = useRef<Map<string, string>>(new Map())
 
   const fetchCompanyProfile = useCallback(async () => {
@@ -370,24 +369,6 @@ export function useCompanySettingsCards() {
     }
     prevFieldSnapshotRef.current = currentSnapshot
   }, [blocks])
-
-  useEffect(() => {
-    if (chatContextType !== "settings_config") {
-      prevMessageCountRef.current = chatMessages.length
-      return
-    }
-    const currentCount = chatMessages.length
-    if (currentCount > prevMessageCountRef.current && currentCount > 0) {
-      const lastMsg = chatMessages[currentCount - 1]
-      if (lastMsg.sender === "lia") {
-        const timer = setTimeout(() => {
-          loadAll()
-        }, 1500)
-        return () => clearTimeout(timer)
-      }
-    }
-    prevMessageCountRef.current = currentCount
-  }, [chatMessages, chatContextType, loadAll])
 
   useEffect(() => {
     switchChatContext("settings_config", { continuePrevious: true })
