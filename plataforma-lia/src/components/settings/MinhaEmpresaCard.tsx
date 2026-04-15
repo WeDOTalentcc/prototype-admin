@@ -233,7 +233,7 @@ export function MinhaEmpresaCard({
                   ) : (
                     <div className="flex items-center gap-1 min-w-0">
                       <span
-                        className={`${textStyles.metricSmall} text-right truncate max-w-[200px] transition-colors motion-reduce:transition-none duration-300 ${
+                        className={`${textStyles.metricSmall} text-right truncate max-w-[320px] transition-colors motion-reduce:transition-none duration-300 ${
                           isUpdated ? "text-status-success" : ""
                         }`}
                         title={formatFieldValue(field.value)}

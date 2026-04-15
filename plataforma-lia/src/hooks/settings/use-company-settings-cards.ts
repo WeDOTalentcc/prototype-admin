@@ -66,10 +66,18 @@ interface AutomationRules {
   autonomy_level?: string
 }
 
+interface ScreeningRules {
+  salary_expectation_filter?: boolean
+  salary_tolerance_percent?: number
+  experience_policy?: string
+  default_screening_questions?: string[]
+}
+
 interface HiringPolicyData {
   pipeline_rules?: PipelineRules
   scheduling_rules?: SchedulingRules
   communication_rules?: CommunicationRules
+  screening_rules?: ScreeningRules
   automation_rules?: AutomationRules
   setup_progress?: number
   [key: string]: unknown
@@ -143,19 +151,33 @@ function buildBlocks(
     { key: "departments_count", label: "Departamentos", value: departments.length > 0 ? `${departments.length} cadastrado(s)` : null, type: "text", editable: false, block: "benefits" },
   ]
 
-  const policyFields: CardField[] = hiringPolicy ? [
-    { key: "min_interviews_before_offer", label: "Min. Entrevistas p/ Oferta", value: hiringPolicy.pipeline_rules?.min_interviews_before_offer, type: "number", editable: false, block: "policy" },
-    { key: "manager_approval_for_offer", label: "Aprovacao Gestor", value: hiringPolicy.pipeline_rules?.manager_approval_for_offer, type: "boolean", editable: false, block: "policy" },
-    { key: "self_scheduling_enabled", label: "Auto-agendamento", value: hiringPolicy.scheduling_rules?.self_scheduling_enabled, type: "boolean", editable: false, block: "policy" },
-    { key: "default_duration_minutes", label: "Duracao Padrao (min)", value: hiringPolicy.scheduling_rules?.default_duration_minutes, type: "number", editable: false, block: "policy" },
-    { key: "auto_rejection_feedback", label: "Feedback Auto Rejeicao", value: hiringPolicy.communication_rules?.auto_rejection_feedback, type: "boolean", editable: false, block: "policy" },
-    { key: "preferred_channel", label: "Canal Preferido", value: hiringPolicy.communication_rules?.preferred_channel, type: "text", editable: false, block: "policy" },
-    { key: "auto_screening", label: "Triagem Automatica", value: hiringPolicy.automation_rules?.auto_screening, type: "boolean", editable: false, block: "policy" },
-    { key: "auto_stage_advance", label: "Avanco Automatico Etapas", value: hiringPolicy.automation_rules?.auto_stage_advance, type: "boolean", editable: false, block: "policy" },
-    { key: "autonomy_level", label: "Nivel de Autonomia LIA", value: hiringPolicy.automation_rules?.autonomy_level, type: "text", editable: false, block: "policy" },
-    { key: "setup_progress", label: "Progresso Configuracao", value: hiringPolicy.setup_progress ? `${hiringPolicy.setup_progress}%` : null, type: "text", editable: false, block: "policy" },
-  ] : [
-    { key: "policy_status", label: "Status", value: null, type: "text", editable: false, block: "policy" },
+  const pr = hiringPolicy?.pipeline_rules
+  const sr = hiringPolicy?.scheduling_rules
+  const cr = hiringPolicy?.communication_rules
+  const scr = hiringPolicy?.screening_rules
+  const ar = hiringPolicy?.automation_rules
+  const hours = sr?.allowed_hours as { start?: string; end?: string } | undefined
+
+  const policyFields: CardField[] = [
+    { key: "min_interviews_before_offer", label: "Min. Entrevistas p/ Oferta", value: pr?.min_interviews_before_offer ?? null, type: "number", editable: false, block: "policy" },
+    { key: "manager_approval_for_offer", label: "Aprovacao Gestor", value: pr?.manager_approval_for_offer ?? null, type: "boolean", editable: false, block: "policy" },
+    { key: "max_days_in_stage", label: "Max. Dias por Etapa", value: pr?.max_days_in_stage ?? null, type: "text", editable: false, block: "policy" },
+    { key: "allowed_days", label: "Dias Permitidos", value: sr?.allowed_days ?? null, type: "list", editable: false, block: "policy" },
+    { key: "allowed_hours", label: "Horario Permitido", value: hours ? `${hours.start || ""} - ${hours.end || ""}` : null, type: "text", editable: false, block: "policy" },
+    { key: "default_duration_minutes", label: "Duracao Padrao (min)", value: sr?.default_duration_minutes ?? null, type: "number", editable: false, block: "policy" },
+    { key: "self_scheduling_enabled", label: "Auto-agendamento", value: sr?.self_scheduling_enabled ?? null, type: "boolean", editable: false, block: "policy" },
+    { key: "auto_rejection_feedback", label: "Feedback Auto Rejeicao", value: cr?.auto_rejection_feedback ?? null, type: "boolean", editable: false, block: "policy" },
+    { key: "rejection_feedback_deadline_hours", label: "Prazo Feedback Rejeicao (h)", value: cr?.rejection_feedback_deadline_hours ?? null, type: "number", editable: false, block: "policy" },
+    { key: "preferred_channel", label: "Canal Preferido", value: cr?.preferred_channel ?? null, type: "text", editable: false, block: "policy" },
+    { key: "lia_tone", label: "Tom da LIA", value: cr?.lia_tone ?? null, type: "text", editable: false, block: "policy" },
+    { key: "salary_expectation_filter", label: "Filtro Pretensao Salarial", value: scr?.salary_expectation_filter ?? null, type: "boolean", editable: false, block: "policy" },
+    { key: "salary_tolerance_percent", label: "Tolerancia Salarial (%)", value: scr?.salary_tolerance_percent ?? null, type: "number", editable: false, block: "policy" },
+    { key: "experience_policy", label: "Politica de Experiencia", value: scr?.experience_policy ?? null, type: "text", editable: false, block: "policy" },
+    { key: "auto_screening", label: "Triagem Automatica", value: ar?.auto_screening ?? null, type: "boolean", editable: false, block: "policy" },
+    { key: "auto_scheduling", label: "Agendamento Automatico", value: ar?.auto_scheduling ?? null, type: "boolean", editable: false, block: "policy" },
+    { key: "auto_stage_advance", label: "Avanco Automatico Etapas", value: ar?.auto_stage_advance ?? null, type: "boolean", editable: false, block: "policy" },
+    { key: "autonomy_level", label: "Nivel de Autonomia LIA", value: ar?.autonomy_level ?? null, type: "text", editable: false, block: "policy" },
+    { key: "setup_progress", label: "Progresso Configuracao", value: hiringPolicy?.setup_progress ? `${hiringPolicy.setup_progress}%` : null, type: "text", editable: false, block: "policy" },
   ]
 
   const additionalData = company.additional_data
