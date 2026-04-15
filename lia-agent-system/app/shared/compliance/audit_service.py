@@ -472,8 +472,16 @@ class AuditService:
         """Log an action (email sent, candidate moved, job published).
 
         Unified entry point — delegates to AuditLog with trace_id.
+        Metadata (field, old_value, new_value, user_id, etc.) is persisted
+        in the ``reasoning`` JSON column for full traceability.
         """
         try:
+            reasoning_payload: list[Any] = []
+            criteria_payload: list[Any] = []
+            if metadata:
+                reasoning_payload = [{"action_metadata": metadata}]
+                criteria_payload = [k for k in metadata.keys()]
+
             async with AsyncSessionLocal() as session:
                 log = AuditLog(
                     id=str(uuid.uuid4()),
@@ -482,8 +490,8 @@ class AuditService:
                     decision_type=action_type,
                     action=action_type,
                     decision="executed",
-                    reasoning=[],
-                    criteria_used=[],
+                    reasoning=reasoning_payload,
+                    criteria_used=criteria_payload,
                     criteria_ignored=[],
                     candidate_id=target_id if target_type == "candidate" else None,
                     job_vacancy_id=target_id if target_type == "job" else None,
