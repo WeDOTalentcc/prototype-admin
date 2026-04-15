@@ -231,10 +231,13 @@ class SettingsProgressRepository:
             result = await self.db.execute(
                 text("""
                     SELECT COUNT(*) FROM integration_connections
-                    WHERE company_id = :cid AND is_active = true
+                    WHERE company_id = :cid
+                    AND status != 'not_connected'
+                    AND sync_enabled = true
                 """),
                 {"cid": str(company_id)},
             )
             return result.scalar() or 0
-        except Exception:
+        except Exception as exc:
+            logger.warning("count_active_integrations failed: %s", exc)
             return 0
