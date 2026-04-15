@@ -1,22 +1,23 @@
 "use client"
 
-import React, { useState, useEffect } from"react"
+import React, { useState, useEffect } from "react"
 import { useTranslations } from "next-intl"
 import {
   Brain, Upload, Plus, Star, Users, Activity,
-  ThumbsUp, ThumbsDown, HelpCircle, ChevronRight, X
-} from"lucide-react"
-import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
-import { Badge } from"@/components/ui/badge"
-import { Button } from"@/components/ui/button"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from"@/components/ui/dialog"
-import { Avatar, AvatarFallback } from"@/components/ui/avatar"
-import { Progress } from"@/components/ui/progress"
+  ThumbsUp, ThumbsDown, HelpCircle, ChevronRight, X,
+  UserCheck, BookOpen, Lightbulb, CheckCircle2, Sparkles,
+  FileText, Target, ArrowRight, Info, Loader2
+} from "lucide-react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Progress } from "@/components/ui/progress"
 import {
-  textStyles, cardStyles, badgeStyles, buttonStyles
-} from"@/lib/design-tokens"
-
-// ---------- Types ----------
+  textStyles, cardStyles, badgeStyles, buttonStyles, inputStyles, formStyles
+} from "@/lib/design-tokens"
+import { toast } from "@/lib/toast"
 
 interface DigitalTwin {
   id: string
@@ -33,7 +34,7 @@ interface TwinEvaluation {
   twin_id: string
   twin_name: string
   score: number
-  decision:"approved" |"rejected" |"maybe"
+  decision: "approved" | "rejected" | "maybe"
   reasoning: string
   confidence: number
   supporting_examples: Array<{
@@ -43,7 +44,326 @@ interface TwinEvaluation {
   }>
 }
 
-// ---------- Twin Card (for Agent Studio page or settings) ----------
+const HOW_IT_WORKS_ICONS = [UserCheck, BookOpen, Brain, Lightbulb] as const
+
+export function DigitalTwinHeader() {
+  const t = useTranslations("studio.twins")
+  const tOnboarding = useTranslations("studio.twins.onboarding")
+
+  const steps = [
+    { icon: HOW_IT_WORKS_ICONS[0], title: tOnboarding("step1Title"), desc: tOnboarding("step1Desc") },
+    { icon: HOW_IT_WORKS_ICONS[1], title: tOnboarding("step2Title"), desc: tOnboarding("step2Desc") },
+    { icon: HOW_IT_WORKS_ICONS[2], title: tOnboarding("step3Title"), desc: tOnboarding("step3Desc") },
+    { icon: HOW_IT_WORKS_ICONS[3], title: tOnboarding("step4Title"), desc: tOnboarding("step4Desc") },
+  ]
+
+  return (
+    <div className="rounded-xl border border-lia-border-subtle bg-lia-bg-secondary p-5 mb-4">
+      <div className="flex items-center gap-2 mb-1">
+        <Users className="w-4 h-4 text-wedo-purple" />
+        <span className="text-xs font-semibold uppercase tracking-wider text-wedo-purple">
+          {t("label")}
+        </span>
+      </div>
+      <h2 className="text-base font-semibold text-lia-text-primary mb-1">
+        {t("headerTitle")}
+      </h2>
+      <p className="text-sm text-lia-text-secondary max-w-2xl mb-5">
+        {t("headerDesc")}
+      </p>
+
+      <div className="flex items-center gap-2 mb-3">
+        <Sparkles className="w-3.5 h-3.5 text-wedo-purple" />
+        <span className={textStyles.label}>{tOnboarding("howItWorks")}</span>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        {steps.map((step, i) => {
+          const Icon = step.icon
+          return (
+            <div
+              key={i}
+              className="relative flex flex-col gap-2 rounded-lg border border-lia-border-subtle bg-lia-bg-primary p-3"
+            >
+              <div className="flex items-center gap-2">
+                <div className="flex items-center justify-center w-7 h-7 rounded-full bg-wedo-purple/10">
+                  <Icon className="w-3.5 h-3.5 text-wedo-purple" />
+                </div>
+                <span className="text-micro font-semibold text-wedo-purple">
+                  {tOnboarding("stepLabel", { number: i + 1 })}
+                </span>
+              </div>
+              <p className={textStyles.label}>{step.title}</p>
+              <p className={textStyles.caption}>{step.desc}</p>
+              {i < steps.length - 1 && (
+                <ArrowRight className="hidden lg:block absolute -right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-lia-text-disabled z-10" />
+              )}
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+interface DigitalTwinEmptyStateProps {
+  onCreateTwin: () => void
+}
+
+export function DigitalTwinEmptyState({ onCreateTwin }: DigitalTwinEmptyStateProps) {
+  const t = useTranslations("studio.twins.emptyState")
+
+  const benefits = [
+    { icon: Target, text: t("benefit1") },
+    { icon: CheckCircle2, text: t("benefit2") },
+    { icon: Activity, text: t("benefit3") },
+  ]
+
+  return (
+    <Card className={cardStyles.flat}>
+      <CardContent className="flex flex-col items-center py-10 px-6">
+        <div className="flex items-center justify-center w-16 h-16 rounded-full bg-wedo-purple/10 mb-4">
+          <Brain className="w-8 h-8 text-wedo-purple" />
+        </div>
+        <h3 className={`${textStyles.h3} text-center mb-2`}>{t("title")}</h3>
+        <p className={`${textStyles.description} text-center max-w-md mb-6`}>
+          {t("description")}
+        </p>
+
+        <div className="w-full max-w-sm space-y-2 mb-6">
+          {benefits.map((b, i) => {
+            const Icon = b.icon
+            return (
+              <div key={i} className="flex items-start gap-2.5 p-2 rounded-md bg-lia-bg-secondary">
+                <Icon className="w-4 h-4 text-wedo-purple mt-0.5 shrink-0" />
+                <p className={textStyles.bodySmall}>{b.text}</p>
+              </div>
+            )
+          })}
+        </div>
+
+        <Button className={buttonStyles.primary} onClick={onCreateTwin}>
+          <Plus className="w-4 h-4 mr-1.5" />
+          {t("createFirst")}
+        </Button>
+        <p className={`${textStyles.caption} mt-2 text-center`}>{t("noExperience")}</p>
+      </CardContent>
+    </Card>
+  )
+}
+
+interface CreateDigitalTwinModalProps {
+  isOpen: boolean
+  onClose: () => void
+  onCreated?: () => void
+}
+
+export function CreateDigitalTwinModal({ isOpen, onClose, onCreated }: CreateDigitalTwinModalProps) {
+  const t = useTranslations("studio.twins.createModal")
+  const [twinName, setTwinName] = useState("")
+  const [specialty, setSpecialty] = useState("")
+  const [description, setDescription] = useState("")
+  const [decisionsFile, setDecisionsFile] = useState<File | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const fileInputRef = React.useRef<HTMLInputElement>(null)
+
+  const handleClose = () => {
+    setTwinName("")
+    setSpecialty("")
+    setDescription("")
+    setDecisionsFile(null)
+    onClose()
+  }
+
+  const MAX_FILE_SIZE = 5 * 1024 * 1024
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] ?? null
+    if (file && file.size > MAX_FILE_SIZE) {
+      toast.error(t("fileTooLargeTitle"), t("fileTooLargeDesc"))
+      if (fileInputRef.current) fileInputRef.current.value = ""
+      return
+    }
+    setDecisionsFile(file)
+  }
+
+  const handleRemoveFile = () => {
+    setDecisionsFile(null)
+    if (fileInputRef.current) fileInputRef.current.value = ""
+  }
+
+  const readFileAsText = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onload = () => resolve(reader.result as string)
+      reader.onerror = reject
+      reader.readAsText(file)
+    })
+  }
+
+  const handleSubmit = async () => {
+    if (!twinName.trim()) return
+    setIsSubmitting(true)
+    try {
+      let decisionsData: string | null = null
+      if (decisionsFile) {
+        decisionsData = await readFileAsText(decisionsFile)
+      }
+
+      const res = await fetch("/api/backend-proxy/digital-twins", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          twin_name: twinName.trim(),
+          specialties: specialty
+            .split(",")
+            .map((s) => s.trim())
+            .filter(Boolean),
+          description: description.trim() || null,
+          decisions_data: decisionsData,
+        }),
+      })
+      if (res.ok) {
+        toast.success(t("successTitle"), t("successDesc"))
+        handleClose()
+        onCreated?.()
+      } else {
+        toast.error(t("errorTitle"), t("errorDesc"))
+      }
+    } catch {
+      toast.error(t("errorTitle"), t("errorDesc"))
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  return (
+    <Dialog open={isOpen} onOpenChange={handleClose}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle className={textStyles.h3}>
+            <Brain className="w-5 h-5 inline mr-2 text-wedo-purple" />
+            {t("title")}
+          </DialogTitle>
+          <DialogDescription className="text-sm text-lia-text-secondary">
+            {t("subtitle")}
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-4 py-2">
+          <div className={formStyles.fieldGroup}>
+            <label className={formStyles.labelRequired}>{t("nameLabel")}</label>
+            <input
+              className={inputStyles.default + " w-full"}
+              placeholder={t("namePlaceholder")}
+              value={twinName}
+              onChange={(e) => setTwinName(e.target.value)}
+            />
+            <p className={formStyles.helperText}>
+              <Info className="w-3 h-3 inline mr-1" />
+              {t("nameHelp")}
+            </p>
+          </div>
+
+          <div className={formStyles.fieldGroup}>
+            <label className={formStyles.label}>{t("specialtyLabel")}</label>
+            <input
+              className={inputStyles.default + " w-full"}
+              placeholder={t("specialtyPlaceholder")}
+              value={specialty}
+              onChange={(e) => setSpecialty(e.target.value)}
+            />
+            <p className={formStyles.helperText}>
+              <Info className="w-3 h-3 inline mr-1" />
+              {t("specialtyHelp")}
+            </p>
+          </div>
+
+          <div className={formStyles.fieldGroup}>
+            <label className={formStyles.label}>{t("descLabel")}</label>
+            <textarea
+              className={inputStyles.default + " w-full min-h-[80px] resize-none"}
+              placeholder={t("descPlaceholder")}
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={3}
+            />
+            <p className={formStyles.helperText}>
+              <Info className="w-3 h-3 inline mr-1" />
+              {t("descHelp")}
+            </p>
+          </div>
+
+          <div className={formStyles.fieldGroup}>
+            <label className={formStyles.label}>{t("decisionsLabel")}</label>
+            <div
+              className="relative rounded-lg border-2 border-dashed border-lia-border-default hover:border-wedo-purple/40 transition-colors p-4 cursor-pointer bg-lia-bg-secondary"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".csv,.json,.txt"
+                onChange={handleFileChange}
+                className="hidden"
+              />
+              {decisionsFile ? (
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <FileText className="w-4 h-4 text-wedo-purple shrink-0" />
+                    <span className={`${textStyles.bodySmall} truncate`}>{decisionsFile.name}</span>
+                    <span className={textStyles.caption}>
+                      ({(decisionsFile.size / 1024).toFixed(1)} KB)
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); handleRemoveFile() }}
+                    className="p-1 rounded hover:bg-lia-bg-tertiary"
+                  >
+                    <X className="w-3.5 h-3.5 text-lia-text-secondary" />
+                  </button>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center gap-1.5 py-1">
+                  <Upload className="w-5 h-5 text-wedo-purple/60" />
+                  <p className={textStyles.bodySmall}>{t("decisionsUploadCta")}</p>
+                  <p className={textStyles.caption}>{t("decisionsFormats")}</p>
+                </div>
+              )}
+            </div>
+            <p className={formStyles.helperText}>
+              <Info className="w-3 h-3 inline mr-1" />
+              {t("decisionsHelp")}
+            </p>
+          </div>
+        </div>
+
+        <DialogFooter>
+          <Button className={buttonStyles.secondary} onClick={handleClose}>
+            {t("cancel")}
+          </Button>
+          <Button
+            className={buttonStyles.primary}
+            onClick={handleSubmit}
+            disabled={!twinName.trim() || isSubmitting}
+          >
+            {isSubmitting ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />
+                {t("creating")}
+              </>
+            ) : (
+              <>
+                <Plus className="w-4 h-4 mr-1.5" />
+                {t("create")}
+              </>
+            )}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
+}
 
 interface TwinCardProps {
   twin: DigitalTwin
@@ -52,8 +372,13 @@ interface TwinCardProps {
 }
 
 export function TwinCard({ twin, onEvaluate, onManageTwin }: TwinCardProps) {
-  const t = useTranslations('agents.digitalTwin')
-  const initials = twin.twin_name.split("").map(w => w[0]).join("").slice(0, 2).toUpperCase()
+  const t = useTranslations("agents.digitalTwin")
+  const initials = twin.twin_name
+    .split(" ")
+    .map((w) => w[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase()
 
   return (
     <Card className={cardStyles.default}>
@@ -68,41 +393,43 @@ export function TwinCard({ twin, onEvaluate, onManageTwin }: TwinCardProps) {
             <div className="flex items-center gap-2">
               <p className={textStyles.subtitle}>{twin.twin_name}</p>
               <Badge className={twin.is_active ? badgeStyles.success : badgeStyles.warning}>
-                {twin.is_active ? t('active') : t('inactive')}
+                {twin.is_active ? t("active") : t("inactive")}
               </Badge>
             </div>
             {twin.specialties.length > 0 && (
               <div className="flex gap-1 mt-1 flex-wrap">
-                {twin.specialties.slice(0, 4).map(s => (
-                  <Badge key={s} className="bg-purple-50 text-purple-700 text-xs">{s}</Badge>
+                {twin.specialties.slice(0, 4).map((s) => (
+                  <Badge key={s} className="bg-purple-50 text-purple-700 text-xs">
+                    {s}
+                  </Badge>
                 ))}
               </div>
             )}
           </div>
         </div>
 
-        {/* Stats */}
         <div className="flex items-center gap-4 mt-3 text-sm text-lia-text-secondary">
-          <span title={t('indexedDecisions')}>
-            <Brain className="w-3.5 h-3.5 inline mr-1" />{twin.decision_count}
+          <span title={t("indexedDecisions")}>
+            <Brain className="w-3.5 h-3.5 inline mr-1" />
+            {twin.decision_count}
           </span>
           {twin.accuracy_pct != null && (
-            <span title={t('accuracy')}>
-              <Star className="w-3.5 h-3.5 inline mr-1" />{twin.accuracy_pct}%
+            <span title={t("accuracy")}>
+              <Star className="w-3.5 h-3.5 inline mr-1" />
+              {twin.accuracy_pct}%
             </span>
           )}
         </div>
 
-        {/* Actions */}
         <div className="flex gap-2 mt-3 pt-3 border-t border-lia-border-subtle">
           {onEvaluate && (
             <Button className={buttonStyles.primary} onClick={() => onEvaluate(twin.id)}>
-              {t('evaluateCandidate')}
+              {t("evaluateCandidate")}
             </Button>
           )}
           {onManageTwin && (
             <Button className={buttonStyles.outline} onClick={() => onManageTwin(twin.id)}>
-              {t('manage')} <ChevronRight className="w-3.5 h-3.5 ml-1" />
+              {t("manage")} <ChevronRight className="w-3.5 h-3.5 ml-1" />
             </Button>
           )}
         </div>
@@ -110,8 +437,6 @@ export function TwinCard({ twin, onEvaluate, onManageTwin }: TwinCardProps) {
     </Card>
   )
 }
-
-// ---------- Evaluate With Twin Modal ----------
 
 interface EvaluateWithTwinModalProps {
   twinId: string
@@ -121,12 +446,14 @@ interface EvaluateWithTwinModalProps {
   onClose: () => void
 }
 
-// Using Record<string, unknown> directly — no type alias needed
-
 export function EvaluateWithTwinModal({
-  twinId, candidateProfile, jobContext, isOpen, onClose,
+  twinId,
+  candidateProfile,
+  jobContext,
+  isOpen,
+  onClose,
 }: EvaluateWithTwinModalProps) {
-  const t = useTranslations('agents.digitalTwin')
+  const t = useTranslations("agents.digitalTwin")
   const [evaluation, setEvaluation] = useState<TwinEvaluation | null>(null)
   const [isLoading, setIsLoading] = useState(false)
 
@@ -138,8 +465,8 @@ export function EvaluateWithTwinModal({
     setIsLoading(true)
     try {
       const res = await fetch(`/api/backend-proxy/digital-twins/${twinId}/evaluate`, {
-        method:"POST",
-        headers: {"Content-Type":"application/json" },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           candidate_profile: candidateProfile,
           job_context: jobContext,
@@ -158,9 +485,9 @@ export function EvaluateWithTwinModal({
   if (!isOpen) return null
 
   const decisionConfig = {
-    approved: { icon: ThumbsUp, color:"text-green-600", bg:"bg-green-50", label: t('approved') },
-    rejected: { icon: ThumbsDown, color:"text-red-600", bg:"bg-red-50", label: t('rejected') },
-    maybe: { icon: HelpCircle, color:"text-yellow-600", bg:"bg-yellow-50", label: t('maybe') },
+    approved: { icon: ThumbsUp, color: "text-green-600", bg: "bg-green-50", label: t("approved") },
+    rejected: { icon: ThumbsDown, color: "text-red-600", bg: "bg-red-50", label: t("rejected") },
+    maybe: { icon: HelpCircle, color: "text-yellow-600", bg: "bg-yellow-50", label: t("maybe") },
   }
 
   return (
@@ -169,33 +496,35 @@ export function EvaluateWithTwinModal({
         <DialogHeader>
           <DialogTitle className={textStyles.h3}>
             <Brain className="w-5 h-5 inline mr-2 text-purple-600" />
-            {t('digitalTwinEvaluation')}
+            {t("digitalTwinEvaluation")}
           </DialogTitle>
-          <DialogDescription className="sr-only">{t('evaluationResultDesc')}</DialogDescription>
+          <DialogDescription className="sr-only">{t("evaluationResultDesc")}</DialogDescription>
         </DialogHeader>
 
         {isLoading ? (
           <div className="flex flex-col items-center py-8">
             <Brain className="w-10 h-10 text-purple-300 animate-pulse mb-3" />
-            <p className={textStyles.body}>{t('analyzingHistory')}</p>
-            <p className={textStyles.caption}>{t('searchingSimilarDecisions')}</p>
+            <p className={textStyles.body}>{t("analyzingHistory")}</p>
+            <p className={textStyles.caption}>{t("searchingSimilarDecisions")}</p>
           </div>
         ) : evaluation ? (
           <div className="space-y-4 py-4">
-            {/* Twin identity */}
             <div className="flex items-center gap-2">
               <Avatar className="w-8 h-8 bg-purple-100">
                 <AvatarFallback className="bg-purple-100 text-purple-700 text-xs">
-                  {evaluation.twin_name.split("").map(w => w[0]).join("").slice(0, 2)}
+                  {evaluation.twin_name
+                    .split(" ")
+                    .map((w) => w[0])
+                    .join("")
+                    .slice(0, 2)}
                 </AvatarFallback>
               </Avatar>
               <div>
                 <p className={textStyles.subtitle}>{evaluation.twin_name}</p>
-                <p className={textStyles.caption}>{t('digitalTwin')}</p>
+                <p className={textStyles.caption}>{t("digitalTwin")}</p>
               </div>
             </div>
 
-            {/* Score + Decision */}
             {(() => {
               const dc = decisionConfig[evaluation.decision] || decisionConfig.maybe
               const Icon = dc.icon
@@ -205,7 +534,7 @@ export function EvaluateWithTwinModal({
                     <Icon className={`w-6 h-6 ${dc.color}`} />
                     <div>
                       <p className={`${textStyles.h4} ${dc.color}`}>{dc.label}</p>
-                      <p className={textStyles.caption}>{t('twinDecision')}</p>
+                      <p className={textStyles.caption}>{t("twinDecision")}</p>
                     </div>
                   </div>
                   <div className="text-right">
@@ -216,35 +545,41 @@ export function EvaluateWithTwinModal({
               )
             })()}
 
-            {/* Confidence */}
             <div>
               <div className="flex items-center justify-between mb-1">
-                <span className={textStyles.label}>{t('confidence')}</span>
-                <span className={textStyles.caption}>{(evaluation.confidence * 100).toFixed(0)}%</span>
+                <span className={textStyles.label}>{t("confidence")}</span>
+                <span className={textStyles.caption}>
+                  {(evaluation.confidence * 100).toFixed(0)}%
+                </span>
               </div>
               <Progress value={evaluation.confidence * 100} className="h-1.5" />
             </div>
 
-            {/* Reasoning (in first person, SME style) */}
             <div>
-              <p className={textStyles.label}>{t('reasoning')}</p>
-              <blockquote className="mt-1 border-l-2 border-purple-300 pl-3 italic text-lia-text-secondary">"{evaluation.reasoning}"
+              <p className={textStyles.label}>{t("reasoning")}</p>
+              <blockquote className="mt-1 border-l-2 border-purple-300 pl-3 italic text-lia-text-secondary">
+                &ldquo;{evaluation.reasoning}&rdquo;
               </blockquote>
             </div>
 
-            {/* Supporting examples */}
             {evaluation.supporting_examples.length > 0 && (
               <div>
-                <p className={`${textStyles.label} mb-2`}>{t('supportingDecisions')}</p>
+                <p className={`${textStyles.label} mb-2`}>{t("supportingDecisions")}</p>
                 <div className="space-y-2 max-h-32 overflow-y-auto">
                   {evaluation.supporting_examples.map((ex, i) => (
                     <div key={i} className="flex items-start gap-2 text-sm">
-                      <Badge className={ex.decision ==="approved" ? badgeStyles.success : badgeStyles.error}>
-                        {ex.decision ==="approved" ?"✅" :"❌"}
+                      <Badge
+                        className={
+                          ex.decision === "approved" ? badgeStyles.success : badgeStyles.error
+                        }
+                      >
+                        {ex.decision === "approved" ? "✅" : "❌"}
                       </Badge>
                       <div className="min-w-0">
                         <p className={textStyles.bodySmall}>{ex.reasoning}</p>
-                        <p className={textStyles.caption}>{t('similarity')}: {(ex.similarity * 100).toFixed(0)}%</p>
+                        <p className={textStyles.caption}>
+                          {t("similarity")}: {(ex.similarity * 100).toFixed(0)}%
+                        </p>
                       </div>
                     </div>
                   ))}
@@ -254,15 +589,17 @@ export function EvaluateWithTwinModal({
           </div>
         ) : (
           <div className="flex flex-col items-center py-8">
-            <p className={textStyles.body}>{t('errorEvaluating')}</p>
+            <p className={textStyles.body}>{t("errorEvaluating")}</p>
           </div>
         )}
 
         <DialogFooter>
-          <Button className={buttonStyles.secondary} onClick={onClose}>{t('close')}</Button>
+          <Button className={buttonStyles.secondary} onClick={onClose}>
+            {t("close")}
+          </Button>
           {evaluation && (
             <Button className={buttonStyles.outline} onClick={runEvaluation}>
-              {t('reevaluate')}
+              {t("reevaluate")}
             </Button>
           )}
         </DialogFooter>
@@ -271,20 +608,23 @@ export function EvaluateWithTwinModal({
   )
 }
 
-// ---------- Twins List (for Agent Studio page) ----------
-
 interface TwinsListProps {
   onEvaluate?: (twinId: string) => void
+  onCreateTwin: () => void
+  refreshKey?: number
 }
 
-export function TwinsList({ onEvaluate }: TwinsListProps) {
-  const t = useTranslations('agents.digitalTwin')
+export function TwinsList({ onEvaluate, onCreateTwin, refreshKey = 0 }: TwinsListProps) {
+  const t = useTranslations("agents.digitalTwin")
   const [twins, setTwins] = useState<DigitalTwin[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
-  useEffect(() => { loadTwins() }, [])
+  useEffect(() => {
+    loadTwins()
+  }, [refreshKey])
 
   const loadTwins = async () => {
+    setIsLoading(true)
     try {
       const res = await fetch("/api/backend-proxy/digital-twins")
       const data = await res.json()
@@ -296,24 +636,27 @@ export function TwinsList({ onEvaluate }: TwinsListProps) {
     }
   }
 
-  if (isLoading) return <p className={textStyles.caption}>{t('loadingTwins')}</p>
+  if (isLoading) return <p className={textStyles.caption}>{t("loadingTwins")}</p>
   if (twins.length === 0) {
-    return (
-      <Card className={cardStyles.flat}>
-        <CardContent className="flex flex-col items-center py-8">
-          <Brain className="w-10 h-10 text-lia-text-disabled mb-2" />
-          <p className={textStyles.body}>{t('noTwinsCreated')}</p>
-          <p className={textStyles.caption}>{t('captureExpertReasoning')}</p>
-        </CardContent>
-      </Card>
-    )
+    return <DigitalTwinEmptyState onCreateTwin={onCreateTwin} />
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      {twins.map(t => (
-        <TwinCard key={t.id} twin={t} onEvaluate={onEvaluate} />
-      ))}
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <p className={textStyles.caption}>
+          {t("twinCount", { count: twins.length })}
+        </p>
+        <Button className={buttonStyles.primary} onClick={onCreateTwin}>
+          <Plus className="w-4 h-4 mr-1.5" />
+          {t("createNew")}
+        </Button>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {twins.map((tw) => (
+          <TwinCard key={tw.id} twin={tw} onEvaluate={onEvaluate} />
+        ))}
+      </div>
     </div>
   )
 }

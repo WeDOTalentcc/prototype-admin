@@ -1442,7 +1442,56 @@
       "twins": {
         "cloneReasoning": "Clone o raciocínio dos seus melhores avaliadores",
         "cloneDesc": "Capture como um especialista da equipe avalia candidatos. O Digital Twin aprende os critérios e funciona como uma \"segunda opinião\" automática na triagem.",
-        "label": "Gêmeos Digitais"
+        "label": "Gêmeos Digitais",
+        "headerTitle": "Sua equipe de especialistas, disponível 24 horas",
+        "headerDesc": "Um Gêmeo Digital aprende como um especialista da sua equipe avalia candidatos. Ele analisa decisões reais e passa a funcionar como uma segunda opinião automática, trazendo consistência e agilidade para a triagem.",
+        "onboarding": {
+          "howItWorks": "Como funciona",
+          "stepLabel": "Passo {number}",
+          "step1Title": "Escolha um especialista",
+          "step1Desc": "Selecione o avaliador da equipe cujo raciocínio você quer replicar",
+          "step2Title": "Alimente com decisões reais",
+          "step2Desc": "Importe avaliações passadas — aprovações, rejeições e os motivos de cada uma",
+          "step3Title": "O twin aprende os critérios",
+          "step3Desc": "A IA identifica padrões e monta o perfil de decisão do especialista",
+          "step4Title": "Use como segunda opinião",
+          "step4Desc": "O twin avalia novos candidatos e mostra como o especialista provavelmente decidiria"
+        },
+        "emptyState": {
+          "title": "Crie seu primeiro Gêmeo Digital",
+          "description": "Gêmeos Digitais replicam o raciocínio dos melhores avaliadores da sua equipe. Cada um aprende com decisões reais e oferece uma segunda opinião automática na triagem de candidatos.",
+          "benefit1": "Triagem mais consistente — mesmos critérios em todos os candidatos",
+          "benefit2": "Decisões mais rápidas — opinião do especialista em segundos",
+          "benefit3": "Aprendizado contínuo — o twin melhora a cada nova decisão",
+          "createFirst": "Criar primeiro Gêmeo Digital",
+          "noExperience": "Não precisa de experiência técnica — é simples e rápido"
+        },
+        "createModal": {
+          "title": "Criar Gêmeo Digital",
+          "subtitle": "Configure as informações do especialista que será replicado pelo twin",
+          "nameLabel": "Nome do twin",
+          "namePlaceholder": "Ex: Maria — Triagem Tech Senior",
+          "nameHelp": "Use o nome do especialista ou uma descrição do perfil de avaliação",
+          "specialtyLabel": "Especialidades",
+          "specialtyPlaceholder": "Ex: Backend, DevOps, Tech Lead",
+          "specialtyHelp": "Separe por vírgula as áreas em que esse avaliador é referência",
+          "descLabel": "Descrição (opcional)",
+          "descPlaceholder": "Ex: Avaliadora técnica com foco em senioridade e fit cultural",
+          "descHelp": "Descreva o estilo de avaliação ou critérios principais deste especialista",
+          "decisionsLabel": "Decisões passadas",
+          "decisionsUploadCta": "Clique para enviar um arquivo com decisões",
+          "decisionsFormats": "Formatos aceitos: CSV, JSON ou TXT",
+          "decisionsHelp": "Importe um arquivo com avaliações anteriores do especialista (aprovações, rejeições e motivos). Isso ajuda o twin a aprender os critérios mais rápido.",
+          "fileTooLargeTitle": "Arquivo muito grande",
+          "fileTooLargeDesc": "O arquivo excede o limite de 5 MB. Escolha um arquivo menor.",
+          "cancel": "Cancelar",
+          "creating": "Criando...",
+          "create": "Criar Gêmeo Digital",
+          "successTitle": "Gêmeo Digital criado!",
+          "successDesc": "Agora importe decisões passadas para ele começar a aprender.",
+          "errorTitle": "Erro ao criar twin",
+          "errorDesc": "Tente novamente em alguns instantes."
+        }
       },
       "search": {
         "multiStrategy": "Busca Multi-Estratégia",
@@ -2162,7 +2211,9 @@
       "evaluateCandidate": "Avaliar candidato",
       "manage": "Gerenciar",
       "digitalTwinEvaluation": "Avaliação Digital Twin",
-      "reevaluate": "Reavaliar"
+      "reevaluate": "Reavaliar",
+      "createNew": "Novo Gêmeo Digital",
+      "twinCount": "{count, plural, =1 {1 gêmeo digital} other {# gêmeos digitais}}"
     },
     "candidateOrigin": {
       "origins": {

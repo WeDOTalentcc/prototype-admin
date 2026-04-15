@@ -1442,7 +1442,56 @@
       "twins": {
         "cloneReasoning": "Clone the reasoning of your best evaluators",
         "cloneDesc": "Capture how a team specialist evaluates candidates. The Digital Twin learns the criteria and works as an automatic 'second opinion' in screening.",
-        "label": "Digital Twins"
+        "label": "Digital Twins",
+        "headerTitle": "Your team of specialists, available 24/7",
+        "headerDesc": "A Digital Twin learns how a specialist on your team evaluates candidates. It analyzes real decisions and works as an automatic second opinion, bringing consistency and speed to your screening process.",
+        "onboarding": {
+          "howItWorks": "How it works",
+          "stepLabel": "Step {number}",
+          "step1Title": "Choose a specialist",
+          "step1Desc": "Select the team evaluator whose reasoning you want to replicate",
+          "step2Title": "Feed with real decisions",
+          "step2Desc": "Import past evaluations — approvals, rejections, and the reasons behind each",
+          "step3Title": "The twin learns the criteria",
+          "step3Desc": "AI identifies patterns and builds the specialist's decision profile",
+          "step4Title": "Use as a second opinion",
+          "step4Desc": "The twin evaluates new candidates and shows how the specialist would likely decide"
+        },
+        "emptyState": {
+          "title": "Create your first Digital Twin",
+          "description": "Digital Twins replicate the reasoning of your team's best evaluators. Each one learns from real decisions and provides an automatic second opinion when screening candidates.",
+          "benefit1": "More consistent screening — same criteria for every candidate",
+          "benefit2": "Faster decisions — expert opinion in seconds",
+          "benefit3": "Continuous learning — the twin improves with every new decision",
+          "createFirst": "Create first Digital Twin",
+          "noExperience": "No technical experience needed — it's simple and quick"
+        },
+        "createModal": {
+          "title": "Create Digital Twin",
+          "subtitle": "Set up the specialist information that will be replicated by the twin",
+          "nameLabel": "Twin name",
+          "namePlaceholder": "E.g.: Maria — Senior Tech Screening",
+          "nameHelp": "Use the specialist's name or a description of the evaluation profile",
+          "specialtyLabel": "Specialties",
+          "specialtyPlaceholder": "E.g.: Backend, DevOps, Tech Lead",
+          "specialtyHelp": "Separate by comma the areas where this evaluator is a reference",
+          "descLabel": "Description (optional)",
+          "descPlaceholder": "E.g.: Technical evaluator focused on seniority and cultural fit",
+          "descHelp": "Describe the evaluation style or main criteria of this specialist",
+          "decisionsLabel": "Past decisions",
+          "decisionsUploadCta": "Click to upload a file with decisions",
+          "decisionsFormats": "Accepted formats: CSV, JSON, or TXT",
+          "decisionsHelp": "Import a file with the specialist's previous evaluations (approvals, rejections, and reasons). This helps the twin learn criteria faster.",
+          "fileTooLargeTitle": "File too large",
+          "fileTooLargeDesc": "The file exceeds the 5 MB limit. Please choose a smaller file.",
+          "cancel": "Cancel",
+          "creating": "Creating...",
+          "create": "Create Digital Twin",
+          "successTitle": "Digital Twin created!",
+          "successDesc": "Now import past decisions so it can start learning.",
+          "errorTitle": "Error creating twin",
+          "errorDesc": "Please try again in a few moments."
+        }
       },
       "search": {
         "multiStrategy": "Multi-Strategy Search",
@@ -2162,7 +2211,9 @@
       "evaluateCandidate": "Evaluate candidate",
       "manage": "Manage",
       "digitalTwinEvaluation": "Digital Twin Evaluation",
-      "reevaluate": "Re-evaluate"
+      "reevaluate": "Re-evaluate",
+      "createNew": "New Digital Twin",
+      "twinCount": "{count, plural, =1 {1 digital twin} other {# digital twins}}"
     },
     "candidateOrigin": {
       "origins": {
