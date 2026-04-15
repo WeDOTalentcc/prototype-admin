@@ -169,6 +169,16 @@ global:
       - wsi_screening
       - create_nurture_sequence
       - suggest_reengagement
+    company_settings:
+      query:
+      - get_company_profile
+      - get_company_completion
+      action:
+      - save_company_field
+      - save_company_section
+      - analyze_company_website
+      - process_uploaded_document
+      - import_workforce_plan
   llm_provider: gemini
   llm_fallback_order:
   - gemini
@@ -226,5 +236,10 @@ restricted_tools:
   - advance_campaign_stage    # advance recruitment campaign stage
   # Autonomous action rejection
   - reject_autonomous_action  # reject AI-initiated autonomous action
+  # Company settings (write operations)
+  - save_company_field         # modify company profile data
+  - save_company_section       # bulk modify company section
+  - analyze_company_website    # external HTTP call to scrape website
+  - import_workforce_plan      # import workforce planning data
 
 tenants: {}

@@ -6,6 +6,8 @@ processing uploaded documents with anonymization, and workforce planning.
 """
 import json
 import logging
+import os
+import uuid as _uuid
 from typing import Any
 
 from lia_agents_core.react_loop import ToolDefinition
@@ -18,6 +20,42 @@ from app.shared.tool_handler import tool_handler
 logger = logging.getLogger(__name__)
 
 _fairness_guard = FairnessGuard()
+
+TIER_1_FIELDS = {"cnpj", "name"}
+TIER_2_FIELDS = {"website", "mission", "vision", "values", "core_competencies", "evp_bullets"}
+TIER_4_FIELDS = {"id", "created_at", "updated_at"}
+
+VALID_PROFILE_FIELDS = {
+    "name", "trading_name", "cnpj", "website", "hr_email", "hr_phone",
+    "address", "industry", "company_size", "employee_count", "founded_year",
+    "linkedin_url", "logo_url",
+}
+VALID_CULTURE_FIELDS = {
+    "mission", "vision", "values", "core_competencies", "evp_bullets",
+    "work_model", "hybrid_days_onsite", "employment_types",
+    "growth_opportunities", "team_dynamics", "leadership_style",
+    "dei_initiatives", "sustainability", "social_impact",
+    "tech_stack", "engineering_culture", "default_languages",
+    "seniority_levels", "default_behavioral_competencies",
+    "default_salary_ranges", "locations", "headquarters",
+}
+
+
+async def _audit_log(company_id: str, action_type: str, field: str | None = None, metadata: dict | None = None) -> None:
+    try:
+        from app.shared.compliance.audit_service import AuditService
+        svc = AuditService()
+        await svc.log_action(
+            trace_id=str(_uuid.uuid4()),
+            company_id=company_id,
+            action_type=f"company_settings.{action_type}",
+            actor="company_settings_agent",
+            target_id=company_id,
+            target_type="company",
+            metadata={"field": field, **(metadata or {})},
+        )
+    except Exception as exc:
+        logger.debug("[company_settings] audit_log non-blocking error: %s", exc)
 
 
 @tool_handler("company_settings")
@@ -110,25 +148,22 @@ async def _wrap_save_company_field(**kwargs: Any) -> dict[str, Any]:
     field = kwargs.get("field", "")
     value = kwargs.get("value")
 
-    valid_profile_fields = {
-        "name", "trading_name", "cnpj", "website", "hr_email", "hr_phone",
-        "address", "industry", "company_size", "employee_count", "founded_year",
-        "linkedin_url", "logo_url",
-    }
-    valid_culture_fields = {
-        "mission", "vision", "values", "core_competencies", "evp_bullets",
-        "work_model", "hybrid_days_onsite", "employment_types",
-        "growth_opportunities", "team_dynamics", "leadership_style",
-        "dei_initiatives", "sustainability", "social_impact",
-        "tech_stack", "engineering_culture", "default_languages",
-        "seniority_levels", "default_behavioral_competencies",
-        "default_salary_ranges", "locations", "headquarters",
-    }
+    if field in TIER_4_FIELDS:
+        return {"success": False, "data": {}, "message": f"Campo '{field}' e imutavel e nao pode ser alterado."}
 
-    if section == "profile" and field not in valid_profile_fields:
+    if section == "profile" and field not in VALID_PROFILE_FIELDS:
         return {"success": False, "data": {}, "message": f"Campo '{field}' nao e valido para perfil."}
-    if section == "culture" and field not in valid_culture_fields:
+    if section == "culture" and field not in VALID_CULTURE_FIELDS:
         return {"success": False, "data": {}, "message": f"Campo '{field}' nao e valido para cultura."}
+
+    tier_warning = None
+    if field in TIER_1_FIELDS:
+        tier_warning = (
+            f"ATENCAO: Campo '{field}' e critico (TIER 1). "
+            "Alteracao requer confirmacao do administrador e dupla verificacao."
+        )
+    elif field in TIER_2_FIELDS:
+        tier_warning = f"Aviso: Campo '{field}' e sensivel (TIER 2). Certifique-se de que o valor esta correto."
 
     if isinstance(value, str) and len(value) > 10:
         check = _fairness_guard.check(value)
@@ -139,46 +174,42 @@ async def _wrap_save_company_field(**kwargs: Any) -> dict[str, Any]:
                 "message": f"Campo '{field}' bloqueado por compliance: {check.educational_message}",
             }
 
+    val = json.dumps(value, ensure_ascii=False) if isinstance(value, (list, dict)) else value
+
+    _PROFILE_UPDATE = {f: f"UPDATE company_profiles SET {f} = :value, updated_at = NOW() WHERE id::text = :company_id" for f in VALID_PROFILE_FIELDS}
+    _PROFILE_INSERT = {f: f"INSERT INTO company_profiles (id, {f}, created_at, updated_at) VALUES (:company_id::uuid, :value, NOW(), NOW())" for f in VALID_PROFILE_FIELDS}
+    _CULTURE_UPDATE = {f: f"UPDATE company_culture_profiles SET {f} = :value, updated_at = NOW() WHERE company_id = :company_id" for f in VALID_CULTURE_FIELDS}
+    _CULTURE_INSERT = {f: f"INSERT INTO company_culture_profiles (company_id, {f}, created_at, updated_at) VALUES (:company_id, :value, NOW(), NOW())" for f in VALID_CULTURE_FIELDS}
+
     async with AsyncSessionLocal() as session:
         if section == "profile":
             existing = await session.execute(
                 text("SELECT id FROM company_profiles WHERE id::text = :company_id LIMIT 1"),
                 {"company_id": company_id},
             )
-            if existing.mappings().first():
-                await session.execute(
-                    text(f"UPDATE company_profiles SET {field} = :value, updated_at = NOW() WHERE id::text = :company_id"),
-                    {"value": json.dumps(value) if isinstance(value, (list, dict)) else value, "company_id": company_id},
-                )
-            else:
-                await session.execute(
-                    text(f"INSERT INTO company_profiles (id, {field}, created_at, updated_at) VALUES (:company_id::uuid, :value, NOW(), NOW())"),
-                    {"company_id": company_id, "value": json.dumps(value) if isinstance(value, (list, dict)) else value},
-                )
+            sql = _PROFILE_UPDATE[field] if existing.mappings().first() else _PROFILE_INSERT[field]
+            await session.execute(text(sql), {"value": val, "company_id": company_id})
         elif section == "culture":
             existing = await session.execute(
                 text("SELECT id FROM company_culture_profiles WHERE company_id = :company_id LIMIT 1"),
                 {"company_id": company_id},
             )
-            val = json.dumps(value, ensure_ascii=False) if isinstance(value, (list, dict)) else value
-            if existing.mappings().first():
-                await session.execute(
-                    text(f"UPDATE company_culture_profiles SET {field} = :value, updated_at = NOW() WHERE company_id = :company_id"),
-                    {"value": val, "company_id": company_id},
-                )
-            else:
-                await session.execute(
-                    text(f"INSERT INTO company_culture_profiles (company_id, {field}, created_at, updated_at) VALUES (:company_id, :value, NOW(), NOW())"),
-                    {"company_id": company_id, "value": val},
-                )
+            sql = _CULTURE_UPDATE[field] if existing.mappings().first() else _CULTURE_INSERT[field]
+            await session.execute(text(sql), {"value": val, "company_id": company_id})
 
         await session.commit()
 
-    return {
+    await _audit_log(company_id, "save_field", field=field, metadata={"section": section, "tier": 1 if field in TIER_1_FIELDS else 2 if field in TIER_2_FIELDS else 3})
+
+    result: dict[str, Any] = {
         "success": True,
         "data": {"section": section, "field": field, "value": value, "saved": True},
         "message": f"Dado salvo: {section}.{field}",
     }
+    if tier_warning:
+        result["data"]["tier_warning"] = tier_warning
+        result["message"] = f"{tier_warning} — {result['message']}"
+    return result
 
 
 @tool_handler("company_settings")
@@ -201,17 +232,23 @@ async def _wrap_save_company_section(**kwargs: Any) -> dict[str, Any]:
                 }
 
     saved_fields = []
+    failed_fields: dict[str, str] = {}
     for field, value in data.items():
         result = await _wrap_save_company_field(
             company_id=company_id, section=section, field=field, value=value
         )
         if result["success"]:
             saved_fields.append(field)
+        else:
+            failed_fields[field] = result.get("message", "erro desconhecido")
 
+    await _audit_log(company_id, "save_section", metadata={"section": section, "fields": saved_fields, "failed": list(failed_fields.keys())})
+
+    all_ok = len(failed_fields) == 0
     return {
-        "success": True,
-        "data": {"section": section, "fields_saved": saved_fields, "count": len(saved_fields)},
-        "message": f"Secao '{section}' salva com {len(saved_fields)} campos.",
+        "success": all_ok,
+        "data": {"section": section, "fields_saved": saved_fields, "count": len(saved_fields), "failed_fields": failed_fields},
+        "message": f"Secao '{section}': {len(saved_fields)} salvos" + (f", {len(failed_fields)} falharam." if failed_fields else "."),
     }
 
 
@@ -224,9 +261,17 @@ async def _wrap_analyze_company_website(**kwargs: Any) -> dict[str, Any]:
     if not website_url:
         return {"success": False, "data": {}, "message": "URL do website e obrigatoria."}
 
+    from urllib.parse import urlparse
+    parsed = urlparse(website_url)
+    if parsed.scheme not in ("http", "https"):
+        return {"success": False, "data": {}, "message": "URL invalida: apenas http/https sao permitidos."}
+    _blocked_hosts = {"localhost", "127.0.0.1", "0.0.0.0", "169.254.169.254", "[::1]"}
+    if parsed.hostname and (parsed.hostname in _blocked_hosts or parsed.hostname.startswith("10.") or parsed.hostname.startswith("192.168.") or parsed.hostname.startswith("172.")):
+        return {"success": False, "data": {}, "message": "URL bloqueada: enderecos internos/privados nao sao permitidos."}
+
     try:
         import httpx
-        backend_url = "http://127.0.0.1:8001"
+        backend_url = os.getenv("LIA_BACKEND_URL", "http://127.0.0.1:8001")
         async with httpx.AsyncClient(timeout=120.0) as client:
             response = await client.post(
                 f"{backend_url}/api/v1/company/culture-profile/analyze-direct",
@@ -286,6 +331,8 @@ async def _wrap_process_uploaded_document(**kwargs: Any) -> dict[str, Any]:
         "general": ["mission", "vision", "values", "tech_stack", "benefits"],
     }
     expected_fields = extraction_hints.get(document_type, extraction_hints["general"])
+
+    await _audit_log(company_id, "process_document", metadata={"document_type": document_type, "text_length": len(document_text)})
 
     return {
         "success": True,
@@ -350,6 +397,8 @@ async def _wrap_import_workforce_plan(**kwargs: Any) -> dict[str, Any]:
             )
 
         await session.commit()
+
+    await _audit_log(company_id, "import_workforce_plan", metadata={"total_hires": total_hires, "departments": departments})
 
     return {
         "success": True,

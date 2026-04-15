@@ -6,7 +6,7 @@ RecruitmentSLA, RecruitmentAutomation, and GlobalSearchSettings.
 """
 import logging
 
-from sqlalchemy import func, select
+from sqlalchemy import func, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.company import Approver, Benefit, CompanyProfile, Department, GlobalSearchSettings
@@ -59,13 +59,14 @@ class SettingsProgressRepository:
         )
         return result.scalar() or 0
 
-    async def count_active_templates(self, company_id) -> int:
-        result = await self.db.execute(
-            select(func.count(RecruitmentTemplate.id)).where(
-                RecruitmentTemplate.company_id == company_id,
-                RecruitmentTemplate.is_active,
-            )
+    async def count_active_templates(self, company_id, category: str | None = None) -> int:
+        stmt = select(func.count(RecruitmentTemplate.id)).where(
+            RecruitmentTemplate.company_id == company_id,
+            RecruitmentTemplate.is_active,
         )
+        if category and hasattr(RecruitmentTemplate, "category"):
+            stmt = stmt.where(RecruitmentTemplate.category == category)
+        result = await self.db.execute(stmt)
         return result.scalar() or 0
 
     async def count_active_slas(self, company_id) -> int:
@@ -85,6 +86,22 @@ class SettingsProgressRepository:
             )
         )
         return result.scalar() or 0
+
+    async def get_culture_profile(self, company_id):
+        try:
+            result = await self.db.execute(
+                text("SELECT additional_data FROM company_culture_profiles WHERE company_id = :cid LIMIT 1"),
+                {"cid": str(company_id)},
+            )
+            row = result.mappings().first()
+            if row:
+                class _Row:
+                    additional_data = row.get("additional_data")
+                return _Row()
+            return None
+        except Exception as e:
+            logger.debug("get_culture_profile failed: %s", e)
+            return None
 
     async def get_global_search_settings(self, company_id) -> GlobalSearchSettings | None:
         """Fetch GlobalSearchSettings for a company."""

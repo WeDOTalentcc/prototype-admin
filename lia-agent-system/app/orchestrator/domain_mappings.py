@@ -36,6 +36,9 @@ AGENT_TYPE_TO_DOMAIN: dict[str, str] = {
     "recruitment_campaign": "recruitment_campaign",
     "multi_strategy": "agent_studio",
     "voice_screening": "talent_pool",
+    "company_settings": "company_settings",
+    "company_profile": "company_settings",
+    "company_config": "company_settings",
 }
 
 DEFAULT_DOMAIN = "recruiter_assistant"

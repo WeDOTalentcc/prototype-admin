@@ -347,6 +347,7 @@ def _ensure_agents_loaded() -> None:
         from app.domains.analytics.agents.analytics_react_agent import AnalyticsReActAgent  # noqa: F401
         from app.domains.communication.agents.communication_react_agent import CommunicationReActAgent  # noqa: F401
         from app.domains.ats_integration.agents.ats_integration_react_agent import ATSIntegrationReActAgent  # noqa: F401
+        from app.domains.company_settings.agents.company_react_agent import CompanySettingsReActAgent  # noqa: F401
 
         # Sourcing sub-agents
         from app.domains.sourcing.agents.sourcing_planner_agent import SourcingPlannerAgent  # noqa: F401

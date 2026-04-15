@@ -14,11 +14,23 @@ import yaml as _yaml_imp
 logger = logging.getLogger(__name__)
 
 _capabilities_yaml_path = Path(__file__).parent / 'config' / 'capabilities.yaml'
-_KEYWORD_ACTION_MAP: dict[str, str] = (
-    _yaml_imp.safe_load(_capabilities_yaml_path.read_text()).get('intent_keywords', {})
-    if _capabilities_yaml_path.exists()
-    else {}
-)
+
+
+def _load_keyword_action_map() -> dict[str, str]:
+    if not _capabilities_yaml_path.exists():
+        return {}
+    raw = _yaml_imp.safe_load(_capabilities_yaml_path.read_text()).get('intent_keywords', {})
+    inverted: dict[str, str] = {}
+    for action, keywords in raw.items():
+        if isinstance(keywords, list):
+            for kw in keywords:
+                inverted[str(kw)] = action
+        else:
+            inverted[str(keywords)] = action
+    return inverted
+
+
+_KEYWORD_ACTION_MAP: dict[str, str] = _load_keyword_action_map()
 
 _matcher = KeywordIntentMatcher.from_keyword_map(_KEYWORD_ACTION_MAP, domain_id="company_settings")
 

@@ -111,11 +111,22 @@ async def get_settings_progress(
             (automations_score * 0.30)
         )
 
-        communication_score = 100
-        email_templates_complete = True
-        notification_rules_complete = True
+        email_template_count = await repo.count_active_templates(company_uuid, category="email") if company_uuid else 0
+        notification_rule_count = await repo.count_active_templates(company_uuid, category="notification") if company_uuid else 0
+        email_templates_complete = email_template_count >= 1
+        notification_rules_complete = notification_rule_count >= 1
+        communication_score = int(
+            (100 if email_templates_complete else 0) * 0.50 +
+            (100 if notification_rules_complete else 0) * 0.50
+        )
 
-        goals_planning_score = 100
+        culture_profile = await repo.get_culture_profile(company_uuid) if company_uuid else None
+        has_workforce_plan = bool(
+            culture_profile
+            and isinstance(getattr(culture_profile, "additional_data", None), dict)
+            and culture_profile.additional_data.get("workforce_plan")
+        ) if culture_profile else False
+        goals_planning_score = 100 if has_workforce_plan else 0
 
         # Global search
         settings = await repo.get_global_search_settings(company_uuid) if company_uuid else None

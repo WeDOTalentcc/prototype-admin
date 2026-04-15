@@ -11,6 +11,7 @@ from app.domains.base import (
 from app.domains.communication.domain import CommunicationDomain  # noqa: F401
 from app.domains.compliance_base import ComplianceDomainPrompt  # LIA-C01
 from app.domains.cv_screening.domain import CVScreeningDomain  # noqa: F401
+from app.domains.company_settings.domain import CompanySettingsDomain  # noqa: F401
 from app.domains.hiring_policy.domain import HiringPolicyDomain  # noqa: F401
 from app.domains.interview_scheduling.domain import InterviewSchedulingDomain  # noqa: F401
 from app.domains.job_management.domain import JobManagementDomain  # noqa: F401
