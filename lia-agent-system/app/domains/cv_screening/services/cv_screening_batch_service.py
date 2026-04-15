@@ -25,8 +25,8 @@ from app.shared.policy_middleware import get_policy_for_company
 
 logger = logging.getLogger(__name__)
 
-_WSI_TECHNICAL_WEIGHT = 0.70
-_WSI_BEHAVIORAL_WEIGHT = 0.30
+_WSI_TECHNICAL_WEIGHT_DEFAULT = 0.70
+_WSI_BEHAVIORAL_WEIGHT_DEFAULT = 0.30
 _SCORE_THRESHOLDS = {"auto_approve": 75, "review": 55}
 
 
@@ -45,10 +45,14 @@ def _normalize_priority(priority_value) -> RequirementPriorityEnum:
     return RequirementPriorityEnum.IMPORTANT
 
 
-def _calculate_wsi_score(rubric_score: float) -> dict[str, Any]:
+def _calculate_wsi_score(
+    rubric_score: float,
+    tech_weight: float = _WSI_TECHNICAL_WEIGHT_DEFAULT,
+    behav_weight: float = _WSI_BEHAVIORAL_WEIGHT_DEFAULT,
+) -> dict[str, Any]:
     technical_score = rubric_score
     behavioral_score = rubric_score * 0.85
-    wsi_score = (technical_score * _WSI_TECHNICAL_WEIGHT) + (behavioral_score * _WSI_BEHAVIORAL_WEIGHT)
+    wsi_score = (technical_score * tech_weight) + (behavioral_score * behav_weight)
     wsi_normalized = wsi_score / 20
 
     if wsi_normalized >= 4.5:
@@ -76,6 +80,40 @@ def _determine_recommendation(score: float) -> str:
     if score >= _SCORE_THRESHOLDS["review"]:
         return "revisao"
     return "rejeitar"
+
+
+async def _load_calibration_weights(
+    company_id: str, job_id: str, db: AsyncSession
+) -> dict[str, float]:
+    """Load CalibrationWeight for tenant. Falls back to defaults if none found."""
+    try:
+        from sqlalchemy import and_
+        from lia_models.calibration import CalibrationWeight
+
+        query = select(CalibrationWeight).where(
+            and_(
+                CalibrationWeight.company_id == company_id,
+                CalibrationWeight.is_active == True,  # noqa: E712
+            )
+        )
+        # Try job-specific first, then global
+        result = await db.execute(query.where(CalibrationWeight.job_id == job_id))
+        weights = result.scalars().all()
+        if not weights:
+            result = await db.execute(query.where(CalibrationWeight.job_id.is_(None)))
+            weights = result.scalars().all()
+
+        if weights:
+            loaded = {w.dimension: w.adjusted_weight for w in weights}
+            logger.info(
+                "[CVScreeningBatch] Loaded %d calibration weights (company=%s, job=%s)",
+                len(loaded), company_id, job_id,
+            )
+            return loaded
+    except Exception as exc:
+        logger.warning("[CVScreeningBatch] CalibrationWeight load failed: %s", exc)
+
+    return {"technical": _WSI_TECHNICAL_WEIGHT_DEFAULT, "behavioral": _WSI_BEHAVIORAL_WEIGHT_DEFAULT}
 
 
 async def _get_candidate_data(candidate_id: str, db: AsyncSession) -> dict[str, Any] | None:
@@ -221,6 +259,9 @@ async def run_batch(
         salary_tolerance: int = screening_rules.get("salary_tolerance_percent", 15)
         job_salary_range = await _get_job_salary_range(job_id, db) if salary_filter_enabled else None
 
+        # Load CalibrationWeight for this tenant (item 12.3)
+        calibration_weights = await _load_calibration_weights(company_id, job_id, db)
+
         candidates_data: list[dict[str, Any]] = []
         salary_excluded: list[str] = []
         for cid in candidate_ids:
@@ -244,6 +285,9 @@ async def run_batch(
 
     semaphore = asyncio.Semaphore(max_concurrent)
 
+    tech_w = calibration_weights.get("technical", _WSI_TECHNICAL_WEIGHT_DEFAULT)
+    behav_w = calibration_weights.get("behavioral", _WSI_BEHAVIORAL_WEIGHT_DEFAULT)
+
     async def _evaluate(candidate: dict[str, Any]) -> dict[str, Any]:
         async with semaphore:
             try:
@@ -251,7 +295,7 @@ async def run_batch(
                     candidate_data=candidate,
                     requirements=requirements,
                 )
-                wsi = _calculate_wsi_score(result.score)
+                wsi = _calculate_wsi_score(result.score, tech_weight=tech_w, behav_weight=behav_w)
                 return {
                     "candidate_id": candidate.get("id"),
                     "candidate_name": candidate.get("name", "Candidato"),

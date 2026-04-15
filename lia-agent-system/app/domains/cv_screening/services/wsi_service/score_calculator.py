@@ -15,13 +15,19 @@ class WSIScoreCalculator:
         candidate_id: str,
         job_vacancy_id: str,
         responses: list[ResponseAnalysis],
-        weights: dict[str, float]
+        weights: dict[str, float],
+        tech_weight: float = 0.70,
+        behav_weight: float = 0.30,
     ) -> WSIResult:
         """
         Calcula WSI final usando média ponderada.
-        
-        Fórmula: WSI = Σ(peso_i × score_i) / Σ(pesos)
-        
+
+        Fórmula: WSI = (technical × tech_weight) + (behavioral × behav_weight)
+
+        Args:
+            tech_weight: Peso da dimensão técnica (default 0.70, CalibrationWeight override).
+            behav_weight: Peso da dimensão comportamental (default 0.30, CalibrationWeight override).
+
         Classificação WSI:
         - 4.5-5.0: Excelente
         - 4.0-4.4: Alto
@@ -33,9 +39,9 @@ class WSIScoreCalculator:
         # Separar respostas por tipo de competência
         technical_responses = [r for r in responses if r.competency in weights and "python" in r.competency.lower() or "javascript" in r.competency.lower() or "sql" in r.competency.lower() or "docker" in r.competency.lower() or "aws" in r.competency.lower()]
         
-        # Se não conseguiu detectar técnicas por nome, assume primeiras 70%
+        # Se não conseguiu detectar técnicas por nome, assume proporção tech_weight
         if not technical_responses:
-            technical_count = int(len(responses) * 0.7)
+            technical_count = int(len(responses) * tech_weight)
             technical_responses = responses[:technical_count]
         
         behavioral_responses = [r for r in responses if r not in technical_responses]
@@ -69,11 +75,11 @@ class WSIScoreCalculator:
             # Se não tem weights, usa média simples
             behavioral_wsi = sum(r.final_score for r in behavioral_responses) / len(behavioral_responses)
         else:
-            # Se não tem respostas comportamentais, usa 70% do técnico
-            behavioral_wsi = technical_wsi * 0.7
-        
-        # Calcular WSI Geral (70% técnico + 30% comportamental)
-        overall_wsi = (technical_wsi * 0.7) + (behavioral_wsi * 0.3)
+            # Se não tem respostas comportamentais, usa tech_weight do técnico
+            behavioral_wsi = technical_wsi * tech_weight
+
+        # Calcular WSI Geral (pesos vindos de CalibrationWeight ou defaults)
+        overall_wsi = (technical_wsi * tech_weight) + (behavioral_wsi * behav_weight)
         
         # Classificação
         if overall_wsi >= 4.5:
