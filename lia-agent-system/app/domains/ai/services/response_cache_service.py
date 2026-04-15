@@ -321,7 +321,9 @@ class ResponseCacheService:
             if data:
                 self._hits += 1
                 try:
-                    return json.loads(data) if isinstance(data, str) else data
+                    from app.shared.security.redis_crypto import get_redis_crypto
+                    decrypted = get_redis_crypto().decrypt(data) if isinstance(data, str) else data
+                    return json.loads(decrypted) if isinstance(decrypted, str) else decrypted
                 except json.JSONDecodeError:
                     return {"message": data}
             
@@ -362,8 +364,9 @@ class ResponseCacheService:
                 else:
                     ttl = self._default_ttl
             
-            data = json.dumps(response)
-            
+            from app.shared.security.redis_crypto import get_redis_crypto
+            data = get_redis_crypto().encrypt(json.dumps(response))
+
             if self._redis_client:
                 try:
                     await self._redis_client.setex(cache_key, ttl, data)

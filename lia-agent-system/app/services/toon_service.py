@@ -292,7 +292,8 @@ class TOONService:
             try:
                 cached = await redis.get(cache_key)
                 if cached:
-                    data = json.loads(cached)
+                    from app.shared.security.redis_crypto import get_redis_crypto
+                    data = json.loads(get_redis_crypto().decrypt(cached))
                     await redis.aclose()
                     return TOONCard(**data)
             except Exception as exc:
@@ -310,7 +311,9 @@ class TOONService:
         redis2 = await _get_redis(self._redis_url)
         if redis2 is not None:
             try:
-                await redis2.setex(cache_key, _TOON_CACHE_TTL, json.dumps(asdict(card)))
+                from app.shared.security.redis_crypto import get_redis_crypto
+                payload = get_redis_crypto().encrypt(json.dumps(asdict(card)))
+                await redis2.setex(cache_key, _TOON_CACHE_TTL, payload)
             except Exception as exc:
                 logger.warning("[TOONService] Cache write error: %s", exc)
             finally:

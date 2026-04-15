@@ -62,7 +62,10 @@ class InterviewSessionStore:
         redis = await self._get_redis()
         if redis and self._redis_available:
             try:
-                payload = pickle.dumps(state)
+                import base64
+                from app.shared.security.redis_crypto import get_redis_crypto
+                raw = base64.b64encode(pickle.dumps(state)).decode()
+                payload = get_redis_crypto().encrypt(raw)
                 await redis.setex(key, SESSION_TTL_SECONDS, payload)
                 return
             except Exception as exc:
@@ -76,7 +79,12 @@ class InterviewSessionStore:
             try:
                 payload = await redis.get(key)
                 if payload is not None:
-                    return pickle.loads(payload)
+                    import base64
+                    from app.shared.security.redis_crypto import get_redis_crypto
+                    decrypted = get_redis_crypto().decrypt(
+                        payload if isinstance(payload, str) else payload.decode()
+                    )
+                    return pickle.loads(base64.b64decode(decrypted))
                 return None
             except Exception as exc:
                 logger.warning(f"[InterviewSessionStore] Redis get failed ({exc}), falling back to memory")

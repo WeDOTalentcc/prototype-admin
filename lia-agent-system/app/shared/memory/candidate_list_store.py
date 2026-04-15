@@ -74,7 +74,9 @@ class CandidateListStore:
         redis = await self._get_redis()
         if redis and self._redis_available:
             try:
-                await redis.setex(key, LIST_TTL_SECONDS, json.dumps(candidates))
+                from app.shared.security.redis_crypto import get_redis_crypto
+                payload = get_redis_crypto().encrypt(json.dumps(candidates))
+                await redis.setex(key, LIST_TTL_SECONDS, payload)
                 logger.debug(
                     "[CandidateListStore] Stored %d candidates for conv=%s", len(candidates), conv_id
                 )
@@ -92,7 +94,8 @@ class CandidateListStore:
             try:
                 raw = await redis.get(key)
                 if raw is not None:
-                    return json.loads(raw)
+                    from app.shared.security.redis_crypto import get_redis_crypto
+                    return json.loads(get_redis_crypto().decrypt(raw))
                 return None
             except Exception as exc:
                 logger.warning("[CandidateListStore] Redis get failed (%s), falling back", exc)

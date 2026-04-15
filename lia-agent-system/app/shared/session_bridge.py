@@ -92,7 +92,11 @@ class SessionBridge:
         try:
             redis_client = await self._get_redis_client()
             if redis_client:
-                await redis_client.setex(self._key(ctx.session_id), self._ttl, serialized)
+                from app.shared.security.redis_crypto import get_redis_crypto
+                await redis_client.setex(
+                    self._key(ctx.session_id), self._ttl,
+                    get_redis_crypto().encrypt(serialized),
+                )
             else:
                 self._memory_store[self._key(ctx.session_id)] = serialized
         except Exception as exc:
@@ -110,7 +114,8 @@ class SessionBridge:
                 raw = self._memory_store.get(key)
 
             if raw:
-                return SessionContext.from_json(raw)
+                from app.shared.security.redis_crypto import get_redis_crypto
+                return SessionContext.from_json(get_redis_crypto().decrypt(raw))
         except Exception as exc:
             logger.error("[SessionBridge] Failed to load session %s: %s", session_id, exc)
         return None
