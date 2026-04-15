@@ -311,6 +311,25 @@ async def _wrap_save_company_section(**kwargs: Any) -> dict[str, Any]:
     }
 
 
+def _validate_url_ssrf(url: str) -> str | None:
+    import ipaddress as _ip
+    from urllib.parse import urlparse
+    parsed = urlparse(url)
+    if parsed.scheme not in ("http", "https"):
+        return "URL invalida: apenas http/https sao permitidos."
+    _blocked_hosts = {"localhost", "0.0.0.0", "[::1]"}
+    hostname = parsed.hostname or ""
+    if hostname in _blocked_hosts:
+        return "URL bloqueada: enderecos internos/privados nao sao permitidos."
+    try:
+        addr = _ip.ip_address(hostname)
+        if addr.is_private or addr.is_loopback or addr.is_link_local or addr.is_reserved:
+            return "URL bloqueada: enderecos internos/privados nao sao permitidos."
+    except ValueError:
+        pass
+    return None
+
+
 @tool_handler("company_settings")
 async def _wrap_analyze_company_website(**kwargs: Any) -> dict[str, Any]:
     company_id = kwargs.get("company_id", "")
@@ -320,21 +339,14 @@ async def _wrap_analyze_company_website(**kwargs: Any) -> dict[str, Any]:
     if not website_url:
         return {"success": False, "data": {}, "message": "URL do website e obrigatoria."}
 
-    import ipaddress as _ip
-    from urllib.parse import urlparse
-    parsed = urlparse(website_url)
-    if parsed.scheme not in ("http", "https"):
-        return {"success": False, "data": {}, "message": "URL invalida: apenas http/https sao permitidos."}
-    _blocked_hosts = {"localhost", "0.0.0.0", "[::1]"}
-    hostname = parsed.hostname or ""
-    if hostname in _blocked_hosts:
-        return {"success": False, "data": {}, "message": "URL bloqueada: enderecos internos/privados nao sao permitidos."}
-    try:
-        addr = _ip.ip_address(hostname)
-        if addr.is_private or addr.is_loopback or addr.is_link_local or addr.is_reserved:
-            return {"success": False, "data": {}, "message": "URL bloqueada: enderecos internos/privados nao sao permitidos."}
-    except ValueError:
-        pass
+    ssrf_err = _validate_url_ssrf(website_url)
+    if ssrf_err:
+        return {"success": False, "data": {}, "message": ssrf_err}
+
+    if linkedin_url:
+        ssrf_err = _validate_url_ssrf(linkedin_url)
+        if ssrf_err:
+            return {"success": False, "data": {}, "message": f"LinkedIn URL: {ssrf_err}"}
 
     try:
         import httpx
