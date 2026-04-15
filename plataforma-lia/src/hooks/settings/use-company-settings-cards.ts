@@ -392,7 +392,7 @@ export function useCompanySettingsCards() {
   useEffect(() => {
     switchChatContext("settings_config", { continuePrevious: true })
     return () => {
-      switchChatContext("general")
+      switchChatContext("general", { continuePrevious: true })
     }
   }, [switchChatContext])
 
