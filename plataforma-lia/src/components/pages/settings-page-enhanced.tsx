@@ -469,6 +469,8 @@ export default function SettingsPageEnhanced() {
                 return (
                   <div key={section.id}>
                     <button
+                      data-testid={`settings-menu-${section.id}`}
+                      data-active={isActive && !activeSubsection}
                       onClick={() => {
                         setActiveSection(section.id)
                         setActiveSubsection('')
@@ -545,7 +547,7 @@ export default function SettingsPageEnhanced() {
         </Card>
       </aside>
 
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col" data-testid="settings-content-area" data-active-section={activeSection}>
           <div className="p-6 dark:border-lia-border-subtle">
             <div className="flex items-center justify-between">
               <div>

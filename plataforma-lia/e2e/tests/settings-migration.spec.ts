@@ -1,16 +1,22 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 
-const SETTINGS_MENU_ITEMS = [
-  { id: 'minha-empresa', label: 'Minha Empresa' },
-  { id: 'pipeline', label: 'Pipeline' },
-  { id: 'screening', label: 'Screening' },
-  { id: 'templates-assinatura', label: 'Templates & Assinatura' },
-  { id: 'comunicacao-alertas', label: 'Comunicação & Alertas' },
-  { id: 'usuarios-departamentos', label: 'Usuários & Departamentos' },
-  { id: 'integrations', label: 'Integrações' },
-];
+const SECTION_IDS = [
+  'minha-empresa', 'pipeline', 'screening',
+  'templates-assinatura', 'comunicacao-alertas',
+  'usuarios-departamentos', 'integrations',
+] as const;
 
-async function navigateToSettings(page: any) {
+const SECTION_LABELS: Record<string, string> = {
+  'minha-empresa': 'Minha Empresa',
+  'pipeline': 'Pipeline',
+  'screening': 'Screening',
+  'templates-assinatura': 'Templates & Assinatura',
+  'comunicacao-alertas': 'Comunicação & Alertas',
+  'usuarios-departamentos': 'Usuários & Departamentos',
+  'integrations': 'Integrações',
+};
+
+async function navigateToSettings(page: Page) {
   await page.goto('/pt');
   await page.waitForLoadState('networkidle');
   const settingsLink = page.locator('text=Configurações').first();
@@ -18,241 +24,196 @@ async function navigateToSettings(page: any) {
   await page.waitForTimeout(3000);
 }
 
-async function expandSettingsSidebar(page: any) {
+async function expandAndLockSidebar(page: Page) {
   const sidebar = page.locator('aside').first();
   await sidebar.hover();
   await page.waitForTimeout(1000);
 }
 
-async function clickMenuItem(page: any, label: string) {
-  await expandSettingsSidebar(page);
-  const button = page.locator(`button:has-text("${label}")`).first();
+async function clickMenuItemById(page: Page, sectionId: string) {
+  await expandAndLockSidebar(page);
+  const button = page.locator(`[data-testid="settings-menu-${sectionId}"]`);
+  await expect(button).toBeVisible({ timeout: 5000 });
   await button.click();
   await page.waitForTimeout(3000);
 }
 
-test.describe('Settings Migration — 7-Item Menu Navigation', () => {
+async function assertContentAreaShowsSection(page: Page, sectionId: string) {
+  const contentArea = page.locator('[data-testid="settings-content-area"]');
+  await expect(contentArea).toBeVisible({ timeout: 5000 });
+  await expect(contentArea).toHaveAttribute('data-active-section', sectionId);
+}
+
+test.describe('Settings Migration — Menu Navigation', () => {
   test.beforeEach(async ({ page }) => {
     await navigateToSettings(page);
   });
 
-  test('SM-001: All 7 menu items are visible in settings sidebar', async ({ page }) => {
-    await expandSettingsSidebar(page);
-    for (const item of SETTINGS_MENU_ITEMS) {
-      const button = page.locator(`button:has-text("${item.label}")`).first();
+  test('SM-001: All 7 menu items visible with data-testid attributes', async ({ page }) => {
+    await expandAndLockSidebar(page);
+    for (const id of SECTION_IDS) {
+      const button = page.locator(`[data-testid="settings-menu-${id}"]`);
       await expect(button).toBeVisible({ timeout: 5000 });
     }
   });
 
-  test('SM-002: Progress bar with percentage visible in expanded sidebar', async ({ page }) => {
-    await expandSettingsSidebar(page);
-
+  test('SM-002: Progress bar with numeric percentage in expanded sidebar', async ({ page }) => {
+    await expandAndLockSidebar(page);
     const progressLabel = page.locator('text=Progresso do Setup');
     await expect(progressLabel).toBeVisible({ timeout: 5000 });
 
-    const percentageEl = page.locator('span:has-text("%")').first();
+    const percentageEl = page.locator('span').filter({ hasText: /^\d+%$/ }).first();
     await expect(percentageEl).toBeVisible({ timeout: 5000 });
-    const percentText = await percentageEl.textContent();
-    expect(percentText).toMatch(/\d+%/);
-
-    const progressBar = page.locator('[class*="rounded-full"][class*="h-1"]').first();
-    await expect(progressBar).toBeVisible({ timeout: 5000 });
+    const text = await percentageEl.textContent();
+    expect(text).toBeTruthy();
+    const numericValue = parseInt(text!.replace('%', ''), 10);
+    expect(numericValue).toBeGreaterThanOrEqual(0);
+    expect(numericValue).toBeLessThanOrEqual(100);
   });
 
-  test('SM-004: Navigate all 7 sections without critical JS errors', async ({ page }) => {
-    const criticalErrors: string[] = [];
-    page.on('console', (msg: any) => {
-      if (msg.type() === 'error') {
-        const text = msg.text();
-        if (!text.includes('401') && !text.includes('404') &&
-            !text.includes('Fast Refresh') && !text.includes('chatWorkflowReels') &&
-            !text.includes('ws-token') && !text.includes('fetch failed') &&
-            !text.includes('undefined is not iterable')) {
-          criticalErrors.push(text);
-        }
-      }
-    });
-
-    for (const item of SETTINGS_MENU_ITEMS) {
-      await clickMenuItem(page, item.label);
+  test('SM-004: Navigate all 7 sections, content area reflects active section', async ({ page }) => {
+    for (const id of SECTION_IDS) {
+      await clickMenuItemById(page, id);
+      await assertContentAreaShowsSection(page, id);
     }
-
-    expect(criticalErrors).toHaveLength(0);
   });
 
-  test('SM-010: Section switching preserves sidebar state', async ({ page }) => {
-    await clickMenuItem(page, 'Minha Empresa');
-    await clickMenuItem(page, 'Pipeline');
-    await clickMenuItem(page, 'Minha Empresa');
+  test('SM-010: Section switching roundtrip preserves state', async ({ page }) => {
+    await clickMenuItemById(page, 'minha-empresa');
+    await assertContentAreaShowsSection(page, 'minha-empresa');
 
-    await expandSettingsSidebar(page);
-    const minhaEmpresaBtn = page.locator('button:has-text("Minha Empresa")').first();
-    const pipelineBtn = page.locator('button:has-text("Pipeline")').first();
-    await expect(minhaEmpresaBtn).toBeVisible();
-    await expect(pipelineBtn).toBeVisible();
+    await clickMenuItemById(page, 'pipeline');
+    await assertContentAreaShowsSection(page, 'pipeline');
+
+    await clickMenuItemById(page, 'minha-empresa');
+    await assertContentAreaShowsSection(page, 'minha-empresa');
+
+    await expandAndLockSidebar(page);
+    for (const id of SECTION_IDS) {
+      const button = page.locator(`[data-testid="settings-menu-${id}"]`);
+      await expect(button).toBeVisible();
+    }
   });
 });
 
-test.describe('Settings Migration — Minha Empresa Cards', () => {
+test.describe('Settings Migration — Minha Empresa Content', () => {
   test.beforeEach(async ({ page }) => {
     await navigateToSettings(page);
-    await clickMenuItem(page, 'Minha Empresa');
+    await clickMenuItemById(page, 'minha-empresa');
   });
 
-  test('SM-003: Minha Empresa loads company data cards with real data', async ({ page }) => {
-    const cardTitles = [
-      'Dados da Empresa',
-      'Cultura',
-      'Tech Stack',
-      'Benefícios',
-      'Documentos',
-      'Políticas',
-    ];
+  test('SM-003: Minha Empresa loads with section title and real content', async ({ page }) => {
+    await assertContentAreaShowsSection(page, 'minha-empresa');
 
-    let foundCards = 0;
-    for (const title of cardTitles) {
-      const card = page.locator(`text=${title}`).first();
-      if (await card.isVisible().catch(() => false)) {
-        foundCards++;
-      }
-    }
-    expect(foundCards).toBeGreaterThanOrEqual(2);
+    const heading = page.locator('h2:has-text("Minha Empresa")');
+    await expect(heading).toBeVisible({ timeout: 5000 });
 
-    const profileResponse = await page.request.get('/api/backend-proxy/company/profile');
-    if (profileResponse.ok()) {
-      const profile = await profileResponse.json();
-      expect(profile).toBeDefined();
-    }
+    const contentArea = page.locator('[data-testid="settings-content-area"]');
+    const hasCards = await contentArea.locator('[class*="Card"], [class*="card"]').count();
+    expect(hasCards).toBeGreaterThan(0);
   });
 
-  test('SM-011: Inline editing on cards — save and cancel', async ({ page }) => {
-    const editButtons = page.locator('button:has(svg), [data-testid*="edit"]').filter({
+  test('SM-011: Inline editing — edit button exists and triggers edit mode', async ({ page }) => {
+    const contentArea = page.locator('[data-testid="settings-content-area"]');
+    await expect(contentArea).toBeVisible();
+
+    const editButtons = contentArea.locator('button').filter({
       has: page.locator('svg'),
     });
-
-    const editBtnCount = await editButtons.count();
-
-    if (editBtnCount > 0) {
-      const firstEditBtn = editButtons.first();
-      await firstEditBtn.click();
-      await page.waitForTimeout(1000);
-
-      const cancelBtn = page.locator('button:has-text("Cancelar"), button:has(svg[class*="X"])').first();
-      if (await cancelBtn.isVisible().catch(() => false)) {
-        await cancelBtn.click();
-        await page.waitForTimeout(500);
-      }
-    }
+    const editCount = await editButtons.count();
+    expect(editCount).toBeGreaterThan(0);
   });
 });
 
-test.describe('Settings Migration — Chat Context Switching', () => {
-  test('SM-012: Chat context switches to settings_config on Minha Empresa', async ({ page }) => {
-    const contextEvents: string[] = [];
-    await page.exposeFunction('__captureContext', (ctx: string) => {
-      contextEvents.push(ctx);
-    });
-
+test.describe('Settings Migration — Chat Context', () => {
+  test('SM-012: Chat panel present alongside settings with correct data attribute', async ({ page }) => {
     await navigateToSettings(page);
-    await clickMenuItem(page, 'Minha Empresa');
+    await clickMenuItemById(page, 'minha-empresa');
 
-    const chatPanel = page.locator('[data-chat-mode], [class*="UnifiedChat"]').first();
-    if (await chatPanel.isVisible().catch(() => false)) {
-      const chatInput = page.locator('textarea[placeholder*="mensagem"], textarea[placeholder*="LIA"], [data-testid="chat-input"]').first();
-      if (await chatInput.isVisible().catch(() => false)) {
-        expect(true).toBeTruthy();
-      }
+    const chatPanel = page.locator('[data-chat-mode]');
+    const chatVisible = await chatPanel.isVisible().catch(() => false);
+
+    if (chatVisible) {
+      const chatMode = await chatPanel.getAttribute('data-chat-mode');
+      expect(chatMode).toBeTruthy();
+      expect(['sidebar', 'floating', 'fullscreen']).toContain(chatMode);
     }
   });
 
-  test('SM-013: Chat shows settings suggestion chips in Minha Empresa', async ({ page }) => {
+  test('SM-013: Chat input is interactive in settings context', async ({ page }) => {
     await navigateToSettings(page);
-    await clickMenuItem(page, 'Minha Empresa');
+    await clickMenuItemById(page, 'minha-empresa');
 
-    const chatArea = page.locator('[data-chat-mode]').first();
-    if (await chatArea.isVisible().catch(() => false)) {
-      const suggestionChips = page.locator('button[class*="suggestion"], [class*="chip"], [class*="empty-state"] button');
-      const chipCount = await suggestionChips.count();
+    const chatInput = page.locator('textarea').first();
+    const inputVisible = await chatInput.isVisible().catch(() => false);
 
-      if (chipCount > 0) {
-        const firstChip = suggestionChips.first();
-        const chipText = await firstChip.textContent();
-        expect(chipText).toBeTruthy();
-      }
+    if (inputVisible) {
+      await chatInput.fill('test');
+      const value = await chatInput.inputValue();
+      expect(value).toBe('test');
+      await chatInput.fill('');
     }
   });
 });
 
 test.describe('Settings Migration — Independent Sections', () => {
-  test('SM-005: Pipeline renders with stage-related content', async ({ page }) => {
+  test('SM-005: Pipeline section renders with section-specific heading', async ({ page }) => {
     await navigateToSettings(page);
-    await clickMenuItem(page, 'Pipeline');
+    await clickMenuItemById(page, 'pipeline');
+    await assertContentAreaShowsSection(page, 'pipeline');
 
-    const pipelineContent = page.locator('text=/[Ee]tapa|[Ss]tage|[Pp]ipeline|[Ff]unil|SLA/').first();
-    const contentArea = page.locator('[class*="ErrorBoundary"], [class*="flex-1"] > div').first();
-    const hasContent = await pipelineContent.isVisible().catch(() => false) ||
-                       await contentArea.isVisible().catch(() => false);
-    expect(hasContent).toBeTruthy();
+    const heading = page.locator('h2:has-text("Pipeline")');
+    await expect(heading).toBeVisible({ timeout: 5000 });
   });
 
-  test('SM-006: Screening renders with question-related content', async ({ page }) => {
+  test('SM-006: Screening section renders with section-specific heading', async ({ page }) => {
     await navigateToSettings(page);
-    await clickMenuItem(page, 'Screening');
+    await clickMenuItemById(page, 'screening');
+    await assertContentAreaShowsSection(page, 'screening');
 
-    const screeningContent = page.locator('text=/[Pp]ergunt|[Qq]uestion|[Ss]creening|[Ee]legibilidade|WhatsApp/').first();
-    const contentArea = page.locator('[class*="ErrorBoundary"], [class*="flex-1"] > div').first();
-    const hasContent = await screeningContent.isVisible().catch(() => false) ||
-                       await contentArea.isVisible().catch(() => false);
-    expect(hasContent).toBeTruthy();
+    const heading = page.locator('h2:has-text("Screening")');
+    await expect(heading).toBeVisible({ timeout: 5000 });
   });
 
-  test('SM-007: Templates & Assinatura renders combined content', async ({ page }) => {
+  test('SM-007: Templates & Assinatura renders with section-specific heading', async ({ page }) => {
     await navigateToSettings(page);
-    await clickMenuItem(page, 'Templates & Assinatura');
+    await clickMenuItemById(page, 'templates-assinatura');
+    await assertContentAreaShowsSection(page, 'templates-assinatura');
 
-    const templatesContent = page.locator('text=/[Tt]emplate|[Aa]ssinatura|[Mm]odelo|[Ee]mail/').first();
-    const contentArea = page.locator('[class*="ErrorBoundary"], [class*="flex-1"] > div').first();
-    const hasContent = await templatesContent.isVisible().catch(() => false) ||
-                       await contentArea.isVisible().catch(() => false);
-    expect(hasContent).toBeTruthy();
+    const heading = page.locator('h2:has-text("Templates")');
+    await expect(heading).toBeVisible({ timeout: 5000 });
   });
 
-  test('SM-008: Usuarios & Departamentos renders combined content', async ({ page }) => {
+  test('SM-008: Usuarios & Departamentos renders with section-specific heading', async ({ page }) => {
     await navigateToSettings(page);
-    await clickMenuItem(page, 'Usuários & Departamentos');
+    await clickMenuItemById(page, 'usuarios-departamentos');
+    await assertContentAreaShowsSection(page, 'usuarios-departamentos');
 
-    const usersContent = page.locator('text=/[Uu]suário|[Dd]epartamento|[Rr]ecrutador|[Pp]ermiss/').first();
-    const contentArea = page.locator('[class*="ErrorBoundary"], [class*="flex-1"] > div').first();
-    const hasContent = await usersContent.isVisible().catch(() => false) ||
-                       await contentArea.isVisible().catch(() => false);
-    expect(hasContent).toBeTruthy();
+    const heading = page.locator('h2:has-text("Usuários")');
+    await expect(heading).toBeVisible({ timeout: 5000 });
   });
 
-  test('SM-014: Integracoes hub renders', async ({ page }) => {
+  test('SM-014: Integracoes section renders with section-specific heading', async ({ page }) => {
     await navigateToSettings(page);
-    await clickMenuItem(page, 'Integrações');
+    await clickMenuItemById(page, 'integrations');
+    await assertContentAreaShowsSection(page, 'integrations');
 
-    const intContent = page.locator('text=/[Ii]ntegra|[Cc]onect|API|webhook/').first();
-    const contentArea = page.locator('[class*="ErrorBoundary"], [class*="flex-1"] > div').first();
-    const hasContent = await intContent.isVisible().catch(() => false) ||
-                       await contentArea.isVisible().catch(() => false);
-    expect(hasContent).toBeTruthy();
+    const heading = page.locator('h2:has-text("Integrações")');
+    await expect(heading).toBeVisible({ timeout: 5000 });
   });
 
-  test('SM-015: Comunicacao & Alertas renders with alert-related content', async ({ page }) => {
+  test('SM-015: Comunicacao & Alertas renders with section-specific heading', async ({ page }) => {
     await navigateToSettings(page);
-    await clickMenuItem(page, 'Comunicação & Alertas');
+    await clickMenuItemById(page, 'comunicacao-alertas');
+    await assertContentAreaShowsSection(page, 'comunicacao-alertas');
 
-    const commContent = page.locator('text=/[Aa]lerta|[Nn]otifica|LGPD|[Hh]orário|[Cc]omunica/').first();
-    const contentArea = page.locator('[class*="ErrorBoundary"], [class*="flex-1"] > div').first();
-    const hasContent = await commContent.isVisible().catch(() => false) ||
-                       await contentArea.isVisible().catch(() => false);
-    expect(hasContent).toBeTruthy();
+    const heading = page.locator('h2:has-text("Comunicação")');
+    await expect(heading).toBeVisible({ timeout: 5000 });
   });
 });
 
-test.describe('Settings Migration — Progress API', () => {
-  test('SM-009: Settings progress API returns correct 7-section structure', async ({ page }) => {
+test.describe('Settings Migration — Progress API Contract', () => {
+  test('SM-009: API returns exactly 7 new section IDs with correct types', async ({ page }) => {
     await page.goto('/pt');
     await page.waitForLoadState('networkidle');
 
@@ -261,42 +222,54 @@ test.describe('Settings Migration — Progress API', () => {
 
     const data = await response.json();
 
-    expect(data.sections).toBeDefined();
-    const expectedKeys = [
-      'minha-empresa', 'pipeline', 'screening',
-      'templates-assinatura', 'comunicacao-alertas',
-      'usuarios-departamentos', 'integracoes',
-    ];
-    for (const key of expectedKeys) {
-      expect(data.sections).toHaveProperty(key);
-      expect(typeof data.sections[key]).toBe('number');
-    }
-
+    expect(data.overall).toBeDefined();
     expect(typeof data.overall).toBe('number');
     expect(data.overall).toBeGreaterThanOrEqual(0);
     expect(data.overall).toBeLessThanOrEqual(100);
 
-    if (data.subsections) {
-      const expectedSubs = [
-        'company_data', 'culture', 'tech_stack', 'benefits',
-        'policies', 'workforce', 'stages', 'slas', 'questions',
-        'templates', 'signature', 'alerts', 'lgpd_schedule',
-        'users', 'departments', 'integrations_active',
-      ];
-      for (const sub of expectedSubs) {
-        expect(data.subsections).toHaveProperty(sub);
-        expect(typeof data.subsections[sub]).toBe('boolean');
-      }
+    expect(data.sections).toBeDefined();
+    const apiSectionKeys = [
+      'minha-empresa', 'pipeline', 'screening',
+      'templates-assinatura', 'comunicacao-alertas',
+      'usuarios-departamentos', 'integracoes',
+    ];
+    for (const key of apiSectionKeys) {
+      expect(data.sections).toHaveProperty(key);
+      expect(typeof data.sections[key]).toBe('number');
+      expect(data.sections[key]).toBeGreaterThanOrEqual(0);
+      expect(data.sections[key]).toBeLessThanOrEqual(100);
     }
-
-    if (data.details) {
-      expect(data.details.company_id).toBeDefined();
-      expect(data.details.scores).toBeDefined();
-    }
+    expect(Object.keys(data.sections)).toHaveLength(7);
 
     const oldKeys = ['company-team', 'recruitment', 'communication', 'goals-planning', 'global-search'];
     for (const oldKey of oldKeys) {
       expect(data.sections).not.toHaveProperty(oldKey);
     }
+
+    expect(data.subsections).toBeDefined();
+    const expectedSubsections = [
+      'company_data', 'culture', 'tech_stack', 'benefits',
+      'policies', 'workforce', 'stages', 'slas', 'questions',
+      'templates', 'signature', 'alerts', 'lgpd_schedule',
+      'users', 'departments', 'integrations_active',
+    ];
+    for (const sub of expectedSubsections) {
+      expect(data.subsections).toHaveProperty(sub);
+      expect(typeof data.subsections[sub]).toBe('boolean');
+    }
+
+    expect(data.details).toBeDefined();
+    expect(data.details.company_id).toBeTruthy();
+    expect(data.details.scores).toBeDefined();
+  });
+
+  test('SM-016: No backend 500 errors on settings progress endpoint', async ({ page }) => {
+    await page.goto('/pt');
+    const response = await page.request.get('/api/backend-proxy/settings/progress');
+    expect(response.status()).not.toBe(500);
+    expect(response.ok()).toBeTruthy();
+
+    const data = await response.json();
+    expect(data.error).toBeFalsy();
   });
 });

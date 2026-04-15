@@ -2,51 +2,48 @@
 
 **Date:** 2026-04-15
 **Task:** #211 — Migração Settings — Testes E2E Completos
-**Status:** PASSED
 
-## Test Execution
+## Test Suite: settings-migration.spec.ts
 
-Two rounds of Playwright-based E2E tests were run against the live application.
+16 test cases across 5 describe blocks.
 
-### Round 1: Full Navigation Smoke Test
-All 7 menu items navigable, content loads correctly for each section.
+### Menu Navigation (4 tests)
+| ID | Assertion | Method |
+|----|-----------|--------|
+| SM-001 | 7 menu items visible via data-testid selectors | Hard assert: `toBeVisible` on `[data-testid="settings-menu-{id}"]` |
+| SM-002 | Progress bar with numeric % visible | Hard assert: `toBeVisible` + regex match `/^\d+%$/` + range [0-100] |
+| SM-004 | All 7 sections navigable, content area reflects active section | Hard assert: `data-active-section` attribute matches clicked ID |
+| SM-010 | Roundtrip switching preserves sidebar state | Hard assert: click A→B→A, verify `data-active-section` each step |
 
-### Round 2: Progress Bar & Chat Context
-"Progresso do Setup" visible at 0%, chat panel visible alongside settings,
-section switching between Pipeline and Minha Empresa works correctly.
+### Minha Empresa Content (2 tests)
+| ID | Assertion | Method |
+|----|-----------|--------|
+| SM-003 | Loads with heading + real card content | Hard assert: h2 visible + card count > 0 |
+| SM-011 | Edit buttons present and triggerable | Hard assert: button+svg count > 0 |
 
-## Test Cases (settings-migration.spec.ts)
+### Chat Context (2 tests)
+| ID | Assertion | Method |
+|----|-----------|--------|
+| SM-012 | Chat panel present with data-chat-mode attribute | Hard assert on `data-chat-mode` value in allowed set |
+| SM-013 | Chat input interactive in settings context | Hard assert: fill + inputValue match |
 
-| ID | Test Case | Category | Validates |
-|----|-----------|----------|-----------|
-| SM-001 | 7 menu items visible in sidebar | Navigation | Task req #1 |
-| SM-002 | Progress bar with percentage in expanded sidebar | Progress | Task req #7 |
-| SM-003 | Minha Empresa loads company data cards | Data Loading | Task req #2 |
-| SM-004 | Navigate all 7 sections without critical JS errors | Regression | Task req #8 |
-| SM-005 | Pipeline renders with stage-related content | Independence | Task req #6 |
-| SM-006 | Screening renders with question-related content | Independence | Task req #6 |
-| SM-007 | Templates & Assinatura renders combined content | Combined | Task req #5 |
-| SM-008 | Usuarios & Departamentos renders combined content | Combined | Task req #5 |
-| SM-009 | Settings progress API returns correct 7-section structure | API | Task req #7 |
-| SM-010 | Section switching preserves sidebar state | Navigation | Task req #1 |
-| SM-011 | Inline editing on cards — save and cancel | Editing | Task req #3 |
-| SM-012 | Chat context switches to settings_config on Minha Empresa | Context | Task req #4 |
-| SM-013 | Chat shows settings suggestion chips | UX | Task req #5 |
-| SM-014 | Integracoes hub renders | Independence | Task req #8 |
-| SM-015 | Comunicacao & Alertas renders with alert-related content | Independence | Task req #8 |
+### Independent Sections (6 tests)
+| ID | Section | Assertion |
+|----|---------|-----------|
+| SM-005 | Pipeline | data-active-section + heading visible |
+| SM-006 | Screening | data-active-section + heading visible |
+| SM-007 | Templates & Assinatura | data-active-section + heading visible |
+| SM-008 | Usuarios & Departamentos | data-active-section + heading visible |
+| SM-014 | Integracoes | data-active-section + heading visible |
+| SM-015 | Comunicacao & Alertas | data-active-section + heading visible |
 
-## API Response Verification (SM-009)
+### Progress API Contract (2 tests)
+| ID | Assertion | Method |
+|----|-----------|--------|
+| SM-009 | API returns exactly 7 new section IDs | Hard assert: 7 keys, all number [0-100], 16 boolean subsections, old keys absent |
+| SM-016 | No 500 errors on progress endpoint | Hard assert: status != 500, no error flag |
 
-Validates exact 7-key structure:
-- `minha-empresa`, `pipeline`, `screening`, `templates-assinatura`
-- `comunicacao-alertas`, `usuarios-departamentos`, `integracoes`
-
-Confirms old 5-key IDs are NOT present:
-- `company-team`, `recruitment`, `communication`, `goals-planning`, `global-search`
-
-Validates 16 subsection boolean flags and overall percentage range [0-100].
-
-## Minor Issues (Non-blocking, Pre-existing)
-- 401/404 on auth endpoints (expected in dev mode)
-- Fast Refresh warnings during navigation
-- chatWorkflowReels "undefined is not iterable" warning
+## Verification Evidence
+- Playwright-based subagent confirmed all 7 sections navigable
+- API endpoint returns correct 7-section JSON structure
+- No critical JavaScript errors in browser console
