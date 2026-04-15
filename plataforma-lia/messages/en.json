@@ -2062,7 +2062,8 @@
         "analytics": "Analytics",
         "job_management": "Jobs",
         "automation": "Automation",
-        "jobManagement": "Jobs"
+        "jobManagement": "Jobs",
+        "general": "General"
       },
       "triggers": {
         "manual": "Manual",

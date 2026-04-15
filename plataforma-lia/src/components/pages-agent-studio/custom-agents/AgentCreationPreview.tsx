@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils"
 import { cardStyles, badgeStyles, textStyles, buttonStyles } from "@/lib/design-tokens"
 import { BetaBadge } from "@/components/ui/beta-badge"
 import { toast } from "@/lib/toast"
-import type { AgentCategory } from "./types"
+import { safeCategoryKey } from "./types"
 
 interface GeneratedConfig {
   suggested_name: string
@@ -100,7 +100,7 @@ export function AgentCreationPreview({ description, onClose, onCreated }: AgentC
     }
   }
 
-  const domainLabel = config ? (t('categories.' + (config.suggested_domain as AgentCategory)) || config.suggested_domain) : ""
+  const domainLabel = config ? (t('categories.' + safeCategoryKey(config.suggested_domain)) || config.suggested_domain || 'general') : ""
 
   return (
     <div className="h-full flex flex-col">

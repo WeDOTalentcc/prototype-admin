@@ -3,7 +3,7 @@
  * Mirrors backend schemas (app/schemas/custom_agent.py + agent_deployment.py)
  */
 
-export type AgentCategory = "screening" | "sourcing" | "communication" | "analytics" | "job_management" | "automation"
+export type AgentCategory = "screening" | "sourcing" | "communication" | "analytics" | "job_management" | "automation" | "general"
 
 export type ContextLevel = "full" | "standard" | "minimal"
 
@@ -127,6 +127,20 @@ export const CATEGORY_KEYS: Record<AgentCategory, string> = {
   analytics: "analytics",
   job_management: "jobManagement",
   automation: "automation",
+  general: "general",
+}
+
+export const VALID_CATEGORIES = new Set<string>(Object.keys(CATEGORY_KEYS))
+
+const CATEGORY_ALIASES: Record<string, AgentCategory> = {
+  jobManagement: "job_management",
+}
+
+export function safeCategoryKey(domain: string | undefined | null): AgentCategory {
+  if (!domain) return 'general'
+  if (VALID_CATEGORIES.has(domain)) return domain as AgentCategory
+  if (CATEGORY_ALIASES[domain]) return CATEGORY_ALIASES[domain]
+  return 'general'
 }
 
 /** i18n key suffixes for tools — use with t(`tools.${key}`) */

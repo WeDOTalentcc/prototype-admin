@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils"
 import { cardStyles, badgeStyles, textStyles } from "@/lib/design-tokens"
 import { BetaBadge } from "@/components/ui/beta-badge"
 import type { CustomAgent } from "./types"
+import { safeCategoryKey } from "./types"
 
 interface AgentCardProps {
   agent: CustomAgent
@@ -28,8 +29,8 @@ export function AgentCard({ agent, onTest, onDeploy, onToggleStatus }: AgentCard
   }
 
   const statusStyle = STATUS_STYLES[agent.status] || STATUS_STYLES.draft
-  const category = agent.domain || "general"
-  const categoryLabel = tCat('categories.' + category) || agent.domain
+  const category = safeCategoryKey(agent.domain)
+  const categoryLabel = tCat('categories.' + category) || agent.domain || 'general'
 
   return (
     <div className={cn(cardStyles.default, "p-4 flex flex-col gap-3")}>

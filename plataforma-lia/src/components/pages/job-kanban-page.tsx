@@ -8,6 +8,7 @@ import { KanbanPageModals } from "@/components/pages/job-kanban/KanbanPageModals
 import { KanbanPageContent } from "@/components/pages/job-kanban/KanbanPageContent"
 import { ErrorBoundarySection } from "@/components/ui/error-boundary-section"
 import { VagaProgressBar } from "@/components/workflow-rail"
+import "@/components/pages/job-kanban-page.css"
 
 export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, onBack?: () => void }) {
   const t = useTranslations('kanban')
@@ -25,39 +26,6 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
   }
 
   return (
-    <>
-      <style jsx>{`
-        @keyframes pulse {
-          0%, 100% {
-            opacity: 1;
-          }
-          50% {
-            opacity: 0.7;
-          }
-        }
-
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-            transform: scale(0.95);
-          }
-          to {
-            opacity: 1;
-            transform: scale(1);
-          }
-        }
-
-        .dragging {
-          opacity: 0.5;
-          cursor: grabbing !important;
-        }
-
-        .drop-zone-active {
-          background-color: var(--wedo-cyan-bg-05);
-          border-color: 'var(--wedo-cyan)';
-        }
-      `}</style>
-
     <ErrorBoundarySection>
     <div className="h-screen bg-lia-bg-primary dark:bg-lia-bg-primary flex flex-col overflow-hidden">
       <KanbanJobHeader
@@ -118,6 +86,5 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
 
     </div>
     </ErrorBoundarySection>
-    </>
   )
 }

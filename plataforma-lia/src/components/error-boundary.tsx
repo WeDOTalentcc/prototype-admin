@@ -29,10 +29,8 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
   }
 
   componentDidCatch(error: Error, info: React.ErrorInfo) {
-
-    // Sentry capture disabled — package not installed
-    // To enable: npm install @sentry/nextjs, then uncomment below
-    // try { const Sentry = require("@sentry/nextjs"); Sentry.captureException(error, { extra: { componentStack: info.componentStack } }) } catch {}
+    console.error('[ErrorBoundary] Uncaught error:', error)
+    console.error('[ErrorBoundary] Component stack:', info.componentStack)
   }
 
   handleReset = () => {

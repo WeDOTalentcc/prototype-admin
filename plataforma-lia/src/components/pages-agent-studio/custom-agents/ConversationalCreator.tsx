@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils"
 import { cardStyles, buttonStyles, textStyles, inputStyles, badgeStyles } from "@/lib/design-tokens"
 import { toast } from "@/lib/toast"
 import { BetaBadge } from "@/components/ui/beta-badge"
-import type { AgentCategory } from "./types"
+import { safeCategoryKey } from "./types"
 
 interface GeneratedConfig {
   suggested_name: string
@@ -96,7 +96,7 @@ export function ConversationalCreator({ onAgentCreated }: ConversationalCreatorP
     }
   }
 
-  const domainLabel = config ? (t('categories.' + (config.suggested_domain as AgentCategory)) || config.suggested_domain) : ""
+  const domainLabel = config ? (t('categories.' + safeCategoryKey(config.suggested_domain)) || config.suggested_domain || 'general') : ""
 
   return (
     <div className={cn(cardStyles.default, "p-5")}>

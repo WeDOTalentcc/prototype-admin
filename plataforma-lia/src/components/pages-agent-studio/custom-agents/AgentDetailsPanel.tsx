@@ -12,7 +12,7 @@ import {
 import { useAgentDeployments } from "@/hooks/agents"
 import { VersionHistoryPanel } from "./VersionHistoryPanel"
 import type { CustomAgent } from "./types"
-import type { AgentCategory } from "./types"
+import { safeCategoryKey } from "./types"
 
 const TRIGGER_ICONS: Record<string, React.ReactNode> = {
   manual: <MousePointer className="w-3 h-3" />,
@@ -55,7 +55,7 @@ export function AgentDetailsPanel({ agent, open, onClose, onDeploy, onTest }: Ag
 
   if (!agent) return null
 
-  const domainLabel = t('categories.' + (agent.domain as AgentCategory)) || agent.domain
+  const domainLabel = t('categories.' + safeCategoryKey(agent.domain)) || agent.domain || 'general'
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
