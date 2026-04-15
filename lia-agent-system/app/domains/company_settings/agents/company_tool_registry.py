@@ -320,13 +320,21 @@ async def _wrap_analyze_company_website(**kwargs: Any) -> dict[str, Any]:
     if not website_url:
         return {"success": False, "data": {}, "message": "URL do website e obrigatoria."}
 
+    import ipaddress as _ip
     from urllib.parse import urlparse
     parsed = urlparse(website_url)
     if parsed.scheme not in ("http", "https"):
         return {"success": False, "data": {}, "message": "URL invalida: apenas http/https sao permitidos."}
-    _blocked_hosts = {"localhost", "127.0.0.1", "0.0.0.0", "169.254.169.254", "[::1]"}
-    if parsed.hostname and (parsed.hostname in _blocked_hosts or parsed.hostname.startswith("10.") or parsed.hostname.startswith("192.168.") or parsed.hostname.startswith("172.")):
+    _blocked_hosts = {"localhost", "0.0.0.0", "[::1]"}
+    hostname = parsed.hostname or ""
+    if hostname in _blocked_hosts:
         return {"success": False, "data": {}, "message": "URL bloqueada: enderecos internos/privados nao sao permitidos."}
+    try:
+        addr = _ip.ip_address(hostname)
+        if addr.is_private or addr.is_loopback or addr.is_link_local or addr.is_reserved:
+            return {"success": False, "data": {}, "message": "URL bloqueada: enderecos internos/privados nao sao permitidos."}
+    except ValueError:
+        pass
 
     try:
         import httpx
