@@ -20,8 +20,18 @@ from app.domains.job_management.repositories.job_vacancy_crud_repository import 
 from app.domains.job_management.dependencies import get_job_vacancy_crud_repo
 from app.domains.integrations_hub.services.rails_adapter import RailsAdapter, RAILS_ENABLED
 from app.domains.integrations_hub.services.rails_adapter_dependency import get_rails_adapter
+from app.shared.rails_migration.deprecation import enforce_job_vacancies_deprecation
 
-router = APIRouter()
+# MIGRATION_PLAN item 7.1 — Python CRUD deprecated in favor of Rails (ats-api-copia).
+#
+# The 13 endpoints below are kept as a compatibility shim during the transition.
+# Every request gets logged with a deprecation warning and a `Sunset` header
+# pointing at the retirement date. Flip `STRICT_RAILS_ONLY=true` in the
+# environment to turn all routes below into HTTP 410 Gone with a pointer at
+# the Rails endpoint — this lets us kill-switch the old API without a deploy.
+router = APIRouter(
+    dependencies=[Depends(enforce_job_vacancies_deprecation)],
+)
 
 
 # ─── Finalize (conversational flow) ───────────────────────────────────────────

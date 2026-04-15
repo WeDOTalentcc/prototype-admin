@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useEffect } from "react"
-import { TwinsList, EvaluateWithTwinModal, DigitalTwinHeader, CreateDigitalTwinModal } from "@/components/pages-agent-studio/DigitalTwinComponents"
+import { TwinsList, EvaluateWithTwinModal } from "@/components/pages-agent-studio/DigitalTwinComponents"
 import MultiStrategySearchPanel from "@/components/pages-agent-studio/MultiStrategySearchPanel"
 import CustomAgentsTab from "@/components/pages-agent-studio/CustomAgentsTab"
 import { TemplateGallery, AgentCard as CustomAgentCard, AgentCardSkeleton, AgentDetailsPanel, DeployDialog, ConversationalCreator, TestDebugPanel, ApprovalsList } from "@/components/pages-agent-studio/custom-agents"
@@ -94,8 +94,6 @@ export default function AgentStudioPage({
   const [isLoading, setIsLoading] = useState(true)
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [evaluatingTwinId, setEvaluatingTwinId] = useState<string | null>(null)
-  const [showCreateTwinModal, setShowCreateTwinModal] = useState(false)
-  const [twinListRefreshKey, setTwinListRefreshKey] = useState(0)
   const [deployAgent, setDeployAgent] = useState<CustomAgent | null>(null)
   const [testAgent, setTestAgent] = useState<CustomAgent | null>(null)
   const [detailsAgent, setDetailsAgent] = useState<CustomAgent | null>(null)
@@ -582,17 +580,17 @@ export default function AgentStudioPage({
 
         {activeTab === "twins" && (
           <div className="space-y-4">
-            <DigitalTwinHeader />
-            <TwinsList
-              onEvaluate={(id) => setEvaluatingTwinId(id)}
-              onCreateTwin={() => setShowCreateTwinModal(true)}
-              refreshKey={twinListRefreshKey}
-            />
-            <CreateDigitalTwinModal
-              isOpen={showCreateTwinModal}
-              onClose={() => setShowCreateTwinModal(false)}
-              onCreated={() => setTwinListRefreshKey((k) => k + 1)}
-            />
+            <div className="rounded-xl border border-lia-border-subtle bg-lia-bg-secondary p-5 mb-4">
+              <div className="flex items-center gap-2 mb-1">
+                <Users className="w-4 h-4 text-wedo-cyan" />
+                <span className="text-xs font-semibold uppercase tracking-wider text-wedo-cyan">{t("studio.twins.label")}</span>
+              </div>
+              <h2 className="text-base font-semibold text-lia-text-primary mb-1">{t("studio.twins.cloneReasoning")}</h2>
+              <p className="text-sm text-lia-text-secondary max-w-2xl">
+                {t("studio.twins.cloneDesc")}
+              </p>
+            </div>
+            <TwinsList onEvaluate={(id) => setEvaluatingTwinId(id)} />
           </div>
         )}
 

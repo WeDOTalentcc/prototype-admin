@@ -31,8 +31,18 @@ from ._shared import (
 from pydantic import BaseModel
 from app.domains.integrations_hub.services.rails_adapter import RailsAdapter, RAILS_ENABLED
 from app.domains.integrations_hub.services.rails_adapter_dependency import get_rails_adapter
+from app.shared.rails_migration.deprecation import enforce_candidates_deprecation
 
-router = APIRouter()
+# MIGRATION_PLAN item 7.2 — Python CRUD deprecated in favor of Rails (ats-api-copia).
+#
+# The 7 endpoints below are kept as a compatibility shim during the transition.
+# Every request gets logged with a deprecation warning and a `Sunset` header
+# pointing at the retirement date. Flip `STRICT_RAILS_ONLY=true` in the
+# environment to turn all routes below into HTTP 410 Gone with a pointer at
+# the Rails endpoint. This lets us kill-switch the old API without a deploy.
+router = APIRouter(
+    dependencies=[Depends(enforce_candidates_deprecation)],
+)
 
 
 # ---------------------------------------------------------------------------

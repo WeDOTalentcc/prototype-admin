@@ -122,6 +122,9 @@ export function ConversationalCreator({ onAgentCreated }: ConversationalCreatorP
     }
   }
 
+  // Defensive: backend should always populate suggested_domain via _coalesce(),
+  // but if the LLM emits null and the helper is not deployed yet, fall back
+  // to "general" instead of resolving categories.undefined (i18n MISSING_MESSAGE).
   const domainKey = config?.suggested_domain ?? "general"
   const domainLabel = config
     ? (t('categories.' + (domainKey as AgentCategory)) || domainKey)

@@ -38,6 +38,21 @@ _INTERROGATIVE_SUFFIXES = re.compile(
     r"\?\s*$",
 )
 
+# BUG-18 fix: frases que começam com intenção direta de navegação NÃO devem
+# ser tratadas como perguntas, mesmo se terminam com "?". "Me leva pra vagas?"
+# é comando educado, não dúvida. Sem esta lista, a confidence era multiplicada
+# por 0.45 e caía abaixo do threshold, bloqueando a sugestão de navegação.
+_NAV_IMPERATIVE_PREFIXES = re.compile(
+    r"^(me\s+(leva|leve|levando|mostra|mostre)|"
+    r"abrir?|abra|abre|"
+    r"ir\s+para|va\s+para|vai\s+para|vamos\s+para|"
+    r"quero\s+(ver|ir|abrir|acessar)|"
+    r"mostra|mostre|"
+    r"levar?\s+(para|pro|pra)|"
+    r"navega[rl]?\s+(para|pro|pra))\b",
+    re.IGNORECASE,
+)
+
 _PATTERNS: list[tuple[list[tuple[str, float]], str, str]] = [
     # ([(keyword, weight), ...], page_name, hint_text)
     # weight: 1.0 = strong action phrase, 0.3 = generic/ambiguous word
@@ -110,9 +125,13 @@ class NavigationIntentDetector:
         logger.debug("[LIA-I06] NavigationIntentDetector still uses internal patterns. Migration to KeywordIntentMatcher pending.")
         text = message.lower().strip()
 
+        # BUG-18: imperativos de navegação ("me leva pra vagas", "abra a página X",
+        # "quero ver minhas vagas") NÃO são perguntas, mesmo com "?". Eles devem
+        # manter confidence alta e disparar a sugestão de navegação.
+        is_nav_imperative = bool(_NAV_IMPERATIVE_PREFIXES.search(text))
         is_question = bool(
             _INTERROGATIVE_PREFIXES.search(text) or _INTERROGATIVE_SUFFIXES.search(text)
-        )
+        ) and not is_nav_imperative
 
         best_page: str | None = None
         best_hint: str | None = None
@@ -143,8 +162,14 @@ class NavigationIntentDetector:
 
         confidence = min(0.95, 0.5 + best_score * 0.2)
 
-        if is_question:
-            confidence *= 0.45
+        # BUG-18: imperativos de navegação ADICIONAM confiança em vez de remover.
+        # "me leva pra vagas" é intenção clara, merece prioridade sobre pergunta genérica.
+        if is_nav_imperative:
+            confidence = min(0.95, confidence + 0.15)
+        elif is_question:
+            # Reduz confiança de perguntas genéricas ("qual é a página de vagas?"),
+            # mas não tanto a ponto de bloquear — antes era 0.45 (muito agressivo).
+            confidence *= 0.75
 
         return NavigationIntentResult(
             page=best_page if confidence >= _FINAL_CONFIDENCE_MIN else None,

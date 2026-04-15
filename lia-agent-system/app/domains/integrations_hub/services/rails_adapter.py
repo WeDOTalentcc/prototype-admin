@@ -454,6 +454,73 @@ class RailsAdapter:
             return int(id_str)
         return None
 
+    @staticmethod
+    def _looks_like_uuid(id_str: str) -> bool:
+        """Return True if the string is shaped like a UUID (not a bigint).
+
+        Used by the fork_uuid lookup path (MIGRATION_PLAN item 7.3). A UUID
+        has exactly 36 chars with dashes at positions 8/13/18/23. We don't
+        try to parse it rigorously — we just want to distinguish fork UUIDs
+        from Rails bigint IDs.
+        """
+        if not id_str or len(id_str) != 36:
+            return False
+        return id_str[8] == "-" and id_str[13] == "-" and id_str[18] == "-" and id_str[23] == "-"
+
+    async def _resolve_rails_candidate_id(self, candidate_id: str) -> int | None:
+        """Resolve a candidate ID (bigint or fork UUID) to a Rails bigint ID.
+
+        MIGRATION_PLAN item 7.3 — Rails now carries `candidates.fork_uuid`
+        (added in migration 20260415120003). When the caller hands us a
+        UUID instead of a bigint, we look it up on Rails via
+        `GET /v1/candidates?fork_uuid=<uuid>` and return the discovered
+        integer id. Result is cached per-request (via the client session)
+        so subsequent operations on the same candidate reuse it.
+
+        Returns:
+            The Rails bigint id if resolvable; None if the candidate has
+            no fork_uuid yet on Rails (e.g. before backfill completes)
+            or if Rails is unavailable.
+        """
+        # Bigint path — no translation needed
+        direct = self._to_rails_id(candidate_id)
+        if direct is not None:
+            return direct
+
+        # UUID path — requires a Rails round-trip
+        if not self._looks_like_uuid(candidate_id):
+            return None
+
+        client = await self._get_rails_client()
+        if not client:
+            return None
+
+        lookup = getattr(client, "find_candidate_by_fork_uuid", None)
+        if not callable(lookup):
+            logger.debug(
+                "[RailsAdapter] Rails client has no find_candidate_by_fork_uuid — "
+                "falling back to None for UUID %s",
+                candidate_id,
+            )
+            return None
+
+        try:
+            data = await lookup(candidate_id)
+        except Exception as exc:
+            logger.warning(
+                "[RailsAdapter] fork_uuid lookup failed for %s: %s", candidate_id, exc
+            )
+            return None
+
+        if not data:
+            return None
+        rails_id = data.get("id") if isinstance(data, dict) else None
+        if isinstance(rails_id, int):
+            return rails_id
+        if isinstance(rails_id, str) and rails_id.isdigit():
+            return int(rails_id)
+        return None
+
     async def get_candidate_from_rails_only(self, candidate_id: str) -> dict | None:
         """Fetch candidate from Rails only — no local DB fallback.
 
@@ -463,9 +530,9 @@ class RailsAdapter:
         client = await self._get_rails_client()
         if not client:
             return None
-        rails_id = self._to_rails_id(candidate_id)
+        rails_id = await self._resolve_rails_candidate_id(candidate_id)
         if rails_id is None:
-            logger.debug("[RailsAdapter] get_candidate_from_rails_only: non-integer ID %r — skipping", candidate_id)
+            logger.debug("[RailsAdapter] get_candidate_from_rails_only: unresolvable ID %r — skipping", candidate_id)
             return None
         data = await client.get_candidate(rails_id)
         if data:
@@ -512,7 +579,7 @@ class RailsAdapter:
         """Get candidate: Rails first, local DB fallback."""
         client = await self._get_rails_client()
         if client:
-            rails_id = self._to_rails_id(candidate_id)
+            rails_id = await self._resolve_rails_candidate_id(candidate_id)
             if rails_id is not None:
                 try:
                     data = await client.get_candidate(rails_id)
@@ -602,9 +669,9 @@ class RailsAdapter:
 
         client = await self._get_rails_client()
         if client:
-            rails_id = self._to_rails_id(candidate_id)
+            rails_id = await self._resolve_rails_candidate_id(candidate_id)
             if rails_id is None:
-                logger.warning("[RailsAdapter] update_candidate: non-integer ID %r — skipping Rails", candidate_id)
+                logger.warning("[RailsAdapter] update_candidate: unresolvable ID %r — skipping Rails", candidate_id)
                 return None
             try:
                 result = await client.update_candidate(rails_id, rails_data)
@@ -619,9 +686,9 @@ class RailsAdapter:
         """Delete candidate from Rails."""
         client = await self._get_rails_client()
         if client:
-            rails_id = self._to_rails_id(candidate_id)
+            rails_id = await self._resolve_rails_candidate_id(candidate_id)
             if rails_id is None:
-                logger.warning("[RailsAdapter] delete_candidate: non-integer ID %r — skipping Rails", candidate_id)
+                logger.warning("[RailsAdapter] delete_candidate: unresolvable ID %r — skipping Rails", candidate_id)
                 return False
             try:
                 return await client.delete_candidate(rails_id)

@@ -9,6 +9,20 @@ description: |
 
 domains:
   job_management:
+    # ── Leitura / Listagem (BUG-17 fix: sem esses patterns, "listar vagas" caía no
+    # genérico \bvaga\b e era roteado para job_wizard, que não tem list_jobs no
+    # tool registry. Padrões específicos primeiro para ancorar leitura antes de criação)
+    - "list(a|ar|ando|e|em|ei)?\\s+(\\w+\\s+)*vagas?"
+    - "ver\\s+(\\w+\\s+)*vagas?"
+    - "mostrar?\\s+(\\w+\\s+)*vagas?"
+    - "minhas?\\s+vagas?"
+    - "quais\\s+(\\w+\\s+)*vagas?"
+    - "quantas\\s+vagas?"
+    - "vagas?\\s+(abertas?|ativas?|em\\s+aberto|em\\s+andamento|pendentes?|fechadas?|pausadas?|canceladas?)"
+    - "ranking\\s+d[eo]?\\s+vagas?"
+    - "\\bfunil\\s+d[ae]\\s+vaga"
+    - "detalhes\\s+d[ae]\\s+vaga"
+    # ── Criação / Edição
     - "criar?\\s+\\w*\\s*vaga"
     - "nova\\s+vaga"
     - "editar?\\s+\\w*\\s*vaga"
@@ -315,19 +329,3 @@ domains:
     - "avan[cç]ar\\s+\\w*\\s*campanha"
     - "progresso\\s+\\w*\\s*campanha"
     - "workflow\\s+rail"
-  company_settings:
-    - "configura[rç].*empresa"
-    - "perfil\\s+(da\\s+)?empresa"
-    - "dados\\s+(da\\s+)?empresa"
-    - "cultura\\s+(da\\s+)?empresa"
-    - "benef[ií]cios\\s+(da\\s+)?empresa"
-    - "tech\\s*stack"
-    - "minha\\s+empresa"
-    - "workforce\\s+planning"
-    - "planejamento\\s+de\\s+contrata[çc][õo]es"
-    - "miss[ãa]o\\s+(da\\s+)?empresa"
-    - "vis[ãa]o\\s+(da\\s+)?empresa"
-    - "valores\\s+(da\\s+)?empresa"
-    - "cnpj"
-    - "evp"
-    - "employer\\s+branding"

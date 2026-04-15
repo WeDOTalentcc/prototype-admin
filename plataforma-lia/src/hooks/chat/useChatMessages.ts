@@ -162,27 +162,25 @@ export function useChatMessages({
     }
 
     try {
-      const res = await fetch("/api/backend-proxy/chat", {
+      const res = await fetch("/api/backend-proxy/chat/message", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({
-          content,
+          message: content,
+          domain,
+          session_id: sessionId,
           conversation_id: conversationId,
-          context: { ...context, domain, session_id: sessionId },
+          context,
         }),
       })
-      const rawOuter = await res.json() as Record<string, unknown>
-      const raw = (rawOuter.data as Record<string, unknown>) ?? rawOuter
-      const msg = (raw.message as Record<string, unknown>) ?? raw
-      const conv = (raw.conversation as Record<string, unknown>) ?? {}
-      const data = {
-        content: (msg.content as string | undefined) ?? (raw.content as string | undefined),
-        conversation_id: (conv.id as string | undefined) ?? (raw.conversation_id as string | undefined),
-        needs_clarification: raw.needs_clarification as boolean | undefined,
-        clarification_question: raw.clarification_question as string | undefined,
-        clarification_options: raw.clarification_options as Array<string | { label?: string; value?: string }> | undefined,
-        message_metadata: (msg.message_metadata ?? raw.message_metadata) as {
+      const data = await res.json() as {
+        content?: string
+        conversation_id?: string
+        needs_clarification?: boolean
+        clarification_question?: string
+        clarification_options?: Array<string | { label?: string; value?: string }>
+        message_metadata?: {
           pending_action?: {
             pending_id?: string
             intent?: string
@@ -191,7 +189,7 @@ export function useChatMessages({
             missing_params?: string[]
             collected_params?: Record<string, unknown>
           }
-        } | undefined,
+        }
       }
       if (data.conversation_id && data.conversation_id !== conversationId) {
         setConversationId(data.conversation_id)
