@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect, useRef } from "react"
 import type { CandidateLocal } from "@/services/lia-api"
+import { ensureServerReady } from "@/lib/backend-ready"
 
 const BACKEND_URL = '/api/backend-proxy'
 const PER_PAGE = 20
@@ -92,7 +93,10 @@ export function useCandidatesList(initialFilters?: CandidatesListFilters): UseCa
         })
     }
 
-    doFetch()
+    ;(async () => {
+      await ensureServerReady()
+      doFetch()
+    })()
   }, [filters, currentPage, fetchTrigger])
 
   const setFilters = useCallback(

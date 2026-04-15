@@ -70,10 +70,10 @@ export function createKanbanCellRenderer(props: KanbanTableCellRendererProps) {
   }
 
   return function renderCustomCell(candidate: KanbanCandidate, columnId: string): React.ReactNode {
-    const scoreResult = renderScoreCell(candidate, columnId, scoreCellProps)
+    const scoreResult = renderScoreCell(candidate, columnId, scoreCellProps, t)
     if (scoreResult !== undefined) return scoreResult
 
-    const pearchResult = renderPearchCell(candidate, columnId)
+    const pearchResult = renderPearchCell(candidate, columnId, t)
     if (pearchResult !== undefined) return pearchResult
 
     switch (columnId) {
