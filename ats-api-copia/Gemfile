@@ -1,7 +1,7 @@
 source "https://rubygems.org"
 
 # Bundle edge Rails instead: gem "rails", github: "rails/rails", branch: "main"
-gem "rails", "7.1.0"
+gem "rails", "~> 7.1.5"
 # The original asset pipeline for Rails [https://github.com/rails/sprockets-rails]
 gem "sprockets-rails"
 # Use postgresql as the database for Active Record
@@ -17,10 +17,10 @@ gem "dotenv-rails"
 # gem "kredis"
 gem "sidekiq", "~> 7.0"
 gem "bcrypt", "~> 3.1.7"
-gem "jwt"
+gem "jwt", "~> 2.9"
 gem "ros-apartment", require: "apartment"
 gem "searchkick"
-gem "elasticsearch"
+gem "elasticsearch", "~> 9.0"
 # Use Active Model has_secure_password [https://guides.rubyonrails.org/active_model_basics.html#securepassword]
 # gem "bcrypt", "~> 3.1.7"
 
@@ -34,11 +34,13 @@ gem "jsonapi-serializer"
 # gem "image_processing", "~> 1.2"
 
 gem 'rack-cors'
+gem 'sentry-ruby', '~> 5.0'
+gem 'sentry-rails', '~> 5.0'
 
 
 # gem para rapptmq
-gem 'sneakers'
-gem 'bunny'
+gem 'sneakers', '~> 2.11'
+gem 'bunny', '~> 2.24'
 # group :mq do
 #   gem 'sneakers'
 # end

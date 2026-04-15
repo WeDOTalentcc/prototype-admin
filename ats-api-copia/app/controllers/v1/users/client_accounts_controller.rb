@@ -4,6 +4,7 @@ module V1
   module Users
     class ClientAccountsController < ApplicationController
       before_action :authorize_request
+      before_action :require_admin!
       before_action :set_client_account, only: %i[show update destroy]
 
       def index

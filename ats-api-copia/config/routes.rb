@@ -17,7 +17,23 @@ Rails.application.routes.draw do
     get "me", to: "sessions#me"
     post "logout", to: "sessions#logout"
 
+    namespace :auth do
+      get "magic-link/verify", to: "magic_links#verify"
+    end
+
+    # Onboarding routes — controller is V1::Users::OnboardingController
+    # but routes live at /v1/onboarding/* per API contract
+    scope :onboarding, controller: "users/onboarding" do
+      get "status", action: :status
+      patch "progress", action: :progress
+      get "settings", action: :settings
+      patch "settings", action: :settings, as: :update_onboarding_settings
+      post "consent", action: :consent
+    end
+
     namespace :users do
+      post "invite", to: "onboarding#invite"
+
       get "applies", to: "applies#index"
       get "applies/:id", to: "applies#show"
       post "applies", to: "applies#create"

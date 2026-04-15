@@ -14,6 +14,19 @@ class JobImportWorker
       payload = JSON.parse(raw_message)
       job_data = payload["payload"]
 
+      account_id = job_data["account_id"]
+      user_id = job_data["user_id"]
+
+      unless account_id.present?
+        Sneakers.logger.error "Rejecting job import: missing account_id in payload"
+        return reject!
+      end
+
+      unless user_id.present?
+        Sneakers.logger.error "Rejecting job import: missing user_id in payload (account_id=#{account_id})"
+        return reject!
+      end
+
       job_attrs = {
         provider: job_data["provider"],
         provider_job_id: job_data["provider_job_id"],
@@ -34,8 +47,8 @@ class JobImportWorker
         friendly_badge: job_data["friendly_badge"],
         disabilities: job_data["disabilities"],
         workplace_type: job_data["workplace_type"],
-        user_id: 1,
-        account_id: 1
+        user_id: user_id,
+        account_id: account_id
       }
 
       job = Job.find_or_initialize_by(
@@ -46,14 +59,14 @@ class JobImportWorker
       job.assign_attributes(job_attrs)
 
       if job.save
-        Sneakers.logger.info "✅ Job salvo: #{job.id}"
+        Sneakers.logger.info "Job saved: id=#{job.id} account_id=#{account_id}"
         ack!
       else
-        Sneakers.logger.error "❌ Erro ao salvar: #{job.errors.full_messages}"
+        Sneakers.logger.error "Job save failed: #{job.errors.full_messages}"
         reject!
       end
     rescue => e
-      Sneakers.logger.error "❌ Erro ao processar mensagem: #{e.message}"
+      Sneakers.logger.error "Job import error: #{e.message}"
       reject!
     end
   end

@@ -1,19 +1,18 @@
+# frozen_string_literal: true
+
 module MessageService
   class EventPublisher
     def self.publish(payload)
-      connection = Bunny.new(ENV["RABBITMQ_URL"])
-      connection.start
-
-      channel = connection.create_channel
+      channel = ConnectionPool.channel
       exchange = channel.direct("messages_exchange", durable: true)
 
       exchange.publish(
         payload.to_json,
-        routing_key: "messages_created"
+        routing_key: "messages_created",
+        persistent: true
       )
-
-      channel.close
-      connection.close
+    ensure
+      channel&.close
     end
   end
 end

@@ -4,6 +4,8 @@ module V1
   module Users
     class UsersController < ApplicationController
       before_action :authorize_request
+      before_action :require_admin!, only: %i[create destroy]
+      before_action :require_manager!, only: %i[update]
       before_action :set_user, only: %i[show update destroy]
 
       def index

@@ -4,9 +4,13 @@ class ApplicationController < ActionController::Base
     header = request.headers['Authorization']
     token = header.split(' ').last if header
 
-    decoded = jwt_decode(token) # Assumes jwt_decode is also available (e.g., in a concern)
+    decoded = jwt_decode(token)
 
     if decoded
+      if JwtBlacklist.revoked?(decoded)
+        return render json: { error: 'Token revogado' }, status: :unauthorized
+      end
+
       @current_user = User.find_by(id: decoded[:user_id])
       render json: { error: 'Not Authorized' }, status: :unauthorized unless @current_user
     else

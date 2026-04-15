@@ -4,6 +4,7 @@ module V1
   module Users
     class DepartmentsController < ApplicationController
       before_action :authorize_request
+      before_action :require_manager!, only: %i[create update destroy]
       before_action :set_department, only: %i[show update destroy]
 
       def index

@@ -6,12 +6,21 @@ module V1
     protect_from_forgery with: :null_session
 
     def create
+      if AccountLockout.locked?(params[:email])
+        remaining = AccountLockout.remaining_seconds(params[:email])
+        return render json: {
+          error: "Conta temporariamente bloqueada. Tente novamente em #{(remaining / 60.0).ceil} minutos."
+        }, status: :too_many_requests
+      end
+
       @user = User.find_by(email: params[:email])
 
       if @user&.authenticate(params[:password])
+        AccountLockout.clear(params[:email])
         token = jwt_encode(user_id: @user.id)
         render json: { user: user_payload(@user), token: }, status: :ok
       else
+        AccountLockout.record_failure(params[:email])
         render json: { error: "Invalid email or password" }, status: :unauthorized
       end
     end
@@ -21,6 +30,10 @@ module V1
     end
 
     def logout
+      header = request.headers["Authorization"]
+      token = header.split(" ").last if header
+      decoded = jwt_decode(token)
+      JwtBlacklist.revoke!(decoded) if decoded
       render json: { message: "Logged out" }
     end
 
@@ -56,6 +69,10 @@ module V1
       decoded = jwt_decode(token)
 
       if decoded
+        if JwtBlacklist.revoked?(decoded)
+          return render json: { error: "Token revogado" }, status: :unauthorized
+        end
+
         @current_user = User.find_by(id: decoded[:user_id])
         Current.user = @current_user
         render json: { error: "Invalid token" }, status: :unauthorized unless @current_user

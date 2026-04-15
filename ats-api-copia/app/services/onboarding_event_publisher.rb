@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # Extension of MessageService::EventPublisher for onboarding events.
-# Uses same RabbitMQ infrastructure but with a dedicated routing key.
+# Uses shared Bunny connection pool with a dedicated routing key.
 #
 # Usage:
 #   OnboardingEventPublisher.publish("user_invited", { user_id: 1, ... })
@@ -11,10 +11,7 @@ class OnboardingEventPublisher
   ROUTING_KEY = "onboarding_events"
 
   def self.publish(event_type, payload)
-    connection = Bunny.new(ENV["RABBITMQ_URL"])
-    connection.start
-
-    channel = connection.create_channel
+    channel = MessageService::ConnectionPool.channel
     exchange = channel.direct(EXCHANGE, durable: true)
 
     message = {
@@ -30,12 +27,10 @@ class OnboardingEventPublisher
       persistent: true
     )
 
-    channel.close
-    connection.close
-
     Rails.logger.info "[Onboarding] Published #{event_type} for user #{payload[:user_id]}"
   rescue StandardError => e
     Rails.logger.warn "[Onboarding] Event publish failed: #{e.message}"
-    # Non-blocking: onboarding continues even if event fails
+  ensure
+    channel&.close
   end
 end

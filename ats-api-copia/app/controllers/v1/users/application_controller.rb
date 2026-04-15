@@ -5,6 +5,7 @@ module V1
     class ApplicationController < ActionController::Base
       include TenantScoped
       include SearchRenderer
+      include Authorizable
       protect_from_forgery with: :null_session
 
       before_action :authorize_request
@@ -30,6 +31,10 @@ module V1
         token = header.split(" ").last if header
         decoded = jwt_decode(token)
         if decoded
+          if JwtBlacklist.revoked?(decoded)
+            return render json: { error: "Token revogado" }, status: :unauthorized
+          end
+
           @current_user = User.find_by(id: decoded[:user_id])
           Current.user = @current_user
           if @current_user
@@ -56,7 +61,7 @@ module V1
       end
 
       def only_admin
-        render json: { error: "This route is admin-only access" }, status: 401 unless @current_user.is_admin
+        require_admin!
       end
 
       def order_params
