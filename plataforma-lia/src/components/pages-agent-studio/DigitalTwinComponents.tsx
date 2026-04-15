@@ -47,8 +47,8 @@ interface TwinEvaluation {
 const HOW_IT_WORKS_ICONS = [UserCheck, BookOpen, Brain, Lightbulb] as const
 
 export function DigitalTwinHeader() {
-  const t = useTranslations("studio.twins")
-  const tOnboarding = useTranslations("studio.twins.onboarding")
+  const t = useTranslations("agents.studio.twins")
+  const tOnboarding = useTranslations("agents.studio.twins.onboarding")
 
   const steps = [
     { icon: HOW_IT_WORKS_ICONS[0], title: tOnboarding("step1Title"), desc: tOnboarding("step1Desc") },
@@ -58,50 +58,46 @@ export function DigitalTwinHeader() {
   ]
 
   return (
-    <div className="rounded-xl border border-lia-border-subtle bg-lia-bg-secondary p-5 mb-4">
-      <div className="flex items-center gap-2 mb-1">
-        <Users className="w-4 h-4 text-wedo-purple" />
-        <span className="text-xs font-semibold uppercase tracking-wider text-wedo-purple">
-          {t("label")}
-        </span>
-      </div>
-      <h2 className="text-base font-semibold text-lia-text-primary mb-1">
-        {t("headerTitle")}
-      </h2>
-      <p className="text-sm text-lia-text-secondary max-w-2xl mb-5">
-        {t("headerDesc")}
-      </p>
+    <section className="relative overflow-hidden rounded-xl border border-lia-border-subtle bg-gradient-to-br from-lia-bg-secondary to-lia-bg-primary p-6">
+      <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-cyan-500/5 to-transparent rounded-full -translate-y-1/2 translate-x-1/4" />
+      <div className="relative">
+        <div className="flex items-center gap-2 mb-1">
+          <Users className="w-4 h-4 text-wedo-cyan" />
+          <span className="text-xs font-semibold uppercase tracking-wider text-wedo-cyan">
+            {t("label")}
+          </span>
+        </div>
+        <h2 className="text-base font-semibold text-lia-text-primary mb-2">
+          {t("headerTitle")}
+        </h2>
+        <p className="text-sm text-lia-text-secondary mb-6 max-w-2xl">
+          {t("headerDesc")}
+        </p>
 
-      <div className="flex items-center gap-2 mb-3">
-        <Sparkles className="w-3.5 h-3.5 text-wedo-purple" />
-        <span className={textStyles.label}>{tOnboarding("howItWorks")}</span>
-      </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-        {steps.map((step, i) => {
-          const Icon = step.icon
-          return (
-            <div
-              key={i}
-              className="relative flex flex-col gap-2 rounded-lg border border-lia-border-subtle bg-lia-bg-primary p-3"
-            >
-              <div className="flex items-center gap-2">
-                <div className="flex items-center justify-center w-7 h-7 rounded-full bg-wedo-purple/10">
-                  <Icon className="w-3.5 h-3.5 text-wedo-purple" />
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+          {steps.map((step, i) => {
+            const Icon = step.icon
+            return (
+              <div key={i} className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 bg-cyan-50 dark:bg-cyan-950/30">
+                  <Icon className="w-5 h-5 text-wedo-cyan" />
                 </div>
-                <span className="text-micro font-semibold text-wedo-purple">
-                  {tOnboarding("stepLabel", { number: i + 1 })}
-                </span>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1.5 mb-0.5">
+                    <span className="text-[10px] font-bold text-lia-text-disabled uppercase">
+                      {tOnboarding("stepLabel", { number: i + 1 })}
+                    </span>
+                    {i < steps.length - 1 && <ArrowRight className="w-3 h-3 text-lia-text-disabled hidden md:block" />}
+                  </div>
+                  <p className="text-xs font-semibold text-lia-text-primary">{step.title}</p>
+                  <p className="text-[11px] text-lia-text-secondary leading-relaxed">{step.desc}</p>
+                </div>
               </div>
-              <p className={textStyles.label}>{step.title}</p>
-              <p className={textStyles.caption}>{step.desc}</p>
-              {i < steps.length - 1 && (
-                <ArrowRight className="hidden lg:block absolute -right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-lia-text-disabled z-10" />
-              )}
-            </div>
-          )
-        })}
+            )
+          })}
+        </div>
       </div>
-    </div>
+    </section>
   )
 }
 
@@ -110,44 +106,23 @@ interface DigitalTwinEmptyStateProps {
 }
 
 export function DigitalTwinEmptyState({ onCreateTwin }: DigitalTwinEmptyStateProps) {
-  const t = useTranslations("studio.twins.emptyState")
-
-  const benefits = [
-    { icon: Target, text: t("benefit1") },
-    { icon: CheckCircle2, text: t("benefit2") },
-    { icon: Activity, text: t("benefit3") },
-  ]
+  const t = useTranslations("agents.studio.twins.emptyState")
 
   return (
-    <Card className={cardStyles.flat}>
-      <CardContent className="flex flex-col items-center py-10 px-6">
-        <div className="flex items-center justify-center w-16 h-16 rounded-full bg-wedo-purple/10 mb-4">
-          <Brain className="w-8 h-8 text-wedo-purple" />
-        </div>
-        <h3 className={`${textStyles.h3} text-center mb-2`}>{t("title")}</h3>
-        <p className={`${textStyles.description} text-center max-w-md mb-6`}>
-          {t("description")}
-        </p>
-
-        <div className="w-full max-w-sm space-y-2 mb-6">
-          {benefits.map((b, i) => {
-            const Icon = b.icon
-            return (
-              <div key={i} className="flex items-start gap-2.5 p-2 rounded-md bg-lia-bg-secondary">
-                <Icon className="w-4 h-4 text-wedo-purple mt-0.5 shrink-0" />
-                <p className={textStyles.bodySmall}>{b.text}</p>
-              </div>
-            )
-          })}
-        </div>
-
-        <Button className={buttonStyles.primary} onClick={onCreateTwin}>
-          <Plus className="w-4 h-4 mr-1.5" />
-          {t("createFirst")}
-        </Button>
-        <p className={`${textStyles.caption} mt-2 text-center`}>{t("noExperience")}</p>
-      </CardContent>
-    </Card>
+    <div className="flex flex-col items-center py-12 px-6">
+      <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-cyan-50 dark:bg-cyan-950/30 mb-4">
+        <Brain className="w-6 h-6 text-wedo-cyan" />
+      </div>
+      <h3 className={`${textStyles.h3} text-center mb-1`}>{t("title")}</h3>
+      <p className={`${textStyles.description} text-center max-w-md mb-6`}>
+        {t("description")}
+      </p>
+      <Button className={buttonStyles.primary} onClick={onCreateTwin}>
+        <Plus className="w-4 h-4 mr-1.5" />
+        {t("createFirst")}
+      </Button>
+      <p className={`${textStyles.caption} mt-2 text-center`}>{t("noExperience")}</p>
+    </div>
   )
 }
 
@@ -158,7 +133,7 @@ interface CreateDigitalTwinModalProps {
 }
 
 export function CreateDigitalTwinModal({ isOpen, onClose, onCreated }: CreateDigitalTwinModalProps) {
-  const t = useTranslations("studio.twins.createModal")
+  const t = useTranslations("agents.studio.twins.createModal")
   const [twinName, setTwinName] = useState("")
   const [specialty, setSpecialty] = useState("")
   const [description, setDescription] = useState("")
@@ -241,7 +216,7 @@ export function CreateDigitalTwinModal({ isOpen, onClose, onCreated }: CreateDig
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className={textStyles.h3}>
-            <Brain className="w-5 h-5 inline mr-2 text-wedo-purple" />
+            <Brain className="w-5 h-5 inline mr-2 text-wedo-cyan" />
             {t("title")}
           </DialogTitle>
           <DialogDescription className="text-sm text-lia-text-secondary">
@@ -296,7 +271,7 @@ export function CreateDigitalTwinModal({ isOpen, onClose, onCreated }: CreateDig
           <div className={formStyles.fieldGroup}>
             <label className={formStyles.label}>{t("decisionsLabel")}</label>
             <div
-              className="relative rounded-lg border-2 border-dashed border-lia-border-default hover:border-wedo-purple/40 transition-colors p-4 cursor-pointer bg-lia-bg-secondary"
+              className="relative rounded-lg border-2 border-dashed border-lia-border-default hover:border-wedo-cyan/40 transition-colors p-4 cursor-pointer bg-lia-bg-secondary"
               onClick={() => fileInputRef.current?.click()}
             >
               <input
@@ -309,7 +284,7 @@ export function CreateDigitalTwinModal({ isOpen, onClose, onCreated }: CreateDig
               {decisionsFile ? (
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 min-w-0">
-                    <FileText className="w-4 h-4 text-wedo-purple shrink-0" />
+                    <FileText className="w-4 h-4 text-wedo-cyan shrink-0" />
                     <span className={`${textStyles.bodySmall} truncate`}>{decisionsFile.name}</span>
                     <span className={textStyles.caption}>
                       ({(decisionsFile.size / 1024).toFixed(1)} KB)
@@ -325,7 +300,7 @@ export function CreateDigitalTwinModal({ isOpen, onClose, onCreated }: CreateDig
                 </div>
               ) : (
                 <div className="flex flex-col items-center gap-1.5 py-1">
-                  <Upload className="w-5 h-5 text-wedo-purple/60" />
+                  <Upload className="w-5 h-5 text-wedo-cyan/60" />
                   <p className={textStyles.bodySmall}>{t("decisionsUploadCta")}</p>
                   <p className={textStyles.caption}>{t("decisionsFormats")}</p>
                 </div>
@@ -384,8 +359,8 @@ export function TwinCard({ twin, onEvaluate, onManageTwin }: TwinCardProps) {
     <Card className={cardStyles.default}>
       <CardContent className="p-4">
         <div className="flex items-start gap-3">
-          <Avatar className="w-10 h-10 bg-purple-100">
-            <AvatarFallback className="bg-purple-100 text-purple-700 text-sm font-medium">
+          <Avatar className="w-10 h-10 bg-cyan-50 dark:bg-cyan-950/30">
+            <AvatarFallback className="bg-cyan-50 dark:bg-cyan-950/30 text-wedo-cyan text-sm font-medium">
               {initials}
             </AvatarFallback>
           </Avatar>
@@ -399,7 +374,7 @@ export function TwinCard({ twin, onEvaluate, onManageTwin }: TwinCardProps) {
             {twin.specialties.length > 0 && (
               <div className="flex gap-1 mt-1 flex-wrap">
                 {twin.specialties.slice(0, 4).map((s) => (
-                  <Badge key={s} className="bg-purple-50 text-purple-700 text-xs">
+                  <Badge key={s} className="bg-cyan-50 dark:bg-cyan-950/30 text-wedo-cyan text-xs">
                     {s}
                   </Badge>
                 ))}
@@ -495,7 +470,7 @@ export function EvaluateWithTwinModal({
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle className={textStyles.h3}>
-            <Brain className="w-5 h-5 inline mr-2 text-purple-600" />
+            <Brain className="w-5 h-5 inline mr-2 text-wedo-cyan" />
             {t("digitalTwinEvaluation")}
           </DialogTitle>
           <DialogDescription className="sr-only">{t("evaluationResultDesc")}</DialogDescription>
@@ -503,15 +478,15 @@ export function EvaluateWithTwinModal({
 
         {isLoading ? (
           <div className="flex flex-col items-center py-8">
-            <Brain className="w-10 h-10 text-purple-300 animate-pulse mb-3" />
+            <Brain className="w-10 h-10 text-cyan-300 animate-pulse mb-3" />
             <p className={textStyles.body}>{t("analyzingHistory")}</p>
             <p className={textStyles.caption}>{t("searchingSimilarDecisions")}</p>
           </div>
         ) : evaluation ? (
           <div className="space-y-4 py-4">
             <div className="flex items-center gap-2">
-              <Avatar className="w-8 h-8 bg-purple-100">
-                <AvatarFallback className="bg-purple-100 text-purple-700 text-xs">
+              <Avatar className="w-8 h-8 bg-cyan-50 dark:bg-cyan-950/30">
+                <AvatarFallback className="bg-cyan-50 dark:bg-cyan-950/30 text-wedo-cyan text-xs">
                   {evaluation.twin_name
                     .split(" ")
                     .map((w) => w[0])
@@ -557,7 +532,7 @@ export function EvaluateWithTwinModal({
 
             <div>
               <p className={textStyles.label}>{t("reasoning")}</p>
-              <blockquote className="mt-1 border-l-2 border-purple-300 pl-3 italic text-lia-text-secondary">
+              <blockquote className="mt-1 border-l-2 border-cyan-300 pl-3 italic text-lia-text-secondary">
                 &ldquo;{evaluation.reasoning}&rdquo;
               </blockquote>
             </div>
@@ -630,7 +605,6 @@ export function TwinsList({ onEvaluate, onCreateTwin, refreshKey = 0 }: TwinsLis
       const data = await res.json()
       setTwins(data?.twins || [])
     } catch {
-      // No twins
     } finally {
       setIsLoading(false)
     }
