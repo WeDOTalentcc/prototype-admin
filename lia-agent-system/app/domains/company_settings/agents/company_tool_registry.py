@@ -141,12 +141,32 @@ async def _wrap_get_company_profile(**kwargs: Any) -> dict[str, Any]:
         }
 
 
+async def _fetch_old_value(session, section: str, field: str, company_id: str) -> Any:
+    try:
+        if section == "profile":
+            row = await session.execute(
+                text(f"SELECT {field} FROM company_profiles WHERE id::text = :cid LIMIT 1"),
+                {"cid": company_id},
+            )
+        else:
+            row = await session.execute(
+                text(f"SELECT {field} FROM company_culture_profiles WHERE company_id = :cid LIMIT 1"),
+                {"cid": company_id},
+            )
+        r = row.mappings().first()
+        return r[field] if r else None
+    except Exception:
+        return None
+
+
 @tool_handler("company_settings")
 async def _wrap_save_company_field(**kwargs: Any) -> dict[str, Any]:
     company_id = kwargs.get("company_id", "")
     section = kwargs.get("section", "profile")
     field = kwargs.get("field", "")
     value = kwargs.get("value")
+    user_id = kwargs.get("user_id", "system")
+    confirmed = kwargs.get("confirmed", False)
 
     if field in TIER_4_FIELDS:
         return {"success": False, "data": {}, "message": f"Campo '{field}' e imutavel e nao pode ser alterado."}
@@ -156,13 +176,33 @@ async def _wrap_save_company_field(**kwargs: Any) -> dict[str, Any]:
     if section == "culture" and field not in VALID_CULTURE_FIELDS:
         return {"success": False, "data": {}, "message": f"Campo '{field}' nao e valido para cultura."}
 
-    tier_warning = None
     if field in TIER_1_FIELDS:
-        tier_warning = (
-            f"ATENCAO: Campo '{field}' e critico (TIER 1). "
-            "Alteracao requer confirmacao do administrador e dupla verificacao."
-        )
-    elif field in TIER_2_FIELDS:
+        async with AsyncSessionLocal() as check_session:
+            existing_row = await check_session.execute(
+                text("SELECT name FROM company_profiles WHERE id::text = :cid LIMIT 1"),
+                {"cid": company_id},
+            )
+            row = existing_row.mappings().first()
+            is_post_setup = row is not None and row.get("name") is not None
+
+        if is_post_setup and not confirmed:
+            return {
+                "success": False,
+                "data": {
+                    "requires_confirmation": True,
+                    "tier": 1,
+                    "field": field,
+                    "proposed_value": value,
+                },
+                "message": (
+                    f"Campo '{field}' e CRITICO (TIER 1). "
+                    "A empresa ja foi configurada — alteracao requer confirmacao explicita do administrador. "
+                    "Chame novamente com confirmed=true para prosseguir."
+                ),
+            }
+
+    tier_warning = None
+    if field in TIER_2_FIELDS:
         tier_warning = f"Aviso: Campo '{field}' e sensivel (TIER 2). Certifique-se de que o valor esta correto."
 
     if isinstance(value, str) and len(value) > 10:
@@ -181,7 +221,10 @@ async def _wrap_save_company_field(**kwargs: Any) -> dict[str, Any]:
     _CULTURE_UPDATE = {f: f"UPDATE company_culture_profiles SET {f} = :value, updated_at = NOW() WHERE company_id = :company_id" for f in VALID_CULTURE_FIELDS}
     _CULTURE_INSERT = {f: f"INSERT INTO company_culture_profiles (company_id, {f}, created_at, updated_at) VALUES (:company_id, :value, NOW(), NOW())" for f in VALID_CULTURE_FIELDS}
 
+    old_value = None
     async with AsyncSessionLocal() as session:
+        old_value = await _fetch_old_value(session, section, field, company_id)
+
         if section == "profile":
             existing = await session.execute(
                 text("SELECT id FROM company_profiles WHERE id::text = :company_id LIMIT 1"),
@@ -199,7 +242,14 @@ async def _wrap_save_company_field(**kwargs: Any) -> dict[str, Any]:
 
         await session.commit()
 
-    await _audit_log(company_id, "save_field", field=field, metadata={"section": section, "tier": 1 if field in TIER_1_FIELDS else 2 if field in TIER_2_FIELDS else 3})
+    tier = 1 if field in TIER_1_FIELDS else 2 if field in TIER_2_FIELDS else 3
+    await _audit_log(company_id, "save_field", field=field, metadata={
+        "section": section,
+        "tier": tier,
+        "old_value": str(old_value)[:500] if old_value is not None else None,
+        "new_value": str(value)[:500] if value is not None else None,
+        "user_id": user_id,
+    })
 
     result: dict[str, Any] = {
         "success": True,
@@ -477,7 +527,7 @@ def get_company_settings_tools() -> list[ToolDefinition]:
         ),
         ToolDefinition(
             name="save_company_field",
-            description="Salva um campo especifico do perfil ou cultura da empresa.",
+            description="Salva um campo especifico do perfil ou cultura da empresa. Campos TIER 1 (cnpj, name) requerem confirmed=true apos setup inicial.",
             parameters={
                 "type": "object",
                 "properties": {
@@ -485,6 +535,8 @@ def get_company_settings_tools() -> list[ToolDefinition]:
                     "section": {"type": "string", "description": "Secao (profile ou culture)"},
                     "field": {"type": "string", "description": "Nome do campo"},
                     "value": {"description": "Valor a salvar"},
+                    "confirmed": {"type": "boolean", "description": "Confirmacao explicita para campos TIER 1 (cnpj, name) pos-setup. Default false."},
+                    "user_id": {"type": "string", "description": "ID do usuario que solicitou a alteracao"},
                 },
                 "required": ["company_id", "section", "field", "value"],
             },

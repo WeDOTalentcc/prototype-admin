@@ -183,26 +183,27 @@ async def get_settings_progress(
     except Exception as e:
         logger.error(f"Error calculating settings progress: {e}")
         return {
-            "overall": 50,
+            "overall": 0,
             "sections": {
-                "company-team": 60,
-                "recruitment": 40,
-                "communication": 60,
-                "goals-planning": 50,
-                "global-search": 80
+                "company-team": 0,
+                "recruitment": 0,
+                "communication": 0,
+                "goals-planning": 0,
+                "global-search": 0
             },
             "subsections": {
                 "company-data": False,
                 "departments": False,
                 "benefits": False,
-                "users": True,
+                "users": False,
                 "approvers": False,
                 "templates": False,
                 "slas": False,
                 "automations": False,
-                "email-templates": True,
-                "notification-rules": True,
+                "email-templates": False,
+                "notification-rules": False,
                 "global-search-settings": False
             },
-            "error": str(e)
+            "error": True,
+            "error_message": str(e)
         }
