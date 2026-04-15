@@ -21,12 +21,12 @@ import {
 
 const SECTION_ICON_COLORS: Record<string, string> = {
   'minha-empresa': 'text-wedo-cyan',
-  'recruitment': 'text-emerald-500',
-  'communication': 'text-violet-500',
-  'goals-planning': 'text-amber-500',
-  'global-search': 'text-wedo-cyan',
+  'pipeline': 'text-emerald-500',
+  'screening': 'text-amber-500',
+  'templates-assinatura': 'text-violet-500',
+  'comunicacao-alertas': 'text-rose-400',
+  'usuarios-departamentos': 'text-sky-500',
   'integrations': 'text-emerald-500',
-  'fairness-compliance': 'text-rose-500',
 }
 
 
@@ -35,10 +35,9 @@ import { LoadingFallback } from"@/components/ui/loading"
 const MinhaEmpresaHub = dynamic(() => import("@/components/settings/MinhaEmpresaHub").then(m => ({ default: m.MinhaEmpresaHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando empresa..." /> })
 const RecruitmentHub = dynamic(() => import("@/components/settings/RecruitmentHub").then(m => ({ default: m.RecruitmentHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando recrutamento..." /> })
 const CommunicationHub = dynamic(() => import("@/components/settings/CommunicationHub").then(m => ({ default: m.CommunicationHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando comunicação..." /> })
-const GoalsPlanningHub = dynamic(() => import("@/components/settings/GoalsPlanningHub").then(m => ({ default: m.GoalsPlanningHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando metas..." /> })
-const GlobalSearchHub = dynamic(() => import("@/components/settings/GlobalSearchHub").then(m => ({ default: m.GlobalSearchHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando busca..." /> })
 const IntegrationsHub = dynamic(() => import("@/components/settings/IntegrationsHub").then(m => ({ default: m.IntegrationsHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando integrações..." /> })
-const FairnessComplianceHub = dynamic(() => import("@/components/settings/FairnessComplianceHub").then(m => ({ default: m.FairnessComplianceHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando compliance..." /> })
+const TemplatesAssinaturaHub = dynamic(() => import("@/components/settings/TemplatesAssinaturaHub").then(m => ({ default: m.TemplatesAssinaturaHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando templates..." /> })
+const UsuariosDepartamentosHub = dynamic(() => import("@/components/settings/UsuariosDepartamentosHub").then(m => ({ default: m.UsuariosDepartamentosHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando usuários..." /> })
 
 import { textStyles, cardStyles, badgeStyles } from '@/lib/design-tokens'
 import { useHoverDebounce } from '@/lib/sidebar/useHoverDebounce'
@@ -89,81 +88,65 @@ const getDefaultSections = (): SettingsSection[] => [
   {
     id: 'minha-empresa',
     title: 'Minha Empresa',
-    description: 'Dados, cultura, beneficios e politicas — conversacional',
+    description: 'Dados, cultura, benefícios e políticas',
     icon: Building,
     status: 'incomplete',
     priority: 'high',
     category: 'basic',
     estimatedTime: 15,
-    subsections: [
-      { id: 'company-data', title: 'Dados da Empresa', description: 'Nome, logo, site', fields: ['company_name', 'cnpj', 'website', 'email', 'phone', 'logo'] },
-      { id: 'departments', title: 'Departamentos', description: 'Estrutura organizacional', fields: ['departments', 'hierarchy'] },
-      { id: 'tech-stack', title: 'Tech Stack', description: 'Stack tecnológico por categoria', fields: ['tech_stack', 'engineering_culture'] },
-      { id: 'benefits', title: 'Benefícios', description: 'Pacote de benefícios da empresa', fields: ['benefits', 'eligibility'] },
-      { id: 'users', title: 'Usuários', description: 'Recrutadores e permissões', fields: ['users', 'roles', 'permissions'] }
-    ]
   },
   {
-    id: 'recruitment',
-    title: 'Recrutamento',
-    description: 'Pipeline e elegibilidade',
+    id: 'pipeline',
+    title: 'Pipeline',
+    description: 'Etapas do processo seletivo',
     icon: Workflow,
     status: 'pending',
     priority: 'high',
     category: 'advanced',
-    estimatedTime: 20,
+    estimatedTime: 10,
     dependencies: ['minha-empresa'],
-    subsections: [
-      { id: 'pipeline', title: 'Pipeline', description: 'Etapas do processo (configurado pelo CS)', fields: ['stages', 'flow'] },
-      { id: 'screening', title: 'Perguntas de Elegibilidade', description: 'Perguntas iniciais via WhatsApp', fields: ['screening_questions'] },
-      { id: 'hiring-policies', title: 'Políticas de Recrutamento', description: 'Regras de pipeline, agendamento e autonomia da LIA', fields: ['hiring_policy'] }
-    ]
   },
   {
-    id: 'communication',
-    title: 'Comunicação & Alertas',
-    description: 'Templates de email, alertas e preferências',
-    icon: Mail,
+    id: 'screening',
+    title: 'Screening',
+    description: 'Perguntas de elegibilidade via WhatsApp',
+    icon: MessageSquare,
+    status: 'pending',
+    priority: 'high',
+    category: 'advanced',
+    estimatedTime: 10,
+    dependencies: ['minha-empresa'],
+  },
+  {
+    id: 'templates-assinatura',
+    title: 'Templates & Assinatura',
+    description: 'Modelos de comunicação e assinatura de email',
+    icon: FileText,
     status: 'incomplete',
     priority: 'medium',
     category: 'advanced',
-    estimatedTime: 15,
+    estimatedTime: 10,
+  },
+  {
+    id: 'comunicacao-alertas',
+    title: 'Comunicação & Alertas',
+    description: 'Horários LGPD, alertas e notificações da LIA',
+    icon: Bell,
+    status: 'incomplete',
+    priority: 'medium',
+    category: 'advanced',
+    estimatedTime: 10,
     dependencies: ['minha-empresa'],
-    subsections: [
-      { id: 'templates', title: 'Templates', description: 'Modelos de email', fields: ['email_templates'] },
-      { id: 'signature', title: 'Assinatura', description: 'Assinatura padrão', fields: ['signature'] },
-      { id: 'schedule', title: 'Horários LGPD', description: 'Janela de envio (8h-20h)', fields: ['sending_hours'] },
-      { id: 'alerts', title: 'Alertas', description: 'Notificações e briefings da LIA', fields: ['alerts', 'notifications'] }
-    ]
   },
   {
-    id: 'goals-planning',
-    title: 'Planejamento',
-    description: 'Planejamento de contratações',
-    icon: Target,
-    status: 'completed',
+    id: 'usuarios-departamentos',
+    title: 'Usuários & Departamentos',
+    description: 'Recrutadores, permissões e estrutura organizacional',
+    icon: Users,
+    status: 'incomplete',
     priority: 'medium',
-    category: 'advanced',
-    estimatedTime: 25,
-    dependencies: ['recruitment'],
-    subsections: [
-      { id: 'workforce', title: 'Planejamento de Contratações', description: 'Planejamento anual', fields: ['workforce_plan'] }
-    ]
-  },
-  {
-    id: 'global-search',
-    title: 'Busca Global',
-    description: 'Configurações da Busca Global',
-    icon: Globe,
-    status: 'completed',
-    priority: 'medium',
-    category: 'advanced',
-    estimatedTime: 5,
-    subsections: [
-      { id: 'limits', title: 'Limites', description: 'Limite de candidatos por busca', fields: ['search_limit'] },
-      { id: 'options', title: 'Opções', description: 'Configurações de busca', fields: ['search_options'] },
-      { id: 'costs', title: 'Custos', description: 'Tabela de custos da Busca Global', fields: ['credit_costs'] }
-    ]
+    category: 'basic',
+    estimatedTime: 10,
   },
   {
     id: 'integrations',
@@ -174,30 +157,6 @@ const getDefaultSections = (): SettingsSection[] => [
     priority: 'medium',
     category: 'integrations',
     estimatedTime: 10,
-    subsections: [
-      { id: 'ai-models', title: 'Modelos de IA', description: 'Provedores de IA (Gemini, Claude, OpenAI)', fields: ['ai_providers'] },
-      { id: 'ats', title: 'ATS / Applicant Tracking', description: 'Gupy, Pandapé, Merge.dev', fields: ['ats_connections'] },
-      { id: 'calendar', title: 'Calendário & Agendamento', description: 'Google Calendar, Microsoft Calendar', fields: ['calendar_integrations'] },
-      { id: 'communication', title: 'Comunicação', description: 'Teams, WhatsApp, Email/SMTP', fields: ['communication_integrations'] },
-      { id: 'crm-hris', title: 'CRM & HRIS', description: 'Salesforce, SAP, Workday', fields: ['crm_hris_integrations'] },
-      { id: 'mcps-apis', title: 'MCPs & APIs', description: 'Webhooks e API REST', fields: ['api_integrations'] },
-    ]
-  },
-  {
-    id: 'fairness-compliance',
-    title: 'Fairness & Compliance',
-    description: 'Monitoramento de equidade e conformidade da IA',
-    icon: Shield,
-    status: 'completed',
-    priority: 'medium',
-    category: 'advanced',
-    estimatedTime: 5,
-    subsections: [
-      { id: 'dashboard', title: 'Dashboard', description: 'Visão geral de fairness', fields: ['fairness_summary'] },
-      { id: 'audit-log', title: 'Auditoria', description: 'Log de eventos de compliance', fields: ['audit_log'] },
-      { id: 'studio', title: 'Studio', description: 'Compliance dos agentes Studio', fields: ['studio_compliance'] },
-      { id: 'export', title: 'Exportar', description: 'Relatórios para auditores', fields: ['export_reports'] },
-    ]
   },
 ]
 
@@ -219,49 +178,26 @@ export default function SettingsPageEnhanced() {
     const handler = (e: Event) => {
       const detail = (e as CustomEvent).detail
       if (detail === 'alertas') {
-        setActiveSection('communication')
-        setActiveSubsection('alerts')
-        setExpandedSections(new Set(['communication']))
+        setActiveSection('comunicacao-alertas')
+        setActiveSubsection('')
+        setExpandedSections(new Set(['comunicacao-alertas']))
       }
     }
     window.addEventListener('settings-open-tab', handler)
     return () => window.removeEventListener('settings-open-tab', handler)
   }, [])
-  const [users, setUsers] = useState<Array<{ id: string; name?: string; [key: string]: unknown }>>([])
-  const [goals, setGoals] = useState<Record<string, unknown[]>>({})
   
   const [sectionCompletion, setSectionCompletion] = useState<Record<string, number>>({
     'minha-empresa': 0,
-    'recruitment': 0,
-    'communication': 0,
-    'goals-planning': 0,
-    'global-search': 0,
+    'pipeline': 0,
+    'screening': 0,
+    'templates-assinatura': 0,
+    'comunicacao-alertas': 0,
+    'usuarios-departamentos': 0,
     'integrations': 0,
   })
 
-  const [subsectionCompletion, setSubsectionCompletion] = useState<Record<string, boolean>>({
-    'company-data': false,
-    'departments': false,
-    'benefits': false,
-    'users': false,
-    'pipeline': false,
-    'screening': false,
-    'templates': false,
-    'signature': false,
-    'schedule': false,
-    'alerts': false,
-    'hiring-policies': false,
-    'workforce': false,
-    'limits': false,
-    'options': false,
-    'costs': false,
-    'ai-models': false,
-    'ats': false,
-    'calendar': false,
-    'communication': false,
-    'crm-hris': false,
-    'mcps-apis': false,
-  })
+  const [subsectionCompletion, setSubsectionCompletion] = useState<Record<string, boolean>>({})
 
   const [overallProgress, setOverallProgress] = useState<number>(0)
   const [progressLoading, setProgressLoading] = useState<boolean>(true)
@@ -282,17 +218,6 @@ export default function SettingsPageEnhanced() {
   })
 
 
-  const [showTemplateSelector, setShowTemplateSelector] = useState(false)
-
-  const [formData, setFormData] = useState<Record<string, string>>({
-    company_name: 'WedoTalent Enterprise',
-    cnpj: '12.345.678/0001-90',
-    website: 'https://www.wedotalent.com',
-    email: 'contato@wedotalent.com',
-    mission: 'Revolucionar o recrutamento através da inteligência artificial.',
-    vision: 'Ser a plataforma líder em recrutamento inteligente no Brasil.'
-  })
-
   const fetchProgress = useCallback(async () => {
     try {
       setProgressLoading(true)
@@ -312,11 +237,11 @@ export default function SettingsPageEnhanced() {
         setSectionCompletion(prev => ({
           ...prev,
           'minha-empresa': data.sections['minha-empresa'] ?? data.sections['company-team'] ?? prev['minha-empresa'],
-          'recruitment': data.sections['recruitment'] ?? prev['recruitment'],
-          'communication': data.sections['communication'] ?? prev['communication'],
-          'hiring-policies': data.sections['hiring-policies'] ?? prev['hiring-policies'],
-          'goals-planning': data.sections['goals-planning'] ?? prev['goals-planning'],
-          'global-search': data.sections['global-search'] ?? prev['global-search'],
+          'pipeline': data.sections['pipeline'] ?? data.sections['recruitment'] ?? prev['pipeline'],
+          'screening': data.sections['screening'] ?? prev['screening'],
+          'templates-assinatura': data.sections['templates-assinatura'] ?? data.sections['communication'] ?? prev['templates-assinatura'],
+          'comunicacao-alertas': data.sections['comunicacao-alertas'] ?? data.sections['communication'] ?? prev['comunicacao-alertas'],
+          'usuarios-departamentos': data.sections['usuarios-departamentos'] ?? prev['usuarios-departamentos'],
           'integrations': data.sections['integrations'] ?? prev['integrations'],
         }))
       }
@@ -408,29 +333,6 @@ export default function SettingsPageEnhanced() {
   }
 
 
-  const handleUserUpdate = (user: { id: string; [key: string]: unknown }) => {
-    setUsers(prev => {
-      const existingIndex = prev.findIndex(u => u.id === user.id)
-      if (existingIndex >= 0) {
-        const newUsers = [...prev]
-        newUsers[existingIndex] = user
-        return newUsers
-      } else {
-        return [...prev, user]
-      }
-    })
-  }
-
-  const handleGoalUpdate = (userId: string, userGoals: unknown[]) => {
-    setGoals(prev => ({
-      ...prev,
-      [userId]: userGoals
-    }))
-    setUsers(prev => prev.map(user =>
-      user.id === userId ? { ...user, goals: userGoals } : user
-    ))
-  }
-
   const renderSectionContent = () => {
     switch (activeSection) {
       case 'minha-empresa':
@@ -439,50 +341,40 @@ export default function SettingsPageEnhanced() {
             <MinhaEmpresaHub />
           </ErrorBoundarySection>
         )
-      case 'recruitment':
+      case 'pipeline':
         return (
           <ErrorBoundarySection>
-          <RecruitmentHub
-            activeSubsection={activeSubsection}
-          />
+            <RecruitmentHub activeSubsection="pipeline" visibleTabs={['pipeline']} />
           </ErrorBoundarySection>
         )
-      case 'communication':
+      case 'screening':
         return (
           <ErrorBoundarySection>
-          <CommunicationHub
-            activeSubsection={activeSubsection}
-          />
+            <RecruitmentHub activeSubsection="screening" visibleTabs={['screening']} />
           </ErrorBoundarySection>
         )
-      case 'goals-planning':
+      case 'templates-assinatura':
         return (
           <ErrorBoundarySection>
-          <GoalsPlanningHub
-            users={users}
-            onGoalUpdate={handleGoalUpdate as any}
-            activeSubsection={activeSubsection}
-          />
+            <TemplatesAssinaturaHub />
           </ErrorBoundarySection>
         )
-      case 'global-search':
+      case 'comunicacao-alertas':
         return (
           <ErrorBoundarySection>
-          <GlobalSearchHub
-            activeSubsection={activeSubsection}
-          />
+            <CommunicationHub activeSubsection="alerts" visibleTabs={['schedule', 'alerts', 'abtesting']} />
+          </ErrorBoundarySection>
+        )
+      case 'usuarios-departamentos':
+        return (
+          <ErrorBoundarySection>
+            <UsuariosDepartamentosHub />
           </ErrorBoundarySection>
         )
       case 'integrations':
         return (
           <ErrorBoundarySection>
             <IntegrationsHub activeSubsection={activeSubsection} />
-          </ErrorBoundarySection>
-        )
-      case 'fairness-compliance':
-        return (
-          <ErrorBoundarySection>
-            <FairnessComplianceHub activeSubsection={activeSubsection} />
           </ErrorBoundarySection>
         )
       default:

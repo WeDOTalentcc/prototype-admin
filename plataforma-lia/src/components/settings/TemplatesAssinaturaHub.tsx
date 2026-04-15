@@ -1,35 +1,26 @@
 "use client"
 
 import React, { useEffect } from "react"
-import { Mail, Clock, PenTool, Bell, FlaskConical } from "lucide-react"
+import { Mail, PenTool } from "lucide-react"
 import { useTranslations } from "next-intl"
 import { tabStyles } from '@/lib/design-tokens'
-import type { CommunicationHubProps } from './communication-hub/CommunicationHub.types'
 import { useCommunicationHub } from './communication-hub/useCommunicationHub'
 import { TemplatesTab } from './communication-hub/TemplatesTab'
 import { SignatureTab } from './communication-hub/SignatureTab'
-import { ScheduleTab } from './communication-hub/ScheduleTab'
-import { AlertsTab } from './communication-hub/AlertsTab'
-import { ABTestingTab } from './communication-hub/ABTestingTab'
 
-export function CommunicationHub({ activeSubsection, visibleTabs }: CommunicationHubProps) {
+export function TemplatesAssinaturaHub() {
   const t = useTranslations("settings")
-  const hub = useCommunicationHub(activeSubsection)
+  const hub = useCommunicationHub()
 
   useEffect(() => {
     hub.fetchData()
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const allTabs = [
+  const tabs = [
     { id: 'templates', label: t("communication.tabTemplates"), icon: Mail },
     { id: 'signature', label: t("communication.tabSignature"), icon: PenTool },
-    { id: 'schedule', label: t("communication.tabSchedule"), icon: Clock },
-    { id: 'alerts', label: t("communication.tabAlerts"), icon: Bell },
-    { id: 'abtesting', label: t("communication.tabAbTesting"), icon: FlaskConical },
   ]
-
-  const tabs = visibleTabs ? allTabs.filter(tab => visibleTabs.includes(tab.id)) : allTabs
 
   const renderContent = () => {
     switch (hub.activeTab) {
@@ -78,46 +69,6 @@ export function CommunicationHub({ activeSubsection, visibleTabs }: Communicatio
             saveCommunicationSettings={hub.saveCommunicationSettings}
           />
         )
-      case 'schedule':
-        return (
-          <ScheduleTab
-            successMessage={hub.successMessage}
-            error={hub.error}
-            sendingHours={hub.sendingHours}
-            setSendingHours={hub.setSendingHours}
-            respectHolidays={hub.respectHolidays}
-            setRespectHolidays={hub.setRespectHolidays}
-            respectWeekends={hub.respectWeekends}
-            setRespectWeekends={hub.setRespectWeekends}
-            maxMessagesPerDay={hub.maxMessagesPerDay}
-            setMaxMessagesPerDay={hub.setMaxMessagesPerDay}
-            isEditingSchedule={hub.isEditingSchedule}
-            setIsEditingSchedule={hub.setIsEditingSchedule}
-            savingSettings={hub.savingSettings}
-            saveCommunicationSettings={hub.saveCommunicationSettings}
-          />
-        )
-      case 'alerts':
-        return (
-          <AlertsTab
-            successMessage={hub.successMessage}
-            error={hub.error}
-            alerts={hub.alerts}
-            briefingFrequency={hub.briefingFrequency}
-            setBriefingFrequency={hub.setBriefingFrequency}
-            isEditingAlerts={hub.isEditingAlerts}
-            setIsEditingAlerts={hub.setIsEditingAlerts}
-            savingAlerts={hub.savingAlerts}
-            saveAlertsConfig={hub.saveAlertsConfig}
-            handleToggleAlert={hub.handleToggleAlert}
-            handleChangeChannel={hub.handleChangeChannel}
-            weeklyDigestEnabled={hub.weeklyDigestEnabled}
-            savingWeeklyDigest={hub.savingWeeklyDigest}
-            handleToggleWeeklyDigest={hub.handleToggleWeeklyDigest}
-          />
-        )
-      case 'abtesting':
-        return <ABTestingTab />
       default:
         return null
     }
@@ -125,7 +76,6 @@ export function CommunicationHub({ activeSubsection, visibleTabs }: Communicatio
 
   return (
     <div className="space-y-4">
-      {tabs.length > 1 && (
       <div className={tabStyles.pillContainer}>
         {tabs.map((tab) => (
           <button
@@ -138,9 +88,10 @@ export function CommunicationHub({ activeSubsection, visibleTabs }: Communicatio
           </button>
         ))}
       </div>
-      )}
 
       {renderContent()}
     </div>
   )
 }
+
+export default TemplatesAssinaturaHub

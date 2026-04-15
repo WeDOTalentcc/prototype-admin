@@ -24,6 +24,7 @@ export interface EmailTemplate {
 
 export interface CommunicationHubProps {
   activeSubsection?: string
+  visibleTabs?: string[]
 }
 
 export interface AiResultModal {

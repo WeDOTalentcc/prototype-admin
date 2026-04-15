@@ -13,20 +13,24 @@ import { RecruitmentScreeningTab } from './RecruitmentScreeningTab'
 
 interface RecruitmentHubProps {
   activeSubsection?: string
+  visibleTabs?: string[]
 }
 
-export function RecruitmentHub({ activeSubsection }: RecruitmentHubProps) {
+export function RecruitmentHub({ activeSubsection, visibleTabs }: RecruitmentHubProps) {
   const t = useTranslations("settings")
   const hub = useRecruitmentHub(activeSubsection)
 
-  const tabs = [
+  const allTabs = [
     { id: 'pipeline', label: t("recruitment.tabPipeline"), icon: Workflow },
     { id: 'screening', label: t("recruitment.tabScreening"), icon: MessageSquare },
     { id: 'hiring-policies', label: t("recruitment.tabHiringPolicies"), icon: ShieldCheck },
   ]
 
+  const tabs = visibleTabs ? allTabs.filter(tab => visibleTabs.includes(tab.id)) : allTabs
+
   return (
     <div className="space-y-6">
+      {tabs.length > 1 && (
       <div className={tabStyles.pillContainer}>
         {tabs.map((tab) => (
           <button
@@ -39,6 +43,7 @@ export function RecruitmentHub({ activeSubsection }: RecruitmentHubProps) {
           </button>
         ))}
       </div>
+      )}
 
       {hub.activeTab === 'pipeline' && (
         <RecruitmentPipelineTab
