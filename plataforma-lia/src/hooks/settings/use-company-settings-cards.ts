@@ -77,6 +77,7 @@ function buildBlocks(
   const basicFields: CardField[] = [
     { key: "name", label: "Nome da Empresa", value: company.name, type: "text", editable: true, block: "basic" },
     { key: "tradeName", label: "Nome Fantasia", value: company.tradeName, type: "text", editable: true, block: "basic" },
+    { key: "logo", label: "Logo", value: company.logo || null, type: "text", editable: false, block: "basic" },
     { key: "cnpj", label: "CNPJ", value: company.cnpj, type: "text", editable: true, block: "basic" },
     { key: "website", label: "Website", value: company.website, type: "text", editable: true, block: "basic" },
     { key: "industry", label: "Setor", value: company.industry, type: "text", editable: true, block: "basic" },
@@ -84,6 +85,7 @@ function buildBlocks(
     { key: "employee_count", label: "Funcionarios", value: company.employee_count, type: "number", editable: true, block: "basic" },
     { key: "headquarters", label: "Sede", value: company.headquarters, type: "text", editable: true, block: "basic" },
     { key: "founded_year", label: "Ano de Fundacao", value: company.founded_year, type: "number", editable: true, block: "basic" },
+    { key: "linkedin_url", label: "LinkedIn", value: company.linkedin_url, type: "text", editable: true, block: "basic" },
     { key: "email", label: "Email RH", value: company.email, type: "text", editable: true, block: "basic" },
     { key: "phone", label: "Telefone", value: company.phone, type: "text", editable: true, block: "basic" },
   ]
@@ -94,8 +96,11 @@ function buildBlocks(
     { key: "values", label: "Valores", value: company.values, type: "list", editable: true, block: "culture" },
     { key: "work_model", label: "Modelo de Trabalho", value: company.work_model, type: "text", editable: true, block: "culture" },
     { key: "dei_initiatives", label: "DEI", value: company.dei_initiatives, type: "text", editable: true, block: "culture" },
+    { key: "sustainability", label: "Sustentabilidade", value: company.sustainability, type: "text", editable: true, block: "culture" },
+    { key: "social_impact", label: "Impacto Social", value: company.social_impact, type: "text", editable: true, block: "culture" },
     { key: "leadership_style", label: "Estilo de Lideranca", value: company.leadership_style, type: "text", editable: true, block: "culture" },
     { key: "growth_opportunities", label: "Oportunidades de Crescimento", value: company.growth_opportunities, type: "text", editable: true, block: "culture" },
+    { key: "team_dynamics", label: "Dinamica de Equipe", value: company.team_dynamics, type: "text", editable: true, block: "culture" },
     { key: "evp_bullets", label: "EVP", value: company.evp_bullets, type: "list", editable: true, block: "culture" },
   ]
 
@@ -105,9 +110,12 @@ function buildBlocks(
     { key: "default_languages", label: "Idiomas", value: company.default_languages, type: "list", editable: true, block: "tech" },
   ]
 
+  const activeBenefits = benefits.filter((b) => b.is_active !== false)
+  const benefitNames = benefits.slice(0, 5).map((b) => b.name).filter(Boolean)
   const benefitsFields: CardField[] = [
     { key: "benefits_count", label: "Total de Beneficios", value: benefits.length > 0 ? `${benefits.length} cadastrado(s)` : null, type: "text", editable: false, block: "benefits" },
-    { key: "benefits_active", label: "Beneficios Ativos", value: benefits.filter((b) => b.is_active !== false).length || null, type: "number", editable: false, block: "benefits" },
+    { key: "benefits_active", label: "Beneficios Ativos", value: activeBenefits.length || null, type: "number", editable: false, block: "benefits" },
+    { key: "benefits_list", label: "Pacote", value: benefitNames.length > 0 ? benefitNames : null, type: "list", editable: false, block: "benefits" },
   ]
 
   const deptFields: CardField[] = [
@@ -130,13 +138,18 @@ function buildBlocks(
     { key: "current_ats", label: "ATS Atual", value: additionalData?.current_ats, type: "text", editable: false, block: "workforce" },
     { key: "main_challenges", label: "Principais Desafios", value: additionalData?.main_challenges, type: "list", editable: false, block: "workforce" },
     { key: "main_priority", label: "Prioridade Principal", value: additionalData?.main_priority, type: "text", editable: false, block: "workforce" },
+    { key: "communication_channels", label: "Canais de Comunicacao", value: additionalData?.communication_channels, type: "list", editable: false, block: "workforce" },
+    { key: "import_spreadsheet", label: "Importar Planilha", value: null, type: "text", editable: false, block: "workforce" },
   ]
 
   const documentFields: CardField[] = [
     { key: "onboarding_completed", label: "Onboarding Concluido", value: additionalData?.onboarding_completed_at ? "Sim" : null, type: "text", editable: false, block: "documents" },
-    { key: "additional_notes", label: "Notas Adicionais", value: additionalData?.additional_notes, type: "text", editable: false, block: "documents" },
     { key: "responsible_name", label: "Responsavel", value: additionalData?.responsible_name, type: "text", editable: false, block: "documents" },
     { key: "responsible_position", label: "Cargo do Responsavel", value: additionalData?.responsible_position, type: "text", editable: false, block: "documents" },
+    { key: "additional_notes", label: "Notas Adicionais", value: additionalData?.additional_notes, type: "text", editable: false, block: "documents" },
+    { key: "handbook", label: "Manual / Handbook", value: null, type: "text", editable: false, block: "documents" },
+    { key: "org_chart", label: "Organograma", value: null, type: "text", editable: false, block: "documents" },
+    { key: "compensation_structure", label: "Estrutura de Remuneracao", value: company.default_salary_ranges && company.default_salary_ranges.length > 0 ? `${company.default_salary_ranges.length} faixa(s)` : null, type: "text", editable: false, block: "documents" },
   ]
 
   const blocks: CardBlock[] = [
@@ -225,12 +238,9 @@ export function useCompanySettingsCards() {
     try {
       const res = await fetch(`/api/backend-proxy/hiring-policy/${cid}`)
       if (res.ok) return await res.json()
-    } catch {
-      try {
-        const fallback = await fetch("/api/backend-proxy/hiring-policy")
-        if (fallback.ok) return await fallback.json()
-      } catch { /* handled by caller */ }
-    }
+      const fallback = await fetch("/api/backend-proxy/hiring-policy")
+      if (fallback.ok) return await fallback.json()
+    } catch { /* handled by caller */ }
     return null
   }, [])
 
@@ -401,6 +411,7 @@ export function useCompanySettingsCards() {
           phone: "hr_phone",
           founded_year: "founded_year",
           headquarters: "headquarters_city",
+          linkedin_url: "linkedin_url",
         }
         const apiField = fieldMap[field] || field
         response = await fetch(`/api/backend-proxy/company/profile/${companyId}`, {
@@ -415,8 +426,11 @@ export function useCompanySettingsCards() {
           values: "values",
           work_model: "work_model",
           dei_initiatives: "dei_initiatives",
+          sustainability: "sustainability",
+          social_impact: "social_impact",
           leadership_style: "leadership_style",
           growth_opportunities: "growth_opportunities",
+          team_dynamics: "team_dynamics",
           evp_bullets: "evp_bullets",
           engineering_culture: "engineering_culture",
           default_languages: "default_languages",

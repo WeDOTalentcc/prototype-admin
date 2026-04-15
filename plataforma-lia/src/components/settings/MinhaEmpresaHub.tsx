@@ -3,7 +3,7 @@
 import React from "react"
 import {
   Building, Heart, Code, Gift, Network, GitBranch, BarChart3, FileText,
-  Loader2, RefreshCw, AlertCircle, CheckCircle,
+  Loader2, RefreshCw, AlertCircle, CheckCircle, Upload,
 } from "lucide-react"
 import { useCompanySettingsCards } from "@/hooks/settings/use-company-settings-cards"
 import { MinhaEmpresaCard } from "@/components/settings/MinhaEmpresaCard"
@@ -19,6 +19,7 @@ const ICON_MAP: Record<string, LucideIcon> = {
   GitBranch,
   BarChart3,
   FileText,
+  Upload,
 }
 
 export function MinhaEmpresaHub() {
