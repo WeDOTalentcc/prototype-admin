@@ -278,7 +278,7 @@ async def sync_workos_user(
                 "last_sso_login_at": datetime.utcnow(),
                 "updated_at": datetime.utcnow(),
             })
-            logger.info(f"Linked existing user {user_data.id if hasattr(user_data, 'id') else '***'} to WorkOS ID {user_data.workos_id}")
+            logger.info(f"Linked existing user (email={user_data.email}) to WorkOS ID {user_data.workos_id}")
         else:
             user = await user_repo.create({
                 "email": user_data.email,
@@ -294,7 +294,7 @@ async def sync_workos_user(
                 "updated_at": datetime.utcnow(),
             })
             is_new_user = True
-            logger.info(f"Created new SSO user: {user_data.id if hasattr(user_data, 'id') else '***'}")
+            logger.info(f"Created new SSO user: workos_id={user_data.workos_id}, email={user_data.email}")
     else:
         update_data = {
             "last_sso_login_at": datetime.utcnow(),
@@ -303,7 +303,7 @@ async def sync_workos_user(
         if user_data.organization_id:
             update_data["workos_organization_id"] = user_data.organization_id
         user = await user_repo.update_by_instance(user, update_data)
-        logger.info(f"SSO login for existing user: {user_data.id if hasattr(user_data, 'id') else '***'}")
+        logger.info(f"SSO login for existing user: workos_id={user_data.workos_id}, email={user_data.email}")
 
     await workos_repo.log_sso_event({
         "company_id": user_data.organization_id or None,
@@ -406,7 +406,7 @@ async def scim_user_created(
             }
         })
 
-        logger.info(f"SCIM linked existing user {user_data.id if hasattr(user_data, 'id') else '***'} to directory (company_id={company_id})")
+        logger.info(f"SCIM linked existing user (workos_id={user_data.workos_id}) to directory (company_id={company_id})")
         return SCIMActionResponse(
             success=True,
             action="created",
@@ -447,7 +447,7 @@ async def scim_user_created(
         }
     })
 
-    logger.info(f"SCIM provisioned new user: {user_data.id if hasattr(user_data, 'id') else '***'} (company_id={company_id})")
+    logger.info(f"SCIM provisioned new user: workos_id={user_data.workos_id} (company_id={company_id})")
     return SCIMActionResponse(
         success=True,
         action="created",
