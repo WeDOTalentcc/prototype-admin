@@ -116,10 +116,7 @@ function buildBlocks(
     { key: "benefits_count", label: "Total de Beneficios", value: benefits.length > 0 ? `${benefits.length} cadastrado(s)` : null, type: "text", editable: false, block: "benefits" },
     { key: "benefits_active", label: "Beneficios Ativos", value: activeBenefits.length || null, type: "number", editable: false, block: "benefits" },
     { key: "benefits_list", label: "Pacote", value: benefitNames.length > 0 ? benefitNames : null, type: "list", editable: false, block: "benefits" },
-  ]
-
-  const deptFields: CardField[] = [
-    { key: "departments_count", label: "Departamentos", value: departments.length > 0 ? `${departments.length} cadastrado(s)` : null, type: "text", editable: false, block: "departments" },
+    { key: "departments_count", label: "Departamentos", value: departments.length > 0 ? `${departments.length} cadastrado(s)` : null, type: "text", editable: false, block: "benefits" },
   ]
 
   const policyFields: CardField[] = hiringPolicy ? [
@@ -132,13 +129,14 @@ function buildBlocks(
   ]
 
   const additionalData = company.additional_data
+  const workforcePlan = (additionalData as Record<string, unknown> | undefined)?.workforce_plan as Record<string, unknown> | undefined
   const workforceFields: CardField[] = [
-    { key: "hiring_volume", label: "Volume de Contratacao", value: additionalData?.hiring_volume, type: "number", editable: false, block: "workforce" },
-    { key: "job_types", label: "Tipos de Vaga", value: additionalData?.job_types, type: "list", editable: false, block: "workforce" },
-    { key: "current_ats", label: "ATS Atual", value: additionalData?.current_ats, type: "text", editable: false, block: "workforce" },
-    { key: "main_challenges", label: "Principais Desafios", value: additionalData?.main_challenges, type: "list", editable: false, block: "workforce" },
-    { key: "main_priority", label: "Prioridade Principal", value: additionalData?.main_priority, type: "text", editable: false, block: "workforce" },
-    { key: "communication_channels", label: "Canais de Comunicacao", value: additionalData?.communication_channels, type: "list", editable: false, block: "workforce" },
+    { key: "hiring_volume", label: "Volume de Contratacao", value: additionalData?.hiring_volume ?? workforcePlan?.hiring_volume, type: "number", editable: false, block: "workforce" },
+    { key: "job_types", label: "Tipos de Vaga", value: additionalData?.job_types ?? workforcePlan?.job_types, type: "list", editable: false, block: "workforce" },
+    { key: "current_ats", label: "ATS Atual", value: additionalData?.current_ats ?? workforcePlan?.current_ats, type: "text", editable: false, block: "workforce" },
+    { key: "main_challenges", label: "Principais Desafios", value: additionalData?.main_challenges ?? workforcePlan?.main_challenges, type: "list", editable: false, block: "workforce" },
+    { key: "main_priority", label: "Prioridade Principal", value: additionalData?.main_priority ?? workforcePlan?.main_priority, type: "text", editable: false, block: "workforce" },
+    { key: "communication_channels", label: "Canais de Comunicacao", value: additionalData?.communication_channels ?? workforcePlan?.communication_channels, type: "list", editable: false, block: "workforce" },
     { key: "import_spreadsheet", label: "Importar Planilha", value: null, type: "text", editable: false, block: "workforce" },
   ]
 
@@ -156,8 +154,7 @@ function buildBlocks(
     { key: "basic", title: "Dados Basicos", iconName: "Building", fields: basicFields, status: computeBlockStatus(basicFields) },
     { key: "culture", title: "Cultura & EVP", iconName: "Heart", fields: cultureFields, status: computeBlockStatus(cultureFields) },
     { key: "tech", title: "Tech Stack", iconName: "Code", fields: techFields, status: computeBlockStatus(techFields) },
-    { key: "benefits", title: "Beneficios", iconName: "Gift", fields: benefitsFields, status: computeBlockStatus(benefitsFields) },
-    { key: "departments", title: "Departamentos", iconName: "Network", fields: deptFields, status: computeBlockStatus(deptFields) },
+    { key: "benefits", title: "Beneficios & Departamentos", iconName: "Gift", fields: benefitsFields, status: computeBlockStatus(benefitsFields) },
     { key: "policy", title: "Politicas de Recrutamento", iconName: "GitBranch", fields: policyFields, status: computeBlockStatus(policyFields) },
     { key: "workforce", title: "Workforce Planning", iconName: "BarChart3", fields: workforceFields, status: computeBlockStatus(workforceFields) },
     { key: "documents", title: "Documentos & Onboarding", iconName: "FileText", fields: documentFields, status: computeBlockStatus(documentFields) },
@@ -234,12 +231,10 @@ export function useCompanySettingsCards() {
     return []
   }, [])
 
-  const fetchHiringPolicy = useCallback(async (cid: string) => {
+  const fetchHiringPolicy = useCallback(async () => {
     try {
-      const res = await fetch(`/api/backend-proxy/hiring-policy/${cid}`)
+      const res = await fetch("/api/backend-proxy/hiring-policy")
       if (res.ok) return await res.json()
-      const fallback = await fetch("/api/backend-proxy/hiring-policy")
-      if (fallback.ok) return await fallback.json()
     } catch { /* handled by caller */ }
     return null
   }, [])
@@ -265,7 +260,7 @@ export function useCompanySettingsCards() {
         cid ? fetchCultureProfile(cid) : null,
         cid ? fetchBenefits(cid) : [],
         fetchDepartments(),
-        cid ? fetchHiringPolicy(cid) : null,
+        fetchHiringPolicy(),
       ])
 
       const merged: CompanyData = {
@@ -354,7 +349,7 @@ export function useCompanySettingsCards() {
     const currentCount = chatMessages.length
     if (currentCount > prevMessageCountRef.current && currentCount > 0) {
       const lastMsg = chatMessages[currentCount - 1]
-      if (lastMsg.sender === "lia" || lastMsg.sender === "assistant") {
+      if (lastMsg.sender === "lia") {
         const timer = setTimeout(() => {
           loadAll()
         }, 1500)
