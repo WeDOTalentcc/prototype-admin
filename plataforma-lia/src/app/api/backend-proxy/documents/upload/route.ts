@@ -4,6 +4,49 @@ import { NextRequest, NextResponse } from "next/server"
 const BACKEND_URL = process.env.BACKEND_URL || "http://127.0.0.1:8001"
 const MAX_FILE_SIZE = 10 * 1024 * 1024
 
+const VALID_DOCUMENT_TYPES = ["handbook", "org_chart", "compensation", "tech_doc", "general"]
+
+const SENSITIVE_TERMS: Record<string, string> = {
+  "idade máxima": "Restrição por idade",
+  "idade mínima": "Restrição por idade",
+  "somente homens": "Discriminação de gênero",
+  "somente mulheres": "Discriminação de gênero",
+  "apenas homens": "Discriminação de gênero",
+  "apenas mulheres": "Discriminação de gênero",
+  "sexo masculino": "Referência a gênero",
+  "sexo feminino": "Referência a gênero",
+  "estado civil": "Dado pessoal sensível",
+  "religião": "Dado pessoal sensível",
+  "raça": "Dado pessoal sensível",
+  "etnia": "Dado pessoal sensível",
+  "cor da pele": "Dado pessoal sensível",
+  "orientação sexual": "Dado pessoal sensível",
+  "deficiência": "Termo sensível — verificar contexto",
+  "portador de necessidades": "Termo desatualizado",
+  "boa aparência": "Critério discriminatório",
+  "aparência física": "Critério discriminatório",
+  "young professionals only": "Age restriction",
+  "male only": "Gender discrimination",
+  "female only": "Gender discrimination",
+  "no disabilities": "Disability discrimination",
+  "marital status": "Sensitive personal data",
+}
+
+function runFairnessCheck(text: string): string[] {
+  const lower = text.toLowerCase()
+  const found: string[] = []
+  const seen = new Set<string>()
+
+  for (const [term, warning] of Object.entries(SENSITIVE_TERMS)) {
+    if (lower.includes(term) && !seen.has(warning)) {
+      seen.add(warning)
+      found.push(warning)
+    }
+  }
+
+  return found
+}
+
 async function extractTextFromFile(file: File): Promise<string> {
   const ext = file.name.substring(file.name.lastIndexOf(".")).toLowerCase()
 
@@ -55,6 +98,13 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    if (!VALID_DOCUMENT_TYPES.includes(documentType)) {
+      return NextResponse.json(
+        { success: false, error: "Tipo de documento inválido" },
+        { status: 400 }
+      )
+    }
+
     if (file.size > MAX_FILE_SIZE) {
       return NextResponse.json(
         { success: false, error: "Arquivo muito grande (máximo 10MB)" },
@@ -80,21 +130,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    let fairnessWarnings: string[] = []
-    try {
-      const checkResponse = await fetch(`${BACKEND_URL}/api/v1/settings/fairness-check`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: extractedText.substring(0, 5000) }),
-      })
-
-      if (checkResponse.ok) {
-        const checkData = await checkResponse.json()
-        fairnessWarnings = checkData.soft_warnings || checkData.warnings || []
-      }
-    } catch {
-      // non-critical
-    }
+    const fairnessWarnings = runFairnessCheck(extractedText.substring(0, 10000))
 
     return NextResponse.json({
       success: true,
@@ -105,7 +141,7 @@ export async function POST(request: NextRequest) {
       text_length: extractedText.length,
       fairness_warnings: fairnessWarnings,
     })
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { success: false, error: "Erro interno ao processar documento" },
       { status: 500 }

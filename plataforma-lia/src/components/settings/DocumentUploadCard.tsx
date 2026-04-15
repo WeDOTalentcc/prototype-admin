@@ -1,8 +1,7 @@
 "use client"
 
-import React, { useState, useRef, useCallback } from "react"
+import React, { useState, useRef, useCallback, useEffect } from "react"
 import { Card, CardContent } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import {
   Upload, FileText, CheckCircle, AlertTriangle, Loader2, X, Clock,
@@ -19,15 +18,32 @@ interface DocumentType {
   label: string
   description: string
   icon: LucideIcon
-  acceptHint: string
 }
 
 const DOCUMENT_TYPES: DocumentType[] = [
-  { id: "handbook", label: "Manual / Handbook", description: "Cultura, missão, valores, benefícios", icon: BookOpen, acceptHint: "PDF, DOCX ou TXT" },
-  { id: "org_chart", label: "Organograma", description: "Departamentos e hierarquia", icon: Network, acceptHint: "PDF, DOCX ou TXT" },
-  { id: "compensation", label: "Plano de Remuneração", description: "Faixas salariais e benefícios", icon: DollarSign, acceptHint: "PDF, DOCX ou TXT" },
-  { id: "tech_doc", label: "Documentação Técnica", description: "Stack, ferramentas, cultura de engenharia", icon: Code, acceptHint: "PDF, DOCX ou TXT" },
+  { id: "handbook", label: "Manual / Handbook", description: "Cultura, missão, valores, benefícios", icon: BookOpen },
+  { id: "org_chart", label: "Organograma", description: "Departamentos e hierarquia", icon: Network },
+  { id: "compensation", label: "Plano de Remuneração", description: "Faixas salariais e benefícios", icon: DollarSign },
+  { id: "tech_doc", label: "Documentação Técnica", description: "Stack, ferramentas, cultura de engenharia", icon: Code },
 ]
+
+const STATE_PROGRESS: Record<UploadState, number> = {
+  idle: 0,
+  uploading: 20,
+  extracting: 50,
+  sending: 80,
+  done: 100,
+  error: 0,
+}
+
+const STATE_LABELS: Record<UploadState, string> = {
+  idle: "",
+  uploading: "Enviando arquivo...",
+  extracting: "Extraindo texto do documento...",
+  sending: "Enviando para LIA para análise...",
+  done: "Concluído!",
+  error: "",
+}
 
 interface UploadedDoc {
   documentType: string
@@ -64,16 +80,37 @@ export function DocumentUploadCard() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [fairnessWarnings, setFairnessWarnings] = useState<string[]>([])
   const [uploadedDocs, setUploadedDocs] = useState<UploadedDoc[]>(loadUploadedDocs)
-  const [extractedSummary, setExtractedSummary] = useState<string | null>(null)
+  const [progressPercent, setProgressPercent] = useState(0)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const progressTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const { sendChatMessage } = useLiaFloat()
+
+  useEffect(() => {
+    return () => {
+      if (progressTimerRef.current) clearInterval(progressTimerRef.current)
+    }
+  }, [])
+
+  const animateProgress = useCallback((target: number) => {
+    if (progressTimerRef.current) clearInterval(progressTimerRef.current)
+    progressTimerRef.current = setInterval(() => {
+      setProgressPercent(prev => {
+        if (prev >= target) {
+          if (progressTimerRef.current) clearInterval(progressTimerRef.current)
+          return target
+        }
+        return prev + 2
+      })
+    }, 50)
+  }, [])
 
   const resetState = useCallback(() => {
     setUploadState("idle")
     setActiveDocType(null)
     setErrorMessage(null)
     setFairnessWarnings([])
-    setExtractedSummary(null)
+    setProgressPercent(0)
+    if (progressTimerRef.current) clearInterval(progressTimerRef.current)
     if (fileInputRef.current) fileInputRef.current.value = ""
   }, [])
 
@@ -109,6 +146,8 @@ export function DocumentUploadCard() {
     }
 
     setUploadState("uploading")
+    setProgressPercent(0)
+    animateProgress(STATE_PROGRESS.uploading)
     setErrorMessage(null)
     setFairnessWarnings([])
 
@@ -118,6 +157,7 @@ export function DocumentUploadCard() {
       formData.append("document_type", activeDocType)
 
       setUploadState("extracting")
+      animateProgress(STATE_PROGRESS.extracting)
 
       const response = await fetch("/api/backend-proxy/documents/upload", {
         method: "POST",
@@ -131,20 +171,39 @@ export function DocumentUploadCard() {
 
       const result = await response.json()
       const extractedText = result.extracted_text || ""
-      const warnings = result.fairness_warnings || []
+      const warnings: string[] = result.fairness_warnings || []
 
       if (!extractedText || extractedText.trim().length < 10) {
         throw new Error("Não foi possível extrair texto suficiente do documento.")
       }
 
       setFairnessWarnings(warnings)
-      setExtractedSummary(`${extractedText.length} caracteres extraídos`)
       setUploadState("sending")
+      animateProgress(STATE_PROGRESS.sending)
 
       const docTypeLabel = DOCUMENT_TYPES.find(d => d.id === activeDocType)?.label || activeDocType
-      const chatMessage = `[Upload de documento: ${docTypeLabel}]\nArquivo: ${file.name}\nTipo: ${activeDocType}\n\nTexto extraído do documento (${extractedText.length} caracteres):\n\n${extractedText.substring(0, 8000)}`
+
+      let warningNotice = ""
+      if (warnings.length > 0) {
+        warningNotice = `\n\n⚠️ FairnessGuard detectou termos sensíveis: ${warnings.join(", ")}. Revise antes de confirmar.`
+      }
+
+      const chatMessage = [
+        `[Upload de documento: ${docTypeLabel}]`,
+        `Arquivo: ${file.name}`,
+        `Tipo: ${activeDocType}`,
+        `Caracteres extraídos: ${extractedText.length}`,
+        warningNotice,
+        `\nTexto extraído:\n\n${extractedText.substring(0, 8000)}`,
+        `\n\n---`,
+        `Analisei o documento "${file.name}" (${docTypeLabel}).`,
+        `Posso usar as informações extraídas para preencher os campos da empresa?`,
+        `Responda "sim" para confirmar ou indique quais campos deseja preencher.`,
+      ].join("\n")
 
       await sendChatMessage(chatMessage, "company_settings")
+
+      animateProgress(100)
 
       const newDoc: UploadedDoc = {
         documentType: activeDocType,
@@ -157,10 +216,12 @@ export function DocumentUploadCard() {
       setUploadedDocs(loadUploadedDocs())
 
       setUploadState("done")
+      setProgressPercent(100)
       setTimeout(resetState, 6000)
     } catch (err) {
       setErrorMessage(err instanceof Error ? err.message : "Erro ao processar documento")
       setUploadState("error")
+      setProgressPercent(0)
       setTimeout(resetState, 5000)
     }
   }
@@ -208,9 +269,7 @@ export function DocumentUploadCard() {
                     <p className={`${textStyles.labelSmall} truncate`}>{docType.label}</p>
                     {isActive ? (
                       <p className="text-micro text-lia-btn-primary-bg font-medium mt-0.5">
-                        {uploadState === "uploading" && "Enviando..."}
-                        {uploadState === "extracting" && "Extraindo texto..."}
-                        {uploadState === "sending" && "Enviando para LIA..."}
+                        {STATE_LABELS[uploadState]}
                       </p>
                     ) : uploaded ? (
                       <div className="mt-0.5">
@@ -254,10 +313,27 @@ export function DocumentUploadCard() {
         })}
       </div>
 
+      {isProcessing && (
+        <div className="px-3 py-2.5 rounded-lg border border-lia-border-subtle bg-lia-bg-secondary">
+          <div className="flex items-center justify-between mb-1.5">
+            <span className="text-xs text-lia-text-secondary font-medium">
+              {STATE_LABELS[uploadState]}
+            </span>
+            <span className="text-micro text-lia-text-tertiary">{progressPercent}%</span>
+          </div>
+          <div className="w-full h-1.5 bg-lia-bg-tertiary dark:bg-lia-bg-elevated rounded-full overflow-hidden">
+            <div
+              className="h-full bg-lia-btn-primary-bg rounded-full transition-all duration-300 ease-out"
+              style={{ width: `${progressPercent}%` }}
+            />
+          </div>
+        </div>
+      )}
+
       {uploadState === "done" && (
         <div className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs bg-status-success/10 text-status-success border border-status-success/30">
           <CheckCircle className="w-3.5 h-3.5 flex-shrink-0" />
-          <span>Documento enviado para a LIA! Ela analisará e preencherá os campos automaticamente.</span>
+          <span>Documento enviado! A LIA perguntará antes de preencher os campos.</span>
         </div>
       )}
 
@@ -298,7 +374,7 @@ export function DocumentUploadCard() {
 
       <p className={`${textStyles.caption} text-center`}>
         <FileText className="w-3 h-3 inline mr-1" />
-        PDF, DOCX ou TXT — máx. 10MB. A LIA extrairá e preencherá os campos automaticamente.
+        PDF, DOCX ou TXT — máx. 10MB. A LIA analisará e pedirá confirmação antes de preencher.
       </p>
     </div>
   )
