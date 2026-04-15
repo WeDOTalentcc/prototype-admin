@@ -15,6 +15,7 @@ from lia_config.database import Base
 
 class SourcingAgent(Base):
     __tablename__ = "sourcing_agents"
+    __table_args__ = {"extend_existing": True}
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     company_id = Column(String(64), nullable=False, index=True)
