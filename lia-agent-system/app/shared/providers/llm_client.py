@@ -1,7 +1,7 @@
 """
-Unified LLM Client — LEGACY WRAPPER (Task #93 migration).
+Unified LLM Client — routes through ProviderContainer (Choose Your AI layer).
 
-All calls now route through LLMProviderFactory for tenant routing,
+All calls route through get_provider_for_tenant() for tenant routing,
 PII stripping, and audit logging. No direct SDK imports.
 """
 import logging
@@ -10,10 +10,9 @@ logger = logging.getLogger(__name__)
 
 
 def get_anthropic_client():
-    """LEGACY — Returns a ProviderContainer via LLMProviderFactory (Task #93).
-    
-    Maintained for backward compatibility. Callers should migrate to
-    get_provider_for_tenant() directly.
+    """Returns a ProviderContainer via get_provider_for_tenant().
+
+    Convenience wrapper. Callers can also use get_provider_for_tenant() directly.
     """
     from app.shared.providers.llm_factory import get_provider_for_tenant
     return get_provider_for_tenant()
@@ -36,7 +35,7 @@ async def llm_complete(
     temperature: float = 0.3,
 ) -> str | None:
     """
-    Completion wrapper — routes through LLMProviderFactory (Task #93).
+    Completion wrapper — routes through ProviderContainer.
     """
     try:
         from app.shared.providers.llm_factory import get_provider_for_tenant

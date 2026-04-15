@@ -451,8 +451,8 @@ class LLMService:
         max_tokens: int = 4096
     ) -> ToolCallResponse:
         """Generate with Claude's tool_use via anthropic SDK."""
-        from app.shared.providers.llm_factory import LLMProviderFactory
-        _claude_provider = LLMProviderFactory.get("claude")
+        from app.shared.providers.llm_factory import get_provider_for_tenant
+        _claude_provider = get_provider_for_tenant().get("claude")
         client = _claude_provider._get_client()
 
         try:
@@ -711,8 +711,8 @@ class LLMService:
             parse_json_from_text,
             structured_output_service,
         )
-        from app.shared.providers.llm_factory import LLMProviderFactory
-        _claude_provider = LLMProviderFactory.get("claude")
+        from app.shared.providers.llm_factory import get_provider_for_tenant
+        _claude_provider = get_provider_for_tenant().get("claude")
         client = _claude_provider._get_client()
         
         tool = structured_output_service.get_claude_tool(output_model, "respond")

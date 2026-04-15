@@ -1,14 +1,11 @@
 """
-LLM Provider Factory — Task #125.
+LLM Provider Factory — Choose Your AI layer.
 
-Manages provider instances with environment-based configuration AND
-per-tenant dependency injection via ProviderContainer.
-
-Changes from original:
-  - LLMProviderFactory preserved for backward compatibility (class-level state).
-  - ProviderContainer added: instance-based DI container per tenant.
-  - get_provider_for_tenant() returns a container scoped to tenant config.
+Multi-tenant LLM provider management:
+  - LLMProviderFactory: global class registry (register/get providers).
+  - ProviderContainer: per-tenant DI container with fallback chain.
   - TenantProviderRegistry: singleton mapping tenant_id → ProviderContainer.
+  - get_provider_for_tenant(): recommended entry point for all LLM access.
 """
 import logging
 import os
@@ -23,15 +20,15 @@ FALLBACK_ORDER: list[str] = ["gemini", "claude", "openai"]
 
 
 # ---------------------------------------------------------------------------
-# Original LLMProviderFactory — kept for backward compatibility
+# LLMProviderFactory — global provider class registry
 # ---------------------------------------------------------------------------
 
 class LLMProviderFactory:
-    """Factory for creating and managing LLM provider instances.
+    """Global registry of LLM provider classes.
 
-    Class variables serve as a global registry — suitable for single-tenant
-    or simple multi-tenant use. For full tenant isolation use ProviderContainer
-    via TenantProviderRegistry.
+    Stores provider classes (register) and creates singleton instances (get).
+    ProviderContainer uses _providers to create per-tenant instances.
+    For multi-tenant access, use get_provider_for_tenant() instead of this class.
     """
 
     _providers: dict[str, type] = {}
@@ -61,12 +58,6 @@ class LLMProviderFactory:
         return cls._instances[provider_name]
 
     @classmethod
-    def get_default(cls) -> LLMProviderABC:
-        """Get the default provider based on environment configuration."""
-        default = os.environ.get("LLM_DEFAULT_PROVIDER", "gemini")
-        return cls.get(default)
-
-    @classmethod
     def available_providers(cls) -> list:
         """List registered provider names."""
         return list(cls._providers.keys())
@@ -75,97 +66,6 @@ class LLMProviderFactory:
     def clear(cls):
         """Clear all instances (for testing)."""
         cls._instances.clear()
-
-    @classmethod
-    async def generate_with_fallback(
-        cls, prompt: str, system: str | None = None, **kwargs
-    ) -> str:
-        """Try providers in fallback order; return first success.
-
-        .. deprecated::
-            Use ``get_provider_for_tenant(company_id).generate_with_fallback()``
-            instead for proper multi-tenant provider isolation.
-            This class-level method uses shared global state and does not
-            respect per-tenant provider configuration.
-
-        Args:
-            prompt: User message/prompt.
-            system: Optional system prompt.
-            **kwargs: Additional arguments passed to the provider.
-
-        Returns:
-            Generated text from the first available provider.
-
-        Raises:
-            Exception: If all providers fail.
-        """
-        import warnings
-        warnings.warn(
-            "LLMProviderFactory.generate_with_fallback() is deprecated. "
-            "Use get_provider_for_tenant(company_id).generate_with_fallback() "
-            "for proper multi-tenant provider isolation.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-
-        plan_code = kwargs.pop("plan_code", None)
-        agent_type = kwargs.pop("agent_type", None)
-        company_id = kwargs.pop("company_id", None)
-        user_id = kwargs.pop("user_id", None)
-        expected_output_tokens = kwargs.pop("expected_output_tokens", None)
-
-        try:
-            if plan_code is None and company_id is not None:
-                from app.domains.credits.services.token_budget_service import get_plan_for_company
-                plan_code = await get_plan_for_company(str(company_id))
-        except Exception as exc:
-            logger.warning(
-                "[LLMFactory] Plan lookup failed (graceful): %s", exc
-            )
-
-        check_request_budget_before_llm(
-            prompt,
-            system,
-            plan_code=plan_code,
-            agent_type=agent_type,
-            company_id=company_id,
-            user_id=user_id,
-            expected_output_tokens=expected_output_tokens,
-        )
-
-        from app.shared.resilience.circuit_breaker import CircuitBreakerError
-
-        errors: list[str] = []
-        for provider_name in FALLBACK_ORDER:
-            try:
-                provider = cls.get(provider_name)
-                if system:
-                    result = await provider.generate_with_system(system, prompt, **kwargs)
-                else:
-                    result = await provider.generate(prompt, **kwargs)
-                if provider_name != FALLBACK_ORDER[0]:
-                    logger.warning(
-                        "[LLMFactory] Used fallback provider '%s' after primary failed",
-                        provider_name,
-                    )
-                return result.text
-            except CircuitBreakerError as e:
-                errors.append(
-                    f"{provider_name}: circuit open (retry_after={e.retry_after:.1f}s)"
-                )
-                logger.warning(
-                    "[LLMFactory] Provider '%s' circuit open, trying next", provider_name
-                )
-            except Exception as e:
-                errors.append(f"{provider_name}: {type(e).__name__}: {e}")
-                logger.warning("[LLMFactory] Provider '%s' failed: %s", provider_name, e)
-
-        from app.shared.errors import LIALLMError
-        raise LIALLMError(
-            message=f"Todos os provedores de LLM falharam: {errors}",
-            code="LLM_ALL_PROVIDERS_FAILED",
-            details={"errors": errors},
-        )
 
 
 # ---------------------------------------------------------------------------
