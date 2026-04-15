@@ -9,6 +9,7 @@ import {
 } from "lucide-react"
 import { textStyles } from "@/lib/design-tokens"
 import { useLiaFloat } from "@/contexts/lia-float-context"
+import { useAuth } from "@/contexts/auth-context"
 import type { LucideIcon } from "lucide-react"
 
 type UploadState = "idle" | "uploading" | "extracting" | "sending" | "done" | "error"
@@ -53,33 +54,40 @@ interface UploadedDoc {
   warnings: string[]
 }
 
-const STORAGE_KEY = "lia_uploaded_documents"
+const STORAGE_KEY_PREFIX = "lia_uploaded_documents"
 
-function loadUploadedDocs(): UploadedDoc[] {
+function getStorageKey(userEmail: string | undefined): string {
+  const scope = userEmail || "anonymous"
+  return `${STORAGE_KEY_PREFIX}_${scope}`
+}
+
+function loadUploadedDocs(storageKey: string): UploadedDoc[] {
   if (typeof window === "undefined") return []
   try {
-    const raw = localStorage.getItem(STORAGE_KEY)
+    const raw = localStorage.getItem(storageKey)
     return raw ? JSON.parse(raw) : []
   } catch {
     return []
   }
 }
 
-function saveUploadedDoc(doc: UploadedDoc) {
-  const docs = loadUploadedDocs()
+function saveUploadedDoc(storageKey: string, doc: UploadedDoc) {
+  const docs = loadUploadedDocs(storageKey)
   const filtered = docs.filter(d => d.documentType !== doc.documentType)
   filtered.push(doc)
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(filtered))
+  localStorage.setItem(storageKey, JSON.stringify(filtered))
 }
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024
 
 export function DocumentUploadCard() {
+  const { user } = useAuth()
+  const storageKey = getStorageKey(user?.email ?? undefined)
   const [uploadState, setUploadState] = useState<UploadState>("idle")
   const [activeDocType, setActiveDocType] = useState<string | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [fairnessWarnings, setFairnessWarnings] = useState<string[]>([])
-  const [uploadedDocs, setUploadedDocs] = useState<UploadedDoc[]>(loadUploadedDocs)
+  const [uploadedDocs, setUploadedDocs] = useState<UploadedDoc[]>(() => loadUploadedDocs(storageKey))
   const [progressPercent, setProgressPercent] = useState(0)
   const [isDragOver, setIsDragOver] = useState(false)
   const [pendingDocType, setPendingDocType] = useState<string | null>(null)
@@ -203,8 +211,8 @@ export function DocumentUploadCard() {
         textLength: extractedText.length,
         warnings,
       }
-      saveUploadedDoc(newDoc)
-      setUploadedDocs(loadUploadedDocs())
+      saveUploadedDoc(storageKey, newDoc)
+      setUploadedDocs(loadUploadedDocs(storageKey))
 
       setUploadState("done")
       setProgressPercent(100)
@@ -215,7 +223,7 @@ export function DocumentUploadCard() {
       setProgressPercent(0)
       setTimeout(resetState, 5000)
     }
-  }, [animateProgress, resetState, sendChatMessage])
+  }, [animateProgress, resetState, sendChatMessage, storageKey])
 
   const handleSelectDocType = (docTypeId: string) => {
     setPendingDocType(docTypeId)

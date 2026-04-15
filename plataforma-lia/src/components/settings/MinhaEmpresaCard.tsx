@@ -3,7 +3,7 @@
 import React, { useState } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import {
-  ChevronDown, ChevronUp, Pencil, Check, X, Loader2, Upload,
+  ChevronDown, ChevronUp, Pencil, Check, X, Loader2,
 } from "lucide-react"
 import type { CardBlock, CardField } from "@/hooks/settings/use-company-settings-cards"
 import { textStyles } from "@/lib/design-tokens"
