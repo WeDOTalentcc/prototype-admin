@@ -160,7 +160,7 @@ export function useCompanyData(): UseCompanyDataResult {
 
         if (fetchedCompanyId) {
           const cultureRes = await fetch(
-            `/api/backend-proxy/company/culture-profile?company_id=${fetchedCompanyId}`,
+            `/api/backend-proxy/company/culture-profile/${encodeURIComponent(fetchedCompanyId)}`,
           );
           if (cultureRes.ok) {
             const cultureProfile = await cultureRes.json();
@@ -248,7 +248,7 @@ export function useCompanyData(): UseCompanyDataResult {
     }
     try {
       const response = await fetch(
-        `/api/backend-proxy/company/culture-profile?company_id=${companyId}`,
+        `/api/backend-proxy/company/culture-profile/${encodeURIComponent(companyId)}`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -379,7 +379,7 @@ export function useCompanyData(): UseCompanyDataResult {
       const newToggles = { ...currentToggles, [fieldKey]: isActive };
 
       await fetch(
-        `/api/backend-proxy/company/culture-profile?company_id=${currentCompanyId}`,
+        `/api/backend-proxy/company/culture-profile/${encodeURIComponent(currentCompanyId)}`,
         {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },

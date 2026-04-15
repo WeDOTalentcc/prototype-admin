@@ -257,7 +257,7 @@ export function useCompanySettingsCards() {
 
   const fetchCultureProfile = useCallback(async (cid: string) => {
     try {
-      const res = await fetch(`/api/backend-proxy/company/culture-profile?company_id=${cid}`)
+      const res = await fetch(`/api/backend-proxy/company/culture-profile/${encodeURIComponent(cid)}`)
       if (res.ok) return await res.json()
     } catch { /* handled by caller */ }
     return null
@@ -477,7 +477,7 @@ export function useCompanySettingsCards() {
           default_languages: "default_languages",
         }
         const apiField = cultureFieldMap[field] || field
-        response = await fetch(`/api/backend-proxy/company/culture-profile?company_id=${companyId}`, {
+        response = await fetch(`/api/backend-proxy/company/culture-profile/${encodeURIComponent(companyId)}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ [apiField]: value }),

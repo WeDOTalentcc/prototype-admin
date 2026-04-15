@@ -187,7 +187,7 @@ export function useCompanyLiaInstructions(): UseCompanyLiaInstructionsResult {
     setError(null)
 
     try {
-      const response = await fetch(`/api/backend-proxy/company/culture-profile?company_id=${encodeURIComponent(companyId)}`)
+      const response = await fetch(`/api/backend-proxy/company/culture-profile/${encodeURIComponent(companyId)}`)
       
       if (!response.ok) {
         // 404 = not found, 422 = invalid company_id format (e.g., "default" instead of UUID)

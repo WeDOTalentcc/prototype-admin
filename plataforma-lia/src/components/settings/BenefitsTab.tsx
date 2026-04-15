@@ -185,7 +185,7 @@ export function BenefitsTab() {
   const saveLiaFieldToggles = async (toggles: Record<string, boolean>, instructions?: Record<string, string>) => {
     try {
       const companyId = await getCompanyId()
-      const response = await fetch(`/api/backend-proxy/company/culture-profile?company_id=${companyId}`, {
+      const response = await fetch(`/api/backend-proxy/company/culture-profile/${encodeURIComponent(companyId)}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

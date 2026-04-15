@@ -51,7 +51,7 @@ export function useCompanyDefaults(): UseCompanyDefaultsResult {
       const fetches: Promise<Response>[] = []
 
       if (companyId) {
-        fetches.push(fetch(`/api/backend-proxy/company/culture-profile?company_id=${companyId}`))
+        fetches.push(fetch(`/api/backend-proxy/company/culture-profile/${encodeURIComponent(companyId)}`))
         fetches.push(fetch(`/api/backend-proxy/company/benefits/?company_id=${companyId}`))
       }
 

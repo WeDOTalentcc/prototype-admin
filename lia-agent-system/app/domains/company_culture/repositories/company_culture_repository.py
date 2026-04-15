@@ -74,10 +74,17 @@ class CompanyCultureRepository:
     async def update_profile_fields(
         self, company_id: UUID, update_data: dict
     ) -> Optional[CompanyCultureProfile]:
-        """Apply recruiter-driven field updates, marking source as 'manual'."""
+        """Apply recruiter-driven field updates, marking source as 'manual'.
+        Creates the profile if it doesn't exist yet (upsert behaviour)."""
         profile = await self.get_profile_by_company(company_id)
         if not profile:
-            return None
+            profile = CompanyCultureProfile(
+                id=uuid.uuid4(),
+                company_id=company_id,
+                source="manual",
+                website_url="",
+            )
+            self.db.add(profile)
         for field, value in update_data.items():
             if hasattr(profile, field):
                 setattr(profile, field, value)

@@ -69,7 +69,7 @@ export function useCompanyCulture(): UseCompanyCultureResult {
     setError(null)
 
     try {
-      const response = await fetch(`/api/backend-proxy/company/culture-profile?company_id=${encodeURIComponent(companyId)}`)
+      const response = await fetch(`/api/backend-proxy/company/culture-profile/${encodeURIComponent(companyId)}`)
       
       if (!response.ok) {
         if (response.status === 404) {

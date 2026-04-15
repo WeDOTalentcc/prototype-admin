@@ -245,7 +245,7 @@ export function useGoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection
     try {
       const updatedToggles = { ...liaToggles, [fieldKey]: isActive }
       const companyId = await getCompanyId()
-      const response = await fetch(`/api/backend-proxy/company/culture-profile?company_id=${companyId}`, {
+      const response = await fetch(`/api/backend-proxy/company/culture-profile/${encodeURIComponent(companyId)}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ lia_field_toggles: updatedToggles })
@@ -262,7 +262,7 @@ export function useGoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection
     try {
       const updatedInstructions = { ...liaInstructions, [fieldKey]: instruction }
       const companyId = await getCompanyId()
-      const response = await fetch(`/api/backend-proxy/company/culture-profile?company_id=${companyId}`, {
+      const response = await fetch(`/api/backend-proxy/company/culture-profile/${encodeURIComponent(companyId)}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ lia_instructions: updatedInstructions })
