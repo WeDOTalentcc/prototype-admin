@@ -12,6 +12,7 @@ import { Button } from"@/components/ui/button"
 import {
   textStyles, cardStyles, badgeStyles, buttonStyles
 } from"@/lib/design-tokens"
+import { extractErrorMessage } from "@/lib/api/extract-error-message"
 
 // ---------- Types ----------
 
@@ -68,16 +69,27 @@ export default function AgentsTab({
   const [agents, setAgents] = useState<SourcingAgent[]>([])
   const [timelines, setTimelines] = useState<Record<string, TimelineEvent[]>>({})
   const [isLoading, setIsLoading] = useState(true)
+  const [loadError, setLoadError] = useState<string | null>(null)
 
   useEffect(() => { loadAgents() }, [jobId, talentPoolId])
 
   const loadAgents = async () => {
     setIsLoading(true)
+    setLoadError(null)
     try {
       const params = new URLSearchParams()
       if (jobId) params.set("job_id", jobId)
       if (talentPoolId) params.set("talent_pool_id", talentPoolId)
       const res = await fetch(`/api/backend-proxy/sourcing-agents?${params}`)
+
+      // Ao contrário do comportamento antigo (data?.agents || []), aqui
+      // distinguimos lista vazia legítima (200 OK, zero agentes) de falha
+      // de backend (500/4xx). Sem isso, 500 caía no empty state silenciosamente
+      // mesmo com agentes cadastrados (bug QA BUG-02).
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => ({}))
+        throw new Error(extractErrorMessage(errBody, res.status))
+      }
       const data = await res.json()
       const agentList = data?.agents || []
       setAgents(agentList)
@@ -87,6 +99,7 @@ export default function AgentsTab({
       await Promise.all(agentList.map(async (a: SourcingAgent) => {
         try {
           const tlRes = await fetch(`/api/backend-proxy/sourcing-agents/${a.id}/timeline?limit=10`)
+          if (!tlRes.ok) { tl[a.id] = []; return }
           const tlData = await tlRes.json()
           tl[a.id] = tlData?.timeline || []
         } catch {
@@ -95,6 +108,9 @@ export default function AgentsTab({
       }))
       setTimelines(tl)
     } catch (err) {
+      const msg = err instanceof Error ? err.message : "Erro desconhecido"
+      setLoadError(msg)
+      setAgents([])
       console.error("Failed to load agents:", err)
     } finally {
       setIsLoading(false)
@@ -109,6 +125,20 @@ export default function AgentsTab({
 
   if (isLoading) {
     return <div className="flex items-center justify-center h-32"><p className={textStyles.caption}>{t('loadingAgents')}</p></div>
+  }
+
+  if (loadError) {
+    return (
+      <div className="flex flex-col items-center justify-center h-48 gap-3 text-center px-4">
+        <AlertCircle className="w-10 h-10 text-status-error" />
+        <p className={textStyles.body}>Não foi possível carregar os agentes</p>
+        <p className={`${textStyles.caption} max-w-md`}>{loadError}</p>
+        <Button variant="outline" onClick={loadAgents} className="mt-2">
+          <RefreshCw className="w-4 h-4 mr-2" />
+          Tentar novamente
+        </Button>
+      </div>
+    )
   }
 
   if (agents.length === 0) {

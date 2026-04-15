@@ -1,6 +1,12 @@
 # Documentação WeDo Talent / Plataforma LIA
 
-**Última Atualização:** 30 Janeiro 2026
+**Última Atualização:** 15 Abril 2026
+
+---
+
+## ⭐ DOCUMENTO CANÔNICO
+
+**[ARCHITECTURE.md](./architecture/ARCHITECTURE.md)** — Source of truth técnica completa da plataforma. ~1300 linhas cobrindo backend, frontend, chat, data layer, infrastructure, agentes, compliance, deploy. Cruza código real com decisões arquiteturais. Atualizar a cada PR estrutural.
 
 ---
 

@@ -58,6 +58,7 @@ export type ChatContextType =
   | "talent_chat"
   | "kanban_chat"
   | "candidates_chat"
+  | "agent_studio"
   | "settings_config"
 
 interface LiaFloatState {
@@ -174,7 +175,11 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
 
   const [sessionId] = useState(() => generateSessionId())
 
-  const handleMessageComplete = useCallback((content: string, executionPlan?: Record<string, unknown>) => {
+  const handleMessageComplete = useCallback((
+    content: string,
+    executionPlan?: Record<string, unknown>,
+    extras?: { options?: Array<{ label: string; value: string }>; isClarification?: boolean },
+  ) => {
     const msg: LiaChatMessage = {
       id: `lia-${Date.now()}`,
       sender: "lia" as const,
@@ -183,6 +188,12 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
     }
     if (executionPlan) {
       msg.executionPlan = executionPlan
+    }
+    if (extras?.options && extras.options.length > 0) {
+      msg.options = extras.options
+    }
+    if (extras?.isClarification) {
+      msg.isClarification = true
     }
     setChatMessages(prev => [...prev, msg])
     if (chatContextTypeRef.current === "settings_config" && typeof window !== "undefined") {

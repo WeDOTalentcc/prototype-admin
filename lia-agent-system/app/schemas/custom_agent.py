@@ -185,3 +185,27 @@ class MarketplaceBillingResponse(BaseModel):
     total_credits_consumed: int = 0
     period_start: Optional[str] = None
     period_end: Optional[str] = None
+
+
+class GeneratedAgentConfig(BaseModel):
+    """Response shape for POST /custom-agents/generate-from-description.
+
+    All fields have defaults so the endpoint never returns null, even when the
+    LLM emits incomplete JSON. Frontend (ConversationalCreator) renders this
+    directly — null/missing values in any field would crash the React tree.
+    Pydantic enforces defaults at the response boundary.
+    """
+
+    suggested_name: str = Field(default="Novo Agente", min_length=1, max_length=256)
+    suggested_role: str = Field(default="", max_length=512)
+    suggested_domain: str = Field(default="general", max_length=64)
+    suggested_tools: list[str] = Field(
+        default_factory=lambda: ["search_candidates", "get_candidate_details"]
+    )
+    suggested_prompt: str = Field(default="", max_length=4000)
+    suggested_context_level: str = Field(
+        default="standard", pattern="^(full|standard|minimal)$"
+    )
+    suggested_max_steps: int = Field(default=8, ge=1, le=20)
+    suggested_temperature: float = Field(default=0.5, ge=0.0, le=2.0)
+    reasoning: str = Field(default="", max_length=2000)

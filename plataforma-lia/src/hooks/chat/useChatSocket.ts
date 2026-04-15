@@ -14,11 +14,16 @@ import type {
   HITLPending,
   PanelUpdateEvent,
   BackgroundTaskEvent,
+  MessageCompleteExtras,
 } from "./lia-chat-connection-types"
 
 export interface UseChatSocketOptions {
   sessionId: string
-  onMessageComplete?: (content: string, executionPlan?: Record<string, unknown>) => void
+  onMessageComplete?: (
+    content: string,
+    executionPlan?: Record<string, unknown>,
+    extras?: MessageCompleteExtras,
+  ) => void
   onPanelUpdate?: (event: PanelUpdateEvent) => void
 }
 
@@ -221,6 +226,28 @@ export function useChatSocket({
         }
         break
 
+      case "clarification": {
+        // Tier 8 fallback from cascaded_router — backend sends:
+        // { type: "clarification", question: string, options: string[] | {label,value}[] }
+        setIsThinking(false)
+        const evt = event as unknown as {
+          question?: string
+          options?: Array<string | { label?: string; value?: string }>
+        }
+        const question = evt.question ?? ""
+        const optionsArr = (evt.options ?? []).map((opt) => {
+          if (typeof opt === "string") return { label: opt, value: opt }
+          return { label: opt.label ?? opt.value ?? "", value: opt.value ?? opt.label ?? "" }
+        }).filter((o) => o.label && o.value)
+        if (question) {
+          onCompleteRef.current?.(question, undefined, {
+            options: optionsArr,
+            isClarification: true,
+          })
+        }
+        break
+      }
+
       default:
         break
     }
@@ -276,5 +303,6 @@ export function useChatSocket({
     planProgressSteps,
     activePlanId,
     conversationIdFromWs,
+    setIsThinking, // expor para que useChatMessages dispare o indicador "LIA digitando" também no caminho REST/SSE (BUG-13)
   }
 }

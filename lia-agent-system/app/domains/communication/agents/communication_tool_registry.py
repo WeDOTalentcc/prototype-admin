@@ -50,27 +50,52 @@ async def _wrap_send_email(**kwargs: Any) -> dict[str, Any]:
     except ValueError:
         msg_type = MessageType.GENERAL
 
-    async with AsyncSessionLocal() as db:
-        result = await svc.send_message(
-            company_id=str(company_id),
-            candidate_id=str(candidate_id),
-            candidate_email=None,  # resolved by service from candidate record
-            candidate_phone=None,
-            message_type=msg_type,
-            channel=MessageChannel.EMAIL,
-            subject=subject,
-            body=body,
-            db=db,
-        )
+    try:
+        async with AsyncSessionLocal() as db:
+            result = await svc.send_message(
+                company_id=str(company_id),
+                candidate_id=str(candidate_id),
+                candidate_email=None,  # resolved by service from candidate record
+                candidate_phone=None,
+                message_type=msg_type,
+                channel=MessageChannel.EMAIL,
+                subject=subject,
+                body=body,
+                db=db,
+            )
 
-    return {
-        "success": result.get("success", True),
-        "message_id": result.get("message_id"),
-        "channel": "email",
-        "candidate_id": candidate_id,
-        "company_id": company_id,
-        "details": result,
-    }
+        return {
+            "success": result.get("success", True),
+            "message_id": result.get("message_id"),
+            "channel": "email",
+            "candidate_id": candidate_id,
+            "company_id": company_id,
+            "details": result,
+        }
+    except Exception as exc:
+        logger.error("[communication_tools] send_email failed: %s", exc, exc_info=True)
+        # Self-correction: check if candidate has phone for WhatsApp fallback
+        alternative_channel = None
+        try:
+            async with AsyncSessionLocal() as _db:
+                from sqlalchemy import text as _txt
+                _row = await _db.execute(
+                    _txt("SELECT phone FROM candidates WHERE id = :cid LIMIT 1"),
+                    {"cid": str(candidate_id)},
+                )
+                if _row.scalar_one_or_none():
+                    alternative_channel = "whatsapp"
+        except Exception:
+            pass
+
+        alt_msg = " O candidato tem telefone — posso tentar por WhatsApp." if alternative_channel else ""
+        return {
+            "success": False,
+            "message": f"Falha ao enviar email (servico indisponivel ou endereco invalido).{alt_msg}",
+            "error_type": "integration_error",
+            "candidate_id": candidate_id,
+            "alternative_channel": alternative_channel,
+        }
 @tool_handler("communication")
 async def _wrap_send_whatsapp(**kwargs: Any) -> dict[str, Any]:
     """Send a WhatsApp message to a candidate using WhatsAppService."""
@@ -85,23 +110,32 @@ async def _wrap_send_whatsapp(**kwargs: Any) -> dict[str, Any]:
         return {"success": False, "message": "candidate_phone é obrigatório"}
     if not message:
         return {"success": False, "message": "message é obrigatório"}
-    svc = WhatsAppService()
-    result = await svc.send_message(
-        to_phone=candidate_phone,
-        message=message,
-        metadata={
-            "company_id": str(company_id),
-            "candidate_id": str(candidate_id) if candidate_id else None,
-        },
-    )
-    return {
-        "success": result.success,
-        "message_id": result.message_id,
-        "status": result.status.value if result.status else None,
-        "channel": "whatsapp",
-        "candidate_phone": candidate_phone,
-        "company_id": company_id,
-    }
+    try:
+        svc = WhatsAppService()
+        result = await svc.send_message(
+            to_phone=candidate_phone,
+            message=message,
+            metadata={
+                "company_id": str(company_id),
+                "candidate_id": str(candidate_id) if candidate_id else None,
+            },
+        )
+        return {
+            "success": result.success,
+            "message_id": result.message_id,
+            "status": result.status.value if result.status else None,
+            "channel": "whatsapp",
+            "candidate_phone": candidate_phone,
+            "company_id": company_id,
+        }
+    except Exception as exc:
+        logger.error("[communication_tools] send_whatsapp failed: %s", exc, exc_info=True)
+        return {
+            "success": False,
+            "message": f"Falha ao enviar WhatsApp: servico indisponivel. Verifique configuracao Twilio.",
+            "error_type": "integration_error",
+            "candidate_phone": candidate_phone,
+        }
 @tool_handler("communication")
 async def _wrap_get_communication_history(**kwargs: Any) -> dict[str, Any]:
     """Retrieve communication history for a candidate using CommunicationHistoryService."""
@@ -251,26 +285,36 @@ async def _wrap_check_rate_limit(**kwargs: Any) -> dict[str, Any]:
             "message": f"Canal inválido '{channel_str}'. Use: email, whatsapp, teams",
         }
 
-    svc = CommunicationService()
-    async with AsyncSessionLocal() as db:
-        validation = await svc.validate_can_send(
-            candidate_id=str(candidate_id),
-            company_id=str(company_id),
-            channel=channel,
-            message_type=MessageType.GENERAL,
-            db=db,
-        )
+    try:
+        svc = CommunicationService()
+        async with AsyncSessionLocal() as db:
+            validation = await svc.validate_can_send(
+                candidate_id=str(candidate_id),
+                company_id=str(company_id),
+                channel=channel,
+                message_type=MessageType.GENERAL,
+                db=db,
+            )
 
-    return {
-        "success": True,
-        "can_send": validation.get("can_send", False),
-        "requires_approval": validation.get("requires_approval", False),
-        "warnings": validation.get("warnings", []),
-        "blocks": validation.get("blocks", []),
-        "candidate_id": candidate_id,
-        "company_id": company_id,
-        "channel": channel_str,
-    }
+        return {
+            "success": True,
+            "can_send": validation.get("can_send", False),
+            "requires_approval": validation.get("requires_approval", False),
+            "warnings": validation.get("warnings", []),
+            "blocks": validation.get("blocks", []),
+            "candidate_id": candidate_id,
+            "company_id": company_id,
+            "channel": channel_str,
+        }
+    except Exception as exc:
+        logger.error("[communication_tools] check_rate_limit failed: %s", exc, exc_info=True)
+        return {
+            "success": False,
+            "can_send": False,
+            "message": "Falha ao verificar rate limit. Por seguranca, envio bloqueado ate verificacao.",
+            "error_type": "integration_error",
+            "candidate_id": candidate_id,
+        }
 # ---------------------------------------------------------------------------
 # Public registry
 # ---------------------------------------------------------------------------

@@ -9,9 +9,20 @@ const BACKEND_URL = process.env.BACKEND_URL || 'http://127.0.0.1:8001'
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
-    const userId = searchParams.get("user_id") || "default_user"
-    
-    const response = await fetch(`${BACKEND_URL}/api/v1/briefing?user_id=${userId}`, {
+    const userId = searchParams.get("user_id")
+
+    // BUG-08: não aceitar default_user como fallback no server-side. Quando o
+    // FE ainda não sabe quem é o usuário, o backend recebe user_id=default_user
+    // e contamina contadores. Agora devolve 400 para estimular o caller a
+    // aguardar auth antes de chamar.
+    if (!userId || userId === "default_user") {
+      return NextResponse.json(
+        { success: false, error: "user_id ausente ou inválido" },
+        { status: 400 }
+      )
+    }
+
+    const response = await fetch(`${BACKEND_URL}/api/v1/briefing?user_id=${encodeURIComponent(userId)}`, {
       headers: getAuthHeaders(request),
     })
 

@@ -175,9 +175,39 @@ class InterviewGraph:
     async def _invoke_langgraph(
         self, state: dict[str, Any], audit_callback=None
     ) -> dict[str, Any]:
-        """Executa via StateGraph nativo com PostgresSaver checkpoint."""
+        """Executa via StateGraph nativo com PostgresSaver checkpoint.
+
+        P36 Full: injects 3-layer intelligence before graph execution.
+        """
         if self._compiled is None:
             self._compiled = self._build_langgraph()
+
+        # --- P36: Camada 3 — Global scheduling insights ---
+        try:
+            from app.shared.services.global_insights_service import get_global_insights
+            insights_svc = get_global_insights()
+            insights = await insights_svc.get_scheduling_insights()
+            snippet = insights_svc.format_scheduling_for_prompt(insights)
+            if snippet:
+                wfd = state.get("workflow_data") or {}
+                wfd["scheduling_insights"] = snippet
+                state["workflow_data"] = wfd
+        except Exception as exc:
+            self.logger.debug("[InterviewGraph] GlobalInsights injection skipped: %s", exc)
+
+        # --- P36: Camada 2 — Recruiter personalization ---
+        try:
+            from app.domains.analytics.services.recruiter_personalization_service import get_recruiter_prompt_context
+            recruiter_ctx = await get_recruiter_prompt_context(
+                recruiter_id=str(state.get("user_id", "")),
+                company_id=str(state.get("company_id", "")),
+            )
+            if recruiter_ctx:
+                wfd = state.get("workflow_data") or {}
+                wfd["recruiter_context"] = recruiter_ctx
+                state["workflow_data"] = wfd
+        except Exception as exc:
+            self.logger.debug("[InterviewGraph] RecruiterPersonalization skipped: %s", exc)
 
         # PII masking: sanitize messages before LLM processing (P35-059)
         try:

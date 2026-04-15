@@ -31,6 +31,11 @@ interface Props {
   thinkingSteps: string[]
   userName: string
   conversationId?: string | null
+  /**
+   * Called when the user clicks a clarification option chip (Tier 8 fallback).
+   * The handler typically forwards the chip's `value` to sendChatMessage.
+   */
+  onChipClick?: (value: string) => void
 }
 
 function MessageActions({
@@ -106,6 +111,7 @@ export function UnifiedMessageList({
   thinkingSteps,
   userName,
   conversationId,
+  onChipClick,
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
@@ -187,6 +193,22 @@ export function UnifiedMessageList({
                   <TastingInsightCard
                     insights={meta!.tasting_insights as { module_name: string; module_label: string; insight_type: string; summary: string; cta: string; badge: string }[]}
                   />
+                )}
+
+                {/* Clarification option chips (Tier 8 fallback from cascaded_router) */}
+                {message.options && message.options.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 mt-2">
+                    {message.options.map((opt) => (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        onClick={() => onChipClick?.(opt.value)}
+                        className="px-3 py-1 text-[12px] rounded-lg border border-lia-border-default text-lia-text-primary hover:bg-lia-interactive-hover transition-colors"
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
                 )}
 
                 {/* Notion-style action icons */}

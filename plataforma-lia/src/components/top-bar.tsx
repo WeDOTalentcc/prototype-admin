@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react"
 import { useAuth } from "@/contexts/auth-context"
+import { useAuthenticatedUserId } from "@/hooks/shared/use-authenticated-user-id"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -56,6 +57,7 @@ export function TopBar({ onNavigate, currentPage }: TopBarProps = {}) {
   const [isChangingPassword, setIsChangingPassword] = useState(false)
 
   const { user: authUser, refreshUser } = useAuth()
+  const { userId: authenticatedUserId, isReady: isAuthReady } = useAuthenticatedUserId()
 
   const handleNotificationClick = useCallback((_notification: AppNotification) => {
     // digest notifications are now handled by WeeklyDigestChatProvider
@@ -158,7 +160,10 @@ export function TopBar({ onNavigate, currentPage }: TopBarProps = {}) {
 
         <div className="flex items-center space-x-1.5">
           <HitlPendingBadge />
-          <NotificationSystem userId={authUser?.email || "default_user"} onNotificationClick={handleNotificationClick} />
+          {/* BUG-08: gating de auth — evita request com default_user pré-hidratação */}
+          {isAuthReady && authenticatedUserId && (
+            <NotificationSystem userId={authenticatedUserId} onNotificationClick={handleNotificationClick} />
+          )}
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

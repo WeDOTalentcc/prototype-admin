@@ -74,3 +74,93 @@ intent_examples:
   - "previsão de quando vamos fechar a vaga"
   - "comparar performance de recrutamento com mês passado"
   - "dashboard de saúde das vagas abertas"
+
+few_shot_examples:
+  - id: anl-ex-01
+    category: happy_path
+    scenario: "Relatorio de pipeline completo"
+    user_input: "Me de um relatorio do pipeline da vaga de Desenvolvedor"
+    expected_response: |
+      Pipeline — Desenvolvedor Full Stack Senior:
+
+      | Estagio        | Candidatos | Conversao | Tempo medio |
+      |----------------|-----------|-----------|-------------|
+      | Triagem        | 45        | 40%       | 2.5 dias    |
+      | Entrevista Tec | 18        | 72%       | 4.1 dias    |
+      | Entrevista Fin | 13        | 85%       | 3.0 dias    |
+      | Oferta         | 11        | 91%       | 2.0 dias    |
+
+      Comparativo mercado tech: seu TTF (32d) esta 9% abaixo da media (35d).
+      Gargalo: triagem (conversao 40% vs benchmark 45%).
+      Sugestao: revisar criterios de triagem ou ampliar sourcing.
+    demonstrates: ["tabela estruturada", "benchmark", "sugestao acionavel"]
+
+  - id: anl-ex-02
+    category: comparativo
+    scenario: "Comparar vagas"
+    user_input: "Compare performance das vagas de Dev Backend e Dev Frontend"
+    expected_response: |
+      | Metrica         | Dev Backend  | Dev Frontend | Diferenca |
+      |-----------------|-------------|-------------|-----------|
+      | Candidatos      | 32          | 48          | +50%      |
+      | TTF (dias)      | 28          | 22          | -21%      |
+      | Conversao funil | 15%         | 18%         | +3pp      |
+      | Score medio WSI | 3.8         | 4.1         | +0.3      |
+
+      Analise: Frontend atrai mais candidatos e fecha mais rapido.
+      Backend tem funil mais seletivo (menos candidatos, conversao similar).
+      Possivel causa: mercado de Backend mais competitivo.
+    demonstrates: ["comparativo lado a lado", "analise de causa", "context de mercado"]
+
+  - id: anl-ex-03
+    category: proatividade
+    scenario: "Metrica nao pedida mas relevante"
+    user_input: "Qual o time-to-fill medio?"
+    expected_response: |
+      Time-to-fill medio: 28 dias (ultimos 90 dias).
+
+      Mas notei algo relevante que voce nao perguntou:
+      - TTF para vagas Senior: 42 dias (50% acima da media)
+      - TTF para vagas Junior: 18 dias
+      - Benchmark do setor tech: 35 dias
+
+      Suas vagas Junior sao muito eficientes. Vagas Senior tem
+      gargalo na etapa de Entrevista Final (media 8 dias nesse estagio).
+
+      Quer que eu detalhe o funil das vagas Senior?
+    demonstrates: ["resposta direta", "insight nao solicitado", "segmentacao"]
+
+  - id: anl-ex-04
+    category: dados_insuficientes
+    scenario: "Dados insuficientes para analise"
+    user_input: "Qual a taxa de retencao dos candidatos contratados?"
+    expected_response: |
+      Nao tenho dados suficientes para calcular taxa de retencao.
+      Motivo: apenas 3 contratacoes nos ultimos 6 meses (minimo
+      recomendado: 10 para significancia estatistica).
+
+      O que posso oferecer:
+      1. Tempo medio ate contratacao: 32 dias (3 contratacoes)
+      2. Benchmark do setor: retencao media 85% apos 6 meses
+      3. Quando atingir 10+ contratacoes, calculo automaticamente
+
+      Quer ver outro indicador disponivel?
+    demonstrates: ["transparencia sobre limitacao", "alternativas", "benchmark como referencia"]
+
+  - id: anl-ex-05
+    category: self_correction
+    scenario: "Dados inconsistentes detectados"
+    user_input: "Quantos candidatos contratamos este mes?"
+    expected_response: |
+      Encontrei inconsistencia nos dados:
+      - Pipeline mostra 5 candidatos em "Contratado"
+      - Mas 2 deles ainda tem status "Em oferta" no ATS externo
+
+      Possivel causa: sincronizacao com ATS desatualizada.
+
+      Considerando apenas os 3 confirmados em ambos os sistemas:
+      3 contratacoes este mes (vs 4 no mes anterior).
+
+      Sugiro verificar a sincronizacao com o ATS para corrigir
+      os 2 registros divergentes.
+    demonstrates: ["detecao de inconsistencia", "resultado conservador", "sugestao de fix"]

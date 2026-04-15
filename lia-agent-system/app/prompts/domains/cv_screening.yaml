@@ -77,3 +77,124 @@ intent_examples:
   - "detectar red flags no currículo"
   - "candidato passou na pré-triagem de elegibilidade?"
   - "avaliação em lote dos candidatos"
+
+few_shot_examples:
+  - id: scr-ex-01
+    category: candidato_perfeito
+    scenario: "Candidato atende todos os requisitos"
+    user_input: "Avalie este candidato para a vaga de Dev Senior"
+    expected_response: |
+      Score: 88% (WSI: 4.4/5) — Alto
+
+      Pontos fortes:
+      - 8 anos de experiencia em Python (requisito: 5+)
+      - Lideranca de equipe de 6 devs (requisito: experiencia em lideranca)
+      - Certificacao AWS Solutions Architect (diferencial)
+
+      Pontos de atencao:
+      - Sem experiencia com Kubernetes (nice-to-have)
+
+      Recomendacao: AVANCAR para Entrevista Tecnica
+      Sugestao para entrevista: explorar experiencia com microsservicos
+      e containers (gap identificado).
+    demonstrates: ["score justificado", "recomendacao clara", "sugestao para entrevista"]
+
+  - id: scr-ex-02
+    category: candidato_parcial
+    scenario: "Candidato atende parcialmente"
+    user_input: "Triar candidato para Analista de Dados"
+    expected_response: |
+      Score: 62% (WSI: 3.1/5) — Medio (zona de revisao)
+
+      Atende:
+      - SQL avancado (requisito mandatorio)
+      - 3 anos de experiencia (requisito: 2+)
+
+      Nao atende:
+      - Python para analise de dados (mandatorio — nao mencionado no CV)
+      - Experiencia com BI tools (importante — apenas Excel avancado)
+
+      Recomendacao: REVISAO HUMANA
+      Motivo: score na zona de revisao (60-74%). Candidato tem base
+      solida em SQL mas gap critico em Python. Recrutador deve decidir
+      se o potencial de desenvolvimento justifica avancar.
+    demonstrates: ["zona de revisao", "gap critico identificado", "decisao delegada ao recrutador"]
+
+  - id: scr-ex-03
+    category: red_flag_com_potencial
+    scenario: "Red flag mas candidato promissor"
+    user_input: "Avalie candidato — tem gaps no curriculo"
+    expected_response: |
+      Score: 71% (WSI: 3.5/5) — Medio
+
+      Red flags detectados:
+      - Gap de 18 meses entre empregos (2023-2024)
+      - Ultima experiencia em empresa diferente do setor da vaga
+
+      Porem:
+      - Skills tecnicas fortes (React, Node.js, TypeScript)
+      - Open source ativo durante o gap (3 projetos no GitHub)
+      - Certificacoes recentes (AWS, Docker)
+
+      Recomendacao: REVISAO HUMANA
+      Nota: gaps no CV NAO sao criterio de rejeicao automatica.
+      Atividade open source durante o periodo sugere
+      desenvolvimento continuo. Recomendo explorar na entrevista.
+    demonstrates: ["red flag sem julgamento prematuro", "evidencia compensatoria", "LGPD compliance"]
+
+  - id: scr-ex-04
+    category: pcd_adaptacao
+    scenario: "Candidato PCD"
+    user_input: "Triar candidato PCD para vaga de UX Designer"
+    expected_response: |
+      Score: 79% (WSI: 3.9/5) — Alto
+
+      Avaliacao baseada EXCLUSIVAMENTE em competencias profissionais:
+      - Portfolio com 12 projetos de UX (requisito: experiencia em UX)
+      - Figma, Adobe XD, user research (requisito: ferramentas)
+      - 5 anos de experiencia (requisito: 3+)
+
+      Recomendacao: AVANCAR para Entrevista
+      Nota: condicao de deficiencia NAO foi considerada na avaliacao
+      (Lei 8.213/91). Se necessario, adaptacoes para a entrevista
+      podem ser oferecidas ao candidato.
+    demonstrates: ["avaliacao por competencia", "PCD sem vies", "adaptacao oferecida"]
+
+  - id: scr-ex-05
+    category: overqualified
+    scenario: "Candidato overqualified"
+    user_input: "Candidato com 15 anos de experiencia para vaga pleno"
+    expected_response: |
+      Score: 92% (WSI: 4.6/5) — Excelente
+
+      Observacao: candidato ACIMA do nivel da vaga.
+      - 15 anos de experiencia (vaga pede 3-5)
+      - Ex-gerente de equipe (vaga e individual contributor)
+      - Salario anterior provavelmente acima da faixa
+
+      Recomendacao: AVANCAR com nota
+      Sugiro: na entrevista, explorar motivacao para buscar
+      posicao de nivel inferior. Pode ser transicao de carreira
+      deliberada (valido) ou desalinhamento de expectativas (risco).
+    demonstrates: ["overqualified detectado", "nao rejeitar automaticamente", "ponto para entrevista"]
+
+  - id: scr-ex-06
+    category: self_correction
+    scenario: "CV ambiguo ou dados conflitantes"
+    user_input: "Avalie candidato — CV parece inconsistente"
+    expected_response: |
+      Encontrei inconsistencias no perfil:
+      - CV diz "5 anos de experiencia em Java"
+      - LinkedIn mostra apenas 2 posicoes com Java (total ~3 anos)
+      - Skills listadas incluem Java mas sem projetos detalhados
+
+      Nao posso dar score confiavel com dados conflitantes.
+
+      Opcoes:
+      1. Avaliar com dados conservadores (3 anos, nao 5)
+      2. Solicitar atualizacao de CV ao candidato
+      3. Marcar para revisao humana
+
+      Recomendo opcao 1 (avaliar conservador) + nota para
+      o entrevistador explorar a discrepancia.
+    demonstrates: ["detecao de inconsistencia", "nao inventar dados", "abordagem conservadora"]

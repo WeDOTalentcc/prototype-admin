@@ -1,5 +1,14 @@
 // Shared types for the use-lia-chat-connection hook family
 
+/**
+ * Quick-reply option attached to a clarification message.
+ * Rendered as a clickable chip that, when pressed, sends `value` as the next user message.
+ */
+export interface LiaChatClarificationOption {
+  label: string
+  value: string
+}
+
 export interface LiaChatMessage {
   id: string
   sender: "lia" | "user"
@@ -8,6 +17,12 @@ export interface LiaChatMessage {
   executionPlan?: Record<string, unknown>
   planProgressSteps?: Array<{ task_id: string; action_id: string; status: string }>
   metadata?: Record<string, unknown>
+  /**
+   * Set by the cascaded router fallback (Tier 8) when no domain confidently
+   * resolves the user's intent. Frontend renders `options` as clickable chips.
+   */
+  isClarification?: boolean
+  options?: LiaChatClarificationOption[]
 }
 
 export interface HITLPending {
@@ -35,9 +50,24 @@ export interface BackgroundTaskEvent {
   result?: Record<string, unknown>
 }
 
+/**
+ * Optional extras attached to a completed message.
+ * - `options`: clarification chips rendered as buttons under the message.
+ * - `isClarification`: marks the message as a Tier 8 fallback so the UI can
+ *   style it differently if desired.
+ */
+export interface MessageCompleteExtras {
+  options?: LiaChatClarificationOption[]
+  isClarification?: boolean
+}
+
 export interface UseLiaChatConnectionOptions {
   sessionId: string
-  onMessageComplete?: (content: string, executionPlan?: Record<string, unknown>) => void
+  onMessageComplete?: (
+    content: string,
+    executionPlan?: Record<string, unknown>,
+    extras?: MessageCompleteExtras,
+  ) => void
   onPanelUpdate?: (event: PanelUpdateEvent) => void
 }
 

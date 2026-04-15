@@ -108,7 +108,47 @@ class CommunicationReActAgent(LangGraphReActBase, EnhancedAgentMixin):
         )
 
     async def _process_langgraph(self, input: AgentInput) -> AgentOutput:
-        """Override: adiciona audit SEG-5 após execução LangGraph nativa."""
+        """Override: injects 3-layer intelligence + audit SEG-5.
+
+        Layer 1: Few-shot (via YAML prompt — already in system prompt)
+        Layer 2: Tenant learning (CalibrationWeight + recruiter preferences)
+        Layer 3: Global insights (anonymous cross-tenant patterns)
+        """
+        # --- Camada 2: Tenant learning ---
+        try:
+            weights = await self.load_calibration_weights(
+                company_id=str(input.company_id or ""),
+                job_id=input.context.get("job_id"),
+            )
+            if weights and weights != self._DEFAULT_WEIGHTS:
+                input.context["calibration_weights"] = weights
+        except Exception as exc:
+            logger.debug("[CommunicationReAct] CalibrationWeight load skipped: %s", exc)
+
+        # --- Camada 3: Global insights ---
+        try:
+            from app.shared.services.global_insights_service import get_global_insights
+            insights_svc = get_global_insights()
+            insights = await insights_svc.get_communication_insights()
+            snippet = insights_svc.format_for_prompt(insights)
+            if snippet:
+                existing = input.context.get("extra_instructions", "")
+                input.context["extra_instructions"] = f"{existing}\n\n{snippet}" if existing else snippet
+        except Exception as exc:
+            logger.debug("[CommunicationReAct] GlobalInsights injection skipped: %s", exc)
+
+        # --- Camada 2: Recruiter personalization ---
+        try:
+            from app.domains.analytics.services.recruiter_personalization_service import get_recruiter_prompt_context
+            recruiter_ctx = await get_recruiter_prompt_context(
+                recruiter_id=str(input.user_id or ""),
+                company_id=str(input.company_id or ""),
+            )
+            if recruiter_ctx:
+                input.context["recruiter_context"] = recruiter_ctx
+        except Exception as exc:
+            logger.debug("[CommunicationReAct] RecruiterPersonalization skipped: %s", exc)
+
         output = await super()._process_langgraph(input)
 
         # SEG-5: AuditService

@@ -77,6 +77,48 @@ async def lifespan(app: FastAPI):
         logger.warning("⚠️  Pearch AI NOT configured (PEARCH_API_KEY missing)")
         logger.warning("   Candidate search features will not work until API key is added")
 
+    # ─── Validate global LLM provider keys ────────────────────────────────────
+    # The platform uses a hybrid LLM provisioning strategy:
+    #   1. Per-tenant config in `tenant_llm_configs` table (encrypted, set via
+    #      menu Configurações > Integrações > LLM)
+    #   2. Global env vars as fallback for tenants without their own config
+    # Without at least ONE provider key, agents will fail at runtime when the
+    # first chat message arrives — silent outage. Warn loudly here.
+    has_anthropic = bool(
+        getattr(settings, "AI_INTEGRATIONS_ANTHROPIC_API_KEY", None)
+        or getattr(settings, "ANTHROPIC_API_KEY", None)
+    )
+    has_gemini = bool(getattr(settings, "AI_INTEGRATIONS_GEMINI_API_KEY", None))
+    has_openai = bool(
+        getattr(settings, "AI_INTEGRATIONS_OPENAI_API_KEY", None)
+        or getattr(settings, "OPENAI_API_KEY", None)
+    )
+    if has_anthropic or has_gemini or has_openai:
+        providers = [
+            name
+            for name, ok in (("anthropic", has_anthropic), ("gemini", has_gemini), ("openai", has_openai))
+            if ok
+        ]
+        logger.info(f"✅ LLM provider(s) configured globally: {', '.join(providers)}")
+        logger.info(
+            "   Tenants without entries in `tenant_llm_configs` will use these as fallback."
+        )
+    else:
+        logger.warning(
+            "⚠️  NO LLM provider configured globally (AI_INTEGRATIONS_ANTHROPIC_API_KEY, "
+            "ANTHROPIC_API_KEY, AI_INTEGRATIONS_GEMINI_API_KEY, OPENAI_API_KEY all empty)."
+        )
+        logger.warning(
+            "   Agents will fail at runtime unless every tenant has its own entry "
+            "in `tenant_llm_configs`. In production this is almost certainly a misconfiguration."
+        )
+        # In production environments, refuse to start with no LLM key at all.
+        if os.getenv("APP_ENV", "development").lower() in ("production", "prod", "staging"):
+            raise RuntimeError(
+                "No LLM provider key configured globally and APP_ENV is production. "
+                "Set AI_INTEGRATIONS_ANTHROPIC_API_KEY (or another provider) before deploying."
+            )
+
     # Production safety guard: OPENMIC_ALLOW_UNSIGNED_WEBHOOK must never be true in prod
     _allow_unsigned = os.getenv("OPENMIC_ALLOW_UNSIGNED_WEBHOOK", "false").lower()
     _is_production = os.getenv("APP_ENV", "development").lower() in ("production", "prod", "staging")

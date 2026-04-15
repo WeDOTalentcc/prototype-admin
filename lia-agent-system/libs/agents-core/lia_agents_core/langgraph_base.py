@@ -97,8 +97,13 @@ class LangGraphBase(BaseAgent, ABC):
         if compiled is None:
             raise RuntimeError(f"[{self.__class__.__name__}] Grafo LangGraph não disponível")
 
+        # P40-RISK-2: explicit recursion_limit as safety net.
+        # Default max_iterations=5 → recursion_limit=11 (2×5+1).
+        # Subclasses that override _run_graph (Autonomous, CustomAgentRuntime) set their own.
+        max_iter = getattr(self, "_max_steps", None) or getattr(self, "max_iterations", 5)
         config: Dict[str, Any] = {
             "configurable": {"thread_id": session_id},
+            "recursion_limit": max_iter * 2 + 1,
         }
         callbacks = [cb for cb in [audit_callback, streaming_callback] if cb is not None]
         if callbacks:

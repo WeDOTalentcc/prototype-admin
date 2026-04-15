@@ -115,7 +115,8 @@ export function DailyBriefingCard({
 }: DailyBriefingCardProps) {
   const { user } = useAuth()
   const { user: jwtUser } = useJWTAuth()
-  const userId = jwtUser?.id || 'default_user'
+  // BUG-08: null enquanto auth não carrega — fetch é gated via useEffect abaixo
+  const userId: string | null = jwtUser?.id || null
   const [briefing, setBriefing] = useState<BriefingData | null>(null)
   const [loading, setLoading] = useState(true)
   const [expanded, setExpanded] = useState(true)
@@ -141,15 +142,17 @@ export function DailyBriefingCard({
 
   useEffect(() => {
     setMounted(true)
+    if (!userId) return // BUG-08: só busca briefing quando auth hidratar
     fetchBriefing()
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [userId])
 
   const fetchBriefing = async () => {
+    if (!userId) return
     setLoading(true)
     setFetchError(false)
     try {
-      const response = await fetch(`${API_BASE}/briefing?user_id=${userId}`)
+      const response = await fetch(`${API_BASE}/briefing?user_id=${encodeURIComponent(userId)}`)
       if (response.ok) {
         const result = await response.json()
         if (result.success && result.data) {
@@ -171,7 +174,8 @@ export function DailyBriefingCard({
   const handleRefresh = async () => {
     setRefreshing(true)
     try {
-      const response = await fetch(`${API_BASE}/briefing?user_id=${userId}&refresh=true`, {
+      if (!userId) { setRefreshing(false); return }
+      const response = await fetch(`${API_BASE}/briefing?user_id=${encodeURIComponent(userId)}&refresh=true`, {
         method: 'POST',
       })
       if (response.ok) {

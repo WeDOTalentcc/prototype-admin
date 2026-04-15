@@ -247,13 +247,19 @@ class CustomAgentRuntime(LangGraphReActBase, EnhancedAgentMixin):
     def _get_system_prompt(self, input: AgentInput) -> str:
         """Compose system prompt respecting context_level:
 
-        - full: persona + domain + tenant + user + history + few-shot + custom (default)
-        - standard: persona + tenant + user + custom (no history, no few-shot)
-        - minimal: persona + custom instructions only
+        - full: persona + domain + tenant + user + history + few-shot + intelligence_floor + custom (default)
+        - standard: persona + tenant + user + intelligence_floor + custom (no history, no few-shot)
+        - minimal: persona + intelligence_floor + custom instructions only
+
+        Intelligence floor (item 12.6) is ALWAYS injected to guarantee minimum
+        quality regardless of client prompt configuration.
         """
         from app.shared.prompts.system_prompt_builder import SystemPromptBuilder
 
         ctx = input.context or {}
+
+        # Load intelligence floor (item 12.6 — quality floor for custom agents)
+        intelligence_floor = self._load_intelligence_floor()
 
         # Map domain to agent_type for SystemPromptBuilder
         agent_type = self._domain if self._domain != "custom" else "general"
@@ -273,26 +279,30 @@ class CustomAgentRuntime(LangGraphReActBase, EnhancedAgentMixin):
 
         # === context_level routing ===
         if self._context_level == "minimal":
-            # Minimal: persona base + custom instructions only
             base = SystemPromptBuilder.build(
                 agent_type=builder_agent_type,
-                extra_instructions=f"INSTRUCOES ADICIONAIS DO OPERADOR:\n{self._system_prompt_template}",
+                extra_instructions=(
+                    f"{intelligence_floor}\n\n"
+                    f"INSTRUCOES ADICIONAIS DO OPERADOR:\n{self._system_prompt_template}"
+                ),
             )
             return base
 
         if self._context_level == "standard":
-            # Standard: persona + tenant + user + custom (no history, no few-shot)
             base = SystemPromptBuilder.build(
                 agent_type=builder_agent_type,
                 tenant_context_snippet=ctx.get("tenant_context_snippet", ""),
                 user_name=ctx.get("user_name", ""),
                 user_role=ctx.get("user_role", ""),
                 context_page=ctx.get("context_page", "general"),
-                extra_instructions=f"INSTRUCOES ADICIONAIS DO OPERADOR:\n{self._system_prompt_template}",
+                extra_instructions=(
+                    f"{intelligence_floor}\n\n"
+                    f"INSTRUCOES ADICIONAIS DO OPERADOR:\n{self._system_prompt_template}"
+                ),
             )
             return base
 
-        # Full: everything (default — same as before)
+        # Full: everything (default)
         base = SystemPromptBuilder.build(
             agent_type=builder_agent_type,
             tenant_context_snippet=ctx.get("tenant_context_snippet", ""),
@@ -302,7 +312,10 @@ class CustomAgentRuntime(LangGraphReActBase, EnhancedAgentMixin):
             conversation_summary=ctx.get("conversation_summary", ""),
             conversation_history=ctx.get("conversation_history"),
             context_page=ctx.get("context_page", "general"),
-            extra_instructions=f"INSTRUCOES ADICIONAIS DO OPERADOR:\n{self._system_prompt_template}",
+            extra_instructions=(
+                f"{intelligence_floor}\n\n"
+                f"INSTRUCOES ADICIONAIS DO OPERADOR:\n{self._system_prompt_template}"
+            ),
         )
 
         # Inject domain-specific few-shot examples + reasoning
@@ -310,6 +323,21 @@ class CustomAgentRuntime(LangGraphReActBase, EnhancedAgentMixin):
         if domain_instructions:
             return f"{base}\n\n---\n\n{domain_instructions}"
         return base
+
+    @staticmethod
+    def _load_intelligence_floor() -> str:
+        """Load intelligence floor YAML (item 12.6 — quality floor for custom agents)."""
+        try:
+            from pathlib import Path
+            import yaml
+            floor_path = Path(__file__).resolve().parent.parent.parent / "config" / "agent_studio" / "intelligence_floor.yaml"
+            if floor_path.exists():
+                with open(floor_path) as f:
+                    data = yaml.safe_load(f)
+                return data.get("floor_instructions", "")
+        except Exception as exc:
+            logger.debug("[CustomAgentRuntime] Intelligence floor load failed: %s", exc)
+        return ""
 
     def _load_domain_instructions(self) -> str:
         """Load DOMAIN_INSTRUCTIONS for the agent's domain (same as product agents)."""

@@ -7,18 +7,29 @@ import { cn } from "@/lib/utils"
 import { cardStyles, buttonStyles, textStyles, inputStyles, badgeStyles } from "@/lib/design-tokens"
 import { toast } from "@/lib/toast"
 import { BetaBadge } from "@/components/ui/beta-badge"
-import { safeCategoryKey } from "./types"
+import type { AgentCategory } from "./types"
 
+/**
+ * Shape of the config returned by POST /api/backend-proxy/custom-agents/generate.
+ *
+ * All fields are optional because the backend may return null/missing values
+ * when the LLM fails to produce a complete JSON. Defenders below (`config?.field ?? default`)
+ * guarantee the UI never crashes regardless of backend shape.
+ *
+ * Backend contract (defensive): app/api/v1/custom_agents.py uses _coalesce()
+ * to convert null → defaults before responding, so in practice fields should
+ * always be populated. This optional typing is belt-and-suspenders.
+ */
 interface GeneratedConfig {
-  suggested_name: string
-  suggested_role: string
-  suggested_domain: string
-  suggested_tools: string[]
-  suggested_prompt: string
-  suggested_context_level: string
-  suggested_max_steps: number
-  suggested_temperature: number
-  reasoning: string
+  suggested_name?: string
+  suggested_role?: string
+  suggested_domain?: string
+  suggested_tools?: string[]
+  suggested_prompt?: string
+  suggested_context_level?: string
+  suggested_max_steps?: number
+  suggested_temperature?: number
+  reasoning?: string
 }
 
 interface ConversationalCreatorProps {
@@ -53,6 +64,11 @@ export function ConversationalCreator({ onAgentCreated }: ConversationalCreatorP
         throw new Error(err.detail || tToast('errorGenerating'))
       }
       const data = await res.json()
+      // Validate response shape — backend should never return non-object,
+      // but defend against proxy/network corruption.
+      if (!data || typeof data !== "object") {
+        throw new Error(tToast('errorGenerating'))
+      }
       setConfig(data)
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : tToast('errorGenerating'))
@@ -66,6 +82,16 @@ export function ConversationalCreator({ onAgentCreated }: ConversationalCreatorP
     setIsCreating(true)
     try {
       const token = localStorage.getItem("auth_token")
+      // Apply same defaults the UI uses when the backend response is partial,
+      // so created agents are never persisted with null/empty critical fields.
+      const safeName = config.suggested_name ?? "Novo Agente"
+      const safeRole = config.suggested_role ?? description.slice(0, 200)
+      const safeDomain = config.suggested_domain ?? "general"
+      const safeTools = config.suggested_tools ?? ["search_candidates", "get_candidate_details"]
+      const safeContextLevel = config.suggested_context_level ?? "standard"
+      const safeMaxSteps = config.suggested_max_steps ?? 8
+      const safeTemperature = config.suggested_temperature ?? 0.5
+
       const res = await fetch("/api/backend-proxy/custom-agents", {
         method: "POST",
         headers: {
@@ -73,19 +99,19 @@ export function ConversationalCreator({ onAgentCreated }: ConversationalCreatorP
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify({
-          name: config.suggested_name,
-          role: config.suggested_role,
-          description: config.suggested_role,
-          system_prompt: config.suggested_prompt,
-          allowed_tools: config.suggested_tools,
-          domain: config.suggested_domain,
-          context_level: config.suggested_context_level,
-          max_steps: config.suggested_max_steps,
-          temperature: config.suggested_temperature,
+          name: safeName,
+          role: safeRole,
+          description: safeRole,
+          system_prompt: config.suggested_prompt ?? "",
+          allowed_tools: safeTools,
+          domain: safeDomain,
+          context_level: safeContextLevel,
+          max_steps: safeMaxSteps,
+          temperature: safeTemperature,
         }),
       })
       if (!res.ok) throw new Error(tToast('errorCreatingAgent'))
-      toast.success(tToast('agentCreated', { name: config.suggested_name }), tToast('agentCreatedDesc'))
+      toast.success(tToast('agentCreated', { name: safeName }), tToast('agentCreatedDesc'))
       setConfig(null)
       setDescription("")
       onAgentCreated()
@@ -96,7 +122,10 @@ export function ConversationalCreator({ onAgentCreated }: ConversationalCreatorP
     }
   }
 
-  const domainLabel = config ? (t('categories.' + safeCategoryKey(config.suggested_domain)) || config.suggested_domain || 'general') : ""
+  const domainKey = config?.suggested_domain ?? "general"
+  const domainLabel = config
+    ? (t('categories.' + (domainKey as AgentCategory)) || domainKey)
+    : ""
 
   return (
     <div className={cn(cardStyles.default, "p-5")}>
@@ -141,13 +170,15 @@ export function ConversationalCreator({ onAgentCreated }: ConversationalCreatorP
 
           <div className={cn(cardStyles.flat, "p-4 space-y-2")}>
             <div className="flex items-center justify-between">
-              <span className="text-sm font-semibold text-lia-text-primary">{config.suggested_name}</span>
+              <span className="text-sm font-semibold text-lia-text-primary">
+                {config.suggested_name ?? t('defaultAgentName') ?? "Novo Agente"}
+              </span>
               <span className={badgeStyles.cyan}>{domainLabel}</span>
             </div>
-            <p className="text-xs text-lia-text-secondary">{config.suggested_role}</p>
+            <p className="text-xs text-lia-text-secondary">{config.suggested_role ?? ""}</p>
 
             <div className="flex flex-wrap gap-1 pt-1">
-              {config.suggested_tools.map((tool) => (
+              {(config.suggested_tools ?? []).map((tool) => (
                 <span key={tool} className={cn(badgeStyles.default, "text-[10px]")}>
                   {t('tools.' + tool) || tool}
                 </span>
@@ -155,9 +186,9 @@ export function ConversationalCreator({ onAgentCreated }: ConversationalCreatorP
             </div>
 
             <div className="flex items-center gap-3 pt-1 text-[10px] text-lia-text-disabled">
-              <span>{t('context')}: {config.suggested_context_level}</span>
-              <span>{t('steps')}: {config.suggested_max_steps}</span>
-              <span>{t('temp')}: {config.suggested_temperature}</span>
+              <span>{t('context')}: {config.suggested_context_level ?? "standard"}</span>
+              <span>{t('steps')}: {config.suggested_max_steps ?? 8}</span>
+              <span>{t('temp')}: {config.suggested_temperature ?? 0.5}</span>
             </div>
 
             {config.reasoning && (
@@ -177,7 +208,7 @@ export function ConversationalCreator({ onAgentCreated }: ConversationalCreatorP
             </button>
             {showPrompt && (
               <pre className="text-[10px] text-lia-text-secondary bg-lia-bg-tertiary rounded-md p-3 overflow-auto max-h-32 whitespace-pre-wrap font-mono">
-                {config.suggested_prompt}
+                {config.suggested_prompt ?? ""}
               </pre>
             )}
           </div>

@@ -18,6 +18,7 @@ from app.schemas.custom_agent import (
     CustomAgentResponse,
     ExecuteCustomAgentRequest,
     ExecuteCustomAgentResponse,
+    GeneratedAgentConfig,
     InstallAgentRequest,
     MarketplaceBillingResponse,
     MarketplaceListingResponse,
@@ -1024,7 +1025,26 @@ async def get_studio_metrics_summary(
     }
 
 
-@router.post("/generate-from-description", summary="LIA generates agent config from description")
+def _coalesce(value, default):
+    """Return ``default`` if ``value`` is None or an empty string/list, else ``value``.
+
+    Python's ``dict.get(key, default)`` only returns ``default`` when the key is
+    *missing*. If the key exists but is ``None`` (e.g. an LLM emits
+    ``"suggested_tools": null``), ``.get`` returns ``None`` and downstream code
+    that expects a list/string crashes. This helper closes that gap.
+    """
+    if value is None:
+        return default
+    if isinstance(value, (list, str)) and not value:
+        return default
+    return value
+
+
+@router.post(
+    "/generate-from-description",
+    response_model=GeneratedAgentConfig,
+    summary="LIA generates agent config from description",
+)
 async def generate_agent_from_description(
     body: dict,
     current_user=Depends(get_current_user),
@@ -1099,30 +1119,38 @@ Responda APENAS com o JSON, sem texto adicional."""
             content = content.split("\n", 1)[-1].rsplit("```", 1)[0]
         config = json.loads(content)
 
-        return {
-            "suggested_name": config.get("suggested_name", "Novo Agente"),
-            "suggested_role": config.get("suggested_role", description[:200]),
-            "suggested_domain": config.get("suggested_domain", "general"),
-            "suggested_tools": config.get("suggested_tools", ["search_candidates", "get_candidate_details"]),
-            "suggested_prompt": config.get("suggested_prompt", ""),
-            "suggested_context_level": config.get("suggested_context_level", "standard"),
-            "suggested_max_steps": config.get("suggested_max_steps", 8),
-            "suggested_temperature": config.get("suggested_temperature", 0.5),
-            "reasoning": config.get("reasoning", ""),
-        }
+        # _coalesce protects against the LLM emitting explicit nulls like
+        # {"suggested_tools": null} — Pydantic GeneratedAgentConfig also
+        # provides a final safety net via its field defaults.
+        return GeneratedAgentConfig(
+            suggested_name=_coalesce(config.get("suggested_name"), "Novo Agente"),
+            suggested_role=_coalesce(config.get("suggested_role"), description[:200]),
+            suggested_domain=_coalesce(config.get("suggested_domain"), "general"),
+            suggested_tools=_coalesce(
+                config.get("suggested_tools"),
+                ["search_candidates", "get_candidate_details"],
+            ),
+            suggested_prompt=_coalesce(config.get("suggested_prompt"), ""),
+            suggested_context_level=_coalesce(
+                config.get("suggested_context_level"), "standard"
+            ),
+            suggested_max_steps=_coalesce(config.get("suggested_max_steps"), 8),
+            suggested_temperature=_coalesce(config.get("suggested_temperature"), 0.5),
+            reasoning=_coalesce(config.get("reasoning"), ""),
+        )
     except json.JSONDecodeError:
-        # Fallback: return sensible defaults
-        return {
-            "suggested_name": "Novo Agente",
-            "suggested_role": description[:200],
-            "suggested_domain": "general",
-            "suggested_tools": ["search_candidates", "get_candidate_details"],
-            "suggested_prompt": f"Voce e um agente de recrutamento. {description}",
-            "suggested_context_level": "standard",
-            "suggested_max_steps": 8,
-            "suggested_temperature": 0.5,
-            "reasoning": "Configuracao padrao gerada como fallback.",
-        }
+        # Fallback: return sensible defaults when the LLM does not emit valid JSON.
+        return GeneratedAgentConfig(
+            suggested_name="Novo Agente",
+            suggested_role=description[:200],
+            suggested_domain="general",
+            suggested_tools=["search_candidates", "get_candidate_details"],
+            suggested_prompt=f"Voce e um agente de recrutamento. {description}",
+            suggested_context_level="standard",
+            suggested_max_steps=8,
+            suggested_temperature=0.5,
+            reasoning="Configuracao padrao gerada como fallback.",
+        )
     except Exception as e:
         logger.error("Error generating agent config: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=f"Erro ao gerar configuracao: {e}")

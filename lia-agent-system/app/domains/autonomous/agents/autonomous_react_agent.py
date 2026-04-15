@@ -194,7 +194,36 @@ class AutonomousReActAgent(LangGraphReActBase, EnhancedAgentMixin):
 
     # _get_system_prompt is now inherited from LangGraphReActBase.
     # It uses SystemPromptBuilder.build() + DOMAIN_INSTRUCTIONS automatically.
-    # The old _AUTONOMOUS_SYSTEM_PROMPT hardcoded prompt has been retired.
+
+    async def _process_langgraph(self, input: AgentInput) -> AgentOutput:
+        """P36 Full: 3-layer intelligence for cross-domain safety net.
+
+        Injects ALL domain insights (not just one) since this agent
+        handles queries spanning multiple domains.
+        """
+        try:
+            weights = await self.load_calibration_weights(str(input.company_id or ""), input.context.get("job_id"))
+            if weights and weights != self._DEFAULT_WEIGHTS:
+                input.context["calibration_weights"] = weights
+        except Exception:
+            pass
+        try:
+            from app.shared.services.global_insights_service import get_global_insights
+            svc = get_global_insights()
+            snippet = svc.format_autonomous_for_prompt(await svc.get_autonomous_insights())
+            if snippet:
+                existing = input.context.get("extra_instructions", "")
+                input.context["extra_instructions"] = f"{existing}\n\n{snippet}" if existing else snippet
+        except Exception:
+            pass
+        try:
+            from app.domains.analytics.services.recruiter_personalization_service import get_recruiter_prompt_context
+            ctx = await get_recruiter_prompt_context(str(input.user_id or ""), str(input.company_id or ""))
+            if ctx:
+                input.context["recruiter_context"] = ctx
+        except Exception:
+            pass
+        return await super()._process_langgraph(input)
 
     def _state_to_output(self, state: dict, input: AgentInput) -> AgentOutput:
         """Converte estado final LangGraph em AgentOutput com detecção de clarificação."""

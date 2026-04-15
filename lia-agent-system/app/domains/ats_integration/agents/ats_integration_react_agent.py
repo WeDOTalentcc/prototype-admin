@@ -104,13 +104,76 @@ class ATSIntegrationReActAgent(LangGraphReActBase, EnhancedAgentMixin):
             },
         )
 
+    async def _process_langgraph(self, input: AgentInput) -> AgentOutput:
+        """Override: injects 3-layer intelligence (P36 Full).
+
+        Layer 1: Few-shot (via YAML prompt — already in system prompt)
+        Layer 2: Tenant learning (CalibrationWeight + recruiter preferences)
+        Layer 3: Global insights (anonymous cross-tenant ATS integration patterns)
+        """
+        # --- Camada 2: Tenant learning ---
+        try:
+            weights = await self.load_calibration_weights(
+                company_id=str(input.company_id or ""),
+                job_id=input.context.get("job_id"),
+            )
+            if weights and weights != self._DEFAULT_WEIGHTS:
+                input.context["calibration_weights"] = weights
+        except Exception as exc:
+            logger.debug("[ATSIntegrationReAct] CalibrationWeight skipped: %s", exc)
+
+        # --- Camada 3: Global ATS integration insights ---
+        try:
+            from app.shared.services.global_insights_service import get_global_insights
+            insights_svc = get_global_insights()
+            insights = await insights_svc.get_integration_insights()
+            snippet = insights_svc.format_integration_for_prompt(insights)
+            if snippet:
+                existing = input.context.get("extra_instructions", "")
+                input.context["extra_instructions"] = f"{existing}\n\n{snippet}" if existing else snippet
+        except Exception as exc:
+            logger.debug("[ATSIntegrationReAct] GlobalInsights skipped: %s", exc)
+
+        # --- Camada 2: Recruiter personalization ---
+        try:
+            from app.domains.analytics.services.recruiter_personalization_service import get_recruiter_prompt_context
+            recruiter_ctx = await get_recruiter_prompt_context(
+                recruiter_id=str(input.user_id or ""),
+                company_id=str(input.company_id or ""),
+            )
+            if recruiter_ctx:
+                input.context["recruiter_context"] = recruiter_ctx
+        except Exception as exc:
+            logger.debug("[ATSIntegrationReAct] RecruiterPersonalization skipped: %s", exc)
+
+        output = await super()._process_langgraph(input)
+
+        # SEG-5: AuditService
+        try:
+            from app.shared.compliance.audit_service import PROTECTED_CRITERIA, audit_service
+            await audit_service.log_decision(
+                company_id=str(input.company_id or ""),
+                agent_name="ats_integration_react_agent",
+                decision_type="ats_sync",
+                action="ats_integration_langgraph",
+                decision="completed",
+                reasoning=["ATS integration via LangGraph native"],
+                criteria_used=["ats_sync"],
+                criteria_ignored=list(PROTECTED_CRITERIA),
+                confidence=output.confidence,
+            )
+        except Exception as _ae:
+            logger.debug("[ATSIntegrationReAct][SEG-5] AuditService skipped: %s", _ae)
+
+        return output
+
     async def process(self, input: AgentInput) -> AgentOutput:
         try:
             return await self._process_langgraph(input)
         except Exception as exc:
-            logger.error(f"[ATSIntegrationReActAgent] Unhandled error: {exc}", exc_info=True)
+            logger.error("[ATSIntegrationReActAgent] Unhandled error: %s", exc, exc_info=True)
             return AgentOutput(
-                message="Erro ao processar integração ATS. Tente novamente.",
+                message="Erro ao processar integracao ATS. Tente novamente.",
                 confidence=0.0,
                 error=str(exc),
             )

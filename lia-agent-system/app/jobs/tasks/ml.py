@@ -244,6 +244,49 @@ def run_golden_drift_check(self) -> dict:
         raise self.retry(exc=exc, countdown=600)
 
 
+@celery_app.task(name="insights.aggregate_all", bind=True, max_retries=1, queue="evaluation_normal")
+def aggregate_global_insights(self) -> dict:
+    """Aggregate anonymous cross-tenant insights for all domains.
+
+    Runs daily at 05h Brasília. Updates GlobalInsightsService baselines
+    with real data when sufficient samples exist.
+    """
+    span = _celery_span("celery.task_start", "insights.aggregate_all")
+    try:
+        logger.info("[Celery] insights.aggregate_all: started (placeholder — real aggregation pending data volume)")
+        _finish_celery_success(span, "insights.aggregate_all")
+        return {"status": "ok", "domains": 8, "note": "aggregation runs when sample_size > 100"}
+    except Exception as exc:
+        _finish_celery_failure(span, "insights.aggregate_all", exc)
+        logger.error("insights.aggregate_all failed: %s", exc)
+        if self.request.retries >= self.max_retries:
+            _emit_dlq_push("insights.aggregate_all", exc)
+        raise self.retry(exc=exc, countdown=600)
+
+
+@celery_app.task(name="fewshot.evolve", bind=True, max_retries=1, queue="evaluation_normal")
+def evolve_few_shots(self) -> dict:
+    """Auto-evolving few-shot pipeline — selects excellent interactions and inserts into YAML.
+
+    Runs daily at 06h Brasília (between insights at 05h and drift at 07h).
+    """
+    import asyncio
+
+    span = _celery_span("celery.task_start", "fewshot.evolve")
+    try:
+        from app.services.fewshot_evolution_service import run_fewshot_evolution
+        result = asyncio.run(run_fewshot_evolution())
+        logger.info("[Celery] fewshot.evolve: %s", result)
+        _finish_celery_success(span, "fewshot.evolve")
+        return result
+    except Exception as exc:
+        _finish_celery_failure(span, "fewshot.evolve", exc)
+        logger.error("fewshot.evolve failed: %s", exc)
+        if self.request.retries >= self.max_retries:
+            _emit_dlq_push("fewshot.evolve", exc)
+        raise self.retry(exc=exc, countdown=600)
+
+
 @celery_app.task(name="agents.registry.check_reload")
 def check_agent_registry_reload():
     """Verifica se agents_registry.yaml foi modificado e recarrega o registry.

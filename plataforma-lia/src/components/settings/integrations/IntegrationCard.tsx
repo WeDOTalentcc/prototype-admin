@@ -55,6 +55,15 @@ export function IntegrationCard({ integration, onClick }: IntegrationCardProps) 
                   {t("integrations.card.active")}
                 </Badge>
               )}
+              {integration.usingSystemKey && (
+                <Badge
+                  variant="outline"
+                  className="text-[10px] px-1.5 py-0 flex-shrink-0 text-lia-text-secondary"
+                  title={t("integrations.card.systemKeyTooltip")}
+                >
+                  {t("integrations.card.systemKey")}
+                </Badge>
+              )}
             </div>
             <div className="flex-shrink-0">
               {isConnected ? (

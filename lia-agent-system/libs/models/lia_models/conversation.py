@@ -17,10 +17,14 @@ class ConversationContextType(str, enum.Enum):
     JOB_CHAT = "job_chat"
     TALENT_CHAT = "talent_chat"
     PIPELINE_CHAT = "pipeline_chat"
+    KANBAN_CHAT = "kanban_chat"
+    CANDIDATES_CHAT = "candidates_chat"
     WIZARD = "wizard"
     GENERAL = "general"
     SCREENING = "screening"
     ANALYTICS = "analytics"
+    SETTINGS_CONFIG = "settings_config"  # S02 — company_settings agent context
+    AGENT_STUDIO = "agent_studio"  # PR2 — agent_studio domain context
 
 
 class Conversation(Base):

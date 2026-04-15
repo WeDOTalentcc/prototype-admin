@@ -5,12 +5,17 @@ Apply to: lia-agent-system/app/api/v1/sourcing_agents.py
 Register: app.include_router(sourcing_agents_router)
 """
 
+import logging
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.auth.dependencies import get_current_user
+from app.auth.models import User
 from app.core.database import get_db
 from pydantic import BaseModel, Field
 from typing import Optional
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/sourcing-agents", tags=["Sourcing Agents"])
 
@@ -58,26 +63,56 @@ async def list_sourcing_agents(
     job_id: Optional[str] = None,
     talent_pool_id: Optional[str] = None,
     status: Optional[str] = None,
-    current_user = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     """List sourcing agents for the current company."""
     from libs.models.lia_models.sourcing_agent import SourcingAgent
     from sqlalchemy import select
 
-    query = select(SourcingAgent).where(
-        SourcingAgent.company_id == current_user.company_id
-    )
-    if job_id:
-        query = query.where(SourcingAgent.job_id == job_id)
-    if talent_pool_id:
-        query = query.where(SourcingAgent.talent_pool_id == talent_pool_id)
-    if status:
-        query = query.where(SourcingAgent.status == status)
+    # Defensive: company_id MUST exist for tenant-scoped listing (ADR multi-tenant).
+    # Without it the query would leak or explode — return 400 with a clear message
+    # instead of 500, so the frontend can render a meaningful error.
+    company_id = getattr(current_user, "company_id", None)
+    if not company_id:
+        logger.warning(
+            "sourcing_agents.list_denied_no_company user_id=%s",
+            getattr(current_user, "id", "unknown"),
+        )
+        raise HTTPException(
+            status_code=400,
+            detail="Usuário sem empresa associada. Não é possível listar agentes.",
+        )
 
-    query = query.order_by(SourcingAgent.created_at.desc())
-    result = await db.execute(query)
-    agents = result.scalars().all()
+    try:
+        query = select(SourcingAgent).where(
+            SourcingAgent.company_id == str(company_id)
+        )
+        if job_id:
+            query = query.where(SourcingAgent.job_id == job_id)
+        if talent_pool_id:
+            query = query.where(SourcingAgent.talent_pool_id == talent_pool_id)
+        if status:
+            query = query.where(SourcingAgent.status == status)
+
+        query = query.order_by(SourcingAgent.created_at.desc())
+        result = await db.execute(query)
+        agents = result.scalars().all()
+    except Exception as exc:
+        logger.error(
+            "sourcing_agents.list_failed company_id=%s job_id=%s talent_pool_id=%s status=%s error=%s",
+            company_id, job_id, talent_pool_id, status, exc,
+            exc_info=True,
+        )
+        raise HTTPException(
+            status_code=500,
+            detail=f"Falha ao listar agentes de sourcing: {exc.__class__.__name__}",
+        )
+
+    logger.info(
+        "sourcing_agents.list_ok company_id=%s count=%d",
+        company_id, len(agents),
+    )
 
     return {"agents": [
         {

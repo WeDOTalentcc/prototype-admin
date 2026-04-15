@@ -71,3 +71,96 @@ intent_examples:
   - "configurar modelo de trabalho"
   - "quais informações faltam no perfil"
   - "benchmark de benefícios para o setor"
+
+few_shot_examples:
+  - id: comp-ex-01
+    category: happy_path
+    scenario: "Configurar cultura da empresa"
+    user_input: "Configure a cultura da empresa — somos uma startup de fintech"
+    expected_response: |
+      Vou configurar o perfil cultural. Ja identifiquei:
+      - Setor: Fintech / Servicos Financeiros
+      - Porte provavel: Startup
+
+      Para completar, preciso de:
+      1. Valores da empresa (ex: inovacao, transparencia, agilidade)
+      2. Modelo de trabalho (remoto, hibrido, presencial)
+      3. Dress code (casual, business casual, formal)
+      4. Beneficios diferenciadores
+
+      Dados de mercado: 78% das fintechs oferecem home office e
+      equity/stock options. Quer que eu sugira beneficios competitivos?
+    demonstrates: ["inferencia de setor", "dados de mercado", "sugestao proativa"]
+
+  - id: comp-ex-02
+    category: url_extraction
+    scenario: "Extrair dados do site"
+    user_input: "Puxe os dados do site da empresa: www.acmecorp.com.br"
+    expected_response: |
+      Extraindo dados de www.acmecorp.com.br...
+
+      Encontrei:
+      - Nome: Acme Corp
+      - Setor: Tecnologia / E-commerce
+      - Sobre: "Plataforma de marketplace para PMEs"
+      - Localizacao: Sao Paulo, SP
+      - Tamanho estimado: 50-200 funcionarios (LinkedIn)
+      - Stack tecnologico mencionado: React, Node.js, AWS
+
+      Campos preenchidos automaticamente. Revise e confirme.
+      Faltam: beneficios, modelo de trabalho, valores culturais.
+    demonstrates: ["extracao automatica", "campos pendentes", "estimativa de porte"]
+
+  - id: comp-ex-03
+    category: beneficios
+    scenario: "Configurar beneficios com elegibilidade"
+    user_input: "Adicione plano de saude e vale-alimentacao"
+    expected_response: |
+      Beneficios adicionados:
+
+      1. Plano de Saude
+         - Tipo: Coparticipacao ou integral?
+         - Abrangencia: Nacional ou regional?
+         - Elegibilidade: todos os funcionarios ou apos periodo de experiencia?
+
+      2. Vale-Alimentacao
+         - Valor mensal? (benchmark setor tech SP: R$ 800-1.200)
+         - Cartao flexivel (VA+VR) ou separado?
+
+      Dados de mercado: 92% das empresas tech oferecem VA.
+      Empresas que oferecem cartao flexivel tem 15% mais candidaturas.
+    demonstrates: ["detalhamento por beneficio", "benchmark salarial", "impacto em candidaturas"]
+
+  - id: comp-ex-04
+    category: self_correction
+    scenario: "URL invalida"
+    user_input: "Extraia dados de www.empresaxyz123456.com"
+    expected_response: |
+      Nao consegui acessar www.empresaxyz123456.com (site nao encontrado
+      ou fora do ar).
+
+      Alternativas:
+      1. Verificar se a URL esta correta
+      2. Tentar LinkedIn da empresa (posso buscar por nome)
+      3. Preencher manualmente — vou guiar campo por campo
+
+      Qual prefere?
+    demonstrates: ["erro identificado", "alternativas praticas", "nao travar fluxo"]
+
+  - id: comp-ex-05
+    category: proatividade
+    scenario: "Campos faltantes detectados"
+    user_input: "[Contexto: perfil da empresa com 45% completude]"
+    expected_response: |
+      O perfil da empresa esta com 45% de completude.
+
+      Campos faltantes que mais impactam qualidade das vagas:
+      1. Tech Stack (+35% match com candidatos quando preenchido)
+      2. Competencias Comportamentais (+28% precisao no WSI)
+      3. Faixas Salariais (+22% candidaturas)
+
+      Completude media das empresas do seu setor: 62%.
+
+      Quer que eu guie o preenchimento dos 3 mais impactantes?
+      Leva aproximadamente 5 minutos.
+    demonstrates: ["gap analysis", "impacto quantificado", "estimativa de tempo"]

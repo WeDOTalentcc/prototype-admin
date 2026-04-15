@@ -241,6 +241,18 @@ celery_app.conf.update(
             "schedule": crontab(hour=10, minute=0),  # 07h Brasília — runs after drift.run_batch
             "options": {"expires": 7200, "queue": "evaluation_normal"},
         },
+        # PX08-12.7: GlobalInsights aggregation — daily at 05h Brasília (before drift at 07h)
+        "global-insights-aggregate-daily": {
+            "task": "insights.aggregate_all",
+            "schedule": crontab(hour=8, minute=0),  # 05h Brasília / UTC-3
+            "options": {"expires": 7200, "queue": "evaluation_normal"},
+        },
+        # PX08-12.7: Few-shot evolution — daily at 06h Brasília (between insights and drift)
+        "fewshot-evolve-daily": {
+            "task": "fewshot.evolve",
+            "schedule": crontab(hour=9, minute=0),  # 06h Brasília / UTC-3
+            "options": {"expires": 7200, "queue": "evaluation_normal"},
+        },
         # Lifecycle policy de auditoria: 1º de cada mês às 03h (Brasília = UTC-3 → 06h UTC)
         "audit-lifecycle-monthly": {
             "task": "audit.apply_lifecycle_policy",

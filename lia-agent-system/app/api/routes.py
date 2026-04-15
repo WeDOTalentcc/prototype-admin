@@ -485,6 +485,9 @@ def register_all_routes(app: FastAPI) -> None:
 
     from app.api.v1 import ai_config
     app.include_router(ai_config.router, prefix="/api/v1", tags=["ai-configuration"])
+
+    from app.api.v1 import agent_studio_quality
+    app.include_router(agent_studio_quality.router, prefix="/api/v1", tags=["agent-studio-quality"])
     app.include_router(agent_quality_router, prefix="/api/v1", tags=["agent-quality"])
     app.include_router(agent_quality_dashboard_router, prefix="/api/v1", tags=["agent-quality-dashboard"])
     app.include_router(ml_predictions_router, prefix="/api/v1", tags=["ml-predictions"])
@@ -591,9 +594,12 @@ def register_all_routes(app: FastAPI) -> None:
 
     # ── Agent Studio / Retention (Etapa 4 & 8) ───────────────────────────────
     app.include_router(company_retention_router, prefix="/api/v1", tags=["company-retention"])
+    # NOTE: sector_templates_router DEVE ser registrado ANTES de agent_templates_router
+    # para evitar colisão com GET /agent-templates/{template_id} — que captura "sectors"
+    # como template_id e devolve 404. FastAPI resolve rotas na ordem de registro.
+    app.include_router(sector_templates_router, prefix="/api/v1", tags=["sector-templates"])
     app.include_router(agent_templates_router, prefix="/api/v1", tags=["agent-templates"])
     # — Phase 6: Agent Studio, Sourcing, Digital Twins, Voice Screening
-    app.include_router(sector_templates_router, prefix="/api/v1", tags=["sector-templates"])
     app.include_router(sourcing_agents_router, prefix="/api/v1", tags=["sourcing-agents"])
     app.include_router(custom_agents_router, prefix="/api/v1", tags=["custom-agents"])
     app.include_router(agent_deployments_router, prefix="/api/v1")

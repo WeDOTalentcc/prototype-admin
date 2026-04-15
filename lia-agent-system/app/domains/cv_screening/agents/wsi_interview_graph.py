@@ -978,12 +978,46 @@ class WSIInterviewGraph:
     async def _start_langgraph(
         self, state: WSIInterviewState, audit_callback=None
     ) -> WSIInterviewState:
-        """Inicia sessão via StateGraph nativo (operation='start')."""
+        """Inicia sessão via StateGraph nativo (operation='start').
+
+        P36 Full: injects 3-layer intelligence before graph execution.
+        """
         if self._compiled_lg is None:
             self._compiled_lg = self._build_langgraph()
 
+        # --- P36: Camada 3 — Global screening insights ---
+        screening_insights_snippet = ""
+        try:
+            from app.shared.services.global_insights_service import get_global_insights
+            insights_svc = get_global_insights()
+            insights = await insights_svc.get_screening_insights()
+            screening_insights_snippet = insights_svc.format_screening_for_prompt(insights)
+        except Exception as exc:
+            logger.debug("[WSIInterviewGraph] GlobalInsights skipped: %s", exc)
+
+        # --- P36: Camada 2 — Recruiter personalization ---
+        recruiter_snippet = ""
+        try:
+            from app.domains.analytics.services.recruiter_personalization_service import get_recruiter_prompt_context
+            recruiter_snippet = await get_recruiter_prompt_context(
+                recruiter_id="system",
+                company_id=str(state.company_id),
+            )
+        except Exception as exc:
+            logger.debug("[WSIInterviewGraph] RecruiterPersonalization skipped: %s", exc)
+
+        # Inject into wsi_data metadata (available to scoring/question generation nodes)
+        wsi_dict = _wsi_state_to_dict(state)
+        if screening_insights_snippet or recruiter_snippet:
+            meta = wsi_dict.get("metadata") or {}
+            if screening_insights_snippet:
+                meta["screening_insights"] = screening_insights_snippet
+            if recruiter_snippet:
+                meta["recruiter_context"] = recruiter_snippet
+            wsi_dict["metadata"] = meta
+
         lg_input = {
-            "wsi_data": _wsi_state_to_dict(state),
+            "wsi_data": wsi_dict,
             "pending_response": "",
             "operation": "start",
         }

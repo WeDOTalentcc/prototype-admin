@@ -12,6 +12,9 @@ from typing import Any
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile, WebSocket, WebSocketDisconnect
 from fastapi.responses import StreamingResponse
+from pydantic import BaseModel
+
+from app.orchestrator.domain_mappings import resolve_domain
 
 from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
@@ -232,9 +235,25 @@ async def send_message(
         page_context=page_context,
         db=repo.db,
     )
-    lia_response = orch_result["response"]
-    detected_intent = orch_result["intent"]
-    detected_entities = orch_result["entities"]
+    lia_response = (orch_result.get("response") or "").strip()
+    detected_intent = orch_result.get("intent") or ""
+    detected_entities = orch_result.get("entities") or {}
+
+    # Defesa em profundidade: se o orquestrador não gerou texto, retornar 502 com
+    # mensagem explícita em vez de responder {"content": ""} silenciosamente. Bug
+    # silencioso confirmado em QA 2026-04-15 (LIA nunca respondia na UI).
+    if not lia_response:
+        logger.error(
+            "chat.empty_response user_id=%s intent=%s entities=%s workflow_keys=%s",
+            user_id,
+            detected_intent,
+            detected_entities,
+            list((orch_result.get("workflow_data") or {}).keys()),
+        )
+        raise HTTPException(
+            status_code=502,
+            detail="LIA não conseguiu gerar resposta. Tente novamente em alguns segundos.",
+        )
 
     if lia_response:
         _c3b_ctx = ComplianceContext(
@@ -1021,3 +1040,100 @@ async def direct_candidate_field_update(
         "total": len(results),
         "results": results,
     }
+
+
+# =============================================
+# CONTEXT SWITCHING (S02)
+# =============================================
+#
+# Frontend (UnifiedChat) calls POST /chat/context when the user navigates to a
+# page that should run a different domain agent — e.g. entering "Minha Empresa"
+# switches to context_type=settings_config which routes to company_settings.
+#
+# This endpoint:
+#   1) Validates the context_type against known contexts.
+#   2) Persists context_type on the Conversation row (if conversation_id passed)
+#      so downstream chat routing can read it.
+#   3) Returns the resolved domain so the frontend can show a context badge
+#      (e.g. "LIA agora está no modo Configurações").
+
+class ChatContextRequest(BaseModel):
+    context_type: str
+    conversation_id: str | None = None
+    metadata: dict[str, Any] | None = None
+
+
+class ChatContextResponse(BaseModel):
+    accepted: bool
+    context_type: str
+    domain_resolved: str
+    conversation_id: str | None = None
+    message: str
+
+
+# Allowed context types (matches libs/models/lia_models/conversation.py enum)
+_ALLOWED_CONTEXT_TYPES = {
+    "general",
+    "job_chat",
+    "talent_chat",
+    "pipeline_chat",
+    "kanban_chat",
+    "candidates_chat",
+    "wizard",
+    "screening",
+    "analytics",
+    "settings_config",
+    "agent_studio",
+}
+
+
+@router.post("/context", response_model=ChatContextResponse)
+async def set_chat_context(
+    payload: ChatContextRequest,
+    current_user: User = Depends(get_current_user_or_demo),
+    repo: ChatRepository = Depends(get_chat_repo),
+):
+    """Notify the orchestrator that the chat context has changed.
+
+    The frontend calls this whenever the user navigates to a page that should
+    run a different agent (e.g. entering "Minha Empresa" → settings_config).
+    The context_type is persisted on the conversation row so subsequent messages
+    route to the correct domain.
+    """
+    ctx = payload.context_type.strip().lower()
+    if ctx not in _ALLOWED_CONTEXT_TYPES:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unknown context_type '{ctx}'. Allowed: {sorted(_ALLOWED_CONTEXT_TYPES)}",
+        )
+
+    domain = resolve_domain(ctx)
+
+    # Persist context on the conversation if an ID was provided
+    if payload.conversation_id:
+        try:
+            conversation = await repo.get_conversation_by_id(payload.conversation_id)
+            if conversation and str(conversation.user_id) == str(current_user.id):
+                conversation.context_type = ctx
+                if payload.metadata:
+                    md = conversation.conversation_metadata or {}
+                    md.update(payload.metadata)
+                    conversation.conversation_metadata = md
+                # Repo uses a shared session that auto-commits on exit;
+                # rely on SQLAlchemy dirty-checking for the update.
+                await repo.session.commit()
+        except Exception as exc:
+            logger.warning(f"[chat.context] failed to persist context on conversation: {exc}")
+
+    logger.info(
+        f"[chat.context] user={current_user.id} context_type={ctx} domain={domain} "
+        f"conversation_id={payload.conversation_id}"
+    )
+
+    return ChatContextResponse(
+        accepted=True,
+        context_type=ctx,
+        domain_resolved=domain,
+        conversation_id=payload.conversation_id,
+        message=f"Contexto atualizado para '{ctx}' (domain={domain}).",
+    )

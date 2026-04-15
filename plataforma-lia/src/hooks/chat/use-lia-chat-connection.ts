@@ -50,6 +50,7 @@ export function useLiaChatConnection({
     setHitlPending: socket.setHitlPending,
     onMessageComplete,
     conversationIdFromWs: socket.conversationIdFromWs,
+    setIsThinking: socket.setIsThinking,
   })
 
   // eslint-disable-next-line react-hooks/exhaustive-deps

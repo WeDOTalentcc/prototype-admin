@@ -372,11 +372,21 @@ class HITLService:
             )
             return existing
 
-    async def get_all_pending_by_company(self, company_id: str) -> list[dict]:
+    async def get_all_pending_by_company(
+        self,
+        company_id: str,
+        db: "AsyncSession | None" = None,
+    ) -> list[dict]:
         """
         Retorna todas as aprovações pendentes para uma empresa.
+
+        Args:
+            company_id: ID da empresa (obrigatório para isolamento multi-tenant).
+            db: Sessão async opcional. Se fornecida (e.g. via FastAPI Depends),
+                é reutilizada — evitando esgotar o pool de conexões em alta
+                concorrência. Se None, cria sessão própria (backward-compat).
+
         DB = source of truth. Redis/in-memory usado apenas quando DB falha.
-        Exige company_id válido para garantir isolamento multi-tenant.
         """
         if not company_id:
             logger.warning("[HITL] get_all_pending_by_company chamado sem company_id — retornando vazio")
@@ -386,10 +396,10 @@ class HITLService:
         db_available = True
         try:
             from sqlalchemy import select
-            from app.core.database import AsyncSessionLocal
             from lia_models.hitl import HITLPendingAction
             now = datetime.now(UTC)
-            async with AsyncSessionLocal() as db:
+
+            async def _run_query(session):
                 query = (
                     select(HITLPendingAction)
                     .where(
@@ -399,12 +409,21 @@ class HITLService:
                     )
                     .order_by(HITLPendingAction.created_at.desc())
                 )
-                result = await db.execute(query)
+                result = await session.execute(query)
                 records = result.scalars().all()
                 for record in records:
                     d = record.to_dict()
                     d["requested_at"] = d.get("created_at", d.get("requested_at"))
                     results.append(d)
+
+            if db is not None:
+                # Usa a sessão do request — padrão correto para handlers HTTP
+                await _run_query(db)
+            else:
+                # Fallback quando chamado fora de um request context
+                from app.core.database import AsyncSessionLocal
+                async with AsyncSessionLocal() as own_db:
+                    await _run_query(own_db)
         except Exception as exc:
             db_available = False
             logger.warning("[HITL] get_all_pending_by_company DB falhou: %s", exc)

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, Suspense, useEffect } from "react"
+import { useState, Suspense, useEffect, useRef } from "react"
 import React from "react"
 import { useRouter } from "next/navigation"
 import { useKeyboardShortcuts } from "@/hooks/shared/use-keyboard-shortcuts"
@@ -64,6 +64,16 @@ export function DashboardApp({ initialPage = "Chat LIA" }: DashboardAppProps) {
     }
   }, [splitView.active, splitView.page])
 
+  // BUG-09: ao sair do modo fullscreen do chat, voltar para a página onde o
+  // usuário estava antes — não mais "Tarefas" hardcoded. Guardamos a última
+  // página não-"Chat LIA" em um ref para restaurar ao fechar o fullscreen.
+  const previousPageBeforeChatRef = useRef<string>("Tarefas")
+  useEffect(() => {
+    if (currentPage !== "Chat LIA") {
+      previousPageBeforeChatRef.current = currentPage
+    }
+  }, [currentPage])
+
   useEffect(() => {
     const handler = (e: Event) => {
       const detail = (e as CustomEvent<{ conversationId?: string }>).detail
@@ -87,7 +97,9 @@ export function DashboardApp({ initialPage = "Chat LIA" }: DashboardAppProps) {
   useEffect(() => {
     const handler = () => {
       if (currentPage === "Chat LIA") {
-        setCurrentPage("Tarefas")
+        // Restaura a última página visitada antes de entrar no Chat LIA fullscreen
+        // (BUG-09 — antes ia para "Tarefas" independente de onde o usuário estava).
+        setCurrentPage(previousPageBeforeChatRef.current || "Tarefas")
       }
     }
     window.addEventListener("lia:leave-fullscreen-chat", handler)

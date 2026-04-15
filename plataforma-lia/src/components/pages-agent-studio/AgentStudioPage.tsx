@@ -19,6 +19,7 @@ import {
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { toast } from "@/lib/toast"
+import { extractErrorMessage } from "@/lib/api/extract-error-message"
 import { Button } from "@/components/ui/button"
 import { BetaBadge } from "@/components/ui/beta-badge"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
@@ -136,7 +137,8 @@ export default function AgentStudioPage({
     try {
       const res = await fetch(`/api/backend-proxy/sourcing-agents/${agentId}/${action}`, { method: "PATCH" })
       if (!res.ok) {
-        throw new Error(`Error ${res.status}`)
+        const errData = await res.json().catch(() => ({}))
+        throw new Error(extractErrorMessage(errData, res.status))
       }
       toast.success(action === "pause" ? t("studio.toast.agentPaused") : t("studio.toast.agentResumed"))
       loadData()
@@ -220,6 +222,25 @@ export default function AgentStudioPage({
             >
               <RefreshCw className="w-4 h-4" />
             </Button>
+            {/* BUG-12: CTA explícito para o ConversationalCreator (que estava
+                escondido na aba "Custom Agents" sem call-to-action visível).
+                Clicar troca para a aba e dá scroll até o componente. */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setActiveTab("custom")
+                // Aguarda render da aba antes de scrollar
+                setTimeout(() => {
+                  document.getElementById("agent-studio-conversational-creator")
+                    ?.scrollIntoView({ behavior: "smooth", block: "start" })
+                }, 80)
+              }}
+              className="gap-2"
+            >
+              <Wand2 className="w-4 h-4" />
+              Criar com IA
+            </Button>
             <Button
               size="sm"
               onClick={() => setShowCreateModal(true)}
@@ -296,19 +317,23 @@ export default function AgentStudioPage({
                     {t("studio.virtualRecruiterDesc")}
                   </p>
 
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                  {/* BUG-10: grid responsivo — antes ia direto para 4 colunas em md (768px),
+                      o que cortava textos ("PASS" em vez de "PASSO") quando o chat lateral
+                      ocupa ~360px. Agora só vai para 4 colunas em xl+ (1280px) e usa 2
+                      colunas no intervalo intermediário, permitindo respirar os textos. */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
                     {FLOW_STEPS_CONFIG.map((step, i) => (
-                      <div key={i} className="flex items-start gap-3">
+                      <div key={i} className="flex items-start gap-3 min-w-0">
                         <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0", step.bg)}>
                           <step.icon className={cn("w-5 h-5", step.color)} />
                         </div>
-                        <div className="min-w-0">
+                        <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-1.5 mb-0.5">
-                            <span className="text-[10px] font-bold text-lia-text-disabled uppercase">{t("studio.flowSteps.step")} {i + 1}</span>
-                            {i < 3 && <ArrowRight className="w-3 h-3 text-lia-text-disabled hidden md:block" />}
+                            <span className="text-[10px] font-bold text-lia-text-disabled uppercase whitespace-nowrap">{t("studio.flowSteps.step")} {i + 1}</span>
+                            {i < 3 && <ArrowRight className="w-3 h-3 text-lia-text-disabled hidden xl:block" />}
                           </div>
-                          <p className="text-xs font-semibold text-lia-text-primary">{t(step.titleKey)}</p>
-                          <p className="text-[11px] text-lia-text-secondary leading-relaxed">{t(step.descKey)}</p>
+                          <p className="text-xs font-semibold text-lia-text-primary break-words">{t(step.titleKey)}</p>
+                          <p className="text-[11px] text-lia-text-secondary leading-relaxed break-words">{t(step.descKey)}</p>
                         </div>
                       </div>
                     ))}
@@ -444,20 +469,23 @@ export default function AgentStudioPage({
                   <Brain className="w-4 h-4 text-wedo-cyan" />
                   <h2 className="text-sm font-semibold text-lia-text-primary">{t("studio.howItWorks")}</h2>
                 </div>
-                <div className="flex items-start gap-2">
+                {/* BUG-10: passa para grid responsivo — em telas apertadas (chat
+                    lateral aberto) fica em 2 colunas sem truncar textos; em telas
+                    largas mantém a visual horizontal com setas. */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:flex xl:items-start xl:gap-2">
                   {FLOW_STEPS_CONFIG.map((step, i) => (
                     <React.Fragment key={i}>
-                      <div className="flex-1 flex items-start gap-2.5">
+                      <div className="xl:flex-1 flex items-start gap-2.5 min-w-0">
                         <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0", step.bg)}>
                           <step.icon className={cn("w-4 h-4", step.color)} />
                         </div>
-                        <div>
-                          <p className="text-xs font-semibold text-lia-text-primary">{t(step.titleKey)}</p>
-                          <p className="text-[10px] text-lia-text-secondary leading-relaxed">{t(step.descKey)}</p>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs font-semibold text-lia-text-primary break-words">{t(step.titleKey)}</p>
+                          <p className="text-[10px] text-lia-text-secondary leading-relaxed break-words">{t(step.descKey)}</p>
                         </div>
                       </div>
                       {i < 3 && (
-                        <ArrowRight className="w-4 h-4 text-lia-text-disabled flex-shrink-0 mt-2" />
+                        <ArrowRight className="hidden xl:block w-4 h-4 text-lia-text-disabled flex-shrink-0 mt-2" />
                       )}
                     </React.Fragment>
                   ))}
@@ -507,8 +535,10 @@ export default function AgentStudioPage({
               onCreateManual={() => setShowCreateModal(true)}
             />
 
-            {/* Conversational Creator */}
-            <ConversationalCreator onAgentCreated={() => mutateCustomAgents()} />
+            {/* Conversational Creator (target do CTA "Criar com IA" — BUG-12) */}
+            <div id="agent-studio-conversational-creator" className="scroll-mt-4">
+              <ConversationalCreator onAgentCreated={() => mutateCustomAgents()} />
+            </div>
 
             {/* Deploy Dialog */}
             <DeployDialog
@@ -801,8 +831,8 @@ function CreateAgentModal({ initialTemplate, onClose, onCreated }: {
         }),
       })
       if (!res.ok) {
-        const errData = await res.json().catch(() => ({ detail: res.statusText }))
-        throw new Error(errData?.detail || `Error ${res.status}`)
+        const errData = await res.json().catch(() => ({}))
+        throw new Error(extractErrorMessage(errData, res.status))
       }
       const data = await res.json()
       if (data?.agent_id) onCreated(data.agent_id)

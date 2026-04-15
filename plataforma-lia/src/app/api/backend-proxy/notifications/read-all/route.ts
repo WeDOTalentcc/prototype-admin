@@ -16,8 +16,16 @@ export async function POST(request: NextRequest) {
     const queryValidation = validateQuery(request, readAllQuerySchema)
     if (!queryValidation.success) return queryValidation.response
 
-    const userId = queryValidation.data.user_id || "default_user"
+    const userId = queryValidation.data.user_id
     const category = queryValidation.data.category
+
+    // BUG-08: recusar default_user — caller deve aguardar auth antes de chamar
+    if (!userId || userId === "default_user") {
+      return NextResponse.json(
+        { success: false, error: "user_id ausente ou inválido" },
+        { status: 400 }
+      )
+    }
 
     const params = new URLSearchParams()
     params.append("user_id", userId)

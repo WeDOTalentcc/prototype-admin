@@ -67,6 +67,7 @@ import { NotificationSystem } from "@/components/notification-system"
 import { HitlPendingBadge } from "@/components/hitl-pending-badge"
 import { ProfileModal } from "@/components/modals/profile-modal"
 import { useAuth } from "@/contexts/auth-context"
+import { useAuthenticatedUserId } from "@/hooks/shared/use-authenticated-user-id"
 import type { Notification as AppNotification } from "@/hooks/shared/use-notifications"
 import Image from "next/image"
 import { useTranslations } from 'next-intl'
@@ -481,6 +482,7 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
   const t = useTranslations('sidebar')
   const { talentPools, agents } = useSidebarDynamicItems()
   const { user: authUser, refreshUser } = useAuth()
+  const { userId: authenticatedUserId, isReady: isAuthReady } = useAuthenticatedUserId()
 
   const [showPasswordModal, setShowPasswordModal] = useState(false)
   const [showProfileModal, setShowProfileModal] = useState(false)
@@ -804,11 +806,16 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
         )}>
           <HitlPendingBadge />
 
-          <NotificationSystem
-            userId={authUser?.email || "default_user"}
-            onNotificationClick={handleNotificationClick}
-            panelPosition="sidebar"
-          />
+          {/* BUG-08: só renderiza após auth hidratar — evita request com
+              userId="default_user" seguido por re-request com email real
+              (dobrava tráfego e contaminava contadores). */}
+          {isAuthReady && authenticatedUserId && (
+            <NotificationSystem
+              userId={authenticatedUserId}
+              onNotificationClick={handleNotificationClick}
+              panelPosition="sidebar"
+            />
+          )}
 
           {isMounted ? (
           <DropdownMenu>

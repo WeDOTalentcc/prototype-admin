@@ -12,6 +12,7 @@ import { useRecentItemsStore } from "@/stores/recent-items-store"
 import type {
   LiaChatMessage,
   HITLPending,
+  MessageCompleteExtras,
 } from "./lia-chat-connection-types"
 import { maskPII, formatMessageTime } from "./lia-chat-connection-types"
 
@@ -33,8 +34,14 @@ export interface UseChatMessagesOptions {
   ) => void
   hitlRef: React.MutableRefObject<HITLPending | null>
   setHitlPending: React.Dispatch<React.SetStateAction<HITLPending | null>>
-  onMessageComplete?: (content: string, executionPlan?: Record<string, unknown>) => void
+  onMessageComplete?: (
+    content: string,
+    executionPlan?: Record<string, unknown>,
+    extras?: MessageCompleteExtras,
+  ) => void
   conversationIdFromWs: string | null
+  /** Setter de isThinking do socket — usado para acender o indicador "LIA digitando" também nos caminhos REST/SSE (BUG-13). */
+  setIsThinking?: React.Dispatch<React.SetStateAction<boolean>>
 }
 
 export interface UseChatMessagesReturn {
@@ -60,6 +67,7 @@ export function useChatMessages({
   setHitlPending,
   onMessageComplete,
   conversationIdFromWs,
+  setIsThinking,
 }: UseChatMessagesOptions): UseChatMessagesReturn {
   const recentItemsStore = useRecentItemsStore()
 
@@ -97,6 +105,10 @@ export function useChatMessages({
         ctx.page_type = "candidates"
       } else if (path.includes("/dashboard")) {
         ctx.page_type = "dashboard"
+      } else if (path.includes("/agent-studio")) {
+        ctx.page_type = "agent_studio"
+      } else if (path.includes("/minha-empresa") || path.includes("/company-settings")) {
+        ctx.page_type = "settings_config"
       } else if (path.includes("/job")) {
         ctx.page_type = "job_detail"
       }
@@ -127,6 +139,10 @@ export function useChatMessages({
 
   const sendMessage = useCallback(async (content: string, domain = "", scope?: string) => {
     clearTokens()
+    // BUG-13: acender "LIA digitando" imediatamente — no caminho WS isso seria
+    // feito pelo evento "thinking", mas em REST/SSE (e até a primeira resposta
+    // do WS chegar) o indicador ficava invisível, dando sensação de chat morto.
+    setIsThinking?.(true)
     const context: Record<string, unknown> = scope ? { scope } : {}
     if (conversationId) {
       context.conversation_id = conversationId
@@ -161,6 +177,9 @@ export function useChatMessages({
       const data = await res.json() as {
         content?: string
         conversation_id?: string
+        needs_clarification?: boolean
+        clarification_question?: string
+        clarification_options?: Array<string | { label?: string; value?: string }>
         message_metadata?: {
           pending_action?: {
             pending_id?: string
@@ -189,14 +208,32 @@ export function useChatMessages({
         setHitlPending(pending)
       }
 
+      // Tier 8 clarification fallback from the cascaded router — render the
+      // question as a LIA message with clickable option chips.
+      if (data.needs_clarification && data.clarification_question) {
+        const optionsArr = (data.clarification_options ?? []).map((opt) => {
+          if (typeof opt === "string") return { label: opt, value: opt }
+          return { label: opt.label ?? opt.value ?? "", value: opt.value ?? opt.label ?? "" }
+        }).filter((o) => o.label && o.value)
+        onCompleteRef.current?.(data.clarification_question, undefined, {
+          options: optionsArr,
+          isClarification: true,
+        })
+        return
+      }
+
       if (data.content) {
         onCompleteRef.current?.(data.content)
       }
     } catch {
       onCompleteRef.current?.("Erro ao conectar com a LIA. Tente novamente.")
+    } finally {
+      // No caminho WS, o indicador é desligado pelo evento "message" do socket.
+      // Aqui (REST) precisamos garantir que ele desliga ao final.
+      setIsThinking?.(false)
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [wsSend, clearTokens, isConnected, transportMode, sessionId, conversationId, getPageContext, hitlRef, setHitlPending, sendMessageViaSSE])
+  }, [wsSend, clearTokens, isConnected, transportMode, sessionId, conversationId, getPageContext, hitlRef, setHitlPending, sendMessageViaSSE, setIsThinking])
 
   const sendApproval = useCallback((approved: boolean) => {
     const pending = hitlRef.current

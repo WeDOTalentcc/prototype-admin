@@ -309,6 +309,7 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
             isThinking={chatIsThinking}
             thinkingSteps={chatThinkingSteps}
             userName={userName}
+            onChipClick={(value) => sendChatMessage(value)}
           />
         ) : (
           <UnifiedChatEmptyState

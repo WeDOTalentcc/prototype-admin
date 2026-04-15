@@ -310,10 +310,34 @@ class LangGraphReActBase(LangGraphBase):
         return []
 
     def _get_model(self) -> Any:
-        """Retorna o LLM LangChain — tenant-aware via TenantProviderRegistry.
+        """Return the LangChain ChatModel for this agent — tenant-aware.
 
-        Choose Your AI: If tenant has a custom provider configured,
-        uses that instead of the global default.
+        Resolution order ("Choose Your AI" — hybrid DB-first → env fallback):
+
+        1. **Per-tenant config** (preferred): if the current request has a
+           ``company_id`` (set by ``AuthEnforcementMiddleware`` into
+           ``tenant_llm_context``) and that tenant has an active row in
+           ``tenant_llm_configs``, use its provider + model + decrypted API key.
+           This is what the menu **Configurações > Integrações > LLM** writes.
+
+        2. **Global env vars** (fallback): if the tenant has no entry, fall
+           back to the platform-wide settings:
+              ``AI_INTEGRATIONS_ANTHROPIC_API_KEY`` (or ``ANTHROPIC_API_KEY``)
+              ``AI_INTEGRATIONS_GEMINI_API_KEY``
+              ``AI_INTEGRATIONS_OPENAI_API_KEY`` (or ``OPENAI_API_KEY``)
+           ``app.main.lifespan`` validates that at least one of these is set
+           and refuses to boot in production if all are empty.
+
+        3. **Default model** (last resort): if no api_key is found at all,
+           ``ChatAnthropic(api_key=None)`` is constructed and will raise
+           ``AuthenticationError`` on first invocation.
+
+        Trade-off / known gap (PR3 Frente F documents this):
+          Tenants without their own row share the same global env-var key,
+          which means they share quota and rate-limit. This is acceptable for
+          free/trial tenants (cost absorbed by the platform) but enterprise
+          tenants should configure their own key via the menu to isolate
+          quota and protect against noisy-neighbour throttling.
         """
         try:
             from lia_config.config import settings

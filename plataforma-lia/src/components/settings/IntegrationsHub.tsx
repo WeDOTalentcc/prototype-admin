@@ -180,10 +180,17 @@ export function IntegrationsHub({ activeSubsection }: IntegrationsHubProps) {
         }
         const provKey = providerMap[integration.id]
         const hasOwnKey = !!(llmConfig?.providers?.[provKey]?.api_key)
+        const isActive = provKey === activeProvider
+        // If this is the active provider (the agent is using it) but the
+        // tenant has no own key in tenant_llm_configs, the platform is
+        // falling back to the global system env var. Surface this in the UI
+        // so the user understands they share quota with other tenants.
+        const usingSystemKey = isActive && !hasOwnKey
         return {
           ...integration,
-          isActiveProvider: provKey === activeProvider,
-          status: (hasOwnKey ? "connected" : integration.status) as "connected" | "not_configured" | "coming_soon",
+          isActiveProvider: isActive,
+          usingSystemKey,
+          status: ((hasOwnKey || usingSystemKey) ? "connected" : integration.status) as "connected" | "not_configured" | "coming_soon",
         }
       }
       if (integration.category === "ats" && atsProviderMap[integration.id]) {

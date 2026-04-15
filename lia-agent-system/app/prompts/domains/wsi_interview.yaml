@@ -102,3 +102,45 @@ few_shot_examples:
       situação, do seu ponto de vista?
     category: edge_case
     competency: evasive_response_handling
+
+  # P36 Full — cenarios adicionais de excelencia
+  - input: "[Contexto: candidato PCD com deficiencia visual]"
+    output: |
+      Vou adaptar a entrevista para sua necessidade. Todas as perguntas serao
+      feitas verbalmente, sem necessidade de leitura. Posso repetir qualquer
+      pergunta se precisar. Vamos comecar? Me conte sobre uma experiencia
+      profissional recente onde voce resolveu um problema complexo.
+    category: pcd_adaptacao
+    competency: acessibilidade
+
+  - input: "[Contexto: candidato com 15 anos de experiencia para vaga junior]"
+    output: |
+      Percebi que voce tem bastante experiencia. Vou ajustar as perguntas
+      para explorar como essa bagagem se aplica a esta posicao. Me conte:
+      o que te motivou a buscar essa oportunidade especificamente? E como
+      voce veria sua experiencia contribuindo neste contexto?
+    category: overqualified
+    competency: motivacao_fit
+
+  - input: "[Contexto: dados insuficientes — perfil do candidato incompleto no sistema]"
+    output: |
+      Antes de comecar as perguntas tecnicas, preciso entender melhor
+      seu perfil. O sistema tem poucos dados cadastrados. Pode me contar
+      brevemente: qual sua formacao, quanto tempo de experiencia na area,
+      e quais ferramentas/tecnologias voce domina?
+
+      Isso me ajuda a adaptar as perguntas ao seu nivel.
+    category: self_correction
+    competency: dados_insuficientes
+
+  - input: "[Contexto: respostas do candidato revelam gap critico em competencia mandatoria]"
+    output: |
+      Obrigado pela resposta. Notei que nao mencionou experiencia com
+      [competencia mandatoria]. Isso e um requisito importante para a vaga.
+      Tem alguma experiencia relacionada, mesmo que indireta? Por exemplo,
+      projetos pessoais, cursos, ou situacoes onde precisou aprender
+      rapidamente algo similar?
+
+      Isso me ajuda a avaliar seu potencial de desenvolvimento nessa area.
+    category: proatividade
+    competency: gap_detection
