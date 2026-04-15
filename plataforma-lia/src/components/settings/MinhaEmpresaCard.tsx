@@ -8,6 +8,7 @@ import {
 import type { CardBlock, CardField } from "@/hooks/settings/use-company-settings-cards"
 import { textStyles } from "@/lib/design-tokens"
 import type { LucideIcon } from "lucide-react"
+import { DocumentUploadCard } from "./DocumentUploadCard"
 
 function formatFieldValue(value: unknown): string {
   if (value === null || value === undefined || value === "") return "Nao definido"
@@ -191,24 +192,17 @@ export function MinhaEmpresaCard({
 
       {isExpanded && (
         <CardContent className="px-4 py-3 border-t border-lia-border-subtle">
+          {block.key === "documents" && (
+            <div className="mb-3">
+              <DocumentUploadCard />
+            </div>
+          )}
           <div className="space-y-1">
             {block.fields.map((field) => {
               const isActionField = field.key === "import_spreadsheet" || field.key === "handbook" || field.key === "org_chart"
 
               if (isActionField) {
-                return (
-                  <div key={field.key} className="py-1.5 px-1.5">
-                    <button
-                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-lia-text-secondary bg-lia-bg-tertiary hover:bg-lia-interactive-active dark:bg-lia-bg-elevated dark:hover:bg-lia-border-medium border border-lia-border-subtle rounded-md transition-colors motion-reduce:transition-none"
-                      disabled
-                      title="Em breve"
-                    >
-                      <Upload className="w-3 h-3" />
-                      {field.label}
-                      <span className="text-micro text-lia-text-tertiary ml-1">(em breve)</span>
-                    </button>
-                  </div>
-                )
+                return null
               }
 
               const isEditing =
