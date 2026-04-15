@@ -439,10 +439,15 @@ export function useCompanySettingsCards() {
           linkedin_url: "linkedin_url",
         }
         const apiField = fieldMap[field] || field
+        let payload: Record<string, unknown> = { [apiField]: value }
+        if (field === "headquarters" && typeof value === "string" && value.includes(",")) {
+          const parts = value.split(",").map(s => s.trim())
+          payload = { headquarters_city: parts[0], headquarters_state: parts[1] || "" }
+        }
         response = await fetch(`/api/backend-proxy/company/profile/${companyId}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ [apiField]: value }),
+          body: JSON.stringify(payload),
         })
       } else if (block === "culture" || block === "tech") {
         const cultureFieldMap: Record<string, string> = {

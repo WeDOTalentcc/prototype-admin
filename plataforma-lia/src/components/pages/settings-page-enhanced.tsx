@@ -32,7 +32,6 @@ const SECTION_ICON_COLORS: Record<string, string> = {
 
 import dynamic from"next/dynamic"
 import { LoadingFallback } from"@/components/ui/loading"
-const CompanyTeamHub = dynamic(() => import("@/components/settings/CompanyTeamHub").then(m => ({ default: m.CompanyTeamHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando empresa..." /> })
 const MinhaEmpresaHub = dynamic(() => import("@/components/settings/MinhaEmpresaHub").then(m => ({ default: m.MinhaEmpresaHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando empresa..." /> })
 const RecruitmentHub = dynamic(() => import("@/components/settings/RecruitmentHub").then(m => ({ default: m.RecruitmentHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando recrutamento..." /> })
 const CommunicationHub = dynamic(() => import("@/components/settings/CommunicationHub").then(m => ({ default: m.CommunicationHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando comunicação..." /> })
