@@ -53,7 +53,9 @@ async def _calc_minha_empresa(repo: SettingsProgressRepository, company, company
     ) if culture_profile else False
     workforce_pct = 100 if has_workforce else 0
 
-    policies_pct = 50
+    policy_count = await repo.count_active_policies(company_uuid) if company_uuid else 0
+    policies_ok = policy_count >= 1
+    policies_pct = min(100, int((policy_count / 3) * 100))
 
     total = int(
         company_data_pct * 0.25 +
@@ -69,7 +71,7 @@ async def _calc_minha_empresa(repo: SettingsProgressRepository, company, company
         "culture": culture_ok,
         "tech_stack": tech_ok,
         "benefits": benefits_ok,
-        "policies": True,
+        "policies": policies_ok,
         "workforce": has_workforce,
     }
 

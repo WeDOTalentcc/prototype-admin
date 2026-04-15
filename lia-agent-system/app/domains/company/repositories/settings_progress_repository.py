@@ -211,6 +211,21 @@ class SettingsProgressRepository:
             logger.warning("count_active_users failed: %s", exc)
             return 0
 
+    async def count_active_policies(self, company_id) -> int:
+        try:
+            result = await self.db.execute(
+                text("""
+                    SELECT COUNT(*) FROM global_policies
+                    WHERE (company_id = :cid OR company_id IS NULL)
+                    AND is_active = true
+                """),
+                {"cid": str(company_id)},
+            )
+            return result.scalar() or 0
+        except Exception as exc:
+            logger.warning("count_active_policies failed: %s", exc)
+            return 0
+
     async def count_active_integrations(self, company_id) -> int:
         try:
             result = await self.db.execute(
