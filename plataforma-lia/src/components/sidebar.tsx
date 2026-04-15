@@ -482,6 +482,7 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
   const { talentPools, agents } = useSidebarDynamicItems()
   const { user: authUser, refreshUser } = useAuth()
 
+  const [mounted, setMounted] = useState(false)
   const [showPasswordModal, setShowPasswordModal] = useState(false)
   const [showProfileModal, setShowProfileModal] = useState(false)
   const [currentPassword, setCurrentPassword] = useState("")
@@ -493,6 +494,8 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
   const [passwordError, setPasswordError] = useState("")
   const [passwordSuccess, setPasswordSuccess] = useState(false)
   const [isChangingPassword, setIsChangingPassword] = useState(false)
+
+  useEffect(() => { setMounted(true) }, [])
 
   const handleNotificationClick = useCallback((_notification: AppNotification) => {
     // digest notifications are now handled by WeeklyDigestChatProvider
@@ -810,6 +813,7 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
             panelPosition="sidebar"
           />
 
+          {mounted ? (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
@@ -892,6 +896,19 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
               </div>
             </DropdownMenuContent>
           </DropdownMenu>
+          ) : (
+            <Button
+              variant="ghost"
+              className="h-7 w-7 p-0 rounded-full hover:bg-lia-interactive-hover"
+              title={currentUser.name}
+            >
+              <Avatar className="h-6 w-6">
+                <AvatarFallback className="text-[10px] bg-lia-bg-inverse text-lia-text-on-inverse">
+                  {currentUser.name.split(" ").map(n => n[0]).join("")}
+                </AvatarFallback>
+              </Avatar>
+            </Button>
+          )}
         </div>
       </div>
 
