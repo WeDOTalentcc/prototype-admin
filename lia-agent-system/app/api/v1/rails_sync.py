@@ -137,7 +137,9 @@ async def get_candidate_enrichment(
     ai_insights = CandidateAIInsights(
         ai_summary=getattr(candidate, "ai_summary", None),
         skills_extracted=getattr(candidate, "skills_extracted", None),
-        has_embedding=getattr(candidate, "embedding_vector", None) is not None,
+        has_embedding=(
+            True if getattr(candidate, "embedding_vector", None) is not None else None
+        ),
     )
 
     return CandidateEnrichmentResponse(

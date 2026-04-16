@@ -44,7 +44,7 @@ class CandidateWSIData(BaseModel):
 class CandidateAIInsights(BaseModel):
     ai_summary: str | None = None
     skills_extracted: list[str] | dict[str, Any] | None = None
-    has_embedding: bool = False
+    has_embedding: bool | None = None
 
 
 class CandidateEnrichmentResponse(_RailsSyncEnvelope):
