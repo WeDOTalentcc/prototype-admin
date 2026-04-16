@@ -40,8 +40,10 @@ from app.domains.cv_screening.services.screening_question_set_service import (
 from app.domains.cv_screening.services.wsi_question_adjuster import (
     wsi_question_adjuster_service,
 )
-from app.shared.compliance.audit_service import AuditService, get_audit_service
-from app.shared.compliance.fairness_guard_middleware import check_fairness
+# NOTE: AuditService + check_fairness intentionally not imported here yet.
+# Task #247 (follow-up) will reintroduce FairnessGuard + audit logging on
+# `/wsi/generate-questions` — they were dead-code in the deleted
+# `wsi_questions.py` (shadowed by the canonical handler below).
 
 from ._shared import (
     BLOOM_LEVELS,
