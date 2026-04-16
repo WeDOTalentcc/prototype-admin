@@ -119,10 +119,18 @@ async def resolve_tenant(
 ):
     """Resolve tenant IDs from WorkOS organization ID or client account ID."""
     try:
+        from app.core.tenant import normalize_demo_company_id as _norm_tenant
+        if client_account_id:
+            client_account_id = _norm_tenant(
+                client_account_id, context="company.resolve_tenant.input"
+            ) or client_account_id
         resolved_client_id = client_account_id
 
         if not resolved_client_id and current_user and hasattr(current_user, 'company_id') and current_user.company_id:
-            resolved_client_id = str(current_user.company_id)
+            from app.core.tenant import normalize_demo_company_id
+            resolved_client_id = normalize_demo_company_id(
+                str(current_user.company_id), context="company.resolve_tenant"
+            ) or str(current_user.company_id)
 
         if workos_organization_id and not resolved_client_id:
             config = await tenant_repo.get_workos_config(workos_organization_id)
@@ -133,7 +141,10 @@ async def resolve_tenant(
             raise HTTPException(status_code=404, detail="No tenant found for the given identifiers")
 
         if current_user and hasattr(current_user, 'company_id') and current_user.company_id:
-            user_company = str(current_user.company_id)
+            from app.core.tenant import normalize_demo_company_id
+            user_company = normalize_demo_company_id(
+                str(current_user.company_id), context="company.resolve_tenant.cross_check"
+            ) or str(current_user.company_id)
             if client_account_id and client_account_id != user_company:
                 logger.warning(f"Cross-tenant access attempt: user {current_user.id} (company={user_company}) tried to resolve tenant {client_account_id}")
                 raise HTTPException(status_code=403, detail="Access denied: cross-tenant resolution not allowed")

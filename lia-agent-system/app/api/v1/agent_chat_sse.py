@@ -70,8 +70,11 @@ def _extract_auth(token: str | None) -> dict[str, Any]:
     try:
         import jwt as pyjwt
         payload = pyjwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+        from app.core.tenant import normalize_demo_company_id
+        raw_cid = str(payload.get("company_id") or payload.get("organization_id") or "")
+        normalized_cid = normalize_demo_company_id(raw_cid, context="agent_chat_sse._extract_auth") or ""
         return {
-            "company_id": str(payload.get("company_id") or payload.get("organization_id") or ""),
+            "company_id": normalized_cid,
             "user_id": str(payload.get("sub") or payload.get("user_id") or "anonymous"),
         }
     except Exception:

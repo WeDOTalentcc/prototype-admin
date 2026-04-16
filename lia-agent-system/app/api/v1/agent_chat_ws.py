@@ -51,6 +51,12 @@ from app.shared.robustness.security_patterns import check_input_security, get_bl
 from app.shared.compliance.fairness_guard import FairnessGuard
 from app.shared.compliance.c3b_layer import pre_compliance, post_compliance, ComplianceContext
 from app.shared.tenant_session import create_session_id
+from app.core.tenant import normalize_demo_company_id
+
+_EMPTY_AGENT_RESPONSE_MESSAGE = (
+    "Desculpe, não consegui gerar uma resposta para essa mensagem. "
+    "Pode reformular ou tentar novamente?"
+)
 
 logger = logging.getLogger(__name__)
 
@@ -376,8 +382,10 @@ def _extract_auth(token: str | None) -> dict[str, Any]:
     try:
         import jwt as pyjwt
         payload = pyjwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+        raw_cid = str(payload.get("company_id") or payload.get("organization_id") or "")
+        normalized_cid = normalize_demo_company_id(raw_cid, context="agent_chat_ws._extract_auth") or ""
         return {
-            "company_id": str(payload.get("company_id") or payload.get("organization_id") or ""),
+            "company_id": normalized_cid,
             "user_id": str(payload.get("sub") or payload.get("user_id") or "anonymous"),
         }
     except Exception:
@@ -913,6 +921,23 @@ async def agent_chat_ws(
                         logger.warning("[AgentChatWS] increment_usage falhou: %s", _inc_exc)
 
                 clean_message = _strip_react_json(output.message or "")
+                if not clean_message or not clean_message.strip():
+                    logger.error(
+                        "[AgentChatWS] Agent '%s' returned empty response session=%s "
+                        "company_id=%s raw=%r",
+                        active_domain, session_id, company_id, output.message,
+                    )
+                    await ws_mgr.send_to_session(session_id, serialize_message(
+                        content=_EMPTY_AGENT_RESPONSE_MESSAGE,
+                        confidence=0.0,
+                        domain=active_domain,
+                        source="agent_empty_response",
+                    ))
+                    await ws_mgr.send_to_session(session_id, serialize_error(
+                        _EMPTY_AGENT_RESPONSE_MESSAGE,
+                        "agent_empty_response",
+                    ))
+                    continue
 
                 _c3b_ctx = ComplianceContext(
                     company_id=company_id or "",
@@ -1083,8 +1108,23 @@ async def http_chat_message(req: HTTPChatRequest, request: Request):
             except Exception as _inc_exc:
                 logger.warning("[HTTPChat] increment_usage falhou: %s", _inc_exc)
 
+        _clean_content = _strip_react_json(output.message or "")
+        if not _clean_content or not _clean_content.strip():
+            logger.error(
+                "[HTTPChat] Agent '%s' returned empty response for session=%s company_id=%s. "
+                "Raw message=%r metadata_keys=%s",
+                active_domain, session_id, company_id,
+                output.message,
+                list((output.metadata or {}).keys()),
+            )
+            return HTTPChatResponse(
+                content=_EMPTY_AGENT_RESPONSE_MESSAGE,
+                confidence=0.0,
+                domain=active_domain,
+                error="agent_empty_response",
+            )
         return HTTPChatResponse(
-            content=_strip_react_json(output.message or ""),
+            content=_clean_content,
             confidence=output.confidence,
             domain=active_domain,
             actions=[a.dict() for a in (output.actions or [])],

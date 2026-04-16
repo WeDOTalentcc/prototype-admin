@@ -14,6 +14,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.auth.models import User, UserRole
 from app.auth.security import decode_token, get_password_hash
 from app.core.database import get_db
+from app.core.tenant import DEMO_COMPANY_UUID, normalize_demo_company_id
 
 DEMO_USER_EMAIL = "demo@wedotalent.com"
 DEMO_USER_PASSWORD = os.getenv("DEV_AUTO_LOGIN_PASSWORD", "demo123")
@@ -67,8 +68,14 @@ async def ensure_demo_user(db: AsyncSession) -> User:
 
     expected_hash_prefix = ("$2a$", "$2b$", "$2y$")
     if demo_user is not None:
+        changed = False
         if not demo_user.password_hash or not demo_user.password_hash.startswith(expected_hash_prefix):
             demo_user.password_hash = get_password_hash(DEMO_USER_PASSWORD)
+            changed = True
+        if demo_user.company_id and str(demo_user.company_id) == "demo_company":
+            demo_user.company_id = DEMO_COMPANY_UUID
+            changed = True
+        if changed:
             await db.commit()
             await db.refresh(demo_user)
         return demo_user
@@ -79,7 +86,7 @@ async def ensure_demo_user(db: AsyncSession) -> User:
         name="Demo User",
         password_hash=get_password_hash(DEMO_USER_PASSWORD),
         role=UserRole.recruiter,
-        company_id="demo_company",
+        company_id=DEMO_COMPANY_UUID,
         is_active=True,
     )
     db.add(demo_user)
@@ -335,6 +342,12 @@ def get_user_company_id(user: User) -> str:
     Returns:
         The company ID for the user
     """
+    _normalized_cid = normalize_demo_company_id(
+        str(user.company_id) if user.company_id is not None else None,
+        context="auth.get_user_company_id",
+    )
+    if _normalized_cid and _normalized_cid != (str(user.company_id) if user.company_id else None):
+        user.company_id = _normalized_cid
     if not user.company_id:
         from fastapi import HTTPException
         raise HTTPException(

@@ -24,6 +24,7 @@ from app.auth.schemas import (
     UserPublicRegister,
     UserResponse,
 )
+from app.core.tenant import normalize_demo_company_id
 from app.auth.security import (
     ACCESS_TOKEN_EXPIRE_MINUTES,
     EMAIL_VERIFICATION_EXPIRE_DAYS,
@@ -132,10 +133,15 @@ async def login(
             detail="User account is inactive"
         )
 
+    _user_company_id = getattr(user, "company_id", None)
+    _token_company_id = normalize_demo_company_id(
+        str(_user_company_id) if _user_company_id is not None else None,
+        context="auth.login",
+    )
     access_token = create_access_token(
         subject=str(user.id),
         role=user.role.value,
-        company_id=getattr(user, "company_id", None),
+        company_id=_token_company_id,
     )
     refresh_token = create_refresh_token(subject=str(user.id))
 
@@ -215,10 +221,15 @@ async def refresh_token(
             detail="User account is inactive"
         )
 
+    _user_company_id = getattr(user, "company_id", None)
+    _token_company_id = normalize_demo_company_id(
+        str(_user_company_id) if _user_company_id is not None else None,
+        context="auth.refresh",
+    )
     access_token = create_access_token(
         subject=str(user.id),
         role=user.role.value,
-        company_id=getattr(user, "company_id", None),
+        company_id=_token_company_id,
     )
     new_refresh_token = create_refresh_token(subject=str(user.id))
 
