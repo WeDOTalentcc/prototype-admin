@@ -75,7 +75,10 @@ export default defineConfig({
         test: {
           name: 'components',
           environment: 'jsdom',
-          include: ['src/components/**/__tests__/**/*.test.tsx'],
+          include: [
+            'src/components/**/__tests__/**/*.test.tsx',
+            'src/app/**/__tests__/**/*.test.tsx',
+          ],
           globals: true,
           setupFiles: ['src/hooks/__tests__/setup.ts'],
           alias: {
