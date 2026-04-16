@@ -57,3 +57,11 @@ repos:
         files: ^(app|scripts|tests)/.*\.py$
         pass_filenames: false
         always_run: false
+
+      - id: init-completeness
+        name: "G6: All model files exported in lia_models/__init__.py (ADR-002)"
+        language: python
+        entry: python3 scripts/check_init_completeness.py
+        files: ^libs/models/lia_models/.*\.py$
+        pass_filenames: false
+        always_run: false
