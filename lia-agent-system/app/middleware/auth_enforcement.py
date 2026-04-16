@@ -224,10 +224,8 @@ class AuthEnforcementMiddleware(BaseHTTPMiddleware):
                 rejection = _check_dev_api_key(request, path)
                 if rejection is not None:
                     return rejection
-                # Task #293: injetar o UUID canônico demo em vez da string legada
-                # "demo_company". A string quebrava `resolve_tenant_id` (está em
-                # _INVALID_TENANT_VALUES) e divergia de `user.company_id` após
-                # `ensure_demo_user`. Sem regressão: o branch só dispara em dev.
+                # Canonical demo UUID (legacy string "demo_company" is in
+                # _INVALID_TENANT_VALUES and breaks resolve_tenant_id).
                 from app.core.tenant import DEMO_COMPANY_UUID
                 request.state.token_payload = {"sub": "dev-user", "company_id": DEMO_COMPANY_UUID, "role": "admin"}
                 request.state.user_id = "dev-user"
@@ -251,7 +249,6 @@ class AuthEnforcementMiddleware(BaseHTTPMiddleware):
                 rejection = _check_dev_api_key(request, path)
                 if rejection is not None:
                     return rejection
-                # Task #293: mesma justificativa do branch acima — UUID canônico.
                 from app.core.tenant import DEMO_COMPANY_UUID
                 request.state.token_payload = {"sub": "dev-user", "company_id": DEMO_COMPANY_UUID, "role": "admin"}
                 request.state.user_id = "dev-user"
@@ -298,8 +295,6 @@ class AuthEnforcementMiddleware(BaseHTTPMiddleware):
                 rejection = _check_dev_api_key(request, path)
                 if rejection is not None:
                     return rejection
-                # Task #293: UUID canônico em todos os branches DEV_MODE para
-                # evitar que `resolve_tenant_id` rejeite a string legada.
                 from app.core.tenant import DEMO_COMPANY_UUID
                 request.state.token_payload = {"sub": "dev-user", "company_id": DEMO_COMPANY_UUID, "role": "admin"}
                 request.state.user_id = "dev-user"

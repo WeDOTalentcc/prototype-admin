@@ -171,8 +171,8 @@ export default function FunilDeTalentosPage() {
     window.open(`/funil-de-talentos/candidato/${candidate.id}`,"_blank")
   }
 
-  // Task #293: redireciona ao login locale-aware, preservando next para
-  // retornar à mesma página após a reautenticação.
+  // Redireciona ao login locale-aware preservando `next` para retornar aqui
+  // após a reautenticação.
   const handleRelogin = useCallback(() => {
     const next = typeof window !== "undefined"
       ? `${window.location.pathname}${window.location.search}`
@@ -182,9 +182,7 @@ export default function FunilDeTalentosPage() {
 
   const isAuthError = errorKind === "unauthorized" || errorKind === "forbidden"
 
-  // Task #293: mensagem localizada derivada de errorKind. O hook só classifica;
-  // a UI traduz. Se futuramente errorKind ganhar um novo valor sem esta chave,
-  // cairá no fallback.
+  // Mensagem localizada derivada de errorKind (o hook só classifica).
   const errorMessage = (() => {
     if (!errorKind) return error
     const key =
@@ -333,12 +331,8 @@ const SENIORITY_OPTIONS = [
               </div>
             </div>
 
-            {/* Task #293: estados de erro diferenciados.
-                - 401/403 → estado dedicado "sessão expirada" que SUBSTITUI a
-                  tabela (user não vê dados estale e a CTA de relogin é o
-                  foco). Redireciona para /{locale}/login?next=<path>.
-                - 5xx/network → banner inline com retry, mantendo a tabela
-                  oculta até a reação do usuário. */}
+            {/* 401/403 → estado dedicado de relogin que substitui a tabela;
+                5xx/network → banner inline com retry. */}
             {isAuthError ? (
               <div
                 role="alert"
@@ -387,10 +381,7 @@ const SENIORITY_OPTIONS = [
               </div>
             ) : null}
 
-            {/* Tabela — só renderiza quando não há erro de auth. Em erros de
-                servidor/rede mantemos o banner inline; a tabela pode continuar
-                visível (última listagem em cache) para não piscar em flaps
-                transitórios. */}
+            {/* Tabela — oculta durante estado de relogin. */}
             {!isAuthError && (
               <div className="bg-lia-bg-primary dark:bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl overflow-hidden">
                 {!loading && candidates.length === 0 && !error ? (

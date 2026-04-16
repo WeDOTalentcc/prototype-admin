@@ -18,9 +18,8 @@ export interface CandidatesListFilters {
   sort_order?: "asc" | "desc"
 }
 
-// Task #293: classificação de erro para a UI. "unauthorized" (401) e
-// "forbidden" (403) exigem CTA de relogin; "server" (5xx) e "network"
-// continuam tratáveis via retry manual.
+// Classificação do erro de fetch. "unauthorized"/"forbidden" exigem relogin;
+// "server"/"network" são retriáveis.
 export type CandidatesErrorKind = "unauthorized" | "forbidden" | "server" | "network"
 
 export interface UseCandidatesListReturn {
@@ -87,9 +86,8 @@ export function useCandidatesList(initialFilters?: CandidatesListFilters): UseCa
       .catch((err: Error & { status?: number }) => {
         if (requestIdRef.current !== thisRequestId) return
         console.error("[useCandidatesList] fetch error:", err)
-        // Task #293: só classifica; a UI traduz via i18n (pipeline.auth.*Message).
-        // `error` permanece com um fallback neutro para consumers legados que
-        // só leem string.
+        // Só classifica; a UI traduz via i18n. `error` fica com mensagem crua
+        // como fallback para consumers legados.
         const status = typeof err?.status === "number" ? err.status : undefined
         const kind: CandidatesErrorKind =
           status === 401 ? "unauthorized" :

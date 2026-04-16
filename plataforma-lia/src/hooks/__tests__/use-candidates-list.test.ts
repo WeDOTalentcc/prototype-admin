@@ -131,7 +131,28 @@ describe("useCandidatesList", () => {
 
     expect(result.current.error).not.toBeNull()
     expect(result.current.candidates).toHaveLength(0)
+    expect(result.current.errorKind).toBe("network")
   })
+
+  // Task #293 — classificação de errorKind por HTTP status.
+  it.each([
+    [401, "unauthorized"],
+    [403, "forbidden"],
+    [500, "server"],
+    [503, "server"],
+  ] as const)(
+    "HTTP %i → errorKind=%s",
+    async (status, expectedKind) => {
+      const err = Object.assign(new Error(`HTTP ${status}`), { status })
+      mockGetCandidates.mockRejectedValueOnce(err)
+
+      const { result } = renderHook(() => useCandidatesList())
+      await waitFor(() => expect(result.current.loading).toBe(false))
+
+      expect(result.current.errorKind).toBe(expectedKind)
+      expect(result.current.candidates).toHaveLength(0)
+    }
+  )
 
   it("goToPage(2) atualiza currentPage e rebusca com offset correto", async () => {
     mockGetCandidates.mockResolvedValue({
