@@ -105,8 +105,6 @@ from app.api.v1 import (
     wizard_analytics,
     wizard_suggestions,
     wizard_smart_orchestrator,
-    wsi_questions,
-    wsi_question_adjust,
     wsi_observability,
     wsi_screening_pipeline_endpoint,
     orchestrated_job_chat,
@@ -138,8 +136,9 @@ app.include_router(wizard_analytics.router, prefix="/api/v1", tags=["wizard_anal
 app.include_router(wizard_suggestions.router, prefix="/api/v1", tags=["wizard_suggestions"])
 app.include_router(wizard_smart_orchestrator.router, prefix="/api/v1", tags=["wizard_smart_orchestrator"])
 app.include_router(wsi_v1.router, tags=["wsi"])
-app.include_router(wsi_questions.router, prefix="/api/v1", tags=["wsi_questions"])
-app.include_router(wsi_question_adjust.router, prefix="/api/v1", tags=["wsi_question_adjust"])
+# NOTE: `wsi_questions` and `wsi_question_adjust` standalone routers were
+# merged into `app/api/v1/wsi/questions.py` (above via `wsi_v1.router`)
+# in Task #244. Do not re-add them here.
 app.include_router(wsi_observability.router, prefix="/api/v1", tags=["wsi_observability"])
 app.include_router(wsi_screening_pipeline_endpoint.router, prefix="/api/v1", tags=["wsi_pipeline"])
 app.include_router(orchestrated_job_chat.router, prefix="/api/v1", tags=["orchestrated_job_chat"])

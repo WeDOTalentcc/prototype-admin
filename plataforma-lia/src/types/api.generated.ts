@@ -20532,11 +20532,11 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Generate Wsi Questions
-         * @description Generate WSI questions based on job competencies using Gemini LLM.
-         *     Falls back to template-based generation if LLM is unavailable.
+         * Generate Questions
+         * @description Generate WSI screening questions using the canonical F6 pipeline
+         *     (CBI + Bloom + Dreyfus + BigFive via WSIService).
          */
-        post: operations["generate_wsi_questions_api_v1_wsi_generate_questions_post"];
+        post: operations["generate_questions_api_v1_wsi_generate_questions_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -20643,6 +20643,95 @@ export interface paths {
         };
         /** Check Question Set Consistency */
         get: operations["check_question_set_consistency_api_v1_wsi_question_sets__job_id__consistency_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/wsi/regenerate-questions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Regenerate Wsi Questions
+         * @description Regenerate WSI questions when competencies change.
+         *
+         *     Accepts full competency lists and computes diffs server-side:
+         *     - Keeps questions for competencies still in the list
+         *     - Removes questions for competencies no longer in the list
+         *     - Generates new questions for new competencies via LLM
+         *     - Ensures minimum WSI quality thresholds
+         */
+        post: operations["regenerate_wsi_questions_api_v1_wsi_regenerate_questions_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/wsi/question-templates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Question Templates
+         * @description Get available question templates for reference.
+         */
+        get: operations["get_question_templates_api_v1_wsi_question_templates_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/wsi/questions/adjust": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Adjust Questions
+         * @description Adjust WSI questions based on recruiter's natural language prompt.
+         */
+        post: operations["adjust_questions_api_v1_wsi_questions_adjust_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/wsi/questions/{job_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Questions For Job
+         * @description Retrieve saved screening questions for a job vacancy.
+         *
+         *     Reads the active screening question set version from the database
+         *     (the same store written by ``POST /wsi/questions/save``).
+         */
+        get: operations["get_questions_for_job_api_v1_wsi_questions__job_id__get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -20980,52 +21069,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/wsi/regenerate-questions": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Regenerate Wsi Questions
-         * @description Regenerate WSI questions when competencies change.
-         *
-         *     Accepts full competency lists and computes diffs server-side:
-         *     - Keeps questions for competencies still in the list
-         *     - Removes questions for competencies no longer in the list
-         *     - Generates new questions for new competencies via LLM
-         *     - Ensures minimum WSI quality thresholds
-         */
-        post: operations["regenerate_wsi_questions_api_v1_wsi_regenerate_questions_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/wsi/question-templates": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Get Question Templates
-         * @description Get available question templates for reference.
-         */
-        get: operations["get_question_templates_api_v1_wsi_question_templates_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/v1/wsi/screening-pipeline": {
         parameters: {
             query?: never;
@@ -21043,49 +21086,6 @@ export interface paths {
          *     using scientific frameworks (Big Five, Bloom, Dreyfus, CBI).
          */
         post: operations["generate_screening_pipeline_api_v1_wsi_screening_pipeline_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/wsi/questions/adjust": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Adjust Questions
-         * @description Adjust WSI questions based on recruiter's natural language prompt.
-         */
-        post: operations["adjust_questions_api_v1_wsi_questions_adjust_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/wsi/questions/{job_id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Get Questions
-         * @description Retrieve saved screening questions for a job vacancy.
-         *
-         *     Reads the active screening question set version from the database
-         *     (the same store written by ``POST /wsi/questions/save``).
-         */
-        get: operations["get_questions_api_v1_wsi_questions__job_id__get"];
-        put?: never;
-        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -60018,7 +60018,10 @@ export interface components {
          * @enum {string}
          */
         QuestionBlockType: "technical" | "behavioral" | "gap_analysis" | "contextual";
-        /** QuestionItem */
+        /**
+         * QuestionItem
+         * @description Per-job question item used by /questions/adjust and GET /questions/{job_id}.
+         */
         QuestionItem: {
             /** Id */
             id?: string | null;
@@ -60108,10 +60111,7 @@ export interface components {
              */
             skillName?: string | null;
         };
-        /**
-         * QuestionsResponse
-         * @description Response with generated questions.
-         */
+        /** QuestionsResponse */
         QuestionsResponse: {
             /** Success */
             success: boolean;
@@ -69199,7 +69199,7 @@ export interface components {
         };
         /**
          * WSIQuestion
-         * @description WSI question structure.
+         * @description Legacy WSI question shape used by /regenerate-questions and /question-templates.
          */
         WSIQuestion: {
             /** Id */
@@ -72099,50 +72099,8 @@ export interface components {
              */
             methodology: string;
         };
-        /** InviteRequest */
-        app__api__v1__wsi_async__InviteRequest: {
-            /** Candidate Id */
-            candidate_id: string;
-            /** Job Id */
-            job_id: string;
-            /** Company Id */
-            company_id: string;
-            /**
-             * Expire Hours
-             * @default 72
-             */
-            expire_hours: number;
-        };
-        /**
-         * GenerateQuestionsRequest
-         * @description Request to generate WSI questions.
-         */
-        app__api__v1__wsi_questions__GenerateQuestionsRequest: {
-            /** Company Id */
-            company_id: string;
-            /** Job Title */
-            job_title: string;
-            /** Technical Skills */
-            technical_skills?: string[];
-            /** Behavioral Competencies */
-            behavioral_competencies?: string[];
-            /** Responsibilities */
-            responsibilities?: string[];
-            /** Seniority */
-            seniority?: string | null;
-            /** Department */
-            department?: string | null;
-            /**
-             * Max Questions
-             * @default 12
-             */
-            max_questions: number;
-        };
-        /**
-         * RegenerateQuestionsRequest
-         * @description Request to regenerate WSI questions based on full competency lists.
-         */
-        app__api__v1__wsi_questions__RegenerateQuestionsRequest: {
+        /** RegenerateQuestionsRequest */
+        app__api__v1__wsi__questions__RegenerateQuestionsRequest: {
             /** Company Id */
             company_id: string;
             /** Job Title */
@@ -72160,6 +72118,20 @@ export interface components {
              * @default 12
              */
             max_questions: number;
+        };
+        /** InviteRequest */
+        app__api__v1__wsi_async__InviteRequest: {
+            /** Candidate Id */
+            candidate_id: string;
+            /** Job Id */
+            job_id: string;
+            /** Company Id */
+            company_id: string;
+            /**
+             * Expire Hours
+             * @default 72
+             */
+            expire_hours: number;
         };
         /**
          * AnalyzeResponseRequest
@@ -106941,7 +106913,7 @@ export interface operations {
             };
         };
     };
-    generate_wsi_questions_api_v1_wsi_generate_questions_post: {
+    generate_questions_api_v1_wsi_generate_questions_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -106950,7 +106922,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["app__api__v1__wsi_questions__GenerateQuestionsRequest"];
+                "application/json": components["schemas"]["app__api__v1__wsi___shared__GenerateQuestionsRequest"];
             };
         };
         responses: {
@@ -106960,7 +106932,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["QuestionsResponse"];
+                    "application/json": components["schemas"]["app__api__v1__wsi___shared__GenerateQuestionsResponse"];
                 };
             };
             /** @description Validation Error */
@@ -107152,6 +107124,123 @@ export interface operations {
                 };
                 content: {
                     "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    regenerate_wsi_questions_api_v1_wsi_regenerate_questions_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["app__api__v1__wsi__questions__RegenerateQuestionsRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["QuestionsResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_question_templates_api_v1_wsi_question_templates_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+        };
+    };
+    adjust_questions_api_v1_wsi_questions_adjust_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdjustQuestionsRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_questions_for_job_api_v1_wsi_questions__job_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                job_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GetQuestionsResponse"];
                 };
             };
             /** @description Validation Error */
@@ -107651,59 +107740,6 @@ export interface operations {
             };
         };
     };
-    regenerate_wsi_questions_api_v1_wsi_regenerate_questions_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["app__api__v1__wsi_questions__RegenerateQuestionsRequest"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["QuestionsResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    get_question_templates_api_v1_wsi_question_templates_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": unknown;
-                };
-            };
-        };
-    };
     generate_screening_pipeline_api_v1_wsi_screening_pipeline_post: {
         parameters: {
             query?: never;
@@ -107724,70 +107760,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["WSIScreeningPipelineResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    adjust_questions_api_v1_wsi_questions_adjust_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["AdjustQuestionsRequest"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": unknown;
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    get_questions_api_v1_wsi_questions__job_id__get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                job_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["GetQuestionsResponse"];
                 };
             };
             /** @description Validation Error */
