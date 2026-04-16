@@ -356,7 +356,11 @@ export async function getCandidates(params: CandidateListParams): Promise<Candid
     { attempts: 3, timeoutMs: 20000, retryDelaysMs: [0, 1000, 3000] },
   )
   if (!response.ok) {
-    throw new Error(`Backend retornou ${response.status}: ${response.statusText}`)
+    // BUG #274: anexar status ao Error pra que o hook possa diferenciar
+    // 401/403 (relogar) de 5xx (retry manual via refresh()).
+    const err = new Error(`Backend retornou ${response.status}: ${response.statusText}`) as Error & { status?: number }
+    err.status = response.status
+    throw err
   }
   const data = await response.json()
   const rawCandidates = data?.candidates ?? data?.items ?? []

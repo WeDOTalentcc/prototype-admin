@@ -1,4 +1,7 @@
 import { CandidateResult } from "@/components/search/search-results-card"
+// Reuse canonical client-side fetch helper (timeout + retry on 5xx/network).
+// See services/lia-api/base.ts.
+import { fetchWithRetry } from "@/services/lia-api/base"
 
 const API_BASE = ""
 
@@ -166,36 +169,41 @@ export interface CreditBalance {
 }
 
 export async function searchCandidates(request: SearchRequest): Promise<SearchResponse> {
-  const response = await fetch(`${API_BASE}/api/backend-proxy/search/candidates`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
+  // BUG #274: este endpoint pode levar mais de 10s; sem timeout/retry/Abort,
+  // qualquer recompilação HMR ou 5xx transiente vira "Failed to fetch" no UI.
+  // Reusa fetchWithRetry canônico (3 tentativas, 30s timeout, retry em 5xx).
+  const response = await fetchWithRetry(
+    `${API_BASE}/api/backend-proxy/search/candidates`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        query: request.query,
+        thread_id: request.thread_id,
+        search_spec: request.search_spec,
+        search_local: request.search_local ?? true,
+        search_pearch: request.search_pearch ?? false,
+        pearch_type: request.pearch_type ?? "fast",
+        local_limit: request.local_limit ?? 20,
+        pearch_limit: request.pearch_limit ?? 15,
+        show_emails: request.show_emails ?? false,
+        show_phone_numbers: request.show_phone_numbers ?? false,
+        high_freshness: request.high_freshness ?? false,
+        strict_filters: request.strict_filters ?? false,
+        require_emails: request.require_emails ?? false,
+        require_phone_numbers: request.require_phone_numbers ?? false,
+        require_phones_or_emails: request.require_phones_or_emails ?? false,
+        job_vacancy_id: request.job_vacancy_id,
+        exclude_candidate_ids: request.exclude_candidate_ids ?? [],
+        include_discovered: request.include_discovered ?? true,
+      }),
     },
-    body: JSON.stringify({
-      query: request.query,
-      thread_id: request.thread_id,
-      search_spec: request.search_spec,
-      search_local: request.search_local ?? true,
-      search_pearch: request.search_pearch ?? false,
-      pearch_type: request.pearch_type ?? "fast",
-      local_limit: request.local_limit ?? 20,
-      pearch_limit: request.pearch_limit ?? 15,
-      show_emails: request.show_emails ?? false,
-      show_phone_numbers: request.show_phone_numbers ?? false,
-      high_freshness: request.high_freshness ?? false,
-      strict_filters: request.strict_filters ?? false,
-      require_emails: request.require_emails ?? false,
-      require_phone_numbers: request.require_phone_numbers ?? false,
-      require_phones_or_emails: request.require_phones_or_emails ?? false,
-      job_vacancy_id: request.job_vacancy_id,
-      exclude_candidate_ids: request.exclude_candidate_ids ?? [],
-      include_discovered: request.include_discovered ?? true,
-    }),
-  })
+    { attempts: 3, timeoutMs: 30000, retryDelaysMs: [0, 1000, 3000] },
+  )
 
   if (!response.ok) {
     const error = await response.text()
-    throw new Error(`Search failed: ${error}`)
+    throw new Error(`Search failed (${response.status}): ${error || response.statusText}`)
   }
 
   return response.json()
