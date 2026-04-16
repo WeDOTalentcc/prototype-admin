@@ -9,7 +9,7 @@ from datetime import datetime
 from sqlalchemy import select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.company_hiring_policy import (
+from lia_models.company_hiring_policy import (
     AUTOMATION_RULES_DEFAULTS,
     COMMUNICATION_RULES_DEFAULTS,
     PIPELINE_RULES_DEFAULTS,

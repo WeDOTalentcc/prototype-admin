@@ -18,7 +18,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.domains.interview_intelligence.services.interview_wsi_service import (
     interview_wsi_service,
 )
-from app.models.interview import Interview
+from lia_models.interview import Interview
 
 logger = logging.getLogger(__name__)
 

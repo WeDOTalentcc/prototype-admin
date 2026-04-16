@@ -15,7 +15,7 @@ import random
 from uuid import uuid4
 
 from app.core.database import AsyncSessionLocal
-from app.models.job_pattern import JobEmbedding, JobPattern, SalaryBenchmark, SkillCluster
+from lia_models.job_pattern import JobEmbedding, JobPattern, SalaryBenchmark, SkillCluster
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

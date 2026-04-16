@@ -10,7 +10,7 @@ from app.core.database import get_db
 from app.shared.providers.llm_factory import get_provider_for_tenant
 from app.domains.interview_scheduling.agents.interview_system_prompt import get_extraction_prompt
 from app.domains.interview_scheduling.services.calendar_service import calendar_service
-from app.models.interview import Interview
+from lia_models.interview import Interview
 from app.schemas.interview_scheduling_state import InterviewSchedulingState
 
 logger = logging.getLogger(__name__)

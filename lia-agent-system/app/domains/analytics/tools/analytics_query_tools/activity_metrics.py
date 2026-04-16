@@ -35,7 +35,7 @@ async def get_activity_summary(
 
     try:
         from sqlalchemy import and_, select
-        from app.models.candidate import VacancyCandidate
+        from lia_models.candidate import VacancyCandidate
 
         period_days = {"today": 1, "week": 7, "month": 30}.get(period, 7)
         start_date = datetime.utcnow() - timedelta(days=period_days)
@@ -147,8 +147,8 @@ async def get_pending_actions(
 
     try:
         from sqlalchemy import and_, select
-        from app.models.candidate import Candidate, VacancyCandidate
-        from app.models.job_vacancy import JobVacancy
+        from lia_models.candidate import Candidate, VacancyCandidate
+        from lia_models.job_vacancy import JobVacancy
 
         overdue_threshold = datetime.utcnow() - timedelta(days=overdue_days)
 

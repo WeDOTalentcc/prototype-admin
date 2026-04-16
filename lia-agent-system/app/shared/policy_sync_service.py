@@ -88,7 +88,7 @@ async def _sync_stage_slas(
     try:
         from sqlalchemy import select, update
 
-        from app.models.recruitment_stage import RecruitmentStage
+        from lia_models.recruitment_stage import RecruitmentStage
         
         if isinstance(max_days, dict):
             for stage_name, days in max_days.items():

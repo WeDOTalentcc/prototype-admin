@@ -7,7 +7,7 @@ from typing import Any
 from sqlalchemy import and_, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.task import Task, TaskPriority, TaskStatus, TaskType
+from lia_models.task import Task, TaskPriority, TaskStatus, TaskType
 
 
 class TasksRepository:

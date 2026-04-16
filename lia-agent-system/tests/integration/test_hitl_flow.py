@@ -166,7 +166,7 @@ class TestUserAgentPreferences:
 
     def test_user_agent_preference_model_importable(self):
         """Modelo UserAgentPreference deve ser importável."""
-        from app.models.user_agent_preference import UserAgentPreference
+        from lia_models.user_agent_preference import UserAgentPreference
         assert UserAgentPreference is not None
 
     def test_user_agent_preference_router_in_main(self):
@@ -177,7 +177,7 @@ class TestUserAgentPreferences:
 
     def test_auto_confirm_field_in_model(self):
         """Modelo UserAgentPreference deve ter campo auto_confirm."""
-        from app.models.user_agent_preference import UserAgentPreference
+        from lia_models.user_agent_preference import UserAgentPreference
         import inspect
         src = inspect.getsource(UserAgentPreference)
         assert "auto_confirm" in src

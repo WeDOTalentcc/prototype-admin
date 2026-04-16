@@ -19,7 +19,7 @@ from app.domains.bulk_actions.dependencies import get_bulk_actions_repo
 from app.domains.bulk_actions.repositories.bulk_actions_repository import BulkActionsRepository
 from app.domains.communication.services.email_service import get_email_service
 from app.domains.communication.services.email_service import EmailService
-from app.models.job_vacancy import JobVacancy
+from lia_models.job_vacancy import JobVacancy
 
 logger = logging.getLogger(__name__)
 

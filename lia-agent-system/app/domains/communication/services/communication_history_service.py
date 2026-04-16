@@ -12,7 +12,7 @@ from typing import Any
 from sqlalchemy import and_, desc, func, select
 
 from app.core.database import AsyncSessionLocal
-from app.models import (
+from lia_models import (
     CommunicationHistory,
     CommunicationStatus,
 )

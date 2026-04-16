@@ -131,7 +131,7 @@ async def _create_interview_calendar_event(request, candidate_name: str, candida
 async def _log_interview_scheduled_audit(db, request, email_sent: bool, whatsapp_sent: bool, calendar_event_created: bool, notification_created: bool, interview_id, calendar_event_id) -> None:
     """Log automation execution log for interview_scheduled trigger."""
     try:
-        from app.models.automation import AutomationExecutionLog
+        from lia_models.automation import AutomationExecutionLog
         db.add(AutomationExecutionLog(
             company_id=request.company_id, trigger_event="interview_scheduled",
             trigger_data={
@@ -435,7 +435,7 @@ Responda em JSON:
             suggested_next_stage = "Reprovado"
 
         try:
-            from app.models.lia_opinion import LiaOpinion
+            from lia_models.lia_opinion import LiaOpinion
 
             score = average_rating if average_rating > 0 else (4.0 if recommendation == "advance" else 2.5 if recommendation == "hold" else 2.0)
 

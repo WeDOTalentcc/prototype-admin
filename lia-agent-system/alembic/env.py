@@ -21,20 +21,20 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app.core.database import Base
 
-from app.models.intelligence_layer import (
+from lia_models.intelligence_layer import (
     IntelligenceInsight, PatternCache, CorrectionPattern, 
     SuccessProfile, OutcomeCorrelation
 )
-from app.models.recruiter_profile import (
+from lia_models.recruiter_profile import (
     RecruiterProfile, RecruiterFieldPreference,
     PersonalizationSettings, ProfileCalculationLog
 )
-from app.models.feedback_learning import WizardFeedback, JobOutcome
-from app.models.job_draft import JobDraft
-from app.models.conversation import Conversation, Message, ConversationSummary
-from app.models.job_vacancy import JobVacancy
-from app.models.candidate import Candidate, VacancyCandidate
-from app.models.interview import Interview, InterviewFeedback
+from lia_models.feedback_learning import WizardFeedback, JobOutcome
+from lia_models.job_draft import JobDraft
+from lia_models.conversation import Conversation, Message, ConversationSummary
+from lia_models.job_vacancy import JobVacancy
+from lia_models.candidate import Candidate, VacancyCandidate
+from lia_models.interview import Interview, InterviewFeedback
 
 from lia_models.billing import CompanyModule
 from lia_models.external_api_consumption import ExternalApiConsumption

@@ -26,13 +26,13 @@ from app.domains.sourcing.services.contact_enrichment_service import (  # noqa: 
     get_contact_enrichment_service,
 )
 from app.domains.sourcing.services.search_analytics import search_analytics_service  # noqa: F401
-from app.models.pearch import (  # noqa: F401
+from lia_models.pearch import (  # noqa: F401
     CandidateProfile,
     HybridSearchRequest,
     PearchSearchRequest,
     SearchType,
 )
-from app.models.rubric import JobRequirement
+from lia_models.rubric import JobRequirement
 from app.schemas.archetype import (
     ArchetypeFromSearchCreate,  # noqa: F401
     ArchetypeFromSearchResponse,  # noqa: F401

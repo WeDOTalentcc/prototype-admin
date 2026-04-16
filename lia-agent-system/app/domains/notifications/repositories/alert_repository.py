@@ -8,7 +8,7 @@ from uuid import UUID
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.alert import AlertConfig, AlertPreference
+from lia_models.alert import AlertConfig, AlertPreference
 
 logger = logging.getLogger(__name__)
 

@@ -13,7 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.domains.cv_screening.repositories.screening_repository import ScreeningRepository
 from app.domains.cv_screening.services.rubric_evaluation_service import RubricEvaluationService, get_rubric_evaluation_service
-from app.models.rubric import JobRequirement, RubricEvaluation
+from lia_models.rubric import JobRequirement, RubricEvaluation
 from app.schemas.rubric import (
     BatchEvaluateRequest,
     BatchEvaluateResponse,

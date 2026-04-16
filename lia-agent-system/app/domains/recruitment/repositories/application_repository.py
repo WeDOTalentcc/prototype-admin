@@ -9,10 +9,10 @@ from datetime import datetime
 from sqlalchemy import and_, func, not_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.candidate import Candidate, VacancyCandidate
-from app.models.candidate_feedback import CandidateFeedback
-from app.models.job_vacancy import JobVacancy
-from app.models.rubric import JobRequirement
+from lia_models.candidate import Candidate, VacancyCandidate
+from lia_models.candidate_feedback import CandidateFeedback
+from lia_models.job_vacancy import JobVacancy
+from lia_models.rubric import JobRequirement
 
 logger = logging.getLogger(__name__)
 
@@ -142,7 +142,7 @@ class ApplicationRepository:
 
     async def get_company_threshold(self, company_id, default_threshold: int = 20) -> int:
         try:
-            from app.models.company import CompanyProfile
+            from lia_models.company import CompanyProfile
             if not company_id:
                 return default_threshold
             cp_result = await self.db.execute(

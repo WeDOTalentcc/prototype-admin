@@ -314,7 +314,7 @@ async def list_patterns(
         from sqlalchemy import and_, select
 
         from app.core.database import AsyncSessionLocal
-        from app.models.job_pattern import JobPattern
+        from lia_models.job_pattern import JobPattern
         
         async with AsyncSessionLocal() as db:
             conditions = [

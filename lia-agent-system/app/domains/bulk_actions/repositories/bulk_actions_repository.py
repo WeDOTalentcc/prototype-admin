@@ -9,10 +9,10 @@ from typing import Any
 from sqlalchemy import and_, func, not_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.candidate import Candidate, VacancyCandidate
-from app.models.company import CompanyProfile
-from app.models.email_template import EmailTemplate
-from app.models.job_vacancy import JobVacancy
+from lia_models.candidate import Candidate, VacancyCandidate
+from lia_models.company import CompanyProfile
+from lia_models.email_template import EmailTemplate
+from lia_models.job_vacancy import JobVacancy
 
 EXCLUDED_STATUSES = ("rejected", "declined", "withdrawn")
 ORGANIC_ORIGINS = ("web", "whatsapp")

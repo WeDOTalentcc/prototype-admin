@@ -25,8 +25,8 @@ from app.domains.interview_scheduling.repositories.interview_analysis_repository
 from app.domains.interview_scheduling.services.interview_transcript_analysis_service import (
     interview_transcript_analysis_service,
 )
-from app.models.interview import Interview
-from app.models.lia_opinion import LiaOpinion
+from lia_models.interview import Interview
+from lia_models.lia_opinion import LiaOpinion
 from app.schemas.lia_opinion import LiaOpinionCreate, OpinionSourceEnum, OpinionTypeEnum, RecommendationEnum
 from app.services.notification_service import (
     NotificationChannel,

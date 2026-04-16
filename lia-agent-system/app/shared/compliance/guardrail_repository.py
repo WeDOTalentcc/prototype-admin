@@ -12,7 +12,7 @@ from pydantic import BaseModel
 from sqlalchemy import and_, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.guardrail import Guardrail
+from lia_models.guardrail import Guardrail
 
 logger = logging.getLogger(__name__)
 
@@ -192,7 +192,7 @@ class GuardrailRepository:
     ):
         """List guardrails with optional filters on domain, company_id, is_active, level."""
         from sqlalchemy import select as _select
-        from app.models.guardrail import Guardrail
+        from lia_models.guardrail import Guardrail
 
         stmt = _select(Guardrail)
 
@@ -213,7 +213,7 @@ class GuardrailRepository:
     async def find_by_rule_domain_company(db, rule, domain=None, company_id=None):
         """Find a guardrail by exact rule + domain + company_id match. Returns None if not found."""
         from sqlalchemy import select as _select
-        from app.models.guardrail import Guardrail
+        from lia_models.guardrail import Guardrail
 
         stmt = _select(Guardrail).where(
             Guardrail.rule == rule,

@@ -126,7 +126,7 @@ async def list_archetypes(
     """
     from sqlalchemy import select
 
-    from app.models.archetype import SearchArchetype, seed_default_archetypes
+    from lia_models.archetype import SearchArchetype, seed_default_archetypes
     
     try:
         # Seed default archetypes if needed
@@ -200,7 +200,7 @@ async def create_archetype(
 
     from sqlalchemy import select
 
-    from app.models.archetype import SearchArchetype
+    from lia_models.archetype import SearchArchetype
     
     try:
         # Generate ID if not provided
@@ -369,7 +369,7 @@ async def get_closed_job_suggestions(
     """
     from sqlalchemy import desc, or_, select
 
-    from app.models.job_vacancy import JobVacancy
+    from lia_models.job_vacancy import JobVacancy
     
     try:
         result = await db.execute(
@@ -448,8 +448,8 @@ async def create_archetype_from_job(
 
     from sqlalchemy import select
 
-    from app.models.archetype import SearchArchetype
-    from app.models.job_vacancy import JobVacancy
+    from lia_models.archetype import SearchArchetype
+    from lia_models.job_vacancy import JobVacancy
     
     try:
         result = await db.execute(
@@ -595,7 +595,7 @@ async def create_archetype_from_description(
     import re
     import uuid as uuid_lib
 
-    from app.models.archetype import SearchArchetype
+    from lia_models.archetype import SearchArchetype
     
     try:
         description = request.description.lower()
@@ -718,7 +718,7 @@ async def get_archetype(
     """Obtém detalhes de um arquétipo específico."""
     from sqlalchemy import select
 
-    from app.models.archetype import SearchArchetype
+    from lia_models.archetype import SearchArchetype
     
     try:
         result = await db.execute(
@@ -764,7 +764,7 @@ async def delete_archetype(
     """
     from sqlalchemy import delete, select
 
-    from app.models.archetype import SearchArchetype
+    from lia_models.archetype import SearchArchetype
     
     try:
         result = await db.execute(
@@ -808,7 +808,7 @@ async def update_archetype(
     """
     from sqlalchemy import select
 
-    from app.models.archetype import SearchArchetype
+    from lia_models.archetype import SearchArchetype
     
     try:
         result = await db.execute(
@@ -885,7 +885,7 @@ async def search_by_archetype(
 
     from sqlalchemy import select, update
 
-    from app.models.archetype import SearchArchetype
+    from lia_models.archetype import SearchArchetype
     from app.shared.services.lia_score_service import lia_score_service
     
     logger = logging.getLogger(__name__)
@@ -1111,8 +1111,8 @@ async def generate_archetype_from_job(
 
     from sqlalchemy import select
 
-    from app.models.archetype import SearchArchetype
-    from app.models.job_vacancy import JobVacancy
+    from lia_models.archetype import SearchArchetype
+    from lia_models.job_vacancy import JobVacancy
     from app.shared.providers.llm_factory import get_provider_for_tenant
 
     try:
@@ -1271,7 +1271,7 @@ async def generate_archetype_from_description(
     import json
     import uuid as uuid_lib
 
-    from app.models.archetype import SearchArchetype
+    from lia_models.archetype import SearchArchetype
     from app.shared.providers.llm_factory import get_provider_for_tenant
 
     try:
@@ -1393,7 +1393,7 @@ async def get_archetype_suggestions(
     """
     from sqlalchemy import select
 
-    from app.models.job_vacancy import JobVacancy
+    from lia_models.job_vacancy import JobVacancy
 
 # RAILS-DEPRECATED: This endpoint manages Rails-owned entities (candidates/jobs/applies/users).
 # Direct DB calls will be replaced by RailsAdapter after ats-api-rails handoff.

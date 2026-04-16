@@ -13,7 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.domains.policy.repositories.global_policy_repository import GlobalPolicyRepository
-from app.models.global_policy import POLICY_TYPES, GlobalPolicy, PolicyScope, PolicyType
+from lia_models.global_policy import POLICY_TYPES, GlobalPolicy, PolicyScope, PolicyType
 
 logger = logging.getLogger(__name__)
 

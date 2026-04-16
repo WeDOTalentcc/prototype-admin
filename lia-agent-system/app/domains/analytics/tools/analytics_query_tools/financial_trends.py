@@ -31,7 +31,7 @@ async def get_cost_metrics(
 
     try:
         from sqlalchemy import and_, select
-        from app.models.job_vacancy import JobVacancy
+        from lia_models.job_vacancy import JobVacancy
 
         period_days = {"month": 30, "quarter": 90}.get(period, 30)
         start_date = datetime.utcnow() - timedelta(days=period_days)
@@ -150,8 +150,8 @@ async def get_trends(
 
     try:
         from sqlalchemy import and_, extract, func, select
-        from app.models.candidate import VacancyCandidate
-        from app.models.job_vacancy import JobVacancy
+        from lia_models.candidate import VacancyCandidate
+        from lia_models.job_vacancy import JobVacancy
 
         months_to_analyze = 6 if period == "month" else 12
         start_date = datetime.utcnow() - timedelta(days=months_to_analyze * 30)

@@ -4,7 +4,7 @@ import logging
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.company import GlobalSearchSettings
+from lia_models.company import GlobalSearchSettings
 
 logger = logging.getLogger(__name__)
 

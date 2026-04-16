@@ -258,7 +258,7 @@ class TranscriptionService:
         language_hint: str = "pt-BR",
     ) -> dict[str, Any]:
         from sqlalchemy import select
-        from app.models.interview import Interview
+        from lia_models.interview import Interview
 
         stmt = select(Interview).where(Interview.id == interview_id)
         result = await db.execute(stmt)

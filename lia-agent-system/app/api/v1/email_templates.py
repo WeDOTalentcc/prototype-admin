@@ -20,7 +20,7 @@ from app.domains.email_templates.repositories.email_templates_repository import 
 )
 from app.domains.job_management.services.template_seeder import clone_templates_for_client as clone_for_client_service
 from app.domains.job_management.services.template_seeder import seed_default_templates as seed_system_templates
-from app.models.email_template import EmailLog, EmailTemplate
+from lia_models.email_template import EmailLog, EmailTemplate
 from app.schemas.email_template import (
     DefaultTemplatesResponse,
     EmailLogListResponse,

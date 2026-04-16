@@ -18,7 +18,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.domains.automation.services.automation_service import AutomationService, automation_service, get_automation_service
-from app.models.automation import ActionType, TriggerType
+from lia_models.automation import ActionType, TriggerType
 
 logger = logging.getLogger(__name__)
 

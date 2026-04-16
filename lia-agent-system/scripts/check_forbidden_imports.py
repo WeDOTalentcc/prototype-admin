@@ -8,6 +8,7 @@ Forbidden paths:
   - from libs.messaging.lia_messaging.*
   - import libs.models.lia_models.*
   - import libs.messaging.lia_messaging.*
+  - from app.models(.*)? / import app.models(.*)?  (removed shim layer — task #242)
 
 Correct alternatives:
   - from lia_models.* …
@@ -30,6 +31,11 @@ FORBIDDEN_PATTERNS = [
     re.compile(r"\bimport\s+libs\.models\.lia_models\b"),
     re.compile(r"\bfrom\s+libs\.messaging\.lia_messaging\b"),
     re.compile(r"\bimport\s+libs\.messaging\.lia_messaging\b"),
+    # task #242: app/models/ shim layer was deleted. The canonical path is
+    # `lia_models.*`. A second import path created duplicate SQLAlchemy class
+    # registrations (e.g. SourcingAgentSignal) and 500s.
+    re.compile(r"\bfrom\s+app\.models\b"),
+    re.compile(r"\bimport\s+app\.models\b"),
 ]
 
 SCAN_DIRS = ["app", "scripts", "tests"]

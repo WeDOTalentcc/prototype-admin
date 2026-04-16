@@ -33,7 +33,7 @@ from app.tools.executor import tool_executor, ToolExecutor
 from app.tools.registry import tool_registry, ToolRegistry
 from app.domains.recruiter_assistant.services.memory_service import memory_service, MemoryService
 from app.shared.services.feedback_service import feedback_service, FeedbackService
-from app.models.structured_responses import (
+from lia_models.structured_responses import (
     OrchestrationDecision,
     IntentClassification,
     JobFieldUpdate,

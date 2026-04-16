@@ -10,7 +10,7 @@ from typing import Any
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.teams import TeamsActionAuditLog, TeamsConversation, TeamsMessage
+from lia_models.teams import TeamsActionAuditLog, TeamsConversation, TeamsMessage
 
 logger = logging.getLogger(__name__)
 

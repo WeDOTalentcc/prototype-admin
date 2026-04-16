@@ -179,7 +179,7 @@ async def get_proactive_alerts(db: AsyncSession = Depends(get_db)):
 @router.post("/activities", response_model=ActivityResponse)
 async def log_activity(request: LogActivityRequest, db: AsyncSession = Depends(get_db)):
     """Log a new agent activity."""
-    from app.models.agent_activity import ActivityStatus
+    from lia_models.agent_activity import ActivityStatus
     
     service = AgentMonitoringService(db)
     

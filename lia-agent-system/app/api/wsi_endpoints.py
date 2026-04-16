@@ -1320,7 +1320,7 @@ async def get_feedback_status(
 
         from sqlalchemy import and_, select
 
-        from app.models.candidate_feedback import CandidateFeedback
+        from lia_models.candidate_feedback import CandidateFeedback
         # TODO(phase2-repo-extraction): CandidateFeedback is a Rails-owned model;
         # this query should move to a CandidateFeedbackRepository or Rails adapter.
         sent_result = await db.execute(

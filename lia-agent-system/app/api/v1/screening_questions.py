@@ -20,7 +20,7 @@ from app.auth.dependencies import (
 from app.auth.models import User
 from app.core.database import get_db
 from app.domains.recruitment.repositories.company_screening_question_repository import CompanyScreeningQuestionRepository
-from app.models.screening_question import (
+from lia_models.screening_question import (
     DEFAULT_SCREENING_QUESTIONS,
     QUESTION_CATEGORIES,
     QUESTION_TYPES,

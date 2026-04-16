@@ -16,7 +16,7 @@ from fastapi import APIRouter, Depends, Header, HTTPException, Query
 from app.domains.policy.dependencies import get_policy_repo
 from app.domains.policy.repositories.policy_repository import PolicyRepository
 from app.domains.policy.services.policy_engine_service import PolicyEngineService, get_policy_engine_service
-from app.models.policy import BusinessRule, EscalationRule, RateLimitRule
+from lia_models.policy import BusinessRule, EscalationRule, RateLimitRule
 from app.schemas.policy import (
     BusinessRuleCreate,
     BusinessRuleResponse,

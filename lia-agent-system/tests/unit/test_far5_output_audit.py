@@ -133,7 +133,7 @@ class TestFairnessAuditLogModel:
     """Verifica que o modelo FairnessAuditLog tem o campo soft_warnings."""
 
     def test_model_has_soft_warnings_column(self):
-        from app.models.fairness_audit import FairnessAuditLog
+        from lia_models.fairness_audit import FairnessAuditLog
         # O campo deve existir no modelo
         assert hasattr(FairnessAuditLog, 'soft_warnings')
 

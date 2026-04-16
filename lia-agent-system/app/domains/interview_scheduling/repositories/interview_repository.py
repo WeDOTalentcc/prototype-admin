@@ -9,9 +9,9 @@ from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import aliased
 
-from app.models.candidate import Candidate
-from app.models.interview import Interview, InterviewFeedback
-from app.models.job_vacancy import JobVacancy
+from lia_models.candidate import Candidate
+from lia_models.interview import Interview, InterviewFeedback
+from lia_models.job_vacancy import JobVacancy
 
 
 class InterviewRepository:

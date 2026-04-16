@@ -16,7 +16,7 @@ from typing import Any, Optional
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.interview import Interview
+from lia_models.interview import Interview
 
 logger = logging.getLogger(__name__)
 

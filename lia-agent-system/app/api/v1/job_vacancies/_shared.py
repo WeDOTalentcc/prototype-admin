@@ -10,7 +10,7 @@ from pydantic import BaseModel, Field
 
 from app.domains.communication.services.teams_service import teams_service
 from lia_messaging.notification_service import notification_service
-from app.models.job_vacancy import JobVacancy
+from lia_models.job_vacancy import JobVacancy
 from app.schemas.job_vacancy_state import JobVacancyState
 
 logger = logging.getLogger(__name__)

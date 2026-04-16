@@ -14,7 +14,7 @@ from app.domains.job_management.dependencies import get_job_vacancy_public_repo
 from app.domains.cv_screening.services.cv_parser import CVParserService, get_cv_parser_service
 from app.domains.cv_screening.services.lia_score_service import get_lia_score_service, LIAScoreService
 from app.domains.job_management.repositories.job_vacancy_public_repository import JobVacancyPublicRepository
-from app.models.candidate import Candidate, VacancyCandidate
+from lia_models.candidate import Candidate, VacancyCandidate
 from app.services.notification_service import NotificationType
 
 router = APIRouter()

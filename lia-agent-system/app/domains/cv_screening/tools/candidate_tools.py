@@ -58,7 +58,7 @@ async def update_candidate_stage(
         from sqlalchemy import and_, select
 
         from app.core.database import AsyncSessionLocal
-        from app.models.candidate import Candidate, VacancyCandidate
+        from lia_models.candidate import Candidate, VacancyCandidate
         
         async with AsyncSessionLocal() as db:
             result = await db.execute(
@@ -179,8 +179,8 @@ async def add_candidate_to_vacancy(
         from sqlalchemy import and_, select
 
         from app.core.database import AsyncSessionLocal
-        from app.models.candidate import Candidate, VacancyCandidate
-        from app.models.job_vacancy import JobVacancy
+        from lia_models.candidate import Candidate, VacancyCandidate
+        from lia_models.job_vacancy import JobVacancy
         
         async with AsyncSessionLocal() as db:
             cand_result = await db.execute(
@@ -414,7 +414,7 @@ async def reject_candidate(
         
         async with AsyncSessionLocal() as db:
             try:
-                from app.models.candidate import Candidate
+                from lia_models.candidate import Candidate
                 
                 result = await db.execute(
                     select(Candidate).where(Candidate.id == UUID(candidate_id))
@@ -542,7 +542,7 @@ async def shortlist_candidate(
         
         async with AsyncSessionLocal() as db:
             try:
-                from app.models.candidate import Candidate
+                from lia_models.candidate import Candidate
                 
                 result = await db.execute(
                     select(Candidate).where(Candidate.id == UUID(candidate_id))
@@ -671,7 +671,7 @@ async def add_to_list(
         from sqlalchemy import select
 
         from app.core.database import AsyncSessionLocal
-        from app.models.candidate import Candidate
+        from lia_models.candidate import Candidate
         
         async with AsyncSessionLocal() as db:
             cand_result = await db.execute(
@@ -750,8 +750,8 @@ async def wsi_screening(
         from sqlalchemy import and_, select
 
         from app.core.database import AsyncSessionLocal
-        from app.models.candidate import Candidate
-        from app.models.job_vacancy import JobVacancy
+        from lia_models.candidate import Candidate
+        from lia_models.job_vacancy import JobVacancy
         
         async with AsyncSessionLocal() as db:
             cand_result = await db.execute(
@@ -874,7 +874,7 @@ async def hide_candidate(
         from sqlalchemy import and_, select
 
         from app.core.database import AsyncSessionLocal
-        from app.models.candidate import Candidate, VacancyCandidate
+        from lia_models.candidate import Candidate, VacancyCandidate
         
         async with AsyncSessionLocal() as db:
             cand_result = await db.execute(

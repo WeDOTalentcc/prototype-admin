@@ -17,8 +17,8 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 from app.auth.models import User, UserRole
 from app.auth.security import create_access_token, get_password_hash
 from app.core.config import settings
-from app.models.candidate import Candidate, VacancyCandidate
-from app.models.job_vacancy import JobVacancy
+from lia_models.candidate import Candidate, VacancyCandidate
+from lia_models.job_vacancy import JobVacancy
 
 
 def get_test_database_url():

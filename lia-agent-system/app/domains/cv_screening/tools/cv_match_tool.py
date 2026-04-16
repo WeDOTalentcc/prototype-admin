@@ -73,8 +73,8 @@ async def analyze_cv_match(
         from sqlalchemy import func, select
 
         from app.core.database import AsyncSessionLocal
-        from app.models.candidate import Candidate
-        from app.models.job_vacancy import JobVacancy
+        from lia_models.candidate import Candidate
+        from lia_models.job_vacancy import JobVacancy
 
         # ── Resolve IDs (one DB round-trip) ─────────────────────────────────
         async with AsyncSessionLocal() as db:

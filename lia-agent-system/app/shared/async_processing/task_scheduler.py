@@ -8,7 +8,7 @@ from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import AsyncSessionLocal
-from app.models.task_record import TaskSchedule
+from lia_models.task_record import TaskSchedule
 
 logger = logging.getLogger(__name__)
 

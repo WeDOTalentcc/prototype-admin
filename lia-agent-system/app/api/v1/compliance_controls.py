@@ -18,7 +18,7 @@ from app.domains.compliance.dependencies import get_compliance_repo
 from app.domains.compliance.repositories.compliance_controls_repository import (
     ComplianceControlsRepository,
 )
-from app.models.observability import ComplianceControlLibrary
+from lia_models.observability import ComplianceControlLibrary
 from app.schemas.compliance_controls import (
     CompanyControlCreate,
     CompanyControlListResponse,

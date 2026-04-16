@@ -146,7 +146,7 @@ async def run_seed(skip_if_exists: bool = True) -> int:
     """
     from sqlalchemy import func, select
 
-    from app.models.guardrail import Guardrail
+    from lia_models.guardrail import Guardrail
 
     inserted = 0
     async with AsyncSessionLocal() as db:

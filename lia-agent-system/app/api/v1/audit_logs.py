@@ -21,7 +21,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.domains.admin.repositories.audit_log_repository import AuditLogRepository
-from app.models.audit_logs import SOXAuditLog
+from lia_models.audit_logs import SOXAuditLog
 from app.schemas.audit_logs import (
     AuditLogCreate,
     AuditLogListResponse,

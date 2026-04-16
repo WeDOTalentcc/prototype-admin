@@ -35,7 +35,7 @@ def _make_pref(
     action_type="move_candidate",
     auto_confirm=True,
 ):
-    from app.models.user_agent_preference import UserAgentPreference
+    from lia_models.user_agent_preference import UserAgentPreference
     pref = UserAgentPreference()
     pref.id = uuid.uuid4()
     pref.user_id = user_id

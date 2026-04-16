@@ -9,7 +9,7 @@ from datetime import datetime
 from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.pipeline_template import DEFAULT_PIPELINE_TEMPLATES, PipelineTemplate
+from lia_models.pipeline_template import DEFAULT_PIPELINE_TEMPLATES, PipelineTemplate
 
 logger = logging.getLogger(__name__)
 

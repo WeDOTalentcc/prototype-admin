@@ -15,7 +15,7 @@ from app.domains.technical_tests.dependencies import get_technical_tests_repo
 from app.domains.technical_tests.repositories.technical_tests_repository import (
     TechnicalTestsRepository,
 )
-from app.models.technical_tests import (
+from lia_models.technical_tests import (
     DEFAULT_TESTS,
     TEST_CATEGORY_OPTIONS,
     TEST_DIFFICULTY_OPTIONS,

@@ -12,9 +12,9 @@ from sqlalchemy import select, and_, text
 from sqlalchemy.ext.asyncio import AsyncSession
 import logging
 
-from app.models.job_draft import JobDraft, DraftFieldHistory, JobDraftStatus, ChangeType
-from app.models.candidate import Candidate
-from app.models import JobVacancy
+from lia_models.job_draft import JobDraft, DraftFieldHistory, JobDraftStatus, ChangeType
+from lia_models.candidate import Candidate
+from lia_models import JobVacancy
 from app.shared.services.intent_classifier import intent_classifier_service, IntentType
 from app.shared.services.enhanced_intent_classifier import (
     enhanced_intent_classifier, EnhancedIntentType,
@@ -108,8 +108,8 @@ class WizardStepService:
         # Import response model here to avoid circular imports at module load time
         from app.api.v1.lia_assistant import WizardStepRequest, WizardStepResponse
 
-        from app.models.company_benefit import CompanyBenefit
-        from app.models.company import CompanyProfile, Department
+        from lia_models.company_benefit import CompanyBenefit
+        from lia_models.company import CompanyProfile, Department
 
         
 

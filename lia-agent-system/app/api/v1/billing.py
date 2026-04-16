@@ -18,7 +18,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from app.domains.billing.dependencies import get_billing_repo
 from app.domains.billing.repositories.billing_repository import BillingRepository
-from app.models.billing import (
+from lia_models.billing import (
     Invoice,
     InvoiceStatus,
     PaymentMethod,

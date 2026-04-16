@@ -20,8 +20,8 @@ from app.domains.saas_metrics.dependencies import get_saas_metrics_repo
 from app.domains.saas_metrics.repositories.saas_metrics_repository import (
     SaasMetricsRepository,
 )
-from app.models.client_account import ClientStatus
-from app.models.saas_metrics import (
+from lia_models.client_account import ClientStatus
+from lia_models.saas_metrics import (
     ChurnRisk,
     PaymentHistory,
     PaymentStatus,

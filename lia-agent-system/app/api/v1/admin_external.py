@@ -27,12 +27,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.dependencies import require_admin
 from app.core.database import get_db
-from app.models.ai_consumption import AiConsumption, AiCreditsBalance
-from app.models.billing import Subscription
-from app.models.client_account import ClientAccount
-from app.models.custom_agent import CustomAgent
-from app.models.digital_twin import DigitalTwin
-from app.models.recruitment_campaign import RecruitmentCampaign
+from lia_models.ai_consumption import AiConsumption, AiCreditsBalance
+from lia_models.billing import Subscription
+from lia_models.client_account import ClientAccount
+from lia_models.custom_agent import CustomAgent
+from lia_models.digital_twin import DigitalTwin
+from lia_models.recruitment_campaign import RecruitmentCampaign
 from lia_models.sourcing_agent import SourcingAgent
 from app.services.quota_enforcement import (
     DEFAULT_QUOTAS,

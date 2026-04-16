@@ -5,7 +5,7 @@ from uuid import UUID
 from sqlalchemy import or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.company import TechnicalQuestion, TechnicalTestTemplate
+from lia_models.company import TechnicalQuestion, TechnicalTestTemplate
 
 logger = logging.getLogger(__name__)
 

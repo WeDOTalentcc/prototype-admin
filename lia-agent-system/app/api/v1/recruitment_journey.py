@@ -12,7 +12,7 @@ from app.domains.recruitment_journey.dependencies import get_recruitment_journey
 from app.domains.recruitment_journey.repositories.recruitment_journey_repository import (
     RecruitmentJourneyRepository,
 )
-from app.models.recruitment_journey import (
+from lia_models.recruitment_journey import (
     DEFAULT_AUTOMATIONS,
     DEFAULT_SLAS,
     DEFAULT_TEMPLATES,

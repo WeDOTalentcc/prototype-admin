@@ -22,8 +22,8 @@ from app.domains.sourcing.services.query_builders import (
     BooleanQueryBuilder,
     CandidateMatcher,
 )
-from app.models.candidate import Candidate
-from app.models.job_vacancy import JobVacancy
+from lia_models.candidate import Candidate
+from lia_models.job_vacancy import JobVacancy
 
 logger = logging.getLogger(__name__)
 

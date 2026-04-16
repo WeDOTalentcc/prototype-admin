@@ -8,7 +8,7 @@ from typing import Any
 from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.ab_testing import ABTestResult, PromptVariant
+from lia_models.ab_testing import ABTestResult, PromptVariant
 
 logger = logging.getLogger(__name__)
 

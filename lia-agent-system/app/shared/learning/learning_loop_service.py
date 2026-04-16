@@ -220,7 +220,7 @@ class LearningLoopService:
         Returns the feedback event ID.
         """
         try:
-            from app.models.intelligent_cache import FeedbackEvent
+            from lia_models.intelligent_cache import FeedbackEvent
             
             modification_delta = None
             if capture.outcome == FeedbackOutcome.MODIFIED:
@@ -337,7 +337,7 @@ class LearningLoopService:
         Returns the number of events processed.
         """
         try:
-            from app.models.intelligent_cache import FeedbackEvent
+            from lia_models.intelligent_cache import FeedbackEvent
             
             result = await db.execute(
                 select(FeedbackEvent)
@@ -737,7 +737,7 @@ class LearningLoopService:
     ) -> dict[str, Any]:
         """Get feedback statistics for analytics."""
         try:
-            from app.models.intelligent_cache import FeedbackEvent
+            from lia_models.intelligent_cache import FeedbackEvent
             
             cutoff = datetime.utcnow() - timedelta(days=days_back)
             
@@ -798,7 +798,7 @@ class LearningLoopService:
             job_context: Context data (job_title, department, seniority, etc.)
         """
         try:
-            from app.models.skills_catalog import SkillUsageAnalytics
+            from lia_models.skills_catalog import SkillUsageAnalytics
             
             # Get job context details
             job_id = job_context.get("job_id")
@@ -912,7 +912,7 @@ class LearningLoopService:
         company_id: str
     ) -> int:
         """Count unprocessed skill analytics records for a company."""
-        from app.models.skills_catalog import SkillUsageAnalytics
+        from lia_models.skills_catalog import SkillUsageAnalytics
         
         result = await db.execute(
             select(func.count(SkillUsageAnalytics.id))
@@ -938,7 +938,7 @@ class LearningLoopService:
             company_id: Company identifier
         """
         try:
-            from app.models.skills_catalog import SkillSuggestionPattern, SkillUsageAnalytics
+            from lia_models.skills_catalog import SkillSuggestionPattern, SkillUsageAnalytics
             
             # Get all analytics for the company
             result = await db.execute(

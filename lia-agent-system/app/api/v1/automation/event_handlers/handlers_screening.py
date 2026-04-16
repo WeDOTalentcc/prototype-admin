@@ -37,8 +37,8 @@ router = APIRouter()
 async def _fetch_candidate_and_vacancy(db, candidate_id: str, vacancy_id: str):
     """Fetch candidate and vacancy from DB, raise 404 if not found."""
     from sqlalchemy import select
-    from app.models.candidate import Candidate
-    from app.models.job_vacancy import JobVacancy
+    from lia_models.candidate import Candidate
+    from lia_models.job_vacancy import JobVacancy
 
     # TODO(phase2-repo-extraction): Move this DB call to AutomationRepository
     candidate_result = await db.execute(select(Candidate).where(Candidate.id == candidate_id))
@@ -165,7 +165,7 @@ async def _create_screening_recruiter_notification(
 def _add_screening_execution_log(db, request, overall_wsi: float, wsi_result, recommendation: str, passed: bool) -> None:
     """Persist AutomationExecutionLog for screening WSI calculation."""
     try:
-        from app.models.automation import AutomationExecutionLog
+        from lia_models.automation import AutomationExecutionLog
         execution_time = int((request.metadata or {}).get("duration_seconds", 0) * 1000)
         db.add(AutomationExecutionLog(
             company_id=request.company_id, trigger_event="screening_completed",

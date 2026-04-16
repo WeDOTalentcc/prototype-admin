@@ -10,7 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
 from app.core.database import get_db
-from app.models import Candidate, JobVacancy
+from lia_models import Candidate, JobVacancy
 
 from ._shared import (
     SuggestionCard,

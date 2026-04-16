@@ -38,7 +38,7 @@ from app.domains.recruitment.repositories.ats_mapping_repository import ATSMappi
 from app.domains.recruitment.repositories.recruitment_stage_repository import RecruitmentStageRepository
 from app.domains.recruitment.repositories.screening_question_repository import ScreeningQuestionRepository
 from app.domains.recruitment.repositories.sub_status_repository import SubStatusRepository
-from app.models.recruitment_stages import (
+from lia_models.recruitment_stages import (
     CANONICAL_SUB_STATUSES,
     DEFAULT_RECRUITMENT_STAGES,
     DEFAULT_SUB_STATUSES,

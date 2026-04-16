@@ -14,8 +14,8 @@ from typing import Any
 from sqlalchemy import func, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.company import Approver, Benefit, CompanyProfile, Department, GlobalSearchSettings
-from app.models.recruitment_journey import RecruitmentAutomation, RecruitmentSLA, RecruitmentTemplate
+from lia_models.company import Approver, Benefit, CompanyProfile, Department, GlobalSearchSettings
+from lia_models.recruitment_journey import RecruitmentAutomation, RecruitmentSLA, RecruitmentTemplate
 
 logger = logging.getLogger(__name__)
 

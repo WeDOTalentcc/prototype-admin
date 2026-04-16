@@ -413,7 +413,7 @@ async def _handle_suggest_next_action(params: dict[str, Any], context: dict[str,
 
 
 async def _handle_list_stages(params: dict[str, Any], context: dict[str, Any] | None) -> dict[str, Any]:
-    from app.models.recruitment_stages import STANDARD_STAGE_CATALOG
+    from lia_models.recruitment_stages import STANDARD_STAGE_CATALOG
 
     stages = []
     for stage in STANDARD_STAGE_CATALOG:

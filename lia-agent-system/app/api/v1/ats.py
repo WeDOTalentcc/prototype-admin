@@ -14,7 +14,7 @@ from app.domains.ats_integration.dependencies import get_ats_repo
 from app.domains.ats_integration.repositories.ats_repository import ATSRepository
 from app.domains.ats_integration.services.gupy_service import GupyService
 from app.domains.ats_integration.services.pandape_service import PandapeService
-from app.models.ats_integration import (
+from lia_models.ats_integration import (
     ATSCandidate,
     ATSConnection,
     ATSJobMapping,

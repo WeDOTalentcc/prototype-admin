@@ -27,8 +27,8 @@ from app.auth.dependencies import (
     get_user_company_id,
 )
 from app.main import app
-from app.models.candidate import VacancyCandidate
-from app.models.job_vacancy import JobVacancy
+from lia_models.candidate import VacancyCandidate
+from lia_models.job_vacancy import JobVacancy
 
 pytestmark = pytest.mark.asyncio
 

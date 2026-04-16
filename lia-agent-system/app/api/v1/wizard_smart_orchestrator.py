@@ -330,8 +330,8 @@ async def finalize_job_vacancy_from_wizard(
 
                 from sqlalchemy import select
 
-                from app.models.conversation import Conversation
-                from app.models.job_vacancy import JobVacancy
+                from lia_models.conversation import Conversation
+                from lia_models.job_vacancy import JobVacancy
                 
                 conv_uuid = None
                 valid_conversation_id = None

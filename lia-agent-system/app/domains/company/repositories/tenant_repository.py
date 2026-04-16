@@ -5,8 +5,8 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.workos_models import CompanyWorkOSConfig
-from app.models.client_account import ClientAccount
-from app.models.company import CompanyProfile
+from lia_models.client_account import ClientAccount
+from lia_models.company import CompanyProfile
 
 logger = logging.getLogger(__name__)
 

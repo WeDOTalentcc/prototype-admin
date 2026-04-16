@@ -241,7 +241,7 @@ async def get_defaults():
     Get default stage configurations.
     Useful for reference and setting up new companies.
     """
-    from app.models.recruitment_stages import (
+    from lia_models.recruitment_stages import (
         DEFAULT_RECRUITMENT_STAGES,
         DEFAULT_SUB_STATUSES,
         GUPY_STAGE_MAPPINGS,

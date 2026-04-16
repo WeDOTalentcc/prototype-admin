@@ -8,7 +8,7 @@ from uuid import UUID
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.automation import AISuggestion
+from lia_models.automation import AISuggestion
 
 logger = logging.getLogger(__name__)
 

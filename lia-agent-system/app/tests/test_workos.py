@@ -582,7 +582,7 @@ class TestWorkOSClientOnboardingRobustness:
         from sqlalchemy import select
         from sqlalchemy.exc import IntegrityError
 
-        from app.models.client_account import ClientAccount
+        from lia_models.client_account import ClientAccount
         
         original_execute = db_session.execute
         call_count = {"count": 0}

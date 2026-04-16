@@ -8,7 +8,7 @@ from datetime import datetime
 from sqlalchemy import and_, select
 
 from app.core.database import AsyncSessionLocal
-from app.models.message_queue import MessageChannel, MessagePriority, MessageQueue, MessageStatus
+from lia_models.message_queue import MessageChannel, MessagePriority, MessageQueue, MessageStatus
 from app.shared.channels.channel_adapter import (
     ChannelAdapter,
     ChannelMessage,

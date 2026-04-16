@@ -22,7 +22,7 @@ from app.domains.hiring_policy.agents.policy_react_agent import PolicyReActAgent
 from app.domains.hiring_policy.repositories.hiring_policy_repository import (
     HiringPolicyRepository,
 )
-from app.models.company_hiring_policy import (
+from lia_models.company_hiring_policy import (
     AUTOMATION_RULES_DEFAULTS,
     COMMUNICATION_RULES_DEFAULTS,
     PIPELINE_RULES_DEFAULTS,

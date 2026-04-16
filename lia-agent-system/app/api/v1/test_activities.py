@@ -9,7 +9,7 @@ from sqlalchemy import delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.models.activity_feed import ActivityFeed
+from lia_models.activity_feed import ActivityFeed
 from app.domains.analytics.services.activity_service import ActivityService, get_activity_service
 
 router = APIRouter(prefix="/test", tags=["Testing"])

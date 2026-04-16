@@ -12,7 +12,7 @@ from typing import Any
 from sqlalchemy import and_, desc, select
 
 from app.core.database import AsyncSessionLocal
-from app.models.audit_log import AuditLog, DecisionType
+from lia_models.audit_log import AuditLog, DecisionType
 
 logger = logging.getLogger(__name__)
 

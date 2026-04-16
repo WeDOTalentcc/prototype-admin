@@ -148,7 +148,7 @@ async def start_calibration_session(
     """
     import uuid
 
-    from app.models.candidate import Candidate
+    from lia_models.candidate import Candidate
     
     session_id = str(uuid.uuid4())
     

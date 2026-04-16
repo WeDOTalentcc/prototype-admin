@@ -17,7 +17,7 @@ from app.domains.client_users.dependencies import get_client_user_repo
 from app.domains.client_users.repositories.client_user_repository import ClientUserRepository
 from app.domains.communication.services.email_service import get_email_service
 from app.domains.communication.services.email_service import EmailService
-from app.models.client_user import (
+from lia_models.client_user import (
     CLIENT_USER_ROLE_OPTIONS,
     CLIENT_USER_STATUS_OPTIONS,
     ClientUser,

@@ -16,7 +16,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.domains.recruitment.repositories.learning_outcome_repository import LearningOutcomeRepository
 from app.domains.job_management.services.outcome_tracker import outcome_tracker
-from app.models.feedback_learning import JobOutcome, JobOutcomeType
+from lia_models.feedback_learning import JobOutcome, JobOutcomeType
 
 router = APIRouter(prefix="/learning-outcomes", tags=["Learning Outcomes"])
 logger = logging.getLogger(__name__)

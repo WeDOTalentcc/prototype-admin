@@ -22,13 +22,13 @@ from app.domains.candidates.repositories.candidate_favorites_repository import (
 from app.domains.candidates.repositories.candidate_repository import CandidateRepository
 from app.domains.candidates.repositories.vacancy_candidate_repository import VacancyCandidateRepository
 from app.domains.sourcing.services.pearch_service import PearchService, get_pearch_service, pearch_service
-from app.models.candidate import (
+from lia_models.candidate import (
     Candidate,
     CandidateFavorite,
     CandidateHidden,
     CandidateSearch,
 )
-from app.models.pearch import PearchSearchRequest, PearchSearchResponse
+from lia_models.pearch import PearchSearchRequest, PearchSearchResponse
 from app.schemas.candidate import (
     CandidateCreate,
     CandidateResponse,

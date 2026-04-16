@@ -11,7 +11,7 @@ from uuid import UUID
 from sqlalchemy import and_, desc, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.observability import ConsentEvent, ConsentVersion
+from lia_models.observability import ConsentEvent, ConsentVersion
 
 
 class ConsentRepository:

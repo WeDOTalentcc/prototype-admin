@@ -10,8 +10,8 @@ from typing import Any
 from sqlalchemy import distinct, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.candidate import Candidate
-from app.models.email_template import EmailLog, EmailTemplate
+from lia_models.candidate import Candidate
+from lia_models.email_template import EmailLog, EmailTemplate
 
 logger = logging.getLogger(__name__)
 

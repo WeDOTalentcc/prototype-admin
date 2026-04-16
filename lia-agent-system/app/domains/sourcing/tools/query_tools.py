@@ -70,7 +70,7 @@ async def search_candidates(
         from sqlalchemy import and_, select
 
         from app.core.database import AsyncSessionLocal
-        from app.models.candidate import Candidate, VacancyCandidate
+        from lia_models.candidate import Candidate, VacancyCandidate
         
         async with AsyncSessionLocal() as db:
             query = select(Candidate)
@@ -213,7 +213,7 @@ async def rank_candidates(
 
         from app.core.database import AsyncSessionLocal
         from app.domains.sourcing.services.wrf_service import wrf_dynamic_k_service
-        from app.models.candidate import Candidate, VacancyCandidate
+        from lia_models.candidate import Candidate, VacancyCandidate
 
         async with AsyncSessionLocal() as db:
             query = select(Candidate)
@@ -311,7 +311,7 @@ async def get_candidate_details(
         from sqlalchemy import and_, select
 
         from app.core.database import AsyncSessionLocal
-        from app.models.candidate import Candidate, VacancyCandidate
+        from lia_models.candidate import Candidate, VacancyCandidate
         
         async with AsyncSessionLocal() as db:
             result = await db.execute(
@@ -412,7 +412,7 @@ async def get_candidate_stats(
         from sqlalchemy import and_, select
 
         from app.core.database import AsyncSessionLocal
-        from app.models.candidate import Candidate, VacancyCandidate
+        from lia_models.candidate import Candidate, VacancyCandidate
         
         period_days = {"week": 7, "month": 30, "quarter": 90}.get(period, 30)
         datetime.utcnow() - timedelta(days=period_days)
@@ -516,7 +516,7 @@ async def get_candidate_history(
         from sqlalchemy import and_, select
 
         from app.core.database import AsyncSessionLocal
-        from app.models.candidate import VacancyCandidate
+        from lia_models.candidate import VacancyCandidate
         
         async with AsyncSessionLocal() as db:
             if candidate_id:
@@ -644,7 +644,7 @@ async def get_talent_quality(
         from sqlalchemy import and_, select
 
         from app.core.database import AsyncSessionLocal
-        from app.models.candidate import Candidate, VacancyCandidate
+        from lia_models.candidate import Candidate, VacancyCandidate
         
         period_days = {"week": 7, "month": 30, "quarter": 90}.get(period, 30)
         start_date = datetime.utcnow() - timedelta(days=period_days)
@@ -754,7 +754,7 @@ async def get_talent_engagement(
         from sqlalchemy import and_, select
 
         from app.core.database import AsyncSessionLocal
-        from app.models.candidate import VacancyCandidate
+        from lia_models.candidate import VacancyCandidate
         
         period_days = {"week": 7, "month": 30, "quarter": 90}.get(period, 30)
         start_date = datetime.utcnow() - timedelta(days=period_days)
@@ -840,7 +840,7 @@ async def get_talent_availability(
         from sqlalchemy import and_, select
 
         from app.core.database import AsyncSessionLocal
-        from app.models.candidate import Candidate, VacancyCandidate
+        from lia_models.candidate import Candidate, VacancyCandidate
         
         async with AsyncSessionLocal() as db:
             query = select(Candidate).join(
@@ -946,7 +946,7 @@ async def get_diversity_metrics(
         from sqlalchemy import and_, select
 
         from app.core.database import AsyncSessionLocal
-        from app.models.candidate import Candidate, VacancyCandidate
+        from lia_models.candidate import Candidate, VacancyCandidate
         
         period_days = {
             "month": 30,
@@ -1066,8 +1066,8 @@ async def get_market_benchmarks(
         from sqlalchemy import and_, func, select
 
         from app.core.database import AsyncSessionLocal
-        from app.models.candidate import VacancyCandidate
-        from app.models.job_vacancy import JobVacancy
+        from lia_models.candidate import VacancyCandidate
+        from lia_models.job_vacancy import JobVacancy
         
         async with AsyncSessionLocal() as db:
             start_date = datetime.utcnow() - timedelta(days=90)

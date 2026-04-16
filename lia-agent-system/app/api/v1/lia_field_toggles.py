@@ -15,7 +15,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.dependencies import get_current_user_or_demo
 from app.core.database import get_db
-from app.models.lia_field_toggles import DEFAULT_FIELD_TOGGLES, FIELD_FALLBACK_CONFIG, LiaFieldToggle
+from lia_models.lia_field_toggles import DEFAULT_FIELD_TOGGLES, FIELD_FALLBACK_CONFIG, LiaFieldToggle
 
 logger = logging.getLogger(__name__)
 
@@ -230,8 +230,8 @@ async def check_job_completeness(
     """
     Check completeness of job data and get suggestions for missing fields.
     """
-    from app.models.company import CompanyProfile
-    from app.models.job_vacancy import JobVacancy
+    from lia_models.company import CompanyProfile
+    from lia_models.job_vacancy import JobVacancy
     from app.shared.services.config_completeness_service import config_completeness_service
     
     try:

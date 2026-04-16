@@ -88,7 +88,7 @@ def _decode_meta(description: str | None) -> tuple[str, str]:
 
 
 def _to_short_list_response(record) -> ShortListResponse:
-    from app.models.candidate_list import CandidateList
+    from lia_models.candidate_list import CandidateList
     job_id, desc = _decode_meta(record.description)
     return ShortListResponse(
         id=str(record.id),

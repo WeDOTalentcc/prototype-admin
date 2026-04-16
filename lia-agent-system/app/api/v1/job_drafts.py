@@ -14,8 +14,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.auth.dependencies import assert_resource_ownership, get_current_user_or_demo, get_user_company_id
 from app.auth.models import User
 from app.core.database import get_db
-from app.models.job_draft import DraftFieldHistory, JobDraft, JobDraftStatus
-from app.models.job_vacancy import JobVacancy
+from lia_models.job_draft import DraftFieldHistory, JobDraft, JobDraftStatus
+from lia_models.job_vacancy import JobVacancy
 
 router = APIRouter()
 logger = logging.getLogger(__name__)

@@ -1,7 +1,7 @@
 from datetime import datetime
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_
-from app.models.job_vacancy import JobVacancy
+from lia_models.job_vacancy import JobVacancy
 import uuid as uuid_lib
 
 

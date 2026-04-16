@@ -6,7 +6,7 @@ from typing import Any, Optional
 from sqlalchemy import and_, desc, select, update
 
 from app.core.database import AsyncSessionLocal
-from app.models.task_record import DeadLetterRecord, TaskRecord
+from lia_models.task_record import DeadLetterRecord, TaskRecord
 
 logger = logging.getLogger(__name__)
 

@@ -92,7 +92,7 @@ async def persist_revealed_contact(
 
     from sqlalchemy import select
 
-    from app.models.candidate import Candidate
+    from lia_models.candidate import Candidate
     
     try:
         # Check if candidate already exists by pearch_id

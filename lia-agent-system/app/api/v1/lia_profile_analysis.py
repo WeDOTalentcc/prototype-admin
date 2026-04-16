@@ -11,7 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.domains.cv_screening.repositories.profile_analysis_repository import ProfileAnalysisRepository
-from app.models.lia_profile_analysis import LiaProfileAnalysis
+from lia_models.lia_profile_analysis import LiaProfileAnalysis
 from app.schemas.lia_profile_analysis import (
     CandidateAnalysesSummary,
     LiaProfileAnalysisCreate,

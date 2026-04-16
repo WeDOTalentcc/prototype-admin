@@ -10,9 +10,9 @@ from uuid import UUID
 from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.candidate import Candidate, VacancyCandidate
-from app.models.email_template import EmailTemplate
-from app.models.shared_search import (
+from lia_models.candidate import Candidate, VacancyCandidate
+from lia_models.email_template import EmailTemplate
+from lia_models.shared_search import (
     FeedbackDecision,
     SharedSearch,
     SharedSearchAccess,
@@ -233,7 +233,7 @@ class SharedSearchRepository:
     # ── CompanyProfile fallback ─────────────────────────────────────────────
 
     async def get_default_company_id(self) -> UUID | None:
-        from app.models.company import CompanyProfile
+        from lia_models.company import CompanyProfile
 
         result = await self.db.execute(
             select(CompanyProfile).where(CompanyProfile.is_default).limit(1)

@@ -254,7 +254,7 @@ async def export_job_analytics(
         
         async with AsyncSessionLocal() as db:
             try:
-                from app.models.job_vacancy import JobVacancy
+                from lia_models.job_vacancy import JobVacancy
                 
                 result = await db.execute(
                     select(JobVacancy).where(JobVacancy.id == UUID(job_id))

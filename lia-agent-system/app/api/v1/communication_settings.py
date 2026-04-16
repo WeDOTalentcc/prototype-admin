@@ -14,7 +14,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.models.communication_settings import DEFAULT_COMMUNICATION_SETTINGS, CommunicationSettings
+from lia_models.communication_settings import DEFAULT_COMMUNICATION_SETTINGS, CommunicationSettings
 from app.domains.communication.repositories.communication_settings_repository import CommunicationSettingsRepository
 
 logger = logging.getLogger(__name__)

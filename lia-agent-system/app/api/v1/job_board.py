@@ -16,7 +16,7 @@ from app.auth.models import User
 from app.core.database import get_db
 from app.domains.communication.services.email_service import EmailService, get_email_service
 from app.domains.job_management.services.job_board_service import job_board_service
-from app.models.job_vacancy import JobVacancy
+from lia_models.job_vacancy import JobVacancy
 
 # RAILS-DEPRECATED: This endpoint manages Rails-owned entities (candidates/jobs/applies/users).
 # Direct DB calls will be replaced by RailsAdapter after ats-api-rails handoff.

@@ -32,7 +32,7 @@ def feedback_generate_and_send_task(
             WSIEvaluationContext,
             personalized_feedback_service,
         )
-        from app.models.candidate import Candidate
+        from lia_models.candidate import Candidate
 
         async with AsyncSessionLocal() as db:
             result = await db.execute(

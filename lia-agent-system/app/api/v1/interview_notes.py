@@ -25,9 +25,9 @@ from app.domains.cv_screening.constants.wsi_constants import (
     WSI_DIMENSION_LABELS,
     WSI_DIMENSION_WEIGHTS_DEFAULT,
 )
-from app.models.candidate import Candidate, VacancyCandidate
-from app.models.job_vacancy import JobVacancy
-from app.models.lia_opinion import LiaOpinion
+from lia_models.candidate import Candidate, VacancyCandidate
+from lia_models.job_vacancy import JobVacancy
+from lia_models.lia_opinion import LiaOpinion
 from app.shared.services.interview_notes_service import (
     create_interview_note as db_create_interview_note,
 )

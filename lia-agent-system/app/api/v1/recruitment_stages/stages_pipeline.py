@@ -259,7 +259,7 @@ async def get_job_pipeline(
     sub_status_repo: SubStatusRepository = Depends(get_sub_status_repo),
 ):
     try:
-        from app.models.job_vacancy import JobVacancy
+        from lia_models.job_vacancy import JobVacancy
 
         effective_company_id = get_user_company_id(current_user)
 
@@ -322,7 +322,7 @@ async def update_job_pipeline(
     sub_status_repo: SubStatusRepository = Depends(get_sub_status_repo),
 ):
     try:
-        from app.models.job_vacancy import JobVacancy
+        from lia_models.job_vacancy import JobVacancy
 
         effective_company_id = get_user_company_id(current_user)
 
@@ -392,7 +392,7 @@ async def get_pipeline_inheritance_status(
     try:
         from sqlalchemy import select as sa_select
 
-        from app.models.job_vacancy import JobVacancy
+        from lia_models.job_vacancy import JobVacancy
 
         result = await stage_repo.db.execute(
             sa_select(JobVacancy).where(JobVacancy.id == job_id)
@@ -424,7 +424,7 @@ async def copy_company_pipeline_to_job(
         from sqlalchemy import select as sa_select
         from sqlalchemy import update as sa_update
 
-        from app.models.job_vacancy import JobVacancy
+        from lia_models.job_vacancy import JobVacancy
 
         job_result = await stage_repo.db.execute(
             sa_select(JobVacancy).where(JobVacancy.id == job_id)
@@ -493,7 +493,7 @@ async def mark_pipeline_customized(
     try:
         from sqlalchemy import update as sa_update
 
-        from app.models.job_vacancy import JobVacancy
+        from lia_models.job_vacancy import JobVacancy
 
         stmt = (
             sa_update(JobVacancy)

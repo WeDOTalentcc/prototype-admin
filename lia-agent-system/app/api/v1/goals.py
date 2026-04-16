@@ -14,7 +14,7 @@ from pydantic import BaseModel
 
 from app.domains.goals.dependencies import get_goals_repo
 from app.domains.goals.repositories.goals_repository import GoalsRepository
-from app.models.goal import Goal
+from lia_models.goal import Goal
 
 logger = logging.getLogger(__name__)
 

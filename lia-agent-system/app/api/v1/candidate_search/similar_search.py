@@ -94,7 +94,7 @@ async def search_similar_candidates(
 
     from sqlalchemy import select
 
-    from app.models.candidate import Candidate
+    from lia_models.candidate import Candidate
     
     if not request.linkedin_url and not request.candidate_id:
         raise HTTPException(

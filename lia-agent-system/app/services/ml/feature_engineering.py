@@ -204,7 +204,7 @@ class OutcomeFeatureEngineer:
         Returns:
             OutcomeFeatures with aggregated historical data
         """
-        from app.models.feedback_learning import JobOutcome
+        from lia_models.feedback_learning import JobOutcome
         
         cutoff_date = datetime.utcnow() - timedelta(days=lookback_days)
         

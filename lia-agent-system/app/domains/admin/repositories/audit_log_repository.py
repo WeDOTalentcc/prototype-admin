@@ -9,7 +9,7 @@ from uuid import UUID
 from sqlalchemy import and_, desc, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.audit_logs import (
+from lia_models.audit_logs import (
     DEFAULT_RETENTION_POLICIES,
     AuditRetentionPolicy,
     SOXAuditLog,

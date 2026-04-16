@@ -9,7 +9,7 @@ from typing import Any
 from sqlalchemy import and_, desc, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.integration_hub import (
+from lia_models.integration_hub import (
     DEFAULT_INTEGRATION_PROVIDERS,
     IntegrationConnection,
     IntegrationProvider,

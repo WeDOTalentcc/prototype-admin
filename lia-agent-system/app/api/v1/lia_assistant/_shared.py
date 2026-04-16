@@ -18,8 +18,8 @@ from app.domains.analytics.services.feedback_learning_service import feedback_le
 from app.domains.cv_screening.services.config_completeness_service import config_completeness_service as completeness_service
 
 # SourcingAgent and AvaliadorWSIAgent moved to lia_assistant_wizard_stages.py (Phase 6 deprecation)
-from app.models.job_draft import ChangeType, DraftFieldHistory, JobDraft
-from app.models.structured_responses import (
+from lia_models.job_draft import ChangeType, DraftFieldHistory, JobDraft
+from lia_models.structured_responses import (
     IntentClassification,
     OrchestrationDecision,
     SalaryAnalysis,

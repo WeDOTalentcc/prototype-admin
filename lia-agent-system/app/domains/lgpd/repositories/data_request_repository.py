@@ -26,7 +26,7 @@ class DataRequestRepository:
         Used as fallback in list_data_requests when neither candidate_id
         nor vacancy_id is supplied.
         """
-        from app.models.data_request import DataRequest
+        from lia_models.data_request import DataRequest
 
         query = select(DataRequest).where(DataRequest.company_id == company_id)
         if status_enum is not None:
@@ -38,7 +38,7 @@ class DataRequestRepository:
 
     async def get_vacancy_trigger_config(self, vacancy_id: UUID):
         """Return VacancyDataRequestConfig for a vacancy, or None."""
-        from app.models.data_request import VacancyDataRequestConfig
+        from lia_models.data_request import VacancyDataRequestConfig
 
         result = await self.db.execute(
             select(VacancyDataRequestConfig).where(
@@ -55,7 +55,7 @@ class DataRequestRepository:
         stage_configs: dict,
     ):
         """Create or update VacancyDataRequestConfig; flush and refresh; return instance."""
-        from app.models.data_request import VacancyDataRequestConfig
+        from lia_models.data_request import VacancyDataRequestConfig
 
         config = await self.get_vacancy_trigger_config(vacancy_id)
         if not config:

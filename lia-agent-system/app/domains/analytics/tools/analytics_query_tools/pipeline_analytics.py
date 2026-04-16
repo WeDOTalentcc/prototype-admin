@@ -34,8 +34,8 @@ async def get_pipeline_stats(
 
     try:
         from sqlalchemy import and_, select
-        from app.models.candidate import VacancyCandidate
-        from app.models.job_vacancy import JobVacancy
+        from lia_models.candidate import VacancyCandidate
+        from lia_models.job_vacancy import JobVacancy
 
         period_days = {
             "week": 7,
@@ -147,8 +147,8 @@ async def get_vacancy_funnel(
 
     try:
         from sqlalchemy import and_, select
-        from app.models.candidate import Candidate, VacancyCandidate
-        from app.models.job_vacancy import JobVacancy
+        from lia_models.candidate import Candidate, VacancyCandidate
+        from lia_models.job_vacancy import JobVacancy
 
         async with analytics_db() as db:
             job_result = await db.execute(
@@ -260,7 +260,7 @@ async def compare_candidates(
 
     try:
         from sqlalchemy import and_, select
-        from app.models.candidate import Candidate
+        from lia_models.candidate import Candidate
 
         async with analytics_db() as db:
             candidates_data = []

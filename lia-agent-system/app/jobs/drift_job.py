@@ -15,7 +15,7 @@ import logging
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.company import CompanyProfile
+from lia_models.company import CompanyProfile
 from app.shared.services.drift_alert_service import drift_alert_service
 
 logger = logging.getLogger(__name__)

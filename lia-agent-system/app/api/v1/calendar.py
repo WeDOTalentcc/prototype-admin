@@ -466,7 +466,7 @@ async def google_oauth_callback(
         from google_auth_oauthlib.flow import Flow  # type: ignore
 
         from app.core.database import AsyncSessionLocal
-        from app.models.company_calendar_credentials import CompanyCalendarCredentials
+        from lia_models.company_calendar_credentials import CompanyCalendarCredentials
         from app.shared.encryption import encrypt_value
 
         flow = Flow.from_client_config(

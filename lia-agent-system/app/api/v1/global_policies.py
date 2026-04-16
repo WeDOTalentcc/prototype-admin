@@ -17,7 +17,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.domains.policy.repositories.global_policy_repository import GlobalPolicyRepository
-from app.models.global_policies import PlatformPolicy
+from lia_models.global_policies import PlatformPolicy
 from app.schemas.global_policies import (
     CategoryCount,
     CategoryListResponse,

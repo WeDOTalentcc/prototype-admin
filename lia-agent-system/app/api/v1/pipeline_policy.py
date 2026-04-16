@@ -49,7 +49,7 @@ async def validate_transition(
         
         interview_count = 0
         try:
-            from app.models.interview import Interview
+            from lia_models.interview import Interview
             result = await db.execute(
                 select(func.count(Interview.id)).where(
                     Interview.candidate_id == candidate_id,

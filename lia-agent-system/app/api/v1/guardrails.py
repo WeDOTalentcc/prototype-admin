@@ -22,7 +22,7 @@ from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.models.guardrail import Guardrail
+from lia_models.guardrail import Guardrail
 from app.shared.compliance.guardrail_repository import GuardrailCreate, GuardrailRepository
 
 logger = logging.getLogger(__name__)

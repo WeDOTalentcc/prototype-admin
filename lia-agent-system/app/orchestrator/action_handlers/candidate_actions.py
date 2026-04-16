@@ -480,7 +480,7 @@ async def _analyze_profile(params: dict[str, Any], context: dict[str, Any]):
         from sqlalchemy import text as sql_text
 
         from app.core.database import AsyncSessionLocal
-        from app.models.candidate import Candidate
+        from lia_models.candidate import Candidate
         from app.shared.services.analysis_service import analysis_service
 
         candidate_id = params.get("candidate_id", "")

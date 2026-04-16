@@ -16,7 +16,7 @@ from uuid import UUID, uuid4
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.job_template import JobTemplate
+from lia_models.job_template import JobTemplate
 
 logger = logging.getLogger(__name__)
 

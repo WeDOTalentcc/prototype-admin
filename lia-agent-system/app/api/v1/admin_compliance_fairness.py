@@ -211,7 +211,7 @@ async def _build_report(
     Aggregates across all snapshots in the period, merging per-group totals
     per dimension (gender, age_group, disability, region).
     """
-    from app.models.bias_audit_snapshot import BiasAuditSnapshot
+    from lia_models.bias_audit_snapshot import BiasAuditSnapshot
 
     stmt = select(
         BiasAuditSnapshot.dimensions_json,

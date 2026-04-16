@@ -20,7 +20,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.auth.models import UserRole
 from app.auth.security import create_access_token
 from app.main import app
-from app.models.recruitment_stages import (
+from lia_models.recruitment_stages import (
     CANONICAL_SUB_STATUSES,
     RecruitmentStage,
     RecruitmentSubStatus,

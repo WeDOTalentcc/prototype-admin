@@ -217,8 +217,8 @@ async def validate_multi_tenancy(
     Uses VacancyCandidate for candidate company validation since the main
     Candidate model may not have direct company_id.
     """
-    from app.models.candidate import VacancyCandidate
-    from app.models.job_vacancy import JobVacancy
+    from lia_models.candidate import VacancyCandidate
+    from lia_models.job_vacancy import JobVacancy
 
 # RAILS-DEPRECATED: This endpoint manages Rails-owned entities (candidates/jobs/applies/users).
 # Direct DB calls will be replaced by RailsAdapter after ats-api-rails handoff.
@@ -890,7 +890,7 @@ async def log_automation_execution(
     across every event handler.
     """
     try:
-        from app.models.automation import AutomationExecutionLog
+        from lia_models.automation import AutomationExecutionLog
 
         db.add(AutomationExecutionLog(
             company_id=company_id,

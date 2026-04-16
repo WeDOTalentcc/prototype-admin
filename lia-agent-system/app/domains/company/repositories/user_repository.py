@@ -6,7 +6,7 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.models import User
-from app.models.job_vacancy import JobVacancy
+from lia_models.job_vacancy import JobVacancy
 
 logger = logging.getLogger(__name__)
 

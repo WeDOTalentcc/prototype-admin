@@ -32,8 +32,8 @@ async def get_stakeholder_metrics(
 
     try:
         from sqlalchemy import and_, select
-        from app.models.candidate import VacancyCandidate
-        from app.models.job_vacancy import JobVacancy
+        from lia_models.candidate import VacancyCandidate
+        from lia_models.job_vacancy import JobVacancy
 
         period_days = {"week": 7, "month": 30}.get(period, 30)
         start_date = datetime.utcnow() - timedelta(days=period_days)
@@ -178,7 +178,7 @@ async def get_hiring_quality(
 
     try:
         from sqlalchemy import and_, select
-        from app.models.job_vacancy import JobVacancy
+        from lia_models.job_vacancy import JobVacancy
 
         period_days = {"quarter": 90, "year": 365}.get(period, 90)
         start_date = datetime.utcnow() - timedelta(days=period_days)
@@ -251,8 +251,8 @@ async def get_prediction_metrics(
 
     try:
         from sqlalchemy import and_, select
-        from app.models.candidate import Candidate, VacancyCandidate
-        from app.models.job_vacancy import JobVacancy
+        from lia_models.candidate import Candidate, VacancyCandidate
+        from lia_models.job_vacancy import JobVacancy
 
         async with analytics_db() as db:
             job_result = await db.execute(

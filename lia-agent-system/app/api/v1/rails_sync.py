@@ -22,9 +22,9 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.models.candidate import Candidate
-from app.models.email_template import EmailTemplate
-from app.models.job_vacancy import JobVacancy
+from lia_models.candidate import Candidate
+from lia_models.email_template import EmailTemplate
+from lia_models.job_vacancy import JobVacancy
 
 logger = logging.getLogger(__name__)
 

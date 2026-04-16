@@ -9,7 +9,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.models.workforce import HiringPlan, ImportJob, PlannedHeadcount, WorkforceEntry
+from lia_models.workforce import HiringPlan, ImportJob, PlannedHeadcount, WorkforceEntry
 
 
 class WorkforceRepository:

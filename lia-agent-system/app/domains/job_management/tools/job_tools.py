@@ -72,7 +72,7 @@ async def create_job(
     
     try:
         from app.core.database import AsyncSessionLocal
-        from app.models.job_vacancy import JobVacancy
+        from lia_models.job_vacancy import JobVacancy
         
         status = "Ativa" if publish else "Rascunho"
         
@@ -174,7 +174,7 @@ async def update_job(
         from sqlalchemy import and_, select
 
         from app.core.database import AsyncSessionLocal
-        from app.models.job_vacancy import JobVacancy
+        from lia_models.job_vacancy import JobVacancy
         
         async with AsyncSessionLocal() as db:
             result = await db.execute(
@@ -266,7 +266,7 @@ async def pause_job(
         
         async with AsyncSessionLocal() as db:
             try:
-                from app.models.job_vacancy import JobVacancy
+                from lia_models.job_vacancy import JobVacancy
                 
                 result = await db.execute(
                     select(JobVacancy).where(JobVacancy.id == UUID(job_id))
@@ -375,7 +375,7 @@ async def close_job(
         
         async with AsyncSessionLocal() as db:
             try:
-                from app.models.job_vacancy import JobVacancy
+                from lia_models.job_vacancy import JobVacancy
                 
                 result = await db.execute(
                     select(JobVacancy).where(JobVacancy.id == UUID(job_id))
@@ -495,7 +495,7 @@ async def publish_job(
         
         async with AsyncSessionLocal() as db:
             try:
-                from app.models.job_vacancy import JobVacancy
+                from lia_models.job_vacancy import JobVacancy
                 
                 result = await db.execute(
                     select(JobVacancy).where(JobVacancy.id == UUID(job_id))

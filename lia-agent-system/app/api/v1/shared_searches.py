@@ -17,7 +17,7 @@ from app.domains.shared_searches.dependencies import get_shared_search_repo
 from app.domains.shared_searches.repositories.shared_search_repository import (
     SharedSearchRepository,
 )
-from app.models.shared_search import (
+from lia_models.shared_search import (
     SharedSearch,
     SharedSearchAccess,
     SharedSearchStatus,

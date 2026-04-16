@@ -14,7 +14,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm.attributes import flag_modified
 
 from app.core.database import get_db
-from app.models.client_account import ClientAccount
+from lia_models.client_account import ClientAccount
 from app.shared.tenant_guard import get_verified_company_id
 
 logger = logging.getLogger(__name__)

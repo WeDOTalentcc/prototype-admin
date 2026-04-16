@@ -24,17 +24,17 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.models.candidate import Candidate
-from app.models.data_request import (
+from lia_models.candidate import Candidate
+from lia_models.data_request import (
     DataFieldType,
     DataRequest,
     DataRequestConfig,
     DataRequestStatus,
 )
-from app.models.data_request import (
+from lia_models.data_request import (
     DataRequestResponse as DataRequestResponseModel,
 )
-from app.models.job_vacancy import JobVacancy
+from lia_models.job_vacancy import JobVacancy
 
 # RAILS-DEPRECATED: This endpoint manages Rails-owned entities (candidates/jobs/applies/users).
 # Direct DB calls will be replaced by RailsAdapter after ats-api-rails handoff.

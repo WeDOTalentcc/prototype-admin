@@ -49,7 +49,7 @@ async def send_email(
         
         async with AsyncSessionLocal() as db:
             try:
-                from app.models.candidate import Candidate
+                from lia_models.candidate import Candidate
                 
                 result = await db.execute(
                     select(Candidate).where(Candidate.id == UUID(candidate_id))
@@ -141,7 +141,7 @@ async def send_whatsapp(
         
         async with AsyncSessionLocal() as db:
             try:
-                from app.models.candidate import Candidate
+                from lia_models.candidate import Candidate
                 
                 result = await db.execute(
                     select(Candidate).where(Candidate.id == UUID(candidate_id))
@@ -263,8 +263,8 @@ async def schedule_interview(
         
         async with AsyncSessionLocal() as db:
             try:
-                from app.models.candidate import Candidate
-                from app.models.job_vacancy import JobVacancy
+                from lia_models.candidate import Candidate
+                from lia_models.job_vacancy import JobVacancy
                 
                 cand_result = await db.execute(
                     select(Candidate).where(Candidate.id == UUID(candidate_id))
@@ -447,7 +447,7 @@ async def send_feedback(
         
         async with AsyncSessionLocal() as db:
             try:
-                from app.models.candidate import Candidate
+                from lia_models.candidate import Candidate
                 
                 result = await db.execute(
                     select(Candidate).where(Candidate.id == UUID(candidate_id))

@@ -71,7 +71,7 @@ async def search_jobs(
         from sqlalchemy import and_, select
 
         from app.core.database import AsyncSessionLocal
-        from app.models.job_vacancy import JobVacancy
+        from lia_models.job_vacancy import JobVacancy
         
         async with AsyncSessionLocal() as db:
             query = select(JobVacancy)
@@ -182,8 +182,8 @@ async def get_job_details(
         from sqlalchemy import and_, select
 
         from app.core.database import AsyncSessionLocal
-        from app.models.candidate import Candidate, VacancyCandidate
-        from app.models.job_vacancy import JobVacancy
+        from lia_models.candidate import Candidate, VacancyCandidate
+        from lia_models.job_vacancy import JobVacancy
         
         async with AsyncSessionLocal() as db:
             result = await db.execute(
@@ -298,8 +298,8 @@ async def get_job_velocity(
         from sqlalchemy import and_, select
 
         from app.core.database import AsyncSessionLocal
-        from app.models.candidate import VacancyCandidate
-        from app.models.job_vacancy import JobVacancy
+        from lia_models.candidate import VacancyCandidate
+        from lia_models.job_vacancy import JobVacancy
         
         async with AsyncSessionLocal() as db:
             job_result = await db.execute(
@@ -439,8 +439,8 @@ async def get_job_quality_metrics(
         from sqlalchemy import and_, select
 
         from app.core.database import AsyncSessionLocal
-        from app.models.candidate import Candidate, VacancyCandidate
-        from app.models.job_vacancy import JobVacancy
+        from lia_models.candidate import Candidate, VacancyCandidate
+        from lia_models.job_vacancy import JobVacancy
         
         async with AsyncSessionLocal() as db:
             job_result = await db.execute(
@@ -594,8 +594,8 @@ async def get_job_benchmark(
         from sqlalchemy import and_, select
 
         from app.core.database import AsyncSessionLocal
-        from app.models.candidate import VacancyCandidate
-        from app.models.job_vacancy import JobVacancy
+        from lia_models.candidate import VacancyCandidate
+        from lia_models.job_vacancy import JobVacancy
         
         async with AsyncSessionLocal() as db:
             job_result = await db.execute(

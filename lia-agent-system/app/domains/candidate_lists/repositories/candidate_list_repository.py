@@ -11,8 +11,8 @@ from sqlalchemy import and_, delete as sa_delete, func, select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.candidate import Candidate, VacancyCandidate
-from app.models.candidate_list import CandidateList, CandidateListMember
+from lia_models.candidate import Candidate, VacancyCandidate
+from lia_models.candidate_list import CandidateList, CandidateListMember
 
 logger = logging.getLogger(__name__)
 

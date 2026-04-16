@@ -289,7 +289,7 @@ async def get_substatus_options(stage: str):
     Returns the list of valid sub-statuses with display names
     for use in the transition modal dropdown.
     """
-    from app.models.recruitment_stages import OFFER_DECLINE_REASONS, REJECTION_REASONS, SUB_STATUSES
+    from lia_models.recruitment_stages import OFFER_DECLINE_REASONS, REJECTION_REASONS, SUB_STATUSES
     
     try:
         if stage == 'rejected':

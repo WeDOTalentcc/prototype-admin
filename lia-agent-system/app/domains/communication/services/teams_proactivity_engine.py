@@ -321,7 +321,7 @@ class TeamsProactivityEngine:
         from sqlalchemy import and_, func, select
 
         from app.domains.communication.services.teams_card_renderer import teams_card_renderer
-        from app.models import Candidate, JobVacancy
+        from lia_models import Candidate, JobVacancy
 
         sent = 0
         try:

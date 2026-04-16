@@ -16,7 +16,7 @@ import logging
 from uuid import UUID
 
 from app.core.database import get_db
-from app.models.observability import BusinessProcess, DisasterRecoveryPlan, ContinuityTest
+from lia_models.observability import BusinessProcess, DisasterRecoveryPlan, ContinuityTest
 from app.shared.tenant_guard import get_verified_company_id
 from app.schemas.continuity import (
     CriticalProcessResponse, CriticalProcessListResponse, CriticalProcessCreate, CriticalProcessUpdate,

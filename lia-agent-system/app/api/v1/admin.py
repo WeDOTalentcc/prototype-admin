@@ -7,8 +7,8 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from app.domains.admin.dependencies import get_admin_repo
 from app.domains.admin.repositories.admin_repository import AdminRepository
-from app.models.alert import AlertSeverity, AlertType
-from app.models.task import TaskPriority, TaskType
+from lia_models.alert import AlertSeverity, AlertType
+from lia_models.task import TaskPriority, TaskType
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 logger = logging.getLogger(__name__)

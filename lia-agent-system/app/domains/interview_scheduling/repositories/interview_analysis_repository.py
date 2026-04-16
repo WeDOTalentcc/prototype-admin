@@ -10,8 +10,8 @@ from uuid import UUID
 from sqlalchemy import and_, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.interview import Interview
-from app.models.lia_opinion import LiaOpinion
+from lia_models.interview import Interview
+from lia_models.lia_opinion import LiaOpinion
 
 logger = logging.getLogger(__name__)
 

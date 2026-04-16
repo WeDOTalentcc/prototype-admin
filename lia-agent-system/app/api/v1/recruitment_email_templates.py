@@ -20,7 +20,7 @@ from app.domains.job_management.services.recruitment_email_templates import (
     render_template,
     seed_default_templates,
 )
-from app.models.recruitment_email_template import RecruitmentEmailTemplate, RecruitmentStageName, TemplateType
+from lia_models.recruitment_email_template import RecruitmentEmailTemplate, RecruitmentStageName, TemplateType
 
 logger = logging.getLogger(__name__)
 

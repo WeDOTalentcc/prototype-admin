@@ -17,7 +17,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.auth.dependencies import get_current_user_or_demo, get_user_company_id
 from app.auth.models import User
 from app.core.database import get_db
-from app.models.talent_pool import TalentPool, TalentPoolCandidate
+from lia_models.talent_pool import TalentPool, TalentPoolCandidate
 
 logger = logging.getLogger(__name__)
 

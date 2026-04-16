@@ -345,7 +345,7 @@ class OutcomePredictor:
         """
         from sqlalchemy import and_, select
 
-        from app.models.company_learning import CompanySkill
+        from lia_models.company_learning import CompanySkill
         
         try:
             stmt = select(CompanySkill).where(
@@ -475,7 +475,7 @@ class OutcomePredictor:
         """Get top skills associated with successful hires."""
         from sqlalchemy import and_, select
 
-        from app.models.company_learning import CompanySkill
+        from lia_models.company_learning import CompanySkill
         
         try:
             conditions = [

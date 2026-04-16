@@ -11,7 +11,7 @@ from app.domains.integrations_hub.dependencies import get_integrations_hub_repo
 from app.domains.integrations_hub.repositories.integrations_hub_repository import (
     IntegrationsHubRepository,
 )
-from app.models.integration_hub import IntegrationCategory
+from lia_models.integration_hub import IntegrationCategory
 
 logger = logging.getLogger(__name__)
 
@@ -415,7 +415,7 @@ async def get_integration_health(
 ):
     """Get overall integration health status."""
     try:
-        from app.models.integration_hub import IntegrationStatus
+        from lia_models.integration_hub import IntegrationStatus
 
         rows = await repo.get_connections_with_providers_for_company(company_id)
 

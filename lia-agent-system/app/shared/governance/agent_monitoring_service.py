@@ -10,8 +10,8 @@ from typing import Any
 from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.agent_activity import ActivityStatus, AgentActivity
-from app.models.task import Task, TaskStatus
+from lia_models.agent_activity import ActivityStatus, AgentActivity
+from lia_models.task import Task, TaskStatus
 
 AGENT_DEFINITIONS = {
     "job_intake": {

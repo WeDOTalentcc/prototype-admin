@@ -15,13 +15,13 @@ class TestAiConsumptionRetentionField:
     """Verifica que o modelo AiConsumption tem o campo de retenção."""
 
     def test_model_has_scheduled_deletion_at(self):
-        from app.models.ai_consumption import AiConsumption
+        from lia_models.ai_consumption import AiConsumption
         assert hasattr(AiConsumption, "scheduled_deletion_at"), (
             "AiConsumption deve ter campo 'scheduled_deletion_at' (LGPD L6)"
         )
 
     def test_scheduled_deletion_at_is_nullable(self):
-        from app.models.ai_consumption import AiConsumption
+        from lia_models.ai_consumption import AiConsumption
         col = AiConsumption.__table__.columns.get("scheduled_deletion_at")
         assert col is not None, "Coluna 'scheduled_deletion_at' não encontrada na tabela"
         assert col.nullable is True, "scheduled_deletion_at deve ser nullable"

@@ -7,7 +7,7 @@ import uuid
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 
-from app.models.admin_settings import (
+from lia_models.admin_settings import (
     AVAILABLE_PERMISSIONS,
     NOTIFICATION_EVENT_TYPES,
     PermissionLevel,

@@ -90,7 +90,7 @@ async def parse_and_create_candidate(
         from sqlalchemy import func, select
 
         from app.core.database import AsyncSessionLocal
-        from app.models.candidate import Candidate
+        from lia_models.candidate import Candidate
 
         async with AsyncSessionLocal() as db:
             # Duplicate check — skip creation if email already exists
@@ -232,8 +232,8 @@ async def add_to_vacancy(
         from sqlalchemy import and_, func, select
 
         from app.core.database import AsyncSessionLocal
-        from app.models.candidate import Candidate, VacancyCandidate
-        from app.models.job_vacancy import JobVacancy
+        from lia_models.candidate import Candidate, VacancyCandidate
+        from lia_models.job_vacancy import JobVacancy
 
         async with AsyncSessionLocal() as db:
             # Resolve candidate

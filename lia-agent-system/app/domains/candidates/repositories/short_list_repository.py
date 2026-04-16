@@ -9,7 +9,7 @@ from uuid import UUID
 from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.candidate_list import CandidateList, CandidateListMember
+from lia_models.candidate_list import CandidateList, CandidateListMember
 
 logger = logging.getLogger(__name__)
 

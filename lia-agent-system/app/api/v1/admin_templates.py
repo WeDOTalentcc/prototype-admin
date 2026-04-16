@@ -15,7 +15,7 @@ from app.core.database import get_db
 from app.domains.admin.repositories.admin_template_repository import (
     AdminTemplateRepository,
 )
-from app.models.email_template import EmailTemplate
+from lia_models.email_template import EmailTemplate
 from app.schemas.email_template import EmailTemplateResponse
 
 logger = logging.getLogger(__name__)

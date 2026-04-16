@@ -133,7 +133,7 @@ class TeamsSSOService:
             return {"company_id": None, "user_id": teams_user_id, "is_authenticated": False}
 
         try:
-            from app.models import User
+            from app.auth.models import User
             from lia_models.teams import TeamsConversation
 
             # Find conversation record

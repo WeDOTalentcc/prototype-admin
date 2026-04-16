@@ -6,11 +6,11 @@ from fastapi import HTTPException
 from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.client_account import ClientAccount
-from app.models.billing import Subscription
-from app.models.custom_agent import CustomAgent
-from app.models.digital_twin import DigitalTwin
-from app.models.recruitment_campaign import RecruitmentCampaign
+from lia_models.client_account import ClientAccount
+from lia_models.billing import Subscription
+from lia_models.custom_agent import CustomAgent
+from lia_models.digital_twin import DigitalTwin
+from lia_models.recruitment_campaign import RecruitmentCampaign
 from lia_models.sourcing_agent import SourcingAgent
 
 logger = logging.getLogger(__name__)

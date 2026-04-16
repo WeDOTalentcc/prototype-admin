@@ -20,7 +20,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.models.agent_quality_evaluation import AgentQualityEvaluation
+from lia_models.agent_quality_evaluation import AgentQualityEvaluation
 
 logger = logging.getLogger(__name__)
 

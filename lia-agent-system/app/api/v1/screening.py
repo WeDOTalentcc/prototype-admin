@@ -9,7 +9,7 @@ from app.auth.dependencies import get_current_active_user, get_user_company_id
 from app.auth.models import User
 from app.domains.cv_screening.dependencies import get_screening_repo, WSIService, get_wsi_service
 from app.domains.cv_screening.repositories.screening_repository import ScreeningRepository
-from app.models.screening import ScreeningTask
+from lia_models.screening import ScreeningTask
 from app.schemas.screening import (
     RegenerateQuestionsRequest,
     ScreeningQuestion,

@@ -273,7 +273,7 @@ async def execute_transition(
     try:
         from sqlalchemy import update as sa_update
 
-        from app.models.candidate import VacancyCandidate
+        from lia_models.candidate import VacancyCandidate
 
         values = {"stage": request.to_stage}
         if request.sub_status:
@@ -353,7 +353,7 @@ async def execute_transition(
             try:
                 from sqlalchemy import select as sa_select
 
-                from app.models.recruitment_stages import RecruitmentStage as _RS
+                from lia_models.recruitment_stages import RecruitmentStage as _RS
                 stage_result = await stage_repo.db.execute(
                     sa_select(_RS).where(_RS.name == request.to_stage)
                 )

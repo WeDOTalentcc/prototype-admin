@@ -8,8 +8,8 @@ from datetime import datetime
 from sqlalchemy import desc, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.candidate import Candidate
-from app.models.email_template import EmailLog
+from lia_models.candidate import Candidate
+from lia_models.email_template import EmailLog
 
 
 class EmailRepository:

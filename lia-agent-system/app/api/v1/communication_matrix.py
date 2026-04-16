@@ -19,7 +19,7 @@ from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
 from app.core.database import get_db
 from app.domains.communication.repositories.communication_matrix_repository import CommunicationMatrixRepository
-from app.models.communication_matrix import (
+from lia_models.communication_matrix import (
     DEFAULT_MATRIX_ENTRIES,
     MODULE_LABELS,
     ChannelType,

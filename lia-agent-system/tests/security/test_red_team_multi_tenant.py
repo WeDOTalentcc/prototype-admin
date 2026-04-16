@@ -19,18 +19,18 @@ class TestMultiTenantIsolation:
 
     def test_job_vacancy_model_has_company_id(self):
         """JobVacancy deve ter campo company_id."""
-        from app.models.job_vacancy import JobVacancy
+        from lia_models.job_vacancy import JobVacancy
         assert hasattr(JobVacancy, "company_id")
 
     def test_hitl_audit_trail_has_company_id(self):
         """HITLAuditTrail deve ter company_id para isolamento."""
-        from app.models.hitl import HITLAuditTrail
+        from lia_models.hitl import HITLAuditTrail
         cols = [c.key for c in HITLAuditTrail.__table__.columns]
         assert "company_id" in cols
 
     def test_hitl_pending_action_has_company_id(self):
         """HITLPendingAction deve ter company_id."""
-        from app.models.hitl import HITLPendingAction
+        from lia_models.hitl import HITLPendingAction
         cols = [c.key for c in HITLPendingAction.__table__.columns]
         assert "company_id" in cols
 
@@ -83,7 +83,7 @@ class TestMultiTenantIsolation:
     )
     def test_candidate_model_has_company_id(self):
         """[GAP] Modelo Candidate deveria ter company_id para isolamento direto."""
-        from app.models.candidate import Candidate
+        from lia_models.candidate import Candidate
         cols = [c.key for c in Candidate.__table__.columns]
         assert "company_id" in cols
 

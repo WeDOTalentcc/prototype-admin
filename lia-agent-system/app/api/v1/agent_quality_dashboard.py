@@ -95,7 +95,7 @@ async def get_agent_quality_dashboard(
 
     # --- 1. Audit logs: executions, confidence, errors per agent ---
     try:
-        from app.models.audit_log import AuditLog
+        from lia_models.audit_log import AuditLog
 
         audit_result = await db.execute(
             select(

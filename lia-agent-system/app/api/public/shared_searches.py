@@ -24,7 +24,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.domains.shared_searches.repositories.shared_search_repository import SharedSearchRepository
 from app.middleware.rate_limiter import rate_limiter as _otp_rate_limiter
-from app.models.shared_search import (
+from lia_models.shared_search import (
     FeedbackDecision,
     SharedSearch,
     SharedSearchAccess,

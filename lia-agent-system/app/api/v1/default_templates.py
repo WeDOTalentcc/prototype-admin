@@ -15,7 +15,7 @@ from app.core.database import get_db
 from app.domains.email_templates.repositories.default_template_repository import (
     DefaultTemplateRepository,
 )
-from app.models.default_templates import (
+from lia_models.default_templates import (
     AVAILABLE_TEMPLATE_VARIABLES,
     DefaultTemplate,
 )

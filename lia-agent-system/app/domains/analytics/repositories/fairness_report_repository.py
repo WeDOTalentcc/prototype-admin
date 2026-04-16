@@ -26,7 +26,7 @@ class FairnessReportRepository:
         company_id: str | None = None,
     ) -> list:
         """Return (category, blocks, warnings, last_occurrence) grouped by category."""
-        from app.models.fairness_audit import FairnessAuditLog
+        from lia_models.fairness_audit import FairnessAuditLog
 
         stmt = select(
             FairnessAuditLog.category,
@@ -48,7 +48,7 @@ class FairnessReportRepository:
         company_id: str | None = None,
     ) -> list:
         """Return (day, blocks, warnings) per day for a time-series trend."""
-        from app.models.fairness_audit import FairnessAuditLog
+        from lia_models.fairness_audit import FairnessAuditLog
 
         stmt = select(
             cast(FairnessAuditLog.created_at, Date).label("day"),
@@ -73,7 +73,7 @@ class FairnessReportRepository:
         offset: int = 0,
     ) -> tuple[int, list]:
         """Return (total_count, rows) for paginated audit log queries."""
-        from app.models.fairness_audit import FairnessAuditLog
+        from lia_models.fairness_audit import FairnessAuditLog
 
         stmt = select(FairnessAuditLog).where(FairnessAuditLog.created_at >= since)
 

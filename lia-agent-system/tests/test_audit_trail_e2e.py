@@ -131,7 +131,7 @@ class TestE4CandidateSearch:
             audit.log_decision = AsyncMock()
 
             from app.api.v1.candidates import search_candidates
-            from app.models.pearch import PearchSearchRequest
+            from lia_models.pearch import PearchSearchRequest
             await search_candidates(PearchSearchRequest(query="react dev"))
 
             audit.log_decision.assert_called_once()
@@ -547,7 +547,7 @@ class TestDecisionTypeValidity:
 
     def test_all_used_types_valid(self):
         from app.shared.compliance.audit_service import DECISION_TYPE_MAPPING
-        from app.models.audit_log import DecisionType
+        from lia_models.audit_log import DecisionType
 
         used = [
             "move_stage", "reject_candidate", "score_candidate",
@@ -573,5 +573,5 @@ class TestDecisionTypeValidity:
 
     def test_search_candidates_maps_to_score_candidate(self):
         from app.shared.compliance.audit_service import DECISION_TYPE_MAPPING
-        from app.models.audit_log import DecisionType
+        from lia_models.audit_log import DecisionType
         assert DECISION_TYPE_MAPPING["search_candidates"] == DecisionType.SCORE_CANDIDATE

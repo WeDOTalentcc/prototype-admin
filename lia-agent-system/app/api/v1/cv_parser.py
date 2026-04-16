@@ -15,7 +15,7 @@ from app.auth.models import User
 from app.core.database import get_db
 from app.domains.cv_screening.services.cv_parser import CVParserService, cv_parser_service, get_cv_parser_service
 from app.domains.cv_screening.repositories.screening_repository import ScreeningRepository
-from app.models.candidate import Candidate, CandidateEducation, CandidateExperience
+from lia_models.candidate import Candidate, CandidateEducation, CandidateExperience
 from app.schemas.cv_parser import (
     CVConfirmRequest,
     CVConfirmResponse,

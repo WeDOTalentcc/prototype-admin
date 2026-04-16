@@ -23,7 +23,7 @@ from typing import Any
 from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.interview import Interview
+from lia_models.interview import Interview
 
 logger = logging.getLogger(__name__)
 

@@ -58,7 +58,7 @@ class TestSchemaImports:
         assert recruiter_preferences is not None
 
     def test_event_store_model(self):
-        from app.models import event_store
+        from lia_models import event_store
         assert event_store is not None
 
 

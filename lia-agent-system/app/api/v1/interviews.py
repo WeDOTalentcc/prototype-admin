@@ -12,7 +12,7 @@ from pydantic import BaseModel, EmailStr
 from app.domains.interview_scheduling.dependencies import get_interview_repo
 from app.domains.interview_scheduling.repositories.interview_repository import InterviewRepository
 from app.domains.interview_scheduling.services.calendar_service import calendar_service
-from app.models.interview import Interview, InterviewFeedback
+from lia_models.interview import Interview, InterviewFeedback
 from app.domains.analytics.services.activity_service import ActivityService, get_activity_service
 from app.shared.compliance.audit_service import AuditService, get_audit_service
 from app.shared.pii_masking import get_masked_logger

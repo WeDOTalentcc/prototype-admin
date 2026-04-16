@@ -11,8 +11,8 @@ from uuid import UUID
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.company import CompanyProfile
-from app.models.company_culture import CompanyCultureProfile, CultureAnalysisJob
+from lia_models.company import CompanyProfile
+from lia_models.company_culture import CompanyCultureProfile, CultureAnalysisJob
 
 logger = logging.getLogger(__name__)
 

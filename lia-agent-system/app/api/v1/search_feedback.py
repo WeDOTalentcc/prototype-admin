@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.domains.recruitment.repositories.search_feedback_repository import SearchFeedbackRepository
-from app.models.search_feedback import SearchFeedback
+from lia_models.search_feedback import SearchFeedback
 
 logger = logging.getLogger(__name__)
 

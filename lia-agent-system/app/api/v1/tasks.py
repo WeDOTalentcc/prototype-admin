@@ -9,7 +9,7 @@ from pydantic import BaseModel, Field
 from app.domains.tasks.dependencies import get_tasks_repo
 from app.domains.tasks.repositories.tasks_repository import TasksRepository
 from app.domains.automation.services.task_service import task_service
-from app.models.task import TaskPriority, TaskStatus, TaskType
+from lia_models.task import TaskPriority, TaskStatus, TaskType
 
 router = APIRouter(prefix="/tasks", tags=["tasks"])
 

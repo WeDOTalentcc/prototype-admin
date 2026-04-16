@@ -969,7 +969,7 @@ class FairnessGuard:
         async def _persist(session: "AsyncSession") -> None:
             import uuid as _uuid
 
-            from app.models.fairness_audit import FairnessAuditLog
+            from lia_models.fairness_audit import FairnessAuditLog
             query_hash = hashlib.sha256(result.original_query.encode("utf-8")).hexdigest()
             record = FairnessAuditLog(
                 company_id=_uuid.UUID(company_id) if company_id else None,

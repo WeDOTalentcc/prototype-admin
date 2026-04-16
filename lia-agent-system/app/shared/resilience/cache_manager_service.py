@@ -250,7 +250,7 @@ class PostgresCache:
     async def get(self, db: AsyncSession, key: str) -> CacheResult:
         """Get value from PostgreSQL cache."""
         try:
-            from app.models.intelligent_cache import CacheEntry
+            from lia_models.intelligent_cache import CacheEntry
             
             result = await db.execute(
                 select(CacheEntry)
@@ -300,7 +300,7 @@ class PostgresCache:
     ) -> bool:
         """Store value in PostgreSQL cache."""
         try:
-            from app.models.intelligent_cache import CacheEntry
+            from lia_models.intelligent_cache import CacheEntry
             
             result = await db.execute(
                 select(CacheEntry).where(CacheEntry.cache_key == key)
@@ -340,7 +340,7 @@ class PostgresCache:
     async def delete(self, db: AsyncSession, key: str) -> bool:
         """Delete a key from PostgreSQL cache."""
         try:
-            from app.models.intelligent_cache import CacheEntry
+            from lia_models.intelligent_cache import CacheEntry
             
             await db.execute(
                 delete(CacheEntry).where(CacheEntry.cache_key == key)
@@ -355,7 +355,7 @@ class PostgresCache:
     async def cleanup_expired(self, db: AsyncSession) -> int:
         """Remove expired entries from PostgreSQL cache."""
         try:
-            from app.models.intelligent_cache import CacheEntry
+            from lia_models.intelligent_cache import CacheEntry
             
             result = await db.execute(
                 delete(CacheEntry).where(CacheEntry.expires_at < datetime.utcnow())

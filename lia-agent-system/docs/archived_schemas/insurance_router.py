@@ -18,7 +18,7 @@ from uuid import UUID
 
 from app.core.database import get_db
 from app.shared.tenant_guard import get_verified_company_id
-from app.models.observability import (
+from lia_models.observability import (
     InsurancePolicy, InsuranceCoverage, InsuranceDocument, InsuranceClaim,
     InsurancePolicyStatusEnum, InsuranceCoverageTypeEnum, InsuranceDocumentTypeEnum,
     InsuranceClaimStatusEnum

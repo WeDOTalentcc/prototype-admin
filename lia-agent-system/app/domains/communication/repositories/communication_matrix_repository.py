@@ -8,7 +8,7 @@ from uuid import UUID
 from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.communication_matrix import CommunicationMatrixEntry
+from lia_models.communication_matrix import CommunicationMatrixEntry
 
 logger = logging.getLogger(__name__)
 

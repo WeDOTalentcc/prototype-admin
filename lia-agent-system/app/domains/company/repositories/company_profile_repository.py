@@ -7,7 +7,7 @@ from uuid import UUID
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.company import Benefit, CompanyProfile, CultureValue, Department
+from lia_models.company import Benefit, CompanyProfile, CultureValue, Department
 
 logger = logging.getLogger(__name__)
 

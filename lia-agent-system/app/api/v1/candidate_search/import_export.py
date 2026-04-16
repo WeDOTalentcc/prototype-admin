@@ -107,7 +107,7 @@ async def import_pearch_candidates(
 
     from sqlalchemy import or_, select
 
-    from app.models.candidate import Candidate, ExternalCandidateProfile
+    from lia_models.candidate import Candidate, ExternalCandidateProfile
     
     imported_ids = []
     skipped_ids = []
@@ -323,7 +323,7 @@ async def promote_candidate_to_main_base(
 
     from sqlalchemy import select
 
-    from app.models.candidate import (
+    from lia_models.candidate import (
         Candidate,
         CandidateEducation,
         CandidateExperience,

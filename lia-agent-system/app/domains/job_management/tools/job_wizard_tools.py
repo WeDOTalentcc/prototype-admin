@@ -303,7 +303,7 @@ async def save_job_draft(
         from sqlalchemy import select
 
         from app.core.database import AsyncSessionLocal
-        from app.models.job_draft import JobDraft
+        from lia_models.job_draft import JobDraft
         
         async with AsyncSessionLocal() as db:
             result = await db.execute(

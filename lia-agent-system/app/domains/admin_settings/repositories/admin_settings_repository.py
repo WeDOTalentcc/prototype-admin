@@ -12,7 +12,7 @@ from sqlalchemy import desc, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.models.admin_settings import (
+from lia_models.admin_settings import (
     DEFAULT_ROLES,
     AdminAuditLog,
     AdminRole,

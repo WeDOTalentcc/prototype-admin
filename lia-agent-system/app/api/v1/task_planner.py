@@ -18,7 +18,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.domains.automation.agents.automation_react_agent import AutomationReActAgent
 from app.domains.automation.services.planned_task_service import CycleDetectedError, planned_task_service
-from app.models.planned_task import PlannedTaskPriority, PlannedTaskStatus
+from lia_models.planned_task import PlannedTaskPriority, PlannedTaskStatus
 
 router = APIRouter(prefix="/task-planner", tags=["Task Planner"])
 

@@ -88,7 +88,7 @@ async def _create_task(params: dict[str, Any], context: dict[str, Any]):
     try:
         from app.core.database import AsyncSessionLocal
         from app.domains.automation.services.task_service import TaskService
-        from app.models.task import TaskPriority, TaskType
+        from lia_models.task import TaskPriority, TaskType
 
         title = params.get("title", "")
         description = params.get("description", "")

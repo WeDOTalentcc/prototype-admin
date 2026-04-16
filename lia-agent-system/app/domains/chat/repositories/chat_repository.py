@@ -11,7 +11,7 @@ from typing import Any
 from sqlalchemy import desc, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.conversation import Conversation, Message
+from lia_models.conversation import Conversation, Message
 
 logger = logging.getLogger(__name__)
 

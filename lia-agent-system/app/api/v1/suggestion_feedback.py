@@ -15,7 +15,7 @@ from sqlalchemy import and_, case, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.models.feedback_learning import SuggestionFeedback
+from lia_models.feedback_learning import SuggestionFeedback
 from app.domains.cv_screening.repositories.suggestion_feedback_repository import SuggestionFeedbackRepository
 from app.domains.analytics.services.feedback_learning_service import feedback_learning_service as _feedback_service
 

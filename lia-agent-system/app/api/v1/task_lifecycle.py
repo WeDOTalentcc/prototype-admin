@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.domains.automation.services.task_service import task_service
-from app.models.task import Task
+from lia_models.task import Task
 
 router = APIRouter(prefix="/task-lifecycle", tags=["task-lifecycle"])
 

@@ -9,7 +9,7 @@ import logging
 from sqlalchemy import and_, case, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.feedback_learning import SuggestionFeedback
+from lia_models.feedback_learning import SuggestionFeedback
 
 logger = logging.getLogger(__name__)
 

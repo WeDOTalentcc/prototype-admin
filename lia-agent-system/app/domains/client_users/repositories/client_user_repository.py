@@ -7,9 +7,9 @@ from uuid import UUID
 from sqlalchemy import and_, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.audit_log import AuditLog
-from app.models.client_account import ClientAccount
-from app.models.client_user import ClientUser, ClientUserRole
+from lia_models.audit_log import AuditLog
+from lia_models.client_account import ClientAccount
+from lia_models.client_user import ClientUser, ClientUserRole
 
 logger = logging.getLogger(__name__)
 
