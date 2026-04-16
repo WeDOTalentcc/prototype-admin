@@ -11,9 +11,7 @@ import { ErrorBoundary } from "@/components/error-boundary"
 import { headers } from "next/headers"
 import { Toaster as SonnerToaster } from "sonner"
 import { LiaFloatProvider } from "@/contexts/lia-float-context"
-import { UnifiedChatConditional } from "@/components/unified-chat"
-import WorkflowRailWrapper from "@/components/workflow-rail/WorkflowRailWrapper"
-import { WeeklyDigestChatProvider } from "@/components/notifications/weekly-digest-chat-provider"
+import DeferredLayoutClients from "@/components/layout/DeferredLayoutClients"
 
 async function getServerUser(): Promise<Record<string, unknown> | null> {
   try {
@@ -147,9 +145,7 @@ export default async function LocaleLayout({
               <ErrorBoundary>
                 {children}
                 <SonnerToaster position="top-right" richColors />
-                <WorkflowRailWrapper />
-                <UnifiedChatConditional />
-                <WeeklyDigestChatProvider />
+                <DeferredLayoutClients />
               </ErrorBoundary>
             </LiaFloatProvider>
           </JWTAuthProvider>

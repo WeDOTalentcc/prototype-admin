@@ -73,20 +73,6 @@
   }
 }
 
-  to {
-    opacity: 0;
-    transform: translateY(-20px) scale(1.02);
-  }
-
-  to {
-    opacity: 0;
-    transform: translateX(-30px);
-  }
-
-  to {
-    opacity: 0;
-  }
-
 @keyframes dotsPulse {
   0%, 100% {
     transform: scale(1);
@@ -168,14 +154,6 @@
     transform: scale(1.2);
   }
 }
-
-  50% {
-    transform: scale(1.02);
-  }
-
-  to {
-    transform: rotate(360deg);
-  }
 
 @keyframes loading-skeleton {
   0% {
@@ -270,7 +248,10 @@
   background-size: 200% 100%;
 }
 
-  50% { transform: scale(1.05); } 
+@keyframes searchPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
 
 @keyframes sonarRing { 
   0% { transform: scale(1); opacity: 0.6; } 

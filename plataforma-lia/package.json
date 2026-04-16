@@ -3,7 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev -H 0.0.0.0 -p 5000",
+    "dev": "next dev -H 0.0.0.0 -p 5000 --turbopack",
+    "dev:webpack": "next dev -H 0.0.0.0 -p 5000",
     "build": "next build",
     "start": "next start -H 0.0.0.0 -p 5000",
     "lint": "bunx tsc --noEmit && next lint",

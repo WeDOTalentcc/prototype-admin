@@ -1071,10 +1071,6 @@
 }
 
 /* Desabilitar animações de Tooltips e Dropdowns - Radix UI */
-@keyframes none {
-  0%, 100% { opacity: 1; transform: none; }
-}
-
 [data-radix-tooltip-content],
 [data-radix-tooltip-content] * {
   animation: none !important;
