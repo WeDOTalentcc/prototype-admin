@@ -33,7 +33,7 @@ from app.models.client_account import ClientAccount
 from app.models.custom_agent import CustomAgent
 from app.models.digital_twin import DigitalTwin
 from app.models.recruitment_campaign import RecruitmentCampaign
-from app.models.sourcing_agent import SourcingAgent
+from lia_models.sourcing_agent import SourcingAgent
 from app.services.quota_enforcement import (
     DEFAULT_QUOTAS,
     PLAN_AGENT_QUOTAS,

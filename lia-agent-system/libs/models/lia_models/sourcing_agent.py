@@ -1,7 +1,5 @@
 """
 SQLAlchemy models for SourcingAgent and SourcingAgentSignal.
-
-Apply to: lia-agent-system/app/models/sourcing_agent.py
 """
 
 from datetime import datetime

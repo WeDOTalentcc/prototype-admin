@@ -386,6 +386,7 @@ from lia_models.ab_testing import (
 )
 from lia_models.triagem import TriagemSession, TriagemMessage
 from lia_models.guardrail import Guardrail
+from lia_models.sourcing_agent import SourcingAgent, SourcingAgentSignal
 
 __all__ = [
     "Conversation",
@@ -703,4 +704,6 @@ __all__ = [
     # Triagem WSI
     "TriagemSession",
     "TriagemMessage",
+    "SourcingAgent",
+    "SourcingAgentSignal",
 ]

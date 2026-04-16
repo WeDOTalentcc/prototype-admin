@@ -11,7 +11,7 @@ from app.models.billing import Subscription
 from app.models.custom_agent import CustomAgent
 from app.models.digital_twin import DigitalTwin
 from app.models.recruitment_campaign import RecruitmentCampaign
-from app.models.sourcing_agent import SourcingAgent
+from lia_models.sourcing_agent import SourcingAgent
 
 logger = logging.getLogger(__name__)
 
