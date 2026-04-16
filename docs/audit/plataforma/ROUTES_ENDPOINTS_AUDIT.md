@@ -266,7 +266,7 @@
 | `mailgun_webhooks` | `/api/v1/webhooks/mailgun` | POST `` |
 | `openmic_webhook` | `/api/v1/openmic` | POST `/webhook`, GET `/webhook/health` |
 | `whatsapp_webhook` | `/api/v1/whatsapp` | POST `/webhook`, POST `/flow-webhook`, POST `/status-callback` |
-| `job_status_webhooks` | `/api/v1/webhooks` | POST `/register`, GET `/`, GET `/{id}`, PATCH `/{id}`, DELETE `/{id}`, POST `/{id}/test`, GET `/{id}/logs`, GET `/events/available` |
+| `job_status_webhooks` | `/api/v1/job-status-webhooks` | POST `/register`, GET `/`, GET `/{id}`, PATCH `/{id}`, DELETE `/{id}`, POST `/{id}/test`, GET `/{id}/logs`, GET `/events/available` |
 | `workos.webhook_router` | `/api/v1` | POST `/workos/webhook` |
 | `email_tracking` | `/api/v1` | Email tracking callbacks |
 

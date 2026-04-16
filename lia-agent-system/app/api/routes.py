@@ -308,6 +308,9 @@ def register_all_routes(app: FastAPI) -> None:
     app.include_router(job_drafts.router, prefix="/api/v1", tags=["job_drafts"])
     app.include_router(job_analytics.router, prefix="/api/v1", tags=["job-analytics"])
     app.include_router(job_board.router, prefix="/api/v1", tags=["job-boards"])
+    # Job-status webhooks: prefix=/api/v1/job-status-webhooks  (job vacancy status change notifications)
+    # NOTE: This router must NOT share a prefix with the generic webhooks router below
+    # (/api/v1/webhooks). Sharing caused duplicate FastAPI operation IDs. Keep them separate.
     app.include_router(job_status_webhooks.router, prefix="/api/v1", tags=["job-status-webhooks"])
     app.include_router(job_learning.router, prefix="/api/v1", tags=["job-learning"])
     app.include_router(job_embeddings.router, prefix="/api/v1", tags=["job-embeddings"])
@@ -521,6 +524,8 @@ def register_all_routes(app: FastAPI) -> None:
 
     # ── ATS / Integrations ────────────────────────────────────────────────────
     app.include_router(ats.router, prefix="/api/v1", tags=["ats"])
+    # Generic webhooks: prefix=/api/v1/webhooks  (company-level subscription CRUD + event catalog)
+    # NOTE: Do NOT add job-status-webhook routes here; they live under /api/v1/job-status-webhooks.
     app.include_router(webhooks.router, prefix="/api/v1", tags=["webhooks"])
     app.include_router(integrations.router, prefix="/api/v1", tags=["integrations"])
     app.include_router(integrations_hub.router, prefix="/api/v1", tags=["integration-hub"])
