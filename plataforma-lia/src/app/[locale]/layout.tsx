@@ -11,7 +11,7 @@ import { ErrorBoundary } from "@/components/error-boundary"
 import { headers } from "next/headers"
 import { Toaster as SonnerToaster } from "sonner"
 import { LiaFloatProvider } from "@/contexts/lia-float-context"
-import DeferredLayoutClients from "@/components/layout/DeferredLayoutClients"
+import DeferredLayoutClients from "@/components/deferred-layout-clients"
 
 async function getServerUser(): Promise<Record<string, unknown> | null> {
   try {
