@@ -40,6 +40,7 @@ import { useParams } from "next/navigation"
 import { JobKanbanPage } from "@/components/pages/job-kanban-page"
 import { liaApi } from "@/services/lia-api"
 import { ErrorBoundarySection } from "@/components/ui/error-boundary-section"
+import { useLoadingWatchdog } from "@/hooks/shared/use-loading-watchdog"
 
 export default function JobPage() {
   const params = useParams()
@@ -55,6 +56,11 @@ export default function JobPage() {
     setIsLoading(true)
     setReloadTrigger(prev => prev + 1)
   }, [])
+
+  useLoadingWatchdog(isLoading, () => {
+    setIsLoading(false)
+    setError('Tempo limite de carregamento excedido')
+  }, 20_000)
 
   useEffect(() => {
     if (!jobId) return
