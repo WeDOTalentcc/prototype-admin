@@ -29,7 +29,8 @@ export async function GET(request: NextRequest) {
     }
 
     const data = await response.json()
-    return NextResponse.json(data)
+    const payload = (data && typeof data === 'object' && 'ok' in data && data.data) ? data.data : data
+    return NextResponse.json(payload)
   } catch (error) {
     return NextResponse.json(
       { error: 'Internal server error', details: String(error) },
