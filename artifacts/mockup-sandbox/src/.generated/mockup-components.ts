@@ -12,6 +12,7 @@ export const modules: ModuleMap = {
   "./components/mockups/decision-bar/Triagem.tsx": () => import("../components/mockups/decision-bar/Triagem.tsx"),
   "./components/mockups/toasts-sonner/SonnerToasts.tsx": () => import("../components/mockups/toasts-sonner/SonnerToasts.tsx"),
   "./components/mockups/toasts-sonner/TemplateSuggestionToastMockup.tsx": () => import("../components/mockups/toasts-sonner/TemplateSuggestionToastMockup.tsx"),
+  "./components/mockups/funil-elevenlabs/FunilElevenLabs.tsx": () => import("../components/mockups/funil-elevenlabs/FunilElevenLabs.tsx"),
   "./components/mockups/triagem-flow/ChatScreen.tsx": () => import("../components/mockups/triagem-flow/ChatScreen.tsx"),
   "./components/mockups/triagem-flow/CompletionScreen.tsx": () => import("../components/mockups/triagem-flow/CompletionScreen.tsx"),
   "./components/mockups/triagem-flow/ConfirmationScreen.tsx": () => import("../components/mockups/triagem-flow/ConfirmationScreen.tsx"),
@@ -21,6 +22,5 @@ export const modules: ModuleMap = {
   "./components/mockups/weekly-digest/TeamsAdaptiveCard.tsx": () => import("../components/mockups/weekly-digest/TeamsAdaptiveCard.tsx"),
   "./components/mockups/wsi-report/Tab1Respostas.tsx": () => import("../components/mockups/wsi-report/Tab1Respostas.tsx"),
   "./components/mockups/wsi-report/Tab2Aprovado.tsx": () => import("../components/mockups/wsi-report/Tab2Aprovado.tsx"),
-  "./components/mockups/wsi-report/Tab2Pendente.tsx": () => import("../components/mockups/wsi-report/Tab2Pendente.tsx"),
-  "./components/mockups/funil-elevenlabs/FunilElevenLabs.tsx": () => import("../components/mockups/funil-elevenlabs/FunilElevenLabs.tsx")
+  "./components/mockups/wsi-report/Tab2Pendente.tsx": () => import("../components/mockups/wsi-report/Tab2Pendente.tsx")
 };
