@@ -47,7 +47,7 @@ export function useJobsPageCore(props: JobsPageProps) {
     actions: dataActions,
   } = useJobsData()
 
-  const { backendJobs, hasMounted, jobsRefreshKey, dashboardStats, isLoadingStats } = dataState
+  const { backendJobs, hasMounted, jobsRefreshKey, dashboardStats, isLoadingStats, isExternalSourceFallback } = dataState
   const { setBackendJobs, setJobsRefreshKey, loadBackendJobs } = dataActions
 
   const allJobs = backendJobs
@@ -290,6 +290,7 @@ export function useJobsPageCore(props: JobsPageProps) {
     jobsRefreshKey,
     dashboardStats,
     isLoadingStats,
+    isExternalSourceFallback,
     setBackendJobs,
     setJobsRefreshKey,
     loadBackendJobs,

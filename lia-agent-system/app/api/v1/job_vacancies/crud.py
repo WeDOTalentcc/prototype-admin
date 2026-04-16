@@ -96,6 +96,7 @@ class JobVacancyListResponse(BaseModel):
     skip: int
     limit: int
     items: list[JobVacancyListItemResponse]
+    source: str | None = None
 
 
 class JobVacancyDeleteResponse(BaseModel):
@@ -504,6 +505,7 @@ async def list_job_vacancies(
         user_id = str(current_user.id) if current_user.id else ""
         is_admin = current_user.role == UserRole.admin if hasattr(current_user, "role") else False
 
+        rails_bridge_failed = False
         if RAILS_ENABLED:
             page = skip // limit + 1 if limit else 1
             # Bridge isolation: any failure inside the Rails branch (network, parsing,
@@ -524,6 +526,7 @@ async def list_job_vacancies(
                     bridge_err,
                 )
                 rails_jobs = None
+                rails_bridge_failed = True
             if rails_jobs is not None:
                 # Apply the same confidentiality/visibility filtering used in the local DB path.
                 # This is a defense-in-depth layer — Rails may enforce its own access control,
@@ -596,6 +599,7 @@ async def list_job_vacancies(
             "total": len(job_vacancies),
             "skip": skip,
             "limit": limit,
+            "source": "local-fallback" if rails_bridge_failed else None,
             "items": [
                 {
                     "id": str(jv.id),

@@ -217,6 +217,7 @@ export interface JobVacancyListResponse {
   skip: number
   limit: number
   items: JobVacancy[]
+  source?: string | null
 }
 
 export interface PublishJobResponse {

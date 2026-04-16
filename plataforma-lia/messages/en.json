@@ -597,6 +597,7 @@
     "interviews": "interviews",
     "conversion": "conversion",
     "atRisk": "at risk",
+    "externalSourceUnavailable": "Some external jobs may not be visible — source unavailable",
     "publishedSuccess": "Jobs published successfully",
     "publishError": "Error publishing jobs. Please try again.",
     "unpublishedSuccess": "Jobs unpublished successfully",

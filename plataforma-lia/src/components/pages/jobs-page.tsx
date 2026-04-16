@@ -3,7 +3,7 @@
 import React, { useMemo } from "react"
 import dynamic from "next/dynamic"
 import { Button } from "@/components/ui/button"
-import { Plus, Users, Clock, AlertTriangle, CheckCircle2, Briefcase, Zap, Pause, CheckCircle, XCircle } from "lucide-react"
+import { Plus, Users, Clock, AlertTriangle, CheckCircle2, Briefcase, Zap, Pause, CheckCircle, XCircle, WifiOff } from "lucide-react"
 import { PageTabNavigation } from "@/components/ui/page-tab-navigation"
 import type { PageTab } from "@/components/ui/page-tab-navigation"
 import { JobKanbanPage } from "./job-kanban-page"
@@ -85,6 +85,7 @@ export function JobsPage(props: JobsPageProps) {
     setBackendJobs, setSelectedJob, setPreviewJob, setEditingJob,
     setPendingNavigateJobId, loadBackendJobs, setActivePreviewTab,
     selectedJob, navigateToCreatedJob,
+    isExternalSourceFallback,
   } = state
 
   if (!hasMounted) {
@@ -202,6 +203,12 @@ export function JobsPage(props: JobsPageProps) {
       </div>
 
       <div className={`flex-1 flex flex-col overflow-hidden px-4 pt-2 pb-2 ${chatMode === 'job-creation' && isChatFullscreen ? 'hidden' : ''}`}>
+        {isExternalSourceFallback && !isLoadingJobs && (
+          <div className="flex items-center gap-2 px-3 py-2 mb-2 rounded-md bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50 text-amber-700 dark:text-amber-400">
+            <WifiOff className="w-3.5 h-3.5 shrink-0" />
+            <span className="text-xs">{t("externalSourceUnavailable")}</span>
+          </div>
+        )}
         <JobsListContent
           {...state}
           setLiaPromptValue={state.setLiaPromptValue as (value: string | ((prev: string) => string)) => void}

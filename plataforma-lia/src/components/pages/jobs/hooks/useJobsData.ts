@@ -15,6 +15,7 @@ interface UseJobsDataReturn {
     jobsRefreshKey: number
     dashboardStats: Record<string, unknown> | null
     isLoadingStats: boolean
+    isExternalSourceFallback: boolean
   }
   actions: {
     setBackendJobs: React.Dispatch<React.SetStateAction<Job[]>>
@@ -72,6 +73,7 @@ export function useJobsData(): UseJobsDataReturn {
   const [jobsRefreshKey, setJobsRefreshKey] = useState(0)
   const [dashboardStats, setDashboardStats] = useState<Record<string, unknown> | null>(null)
   const [isLoadingStats, setIsLoadingStats] = useState(true)
+  const [isExternalSourceFallback, setIsExternalSourceFallback] = useState(false)
 
   useEffect(() => {
     mountedRef.current = true
@@ -94,6 +96,8 @@ export function useJobsData(): UseJobsDataReturn {
       if (!response || !response.items) {
         throw new Error('Invalid response format')
       }
+
+      setIsExternalSourceFallback(response.source === 'local-fallback')
 
       const stageMapping: Record<string, Job['stage']> = {
         'Planejamento': 'Planejamento',
@@ -281,6 +285,7 @@ export function useJobsData(): UseJobsDataReturn {
       jobsRefreshKey,
       dashboardStats,
       isLoadingStats,
+      isExternalSourceFallback,
     },
     actions: {
       setBackendJobs,

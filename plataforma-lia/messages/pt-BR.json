@@ -597,6 +597,7 @@
     "interviews": "entrevistas",
     "conversion": "conversão",
     "atRisk": "em risco",
+    "externalSourceUnavailable": "Algumas vagas externas podem não estar visíveis — fonte indisponível",
     "publishedSuccess": "Vagas publicadas com sucesso",
     "publishError": "Erro ao publicar vagas. Tente novamente.",
     "unpublishedSuccess": "Vagas despublicadas com sucesso",
