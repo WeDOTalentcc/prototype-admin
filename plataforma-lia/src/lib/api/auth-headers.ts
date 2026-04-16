@@ -21,22 +21,22 @@ function resolveAuthHeader(request: NextRequest): string | null {
   return null
 }
 
-// Task #293: em não-prod, quando nenhum Bearer está disponível (ex.: usuário
-// sem cookie válido em onboarding), permitimos que o proxy injete
-// `X-Dev-Api-Key` a partir de um secret server-side. O backend valida essa
-// chave em `AuthEnforcementMiddleware._check_dev_api_key` APENAS quando
-// `LIA_DEV_MODE=true`. Em produção, `LIA_DEV_MODE` é false e a chave é
-// ignorada — logo este header nunca gera bypass em prod.
+// Dev fallback header injection (task #293).
+//
+// Contrato cross-service:
+//   - Front só injeta `X-Dev-Api-Key` quando `LIA_DEV_MODE === 'true'` E
+//     `LIA_DEV_API_KEY` está presente. Ambas as variáveis são server-side
+//     (Next route handlers), nunca expostas ao browser.
+//   - Backend só aceita a chave quando `LIA_DEV_MODE === 'true'` no ambiente
+//     do FastAPI. Em produção, `LIA_DEV_MODE` é false e o header é ignorado.
+//
+// Portanto: não há bypass em produção; o header é apenas um opt-in explícito
+// coordenado pelos operadores via duas variáveis distintas nos dois serviços.
 function getDevFallbackHeaders(): Record<string, string> {
-  const isDevMode =
-    process.env.LIA_DEV_MODE === 'true' ||
-    (process.env.NODE_ENV !== 'production' &&
-      process.env.APP_ENV !== 'production')
+  if (process.env.LIA_DEV_MODE !== 'true') return {}
   const devKey = process.env.LIA_DEV_API_KEY
-  if (isDevMode && devKey) {
-    return { 'X-Dev-Api-Key': devKey }
-  }
-  return {}
+  if (!devKey) return {}
+  return { 'X-Dev-Api-Key': devKey }
 }
 
 export function getAuthHeaders(request: NextRequest, required = false): HeadersInit {

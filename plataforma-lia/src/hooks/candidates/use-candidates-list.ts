@@ -103,6 +103,9 @@ export function useCandidatesList(initialFilters?: CandidatesListFilters): UseCa
         setError(err?.message || "candidates_fetch_failed")
         setErrorKind(kind)
         setCandidates([])
+        // Reseta total para evitar paginação stale sob estado de erro
+        // (ex.: banner 401/500 mostrado com "Página 1 de 3" de listagem antiga).
+        setTotal(0)
         setLoading(false)
       })
   }, [filters.status, filters.tags, filters.seniority, filters.sort_by, filters.sort_order, debouncedSearch, currentPage, fetchTrigger])

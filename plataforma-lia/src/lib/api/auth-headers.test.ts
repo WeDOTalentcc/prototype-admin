@@ -53,7 +53,7 @@ describe("getAuthHeaders — dev fallback injection (task #293)", () => {
     expect(headers["X-Dev-Api-Key"]).toBe("dev-secret")
   })
 
-  it("no bearer + production → no dev header even if LIA_DEV_API_KEY set", () => {
+  it("no bearer + LIA_DEV_MODE unset → no dev header (even with key)", () => {
     process.env.APP_ENV = "production"
     process.env.NODE_ENV = "production"
     process.env.LIA_DEV_API_KEY = "dev-secret"
@@ -61,6 +61,16 @@ describe("getAuthHeaders — dev fallback injection (task #293)", () => {
     const req = makeRequest({})
     const headers = getAuthHeaders(req) as Record<string, string>
     expect(headers["Authorization"]).toBeUndefined()
+    expect(headers["X-Dev-Api-Key"]).toBeUndefined()
+  })
+
+  it("no bearer + NODE_ENV=development but LIA_DEV_MODE unset → no dev header", () => {
+    process.env.NODE_ENV = "development"
+    process.env.APP_ENV = "development"
+    process.env.LIA_DEV_API_KEY = "dev-secret"
+    delete process.env.LIA_DEV_MODE
+    const req = makeRequest({})
+    const headers = getAuthHeaders(req) as Record<string, string>
     expect(headers["X-Dev-Api-Key"]).toBeUndefined()
   })
 
