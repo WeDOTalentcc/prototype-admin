@@ -25,12 +25,25 @@ async function proxyRequest(
 
     const contentType = request.headers.get('content-type')
     const isMultipart = contentType?.includes('multipart/form-data')
-    
-    const headers: HeadersInit = {}
-    
+
+    const headers: Record<string, string> = {}
+
     if (!isMultipart && contentType) {
       headers['Content-Type'] = contentType
     }
+
+    // Bug #303: o middleware injeta `Authorization` (e a request carrega o
+    // cookie de sessão); precisamos repassá-los pra que rotas WSI que
+    // dependem do tenant do usuário continuem funcionando. NÃO copiar
+    // `host`/`content-length`/`connection` para evitar confundir o backend.
+    const authHeader = request.headers.get('authorization')
+    if (authHeader) headers['Authorization'] = authHeader
+    const cookieHeader = request.headers.get('cookie')
+    if (cookieHeader) headers['Cookie'] = cookieHeader
+    const xAuthMethod = request.headers.get('x-auth-method')
+    if (xAuthMethod) headers['X-Auth-Method'] = xAuthMethod
+    const xDevApiKey = request.headers.get('x-dev-api-key')
+    if (xDevApiKey) headers['X-Dev-Api-Key'] = xDevApiKey
 
     const options: RequestInit = {
       method: request.method,

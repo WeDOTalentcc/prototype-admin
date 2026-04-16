@@ -146,12 +146,47 @@ export async function updateScreeningStatus(jobId: string, status: string, extra
   return response.json()
 }
 
+// Bug #303: 401 do middleware no `/api/lia/*` (sessão expirada) era convertido
+// num `Error` cru, estourando no overlay do Next. Agora:
+//   - Anexa `err.status` para que consumers possam diferenciar 401/403 de 5xx.
+//   - Em 401, dispara o mesmo fluxo de relogin usado pelo restante do app
+//     (mesmo handler do `useSessionRefresh` → `/login?reason=session_expired`),
+//     evitando que o usuário fique preso numa página sem dados.
+//   - Preserva `detail` do backend quando presente.
+//
+// As demais funções deste módulo continuam com o tratamento legado; só foi
+// normalizado o caminho usado pelo kanban (escopo da task #303).
+function handleSessionExpiredRedirect(): void {
+  if (typeof window === 'undefined') return
+  if (window.location.pathname.startsWith('/login')) return
+  window.location.href = '/login?reason=session_expired'
+}
+
+async function buildWsiError(response: Response, fallbackMessage: string): Promise<Error & { status: number }> {
+  let message = fallbackMessage
+  try {
+    const body = await response.json()
+    if (body?.detail && typeof body.detail === 'string') message = body.detail
+    else if (body?.error && typeof body.error === 'string') message = body.error
+  } catch {
+    if (response.statusText) message = `${fallbackMessage}: ${response.statusText}`
+  }
+  const err = new Error(message) as Error & { status: number }
+  err.status = response.status
+  return err
+}
+
 export async function wsiGetCandidatesScores(jobVacancyId: string): Promise<WSICandidatesScores> {
   const response = await fetch(`/api/lia/api/wsi/candidates/${jobVacancyId}/scores`, {
     headers: getAuthHeaders(),
+    credentials: 'include',
   })
   if (!response.ok) {
-    throw new Error(`Failed to get candidates WSI scores: ${response.statusText}`)
+    const err = await buildWsiError(response, 'Failed to get candidates WSI scores')
+    if (response.status === 401 || response.status === 403) {
+      handleSessionExpiredRedirect()
+    }
+    throw err
   }
   return response.json()
 }

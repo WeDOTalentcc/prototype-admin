@@ -71,7 +71,20 @@ export function useKanbanDataEffects({
           return updated
         })
       })
-      .catch((err) => { console.error('[useKanbanDataEffects] wsiGetCandidatesScores fetch failed', err) })
+      .catch((err: Error & { status?: number }) => {
+        // Bug #303: 401/403 já dispara o redirect de relogin no helper do
+        // wsi-api; aqui só engolimos pra não estourar o overlay do Next.
+        // Para 5xx/erros de rede, mantemos o board renderizado (sem badges
+        // de score) e logamos discretamente em debug — sem `console.error`,
+        // que estoura o overlay em dev e polui o Sentry/console em prod.
+        if (err?.status === 401 || err?.status === 403) return
+        if (typeof console !== 'undefined' && typeof console.debug === 'function') {
+          console.debug('[useKanbanDataEffects] wsiGetCandidatesScores indisponível (board segue sem scores)', {
+            status: err?.status,
+            message: err?.message,
+          })
+        }
+      })
   // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: candidatesData/setCandidatesData excluded to avoid infinite loop
   }, [isLoadingCandidates, currentJob?.id, currentJob?.backendId])
 
