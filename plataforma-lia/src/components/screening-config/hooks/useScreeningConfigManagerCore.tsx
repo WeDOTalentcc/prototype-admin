@@ -154,7 +154,7 @@ export const SCREENING_SECTIONS = [
 
 
 export function useScreeningConfigManagerCore({ job, onJobUpdate, onFormUpdate, _externalActiveSection, _hideOwnSidebar }: ScreeningConfigManagerProps & { _externalActiveSection?: string; _hideOwnSidebar?: boolean }) {
-  const { config: screeningConfig, updateConfig: updateScreeningConfig } = useScreeningConfig((job?.backendId || job?.jobId || null) as string | number | null)
+  const { config: screeningConfig, updateConfig: updateScreeningConfig, isLoading: isLoadingScreeningConfig, loadError: screeningConfigLoadError, mutate: retryScreeningConfig } = useScreeningConfig((job?.backendId || job?.jobId || null) as string | number | null)
 
   const [blockPromptOpen, setBlockPromptOpen] = useState<string | null>(null)
   const [blockPromptText, setBlockPromptText] = useState("")
@@ -578,6 +578,9 @@ export function useScreeningConfigManagerCore({ job, onJobUpdate, onFormUpdate, 
     companyQuestions,
     screeningConfig,
     updateScreeningConfig,
+    isLoadingScreeningConfig,
+    screeningConfigLoadError,
+    retryScreeningConfig,
     configDone,
     currentSection,
     customQuestions,

@@ -8,6 +8,7 @@ import { liaApi, type CandidateLocal } from "@/services/lia-api"
 import { type CommunicationType } from "@/components/modals/unified-communication-modal"
 import { toast } from "sonner"
 import { useCurrentCompany } from '@/hooks/company/use-current-company'
+import { useLoadingWatchdog } from "@/hooks/shared/use-loading-watchdog"
 type ActiveTab = 'profile' | 'activities' | 'files' | 'opinions'
 type ActivityCategory = 'all' | 'interview' | 'screening' | 'general'
 
@@ -61,56 +62,61 @@ const candidateId = params.id as string
   const [expandedOpinionId, setExpandedOpinionId] = useState<string | null>(null)
   const [expandedActivity, setExpandedActivity] = useState<string | null>(null)
   const [showLiaAnalysisModal, setShowLiaAnalysisModal] = useState(false)
-  
+
+  useLoadingWatchdog(loading, () => {
+    setLoading(false)
+    setError('Tempo limite de carregamento excedido')
+  }, 20_000)
+
+  const loadCandidate = useCallback(async () => {
+    if (!candidateId) return
+
+    setError(null)
+    try {
+      setLoading(true)
+      const data = await liaApi.getCandidate(candidateId)
+      setCandidate(data)
+
+      // Initialize favorite/hidden state from candidate data or API
+      try {
+        const additionalData = (data as unknown as Record<string, unknown>)?.additional_data as Record<string, unknown> | undefined
+        if (additionalData?.is_favorited !== undefined) {
+          setIsFavorite(Boolean(additionalData.is_favorited))
+        } else {
+          const favResponse = await fetch(`/api/backend-proxy/candidates/${candidateId}/favorite/status`)
+          if (favResponse.ok) {
+            const favData = await favResponse.json()
+            setIsFavorite(favData?.is_favorited || false)
+          }
+        }
+      } catch (e) {
+        // Fail gracefully if endpoint doesn't exist
+      }
+
+      try {
+        const additionalData = (data as unknown as Record<string, unknown>)?.additional_data as Record<string, unknown> | undefined
+        if (additionalData?.is_hidden !== undefined) {
+          setIsHidden(Boolean(additionalData.is_hidden))
+        } else {
+          const hideResponse = await fetch(`/api/backend-proxy/candidates/${candidateId}/hide/status`)
+          if (hideResponse.ok) {
+            const hideData = await hideResponse.json()
+            setIsHidden(hideData?.is_hidden || false)
+          }
+        }
+      } catch (e) {
+        // Fail gracefully if endpoint doesn't exist
+      }
+    } catch (err) {
+      setError("Não foi possível carregar o perfil do candidato")
+    } finally {
+      setLoading(false)
+    }
+  }, [candidateId])
 
   useEffect(() => {
-    async function loadCandidate() {
-      if (!candidateId) return
-      
-      try {
-        setLoading(true)
-        const data = await liaApi.getCandidate(candidateId)
-        setCandidate(data)
-        
-        // Initialize favorite/hidden state from candidate data or API
-        try {
-          const additionalData = (data as unknown as Record<string, unknown>)?.additional_data as Record<string, unknown> | undefined
-          if (additionalData?.is_favorited !== undefined) {
-            setIsFavorite(Boolean(additionalData.is_favorited))
-          } else {
-            const favResponse = await fetch(`/api/backend-proxy/candidates/${candidateId}/favorite/status`)
-            if (favResponse.ok) {
-              const favData = await favResponse.json()
-              setIsFavorite(favData?.is_favorited || false)
-            }
-          }
-        } catch (e) {
-          // Fail gracefully if endpoint doesn't exist
-        }
-        
-        try {
-          const additionalData = (data as unknown as Record<string, unknown>)?.additional_data as Record<string, unknown> | undefined
-          if (additionalData?.is_hidden !== undefined) {
-            setIsHidden(Boolean(additionalData.is_hidden))
-          } else {
-            const hideResponse = await fetch(`/api/backend-proxy/candidates/${candidateId}/hide/status`)
-            if (hideResponse.ok) {
-              const hideData = await hideResponse.json()
-              setIsHidden(hideData?.is_hidden || false)
-            }
-          }
-        } catch (e) {
-          // Fail gracefully if endpoint doesn't exist
-        }
-      } catch (err) {
-        setError("Não foi possível carregar o perfil do candidato")
-      } finally {
-        setLoading(false)
-      }
-    }
-    
     loadCandidate()
-  }, [candidateId])
+  }, [loadCandidate])
 
   const fetchOpinionsSummary = useCallback(async () => {
     if (!candidateId) return
@@ -552,6 +558,7 @@ const candidateId = params.id as string
     copyToClipboard,
     education,
     error,
+    retry: loadCandidate,
     expandedAnalysisId,
     expandedOpinionId,
     experiences,

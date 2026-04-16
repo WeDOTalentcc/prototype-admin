@@ -11,7 +11,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from"@/compo
 import {
   ArrowLeft, MapPin, Briefcase, Mail, Phone, Linkedin, Globe, Github,
   MessageSquare, UserPlus, Heart, EyeOff, CalendarDays, Plus, Send,
-  FileText, Activity, List, Brain, Shield, Loader2, ClipboardCheck
+  FileText, Activity, List, Brain, Shield, Loader2, ClipboardCheck, RotateCcw
 } from"lucide-react"
 import { badgeStyles } from"@/lib/design-tokens"
 import { AddToListModal } from"@/components/modals/add-to-list-modal"
@@ -40,7 +40,7 @@ export default function CandidateProfilePage() {
   const {
     activeTab, activities, activityFilter, activityView, calculateAge,
     candidate, candidateFiles, cleanMarkdown, communicationType,
-    copyToClipboard, education, error, expandedAnalysisId, expandedOpinionId,
+    copyToClipboard, education, error, retry, expandedAnalysisId, expandedOpinionId,
     experiences, fetchSavedAnalyses, fileCategories, formatCurrency, formatDate,
     formatDateShort, formatFileSize, formatRelativeTime, getCategoryColor,
     getCategoryLabel, getFileIcon, getInitials, getLanguageLevel, getShortId,
@@ -78,9 +78,16 @@ export default function CandidateProfilePage() {
       <div className="flex items-center justify-center min-h-screen bg-lia-bg-primary dark:bg-lia-bg-primary" role="alert" aria-live="assertive">
         <div className="text-center">
           <p className="text-sm text-status-error mb-4">{error ||"Candidato não encontrado"}</p>
-          <Button variant="outline" onClick={() => router.back()}>
-            <ArrowLeft className="w-4 h-4 mr-2" />Voltar
-          </Button>
+          <div className="flex items-center justify-center gap-2 flex-wrap">
+            {error && (
+              <Button variant="outline" onClick={() => retry()}>
+                <RotateCcw className="w-4 h-4 mr-2" />Tentar novamente
+              </Button>
+            )}
+            <Button variant="outline" onClick={() => router.back()}>
+              <ArrowLeft className="w-4 h-4 mr-2" />Voltar
+            </Button>
+          </div>
         </div>
       </div>
     )

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from 'react'
+import { useLoadingWatchdog } from '@/hooks/shared/use-loading-watchdog'
 
 export type ScreeningChannelKey = 'chat_web' | 'phone' | 'whatsapp' | 'voip_web'
 
@@ -124,6 +125,7 @@ interface UseScreeningConfigResult {
   config: ScreeningConfig
   isLoading: boolean
   error: string | null
+  loadError: string | null
   isDefault: boolean
   mutate: () => Promise<void>
   updateConfig: (updates: Partial<ScreeningConfig>) => Promise<boolean>
@@ -132,8 +134,16 @@ interface UseScreeningConfigResult {
 export function useScreeningConfig(jobId: string | number | null): UseScreeningConfigResult {
   const [config, setConfig] = useState<ScreeningConfig>(DEFAULT_CONFIG)
   const [isLoading, setIsLoading] = useState(false)
+  const [isInitialLoading, setIsInitialLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [loadError, setLoadError] = useState<string | null>(null)
   const [isDefault, setIsDefault] = useState(true)
+
+  useLoadingWatchdog(isInitialLoading, () => {
+    setIsInitialLoading(false)
+    setIsLoading(false)
+    setLoadError('Tempo limite de carregamento excedido')
+  }, 20_000)
 
   const fetchConfig = useCallback(async () => {
     if (!jobId) {
@@ -142,8 +152,9 @@ export function useScreeningConfig(jobId: string | number | null): UseScreeningC
       return
     }
 
+    setIsInitialLoading(true)
     setIsLoading(true)
-    setError(null)
+    setLoadError(null)
 
     try {
       const response = await fetch(`/api/backend-proxy/jobs/${jobId}/screening-config`)
@@ -152,6 +163,7 @@ export function useScreeningConfig(jobId: string | number | null): UseScreeningC
         // Don't throw for expected cases - just use defaults
         setConfig(DEFAULT_CONFIG)
         setIsDefault(true)
+        setIsInitialLoading(false)
         setIsLoading(false)
         return
       }
@@ -189,10 +201,11 @@ export function useScreeningConfig(jobId: string | number | null): UseScreeningC
       setConfig(mergedConfig)
       setIsDefault(data.is_default ?? true)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error')
+      setLoadError(err instanceof Error ? err.message : 'Unknown error')
       setConfig(DEFAULT_CONFIG)
       setIsDefault(true)
     } finally {
+      setIsInitialLoading(false)
       setIsLoading(false)
     }
   }, [jobId])
@@ -249,6 +262,7 @@ export function useScreeningConfig(jobId: string | number | null): UseScreeningC
     config,
     isLoading,
     error,
+    loadError,
     isDefault,
     mutate: fetchConfig,
     updateConfig

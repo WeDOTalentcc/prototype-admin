@@ -79,8 +79,20 @@ export const SCREENING_SECTIONS = [
 function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiveSection, _hideOwnSidebar }: ScreeningConfigManagerProps & { _externalActiveSection?: string; _hideOwnSidebar?: boolean }) {
   const core = useScreeningConfigManagerCore({ job, onJobUpdate, onFormUpdate, _externalActiveSection, _hideOwnSidebar })
   const {
-    activeSection, companyQuestions, configDone, currentSection, customQuestions, disabledCompanyQIds, editAutoApprovalPreset, editAvailableHours, editAvailableHoursInherited, editCalendarProvider, editChannels, editFallbackOrder, editInterviewDuration, editMaxRetries, editMinScorePreset, editPrimaryChannel, editSchedulingEnabled, editSchedulingMinScorePreset, editTimeoutHours, getConfigStatusInfo, isEditingScreening, isEditingScreeningConfig, jdDone, questionsDone, resetScreeningEditing, screeningConfig, selectedBankQuestions, setActiveSection, setEditAutoApprovalPreset, setEditAvailableHours, setEditAvailableHoursInherited, setEditCalendarProvider, setEditChannels, setEditFallbackOrder, setEditInterviewDuration, setEditMaxRetries, setEditMinScorePreset, setEditPrimaryChannel, setEditSchedulingEnabled, setEditSchedulingMinScorePreset, setEditTimeoutHours, setIsEditingScreening, setIsEditingScreeningConfig, setShowScreeningToggleConfirm, showScreeningToggleConfirm, updateScreeningConfig,
+    activeSection, companyQuestions, configDone, currentSection, customQuestions, disabledCompanyQIds, editAutoApprovalPreset, editAvailableHours, editAvailableHoursInherited, editCalendarProvider, editChannels, editFallbackOrder, editInterviewDuration, editMaxRetries, editMinScorePreset, editPrimaryChannel, editSchedulingEnabled, editSchedulingMinScorePreset, editTimeoutHours, getConfigStatusInfo, isEditingScreening, isEditingScreeningConfig, screeningConfigLoadError, retryScreeningConfig, jdDone, questionsDone, resetScreeningEditing, screeningConfig, selectedBankQuestions, setActiveSection, setEditAutoApprovalPreset, setEditAvailableHours, setEditAvailableHoursInherited, setEditCalendarProvider, setEditChannels, setEditFallbackOrder, setEditInterviewDuration, setEditMaxRetries, setEditMinScorePreset, setEditPrimaryChannel, setEditSchedulingEnabled, setEditSchedulingMinScorePreset, setEditTimeoutHours, setIsEditingScreening, setIsEditingScreeningConfig, setShowScreeningToggleConfirm, showScreeningToggleConfirm, updateScreeningConfig,
   } = core
+
+  if (screeningConfigLoadError) {
+    return (
+      <div className="flex flex-col items-center justify-center py-16 gap-4" role="alert" aria-live="assertive">
+        <AlertCircle className="w-8 h-8 text-status-error" />
+        <p className="text-sm text-status-error text-center">{screeningConfigLoadError}</p>
+        <Button variant="outline" size="sm" onClick={retryScreeningConfig}>
+          <RotateCcw className="w-3.5 h-3.5 mr-2" />Tentar novamente
+        </Button>
+      </div>
+    )
+  }
 
 
   return (
