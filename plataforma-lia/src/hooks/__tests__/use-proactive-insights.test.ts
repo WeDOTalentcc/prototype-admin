@@ -1,7 +1,7 @@
 import React from 'react'
 import { renderHook, act } from '@testing-library/react'
 import { SWRConfig } from 'swr'
-import { useProactiveInsights } from '../use-proactive-insights'
+import { useProactiveInsights } from '../ai/use-proactive-insights'
 
 const swrWrapper = ({ children }: { children: React.ReactNode }) => (
   React.createElement(SWRConfig, { value: { dedupingInterval: 0, provider: () => new Map(), revalidateOnFocus: false } }, children)
@@ -126,6 +126,21 @@ describe('useProactiveInsights', () => {
 
     await act(async () => { vi.advanceTimersByTime(5 * 60 * 1000) })
     expect(global.fetch).toHaveBeenCalledTimes(2)
+  })
+
+  it('returns empty array when backend response is not an array (defensive guard)', async () => {
+    ;(global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ detail: 'Authentication required' }),
+    })
+
+    const { result } = renderHook(() =>
+      useProactiveInsights('job-1', 'comp-1'),
+      { wrapper: swrWrapper }
+    )
+    await act(async () => { await Promise.resolve() })
+
+    expect(result.current.insights).toHaveLength(0)
   })
 
   // ── New tests ─────────────────────────────────────────────────────────────

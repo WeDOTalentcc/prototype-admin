@@ -68,7 +68,8 @@ export function useProactiveInsights(
     })
   }, [])
 
-  const insights = (data ?? []).filter(i => !dismissed.has(i.id))
+  const rawData = Array.isArray(data) ? data : []
+  const insights = rawData.filter(i => !dismissed.has(i.id))
 
   return {
     insights,
