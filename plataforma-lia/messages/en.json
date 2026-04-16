@@ -1336,7 +1336,8 @@
       "shareSelection": "Share Selection"
     },
     "auth": {
-      "reloginCta": "Sign in",
+      "reloginTitle": "Your session has expired",
+      "reloginCta": "Sign in again",
       "retryCta": "Try again"
     },
     "emptyState": {

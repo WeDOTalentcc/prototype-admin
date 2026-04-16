@@ -1336,7 +1336,8 @@
       "shareSelection": "Compartilhar Seleção"
     },
     "auth": {
-      "reloginCta": "Fazer login",
+      "reloginTitle": "Sua sessão expirou",
+      "reloginCta": "Fazer login novamente",
       "retryCta": "Tentar novamente"
     },
     "emptyState": {

@@ -1,8 +1,9 @@
 "use client"
 
-import { useState, useMemo } from"react"
+import { useState, useMemo, useCallback } from"react"
 import dynamic from "next/dynamic"
-import { useTranslations } from "next-intl"
+import { useTranslations, useLocale } from "next-intl"
+import { LogIn } from"lucide-react"
 import { Button } from"@/components/ui/button"
 import { Input } from"@/components/ui/input"
 import { Badge } from"@/components/ui/badge"
@@ -93,6 +94,7 @@ function toCandidateTableRow(c: CandidateLocal): Candidate {
 // ── Componente ─────────────────────────────────────────────────────────────────
 export default function FunilDeTalentosPage() {
   const t = useTranslations('pipeline')
+  const locale = useLocale()
   const {
     candidates: rawCandidates,
     loading,
@@ -168,6 +170,17 @@ export default function FunilDeTalentosPage() {
   const handleCandidateClick = (candidate: Candidate) => {
     window.open(`/funil-de-talentos/candidato/${candidate.id}`,"_blank")
   }
+
+  // Task #293: redireciona ao login locale-aware, preservando next para
+  // retornar à mesma página após a reautenticação.
+  const handleRelogin = useCallback(() => {
+    const next = typeof window !== "undefined"
+      ? `${window.location.pathname}${window.location.search}`
+      : `/${locale}/funil-de-talentos`
+    window.location.href = `/${locale}/login?next=${encodeURIComponent(next)}`
+  }, [locale])
+
+  const isAuthError = errorKind === "unauthorized" || errorKind === "forbidden"
 
   // Filtros rápidos
   
@@ -307,61 +320,89 @@ const SENIORITY_OPTIONS = [
               </div>
             </div>
 
-            {/* Task #293: error state com CTA diferenciado. 401/403 oferecem
-                relogin (redireciona ao root para reautenticar); 5xx/network
-                mantêm retry manual via refresh(). */}
-            {error && (
-              <div className="flex items-start gap-2 p-3 bg-status-error/10 dark:bg-status-error/10 border border-status-error/30 dark:border-status-error/30 rounded-xl text-xs text-status-error dark:text-status-error">
+            {/* Task #293: estados de erro diferenciados.
+                - 401/403 → estado dedicado "sessão expirada" que SUBSTITUI a
+                  tabela (user não vê dados estale e a CTA de relogin é o
+                  foco). Redireciona para /{locale}/login?next=<path>.
+                - 5xx/network → banner inline com retry, mantendo a tabela
+                  oculta até a reação do usuário. */}
+            {isAuthError ? (
+              <div
+                role="alert"
+                aria-live="assertive"
+                data-testid="funil-relogin-state"
+                className="flex flex-col items-center justify-center text-center gap-3 py-14 px-6 bg-lia-bg-primary dark:bg-lia-bg-primary border border-status-error/30 rounded-xl"
+              >
+                <div className="h-10 w-10 rounded-full bg-status-error/10 flex items-center justify-center">
+                  <LogIn className="h-5 w-5 text-status-error" aria-hidden="true" />
+                </div>
+                <div className="space-y-1">
+                  <h2 className="text-sm font-semibold text-lia-text-primary">
+                    {t('auth.reloginTitle')}
+                  </h2>
+                  <p className="text-xs text-lia-text-secondary max-w-sm">{error}</p>
+                </div>
+                <Button
+                  size="sm"
+                  variant="primary"
+                  onClick={handleRelogin}
+                  className="h-8 rounded-xl text-xs"
+                >
+                  <LogIn className="h-3.5 w-3.5 mr-1.5" />
+                  {t('auth.reloginCta')}
+                </Button>
+              </div>
+            ) : error ? (
+              <div
+                role="alert"
+                aria-live="polite"
+                data-testid="funil-error-state"
+                className="flex items-start gap-2 p-3 bg-status-error/10 dark:bg-status-error/10 border border-status-error/30 dark:border-status-error/30 rounded-xl text-xs text-status-error dark:text-status-error"
+              >
                 <AlertCircle className="h-4 w-4 flex-shrink-0 mt-0.5" />
                 <div className="flex-1 flex items-center justify-between gap-3">
                   <span>{error}</span>
-                  {(errorKind === "unauthorized" || errorKind === "forbidden") ? (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => { window.location.href = "/" }}
-                      className="h-7 rounded-lg text-xs border-status-error/40"
-                    >
-                      {t('auth.reloginCta')}
-                    </Button>
-                  ) : (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => refresh()}
-                      className="h-7 rounded-lg text-xs border-status-error/40"
-                    >
-                      {t('auth.retryCta')}
-                    </Button>
-                  )}
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => refresh()}
+                    className="h-7 rounded-lg text-xs border-status-error/40"
+                  >
+                    {t('auth.retryCta')}
+                  </Button>
                 </div>
               </div>
-            )}
+            ) : null}
 
-            {/* Table */}
-            <div className="bg-lia-bg-primary dark:bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl overflow-hidden">
-              {!loading && candidates.length === 0 && !error ? (
-                <div className="flex flex-col items-center justify-center py-16 text-center px-4">
-                  <Users className="h-10 w-10 text-lia-text-disabled dark:text-lia-text-secondary mb-3" />
-                  <p className="text-sm font-medium text-lia-text-secondary dark:text-lia-text-tertiary" aria-live="polite" aria-atomic="true">
-                    {filters.search || filters.status || filters.seniority
-                      ? t('emptyState.noResults')
-                      : t('emptyState.searchPrompt')}
-                  </p>
-                </div>
-              ) : (
-                <CandidatesTable
-                  candidates={candidates}
-                  selectedIds={selectedIds}
-                  onToggleSelect={toggleCandidate}
-                  onSelectAll={handleSelectAll}
-                  onCandidateClick={handleCandidateClick}
-                  sortConfig={sortConfig}
-                  onSort={handleSort}
-                  isLoading={loading}
-                />
-              )}
-            </div>
+            {/* Tabela — só renderiza quando não há erro de auth. Em erros de
+                servidor/rede mantemos o banner inline; a tabela pode continuar
+                visível (última listagem em cache) para não piscar em flaps
+                transitórios. */}
+            {!isAuthError && (
+              <div className="bg-lia-bg-primary dark:bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl overflow-hidden">
+                {!loading && candidates.length === 0 && !error ? (
+                  <div className="flex flex-col items-center justify-center py-16 text-center px-4">
+                    <Users className="h-10 w-10 text-lia-text-disabled dark:text-lia-text-secondary mb-3" />
+                    <p className="text-sm font-medium text-lia-text-secondary dark:text-lia-text-tertiary" aria-live="polite" aria-atomic="true">
+                      {filters.search || filters.status || filters.seniority
+                        ? t('emptyState.noResults')
+                        : t('emptyState.searchPrompt')}
+                    </p>
+                  </div>
+                ) : (
+                  <CandidatesTable
+                    candidates={candidates}
+                    selectedIds={selectedIds}
+                    onToggleSelect={toggleCandidate}
+                    onSelectAll={handleSelectAll}
+                    onCandidateClick={handleCandidateClick}
+                    sortConfig={sortConfig}
+                    onSort={handleSort}
+                    isLoading={loading}
+                  />
+                )}
+              </div>
+            )}
 
             {/* Pagination */}
             {totalPages > 1 && (
