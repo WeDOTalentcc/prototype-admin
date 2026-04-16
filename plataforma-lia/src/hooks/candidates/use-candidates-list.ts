@@ -2,10 +2,12 @@
 
 import { useState, useCallback, useEffect, useRef } from "react"
 import type { CandidateLocal } from "@/services/lia-api"
-import { ensureServerReady } from "@/lib/backend-ready"
+// liaApi.getCandidates centralises fetch, auth headers, and error handling.
+// Reliability concerns (retries, health checks) belong at the service layer.
+import { liaApi } from "@/services/lia-api"
 
-const BACKEND_URL = '/api/backend-proxy'
 const PER_PAGE = 20
+const SEARCH_DEBOUNCE_MS = 300
 
 export interface CandidatesListFilters {
   search?: string
@@ -38,70 +40,57 @@ export function useCandidatesList(initialFilters?: CandidatesListFilters): UseCa
   const [total, setTotal] = useState(0)
   const [currentPage, setCurrentPage] = useState(1)
   const [filters, setFiltersState] = useState<CandidatesListFilters>(initialFilters ?? {})
+  const [searchTerm, setSearchTerm] = useState(initialFilters?.search ?? "")
+  const [debouncedSearch, setDebouncedSearch] = useState(initialFilters?.search ?? "")
   const [fetchTrigger, setFetchTrigger] = useState(0)
   const requestIdRef = useRef(0)
 
   useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchTerm)
+    }, SEARCH_DEBOUNCE_MS)
+    return () => clearTimeout(timer)
+  }, [searchTerm])
+
+  useEffect(() => {
     const thisRequestId = ++requestIdRef.current
-
-    const query = new URLSearchParams()
-    if (filters.search) query.set('search', filters.search)
-    if (filters.status) query.set('status', filters.status)
-    if (filters.tags) query.set('tags', filters.tags)
-    if (filters.seniority) query.set('seniority', filters.seniority)
-    if (filters.sort_by) query.set('sort_by', filters.sort_by)
-    if (filters.sort_order) query.set('sort_order', filters.sort_order)
-    query.set('limit', String(PER_PAGE))
-    query.set('offset', String((currentPage - 1) * PER_PAGE))
-
-    const qs = query.toString()
-    const url = `${BACKEND_URL}/candidates${qs ? `?${qs}` : ''}`
 
     setLoading(true)
     setError(null)
 
-    let retryCount = 0
-    const maxRetries = 2
-    const baseDelay = 1500
-
-    function doFetch() {
-      fetch(url, {
-        headers: { 'Content-Type': 'application/json' },
-        signal: AbortSignal.timeout(35000),
-      })
-        .then(response => {
-          if (!response.ok) throw new Error(`Backend retornou ${response.status}`)
-          return response.json()
-        })
-        .then(data => {
-          if (requestIdRef.current !== thisRequestId) return
-          setCandidates(data.items || data.candidates || [])
-          setTotal(data.total ?? 0)
-          setLoading(false)
-        })
-        .catch(err => {
-          if (requestIdRef.current !== thisRequestId) return
-          if (retryCount < maxRetries) {
-            retryCount++
-            const delay = baseDelay * Math.pow(1.5, retryCount - 1)
-            setTimeout(doFetch, delay)
-            return
-          }
-          console.error('[useCandidatesList] fetch error:', err)
-          setError("Erro ao carregar candidatos. Tente novamente.")
-          setLoading(false)
-        })
+    const params = {
+      search: debouncedSearch || undefined,
+      status: filters.status,
+      tags: filters.tags,
+      seniority: filters.seniority,
+      sort_by: filters.sort_by,
+      sort_order: filters.sort_order,
+      limit: PER_PAGE,
+      offset: (currentPage - 1) * PER_PAGE,
     }
 
-    ;(async () => {
-      await ensureServerReady()
-      doFetch()
-    })()
-  }, [filters, currentPage, fetchTrigger])
+    liaApi.getCandidates(params)
+      .then(data => {
+        if (requestIdRef.current !== thisRequestId) return
+        setCandidates(data.candidates as CandidateLocal[])
+        setTotal(data.total ?? 0)
+        setLoading(false)
+      })
+      .catch(err => {
+        if (requestIdRef.current !== thisRequestId) return
+        console.error("[useCandidatesList] fetch error:", err)
+        setError("Erro ao carregar candidatos. Tente novamente.")
+        setCandidates([])
+        setLoading(false)
+      })
+  }, [filters.status, filters.tags, filters.seniority, filters.sort_by, filters.sort_order, debouncedSearch, currentPage, fetchTrigger])
 
   const setFilters = useCallback(
     (newFilters: CandidatesListFilters) => {
-      setFiltersState(newFilters)
+      const { search, ...rest } = newFilters
+      setFiltersState(rest)
+      // Always replace searchTerm so `setFilters({})` clears an active search.
+      setSearchTerm(search ?? "")
       setCurrentPage(1)
     },
     []
@@ -109,8 +98,13 @@ export function useCandidatesList(initialFilters?: CandidatesListFilters): UseCa
 
   const updateFilter = useCallback(
     <K extends keyof CandidatesListFilters>(key: K, value: CandidatesListFilters[K]) => {
-      setFiltersState(prev => ({ ...prev, [key]: value }))
-      setCurrentPage(1)
+      if (key === "search") {
+        setSearchTerm((value as string) ?? "")
+        setCurrentPage(1)
+      } else {
+        setFiltersState(prev => ({ ...prev, [key]: value }))
+        setCurrentPage(1)
+      }
     },
     []
   )
@@ -132,11 +126,13 @@ export function useCandidatesList(initialFilters?: CandidatesListFilters): UseCa
         setFetchTrigger(prev => prev + 1)
       }
     }
-    window.addEventListener('focus', onFocus)
-    return () => window.removeEventListener('focus', onFocus)
+    window.addEventListener("focus", onFocus)
+    return () => window.removeEventListener("focus", onFocus)
   }, [error])
 
   const totalPages = Math.max(1, Math.ceil(total / PER_PAGE))
+
+  const exposedFilters: CandidatesListFilters = { ...filters, search: searchTerm }
 
   return {
     candidates,
@@ -146,7 +142,7 @@ export function useCandidatesList(initialFilters?: CandidatesListFilters): UseCa
     currentPage,
     totalPages,
     perPage: PER_PAGE,
-    filters,
+    filters: exposedFilters,
     setFilters,
     updateFilter,
     goToPage,

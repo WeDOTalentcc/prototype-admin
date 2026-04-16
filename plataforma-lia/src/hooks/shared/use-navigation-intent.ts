@@ -19,7 +19,9 @@ export interface NavigationIntentResult {
   hint: string | null
 }
 
-const CONFIDENCE_THRESHOLD = 0.75
+// Threshold at which a navigation suggestion is surfaced to the user.
+// Below this level the page/hint are zeroed out and no suggestion is shown.
+const CONFIDENCE_THRESHOLD = 0.65
 
 export function useNavigationIntent() {
   const [result, setResult] = useState<NavigationIntentResult | null>(null)
