@@ -108,7 +108,7 @@ class TalentPoolDomain(ComplianceDomainPrompt):
 
     async def _handle_create_pool(self, params: dict, context: DomainContext) -> DomainResponse:
         from lia_config.database import AsyncSessionLocal
-        from libs.models.lia_models.talent_pool import TalentPool
+        from lia_models.talent_pool import TalentPool
 
         name = params.get("name")
         if not name:
@@ -141,7 +141,7 @@ class TalentPoolDomain(ComplianceDomainPrompt):
 
     async def _handle_list_pools(self, params: dict, context: DomainContext) -> DomainResponse:
         from lia_config.database import AsyncSessionLocal
-        from libs.models.lia_models.talent_pool import TalentPool
+        from lia_models.talent_pool import TalentPool
         from sqlalchemy import select
 
         status_filter = params.get("status", "active")
@@ -177,7 +177,7 @@ class TalentPoolDomain(ComplianceDomainPrompt):
 
     async def _handle_add_to_pool(self, params: dict, context: DomainContext) -> DomainResponse:
         from lia_config.database import AsyncSessionLocal
-        from libs.models.lia_models.talent_pool import TalentPool, TalentPoolCandidate
+        from lia_models.talent_pool import TalentPool, TalentPoolCandidate
         from sqlalchemy import select, text
 
         pool_id = params.get("pool_id")
@@ -285,7 +285,7 @@ class TalentPoolDomain(ComplianceDomainPrompt):
 
     async def _handle_move_to_job(self, params: dict, context: DomainContext) -> DomainResponse:
         from lia_config.database import AsyncSessionLocal
-        from libs.models.lia_models.talent_pool import TalentPool, TalentPoolCandidate
+        from lia_models.talent_pool import TalentPool, TalentPoolCandidate
         from sqlalchemy import select, text
         
 
@@ -466,7 +466,7 @@ class TalentPoolDomain(ComplianceDomainPrompt):
 
     async def _handle_get_candidates(self, params: dict, context: DomainContext) -> DomainResponse:
         from lia_config.database import AsyncSessionLocal
-        from libs.models.lia_models.talent_pool import TalentPool, TalentPoolCandidate
+        from lia_models.talent_pool import TalentPool, TalentPoolCandidate
         from sqlalchemy import select
 
         pool_id = params.get("pool_id")
@@ -525,7 +525,7 @@ class TalentPoolDomain(ComplianceDomainPrompt):
 
     async def _handle_create_job_from_pool(self, params: dict, context: DomainContext) -> DomainResponse:
         from lia_config.database import AsyncSessionLocal
-        from libs.models.lia_models.talent_pool import TalentPool
+        from lia_models.talent_pool import TalentPool
         from sqlalchemy import select, text
 
         pool_id = params.get("pool_id")

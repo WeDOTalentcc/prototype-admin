@@ -36,7 +36,7 @@ class TwinKnowledgeIndexer:
 
         Returns number of decisions indexed.
         """
-        from libs.models.lia_models.digital_twin import TwinDecision
+        from lia_models.digital_twin import TwinDecision
         from sqlalchemy import text
 
         # Query past decisions with reasoning from ATS
@@ -134,7 +134,7 @@ class TwinKnowledgeIndexer:
         decisions = await self._extract_decisions_from_transcript(transcription)
 
         # 3. Index each decision
-        from libs.models.lia_models.digital_twin import TwinDecision
+        from lia_models.digital_twin import TwinDecision
         indexed = 0
         for d in decisions:
             text_for_embedding = f"Decisão: {d['decision']}\nRaciocínio: {d['reasoning']}"
@@ -168,7 +168,7 @@ class TwinKnowledgeIndexer:
         db=None,
     ) -> dict:
         """Index a single manually entered decision."""
-        from libs.models.lia_models.digital_twin import TwinDecision
+        from lia_models.digital_twin import TwinDecision
 
         text_for_embedding = (
             f"Decisão: {decision}\n"
@@ -253,7 +253,7 @@ class TwinKnowledgeIndexer:
 
     async def _update_twin_stats(self, twin_id: str, db):
         """Update twin's decision_count and recompute centroid embedding."""
-        from libs.models.lia_models.digital_twin import DigitalTwin, TwinDecision
+        from lia_models.digital_twin import DigitalTwin, TwinDecision
         from sqlalchemy import select, func
 
         # Count decisions

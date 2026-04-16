@@ -22,7 +22,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.dependencies import get_current_user
 from app.core.database import get_db
-from libs.models.lia_models.agent_template import AgentTemplate, AgentTemplateStatus
+from lia_models.agent_template import AgentTemplate, AgentTemplateStatus
 
 router = APIRouter()
 

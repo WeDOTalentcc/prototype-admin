@@ -198,4 +198,18 @@ Existing raw dict messages continue to work but should migrate.
 
 ---
 
-*Last updated: 2026-04-13 | Phase 6 Batch 1: API contract infrastructure*
+## ADR-012: Canonical Model Import Path (2026-04-16) [LIA-M01]
+
+**Rule:** All model imports MUST use the installed package path `from lia_models.xyz import ...`.
+
+Forbidden: `from libs.models.lia_models.xyz import ...` — this filesystem path creates duplicate class registrations in SQLAlchemy's mapper, causing `Multiple classes found` errors at runtime.
+
+Allowed alternatives:
+- `from lia_models.xyz import Model` (canonical, preferred)
+- `from app.models.xyz import Model` (via proxy shims, resolves to the same object)
+
+**Never** import models using the raw filesystem path through `libs.models.lia_models`.
+
+---
+
+*Last updated: 2026-04-16 | Phase 6 Batch 2: Unified model imports*

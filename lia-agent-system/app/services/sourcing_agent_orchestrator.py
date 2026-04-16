@@ -52,7 +52,7 @@ class SourcingAgentOrchestrator:
 
         If no search_strategy provided and job_id given, extracts strategy from JD via LLM.
         """
-        from libs.models.lia_models.sourcing_agent import SourcingAgent
+        from lia_models.sourcing_agent import SourcingAgent
 
         # Extract strategy from JD if not provided
         if not search_strategy and job_id:
@@ -96,7 +96,7 @@ class SourcingAgentOrchestrator:
         - Each rejection + reason → LLM extracts anti-criteria → added to exclusions
         - Each approval → LLM extracts positive criteria → reinforces positive_signals
         """
-        from libs.models.lia_models.sourcing_agent import SourcingAgent, SourcingAgentSignal
+        from lia_models.sourcing_agent import SourcingAgent, SourcingAgentSignal
         from sqlalchemy import select
 
         # Load agent
@@ -190,7 +190,7 @@ class SourcingAgentOrchestrator:
         Uses the agent's search_strategy to find candidates, then generates
         match_criteria for each (Why we matched this profile).
         """
-        from libs.models.lia_models.sourcing_agent import SourcingAgent
+        from lia_models.sourcing_agent import SourcingAgent
         from sqlalchemy import select
 
         result = await db.execute(select(SourcingAgent).where(SourcingAgent.id == agent_id))
@@ -224,7 +224,7 @@ class SourcingAgentOrchestrator:
 
     async def get_agent_timeline(self, agent_id: str, limit: int = 20, db=None) -> list[dict]:
         """Get activity timeline for the Agents tab."""
-        from libs.models.lia_models.sourcing_agent import SourcingAgentSignal
+        from lia_models.sourcing_agent import SourcingAgentSignal
         from sqlalchemy import select
 
         result = await db.execute(
@@ -307,7 +307,7 @@ class SourcingAgentOrchestrator:
     async def _fallback_db_candidates(self, agent, limit: int, db) -> list[dict]:
         """Fallback: search candidates directly from DB using agent's search_strategy."""
         try:
-            from libs.models.lia_models.candidate import Candidate, CandidateExperience, CandidateEducation
+            from lia_models.candidate import Candidate, CandidateExperience, CandidateEducation
             from sqlalchemy import select, or_, func
 
             strategy = agent.search_strategy or {}

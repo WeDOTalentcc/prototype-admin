@@ -339,7 +339,7 @@ async def rename_conversation(
     request: RenameConversationRequest,
     db: AsyncSession = Depends(get_db),
 ):
-    from libs.models.lia_models.conversation import Conversation
+    from lia_models.conversation import Conversation
     from sqlalchemy import select
     result = await db.execute(select(Conversation).where(Conversation.id == conversation_id))
     conversation = result.scalar_one_or_none()

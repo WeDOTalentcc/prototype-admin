@@ -41,7 +41,7 @@ class StudioNotificationService:
     ) -> None:
         """Notify recruiter that an agent finished executing."""
         try:
-            from libs.messaging.lia_messaging.notification_service import (
+            from lia_messaging.notification_service import (
                 notification_service, NotificationType,
             )
             await notification_service.create_notification(
@@ -76,7 +76,7 @@ class StudioNotificationService:
     ) -> None:
         """Notify creator that agent was deployed to target."""
         try:
-            from libs.messaging.lia_messaging.notification_service import (
+            from lia_messaging.notification_service import (
                 notification_service, NotificationType,
             )
             target_label = {
@@ -117,7 +117,7 @@ class StudioNotificationService:
     ) -> None:
         """Notify ALL admins that an approval is pending."""
         try:
-            from libs.messaging.lia_messaging.notification_service import (
+            from lia_messaging.notification_service import (
                 notification_service, NotificationType,
             )
             for admin_id in admin_user_ids:
@@ -154,7 +154,7 @@ class StudioNotificationService:
     ) -> None:
         """Notify creator that admin approved/rejected their agent."""
         try:
-            from libs.messaging.lia_messaging.notification_service import (
+            from lia_messaging.notification_service import (
                 notification_service, NotificationType,
             )
             is_approved = action == "approve"

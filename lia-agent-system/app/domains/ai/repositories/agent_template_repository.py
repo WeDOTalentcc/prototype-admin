@@ -17,7 +17,7 @@ class AgentTemplateRepository:
 
     async def _get_model(self):
         """Lazy-import to avoid circular deps."""
-        from libs.models.lia_models.agent_template import AgentTemplate
+        from lia_models.agent_template import AgentTemplate
         return AgentTemplate
 
     async def list_templates(

@@ -162,7 +162,7 @@ async def get_domain_for_company(
         try:
             from sqlalchemy import select
 
-            from libs.models.lia_models.agent_template import AgentTemplate, AgentTemplateStatus
+            from lia_models.agent_template import AgentTemplate, AgentTemplateStatus
 
             stmt = (
                 select(AgentTemplate)

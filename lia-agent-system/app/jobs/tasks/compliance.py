@@ -334,11 +334,11 @@ async def _run_retention_cleanup_async() -> dict:
     except ImportError:
         from app.core.database import AsyncSessionLocal
 
-    from libs.models.lia_models.retention_policy import CompanyRetentionPolicy
+    from lia_models.retention_policy import CompanyRetentionPolicy
 
     # Candidate model — try multiple import paths
     try:
-        from libs.models.lia_models.candidate import Candidate
+        from lia_models.candidate import Candidate
     except ImportError:
         from app.models.candidate import Candidate
 

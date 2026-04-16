@@ -53,7 +53,7 @@ class TwinInferenceService:
         Returns:
             TwinEvaluation with score, decision, reasoning in SME style
         """
-        from libs.models.lia_models.digital_twin import DigitalTwin
+        from lia_models.digital_twin import DigitalTwin
         from sqlalchemy import select
 
         # 1. Load twin
@@ -139,7 +139,7 @@ Responda APENAS com o JSON.
         """Retrieve K most similar decisions from twin's corpus via pgvector."""
         if not embedding:
             # No embedding — return most recent decisions as fallback
-            from libs.models.lia_models.digital_twin import TwinDecision
+            from lia_models.digital_twin import TwinDecision
             from sqlalchemy import select
 
             result = await db.execute(

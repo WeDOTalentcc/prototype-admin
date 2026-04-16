@@ -67,7 +67,7 @@ async def list_sourcing_agents(
     db: AsyncSession = Depends(get_db),
 ):
     """List sourcing agents for the current company."""
-    from libs.models.lia_models.sourcing_agent import SourcingAgent
+    from lia_models.sourcing_agent import SourcingAgent
     from sqlalchemy import select
 
     # Defensive: company_id MUST exist for tenant-scoped listing (ADR multi-tenant).
@@ -136,7 +136,7 @@ async def list_sourcing_agents(
 @router.get("/{agent_id}")
 async def get_sourcing_agent(agent_id: str, db: AsyncSession = Depends(get_db)):
     """Get details of a specific sourcing agent."""
-    from libs.models.lia_models.sourcing_agent import SourcingAgent
+    from lia_models.sourcing_agent import SourcingAgent
     from sqlalchemy import select
 
     result = await db.execute(select(SourcingAgent).where(SourcingAgent.id == agent_id))
@@ -217,7 +217,7 @@ async def get_agent_timeline(
 @router.patch("/{agent_id}/pause")
 async def pause_agent(agent_id: str, db: AsyncSession = Depends(get_db)):
     """Pause a sourcing agent."""
-    from libs.models.lia_models.sourcing_agent import SourcingAgent
+    from lia_models.sourcing_agent import SourcingAgent
     from sqlalchemy import select
 
     result = await db.execute(select(SourcingAgent).where(SourcingAgent.id == agent_id))
@@ -233,7 +233,7 @@ async def pause_agent(agent_id: str, db: AsyncSession = Depends(get_db)):
 @router.patch("/{agent_id}/resume")
 async def resume_agent(agent_id: str, db: AsyncSession = Depends(get_db)):
     """Resume a paused sourcing agent."""
-    from libs.models.lia_models.sourcing_agent import SourcingAgent
+    from lia_models.sourcing_agent import SourcingAgent
     from sqlalchemy import select
 
     result = await db.execute(select(SourcingAgent).where(SourcingAgent.id == agent_id))

@@ -853,7 +853,7 @@ class SourcingDomain(ComplianceDomainPrompt):
 
     async def _handle_talent_pool_search(self, params: dict, context: DomainContext) -> DomainResponse:
         from lia_config.database import AsyncSessionLocal
-        from libs.models.lia_models.talent_pool import TalentPool
+        from lia_models.talent_pool import TalentPool
         from sqlalchemy import select
 
         async with AsyncSessionLocal() as session:

@@ -591,7 +591,7 @@ class RailsAdapter:
 
         if self.db:
             try:
-                from libs.models.lia_models.candidate import Candidate
+                from lia_models.candidate import Candidate
                 result = await self.db.execute(
                     select(Candidate).where(Candidate.id == candidate_id)
                 )
@@ -619,7 +619,7 @@ class RailsAdapter:
 
         if self.db:
             try:
-                from libs.models.lia_models.candidate import Candidate
+                from lia_models.candidate import Candidate
                 result = await self.db.execute(
                     select(Candidate).limit(limit).offset((page - 1) * limit)
                 )
@@ -648,7 +648,7 @@ class RailsAdapter:
 
         if self.db:
             try:
-                from libs.models.lia_models.candidate import Candidate
+                from lia_models.candidate import Candidate
                 candidate = Candidate(**candidate_data)
                 self.db.add(candidate)
                 await self.db.commit()
@@ -767,7 +767,7 @@ class RailsAdapter:
 
         if self.db:
             try:
-                from libs.models.lia_models.job_vacancy import JobVacancy
+                from lia_models.job_vacancy import JobVacancy
                 result = await self.db.execute(
                     select(JobVacancy).where(JobVacancy.id == job_id)
                 )
@@ -794,7 +794,7 @@ class RailsAdapter:
 
         if self.db:
             try:
-                from libs.models.lia_models.job_vacancy import JobVacancy
+                from lia_models.job_vacancy import JobVacancy
                 result = await self.db.execute(
                     select(JobVacancy).limit(limit).offset((page - 1) * limit)
                 )
@@ -824,7 +824,7 @@ class RailsAdapter:
 
         if self.db:
             try:
-                from libs.models.lia_models.job_vacancy import JobVacancy
+                from lia_models.job_vacancy import JobVacancy
                 job = JobVacancy(**job_data)
                 self.db.add(job)
                 await self.db.commit()

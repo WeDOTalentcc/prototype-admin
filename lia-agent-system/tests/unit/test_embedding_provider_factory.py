@@ -630,7 +630,7 @@ async def _run_batch_process_jobs(
         "app.core.config": MagicMock(),
         "app.models": MagicMock(),
         "app.models.job_pattern": stub_job_pattern,
-        "libs.models.lia_models.job_pattern": stub_job_pattern,
+        "lia_models.job_pattern": stub_job_pattern,
         "app.shared.intelligence.embedding_service": MagicMock(),
     }
     for name, stub in required_stubs.items():

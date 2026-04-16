@@ -64,7 +64,6 @@ class NotificationChannel(str, Enum):
 class Notification(Base):
     """Notification model for bell/in-app notifications."""
     __tablename__ = "notifications"
-    __table_args__ = {"extend_existing": True}
     
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     user_id = Column(String, nullable=False)
@@ -132,7 +131,6 @@ class Notification(Base):
 class ChatNotification(Base):
     """Chat inline notification model - messages that appear in the chat interface."""
     __tablename__ = "chat_notifications"
-    __table_args__ = {"extend_existing": True}
     
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     user_id = Column(String, nullable=False)

@@ -327,7 +327,7 @@ class TranscriptionService:
 
         try:
             from sqlalchemy import select, update
-            from libs.models.lia_models.candidate import VacancyCandidate
+            from lia_models.candidate import VacancyCandidate
 
             stmt = select(VacancyCandidate).where(
                 VacancyCandidate.candidate_id == interview.candidate_id,

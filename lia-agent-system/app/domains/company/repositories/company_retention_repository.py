@@ -17,7 +17,7 @@ class CompanyRetentionRepository:
 
     async def get_by_company_id(self, company_id: str):
         """Return CompanyRetentionPolicy for company, or None."""
-        from libs.models.lia_models.retention_policy import CompanyRetentionPolicy
+        from lia_models.retention_policy import CompanyRetentionPolicy
 
         result = await self.db.execute(
             select(CompanyRetentionPolicy).where(
@@ -34,7 +34,7 @@ class CompanyRetentionRepository:
         activated_by: str | None,
     ):
         """Create or update CompanyRetentionPolicy; flush and refresh; return instance."""
-        from libs.models.lia_models.retention_policy import CompanyRetentionPolicy
+        from lia_models.retention_policy import CompanyRetentionPolicy
 
         policy = await self.get_by_company_id(company_id)
         now = datetime.now(UTC)

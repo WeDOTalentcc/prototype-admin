@@ -18,26 +18,26 @@ class TestAgentTemplateModel:
     """Testa o model SQLAlchemy."""
 
     def test_model_exists(self):
-        from libs.models.lia_models.agent_template import AgentTemplate
+        from lia_models.agent_template import AgentTemplate
         assert AgentTemplate is not None
 
     def test_model_tablename(self):
-        from libs.models.lia_models.agent_template import AgentTemplate
+        from lia_models.agent_template import AgentTemplate
         assert AgentTemplate.__tablename__ == "agent_templates"
 
     def test_model_has_required_columns(self):
-        from libs.models.lia_models.agent_template import AgentTemplate
+        from lia_models.agent_template import AgentTemplate
         required = ["id", "company_id", "name", "domain", "system_prompt_yaml",
                     "version", "status", "created_by", "created_at"]
         for col_name in required:
             assert hasattr(AgentTemplate, col_name), f"Missing column: {col_name}"
 
     def test_model_has_published_at(self):
-        from libs.models.lia_models.agent_template import AgentTemplate
+        from lia_models.agent_template import AgentTemplate
         assert hasattr(AgentTemplate, "published_at")
 
     def test_model_has_base_template_id(self):
-        from libs.models.lia_models.agent_template import AgentTemplate
+        from lia_models.agent_template import AgentTemplate
         assert hasattr(AgentTemplate, "base_template_id")
 
 
@@ -45,20 +45,20 @@ class TestAgentTemplateStatus:
     """Testa o enum de status."""
 
     def test_status_enum_exists(self):
-        from libs.models.lia_models.agent_template import AgentTemplateStatus
+        from lia_models.agent_template import AgentTemplateStatus
         assert AgentTemplateStatus is not None
 
     def test_status_has_draft(self):
-        from libs.models.lia_models.agent_template import AgentTemplateStatus
+        from lia_models.agent_template import AgentTemplateStatus
         assert hasattr(AgentTemplateStatus, "DRAFT") or "draft" in [s.value for s in AgentTemplateStatus]
 
     def test_status_has_published(self):
-        from libs.models.lia_models.agent_template import AgentTemplateStatus
+        from lia_models.agent_template import AgentTemplateStatus
         values = [s.value for s in AgentTemplateStatus]
         assert "published" in values
 
     def test_status_has_archived(self):
-        from libs.models.lia_models.agent_template import AgentTemplateStatus
+        from lia_models.agent_template import AgentTemplateStatus
         values = [s.value for s in AgentTemplateStatus]
         assert "archived" in values
 
