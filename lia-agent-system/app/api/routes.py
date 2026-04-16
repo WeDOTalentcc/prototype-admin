@@ -14,7 +14,6 @@ from app.api.public import shared_searches as public_shared_searches
 # ── Bulk import from app.api.v1 ──────────────────────────────────────────────
 # ── Individual imports ────────────────────────────────────────────────────────
 # ── Lazy imports (originally inline in main.py) ───────────────────────────────
-from app.api.v1 import llm_config as llm_config_router_mod
 
 from app.api.v1 import (
     ab_testing,
@@ -227,7 +226,6 @@ from app.api.v1.agent_deployments import router as agent_deployments_router
 from app.api.v1.agent_deployments import target_router as agent_deployments_target_router
 from app.api.v1.agent_approvals import agent_router as agent_approvals_agent_router
 from app.api.v1.agent_approvals import approvals_router as agent_approvals_approvals_router
-from app.api.v1.webhooks import router as webhooks_router
 from app.api.v1.custom_agents import marketplace_router as agent_marketplace_router
 from app.api.v1.custom_agents import admin_marketplace_router
 from app.api.v1.multi_strategy_search import router as multi_strategy_router
@@ -522,9 +520,6 @@ def register_all_routes(app: FastAPI) -> None:
     app.include_router(default_templates.router, prefix="/api/v1", tags=["default-templates"])
     app.include_router(hiring_policy.router, prefix="/api/v1", tags=["hiring-policy"])
 
-    # ── LLM Config (Choose Your AI) ──────────────────────────────────────────
-    app.include_router(llm_config_router_mod.router, prefix="/api/v1", tags=["llm-config"])
-
     # ── ATS / Integrations ────────────────────────────────────────────────────
     app.include_router(ats.router, prefix="/api/v1", tags=["ats"])
     app.include_router(webhooks.router, prefix="/api/v1", tags=["webhooks"])
@@ -606,7 +601,6 @@ def register_all_routes(app: FastAPI) -> None:
     app.include_router(agent_deployments_target_router, prefix="/api/v1")
     app.include_router(agent_approvals_agent_router, prefix="/api/v1")
     app.include_router(agent_approvals_approvals_router, prefix="/api/v1")
-    app.include_router(webhooks_router, prefix="/api/v1")
     app.include_router(agent_marketplace_router, prefix="/api/v1", tags=["agent-marketplace"])
     app.include_router(admin_marketplace_router, prefix="/api/v1", tags=["admin-marketplace"])
     app.include_router(multi_strategy_router, prefix="/api/v1", tags=["multi-strategy"])

@@ -20,7 +20,7 @@ from app.domains.job_management.repositories.webhook_repository import WebhookRe
 from app.domains.job_management.services.job_status_webhook_service import job_status_webhook_service
 from app.models.webhook_registration import JOB_STATUS_WEBHOOK_EVENTS, WebhookDeliveryLog, WebhookRegistration
 
-router = APIRouter(prefix="/webhooks", tags=["webhooks"])
+router = APIRouter(prefix="/job-status-webhooks", tags=["job-status-webhooks"])
 logger = logging.getLogger(__name__)
 
 

@@ -1,14 +1,18 @@
 """
 WSI Question Adjust API
-Endpoints for adjusting WSI questions via conversational prompts, evaluating JD quality,
-and persisting screening questions per job vacancy.
+Endpoints for adjusting WSI questions via conversational prompts.
+
+Note: ``/jd-evaluate`` and ``/questions/save`` previously lived here as
+in-memory stubs but have been removed because the production-ready versions
+in ``app/api/v1/wsi/evaluation.py`` and ``app/api/v1/wsi/questions.py``
+register the same routes — the duplicates emitted "Duplicate Operation ID"
+warnings from FastAPI at startup.
 """
 import logging
-from datetime import datetime
 from typing import Any
 
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 from app.domains.cv_screening.services.wsi_question_adjuster import wsi_question_adjuster_service
 
@@ -33,31 +37,6 @@ class AdjustQuestionsRequest(BaseModel):
     adjustment_prompt: str
     current_questions: list[QuestionItem]
     job_context: dict[str, Any] | None = None
-
-
-class EvaluateJDRequest(BaseModel):
-    job_title: str
-    responsibilities: list[str] = Field(default_factory=list)
-    technical_skills: list[str] = Field(default_factory=list)
-    behavioral_competencies: list[str] = Field(default_factory=list)
-    seniority: str | None = None
-    department: str | None = None
-    description: str | None = None
-
-
-class SaveQuestionsRequest(BaseModel):
-    job_id: str
-    questions: list[QuestionItem]
-    source: str = "wsi_generation"
-
-
-class SaveQuestionsResponse(BaseModel):
-    success: bool
-    job_id: str
-    questions_count: int
-    source: str
-    saved_at: str
-    iteration_reset: bool = False
 
 
 class GetQuestionsResponse(BaseModel):
@@ -89,69 +68,6 @@ async def adjust_questions(request: AdjustQuestionsRequest):
         raise HTTPException(status_code=429, detail=str(e))
     except Exception as e:
         logger.error(f"Error adjusting WSI questions: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@router.post("/jd-evaluate", response_model=None)
-async def evaluate_jd(request: EvaluateJDRequest):
-    """Evaluate a Job Description for WSI question generation readiness."""
-    try:
-        result = await wsi_question_adjuster_service.evaluate_job_description(
-            job_title=request.job_title,
-            responsibilities=request.responsibilities,
-            technical_skills=request.technical_skills,
-            behavioral_competencies=request.behavioral_competencies,
-            seniority=request.seniority,
-            department=request.department,
-            description=request.description
-        )
-        return result
-    except Exception as e:
-        logger.error(f"Error evaluating JD: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@router.post("/questions/save", response_model=SaveQuestionsResponse)
-async def save_questions(request: SaveQuestionsRequest):
-    """
-    Save generated or adjusted screening questions to a job vacancy.
-    Resets the adjuster iteration count for this job so fresh adjustments can be made.
-    """
-    try:
-        saved_at = datetime.utcnow().isoformat() + "Z"
-
-        _saved_questions[request.job_id] = {
-            "questions": [q.dict() for q in request.questions],
-            "source": request.source,
-            "saved_at": saved_at,
-        }
-
-        iteration_reset = False
-        iteration_keys_to_reset = [
-            k for k in wsi_question_adjuster_service._iteration_counts
-            if k.startswith(f"{request.job_id}_")
-        ]
-        if iteration_keys_to_reset:
-            for key in iteration_keys_to_reset:
-                del wsi_question_adjuster_service._iteration_counts[key]
-            iteration_reset = True
-
-        logger.info(
-            f"Saved {len(request.questions)} questions for job {request.job_id} "
-            f"(source={request.source}, iteration_reset={iteration_reset})"
-        )
-
-        return SaveQuestionsResponse(
-            success=True,
-            job_id=request.job_id,
-            questions_count=len(request.questions),
-            source=request.source,
-            saved_at=saved_at,
-            iteration_reset=iteration_reset,
-        )
-
-    except Exception as e:
-        logger.error(f"Error saving WSI questions for job {request.job_id}: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
