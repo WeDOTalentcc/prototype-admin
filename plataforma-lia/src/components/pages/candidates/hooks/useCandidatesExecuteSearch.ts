@@ -179,6 +179,9 @@ export function useCandidatesExecuteSearch(deps: ExecuteSearchDeps) {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ linkedin_url: similarUrl, limit: 20, search_pearch: shouldUsePearch || shouldUseHybrid, pearch_type: pearchSearchOptions.searchType }),
           }, { attempts: 2, timeoutMs: 30000, retryDelaysMs: [0, 1500] })
+          if (!response.ok) {
+            throw new Error(`Busca por perfil similar falhou (${response.status})`)
+          }
           if (response.ok) {
             const data = await response.json()
             totalCount = data.total_count || 0; localCount = data.local_count || 0; pearchCount = data.pearch_count || 0; creditsUsed = data.credits_used
@@ -192,6 +195,9 @@ export function useCandidatesExecuteSearch(deps: ExecuteSearchDeps) {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ job_description: metadata.jobDescription, limit: 20, search_pearch: shouldUsePearch || shouldUseHybrid, pearch_type: pearchSearchOptions.searchType }),
         }, { attempts: 2, timeoutMs: 30000, retryDelaysMs: [0, 1500] })
+        if (!response.ok) {
+          throw new Error(`Busca por descrição de vaga falhou (${response.status})`)
+        }
         if (response.ok) {
           const data = await response.json()
           totalCount = data.total_count || 0; localCount = data.local_count || 0; pearchCount = data.pearch_count || 0; creditsUsed = data.credits_used
@@ -204,6 +210,9 @@ export function useCandidatesExecuteSearch(deps: ExecuteSearchDeps) {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ limit: 20, search_pearch: shouldUsePearch || shouldUseHybrid, pearch_type: pearchSearchOptions.searchType }),
         }, { attempts: 2, timeoutMs: 30000, retryDelaysMs: [0, 1500] })
+        if (!response.ok) {
+          throw new Error(`Busca por arquétipo falhou (${response.status})`)
+        }
         if (response.ok) {
           const data = await response.json()
           totalCount = data.total_count || 0; localCount = data.local_count || 0; pearchCount = data.pearch_count || 0; creditsUsed = data.credits_used
