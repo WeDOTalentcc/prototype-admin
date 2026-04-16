@@ -198,18 +198,24 @@ Existing raw dict messages continue to work but should migrate.
 
 ---
 
-## ADR-012: Canonical Model Import Path (2026-04-16) [LIA-M01]
+## ADR-012: Forbidden Import Paths (2026-04-16) [ENFORCED by CI]
 
-**Rule:** All model imports MUST use the installed package path `from lia_models.xyz import ...`.
+**Rule:** Never use `from libs.models.lia_models` or `from libs.messaging.lia_messaging` import paths.
 
-Forbidden: `from libs.models.lia_models.xyz import ...` — this filesystem path creates duplicate class registrations in SQLAlchemy's mapper, causing `Multiple classes found` errors at runtime.
+These fully-qualified paths cause duplicate SQLAlchemy class registrations because Python treats them as distinct modules from the short-form `lia_models` / `lia_messaging` packages.
 
-Allowed alternatives:
-- `from lia_models.xyz import Model` (canonical, preferred)
+**Correct imports:**
+- `from lia_models.X import Y` (canonical, preferred)
 - `from app.models.xyz import Model` (via proxy shims, resolves to the same object)
+- `from lia_messaging.X import Y` (not `from libs.messaging.lia_messaging.X import Y`)
 
-**Never** import models using the raw filesystem path through `libs.models.lia_models`.
+**Forbidden:**
+- `from libs.models.lia_models.xyz import ...`
+- `from libs.messaging.lia_messaging.X import Y`
+
+**Enforcement:** `scripts/check_forbidden_imports.py` (pre-commit hook **G5** + CI)
 
 ---
 
-*Last updated: 2026-04-16 | Phase 6 Batch 2: Unified model imports*
+*Last updated: 2026-04-16 | ADR-012: forbidden import path enforcement*
+

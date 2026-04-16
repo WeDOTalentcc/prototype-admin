@@ -49,3 +49,11 @@ repos:
         files: ^app/api/.*\.py$
         pass_filenames: false
         always_run: false
+
+      - id: no-forbidden-imports
+        name: "G5: No forbidden import paths (ADR-012)"
+        language: python
+        entry: python3 scripts/check_forbidden_imports.py
+        files: ^(app|scripts|tests)/.*\.py$
+        pass_filenames: false
+        always_run: false
