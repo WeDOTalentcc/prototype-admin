@@ -49,7 +49,6 @@ export default defineConfig({
           },
         },
         esbuild: {
-          jsxInject: `import React from 'react'`,
           jsx: 'automatic',
           jsxImportSource: 'react',
         },
@@ -67,7 +66,6 @@ export default defineConfig({
           },
         },
         esbuild: {
-          jsxInject: `import React from 'react'`,
           jsx: 'automatic',
           jsxImportSource: 'react',
         },
@@ -85,7 +83,6 @@ export default defineConfig({
           },
         },
         esbuild: {
-          jsxInject: `import React from 'react'`,
           jsx: 'automatic',
           jsxImportSource: 'react',
         },
