@@ -11,7 +11,7 @@ from uuid import UUID
 
 from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload
+from sqlalchemy.orm import defer, selectinload
 
 from lia_models.candidate import (
     Candidate,
@@ -20,6 +20,30 @@ from lia_models.candidate import (
 )
 
 logger = logging.getLogger(__name__)
+
+# Colunas JSON/TEXT pesadas que a LISTAGEM enxuta (GET /candidates sem `full=1`)
+# NÃO consome. Evitar trazê-las do Postgres reduz o tempo de list em p95 com
+# limit=20, pois economiza I/O + TOAST fetch + serialização no driver.
+# Permanecem disponíveis por padrão em GET /candidates/{id} (consulta separada).
+_SLIM_LIST_DEFERRED_COLUMNS = (
+    "resume_text",
+    "cover_letter",
+    "work_history",
+    "pearch_insights",
+    "lia_insights",
+    "additional_data",
+    "past_locations",
+    "diversity_documents",
+    "personal_emails",
+    "business_emails",
+    "phone_types",
+    "company_keywords",
+    "preferred_channels",
+    "channel_opt_out",
+    "languages",
+    "notes",
+    "self_introduction",
+)
 
 
 class CandidateRepository:
@@ -125,9 +149,29 @@ class CandidateRepository:
         limit: int = 50,
         sort_by: str | None = None,
         sort_order: str | None = None,
+        slim: bool = False,
     ) -> list[Candidate]:
+        """
+        Lista candidatos paginados ordenados por `sort_by` (default: created_at DESC).
+
+        Parâmetros chave:
+          - slim: quando True, pede ao Postgres para NÃO trazer as colunas JSON/TEXT
+            pesadas listadas em `_SLIM_LIST_DEFERRED_COLUMNS`. Use para o hot path
+            da listagem do /candidates onde o UI consome só campos leves. Índice
+            composto `(is_active, created_at DESC)` (migration 081) garante que
+            o `ORDER BY created_at DESC` não provoque sort in-memory.
+        """
         query = select(Candidate).where(Candidate.is_active)
         query = self._build_list_filters(query, search=search, status=status, source=source, seniority=seniority, ids=ids)
+
+        if slim:
+            # defer(*cols) diz ao SQLAlchemy para excluir essas colunas do SELECT;
+            # o acesso posterior aos atributos dispararia uma consulta adicional
+            # (N+1) — por isso o serializer light (`_serialize_candidate_light`)
+            # foi desenhado para não tocar nessas colunas.
+            query = query.options(
+                *(defer(getattr(Candidate, col)) for col in _SLIM_LIST_DEFERRED_COLUMNS)
+            )
 
         allowed_sort_fields = {
             "created_at": Candidate.created_at,

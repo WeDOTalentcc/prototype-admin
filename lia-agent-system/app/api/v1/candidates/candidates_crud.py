@@ -48,6 +48,59 @@ router = APIRouter(
 # ---------------------------------------------------------------------------
 # Response helper: serialize a candidate ORM object to dict
 # ---------------------------------------------------------------------------
+def _serialize_candidate_light(c) -> dict:
+    """
+    Serialização enxuta para a LISTAGEM (GET /candidates).
+
+    Remove colunas JSON/TEXT pesadas que o UI da listagem não consome —
+    elas permanecem disponíveis via GET /candidates/{id} (serializer `full`).
+    Motivação: reduzir payload de ~2.3KB/candidato para ~800B/candidato e
+    evitar CPU de parsing de JSONs grandes (pearch_insights, lia_insights,
+    additional_data, work_history, etc.) no hot path do list.
+    Veja também `CandidateRepository.list_candidates(slim=True)` que evita
+    trazer essas colunas do Postgres logo na query (defer).
+    """
+    return {
+        # Identificação + contato básico exibido nos cards/rows
+        "id": str(c.id),
+        "name": c.name,
+        "email": c.email,
+        "phone": c.phone,
+        "mobile_phone": c.mobile_phone,
+        "linkedin_url": c.linkedin_url,
+        "avatar_url": c.avatar_url,
+        # Perfil profissional resumido
+        "current_title": c.current_title,
+        "current_company": c.current_company,
+        "seniority_level": c.seniority_level,
+        "years_of_experience": c.years_of_experience,
+        "headline": c.headline,
+        "technical_skills": c.technical_skills or [],
+        "location_city": c.location_city,
+        "location_state": c.location_state,
+        "location_country": c.location_country,
+        # Flags usadas para badges/filtros no card
+        "is_remote": c.is_remote,
+        "is_open_to_work": c.is_open_to_work,
+        "is_decision_maker": c.is_decision_maker,
+        "is_top_universities": c.is_top_universities,
+        "is_hiring": c.is_hiring,
+        # Métricas exibidas no card
+        "lia_score": c.lia_score,
+        "skills_match_percentage": c.skills_match_percentage,
+        # Fonte + workflow
+        "source": c.source,
+        "status": c.status,
+        "is_active": c.is_active,
+        "is_blacklisted": c.is_blacklisted,
+        "tags": c.tags or [],
+        # Timestamps
+        "created_at": c.created_at.isoformat() if c.created_at else None,
+        "updated_at": c.updated_at.isoformat() if c.updated_at else None,
+        "last_activity_at": c.last_activity_at.isoformat() if c.last_activity_at else None,
+    }
+
+
 def _serialize_candidate(c, *, full: bool = False) -> dict:
     """Return a dict representation of a Candidate ORM object."""
     base = {
@@ -165,6 +218,15 @@ async def list_candidates(
     limit: int = Query(default=50, le=200),
     sort_by: str | None = None,
     sort_order: str | None = None,
+    full: bool = Query(
+        default=False,
+        description=(
+            "Quando true retorna o payload completo de cada candidato (inclui JSONs "
+            "pesados: work_history, pearch_insights, lia_insights, additional_data, "
+            "resume_text etc). Por padrão (false) é retornado payload enxuto ~3x menor "
+            "adequado para o hot path da listagem."
+        ),
+    ),
     candidate_repo: CandidateRepository = Depends(get_candidate_repo),
     rails_adapter: RailsAdapter = Depends(get_rails_adapter),
 ):
@@ -210,19 +272,47 @@ async def list_candidates(
                 id_list = None
 
         effective_skip = offset if offset > 0 else skip
+
+        # Instrumentação de perf (task #276): mede cada etapa separadamente para
+        # detectar regressões futuras (count lento, list lento ou serialização
+        # pesada). p95 alvo: <1s com limit=20. Logs estruturados para grep.
+        import time as _time
+        _t_total = _time.perf_counter()
+        _t0 = _time.perf_counter()
         total = await candidate_repo.count_candidates(
             search=search, status=status, source=source, seniority=seniority, ids=id_list,
         )
+        _t_count_ms = (_time.perf_counter() - _t0) * 1000.0
+
+        _t0 = _time.perf_counter()
         candidates = await candidate_repo.list_candidates(
             search=search, status=status, source=source, seniority=seniority, ids=id_list,
             skip=effective_skip, limit=limit, sort_by=sort_by, sort_order=sort_order,
+            slim=not full,
         )
+        _t_list_ms = (_time.perf_counter() - _t0) * 1000.0
+
+        _t0 = _time.perf_counter()
+        if full:
+            items = [_serialize_candidate(c, full=True) for c in candidates]
+        else:
+            items = [_serialize_candidate_light(c) for c in candidates]
+        _t_ser_ms = (_time.perf_counter() - _t0) * 1000.0
+        _t_total_ms = (_time.perf_counter() - _t_total) * 1000.0
+
+        logger.info(
+            "[list_candidates] total=%d returned=%d limit=%d full=%s "
+            "count=%.1fms list=%.1fms serialize=%.1fms endpoint=%.1fms",
+            total, len(items), limit, full,
+            _t_count_ms, _t_list_ms, _t_ser_ms, _t_total_ms,
+        )
+
         return {
             "total": total,
             "skip": effective_skip,
             "limit": limit,
             "source": "local",
-            "items": [_serialize_candidate(c) for c in candidates],
+            "items": items,
         }
     except Exception as e:
         logger.error(f"Error listing candidates: {e}", exc_info=True)
