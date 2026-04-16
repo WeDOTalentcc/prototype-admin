@@ -344,7 +344,7 @@ O `RailsAdapter` em `app/domains/integrations_hub/services/rails_adapter.py` é 
 | Merge.dev ATS | `POST /api/v1/webhooks/merge` | Não confirmado | Sync dados ATS externos |
 | Mailgun | `POST /api/v1/webhooks/mailgun` | Não confirmado | Email events (bounces, opens) |
 | WorkOS | `POST /api/v1/workos/webhook` | Sim (WorkOS signature) | SSO events (user.created, etc.) |
-| Job Status Webhooks | `POST /api/v1/webhooks/register` | Sim (auth middleware) | Cadastro de webhooks de clientes |
+| Job Status Webhooks | `POST /api/v1/job-status-webhooks/register` | Sim (auth middleware) | Cadastro de webhooks de clientes (renomeado em #234 para evitar colisão com `/api/v1/webhooks/*` da plataforma) |
 | Email Tracking | `/api/v1` (tracking) | Parcial | Open/click tracking |
 
 ### Webhooks de Saída (outbound) — Python para clientes
