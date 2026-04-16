@@ -5,7 +5,7 @@ const BACKEND_URL = process.env.BACKEND_URL || 'http://127.0.0.1:8001'
 
 export async function GET() {
   try {
-    const response = await fetch(`${BACKEND_URL}/health`, {
+    const response = await fetch(`${BACKEND_URL}/api/v1/health`, {
       signal: AbortSignal.timeout(5000),
     })
 

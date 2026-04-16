@@ -284,13 +284,17 @@ Antes de recomendar correções, a plataforma já tem infra enterprise cross-cut
 
 ## 8. Próximas tarefas sugeridas (em ordem de impacto)
 
-> Títulos curtos, prontos para virar tasks. Não foram criadas aqui — sugestão para aprovação.
+> Status de implementação aplicado em 16/04/2026 (commit pós-auditoria).
 
-1. **Desfazer o fallback SSE "fantasma" e cair direto no REST quando o WS falhar** (corrige #1 e #3; baixo risco, ganho imediato).
-2. **Esperar o token de WS antes de abrir qualquer transporte e retentar o fetch de `/api/auth/ws-token`** (corrige #2 e #6).
-3. **Apontar o WebSocket do cliente direto para o backend (`NEXT_PUBLIC_WS_URL`) em dev + docs** (destrava o caminho WS verdadeiro).
-4. **Garantir `setIsThinking(false)` em todos os caminhos do chat (WS, SSE e erros SSE)** (corrige o bubble preso — #3).
-5. **Corrigir a rota `/api/backend-proxy/health` para `${BACKEND_URL}/api/v1/health`** (limpa 502 recorrente, correção trivial).
+1. ✅ **IMPLEMENTADO** — Desfazer o fallback SSE "fantasma" e cair direto no REST quando o WS falhar (`useChatTransport.ts`: `isConnected=false` + `transportMode="disconnected"` após max retries).
+2. ✅ **IMPLEMENTADO** — Retry + backoff do `/api/auth/ws-token` em `useChatSocket.ts` (3 tentativas, backoff exponencial 1.5s base, para em 401).
+3. ⏭ **NÃO APLICADO** — Apontar WS direto para `NEXT_PUBLIC_WS_URL`. Em Replit dev o backend 127.0.0.1:8001 não é exposto publicamente; o Fix #1 já resolve o sintoma fazendo o REST assumir.
+4. ✅ **IMPLEMENTADO** — `setIsThinking(false)` em todos os caminhos: novo `case "error"` em `useChatSocket.handleEvent` + emissão de evento `error` no SSE (tanto em falha permanente quanto em stream silencioso sem terminal).
+5. ✅ **IMPLEMENTADO** — `/api/backend-proxy/health` aponta direto pra `/api/v1/health` (sem redirect 307).
+
+### Bug novo descoberto durante validação runtime (não estava na auditoria)
+
+Após as correções acima, o caminho REST foi desbloqueado e `POST /api/backend-proxy/chat/message` passa a retornar HTTP 200 corretamente, mas o corpo vem com **`{"content": ""}`** — o backend processa a mensagem sem erro e ainda assim produz resposta vazia. Evidência: o JWT emitido por `dev-auto-login` carrega `company_id: "demo_company"` (string literal), e o handler `http_chat_message` (`agent_chat_ws.py:995`) retorna `content=_strip_react_json(output.message or "")` — ou seja, algum agente está devolvendo `output.message` vazio sem exceção. Fora do escopo de #277, merece task separada.
 
 ---
 

@@ -53,6 +53,7 @@ export interface UseChatSocketReturn {
   setHitlPending: React.Dispatch<React.SetStateAction<HITLPending | null>>
   thinkingSteps: string[]
   isThinking: boolean
+  setIsThinking: React.Dispatch<React.SetStateAction<boolean>>
   fairnessWarnings: string[]
   setFairnessWarnings: React.Dispatch<React.SetStateAction<string[]>>
   backgroundTasks: BackgroundTaskEvent[]
@@ -83,13 +84,38 @@ export function useChatSocket({
   const [conversationIdFromWs, setConversationIdFromWs] = useState<string | null>(null)
 
   useEffect(() => {
+    // BUG-AUDIT #277 / H2a+H4: o ws-token pode demorar (cold-start backend do
+    // dev-auto-login até 15s) ou cair em 503 transitório — sem retry o header
+    // Authorization ficava undefined pra sempre nessa instância, bloqueando
+    // WS e SSE. Fazemos retry curto com backoff; enquanto isso o REST cobre.
     let cancelled = false
-    fetch("/api/auth/ws-token")
-      .then(r => r.ok ? r.json() : null)
-      .then(data => {
-        if (!cancelled && data?.token) setWsAuthToken(data.token)
-      })
-      .catch((err) => { console.warn('[useChatSocket] ws-token fetch failed', err) })
+    const maxAttempts = 3
+    const baseDelay = 1500
+
+    const attempt = async (n: number): Promise<void> => {
+      if (cancelled) return
+      try {
+        const r = await fetch("/api/auth/ws-token")
+        if (cancelled) return
+        if (r.ok) {
+          const data = await r.json() as { token?: string }
+          if (!cancelled && data?.token) {
+            setWsAuthToken(data.token)
+            return
+          }
+        }
+        // 401 definitivo → não insistir (sem credenciais)
+        if (r.status === 401) return
+      } catch (err) {
+        if (cancelled) return
+        console.warn('[useChatSocket] ws-token fetch failed (attempt', n + 1, ')', err)
+      }
+      if (n + 1 < maxAttempts && !cancelled) {
+        setTimeout(() => { void attempt(n + 1) }, baseDelay * Math.pow(2, n))
+      }
+    }
+
+    void attempt(0)
     return () => { cancelled = true }
   }, [])
 
@@ -224,6 +250,14 @@ export function useChatSocket({
           const execPlan = (event as unknown as Record<string, unknown>).execution_plan as Record<string, unknown> | undefined
           onCompleteRef.current?.(event.content, execPlan)
         }
+        break
+
+      case "error":
+        // BUG-AUDIT #277 / H7: garantir que "LIA digitando" sai quando
+        // qualquer caminho (WS, SSE) reporta erro — sem isso o indicador
+        // ficava preso ligado quando o stream quebrava antes do primeiro
+        // evento "message".
+        setIsThinking(false)
         break
 
       case "clarification": {

@@ -217,21 +217,27 @@ export function useChatTransport(
           }
           reconnectTimerRef.current = setTimeout(connectWs, delay)
         } else if (reconnectCountRef.current >= maxReconnectAttempts) {
+          // BUG-AUDIT #277: não declarar isConnected=true em modo SSE "fantasma".
+          // Fazê-lo capturava todo envio no sendMessageViaSSE (que aqui costuma
+          // falhar em dev via rewrite do Next) e impedia o caminho REST — que
+          // funciona de ponta a ponta — de ser acionado em useChatMessages.
+          // Mantemos disconnected para liberar o branch REST.
           wsFailedPermanentlyRef.current = true
           if (mountedRef.current) {
             setIsReconnecting(false)
             setReconnectAttempt(0)
-            setTransportMode("sse")
-            setIsConnected(true)
+            setTransportMode("disconnected")
+            setIsConnected(false)
             setError(null)
           }
         }
       }
     } catch {
+      // BUG-AUDIT #277: ver comentário acima — não fingir conexão SSE.
       wsFailedPermanentlyRef.current = true
       if (mountedRef.current) {
-        setTransportMode("sse")
-        setIsConnected(true)
+        setTransportMode("disconnected")
+        setIsConnected(false)
         setError(null)
       }
     }
@@ -293,6 +299,17 @@ export function useChatTransport(
       setTokens("")
       setError(null)
 
+      // BUG-AUDIT #277 / H7: rastrear se um evento terminal (message/clarification/error)
+      // foi recebido. Se o stream fechar (done=true) sem terminal, emitimos "error"
+      // pra destravar isThinking em useChatSocket.
+      let receivedTerminal = false
+      const wrappedHandleParsedEvent = (event: TransportEvent) => {
+        if (event.type === "message" || event.type === "clarification" || event.type === "error") {
+          receivedTerminal = true
+        }
+        handleParsedEvent(event)
+      }
+
       const body = JSON.stringify({
         message,
         domain,
@@ -351,7 +368,7 @@ export function useChatTransport(
                   try {
                     const event = JSON.parse(jsonStr) as TransportEvent
                     if (mountedRef.current) {
-                      handleParsedEvent(event)
+                      wrappedHandleParsedEvent(event)
                     }
                   } catch {
                     // ignore malformed
@@ -363,6 +380,14 @@ export function useChatTransport(
             sseFailureCountRef.current = 0
             if (mountedRef.current) {
               setIsStreaming(false)
+              // BUG-AUDIT #277 / H7: fechamento silencioso — garantir que
+              // isThinking/streaming sejam desligados mesmo sem evento terminal.
+              if (!receivedTerminal) {
+                onEventRef.current?.({
+                  type: "error",
+                  message: "Resposta incompleta do servidor.",
+                } as TransportEvent)
+              }
             }
           })
           .catch((err) => {
@@ -387,6 +412,12 @@ export function useChatTransport(
               )
               setIsConnected(false)
               setTransportMode("disconnected")
+              // BUG-AUDIT #277 / H7: propagar erro pra useChatSocket limpar
+              // isThinking — senão o bubble "LIA digitando" fica preso.
+              onEventRef.current?.({
+                type: "error",
+                message: "Não foi possível conectar ao servidor.",
+              } as TransportEvent)
             }
           })
       }
