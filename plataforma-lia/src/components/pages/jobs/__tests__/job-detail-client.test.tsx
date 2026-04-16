@@ -8,7 +8,7 @@
  * - The retry button is present and clicking it re-triggers the fetch
  */
 import React from "react"
-import { render, screen, waitFor, fireEvent } from "@testing-library/react"
+import { render, screen, waitFor, fireEvent, act } from "@testing-library/react"
 import { vi, describe, it, expect, beforeEach, afterEach } from "vitest"
 
 // ── Mocks — must be hoisted before the component import ─────────────────────
@@ -51,6 +51,7 @@ describe("JobDetailClient — error state", () => {
 
   afterEach(() => {
     vi.clearAllMocks()
+    vi.useRealTimers()
   })
 
   it("shows error message and retry button when getJobVacancy rejects", async () => {
@@ -122,5 +123,43 @@ describe("JobDetailClient — error state", () => {
 
     expect(screen.queryByRole("alert")).toBeNull()
     expect(screen.queryByRole("status")).toBeNull()
+  })
+
+  it("shows error state and retry button when getJobVacancy times out after 15 s", async () => {
+    vi.useFakeTimers()
+
+    mockGetJobVacancy.mockImplementation(
+      () =>
+        new Promise<never>((_, reject) =>
+          setTimeout(
+            () =>
+              reject(
+                Object.assign(new Error("signal is aborted without reason"), {
+                  name: "AbortError",
+                })
+              ),
+            15000
+          )
+        )
+    )
+
+    render(<JobPage />)
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(15000)
+    })
+
+    // Restore real timers so waitFor's internal polling works normally.
+    // afterEach also calls useRealTimers as a defensive guard.
+    vi.useRealTimers()
+
+    await waitFor(() => {
+      expect(screen.getByRole("alert")).toBeInTheDocument()
+    })
+
+    expect(screen.getByText("Erro ao carregar a vaga")).toBeInTheDocument()
+    expect(
+      screen.getByRole("button", { name: /tentar novamente/i })
+    ).toBeInTheDocument()
   })
 })
