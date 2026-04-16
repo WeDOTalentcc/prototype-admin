@@ -97,12 +97,14 @@ export default function FunilDeTalentosPage() {
     candidates: rawCandidates,
     loading,
     error,
+    errorKind,
     total,
     currentPage,
     totalPages,
     filters,
     updateFilter,
     goToPage,
+    refresh,
   } = useCandidatesList()
 
   const {
@@ -305,11 +307,34 @@ const SENIORITY_OPTIONS = [
               </div>
             </div>
 
-            {/* Error state */}
+            {/* Task #293: error state com CTA diferenciado. 401/403 oferecem
+                relogin (redireciona ao root para reautenticar); 5xx/network
+                mantêm retry manual via refresh(). */}
             {error && (
-              <div className="flex items-center gap-2 p-3 bg-status-error/10 dark:bg-status-error/10 border border-status-error/30 dark:border-status-error/30 rounded-xl text-xs text-status-error dark:text-status-error">
-                <AlertCircle className="h-4 w-4 flex-shrink-0" />
-                {error}
+              <div className="flex items-start gap-2 p-3 bg-status-error/10 dark:bg-status-error/10 border border-status-error/30 dark:border-status-error/30 rounded-xl text-xs text-status-error dark:text-status-error">
+                <AlertCircle className="h-4 w-4 flex-shrink-0 mt-0.5" />
+                <div className="flex-1 flex items-center justify-between gap-3">
+                  <span>{error}</span>
+                  {(errorKind === "unauthorized" || errorKind === "forbidden") ? (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => { window.location.href = "/" }}
+                      className="h-7 rounded-lg text-xs border-status-error/40"
+                    >
+                      {t('auth.reloginCta')}
+                    </Button>
+                  ) : (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => refresh()}
+                      className="h-7 rounded-lg text-xs border-status-error/40"
+                    >
+                      {t('auth.retryCta')}
+                    </Button>
+                  )}
+                </div>
               </div>
             )}
 

@@ -1335,6 +1335,10 @@
       "message": "Mensagem",
       "shareSelection": "Compartilhar Seleção"
     },
+    "auth": {
+      "reloginCta": "Fazer login",
+      "retryCta": "Tentar novamente"
+    },
     "emptyState": {
       "noResults": "Nenhum candidato encontrado. Tente outros filtros.",
       "searchPrompt": "Busque candidatos por nome, habilidade ou cargo"

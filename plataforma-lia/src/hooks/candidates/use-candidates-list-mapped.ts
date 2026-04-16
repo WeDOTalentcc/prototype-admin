@@ -9,7 +9,7 @@
  * Portabilidade Vue: composable com computed(() => candidates.value.map(...))
  */
 import { useMemo } from "react"
-import { useCandidatesList, type CandidatesListFilters } from "./use-candidates-list"
+import { useCandidatesList, type CandidatesListFilters, type CandidatesErrorKind } from "./use-candidates-list"
 import { mapCandidateLocalToCandidate } from "@/lib/transforms/candidate-transforms"
 import type { Candidate } from "@/components/pages/candidates/types"
 
@@ -17,6 +17,7 @@ export interface UseCandidatesListMappedReturn {
   candidates: Candidate[]
   loading: boolean
   error: string | null
+  errorKind: CandidatesErrorKind | null
   total: number
   currentPage: number
   totalPages: number
@@ -42,6 +43,7 @@ export function useCandidatesListMapped(
     candidates,
     loading: list.loading,
     error: list.error,
+    errorKind: list.errorKind,
     total: list.total,
     currentPage: list.currentPage,
     totalPages: list.totalPages,

@@ -1335,6 +1335,10 @@
       "message": "Message",
       "shareSelection": "Share Selection"
     },
+    "auth": {
+      "reloginCta": "Sign in",
+      "retryCta": "Try again"
+    },
     "emptyState": {
       "noResults": "No candidates found. Try different filters.",
       "searchPrompt": "Search candidates by name, skill, or position"
