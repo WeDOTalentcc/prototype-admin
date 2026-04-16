@@ -175,12 +175,17 @@ async def add_approval_workflow_columns():
 
 async def ensure_default_company():
     """
-    Ensure the companies table exists and the demo_company entry is created.
-    This provides a valid company_id for multi-tenancy in development/demo environments.
-    
-    The demo_company is used as the default tenant for:
+    Ensure the companies table exists and the canonical demo company row
+    (id = ``00000000-0000-4000-a000-000000000001``, see
+    ``app.core.tenant.DEMO_COMPANY_UUID``) is present.
+
+    This provides a valid ``company_id`` for multi-tenancy in
+    development/demo environments. The demo company is used as the
+    default tenant for:
+
     - New users without a specific company assignment
-    - Legacy records that had company_id='default'
+    - Legacy records that had ``company_id='default'`` or
+      ``company_id='demo_company'`` (post alembic migration 080)
     - Development and testing purposes
     """
     async with engine.begin() as conn:
@@ -201,10 +206,12 @@ async def ensure_default_company():
             logger.warning(f"Could not create companies table: {e}")
         
         try:
+            # Canonical demo tenant id (see app.core.tenant.DEMO_COMPANY_UUID
+            # and alembic migration 080_migrate_demo_company_to_uuid).
             await conn.execute(text("""
                 INSERT INTO companies (id, name, display_name, is_active, is_demo, created_at, updated_at)
                 VALUES (
-                    'demo_company',
+                    '00000000-0000-4000-a000-000000000001',
                     'Demo Company',
                     'Demo Company - Development/Testing',
                     TRUE,
@@ -215,40 +222,42 @@ async def ensure_default_company():
                 ON CONFLICT (id) DO UPDATE SET
                     updated_at = CURRENT_TIMESTAMP
             """))
-            logger.debug("Ensured demo_company entry exists")
+            logger.debug("Ensured canonical demo company entry exists")
         except Exception as e:
-            logger.warning(f"Could not create demo_company: {e}")
-    
-    logger.info("Default company (demo_company) verified/created successfully")
+            logger.warning(f"Could not create canonical demo company: {e}")
+
+    logger.info("Default company (canonical demo UUID) verified/created successfully")
 
 
 async def migrate_default_company_ids():
     """
-    Migrate legacy 'default' company_id values to 'demo_company'.
-    This is a data hygiene operation to ensure all records have valid company references.
-    
+    Migrate legacy 'default'/'demo_company' company_id values to the canonical
+    demo UUID. Data hygiene operation to ensure all records have valid company
+    references aligned with the post-migration-080 schema.
+
     Updates the following tables:
     - users
     - job_vacancies
     - vacancy_candidates
     """
+    canonical = "00000000-0000-4000-a000-000000000001"
     tables_to_update = ["users", "job_vacancies", "vacancy_candidates"]
-    
+
     async with engine.begin() as conn:
         for table_name in tables_to_update:
             try:
                 result = await conn.execute(text(f"""
-                    UPDATE {table_name} 
-                    SET company_id = 'demo_company'
-                    WHERE company_id = 'default'
-                """))
+                    UPDATE {table_name}
+                    SET company_id = :canonical
+                    WHERE company_id IN ('default', 'demo_company')
+                """), {"canonical": canonical})
                 if result.rowcount > 0:
-                    logger.info(f"Migrated {result.rowcount} records in {table_name} from 'default' to 'demo_company'")
+                    logger.info(f"Migrated {result.rowcount} records in {table_name} to canonical demo UUID")
                 else:
                     logger.debug(f"No records to migrate in {table_name}")
             except Exception as e:
                 logger.warning(f"Could not migrate company_id in {table_name}: {e}")
-    
+
     logger.info("Company ID migration completed")
 
 
