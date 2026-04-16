@@ -35,13 +35,33 @@ async def get_item(id: int, repo: ItemRepository = Depends(get_item_repo)):
 
 ---
 
-## ADR-002: Canonical Model Location (2026-04-06)
+## ADR-002: Canonical Model Location (2026-04-06, updated 2026-04-16)
 
 **Rule:** SQLAlchemy ORM models are defined ONLY in the `lia_models` package.
 
-- `app/models/` → DELETE (migrate to lia_models)
+**Layers:**
+- `lia_models/` → canonical source of truth (all model definitions live here)
+- `app/models/*.py` → compatibility proxies (`from lia_models.xyz import *`); no model definitions allowed
+- `app/models/__init__.py` → central re-export hub for convenience imports
 - `app/domains/*/models/` → re-export from lia_models only
-- `lia_models/` → canonical source of truth
+
+**Valid import paths** (both resolve to the same Python object):
+```python
+from lia_models.job_vacancy import JobVacancy
+from app.models.job_vacancy import JobVacancy
+from app.models import JobVacancy
+```
+
+**Forbidden** (see ADR-012):
+```python
+from libs.models.lia_models.job_vacancy import JobVacancy
+```
+
+**Proxy file format** (`app/models/xyz.py`):
+```python
+"""Backwards-compatibility shim — real implementation in libs/models."""
+from lia_models.xyz import *  # noqa: F401,F403
+```
 
 ---
 
@@ -136,10 +156,12 @@ Before every PR:
 - [ ] Is there a multiline prompt > 5 lines in Python? → **MOVE TO YAML**
 - [ ] Did I write bare `except:`? → **USE `except Exception:`**
 - [ ] Do my new tests have real assertions? → **REQUIRED**
+- [ ] Does my import use `from libs.models.lia_models`? → **USE `from lia_models` (ADR-012)**
+- [ ] Does my `app/models/*.py` file define a class? → **MOVE TO `lia_models/`, keep proxy only (ADR-002)**
 
 ---
 
-*Last updated: 2026-04-06 | See REFACTOR_PLAN.md for phase-by-phase execution plan*
+*Last updated: 2026-04-16 | See REFACTOR_PLAN.md for phase-by-phase execution plan*
 
 ---
 
@@ -200,7 +222,7 @@ Existing raw dict messages continue to work but should migrate.
 
 ## ADR-012: Forbidden Import Paths (2026-04-16) [ENFORCED by CI]
 
-**Rule:** Never use `from libs.models.lia_models` or `from libs.messaging.lia_messaging` import paths.
+**Rule:** Never use `from libs.models.lia_models` or `from libs.messaging.lia_messaging` import paths. See ADR-002 for the canonical model location and valid import paths.
 
 These fully-qualified paths cause duplicate SQLAlchemy class registrations because Python treats them as distinct modules from the short-form `lia_models` / `lia_messaging` packages.
 
