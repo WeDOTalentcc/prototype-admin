@@ -38,7 +38,7 @@ FORBIDDEN_PATTERNS = [
     re.compile(r"\bimport\s+app\.models\b"),
 ]
 
-SCAN_DIRS = ["app", "scripts", "tests"]
+SCAN_DIRS = ["app", "scripts", "tests", "libs", "alembic"]
 
 SELF = Path(__file__).resolve()
 

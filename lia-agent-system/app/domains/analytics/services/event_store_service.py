@@ -40,7 +40,10 @@ class EventStoreService:
     ) -> bool:
         """Append event to store. Fail-open: returns False on error."""
         try:
-            DomainEvent = _DomainEvent or __import__("app.models.event_store", fromlist=["DomainEvent"]).DomainEvent
+            if _DomainEvent is None:
+                logger.warning("event_store: DomainEvent model unavailable")
+                return False
+            DomainEvent = _DomainEvent
             # Get next sequence number
             result = await db.execute(
                 select(func.coalesce(func.max(DomainEvent.sequence_number), 0)).where(
@@ -85,7 +88,10 @@ class EventStoreService:
     ) -> list[dict[str, Any]]:
         """Get ordered event history for an aggregate. Fail-open: returns []."""
         try:
-            DomainEvent = _DomainEvent or __import__("app.models.event_store", fromlist=["DomainEvent"]).DomainEvent
+            if _DomainEvent is None:
+                logger.warning("event_store: DomainEvent model unavailable")
+                return []
+            DomainEvent = _DomainEvent
             result = await db.execute(
                 select(DomainEvent).where(
                     DomainEvent.aggregate_type == aggregate_type,
