@@ -71,5 +71,5 @@ def downgrade() -> None:
             "DROP INDEX CONCURRENTLY IF EXISTS ix_candidates_active_created_at"
         )
         op.execute(
-            "DROP INDEX CONCURRENTLY IF EXISTS ix_candidates_seniority_level"
+            "DROP INDEX CONCURRENTLY IF EXISTS ix_candidates_seniority_level_lower"
         )
