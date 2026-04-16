@@ -20,6 +20,12 @@ export interface CandidatesListFilters {
 
 // Classificação do erro de fetch. "unauthorized"/"forbidden" exigem relogin;
 // "server"/"network" são retriáveis.
+//
+// Contrato para consumidores:
+//   - `errorKind` é a fonte de verdade para roteamento de UX.
+//   - `error` passou a carregar a mensagem crua (err.message) em vez do texto
+//     pt-BR anterior. Consumidores que queiram copy localizado devem derivar
+//     a string de `errorKind` via i18n (ver FunilDeTalentosClient).
 export type CandidatesErrorKind = "unauthorized" | "forbidden" | "server" | "network"
 
 export interface UseCandidatesListReturn {
