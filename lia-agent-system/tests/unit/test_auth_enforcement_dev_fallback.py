@@ -12,7 +12,6 @@ from __future__ import annotations
 import os
 from unittest.mock import patch
 
-import pytest
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.testclient import TestClient
@@ -27,6 +26,8 @@ def _build_app_with_middleware(dev_mode: bool, dev_api_key: str = ""):
     env_patches = {
         "LIA_DEV_MODE": "true" if dev_mode else "",
         "LIA_DEV_API_KEY": dev_api_key,
+        # Literal production probe: quando dev_mode=False simulamos deploy real.
+        "APP_ENV": "development" if dev_mode else "production",
     }
     with patch.dict(os.environ, env_patches, clear=False):
         import importlib
