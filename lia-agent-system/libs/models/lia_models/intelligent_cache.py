@@ -144,9 +144,9 @@ class FeedbackEvent(Base):
     
     __table_args__ = (
         Index('ix_feedback_events_company_field', 'company_id', 'field_name'),
-        Index('ix_feedback_events_outcome', 'company_id', 'outcome'),
+        Index('ix_feedback_events_company_outcome', 'company_id', 'outcome'),
         Index('ix_feedback_events_unprocessed', 'company_id', 'processed_for_learning'),
-        Index('ix_feedback_events_role', 'company_id', 'role'),
+        Index('ix_feedback_events_company_role', 'company_id', 'role'),
     )
 
 
