@@ -224,7 +224,7 @@ class AuthEnforcementMiddleware(BaseHTTPMiddleware):
                 rejection = _check_dev_api_key(request, path)
                 if rejection is not None:
                     return rejection
-                # Canonical demo UUID (legacy string "demo_company" is in
+                # Canonical demo UUID (the legacy non-UUID slug is in
                 # _INVALID_TENANT_VALUES and breaks resolve_tenant_id).
                 from app.core.tenant import DEMO_COMPANY_UUID
                 request.state.token_payload = {"sub": "dev-user", "company_id": DEMO_COMPANY_UUID, "role": "admin"}
