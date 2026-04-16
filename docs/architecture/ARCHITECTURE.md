@@ -867,7 +867,12 @@ External ATS (Gupy/Pandapé/Merge)        Rails ATS (ats-api-copia)
   JobVacancy, EmailTemplate) flow through `RailsSyncRepository`.
 - **Architectural enforcement:** rails-sync compliance with ADR-001 (no SQL in
   controllers) and ADR-005 (every endpoint declares `response_model`) is locked
-  in `tests/contract/test_rails_sync_contracts.py`.
+  in `tests/contract/test_rails_sync_contracts.py`. The inverse direction
+  (FastAPI → Rails ATS via `WeDOTalentATSClient`) is locked in
+  `tests/contract/test_wedotalent_rails_client_contract.py`, which uses
+  `respx` to stub the Rails endpoints and assert auth header, JSONAPI
+  envelope unwrapping, 4xx non-retry, 5xx retry-with-backoff, and bounded
+  retries.
 
 **Notas sobre o ATS Rails (`ats-api-copia`):**
 
