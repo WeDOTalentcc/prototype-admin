@@ -62,13 +62,19 @@ export function useFloatConversation(
       const id = data.id ?? null
       if (id) {
         setConversationId(id)
-        recentItemsStore.addItem({
+        const newItem = {
           id,
-          type: "chat",
+          type: "chat" as const,
           title,
           timestamp: Date.now(),
           meta: { conversationId: id },
-        })
+        }
+        recentItemsStore.addItem(newItem)
+        try {
+          const existing = JSON.parse(localStorage.getItem("lia-recent-items") ?? "[]") as typeof newItem[]
+          const filtered = existing.filter(i => !(i.id === id && i.type === "chat"))
+          localStorage.setItem("lia-recent-items", JSON.stringify([newItem, ...filtered].slice(0, 15)))
+        } catch {}
       }
       return id
     } catch {
