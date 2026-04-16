@@ -799,10 +799,89 @@ Eventos: thinking, token, message_complete, panel_update, background_task_update
 | **Email** | SendGrid | `SENDGRID_API_KEY` |
 | | Resend | `RESEND_API_KEY` |
 | | Mailgun | `MAILGUN_API_KEY` |
-| **ATS** | Gupy / Pandapé / Merge.dev | API keys respectivas |
+| **ATS** | Gupy / Pandapé / Merge.dev | API keys respectivas (ver §9.8) |
+| **ATS (interno)** | Rails ATS — `ats-api-copia` | `RAILS_API_TOKEN` (sync FastAPI ↔ Rails) |
 | **Auth/SaaS** | WorkOS | `WORKOS_API_KEY/CLIENT_ID/WEBHOOK_SECRET` |
 | | HubSpot (CRM) | `HUBSPOT_API_KEY` |
 | | Stripe (billing) | `STRIPE_SECRET_KEY/WEBHOOK_SECRET` |
+
+---
+
+### 9.8 ATS Integration Boundary
+
+A camada de integração ATS é a fronteira entre `lia-agent-system` (FastAPI) e
+sistemas externos de ATS — tanto o ATS Rails interno (`ats-api-copia`) quanto
+provedores externos (Gupy, Pandapé, Merge.dev). Toda comunicação cross-system
+passa por este contorno; nenhum agente, controller ou job acessa um ATS
+diretamente.
+
+**Camadas:**
+
+```
+External ATS (Gupy/Pandapé/Merge)        Rails ATS (ats-api-copia)
+        ▲                                          ▲
+        │ HTTPS                                    │ HTTPS (Bearer token)
+        ▼                                          ▼
+┌──────────────────────────────┐    ┌─────────────────────────────────┐
+│ ats_clients/ (provider SDKs) │    │ /api/v1/rails-sync/* (FastAPI)  │
+│  base.py, gupy.py,           │    │  GET candidates/{id}/enrichment │
+│  pandape.py, merge.py        │    │  GET jobs/{id}/intelligence     │
+│  wedotalent_rails.py         │    │  GET compliance/status          │
+│                              │    │  POST bulk-sync/candidates      │
+│ ATSProviderFactory cache     │    │                                 │
+└──────────────────────────────┘    └─────────────────────────────────┘
+        ▲                                          ▲
+        │                                          │
+┌────────────────────────────────────────────────────────────────────┐
+│ libs/schemas/ats/         ← Pydantic wire contracts (response_model)│
+│ rails_sync.py             ← envelopes + provenance (source/synced_at)│
+└────────────────────────────────────────────────────────────────────┘
+        ▲                                          ▲
+        │                                          │
+┌────────────────────────────────────────────────────────────────────┐
+│ app/domains/ats_integration/ (DDD domain)                          │
+│  • agents/   — ATSIntegrationReActAgent (4-file pattern)           │
+│  • services/ — ATSSyncService, gupy/pandape/merge services         │
+│  • repositories/                                                   │
+│      ats_repository.py        — domain models (5 ATS tables)       │
+│      rails_sync_repository.py — read-only facade for rails-sync    │
+│  • tools/    — ats_tools (tool registry for the agent)             │
+└────────────────────────────────────────────────────────────────────┘
+```
+
+**Contracts:**
+
+- **Wire contracts:** `libs/schemas/ats/` holds the Pydantic envelopes for every
+  rails-sync endpoint. Every response carries `source: "fastapi"` and an
+  ISO-8601 `synced_at` so the Rails consumer can audit provenance. Schemas live
+  in `libs/` (not `app/schemas/`) because they are part of the cross-service
+  public surface.
+- **Provider clients:** `app/domains/ats_integration/services/ats_clients/`
+  defines the abstract `ATSClient` (Template Method) plus concrete clients per
+  provider. New providers register in `ATSProviderFactory.PROVIDER_CLASSES` and
+  read credentials from `ATS_<PROVIDER>_*` env vars.
+- **Persistence:** the 5 canonical ATS tables (`ats_connections`,
+  `ats_sync_jobs`, `ats_candidates`, `ats_webhook_logs`, `ats_job_mappings`)
+  live in `lia_models.ats_integration` and are accessed only via
+  `ATSRepository`. Cross-domain reads needed by `rails-sync` (Candidate,
+  JobVacancy, EmailTemplate) flow through `RailsSyncRepository`.
+- **Architectural enforcement:** rails-sync compliance with ADR-001 (no SQL in
+  controllers) and ADR-005 (every endpoint declares `response_model`) is locked
+  in `tests/contract/test_rails_sync_contracts.py`.
+
+**Notas sobre o ATS Rails (`ats-api-copia`):**
+
+- Stack: Rails 7.1 + PostgreSQL com Apartment gem (multi-tenancy por schema —
+  `Account` e `User` excluídos do isolamento, todas as outras tabelas vivem no
+  schema do tenant).
+- Auth: JWT custom assinado com `Rails.application.secret_key_base` (24 h de
+  expiração). WorkOS / futuras sessões ATS-issued podem entrar no mesmo slot
+  `Authorization: Bearer …` consumido por FastAPI (ver ADR-013).
+- Real-time: ActionCable (`/cable`) para mensagens recrutador ↔ candidato. O
+  FastAPI **não** consome esse canal — apenas a superfície REST acima.
+- Inconsistências conhecidas (snapshot 2026-03-24, ainda não endereçadas):
+  Pundit no Gemfile mas `app/policies/` vazio; CORS de produção apenas com
+  `localhost:3000` no repo.
 
 ---
 
