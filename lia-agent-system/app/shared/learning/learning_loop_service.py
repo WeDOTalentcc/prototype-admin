@@ -476,7 +476,7 @@ class LearningLoopService:
         data: dict
     ) -> None:
         """Update or create a learning pattern."""
-        from app.models.intelligent_cache import LearningPattern
+        from lia_models.feedback import LearningPattern
         
         result = await db.execute(
             select(LearningPattern)
@@ -603,7 +603,7 @@ class LearningLoopService:
         Returns patterns sorted by specificity and confidence.
         """
         try:
-            from app.models.intelligent_cache import LearningPattern
+            from lia_models.feedback import LearningPattern
             
             pattern_type = self._get_pattern_type(field_name)
             

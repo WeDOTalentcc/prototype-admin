@@ -97,57 +97,6 @@ class QueryEmbedding(Base):
     )
 
 
-class LearningPattern(Base):
-    """
-    Stores learned patterns for intelligent suggestions.
-    
-    Patterns are extracted from feedback and applied to future suggestions:
-    - Salary patterns: "Senior Python in SP avg R$18k"
-    - Skill patterns: "90% of Data roles use SQL"
-    - Preference patterns: "This company always adds 'Day Off Aniversário'"
-    
-    Patterns have confidence scores based on sample size and recency.
-    """
-    __tablename__ = "learning_patterns"
-    
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    
-    company_id = Column(String(255), nullable=False, index=True)
-    
-    pattern_type = Column(String(100), nullable=False, index=True)
-    pattern_key = Column(String(512), nullable=False, index=True)
-    
-    pattern_value = Column(JSON, nullable=False)
-    
-    sample_size = Column(Integer, default=1)
-    acceptance_rate = Column(Float, default=1.0)
-    
-    confidence = Column(String(20), default="low")
-    confidence_score = Column(Float, default=0.5)
-    
-    role_filter = Column(String(255), nullable=True, index=True)
-    seniority_filter = Column(String(100), nullable=True)
-    department_filter = Column(String(100), nullable=True)
-    location_filter = Column(String(255), nullable=True)
-    
-    is_active = Column(Boolean, default=True, index=True)
-    
-    expires_at = Column(DateTime, nullable=True)
-    last_applied_at = Column(DateTime, nullable=True)
-    last_confirmed_at = Column(DateTime, nullable=True)
-    
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
-    __table_args__ = (
-        Index('ix_learning_patterns_company_type', 'company_id', 'pattern_type'),
-        Index('ix_learning_patterns_key', 'company_id', 'pattern_key'),
-        Index('ix_learning_patterns_active', 'company_id', 'is_active'),
-        Index('ix_learning_patterns_role', 'company_id', 'role_filter'),
-        {"extend_existing": True},
-    )
-
-
 class FeedbackEvent(Base):
     """
     Unified feedback capture for all suggestion types.
