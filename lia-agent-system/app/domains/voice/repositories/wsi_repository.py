@@ -584,6 +584,33 @@ class WsiRepository:
             "source": source,
         })
 
+    async def get_job_screening_questions(self, job_id: str) -> list[dict]:
+        """Return active job_screening_questions rows for *job_id*, ordered by id.
+
+        Used as a fallback read path when no active screening_question_sets record
+        exists for the job.
+        """
+        result = await self.db.execute(text("""
+            SELECT id, question_text, category, question_type, weight, skill_targeted, block_id
+            FROM job_screening_questions
+            WHERE job_vacancy_id = :job_id
+              AND is_active = TRUE
+            ORDER BY id
+        """), {"job_id": job_id})
+        rows = result.fetchall()
+        return [
+            {
+                "id": r[0],
+                "text": r[1],
+                "category": r[2],
+                "type": r[3],
+                "weight": r[4],
+                "skill_targeted": r[5],
+                "block_id": r[6],
+            }
+            for r in rows
+        ]
+
     # ------------------------------------------------------------------
     # Voice call — session/call_id binding (twilio_voice.py Phase 2)
     # ------------------------------------------------------------------

@@ -707,8 +707,12 @@ async def get_questions_for_job(
     """
     Retrieve saved screening questions for a job vacancy.
 
-    Reads the active screening question set version from the database
-    (the same store written by ``POST /wsi/questions/save``).
+    Primary source: the active screening_question_sets version written by
+    ``POST /wsi/questions/save`` via ScreeningQuestionSetService.
+
+    Fallback: if no active question-set version exists (e.g. the version
+    write failed during save but row-level writes to job_screening_questions
+    succeeded), queries job_screening_questions directly via WsiRepository.
     """
     try:
         qs = await sqs_svc.get_active_version(db, job_id)
@@ -716,34 +720,57 @@ async def get_questions_for_job(
         logger.error(f"Failed to load active question set for job {job_id}: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-    if not qs or not qs.questions_snapshot:
+    if qs and qs.questions_snapshot:
+        questions: list[QuestionItem] = []
+        for q in qs.questions_snapshot:
+            if not isinstance(q, dict):
+                continue
+            questions.append(QuestionItem(
+                id=q.get("id"),
+                text=q.get("text") or q.get("question") or "",
+                category=q.get("category"),
+                type=q.get("type", "open"),
+                weight=q.get("weight", 0.75),
+                skill_targeted=q.get("skill_targeted"),
+            ))
         return GetQuestionsResponse(
             success=True,
             job_id=job_id,
-            questions=[],
-            questions_count=0,
-            source=None,
-            saved_at=None,
+            questions=questions,
+            questions_count=len(questions),
+            source=qs.source,
+            saved_at=qs.created_at.isoformat() if qs.created_at else None,
         )
 
-    questions: list[QuestionItem] = []
-    for q in qs.questions_snapshot:
-        if not isinstance(q, dict):
-            continue
-        questions.append(QuestionItem(
-            id=q.get("id"),
-            text=q.get("text") or q.get("question") or "",
-            category=q.get("category"),
-            type=q.get("type", "open"),
-            weight=q.get("weight", 0.75),
-            skill_targeted=q.get("skill_targeted"),
-        ))
+    # Fallback: read directly from job_screening_questions table.
+    try:
+        repo = WsiRepository(db)
+        raw_rows = await repo.get_job_screening_questions(job_id)
+    except Exception as e:
+        logger.error(f"Fallback read from job_screening_questions failed for job {job_id}: {e}")
+        raw_rows = []
 
+    fallback_questions: list[QuestionItem] = [
+        QuestionItem(
+            id=r.get("id"),
+            text=r.get("text") or "",
+            category=r.get("category"),
+            type=r.get("type", "open"),
+            weight=r.get("weight", 0.75),
+            skill_targeted=r.get("skill_targeted"),
+        )
+        for r in raw_rows
+    ]
+    if fallback_questions:
+        logger.info(
+            f"get_questions_for_job: no active question set for job {job_id}; "
+            f"returning {len(fallback_questions)} rows from job_screening_questions fallback"
+        )
     return GetQuestionsResponse(
         success=True,
         job_id=job_id,
-        questions=questions,
-        questions_count=len(questions),
-        source=qs.source,
-        saved_at=qs.created_at.isoformat() if qs.created_at else None,
+        questions=fallback_questions,
+        questions_count=len(fallback_questions),
+        source="job_screening_questions" if fallback_questions else None,
+        saved_at=None,
     )
