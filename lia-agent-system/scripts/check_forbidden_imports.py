@@ -23,6 +23,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).parent.parent
+WORKSPACE_ROOT = ROOT.parent
 
 FORBIDDEN_PATTERNS = [
     re.compile(r"\bfrom\s+libs\.models\.lia_models\b"),
@@ -36,6 +37,24 @@ SCAN_DIRS = ["app", "scripts", "tests"]
 SELF = Path(__file__).resolve()
 
 
+def _check_file(py_file: Path, base: Path, violations: list[str]) -> None:
+    if py_file.resolve() == SELF:
+        return
+    try:
+        source = py_file.read_text(encoding="utf-8")
+    except Exception:
+        return
+    for lineno, line in enumerate(source.splitlines(), 1):
+        stripped = line.lstrip()
+        if stripped.startswith("#"):
+            continue
+        for pattern in FORBIDDEN_PATTERNS:
+            if pattern.search(line):
+                rel = py_file.relative_to(base)
+                violations.append(f"  {rel}:{lineno}: {line.rstrip()}")
+                break
+
+
 def main() -> int:
     violations: list[str] = []
 
@@ -44,21 +63,13 @@ def main() -> int:
         if not target.exists():
             continue
         for py_file in target.rglob("*.py"):
-            if py_file.resolve() == SELF:
-                continue
-            try:
-                source = py_file.read_text(encoding="utf-8")
-            except Exception:
-                continue
-            for lineno, line in enumerate(source.splitlines(), 1):
-                stripped = line.lstrip()
-                if stripped.startswith("#"):
-                    continue
-                for pattern in FORBIDDEN_PATTERNS:
-                    if pattern.search(line):
-                        rel = py_file.relative_to(ROOT)
-                        violations.append(f"  {rel}:{lineno}: {line.rstrip()}")
-                        break
+            _check_file(py_file, ROOT, violations)
+
+    for py_file in ROOT.glob("*.py"):
+        _check_file(py_file, ROOT, violations)
+
+    for py_file in WORKSPACE_ROOT.glob("*.py"):
+        _check_file(py_file, WORKSPACE_ROOT, violations)
 
     if violations:
         print(
