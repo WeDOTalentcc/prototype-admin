@@ -116,14 +116,8 @@ export default function LoginPage() {
           <p className="text-base text-lia-text-secondary dark:text-lia-text-secondary font-normal leading-relaxed">
             {t("heroSubtitle")}<br />
             {t.rich("heroRecruitment", {
-              accent: t("accentSimple"),
-            }).toString().split(t("accentSimple")).map((part, i, arr) =>
-              i < arr.length - 1 ? (
-                <span key={i}>{part}<span className="text-wedo-cyan font-semibold">{t("accentSimple")}</span></span>
-              ) : (
-                <span key={i}>{part}</span>
-              )
-            )}
+              accent: (chunks) => <span className="text-wedo-cyan font-semibold">{chunks}</span>,
+            })}
           </p>
           <p className="mt-5 text-[13px] text-lia-text-tertiary dark:text-lia-text-tertiary tracking-wide border-l-2 border-wedo-cyan/50 pl-3">
             <span className="font-bold">{t("atsConnect")}</span>&nbsp;&nbsp;·&nbsp;&nbsp;{t("atsOrFull")}
