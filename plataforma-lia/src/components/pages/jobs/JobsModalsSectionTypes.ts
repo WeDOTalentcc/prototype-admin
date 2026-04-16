@@ -67,7 +67,7 @@ export interface JobsModalsSectionProps {
   activeFilter: string
 
   onDeselectAll: () => void
-  onRefreshJobs: () => void
+  onRefreshJobs: () => void | Promise<void>
   onSetBackendJobs: React.Dispatch<React.SetStateAction<Job[]>>
   onSetSelectedJob: (job: Job | null) => void
   onSetPreviewJob: (job: Job | null) => void

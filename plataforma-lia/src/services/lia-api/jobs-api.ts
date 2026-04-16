@@ -52,15 +52,25 @@ export async function listJobVacancies(status?: string, skip: number = 0, limit:
 }
 
 export async function getJobVacancy(id: string): Promise<JobVacancy> {
-  const response = await fetch(`${BACKEND_URL}/job-vacancies/${id}`, {
-    headers: getAuthHeaders(),
-  })
+  // Hard timeout so a hanging backend (e.g. Rails bridge stuck) never leaves
+  // the detail page spinner stuck forever (Task #241).
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), 15000)
 
-  if (!response.ok) {
-    throw new Error(`Failed to fetch job vacancy: ${response.statusText}`)
+  try {
+    const response = await fetch(`${BACKEND_URL}/job-vacancies/${id}`, {
+      headers: getAuthHeaders(),
+      signal: controller.signal,
+    })
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch job vacancy: ${response.statusText}`)
+    }
+
+    return response.json()
+  } finally {
+    clearTimeout(timeout)
   }
-
-  return response.json()
 }
 
 export async function createJobVacancy(data: JobVacancyCreateRequest): Promise<JobVacancy> {

@@ -342,10 +342,23 @@ export function useJobsStatusHandlers(props: JobsModalsSectionProps) {
     // Set pendingNavigateJobId as fallback so the list-based useEffect can catch it
     // if the router push somehow doesn't happen (e.g., navigation intercepted)
     onSetPendingNavigateJobId(jobId)
-    // Refresh the jobs list in the background so it stays consistent when user returns
-    onRefreshJobs()
-    // Primary path: navigate directly to the new job's detail page (deterministic)
+    // Primary path: navigate directly to the new job's detail page (deterministic).
+    // This MUST happen before kicking off the refresh so a failing list-fetch
+    // (e.g. backend bridge returning 500) cannot block navigation (Task #241).
     onNavigateToCreatedJob(jobId, jobTitle)
+    // Refresh the jobs list in the background so it stays consistent when user returns.
+    // We swallow any rejection here — the navigation already happened and the detail
+    // page loads independently of the list.
+    try {
+      const maybePromise = onRefreshJobs()
+      if (maybePromise && typeof maybePromise.catch === 'function') {
+        maybePromise.catch((err) => {
+          console.warn('[handleJobCreated] background refresh failed (non-blocking):', err)
+        })
+      }
+    } catch (err) {
+      console.warn('[handleJobCreated] background refresh threw synchronously:', err)
+    }
   }, [onCloseCreateJobModal, onSetPendingNavigateJobId, onRefreshJobs, onNavigateToCreatedJob])
 
   const handleEditSave = useCallback(async (jobId: string, updates: Record<string, unknown>) => {

@@ -383,8 +383,18 @@ async def get_job_vacancy(
     try:
         # When Rails is enabled and the ID is a bigint (Rails-style), try Rails first.
         # UUID-style IDs are always served from local DB with full authorization checks.
+        # Any failure inside the Rails branch (network, parsing, mapping) must fall through
+        # to the local DB path instead of bubbling up as a 500 — the bridge being unavailable
+        # cannot block normal use of locally-stored vacancies (Task #241).
         if RAILS_ENABLED and job_vacancy_id.isdigit():
-            rails_job = await rails_adapter.get_job_from_rails_only(job_vacancy_id)
+            try:
+                rails_job = await rails_adapter.get_job_from_rails_only(job_vacancy_id)
+            except Exception as bridge_err:  # noqa: BLE001 — bridge isolation
+                logger.warning(
+                    "[get_job_vacancy] Rails bridge failed for job %s, falling back to local DB: %s",
+                    job_vacancy_id, bridge_err,
+                )
+                rails_job = None
             if rails_job:
                 # Apply visibility/confidentiality checks equivalent to local path.
                 # Rails is the authoritative auth source for its own data, but we
@@ -496,12 +506,24 @@ async def list_job_vacancies(
 
         if RAILS_ENABLED:
             page = skip // limit + 1 if limit else 1
-            rails_jobs = await rails_adapter.list_jobs_from_rails_only(
-                page=page,
-                limit=limit,
-                status=status,
-                visibility=visibility,
-            )
+            # Bridge isolation: any failure inside the Rails branch (network, parsing,
+            # mapping, unexpected formats) must fall through to the local DB rather than
+            # surfacing as a 500. The frontend depends on this endpoint being resilient
+            # so newly-created vacancies remain navigable when Rails is misconfigured
+            # or unavailable (Task #241).
+            try:
+                rails_jobs = await rails_adapter.list_jobs_from_rails_only(
+                    page=page,
+                    limit=limit,
+                    status=status,
+                    visibility=visibility,
+                )
+            except Exception as bridge_err:  # noqa: BLE001 — bridge isolation
+                logger.warning(
+                    "[list_job_vacancies] Rails bridge failed, falling back to local DB: %s",
+                    bridge_err,
+                )
+                rails_jobs = None
             if rails_jobs is not None:
                 # Apply the same confidentiality/visibility filtering used in the local DB path.
                 # This is a defense-in-depth layer — Rails may enforce its own access control,
