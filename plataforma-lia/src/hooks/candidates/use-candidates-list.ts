@@ -87,26 +87,16 @@ export function useCandidatesList(initialFilters?: CandidatesListFilters): UseCa
       .catch((err: Error & { status?: number }) => {
         if (requestIdRef.current !== thisRequestId) return
         console.error("[useCandidatesList] fetch error:", err)
-        // Task #293: classifica o erro para a UI decidir entre CTA de relogin
-        // (401/403) e retry (5xx/network). `candidates-api.ts:359-363` já
-        // anexa `err.status`; aqui só precisamos ler.
+        // Task #293: só classifica; a UI traduz via i18n (pipeline.auth.*Message).
+        // `error` permanece com um fallback neutro para consumers legados que
+        // só leem string.
         const status = typeof err?.status === "number" ? err.status : undefined
-        let kind: CandidatesErrorKind
-        let message: string
-        if (status === 401) {
-          kind = "unauthorized"
-          message = "Sua sessão expirou. Faça login novamente para continuar."
-        } else if (status === 403) {
-          kind = "forbidden"
-          message = "Você não tem permissão para ver esses candidatos."
-        } else if (status !== undefined && status >= 500) {
-          kind = "server"
-          message = "O servidor está com problemas no momento. Tente novamente em instantes."
-        } else {
-          kind = "network"
-          message = "Erro ao carregar candidatos. Tente novamente."
-        }
-        setError(message)
+        const kind: CandidatesErrorKind =
+          status === 401 ? "unauthorized" :
+          status === 403 ? "forbidden" :
+          (status !== undefined && status >= 500) ? "server" :
+          "network"
+        setError(err?.message || "candidates_fetch_failed")
         setErrorKind(kind)
         setCandidates([])
         setLoading(false)

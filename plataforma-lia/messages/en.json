@@ -1338,7 +1338,11 @@
     "auth": {
       "reloginTitle": "Your session has expired",
       "reloginCta": "Sign in again",
-      "retryCta": "Try again"
+      "retryCta": "Try again",
+      "unauthorizedMessage": "Your session has expired. Please sign in again to continue.",
+      "forbiddenMessage": "You don't have permission to view these candidates.",
+      "serverErrorMessage": "The server is having trouble right now. Please try again in a moment.",
+      "networkErrorMessage": "Failed to load candidates. Please try again."
     },
     "emptyState": {
       "noResults": "No candidates found. Try different filters.",

@@ -182,6 +182,19 @@ export default function FunilDeTalentosPage() {
 
   const isAuthError = errorKind === "unauthorized" || errorKind === "forbidden"
 
+  // Task #293: mensagem localizada derivada de errorKind. O hook só classifica;
+  // a UI traduz. Se futuramente errorKind ganhar um novo valor sem esta chave,
+  // cairá no fallback.
+  const errorMessage = (() => {
+    if (!errorKind) return error
+    const key =
+      errorKind === "unauthorized" ? "auth.unauthorizedMessage" :
+      errorKind === "forbidden"    ? "auth.forbiddenMessage"    :
+      errorKind === "server"       ? "auth.serverErrorMessage"  :
+                                     "auth.networkErrorMessage"
+    return t(key)
+  })()
+
   // Filtros rápidos
   
 const STATUS_COLORS: Record<string, { active: string; inactive: string }> = {
@@ -340,7 +353,7 @@ const SENIORITY_OPTIONS = [
                   <h2 className="text-sm font-semibold text-lia-text-primary">
                     {t('auth.reloginTitle')}
                   </h2>
-                  <p className="text-xs text-lia-text-secondary max-w-sm">{error}</p>
+                  <p className="text-xs text-lia-text-secondary max-w-sm">{errorMessage}</p>
                 </div>
                 <Button
                   size="sm"
@@ -361,7 +374,7 @@ const SENIORITY_OPTIONS = [
               >
                 <AlertCircle className="h-4 w-4 flex-shrink-0 mt-0.5" />
                 <div className="flex-1 flex items-center justify-between gap-3">
-                  <span>{error}</span>
+                  <span>{errorMessage}</span>
                   <Button
                     size="sm"
                     variant="outline"
