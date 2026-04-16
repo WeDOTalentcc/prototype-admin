@@ -152,6 +152,16 @@ async def lifespan(app: FastAPI):
         logger.error(f"❌ Database initialization failed: {e}")
         raise
 
+    # Seed dev demo user (idempotent) so dev auto-login can succeed on first request
+    try:
+        if os.getenv("APP_ENV", "development").lower() in ("development", "dev", "local"):
+            from app.auth.dependencies import ensure_demo_user
+            async with AsyncSessionLocal() as db:
+                await ensure_demo_user(db)
+            logger.info("✅ Dev demo user ensured (demo@wedotalent.com)")
+    except Exception as e:
+        logger.warning(f"⚠️ Dev demo user seed failed: {e}")
+
     # Domain auto-discovery
     from app.domains.registry import DomainRegistry
     domain_registry = DomainRegistry()

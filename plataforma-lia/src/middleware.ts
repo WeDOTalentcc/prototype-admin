@@ -3,11 +3,12 @@ export const runtime = 'nodejs'
 import { NextRequest, NextResponse } from 'next/server'
 import { jwtVerify } from 'jose'
 import { verifyAndDecodeSession } from '@/lib/session-crypto'
+import { getDevToken, isDevAutoLoginEnabled } from '@/lib/auth/dev-auto-login'
 import createMiddleware from 'next-intl/middleware'
 import { routing } from '@/i18n/routing'
 import { locales, defaultLocale } from '@/i18n/config'
 
-const DEV_AUTO_LOGIN = process.env.NODE_ENV !== 'production'
+const DEV_AUTO_LOGIN = isDevAutoLoginEnabled()
 const BACKEND_URL = process.env.BACKEND_URL || 'http://127.0.0.1:8001'
 const IS_PRODUCTION = process.env.NODE_ENV === 'production'
 const COOKIE_SECURE = IS_PRODUCTION
@@ -83,38 +84,6 @@ function getBaseUrl(request: NextRequest): string {
   }
   const host = request.headers.get('host') || 'localhost:5000'
   return `http://${host}`
-}
-
-let cachedDevToken: { token: string; expiresAt: number } | null = null
-
-async function getDevToken(): Promise<string | null> {
-  if (cachedDevToken && cachedDevToken.expiresAt > Date.now()) {
-    return cachedDevToken.token
-  }
-
-  const demoEmail = process.env.DEV_AUTO_LOGIN_EMAIL || 'demo@wedotalent.com'
-  const demoPassword = process.env.DEV_AUTO_LOGIN_PASSWORD || 'demo123'
-
-  try {
-    const res = await fetch(`${BACKEND_URL}/api/v1/auth/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: demoEmail, password: demoPassword }),
-      signal: AbortSignal.timeout(15000),
-    })
-    if (!res.ok) return null
-    const data = await res.json()
-    const token = data.access_token || data?.data?.access_token
-    if (!token) return null
-
-    cachedDevToken = {
-      token,
-      expiresAt: Date.now() + 25 * 60 * 1000,
-    }
-    return token
-  } catch {
-    return null
-  }
 }
 
 function extractLocaleFromPath(pathname: string): string {

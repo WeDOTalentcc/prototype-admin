@@ -1,44 +1,28 @@
 export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
+import { loginDemoUser, isDevAutoLoginEnabled } from '@/lib/auth/dev-auto-login'
 
 const IS_PRODUCTION = process.env.NODE_ENV === 'production'
 
 export async function GET(request: NextRequest) {
-  if (IS_PRODUCTION) {
+  if (!isDevAutoLoginEnabled()) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 })
   }
 
-  const demoEmail = process.env.DEV_AUTO_LOGIN_EMAIL || 'demo@wedotalent.com'
-  const demoPassword = process.env.DEV_AUTO_LOGIN_PASSWORD || 'demo123'
-
   const redirectTo = request.nextUrl.searchParams.get('next') || '/'
 
-  const backendUrl = process.env.BACKEND_URL || 'http://127.0.0.1:8001'
-
   try {
-    const loginResponse = await fetch(`${backendUrl}/api/v1/auth/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: demoEmail, password: demoPassword }),
-      signal: AbortSignal.timeout(5000),
-    })
+    const result = await loginDemoUser()
 
-    if (!loginResponse.ok) {
+    if (!result) {
       const url = new URL('/login', request.url)
       url.searchParams.set('error', 'auto-login-failed')
       return NextResponse.redirect(url)
     }
 
-    const data = await loginResponse.json()
-    const accessToken = data.access_token
-    const refreshToken = data.refresh_token
-
-    if (!accessToken) {
-      const url = new URL('/login', request.url)
-      url.searchParams.set('error', 'no-token')
-      return NextResponse.redirect(url)
-    }
+    const accessToken = result.accessToken
+    const refreshToken = result.refreshToken
 
     const safeRedirect = redirectTo.startsWith('/') && !redirectTo.startsWith('//') ? redirectTo : '/'
     const forwardedHost = request.headers.get('x-forwarded-host')
