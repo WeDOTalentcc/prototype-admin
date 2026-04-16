@@ -239,5 +239,28 @@ These fully-qualified paths cause duplicate SQLAlchemy class registrations becau
 
 ---
 
-*Last updated: 2026-04-16 | ADR-012: forbidden import path enforcement*
+## ADR-013: Dev Auto-Login Contract (2026-04-16)
+
+**Decision:** A single backend helper (`app.auth.dependencies.ensure_demo_user`) and a single frontend helper (`plataforma-lia/src/lib/auth/dev-auto-login.ts`) own the dev auto-login flow end-to-end.
+
+**Backend contract:**
+- `ensure_demo_user(db)` — idempotent. Creates the `demo@wedotalent.com` user with a real bcrypt hash (`get_password_hash(DEV_AUTO_LOGIN_PASSWORD or "demo123")`); repairs the hash if it does not match the bcrypt prefix.
+- Hard-gated on `_is_dev_environment()` (canonical `APP_ENV`, accepts `development`/`dev`/`local`). Defense-in-depth: the helper itself raises 403 outside dev, so a forgotten gate at the call site cannot expose the demo account.
+- Eagerly seeded in `app/main.py` lifespan when in dev so the very first request can authenticate.
+- `get_current_user_or_demo` is the only consumer of the lazy fallback path; all production paths must use `get_current_user` (strict).
+
+**Frontend contract:**
+- `isDevAutoLoginEnabled()` returns `true` only when `NODE_ENV !== 'production'`.
+- `loginDemoUser()` returns `{ accessToken, refreshToken? } | null` (used by `/api/auth/auto-login`).
+- `getDevToken()` returns a 25-minute cached access token (used by `middleware.ts` and `/api/auth/ws-token`).
+- `clearCachedDevToken()` invalidates the cache (e.g. on logout).
+- All four touch points — `middleware.ts`, `api/auth/ws-token/route.ts`, `api/auth/auto-login/route.ts`, and any future consumer — MUST import from this helper. Inline duplicates of the demo-login fetch + token cache are forbidden.
+
+**`/api/auth/ws-token` contract:** returns `{ token, authMode }` on success or `{ token: null, code, reason, authMode }` with HTTP 401/503 on failure so the chat WebSocket hook can surface a deterministic reason instead of silently disconnecting.
+
+**Disable mechanism:** Set `NODE_ENV=production` (frontend) or `APP_ENV=production|staging` (backend). Both layers must be flipped before production cutover. WorkOS / future ATS-issued sessions slot into the same `Authorization: Bearer …` slot consumed downstream by the FastAPI app, so swapping auth providers does not require touching protected route handlers.
+
+---
+
+*Last updated: 2026-04-16 | ADR-013: dev auto-login canonical contract*
 
