@@ -6,7 +6,6 @@ export const modules: ModuleMap = {
   "./components/mockups/chat-usability/StrongAffordance.tsx": () => import("../components/mockups/chat-usability/StrongAffordance.tsx"),
   "./components/mockups/chat-welcome-polish/ElevatedCards.tsx": () => import("../components/mockups/chat-welcome-polish/ElevatedCards.tsx"),
   "./components/mockups/chat-welcome-polish/TighterRhythm.tsx": () => import("../components/mockups/chat-welcome-polish/TighterRhythm.tsx"),
-  "./components/mockups/funil-elevenlabs/FunilElevenLabs.tsx": () => import("../components/mockups/funil-elevenlabs/FunilElevenLabs.tsx"),
   "./components/mockups/decision-bar/Entrevista.tsx": () => import("../components/mockups/decision-bar/Entrevista.tsx"),
   "./components/mockups/decision-bar/Passive.tsx": () => import("../components/mockups/decision-bar/Passive.tsx"),
   "./components/mockups/decision-bar/Proposta.tsx": () => import("../components/mockups/decision-bar/Proposta.tsx"),
