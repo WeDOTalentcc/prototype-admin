@@ -174,7 +174,8 @@ export function useCandidatesExecuteSearch(deps: ExecuteSearchDeps) {
         if (similarUrl) {
           const response = await fetch('/api/backend-proxy/search/candidates/similar', {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ linkedin_url: similarUrl, limit: 20, search_pearch: shouldUsePearch || shouldUseHybrid, pearch_type: pearchSearchOptions.searchType })
+            body: JSON.stringify({ linkedin_url: similarUrl, limit: 20, search_pearch: shouldUsePearch || shouldUseHybrid, pearch_type: pearchSearchOptions.searchType }),
+            signal: AbortSignal.timeout(25000),
           })
           if (response.ok) {
             const data = await response.json()
@@ -187,7 +188,8 @@ export function useCandidatesExecuteSearch(deps: ExecuteSearchDeps) {
       } else if (mode === 'jd' && metadata?.jobDescription) {
         const response = await fetch('/api/backend-proxy/search/candidates/by-job-description', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ job_description: metadata.jobDescription, limit: 20, search_pearch: shouldUsePearch || shouldUseHybrid, pearch_type: pearchSearchOptions.searchType })
+          body: JSON.stringify({ job_description: metadata.jobDescription, limit: 20, search_pearch: shouldUsePearch || shouldUseHybrid, pearch_type: pearchSearchOptions.searchType }),
+          signal: AbortSignal.timeout(25000),
         })
         if (response.ok) {
           const data = await response.json()
@@ -199,7 +201,8 @@ export function useCandidatesExecuteSearch(deps: ExecuteSearchDeps) {
       } else if (mode === 'archetypes' && metadata?.archetypeVacancyId) {
         const response = await fetch(`/api/backend-proxy/search/archetypes/${metadata.archetypeVacancyId}/search`, {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ limit: 20, search_pearch: shouldUsePearch || shouldUseHybrid, pearch_type: pearchSearchOptions.searchType })
+          body: JSON.stringify({ limit: 20, search_pearch: shouldUsePearch || shouldUseHybrid, pearch_type: pearchSearchOptions.searchType }),
+          signal: AbortSignal.timeout(25000),
         })
         if (response.ok) {
           const data = await response.json()
@@ -309,8 +312,23 @@ export function useCandidatesExecuteSearch(deps: ExecuteSearchDeps) {
           }
         } catch {}
       }
-    } catch {
+    } catch (err) {
+      const isTimeout = err instanceof DOMException && err.name === 'TimeoutError'
+      const message = isTimeout
+        ? 'A busca demorou demais e foi cancelada. Tente novamente.'
+        : err instanceof Error
+          ? `Não foi possível completar a busca: ${err.message}`
+          : 'Não foi possível completar a busca. Tente novamente.'
+      console.error('[useCandidatesExecuteSearch] search failed:', err)
+      setChatMessages(prev => [...prev, {
+        id: `search-error-${Date.now()}`,
+        type: 'lia',
+        content: message,
+        timestamp: new Date(),
+      }])
       setSearchResults(prev => ({ ...prev, isLoading: false, query: '' }))
+      setHasSearched(true)
+      setHasSearchResults(false)
     } finally {
       setIsLoading(false)
       setIsSearchActive(false)

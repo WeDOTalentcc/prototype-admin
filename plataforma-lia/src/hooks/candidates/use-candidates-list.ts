@@ -2,8 +2,8 @@
 
 import { useState, useCallback, useEffect, useRef } from "react"
 import type { CandidateLocal } from "@/services/lia-api"
-// liaApi.getCandidates centralises fetch, auth headers, and error handling.
-// Reliability concerns (retries, health checks) belong at the service layer.
+// liaApi.getCandidates centralises fetch, auth headers, timeout, and retry —
+// see fetchWithRetry in services/lia-api/base.ts.
 import { liaApi } from "@/services/lia-api"
 
 const PER_PAGE = 20

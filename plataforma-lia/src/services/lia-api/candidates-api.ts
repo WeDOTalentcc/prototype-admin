@@ -1,4 +1,4 @@
-import { BACKEND_URL, getAuthHeaders } from './base'
+import { BACKEND_URL, fetchWithRetry, getAuthHeaders } from './base'
 import type {
   CandidateSearchRequest,
   CandidateSearchResponse,
@@ -23,30 +23,36 @@ export async function searchCandidates(request: CandidateSearchRequest): Promise
     timeout: String(request.timeout || 60),
   })
 
-  const response = await fetch(`${BACKEND_URL}/candidates/search?${params}`, {
-    headers: getAuthHeaders(),
-  })
+  const response = await fetchWithRetry(
+    `${BACKEND_URL}/candidates/search?${params}`,
+    { headers: getAuthHeaders() },
+    { attempts: 2, timeoutMs: 25000 },
+  )
 
   if (!response.ok) {
     const error = await response.json().catch(() => ({ detail: response.statusText }))
-    throw new Error(error.detail || 'Candidate search failed')
+    throw new Error(error.detail || `Candidate search failed (${response.status})`)
   }
 
   return response.json()
 }
 
 export async function searchCandidatesLocal(request: { query: string; limit?: number }): Promise<CandidateSearchResponse> {
-  const response = await fetch(`${BACKEND_URL}/candidates/search/local/`, {
-    method: 'POST',
-    headers: getAuthHeaders(),
-    body: JSON.stringify({
-      filters: {
-        query: request.query,
-        limit: request.limit || 15,
-        is_active: true
-      }
-    }),
-  })
+  const response = await fetchWithRetry(
+    `${BACKEND_URL}/candidates/search/local/`,
+    {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({
+        filters: {
+          query: request.query,
+          limit: request.limit || 15,
+          is_active: true
+        }
+      }),
+    },
+    { attempts: 2, timeoutMs: 25000 },
+  )
 
   if (!response.ok) {
     const error = await response.json().catch(() => ({ detail: response.statusText }))
@@ -344,15 +350,20 @@ export async function getCandidates(params: CandidateListParams): Promise<Candid
   if (params.sort_order) query.set('sort_order', params.sort_order)
   const qs = query.toString()
   const url = `${BACKEND_URL}/candidates${qs ? `?${qs}` : ''}`
-  const response = await fetch(url, { headers: getAuthHeaders() })
+  const response = await fetchWithRetry(
+    url,
+    { headers: getAuthHeaders() },
+    { attempts: 3, timeoutMs: 20000, retryDelaysMs: [0, 1000, 3000] },
+  )
   if (!response.ok) {
     throw new Error(`Backend retornou ${response.status}: ${response.statusText}`)
   }
   const data = await response.json()
+  const rawCandidates = data?.candidates ?? data?.items ?? []
   return {
-    candidates: data.candidates || data.items || [],
-    total: data.total ?? 0,
-    page: data.page ?? 1,
-    per_page: data.per_page ?? data.limit ?? params.limit ?? 20,
+    candidates: Array.isArray(rawCandidates) ? rawCandidates : [],
+    total: typeof data?.total === 'number' ? data.total : 0,
+    page: typeof data?.page === 'number' ? data.page : 1,
+    per_page: data?.per_page ?? data?.limit ?? params.limit ?? 20,
   }
 }
