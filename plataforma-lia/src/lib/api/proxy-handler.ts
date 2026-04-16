@@ -178,15 +178,46 @@ export function createProxyHandlers<M extends HttpMethod = "GET">(
         const response = await fetch(url, { ...fetchOptions, signal: AbortSignal.timeout(30000) })
 
         if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}))
+          const errText = await response.text().catch(() => "")
+          let errorData: unknown = {}
+          if (errText) {
+            try { errorData = JSON.parse(errText) } catch { errorData = { detail: errText } }
+          }
           return NextResponse.json(
             { error: "Backend error on " + method + " " + resolvedPath, details: errorData },
             { status: response.status }
           )
         }
 
-        const data = await response.json()
-        // Unwrap FastAPI envelope: {ok: true, data: ..., meta: {}}
+        // 204/205 (and any explicitly empty body) — pass status through with no JSON.
+        if (response.status === 204 || response.status === 205) {
+          return new NextResponse(null, { status: response.status })
+        }
+
+        const rawText = await response.text()
+        if (!rawText) {
+          return new NextResponse(null, { status: response.status })
+        }
+
+        // If the backend returned non-JSON, pass it through verbatim with its content-type.
+        const contentType = response.headers.get("content-type") || ""
+        if (!contentType.includes("application/json")) {
+          return new NextResponse(rawText, {
+            status: response.status,
+            headers: { "Content-Type": contentType || "text/plain" },
+          })
+        }
+
+        let data: unknown
+        try {
+          data = JSON.parse(rawText)
+        } catch {
+          return new NextResponse(rawText, {
+            status: response.status,
+            headers: { "Content-Type": "application/json" },
+          })
+        }
+
         // Unwrap FastAPI envelope: {ok: true, data: ..., meta: {}}
         const unwrapped = (data && typeof data === 'object' && 'ok' in data && 'data' in data) ? (data as Record<string, unknown>).data : data
         const result = onResponse ? onResponse(unwrapped) : unwrapped
