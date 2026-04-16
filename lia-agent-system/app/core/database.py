@@ -917,11 +917,22 @@ async def create_feedback_learning_tables():
                     preferred_tools JSON DEFAULT '[]',
                     example_good_responses JSON DEFAULT '[]',
                     example_bad_responses JSON DEFAULT '[]',
+                    pattern_value JSON,
                     positive_feedback_count INTEGER DEFAULT 0,
                     negative_feedback_count INTEGER DEFAULT 0,
                     success_rate FLOAT DEFAULT 0.0,
+                    sample_size INTEGER DEFAULT 1,
+                    acceptance_rate FLOAT DEFAULT 1.0,
                     is_active BOOLEAN DEFAULT TRUE,
                     confidence FLOAT DEFAULT 0.5,
+                    confidence_score FLOAT DEFAULT 0.5,
+                    role_filter VARCHAR(255),
+                    seniority_filter VARCHAR(100),
+                    department_filter VARCHAR(100),
+                    location_filter VARCHAR(255),
+                    expires_at TIMESTAMP,
+                    last_applied_at TIMESTAMP,
+                    last_confirmed_at TIMESTAMP,
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )
@@ -952,6 +963,24 @@ async def create_feedback_learning_tables():
             await conn.execute(text(
                 "CREATE INDEX IF NOT EXISTS idx_learning_patterns_key ON learning_patterns(pattern_key)"
             ))
+            await conn.execute(text(
+                "CREATE INDEX IF NOT EXISTS idx_learning_patterns_created_at ON learning_patterns(created_at)"
+            ))
+            await conn.execute(text(
+                "CREATE INDEX IF NOT EXISTS idx_learning_patterns_role_filter ON learning_patterns(role_filter)"
+            ))
+            await conn.execute(text(
+                "CREATE INDEX IF NOT EXISTS ix_learning_patterns_company_type ON learning_patterns(company_id, pattern_type)"
+            ))
+            await conn.execute(text(
+                "CREATE INDEX IF NOT EXISTS ix_learning_patterns_key ON learning_patterns(company_id, pattern_key)"
+            ))
+            await conn.execute(text(
+                "CREATE INDEX IF NOT EXISTS ix_learning_patterns_active ON learning_patterns(company_id, is_active)"
+            ))
+            await conn.execute(text(
+                "CREATE INDEX IF NOT EXISTS ix_learning_patterns_role ON learning_patterns(company_id, role_filter)"
+            ))
             logger.debug("Ensured interaction_feedback and learning_patterns indexes exist")
         except Exception as e:
             logger.warning(f"Could not create interaction_feedback/learning_patterns indexes: {e}")
@@ -977,6 +1006,49 @@ async def add_job_draft_affirmative_columns():
             except Exception as e:
                 logger.warning(f"Could not add column {column_name} to job_drafts: {e}")
     logger.info("Job draft affirmative columns verified/added successfully")
+
+
+async def add_learning_pattern_columns():
+    """Add consolidated columns to learning_patterns for existing databases."""
+    columns_to_add = [
+        ("pattern_value", "JSON"),
+        ("sample_size", "INTEGER DEFAULT 1"),
+        ("acceptance_rate", "FLOAT DEFAULT 1.0"),
+        ("confidence_score", "FLOAT DEFAULT 0.5"),
+        ("role_filter", "VARCHAR(255)"),
+        ("seniority_filter", "VARCHAR(100)"),
+        ("department_filter", "VARCHAR(100)"),
+        ("location_filter", "VARCHAR(255)"),
+        ("expires_at", "TIMESTAMP"),
+        ("last_applied_at", "TIMESTAMP"),
+        ("last_confirmed_at", "TIMESTAMP"),
+    ]
+    async with engine.begin() as conn:
+        for column_name, column_type in columns_to_add:
+            try:
+                await conn.execute(
+                    text(f"ALTER TABLE learning_patterns ADD COLUMN IF NOT EXISTS {column_name} {column_type}")
+                )
+            except Exception as e:
+                logger.warning(f"Could not add column {column_name} to learning_patterns: {e}")
+
+        indexes_to_add = [
+            ("idx_learning_patterns_created_at", "learning_patterns(created_at)"),
+            ("idx_learning_patterns_role_filter", "learning_patterns(role_filter)"),
+            ("ix_learning_patterns_company_type", "learning_patterns(company_id, pattern_type)"),
+            ("ix_learning_patterns_key", "learning_patterns(company_id, pattern_key)"),
+            ("ix_learning_patterns_active", "learning_patterns(company_id, is_active)"),
+            ("ix_learning_patterns_role", "learning_patterns(company_id, role_filter)"),
+        ]
+        for index_name, index_def in indexes_to_add:
+            try:
+                await conn.execute(
+                    text(f"CREATE INDEX IF NOT EXISTS {index_name} ON {index_def}")
+                )
+            except Exception as e:
+                logger.warning(f"Could not create index {index_name}: {e}")
+
+    logger.info("Learning pattern consolidated columns verified/added successfully")
 
 
 async def setup_pgvector():
@@ -1250,6 +1322,7 @@ async def init_db():
     await create_company_workos_config_table()
     await add_client_user_invitation_columns()
     await create_feedback_learning_tables()
+    await add_learning_pattern_columns()
     await add_job_draft_affirmative_columns()
     await create_background_jobs_tables()
     await ensure_job_templates_indexes()
