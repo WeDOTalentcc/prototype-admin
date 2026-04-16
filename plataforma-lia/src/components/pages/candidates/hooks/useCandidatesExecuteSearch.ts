@@ -4,6 +4,9 @@ import { liaApi, CandidateLocal } from "@/services/lia-api"
 import {
   searchCandidates as searchCandidatesHybrid,
 } from "@/lib/api/candidate-search"
+// BUG #274: reusar helper canônico para os modos similar/jd/archetypes
+// também terem retry em 5xx (o timeout já existia via AbortSignal.timeout).
+import { fetchWithRetry } from "@/services/lia-api/base"
 import { isGlobalSource } from "@/lib/utils/source-detection"
 import type { Candidate } from "@/components/pages/candidates/types"
 import type { ParsedEntities, SearchMode, SearchMetadata } from "@/components/search/smart-search-input"
@@ -172,11 +175,10 @@ export function useCandidatesExecuteSearch(deps: ExecuteSearchDeps) {
       if (mode === 'similar' && metadata) {
         const similarUrl = metadata.similarProfileUrl || metadata.similarProfileUrls?.[0]
         if (similarUrl) {
-          const response = await fetch('/api/backend-proxy/search/candidates/similar', {
+          const response = await fetchWithRetry('/api/backend-proxy/search/candidates/similar', {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ linkedin_url: similarUrl, limit: 20, search_pearch: shouldUsePearch || shouldUseHybrid, pearch_type: pearchSearchOptions.searchType }),
-            signal: AbortSignal.timeout(25000),
-          })
+          }, { attempts: 2, timeoutMs: 30000, retryDelaysMs: [0, 1500] })
           if (response.ok) {
             const data = await response.json()
             totalCount = data.total_count || 0; localCount = data.local_count || 0; pearchCount = data.pearch_count || 0; creditsUsed = data.credits_used
@@ -186,11 +188,10 @@ export function useCandidatesExecuteSearch(deps: ExecuteSearchDeps) {
           }
         }
       } else if (mode === 'jd' && metadata?.jobDescription) {
-        const response = await fetch('/api/backend-proxy/search/candidates/by-job-description', {
+        const response = await fetchWithRetry('/api/backend-proxy/search/candidates/by-job-description', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ job_description: metadata.jobDescription, limit: 20, search_pearch: shouldUsePearch || shouldUseHybrid, pearch_type: pearchSearchOptions.searchType }),
-          signal: AbortSignal.timeout(25000),
-        })
+        }, { attempts: 2, timeoutMs: 30000, retryDelaysMs: [0, 1500] })
         if (response.ok) {
           const data = await response.json()
           totalCount = data.total_count || 0; localCount = data.local_count || 0; pearchCount = data.pearch_count || 0; creditsUsed = data.credits_used
@@ -199,11 +200,10 @@ export function useCandidatesExecuteSearch(deps: ExecuteSearchDeps) {
           if (data.candidates?.length > 0) mappedCandidates = data.candidates.map((c: Record<string, unknown>) => mapCandidateToInternal(c))
         }
       } else if (mode === 'archetypes' && metadata?.archetypeVacancyId) {
-        const response = await fetch(`/api/backend-proxy/search/archetypes/${metadata.archetypeVacancyId}/search`, {
+        const response = await fetchWithRetry(`/api/backend-proxy/search/archetypes/${metadata.archetypeVacancyId}/search`, {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ limit: 20, search_pearch: shouldUsePearch || shouldUseHybrid, pearch_type: pearchSearchOptions.searchType }),
-          signal: AbortSignal.timeout(25000),
-        })
+        }, { attempts: 2, timeoutMs: 30000, retryDelaysMs: [0, 1500] })
         if (response.ok) {
           const data = await response.json()
           totalCount = data.total_count || 0; localCount = data.local_count || 0; pearchCount = data.pearch_count || 0; creditsUsed = data.credits_used
@@ -313,12 +313,18 @@ export function useCandidatesExecuteSearch(deps: ExecuteSearchDeps) {
         } catch {}
       }
     } catch (err) {
+      // BUG #274: cobre tanto AbortSignal.timeout (DOMException TimeoutError)
+      // quanto erros de rede intermitentes (TypeError: Failed to fetch) e 5xx
+      // que esgotaram o retry do fetchWithRetry.
       const isTimeout = err instanceof DOMException && err.name === 'TimeoutError'
+      const isNetwork = err instanceof TypeError && /fetch/i.test(err.message)
       const message = isTimeout
         ? 'A busca demorou demais e foi cancelada. Tente novamente.'
-        : err instanceof Error
-          ? `Não foi possível completar a busca: ${err.message}`
-          : 'Não foi possível completar a busca. Tente novamente.'
+        : isNetwork
+          ? 'Sem resposta do servidor. Verifique sua conexão e tente novamente.'
+          : err instanceof Error
+            ? `Não foi possível completar a busca: ${err.message}`
+            : 'Não foi possível completar a busca. Tente novamente.'
       console.error('[useCandidatesExecuteSearch] search failed:', err)
       setChatMessages(prev => [...prev, {
         id: `search-error-${Date.now()}`,
