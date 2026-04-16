@@ -7,6 +7,7 @@ import { type ParsedEntities, type SmartSearchInputProps } from "@/components/se
 
 import { useJWTAuth } from "@/contexts/auth-context"
 import { useCandidatesStore } from "@/stores/candidates-store"
+import { useLoadingWatchdog } from "@/hooks/shared/use-loading-watchdog"
 import { useGlobalSearchSettings } from "@/hooks/search/useGlobalSearchSettings"
 import { useHideViewedCandidates } from "@/hooks/candidates/useHideViewedCandidates"
 import { useCandidateFilters } from "@/hooks/candidates/use-candidate-filters"
@@ -102,6 +103,16 @@ export function useCandidatesPageCore({
   useEffect(() => {
     return () => { resetCandidatesStore() }
   }, [resetCandidatesStore])
+
+  // BUG #275: rede de segurança. Se `isSearchActive` ficar true por mais de
+  // 45s (caso algum caminho patológico escape do try/catch/finally de
+  // `useCandidatesExecuteSearch`), forçamos reset da UI para evitar que a
+  // animação "LIA está buscando..." fique girando para sempre.
+  useLoadingWatchdog(isSearchActive, () => {
+    console.warn('[candidates] watchdog: isSearchActive preso por 45s — forçando reset da UI')
+    setIsSearchActive(false)
+    setIsLoading(false)
+  }, 45_000)
 
   const {
     state: {

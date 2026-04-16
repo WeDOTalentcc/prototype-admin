@@ -296,6 +296,11 @@ export function useCandidatesExecuteSearch(deps: ExecuteSearchDeps) {
       setShowExpandGlobalOption(!shouldUsePearch && !shouldUseHybrid)
 
       if (mappedCandidates.length > 0) {
+        // BUG #275: a chamada `/search/analyze` é best-effort (insight analytics).
+        // Antes rodava sem timeout dentro do mesmo try do search — se ela
+        // travasse, `isSearchActive` ficava true até terminar (porque o
+        // finally do try/catch só dispara depois dela). Isto mantinha o
+        // "LIA está buscando..." preso. Adiciona timeout de 8s.
         try {
           const analyzeResponse = await fetch('/api/backend-proxy/search/analyze', {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -310,7 +315,8 @@ export function useCandidatesExecuteSearch(deps: ExecuteSearchDeps) {
                 linkedin_url: c.linkedin_url, source: c.source,
               })),
               local_count: localCount, global_count: pearchCount,
-            })
+            }),
+            signal: AbortSignal.timeout(8000),
           })
           if (analyzeResponse.ok) {
             const analyticsData = await analyzeResponse.json()
