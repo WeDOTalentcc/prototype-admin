@@ -1,49 +1,8 @@
-export const dynamic = "force-dynamic"
-import { NextRequest, NextResponse } from 'next/server'
-import { validateBody, validateParams } from '@/lib/api/validate'
-import { jobStatusSchema } from '@/lib/schemas'
-import { z } from 'zod'
+import { createProxyHandlers } from "@/lib/api/proxy-handler"
+import { jobStatusSchema } from "@/lib/schemas"
 
-const BACKEND_URL = process.env.BACKEND_URL || 'http://127.0.0.1:8001'
-
-const jobIdSchema = z.object({ jobId: z.string().min(1) })
-
-export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ jobId: string }> }
-) {
-  try {
-    const rawParams = await params
-    const paramsResult = validateParams(rawParams, jobIdSchema)
-    if (!paramsResult.success) return paramsResult.response
-
-    const bodyResult = await validateBody(request, jobStatusSchema)
-    if (!bodyResult.success) return bodyResult.response
-
-    const { jobId } = paramsResult.data
-    const backendUrl = `${BACKEND_URL}/api/v1/job-vacancies/${jobId}/close`
-
-    const response = await fetch(backendUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(bodyResult.data),
-    })
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}))
-      return NextResponse.json(
-        { error: 'Erro ao fechar vaga', details: errorData },
-        { status: response.status }
-      )
-    }
-
-    const data = await response.json()
-    const payload = (data && typeof data === 'object' && 'ok' in data && data.data) ? data.data : data
-    return NextResponse.json(payload)
-  } catch (error) {
-    return NextResponse.json(
-      { error: 'Erro ao conectar com o backend' },
-      { status: 500 }
-    )
-  }
-}
+export const { dynamic, POST } = createProxyHandlers({
+  backendPath: "/api/v1/job-vacancies/:jobId/close",
+  methods: ["POST"],
+  bodySchema: jobStatusSchema,
+})

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
+import type { ZodSchema } from "zod"
 import { getAuthHeaders } from "@/lib/api/auth-headers"
 
 const BACKEND_URL = process.env.BACKEND_URL || "http://127.0.0.1:8001"
@@ -30,6 +31,8 @@ interface ProxyConfig<M extends HttpMethod> {
   defaultParams?: Record<string, string>
   /** Transform the response data before returning to the client */
   onResponse?: (data: unknown) => unknown
+  /** Optional Zod schema to validate the request body for non-GET/DELETE methods. Returns 400 on failure. */
+  bodySchema?: ZodSchema<unknown>
 }
 
 function resolvePath(
@@ -95,6 +98,7 @@ export function createProxyHandlers<M extends HttpMethod = "GET">(
     backendTarget = "fastapi",
     defaultParams,
     onResponse,
+    bodySchema,
   } = config
 
   const hasParams = backendPath.includes(":")
@@ -134,11 +138,31 @@ export function createProxyHandlers<M extends HttpMethod = "GET">(
         const fetchOptions: RequestInit = { method, headers }
 
         if (method !== "GET" && method !== "DELETE") {
-          try {
-            const body = await request.json()
-            fetchOptions.body = JSON.stringify(body)
-          } catch {
-            // No body or invalid JSON
+          if (bodySchema) {
+            let raw: unknown
+            try {
+              raw = await request.json()
+            } catch {
+              return NextResponse.json(
+                { error: "Invalid JSON body" },
+                { status: 400 }
+              )
+            }
+            const parsed = bodySchema.safeParse(raw)
+            if (!parsed.success) {
+              return NextResponse.json(
+                { error: "Validation error", details: parsed.error.flatten() },
+                { status: 400 }
+              )
+            }
+            fetchOptions.body = JSON.stringify(parsed.data)
+          } else {
+            try {
+              const body = await request.json()
+              fetchOptions.body = JSON.stringify(body)
+            } catch {
+              // No body or invalid JSON
+            }
           }
         } else if (method === "DELETE") {
           try {
