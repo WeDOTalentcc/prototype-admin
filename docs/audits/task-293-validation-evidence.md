@@ -23,6 +23,29 @@ Probes curl contra a instância em execução (dev-server local, LIA_DEV_MODE of
 
 Conclusão: comportamento de produção preservado. Nenhum bypass via header.
 
+## 1b. Frontend proxy — injeção do X-Dev-Api-Key em não-prod
+
+`plataforma-lia/src/lib/api/auth-headers.test.ts` (6 testes) cobre a cadeia
+end-to-end do fallback sem cookie:
+
+```
+forwards Bearer from Authorization header when present                   PASSED
+no bearer + LIA_DEV_MODE=true + LIA_DEV_API_KEY → injects X-Dev-Api-Key    PASSED
+no bearer + production → no dev header even if LIA_DEV_API_KEY set         PASSED
+no bearer + dev-mode but no LIA_DEV_API_KEY → no dev header                PASSED
+Bearer present + dev-mode → Bearer wins, no dev header                     PASSED
+getAuthHeadersForForm applies same dev-fallback rules                      PASSED
+```
+
+Cadeia demonstrada:
+1. Frontend sem cookie de sessão chama `/api/backend-proxy/candidates`.
+2. `getAuthHeaders` detecta ausência de Bearer + `LIA_DEV_MODE=true` +
+   `LIA_DEV_API_KEY` configurado → injeta `X-Dev-Api-Key`.
+3. Backend `AuthEnforcementMiddleware._check_dev_api_key` valida a chave
+   (fail-closed) e cai no branch DEV_MODE, injetando `DEMO_COMPANY_UUID`.
+4. Em produção (`APP_ENV=production`, `LIA_DEV_MODE=false`), ambos os lados
+   ignoram o mecanismo e o request retorna 401 (coberto no item 1).
+
 ## 2. Backend — dev fallback injeta UUID canônico
 
 Caso coberto por `test_dev_mode_injects_canonical_demo_uuid`: middleware com

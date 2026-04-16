@@ -21,6 +21,24 @@ function resolveAuthHeader(request: NextRequest): string | null {
   return null
 }
 
+// Task #293: em não-prod, quando nenhum Bearer está disponível (ex.: usuário
+// sem cookie válido em onboarding), permitimos que o proxy injete
+// `X-Dev-Api-Key` a partir de um secret server-side. O backend valida essa
+// chave em `AuthEnforcementMiddleware._check_dev_api_key` APENAS quando
+// `LIA_DEV_MODE=true`. Em produção, `LIA_DEV_MODE` é false e a chave é
+// ignorada — logo este header nunca gera bypass em prod.
+function getDevFallbackHeaders(): Record<string, string> {
+  const isDevMode =
+    process.env.LIA_DEV_MODE === 'true' ||
+    (process.env.NODE_ENV !== 'production' &&
+      process.env.APP_ENV !== 'production')
+  const devKey = process.env.LIA_DEV_API_KEY
+  if (isDevMode && devKey) {
+    return { 'X-Dev-Api-Key': devKey }
+  }
+  return {}
+}
+
 export function getAuthHeaders(request: NextRequest, required = false): HeadersInit {
   const authHeader = resolveAuthHeader(request)
 
@@ -30,7 +48,7 @@ export function getAuthHeaders(request: NextRequest, required = false): HeadersI
 
   return {
     'Content-Type': 'application/json',
-    ...(authHeader ? { 'Authorization': authHeader } : {}),
+    ...(authHeader ? { 'Authorization': authHeader } : getDevFallbackHeaders()),
   }
 }
 
@@ -42,6 +60,6 @@ export function getAuthHeadersForForm(request: NextRequest, required = false): H
   }
 
   return {
-    ...(authHeader ? { 'Authorization': authHeader } : {}),
+    ...(authHeader ? { 'Authorization': authHeader } : getDevFallbackHeaders()),
   }
 }
