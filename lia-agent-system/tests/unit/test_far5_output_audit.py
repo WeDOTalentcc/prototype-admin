@@ -14,7 +14,7 @@ class TestAuditRankingResults:
     """Testa BiasAuditService.audit_ranking_results()."""
 
     def setup_method(self):
-        from app.shared.services.bias_audit_service import BiasAuditService
+        from app.shared.compliance.bias_audit_service import BiasAuditService
         self.service = BiasAuditService()
 
     def test_detects_gender_imbalance_above_threshold(self):
@@ -117,7 +117,7 @@ class TestAuditRankingResults:
         import logging
         results = [{"id": str(i), "gender": "masculino"} for i in range(10)]
 
-        with patch('app.services.bias_audit_service.logger') as mock_logger:
+        with patch('app.shared.compliance.bias_audit_service.logger') as mock_logger:
             audit = self.service.audit_ranking_results(
                 results, dimension="gender", top_n=10, company_id="test-company-123"
             )

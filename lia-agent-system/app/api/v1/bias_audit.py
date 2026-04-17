@@ -20,7 +20,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.shared.tenant_guard import get_verified_company_id
-from app.shared.services.bias_audit_service import (
+from app.shared.compliance.bias_audit_service import (
     BiasAuditReport,
     bias_audit_service,
 )

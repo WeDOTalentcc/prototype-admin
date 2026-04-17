@@ -193,7 +193,7 @@ class TestDriftAlertService:
 class TestBiasAuditService:
 
     def test_four_fifths_ratio_below_080_is_low(self):
-        from app.shared.services.bias_audit_service import _adverse_impact_ratio
+        from app.shared.compliance.bias_audit_service import _adverse_impact_ratio
         # F: 4/10 = 40%, M: 8/10 = 80% → ratio = 0.5 → abaixo de 0.80
         groups = {
             "F": {"count": 10, "pass_count": 4, "rate": 0.40},
@@ -203,7 +203,7 @@ class TestBiasAuditService:
         assert ratio == pytest.approx(0.5, rel=0.01)
 
     def test_four_fifths_ratio_above_080_is_ok(self):
-        from app.shared.services.bias_audit_service import _adverse_impact_ratio
+        from app.shared.compliance.bias_audit_service import _adverse_impact_ratio
         # F: 85%, M: 90% → ratio ≈ 0.944
         groups = {
             "F": {"count": 20, "pass_count": 17, "rate": 0.85},
@@ -213,13 +213,13 @@ class TestBiasAuditService:
         assert ratio > 0.80
 
     def test_ratio_returns_1_with_single_group(self):
-        from app.shared.services.bias_audit_service import _adverse_impact_ratio
+        from app.shared.compliance.bias_audit_service import _adverse_impact_ratio
         groups = {"M": {"count": 10, "pass_count": 8, "rate": 0.80}}
         ratio = _adverse_impact_ratio(groups)
         assert ratio == 1.0
 
     def test_ratio_returns_1_when_all_zero(self):
-        from app.shared.services.bias_audit_service import _adverse_impact_ratio
+        from app.shared.compliance.bias_audit_service import _adverse_impact_ratio
         groups = {
             "F": {"count": 10, "pass_count": 0, "rate": 0.0},
             "M": {"count": 10, "pass_count": 0, "rate": 0.0},
@@ -229,7 +229,7 @@ class TestBiasAuditService:
 
     @pytest.mark.asyncio
     async def test_get_adverse_impact_returns_report(self):
-        from app.shared.services.bias_audit_service import BiasAuditService, BiasAuditReport
+        from app.shared.compliance.bias_audit_service import BiasAuditService, BiasAuditReport
         svc = BiasAuditService()
         db = _make_db()
 
@@ -248,7 +248,7 @@ class TestBiasAuditService:
 
     @pytest.mark.asyncio
     async def test_save_snapshot_does_not_raise(self):
-        from app.shared.services.bias_audit_service import BiasAuditService, BiasAuditReport
+        from app.shared.compliance.bias_audit_service import BiasAuditService, BiasAuditReport
         svc = BiasAuditService()
         report = BiasAuditReport(
             job_id=JOB_ID,

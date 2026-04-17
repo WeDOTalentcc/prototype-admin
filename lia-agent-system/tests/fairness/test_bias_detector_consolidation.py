@@ -122,9 +122,3 @@ def test_jd_enrichment_check_fairness_delegates_to_fairness_guard():
     assert any("jovem e dinâmico" in c for c in corrections)
 
 
-def test_bias_audit_service_shim_reexports_canonical():
-    from app.shared.compliance import bias_audit_service as canonical
-    from app.shared.services import bias_audit_service as shim
-
-    assert shim.BiasAuditService is canonical.BiasAuditService
-    assert shim.bias_audit_service is canonical.bias_audit_service
