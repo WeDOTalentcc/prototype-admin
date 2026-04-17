@@ -45,6 +45,14 @@ export function ScreeningChannelsModal({
     }
   }, [isOpen, config])
 
+  const handleMasterToggle = (next: boolean) => {
+    setMasterEnabled(next)
+    setWhatsappEnabled(next)
+    setChatWebEnabled(next)
+    setPhonePstnEnabled(next)
+    setVoiceWebEnabled(next)
+  }
+
   const handleSave = async () => {
     setIsSaving(true)
     try {
@@ -102,7 +110,7 @@ export function ScreeningChannelsModal({
                 <p className="text-micro text-lia-text-tertiary">Desligue para suspender todos os canais</p>
               </div>
             </div>
-            <Switch checked={masterEnabled} onCheckedChange={setMasterEnabled} />
+            <Switch checked={masterEnabled} onCheckedChange={handleMasterToggle} />
           </div>
 
           <div className={`space-y-2 ${masterEnabled ? '' : 'opacity-50 pointer-events-none'}`}>

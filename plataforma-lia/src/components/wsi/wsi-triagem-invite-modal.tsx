@@ -19,9 +19,35 @@ import { sanitizeHtml } from"@/lib/sanitize"
 import { toast } from"sonner"
 import { useTranslations } from "next-intl"
 import { useLocale } from "next-intl"
-import type { ScreeningChannelConfig, ScreeningChannelKey } from"@/hooks/recruitment/useScreeningConfig"
+import type { ScreeningChannelConfig, ScreeningChannelKey, ScreeningConfig } from"@/hooks/recruitment/useScreeningConfig"
+
+/** Subset of ScreeningConfig the invite modal needs to filter channels. */
+type InviteChannelsContext = ScreeningChannelConfig & {
+  channels?: ScreeningConfig['channels']
+  channels_master_enabled?: boolean
+}
 
 type ContactChannel = 'email' | 'whatsapp' | 'telefone' | 'voz_web' | 'both'
+
+/**
+ * Task #425 — derive list of allowed invite channels strictly from the job's
+ * canonical screening channel config. Only enabled channels (and only when
+ * the master toggle is on) appear in the picker.
+ */
+function buildAvailableChannels(cfg?: InviteChannelsContext): ContactChannel[] {
+  if (!cfg) return ['email', 'whatsapp', 'telefone', 'voz_web']
+  const masterOn = cfg.channels_master_enabled !== false
+  if (!masterOn) return []
+  const ch = cfg.channels ?? {}
+  const out: ContactChannel[] = []
+  if (ch.chat_web?.enabled !== false) out.push('email')
+  if (ch.whatsapp?.enabled) out.push('whatsapp')
+  const pstn = ch.phone_pstn?.enabled ?? ch.phone?.enabled ?? false
+  if (pstn) out.push('telefone')
+  const voz = ch.voice_web?.enabled ?? ch.voip_web?.enabled ?? true
+  if (voz) out.push('voz_web')
+  return out
+}
 
 /**
  * Task #425 — map canonical screening channel to invite contact channel.
@@ -86,7 +112,7 @@ interface WSITriagemInviteModalProps {
   screeningQuestions?: ScreeningQuestion[]
   onSend?: (data: Record<string, unknown>) => void
   companyId?: string
-  screeningChannels?: ScreeningChannelConfig
+  screeningChannels?: InviteChannelsContext
 }
 
 function getDefaultScreeningQuestions(t: (key: string) => string): ScreeningQuestion[] {
@@ -115,10 +141,16 @@ export function WSITriagemInviteModal({
   const locale = useLocale()
   const PIPELINE_STAGES = usePipelineStages()
   const jobTitle = jobTitleProp || t('invite.jobDefault')
-  const defaultChannel: ContactChannel = screeningChannels?.primary_channel
+  const availableChannels = buildAvailableChannels(screeningChannels)
+  const primaryFromConfig: ContactChannel = screeningChannels?.primary_channel
     ? screeningChannelToContact(screeningChannels.primary_channel)
     : 'email'
+  const defaultChannel: ContactChannel =
+    availableChannels.includes(primaryFromConfig)
+      ? primaryFromConfig
+      : (availableChannels[0] ?? 'email')
   const [channel, setChannel] = useState<ContactChannel>(defaultChannel)
+  const [showPhoneScript, setShowPhoneScript] = useState(false)
   const [subject, setSubject] = useState('')
   const [message, setMessage] = useState('')
   const [isSending, setIsSending] = useState(false)
@@ -173,26 +205,24 @@ useEffect(() => {
   }, [candidate, jobTitle, t])
 
   useEffect(() => {
-    if (isOpen && candidate && channel === 'telefone') {
+    if (isOpen && candidate && channel === 'telefone' && showPhoneScript) {
       setMessage(generatePhoneScript())
       setSubject('')
     }
-  }, [isOpen, channel, candidate, generatePhoneScript])
+  }, [isOpen, channel, candidate, generatePhoneScript, showPhoneScript])
 
   useEffect(() => {
     if (!isOpen) {
-      const resetChannel: ContactChannel = screeningChannels?.primary_channel
-        ? screeningChannelToContact(screeningChannels.primary_channel)
-        : 'email'
-      setChannel(resetChannel)
+      setChannel(defaultChannel)
       setMessage('')
       setSubject('')
       setShowQuestions(true)
       setLinkToVacancy(false)
       setSelectedVacancyId(null)
       setSelectedStage('triagem')
+      setShowPhoneScript(false)
     }
-  }, [isOpen, screeningChannels])
+  }, [isOpen, defaultChannel])
 
   const handleSend = async () => {
     if (!candidate) return
@@ -202,12 +232,12 @@ useEffect(() => {
       return
     }
     
-    if ((channel === 'email' || channel === 'both') && !candidate.email) {
+    if ((channel === 'email' || channel === 'voz_web') && !candidate.email) {
       toast.error(t('invite.toasts.emailNotInformed'), { description: t('invite.toasts.emailNotInformedDesc') })
       return
     }
     
-    if ((channel === 'whatsapp' || channel === 'both') && !candidate.phone) {
+    if ((channel === 'whatsapp' || channel === 'telefone') && !candidate.phone) {
       toast.error(t('invite.toasts.phoneNotInformed'), { description: t('invite.toasts.phoneNotInformedDesc') })
       return
     }
@@ -237,7 +267,11 @@ useEffect(() => {
 
       const selectedVacancy = linkToVacancy ? vacancies.find(v => v.id === selectedVacancyId) : null
       
-      const sendChannel = channel === 'both' ? 'email' : channel
+      // voz_web is delivered via email (link to /voip-start), but the modality
+      // is tracked separately in the onSend callback. Backend expects one of
+      // email|whatsapp|telefone for send-screening-invite.
+      const sendChannel: 'email' | 'whatsapp' | 'telefone' =
+        channel === 'voz_web' ? 'email' : (channel as 'email' | 'whatsapp' | 'telefone')
       
       const inviteResponse = await fetch('/api/backend-proxy/communication/send-screening-invite', {
         method: 'POST',
@@ -248,7 +282,7 @@ useEffect(() => {
           candidate_name: candidate.name,
           candidate_email: candidate.email,
           candidate_phone: candidate.phone,
-          subject: (channel === 'email' || channel === 'both') ? subject : undefined,
+          subject: (channel === 'email' || channel === 'voz_web') ? subject : undefined,
           message,
           vacancy_id: linkToVacancy ? selectedVacancyId : jobId,
           vacancy_title: selectedVacancy?.title || jobTitle,
@@ -264,7 +298,7 @@ useEffect(() => {
         return
       }
       
-      if ((channel === 'whatsapp' || channel === 'both') && candidate.phone) {
+      if (channel === 'whatsapp' && candidate.phone) {
         const whatsappUrl = `https://wa.me/${candidate.phone.replace(/\D/g, '')}?text=${encodeURIComponent(message)}`
         window.open(whatsappUrl, '_blank')
       }
@@ -283,9 +317,9 @@ useEffect(() => {
           title: t('invite.toasts.phoneSuccess'),
           description: t('invite.toasts.phoneSuccessDesc', { name: candidate.name })
         },
-        both: {
-          title: t('invite.toasts.bothSuccess'),
-          description: t('invite.toasts.bothSuccessDesc', { name: candidate.name, mock: mockSuffix })
+        voz_web: {
+          title: 'Convite de Voz Web enviado',
+          description: `Link de Voz no Navegador (Gemini Live) enviado para ${candidate.name}.`
         }
       }
       
@@ -294,7 +328,7 @@ useEffect(() => {
       
       onSend?.({
         channel,
-        subject: channel === 'email' ? subject : undefined,
+        subject: (channel === 'email' || channel === 'voz_web') ? subject : undefined,
         message,
         candidateId: candidate.id,
         screeningQuestions: screeningQuestions.map(q => q.id),
@@ -366,75 +400,123 @@ useEffect(() => {
                 {t('invite.contactChannel')}
               </label>
               <div className="flex flex-col gap-2">
-                <button
-                  onClick={() => setChannel('email')}
-                  className={`flex items-center gap-3 p-3 rounded-md border transition-colors motion-reduce:transition-none text-left ${
- channel === 'email' 
-                      ? 'border-lia-btn-primary-bg bg-lia-bg-secondary/50' 
-                      : 'border-lia-border-subtle hover:border-lia-border-default'
-                  }`}
-                >
-                  <Mail className={`w-4 h-4 ${channel === 'email' ? 'text-lia-text-secondary' : 'text-lia-text-tertiary'}`} />
-                  <div className="flex-1">
-                    <div className={textStyles.subtitle}>{t('invite.email')}</div>
-                    <div className={textStyles.caption}>{candidate.email || t('invite.notInformed')}</div>
+                {availableChannels.length === 0 && (
+                  <div className="text-xs text-status-warning bg-status-warning/10 border border-status-warning/20 rounded-md p-3">
+                    {t.has('invite.noChannelsEnabled')
+                      ? t('invite.noChannelsEnabled')
+                      : 'Nenhum canal habilitado nesta vaga. Habilite ao menos um canal nas configurações de triagem.'}
                   </div>
-                </button>
-                
-                <button
-                  onClick={() => setChannel('whatsapp')}
-                  className={`flex items-center gap-3 p-3 rounded-md border transition-colors motion-reduce:transition-none text-left ${
- channel === 'whatsapp' 
-                      ? 'border-lia-btn-primary-bg bg-lia-bg-secondary/50' 
-                      : 'border-lia-border-subtle hover:border-lia-border-default'
-                  }`}
-                >
-                  <MessageSquare className={`w-4 h-4 ${channel === 'whatsapp' ? 'text-lia-text-secondary' : 'text-lia-text-tertiary'}`} />
-                  <div className="flex-1">
-                    <div className={textStyles.subtitle}>{t('invite.whatsapp')}</div>
-                    <div className={textStyles.caption}>{candidate.phone || t('invite.notInformed')}</div>
-                  </div>
-                </button>
-                
-                <button
-                  onClick={() => setChannel('telefone')}
-                  className={`flex items-center gap-3 p-3 rounded-md border transition-colors motion-reduce:transition-none text-left ${
- channel === 'telefone' 
-                      ? 'border-lia-btn-primary-bg bg-lia-bg-secondary/50' 
-                      : 'border-lia-border-subtle hover:border-lia-border-default'
-                  }`}
-                >
-                  <Phone className={`w-4 h-4 ${channel === 'telefone' ? 'text-lia-text-secondary' : 'text-lia-text-tertiary'}`} />
-                  <div className="flex-1">
-                    <div className={textStyles.subtitle}>{t('invite.phone')}</div>
-                    <div className={textStyles.caption}>{candidate.phone || t('invite.notInformed')}</div>
-                  </div>
-                </button>
-                
-                <button
-                  onClick={() => setChannel('both')}
-                  className={`flex items-center gap-3 p-3 rounded-md border transition-colors motion-reduce:transition-none text-left ${
- channel === 'both' 
-                      ? 'border-lia-btn-primary-bg bg-lia-bg-secondary/50' 
-                      : 'border-lia-border-subtle hover:border-lia-border-default'
-                  }`}
-                >
-                  <div className="flex items-center gap-0.5">
-                    <Mail className={`w-3.5 h-3.5 ${channel === 'both' ? 'text-lia-text-secondary' : 'text-lia-text-tertiary'}`} />
-                    <MessageSquare className={`w-3.5 h-3.5 ${channel === 'both' ? 'text-lia-text-secondary' : 'text-lia-text-tertiary'}`} />
-                  </div>
-                  <div className="flex-1">
-                    <div className={textStyles.subtitle}>{t('invite.both')}</div>
-                    <div className={textStyles.caption}>{t('invite.bothSimultaneous')}</div>
-                  </div>
-                </button>
+                )}
+                {availableChannels.includes('email') && (
+                  <button
+                    onClick={() => setChannel('email')}
+                    className={`flex items-center gap-3 p-3 rounded-md border transition-colors motion-reduce:transition-none text-left ${
+                      channel === 'email'
+                        ? 'border-lia-btn-primary-bg bg-lia-bg-secondary/50'
+                        : 'border-lia-border-subtle hover:border-lia-border-default'
+                    }`}
+                  >
+                    <Mail className={`w-4 h-4 ${channel === 'email' ? 'text-lia-text-secondary' : 'text-lia-text-tertiary'}`} />
+                    <div className="flex-1">
+                      <div className={textStyles.subtitle}>Chat Web (link por email)</div>
+                      <div className={textStyles.caption}>{candidate.email || t('invite.notInformed')}</div>
+                    </div>
+                  </button>
+                )}
+
+                {availableChannels.includes('whatsapp') && (
+                  <button
+                    onClick={() => setChannel('whatsapp')}
+                    className={`flex items-center gap-3 p-3 rounded-md border transition-colors motion-reduce:transition-none text-left ${
+                      channel === 'whatsapp'
+                        ? 'border-lia-btn-primary-bg bg-lia-bg-secondary/50'
+                        : 'border-lia-border-subtle hover:border-lia-border-default'
+                    }`}
+                  >
+                    <MessageSquare className={`w-4 h-4 ${channel === 'whatsapp' ? 'text-lia-text-secondary' : 'text-lia-text-tertiary'}`} />
+                    <div className="flex-1">
+                      <div className={textStyles.subtitle}>{t('invite.whatsapp')}</div>
+                      <div className={textStyles.caption}>{candidate.phone || t('invite.notInformed')}</div>
+                    </div>
+                  </button>
+                )}
+
+                {availableChannels.includes('telefone') && (
+                  <button
+                    onClick={() => setChannel('telefone')}
+                    className={`flex items-center gap-3 p-3 rounded-md border transition-colors motion-reduce:transition-none text-left ${
+                      channel === 'telefone'
+                        ? 'border-lia-btn-primary-bg bg-lia-bg-secondary/50'
+                        : 'border-lia-border-subtle hover:border-lia-border-default'
+                    }`}
+                  >
+                    <Phone className={`w-4 h-4 ${channel === 'telefone' ? 'text-lia-text-secondary' : 'text-lia-text-tertiary'}`} />
+                    <div className="flex-1">
+                      <div className={textStyles.subtitle}>Ligação automática (PSTN)</div>
+                      <div className={textStyles.caption}>{candidate.phone || t('invite.notInformed')}</div>
+                    </div>
+                  </button>
+                )}
+
+                {availableChannels.includes('voz_web') && (
+                  <button
+                    onClick={() => setChannel('voz_web')}
+                    className={`flex items-center gap-3 p-3 rounded-md border transition-colors motion-reduce:transition-none text-left ${
+                      channel === 'voz_web'
+                        ? 'border-lia-btn-primary-bg bg-lia-bg-secondary/50'
+                        : 'border-lia-border-subtle hover:border-lia-border-default'
+                    }`}
+                  >
+                    <Phone className={`w-4 h-4 ${channel === 'voz_web' ? 'text-lia-text-secondary' : 'text-lia-text-tertiary'}`} />
+                    <div className="flex-1">
+                      <div className={textStyles.subtitle}>Voz no Navegador (Gemini Live)</div>
+                      <div className={textStyles.caption}>Link enviado por email — candidato fala pelo navegador</div>
+                    </div>
+                  </button>
+                )}
               </div>
             </div>
 
-            {/* MessageComposer for email/whatsapp/both, Manual editor for telefone */}
-            {channel !== 'telefone' ? (
+            {/* Channel-specific composer */}
+            {channel === 'telefone' ? (
+              <div className="space-y-2">
+                <div className="border border-lia-border-subtle rounded-md p-3 bg-lia-bg-secondary/40">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Phone className="w-4 h-4 text-wedo-orange" />
+                    <span className={textStyles.subtitle}>Ligação automática (Twilio PSTN)</span>
+                  </div>
+                  <p className="text-micro text-lia-text-tertiary">
+                    A LIA vai discar para <strong className="text-lia-text-primary">{candidate.phone || '—'}</strong> e conduzir a triagem por voz.
+                  </p>
+                  <p className="text-micro text-lia-text-disabled mt-1">
+                    Disparo automático no envio. Roteiro manual abaixo é apenas fallback se a chamada falhar.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowPhoneScript(s => !s)}
+                  className="text-micro text-lia-text-secondary hover:text-lia-text-primary underline"
+                >
+                  {showPhoneScript ? 'Ocultar roteiro manual de fallback' : 'Ver roteiro manual de fallback'}
+                </button>
+                {showPhoneScript && (
+                  <div>
+                    <label className="text-xs font-medium text-lia-text-primary mb-2 block">
+                      {t('invite.scriptLabel')}
+                    </label>
+                    <Textarea
+                      ref={messageTextareaRef}
+                      value={message}
+                      onChange={(e) => setMessage(e.target.value)}
+                      placeholder={t('invite.scriptPlaceholder')}
+                      className="min-h-card-lg text-xs focus:ring-1 focus:ring-lia-btn-primary-bg/20 focus:border-lia-border-medium resize-none border-lia-border-subtle"
+                    />
+                  </div>
+                )}
+              </div>
+            ) : (
               <MessageComposer
-                channel={(channel === 'both' ? 'email' : channel) as 'email' | 'whatsapp'}
+                channel={(channel === 'voz_web' ? 'email' : channel) as 'email' | 'whatsapp'}
                 situation="triagem"
                 initialSubject={subject}
                 initialMessage={message}
@@ -452,19 +534,6 @@ useEffect(() => {
                   title: jobTitle
                 }}
               />
-            ) : (
-              <div>
-                <label className="text-xs font-medium text-lia-text-primary mb-2 block">
-                  {t('invite.scriptLabel')}
-                </label>
-                <Textarea
-                  ref={messageTextareaRef}
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  placeholder={t('invite.scriptPlaceholder')}
-                  className="min-h-card-lg text-xs focus:ring-1 focus:ring-lia-btn-primary-bg/20 focus:border-lia-border-medium resize-none border-lia-border-subtle"
-                />
-              </div>
             )}
 
             {/* Vincular à Vaga */}

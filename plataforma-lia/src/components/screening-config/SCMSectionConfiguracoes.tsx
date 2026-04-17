@@ -400,7 +400,7 @@ export function SCMSectionConfiguracoes({
                   const isInFallback = fallbackIdx !== -1
                   const isTwilioChannel = ch.key === 'phone_pstn'
 
-                  const isUnavailable = ch.comingSoon || (isTwilioChannel && !editChannels.phone)
+                  const isUnavailable = ch.comingSoon || (isTwilioChannel && !editChannels.phone_pstn)
 
                   const handleSelectPrimary = () => {
                     if (isUnavailable) return
@@ -436,7 +436,7 @@ export function SCMSectionConfiguracoes({
                             {ch.comingSoon && (
                               <span className="text-micro px-1 py-0 bg-lia-bg-tertiary text-lia-text-disabled rounded-xl">Em breve</span>
                             )}
-                            {isTwilioChannel && !editChannels.phone && !ch.comingSoon && (
+                            {isTwilioChannel && !editChannels.phone_pstn && !ch.comingSoon && (
                               <span className="text-micro px-1 py-0 bg-status-warning/10 text-status-warning rounded-xl border border-status-warning/20">Não disponível — config. pendente</span>
                             )}
                           </div>
@@ -494,9 +494,10 @@ export function SCMSectionConfiguracoes({
               <h3 className="text-xs font-semibold text-lia-text-tertiary uppercase tracking-wider px-1 mb-3">Canais Habilitados</h3>
               <div className="border border-lia-border-subtle rounded-xl divide-y divide-lia-border-subtle">
                 {([
-                  { key: 'whatsapp' as const, label: 'WhatsApp', icon: MessageSquare },
                   { key: 'chat_web' as const, label: 'Chat Web', icon: Globe },
-                  { key: 'phone' as const, label: 'Ligação', icon: Phone },
+                  { key: 'whatsapp' as const, label: 'WhatsApp', icon: MessageSquare },
+                  { key: 'phone_pstn' as const, label: 'Ligação (PSTN)', icon: Phone },
+                  { key: 'voice_web' as const, label: 'Voz no Navegador', icon: Phone },
                 ] as const).map((ch) => {
                   const ChIcon = ch.icon
                   const enabled = editChannels[ch.key]
@@ -505,7 +506,7 @@ export function SCMSectionConfiguracoes({
                       <div className="flex items-center gap-2">
                         <ChIcon className="w-3.5 h-3.5 text-lia-text-secondary" />
                         <span className="text-xs font-medium text-lia-text-primary">{ch.label}</span>
-                        {ch.key === 'phone' && !enabled && <span className="text-micro text-lia-text-disabled">(Integração pendente)</span>}
+                        {ch.key === 'phone_pstn' && !enabled && <span className="text-micro text-lia-text-disabled">(Integração pendente)</span>}
                       </div>
                       <button onClick={() => setEditChannels(prev => ({ ...prev, [ch.key]: !prev[ch.key] }))}
                         className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors motion-reduce:transition-none ${enabled ? 'bg-lia-btn-primary-bg' : 'bg-lia-border-default'}`}>

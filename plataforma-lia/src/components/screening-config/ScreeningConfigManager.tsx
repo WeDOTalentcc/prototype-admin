@@ -164,7 +164,8 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                           setEditChannels({
                             whatsapp: screeningConfig.channels?.whatsapp?.enabled ?? true,
                             chat_web: screeningConfig.channels?.chat_web?.enabled ?? true,
-                            phone: screeningConfig.channels?.phone?.enabled ?? false
+                            phone_pstn: screeningConfig.channels?.phone_pstn?.enabled ?? screeningConfig.channels?.phone?.enabled ?? false,
+                            voice_web: screeningConfig.channels?.voice_web?.enabled ?? screeningConfig.channels?.voip_web?.enabled ?? true,
                           })
                           setEditPrimaryChannel(screeningConfig.screening_channels?.primary_channel ?? 'chat_web')
                           setEditFallbackOrder(screeningConfig.screening_channels?.fallback_order ?? ['whatsapp'])
@@ -195,15 +196,18 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                             channels: {
                               whatsapp: { enabled: editChannels.whatsapp, label: 'WhatsApp' },
                               chat_web: { enabled: editChannels.chat_web, label: 'Chat Web' },
-                              phone: { enabled: editChannels.phone, label: 'Ligação' }
+                              phone_pstn: { enabled: editChannels.phone_pstn, label: 'Ligação (PSTN)' },
+                              voice_web: { enabled: editChannels.voice_web, label: 'Voz no Navegador' },
                             },
                             screening_channels: {
                               primary_channel: editPrimaryChannel,
                               fallback_order: editFallbackOrder
                                 .filter(k => k !== editPrimaryChannel)
                                 .filter(k => {
-                                  if (k === 'phone_pstn') return editChannels.phone
-                                  if (k === 'voice_web') return true
+                                  if (k === 'phone_pstn') return editChannels.phone_pstn
+                                  if (k === 'voice_web') return editChannels.voice_web
+                                  if (k === 'whatsapp') return editChannels.whatsapp
+                                  if (k === 'chat_web') return editChannels.chat_web
                                   return true
                                 }),
                             },

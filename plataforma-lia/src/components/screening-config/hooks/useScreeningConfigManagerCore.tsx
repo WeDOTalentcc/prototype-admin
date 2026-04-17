@@ -164,7 +164,7 @@ export function useScreeningConfigManagerCore({ job, onJobUpdate, onFormUpdate, 
   const setActiveSection = setInternalActiveSection
   const [isEditingScreeningConfig, setIsEditingScreeningConfig] = useState(false)
   const [editChannels, setEditChannels] = useState({
-    whatsapp: true, chat_web: true, phone: false
+    whatsapp: true, chat_web: true, phone_pstn: false, voice_web: true
   })
   const [editPrimaryChannel, setEditPrimaryChannel] = useState<ScreeningChannelKey>('chat_web')
   const [editFallbackOrder, setEditFallbackOrder] = useState<ScreeningChannelKey[]>(['whatsapp'])
