@@ -41,8 +41,6 @@ export interface CandidatesLIAHandlersContext {
   setChatMessages: (v: LIAChatMessage[] | ((prev: LIAChatMessage[]) => LIAChatMessage[])) => void
   liaPromptValue: string
   setLiaPromptValue: (v: string) => void
-  liaWidth: number
-  setLiaWidth: (v: number) => void
   activeSearchTab: SearchTab
   setActiveSearchTab: (v: SearchTab) => void
   talentConversationId: string | undefined
@@ -70,13 +68,6 @@ export interface CandidatesLIAHandlersContext {
   activeSearchFilters: SearchFilters
   liaPromptEntities: ParsedEntities
   setLiaPromptEntities: (v: ParsedEntities) => void
-  setShowExpandedLIA: (v: boolean) => void
-  userCollapsedLIA: boolean
-  setUserCollapsedLIA: (v: boolean) => void
-  selectedCandidateForLIA: Candidate | null
-  setSelectedCandidateForLIA: (v: Candidate | null) => void
-  showLIAPromptForCandidate: boolean
-  setShowLIAPromptForCandidate: (v: boolean) => void
   selectedCandidate: Candidate | null
   setSelectedCandidate: (v: Candidate | null) => void
   showQuickViewModal: boolean

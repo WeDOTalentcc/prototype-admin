@@ -88,10 +88,6 @@ export function useJobsPageCore(props: JobsPageProps) {
     allJobs,
     filteredJobs,
     setBackendJobs,
-    setShowExpandedLIA: (v) => chatActions.setShowExpandedLIA(v),
-    setLiaPromptValue: (v) => chatActions.setLiaPromptValue(v),
-    setLiaHighlight: (v: unknown) => (chatActions as any).setLiaHighlight?.(v),
-    liaInputRef: undefined, // will be supplied after chat state is created
   })
 
   // -----------------------------------------------------------------------
@@ -540,32 +536,7 @@ export function useJobsPageCore(props: JobsPageProps) {
     handleJobAssignRecruiter: bulkActions.handleJobAssignRecruiter,
     getSelectedJobsHaveActiveStatus: bulkActions.getSelectedJobsHaveActiveStatus,
 
-    // --- chat ---
-    showInlineChat: chatState.showInlineChat,
-    setShowInlineChat: chatActions.setShowInlineChat,
-    chatMode: chatState.chatMode,
-    setChatMode: chatActions.setChatMode,
-    inlineChatInitialMessage: chatState.inlineChatInitialMessage,
-    isChatFullscreen: chatState.isChatFullscreen,
-    setIsChatFullscreen: chatActions.setIsChatFullscreen,
-    isTableCollapsed: chatState.isTableCollapsed,
-    liaInlineMessages: chatState.liaInlineMessages,
-    setLiaInlineMessages: chatActions.setLiaInlineMessages,
-    liaInlineLoading: chatState.liaInlineLoading,
-    liaInlineMessagesEndRef: chatState.liaInlineMessagesEndRef,
-    liaInputRef: chatState.liaInputRef,
-    showExpandedLIA: chatState.showExpandedLIA,
-    setShowExpandedLIA: chatActions.setShowExpandedLIA,
-    liaPromptValue: chatState.liaPromptValue,
-    setLiaPromptValue: chatActions.setLiaPromptValue,
-    userCollapsedLIA: chatState.userCollapsedLIA,
-    setUserCollapsedLIA: chatActions.setUserCollapsedLIA,
-    liaWidth: chatState.liaWidth,
-    setLiaWidth: chatActions.setLiaWidth,
-    isResizingLIA: chatState.isResizingLIA,
-    setIsResizingLIA: chatActions.setIsResizingLIA,
-    showLiaSuggestions: chatState.showLiaSuggestions,
-    liaHighlight: chatState.liaHighlight,
+    // --- chat (orquestrador LIA + abertura do chat flutuante unificado) ---
     liaMessages: chatState.liaMessages,
     isLiaProcessing: chatState.isLiaProcessing,
     jobsConversationId: chatState.jobsConversationId,
@@ -577,13 +548,8 @@ export function useJobsPageCore(props: JobsPageProps) {
     liaResponse: chatState.liaResponse,
     liaPromptLoading: chatState.liaPromptLoading,
     followUpSuggestions: chatState.followUpSuggestions,
-    sendLiaInlineMessage: chatActions.sendLiaInlineMessage,
     openGeneralChat: chatActions.openGeneralChat,
     openJobCreationChat: chatActions.openJobCreationChat,
-    closeChat: chatActions.closeChat,
-    returnToGeneralChat: chatActions.returnToGeneralChat,
-    returnToLateralPrompt: chatActions.returnToLateralPrompt,
-    toggleTableExpansion: chatActions.toggleTableExpansion,
     handleAICommand: chatActions.handleAICommand,
     getContextualSuggestions: chatActions.getContextualSuggestions,
   }

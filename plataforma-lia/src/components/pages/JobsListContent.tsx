@@ -3,7 +3,7 @@
 import React from"react"
 import {
   Briefcase, CheckCircle, CheckCircle2, Target, ChevronsLeftRight,
-  Brain, Copy, Share2, UserCheck, X, ChevronLeft, ChevronRight, Loader2
+  Brain, Copy, Share2, UserCheck, X, ChevronRight, Loader2
 } from"lucide-react"
 import { Button } from"@/components/ui/button"
 import { Badge } from"@/components/ui/badge"
@@ -35,14 +35,6 @@ interface SavedSearchLocal {
   createdAt: Date | string
 }
 
-interface LiaInlineMessage {
-  id: string
-  role:"user" |"assistant"
-  content: string
-  timestamp: Date
-  isTyping?: boolean
-}
-
 interface ColumnDefLocal {
   id: string
   label: string
@@ -55,17 +47,7 @@ interface ColumnViewLocal {
   name: string
 }
 
-type RecentItem = {
-  id: string
-  type:"vaga" |"chat" |"candidato"
-  title: string
-  subtitle?: string
-  meta?: Record<string, string | undefined>
-}
-
 interface JobsListContentProps {
-  showExpandedLIA: boolean; setShowExpandedLIA: (v: boolean) => void
-  showInlineChat: boolean; chatMode:"general" |"job-creation" | null; isChatFullscreen: boolean
   selectedJobsForBatch: Set<number>; filteredJobs: Job[]
   isLoadingJobs: boolean; isTableCollapsed: boolean
   searchTerm: string; selectedDaysFilter: string
@@ -76,22 +58,12 @@ interface JobsListContentProps {
   handleJobPublish: () => void; handleJobInsights: () => void
   handleJobDuplicate: () => void; handleJobToggleStatus: () => void
   handleJobAssignRecruiter: () => void; getSelectedJobsHaveActiveStatus: () => boolean
-  toggleTableExpansion: () => void; setChatMode: (mode:"general" |"job-creation" | null) => void
+  toggleTableExpansion: () => void
+  openJobCreationChat: (initialMessage?: string) => void
   setSearchTerm: (v: string) => void; jobFilters: JobFiltersLocal; toggleJobFilter: (category: string, key: string, value: unknown) => void
   clearAllJobFilters: () => void; hasActiveFilters: () => boolean
   savedSearches: SavedSearchLocal[]; saveSearchAsTemplate: (name: string) => void
   handleApplySavedSearch: (id: string) => void; handleRenameSavedSearch: (id: string, name: string) => void; handleDeleteSavedSearch: (id: string) => void
-  inlineChatInitialMessage?: string; liaInlineMessages: LiaInlineMessage[]; liaInlineLoading: boolean
-  liaWidth: number; isResizingLIA: boolean; userCollapsedLIA: boolean
-  liaPromptValue: string; setLiaPromptValue: (value: string | ((prev: string) => string)) => void
-  closeChat: () => void; openGeneralChat: (msg?: string) => void
-  openJobCreationChat: (msg?: string) => void; returnToGeneralChat: () => void
-  returnToLateralPrompt: () => void; sendLiaInlineMessage: (content: string) => Promise<void>
-  setUserCollapsedLIA: (v: boolean) => void; setIsChatFullscreen: (v: boolean) => void
-  setIsResizingLIA: (v: boolean) => void; setLiaWidth: (v: number) => void
-  setLiaInlineMessages: (msgs: LiaInlineMessage[]) => void
-  liaInlineMessagesEndRef: React.RefObject<HTMLDivElement | null>
-  onAddRecentItem?: (item: RecentItem) => void
   showJobPreview: boolean; previewJob: Job | null
   activePreviewTab:"screening" |"pipeline"; setActivePreviewTab: (tab:"screening" |"pipeline") => void
   previewWidth: number; setPreviewWidth: (v: number) => void
@@ -119,22 +91,16 @@ interface JobsListContentProps {
 
 export function JobsListContent(props: JobsListContentProps) {
   const {
-    showExpandedLIA, setShowExpandedLIA, showInlineChat, chatMode, isChatFullscreen,
     selectedJobsForBatch, filteredJobs, isLoadingJobs, isTableCollapsed,
     searchTerm, selectedDaysFilter, showTableFiltersPanel, setShowTableFiltersPanel,
     showColumnConfig, handleToggleColumnConfig, getActiveJobFiltersCount,
     selectAllJobs, deselectAllJobs, handleJobPublish, handleJobInsights,
     handleJobDuplicate, handleJobToggleStatus, handleJobAssignRecruiter,
-    getSelectedJobsHaveActiveStatus, toggleTableExpansion, setChatMode,
+    getSelectedJobsHaveActiveStatus, toggleTableExpansion,
+    openJobCreationChat,
     setSearchTerm, jobFilters, toggleJobFilter, clearAllJobFilters,
     hasActiveFilters, savedSearches, saveSearchAsTemplate, handleApplySavedSearch,
     handleRenameSavedSearch, handleDeleteSavedSearch,
-    inlineChatInitialMessage, liaInlineMessages, liaInlineLoading,
-    liaWidth, isResizingLIA, userCollapsedLIA, liaPromptValue, setLiaPromptValue,
-    closeChat, openGeneralChat, openJobCreationChat, returnToGeneralChat,
-    returnToLateralPrompt, sendLiaInlineMessage, setUserCollapsedLIA,
-    setIsChatFullscreen, setIsResizingLIA, setLiaWidth, setLiaInlineMessages,
-    liaInlineMessagesEndRef, onAddRecentItem,
     showJobPreview, previewJob, activePreviewTab, setActivePreviewTab,
     previewWidth, setPreviewWidth, setIsResizingPreview, setShowJobPreview,
     setPreviewJob, handleJobClick, screeningConfig, isLoadingScreeningConfig,
@@ -165,8 +131,7 @@ export function JobsListContent(props: JobsListContentProps) {
 
   return (
     <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
-      {!showExpandedLIA && !showInlineChat && (
-        <div className="flex-shrink-0 flex items-center justify-end gap-4 mt-3 mb-2">
+      <div className="flex-shrink-0 flex items-center justify-end gap-4 mt-3 mb-2">
           <div className="flex items-center gap-3">
             {selectedJobsForBatch.size > 0 && (
               <Badge className="bg-lia-bg-tertiary text-lia-text-primary border-lia-border-default dark:bg-lia-bg-secondary dark:border-lia-border-default text-xs font-bold">
@@ -198,7 +163,6 @@ export function JobsListContent(props: JobsListContentProps) {
             </Button>
           </div>
         </div>
-      )}
 
       <div className="flex-shrink-0 flex items-center justify-between mb-2">
         <div className="text-xs text-lia-text-primary flex items-center gap-3">
@@ -226,7 +190,6 @@ export function JobsListContent(props: JobsListContentProps) {
           onRenameSavedSearch={handleRenameSavedSearch} onDeleteSavedSearch={handleDeleteSavedSearch}
         />
 
-        {!(chatMode === 'job-creation' && isChatFullscreen) && (
         <div className={`h-full bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-xl transition-[width,height] duration-300 min-w-0 overflow-hidden ${
           isTableCollapsed ? 'w-14 flex-shrink-0' : 'flex-1'
         }`}>
@@ -248,18 +211,6 @@ export function JobsListContent(props: JobsListContentProps) {
             </div>
           ) : (
             <div className="h-full flex flex-col">
-              {showInlineChat && (
-                <div className="flex-shrink-0 px-3 py-2 bg-lia-bg-secondary dark:bg-lia-bg-secondary flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Briefcase className="w-4 h-4 text-lia-text-primary" />
-                    <span className="text-xs font-medium text-lia-text-primary" aria-live="polite" aria-atomic="true">{t('jobsCount', { count: filteredJobs.length })}</span>
-                  </div>
-                  <Button variant="ghost" size="sm" onClick={toggleTableExpansion}
-                    className="h-7 w-7 p-0 rounded-lg hover:bg-lia-interactive-active dark:hover:bg-lia-bg-inverse" title={t('collapseTable')}>
-                    <ChevronLeft className="w-4 h-4 text-lia-text-primary" />
-                  </Button>
-                </div>
-              )}
               <div className="flex-1 overflow-y-auto" role="status" aria-live="polite" aria-label={t('loadingAriaLabel')}>
                 {jobsError && !isLoadingJobs ? (
                   <div className="flex items-center justify-center py-12">
@@ -282,7 +233,7 @@ export function JobsListContent(props: JobsListContentProps) {
                 ) : filteredJobs.length === 0 ? (
                   <EmptyState icon={<Briefcase />} title={t('emptyTitle')}
                     description={t('emptyDescription')}
-                    action={{ label: t('emptyAction'), onClick: () => setChatMode('job-creation') }} className="h-64" />
+                    action={{ label: t('emptyAction'), onClick: () => openJobCreationChat() }} className="h-64" />
                 ) : (
                   <JobsCompactTableView
                     isLoading={isLoadingJobs} filteredJobs={filteredJobs}
@@ -307,7 +258,6 @@ export function JobsListContent(props: JobsListContentProps) {
             </div>
           )}
         </div>
-        )}
 
         <JobPreviewPanel
           showJobPreview={showJobPreview} previewJob={previewJob}

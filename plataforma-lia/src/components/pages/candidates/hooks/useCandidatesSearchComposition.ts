@@ -72,8 +72,6 @@ export interface UseCandidatesSearchCompositionParams {
   setLastSearchUsedPearch: (v: boolean) => void
   setSearchExecutionId: (v: number | ((prev: number) => number)) => void
   setShowExpandGlobalOption: (v: boolean) => void
-  setShowExpandedLIA: (v: boolean) => void
-  setUserCollapsedLIA: (v: boolean) => void
   setIsLoading: (v: boolean) => void
   setIsSearchActive: (v: boolean) => void
   setIsDroppingCV: (v: boolean) => void
@@ -176,8 +174,6 @@ export function useCandidatesSearchComposition(params: UseCandidatesSearchCompos
     setLastSearchUsedPearch: params.setLastSearchUsedPearch,
     setSearchExecutionId: params.setSearchExecutionId,
     setShowExpandGlobalOption: params.setShowExpandGlobalOption,
-    setShowExpandedLIA: params.setShowExpandedLIA,
-    setUserCollapsedLIA: params.setUserCollapsedLIA,
     setLastSuccessfulQuery: archetypeSetLastSuccessfulQuery,
     setChatMessages: params.setChatMessages,
     setIsLoading: params.setIsLoading,

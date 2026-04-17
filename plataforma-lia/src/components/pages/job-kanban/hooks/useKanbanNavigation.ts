@@ -14,7 +14,6 @@ interface UseKanbanNavigationProps {
   setTransitionInitialPrompt: (p: string) => void
   setTransitionAllowStageSelection: (v: boolean) => void
   setLiaPromptValue: (v: string) => void
-  setShowExpandedLIA: (v: boolean) => void
   setPreviewCandidate: (c: Record<string, unknown> | null) => void
   setIsPreviewOpen: (v: boolean) => void
   // pendingCommunicationAction useEffect props
@@ -31,7 +30,6 @@ export function useKanbanNavigation({
   setTransitionInitialPrompt,
   setTransitionAllowStageSelection,
   setLiaPromptValue,
-  setShowExpandedLIA,
   setPreviewCandidate,
   setIsPreviewOpen,
   setUnifiedModalCandidate,
@@ -116,7 +114,6 @@ export function useKanbanNavigation({
     } else {
       if (prompt) {
         setLiaPromptValue(prompt)
-        setShowExpandedLIA(true)
       }
       if (matched) {
         setPreviewCandidate(matched as Record<string, unknown>)
@@ -124,7 +121,7 @@ export function useKanbanNavigation({
       }
     }
     return true
-  }, [candidatesData, dynamicStages, openTransition, setTransitionInitialPrompt, setLiaPromptValue, setShowExpandedLIA, setPreviewCandidate, setIsPreviewOpen, setTransitionAllowStageSelection])
+  }, [candidatesData, dynamicStages, openTransition, setTransitionInitialPrompt, setLiaPromptValue, setPreviewCandidate, setIsPreviewOpen, setTransitionAllowStageSelection])
 
   const consumeNavigateToCandidate = useNavigationStore(s => s.consumeNavigateToCandidate)
   const consumePendingCommunicationAction = useJobUIStore(s => s.consumePendingCommunicationAction)

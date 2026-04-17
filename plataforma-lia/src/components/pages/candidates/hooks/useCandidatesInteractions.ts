@@ -31,8 +31,6 @@ interface UseCandidatesInteractionsParams {
   setShowCandidatePage: (v: boolean) => void
   setShowSidePreview: (v: boolean) => void
   setSidePreviewCandidate: (c: Candidate | null) => void
-  setSelectedCandidateForLIA: (c: Candidate | null) => void
-  setShowLIAPromptForCandidate: (v: boolean) => void
   // Preview resize
   previewWidth: number
   setPreviewWidth: (v: number) => void
@@ -76,8 +74,6 @@ export function useCandidatesInteractions({
   setShowCandidatePage,
   setShowSidePreview,
   setSidePreviewCandidate,
-  setSelectedCandidateForLIA,
-  setShowLIAPromptForCandidate,
   previewWidth,
   setPreviewWidth,
   setUnifiedModalCandidate,
@@ -143,8 +139,7 @@ export function useCandidatesInteractions({
   }
 
   const handleLIAClick = (candidate: Candidate) => {
-    setSelectedCandidateForLIA(candidate)
-    setShowLIAPromptForCandidate(true)
+    handleCandidateClick(candidate)
   }
 
   // ── Preview resize ────────────────────────────────────────────────────────

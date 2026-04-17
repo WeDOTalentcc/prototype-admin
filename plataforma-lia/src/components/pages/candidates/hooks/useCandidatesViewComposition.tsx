@@ -102,8 +102,6 @@ export interface UseCandidatesViewCompositionParams {
   setShowCandidatePage: (v: boolean) => void
   setShowSidePreview: (v: boolean) => void
   setSidePreviewCandidate: (v: Candidate | null) => void
-  setSelectedCandidateForLIA: (v: Candidate | null) => void
-  setShowLIAPromptForCandidate: (v: boolean) => void
   setUnifiedModalCandidate: (v: Candidate | null) => void
   setUnifiedModalType: (v: CommunicationType) => void
   setUnifiedModalOpen: (v: boolean) => void
@@ -123,8 +121,6 @@ export interface UseCandidatesViewCompositionParams {
   setChatMessages: Dispatch<SetStateAction<ChatMessage[]>>
   liaPromptValue: string
   setLiaPromptValue: (v: string) => void
-  liaWidth: number
-  setLiaWidth: (v: number) => void
   activeSearchTab: SearchTab
   setActiveSearchTab: (v: SearchTab) => void
   talentConversationId: string | undefined
@@ -140,16 +136,11 @@ export interface UseCandidatesViewCompositionParams {
   activeSearchFilters: SearchFilters
   liaPromptEntities: import('@/components/search/smart-search-input').ParsedEntities
   setLiaPromptEntities: (v: import('@/components/search/smart-search-input').ParsedEntities) => void
-  setShowExpandedLIA: (v: boolean) => void
-  userCollapsedLIA: boolean
-  setUserCollapsedLIA: (v: boolean) => void
   selectedCandidate: Candidate | null
-  showLIAPromptForCandidate: boolean
   showQuickViewModal: boolean
   showComparisonModal: boolean
   isLIAThinking: boolean
   setIsLIAThinking: (v: boolean) => void
-  selectedCandidateForLIA: Candidate | null
   setWsiInviteCandidate: (v: Candidate | null) => void
   setShowWSIInviteModal: (v: boolean) => void
   setWsiCandidateForScreening: (v: Candidate | null) => void
@@ -264,8 +255,6 @@ export function useCandidatesViewComposition(params: UseCandidatesViewCompositio
     setShowCandidatePage: params.setShowCandidatePage,
     setShowSidePreview: params.setShowSidePreview,
     setSidePreviewCandidate: params.setSidePreviewCandidate,
-    setSelectedCandidateForLIA: params.setSelectedCandidateForLIA,
-    setShowLIAPromptForCandidate: params.setShowLIAPromptForCandidate,
     previewWidth: params.previewWidth,
     setPreviewWidth: params.setPreviewWidth,
     setUnifiedModalCandidate: params.setUnifiedModalCandidate,
@@ -302,8 +291,6 @@ export function useCandidatesViewComposition(params: UseCandidatesViewCompositio
     setChatMessages: params.setChatMessages,
     liaPromptValue: params.liaPromptValue,
     setLiaPromptValue: params.setLiaPromptValue,
-    liaWidth: params.liaWidth,
-    setLiaWidth: params.setLiaWidth,
     activeSearchTab: params.activeSearchTab,
     setActiveSearchTab: params.setActiveSearchTab,
     talentConversationId: params.talentConversationId,
@@ -323,13 +310,6 @@ export function useCandidatesViewComposition(params: UseCandidatesViewCompositio
     activeSearchFilters: params.activeSearchFilters,
     liaPromptEntities: params.liaPromptEntities,
     setLiaPromptEntities: params.setLiaPromptEntities,
-    setShowExpandedLIA: params.setShowExpandedLIA,
-    userCollapsedLIA: params.userCollapsedLIA,
-    setUserCollapsedLIA: params.setUserCollapsedLIA,
-    selectedCandidateForLIA: params.selectedCandidateForLIA,
-    setSelectedCandidateForLIA: params.setSelectedCandidateForLIA,
-    showLIAPromptForCandidate: params.showLIAPromptForCandidate,
-    setShowLIAPromptForCandidate: params.setShowLIAPromptForCandidate,
     selectedCandidate: params.selectedCandidate,
     setSelectedCandidate: params.setSelectedCandidate,
     showQuickViewModal: params.showQuickViewModal,

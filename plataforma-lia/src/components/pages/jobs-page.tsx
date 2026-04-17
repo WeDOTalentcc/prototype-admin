@@ -17,7 +17,6 @@ import type { Job } from "@/components/jobs"
 import { useTranslations } from 'next-intl'
 
 const JobsModalsSection = dynamic(() => import("@/components/pages/jobs/JobsModalsSection").then(m => ({ default: m.JobsModalsSection })), { ssr: false, loading: () => null })
-const ExpandedChatModal = dynamic(() => import("@/components/expanded-chat-modal").then(m => ({ default: m.ExpandedChatModal })), { ssr: false, loading: () => <JobsLoadingModal /> })
 
 interface JobsPageProps {
   onNavigate?: (page: string) => void
@@ -29,7 +28,6 @@ interface JobsPageProps {
 }
 
 export function JobsPage(props: JobsPageProps) {
-  const { onAddRecentItem } = props
   const state = useJobsPageCore(props)
   const t = useTranslations('jobs')
 
@@ -59,14 +57,11 @@ export function JobsPage(props: JobsPageProps) {
   }
 
   const {
-    hasMounted, activeFilter, allJobs, chatMode, closeChat,
-    deselectAllJobs, filteredJobs, isChatFullscreen, isLoadingJobs, jobsError,
-    inlineChatInitialMessage, liaInlineMessages, navigationFilters,
-    openGeneralChat, openJobCreationChat, returnToGeneralChat,
-    returnToLateralPrompt, setActiveFilter, setIsChatFullscreen,
-    setLiaInlineMessages, setLiaPromptValue, liaPromptValue,
-    showInlineChat, setShowCreateJobModal,
-    orchestratorSuggestions, getContextualSuggestions,
+    hasMounted, activeFilter, allJobs,
+    deselectAllJobs, filteredJobs, isLoadingJobs, jobsError,
+    navigationFilters,
+    openJobCreationChat, setActiveFilter,
+    setShowCreateJobModal,
     showReport, reportJob, handleCloseReport,
     showCompareModal, setShowCompareModal, showPublishModal, setShowPublishModal,
     showUnpublishModal, setShowUnpublishModal, showInsightsModal, setShowInsightsModal,
@@ -114,25 +109,7 @@ export function JobsPage(props: JobsPageProps) {
   return (
     <ErrorBoundarySection>
     <div className="h-full flex flex-col bg-lia-bg-primary dark:bg-lia-bg-primary overflow-hidden relative">
-      {chatMode === 'job-creation' && isChatFullscreen && showInlineChat && (
-        <div className="absolute inset-0 z-50 bg-lia-bg-primary dark:bg-lia-bg-primary flex flex-col">
-          <ExpandedChatModal
-            isOpen={true}
-            onClose={closeChat}
-            initialMessage={inlineChatInitialMessage}
-            initialMessages={liaInlineMessages}
-            contextTitle={t("jobCreation")}
-            inline={true}
-            mode="job-creation"
-            onJobCreated={() => { returnToGeneralChat() }}
-            onReturnToLateral={returnToLateralPrompt}
-            onFullscreenChange={setIsChatFullscreen}
-            onMessagesUpdate={(msgs) => setLiaInlineMessages(msgs)}
-          />
-        </div>
-      )}
-
-      <div className={`flex-shrink-0 px-4 pt-3 pb-0 bg-lia-bg-primary dark:bg-lia-bg-primary ${chatMode === 'job-creation' && isChatFullscreen ? 'hidden' : ''}`}>
+      <div className="flex-shrink-0 px-4 pt-3 pb-0 bg-lia-bg-primary dark:bg-lia-bg-primary">
         <div className="flex items-center justify-between mb-2">
           <h1 className="text-lg font-semibold text-lia-text-primary">
             {t("title")}
@@ -202,7 +179,7 @@ export function JobsPage(props: JobsPageProps) {
         )}
       </div>
 
-      <div className={`flex-1 flex flex-col overflow-hidden px-4 pt-2 pb-2 ${chatMode === 'job-creation' && isChatFullscreen ? 'hidden' : ''}`}>
+      <div className="flex-1 flex flex-col overflow-hidden px-4 pt-2 pb-2">
         {isExternalSourceFallback && !isLoadingJobs && (
           <div className="flex items-center gap-2 px-3 py-2 mb-2 rounded-md bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50 text-amber-700 dark:text-amber-400">
             <WifiOff className="w-3.5 h-3.5 shrink-0" />
@@ -210,13 +187,11 @@ export function JobsPage(props: JobsPageProps) {
           </div>
         )}
         <JobsListContent
-          {...state}
-          setLiaPromptValue={state.setLiaPromptValue as (value: string | ((prev: string) => string)) => void}
+          {...(state as unknown as React.ComponentProps<typeof JobsListContent>)}
           toggleJobFilter={state.toggleJobFilter as (category: string, key: string, value: unknown) => void}
           activePreviewTab={state.activePreviewTab as "screening" | "pipeline"}
           statusOrder={statusOrder}
           groupedJobs={groupedJobs}
-          onAddRecentItem={onAddRecentItem}
         />
 
         <JobsModalsSection

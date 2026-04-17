@@ -3,7 +3,7 @@
 import React from"react"
 import { Button } from"@/components/ui/button"
 import { Badge } from"@/components/ui/badge"
-import { Users, ChevronRight, Loader2 } from"lucide-react"
+import { Users, Loader2 } from"lucide-react"
 import { UnifiedCandidateTable } from"@/components/tables"
 import type { TableCandidate } from"@/components/tables"
 import { CandidatesLoadMoreFooter } from"./CandidatesLoadMoreFooter"
@@ -12,8 +12,6 @@ import type { TableColumn } from"./CandidateSearchResultsView.types"
 import { useTranslations } from "next-intl"
 
 export interface CandidatesTableAreaProps {
-  isLiaSuperChat: boolean
-  setIsLiaSuperChat: (value: boolean) => void
   sortedCandidates: Candidate[]
   selectedCandidatesForBatch: Set<string>
   isLoading: boolean
@@ -49,8 +47,6 @@ export interface CandidatesTableAreaProps {
 }
 
 export function CandidatesTableArea({
-  isLiaSuperChat,
-  setIsLiaSuperChat,
   sortedCandidates,
   selectedCandidatesForBatch,
   isLoading,
@@ -86,43 +82,8 @@ export function CandidatesTableArea({
 }: CandidatesTableAreaProps) {
   const t = useTranslations('candidates')
   return (
-    <div data-testid="candidates-table-area" className={`bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md transition-colors motion-reduce:transition-none duration-300 ${
-      isLiaSuperChat
-        ? 'w-14 flex-shrink-0'
-        : 'flex-1 min-w-0 h-full'
-    }`}>
-      {isLiaSuperChat ? (
-        <div className="h-full flex flex-col items-center py-4 gap-3">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setIsLiaSuperChat(false)}
-            className="h-10 w-10 p-0 rounded-xl hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse"
-            title={t('table.expandTable')}
-          >
-            <ChevronRight className="w-5 h-5 text-lia-text-primary" />
-          </Button>
-
-          <div className="flex flex-col items-center gap-2 text-lia-text-primary">
-            <Users className="w-5 h-5" />
-            <span
-              className="text-xs font-medium"
-              style={{ writingMode: 'vertical-rl', textOrientation: 'mixed' }}
-              aria-live="polite"
-              aria-atomic="true"
-            >
-              {t('table.candidatesCount', { count: sortedCandidates.length })}
-            </span>
-          </div>
-
-          {selectedCandidatesForBatch.size > 0 && (
-            <Badge className="bg-lia-btn-primary-bg dark:bg-lia-bg-secondary text-white text-xs px-1.5 py-0.5">
-              {selectedCandidatesForBatch.size}
-            </Badge>
-          )}
-        </div>
-      ) : (
-        <div className="h-full flex flex-col overflow-hidden">
+    <div data-testid="candidates-table-area" className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md transition-colors motion-reduce:transition-none duration-300 flex-1 min-w-0 h-full">
+      <div className="h-full flex flex-col overflow-hidden">
           <div ref={tableContainerRef} className="flex-1 relative overflow-auto">
             {isLoading && (
               <div
@@ -306,8 +267,7 @@ export function CandidatesTableArea({
             isLoadingMore={isLoadingMore}
             onLoadMore={onLoadMore}
           />
-        </div>
-      )}
+      </div>
     </div>
   )
 }

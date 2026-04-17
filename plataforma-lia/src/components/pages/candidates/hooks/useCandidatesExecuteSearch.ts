@@ -60,8 +60,6 @@ interface ExecuteSearchDeps {
   setLastSearchUsedPearch: (v: boolean) => void
   setSearchExecutionId: (fn: number | ((prev: number) => number)) => void
   setShowExpandGlobalOption: (v: boolean) => void
-  setShowExpandedLIA: (v: boolean) => void
-  setUserCollapsedLIA: (v: boolean) => void
   setLastSuccessfulQuery: (q: string) => void
   setChatMessages: (fn: ChatMessage[] | ((prev: ChatMessage[]) => ChatMessage[])) => void
   setIsLoading: (v: boolean) => void
@@ -147,7 +145,7 @@ export function useCandidatesExecuteSearch(deps: ExecuteSearchDeps) {
     setLocalResultsCount, setPearchResultsCount, setCreditsUsedInSearch, setCreditsRemaining,
     setShowSearchResults, setDisplayedResultsCount, setCurrentSearchSource, setHasSearched,
     setLastSearchEntities, setLastSearchMetadata, setLastSearchUsedPearch, setSearchExecutionId,
-    setShowExpandGlobalOption, setShowExpandedLIA, setUserCollapsedLIA, setLastSuccessfulQuery,
+    setShowExpandGlobalOption, setLastSuccessfulQuery,
     setChatMessages, setIsLoading, setIsSearchActive,
   } = deps
 
@@ -290,8 +288,6 @@ export function useCandidatesExecuteSearch(deps: ExecuteSearchDeps) {
         isEnrichingContacts,
       }))
 
-      setShowExpandedLIA(true)
-      setUserCollapsedLIA(false)
       setLastSuccessfulQuery(query)
       setShowExpandGlobalOption(!shouldUsePearch && !shouldUseHybrid)
 

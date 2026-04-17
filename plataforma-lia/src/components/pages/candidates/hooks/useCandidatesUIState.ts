@@ -14,7 +14,6 @@ import type { Candidate } from "@/components/pages/candidates/types"
 import {
   DEFAULT_PEARCH_OPTIONS,
   PREVIEW_WIDTH_DEFAULT,
-  LIA_WIDTH_DEFAULT,
   LIA_ASSISTANT_TIPS_DEFAULT,
   type PearchSearchOptions,
   type ChatMessage,
@@ -36,9 +35,6 @@ export function useCandidatesUIState() {
   const [liaSuggestions, setLiaSuggestions] = useState<string[]>([])
   const [liaAssistantTips, setLiaAssistantTips] = useState<string[]>(LIA_ASSISTANT_TIPS_DEFAULT)
   const [activeSearchTab, setActiveSearchTab] = useState<SearchTab>('ia-natural')
-  const [liaWidth, setLiaWidth] = useState(LIA_WIDTH_DEFAULT)
-  const [isResizingLIA, setIsResizingLIA] = useState(false)
-  const [isLiaSuperChat, setIsLiaSuperChat] = useState(false)
   const [isLIAThinking, setIsLIAThinking] = useState(false)
   const { chatMessages: unifiedMessages, setChatMessages: setUnifiedMessages, addChatMessage: addUnifiedMessage } = useLiaChatContext()
   const chatMessages = useMemo<ChatMessage[]>(() => unifiedMessages.map(m => ({
@@ -156,9 +152,6 @@ export function useCandidatesUIState() {
     liaSuggestions, setLiaSuggestions,
     liaAssistantTips, setLiaAssistantTips,
     activeSearchTab, setActiveSearchTab,
-    liaWidth, setLiaWidth,
-    isResizingLIA, setIsResizingLIA,
-    isLiaSuperChat, setIsLiaSuperChat,
     isLIAThinking, setIsLIAThinking,
     chatMessages, setChatMessages,
     // Search

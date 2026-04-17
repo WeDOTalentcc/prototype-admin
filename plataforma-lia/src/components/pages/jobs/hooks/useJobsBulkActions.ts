@@ -16,10 +16,6 @@ interface UseJobsBulkActionsOptions {
   allJobs: Job[]
   filteredJobs: Job[]
   setBackendJobs: React.Dispatch<React.SetStateAction<Job[]>>
-  setShowExpandedLIA?: (v: boolean) => void
-  setLiaPromptValue?: (v: string) => void
-  setLiaHighlight?: (v: boolean) => void
-  liaInputRef?: React.RefObject<HTMLInputElement>
 }
 
 interface UseJobsBulkActionsReturn {
@@ -77,10 +73,6 @@ export function useJobsBulkActions({
   allJobs,
   filteredJobs,
   setBackendJobs,
-  setShowExpandedLIA,
-  setLiaPromptValue,
-  setLiaHighlight,
-  liaInputRef,
 }: UseJobsBulkActionsOptions): UseJobsBulkActionsReturn {
   const [selectedJobsForBatch, setSelectedJobsForBatch] = useState<Set<number>>(new Set())
   const [pinnedJobs, setPinnedJobs] = useState<Set<number>>(new Set())
@@ -129,17 +121,10 @@ export function useJobsBulkActions({
   const selectAllJobs = () => {
     const allJobIds = new Set(filteredJobs.map(job => job.id))
     setSelectedJobsForBatch(allJobIds)
-    setShowExpandedLIA?.(true)
-    setLiaHighlight?.(true)
-    setLiaPromptValue?.(`Analisar ${allJobIds.size} vagas selecionadas`)
-    setTimeout(() => setLiaHighlight?.(false), 1000)
-    setTimeout(() => liaInputRef?.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100)
   }
 
   const deselectAllJobs = () => {
     setSelectedJobsForBatch(new Set())
-    setLiaPromptValue?.('')
-    setShowExpandedLIA?.(false)
   }
 
   const toggleJobSelection = (jobId: number) => {
@@ -150,19 +135,6 @@ export function useJobsBulkActions({
       } else {
         next.add(jobId)
       }
-
-      if (next.size > 0) {
-        setShowExpandedLIA?.(true)
-        setLiaHighlight?.(true)
-        const selectedJobs = allJobs.filter(job => next.has(job.id))
-        const jobTitles = selectedJobs.map(job => job.title).join(', ')
-        setLiaPromptValue?.(`Analisar ${next.size} vaga(s) selecionada(s): ${jobTitles}`)
-        setTimeout(() => setLiaHighlight?.(false), 1000)
-        setTimeout(() => liaInputRef?.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100)
-      } else {
-        setLiaPromptValue?.('')
-      }
-
       return next
     })
   }

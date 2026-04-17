@@ -8,14 +8,8 @@ import {
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { LIAToolbarBrainButton } from "@/components/ui/lia-toolbar-brain-button"
 
 interface KanbanToolbarProps {
-  showExpandedLIA: boolean
-  setShowExpandedLIA: (v: boolean) => void
-  liaPromptValue: string
-  setLiaPromptValue: (v: string) => void
-  handleAICommand: (prompt: string) => void
   searchQuery: string
   setSearchQuery: (v: string) => void
   viewMode: string
@@ -39,8 +33,6 @@ interface KanbanToolbarProps {
 }
 
 export function KanbanToolbar({
-  showExpandedLIA,
-  setShowExpandedLIA,
   searchQuery,
   setSearchQuery,
   viewMode,
@@ -124,15 +116,7 @@ export function KanbanToolbar({
 
   return (
     <div className="flex-shrink-0 bg-lia-bg-primary dark:bg-lia-bg-secondary px-4 py-2">
-      <div className="w-full px-4 flex items-center justify-between gap-2">
-        {/* Lado Esquerdo: Botão LIA Brain - Oculto quando prompt expandido está aberto */}
-        {!showExpandedLIA && (
-          <LIAToolbarBrainButton
-            isOpen={showExpandedLIA}
-            onClick={() => setShowExpandedLIA(true)}
-          />
-        )}
-
+      <div className="w-full px-4 flex items-center justify-end gap-2">
         {/* Ações do lado direito */}
         <div className="flex items-center gap-2">
           {/* Barra de Busca */}

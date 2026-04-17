@@ -76,9 +76,6 @@ interface PaginatedResult {
 }
 
 interface KanbanTableViewProps {
-  // Visibility / mode
-  showSuperChat: boolean
-
   // Filter panel state
   showTableFiltersPanel: boolean
   onShowTableFiltersPanelChange: (value: boolean) => void

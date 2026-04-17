@@ -28,11 +28,7 @@ interface CandidatesViewState {
   previewCandidate: Record<string, unknown> | null
   showSidePreview: boolean
   sidePreviewCandidate: Record<string, unknown> | null
-  selectedCandidateForLIA: Record<string, unknown> | null
-  showLIAPromptForCandidate: boolean
-  showExpandedLIA: boolean
   liaPromptValue: string
-  userCollapsedLIA: boolean
   talentConversationId: string | undefined
   viewedCandidateIds: Set<string>
   currentPage: number
@@ -98,11 +94,7 @@ interface CandidatesActions {
   setPreviewCandidate: (v: Record<string, unknown> | null) => void
   setShowSidePreview: (v: boolean) => void
   setSidePreviewCandidate: (v: Record<string, unknown> | null) => void
-  setSelectedCandidateForLIA: (v: Record<string, unknown> | null) => void
-  setShowLIAPromptForCandidate: (v: boolean) => void
-  setShowExpandedLIA: (v: boolean) => void
   setLiaPromptValue: (v: string) => void
-  setUserCollapsedLIA: (v: boolean) => void
   setTalentConversationId: (v: string | undefined) => void
   setViewedCandidateIds: (v: Set<string> | ((prev: Set<string>) => Set<string>)) => void
   setCurrentPage: (v: number) => void
@@ -169,11 +161,7 @@ const initialState: CandidatesFullState = {
   previewCandidate: null,
   showSidePreview: false,
   sidePreviewCandidate: null,
-  selectedCandidateForLIA: null,
-  showLIAPromptForCandidate: false,
-  showExpandedLIA: false,
   liaPromptValue: '',
-  userCollapsedLIA: false,
   talentConversationId: undefined,
   viewedCandidateIds: new Set<string>(),
   currentPage: 1,
@@ -258,11 +246,7 @@ export const useCandidatesStore = create<CandidatesStore>()(
       setPreviewCandidate: (v) => set({ previewCandidate: v }, false, 'view/setPreviewCandidate'),
       setShowSidePreview: (v) => set({ showSidePreview: v }, false, 'view/setShowSidePreview'),
       setSidePreviewCandidate: (v) => set({ sidePreviewCandidate: v }, false, 'view/setSidePreviewCandidate'),
-      setSelectedCandidateForLIA: (v) => set({ selectedCandidateForLIA: v }, false, 'view/setSelectedCandidateForLIA'),
-      setShowLIAPromptForCandidate: (v) => set({ showLIAPromptForCandidate: v }, false, 'view/setShowLIAPromptForCandidate'),
-      setShowExpandedLIA: (v) => set({ showExpandedLIA: v }, false, 'view/setShowExpandedLIA'),
       setLiaPromptValue: (v) => set({ liaPromptValue: v }, false, 'view/setLiaPromptValue'),
-      setUserCollapsedLIA: (v) => set({ userCollapsedLIA: v }, false, 'view/setUserCollapsedLIA'),
       setTalentConversationId: (v) => set({ talentConversationId: v }, false, 'view/setTalentConversationId'),
       setViewedCandidateIds: setOrUpdate<Set<string>>(set, 'viewedCandidateIds', 'view/setViewedCandidateIds'),
       setCurrentPage: (v) => set({ currentPage: v }, false, 'view/setCurrentPage'),

@@ -8,10 +8,8 @@ import { BulkActionsBar, type BulkActionType } from "@/components/ui/bulk-action
 import { PipelineStagesCarousel } from "@/components/ui/pipeline-stages-carousel"
 import { JobEditTab } from "@/components/jobs/JobEditTab"
 import { KanbanToolbar } from "@/components/pages/job-kanban/KanbanToolbar"
-import { KanbanLIASidebar } from "@/components/pages/job-kanban/KanbanLIASidebar"
 import { KanbanTableView } from "@/components/pages/job-kanban/KanbanTableView"
 import { KanbanBoardSection } from "@/components/pages/job-kanban/KanbanBoardSection"
-import { KanbanSuperChatSection } from "@/components/pages/job-kanban/KanbanSuperChatSection"
 import { getLiaAlerts } from "@/components/pages/job-kanban/utils/kanbanHelpers"
 import type { KanbanPageCoreState } from "@/components/pages/job-kanban/hooks/useKanbanPageCore"
 
@@ -26,21 +24,14 @@ export function KanbanPageContent({ state }: KanbanPageContentProps) {
     handleSaveJobSection, savingJobSection, companyDefaults,
     isCreationMode, handlePublishJob, isPublishing, publicLink,
     setJobLocalOverrides, proactiveInsights, dismissInsight,
-    showSuperChat, showExpandedLIA, setShowExpandedLIA,
-    setUserCollapsedLIA, searchQuery, setSearchQuery,
+    searchQuery, setSearchQuery,
     showKanbanFiltersPanel, setShowKanbanFiltersPanel,
     showTableFiltersPanel, setShowTableFiltersPanel,
     showColumnConfig, setShowColumnConfig,
     kanbanScoreMin, kanbanStatusFilter, kanbanWorkModelFilter, kanbanOriginFilter,
     selectedCandidates, setSelectedCandidates,
     allTableCandidates, candidatesData,
-    liaMessages, liaPromptValue, setLiaPromptValue, isLiaLoading,
-    liaExpandedWidth, setLiaExpandedWidth, computedSuggestions,
-    showLiaSuggestionsPanel, setShowLiaSuggestionsPanel,
-    isResizingLIA, setIsResizingLIA, chatScrollRef,
-    handleAICommand, handleLiaUiAction, openSuperChat,
-    setSelectedCandidate, setShowCandidatePage,
-    setLiaMessages, viewMode: _vm,
+    viewMode: _vm,
     tableStageFilter, setTableStageFilter, clearStageFilters,
     toggleStageFilter, pipelineStages, getStageCount,
     handleBulkAction, tableColumns, setTableColumns,
@@ -203,11 +194,6 @@ export function KanbanPageContent({ state }: KanbanPageContentProps) {
       )}
 
       <KanbanToolbar
-        showExpandedLIA={showExpandedLIA}
-        setShowExpandedLIA={setShowExpandedLIA}
-        liaPromptValue={liaPromptValue}
-        setLiaPromptValue={setLiaPromptValue}
-        handleAICommand={handleAICommand}
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
         viewMode={viewMode}
@@ -231,45 +217,12 @@ export function KanbanPageContent({ state }: KanbanPageContentProps) {
       />
 
       <div className="flex-1 flex gap-2 overflow-hidden bg-lia-bg-primary dark:bg-lia-bg-primary min-w-0">
-        {showSuperChat && (
-          <KanbanSuperChatSection state={state} />
-        )}
-
-        {showExpandedLIA && !showSuperChat && (
-          <KanbanLIASidebar
-            liaMessages={liaMessages as unknown as Parameters<typeof KanbanLIASidebar>[0]["liaMessages"]}
-            liaPromptValue={liaPromptValue}
-            isLiaLoading={isLiaLoading}
-            liaExpandedWidth={liaExpandedWidth}
-            computedSuggestions={computedSuggestions}
-            showLiaSuggestionsPanel={showLiaSuggestionsPanel}
-            selectedCandidates={selectedCandidates}
-            isResizingLIA={isResizingLIA}
-            candidatesData={candidatesData as unknown as Parameters<typeof KanbanLIASidebar>[0]["candidatesData"]}
-            chatScrollRef={chatScrollRef as unknown as Parameters<typeof KanbanLIASidebar>[0]["chatScrollRef"]}
-            setLiaMessages={setLiaMessages as unknown as Parameters<typeof KanbanLIASidebar>[0]["setLiaMessages"]}
-            setLiaPromptValue={setLiaPromptValue}
-            setLiaExpandedWidth={setLiaExpandedWidth}
-            setShowExpandedLIA={setShowExpandedLIA}
-            setUserCollapsedLIA={setUserCollapsedLIA}
-            setShowLiaSuggestionsPanel={setShowLiaSuggestionsPanel}
-            setSelectedCandidates={setSelectedCandidates}
-            setIsResizingLIA={setIsResizingLIA}
-            setSelectedCandidate={setSelectedCandidate}
-            setShowCandidatePage={setShowCandidatePage}
-            openSuperChat={openSuperChat}
-            handleAICommand={handleAICommand}
-            handleLiaUiAction={handleLiaUiAction}
-          />
-        )}
-
-        {viewMode === "kanban" && !showSuperChat && (
+        {viewMode === "kanban" && (
           <KanbanBoardSection state={state} />
         )}
 
-        {viewMode === "table" && !showSuperChat && (
+        {viewMode === "table" && (
           <KanbanTableView
-            showSuperChat={showSuperChat}
             showTableFiltersPanel={showTableFiltersPanel}
             onShowTableFiltersPanelChange={setShowTableFiltersPanel}
             dynamicStages={dynamicStages}

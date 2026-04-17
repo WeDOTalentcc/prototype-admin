@@ -74,18 +74,17 @@ export function useKanbanUIModals({ job }: {
     '3️⃣ Quando há **demandas conflitantes** entre diferentes áreas, como você prioriza?'
   ])
 
-  // LIA / Chat
+  // LIA / Chat (apenas estado ainda em uso pelos handlers — o chat unificado
+  // flutuante cuida da janela de conversa)
   const [showLiaSuggestions, setShowLiaSuggestions] = useState(false)
   const [liaSuggestionsData, setLiaSuggestionsData] = useState<Array<{
     type: string; severity: string; candidate_id: string; candidate_name: string;
     message: string; suggested_action: string; stage: string
   }>>([])
   const [showLiaSuggestionsPanel, setShowLiaSuggestionsPanel] = useState(true)
-  const [showExpandedLIA, setShowExpandedLIA] = useState(false)
   const [transitionInitialPrompt, setTransitionInitialPrompt] = useState<string | undefined>(undefined)
   const [transitionAllowStageSelection, setTransitionAllowStageSelection] = useState(false)
   const [transitionInterviewAlert, setTransitionInterviewAlert] = useState<{ name: string; date: string } | null>(null)
-  const [showSuperChat, setShowSuperChat] = useState(false)
   const [liaPromptValue, setLiaPromptValue] = useState("")
   const { chatMessages: unifiedMessages, setChatMessages: setUnifiedMessages } = useLiaChatContext()
   const liaMessages = useMemo(() => unifiedMessages.map(m => ({
@@ -125,44 +124,6 @@ export function useKanbanUIModals({ job }: {
   const [liaConversationId, setLiaConversationId] = useState<string | undefined>(undefined)
   const chatScrollRef = useRef<HTMLDivElement>(null)
   const [liaSearchQuery, setLiaSearchQuery] = useState("")
-  const [userCollapsedLIA, setUserCollapsedLIA] = useState(false)
-  const [liaExpandedWidth, setLiaExpandedWidth] = useState(400)
-  const [isResizingLIA, setIsResizingLIA] = useState(false)
-
-  const openSuperChat = useCallback((initialMessage?: string) => {
-    setShowExpandedLIA(false)
-    setShowSuperChat(true)
-    if (initialMessage) setLiaPromptValue(initialMessage)
-  }, [])
-
-  const returnToExpandedPrompt = useCallback(() => {
-    setShowSuperChat(false)
-    setShowExpandedLIA(true)
-  }, [])
-
-  // LIA resize effect
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      if (!isResizingLIA) return
-      const newWidth = Math.max(280, Math.min(480, e.clientX - 16))
-      setLiaExpandedWidth(newWidth)
-    }
-    const handleMouseUp = () => {
-      setIsResizingLIA(false)
-      document.body.style.cursor = ''
-      document.body.style.userSelect = ''
-    }
-    if (isResizingLIA) {
-      document.body.style.cursor = 'ew-resize'
-      document.body.style.userSelect = 'none'
-      document.addEventListener('mousemove', handleMouseMove)
-      document.addEventListener('mouseup', handleMouseUp)
-    }
-    return () => {
-      document.removeEventListener('mousemove', handleMouseMove)
-      document.removeEventListener('mouseup', handleMouseUp)
-    }
-  }, [isResizingLIA])
 
   // Email modal
   const [showEmailModal, setShowEmailModal] = useState(false)
@@ -286,9 +247,9 @@ export function useKanbanUIModals({ job }: {
       perguntasEliminatorias, perguntasInformativas, habilidadesTecnicas,
       perguntasTecnicasAvaliacao, skillWeights, originalSkillWeights, isSkillWeightsModified, perguntasSituacionais,
       showLiaSuggestions, liaSuggestionsData, showLiaSuggestionsPanel,
-      showExpandedLIA, transitionInitialPrompt, transitionAllowStageSelection, transitionInterviewAlert,
-      showSuperChat, liaPromptValue, liaMessages, isLiaLoading, liaConversationId,
-      chatScrollRef, liaSearchQuery, userCollapsedLIA, liaExpandedWidth, isResizingLIA,
+      transitionInitialPrompt, transitionAllowStageSelection, transitionInterviewAlert,
+      liaPromptValue, liaMessages, isLiaLoading, liaConversationId,
+      chatScrollRef, liaSearchQuery,
       showEmailModal, emailCandidate, showShareGestorModal,
       unifiedModalOpen, unifiedModalType, unifiedModalCandidate, unifiedModalSituation,
       showWSIModal, wsiCandidate, showWSIInviteModal, wsiInviteCandidate,
@@ -314,9 +275,9 @@ export function useKanbanUIModals({ job }: {
       setPerguntasEliminatorias, setPerguntasInformativas, setHabilidadesTecnicas,
       setPerguntasTecnicasAvaliacao, setSkillWeights, setIsSkillWeightsModified, setPerguntasSituacionais,
       setShowLiaSuggestions, setLiaSuggestionsData, setShowLiaSuggestionsPanel,
-      setShowExpandedLIA, setTransitionInitialPrompt, setTransitionAllowStageSelection, setTransitionInterviewAlert,
-      setShowSuperChat, setLiaPromptValue, setLiaMessages, setIsLiaLoading, setLiaConversationId,
-      setLiaSearchQuery, setUserCollapsedLIA, setLiaExpandedWidth, setIsResizingLIA,
+      setTransitionInitialPrompt, setTransitionAllowStageSelection, setTransitionInterviewAlert,
+      setLiaPromptValue, setLiaMessages, setIsLiaLoading, setLiaConversationId,
+      setLiaSearchQuery,
       setShowEmailModal, setEmailCandidate, setShowShareGestorModal,
       setUnifiedModalOpen, setUnifiedModalType, setUnifiedModalCandidate, setUnifiedModalSituation,
       setShowWSIModal, setWsiCandidate, setShowWSIInviteModal, setWsiInviteCandidate,
@@ -330,7 +291,6 @@ export function useKanbanUIModals({ job }: {
       setShowJobStatusModal, setJobStatusModalMode, setShowCloseVacancyModal,
       setShowAddToListModal, setIsAddingToList, setShowBulkActionModal, setBulkActionType,
       setShowDataRequestModal, setDataRequestModalCandidate, setViewedCandidateIds,
-      openSuperChat, returnToExpandedPrompt,
     },
   }
 }

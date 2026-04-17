@@ -39,7 +39,6 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
         setShowCloseVacancyModal={state.setShowCloseVacancyModal}
         setActiveTab={state.setActiveTab as any}
         computedSuggestions={state.computedSuggestions}
-        setShowExpandedLIA={state.setShowExpandedLIA}
         setShowLiaSuggestionsPanel={state.setShowLiaSuggestionsPanel}
         allTableCandidates={state.allTableCandidates}
         selectedCandidates={state.selectedCandidates}

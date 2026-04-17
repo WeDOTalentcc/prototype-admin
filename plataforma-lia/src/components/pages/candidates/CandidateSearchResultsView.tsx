@@ -68,8 +68,6 @@ export interface CandidateSearchResultsViewProps {
   quickFilters: Set<string>
   searchTerm: string
   getActiveAdvancedFiltersCount: () => number
-  isLiaSuperChat: boolean
-  setIsLiaSuperChat: (value: boolean) => void
   // Filters panel
   tableFilters: TableFilters
   setTableFilters: React.Dispatch<React.SetStateAction<TableFilters>>
@@ -194,8 +192,6 @@ export function CandidateSearchResultsView({
   quickFilters,
   searchTerm,
   getActiveAdvancedFiltersCount,
-  isLiaSuperChat,
-  setIsLiaSuperChat,
   tableFilters,
   setTableFilters,
   newSoftSkillFilter,
@@ -425,8 +421,6 @@ export function CandidateSearchResultsView({
 
         {/* Main Content Area - Candidatos Table */}
         <CandidatesTableArea
-          isLiaSuperChat={isLiaSuperChat}
-          setIsLiaSuperChat={setIsLiaSuperChat}
           sortedCandidates={sortedCandidates}
           selectedCandidatesForBatch={selectedCandidatesForBatch}
           isLoading={isLoading}

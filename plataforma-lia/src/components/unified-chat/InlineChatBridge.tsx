@@ -30,11 +30,11 @@ interface Props {
  * - Consistent UX across all pages
  * - Context preserved via LiaFloatContext
  *
- * Replaces:
- * - InlineChatPanel (jobs page)
- * - CompactLIAPrompt (candidates page)
- * - KanbanSuperChatSection (kanban)
- * - LiaChatModal (candidate preview)
+ * Replaces (now removed) inline chat surfaces previously rendered by:
+ * - jobs page inline chat panel
+ * - candidates page compact LIA prompt
+ * - kanban super-chat section / LIA sidebar
+ * - candidate preview LiaChatModal
  */
 export function InlineChatBridge({
   initialMessage,

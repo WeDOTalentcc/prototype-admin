@@ -60,9 +60,6 @@ export interface KanbanLIAHandlersContext {
   setLiaMessages: React.Dispatch<React.SetStateAction<{ id: string; type: 'user' | 'response'; content: string; timestamp: number; metadata?: Record<string, unknown> }[]>>
   setLiaPromptValue: (value: string) => void
   setIsLiaLoading: (loading: boolean) => void
-  setShowExpandedLIA: (open: boolean) => void
-  setShowSuperChat: (open: boolean) => void
-  setUserCollapsedLIA: (collapsed: boolean) => void
   liaConversationId: string | undefined
   setLiaConversationId: (id: string | undefined) => void
 
@@ -106,9 +103,6 @@ export function useKanbanLIAHandlers(ctx: KanbanLIAHandlersContext) {
     setLiaMessages,
     setLiaPromptValue,
     setIsLiaLoading,
-    setShowExpandedLIA,
-    setShowSuperChat,
-    setUserCollapsedLIA,
     liaConversationId: localLiaConversationId,
     setLiaConversationId,
     currentJob,
@@ -323,7 +317,6 @@ export function useKanbanLIAHandlers(ctx: KanbanLIAHandlersContext) {
     const timestamp = Date.now()
 
     setLiaPromptValue('')
-    setShowExpandedLIA(true)
     setIsLiaLoading(true)
 
     try {
@@ -421,12 +414,6 @@ export function useKanbanLIAHandlers(ctx: KanbanLIAHandlersContext) {
           })
         }
 
-        if (response.ui_action === 'start_job_wizard') {
-          setTimeout(() => {
-            setShowSuperChat(true)
-            setUserCollapsedLIA(false)
-          }, 500)
-        }
 
         if (!response.action_executed && response.ui_action && response.ui_action !== 'start_job_wizard') {
           const enrichedParams = { ...(response.ui_action_params || {}) }

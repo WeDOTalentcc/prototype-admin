@@ -12,11 +12,7 @@ interface ViewState {
   previewCandidate: Candidate | null
   showSidePreview: boolean
   sidePreviewCandidate: Candidate | null
-  selectedCandidateForLIA: Candidate | null
-  showLIAPromptForCandidate: boolean
-  showExpandedLIA: boolean
   liaPromptValue: string
-  userCollapsedLIA: boolean
   talentConversationId: string | undefined
   viewedCandidateIds: Set<string>
   currentPage: number
@@ -36,11 +32,7 @@ interface ViewActions {
   setPreviewCandidate: (v: Candidate | null) => void
   setShowSidePreview: (v: boolean) => void
   setSidePreviewCandidate: (v: Candidate | null) => void
-  setSelectedCandidateForLIA: (v: Candidate | null) => void
-  setShowLIAPromptForCandidate: (v: boolean) => void
-  setShowExpandedLIA: (v: boolean) => void
   setLiaPromptValue: (v: string) => void
-  setUserCollapsedLIA: (v: boolean) => void
   setTalentConversationId: (v: string | undefined) => void
   setViewedCandidateIds: (v: Set<string> | ((prev: Set<string>) => Set<string>)) => void
   setCurrentPage: (v: number) => void
@@ -69,11 +61,7 @@ export function useCandidatesViewState(): UseCandidatesViewStateReturn {
       previewCandidate: store.previewCandidate as Candidate | null,
       showSidePreview: store.showSidePreview,
       sidePreviewCandidate: store.sidePreviewCandidate as Candidate | null,
-      selectedCandidateForLIA: store.selectedCandidateForLIA as Candidate | null,
-      showLIAPromptForCandidate: store.showLIAPromptForCandidate,
-      showExpandedLIA: store.showExpandedLIA,
       liaPromptValue: store.liaPromptValue,
-      userCollapsedLIA: store.userCollapsedLIA,
       talentConversationId: store.talentConversationId,
       viewedCandidateIds: store.viewedCandidateIds,
       currentPage: store.currentPage,
@@ -92,11 +80,7 @@ export function useCandidatesViewState(): UseCandidatesViewStateReturn {
       setPreviewCandidate: store.setPreviewCandidate as ViewActions['setPreviewCandidate'],
       setShowSidePreview: store.setShowSidePreview,
       setSidePreviewCandidate: store.setSidePreviewCandidate as ViewActions['setSidePreviewCandidate'],
-      setSelectedCandidateForLIA: store.setSelectedCandidateForLIA as ViewActions['setSelectedCandidateForLIA'],
-      setShowLIAPromptForCandidate: store.setShowLIAPromptForCandidate,
-      setShowExpandedLIA: store.setShowExpandedLIA,
       setLiaPromptValue: store.setLiaPromptValue,
-      setUserCollapsedLIA: store.setUserCollapsedLIA,
       setTalentConversationId: store.setTalentConversationId,
       setViewedCandidateIds: store.setViewedCandidateIds,
       setCurrentPage: store.setCurrentPage,

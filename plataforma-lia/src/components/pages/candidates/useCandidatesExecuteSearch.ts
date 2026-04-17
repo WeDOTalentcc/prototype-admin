@@ -192,8 +192,6 @@ export interface ExecuteSearchDeps {
   setHasSearched: (v: boolean) => void
   setLastSuccessfulQuery: (v: string) => void
   setChatMessages: (fn: (prev: ChatMessage[]) => ChatMessage[]) => void
-  setShowExpandedLIA: (v: boolean) => void
-  setUserCollapsedLIA: (v: boolean) => void
   setSearchThreadId: (v: string | undefined) => void
 }
 
@@ -554,9 +552,6 @@ export function createExecuteSearch(deps: ExecuteSearchDeps) {
         showGlobalResults: shouldAutoShowGlobal,
         globalDismissed: prev.globalDismissed
       }))
-
-      deps.setShowExpandedLIA(true)
-      deps.setUserCollapsedLIA(false)
 
       const shouldShowLocationTip = !usePearch && !shouldUsePearch && !shouldUseHybrid && globalCandidates.length > 0
 

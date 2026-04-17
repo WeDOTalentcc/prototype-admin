@@ -26,7 +26,6 @@ interface KanbanJobHeaderProps {
   setShowCloseVacancyModal: (show: boolean) => void
   setActiveTab: (tab: string) => void
   computedSuggestions: unknown[]
-  setShowExpandedLIA: (show: boolean) => void
   setShowLiaSuggestionsPanel: (show: boolean) => void
   allTableCandidates: unknown[]
   selectedCandidates: Set<string>
@@ -44,7 +43,7 @@ export const KanbanJobHeader = React.memo(function KanbanJobHeader(props: Kanban
   const {
     onBack, router, currentJob, jobEditForm, setJobEditForm,
     setJobStatusModalMode, setShowJobStatusModal, setShowCloseVacancyModal,
-    setActiveTab, computedSuggestions, setShowExpandedLIA, setShowLiaSuggestionsPanel,
+    setActiveTab, computedSuggestions, setShowLiaSuggestionsPanel,
     allTableCandidates, selectedCandidates, setSelectedCandidates, setShowShareGestorModal,
     handleShowReport, activeTab, setShowJobEditor, pipelineInheritance,
   } = props
@@ -280,7 +279,6 @@ export const KanbanJobHeader = React.memo(function KanbanJobHeader(props: Kanban
                     <Badge 
                       className="bg-wedo-cyan text-white border-0 font-semibold whitespace-nowrap text-micro px-1.5 py-0 cursor-pointer hover:bg-wedo-cyan-dark transition-colors motion-reduce:transition-none"
                       onClick={() => {
-                        setShowExpandedLIA(true)
                         setShowLiaSuggestionsPanel(true)
                       }}
                     >

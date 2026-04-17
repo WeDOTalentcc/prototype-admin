@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { callOrchestratedJobsManagement } from "@/lib/api/kanban-assistant"
 import { useLiaSuggestions, useJobInsights, useLiaExpandedPrompt } from "@/hooks/ai/use-lia-suggestions"
 import { useCompanyId } from "@/hooks/company/useCompanyId"
@@ -9,18 +9,11 @@ import type { Job } from "@/components/jobs"
 
 // ---------------------------------------------------------------------------
 // useJobsChat
-// Responsável por: chat inline lateral (3 níveis: mini, geral, criação de vaga),
-// mensagens LIA, processamento de comandos, sugestões contextuais,
-// prompt expandido, controle de largura do painel LIA.
+// Orquestra apenas o pipeline LIA (sugestões, insights, comandos para o
+// orquestrador) e a abertura do chat flutuante unificado. Toda a UI de chat
+// inline/lateral foi removida — o chat flutuante (LiaFloat) cobre as
+// conversas com a LIA.
 // ---------------------------------------------------------------------------
-
-interface LiaInlineMessage {
-  id: string
-  role: 'user' | 'assistant'
-  content: string
-  timestamp: Date
-  isTyping?: boolean
-}
 
 interface LiaOrchestratorMessage {
   id: string
@@ -50,22 +43,6 @@ interface UseJobsChatOptions {
 
 interface UseJobsChatReturn {
   state: {
-    showInlineChat: boolean
-    chatMode: 'general' | 'job-creation' | null
-    inlineChatInitialMessage: string | undefined
-    isChatFullscreen: boolean
-    isTableCollapsed: boolean
-    liaInlineMessages: LiaInlineMessage[]
-    liaInlineLoading: boolean
-    liaInlineMessagesEndRef: React.RefObject<HTMLDivElement | null>
-    liaInputRef: React.RefObject<HTMLInputElement | null>
-    showExpandedLIA: boolean
-    liaPromptValue: string
-    userCollapsedLIA: boolean
-    liaWidth: number
-    isResizingLIA: boolean
-    showLiaSuggestions: boolean
-    liaHighlight: boolean
     liaMessages: LiaOrchestratorMessage[]
     isLiaProcessing: boolean
     jobsConversationId: string | undefined
@@ -79,28 +56,11 @@ interface UseJobsChatReturn {
     followUpSuggestions: ReturnType<typeof useLiaExpandedPrompt>['followUpSuggestions']
   }
   actions: {
-    setShowInlineChat: (v: boolean) => void
-    setChatMode: (v: 'general' | 'job-creation' | null) => void
-    setInlineChatInitialMessage: (v: string | undefined) => void
-    setIsChatFullscreen: (v: boolean) => void
-    setIsTableCollapsed: (v: boolean) => void
-    setLiaInlineMessages: React.Dispatch<React.SetStateAction<LiaInlineMessage[]>>
-    setShowExpandedLIA: (v: boolean) => void
-    setLiaPromptValue: (v: string) => void
-    setUserCollapsedLIA: (v: boolean) => void
-    setLiaWidth: (v: number) => void
-    setIsResizingLIA: (v: boolean) => void
-    setShowLiaSuggestions: (v: boolean) => void
     setLiaMessages: React.Dispatch<React.SetStateAction<LiaOrchestratorMessage[]>>
     setJobsConversationId: (v: string | undefined) => void
     setOrchestratorSuggestions: (v: string[]) => void
-    sendLiaInlineMessage: (content: string) => Promise<void>
     openGeneralChat: (initialMessage?: string) => void
     openJobCreationChat: (initialMessage?: string) => void
-    closeChat: () => void
-    returnToGeneralChat: () => void
-    returnToLateralPrompt: (messages?: Array<{ id: string; role: 'user' | 'assistant'; content: string; timestamp: Date }>) => void
-    toggleTableExpansion: () => void
     handleAICommand: (command: string, action?: string) => Promise<void>
     getContextualSuggestions: () => string[]
     refreshSuggestions: ReturnType<typeof useLiaSuggestions>['refresh']
@@ -111,7 +71,6 @@ interface UseJobsChatReturn {
 
 export function useJobsChat({
   filteredJobs,
-  allJobs,
   selectedJobsForBatch,
   onAddRecentItem,
   onChatOpened,
@@ -121,25 +80,6 @@ export function useJobsChat({
 }: UseJobsChatOptions): UseJobsChatReturn {
   const { companyId: resolvedCompanyId } = useCompanyId()
   const { open: openGlobalChat } = useLiaFloat()
-  const [showInlineChat, setShowInlineChat] = useState(false)
-  const [chatMode, setChatMode] = useState<'general' | 'job-creation' | null>(null)
-  const [inlineChatInitialMessage, setInlineChatInitialMessage] = useState<string | undefined>()
-  const [isChatFullscreen, setIsChatFullscreen] = useState(false)
-  const [isTableCollapsed, setIsTableCollapsed] = useState(false)
-
-  const [liaInlineMessages, setLiaInlineMessages] = useState<LiaInlineMessage[]>([])
-  const [liaInlineLoading, setLiaInlineLoading] = useState(false)
-  const liaInlineMessagesEndRef = useRef<HTMLDivElement>(null)
-  const liaInputRef = useRef<HTMLInputElement>(null)
-  const liaInlineChatIdRef = useRef<string>(`chat-inline-${Date.now()}`)
-
-  const [showExpandedLIA, setShowExpandedLIA] = useState(false)
-  const [liaPromptValue, setLiaPromptValue] = useState("")
-  const [userCollapsedLIA, setUserCollapsedLIA] = useState(false)
-  const [liaWidth, setLiaWidth] = useState(400)
-  const [isResizingLIA, setIsResizingLIA] = useState(false)
-  const [showLiaSuggestions, setShowLiaSuggestions] = useState(false)
-  const [liaHighlight, setLiaHighlight] = useState(false)
 
   const [liaMessages, setLiaMessages] = useState<LiaOrchestratorMessage[]>([])
   const [isLiaProcessing, setIsLiaProcessing] = useState(false)
@@ -158,51 +98,19 @@ export function useJobsChat({
     }
   }, [pendingChatOpen, onChatOpened, openGlobalChat])
 
-  // Auto-expand LIA sidebar on selection
-  useEffect(() => {
-    if (selectedJobsForBatch.size > 0 && !userCollapsedLIA) {
-      setShowExpandedLIA(true)
-    } else if (selectedJobsForBatch.size === 0) {
-      setShowExpandedLIA(false)
-      setUserCollapsedLIA(false)
-    }
-  }, [selectedJobsForBatch.size, userCollapsedLIA])
-
-  // Listen for preview tab navigation event
-  useEffect(() => {
-    const handleSetPreviewTab = (event: CustomEvent) => {
-      // Forward to parent via event if needed — the preview hook handles its own tab
-    }
-    window.addEventListener('setJobPreviewTab', handleSetPreviewTab as EventListener)
-    return () => window.removeEventListener('setJobPreviewTab', handleSetPreviewTab as EventListener)
-  }, [])
-
-  // Scroll inline messages to bottom
-  useEffect(() => {
-    liaInlineMessagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [liaInlineMessages])
-
   // -------------------------------------------------------------------------
-  // Chat mode helpers
+  // Floating chat openers (delegate to LiaFloat unified chat)
   // -------------------------------------------------------------------------
-  const isJobCreationIntent = (message: string): boolean => {
-    const lower = message.toLowerCase()
-    return [
-      'criar vaga', 'nova vaga', 'abrir vaga', 'cadastrar vaga', 'registrar vaga',
-      'quero criar', 'preciso de uma vaga', 'preciso abrir', 'montar vaga',
-      'configurar vaga', 'iniciar processo seletivo', 'novo processo seletivo',
-    ].some(p => lower.includes(p))
-  }
-
   const openGeneralChat = useCallback((initialMessage?: string) => {
+    const id = `chat-inline-${Date.now()}`
     openGlobalChat()
     onAddRecentItem?.({
-      id: liaInlineChatIdRef.current,
+      id,
       type: 'chat',
       title: initialMessage
         ? `Chat: ${initialMessage.slice(0, 40)}${initialMessage.length > 40 ? '...' : ''}`
         : 'Chat com LIA',
-      meta: { conversationId: liaInlineChatIdRef.current },
+      meta: { conversationId: id },
     })
   }, [onAddRecentItem, openGlobalChat])
 
@@ -218,90 +126,6 @@ export function useJobsChat({
       meta: { conversationId: wizardId },
     })
   }, [onAddRecentItem, openGlobalChat])
-
-  const closeChat = useCallback(() => {
-    setShowInlineChat(false)
-    setChatMode(null)
-    setInlineChatInitialMessage(undefined)
-    setIsTableCollapsed(false)
-    liaInlineChatIdRef.current = `chat-inline-${Date.now()}`
-  }, [])
-
-  const returnToGeneralChat = useCallback(() => {
-    setChatMode('general')
-  }, [])
-
-  const returnToLateralPrompt = useCallback((messages?: Array<{ id: string; role: 'user' | 'assistant'; content: string; timestamp: Date }>) => {
-    if (messages && messages.length > 0) {
-      setLiaInlineMessages(messages.map(m => ({
-        id: m.id, role: m.role, content: m.content, timestamp: m.timestamp,
-      })))
-    }
-    setShowInlineChat(false)
-    setChatMode(null)
-    setInlineChatInitialMessage(undefined)
-    setIsTableCollapsed(false)
-    setShowExpandedLIA(true)
-  }, [])
-
-  const toggleTableExpansion = useCallback(() => {
-    setIsTableCollapsed(prev => !prev)
-  }, [])
-
-  // -------------------------------------------------------------------------
-  // sendLiaInlineMessage
-  // -------------------------------------------------------------------------
-  const sendLiaInlineMessage = useCallback(async (content: string) => {
-    if (isJobCreationIntent(content)) {
-      openJobCreationChat(content)
-      return
-    }
-
-    const userMessage: LiaInlineMessage = {
-      id: `user-${Date.now()}`, role: 'user', content, timestamp: new Date(),
-    }
-    setLiaInlineMessages(prev => [...prev, userMessage])
-    setLiaInlineLoading(true)
-
-    onAddRecentItem?.({
-      id: liaInlineChatIdRef.current,
-      type: 'chat',
-      title: `Chat: ${content.slice(0, 40)}${content.length > 40 ? '...' : ''}`,
-      meta: { conversationId: liaInlineChatIdRef.current },
-    })
-
-    try {
-      const selectedJobIds = Array.from(selectedJobsForBatch).map(String)
-      const response = await fetch('/api/backend-proxy/lia/expanded-prompt', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          message: content,
-          context_type: 'jobs',
-          context_ids: selectedJobIds.length > 0 ? selectedJobIds : undefined,
-        }),
-      })
-
-      if (!response.ok) throw new Error('Falha na resposta')
-
-      const data = await response.json()
-      setLiaInlineMessages(prev => [...prev, {
-        id: `lia-${Date.now()}`,
-        role: 'assistant',
-        content: data.response || 'Desculpe, não consegui processar sua mensagem.',
-        timestamp: new Date(),
-      }])
-    } catch {
-      setLiaInlineMessages(prev => [...prev, {
-        id: `lia-${Date.now()}`,
-        role: 'assistant',
-        content: 'Desculpe, ocorreu um erro ao processar sua mensagem. Tente novamente.',
-        timestamp: new Date(),
-      }])
-    } finally {
-      setLiaInlineLoading(false)
-    }
-  }, [openJobCreationChat, selectedJobsForBatch, onAddRecentItem])
 
   // -------------------------------------------------------------------------
   // handleAICommand (multi-agent orchestrator)
@@ -436,20 +260,14 @@ export function useJobsChat({
 
   return {
     state: {
-      showInlineChat, chatMode, inlineChatInitialMessage, isChatFullscreen, isTableCollapsed,
-      liaInlineMessages, liaInlineLoading, liaInlineMessagesEndRef, liaInputRef,
-      showExpandedLIA, liaPromptValue, userCollapsedLIA, liaWidth, isResizingLIA,
-      showLiaSuggestions, liaHighlight, liaMessages, isLiaProcessing, jobsConversationId,
+      liaMessages, isLiaProcessing, jobsConversationId,
       orchestratorSuggestions, dynamicSuggestions, suggestionsLoading, dynamicInsights,
       insightsLoading, liaResponse, liaPromptLoading, followUpSuggestions,
     },
     actions: {
-      setShowInlineChat, setChatMode, setInlineChatInitialMessage, setIsChatFullscreen,
-      setIsTableCollapsed, setLiaInlineMessages, setShowExpandedLIA, setLiaPromptValue,
-      setUserCollapsedLIA, setLiaWidth, setIsResizingLIA, setShowLiaSuggestions, setLiaMessages,
-      setJobsConversationId, setOrchestratorSuggestions, sendLiaInlineMessage,
-      openGeneralChat, openJobCreationChat, closeChat, returnToGeneralChat, returnToLateralPrompt,
-      toggleTableExpansion, handleAICommand, getContextualSuggestions,
+      setLiaMessages, setJobsConversationId, setOrchestratorSuggestions,
+      openGeneralChat, openJobCreationChat,
+      handleAICommand, getContextualSuggestions,
       refreshSuggestions, generateInsights, sendLiaPrompt,
     },
   }

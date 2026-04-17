@@ -1,61 +1,21 @@
 "use client"
 
-import { useEffect, useRef } from "react"
-import type { Dispatch, SetStateAction } from "react"
+import { useEffect } from "react"
 import type { ParsedEntities } from "@/components/search/smart-search-input"
-import type { Candidate } from "@/components/pages/candidates/types"
-import type { ChatMessage } from "./candidates-core"
 
 export interface UseCandidatesPageEffectsParams {
-  selectedCandidatesForBatch: Set<string>
-  userCollapsedLIA: boolean
-  candidates: Candidate[]
   liaPromptValue: string
-  setShowExpandedLIA: (v: boolean) => void
-  setChatMessages: Dispatch<SetStateAction<ChatMessage[]>>
   setLiaPromptEntities: (v: ParsedEntities) => void
   setLiaSuggestions: (v: string[]) => void
   setLiaIsParsingEntities: (v: boolean) => void
 }
 
 export function useCandidatesPageEffects({
-  selectedCandidatesForBatch,
-  userCollapsedLIA,
-  candidates,
   liaPromptValue,
-  setShowExpandedLIA,
-  setChatMessages,
   setLiaPromptEntities,
   setLiaSuggestions,
   setLiaIsParsingEntities,
 }: UseCandidatesPageEffectsParams) {
-  const prevSelectedCountRef = useRef(0)
-  useEffect(() => {
-    const currentCount = selectedCandidatesForBatch.size
-    const prevCount = prevSelectedCountRef.current
-    if (currentCount > 0 && !userCollapsedLIA) {
-      setShowExpandedLIA(true)
-      if (currentCount !== prevCount) {
-        const names = candidates
-          .filter(c => selectedCandidatesForBatch.has(c.id))
-          .slice(0, 3)
-          .map(c => c.name)
-        const preview = names.join(', ') + (currentCount > 3 ? ` e mais ${currentCount - 3}` : '')
-        const plural = currentCount > 1
-        setChatMessages(prev => [
-          ...prev,
-          {
-            id: `lia-selection-${Date.now()}`,
-            type: 'lia' as const,
-            content: `Você selecionou **${currentCount} candidato${plural ? 's' : ''}**: ${preview}.\n\nPosso analisar ${plural ? 'estes candidatos' : 'este candidato'} para você:\n\n• **Analisar potencial de crescimento**\n• **Definir tipo de perfil** (executor, estratégico, etc)\n• **Resumo executivo do perfil**`,
-            timestamp: new Date(),
-          },
-        ])
-      }
-    }
-    prevSelectedCountRef.current = currentCount
-  }, [selectedCandidatesForBatch.size, userCollapsedLIA, candidates, selectedCandidatesForBatch, setChatMessages, setShowExpandedLIA])
-
   useEffect(() => {
     const emptyEntities: ParsedEntities = {
       job_title: undefined, location: undefined, skills: [],
@@ -85,7 +45,4 @@ export function useCandidatesPageEffects({
     }, 500)
     return () => clearTimeout(timer)
   }, [liaPromptValue, setLiaIsParsingEntities, setLiaPromptEntities, setLiaSuggestions])
-
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => { setShowExpandedLIA(true) }, []) // intentional: run only on mount to expand LIA panel
 }
