@@ -317,16 +317,14 @@ python3 scripts/check_shim_sla.py            # human-readable
 python3 scripts/check_shim_sla.py --json     # CI-friendly
 ```
 
-### S7.2 — `GlobalToolRegistry` must stay empty at boot
+### S7.2 — `GlobalToolRegistry` retired (Task #350)
 
 Task #308 retired eager `GlobalToolRegistry.register(...)` calls; tool routing
-now goes through `ToolRegistry` + `tool_permissions.yaml`. To prevent the old
-pattern from creeping back in, a regression test fails the build if
-`GlobalToolRegistry._registry` is non-empty after a fresh import (and after
-importing `app.main`).
-
-**Enforcement:** `tests/unit/test_global_tool_registry_empty.py` (runs in the
-default CI test job).
+goes through `ToolRegistry` + `tool_permissions.yaml`. Task #350 then removed
+the now-empty `app/shared/global_tool_registry.py` shim and its anti-revival
+guard tests, since they had no production callers and the surrounding rules
+(S7.3 below + scope checks via `tool_permissions.yaml`) already prevent the
+old pattern from coming back.
 
 ### S7.3 — No `from langchain_core.tools import tool` in domain tools
 

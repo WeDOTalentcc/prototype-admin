@@ -18,8 +18,10 @@ self-contained, exits non-zero on violation, and is safe to run locally.
 | Script                                    | Hook id                      | Rule  | Description |
 | ----------------------------------------- | ---------------------------- | ----- | ----------- |
 | `check_shim_sla.py`                       | `shim-sla`                   | S7.1  | Fails if any shim/proxy file has 0 importers AND is ≥ 90 days old (eligible for deletion). |
-| _(pytest)_ `tests/unit/test_global_tool_registry_empty.py` | n/a                          | S7.2  | Anti-revival of Task #308: `GlobalToolRegistry._registry` MUST be empty after app boot. |
 | `check_no_legacy_tool_decorator.py`       | `no-legacy-tool-decorator`   | S7.3  | Blocks `from langchain_core.tools import tool` inside `app/domains/*/tools/`. Use `@tool_handler` instead. |
+
+> S7.2 (anti-revival of `GlobalToolRegistry`) was retired by Task #350 along
+> with `app/shared/global_tool_registry.py` itself.
 
 ### Running locally
 

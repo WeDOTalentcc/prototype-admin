@@ -36,6 +36,11 @@ FORBIDDEN_PATTERNS = [
     # registrations (e.g. SourcingAgentSignal) and 500s.
     re.compile(r"\bfrom\s+app\.models\b"),
     re.compile(r"\bimport\s+app\.models\b"),
+    # task #350: app.shared.global_tool_registry was deleted (had no
+    # production callers). Reintroducing it would resurrect a dead code path.
+    # Tool routing goes through app.tools.registry + tool_permissions.yaml.
+    re.compile(r"\bfrom\s+app\.shared\.global_tool_registry\b"),
+    re.compile(r"\bimport\s+app\.shared\.global_tool_registry\b"),
 ]
 
 SCAN_DIRS = ["app", "scripts", "tests", "libs", "alembic"]
