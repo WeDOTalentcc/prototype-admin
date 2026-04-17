@@ -157,6 +157,24 @@ async def finalize_job_vacancy(
         if not request.job_vacancy_state.is_ready_for_publication():
             raise HTTPException(status_code=400, detail="Job vacancy is not ready for publication. Missing required fields.")
 
+        # Task #358: block discriminatory text on the conversational
+        # finalize path too — the wizard ultimately writes the same
+        # JobVacancy row as the direct POST endpoint.
+        state = request.job_vacancy_state
+        fairness_warnings = run_fairness_guard_on_jd(
+            title=state.job_title,
+            description=(
+                state.job_description_generated
+                or state.description
+            ),
+            requirements=getattr(state, "required_skills", None),
+            technical_requirements=[
+                tr.model_dump() if hasattr(tr, "model_dump") else tr
+                for tr in (state.technical_requirements or [])
+            ],
+            context="job_vacancy_finalize",
+        )
+
         db = repo.get_session()
         job_vacancy = await job_vacancy_service.finalize_job_vacancy(
             state=request.job_vacancy_state,
@@ -188,7 +206,8 @@ async def finalize_job_vacancy(
             job_vacancy_id=job_id,
             title=job_title,
             status=job_status,
-            message=f"Vaga \{job_title}\ criada com sucesso!"
+            message=f"Vaga \{job_title}\ criada com sucesso!",
+            fairness_warnings=fairness_warnings or None,
         )
 
     except HTTPException:
@@ -686,6 +705,18 @@ async def create_job_vacancy(
         company_id = get_user_company_id(current_user)
         logger.info(f"Creating job vacancy: {job_data.title} for company: {company_id}")
 
+        # Task #358: refuse to persist a discriminatory JD. Soft warnings
+        # (implicit-bias) are surfaced on the response without blocking.
+        fairness_warnings = run_fairness_guard_on_jd(
+            title=job_data.title,
+            description=job_data.description,
+            requirements=job_data.requirements,
+            technical_requirements=job_data.technical_requirements,
+            behavioral_competencies=job_data.behavioral_competencies,
+            languages=job_data.languages,
+            context="job_vacancy_create",
+        )
+
         job_vacancy = JobVacancy(
             id=uuid_lib.uuid4(),
             title=job_data.title,
@@ -755,7 +786,8 @@ async def create_job_vacancy(
             screening_questions=job_vacancy.screening_questions or [],
             interview_stages=job_vacancy.interview_stages or [],
             disabled_eligibility_question_ids=job_vacancy.disabled_eligibility_question_ids or [],
-            conversation_id=str(job_vacancy.conversation_id) if job_vacancy.conversation_id else None
+            conversation_id=str(job_vacancy.conversation_id) if job_vacancy.conversation_id else None,
+            fairness_warnings=fairness_warnings or None,
         )
 
     except HTTPException:
@@ -787,6 +819,30 @@ async def update_job_vacancy(
             raise HTTPException(status_code=404, detail="Job vacancy not found")
 
         update_data = job_data.model_dump(exclude_unset=True, exclude_none=True)
+
+        # Task #358: re-run FairnessGuard whenever any user-authored JD
+        # field is being changed. Use the *post-update* value so a partial
+        # PATCH (e.g. only description) still gets the full text checked.
+        jd_fields = {
+            "title", "description", "requirements", "technical_requirements",
+            "behavioral_competencies", "languages",
+        }
+        fairness_warnings: list[str] = []
+        if jd_fields & update_data.keys():
+            fairness_warnings = run_fairness_guard_on_jd(
+                title=update_data.get("title", job_vacancy.title),
+                description=update_data.get("description", job_vacancy.description),
+                requirements=update_data.get("requirements", job_vacancy.requirements),
+                technical_requirements=update_data.get(
+                    "technical_requirements", job_vacancy.technical_requirements
+                ),
+                behavioral_competencies=update_data.get(
+                    "behavioral_competencies", job_vacancy.behavioral_competencies
+                ),
+                languages=update_data.get("languages", job_vacancy.languages),
+                context="job_vacancy_update",
+            )
+
         update_data["updated_at"] = datetime.utcnow()
 
         changes = {}
@@ -843,7 +899,8 @@ async def update_job_vacancy(
             interview_stages=job_vacancy.interview_stages or [],
             disabled_eligibility_question_ids=job_vacancy.disabled_eligibility_question_ids or [],
             conversation_id=str(job_vacancy.conversation_id) if job_vacancy.conversation_id else None,
-            enriched_jd=job_vacancy.enriched_jd
+            enriched_jd=job_vacancy.enriched_jd,
+            fairness_warnings=fairness_warnings or None,
         )
 
     except HTTPException:
