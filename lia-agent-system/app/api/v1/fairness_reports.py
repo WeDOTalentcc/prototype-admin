@@ -194,6 +194,108 @@ async def get_fairness_audit_logs(
     )
 
 
+class JobFairnessBlockEntry(BaseModel):
+    id: str
+    category: str | None
+    educational_message: str | None
+    blocked_terms: list[str]
+    soft_warnings: list[str]
+    is_blocked: bool
+    context: str | None
+    created_at: datetime
+
+
+class JobFairnessBlocksResponse(BaseModel):
+    job_id: str
+    total: int
+    limit: int
+    offset: int
+    latest_block: JobFairnessBlockEntry | None
+    items: list[JobFairnessBlockEntry]
+
+
+@router.get("/jobs/{job_id}/blocks", response_model=JobFairnessBlocksResponse)
+async def get_job_fairness_blocks(
+    job_id: str,
+    include_warnings: bool = Query(False, description="Also include soft-warning events"),
+    limit: int = Query(20, ge=1, le=100),
+    offset: int = Query(0, ge=0),
+    db: AsyncSession = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    """
+    FairnessGuard blocks recorded for a single job vacancy.
+
+    Surfaces the category and educational message of the most recent block
+    (so recruiters understand why a sourcing search returned no candidates)
+    plus a paginated history of past events.
+
+    Multi-tenant safe: the job_id is first verified to belong to the caller's
+    company. Returns 404 (not 403) for jobs in other tenants to avoid leaking
+    existence of foreign UUIDs.
+    """
+    from fastapi import HTTPException
+    import uuid as _uuid
+
+    from app.auth.dependencies import get_user_company_id
+    from app.shared.compliance.fairness_guard import get_educational_message_for_category
+    from lia_models.job_vacancy import JobVacancy
+
+    try:
+        job_uuid = _uuid.UUID(job_id)
+    except (ValueError, TypeError):
+        raise HTTPException(status_code=404, detail="Job vacancy not found")
+
+    user_company = get_user_company_id(current_user)
+    if not user_company:
+        raise HTTPException(status_code=403, detail="Usuário sem empresa associada")
+
+    job_row = (
+        await db.execute(
+            select(JobVacancy.id).where(
+                JobVacancy.id == job_uuid,
+                JobVacancy.company_id == user_company,
+            )
+        )
+    ).first()
+    if job_row is None:
+        raise HTTPException(status_code=404, detail="Job vacancy not found")
+
+    repo = FairnessReportRepository(db)
+    total, rows = await repo.get_blocks_for_job(
+        job_id=job_id,
+        limit=limit,
+        offset=offset,
+        blocked_only=not include_warnings,
+    )
+
+    def _to_entry(row) -> JobFairnessBlockEntry:
+        return JobFairnessBlockEntry(
+            id=str(row.id),
+            category=row.category,
+            educational_message=get_educational_message_for_category(row.category),
+            blocked_terms=list(row.blocked_terms or []),
+            soft_warnings=list(row.soft_warnings or []),
+            is_blocked=bool(row.is_blocked),
+            context=row.context if isinstance(row.context, str) else None,
+            created_at=row.created_at,
+        )
+
+    items = [_to_entry(row) for row in rows]
+
+    latest_row = await repo.get_latest_block_for_job(job_id)
+    latest_block = _to_entry(latest_row) if latest_row is not None else None
+
+    return JobFairnessBlocksResponse(
+        job_id=job_id,
+        total=total,
+        limit=limit,
+        offset=offset,
+        latest_block=latest_block,
+        items=items,
+    )
+
+
 @router.get("/reports/export", response_model=None)
 async def export_fairness_report(
     company_id: str | None = Query(None),

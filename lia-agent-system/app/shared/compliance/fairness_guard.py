@@ -1176,3 +1176,17 @@ class FairnessGuard:
             except Exception:
                 pass
             logger.error("FairnessGuard audit log failed (non-blocking): %s", e)
+
+
+def get_educational_message_for_category(category: str | None) -> str | None:
+    """Return the educational/coaching message associated with a bias category.
+
+    Used by reporting endpoints to surface why a query was blocked without
+    re-running FairnessGuard. Returns None for unknown categories.
+    """
+    if not category:
+        return None
+    entry = DISCRIMINATORY_CATEGORIES.get(category)
+    if not entry:
+        return None
+    return entry.get("message")

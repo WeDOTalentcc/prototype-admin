@@ -9,6 +9,7 @@ import { EmptyState } from "@/components/ui/empty-state"
 import { KanbanFiltersPanel } from "@/components/pages/job-kanban/KanbanFiltersPanel"
 import { KanbanColumnRenderer } from "@/components/pages/job-kanban/KanbanColumnRenderer"
 import { AddColumnPopover } from "@/components/pages/job-kanban/AddColumnPopover"
+import { JobFairnessBlockBanner } from "@/components/jobs/JobFairnessBlockBanner"
 import type { KanbanPageCoreState } from "@/components/pages/job-kanban/hooks/useKanbanPageCore"
 
 const CandidatePreview = dynamic(() => import("@/components/candidate-preview").then(m => ({ default: m.CandidatePreview })), { ssr: false, loading: () => <LoadingModal /> })
@@ -139,6 +140,9 @@ export function KanbanBoardSection({ state }: KanbanBoardSectionProps) {
 
       <div className="flex-1 overflow-x-auto overflow-y-hidden" suppressHydrationWarning>
         <div className="p-4 h-full" suppressHydrationWarning>
+          {(currentJob as { id?: string })?.id ? (
+            <JobFairnessBlockBanner jobId={(currentJob as { id: string }).id} />
+          ) : null}
           {(!hasMounted || isLoadingCandidates) ? (
             <div className="flex gap-3 h-full min-w-max" suppressHydrationWarning>
               {dynamicStages.map((stage) => (
