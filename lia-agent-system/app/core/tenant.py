@@ -5,12 +5,19 @@ logger = logging.getLogger(__name__)
 
 DEMO_COMPANY_UUID = "00000000-0000-4000-a000-000000000001"
 
-DEMO_COMPANY_LEGACY_ALIASES = frozenset({"demo_company"})
+# Dev/staging company_id aliases → mapped to DEMO_COMPANY_UUID in non-prod.
+# Add here when a new dev/staging environment uses a different ID format.
+# In production, WorkOS org IDs map directly — do NOT add prod IDs here.
+DEMO_COMPANY_LEGACY_ALIASES = frozenset({
+    "demo_company",
+    "37",                                    # Rails integer ID in Replit dev
+    "a1b2c3d4-e5f6-7890-abcd-ef1234567890",  # Staging placeholder UUID
+})
 
 _INVALID_TENANT_VALUES = frozenset({
     "default", "demo_company", "unknown",
     "00000000-0000-0000-0000-000000000000",
-    "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    # Note: "a1b2c3d4-..." removed from INVALID — it's a valid dev alias above
 })
 
 
