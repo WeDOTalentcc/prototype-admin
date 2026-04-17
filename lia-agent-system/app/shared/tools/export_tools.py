@@ -21,7 +21,8 @@ async def export_candidates(
     filters: dict[str, Any] | None = None,
     format: str = "csv",
     include_fields: list[str] | None = None,
-    filename: str | None = None
+    filename: str | None = None,
+    **kwargs,  # absorbs _context injected by ToolExecutor
 ) -> dict[str, Any]:
     """
     Export a list of candidates to a file.

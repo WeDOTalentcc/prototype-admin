@@ -29,6 +29,14 @@ PAGE_TO_CONTEXT_TYPE: dict[str, str] = {
     "company_settings": "company_settings",
     "global": "general",
     "general": "general",
+    # Portuguese page names from frontend scope
+    "Vagas": "job_management",
+    "Candidatos": "talent_funnel",
+    "Analytics": "analytics",
+    "Configuracoes": "company_settings",
+    "Configurações": "company_settings",
+    "Kanban": "pipeline",
+    "Sourcing": "talent_funnel",
 }
 
 

@@ -1027,6 +1027,17 @@ class HTTPChatResponse(BaseModel):
 
 
 @router.post("/chat/message", response_model=HTTPChatResponse)
+
+_SCOPE_TO_DOMAIN = {
+    "Vagas": "jobs_management", "vagas": "jobs_management",
+    "jobs": "jobs_management", "job": "jobs_management",
+    "Candidatos": "sourcing", "candidatos": "sourcing",
+    "Analytics": "analytics", "analytics": "analytics",
+    "Configuracoes": "company_settings", "Configuracoes": "company_settings",
+    "Kanban": "kanban", "kanban": "kanban",
+    "Sourcing": "sourcing",
+}
+
 async def http_chat_message(req: HTTPChatRequest, request: Request):
     """
     HTTP fallback for agent chat when WebSocket is unavailable.
@@ -1047,6 +1058,13 @@ async def http_chat_message(req: HTTPChatRequest, request: Request):
     context = req.context or {}
     context.setdefault("company_id", company_id)
     context.setdefault("user_id", user_id)
+    # A2a: map frontend scope to domain agent
+    if not req.domain and context.get("scope"):
+        _page_domain = _SCOPE_TO_DOMAIN.get(context["scope"])
+        if _page_domain:
+            active_domain = _page_domain
+    if context.get("scope") and context["scope"] not in ("global", ""):
+        context.setdefault("page_context_hint", f"Usuário está na página: {context['scope']}")
 
     _inj_result = _injection_guard.check(content)
     if _inj_result.risk_level == "high":
