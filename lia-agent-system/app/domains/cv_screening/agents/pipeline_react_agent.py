@@ -21,7 +21,7 @@ from app.domains.cv_screening.agents.pipeline_stage_context import (
     get_stage_context,
 )
 from app.domains.cv_screening.agents.pipeline_system_prompt import get_pipeline_system_prompt, PIPELINE_DOMAIN_SPECIFIC, PIPELINE_REASONING_PROMPT
-from app.domains.cv_screening.agents.pipeline_tool_registry import (
+from app.domains.pipeline.agents.pipeline_tool_registry import (
     get_pipeline_tools,
 )
 

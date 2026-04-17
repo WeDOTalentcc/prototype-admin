@@ -125,7 +125,7 @@ class CustomAgentRuntime(LangGraphReActBase, EnhancedAgentMixin):
         domain_tool_loaders = {
             "sourcing": "app.domains.sourcing.agents.sourcing_tool_registry.get_sourcing_tools",
             "pipeline": "app.domains.pipeline.agents.pipeline_tool_registry.get_pipeline_tools",
-            "screening": "app.domains.cv_screening.agents.pipeline_tool_registry.get_pipeline_tools",
+            "screening": "app.domains.pipeline.agents.pipeline_tool_registry.get_pipeline_tools",
             "communication": "app.domains.communication.agents.communication_tool_registry.get_communication_tools",
             "analytics": "app.domains.analytics.agents.analytics_tool_registry.get_analytics_tools",
             "job_management": "app.domains.job_management.agents.wizard_tool_registry.get_wizard_tools",

@@ -108,7 +108,7 @@ async def test_wizard_generate_report_success():
 
 @pytest.mark.asyncio
 async def test_pipeline_generate_report_success():
-    from app.domains.cv_screening.agents.pipeline_tool_registry import _wrap_generate_report
+    from app.domains.pipeline.agents.pipeline_tool_registry import _wrap_generate_report
 
     mock_row = _make_db_row({"total": 80, "screening": 30, "interview": 20, "offer": 10, "hired": 5})
     mock_session = AsyncMock()
@@ -117,7 +117,7 @@ async def test_pipeline_generate_report_success():
     mock_ctx.__aenter__ = AsyncMock(return_value=mock_session)
     mock_ctx.__aexit__ = AsyncMock(return_value=False)
 
-    with patch("app.domains.cv_screening.agents.pipeline_tool_registry.AsyncSessionLocal", return_value=mock_ctx):
+    with patch("app.domains.pipeline.agents.pipeline_tool_registry.AsyncSessionLocal", return_value=mock_ctx):
         result = await _wrap_generate_report(report_type="funnel", period="month", company_id="c4")
 
     assert result["success"] is True
@@ -175,7 +175,7 @@ def test_stage_tools_include_generate_report():
     from app.domains.recruiter_assistant.agents.talent_tool_registry import STAGE_TOOLS as talent_stages
     from app.domains.sourcing.agents.sourcing_tool_registry import STAGE_TOOLS as sourcing_stages
     from app.domains.job_management.agents.wizard_tool_registry import STAGE_TOOLS as wizard_stages
-    from app.domains.cv_screening.agents.pipeline_tool_registry import STAGE_TOOLS as pipeline_stages
+    from app.domains.pipeline.agents.pipeline_tool_registry import STAGE_TOOLS as pipeline_stages
 
     assert "generate_report" in talent_stages.get("action_planning", [])
     assert "generate_report" in sourcing_stages.get("shortlist-creation", [])

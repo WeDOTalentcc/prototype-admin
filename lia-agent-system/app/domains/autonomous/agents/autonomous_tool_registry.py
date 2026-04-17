@@ -627,35 +627,35 @@ async def _wrap_get_company_config(**kwargs: Any) -> dict[str, Any]:
 @tool_handler("autonomous")
 async def _wrap_view_candidate_profile(**kwargs: Any) -> dict[str, Any]:
     """View full candidate profile from pipeline perspective."""
-    from app.domains.cv_screening.agents.pipeline_tool_registry import _wrap_view_candidate_profile
+    from app.domains.pipeline.agents.pipeline_tool_registry import _wrap_view_candidate_profile
     return await _wrap_view_candidate_profile(**kwargs)
 
 
 @tool_handler("autonomous")
 async def _wrap_view_screening_results(**kwargs: Any) -> dict[str, Any]:
     """View WSI screening results for a candidate."""
-    from app.domains.cv_screening.agents.pipeline_tool_registry import _wrap_view_screening_results
+    from app.domains.pipeline.agents.pipeline_tool_registry import _wrap_view_screening_results
     return await _wrap_view_screening_results(**kwargs)
 
 
 @tool_handler("autonomous")
 async def _wrap_view_interview_notes(**kwargs: Any) -> dict[str, Any]:
     """View interview notes and feedback for a candidate."""
-    from app.domains.cv_screening.agents.pipeline_tool_registry import _wrap_view_interview_notes
+    from app.domains.pipeline.agents.pipeline_tool_registry import _wrap_view_interview_notes
     return await _wrap_view_interview_notes(**kwargs)
 
 
 @tool_handler("autonomous")
 async def _wrap_run_wsi_screening(**kwargs: Any) -> dict[str, Any]:
     """Run WSI automated screening for a candidate against a job."""
-    from app.domains.cv_screening.agents.pipeline_tool_registry import _wrap_run_wsi_screening
+    from app.domains.pipeline.agents.pipeline_tool_registry import _wrap_run_wsi_screening
     return await _wrap_run_wsi_screening(**kwargs)
 
 
 @tool_handler("autonomous")
 async def _wrap_add_candidate_notes(**kwargs: Any) -> dict[str, Any]:
     """Add notes or observations to a candidate's pipeline record."""
-    from app.domains.cv_screening.agents.pipeline_tool_registry import _wrap_add_notes
+    from app.domains.pipeline.agents.pipeline_tool_registry import _wrap_add_notes
     return await _wrap_add_notes(**kwargs)
 
 
@@ -1028,7 +1028,7 @@ async def _wrap_get_shortlists(**kwargs: Any) -> dict[str, Any]:
 @tool_handler("autonomous")
 async def _wrap_schedule_interview(**kwargs: Any) -> dict[str, Any]:
     """Schedule an interview for a candidate (write operation)."""
-    from app.domains.cv_screening.agents.pipeline_tool_registry import _wrap_schedule_interview as _pi_sched
+    from app.domains.pipeline.agents.pipeline_tool_registry import _wrap_schedule_interview as _pi_sched
     return await _pi_sched(**kwargs)
 
 

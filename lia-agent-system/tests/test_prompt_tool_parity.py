@@ -133,7 +133,7 @@ class TestPipelinePromptParity:
         self.sys_prompt = self.sys_match.group(1)
 
         self.pipeline_tools = _scan_domain_tool_registry(
-            os.path.join(BASE, "app", "domains", "cv_screening", "agents", "pipeline_tool_registry.py")
+            os.path.join(BASE, "app", "domains", "pipeline", "agents", "pipeline_tool_registry.py")
         )
         self.enhanced_tools = _get_enhanced_mixin_tools()
         self.allowed_tools = self.pipeline_tools | self.enhanced_tools
