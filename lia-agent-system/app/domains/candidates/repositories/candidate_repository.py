@@ -177,7 +177,10 @@ class CandidateRepository:
             o `ORDER BY created_at DESC` não provoque sort in-memory.
         """
         query = select(Candidate).where(Candidate.is_active)
-        query = self._build_list_filters(query, search=search, status=status, source=source, seniority=seniority, ids=ids)
+        query = self._build_list_filters(
+            query, search=search, status=status, source=source,
+            seniority=seniority, ids=ids, company_id=company_id,
+        )
 
         if slim:
             # defer(*cols) diz ao SQLAlchemy para excluir essas colunas do SELECT;

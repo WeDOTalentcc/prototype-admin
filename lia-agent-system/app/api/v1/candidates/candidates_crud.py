@@ -5,7 +5,7 @@ import uuid
 from datetime import datetime
 from typing import Optional
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Request
 
 from ._shared import (
     ActivityService,
@@ -229,6 +229,7 @@ async def list_candidates(
             "adequado para o hot path da listagem."
         ),
     ),
+    request: Request = None,  # type: ignore[assignment]
     candidate_repo: CandidateRepository = Depends(get_candidate_repo),
     rails_adapter: RailsAdapter = Depends(get_rails_adapter),
     current_user: User = Depends(get_current_user_or_demo),
@@ -241,6 +242,7 @@ async def list_candidates(
     modelo Candidate — ver auditoria #287, causa raiz #4).
     """
     _company_id = str(current_user.company_id) if current_user.company_id else None
+    _request_id = getattr(request.state, "request_id", "unknown") if request else "unknown"
     # Only call Rails when explicitly enabled — avoids adapter's own DB fallback
     # bypassing endpoint-level filters and authorization.
     if RAILS_ENABLED:
@@ -327,17 +329,35 @@ async def list_candidates(
         }
     except Exception:
         logger.exception(
-            "[list_candidates] failed user_id=%s company_id=%s search=%r status=%r",
-            getattr(current_user, "id", None), _company_id, search, status,
+            "[list_candidates] failed request_id=%s user_id=%s company_id=%s search=%r status=%r",
+            _request_id, getattr(current_user, "id", None), _company_id, search, status,
         )
         raise HTTPException(status_code=500, detail="Falha ao listar candidatos.")
+
+
+def _assert_tenant_scope(candidate, current_user: User) -> None:
+    """Enforce tenant scope on a candidate row (task #295).
+
+    No-op enquanto `Candidate.company_id` não existir (ver auditoria #287
+    causa raiz #4 e follow-up de migração). Quando a coluna landar, qualquer
+    acesso cross-tenant por id vira 404 (em vez de 403, para não vazar
+    existência da row para outros tenants).
+    """
+    row_company = getattr(candidate, "company_id", None)
+    if row_company is None:
+        return
+    user_company = str(current_user.company_id) if current_user.company_id else None
+    if user_company and str(row_company) != user_company:
+        raise HTTPException(status_code=404, detail="Candidate not found")
 
 
 @router.get("/{candidate_id}", response_model=None)
 async def get_candidate(
     candidate_id: str,
+    request: Request = None,  # type: ignore[assignment]
     candidate_repo: CandidateRepository = Depends(get_candidate_repo),
     rails_adapter: RailsAdapter = Depends(get_rails_adapter),
+    current_user: User = Depends(get_current_user_or_demo),
 ):
     """Get a candidate by ID. When RAILS_API_URL is configured, tries Rails first then falls back to local DB."""
     # Only call Rails when explicitly enabled — avoids adapter's own DB fallback
@@ -359,11 +379,16 @@ async def get_candidate(
         candidate = await candidate_repo.get_by_id_str(candidate_id)
         if not candidate:
             raise HTTPException(status_code=404, detail="Candidate not found")
+        _assert_tenant_scope(candidate, current_user)
         return _serialize_candidate(candidate, full=True)
     except HTTPException:
         raise
     except Exception:
-        logger.exception("[get_candidate] failed candidate_id=%s", candidate_id)
+        _rid = getattr(request.state, "request_id", "unknown") if request else "unknown"
+        logger.exception(
+            "[get_candidate] failed request_id=%s candidate_id=%s user_id=%s",
+            _rid, candidate_id, getattr(current_user, "id", None),
+        )
         raise HTTPException(status_code=500, detail="Falha ao carregar o candidato.")
 
 
@@ -395,7 +420,9 @@ async def _background_enrich_candidate(candidate_id: uuid.UUID, linkedin_url: st
 async def create_candidate(
     candidate_data: CandidateCreate,
     background_tasks: BackgroundTasks,
+    request: Request = None,  # type: ignore[assignment]
     candidate_repo: CandidateRepository = Depends(get_candidate_repo),
+    current_user: User = Depends(get_current_user_or_demo),
 ):
     """Create a new candidate. If auto_enrich=True and linkedin_url is provided, enrichment runs in background."""
     try:
@@ -458,7 +485,11 @@ async def create_candidate(
             "enrichment_scheduled": enrichment_scheduled,
         }
     except Exception:
-        logger.exception("[create_candidate] failed name=%s", candidate_data.name)
+        _rid = getattr(request.state, "request_id", "unknown") if request else "unknown"
+        logger.exception(
+            "[create_candidate] failed request_id=%s user_id=%s name=%s",
+            _rid, getattr(current_user, "id", None), candidate_data.name,
+        )
         raise HTTPException(status_code=500, detail="Falha ao criar o candidato.")
 
 
@@ -466,13 +497,16 @@ async def create_candidate(
 async def update_candidate(
     candidate_id: str,
     candidate_data: CandidateUpdate,
+    request: Request = None,  # type: ignore[assignment]
     candidate_repo: CandidateRepository = Depends(get_candidate_repo),
+    current_user: User = Depends(get_current_user_or_demo),
 ):
     """Update an existing candidate."""
     try:
         candidate = await candidate_repo.get_by_id_str(candidate_id)
         if not candidate:
             raise HTTPException(status_code=404, detail="Candidate not found")
+        _assert_tenant_scope(candidate, current_user)
         update_data = candidate_data.model_dump(exclude_unset=True)
         for field, value in update_data.items():
             if hasattr(candidate, field):
@@ -491,7 +525,11 @@ async def update_candidate(
     except HTTPException:
         raise
     except Exception:
-        logger.exception("[update_candidate] failed candidate_id=%s", candidate_id)
+        _rid = getattr(request.state, "request_id", "unknown") if request else "unknown"
+        logger.exception(
+            "[update_candidate] failed request_id=%s candidate_id=%s user_id=%s",
+            _rid, candidate_id, getattr(current_user, "id", None),
+        )
         raise HTTPException(status_code=500, detail="Falha ao atualizar o candidato.")
 
 
@@ -499,16 +537,19 @@ async def update_candidate(
 async def update_candidate_stage(
     candidate_id: str,
     stage_data: CandidateStageUpdate,
+    request: Request = None,  # type: ignore[assignment]
     candidate_repo: CandidateRepository = Depends(get_candidate_repo),
     vc_repo: VacancyCandidateRepository = Depends(get_vacancy_candidate_repo),
     audit_svc: AuditService = Depends(get_audit_service),
     activity_svc: ActivityService = Depends(get_activity_service),
+    current_user: User = Depends(get_current_user_or_demo),
 ):
     """Update candidate pipeline stage (used when moving candidates in Kanban)."""
     try:
         candidate = await candidate_repo.get_by_id_str(candidate_id)
         if not candidate:
             raise HTTPException(status_code=404, detail="Candidate not found")
+        _assert_tenant_scope(candidate, current_user)
 
         vacancy_candidate = await vc_repo.get_for_candidate_and_job(
             candidate_id=candidate_id,
@@ -670,9 +711,11 @@ async def update_candidate_stage(
     except HTTPException:
         raise
     except Exception:
+        _rid = getattr(request.state, "request_id", "unknown") if request else "unknown"
         logger.exception(
-            "[update_candidate_stage] failed candidate_id=%s stage=%s",
-            candidate_id, getattr(stage_data, "stage", None),
+            "[update_candidate_stage] failed request_id=%s candidate_id=%s user_id=%s stage=%s",
+            _rid, candidate_id, getattr(current_user, "id", None),
+            getattr(stage_data, "stage", None),
         )
         raise HTTPException(status_code=500, detail="Falha ao atualizar a etapa do candidato.")
 
@@ -680,20 +723,27 @@ async def update_candidate_stage(
 @router.delete("/{candidate_id}", response_model=None)
 async def delete_candidate(
     candidate_id: str,
+    request: Request = None,  # type: ignore[assignment]
     candidate_repo: CandidateRepository = Depends(get_candidate_repo),
+    current_user: User = Depends(get_current_user_or_demo),
 ):
     """Soft delete (deactivate) a candidate."""
     try:
         candidate = await candidate_repo.get_by_id_str(candidate_id)
         if not candidate:
             raise HTTPException(status_code=404, detail="Candidate not found")
+        _assert_tenant_scope(candidate, current_user)
         await candidate_repo.soft_delete(candidate)
         logger.info(f"Candidate deactivated: {candidate_id}")
         return {"message": "Candidate deactivated successfully", "id": candidate_id}
     except HTTPException:
         raise
     except Exception:
-        logger.exception("[delete_candidate] failed candidate_id=%s", candidate_id)
+        _rid = getattr(request.state, "request_id", "unknown") if request else "unknown"
+        logger.exception(
+            "[delete_candidate] failed request_id=%s candidate_id=%s user_id=%s",
+            _rid, candidate_id, getattr(current_user, "id", None),
+        )
         raise HTTPException(status_code=500, detail="Falha ao remover o candidato.")
 
 
@@ -711,19 +761,25 @@ class EnrichmentRequest(BaseModel):
 @router.post("/{candidate_id}/enrich", response_model=None)
 async def enrich_candidate(
     candidate_id: str,
-    request: EnrichmentRequest = EnrichmentRequest(),
+    enrichment_request: EnrichmentRequest = EnrichmentRequest(),
+    http_request: Request = None,  # type: ignore[assignment]
     candidate_repo: CandidateRepository = Depends(get_candidate_repo),
+    current_user: User = Depends(get_current_user_or_demo),
 ):
     """Enrich candidate data from LinkedIn using Apify scrapers."""
     try:
+        existing = await candidate_repo.get_by_id_str(candidate_id)
+        if not existing:
+            raise HTTPException(status_code=404, detail="Candidate not found")
+        _assert_tenant_scope(existing, current_user)
         from app.domains.candidates.services.candidate_enrichment_service import candidate_enrichment_service
         result = await candidate_enrichment_service.enrich_candidate(
             db=candidate_repo.db,
             candidate_id=uuid.UUID(candidate_id),
-            linkedin_url=request.linkedin_url,
-            include_experiences=request.include_experiences,
-            include_education=request.include_education,
-            include_email_discovery=request.include_email_discovery,
+            linkedin_url=enrichment_request.linkedin_url,
+            include_experiences=enrichment_request.include_experiences,
+            include_education=enrichment_request.include_education,
+            include_email_discovery=enrichment_request.include_email_discovery,
         )
         if not result["success"]:
             raise HTTPException(status_code=400, detail=result.get("error", "Enrichment failed"))
@@ -742,5 +798,9 @@ async def enrich_candidate(
     except HTTPException:
         raise
     except Exception:
-        logger.exception("[enrich_candidate] failed candidate_id=%s", candidate_id)
+        _rid = getattr(http_request.state, "request_id", "unknown") if http_request else "unknown"
+        logger.exception(
+            "[enrich_candidate] failed request_id=%s candidate_id=%s user_id=%s",
+            _rid, candidate_id, getattr(current_user, "id", None),
+        )
         raise HTTPException(status_code=500, detail="Falha ao enriquecer o candidato.")
