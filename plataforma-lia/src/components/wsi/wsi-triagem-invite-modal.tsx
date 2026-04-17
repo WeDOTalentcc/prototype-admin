@@ -846,7 +846,15 @@ useEffect(() => {
             </Button>
             <Button
               onClick={handleSend}
-              disabled={isSending || !message.trim()}
+              disabled={(() => {
+                if (isSending) return true
+                const needsEmail = channel === 'email' || channel === 'voz_web' || channel === 'both'
+                const needsPhone = channel === 'whatsapp' || channel === 'telefone' || channel === 'both'
+                if (needsEmail && !candidate.email) return true
+                if (needsPhone && !candidate.phone) return true
+                if (!message.trim()) return true
+                return false
+              })()}
               className="h-9 px-4 text-xs font-medium bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text"
             >
               {isSending ? (

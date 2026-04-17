@@ -79,7 +79,7 @@ export const SCREENING_SECTIONS = [
 function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiveSection, _hideOwnSidebar }: ScreeningConfigManagerProps & { _externalActiveSection?: string; _hideOwnSidebar?: boolean }) {
   const core = useScreeningConfigManagerCore({ job, onJobUpdate, onFormUpdate, _externalActiveSection, _hideOwnSidebar })
   const {
-    activeSection, companyQuestions, configDone, currentSection, customQuestions, disabledCompanyQIds, editAutoApprovalPreset, editAvailableHours, editAvailableHoursInherited, editCalendarProvider, editChannels, editFallbackOrder, editInterviewDuration, editMaxRetries, editMinScorePreset, editPrimaryChannel, editSchedulingEnabled, editSchedulingMinScorePreset, editTimeoutHours, getConfigStatusInfo, isEditingScreening, isEditingScreeningConfig, screeningConfigLoadError, retryScreeningConfig, jdDone, questionsDone, resetScreeningEditing, screeningConfig, selectedBankQuestions, setActiveSection, setEditAutoApprovalPreset, setEditAvailableHours, setEditAvailableHoursInherited, setEditCalendarProvider, setEditChannels, setEditFallbackOrder, setEditInterviewDuration, setEditMaxRetries, setEditMinScorePreset, setEditPrimaryChannel, setEditSchedulingEnabled, setEditSchedulingMinScorePreset, setEditTimeoutHours, setIsEditingScreening, setIsEditingScreeningConfig, setShowScreeningToggleConfirm, showScreeningToggleConfirm, updateScreeningConfig,
+    activeSection, companyQuestions, configDone, currentSection, customQuestions, disabledCompanyQIds, editAutoApprovalPreset, editAvailableHours, editAvailableHoursInherited, editCalendarProvider, editChannels, editChannelsMasterEnabled, editFallbackOrder, editInterviewDuration, editMaxRetries, editMinScorePreset, editPrimaryChannel, editSchedulingEnabled, editSchedulingMinScorePreset, editTimeoutHours, getConfigStatusInfo, isEditingScreening, isEditingScreeningConfig, screeningConfigLoadError, retryScreeningConfig, jdDone, questionsDone, resetScreeningEditing, screeningConfig, selectedBankQuestions, setActiveSection, setEditAutoApprovalPreset, setEditAvailableHours, setEditAvailableHoursInherited, setEditCalendarProvider, setEditChannels, setEditChannelsMasterEnabled, setEditFallbackOrder, setEditInterviewDuration, setEditMaxRetries, setEditMinScorePreset, setEditPrimaryChannel, setEditSchedulingEnabled, setEditSchedulingMinScorePreset, setEditTimeoutHours, setIsEditingScreening, setIsEditingScreeningConfig, setShowScreeningToggleConfirm, showScreeningToggleConfirm, updateScreeningConfig,
   } = core
 
   if (screeningConfigLoadError) {
@@ -167,6 +167,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                             phone_pstn: screeningConfig.channels?.phone_pstn?.enabled ?? screeningConfig.channels?.phone?.enabled ?? false,
                             voice_web: screeningConfig.channels?.voice_web?.enabled ?? screeningConfig.channels?.voip_web?.enabled ?? true,
                           })
+                          setEditChannelsMasterEnabled(screeningConfig.channels_master_enabled !== false)
                           setEditPrimaryChannel(screeningConfig.screening_channels?.primary_channel ?? 'chat_web')
                           setEditFallbackOrder(screeningConfig.screening_channels?.fallback_order ?? ['whatsapp'])
                           setEditMinScorePreset(screeningConfig.settings?.min_score_preset ?? 'recommended')
@@ -193,6 +194,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                             }
                           }
                           const success = await updateScreeningConfig({
+                            channels_master_enabled: editChannelsMasterEnabled,
                             channels: {
                               whatsapp: { enabled: editChannels.whatsapp, label: 'WhatsApp' },
                               chat_web: { enabled: editChannels.chat_web, label: 'Chat Web' },

@@ -166,6 +166,14 @@ export function useScreeningConfigManagerCore({ job, onJobUpdate, onFormUpdate, 
   const [editChannels, setEditChannels] = useState({
     whatsapp: true, chat_web: true, phone_pstn: false, voice_web: true
   })
+  // Task #425 — editable master toggle for channels (default ON for back-compat).
+  const [editChannelsMasterEnabled, setEditChannelsMasterEnabled] = useState<boolean>(true)
+  // Sync master toggle with server value when config loads or changes outside edit mode.
+  useEffect(() => {
+    if (!isEditingScreeningConfig) {
+      setEditChannelsMasterEnabled(screeningConfig?.channels_master_enabled !== false)
+    }
+  }, [screeningConfig?.channels_master_enabled, isEditingScreeningConfig])
   const [editPrimaryChannel, setEditPrimaryChannel] = useState<ScreeningChannelKey>('chat_web')
   const [editFallbackOrder, setEditFallbackOrder] = useState<ScreeningChannelKey[]>(['whatsapp'])
   const [editMinScorePreset, setEditMinScorePreset] = useState<'rigorous' | 'recommended' | 'flexible'>('recommended')
@@ -534,6 +542,7 @@ export function useScreeningConfigManagerCore({ job, onJobUpdate, onFormUpdate, 
     editAvailableHoursInherited,
     editCalendarProvider,
     editChannels,
+    editChannelsMasterEnabled,
     editFallbackOrder,
     editInterviewDuration,
     editMaxRetries,
@@ -568,6 +577,7 @@ export function useScreeningConfigManagerCore({ job, onJobUpdate, onFormUpdate, 
     setEditAvailableHoursInherited,
     setEditCalendarProvider,
     setEditChannels,
+    setEditChannelsMasterEnabled,
     setEditFallbackOrder,
     setEditInterviewDuration,
     setEditMaxRetries,
