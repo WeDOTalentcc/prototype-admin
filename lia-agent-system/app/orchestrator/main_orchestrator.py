@@ -296,7 +296,13 @@ class MainOrchestrator:
             conv, conv_id = None, conv_id
             if not ctx.skip_memory_persist:
                 try:
-                    conv, conv_id = await self._setup_conversation_memory(ctx, conv_id, db, {})
+                    _mem_ctx: dict = {}
+                    conv, conv_id = await self._setup_conversation_memory(ctx, conv_id, db, _mem_ctx)
+                    # Inject loaded history into ctx.extra so agents can access it (Bug: was passing {} and discarding)
+                    if _mem_ctx.get("conversation_history"):
+                        ctx.extra["conversation_history"] = _mem_ctx["conversation_history"]
+                    if _mem_ctx.get("conversation_summary"):
+                        ctx.extra["conversation_summary"] = _mem_ctx["conversation_summary"]
                 except Exception as e:
                     logger.warning("[LIA-M01] Memory setup failed (non-blocking): %s", e)
 
