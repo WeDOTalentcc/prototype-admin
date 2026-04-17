@@ -1,0 +1,276 @@
+[
+  {
+    "id": "JM-001",
+    "category": "JM",
+    "severity": "critical",
+    "title": "List all jobs",
+    "prompt": "mostra todas as vagas",
+    "context": {
+      "scope": "Vagas",
+      "page": "gestao-vagas"
+    },
+    "expected_tools": [
+      "list_jobs"
+    ],
+    "canonical_files": [
+      "app/domains/recruiter_assistant/agents/jobs_mgmt_tool_registry.py",
+      "app/domains/recruiter_assistant/agents/jobs_mgmt_system_prompt.py"
+    ],
+    "success_criteria": [
+      "Response contains at least one job title or ID",
+      "Does not ask for clarification before executing",
+      "Calls list_jobs tool"
+    ],
+    "anti_patterns": [
+      "Says 'Não encontrei nenhuma vaga' without attempting tool call",
+      "Asks 'qual empresa?' before calling the tool",
+      "Says tool not authorized"
+    ],
+    "api_ok": true,
+    "http_status": 200,
+    "latency_ms": 233,
+    "response": "{'ok': True, 'data': {'message': {'id': '6b7b4f50-cd49-44f7-b9ca-c41f16de8e4b', 'conversation_id': '5e1f2e18-5ff2-450f-9930-d5b3cb6767c2', 'role': 'assistant', 'content': \"KeywordIntentMatcher matched action 'create_job' (kw='')\", 'message_metadata': {'intent': 'create_job', 'entities': {}}, 'created_at': '2026-04-17T17:57:55.245503'}, 'conversation': {'id': '5e1f2e18-5ff2-450f-9930-d5b3cb6767c2', 'user_id': '13cf82fb-f1f6-4205-9377-758e59040148', 'user_role': 'recruiter', 'title': 'mostra todas as vagas', 'intent': 'create_job', 'workflow_type': None, 'workflow_step': 0, 'workflow_data': {}, 'status': 'active', 'created_at': '2026-04-17T17:57:55.040001', 'updated_at': '2026-04-17T17:57:55.245503'}}, 'meta': {'request_id': 'ef387377-a722-45be-8414-a2feb37bcec4', 'ts': '2026-04-17T17:57:55.249228+00:00'}}",
+    "error": "",
+    "score": 1,
+    "flags": [],
+    "scored_at": "2026-04-17T17:57:55.251491"
+  },
+  {
+    "id": "JM-002",
+    "category": "JM",
+    "severity": "critical",
+    "title": "List active jobs only",
+    "prompt": "quais vagas estão ativas?",
+    "context": {
+      "scope": "Vagas",
+      "page": "gestao-vagas"
+    },
+    "expected_tools": [
+      "list_jobs"
+    ],
+    "canonical_files": [
+      "app/domains/recruiter_assistant/agents/jobs_mgmt_tool_registry.py"
+    ],
+    "success_criteria": [
+      "Filters by status=active or ativa",
+      "Returns job list with status indicator"
+    ],
+    "anti_patterns": [
+      "Returns all jobs without filtering",
+      "Cannot find any jobs"
+    ],
+    "api_ok": true,
+    "http_status": 200,
+    "latency_ms": 164,
+    "response": "{'ok': True, 'data': {'message': {'id': 'ce15d028-304d-43d6-a7e0-d6a37de68bf8', 'conversation_id': '11a54159-6f08-4f25-a8b9-d6edde1ea4c8', 'role': 'assistant', 'content': \"KeywordIntentMatcher matched action 'create_job' (kw='')\", 'message_metadata': {'intent': 'create_job', 'entities': {}}, 'created_at': '2026-04-17T17:57:55.911845'}, 'conversation': {'id': '11a54159-6f08-4f25-a8b9-d6edde1ea4c8', 'user_id': '13cf82fb-f1f6-4205-9377-758e59040148', 'user_role': 'recruiter', 'title': 'quais vagas estão ativas?', 'intent': 'create_job', 'workflow_type': None, 'workflow_step': 0, 'workflow_data': {}, 'status': 'active', 'created_at': '2026-04-17T17:57:55.760194', 'updated_at': '2026-04-17T17:57:55.911845'}}, 'meta': {'request_id': 'db7584fe-fa9a-4091-b9d8-e16d8b71d4b8', 'ts': '2026-04-17T17:57:55.914352+00:00'}}",
+    "error": "",
+    "score": 3,
+    "flags": [],
+    "scored_at": "2026-04-17T17:57:55.915961"
+  },
+  {
+    "id": "JM-003",
+    "category": "JM",
+    "severity": "high",
+    "title": "Pause a specific job",
+    "prompt": "pausa a vaga de Product Manager",
+    "context": {
+      "scope": "Vagas",
+      "page": "gestao-vagas"
+    },
+    "expected_tools": [
+      "list_jobs",
+      "pause_job"
+    ],
+    "canonical_files": [
+      "app/domains/recruiter_assistant/agents/jobs_mgmt_tool_registry.py"
+    ],
+    "success_criteria": [
+      "Identifies the correct job",
+      "Asks for confirmation before pausing (HITL)",
+      "Confirms action was taken or asks to confirm"
+    ],
+    "anti_patterns": [
+      "Pauses without asking for confirmation",
+      "Says cannot perform write operations"
+    ],
+    "api_ok": true,
+    "http_status": 200,
+    "latency_ms": 7030,
+    "response": "{'ok': True, 'data': {'message': {'id': 'daeefb76-cd73-486b-9494-6ee655ed09ff', 'conversation_id': '23e0a808-6a7b-4bf8-a00e-386a68451ca8', 'role': 'assistant', 'content': 'Preciso de algumas informações antes de prosseguir.\\n\\nNão encontrei uma vaga de Product Manager ativa no seu portfólio no momento — o sistema indica que você tem **0 vagas abertas**.\\n\\nPode ser que:\\n- A vaga esteja cadastrada com outro nome ou título\\n- Ela já esteja pausada ou encerrada\\n- Ainda não foi criada na plataforma\\n\\nVocê consegue confirmar o nome exato da vaga ou o código dela? Assim consigo localizar e executar a pausa corretamente.', 'message_metadata': {'intent': 'pause_job', 'entities': {}}, 'created_at': '2026-04-17T17:58:03.442639'}, 'conversation': {'id': '23e0a808-6a7b-4bf8-a00e-386a68451ca8', 'user_id': '13cf82fb-f1f6-4205-9377-758e59040148', 'user_role': 'recruiter', 'title': 'pausa a vaga de Product Manager', 'intent': 'pause_job', 'workflow_type': None, 'workflow_step': 0, 'workflow_data': {}, 'status': 'active', 'created_at': '2026-04-17T17:57:56.426387', 'updated_at': '2026-04-17T17:58:03.442639'}}, 'meta': {'request_id': '457b3a34-563b-4896-88fe-3a2273368251', 'ts': '2026-04-17T17:58:03.445299+00:00'}}",
+    "error": "",
+    "score": 1,
+    "flags": [],
+    "scored_at": "2026-04-17T17:58:03.446826"
+  },
+  {
+    "id": "JM-004",
+    "category": "JM",
+    "severity": "high",
+    "title": "Get job details",
+    "prompt": "me conta mais sobre a vaga V0037",
+    "context": {
+      "scope": "Vagas",
+      "page": "gestao-vagas"
+    },
+    "expected_tools": [
+      "get_job_details"
+    ],
+    "canonical_files": [
+      "app/domains/recruiter_assistant/agents/jobs_mgmt_tool_registry.py"
+    ],
+    "success_criteria": [
+      "Returns job title, status, candidate count",
+      "Uses V0037 as job identifier"
+    ],
+    "anti_patterns": [
+      "Says job not found",
+      "Returns generic information"
+    ],
+    "api_ok": true,
+    "http_status": 200,
+    "latency_ms": 2312,
+    "response": "{'ok': True, 'data': {'message': {'id': '2a612292-128d-447b-acb8-40c6997ad621', 'conversation_id': 'c0659428-9e5f-45b0-b37c-596ddd5f9fd8', 'role': 'assistant', 'content': 'Poderia me confirmar o ID da vaga? O ID \"V0037\" parece estar incompleto ou incorreto.', 'message_metadata': {'intent': 'agentic_tool_call', 'entities': {}}, 'created_at': '2026-04-17T17:58:06.252831'}, 'conversation': {'id': 'c0659428-9e5f-45b0-b37c-596ddd5f9fd8', 'user_id': '13cf82fb-f1f6-4205-9377-758e59040148', 'user_role': 'recruiter', 'title': 'me conta mais sobre a vaga V0037', 'intent': 'agentic_tool_call', 'workflow_type': None, 'workflow_step': 0, 'workflow_data': {}, 'status': 'active', 'created_at': '2026-04-17T17:58:03.958025', 'updated_at': '2026-04-17T17:58:06.252831'}}, 'meta': {'request_id': 'a378cc35-d304-44a9-aa67-9fe875eb4226', 'ts': '2026-04-17T17:58:06.257602+00:00'}}",
+    "error": "",
+    "score": 2,
+    "flags": [],
+    "scored_at": "2026-04-17T17:58:06.259167"
+  },
+  {
+    "id": "JM-005",
+    "category": "JM",
+    "severity": "high",
+    "title": "List urgent jobs",
+    "prompt": "quais vagas estão urgentes ou em risco?",
+    "context": {
+      "scope": "Vagas",
+      "page": "gestao-vagas"
+    },
+    "expected_tools": [
+      "list_jobs"
+    ],
+    "canonical_files": [
+      "app/domains/recruiter_assistant/agents/jobs_mgmt_tool_registry.py"
+    ],
+    "success_criteria": [
+      "Filters for urgent/at-risk jobs",
+      "Explains why each job is at risk"
+    ],
+    "anti_patterns": [
+      "Returns all jobs without filtering"
+    ],
+    "api_ok": true,
+    "http_status": 200,
+    "latency_ms": 7816,
+    "response": "{'ok': True, 'data': {'message': {'id': 'beb1d16a-bfa9-461c-b0b1-e28f9f04669f', 'conversation_id': '5e62b87a-b818-4061-910c-5a31afa939d0', 'role': 'assistant', 'content': 'Para te ajudar a buscar as vagas em risco ou urgentes, preciso de algumas informações:\\n\\n1.  **Vagas Urgentes:** Posso buscar por vagas que foram marcadas como urgentes.\\n2.  **Vagas em Risco:** A LIA pode te alertar sobre vagas em risco com base em diversos fatores. Você gostaria de ver alertas de qual severidade (baixa, média, alta ou todas)?\\n\\nMe diga quais você gostaria de ver!', 'message_metadata': {'intent': 'agentic_tool_call', 'entities': {}}, 'created_at': '2026-04-17T17:58:14.567760'}, 'conversation': {'id': '5e62b87a-b818-4061-910c-5a31afa939d0', 'user_id': '13cf82fb-f1f6-4205-9377-758e59040148', 'user_role': 'recruiter', 'title': 'quais vagas estão urgentes ou em risco?', 'intent': 'agentic_tool_call', 'workflow_type': None, 'workflow_step': 0, 'workflow_data': {}, 'status': 'active', 'created_at': '2026-04-17T17:58:10.288816', 'updated_at': '2026-04-17T17:58:14.567760'}}, 'meta': {'request_id': '739bb1dd-3c46-457a-8ff7-2a3f10a34816', 'ts': '2026-04-17T17:58:14.573056+00:00'}}",
+    "error": "",
+    "score": 1,
+    "flags": [],
+    "scored_at": "2026-04-17T17:58:14.575556"
+  },
+  {
+    "id": "JM-006",
+    "category": "JM",
+    "severity": "medium",
+    "title": "Close a job",
+    "prompt": "fecha a vaga Tech Lead Backend — preenchemos a posição",
+    "context": {
+      "scope": "Vagas",
+      "page": "gestao-vagas"
+    },
+    "expected_tools": [
+      "list_jobs",
+      "close_job"
+    ],
+    "canonical_files": [
+      "app/domains/recruiter_assistant/agents/jobs_mgmt_tool_registry.py"
+    ],
+    "success_criteria": [
+      "Identifies correct job",
+      "Confirms before executing",
+      "Reports success"
+    ],
+    "anti_patterns": [
+      "Closes without confirmation",
+      "Cannot find job"
+    ],
+    "api_ok": true,
+    "http_status": 200,
+    "latency_ms": 6314,
+    "response": "{'ok': True, 'data': {'message': {'id': '6f44b028-fa4b-4099-b60a-c25f222c8190', 'conversation_id': 'bdce786c-0fb6-4b2b-9011-b38e58dc39c3', 'role': 'assistant', 'content': 'Ok, compreendi. Para fechar a vaga \"Tech Lead Backend\", preciso do ID da vaga. Você poderia me fornecer o ID da vaga?\\n\\nAlém disso, como a posição foi preenchida, você gostaria de informar o ID do candidato contratado para essa vaga?', 'message_metadata': {'intent': 'agentic_tool_call', 'entities': {}}, 'created_at': '2026-04-17T17:58:21.382504'}, 'conversation': {'id': 'bdce786c-0fb6-4b2b-9011-b38e58dc39c3', 'user_id': '13cf82fb-f1f6-4205-9377-758e59040148', 'user_role': 'recruiter', 'title': 'fecha a vaga Tech Lead Backend — preenchemos a posição', 'intent': 'agentic_tool_call', 'workflow_type': None, 'workflow_step': 0, 'workflow_data': {}, 'status': 'active', 'created_at': '2026-04-17T17:58:19.847372', 'updated_at': '2026-04-17T17:58:21.382504'}}, 'meta': {'request_id': '4575d6f6-8bb4-4470-a102-7c2c9713c7f5', 'ts': '2026-04-17T17:58:21.388085+00:00'}}",
+    "error": "",
+    "score": 1,
+    "flags": [],
+    "scored_at": "2026-04-17T17:58:21.390102"
+  },
+  {
+    "id": "JM-007",
+    "category": "JM",
+    "severity": "medium",
+    "title": "Update job salary range",
+    "prompt": "atualiza o salário da vaga de Marketing Digital para até R$12.000",
+    "context": {
+      "scope": "Vagas",
+      "page": "gestao-vagas"
+    },
+    "expected_tools": [
+      "list_jobs",
+      "update_job"
+    ],
+    "canonical_files": [
+      "app/domains/recruiter_assistant/agents/jobs_mgmt_tool_registry.py"
+    ],
+    "success_criteria": [
+      "Updates salary field",
+      "Asks for confirmation"
+    ],
+    "anti_patterns": [
+      "Says cannot update",
+      "Asks which job when it was specified"
+    ],
+    "api_ok": true,
+    "http_status": 200,
+    "latency_ms": 39,
+    "response": "{'ok': True, 'data': {'message': {'id': '784dccd0-c474-423b-b55b-56b289162619', 'conversation_id': '2b624c8e-3a34-412a-8326-896981ff42f4', 'role': 'assistant', 'content': 'Qual candidato você quer atualizar?', 'message_metadata': {'intent': 'update_candidate_field', 'entities': {}}, 'created_at': '2026-04-17T17:58:21.925151'}, 'conversation': {'id': '2b624c8e-3a34-412a-8326-896981ff42f4', 'user_id': '13cf82fb-f1f6-4205-9377-758e59040148', 'user_role': 'recruiter', 'title': 'atualiza o salário da vaga de Marketing Digital para até R$12.000', 'intent': 'update_candidate_field', 'workflow_type': None, 'workflow_step': 0, 'workflow_data': {}, 'status': 'active', 'created_at': '2026-04-17T17:58:21.900007', 'updated_at': '2026-04-17T17:58:21.925151'}}, 'meta': {'request_id': '60b1af01-54d5-4c1f-a6d3-579996db475f', 'ts': '2026-04-17T17:58:21.927799+00:00'}}",
+    "error": "",
+    "score": 0,
+    "flags": [
+      "ANTI_PATTERN: Says cannot update"
+    ],
+    "scored_at": "2026-04-17T17:58:21.929314"
+  },
+  {
+    "id": "JM-008",
+    "category": "JM",
+    "severity": "low",
+    "title": "Count jobs by status",
+    "prompt": "quantas vagas tenho abertas, pausadas e concluídas?",
+    "context": {
+      "scope": "Vagas",
+      "page": "gestao-vagas"
+    },
+    "expected_tools": [
+      "list_jobs"
+    ],
+    "canonical_files": [
+      "app/domains/recruiter_assistant/agents/jobs_mgmt_tool_registry.py"
+    ],
+    "success_criteria": [
+      "Returns numeric counts",
+      "Differentiates by status"
+    ],
+    "anti_patterns": [
+      "Lists all jobs instead of counts"
+    ],
+    "api_ok": false,
+    "http_status": 0,
+    "latency_ms": -1,
+    "response": "",
+    "error": "TIMEOUT",
+    "score": 0,
+    "flags": [
+      "HTTP_0"
+    ],
+    "scored_at": "2026-04-17T17:58:52.460684"
+  }
+]
