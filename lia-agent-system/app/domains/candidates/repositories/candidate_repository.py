@@ -90,7 +90,17 @@ class CandidateRepository:
         source: str | None = None,
         seniority: str | None = None,
         ids: list[str] | None = None,
+        company_id: str | None = None,
     ):
+        # Tenant scope (task #295). O filtro só é aplicado se a coluna
+        # `company_id` existir no modelo Candidate — hoje ela não existe
+        # (ver auditoria docs/audits/candidates-root-cause-2026-04-16.md
+        # causa raiz #4) e o parâmetro fica como no-op forward-compat.
+        # Quando a migração que adicionar a coluna landar, o filtro já
+        # passa a ser aplicado automaticamente sem mudar o caller.
+        if company_id and hasattr(Candidate, "company_id"):
+            query = query.where(Candidate.company_id == company_id)
+
         if ids:
             query = query.where(Candidate.id.in_(ids))
 
@@ -132,9 +142,13 @@ class CandidateRepository:
         source: str | None = None,
         seniority: str | None = None,
         ids: list[str] | None = None,
+        company_id: str | None = None,
     ) -> int:
         query = select(func.count(Candidate.id)).where(Candidate.is_active)
-        query = self._build_list_filters(query, search=search, status=status, source=source, seniority=seniority, ids=ids)
+        query = self._build_list_filters(
+            query, search=search, status=status, source=source,
+            seniority=seniority, ids=ids, company_id=company_id,
+        )
         result = await self.db.execute(query)
         return result.scalar() or 0
 
@@ -150,6 +164,7 @@ class CandidateRepository:
         sort_by: str | None = None,
         sort_order: str | None = None,
         slim: bool = False,
+        company_id: str | None = None,
     ) -> list[Candidate]:
         """
         Lista candidatos paginados ordenados por `sort_by` (default: created_at DESC).

@@ -23,10 +23,12 @@ from ._shared import (
     get_activity_service,
     get_audit_service,
     get_candidate_repo,
+    get_current_user_or_demo,
     get_stage_rank,
     get_vacancy_candidate_repo,
     logger,
     normalize_array_field,
+    User,
 )
 from pydantic import BaseModel
 from app.domains.integrations_hub.services.rails_adapter import RailsAdapter, RAILS_ENABLED
@@ -229,8 +231,16 @@ async def list_candidates(
     ),
     candidate_repo: CandidateRepository = Depends(get_candidate_repo),
     rails_adapter: RailsAdapter = Depends(get_rails_adapter),
+    current_user: User = Depends(get_current_user_or_demo),
 ):
-    """List candidates. When RAILS_API_URL is configured, tries Rails first then falls back to local DB."""
+    """List candidates. When RAILS_API_URL is configured, tries Rails first then falls back to local DB.
+
+    Task #295: passa a exigir auth via `get_current_user_or_demo` (em DEV_MODE
+    cai no usuário demo). O `company_id` do usuário é propagado para o repo
+    como filtro forward-compat (no-op enquanto a coluna não existir no
+    modelo Candidate — ver auditoria #287, causa raiz #4).
+    """
+    _company_id = str(current_user.company_id) if current_user.company_id else None
     # Only call Rails when explicitly enabled — avoids adapter's own DB fallback
     # bypassing endpoint-level filters and authorization.
     if RAILS_ENABLED:
@@ -281,6 +291,7 @@ async def list_candidates(
         _t0 = _time.perf_counter()
         total = await candidate_repo.count_candidates(
             search=search, status=status, source=source, seniority=seniority, ids=id_list,
+            company_id=_company_id,
         )
         _t_count_ms = (_time.perf_counter() - _t0) * 1000.0
 
@@ -288,7 +299,7 @@ async def list_candidates(
         candidates = await candidate_repo.list_candidates(
             search=search, status=status, source=source, seniority=seniority, ids=id_list,
             skip=effective_skip, limit=limit, sort_by=sort_by, sort_order=sort_order,
-            slim=not full,
+            slim=not full, company_id=_company_id,
         )
         _t_list_ms = (_time.perf_counter() - _t0) * 1000.0
 
@@ -314,9 +325,12 @@ async def list_candidates(
             "source": "local",
             "items": items,
         }
-    except Exception as e:
-        logger.error(f"Error listing candidates: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+    except Exception:
+        logger.exception(
+            "[list_candidates] failed user_id=%s company_id=%s search=%r status=%r",
+            getattr(current_user, "id", None), _company_id, search, status,
+        )
+        raise HTTPException(status_code=500, detail="Falha ao listar candidatos.")
 
 
 @router.get("/{candidate_id}", response_model=None)
@@ -348,9 +362,9 @@ async def get_candidate(
         return _serialize_candidate(candidate, full=True)
     except HTTPException:
         raise
-    except Exception as e:
-        logger.error(f"Error getting candidate: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+    except Exception:
+        logger.exception("[get_candidate] failed candidate_id=%s", candidate_id)
+        raise HTTPException(status_code=500, detail="Falha ao carregar o candidato.")
 
 
 async def _background_enrich_candidate(candidate_id: uuid.UUID, linkedin_url: str):
@@ -443,9 +457,9 @@ async def create_candidate(
             "message": "Candidate created successfully",
             "enrichment_scheduled": enrichment_scheduled,
         }
-    except Exception as e:
-        logger.error(f"Error creating candidate: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+    except Exception:
+        logger.exception("[create_candidate] failed name=%s", candidate_data.name)
+        raise HTTPException(status_code=500, detail="Falha ao criar o candidato.")
 
 
 @router.put("/{candidate_id}", response_model=None)
@@ -476,9 +490,9 @@ async def update_candidate(
         }
     except HTTPException:
         raise
-    except Exception as e:
-        logger.error(f"Error updating candidate: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+    except Exception:
+        logger.exception("[update_candidate] failed candidate_id=%s", candidate_id)
+        raise HTTPException(status_code=500, detail="Falha ao atualizar o candidato.")
 
 
 @router.patch("/{candidate_id}/stage", response_model=None)
@@ -655,9 +669,12 @@ async def update_candidate_stage(
         }
     except HTTPException:
         raise
-    except Exception as e:
-        logger.error(f"Error updating candidate stage: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+    except Exception:
+        logger.exception(
+            "[update_candidate_stage] failed candidate_id=%s stage=%s",
+            candidate_id, getattr(stage_data, "stage", None),
+        )
+        raise HTTPException(status_code=500, detail="Falha ao atualizar a etapa do candidato.")
 
 
 @router.delete("/{candidate_id}", response_model=None)
@@ -675,9 +692,9 @@ async def delete_candidate(
         return {"message": "Candidate deactivated successfully", "id": candidate_id}
     except HTTPException:
         raise
-    except Exception as e:
-        logger.error(f"Error deleting candidate: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+    except Exception:
+        logger.exception("[delete_candidate] failed candidate_id=%s", candidate_id)
+        raise HTTPException(status_code=500, detail="Falha ao remover o candidato.")
 
 
 # ---------------------------------------------------------------------------
@@ -724,6 +741,6 @@ async def enrich_candidate(
         }
     except HTTPException:
         raise
-    except Exception as e:
-        logger.error(f"Error enriching candidate: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+    except Exception:
+        logger.exception("[enrich_candidate] failed candidate_id=%s", candidate_id)
+        raise HTTPException(status_code=500, detail="Falha ao enriquecer o candidato.")
