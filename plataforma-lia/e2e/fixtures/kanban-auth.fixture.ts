@@ -88,7 +88,9 @@ export const test = base.extend<KanbanAuthFixture>({
       console.warn('  ⚠️  Usando token fake — dados podem estar vazios')
     }
     await page.goto('/pt/jobs/406731ad-388f-5ea5-a0b6-bdb6dadf186e')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
+    // Aguarda algum elemento do kanban ou da página carregar (evita networkidle que nunca resolve em apps com polling)
+    await page.waitForSelector('[data-testid="kanban-column"], [data-testid="candidate-card"], h1, main', { timeout: 30000 }).catch(() => {})
     await use(page)
   },
 
@@ -99,7 +101,8 @@ export const test = base.extend<KanbanAuthFixture>({
     const go = async (jobKey: keyof typeof KANBAN_JOBS = 'productManager') => {
       const job = KANBAN_JOBS[jobKey]
       await page.goto(job.url)
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
+      await page.waitForSelector('[data-testid="kanban-column"], [data-testid="candidate-card"], h1, main', { timeout: 30000 }).catch(() => {})
       return page
     }
     await use(go)
