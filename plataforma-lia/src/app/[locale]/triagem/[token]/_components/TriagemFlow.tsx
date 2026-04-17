@@ -183,7 +183,12 @@ export function TriagemFlow({ hook }: TriagemFlowProps) {
   }
 
   if (pageState === "welcome" && config) {
-    const showVoipButton = true
+    // Task #425: voice-in-browser is now driven strictly by the recruiter's
+    // channel config — no more unconditional rendering. WelcomeCard handles
+    // the in-card "Voz no Navegador" CTA; the dedicated VoIPCallButton block
+    // below appears only as the secondary affordance after a phone call has
+    // been requested OR alongside the welcome card when explicitly enabled.
+    const showVoipButton = !!config.voiceWebEnabled
 
     return (
       <ChatContainer>

@@ -156,33 +156,78 @@ export function WelcomeCard({ config, onStart, onRequestCall, isStarting = false
           </span>
         </label>
 
-        <div className={config.phoneEnabled ? "flex gap-3" : ""}>
-          <button
-            type="button"
-            onClick={() => onStart(false)}
-            disabled={isStarting || !consentChecked}
-            aria-label="Iniciar conversa de triagem"
-            className={cn(
-              "h-11 flex items-center justify-center rounded-lg bg-lia-btn-primary-bg text-lia-btn-primary-text text-sm font-medium hover:bg-lia-btn-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 focus:outline-none",
-              config.phoneEnabled ? "flex-1" : "w-full"
-            )}
-          >
-            {isStarting ? "Iniciando..." : "Iniciar Conversa"}
-          </button>
-
-          {config.phoneEnabled && onRequestCall && (
-            <button
-              type="button"
-              onClick={onRequestCall}
-              disabled={isStarting || !consentChecked}
-              aria-label="Solicitar ligação telefônica"
-              className="h-11 flex items-center justify-center gap-2 px-4 rounded-lg border border-lia-border-subtle text-lia-text-primary text-sm font-medium hover:bg-lia-bg-tertiary disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 focus:outline-none"
-            >
-              <Phone className="w-4 h-4" />
-              Receber Ligação
-            </button>
-          )}
-        </div>
+        {/* Task #425: candidate channel selector — render only enabled channels.
+            Default true preserves backward-compat for legacy configs without
+            channel flags; phoneEnabled and voiceWebEnabled default false to
+            avoid silently surfacing unconfigured PSTN/voz_web. */}
+        {(() => {
+          const chatWebOn = config.chatWebEnabled !== false
+          const whatsappOn = config.whatsappEnabled !== false
+          const phoneOn = !!config.phoneEnabled
+          const voiceWebOn = !!config.voiceWebEnabled
+          const noChannels = !chatWebOn && !whatsappOn && !phoneOn && !voiceWebOn
+          if (noChannels) {
+            return (
+              <div className="rounded-lg border border-status-error/30 bg-status-error/10 p-3 text-xs text-status-error">
+                Esta triagem não tem nenhum canal de contato habilitado. Por favor, peça ao recrutador para revisar a configuração.
+              </div>
+            )
+          }
+          return (
+            <div className="space-y-2">
+              {chatWebOn && (
+                <button
+                  type="button"
+                  onClick={() => onStart(false)}
+                  disabled={isStarting || !consentChecked}
+                  aria-label="Iniciar conversa de triagem por chat"
+                  className="w-full h-11 flex items-center justify-center rounded-lg bg-lia-btn-primary-bg text-lia-btn-primary-text text-sm font-medium hover:bg-lia-btn-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 focus:outline-none"
+                >
+                  {isStarting ? "Iniciando..." : "Iniciar Conversa por Chat"}
+                </button>
+              )}
+              {whatsappOn && (
+                <a
+                  href={`https://wa.me/?text=${encodeURIComponent(`Olá LIA, gostaria de iniciar minha triagem para ${config.jobTitle}.`)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-disabled={!consentChecked}
+                  onClick={(e) => { if (!consentChecked) { e.preventDefault() } }}
+                  className={cn(
+                    "w-full h-11 flex items-center justify-center gap-2 rounded-lg border border-lia-border-subtle text-lia-text-primary text-sm font-medium hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 focus:outline-none",
+                    !consentChecked && "opacity-50 cursor-not-allowed pointer-events-none"
+                  )}
+                >
+                  Continuar pelo WhatsApp
+                </a>
+              )}
+              {phoneOn && onRequestCall && (
+                <button
+                  type="button"
+                  onClick={onRequestCall}
+                  disabled={isStarting || !consentChecked}
+                  aria-label="Solicitar ligação telefônica automática"
+                  className="w-full h-11 flex items-center justify-center gap-2 rounded-lg border border-lia-border-subtle text-lia-text-primary text-sm font-medium hover:bg-lia-bg-tertiary disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 focus:outline-none"
+                >
+                  <Phone className="w-4 h-4" />
+                  Receber Ligação Automática
+                </button>
+              )}
+              {voiceWebOn && (
+                <button
+                  type="button"
+                  onClick={() => onStart(true)}
+                  disabled={isStarting || !consentChecked}
+                  aria-label="Iniciar conversa por voz no navegador"
+                  className="w-full h-11 flex items-center justify-center gap-2 rounded-lg border border-lia-border-subtle text-lia-text-primary text-sm font-medium hover:bg-lia-bg-tertiary disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 focus:outline-none"
+                >
+                  <Phone className="w-4 h-4" />
+                  Voz no Navegador
+                </button>
+              )}
+            </div>
+          )
+        })()}
 
         <a
           href={config.privacyPolicyUrl}

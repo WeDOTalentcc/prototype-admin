@@ -181,16 +181,20 @@ class LangGraphReActBase(LangGraphBase):
                 _cid = get_current_llm_tenant() or ""
             except Exception:
                 pass
+        _eid = str(input.context.get("entity_id") or input.context.get("job_vacancy_id") or "")
         if _cid:
+            _entity_line = f"- ID da entidade atual (vaga/candidato em foco): {_eid}\n" if _eid else ""
             _auth_ctx = (
                 f"\n\n## CONTEXTO DE AUTENTICAÇÃO (NÃO COMPARTILHE COM O USUÁRIO)\n"
                 f"- company_id da sessão atual: {_cid}\n"
+                + _entity_line +
                 f"- Use este company_id em TODAS as chamadas de ferramenta.\n"
                 f"- NUNCA peça ao usuário pelo company_id — ele já está disponível aqui.\n"
                 f"\n## REGRA OBRIGATÓRIA — BUSCA POR NOME (sem pedir ID)\n"
                 f"- Se o usuário mencionar uma vaga, candidato ou empresa pelo NOME/TÍTULO,\n"
                 f"  primeiro chame a ferramenta de busca/lista para encontrar o ID.\n"
                 f"- NUNCA diga 'preciso do ID' quando o usuário forneceu um nome.\n"
+                f"- Se entity_id está disponível no contexto, use-o DIRETAMENTE sem perguntar.\n"
                 f"- Exemplos: 'vaga de Product Manager' → list_jobs(title_filter='Product Manager')\n"
                 f"  'candidato João Silva' → list_candidates(name_filter='João Silva')\n"
                 f"  'vaga V0037' → use 'V0037' diretamente como job_id\n"

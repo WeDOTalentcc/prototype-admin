@@ -131,25 +131,38 @@ export function SCMSectionConfiguracoes({
               })()}
             </div>
 
-            {/* Channels preview */}
+            {/* Channels preview — Task #425: 4 canonical channels + master toggle status */}
             <div>
-              <h3 className="text-xs font-semibold text-lia-text-tertiary uppercase tracking-wider px-1 mb-3">Canais Habilitados</h3>
+              <div className="flex items-center justify-between px-1 mb-3">
+                <h3 className="text-xs font-semibold text-lia-text-tertiary uppercase tracking-wider">Canais Habilitados</h3>
+                {(() => {
+                  const masterOn = screeningConfig?.channels_master_enabled !== false
+                  return (
+                    <span className={`text-micro font-medium px-2 py-0.5 rounded-full border ${masterOn ? 'border-lia-border-subtle text-lia-text-secondary bg-lia-bg-secondary' : 'border-status-error/30 text-status-error bg-status-error/10'}`}>
+                      {masterOn ? 'Triagem ativa' : 'Triagem desligada'}
+                    </span>
+                  )
+                })()}
+              </div>
               <div className="border border-lia-border-subtle rounded-xl divide-y divide-lia-border-subtle">
                 {[
-                  { key: 'whatsapp', label: 'WhatsApp', icon: MessageSquare, enabled: screeningConfig?.channels?.whatsapp?.enabled ?? true },
                   { key: 'chat_web', label: 'Chat Web', icon: Globe, enabled: screeningConfig?.channels?.chat_web?.enabled ?? true },
-                  { key: 'phone', label: 'Ligação', icon: Phone, enabled: screeningConfig?.channels?.phone?.enabled ?? false },
+                  { key: 'whatsapp', label: 'WhatsApp', icon: MessageSquare, enabled: screeningConfig?.channels?.whatsapp?.enabled ?? true },
+                  { key: 'phone_pstn', label: 'Ligação automática (PSTN)', icon: Phone, enabled: screeningConfig?.channels?.phone_pstn?.enabled ?? screeningConfig?.channels?.phone?.enabled ?? false },
+                  { key: 'voice_web', label: 'Voz no navegador (Gemini Live)', icon: Phone, enabled: screeningConfig?.channels?.voice_web?.enabled ?? screeningConfig?.channels?.voip_web?.enabled ?? true },
                 ].map((ch) => {
+                  const masterOn = screeningConfig?.channels_master_enabled !== false
+                  const effective = masterOn && ch.enabled
                   const ChIcon = ch.icon
                   return (
                     <div key={ch.key} className="flex items-center justify-between px-3 py-2">
                       <div className="flex items-center gap-2">
                         <ChIcon className="w-3.5 h-3.5 text-lia-text-disabled" />
                         <span className="text-xs font-medium text-lia-text-secondary">{ch.label}</span>
-                        {ch.key === 'phone' && !ch.enabled && <span className="text-micro text-lia-text-disabled">(Integração pendente)</span>}
+                        {!masterOn && <span className="text-micro text-lia-text-disabled">(triagem desligada)</span>}
                       </div>
-                      <div className={`relative inline-flex h-5 w-9 items-center rounded-full ${ch.enabled ? 'bg-lia-border-medium' : 'bg-lia-interactive-active'}`}>
-                        <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-lia-bg-primary ${ch.enabled ? 'translate-x-4' : 'translate-x-0.5'}`} />
+                      <div className={`relative inline-flex h-5 w-9 items-center rounded-full ${effective ? 'bg-lia-border-medium' : 'bg-lia-interactive-active'}`}>
+                        <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-lia-bg-primary ${effective ? 'translate-x-4' : 'translate-x-0.5'}`} />
                       </div>
                     </div>
                   )

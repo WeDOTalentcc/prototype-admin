@@ -24,6 +24,10 @@ interface TriagemDetailsModalProps {
   isOpen: boolean
   onClose: () => void
   jobVacancyId?: string
+  /** Task #425 — optional context to enable the Twilio PSTN trigger button. */
+  jobId?: string
+  jobTitle?: string
+  companyId?: string
   onApprove?: (candidate: Candidate) => void
   onReject?: (candidate: Candidate) => void
 }
@@ -33,6 +37,9 @@ export function TriagemDetailsModal({
   isOpen,
   onClose,
   jobVacancyId,
+  jobId,
+  jobTitle,
+  companyId,
   onApprove,
   onReject
 }: TriagemDetailsModalProps) {
@@ -149,6 +156,9 @@ export function TriagemDetailsModal({
           setConfirmReject={state.setConfirmReject}
           onApprove={onApprove}
           onReject={onReject}
+          jobTitle={jobTitle}
+          jobId={jobId ?? jobVacancyId}
+          companyId={companyId}
         />
       </div>
     </div>

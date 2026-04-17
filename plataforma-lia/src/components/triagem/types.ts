@@ -89,6 +89,9 @@ export interface TriagemConfig {
   benefits?: string[] | null
   showSalary?: boolean
   showBenefits?: boolean
+  /** Task #425: per-channel availability gated by master toggle. */
+  chatWebEnabled?: boolean
+  whatsappEnabled?: boolean
   phoneEnabled?: boolean
   /** Voice-in-browser channel availability (Gemini Live). Task #425. */
   voiceWebEnabled?: boolean

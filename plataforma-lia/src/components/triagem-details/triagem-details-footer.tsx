@@ -2,6 +2,7 @@
 
 import { ThumbsUp, ThumbsDown, Loader2 } from "lucide-react"
 import type { Candidate } from "@/components/pages/candidates/types"
+import { TwilioCallButton } from "./TwilioCallButton"
 
 interface TriagemDetailsFooterProps {
   candidate: Candidate
@@ -13,16 +14,27 @@ interface TriagemDetailsFooterProps {
   setConfirmReject: (v: boolean) => void
   onApprove?: (candidate: Candidate) => void
   onReject?: (candidate: Candidate) => void
+  /** Task #425 — Twilio PSTN trigger context. */
+  jobTitle?: string
+  jobId?: string
+  companyId?: string
 }
 
 export function TriagemDetailsFooter({
   candidate, approving, setApproving, rejecting, setRejecting,
   confirmReject, setConfirmReject, onApprove, onReject,
+  jobTitle, jobId, companyId,
 }: TriagemDetailsFooterProps) {
   return (
     <div className="flex-shrink-0 px-4 py-3 flex items-center justify-between border-t border-lia-border-subtle bg-lia-bg-secondary">
       <div className="flex items-center gap-2">
         <span className="text-micro text-lia-text-secondary">Decisão do Recrutador</span>
+        <TwilioCallButton
+          candidate={candidate}
+          jobTitle={jobTitle}
+          jobId={jobId}
+          companyId={companyId}
+        />
       </div>
       <div className="flex items-center gap-2">
         {confirmReject ? (

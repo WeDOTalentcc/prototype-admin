@@ -98,10 +98,15 @@ async def get_session_config(db: AsyncSession, token: str) -> dict[str, Any] | N
                 job_info["showBenefits"] = show_benefits
                 sc = getattr(job, "screening_config", None) or {}
                 channels = sc.get("channels") or {}
-                # Task #425 — canonical 4-channel model with legacy fallback
+                # Task #425 — canonical 4-channel model with legacy fallback,
+                # all gated by the master channel toggle (default ON for back-compat).
+                chat_ch = channels.get("chat_web") or {}
+                whatsapp_ch = channels.get("whatsapp") or {}
                 phone_ch = channels.get("phone_pstn") or channels.get("phone") or {}
                 voice_ch = channels.get("voice_web") or channels.get("voip_web") or {}
                 master_enabled = sc.get("channels_master_enabled", True)
+                job_info["chatWebEnabled"] = bool(master_enabled) and bool(chat_ch.get("enabled", True))
+                job_info["whatsappEnabled"] = bool(master_enabled) and bool(whatsapp_ch.get("enabled", True))
                 job_info["phoneEnabled"] = bool(master_enabled) and bool(phone_ch.get("enabled", False))
                 job_info["voiceWebEnabled"] = bool(master_enabled) and bool(voice_ch.get("enabled", True))
         except Exception as e:
@@ -317,9 +322,34 @@ async def start_session(db: AsyncSession, token: str, voice_mode: bool | None = 
     if not session:
         return {"error": "not_found"}
 
+    # Task #425 — session resumption: cap reopens to 2 (after the original
+    # invited→started transition). reopen_count is persisted in
+    # TriagemSession.metadata_json (JSON column, no migration required).
+    REOPEN_LIMIT = 2
     if session.status == "invited":
         session.status = "started"
         session.started_at = datetime.utcnow()
+    elif session.status in ("started", "in_progress"):
+        meta = dict(session.metadata_json or {})
+        current = int(meta.get("reopen_count", 0))
+        if current >= REOPEN_LIMIT:
+            return {
+                "error": "reopen_limit_exceeded",
+                "reopen_count": current,
+                "limit": REOPEN_LIMIT,
+                "message": (
+                    f"Esta triagem já foi retomada {current}x e atingiu o limite "
+                    f"de {REOPEN_LIMIT} reaberturas. Procure o recrutador para liberar uma nova tentativa."
+                ),
+            }
+        meta["reopen_count"] = current + 1
+        meta["last_reopened_at"] = datetime.utcnow().isoformat()
+        session.metadata_json = meta
+    elif session.status == "completed":
+        return {
+            "error": "session_completed",
+            "message": "Esta triagem já foi finalizada e não pode ser reaberta.",
+        }
 
     if voice_mode is not None:
         session.voice_mode = voice_mode
