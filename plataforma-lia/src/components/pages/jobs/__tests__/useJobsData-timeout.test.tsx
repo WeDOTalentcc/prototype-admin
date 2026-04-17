@@ -14,7 +14,7 @@ import React from "react"
 import { renderHook, render, screen, act } from "@testing-library/react"
 import { vi, describe, it, expect, beforeEach, afterEach } from "vitest"
 
-// ── Global fetch stub (health-check inside waitForServer) ─────────────────────
+// ── Global fetch stub ────────────────────────────────────────────────────────
 
 const mockFetch = vi.fn()
 vi.stubGlobal("fetch", mockFetch)

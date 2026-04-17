@@ -10,7 +10,7 @@ import { useBulkCandidateDataRequests } from "@/hooks/candidates/use-candidate-d
 import { mapCandidateToInternal as _mapCandidateToInternal } from "@/components/pages/candidates/hooks/useCandidatesExecuteSearch"
 import type { Candidate } from "@/components/pages/candidates/types"
 import type { JobVacancy, EmailTemplate } from "@/services/lia-api"
-import { fetchWithRetry } from "@/lib/backend-ready"
+import { fetchWithRetry } from "@/services/lia-api/base"
 
 interface UseCandidatesDataOptions {
   /** Propagate the new Set of viewed candidate IDs upward */
@@ -74,19 +74,17 @@ export function useCandidatesData({
       )
       .catch(() => { setCandidateListsForModal([]); secondaryFetchFailedRef.current = true })
 
-    fetchWithRetry(async () => {
-      const r = await fetch('/api/backend-proxy/candidates/viewed')
-      if (!r.ok) throw new Error(`viewed ${r.status}`)
-      return r.json()
-    })
-      .then(data => {
+    fetchWithRetry('/api/backend-proxy/candidates/viewed')
+      .then(async r => {
+        if (!r.ok) throw new Error(`viewed ${r.status}`)
+        const data = await r.json()
         if (data?.candidate_ids) {
           onViewedIdsChange(() => new Set<string>(data.candidate_ids))
         }
       })
       .catch((err) => { console.warn('[useCandidatesData] viewed-candidates fetch failed (cold-start)', err?.message || err); secondaryFetchFailedRef.current = true })
 
-    fetchWithRetry(() => liaApi.listJobVacancies())
+    liaApi.listJobVacancies()
       .then(r =>
         r.items &&
         setBulkJobVacancies(
@@ -95,7 +93,7 @@ export function useCandidatesData({
       )
       .catch((err) => { console.warn('[useCandidatesData] listJobVacancies fetch failed (cold-start)', err?.message || err); secondaryFetchFailedRef.current = true })
 
-    fetchWithRetry(() => liaApi.listEmailTemplates(undefined, true))
+    liaApi.listEmailTemplates(undefined, true)
       .then(r => r.items && setBulkEmailTemplates(r.items))
       .catch((err) => { console.warn('[useCandidatesData] listEmailTemplates fetch failed (cold-start)', err?.message || err); secondaryFetchFailedRef.current = true })
   // eslint-disable-next-line react-hooks/exhaustive-deps

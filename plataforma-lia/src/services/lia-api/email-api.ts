@@ -1,4 +1,4 @@
-import { BACKEND_URL, getAuthHeaders } from './base'
+import { BACKEND_URL, getAuthHeaders, fetchWithRetry } from './base'
 import type {
   EmailTemplate,
   EmailTemplateCreateRequest,
@@ -35,9 +35,11 @@ export async function listEmailTemplates(
 
   let response: Response
   try {
-    response = await fetch(`${BACKEND_URL}/email-templates?${params}`, {
-      headers: getAuthHeaders(),
-    })
+    response = await fetchWithRetry(
+      `${BACKEND_URL}/email-templates?${params}`,
+      { headers: getAuthHeaders() },
+      { timeoutMs: 15000 },
+    )
   } catch {
     throw new Error('Network error fetching email templates (server may be starting)')
   }

@@ -27,6 +27,18 @@ export const DEBOUNCE_MS = 300
 export const TIMEOUT_MS = 30000
 export const MAX_RETRIES = 2
 
+import { fetchWithRetry as canonicalFetchWithRetry } from "@/services/lia-api/base"
+
+// Thin wrapper around the canonical fetchWithRetry (services/lia-api/base).
+// The legacy local helper retried indiscriminately on any network error and
+// never honored `Retry-After`; the canonical helper retries only on
+// 5xx/429/network and respects `Retry-After`. We preserve the longer
+// per-attempt timeout (TIMEOUT_MS) historically used by the triagem chat,
+// because LLM responses can take longer than the 20s default.
+export function fetchWithRetry(url: string, options: RequestInit = {}): Promise<Response> {
+  return canonicalFetchWithRetry(url, options, { timeoutMs: TIMEOUT_MS })
+}
+
 export function base64ToAudioUrl(base64Data: string): string {
   const binaryStr = atob(base64Data)
   const bytes = new Uint8Array(binaryStr.length)
@@ -105,47 +117,6 @@ export function mapBackendSession(raw: Record<string, unknown>): TriagemSession 
     wsiFinalScore: (raw.wsi_final_score as number) ?? (raw.wsiFinalScore as number) ?? null,
     recommendation: (raw.recommendation as TriagemSession["recommendation"]) ?? null,
   }
-}
-
-export async function fetchWithTimeout(
-  url: string,
-  options: RequestInit,
-  timeoutMs: number = TIMEOUT_MS,
-): Promise<Response> {
-  const controller = new AbortController()
-  const timer = setTimeout(() => controller.abort(), timeoutMs)
-  try {
-    const response = await fetch(url, {
-      ...options,
-      signal: controller.signal,
-    })
-    return response
-  } finally {
-    clearTimeout(timer)
-  }
-}
-
-export async function fetchWithRetry(
-  url: string,
-  options: RequestInit,
-  retries: number = MAX_RETRIES,
-): Promise<Response> {
-  let lastError: unknown
-  for (let attempt = 0; attempt <= retries; attempt++) {
-    try {
-      const response = await fetchWithTimeout(url, options)
-      if (response.ok || response.status < 500) {
-        return response
-      }
-      lastError = new Error(`Server error: ${response.status}`)
-    } catch (err) {
-      lastError = err
-      if (attempt < retries) {
-        await new Promise((resolve) => setTimeout(resolve, 1000 * (attempt + 1)))
-      }
-    }
-  }
-  throw lastError
 }
 
 function extractErrorMessage(body: Record<string, unknown>): string | undefined {
