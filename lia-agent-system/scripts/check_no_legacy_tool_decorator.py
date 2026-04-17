@@ -36,13 +36,7 @@ FORBIDDEN_RE = re.compile(
 # Files grandfathered in. Each entry should be removed once the file migrates
 # to `@tool_handler`. New entries are NOT accepted — onboarding new files via
 # the allow list defeats the purpose of the guard.
-ALLOW_LIST: set[str] = {
-    "app/domains/ats_integration/tools/ats_tools.py",
-    "app/domains/hiring_policy/tools/policy_tools.py",
-    "app/domains/pipeline/tools/pipeline_tools.py",
-    "app/domains/interview_scheduling/tools/scheduling_tools.py",
-    "app/domains/automation/tools/automation_tools.py",
-}
+ALLOW_LIST: set[str] = set()
 
 
 def imports_legacy_tool(text: str) -> bool:
