@@ -341,7 +341,29 @@ accepted and existing entries should be removed as they migrate.
 **Enforcement:** `scripts/check_no_legacy_tool_decorator.py` (pre-commit hook
 `no-legacy-tool-decorator` + CI job "S7.3").
 
+### S7.4 — Superfície canônica de autoria de tools (Task #351, ADR-016)
+
+Três peças coexistem com papéis **diferentes**, não duplicados:
+
+- **Autoria** → `@tool_handler` decorator (`app/shared/tool_handler.py`) +
+  `app/domains/*/agents/*_tool_registry.py`. É onde toda tool nova nasce.
+- **Execução** → `ToolRegistry` global em `app/tools/registry.py`. É o índice
+  por-nome que o orchestrator/executor consultam. **Não é superfície de
+  autoria**; só `app/tools/__init__.py:initialize_tools()` chama
+  `tool_registry.register(...)`, agregando os `get_*_tools()` de cada domínio.
+- **Escopo / governança** → `app/tools/tool_permissions.yaml` mantém
+  `scopes:` (mapeamento UI-context → tools) e `restricted_tools:` (HITL).
+  A config `llm_provider` / `llm_fallback_order` por tenant **migra para DB**
+  (`tenant_llm_config`); a YAML conserva apenas defaults de sistema.
+
+Bridge `rails-ats-api`: tools continuam registradas em Python; o que muda é a
+implementação interna delas (chamam `RailsAdapter` HTTP em vez do repo local
+quando `RAILS_API_URL` estiver setado). Tenant check, escopo e HITL ficam num
+só lugar.
+
+Detalhes, plano de migração e não-decisões: `docs/specs/ai/ADR-016-tool-registration-canonical.md`.
+
 ---
 
-*Last updated: 2026-04-17 | ADR-015: audit guards (S7.1 / S7.2 / S7.3)*
+*Last updated: 2026-04-17 | ADR-015 (S7.1/S7.2/S7.3) + ADR-016 (S7.4)*
 
