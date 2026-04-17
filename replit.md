@@ -46,6 +46,12 @@ The platform uses Next.js, React, and TypeScript for the frontend, styled with R
 - **CrewAI-Style Delegation on AgentBus**: A formal multi-agent delegation system built on AgentBus with `AgentCrew`, `CrewPlan`, and `CrewPlanExecutor` for task orchestration.
 - **UI/UX Enhancements**: TopBar eliminated, sidebar now includes user panel and redesigned notification system. TipTap Rich Text Editor integrated for email templates and job descriptions.
 
+# Database Migrations
+- **Tool**: Alembic. Versions live in `lia-agent-system/alembic/versions/` (NOT `lia-agent-system/app/db/migrations/`).
+- **Apply**: `cd lia-agent-system && python -m alembic upgrade head`. Idempotent — re-runs are no-ops when already at head.
+- **Automated**: `scripts/post-merge.sh` runs `alembic upgrade head` after every merge so model changes never leave the running DB out of sync (regression guard for the 2026-04-17 outage where Task #346's migration 082 `add_candidate_company_id` shipped but never ran → all `/candidates` and `/search/candidates` endpoints returned 500 with `UndefinedColumnError: column candidates.company_id does not exist`).
+- **Demo tenant**: Canonical UUID is `00000000-0000-4000-a000-000000000001`. Migration 080 retired the legacy string id `'demo_company'` from every string-typed `company_id`/`tenant_id` column and inserted the canonical row into `companies`.
+
 # External Dependencies
 - Anthropic (Claude API)
 - WorkOS

@@ -31,23 +31,34 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const data = await response.json() as Record<string, unknown>
+    const raw = await response.json() as Record<string, unknown>
+
+    // Backend wraps responses in { ok, data: { message: { content } }, meta }
+    // Support both the enveloped format and any legacy flat format.
+    const envelopeData = (raw.data as Record<string, unknown> | undefined) ?? raw
 
     const content =
-      (data.content as string | undefined) ||
-      ((data.message as Record<string, unknown> | undefined)?.content as string | undefined) ||
-      ((data.message as Record<string, unknown> | undefined)?.text as string | undefined) ||
+      (envelopeData.content as string | undefined) ||
+      ((envelopeData.message as Record<string, unknown> | undefined)?.content as string | undefined) ||
+      ((envelopeData.message as Record<string, unknown> | undefined)?.text as string | undefined) ||
+      (raw.content as string | undefined) ||
       ''
 
     const conversationId =
-      (data.conversation_id as string | undefined) ||
-      ((data.message as Record<string, unknown> | undefined)?.conversation_id as string | undefined) ||
-      ((data.conversation as Record<string, unknown> | undefined)?.id as string | undefined)
+      (envelopeData.conversation_id as string | undefined) ||
+      ((envelopeData.message as Record<string, unknown> | undefined)?.conversation_id as string | undefined) ||
+      ((envelopeData.conversation as Record<string, unknown> | undefined)?.id as string | undefined) ||
+      (raw.conversation_id as string | undefined)
+
+    const messageMetadata =
+      (envelopeData.message_metadata as Record<string, unknown> | undefined) ||
+      ((envelopeData.message as Record<string, unknown> | undefined)?.message_metadata as Record<string, unknown> | undefined) ||
+      (raw.message_metadata as Record<string, unknown> | undefined)
 
     return NextResponse.json({
       content,
       conversation_id: conversationId,
-      message_metadata: data.message_metadata,
+      message_metadata: messageMetadata,
     })
   } catch {
     return NextResponse.json(
