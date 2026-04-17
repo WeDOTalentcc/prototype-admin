@@ -333,6 +333,19 @@ class InterviewGraph:
                     "[InterviewGraph] audit_service skipped (LangGraph path): %s", _audit_exc
                 )
 
+        # F4 (AUDIT 2026-04) — A3/G1: FairnessGuard L2 sobre o texto de saída ao
+        # candidato (paridade com WSIInterviewGraph). Diferente do WSI (fail-open
+        # warnings), aqui aplicamos política BLOCK + REGENERATE: se FG detectar
+        # conteúdo discriminatório, a mensagem é substituída por um fallback
+        # sanitizado e a decisão é auditada (BCB 498 / SOX / EU AI Act Art. 10).
+        result = await self._apply_fairness_guard_to_response(
+            result=result,
+            session_id=session_id,
+            company_id=state.get("company_id"),
+            candidate_id=state.get("candidate_id"),
+            job_id=state.get("job_id"),
+        )
+
         self.logger.info(
             "[InterviewGraph] execução concluída (LangGraph nativo)",
             extra={"session_id": session_id, "graph": "InterviewGraph"},
@@ -346,6 +359,116 @@ class InterviewGraph:
     async def invoke(self, state: dict[str, Any], audit_callback=None) -> dict[str, Any]:
         """Invoca o grafo de agendamento via LangGraph nativo."""
         return await self._invoke_langgraph(state, audit_callback)
+
+    # ------------------------------------------------------------------
+    # F4 (AUDIT 2026-04) — FairnessGuard L2 sobre saída ao candidato
+    # ------------------------------------------------------------------
+
+    # Mensagem fallback sanitizada usada quando FG bloqueia o texto original.
+    # Não menciona atributos protegidos; segue tom neutro e operacional.
+    _FAIRNESS_BLOCK_FALLBACK_MESSAGE = (
+        "Sua solicitação de entrevista foi processada. "
+        "Em instantes você receberá uma confirmação por e-mail com os detalhes."
+    )
+
+    async def _apply_fairness_guard_to_response(
+        self,
+        result: dict[str, Any],
+        session_id: str | None,
+        company_id: Any,
+        candidate_id: Any,
+        job_id: Any,
+    ) -> dict[str, Any]:
+        """
+        Aplica FairnessGuard L2 sobre `response_data["message"]` antes de
+        devolver ao caller.
+
+        Política BLOCK + REGENERATE (mais estrita que o WSI L2 fail-open):
+          - Se FG retornar `has_warnings`, a mensagem original é substituída
+            pelo fallback sanitizado (`_FAIRNESS_BLOCK_FALLBACK_MESSAGE`).
+          - A mensagem original NÃO é colocada em `response_data` (que é
+            serializado para o caller / API): é preservada apenas no
+            `audit_service.log_decision(metadata=...)` server-side, evitando
+            vazar conteúdo discriminatório para o consumidor.
+          - As warnings ficam em `response_data["fairness_warnings"]`.
+          - `response_data["fairness_blocked"] = True` sinaliza o bloqueio.
+          - `audit_service.log_decision(decision="blocked", ...)` registra o evento
+            com `criteria_used=["fairness_guard_l2"]` para BCB 498 / SOX / EU AI Act.
+
+        Falhas internas do FG (import error, etc.) são fail-open: log debug,
+        sem bloquear o agendamento — alinhado ao princípio de não derrubar
+        a operação por falha do gate.
+        """
+        try:
+            workflow_data_post = result.get("workflow_data") or {}
+            response_data = workflow_data_post.get("response_data") or {}
+            candidate_msg = response_data.get("message") or ""
+            if not candidate_msg:
+                return result
+
+            from app.shared.compliance.fairness_guard_middleware import check_fairness
+            fg_out = check_fairness(
+                {"candidate_message": candidate_msg},
+                context="interview_scheduling_response",
+                company_id=str(company_id or ""),
+            )
+            if not fg_out.has_warnings:
+                return result
+
+            warnings_serialised = [str(w) for w in fg_out.warnings]
+            self.logger.warning(
+                "[InterviewGraph][A3] FairnessGuard L2 BLOCKED candidate response "
+                "session=%s warnings=%d",
+                session_id,
+                len(warnings_serialised),
+            )
+
+            response_data["fairness_blocked"] = True
+            response_data["fairness_warnings"] = warnings_serialised
+            # NOTE: a mensagem original NÃO é exposta em response_data (que vai
+            # para o caller via API). Ela vai apenas ao audit_service abaixo,
+            # como metadata server-side, para investigação forense.
+            response_data["message"] = self._FAIRNESS_BLOCK_FALLBACK_MESSAGE
+            workflow_data_post["response_data"] = response_data
+            result["workflow_data"] = workflow_data_post
+
+            try:
+                from app.core.database import get_db as _get_db
+                from app.shared.compliance.audit_service import audit_service
+                async for db in _get_db():
+                    await audit_service.log_decision(
+                        db=db,
+                        company_id=company_id,
+                        domain="interview_scheduling",
+                        agent_name="interview_graph",
+                        decision_type="candidate_message",
+                        decision="blocked",
+                        candidate_id=candidate_id,
+                        job_id=job_id,
+                        metadata={
+                            "session_id": session_id,
+                            "path": "fairness_guard_l2",
+                            "warnings_count": len(warnings_serialised),
+                            "warnings": warnings_serialised[:10],
+                            # Server-side only: original mensagem ofensiva
+                            # preservada para investigação forense — nunca
+                            # retornada ao caller via response_data.
+                            "blocked_original_message": candidate_msg,
+                        },
+                        criteria_used=["fairness_guard_l2"],
+                        criteria_ignored=[],
+                    )
+                    break
+            except Exception as _audit_exc:
+                self.logger.debug(
+                    "[InterviewGraph][A3] audit_service skipped on FG block: %s",
+                    _audit_exc,
+                )
+        except Exception as fg_exc:
+            self.logger.debug(
+                "[InterviewGraph][A3] FairnessGuard check skipped: %s", fg_exc
+            )
+        return result
 
     def get_graph_structure(self) -> dict[str, Any]:
         """Retorna metadata do grafo para observabilidade."""

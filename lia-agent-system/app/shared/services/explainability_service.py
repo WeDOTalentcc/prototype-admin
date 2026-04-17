@@ -5,6 +5,10 @@ This service generates human-readable explanations of AI decisions,
 enabling transparency for candidates and compliance with AI governance requirements.
 """
 
+# @deprecated since=2026-04-17
+# @remove-after=2026-07-16
+# @owner=backend-platform
+# @replacement=integrations_hub/rails_adapter::explainability
 # RAILS-DEPRECATED: This service performs CRUD for Rails-owned entities.
 # Will be deleted after ats-api-rails handoff is complete.
 # Do NOT migrate to a domain -- route through integrations_hub/rails_adapter instead.

@@ -59,6 +59,12 @@ jobs:
       - name: Enforce Choose Your AI (LIA-LLM-1)
         run: python scripts/check_llm_factory_enforcement.py
 
+      - name: "F11 — block langchain_core @tool decorator regression"
+        run: python scripts/check_no_langchain_tool_decorator.py
+
+      - name: "F8 — verify require_company=False exemptions are documented"
+        run: python scripts/check_require_company_exemptions.py
+
       - name: Architectural fitness functions
         run: pytest tests/fitness/ -v --timeout=30 --no-cov
 

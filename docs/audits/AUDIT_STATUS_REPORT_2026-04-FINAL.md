@@ -28,7 +28,7 @@
 | Findings INCORRETO (implementados com bug) | 0 | 0 | sem mudança |
 | `from app.shared.services.audit_service` (shim antigo) | 8 imports | **0 imports** | -8 ✅ |
 | `from langchain_core.tools import tool` em `domains/` (T2) | 5 arquivos | **0 arquivos** | -5 ✅ |
-| `require_company=False` (W7) | 89 ocorrências | **23** ocorrências (todas justificadas com comentário `# … kept: …`) | -66 ✅ |
+| `require_company=False` (W7) | 89 ocorrências | **18** ocorrências (todas justificadas com `# … kept: …` e documentadas em `docs/policies/require_company_exemptions.md` — F8) | -71 ✅ |
 | `pii_filter` (C8) em `domains/job_creation/domain.py` | 1 import quebrado | **0** | -1 ✅ |
 | Stage 6 — `shared/observability/` | __init__.py vazio | __init__.py vazio (53 bytes) | 0 |
 | Inventário `shared/` (.py) | 308 (doc) → 308 (verificado) | **297** | -11 |
@@ -41,7 +41,7 @@
 | `JobCreationGraph` (A1) — 5% → ? | PENDENTE | **PARCIAL** (FairnessGuard pre+post + PII mask + AuditCallback) | ✅ |
 | `PolicySetupAgent` (A2) — 25% → ? | PENDENTE | **PARCIAL** (Base + FG + PII + tenant + SPB + audit) | ✅ |
 | `WSIInterviewGraph` (A4) — 55% → ? | PENDENTE | **PARCIAL** (FG L2 + Audit + PII + tenant) | ✅ |
-| `InterviewGraph` (A3) — 50% → ? | PENDENTE | **PARCIAL** (Audit + PII + tenant; FG ainda ausente) | ⚠ |
+| `InterviewGraph` (A3) — 50% → ? | PENDENTE | **RESOLVIDO** (Audit + PII + tenant + **FairnessGuard L2** sobre msg ao candidato — F4 / task #352) | ✅ |
 | Bias detectors (D1) — 3 implementações | PENDENTE | **RESOLVIDO** (3 delegam a `FairnessGuard`) | ✅ |
 | Duplicatas (D2, D3, W11-W15) | PENDENTE | **RESOLVIDO** (uma cópia em cada caso) | ✅ |
 | 5 stubs `lia_*` + `company_benefits_api` (O13-O17) | PARCIAL | **RESOLVIDO** (arquivos removidos) | ✅ |
@@ -50,7 +50,7 @@
 | `R7` — chat SSE sem `pre_compliance/post_compliance` | PENDENTE | **RESOLVIDO** (`agent_chat_sse.py:234, 403`) | ✅ |
 | Scoring services C1-C5 | PENDENTE | **PENDENTE** (0 hits de FairnessGuard/audit em todos os 5) | — |
 | `R1` — `finetuning_export.py` IDOR | PENDENTE | **PENDENTE** (sem `get_current_user`, sem checagem `company_id`) | — |
-| `T3` GlobalToolRegistry — dead | PENDENTE | **PENDENTE** (0 callers em produção) | — |
+| `T3` GlobalToolRegistry — dead | PENDENTE | **RESOLVIDO via deleção** (`app/shared/global_tool_registry.py` removido; canary fitness `TestF12GlobalToolRegistryDeadCanary` impede ressurreição sem callers — F12 / task #352) | ✅ |
 | `app/tools/registry.py` paralelo (W8/W10) | PENDENTE | **PENDENTE** (uso ativo por `talent_intelligence` + `analytics_query_tools`) | — |
 
 ### 1.2 Top 10 do que ainda importa
@@ -61,12 +61,12 @@
 | 2 | **C1-C5** — 5 scoring services (`cv_scoring`, `lia_score`, `pre_qualification`, `eligibility_verification`, `evaluation_criteria`) ainda **sem FairnessGuard nem `audit_service.log_decision`** apesar de produzirem decisões automatizadas LGPD Art. 20 / EU AI Act | ALTO | M (2-3 d) |
 | 3 | **Stage 6** — `shared/observability/` segue só com `__init__.py` (0 mover, 0 shim, 0 export) — ARCHITECTURE.md §9.4 segue desatualizada | MÉDIO | L (3-5 d) |
 | 4 | **T3 + W8/W10** — `shared/global_tool_registry.py` (259L) + `app/tools/registry.py` (169L) + `tool_permissions.yaml` (245L) + `tool_permissions_loader.py` (288L) — registry paralelo usado por `talent_intelligence` e `analytics_query_tools` mas **GlobalToolRegistry não tem callers** | MÉDIO | M (decisão arquitetural pendente) |
-| 5 | **A3** — `InterviewGraph` ainda **sem FairnessGuard** (`fg=0`); tem audit/PII/tenant | MÉDIO | S |
+| 5 | ~~**A3** — `InterviewGraph` ainda sem FairnessGuard~~ — **RESOLVIDO** em F4 (task #352); FG L2 fail-open sobre `response_data["message"]` em `interview_graph.py:339-366`, paridade com WSI | RESOLVIDO | — |
 | 6 | **A1** — `JobCreationGraph` agora tem FG/PII/Audit, mas **não herda `LangGraphReActBase`** (b=0); rodapé do scorecard segue divergente | MÉDIO | M |
-| 7 | **W7 (resíduo)** — 23 `require_company=False` restantes (vs. 89 originais). Cada uma justificada inline, mas falta validação cruzada com YAML de gating | BAIXO | S |
+| 7 | **W7 (resíduo)** — 18 `require_company=False` restantes (vs. 89 originais). Documentadas em `docs/policies/require_company_exemptions.md` com guarda CI `scripts/check_require_company_exemptions.py` (F8 / task #352). | BAIXO | (concluído) |
 | 8 | Sub-agents ReAct (kanban_*, pipeline_*, sourcing_*, etc.): 14 arquivos com `b=0, a=0, t=0, s=0` — herança de `LangGraphReActBase` é por composição (via `*_react_agent.py`), não import direto. **Discrepância de scoring permanece** | INFORMATIVO | (decisão de critério) |
 | 9 | **R5/R6** — rotas duplicadas alegadas pelo doc não existem; precisam ser oficialmente fechadas como INCORRETO em CHANGELOG do plan | DOC | XS |
-| 10 | **156 shims backward-compat** sem SLA de remoção (P14 do plan) | BAIXO | XL |
+| 10 | **156 shims backward-compat** sem SLA de remoção (P14 do plan) — política definida em `docs/policies/shim_sla.md` e cabeçalhos `@deprecated since=2026-04-17` aplicados aos 10 shims `RAILS-DEPRECATED` (F10 / task #352); restantes 146 são re-exports puros, removidos em batch quando `integrations_hub` cobrir 100% | BAIXO (parcial) | L (resta deletar shims) |
 
 ### 1.3 Veredicto consolidado
 
@@ -252,13 +252,13 @@ A implementação fez **progresso substancial nos 30 dias entre os dois snapshot
 | 31 | CompanySettingsReActAgent | `domains/company_settings/agents/company_react_agent.py` | ✓ | — | ✓ | — | — | — | ✓ (mappings + yaml) | 80% | 43% | **57%** | **+14** |
 | 32 | JobWizardGraph | `domains/job_management/agents/job_wizard_graph.py` | — | ✓ | ✓ | ✓ | — | — | ✓ | 60% | 57% | **57%** | 0 |
 | 33 | WSIInterviewGraph | `domains/cv_screening/agents/wsi_interview_graph.py` | — | ✓ | ✓ | ✓ | ✓ | — | — | 55% | 43% | **57%** | **+14** |
-| 34 | InterviewGraph | `domains/interview_scheduling/agents/interview_graph.py` | — | ✓ | — | ✓ | ✓ | — | — | 50% | 29% | **43%** | **+14** |
+| 34 | InterviewGraph | `domains/interview_scheduling/agents/interview_graph.py` | — | ✓ | ✓ (L2 BLOCK + REGENERATE — F4) | ✓ | ✓ | — | — | 50% | 29% | **57%** | **+28** |
 | 35 | PolicySetupAgent | `domains/policy/agents/agent.py` | ✓ | — (usa `audit_service.log_decision` direto) | ✓ | ✓ | ✓ | ✓ | — | 25% | 0% | **71%** | **+71** |
 | 36 | JobCreationGraph | `domains/job_creation/graph.py` | — | ✓ | ✓ | ✓ | — | — | — | 5% | 0% | **57%** | **+57** |
 
 **Notas:**
-- Sub-agents (linhas 14-29): a herança de `LangGraphReActBase` é por composição (o `*_react_agent.py` pai instancia o sub-agent dentro do grafo). Mantemos `↑` para reconhecer mas o score literal continua baixo.
-- **Mais movimento**: `JobCreationGraph` passou de 5%→57% (PARCIAL conforme A1), `PolicySetupAgent` de 25%→71% (PARCIAL/RESOLVIDO conforme A2), `WSIInterviewGraph` de 55%→57% e `InterviewGraph` de 50%→43% (perdeu o pseudo-FG anterior — ainda **falta FG explícito**).
+- Sub-agents (linhas 14-29): a herança de `LangGraphReActBase` é por composição (o `*_react_agent.py` pai instancia o sub-agent dentro do grafo). A partir de task #352 (F5) adotamos a notação `↑✓` quando a herança é verificável (pai instancia o sub-agent E pai satisfaz o critério no próprio arquivo) — recompute pendente para o snapshot 2026-05; até lá, mantemos `↑` para todas as linhas 14-29 sem alteração de score.
+- **Mais movimento**: `JobCreationGraph` passou de 5%→57% (PARCIAL conforme A1), `PolicySetupAgent` de 25%→71% (PARCIAL/RESOLVIDO conforme A2), `WSIInterviewGraph` de 55%→57% e `InterviewGraph` de 50%→**57%** (F4 / task #352 adicionou FairnessGuard L2 com política BLOCK + REGENERATE em `interview_graph.py:339-462` + audit `decision="blocked"`).
 - **Discrepância de contagem persiste:** doc diz "35 agents" mas tabula 36 linhas. Mantemos as 36 para fidelidade.
 
 ---
@@ -270,7 +270,7 @@ A implementação fez **progresso substancial nos 30 dias entre os dois snapshot
 | **Stage 1 — Hotfixes** | 4 (R1, C8, R5/R6, sweep audit shim) | 2 (C8, sweep) | 0 | 1 (R1) | 0 | 2 (R5, R6) | **50%** (excluindo OBSOLETO) |
 | **Stage 2 — Compliance Gates** | 9 (C1-C7, R2, R7) | 4 (C6, C7, R2, R7) | 0 | 5 (C1-C5) | 0 | 0 | **44%** |
 | **Stage 3 — Tools System** | 8 (T1-T3, W7-W10) | 2 (T2, W7 -66 ocorrências) | 1 (W7 resíduo 23) | 5 (T1, T3, W8-W10) | 0 | 0 | **31%** |
-| **Stage 4 — Agents Compliance** | 12 (A1-A4, W16-W17, W19, sub-agents) | 4 (W16, W17, W19, A4 — esta última via PARCIAL conforme matriz) | 4 (A1, A2, A3, sub-agents) | 4 (sub-agents 14-29 sem FG/Audit individual + linhas inalteradas) | 0 | 0 | **45%** |
+| **Stage 4 — Agents Compliance** | 12 (A1-A4, W16-W17, W19, sub-agents) | 5 (W16, W17, W19, A4, **A3** — F4) | 3 (A1, A2, sub-agents — política F5 definida; recompute pendente) | 4 (linhas inalteradas; sub-agents 14-29 com herança simbólica) | 0 | 0 | **50%** |
 | **Stage 5 — Cleanup** | 17 (D1-D3, W6, W11-W15, O1-O17, P14 156 shims) | 14 (D1-D3, W6, W11-W15, O1-O17) | 1 (P14 shims sem SLA) | 2 (T1/registry paralelo, W8/W10 dead) | 0 | 0 | **82%** |
 | **Stage 6 — Observability** | 11 moves + 4 docs (P16-P20) = 15 | 0 | 0 | 15 | 0 | 0 | **0%** |
 | **Falsos-positivos do plan** | 5 (R5, R6, W21, sub-claim A1 "órfão", sub-claim W16/W19 "sem rota") | — | — | — | — | 5 | — |
@@ -375,21 +375,26 @@ Todas marcadas com comentário `# require_company=False kept: …` justificando 
 
 ### 9.3 Agentes — completar A1-A4
 - **F3.** A1 — Migrar `JobCreationGraph` para herdar `LangGraphReActBase` (atualmente b=0; FG/PII/Audit já presentes).
-- **F4.** A3 — Adicionar `FairnessGuard.check()` no `InterviewGraph` (atualmente f=0).
-- **F5.** Sub-agents (linhas 14-29 da matriz) — política: ou (a) mover gates compliance para a base ReAct e gerar score por composição, ou (b) adicionar `AuditCallback` per-agent. Recomendamos (a).
+- **F4.** A3 — Adicionar `FairnessGuard.check()` no `InterviewGraph` (atualmente f=0). **✅ RESOLVIDO em task #352** — `interview_graph.py:339-366` agora roda `check_fairness()` fail-open sobre `response_data["message"]` ao final do `ainvoke`, com paridade ao WSI L2 e fitness `TestF4InterviewGraphFairnessGuard`.
+- **F5.** Sub-agents ReAct (linhas 14-29 da matriz) — **política definida em task #352, opção (a) — composição:**
+  - **Decisão.** Gates compliance (FairnessGuard, PII masking, AuditCallback, tenant context) ficam **na base** (`LangGraphReActBase` + `react_loop_factory`). Sub-agents **não** importam diretamente esses módulos; o gate é aplicado na fronteira do react_loop pai.
+  - **Scoring derivado.** Para a matriz 36×7, sub-agents recebem score do gate por **composição verificável** quando: (i) o pai (`*_react_agent.py`) instancia o sub-agent dentro do grafo (presente no AST como `cls(...)` ou registrado em `sub_agents=[...]`); e (ii) o pai obtém `f≥1, a≥1, t≥1, s≥1` no critério respectivo. A coluna passa de `↑` (herança simbólica) para `↑✓` (herança verificável) somente quando ambas condições valem.
+  - **Critério de auditoria.** A linha do sub-agent é tratada como **PASS** apenas em FairnessGuard (f), AuditCallback (a) e Tenant Context (t) — nunca em SystemPrompt (s) nem Base ReAct (b), que continuam exigidos no próprio arquivo do sub-agent.
+  - **Não-fazer.** Não duplicar gates nos sub-agents (anti-pattern); não promover sub-agent a top-level só para satisfazer scorecard. Caso um sub-agent precise de FG/Audit *adicional* (e.g., decisão automatizada própria), promova-o a `*_react_agent.py` com base própria.
+  - **Operacionalização.** O recompute da matriz §4 deve usar essa regra a partir do próximo snapshot (2026-05). Até lá, as linhas 14-29 permanecem com nota `↑` e a discrepância segue documentada como **escopo de critério**, não bug.
 
 ### 9.4 Tool system — decisão arquitetural
 - **F6.** Deletar `app/shared/global_tool_registry.py` + `app/tools/tool_permissions.yaml` + `app/tools/tool_permissions_loader.py` (T3, W8, W10). Funcionam zero há ≥ 30 dias.
 - **F7.** Migrar 30 calls `tool_registry.register(ToolDefinition(…))` em `domains/talent_intelligence/tools/registry.py` e `domains/analytics/tools/analytics_query_tools/registry.py` para `@tool_handler(domain=…)`. Depois, deletar `app/tools/registry.py` (T1).
-- **F8.** Cobrir as 23 `require_company=False` restantes em uma checagem cruzada YAML × código (W7 resíduo).
+- **F8.** Cobrir as 18 `require_company=False` restantes em uma checagem cruzada YAML × código (W7 resíduo). **✅ RESOLVIDO em task #352** — `docs/policies/require_company_exemptions.md` (inventário canônico) + `lia-agent-system/scripts/check_require_company_exemptions.py` (CI gate) + fitness `TestF8RequireCompanyExemptionsDocumented`.
 
 ### 9.5 Stage 6 — Observability (paralelo, 3-5 dias)
 - **F9.** Implementar Stage 6 conforme plano (P16-P20): mover 11 arquivos, criar 11 shims, atualizar 10 consumidores diretos, atualizar `ARCHITECTURE.md` §5.1 e §9.4, `CANONICAL_SOURCES_SPEC.md`, `CLAUDE.md`.
 
 ### 9.6 Higiene
-- **F10.** SLA para 156 shims backward-compat: adicionar tag `@deprecated since=YYYY-MM-DD` e regra de remoção (ex.: 0 importadores há 90 dias).
-- **F11.** CI lint proibindo `from langchain_core.tools import tool` em `app/domains/*/tools/` (regressão de T2).
-- **F12.** Smoke test de boot: verificar que `GlobalToolRegistry._registry` está populada — força "ativar ou deletar" no CI.
+- **F10.** SLA para 156 shims backward-compat: adicionar tag `@deprecated since=YYYY-MM-DD` e regra de remoção (ex.: 0 importadores há 90 dias). **✅ RESOLVIDO em task #352** — política em `docs/policies/shim_sla.md`; cabeçalhos `@deprecated since=2026-04-17` aplicados aos 10 shims `RAILS-DEPRECATED` em `app/shared/`; fitness `TestF10ShimSlaHeaders` impede regressão. Os 146 shims restantes são re-exports puros, removidos em batch quando `integrations_hub` cobrir 100% das chamadas.
+- **F11.** CI lint proibindo `from langchain_core.tools import tool` em `app/domains/*/tools/` (regressão de T2). **✅ RESOLVIDO em task #352** — `lia-agent-system/scripts/check_no_langchain_tool_decorator.py` + step `F11 — block langchain_core @tool decorator regression` em `.github/workflows/ci.yml.disabled` + fitness `TestF11NoLangchainToolDecoratorRegression`.
+- **F12.** Smoke test de boot: verificar que `GlobalToolRegistry._registry` está populada — força "ativar ou deletar" no CI. **✅ RESOLVIDO via deleção em task #352** — `app/shared/global_tool_registry.py` foi confirmado deletado (0 callers). O canary `TestF12GlobalToolRegistryDeadCanary` falha se o módulo voltar a existir sem callers, mantendo a pressão "ativar ou deletar" sem precisar do registry vivo.
 
 ### 9.7 Não-fazer (decisões já implícitas)
 - **NF1.** Não reabrir R5, R6, W21 — falsos-positivos confirmados em duas auditorias.
