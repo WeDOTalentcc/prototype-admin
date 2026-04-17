@@ -1,6 +1,6 @@
 "use client"
 
-import React from "react"
+import React, { useState } from "react"
 import { ChatContainer } from "@/components/triagem/ChatContainer"
 import { MessageBubble } from "@/components/triagem/MessageBubble"
 import { InputBar } from "@/components/triagem/InputBar"
@@ -140,6 +140,7 @@ function LGPDFooter() {
 }
 
 export function TriagemFlow({ hook }: TriagemFlowProps) {
+  const [whatsappModalOpen, setWhatsappModalOpen] = useState(false)
   const {
     token,
     pageState,
@@ -227,6 +228,7 @@ export function TriagemFlow({ hook }: TriagemFlowProps) {
               config={config}
               onStart={handleStartChat}
               onRequestCall={handleOpenPhoneModal}
+              onRequestWhatsapp={() => setWhatsappModalOpen(true)}
               isStarting={isSending}
             />
             {showVoipButton && (
@@ -258,6 +260,19 @@ export function TriagemFlow({ hook }: TriagemFlowProps) {
           onConfirm={handleRequestCall}
           isLoading={phoneCallLoading}
           error={phoneCallError}
+          initialPhone={config?.candidatePhone ?? null}
+        />
+        <PhoneConfirmModal
+          mode="whatsapp"
+          open={whatsappModalOpen}
+          onClose={() => setWhatsappModalOpen(false)}
+          onConfirm={(e164: string) => {
+            const digits = e164.replace(/\D/g, "")
+            const text = `Olá LIA, gostaria de iniciar minha triagem para ${config.jobTitle}.`
+            const url = `https://wa.me/${digits}?text=${encodeURIComponent(text)}`
+            window.open(url, "_blank", "noopener,noreferrer")
+            setWhatsappModalOpen(false)
+          }}
           initialPhone={config?.candidatePhone ?? null}
         />
         <LGPDFooter />

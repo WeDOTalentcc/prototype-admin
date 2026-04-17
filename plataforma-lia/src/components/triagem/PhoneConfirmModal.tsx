@@ -15,6 +15,13 @@ interface PhoneConfirmModalProps {
    * as suggestion so the candidate doesn't retype it.
    */
   initialPhone?: string | null
+  /**
+   * Task #425 — same form is shared by the "Receber Ligação" (phone) and
+   * "Continuar pelo WhatsApp" (whatsapp) candidate channels. Mode just
+   * swaps the labels and CTA; phone validation and E.164 normalization are
+   * identical for both.
+   */
+  mode?: "phone" | "whatsapp"
 }
 
 function formatPhoneInput(raw: string): string {
@@ -44,7 +51,15 @@ export function PhoneConfirmModal({
   isLoading = false,
   error = null,
   initialPhone = null,
+  mode = "phone",
 }: PhoneConfirmModalProps) {
+  const isWhatsapp = mode === "whatsapp"
+  const title = isWhatsapp ? "Continuar pelo WhatsApp" : "Receber Ligação"
+  const description = isWhatsapp
+    ? "Confirme seu número de WhatsApp. Vamos abrir uma conversa para você continuar a triagem por mensagem."
+    : "Informe seu telefone para receber uma ligação da LIA. A triagem sera conduzida por voz."
+  const ctaIdle = isWhatsapp ? "Abrir WhatsApp" : "Solicitar Ligação"
+  const ctaLoading = isWhatsapp ? "Abrindo..." : "Ligando..."
   const [phone, setPhone] = useState(() => initialPhone ? formatPhoneInput(initialPhone) : "")
 
   useEffect(() => {
@@ -79,12 +94,12 @@ export function PhoneConfirmModal({
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4"
       role="dialog"
       aria-modal="true"
-      aria-label="Solicitar ligação"
+      aria-label={title}
     >
       <div className="w-full max-w-sm bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-subtle rounded-xl shadow-lia-md p-6 space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-base font-semibold text-lia-text-primary">
-            Receber Ligação
+            {title}
           </h2>
           <button
             type="button"
@@ -99,7 +114,7 @@ export function PhoneConfirmModal({
         </div>
 
         <p className="text-sm text-lia-text-secondary leading-relaxed">
-          Informe seu telefone para receber uma ligação da LIA. A triagem sera conduzida por voz.
+          {description}
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -140,12 +155,12 @@ export function PhoneConfirmModal({
             {isLoading ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />
-                Ligando...
+                {ctaLoading}
               </>
             ) : (
               <>
                 <Phone className="w-4 h-4" />
-                Solicitar Ligação
+                {ctaIdle}
               </>
             )}
           </button>

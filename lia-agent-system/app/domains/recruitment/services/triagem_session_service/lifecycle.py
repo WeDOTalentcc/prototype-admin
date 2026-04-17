@@ -47,6 +47,24 @@ async def validate_token(db: AsyncSession, token: str) -> dict[str, Any]:
     if session.status == "completed":
         return {"valid": True, "completed": True, "session": session.to_dict()}
 
+    # Task #425 — enforce reopen cap on the candidate-facing GET path so the
+    # limit applies whether the candidate hits /start or just resumes via
+    # the token URL. The increment itself still happens on /start (state
+    # transition); validate_token only blocks further access when capped.
+    REOPEN_LIMIT = 2
+    if session.status in ("started", "in_progress"):
+        meta = session.metadata_json or {}
+        current = int(meta.get("reopen_count", 0))
+        if current >= REOPEN_LIMIT:
+            return {
+                "valid": False,
+                "error": "reopen_limit_exceeded",
+                "status_code": 410,
+                "reopen_count": current,
+                "limit": REOPEN_LIMIT,
+                "session": session.to_dict(),
+            }
+
     return {"valid": True, "completed": False, "session": session.to_dict()}
 
 
@@ -358,6 +376,33 @@ async def start_session(db: AsyncSession, token: str, voice_mode: bool | None = 
     use_voice = voice_mode if voice_mode is not None else session.voice_mode
 
     active_blocks = _get_session_blocks(session)
+
+    # Task #425 — true resume: if this session already has prior question
+    # messages, do NOT re-inject the first question. Return the most recent
+    # LIA question so the candidate continues exactly where they left off.
+    existing_q = await db.execute(
+        select(TriagemMessage)
+        .where(
+            TriagemMessage.session_id == session.id,
+            TriagemMessage.sender == "lia",
+            TriagemMessage.message_type == "question",
+        )
+        .order_by(TriagemMessage.created_at.desc())
+        .limit(1)
+    )
+    last_question = existing_q.scalar_one_or_none()
+    if last_question is not None:
+        return {
+            "session": session.to_dict(),
+            "lia_response": last_question.to_dict(),
+            "progress": _build_progress(
+                session.current_block,
+                getattr(session, "current_question", 0) or 0,
+                active_blocks,
+            ),
+            "resumed": True,
+        }
+
     first_block = active_blocks[0]
     first_question = first_block["questions"][0]
     transition = f"Vamos começar pela etapa de **{first_block['name']}**.\n\n{first_question}"

@@ -10,6 +10,8 @@ interface WelcomeCardProps {
   config: TriagemConfig
   onStart: (voiceMode?: boolean) => void
   onRequestCall?: () => void
+  /** Task #425 — opens phone confirm modal in WhatsApp mode (shared form). */
+  onRequestWhatsapp?: () => void
   isStarting?: boolean
   className?: string
 }
@@ -30,7 +32,7 @@ const WORK_MODEL_LABELS: Record<string, string> = {
   presencial: "Presencial",
 }
 
-export function WelcomeCard({ config, onStart, onRequestCall, isStarting = false, className }: WelcomeCardProps) {
+export function WelcomeCard({ config, onStart, onRequestCall, onRequestWhatsapp, isStarting = false, className }: WelcomeCardProps) {
   const [consentChecked, setConsentChecked] = useState(false)
 
   const hasJobDetails = config.jobDescription || config.location || config.workModel
@@ -186,20 +188,16 @@ export function WelcomeCard({ config, onStart, onRequestCall, isStarting = false
                   {isStarting ? "Iniciando..." : "Iniciar Conversa por Chat"}
                 </button>
               )}
-              {whatsappOn && (
-                <a
-                  href={`https://wa.me/?text=${encodeURIComponent(`Olá LIA, gostaria de iniciar minha triagem para ${config.jobTitle}.`)}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-disabled={!consentChecked}
-                  onClick={(e) => { if (!consentChecked) { e.preventDefault() } }}
-                  className={cn(
-                    "w-full h-11 flex items-center justify-center gap-2 rounded-lg border border-lia-border-subtle text-lia-text-primary text-sm font-medium hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 focus:outline-none",
-                    !consentChecked && "opacity-50 cursor-not-allowed pointer-events-none"
-                  )}
+              {whatsappOn && onRequestWhatsapp && (
+                <button
+                  type="button"
+                  onClick={onRequestWhatsapp}
+                  disabled={isStarting || !consentChecked}
+                  aria-label="Continuar a triagem pelo WhatsApp"
+                  className="w-full h-11 flex items-center justify-center gap-2 rounded-lg border border-lia-border-subtle text-lia-text-primary text-sm font-medium hover:bg-lia-bg-tertiary disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 focus:outline-none"
                 >
                   Continuar pelo WhatsApp
-                </a>
+                </button>
               )}
               {phoneOn && onRequestCall && (
                 <button

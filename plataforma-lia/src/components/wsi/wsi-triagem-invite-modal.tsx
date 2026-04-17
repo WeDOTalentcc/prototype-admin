@@ -266,13 +266,53 @@ useEffect(() => {
       }
 
       const selectedVacancy = linkToVacancy ? vacancies.find(v => v.id === selectedVacancyId) : null
-      
+      const effectiveJobId = (linkToVacancy ? selectedVacancyId : jobId) || ''
+      const effectiveJobTitle = selectedVacancy?.title || jobTitle || ''
+
+      // Task #425 — Telefone (PSTN) is dispatched directly via Twilio voice
+      // initiate. It is NOT a generic "invite"; it triggers an outbound call
+      // immediately. Other channels still use send-screening-invite.
+      if (channel === 'telefone') {
+        if (!companyId) {
+          toast.error('Empresa não identificada', { description: 'Não foi possível identificar a empresa para iniciar a ligação.' })
+          return
+        }
+        const callResponse = await fetch('/api/backend-proxy/twilio-voice/initiate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            candidate_id: candidate.id,
+            candidate_name: candidate.name,
+            phone_number: candidate.phone,
+            job_title: effectiveJobTitle,
+            company_id: companyId,
+            job_id: effectiveJobId,
+            language: 'pt-BR',
+          })
+        })
+        const callData = await callResponse.json().catch(() => ({}))
+        if (!callResponse.ok || callData?.success === false) {
+          toast.error('Falha ao iniciar ligação', { description: callData?.error || callData?.detail || 'Tente novamente em instantes.' })
+          return
+        }
+        toast.success('Ligação iniciada', { description: `A LIA está discando para ${candidate.name}.` })
+        onSend?.({
+          channel: 'telefone',
+          candidateId: candidate.id,
+          candidateName: candidate.name,
+          jobTitle: effectiveJobTitle,
+          vacancyId: effectiveJobId,
+        } as never)
+        onClose()
+        return
+      }
+
       // voz_web is delivered via email (link to /voip-start), but the modality
       // is tracked separately in the onSend callback. Backend expects one of
       // email|whatsapp|telefone for send-screening-invite.
-      const sendChannel: 'email' | 'whatsapp' | 'telefone' =
-        channel === 'voz_web' ? 'email' : (channel as 'email' | 'whatsapp' | 'telefone')
-      
+      const sendChannel: 'email' | 'whatsapp' =
+        channel === 'voz_web' ? 'email' : (channel as 'email' | 'whatsapp')
+
       const inviteResponse = await fetch('/api/backend-proxy/communication/send-screening-invite', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -479,40 +519,14 @@ useEffect(() => {
 
             {/* Channel-specific composer */}
             {channel === 'telefone' ? (
-              <div className="space-y-2">
-                <div className="border border-lia-border-subtle rounded-md p-3 bg-lia-bg-secondary/40">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Phone className="w-4 h-4 text-wedo-orange" />
-                    <span className={textStyles.subtitle}>Ligação automática (Twilio PSTN)</span>
-                  </div>
-                  <p className="text-micro text-lia-text-tertiary">
-                    A LIA vai discar para <strong className="text-lia-text-primary">{candidate.phone || '—'}</strong> e conduzir a triagem por voz.
-                  </p>
-                  <p className="text-micro text-lia-text-disabled mt-1">
-                    Disparo automático no envio. Roteiro manual abaixo é apenas fallback se a chamada falhar.
-                  </p>
+              <div className="border border-lia-border-subtle rounded-md p-3 bg-lia-bg-secondary/40">
+                <div className="flex items-center gap-2 mb-1">
+                  <Phone className="w-4 h-4 text-wedo-orange" />
+                  <span className={textStyles.subtitle}>Ligação automática (Twilio PSTN)</span>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setShowPhoneScript(s => !s)}
-                  className="text-micro text-lia-text-secondary hover:text-lia-text-primary underline"
-                >
-                  {showPhoneScript ? 'Ocultar roteiro manual de fallback' : 'Ver roteiro manual de fallback'}
-                </button>
-                {showPhoneScript && (
-                  <div>
-                    <label className="text-xs font-medium text-lia-text-primary mb-2 block">
-                      {t('invite.scriptLabel')}
-                    </label>
-                    <Textarea
-                      ref={messageTextareaRef}
-                      value={message}
-                      onChange={(e) => setMessage(e.target.value)}
-                      placeholder={t('invite.scriptPlaceholder')}
-                      className="min-h-card-lg text-xs focus:ring-1 focus:ring-lia-btn-primary-bg/20 focus:border-lia-border-medium resize-none border-lia-border-subtle"
-                    />
-                  </div>
-                )}
+                <p className="text-micro text-lia-text-tertiary">
+                  Ao confirmar, a LIA disca imediatamente para <strong className="text-lia-text-primary">{candidate.phone || '—'}</strong> e conduz a triagem por voz.
+                </p>
               </div>
             ) : (
               <MessageComposer
