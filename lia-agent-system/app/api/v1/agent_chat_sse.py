@@ -40,6 +40,11 @@ from app.shared.chat_event_serializer import (
     serialize_token_done,
 )
 from app.shared.prompt_injection import PromptInjectionGuard
+from app.shared.compliance.c3b_layer import (
+    ComplianceContext,
+    pre_compliance,
+    post_compliance,
+)
 from app.domains.credits.services.token_budget_service import (
     check_budget,
     get_plan_for_company,
@@ -201,9 +206,8 @@ async def sse_chat_stream(
         )
 
 
-    # LIA-P03: Add FairnessGuard and SecurityPatterns to agent SSE
+    # LIA-P03: SecurityPatterns input check (kept inline; not part of c3b layer)
     try:
-        from app.shared.compliance.fairness_guard import FairnessGuard
         from app.shared.robustness.security_patterns import check_input_security
 
         _security_result = check_input_security(content)
@@ -212,18 +216,10 @@ async def sse_chat_stream(
                 status_code=400,
                 detail="Mensagem bloqueada por verificacao de seguranca."
             )
-
-        _fg = FairnessGuard()
-        _fr = _fg.check(content)
-        if _fr and _fr.is_blocked:
-            raise HTTPException(
-                status_code=400,
-                detail=_fr.educational_message or "Sua solicitacao contem termos que podem gerar vies."
-            )
     except HTTPException:
         raise
     except Exception as e:
-        logger.debug("[LIA-P03] Agent SSE compliance skipped: %s", e)
+        logger.debug("[LIA-P03] Agent SSE security_patterns skipped: %s", e)
 
     active_domain = req.domain or "recruiter_assistant"
     context = req.context or {}
@@ -231,6 +227,17 @@ async def sse_chat_stream(
     context.setdefault("user_id", user_id)
     if req.conversation_id:
         context["conversation_id"] = req.conversation_id
+
+    # R7: Converge SSE chat path on the same pre/post compliance used by
+    # chat.py and agent_chat_ws.py (PII masking + FairnessGuard L3 for HR
+    # domains, plus post-response FactChecker + audit log).
+    _c3b_pre = await pre_compliance(content, company_id or "", active_domain)
+    if _c3b_pre.fairness_blocked:
+        raise HTTPException(
+            status_code=422,
+            detail=_c3b_pre.block_reason or "Solicitação bloqueada por critérios de equidade.",
+        )
+    content = _c3b_pre.clean_message
 
     async def event_generator():
         event_seq = 0
@@ -380,6 +387,20 @@ async def sse_chat_stream(
                                 pass
 
                         clean_message = _strip_react_json(output.message or "")
+
+                        # R7: Post-compliance (FactChecker + audit log) — same
+                        # path as chat.py / agent_chat_ws.py.
+                        if clean_message:
+                            _c3b_ctx = ComplianceContext(
+                                company_id=company_id or "",
+                                user_id=user_id,
+                                session_id=session_id,
+                                domain=resolved_domain,
+                                agent_id=resolved_domain,
+                                original_message=_c3b_pre.original_message,
+                                fairness_flags=_c3b_pre.fairness_flags,
+                            )
+                            clean_message = await post_compliance(clean_message, _c3b_ctx)
 
                         panel_meta = (output.metadata or {}).get("panel_update")
                         if panel_meta and isinstance(panel_meta, dict):
