@@ -30,6 +30,41 @@ except ImportError:
 
 logger = logging.getLogger(__name__)
 
+
+# ---------------------------------------------------------------------------
+# A4 (compliance) — tenant LLM context scope helper
+# ---------------------------------------------------------------------------
+from contextlib import contextmanager
+
+
+@contextmanager
+def _wsi_tenant_scope(company_id: str | None):
+    """Set ``tenant_llm_context`` for the duration of a graph execution.
+
+    Used by ``WSIInterviewGraph`` so that the WSIScreeningPipeline and any
+    LLM-backed node inside the graph resolves the provider/key configured
+    by the tenant (Choose Your AI). No-op when ``company_id`` is empty or
+    when the contextvar has already been set by an upstream middleware.
+    """
+    token = None
+    try:
+        from app.middleware.auth_enforcement import _current_company_id
+        cid = str(company_id or "")
+        if cid and not _current_company_id.get(""):
+            token = _current_company_id.set(cid)
+    except Exception as _exc:
+        logger.debug("[WSIInterviewGraph] tenant_llm_context skipped: %s", _exc)
+    try:
+        yield
+    finally:
+        if token is not None:
+            try:
+                from app.middleware.auth_enforcement import _current_company_id
+                _current_company_id.reset(token)
+            except Exception:
+                pass
+
+
 # ---------------------------------------------------------------------------
 # State
 # ---------------------------------------------------------------------------
@@ -981,7 +1016,18 @@ class WSIInterviewGraph:
         """Inicia sessão via StateGraph nativo (operation='start').
 
         P36 Full: injects 3-layer intelligence before graph execution.
+
+        A4 (compliance) — propaga ``state.company_id`` para o
+        ``tenant_llm_context`` antes da execução, garantindo que o
+        ``WSIScreeningPipeline`` e qualquer consumidor de LLM dos nós
+        usem o provider/key configurado pelo tenant (Choose Your AI).
         """
+        with _wsi_tenant_scope(state.company_id):
+            return await self._start_langgraph_inner(state, audit_callback)
+
+    async def _start_langgraph_inner(
+        self, state: WSIInterviewState, audit_callback=None
+    ) -> WSIInterviewState:
         if self._compiled_lg is None:
             self._compiled_lg = self._build_langgraph()
 
@@ -1040,7 +1086,22 @@ class WSIInterviewGraph:
         candidate_response: str,
         audit_callback=None,
     ) -> WSIInterviewState:
-        """Processa resposta via StateGraph nativo (operation='submit')."""
+        """Processa resposta via StateGraph nativo (operation='submit').
+
+        A4 (compliance) — propaga ``state.company_id`` para o
+        ``tenant_llm_context`` antes da execução.
+        """
+        with _wsi_tenant_scope(state.company_id):
+            return await self._submit_response_langgraph_inner(
+                state, candidate_response, audit_callback
+            )
+
+    async def _submit_response_langgraph_inner(
+        self,
+        state: WSIInterviewState,
+        candidate_response: str,
+        audit_callback=None,
+    ) -> WSIInterviewState:
         if self._compiled_lg is None:
             self._compiled_lg = self._build_langgraph()
 

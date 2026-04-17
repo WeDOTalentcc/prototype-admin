@@ -178,10 +178,41 @@ class InterviewGraph:
         """Executa via StateGraph nativo com PostgresSaver checkpoint.
 
         P36 Full: injects 3-layer intelligence before graph execution.
+
+        A3 (compliance) — propaga ``state['company_id']`` para o
+        ``tenant_llm_context`` antes da execução para que ``get_provider_for_tenant``
+        nos nós e qualquer outro consumidor de LLM resolva o provider/key
+        correto por tenant (Choose Your AI). Falha-segura: se o middleware
+        já tiver setado o contextvar, mantém o valor.
         """
         if self._compiled is None:
             self._compiled = self._build_langgraph()
 
+        # --- A3: tenant LLM context propagation ---
+        _tenant_token = None
+        try:
+            from app.middleware.auth_enforcement import _current_company_id
+            _company_id = str(state.get("company_id") or "")
+            if _company_id and not _current_company_id.get(""):
+                _tenant_token = _current_company_id.set(_company_id)
+        except Exception as _tenant_exc:
+            self.logger.debug("[InterviewGraph] tenant_llm_context skipped: %s", _tenant_exc)
+
+        try:
+            return await self._invoke_langgraph_inner(state, audit_callback)
+        finally:
+            # A3: garante restauração do contextvar mesmo em exceção fora do try interno
+            if _tenant_token is not None:
+                try:
+                    from app.middleware.auth_enforcement import _current_company_id
+                    _current_company_id.reset(_tenant_token)
+                except Exception:
+                    pass
+
+    async def _invoke_langgraph_inner(
+        self, state: dict[str, Any], audit_callback=None
+    ) -> dict[str, Any]:
+        """Corpo da execução LangGraph (extraído para garantir reset do tenant context)."""
         # --- P36: Camada 3 — Global scheduling insights ---
         try:
             from app.shared.services.global_insights_service import get_global_insights

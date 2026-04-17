@@ -94,3 +94,23 @@ agents:
     model_id: claude-sonnet-4-6
     system_prompt_path: null
     enabled: true
+
+  # A3 — InterviewGraph (entrevistas / agendamento conversacional).
+  # Composição com tenant_llm_context (provider escolhido via contextvar
+  # por tenant) + AuditCallback + FairnessGuard + pii_masking já presentes.
+  - name: interview_scheduling
+    domain: interview_scheduling
+    class_path: app.domains.interview_scheduling.agents.interview_graph.InterviewGraph
+    model_id: claude-sonnet-4-6
+    system_prompt_path: app/prompts/domains/interview_scheduling.yaml
+    enabled: true
+
+  # A4 — WSIInterviewGraph (entrevistas WSI síncronas).
+  # Composição com tenant_llm_context para WSIScreeningPipeline +
+  # AuditCallback + FairnessGuard + pii_masking já presentes.
+  - name: wsi_interview
+    domain: wsi_interview
+    class_path: app.domains.cv_screening.agents.wsi_interview_graph.WSIInterviewGraph
+    model_id: claude-sonnet-4-6
+    system_prompt_path: app/prompts/domains/wsi_interview.yaml
+    enabled: true

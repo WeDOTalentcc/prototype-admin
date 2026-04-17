@@ -212,7 +212,10 @@ async def interview_details_collector(state: dict[str, Any]) -> dict[str, Any]:
     )
     
     try:
-        container = get_provider_for_tenant()
+        # A3: passa company_id explicitamente para resolver provider/key por tenant
+        # (Choose Your AI). Fallback para contextvar quando ausente do state.
+        _tenant_id = str(state.get("company_id") or "") or None
+        container = get_provider_for_tenant(tenant_id=_tenant_id)
         extracted_json = await container.generate_with_fallback(extraction_prompt)
         # Clean JSON
         if "```json" in extracted_json:
