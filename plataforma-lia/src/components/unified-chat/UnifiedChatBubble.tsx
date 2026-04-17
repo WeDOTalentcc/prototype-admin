@@ -7,11 +7,20 @@ import { useLiaChatContext } from "@/contexts/lia-float-context"
 import { useTranslations } from 'next-intl'
 
 const POSITION_STORAGE_KEY = "lia-bubble-position"
+const RESET_EVENT = "lia:reset-bubble-position"
 const DRAG_THRESHOLD = 4
 const BUTTON_SIZE = 56
+const ARROW_STEP = 8
+const ARROW_STEP_LARGE = 32
 
 interface Props {
   onOpen: () => void
+}
+
+function clampPosition(p: { x: number; y: number }) {
+  const x = Math.max(0, Math.min(window.innerWidth - BUTTON_SIZE, p.x))
+  const y = Math.max(0, Math.min(window.innerHeight - BUTTON_SIZE, p.y))
+  return { x, y }
 }
 
 function getStoredPosition(): { x: number; y: number } | null {
@@ -21,13 +30,16 @@ function getStoredPosition(): { x: number; y: number } | null {
     if (stored) {
       const parsed = JSON.parse(stored)
       if (typeof parsed.x === "number" && typeof parsed.y === "number") {
-        const x = Math.max(0, Math.min(window.innerWidth - BUTTON_SIZE, parsed.x))
-        const y = Math.max(0, Math.min(window.innerHeight - BUTTON_SIZE, parsed.y))
-        return { x, y }
+        return clampPosition(parsed)
       }
     }
   } catch {}
   return null
+}
+
+function getDefaultPosition(): { x: number; y: number } {
+  if (typeof window === "undefined") return { x: 0, y: 0 }
+  return { x: window.innerWidth - BUTTON_SIZE - 24, y: window.innerHeight - BUTTON_SIZE - 24 }
 }
 
 export function UnifiedChatBubble({ onOpen }: Props) {
@@ -36,12 +48,15 @@ export function UnifiedChatBubble({ onOpen }: Props) {
   const [position, setPosition] = useState<{ x: number; y: number } | null>(getStoredPosition)
   const isDragging = useRef(false)
   const dragStart = useRef<{ x: number; y: number; bx: number; by: number } | null>(null)
+  const dragOriginPosition = useRef<{ x: number; y: number } | null>(null)
   const hasMoved = useRef(false)
   const buttonRef = useRef<HTMLButtonElement>(null)
 
   useEffect(() => {
     if (position) {
       localStorage.setItem(POSITION_STORAGE_KEY, JSON.stringify(position))
+    } else {
+      localStorage.removeItem(POSITION_STORAGE_KEY)
     }
   }, [position])
 
@@ -49,14 +64,19 @@ export function UnifiedChatBubble({ onOpen }: Props) {
     const handleResize = () => {
       setPosition(prev => {
         if (!prev) return prev
-        const x = Math.max(0, Math.min(window.innerWidth - BUTTON_SIZE, prev.x))
-        const y = Math.max(0, Math.min(window.innerHeight - BUTTON_SIZE, prev.y))
-        if (x === prev.x && y === prev.y) return prev
-        return { x, y }
+        const next = clampPosition(prev)
+        if (next.x === prev.x && next.y === prev.y) return prev
+        return next
       })
     }
     window.addEventListener("resize", handleResize)
     return () => window.removeEventListener("resize", handleResize)
+  }, [])
+
+  useEffect(() => {
+    const handleReset = () => setPosition(null)
+    window.addEventListener(RESET_EVENT, handleReset)
+    return () => window.removeEventListener(RESET_EVENT, handleReset)
   }, [])
 
   const handlePointerDown = useCallback((e: React.PointerEvent) => {
@@ -65,8 +85,9 @@ export function UnifiedChatBubble({ onOpen }: Props) {
     const rect = buttonRef.current?.getBoundingClientRect()
     if (!rect) return
     dragStart.current = { x: e.clientX, y: e.clientY, bx: rect.left, by: rect.top }
+    dragOriginPosition.current = position
     ;(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
-  }, [])
+  }, [position])
 
   const handlePointerMove = useCallback((e: React.PointerEvent) => {
     if (!isDragging.current || !dragStart.current) return
@@ -74,14 +95,13 @@ export function UnifiedChatBubble({ onOpen }: Props) {
     const dy = e.clientY - dragStart.current.y
     if (Math.abs(dx) > DRAG_THRESHOLD || Math.abs(dy) > DRAG_THRESHOLD) hasMoved.current = true
     if (!hasMoved.current) return
-    const newX = Math.max(0, Math.min(window.innerWidth - BUTTON_SIZE, dragStart.current.bx + dx))
-    const newY = Math.max(0, Math.min(window.innerHeight - BUTTON_SIZE, dragStart.current.by + dy))
-    setPosition({ x: newX, y: newY })
+    setPosition(clampPosition({ x: dragStart.current.bx + dx, y: dragStart.current.by + dy }))
   }, [])
 
   const handlePointerUp = useCallback(() => {
     isDragging.current = false
     dragStart.current = null
+    dragOriginPosition.current = null
     if (hasMoved.current) {
       hasMoved.current = false
       return
@@ -92,6 +112,7 @@ export function UnifiedChatBubble({ onOpen }: Props) {
   const handlePointerCancel = useCallback(() => {
     isDragging.current = false
     dragStart.current = null
+    dragOriginPosition.current = null
     hasMoved.current = false
   }, [])
 
@@ -106,6 +127,32 @@ export function UnifiedChatBubble({ onOpen }: Props) {
     if (e.key === "Enter" || e.key === " ") {
       e.preventDefault()
       onOpen()
+      return
+    }
+    if (e.key === "Escape" && isDragging.current) {
+      e.preventDefault()
+      const origin = dragOriginPosition.current
+      isDragging.current = false
+      dragStart.current = null
+      hasMoved.current = false
+      dragOriginPosition.current = null
+      setPosition(origin)
+      return
+    }
+    const arrowMap: Record<string, [number, number]> = {
+      ArrowUp: [0, -1],
+      ArrowDown: [0, 1],
+      ArrowLeft: [-1, 0],
+      ArrowRight: [1, 0],
+    }
+    const delta = arrowMap[e.key]
+    if (delta) {
+      e.preventDefault()
+      const step = e.shiftKey ? ARROW_STEP_LARGE : ARROW_STEP
+      setPosition(prev => {
+        const base = prev ?? getDefaultPosition()
+        return clampPosition({ x: base.x + delta[0] * step, y: base.y + delta[1] * step })
+      })
     }
   }, [onOpen])
 
@@ -131,6 +178,7 @@ export function UnifiedChatBubble({ onOpen }: Props) {
         "transition-transform motion-reduce:transition-none",
         "hover:scale-110 hover:shadow-xl hover:shadow-[#60BED1]/40",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#60BED1]/50 focus-visible:ring-offset-2",
+        "cursor-grab active:cursor-grabbing",
         "group"
       )}
       style={style}
@@ -141,6 +189,19 @@ export function UnifiedChatBubble({ onOpen }: Props) {
         className="w-7 h-7 text-white drop-shadow-sm group-hover:drop-shadow-md transition-all motion-reduce:transition-none"
         strokeWidth={2.2}
       />
+
+      {/* Drag affordance — 6 small dots, visible on hover/focus */}
+      <span
+        aria-hidden="true"
+        className={cn(
+          "absolute -bottom-1 left-1/2 -translate-x-1/2 flex gap-[3px]",
+          "opacity-0 group-hover:opacity-80 group-focus-visible:opacity-80 transition-opacity motion-reduce:transition-none"
+        )}
+      >
+        <span className="w-[3px] h-[3px] rounded-full bg-white/90" />
+        <span className="w-[3px] h-[3px] rounded-full bg-white/90" />
+        <span className="w-[3px] h-[3px] rounded-full bg-white/90" />
+      </span>
 
       {chatIsConnected && (
         <span className="absolute top-0 right-0 w-2.5 h-2.5 rounded-full bg-status-success ring-2 ring-[#60BED1]" />

@@ -34,6 +34,9 @@ interface Props {
   onRename?: (newTitle: string) => void
   onDelete?: () => void
   hasMessages?: boolean
+  onResetPosition?: () => void
+  onHeaderPointerDown?: (e: React.PointerEvent) => void
+  isDraggable?: boolean
 }
 
 export function UnifiedChatHeader({
@@ -49,6 +52,9 @@ export function UnifiedChatHeader({
   onRename,
   onDelete,
   hasMessages,
+  onResetPosition,
+  onHeaderPointerDown,
+  isDraggable,
 }: Props) {
   const t = useTranslations('chat.header')
   const [showModeMenu, setShowModeMenu] = useState(false)
@@ -126,7 +132,15 @@ export function UnifiedChatHeader({
   }
 
   return (
-    <div className="flex items-center justify-between px-4 py-2.5 flex-shrink-0 bg-lia-bg-primary">
+    <div
+      onPointerDown={onHeaderPointerDown}
+      className={cn(
+        "flex items-center justify-between px-4 py-2.5 flex-shrink-0 bg-lia-bg-primary",
+        isDraggable && "cursor-grab active:cursor-grabbing select-none touch-none"
+      )}
+      title={isDraggable ? t('dragHandle') : undefined}
+      data-drag-handle={isDraggable || undefined}
+    >
       <div className="flex items-center gap-2 min-w-0">
         <Brain className="w-4 h-4 text-wedo-cyan flex-shrink-0" strokeWidth={2} />
 
@@ -233,6 +247,20 @@ export function UnifiedChatHeader({
                     )}
                   </button>
                 ))}
+                {onResetPosition && mode === "floating" && (
+                  <>
+                    <div className="my-1 border-t border-lia-border-subtle" />
+                    <button
+                      onClick={() => {
+                        onResetPosition()
+                        setShowModeMenu(false)
+                      }}
+                      className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-lia-text-secondary hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none"
+                    >
+                      <span>{t('resetPosition')}</span>
+                    </button>
+                  </>
+                )}
               </div>
             </>
           )}

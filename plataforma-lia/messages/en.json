@@ -483,7 +483,9 @@
       "modeSidebar": "Sidebar",
       "modeFloating": "Floating",
       "modeFullscreen": "Full screen",
-      "modeMinimize": "Minimize"
+      "modeMinimize": "Minimize",
+      "resetPosition": "Reset position",
+      "dragHandle": "Drag to move"
     },
     "input": {
       "placeholder": "Ask LIA anything...",
@@ -582,8 +584,8 @@
       "confirmProcess": "Confirm and process"
     },
     "bubble": {
-      "openLia": "Open LIA ({shortcut})",
-      "openLiaLabel": "Open chat with LIA"
+      "openLia": "Open LIA ({shortcut}) — click to open, drag to move",
+      "openLiaLabel": "Open chat with LIA. Click to open, drag to move, use arrow keys to reposition."
     },
     "helpResponse": "**What LIA can do:**\n\n**Create jobs**\n- Create jobs with automatic JD enrichment\n- Generate WSI screening questions (CBI/Bloom/Dreyfus)\n- Configure eligibility and publish\n\n**Find candidates**\n- Automatic sourcing (local/global/hybrid)\n- Search by skills, experience, location\n- Talent pools and lists\n\n**Analyze**\n- Pipeline health and bottlenecks\n- Job analytics (funnel, speed, quality)\n- Weekly/monthly reports\n\n**Communicate**\n- Schedule interviews (direct or self-scheduling)\n- Send feedback (approval/rejection)\n- Email and WhatsApp\n\n**Shortcuts**\n- @name — mention candidate or job\n- /create job — start wizard\n- /search — search candidates\n- /pipeline — view pipeline\n- /report — generate report\n- Drag PDF — auto-detects CV or JD"
   },

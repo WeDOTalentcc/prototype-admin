@@ -20,9 +20,16 @@ import type { ChatMode } from "./unified-chat-types"
 
 const MODE_STORAGE_KEY = "lia-chat-mode"
 const WIDTH_STORAGE_KEY = "lia-chat-width"
+const FLOATING_POSITION_KEY = "lia-chat-floating-position"
+const FLOATING_RESET_EVENT = "lia:reset-floating-position"
 const DEFAULT_WIDTH = 380
 const MIN_WIDTH = 300
 const MAX_WIDTH = 600
+const FLOATING_WIDTH = 360
+const FLOATING_HEIGHT = 520
+const FLOATING_DRAG_THRESHOLD = 4
+const ARROW_STEP = 8
+const ARROW_STEP_LARGE = 32
 
 function getStoredMode(): ChatMode {
   if (typeof window === "undefined") return "sidebar"
@@ -39,6 +46,26 @@ function getStoredWidth(): number {
     if (!isNaN(n) && n >= MIN_WIDTH && n <= MAX_WIDTH) return n
   }
   return DEFAULT_WIDTH
+}
+
+function clampFloatingPosition(p: { x: number; y: number }) {
+  const x = Math.max(0, Math.min(window.innerWidth - FLOATING_WIDTH, p.x))
+  const y = Math.max(0, Math.min(window.innerHeight - FLOATING_HEIGHT, p.y))
+  return { x, y }
+}
+
+function getStoredFloatingPosition(): { x: number; y: number } | null {
+  if (typeof window === "undefined") return null
+  try {
+    const stored = localStorage.getItem(FLOATING_POSITION_KEY)
+    if (stored) {
+      const parsed = JSON.parse(stored)
+      if (typeof parsed.x === "number" && typeof parsed.y === "number") {
+        return clampFloatingPosition(parsed)
+      }
+    }
+  } catch {}
+  return null
 }
 
 interface Props {
@@ -64,6 +91,107 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
   const [sidebarWidthPx, setSidebarWidthPx] = useState(getStoredWidth)
   const [isResizing, setIsResizing] = useState(false)
   const widthRef = useRef(sidebarWidthPx)
+  const [floatingPosition, setFloatingPosition] = useState<{ x: number; y: number } | null>(getStoredFloatingPosition)
+  const floatingDragRef = useRef<{ startX: number; startY: number; bx: number; by: number; moved: boolean; origin: { x: number; y: number } | null } | null>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  // Persist floating position
+  useEffect(() => {
+    if (typeof window === "undefined") return
+    if (floatingPosition) {
+      localStorage.setItem(FLOATING_POSITION_KEY, JSON.stringify(floatingPosition))
+    } else {
+      localStorage.removeItem(FLOATING_POSITION_KEY)
+    }
+  }, [floatingPosition])
+
+  // Reposition on resize
+  useEffect(() => {
+    const handleResize = () => {
+      setFloatingPosition(prev => {
+        if (!prev) return prev
+        const next = clampFloatingPosition(prev)
+        if (next.x === prev.x && next.y === prev.y) return prev
+        return next
+      })
+    }
+    window.addEventListener("resize", handleResize)
+    return () => window.removeEventListener("resize", handleResize)
+  }, [])
+
+  // Reset event listener
+  useEffect(() => {
+    const handleReset = () => setFloatingPosition(null)
+    window.addEventListener(FLOATING_RESET_EVENT, handleReset)
+    return () => window.removeEventListener(FLOATING_RESET_EVENT, handleReset)
+  }, [])
+
+  const handleHeaderPointerDown = useCallback((e: React.PointerEvent) => {
+    // Ignore drag if clicking on interactive elements
+    const target = e.target as HTMLElement
+    if (target.closest('button, input, [role="menu"], [role="menuitem"]')) return
+    const rect = containerRef.current?.getBoundingClientRect()
+    if (!rect) return
+    floatingDragRef.current = {
+      startX: e.clientX,
+      startY: e.clientY,
+      bx: rect.left,
+      by: rect.top,
+      moved: false,
+      origin: floatingPosition,
+    }
+    ;(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
+
+    const handleMove = (ev: PointerEvent) => {
+      const ref = floatingDragRef.current
+      if (!ref) return
+      const dx = ev.clientX - ref.startX
+      const dy = ev.clientY - ref.startY
+      if (!ref.moved && (Math.abs(dx) > FLOATING_DRAG_THRESHOLD || Math.abs(dy) > FLOATING_DRAG_THRESHOLD)) {
+        ref.moved = true
+      }
+      if (!ref.moved) return
+      setFloatingPosition(clampFloatingPosition({ x: ref.bx + dx, y: ref.by + dy }))
+    }
+    const handleUp = () => {
+      floatingDragRef.current = null
+      window.removeEventListener("pointermove", handleMove)
+      window.removeEventListener("pointerup", handleUp)
+      window.removeEventListener("pointercancel", handleUp)
+    }
+    window.addEventListener("pointermove", handleMove)
+    window.addEventListener("pointerup", handleUp)
+    window.addEventListener("pointercancel", handleUp)
+  }, [floatingPosition])
+
+  const handleResetFloatingPosition = useCallback(() => {
+    setFloatingPosition(null)
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new CustomEvent("lia:reset-bubble-position"))
+    }
+  }, [])
+
+  // Keyboard arrow movement when header has focus (only floating mode)
+  const handleContainerKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (mode !== "floating") return
+    const target = e.target as HTMLElement
+    if (target.closest('input, textarea, [contenteditable="true"]')) return
+    const arrowMap: Record<string, [number, number]> = {
+      ArrowUp: [0, -1],
+      ArrowDown: [0, 1],
+      ArrowLeft: [-1, 0],
+      ArrowRight: [1, 0],
+    }
+    const delta = arrowMap[e.key]
+    if (!delta) return
+    if (!target.closest('[data-drag-handle]')) return
+    e.preventDefault()
+    const step = e.shiftKey ? ARROW_STEP_LARGE : ARROW_STEP
+    setFloatingPosition(prev => {
+      const base = prev ?? { x: window.innerWidth - FLOATING_WIDTH - 16, y: window.innerHeight - FLOATING_HEIGHT - 16 }
+      return clampFloatingPosition({ x: base.x + delta[0] * step, y: base.y + delta[1] * step })
+    })
+  }, [mode])
 
   useEffect(() => {
     if (!isResizing) return
@@ -231,8 +359,15 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
   const dynamicPanelWidth = hasDynamicPanel ? 340 : 0
   const inlineWidth = isInline ? sidebarWidthPx + dynamicPanelWidth : undefined
 
+  const isFloatingOverlay = !isInline && mode === "floating"
+  const floatingStyle: React.CSSProperties | undefined = isFloatingOverlay && floatingPosition
+    ? { left: floatingPosition.x, top: floatingPosition.y, right: "auto", bottom: "auto" }
+    : undefined
+
   return (
     <div
+      ref={containerRef}
+      onKeyDown={handleContainerKeyDown}
       className={cn(
         "flex bg-lia-bg-primary relative overflow-hidden",
         isInline
@@ -241,10 +376,17 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
             ? "fixed inset-0 z-50"
             : mode === "sidebar"
               ? "fixed top-2 right-2 bottom-2 z-40 border border-lia-border-subtle rounded-xl shadow-xl"
-              : "fixed bottom-4 right-4 w-[360px] h-[520px] z-30 rounded-xl border border-lia-border-subtle shadow-xl",
+              : "fixed w-[360px] h-[520px] z-30 rounded-xl border border-lia-border-subtle shadow-xl",
+        isFloatingOverlay && !floatingPosition && "bottom-4 right-4",
         className
       )}
-      style={isInline ? { width: `${inlineWidth}px` } : (!isInline && mode === "sidebar") ? { width: `${sidebarWidthPx + dynamicPanelWidth}px` } : undefined}
+      style={
+        isInline
+          ? { width: `${inlineWidth}px` }
+          : (!isInline && mode === "sidebar")
+            ? { width: `${sidebarWidthPx + dynamicPanelWidth}px` }
+            : floatingStyle
+      }
       data-chat-mode={effectiveMode}
       data-render-mode={renderMode}
     >
@@ -272,6 +414,9 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
           isConnected={chatIsConnected}
           transportMode={chatTransportMode}
           isReconnecting={chatIsReconnecting}
+          isDraggable={isFloatingOverlay}
+          onHeaderPointerDown={isFloatingOverlay ? handleHeaderPointerDown : undefined}
+          onResetPosition={isFloatingOverlay ? handleResetFloatingPosition : undefined}
         />
 
         {/* Content area */}
