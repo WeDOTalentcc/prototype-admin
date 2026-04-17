@@ -470,6 +470,102 @@ _COMPILED_PATTERNS: dict[str, list[re.Pattern]] = {}
 #              aparencia_fisica), expansão IMPLICIT_BIAS_TERMS, fix regex idade
 _PATTERNS_VERSION = 5
 
+# ---------------------------------------------------------------------------
+# Interview transcript bias indicators (consolidated from 3 ex-detectors)
+#
+# Used by:
+#  - app.domains.interview_intelligence.services.bias_detector_service
+#  - app.domains.talent_intelligence.tools.interview_intelligence_tools
+#
+# These are KEYWORD-LEVEL indicators — broader than the explicit
+# DISCRIMINATORY_CATEGORIES regex (which require selectors like "apenas").
+# They flag mentions of protected attributes that warrant review when used
+# by an interviewer, but do NOT block queries on their own.
+# ---------------------------------------------------------------------------
+INTERVIEW_BIAS_INDICATORS: list[tuple[str, str, str, str]] = [
+    # (regex_pattern, bias_type, severity, description)
+    (r"\b(idade|velho|jovem|novo demais|experiência demais|experiencia demais|aposentad[oa])\b",
+     "age_bias", "high", "Referência a idade do candidato"),
+    (r"\b(bonit[oa]|atraente|aparência|aparencia|feio|magr[oa]|gord[oa]|apresentável|apresentavel)\b",
+     "appearance_bias", "high", "Referência à aparência física"),
+    (r"\b(casad[oa]|solteir[oa]|filhos|grávida|gravida|gestante|maternidade|paternidade)\b",
+     "family_status_bias", "high", "Referência a estado civil/família"),
+    (r"\b(sotaque|regional|periferia|favela|bairro nobre|classe)\b",
+     "socioeconomic_bias", "medium", "Referência a origem socioeconômica"),
+    (r"\b(deficiente|deficiência|deficiencia|cadeirante|cego|surdo|mudo|pcd)\b",
+     "disability_bias", "high", "Referência a deficiência (pode ser contexto legítimo)"),
+    (r"\b(raça|raca|cor|negro|branco|pardo|indígena|indigena|asiático|asiatico|preto)\b",
+     "racial_bias", "high", "Referência a raça/cor"),
+    (r"\b(religião|religiao|religioso|igreja|deus|ateu|evangélic[oa]|evangelic[oa]|católic[oa]|catolic[oa])\b",
+     "religious_bias", "medium", "Referência a religião"),
+    (r"\b(orientação sexual|orientacao sexual|gay|lésbica|lesbica|trans|heterossexual|homossexual|lgbtq)\b",
+     "sexual_orientation_bias", "high", "Referência a orientação sexual"),
+    (r"\b(parece comigo|mesma faculdade|mesma cidade|conterrâneo|conterraneo|colega de)\b",
+     "affinity_bias", "medium", "Indicador de viés de afinidade"),
+    (r"\b(cultural fit|fit cultural|não combina|nao combina|não é a cara|nao e a cara|nosso perfil|cara da empresa)\b",
+     "cultural_proxy_bias", "medium", "Proxy para viés via 'cultural fit'"),
+]
+
+# ---------------------------------------------------------------------------
+# Inclusive-language replacements (consolidated from jd_enrichment.py)
+# Used by jd_enrichment to rewrite excluding terms in JDs.
+# ---------------------------------------------------------------------------
+INCLUSIVE_LANGUAGE_REPLACEMENTS_PT: dict[str, str] = {
+    # Age proxy
+    "jovem e dinâmico": "proativo e engajado",
+    "jovem e dinamico": "proativo e engajado",
+    "energia jovem": "alta energia",
+    "recém-formado apenas": "formação recente é diferencial",
+    "recem-formado apenas": "formacao recente e diferencial",
+    # Gender proxy
+    "ele deve": "a pessoa deve",
+    "ele precisa": "a pessoa precisa",
+    "o candidato ideal": "a pessoa ideal",
+    # Culture fit (class bias proxy)
+    "fit cultural": "alinhamento com valores",
+    "cultural fit": "alinhamento com valores",
+    "cara da empresa": "alinhamento com a missao",
+    # Appearance proxy
+    "boa aparência": "",
+    "boa aparencia": "",
+    "boa apresentação pessoal": "",
+    "boa apresentacao pessoal": "",
+    # Marital/family
+    "sem filhos": "",
+    "disponibilidade total": "disponibilidade conforme combinado",
+}
+
+INCLUSIVE_LANGUAGE_REPLACEMENTS_EN: dict[str, str] = {
+    "young and dynamic": "proactive and engaged",
+    "culture fit": "values alignment",
+    "he should": "the person should",
+    "he must": "the person must",
+    "native speaker": "fluent in",
+    "good looking": "",
+    "attractive": "",
+}
+
+# Filtros bloqueados em queries de busca (consolidado de jd_enrichment).
+BLOCKED_FILTER_FIELDS: frozenset = frozenset({
+    "gender", "genero", "sexo",
+    "age", "idade",
+    "race", "raca", "ethnicity", "etnia",
+    "marital", "estado_civil",
+    "religion", "religiao",
+})
+
+_COMPILED_INTERVIEW_INDICATORS: list[tuple[re.Pattern, str, str, str]] = []
+
+
+def _ensure_interview_indicators_compiled() -> None:
+    global _COMPILED_INTERVIEW_INDICATORS
+    if not _COMPILED_INTERVIEW_INDICATORS:
+        _COMPILED_INTERVIEW_INDICATORS = [
+            (re.compile(pat, re.IGNORECASE | re.UNICODE), btype, sev, desc)
+            for pat, btype, sev, desc in INTERVIEW_BIAS_INDICATORS
+        ]
+
+
 HIGH_IMPACT_ACTIONS = {
     "rejection", "shortlist", "wsi_score", "policy_save", "bulk_rejection",
     # FAR-4: sourcing search e import de JD são ações de alto impacto para Layer 3
@@ -927,6 +1023,81 @@ class FairnessGuard:
     def get_categories(self) -> list[str]:
         # Return only core categories (exclude _en suffix) → 13 categories
         return [k for k in DISCRIMINATORY_CATEGORIES.keys() if not k.endswith('_en')]
+
+    def detect_interview_indicators(self, text: str) -> list[dict[str, Any]]:
+        """
+        Keyword-level bias indicators for interview transcripts and free-form
+        recruiter text (consolidates the 3 ex-bias-detectors).
+
+        Returns a list of {type, description, occurrences, severity,
+        matched_terms, source} alerts. Empty list when no indicator is found.
+        """
+        if not text:
+            return []
+        _ensure_interview_indicators_compiled()
+        text_lower = text.lower()
+        alerts: list[dict[str, Any]] = []
+        for compiled, btype, severity, description in _COMPILED_INTERVIEW_INDICATORS:
+            matches = compiled.findall(text_lower)
+            if matches:
+                # findall on grouped patterns returns tuples or strings; normalize
+                normalized: list[str] = []
+                for m in matches:
+                    if isinstance(m, tuple):
+                        normalized.extend(g for g in m if g)
+                    elif m:
+                        normalized.append(m)
+                alerts.append({
+                    "type": btype,
+                    "description": description,
+                    "occurrences": len(matches),
+                    "severity": severity,
+                    "matched_terms": list({t for t in normalized})[:5],
+                    "source": "fairness_guard.interview_indicators",
+                })
+        return alerts
+
+    def apply_inclusive_language(self, text: str) -> tuple[str, list[str]]:
+        """
+        Rewrite a text replacing or removing non-inclusive terms (PT/EN).
+        Returns (corrected_text, list_of_corrections_applied).
+
+        Consolidated from jd_enrichment.check_fairness().
+        """
+        if not text:
+            return text, []
+        corrected = text
+        corrections: list[str] = []
+
+        for term, replacement in INCLUSIVE_LANGUAGE_REPLACEMENTS_PT.items():
+            pattern = re.compile(re.escape(term), re.IGNORECASE)
+            if pattern.search(corrected):
+                if replacement:
+                    corrected = pattern.sub(replacement, corrected)
+                    corrections.append(
+                        f"Substituido '{term}' por '{replacement}' (linguagem inclusiva)"
+                    )
+                else:
+                    corrected = pattern.sub("", corrected)
+                    corrections.append(
+                        f"Removido '{term}' (termo potencialmente discriminatorio)"
+                    )
+
+        for term, replacement in INCLUSIVE_LANGUAGE_REPLACEMENTS_EN.items():
+            pattern = re.compile(re.escape(term), re.IGNORECASE)
+            if pattern.search(corrected):
+                if replacement:
+                    corrected = pattern.sub(replacement, corrected)
+                    corrections.append(
+                        f"Replaced '{term}' with '{replacement}' (inclusive language)"
+                    )
+                else:
+                    corrected = pattern.sub("", corrected)
+                    corrections.append(
+                        f"Removed '{term}' (potentially discriminatory term)"
+                    )
+
+        return corrected.strip(), corrections
 
     async def log_check(
         self,

@@ -23,32 +23,14 @@ from typing import Any
 from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.shared.compliance.fairness_guard import FairnessGuard
 from lia_models.interview import Interview
 
 logger = logging.getLogger(__name__)
 
-BIAS_PATTERNS: list[tuple[str, str, str, str]] = [
-    (r"\b(idade|velho|jovem|novo demais|experiência demais|aposentad[oa])\b",
-     "age_bias", "high", "Referência a idade do candidato"),
-    (r"\b(bonit[oa]|atraente|aparência|feio|magr[oa]|gord[oa]|apresentável)\b",
-     "appearance_bias", "high", "Referência à aparência física"),
-    (r"\b(casad[oa]|solteir[oa]|filhos|grávida|gestante|maternidade|paternidade)\b",
-     "family_status_bias", "high", "Referência a estado civil/família"),
-    (r"\b(sotaque|regional|periferia|favela|bairro nobre|classe)\b",
-     "socioeconomic_bias", "medium", "Referência a origem socioeconômica"),
-    (r"\b(deficiente|deficiência|cadeirante|cego|surdo|mudo|pcd)\b",
-     "disability_bias", "high", "Referência a deficiência (pode ser contexto legítimo)"),
-    (r"\b(raça|cor|negro|branco|pardo|indígena|asiático|preto)\b",
-     "racial_bias", "high", "Referência a raça/cor"),
-    (r"\b(religião|religioso|igreja|deus|ateu|evangélic[oa]|católic[oa])\b",
-     "religious_bias", "medium", "Referência a religião"),
-    (r"\b(orientação sexual|gay|lésbica|trans|heterossexual|homossexual|lgbtq)\b",
-     "sexual_orientation_bias", "high", "Referência a orientação sexual"),
-    (r"\b(parece comigo|mesma faculdade|mesma cidade|conterrâneo|colega de)\b",
-     "affinity_bias", "medium", "Indicador de viés de afinidade"),
-    (r"\b(cultural fit|não combina|não é a cara|nosso perfil|cara da empresa)\b",
-     "cultural_proxy_bias", "medium", "Proxy para viés via 'cultural fit'"),
-]
+# Single source of truth for bias indicators is FairnessGuard.
+# We instantiate it once and delegate keyword scans there.
+_fairness_guard = FairnessGuard()
 
 LEADING_QUESTION_PATTERNS: list[tuple[str, str]] = [
     (r"você não acha que\b", "Pergunta indutiva: 'você não acha que...'"),
@@ -223,19 +205,11 @@ class BiasDetectorService:
     def _detect_patterns_interviewer_only(self, interviewer_text: str) -> list[dict[str, Any]]:
         if not interviewer_text:
             return []
-        text_lower = interviewer_text.lower()
-        alerts: list[dict[str, Any]] = []
-        for pattern, bias_type, severity, description in BIAS_PATTERNS:
-            matches = re.findall(pattern, text_lower, re.IGNORECASE)
-            if matches:
-                alerts.append({
-                    "type": bias_type,
-                    "description": description,
-                    "occurrences": len(matches),
-                    "severity": severity,
-                    "matched_terms": list(set(matches))[:5],
-                    "source": "pattern_interviewer",
-                })
+        # Delegate keyword detection to FairnessGuard (SSOT).
+        alerts = _fairness_guard.detect_interview_indicators(interviewer_text)
+        # Preserve legacy "source" tag expected by tests / dashboards.
+        for a in alerts:
+            a["source"] = "pattern_interviewer"
         return alerts
 
     def _detect_leading_questions(self, interviewer_text: str) -> list[dict[str, Any]]:
