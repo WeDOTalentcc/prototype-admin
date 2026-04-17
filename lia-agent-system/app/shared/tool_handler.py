@@ -38,7 +38,19 @@ def tool_handler(domain: str, *, require_company: bool = True, module: Optional[
         @wraps(func)
         async def wrapper(**kwargs: Any) -> dict[str, Any]:
             if require_company and not kwargs.get("company_id"):
-                return dict(_TENANT_REQUIRED_RESPONSE)
+                # Fallback 1: _context object (AgenticLoop/ToolExecutor path)
+                _ctx = kwargs.get("_context")
+                _resolved = getattr(_ctx, "company_id", "") if _ctx else ""
+                # Fallback 2: contextvar set by AuthEnforcementMiddleware (LangGraph path)
+                if not _resolved:
+                    try:
+                        from app.shared.tenant_llm_context import get_current_llm_tenant
+                        _resolved = get_current_llm_tenant()
+                    except Exception:
+                        pass
+                if not _resolved:
+                    return dict(_TENANT_REQUIRED_RESPONSE)
+                kwargs["company_id"] = _resolved
 
             access_result = None
 
