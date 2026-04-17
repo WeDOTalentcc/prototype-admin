@@ -85,120 +85,146 @@ async def _wrap_suggest_skills(**kwargs: Any) -> dict[str, Any]:
 
 @tool_handler("sourcing")
 async def _wrap_search_candidates(**kwargs: Any) -> dict[str, Any]:
-    """Execute talent search based on defined criteria."""
-    skills = kwargs.get("skills", [])
-    location = kwargs.get("location", "")
-    seniority = kwargs.get("experience_level", "") or kwargs.get("seniority_level", "")
-    role = kwargs.get("role", "")
-    page = kwargs.get("page", 1)
-    limit = kwargs.get("limit", 20)
+    """Execute talent search reusing the same pipeline as the REST endpoint.
+
+    Task #395: aligns the conversational LIA search with the on-screen search.
+    Both paths now go through ``PearchService.hybrid_search`` →
+    ``enrich_and_filter_candidates`` → credit debit, so dedup, Apify enrichment,
+    contact filtering and credit cost stay consistent across surfaces.
+    """
+    from app.api.v1.candidate_search._shared import (
+        CandidateSearchResultDTO,
+        enrich_and_filter_candidates,
+    )
+    from app.domains.credits.services.credit_service import credit_service
+    from app.domains.sourcing.services.pearch_service import pearch_service
+    from lia_models.pearch import HybridSearchRequest, SearchType
+
+    company_id = kwargs.get("company_id") or ""
+    user_id = kwargs.get("user_id") or ""
+
+    role = kwargs.get("role", "") or ""
+    skills = kwargs.get("skills", []) or []
+    location = kwargs.get("location", "") or ""
+    seniority = (
+        kwargs.get("experience_level", "")
+        or kwargs.get("seniority_level", "")
+        or ""
+    )
+
+    raw_query = (kwargs.get("query") or "").strip()
+    if raw_query:
+        nl_query = raw_query
+    else:
+        skills_str = " ".join(skills) if isinstance(skills, list) else str(skills or "")
+        nl_query = " ".join(p for p in [role, skills_str, seniority, location] if p).strip()
+    if not nl_query:
+        return {
+            "success": False,
+            "data": {},
+            "message": "Informe pelo menos um critério de busca (role, skills, location, seniority ou query).",
+        }
+
+    page = max(1, int(kwargs.get("page", 1) or 1))
+    limit = int(kwargs.get("limit", 20) or 20)
     if limit > 50:
         limit = 50
-    offset = (max(1, page) - 1) * limit
 
-    conditions = ["is_active = true"]
-    params: dict[str, Any] = {"lim": limit, "off": offset}
+    include_pearch = bool(kwargs.get("include_pearch", True))
+    pearch_limit = int(kwargs.get("pearch_limit", 15) or 15)
+    if pearch_limit > 50:
+        pearch_limit = 50
 
-    if role:
-        conditions.append("current_title ILIKE :role_pattern")
-        params["role_pattern"] = f"%{role}%"
-
-    if skills and isinstance(skills, list) and len(skills) > 0:
-        conditions.append("technical_skills && :skills_arr")
-        params["skills_arr"] = skills
-
+    search_spec: dict[str, Any] = {}
     if location:
-        conditions.append(
-            "(location_city ILIKE :loc_pattern OR location_state ILIKE :loc_pattern OR location_country ILIKE :loc_pattern)"
-        )
-        params["loc_pattern"] = f"%{location}%"
-
+        search_spec["location"] = location
+    if isinstance(skills, list) and skills:
+        search_spec["skills"] = skills
     if seniority:
-        conditions.append("seniority_level ILIKE :seniority_pattern")
-        params["seniority_pattern"] = f"%{seniority}%"
+        search_spec["seniority"] = seniority
+    if role:
+        search_spec["role"] = role
 
-    where_clause = " AND ".join(conditions) if conditions else "1=1"
+    job_vacancy_id = kwargs.get("job_vacancy_id") or kwargs.get("vacancy_id")
+    try:
+        job_vacancy_id = int(job_vacancy_id) if job_vacancy_id else None
+    except (TypeError, ValueError):
+        job_vacancy_id = None
 
-    query = f"""
-        SELECT id, name, email, current_title, current_company,
-               seniority_level, years_of_experience,
-               technical_skills, soft_skills,
-               location_city, location_state, location_country,
-               status, lia_score
-        FROM candidates
-        WHERE {where_clause}
-        ORDER BY lia_score DESC NULLS LAST, years_of_experience DESC NULLS LAST
-        LIMIT :lim OFFSET :off
-    """
-
-    count_query = f"SELECT COUNT(*) as total FROM candidates WHERE {where_clause}"
+    hybrid_request = HybridSearchRequest(
+        query=nl_query,
+        search_spec=search_spec or None,
+        search_local_first=bool(kwargs.get("search_local", True)),
+        include_pearch=include_pearch,
+        pearch_type=SearchType.FAST,
+        local_limit=limit,
+        pearch_limit=pearch_limit if include_pearch else 0,
+        show_emails=bool(kwargs.get("show_emails", False)),
+        show_phone_numbers=bool(kwargs.get("show_phone_numbers", False)),
+        job_vacancy_id=job_vacancy_id,
+        exclude_candidate_ids=list(kwargs.get("exclude_candidate_ids") or []),
+        include_discovered=bool(kwargs.get("include_discovered", True)),
+    )
 
     async with AsyncSessionLocal() as session:
-        count_result = await session.execute(text(count_query), params)
-        total = count_result.scalar() or 0
+        result = await pearch_service.hybrid_search(session, hybrid_request)
 
-        result = await session.execute(text(query), params)
-        rows = result.mappings().all()
+        candidates: list[CandidateSearchResultDTO] = []
+        for profile in result.local_candidates:
+            candidates.append(CandidateSearchResultDTO.from_profile(profile, "local"))
+        for profile in result.pearch_candidates:
+            candidates.append(CandidateSearchResultDTO.from_profile(profile, "pearch"))
 
-    candidates = []
-    for row in rows:
-        candidates.append({
-            "id": str(row["id"]),
-            "name": row["name"],
-            "email": row["email"],
-            "current_title": row["current_title"],
-            "current_company": row["current_company"],
-            "seniority_level": row["seniority_level"],
-            "years_of_experience": row["years_of_experience"],
-            "technical_skills": row["technical_skills"] or [],
-            "soft_skills": row["soft_skills"] or [],
-            "location": f"{row['location_city'] or ''}, {row['location_state'] or ''}, {row['location_country'] or ''}".strip(", "),
-            "status": row["status"],
-            "lia_score": row["lia_score"],
-        })
+        candidates = await enrich_and_filter_candidates(session, candidates)
 
-    # --- Phase 8.1.5: Pearch hybrid search support ---
-    include_pearch = kwargs.get("include_pearch", False)
-    pearch_candidates = []
-    pearch_count = 0
-    if include_pearch:
-        try:
-            from app.domains.sourcing.services.pearch_service import PearchService
-            pearch_svc = PearchService()
-            pearch_query = f"{role} {' '.join(skills) if isinstance(skills, list) else ''} {location}".strip()
-            pearch_result = await pearch_svc.search_candidates(
-                query=pearch_query,
-                search_type="fast",
-                limit=min(limit, 15),
-            )
-            if pearch_result and pearch_result.get("candidates"):
-                for pc in pearch_result["candidates"]:
-                    pc["source"] = "pearch"
-                    pearch_candidates.append(pc)
-                pearch_count = len(pearch_candidates)
-        except Exception as e:
-            import logging
-            logging.getLogger(__name__).warning("[SearchCandidates] Pearch fallback: %s", e)
+        credit_warning: str | None = None
+        if company_id:
+            try:
+                action = "bulk_search" if include_pearch else "search"
+                ok, remaining = await credit_service.consume_action(
+                    session,
+                    company_id,
+                    action,
+                    reference_type="search",
+                    reference_id=getattr(result, "thread_id", None),
+                    performed_by=user_id or None,
+                )
+                if not ok:
+                    credit_warning = (
+                        f"Créditos insuficientes (saldo: {remaining}). "
+                        "Resultados foram retornados, mas a ação não foi debitada."
+                    )
+                    logger.warning(
+                        "[search_candidates] Insufficient credits company=%s action=%s balance=%s",
+                        company_id, action, remaining,
+                    )
+                await session.commit()
+            except Exception as credit_err:
+                logger.warning(
+                    "[search_candidates] Credit deduction error (non-fatal): %s",
+                    credit_err,
+                )
 
-    # Combine local + pearch, dedup by email/linkedin
-    if pearch_candidates:
-        seen = {c.get("email") or c.get("id") for c in candidates}
-        for pc in pearch_candidates:
-            uid = pc.get("email") or pc.get("linkedin_url") or pc.get("id")
-            if uid and uid not in seen:
-                seen.add(uid)
-                candidates.append(pc)
-        total = total + pearch_count
+    serialized = [c.model_dump(mode="json") for c in candidates]
+    total = len(serialized)
+    message = f"{total} candidatos encontrados (local: {result.local_count}, pearch: {result.pearch_count})."
+    if credit_warning:
+        message = f"{message} {credit_warning}"
 
     return {
         "success": True,
         "data": {
-            "candidates": candidates,
+            "query": result.query,
+            "thread_id": getattr(result, "thread_id", None),
+            "candidates": serialized,
             "total_results": total,
+            "local_count": result.local_count,
+            "pearch_count": result.pearch_count,
             "page": page,
             "limit": limit,
+            "warning_message": credit_warning or getattr(result, "warning_message", None),
         },
-        "message": f"{len(candidates)} candidatos encontrados (total: {total}).",
+        "message": message,
     }
 
 
@@ -977,16 +1003,26 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
     ),
     ToolDefinition(
         name="search_candidates",
-        description="Executa busca de candidatos com base nos criterios definidos. Retorna lista paginada de candidatos.",
+        description=(
+            "Executa busca de candidatos usando o mesmo pipeline da tela "
+            "(Pearch hybrid_search + enriquecimento Apify + filtro por contato + débito de créditos). "
+            "Use para garantir que o resultado da conversa bata com o que o usuário vê na busca."
+        ),
         parameters={
             "type": "object",
             "properties": {
+                "query": {"type": "string", "description": "Query em linguagem natural (preferida; se ausente é montada a partir de role/skills/location/seniority)"},
                 "role": {"type": "string", "description": "Cargo ou titulo para buscar"},
                 "skills": {"type": "array", "items": {"type": "string"}, "description": "Lista de skills para filtrar"},
                 "location": {"type": "string", "description": "Localizacao para filtrar"},
                 "experience_level": {"type": "string", "description": "Nivel de senioridade"},
-                "page": {"type": "integer", "description": "Numero da pagina"},
-                "limit": {"type": "integer", "description": "Quantidade de resultados por pagina"},
+                "include_pearch": {"type": "boolean", "description": "Complementar com busca Pearch (default true, igual à tela)"},
+                "limit": {"type": "integer", "description": "Quantidade de resultados locais (max 50)"},
+                "pearch_limit": {"type": "integer", "description": "Limite de resultados Pearch (max 50)"},
+                "show_emails": {"type": "boolean", "description": "Revelar emails (consome créditos extras)"},
+                "show_phone_numbers": {"type": "boolean", "description": "Revelar telefones (consome créditos extras)"},
+                "job_vacancy_id": {"type": "integer", "description": "ID da vaga para contexto (opcional)"},
+                "page": {"type": "integer", "description": "Numero da pagina (informativo)"},
             },
             "required": [],
         },
