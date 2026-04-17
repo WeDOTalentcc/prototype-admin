@@ -23,6 +23,11 @@ _FAIRNESS_DOMAINS = frozenset({
     "salary_benchmark",
     "job_management",
     "candidate_evaluation",
+    # Audit A2 (task #316): hiring-policy authoring is a high-risk surface —
+    # discriminatory policy text must be blocked at the API edge with HTTP 422.
+    "hiring_policy",
+    "policy",
+    "policy_setup",
 })
 
 

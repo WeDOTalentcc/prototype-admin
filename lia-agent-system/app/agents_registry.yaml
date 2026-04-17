@@ -48,7 +48,7 @@ agents:
 
   - name: policy
     domain: policy
-    class_path: app.domains.policy.agents.policy_agent.PolicySetupAgent
+    class_path: app.domains.policy.agents.agent.PolicySetupAgent
     model_id: claude-haiku-4-5-20251001
     system_prompt_path: null
     enabled: true
