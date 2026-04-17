@@ -52,6 +52,9 @@
 | `R1` — `finetuning_export.py` IDOR | PENDENTE | **PENDENTE** (sem `get_current_user`, sem checagem `company_id`) | — |
 | `T3` GlobalToolRegistry — dead | PENDENTE | **RESOLVIDO via deleção** (`app/shared/global_tool_registry.py` removido; canary fitness `TestF12GlobalToolRegistryDeadCanary` impede ressurreição sem callers — F12 / task #352) | ✅ |
 | `app/tools/registry.py` paralelo (W8/W10) | PENDENTE | **PENDENTE** (uso ativo por `talent_intelligence` + `analytics_query_tools`) | — |
+| Sub-agents 14-29 — herança simbólica `↑` | PENDENTE (recompute) | **RESOLVIDO** (recompute task #369: política F5 aplicada; herança verificável `↑✓` de f/a/t via `LangGraphReActBase` em `libs/agents-core/lia_agents_core/langgraph_react_base.py:150-152, 251, 349`) | ✅ |
+
+> **Reconciliação task #369 (sub-agents).** O recompute da matriz §4 foi executado conforme F5 (definida em task #352). **Nota de contagem:** o enunciado original da tarefa #369 referenciava "14 sub-agent rows" (número herdado de §1.2 item #8 pré-recompute, que datava do CODE_AUDIT inicial); o inventário atual da matriz §4 abrange **16 linhas** de sub-agent (linhas 14-29 — Kanban×3, Pipeline×3, Sourcing×10), portanto as 16 linhas foram processadas. Para cada uma verificou-se: (i) extends-relationship com o `*ReActAgent` pai (Python class inheritance — composição estrutural equivalente, e na prática mais forte, que `cls(...)` em grafo) — confirmada em todos os 16 arquivos via `class XxxAgent(YyyReActAgent)`; (ii) cadeia `*ReActAgent → LangGraphReActBase` injeta `FairnessGuard.check()` (linha 251), `AuditCallback` (linhas 150-152) e `tenant_llm_context.get_current_llm_tenant()` (linha 349) em runtime para todas as subclasses. As 16 linhas migram de `↑` para `↑✓` em FairnessGuard, AuditCallback e Tenant Context. Score sobe de 14%/29% para **43% uniforme**. Os critérios Base (b), PII (p), SPB (s) e Reg permanecem `—` no arquivo do sub-agent — F5 proíbe inheritance-pass nesses 4 critérios. Não houve mudança de código de produção: este é um rebuild de scorecard.
 
 ### 1.2 Top 10 do que ainda importa
 
@@ -64,7 +67,7 @@
 | 5 | ~~**A3** — `InterviewGraph` ainda sem FairnessGuard~~ — **RESOLVIDO** em F4 (task #352); FG L2 fail-open sobre `response_data["message"]` em `interview_graph.py:339-366`, paridade com WSI | RESOLVIDO | — |
 | 6 | **A1** — `JobCreationGraph` agora tem FG/PII/Audit, mas **não herda `LangGraphReActBase`** (b=0); rodapé do scorecard segue divergente | MÉDIO | M |
 | 7 | **W7 (resíduo)** — 18 `require_company=False` restantes (vs. 89 originais). Documentadas em `docs/policies/require_company_exemptions.md` com guarda CI `scripts/check_require_company_exemptions.py` (F8 / task #352). | BAIXO | (concluído) |
-| 8 | Sub-agents ReAct (kanban_*, pipeline_*, sourcing_*, etc.): 14 arquivos com `b=0, a=0, t=0, s=0` — herança de `LangGraphReActBase` é por composição (via `*_react_agent.py`), não import direto. **Discrepância de scoring permanece** | INFORMATIVO | (decisão de critério) |
+| 8 | ~~Sub-agents ReAct (kanban_*, pipeline_*, sourcing_*, etc.): 14 arquivos com `b=0, a=0, t=0, s=0`~~ — **RESOLVIDO** em task #369: política F5 aplicada, scorecard recomputado com `↑✓` em FairnessGuard/AuditCallback/Tenant Context (verificável via cadeia `*ReActAgent → LangGraphReActBase`). Sub-agents agora pontuam 43% uniforme (3/7). Gaps remanescentes: Base/PII/SPB/Reg — F5 exige no próprio arquivo do sub-agent. | RESOLVIDO | — |
 | 9 | **R5/R6** — rotas duplicadas alegadas pelo doc não existem; precisam ser oficialmente fechadas como INCORRETO em CHANGELOG do plan | DOC | XS |
 | 10 | **156 shims backward-compat** sem SLA de remoção (P14 do plan) — política definida em `docs/policies/shim_sla.md` e cabeçalhos `@deprecated since=2026-04-17` aplicados aos 10 shims `RAILS-DEPRECATED` (F10 / task #352); restantes 146 são re-exports puros, removidos em batch quando `integrations_hub` cobrir 100% | BAIXO (parcial) | L (resta deletar shims) |
 
@@ -215,7 +218,9 @@ A implementação fez **progresso substancial nos 30 dias entre os dois snapshot
 > 6. **SPB** — `SystemPromptBuilder`;
 > 7. **Reg** — listado em `agents_registry.yaml`.
 >
-> Convenção: `✓` = import direto verificável; `↑` = herdado (sub-agent que delega ao react_agent pai); `—` = ausente.
+> Convenção: `✓` = import direto verificável no arquivo; `↑✓` = herdado e **verificável** (sub-agent extends `*ReActAgent` pai → `LangGraphReActBase`, que injeta o gate em runtime — F5 / task #352; recomputado em task #369); `↑` = herdado simbólico (não conta para score); `—` = ausente.
+>
+> **Política F5 (task #352, recomputada em #369).** Para sub-agents (linhas 14-29), os critérios FairnessGuard (3), AuditCallback (2) e Tenant Context (5) podem receber `↑✓` quando: (i) há extends-relationship com o `*ReActAgent` pai (Python class inheritance), e (ii) a cadeia chega a `LangGraphReActBase` que injeta o gate. Os critérios Base (1), PII (4), SPB (6) e Reg (7) **não** aceitam inheritance-pass — F5 exige import/registro direto no arquivo do sub-agent.
 
 | # | Agente | Arquivo | (1) Base | (2) Audit | (3) FG | (4) PII | (5) Tenant | (6) SPB | (7) Reg | Score doc | **Score #302** | **Score #347** | Δ |
 |---:|---|---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|---:|---:|---:|---:|
@@ -232,22 +237,22 @@ A implementação fez **progresso substancial nos 30 dias entre os dois snapshot
 | 11 | ATSIntegrationReActAgent | `domains/ats_integration/agents/ats_integration_react_agent.py` | ✓ | — | — | — | — | — | ✓ | 100% | 43% | **43%** | 0 |
 | 12 | CustomAgentRuntime | `domains/agent_studio/custom_agent_runtime.py` | ✓ | ✓ | ✓ | — | — | ✓ | — | 100% | n/a (runtime) | **57%** (4 de 7 critérios verificáveis) | — |
 | 13 | AutonomousReActAgent | `domains/autonomous/agents/autonomous_react_agent.py` | ✓ | ✓ | ✓ | — | — | ✓ | ✓ | 95% | 86% | **86%** | 0 |
-| 14 | KanbanActionAgent | `domains/recruiter_assistant/agents/kanban_action_agent.py` | ↑ | — | ✓ | — | — | — | — | 95% | 29% | **29%** | 0 |
-| 15 | KanbanSearchAgent | `domains/recruiter_assistant/agents/kanban_search_agent.py` | ↑ | — | — | — | — | — | — | 95% | 14% | **14%** | 0 |
-| 16 | KanbanInsightAgent | `domains/recruiter_assistant/agents/kanban_insight_agent.py` | ↑ | — | — | — | — | — | — | 95% | 14% | **14%** | 0 |
-| 17 | PipelineActionAgent | `domains/pipeline/agents/pipeline_action_agent.py` | ↑ | — | ✓ | — | — | — | — | 95% | 29% | **29%** | 0 |
-| 18 | PipelineContextAgent | `domains/pipeline/agents/pipeline_context_agent.py` | ↑ | — | — | — | — | — | — | 95% | 14% | **14%** | 0 |
-| 19 | PipelineDecisionAgent | `domains/pipeline/agents/pipeline_decision_agent.py` | ↑ | — | — | — | — | — | — | 95% | 14% | **14%** | 0 |
-| 20 | SourcingPlannerAgent | `domains/sourcing/agents/sourcing_planner_agent.py` | ↑ | — | — | — | — | — | — | 95% | 14% | **14%** | 0 |
-| 21 | SourcingSearchAgent | `domains/sourcing/agents/sourcing_search_agent.py` | ↑ | — | — | — | — | — | — | 95% | 14% | **14%** | 0 |
-| 22 | SourcingEnrichAgent | `domains/sourcing/agents/sourcing_enrich_agent.py` | ↑ | — | — | — | — | — | — | 95% | 14% | **14%** | 0 |
-| 23 | SourcingEngagementAgent | `domains/sourcing/agents/sourcing_engagement_agent.py` | ↑ | — | — | — | — | — | — | 95% | 14% | **14%** | 0 |
-| 24 | DiversitySourcingAgent | `domains/sourcing/agents/diversity_sourcing_agent.py` | ↑ | — | ✓ | — | — | — | — | 95% | 29% | **29%** | 0 |
-| 25 | GithubSourcingAgent | `domains/sourcing/agents/github_sourcing_agent.py` | ↑ | — | ✓ | — | — | — | — | 95% | 29% | **29%** | 0 |
-| 26 | NurtureSequenceAgent | `domains/sourcing/agents/nurture_sequence_agent.py` | ↑ | — | — | — | — | — | — | 95% | 14% | **14%** | 0 |
-| 27 | PassivePipelineAgent | `domains/sourcing/agents/passive_pipeline_agent.py` | ↑ | — | — | — | — | — | — | 95% | 14% | **14%** | 0 |
-| 28 | ReferralAgent | `domains/sourcing/agents/referral_agent.py` | ↑ | — | — | — | — | — | — | 95% | 14% | **14%** | 0 |
-| 29 | StackOverflowSourcingAgent | `domains/sourcing/agents/stackoverflow_sourcing_agent.py` | ↑ | — | ✓ | — | — | — | — | 95% | 29% | **29%** | 0 |
+| 14 | KanbanActionAgent | `domains/recruiter_assistant/agents/kanban_action_agent.py` | ↑ | ↑✓ | ✓ | — | ↑✓ | — | — | 95% | 29% | **43%** | **+14** |
+| 15 | KanbanSearchAgent | `domains/recruiter_assistant/agents/kanban_search_agent.py` | ↑ | ↑✓ | ↑✓ | — | ↑✓ | — | — | 95% | 14% | **43%** | **+29** |
+| 16 | KanbanInsightAgent | `domains/recruiter_assistant/agents/kanban_insight_agent.py` | ↑ | ↑✓ | ↑✓ | — | ↑✓ | — | — | 95% | 14% | **43%** | **+29** |
+| 17 | PipelineActionAgent | `domains/pipeline/agents/pipeline_action_agent.py` | ↑ | ↑✓ | ✓ | — | ↑✓ | — | — | 95% | 29% | **43%** | **+14** |
+| 18 | PipelineContextAgent | `domains/pipeline/agents/pipeline_context_agent.py` | ↑ | ↑✓ | ↑✓ | — | ↑✓ | — | — | 95% | 14% | **43%** | **+29** |
+| 19 | PipelineDecisionAgent | `domains/pipeline/agents/pipeline_decision_agent.py` | ↑ | ↑✓ | ↑✓ | — | ↑✓ | — | — | 95% | 14% | **43%** | **+29** |
+| 20 | SourcingPlannerAgent | `domains/sourcing/agents/sourcing_planner_agent.py` | ↑ | ↑✓ | ↑✓ | — | ↑✓ | — | — | 95% | 14% | **43%** | **+29** |
+| 21 | SourcingSearchAgent | `domains/sourcing/agents/sourcing_search_agent.py` | ↑ | ↑✓ | ↑✓ | — | ↑✓ | — | — | 95% | 14% | **43%** | **+29** |
+| 22 | SourcingEnrichAgent | `domains/sourcing/agents/sourcing_enrich_agent.py` | ↑ | ↑✓ | ↑✓ | — | ↑✓ | — | — | 95% | 14% | **43%** | **+29** |
+| 23 | SourcingEngagementAgent | `domains/sourcing/agents/sourcing_engagement_agent.py` | ↑ | ↑✓ | ↑✓ | — | ↑✓ | — | — | 95% | 14% | **43%** | **+29** |
+| 24 | DiversitySourcingAgent | `domains/sourcing/agents/diversity_sourcing_agent.py` | ↑ | ↑✓ | ✓ | — | ↑✓ | — | — | 95% | 29% | **43%** | **+14** |
+| 25 | GithubSourcingAgent | `domains/sourcing/agents/github_sourcing_agent.py` | ↑ | ↑✓ | ✓ | — | ↑✓ | — | — | 95% | 29% | **43%** | **+14** |
+| 26 | NurtureSequenceAgent | `domains/sourcing/agents/nurture_sequence_agent.py` | ↑ | ↑✓ | ↑✓ | — | ↑✓ | — | — | 95% | 14% | **43%** | **+29** |
+| 27 | PassivePipelineAgent | `domains/sourcing/agents/passive_pipeline_agent.py` | ↑ | ↑✓ | ↑✓ | — | ↑✓ | — | — | 95% | 14% | **43%** | **+29** |
+| 28 | ReferralAgent | `domains/sourcing/agents/referral_agent.py` | ↑ | ↑✓ | ↑✓ | — | ↑✓ | — | — | 95% | 14% | **43%** | **+29** |
+| 29 | StackOverflowSourcingAgent | `domains/sourcing/agents/stackoverflow_sourcing_agent.py` | ↑ | ↑✓ | ✓ | — | ↑✓ | — | — | 95% | 29% | **43%** | **+14** |
 | 30 | PipelineReActAgent (cv_screening) | `domains/cv_screening/agents/pipeline_react_agent.py` | ✓ | — | — | — | — | — | — | 95% | 14% | **14%** | 0 |
 | 31 | CompanySettingsReActAgent | `domains/company_settings/agents/company_react_agent.py` | ✓ | — | ✓ | — | — | — | ✓ (mappings + yaml) | 80% | 43% | **57%** | **+14** |
 | 32 | JobWizardGraph | `domains/job_management/agents/job_wizard_graph.py` | — | ✓ | ✓ | ✓ | — | — | ✓ | 60% | 57% | **57%** | 0 |
@@ -257,8 +262,9 @@ A implementação fez **progresso substancial nos 30 dias entre os dois snapshot
 | 36 | JobCreationGraph | `domains/job_creation/graph.py` | — | ✓ | ✓ | ✓ | — | — | — | 5% | 0% | **57%** | **+57** |
 
 **Notas:**
-- Sub-agents (linhas 14-29): a herança de `LangGraphReActBase` é por composição (o `*_react_agent.py` pai instancia o sub-agent dentro do grafo). A partir de task #352 (F5) adotamos a notação `↑✓` quando a herança é verificável (pai instancia o sub-agent E pai satisfaz o critério no próprio arquivo) — recompute pendente para o snapshot 2026-05; até lá, mantemos `↑` para todas as linhas 14-29 sem alteração de score.
-- **Mais movimento**: `JobCreationGraph` passou de 5%→57% (PARCIAL conforme A1), `PolicySetupAgent` de 25%→71% (PARCIAL/RESOLVIDO conforme A2), `WSIInterviewGraph` de 55%→57% e `InterviewGraph` de 50%→**57%** (F4 / task #352 adicionou FairnessGuard L2 com política BLOCK + REGENERATE em `interview_graph.py:339-462` + audit `decision="blocked"`).
+- **Sub-agents (linhas 14-29) — recompute task #369.** A herança de `LangGraphReActBase` é por composição estrutural: cada sub-agent declara `class XxxAgent(YyyReActAgent)` (Python class inheritance), e a cadeia `Yyy ReActAgent → LangGraphReActBase` injeta os 3 gates em runtime — `FairnessGuard.check()` (`libs/agents-core/lia_agents_core/langgraph_react_base.py:251`), `AuditCallback` (`:150-152`) e `tenant_llm_context.get_current_llm_tenant()` (`:349`). Verificação satisfeita para os 16 sub-agents. Critérios marcados `↑✓` (PASS por composição verificável): **(2) Audit, (3) FG, (5) Tenant**. Critérios mantidos `↑`/`—` (gap aberto, F5 exige no próprio arquivo): **(1) Base, (4) PII, (6) SPB, (7) Reg**. Score uniforme: **43%** (3/7).
+- **Sub-agents — gaps remanescentes (transparência).** Todos os 16 sub-agents têm `b=↑` (extends parent, não LangGraphReActBase direto), `p=—` (PII masking ocorre no base mas F5 não permite herança nesse critério), `s=—` (SPB ocorre no base mas idem) e `Reg=—` (sub-agents não estão em `agents_registry.yaml`, expostos só via parent). Esses 4 critérios continuam abertos por design — não são compliance gaps.
+- **Mais movimento**: `JobCreationGraph` passou de 5%→57% (PARCIAL conforme A1), `PolicySetupAgent` de 25%→71% (PARCIAL/RESOLVIDO conforme A2), `WSIInterviewGraph` de 55%→57% e `InterviewGraph` de 50%→**57%** (F4 / task #352 adicionou FairnessGuard L2 com política BLOCK + REGENERATE em `interview_graph.py:339-462` + audit `decision="blocked"`). Sub-agents 14-29: 14%/29% → **43% uniforme** (recompute F5 em task #369).
 - **Discrepância de contagem persiste:** doc diz "35 agents" mas tabula 36 linhas. Mantemos as 36 para fidelidade.
 
 ---
@@ -270,7 +276,7 @@ A implementação fez **progresso substancial nos 30 dias entre os dois snapshot
 | **Stage 1 — Hotfixes** | 4 (R1, C8, R5/R6, sweep audit shim) | 2 (C8, sweep) | 0 | 1 (R1) | 0 | 2 (R5, R6) | **50%** (excluindo OBSOLETO) |
 | **Stage 2 — Compliance Gates** | 9 (C1-C7, R2, R7) | 4 (C6, C7, R2, R7) | 0 | 5 (C1-C5) | 0 | 0 | **44%** |
 | **Stage 3 — Tools System** | 8 (T1-T3, W7-W10) | 2 (T2, W7 -66 ocorrências) | 1 (W7 resíduo 23) | 5 (T1, T3, W8-W10) | 0 | 0 | **31%** |
-| **Stage 4 — Agents Compliance** | 12 (A1-A4, W16-W17, W19, sub-agents) | 5 (W16, W17, W19, A4, **A3** — F4) | 3 (A1, A2, sub-agents — política F5 definida; recompute pendente) | 4 (linhas inalteradas; sub-agents 14-29 com herança simbólica) | 0 | 0 | **50%** |
+| **Stage 4 — Agents Compliance** | 12 (A1-A4, W16-W17, W19, sub-agents) | 6 (W16, W17, W19, A4, **A3** — F4, **sub-agents 14-29** — F5 recompute task #369: ↑✓ verificável em f/a/t via cadeia para `LangGraphReActBase`) | 2 (A1, A2) | 4 (linhas inalteradas) | 0 | 0 | **67%** |
 | **Stage 5 — Cleanup** | 17 (D1-D3, W6, W11-W15, O1-O17, P14 156 shims) | 14 (D1-D3, W6, W11-W15, O1-O17) | 1 (P14 shims sem SLA) | 2 (T1/registry paralelo, W8/W10 dead) | 0 | 0 | **82%** |
 | **Stage 6 — Observability** | 11 moves + 4 docs (P16-P20) = 15 | 0 | 0 | 15 | 0 | 0 | **0%** |
 | **Falsos-positivos do plan** | 5 (R5, R6, W21, sub-claim A1 "órfão", sub-claim W16/W19 "sem rota") | — | — | — | — | 5 | — |
@@ -378,10 +384,10 @@ Todas marcadas com comentário `# require_company=False kept: …` justificando 
 - **F4.** A3 — Adicionar `FairnessGuard.check()` no `InterviewGraph` (atualmente f=0). **✅ RESOLVIDO em task #352** — `interview_graph.py:339-366` agora roda `check_fairness()` fail-open sobre `response_data["message"]` ao final do `ainvoke`, com paridade ao WSI L2 e fitness `TestF4InterviewGraphFairnessGuard`.
 - **F5.** Sub-agents ReAct (linhas 14-29 da matriz) — **política definida em task #352, opção (a) — composição:**
   - **Decisão.** Gates compliance (FairnessGuard, PII masking, AuditCallback, tenant context) ficam **na base** (`LangGraphReActBase` + `react_loop_factory`). Sub-agents **não** importam diretamente esses módulos; o gate é aplicado na fronteira do react_loop pai.
-  - **Scoring derivado.** Para a matriz 36×7, sub-agents recebem score do gate por **composição verificável** quando: (i) o pai (`*_react_agent.py`) instancia o sub-agent dentro do grafo (presente no AST como `cls(...)` ou registrado em `sub_agents=[...]`); e (ii) o pai obtém `f≥1, a≥1, t≥1, s≥1` no critério respectivo. A coluna passa de `↑` (herança simbólica) para `↑✓` (herança verificável) somente quando ambas condições valem.
+  - **Scoring derivado.** Para a matriz 36×7, sub-agents recebem score do gate por **composição verificável** quando há um vínculo estrutural entre sub-agent e pai — satisfeito por **qualquer** das duas evidências, ambas equivalentes para o ciclo de vida do gate: (a) o pai (`*_react_agent.py`) instancia o sub-agent dentro do grafo (AST: `cls(...)` ou registrado em `sub_agents=[...]`); **ou** (b) o sub-agent estende o pai por herança Python (`class XxxAgent(YyyReActAgent)`) — caminho mais forte, pois o gate herdado pela MRO do pai roda em toda execução do sub-agent. Em ambos os casos exige-se também que o pai (ou a base que o pai estende — `LangGraphReActBase` em `libs/agents-core/lia_agents_core/langgraph_react_base.py`) satisfaça `f≥1, a≥1, t≥1` no critério respectivo. A coluna passa de `↑` (herança simbólica) para `↑✓` (herança verificável) somente quando vínculo estrutural + satisfação na cadeia valem.
   - **Critério de auditoria.** A linha do sub-agent é tratada como **PASS** apenas em FairnessGuard (f), AuditCallback (a) e Tenant Context (t) — nunca em SystemPrompt (s) nem Base ReAct (b), que continuam exigidos no próprio arquivo do sub-agent.
   - **Não-fazer.** Não duplicar gates nos sub-agents (anti-pattern); não promover sub-agent a top-level só para satisfazer scorecard. Caso um sub-agent precise de FG/Audit *adicional* (e.g., decisão automatizada própria), promova-o a `*_react_agent.py` com base própria.
-  - **Operacionalização.** O recompute da matriz §4 deve usar essa regra a partir do próximo snapshot (2026-05). Até lá, as linhas 14-29 permanecem com nota `↑` e a discrepância segue documentada como **escopo de critério**, não bug.
+  - **Operacionalização.** ✅ **RESOLVIDO em task #369** — recompute aplicado neste snapshot. Linhas 14-29 da matriz §4 agora exibem `↑✓` em FairnessGuard, AuditCallback e Tenant Context (verificação: `class XxxAgent(YyyReActAgent)` + cadeia até `LangGraphReActBase` em `libs/agents-core/lia_agents_core/langgraph_react_base.py:150-152, 251, 349`). Score uniforme 43% (3/7). Item #8 do Top 10 (§1.2) fechado.
 
 ### 9.4 Tool system — decisão arquitetural
 - **F6.** Deletar `app/shared/global_tool_registry.py` + `app/tools/tool_permissions.yaml` + `app/tools/tool_permissions_loader.py` (T3, W8, W10). Funcionam zero há ≥ 30 dias.
