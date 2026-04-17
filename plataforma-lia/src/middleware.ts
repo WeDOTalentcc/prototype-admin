@@ -161,6 +161,7 @@ export async function middleware(request: NextRequest) {
   if (isStaticOrApiPath(pathname)) {
     if (pathname.startsWith('/api/') && !isPublicApiPath(pathname)) {
       const accessTokenCookie = request.cookies.get('lia_access_token')
+      let devAutoLoginFailed = false
       if (DEV_AUTO_LOGIN) {
         const token = await getDevToken()
         if (token) {
@@ -171,6 +172,7 @@ export async function middleware(request: NextRequest) {
           response.headers.set('Pragma', 'no-cache')
           return response
         }
+        devAutoLoginFailed = true
       }
       if (accessTokenCookie && accessTokenCookie.value !== '_sso_session_') {
         const payload = await verifyJwt(accessTokenCookie.value)
@@ -185,6 +187,16 @@ export async function middleware(request: NextRequest) {
           requestHeaders.set('X-Auth-Method', 'workos')
           return NextResponse.next({ request: { headers: requestHeaders } })
         }
+      }
+      if (devAutoLoginFailed) {
+        return NextResponse.json(
+          {
+            error: 'dev_auto_login_failed',
+            message:
+              'Dev auto-login failed: the demo user could not authenticate against the backend. Check DEV_AUTO_LOGIN_EMAIL/DEV_AUTO_LOGIN_PASSWORD env vars or re-seed the demo user in lia-backend. See server logs for the [dev-auto-login] entry.',
+          },
+          { status: 503 },
+        )
       }
       return denyAccess(request, pathname)
     }
