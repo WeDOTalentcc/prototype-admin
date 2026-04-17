@@ -19,6 +19,7 @@ See ADR-012 in ARCHITECTURE.md for rationale.
 Run:  python scripts/check_forbidden_imports.py
 Exit: 0 = clean, 1 = violations found
 """
+import ast
 import re
 import sys
 from pathlib import Path
@@ -86,6 +87,39 @@ SCAN_DIRS = ["app", "scripts", "tests", "libs", "alembic"]
 SELF = Path(__file__).resolve()
 
 
+def _scan_string_literals(
+    source: str, py_file: Path, base: Path, violations: list[str]
+) -> None:
+    """Parse the file as Python and search inside every string literal for
+    forbidden import patterns. This catches patch/codegen scripts that emit
+    Python source via ``write_text(...)`` or string templates — the line
+    scanner above only sees the surrounding quotes, not the embedded import.
+    """
+    try:
+        tree = ast.parse(source)
+    except SyntaxError:
+        return
+    for node in ast.walk(tree):
+        if not (isinstance(node, ast.Constant) and isinstance(node.value, str)):
+            continue
+        text = node.value
+        if not text or "import" not in text:
+            continue
+        node_lineno = getattr(node, "lineno", 1) or 1
+        for offset, line in enumerate(text.splitlines()):
+            stripped = line.lstrip()
+            if stripped.startswith("#"):
+                continue
+            for pattern in FORBIDDEN_PATTERNS:
+                if pattern.search(line):
+                    rel = py_file.relative_to(base)
+                    lineno = node_lineno + offset
+                    violations.append(
+                        f"  {rel}:{lineno} (inside string literal): {line.strip()}"
+                    )
+                    break
+
+
 def _check_file(py_file: Path, base: Path, violations: list[str]) -> None:
     if py_file.resolve() == SELF:
         return
@@ -102,6 +136,7 @@ def _check_file(py_file: Path, base: Path, violations: list[str]) -> None:
                 rel = py_file.relative_to(base)
                 violations.append(f"  {rel}:{lineno}: {line.rstrip()}")
                 break
+    _scan_string_literals(source, py_file, base, violations)
 
 
 def main() -> int:
