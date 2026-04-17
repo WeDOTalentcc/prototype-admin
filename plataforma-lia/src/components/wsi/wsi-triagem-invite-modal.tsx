@@ -21,14 +21,22 @@ import { useTranslations } from "next-intl"
 import { useLocale } from "next-intl"
 import type { ScreeningChannelConfig, ScreeningChannelKey } from"@/hooks/recruitment/useScreeningConfig"
 
-type ContactChannel = 'email' | 'whatsapp' | 'telefone' | 'both'
+type ContactChannel = 'email' | 'whatsapp' | 'telefone' | 'voz_web' | 'both'
 
-function screeningChannelToContact(key: ScreeningChannelKey): ContactChannel {
+/**
+ * Task #425 — map canonical screening channel to invite contact channel.
+ * The 4 canonical channels (chat_web, whatsapp, phone_pstn, voice_web) each
+ * surface as a distinct invite channel — no longer collapsing PSTN with VoIP.
+ * Legacy keys (`phone`, `voip_web`) are accepted for backward compat.
+ */
+function screeningChannelToContact(key: ScreeningChannelKey | 'phone' | 'voip_web'): ContactChannel {
   switch (key) {
     case 'chat_web': return 'email'
     case 'whatsapp': return 'whatsapp'
-    case 'phone':
-    case 'voip_web': return 'telefone'
+    case 'phone_pstn':
+    case 'phone': return 'telefone'
+    case 'voice_web':
+    case 'voip_web': return 'voz_web'
     default: return 'email'
   }
 }

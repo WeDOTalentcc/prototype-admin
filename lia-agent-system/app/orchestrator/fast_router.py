@@ -275,10 +275,10 @@ _HARDCODED_DOMAIN_PATTERNS: dict[str, list[str]] = {
         r"personalize.?communication",
         r"reschedule.?interview",
         r"cancel.?interview",
-        r"atualiza\s+o?\s+(email|telefone|celular|linkedin|cargo|empresa|cidade|estado|sal[aá]rio|modelo\s+de\s+trabalho|forma[çc][aã]o|idiomas?|disponibilidade)",
+        r"atualiza\s+o?\s+(email|telefone|celular|linkedin|cargo|empresa|cidade|estado|modelo\s+de\s+trabalho|forma[çc][aã]o|idiomas?|disponibilidade)",
         r"atualizar?\s+campo",
-        r"muda\s+o?\s+(email|telefone|celular|linkedin|cargo|empresa|cidade|estado|sal[aá]rio|modelo\s+de\s+trabalho|forma[çc][aã]o|idiomas?|disponibilidade)",
-        r"troca\s+o?\s+(email|telefone|celular|linkedin|cargo|empresa|cidade|estado|sal[aá]rio|modelo\s+de\s+trabalho|forma[çc][aã]o|idiomas?|disponibilidade)",
+        r"muda\s+o?\s+(email|telefone|celular|linkedin|cargo|empresa|cidade|estado|modelo\s+de\s+trabalho|forma[çc][aã]o|idiomas?|disponibilidade)",
+        r"troca\s+o?\s+(email|telefone|celular|linkedin|cargo|empresa|cidade|estado|modelo\s+de\s+trabalho|forma[çc][aã]o|idiomas?|disponibilidade)",
     ],
     "analytics": [
         r"gerar?\s+relat[óo]rio",

@@ -40,6 +40,8 @@ domains:
     - "\\bvaga\\b"
     - "compet[eê]ncias"
     - "sal[áa]rio"
+    - "sal[aá]rio\\s+da\\s+vaga"
+    - "atualiz\\w*\\s+\\w+\\s+sal[aá]rio\\s+da\\s+vaga"
     - "benef[ií]cios"
     - "enrichment"
   sourcing:
@@ -213,10 +215,10 @@ domains:
     - "personalize.?communication"
     - "reschedule.?interview"
     - "cancel.?interview"
-    - "atualiza\\s+o?\\s+(email|telefone|celular|linkedin|cargo|empresa|cidade|estado|sal[aá]rio|modelo\\s+de\\s+trabalho|forma[çc][aã]o|idiomas?|disponibilidade)"
+    - "atualiza\\s+o?\\s+(email|telefone|celular|linkedin|cargo|empresa|cidade|estado|modelo\\s+de\\s+trabalho|forma[çc][aã]o|idiomas?|disponibilidade)"
     - "atualizar?\\s+campo"
-    - "muda\\s+o?\\s+(email|telefone|celular|linkedin|cargo|empresa|cidade|estado|sal[aá]rio|modelo\\s+de\\s+trabalho|forma[çc][aã]o|idiomas?|disponibilidade)"
-    - "troca\\s+o?\\s+(email|telefone|celular|linkedin|cargo|empresa|cidade|estado|sal[aá]rio|modelo\\s+de\\s+trabalho|forma[çc][aã]o|idiomas?|disponibilidade)"
+    - "muda\\s+o?\\s+(email|telefone|celular|linkedin|cargo|empresa|cidade|estado|modelo\\s+de\\s+trabalho|forma[çc][aã]o|idiomas?|disponibilidade)"
+    - "troca\\s+o?\\s+(email|telefone|celular|linkedin|cargo|empresa|cidade|estado|modelo\\s+de\\s+trabalho|forma[çc][aã]o|idiomas?|disponibilidade)"
   analytics:
     - "gerar?\\s+relat[óo]rio"
     - "relat[óo]rio\\b"

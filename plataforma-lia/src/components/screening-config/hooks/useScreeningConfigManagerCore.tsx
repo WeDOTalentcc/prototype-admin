@@ -434,81 +434,22 @@ export function useScreeningConfigManagerCore({ job, onJobUpdate, onFormUpdate, 
       } else {
         throw new Error('Invalid response')
       }
-    } catch {
-      const perBlock = mode === 'compact' ? 4 : 7
-      const mockTemplates: Record<number, string[]> = {
-        2: [
-          'Você possui experiência mínima de 3 anos na área?',
-          'Você tem disponibilidade para início imediato?',
-          'Possui formação superior completa na área ou correlata?',
-          'Está disponível para trabalho presencial conforme necessário?',
-          'Possui registro profissional ativo na categoria exigida?'
-        ],
-        3: [
-          'Descreva sua experiência com as tecnologias principais desta vaga.',
-          'Como você abordaria a resolução de um problema técnico complexo em produção?',
-          'Qual foi o projeto mais desafiador tecnicamente que você liderou?',
-          'Como você garante a qualidade do código em projetos de grande escala?',
-          'Descreva sua experiência com metodologias ágeis e entrega contínua.',
-          'Como você avalia e decide entre diferentes abordagens técnicas para resolver um problema?',
-          'Descreva como você estrutura a documentação técnica de um projeto.',
-          'Como você realiza code review e garante padrões de qualidade no time?',
-          'Qual sua experiência com arquitetura de sistemas escaláveis?'
-        ],
-        4: [
-          'Como você lida com conflitos em equipe?',
-          'Descreva uma situação em que precisou se adaptar rapidamente a mudanças.',
-          'Como você prioriza demandas concorrentes de diferentes stakeholders?',
-          'Conte sobre uma experiência onde precisou dar feedback difícil a um colega.',
-          'Como você mantém a motivação da equipe em períodos de alta pressão?'
-        ],
-        5: [
-          'Descreva uma situação profissional em que precisou lidar com um conflito ético.',
-          'Como você reagiria se percebesse que uma decisão do seu gestor poderia impactar negativamente a equipe?',
-          'Conte sobre uma vez em que precisou adaptar seu estilo de comunicação para influenciar um resultado.',
-          'Descreva como você lidaria com uma mudança significativa nos processos da sua área.',
-          'Como você equilibra suas metas individuais com os objetivos do time?'
-        ]
-      }
-      const generated: Record<number, any[]> = {}
-      ;[2, 3, 4].forEach(bid => {
-        const templates = mockTemplates[bid] || mockTemplates[2]
-        generated[bid] = templates.slice(0, perBlock).map((text, i) => ({
-          id: `q_gen_${Date.now()}_${bid}_${i}`,
-          question: text,
-          text: text,
-          type: bid === 2 ? 'eliminatory' : 'classificatory',
-          category: bid === 2 ? 'company' : bid === 3 ? 'technical' : 'behavioral',
-          framework: bid === 2 ? 'Company' : bid === 4 ? 'BigFive' : 'CBI',
-          block_id: bid,
-          skill_targeted: '',
-          generated: true
-        }))
+    } catch (err) {
+      // Task #425 — Silent mock fallback removed. WSI generation must succeed
+      // against the real backend; on failure, surface the error to the user
+      // and reset the wizard so they can retry. Never invent questions.
+      const message = err instanceof Error ? err.message : String(err)
+      console.error('[WSI generation] backend call failed:', message)
+      toast.error('Falha ao gerar roteiro WSI', {
+        description: 'Não foi possível gerar as perguntas no backend. Verifique a conexão e tente novamente.',
       })
-      setGeneratedQuestions(generated)
-      const totalCount = Object.values(generated).reduce((sum, arr) => sum + arr.length, 0)
-      setWsiGeneratedCount(totalCount)
-
-      const elapsed = Date.now() - startTime
-      if (elapsed < 14000) {
-        await new Promise(resolve => setTimeout(resolve, 14000 - elapsed))
-      }
-
-      const breakdown: Record<number, number> = {}
-      Object.entries(generated).forEach(([bid, questions]) => {
-        breakdown[Number(bid)] = (questions as Array<Record<string, unknown>>).length
-      })
-      setWsiGenerationContext(prev => prev ? { ...prev, blockBreakdown: breakdown } : prev)
-      setWsiDynamicMessage('Finalizando roteiro de triagem...')
-      setWsiGenerationStep(4)
-      setWsiGenerationCompleted(true)
-      setExpandedBlocks(prev => {
-        const newBlocks = [...prev]
-        ;[2, 3, 4, 5].forEach(id => {
-          if (!newBlocks.includes(id)) newBlocks.push(id)
-        })
-        return newBlocks
-      })
+      setGeneratedQuestions({})
+      setWsiGeneratedCount(0)
+      setWsiGenerationContext(prev => prev ? { ...prev, blockBreakdown: {}, methodologyBreakdown: {}, companyStandardFound: false } : prev)
+      setWsiDynamicMessage('')
+      setWsiGenerationStep(0)
+      setWsiGenerationCompleted(false)
+      setWsiGenerationMode(null)
     } finally {
       setIsGeneratingWSI(false)
       clearTimeout(stepTimer2)
@@ -553,17 +494,19 @@ export function useScreeningConfigManagerCore({ job, onJobUpdate, onFormUpdate, 
   const CHANNEL_LABELS: Record<ScreeningChannelKey, string> = {
     chat_web: 'Chat Web',
     whatsapp: 'WhatsApp',
-    phone: 'Ligação',
-    voip_web: 'VoIP Web',
+    phone_pstn: 'Ligação (PSTN)',
+    voice_web: 'Voz no Navegador',
   }
 
   const getConfigStatusInfo = () => {
+    if (screeningConfig?.channels_master_enabled === false) return 'Triagem desabilitada'
     const primary = screeningConfig?.screening_channels?.primary_channel
-    if (primary) return `Canal: ${CHANNEL_LABELS[primary]}`
+    if (primary) return `Canal: ${CHANNEL_LABELS[primary] ?? primary}`
     const enabledChannels: string[] = []
-    if (screeningConfig?.channels?.whatsapp?.enabled ?? true) enabledChannels.push('WhatsApp')
     if (screeningConfig?.channels?.chat_web?.enabled ?? true) enabledChannels.push('Chat Web')
-    if (screeningConfig?.channels?.phone?.enabled ?? false) enabledChannels.push('Ligação')
+    if (screeningConfig?.channels?.whatsapp?.enabled ?? true) enabledChannels.push('WhatsApp')
+    if (screeningConfig?.channels?.phone_pstn?.enabled ?? false) enabledChannels.push('Ligação')
+    if (screeningConfig?.channels?.voice_web?.enabled ?? true) enabledChannels.push('Voz')
     return enabledChannels.join(', ') || 'Nenhum canal'
   }
 

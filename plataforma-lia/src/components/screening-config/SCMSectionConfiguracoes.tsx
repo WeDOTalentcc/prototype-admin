@@ -17,8 +17,8 @@ type Props = ReturnType<typeof useScreeningConfigManagerCore>
 const CHANNEL_DEFS: { key: ScreeningChannelKey; label: string; icon: React.ElementType; desc: string; comingSoon?: boolean }[] = [
   { key: 'chat_web', label: 'Chat Web', icon: Globe, desc: 'Chat via portal de carreiras' },
   { key: 'whatsapp', label: 'WhatsApp', icon: MessageSquare, desc: 'Mensagens via WhatsApp Business' },
-  { key: 'phone', label: 'Ligação Telefônica', icon: Phone, desc: 'Chamada de voz via Twilio' },
-  { key: 'voip_web', label: 'VoIP Web', icon: Wifi, desc: 'Chamada no navegador (em breve)', comingSoon: true },
+  { key: 'phone_pstn', label: 'Ligação (PSTN)', icon: Phone, desc: 'Chamada de voz via Twilio' },
+  { key: 'voice_web', label: 'Voz no Navegador', icon: Wifi, desc: 'Conversa por voz via Gemini Live' },
 ]
 
 export function SCMSectionConfiguracoes({
@@ -398,7 +398,7 @@ export function SCMSectionConfiguracoes({
                   const isPrimary = editPrimaryChannel === ch.key
                   const fallbackIdx = editFallbackOrder.indexOf(ch.key)
                   const isInFallback = fallbackIdx !== -1
-                  const isTwilioChannel = ch.key === 'phone'
+                  const isTwilioChannel = ch.key === 'phone_pstn'
 
                   const isUnavailable = ch.comingSoon || (isTwilioChannel && !editChannels.phone)
 

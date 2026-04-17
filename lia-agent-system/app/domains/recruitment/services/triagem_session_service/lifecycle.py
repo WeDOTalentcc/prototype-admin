@@ -11,6 +11,7 @@ from typing import Any
 from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from lia_models.candidate import Candidate
 from lia_models.job_vacancy import JobVacancy
 from lia_models.triagem import TriagemMessage, TriagemSession
 
@@ -96,16 +97,41 @@ async def get_session_config(db: AsyncSession, token: str) -> dict[str, Any] | N
                 job_info["showSalary"] = show_salary
                 job_info["showBenefits"] = show_benefits
                 sc = getattr(job, "screening_config", None) or {}
-                phone_ch = (sc.get("channels") or {}).get("phone") or {}
-                job_info["phoneEnabled"] = bool(phone_ch.get("enabled", False))
+                channels = sc.get("channels") or {}
+                # Task #425 — canonical 4-channel model with legacy fallback
+                phone_ch = channels.get("phone_pstn") or channels.get("phone") or {}
+                voice_ch = channels.get("voice_web") or channels.get("voip_web") or {}
+                master_enabled = sc.get("channels_master_enabled", True)
+                job_info["phoneEnabled"] = bool(master_enabled) and bool(phone_ch.get("enabled", False))
+                job_info["voiceWebEnabled"] = bool(master_enabled) and bool(voice_ch.get("enabled", True))
         except Exception as e:
             logger.warning(f"[Triagem] Could not fetch job info for job_id={job_id}: {e}")
+
+    # Task #425 — resolve candidate phone for PhoneConfirmModal pre-fill
+    candidate_phone: str | None = session_data.get("candidate_phone")
+    if not candidate_phone:
+        cand_id = session_data.get("candidate_id")
+        if cand_id:
+            try:
+                cand_uuid = uuid.UUID(cand_id) if isinstance(cand_id, str) else cand_id
+                cand_result = await db.execute(
+                    select(Candidate).where(Candidate.id == cand_uuid)
+                )
+                cand = cand_result.scalar_one_or_none()
+                if cand:
+                    candidate_phone = (
+                        getattr(cand, "mobile_phone", None)
+                        or getattr(cand, "phone", None)
+                    )
+            except Exception as e:
+                logger.warning(f"[Triagem] Could not fetch candidate phone for candidate_id={cand_id}: {e}")
 
     config = {
         "companyName": session_data.get("company_name", ""),
         "companyLogoUrl": session_data.get("company_logo_url"),
         "jobTitle": session_data.get("job_title", ""),
         "candidateName": session_data.get("candidate_name", ""),
+        "candidatePhone": candidate_phone,
         "estimatedMinutes": 20,
         "privacyPolicyUrl": "/politica-privacidade",
         "audioEnabled": True,

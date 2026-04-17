@@ -11,7 +11,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
-import { MessageSquare, Globe, Phone, Loader2 } from "lucide-react"
+import { MessageSquare, Globe, Phone, Mic, Loader2, Power } from "lucide-react"
 import { toast } from "sonner"
 import type { ScreeningConfig } from "@/hooks/recruitment/useScreeningConfig"
 
@@ -28,16 +28,20 @@ export function ScreeningChannelsModal({
   config,
   updateConfig,
 }: ScreeningChannelsModalProps) {
+  const [masterEnabled, setMasterEnabled] = useState(config?.channels_master_enabled ?? true)
   const [whatsappEnabled, setWhatsappEnabled] = useState(config?.channels?.whatsapp?.enabled ?? true)
   const [chatWebEnabled, setChatWebEnabled] = useState(config?.channels?.chat_web?.enabled ?? true)
-  const [phoneEnabled, setPhoneEnabled] = useState(config?.channels?.phone?.enabled ?? false)
+  const [phonePstnEnabled, setPhonePstnEnabled] = useState(config?.channels?.phone_pstn?.enabled ?? false)
+  const [voiceWebEnabled, setVoiceWebEnabled] = useState(config?.channels?.voice_web?.enabled ?? true)
   const [isSaving, setIsSaving] = useState(false)
 
   useEffect(() => {
     if (isOpen) {
+      setMasterEnabled(config?.channels_master_enabled ?? true)
       setWhatsappEnabled(config?.channels?.whatsapp?.enabled ?? true)
       setChatWebEnabled(config?.channels?.chat_web?.enabled ?? true)
-      setPhoneEnabled(config?.channels?.phone?.enabled ?? false)
+      setPhonePstnEnabled(config?.channels?.phone_pstn?.enabled ?? false)
+      setVoiceWebEnabled(config?.channels?.voice_web?.enabled ?? true)
     }
   }, [isOpen, config])
 
@@ -45,20 +49,22 @@ export function ScreeningChannelsModal({
     setIsSaving(true)
     try {
       const success = await updateConfig({
+        channels_master_enabled: masterEnabled,
         channels: {
           whatsapp: { enabled: whatsappEnabled, label: 'WhatsApp' },
           chat_web: { enabled: chatWebEnabled, label: 'Chat Web' },
-          phone: { enabled: phoneEnabled, label: 'Ligação' },
+          phone_pstn: { enabled: phonePstnEnabled, label: 'Ligação (PSTN)' },
+          voice_web: { enabled: voiceWebEnabled, label: 'Voz no Navegador' },
         }
       })
-      
+
       if (success) {
         toast.success("Canais de comunicação atualizados com sucesso")
         onClose()
       } else {
         toast.error("Erro ao atualizar canais de comunicação")
       }
-    } catch (error) {
+    } catch (_error) {
       toast.error("Erro ao salvar configurações")
     } finally {
       setIsSaving(false)
@@ -84,53 +90,73 @@ export function ScreeningChannelsModal({
           </div>
         </DialogHeader>
 
-        <div className="space-y-4 py-4">
-          <div className="flex items-center justify-between p-3 rounded-xl bg-lia-bg-secondary border border-lia-border-subtle">
+        <div className="space-y-3 py-4">
+          {/* Master toggle */}
+          <div className={`flex items-center justify-between p-3 rounded-xl border ${masterEnabled ? 'bg-lia-bg-secondary border-lia-border-subtle' : 'bg-lia-bg-tertiary border-lia-border-default'}`}>
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-md bg-status-success/10 flex items-center justify-center">
-                <MessageSquare className="w-4 h-4 text-status-success" />
+              <div className={`w-8 h-8 rounded-md flex items-center justify-center ${masterEnabled ? 'bg-lia-btn-primary-bg/15' : 'bg-lia-bg-tertiary'}`}>
+                <Power className={`w-4 h-4 ${masterEnabled ? 'text-lia-btn-primary-bg' : 'text-lia-text-disabled'}`} />
               </div>
               <div>
-                <Label className="text-xs font-medium text-lia-text-primary">WhatsApp</Label>
-                <p className="text-micro text-lia-text-tertiary">Canal principal de triagem</p>
+                <Label className="text-xs font-semibold text-lia-text-primary">Triagem Habilitada</Label>
+                <p className="text-micro text-lia-text-tertiary">Desligue para suspender todos os canais</p>
               </div>
             </div>
-            <Switch
-              checked={whatsappEnabled}
-              onCheckedChange={setWhatsappEnabled}
-            />
+            <Switch checked={masterEnabled} onCheckedChange={setMasterEnabled} />
           </div>
 
-          <div className="flex items-center justify-between p-3 rounded-xl bg-lia-bg-secondary border border-lia-border-subtle">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-md bg-wedo-cyan/10 flex items-center justify-center">
-                <Globe className="w-4 h-4 text-wedo-cyan-dark" />
+          <div className={`space-y-2 ${masterEnabled ? '' : 'opacity-50 pointer-events-none'}`}>
+            <div className="flex items-center justify-between p-3 rounded-xl bg-lia-bg-secondary border border-lia-border-subtle">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-md bg-wedo-cyan/10 flex items-center justify-center">
+                  <Globe className="w-4 h-4 text-wedo-cyan-dark" />
+                </div>
+                <div>
+                  <Label className="text-xs font-medium text-lia-text-primary">Chat Web</Label>
+                  <p className="text-micro text-lia-text-tertiary">Triagem por chat de texto no navegador</p>
+                </div>
               </div>
-              <div>
-                <Label className="text-xs font-medium text-lia-text-primary">Chat Web</Label>
-                <p className="text-micro text-lia-text-tertiary">Widget integrado no site</p>
-              </div>
+              <Switch checked={chatWebEnabled} onCheckedChange={setChatWebEnabled} disabled={!masterEnabled} />
             </div>
-            <Switch
-              checked={chatWebEnabled}
-              onCheckedChange={setChatWebEnabled}
-            />
-          </div>
 
-          <div className="flex items-center justify-between p-3 rounded-xl bg-lia-bg-secondary border border-lia-border-subtle">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-md bg-wedo-orange/10 flex items-center justify-center">
-                <Phone className="w-4 h-4 text-wedo-orange" />
+            <div className="flex items-center justify-between p-3 rounded-xl bg-lia-bg-secondary border border-lia-border-subtle">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-md bg-status-success/10 flex items-center justify-center">
+                  <MessageSquare className="w-4 h-4 text-status-success" />
+                </div>
+                <div>
+                  <Label className="text-xs font-medium text-lia-text-primary">WhatsApp</Label>
+                  <p className="text-micro text-lia-text-tertiary">Triagem por mensagem assíncrona</p>
+                </div>
               </div>
-              <div>
-                <Label className="text-xs font-medium text-lia-text-primary">Ligação</Label>
-                <p className="text-micro text-lia-text-tertiary">Chamada de voz automatizada</p>
-              </div>
+              <Switch checked={whatsappEnabled} onCheckedChange={setWhatsappEnabled} disabled={!masterEnabled} />
             </div>
-            <Switch
-              checked={phoneEnabled}
-              onCheckedChange={setPhoneEnabled}
-            />
+
+            <div className="flex items-center justify-between p-3 rounded-xl bg-lia-bg-secondary border border-lia-border-subtle">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-md bg-wedo-orange/10 flex items-center justify-center">
+                  <Phone className="w-4 h-4 text-wedo-orange" />
+                </div>
+                <div>
+                  <Label className="text-xs font-medium text-lia-text-primary">Ligação (PSTN)</Label>
+                  <p className="text-micro text-lia-text-tertiary">Chamada telefônica via Twilio Voice</p>
+                </div>
+              </div>
+              <Switch checked={phonePstnEnabled} onCheckedChange={setPhonePstnEnabled} disabled={!masterEnabled} />
+            </div>
+
+            <div className="flex items-center justify-between p-3 rounded-xl bg-lia-bg-secondary border border-lia-border-subtle">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-md bg-wedo-blue/10 flex items-center justify-center">
+                  <Mic className="w-4 h-4 text-wedo-blue" />
+                </div>
+                <div>
+                  <Label className="text-xs font-medium text-lia-text-primary">Voz no Navegador</Label>
+                  <p className="text-micro text-lia-text-tertiary">Conversa por voz via Gemini Live</p>
+                </div>
+              </div>
+              <Switch checked={voiceWebEnabled} onCheckedChange={setVoiceWebEnabled} disabled={!masterEnabled} />
+            </div>
           </div>
         </div>
 

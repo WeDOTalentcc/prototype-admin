@@ -3,11 +3,23 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useLoadingWatchdog } from '@/hooks/shared/use-loading-watchdog'
 
-export type ScreeningChannelKey = 'chat_web' | 'phone' | 'whatsapp' | 'voip_web'
+/**
+ * Canonical screening channel keys — Task #425 (4 Canais MVP).
+ * Legacy aliases (`phone`, `voip_web`) are normalized to canonical at read time
+ * and mirrored back at write time so older readers keep working.
+ */
+export type ScreeningChannelKey = 'chat_web' | 'whatsapp' | 'phone_pstn' | 'voice_web'
+export type LegacyScreeningChannelKey = 'phone' | 'voip_web'
+export type AnyScreeningChannelKey = ScreeningChannelKey | LegacyScreeningChannelKey
 
 export interface ScreeningChannelConfig {
   primary_channel: ScreeningChannelKey
   fallback_order: ScreeningChannelKey[]
+}
+
+export interface ChannelToggle {
+  enabled: boolean
+  label?: string
 }
 
 export interface ScreeningConfig {
@@ -19,10 +31,21 @@ export interface ScreeningConfig {
     scheduled_end_date?: string | null
     last_updated?: string | null
   }
+  /**
+   * Master toggle: when false, the screening flow is disabled regardless of
+   * individual channel toggles. Defaults to true. Independent of `status.enabled`
+   * which is the global pause/resume flag controlled by auto-approval limits.
+   */
+  channels_master_enabled?: boolean
   channels?: {
-    whatsapp?: { enabled: boolean; label?: string }
-    chat_web?: { enabled: boolean; label?: string }
-    phone?: { enabled: boolean; label?: string }
+    whatsapp?: ChannelToggle
+    chat_web?: ChannelToggle
+    phone_pstn?: ChannelToggle
+    voice_web?: ChannelToggle
+    /** @deprecated use phone_pstn — kept as legacy mirror for backward compat */
+    phone?: ChannelToggle
+    /** @deprecated use voice_web — kept as legacy mirror for backward compat */
+    voip_web?: ChannelToggle
   }
   screening_channels?: ScreeningChannelConfig
   settings?: {
@@ -58,15 +81,26 @@ export interface ScreeningConfig {
   is_default?: boolean
 }
 
+export function normalizeChannelKey(k: string | undefined | null): ScreeningChannelKey {
+  if (k === 'phone') return 'phone_pstn'
+  if (k === 'voip_web') return 'voice_web'
+  if (k === 'chat_web' || k === 'whatsapp' || k === 'phone_pstn' || k === 'voice_web') return k
+  return 'chat_web'
+}
+
 const DEFAULT_CONFIG: ScreeningConfig = {
   status: {
     enabled: true,
     last_updated: null
   },
+  channels_master_enabled: true,
   channels: {
     whatsapp: { enabled: true, label: 'WhatsApp' },
     chat_web: { enabled: true, label: 'Chat Web' },
-    phone: { enabled: false, label: 'Ligação' }
+    phone_pstn: { enabled: false, label: 'Ligação (PSTN)' },
+    voice_web: { enabled: true, label: 'Voz no Navegador' },
+    phone: { enabled: false, label: 'Ligação (PSTN)' },
+    voip_web: { enabled: true, label: 'Voz no Navegador' },
   },
   screening_channels: {
     primary_channel: 'chat_web',
@@ -131,6 +165,53 @@ interface UseScreeningConfigResult {
   updateConfig: (updates: Partial<ScreeningConfig>) => Promise<boolean>
 }
 
+/**
+ * Normalize a raw channels object: ensure all 4 canonical keys are populated,
+ * absorbing legacy `phone`/`voip_web` data, and write the legacy mirrors back
+ * so older readers keep functioning during the migration window.
+ */
+function mergeToggle(
+  base: ChannelToggle | undefined,
+  override: ChannelToggle | undefined,
+  defaultEnabled: boolean,
+  defaultLabel: string
+): ChannelToggle {
+  return {
+    enabled: override?.enabled ?? base?.enabled ?? defaultEnabled,
+    label: override?.label ?? base?.label ?? defaultLabel,
+  }
+}
+
+function normalizeChannels(
+  raw: ScreeningConfig['channels'] | undefined
+): ScreeningConfig['channels'] {
+  const r = raw || {}
+  const d = DEFAULT_CONFIG.channels || {}
+  const phonePstn = r.phone_pstn ?? r.phone
+  const voiceWeb = r.voice_web ?? r.voip_web
+  const phoneToggle = mergeToggle(d.phone_pstn, phonePstn, false, 'Ligação (PSTN)')
+  const voiceToggle = mergeToggle(d.voice_web, voiceWeb, true, 'Voz no Navegador')
+  return {
+    whatsapp: mergeToggle(d.whatsapp, r.whatsapp, true, 'WhatsApp'),
+    chat_web: mergeToggle(d.chat_web, r.chat_web, true, 'Chat Web'),
+    phone_pstn: phoneToggle,
+    voice_web: voiceToggle,
+    phone: phoneToggle,
+    voip_web: voiceToggle,
+  }
+}
+
+function normalizeScreeningChannels(
+  raw: ScreeningChannelConfig | undefined
+): ScreeningChannelConfig {
+  const base = DEFAULT_CONFIG.screening_channels as ScreeningChannelConfig
+  if (!raw) return base
+  return {
+    primary_channel: normalizeChannelKey(raw.primary_channel as unknown as string),
+    fallback_order: (raw.fallback_order || []).map(k => normalizeChannelKey(k as unknown as string)),
+  }
+}
+
 export function useScreeningConfig(jobId: string | number | null): UseScreeningConfigResult {
   const [config, setConfig] = useState<ScreeningConfig>(DEFAULT_CONFIG)
   const [isLoading, setIsLoading] = useState(false)
@@ -181,14 +262,9 @@ export function useScreeningConfig(jobId: string | number | null): UseScreeningC
 
       const mergedConfig: ScreeningConfig = {
         status: { ...DEFAULT_CONFIG.status, ...data.status },
-        channels: {
-          whatsapp: { ...DEFAULT_CONFIG.channels?.whatsapp, ...data.channels?.whatsapp },
-          chat_web: { ...DEFAULT_CONFIG.channels?.chat_web, ...data.channels?.chat_web },
-          phone: { ...DEFAULT_CONFIG.channels?.phone, ...data.channels?.phone },
-        },
-        screening_channels: data.screening_channels
-          ? { ...DEFAULT_CONFIG.screening_channels, ...data.screening_channels }
-          : DEFAULT_CONFIG.screening_channels,
+        channels_master_enabled: data.channels_master_enabled ?? DEFAULT_CONFIG.channels_master_enabled,
+        channels: normalizeChannels(data.channels),
+        screening_channels: normalizeScreeningChannels(data.screening_channels),
         settings: mergedSettings,
         metrics: { ...DEFAULT_CONFIG.metrics, ...data.metrics },
         scheduling: mergedScheduling,
@@ -227,6 +303,8 @@ export function useScreeningConfig(jobId: string | number | null): UseScreeningC
       const newConfig: ScreeningConfig = {
         ...config,
         ...updates,
+        channels: normalizeChannels(updates.channels ?? config.channels),
+        screening_channels: normalizeScreeningChannels(updates.screening_channels ?? config.screening_channels),
         status: {
           enabled: config.status?.enabled ?? true,
           ...config.status,

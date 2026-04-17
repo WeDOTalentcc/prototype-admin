@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useCallback } from "react"
+import React, { useState, useCallback, useEffect } from "react"
 import { Phone, X, Loader2 } from "lucide-react"
 
 interface PhoneConfirmModalProps {
@@ -9,6 +9,12 @@ interface PhoneConfirmModalProps {
   onConfirm: (phone: string) => void
   isLoading?: boolean
   error?: string | null
+  /**
+   * Pre-fill the phone input with the candidate's known phone number (E.164,
+   * national, or formatted). Task #425 — recruiter-known phone is surfaced
+   * as suggestion so the candidate doesn't retype it.
+   */
+  initialPhone?: string | null
 }
 
 function formatPhoneInput(raw: string): string {
@@ -37,8 +43,15 @@ export function PhoneConfirmModal({
   onConfirm,
   isLoading = false,
   error = null,
+  initialPhone = null,
 }: PhoneConfirmModalProps) {
-  const [phone, setPhone] = useState("")
+  const [phone, setPhone] = useState(() => initialPhone ? formatPhoneInput(initialPhone) : "")
+
+  useEffect(() => {
+    if (open && initialPhone) {
+      setPhone(formatPhoneInput(initialPhone))
+    }
+  }, [open, initialPhone])
 
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {

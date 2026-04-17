@@ -202,8 +202,8 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                               fallback_order: editFallbackOrder
                                 .filter(k => k !== editPrimaryChannel)
                                 .filter(k => {
-                                  if (k === 'phone') return editChannels.phone
-                                  if (k === 'voip_web') return false
+                                  if (k === 'phone_pstn') return editChannels.phone
+                                  if (k === 'voice_web') return true
                                   return true
                                 }),
                             },

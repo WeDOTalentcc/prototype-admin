@@ -253,6 +253,7 @@ export function TriagemFlow({ hook }: TriagemFlowProps) {
           onConfirm={handleRequestCall}
           isLoading={phoneCallLoading}
           error={phoneCallError}
+          initialPhone={config?.candidatePhone ?? null}
         />
         <LGPDFooter />
       </ChatContainer>

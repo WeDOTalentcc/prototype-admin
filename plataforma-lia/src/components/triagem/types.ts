@@ -90,6 +90,10 @@ export interface TriagemConfig {
   showSalary?: boolean
   showBenefits?: boolean
   phoneEnabled?: boolean
+  /** Voice-in-browser channel availability (Gemini Live). Task #425. */
+  voiceWebEnabled?: boolean
+  /** Recruiter-known candidate phone (E.164 or national format) for pre-fill. */
+  candidatePhone?: string | null
 }
 
 export interface TriagemError {
