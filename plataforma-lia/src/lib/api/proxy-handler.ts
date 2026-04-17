@@ -178,15 +178,24 @@ export function createProxyHandlers<M extends HttpMethod = "GET">(
         const response = await fetch(url, { ...fetchOptions, signal: AbortSignal.timeout(30000) })
 
         if (!response.ok) {
+          // Pass the backend response through verbatim — preserve status, body
+          // and content-type. The UI needs the original payload (request_id,
+          // code, errors, warning_message, etc.) to react correctly to 4xx/5xx.
           const errText = await response.text().catch(() => "")
-          let errorData: unknown = {}
-          if (errText) {
-            try { errorData = JSON.parse(errText) } catch { errorData = { detail: errText } }
+          const errCt = response.headers.get("content-type") || ""
+          if (!errText) {
+            return new NextResponse(null, { status: response.status })
           }
-          return NextResponse.json(
-            { error: "Backend error on " + method + " " + resolvedPath, details: errorData },
-            { status: response.status }
-          )
+          if (errCt.includes("application/json")) {
+            return new NextResponse(errText, {
+              status: response.status,
+              headers: { "Content-Type": "application/json" },
+            })
+          }
+          return new NextResponse(errText, {
+            status: response.status,
+            headers: { "Content-Type": errCt || "text/plain" },
+          })
         }
 
         // 204/205 (and any explicitly empty body) — pass status through with no JSON.
@@ -223,9 +232,26 @@ export function createProxyHandlers<M extends HttpMethod = "GET">(
         const result = onResponse ? onResponse(unwrapped) : unwrapped
         return NextResponse.json(result)
       } catch (error) {
+        // AbortSignal.timeout fires DOMException name="TimeoutError" (or
+        // AbortError on older runtimes). Map to a structured 504 so the UI
+        // can distinguish "backend trava" from "backend caiu".
+        const isTimeout =
+          error instanceof DOMException &&
+          (error.name === "TimeoutError" || error.name === "AbortError")
+        if (isTimeout) {
+          return NextResponse.json(
+            {
+              error: "Backend timeout",
+              detail: "Backend did not respond within 30s",
+              path: backendPath,
+              method,
+            },
+            { status: 504 }
+          )
+        }
         return NextResponse.json(
           { error: "Erro ao conectar com o backend" },
-          { status: 500 }
+          { status: 502 }
         )
       }
     }
