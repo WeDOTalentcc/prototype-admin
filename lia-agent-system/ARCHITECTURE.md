@@ -291,4 +291,59 @@ new router must follow the same `include_router(..., prefix="/api/v1")`
 pattern; the only sanctioned exceptions are health/liveness probes and
 the legacy `jobs_ws.router` (tracked separately).
 
+---
+
+## ADR-015: Audit Guards — Shim SLA, Registry anti-revival, Legacy `@tool` ban (2026-04-17) [ENFORCED by CI]
+
+These three rules close the §9 audit recommendations (S7.1, S7.2, S7.3) and
+prevent regression of debt that was paid down in tasks #124 / #242 / #308.
+
+### S7.1 — Shim SLA (90 days, 0 importers ⇒ deletion)
+
+A "shim" is a backwards-compatibility proxy file that re-exports symbols from
+a canonical location (typically `lia_models.*` / `lia_messaging.*`). Shims
+accumulate without a deletion contract, which is how 156 dead files lived in
+`app/models/` before task #242.
+
+**Rule:** any shim with **0 importers anywhere in the repo** AND **≥ 90 days
+old** (creation date via `git log --diff-filter=A`) is eligible for automated
+deletion. The script lists candidates and exits non-zero.
+
+**Enforcement:** `scripts/check_shim_sla.py` (pre-commit hook `shim-sla` + CI
+job "S7.1: Shim SLA").
+
+```bash
+python3 scripts/check_shim_sla.py            # human-readable
+python3 scripts/check_shim_sla.py --json     # CI-friendly
+```
+
+### S7.2 — `GlobalToolRegistry` must stay empty at boot
+
+Task #308 retired eager `GlobalToolRegistry.register(...)` calls; tool routing
+now goes through `ToolRegistry` + `tool_permissions.yaml`. To prevent the old
+pattern from creeping back in, a regression test fails the build if
+`GlobalToolRegistry._registry` is non-empty after a fresh import (and after
+importing `app.main`).
+
+**Enforcement:** `tests/unit/test_global_tool_registry_empty.py` (runs in the
+default CI test job).
+
+### S7.3 — No `from langchain_core.tools import tool` in domain tools
+
+Domain tools live under `app/domains/*/tools/` and MUST use the in-house
+`@tool_handler` decorator so audit, scope, fail-closed, and permission
+semantics are applied uniformly. Importing the legacy `@tool` decorator from
+`langchain_core.tools` defeats this.
+
+**Rule:** `from langchain_core.tools import tool` is banned in
+`app/domains/*/tools/`. A small `ALLOW_LIST` inside the script grandfathers
+the five files that pre-date the rule; new entries to the allow list are not
+accepted and existing entries should be removed as they migrate.
+
+**Enforcement:** `scripts/check_no_legacy_tool_decorator.py` (pre-commit hook
+`no-legacy-tool-decorator` + CI job "S7.3").
+
+---
+
+*Last updated: 2026-04-17 | ADR-015: audit guards (S7.1 / S7.2 / S7.3)*
 

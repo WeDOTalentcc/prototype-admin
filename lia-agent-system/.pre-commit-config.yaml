@@ -65,3 +65,19 @@ repos:
         files: ^libs/models/lia_models/.*\.py$
         pass_filenames: false
         always_run: false
+
+      - id: shim-sla
+        name: "S7.1: Shim SLA — no orphan shims older than 90 days"
+        language: system
+        entry: python3 scripts/check_shim_sla.py
+        files: ^(app|libs)/.*\.py$
+        pass_filenames: false
+        always_run: false
+
+      - id: no-legacy-tool-decorator
+        name: "S7.3: No `from langchain_core.tools import tool` in app/domains/*/tools/"
+        language: system
+        entry: python3 scripts/check_no_legacy_tool_decorator.py
+        files: ^app/domains/.*/tools/.*\.py$
+        pass_filenames: false
+        always_run: false

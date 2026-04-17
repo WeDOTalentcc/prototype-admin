@@ -148,6 +148,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          # Full history required by `scripts/check_shim_sla.py` to compute
+          # creation dates via `git log --diff-filter=A --follow`.
+          fetch-depth: 0
 
       - name: Set up Python 3.11
         uses: actions/setup-python@v5
@@ -170,3 +174,14 @@ jobs:
 
       - name: Run ruff
         run: ruff check app/ --select=E,F --ignore=E501,F401,F403 || true
+
+      # ── Audit guards (S7.x) ────────────────────────────────────────────────
+      # NOTE: the lint job's checkout above uses fetch-depth: 0 so
+      # `check_shim_sla.py` can read accurate creation dates from git history.
+      - name: "S7.1: Shim SLA"
+        run: python3 scripts/check_shim_sla.py
+        working-directory: .
+
+      - name: "S7.3: No legacy @tool decorator in app/domains/*/tools/"
+        run: python3 scripts/check_no_legacy_tool_decorator.py
+        working-directory: .
