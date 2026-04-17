@@ -94,17 +94,28 @@ async def log_scoring_decision(
     row carries the complete decision context.
     """
     try:
-        full_reasoning = list(reasoning)
+        full_reasoning: list[Any] = list(reasoning)
         if score_breakdown is not None:
             full_reasoning.append(f"score_breakdown={score_breakdown}")
         subject_id = candidate_id or job_vacancy_id
         if subject_id:
             full_reasoning.append(f"subject_id={subject_id}")
+        # Regulator-facing evidence trail for fairness blocks (EU AI Act / LGPD).
+        # Persists the regulatory_basis inside the audit row's reasoning JSON so
+        # auditors can prove the block was anchored on the high-risk AI Act
+        # category and the LGPD Art. 20 right to review of automated decisions.
+        persisted_action = action
+        if action == "fairness_block":
+            persisted_action = "cv_screening.fairness_block"
+            full_reasoning.append({
+                "regulatory_basis": ["EU_AI_ACT_HIGH_RISK", "LGPD_ART_20"],
+                "evidence_type": "fairness_block",
+            })
         await audit_service.log_decision(
             company_id=str(company_id) if company_id else "unknown",
             agent_name=agent_name,
             decision_type=decision_type,
-            action=action,
+            action=persisted_action,
             decision=decision,
             reasoning=full_reasoning,
             criteria_used=criteria_used,

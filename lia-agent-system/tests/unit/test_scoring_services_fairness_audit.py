@@ -89,10 +89,10 @@ def _assert_fairness_audit(audit_mock, expected_agent: str) -> None:
     )
     fairness_calls = [
         call for call in audit_mock.await_args_list
-        if call.kwargs.get("action") == "fairness_block"
+        if call.kwargs.get("action") == "cv_screening.fairness_block"
     ]
     assert fairness_calls, (
-        f"Expected a 'fairness_block' audit entry for {expected_agent}, got "
+        f"Expected a 'cv_screening.fairness_block' audit entry for {expected_agent}, got "
         f"{[c.kwargs.get('action') for c in audit_mock.await_args_list]}"
     )
     fb = fairness_calls[0].kwargs
