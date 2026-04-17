@@ -292,6 +292,118 @@ class TestLinkedInUrlDedup:
         assert is_dup is False
 
 
+class TestNormalizeLinkedInSlug:
+
+    def test_basic_url(self):
+        from app.domains.sourcing.services.contact_enrichment_service import normalize_linkedin_slug
+        assert normalize_linkedin_slug("https://www.linkedin.com/in/john-doe") == "john-doe"
+
+    def test_trailing_slash(self):
+        from app.domains.sourcing.services.contact_enrichment_service import normalize_linkedin_slug
+        assert normalize_linkedin_slug("https://www.linkedin.com/in/john-doe/") == "john-doe"
+
+    def test_query_string_and_fragment(self):
+        from app.domains.sourcing.services.contact_enrichment_service import normalize_linkedin_slug
+        assert (
+            normalize_linkedin_slug("https://linkedin.com/in/john-doe/?utm=foo#bar")
+            == "john-doe"
+        )
+
+    def test_http_vs_https_and_www(self):
+        from app.domains.sourcing.services.contact_enrichment_service import normalize_linkedin_slug
+        a = normalize_linkedin_slug("http://linkedin.com/in/JohnDoe")
+        b = normalize_linkedin_slug("https://www.linkedin.com/in/johndoe/")
+        assert a == b == "johndoe"
+
+    def test_locale_prefix(self):
+        from app.domains.sourcing.services.contact_enrichment_service import normalize_linkedin_slug
+        assert normalize_linkedin_slug("https://uk.linkedin.com/in/janedoe") == "janedoe"
+        assert (
+            normalize_linkedin_slug("https://www.linkedin.com/uk/in/janedoe")
+            == "janedoe"
+        )
+
+    def test_pub_legacy(self):
+        from app.domains.sourcing.services.contact_enrichment_service import normalize_linkedin_slug
+        assert (
+            normalize_linkedin_slug("https://www.linkedin.com/pub/oldprofile")
+            == "oldprofile"
+        )
+
+    def test_bare_slug(self):
+        from app.domains.sourcing.services.contact_enrichment_service import normalize_linkedin_slug
+        assert normalize_linkedin_slug("john-doe") == "john-doe"
+
+    def test_empty_or_none(self):
+        from app.domains.sourcing.services.contact_enrichment_service import normalize_linkedin_slug
+        assert normalize_linkedin_slug(None) is None
+        assert normalize_linkedin_slug("") is None
+        assert normalize_linkedin_slug("   ") is None
+
+    def test_url_without_in_segment_returns_none(self):
+        from app.domains.sourcing.services.contact_enrichment_service import normalize_linkedin_slug
+        # Old behavior would return the whole URL, leading to overly broad ILIKE.
+        assert normalize_linkedin_slug("https://www.linkedin.com/company/acme") is None
+        assert normalize_linkedin_slug("https://example.com/profile/foo") is None
+
+
+class TestLinkedInUrlDedupNormalization:
+
+    def _db_with_candidates(self, candidates):
+        db = AsyncMock(spec=AsyncSession)
+        result_mock = MagicMock()
+        result_mock.scalars.return_value.all.return_value = candidates
+        db.execute.return_value = result_mock
+        return db
+
+    @pytest.mark.asyncio
+    async def test_equivalent_urls_match(self):
+        from app.domains.sourcing.services.contact_enrichment_service import ContactEnrichmentService
+        svc = ContactEnrichmentService(enrichment_svc=MagicMock())
+
+        existing = _FakeCandidate(
+            linkedin_url="http://linkedin.com/in/JohnDoe/?utm=src",
+            additional_data={"enrichment": {"last_enriched_at": datetime.utcnow().isoformat()}},
+        )
+        db = self._db_with_candidates([existing])
+
+        is_dup = await svc._linkedin_url_recently_enriched(
+            db, "https://www.linkedin.com/in/johndoe"
+        )
+        assert is_dup is True
+
+    @pytest.mark.asyncio
+    async def test_url_without_in_segment_skips_dedup(self):
+        from app.domains.sourcing.services.contact_enrichment_service import ContactEnrichmentService
+        svc = ContactEnrichmentService(enrichment_svc=MagicMock())
+
+        db = AsyncMock(spec=AsyncSession)
+
+        is_dup = await svc._linkedin_url_recently_enriched(
+            db, "https://www.linkedin.com/company/acme"
+        )
+        assert is_dup is False
+        db.execute.assert_not_awaited()
+
+    @pytest.mark.asyncio
+    async def test_substring_match_does_not_count_as_duplicate(self):
+        # A candidate whose slug starts with the same prefix must NOT be
+        # treated as a dedup hit.
+        from app.domains.sourcing.services.contact_enrichment_service import ContactEnrichmentService
+        svc = ContactEnrichmentService(enrichment_svc=MagicMock())
+
+        unrelated = _FakeCandidate(
+            linkedin_url="https://www.linkedin.com/in/john-doe-the-second",
+            additional_data={"enrichment": {"last_enriched_at": datetime.utcnow().isoformat()}},
+        )
+        db = self._db_with_candidates([unrelated])
+
+        is_dup = await svc._linkedin_url_recently_enriched(
+            db, "https://www.linkedin.com/in/john-doe"
+        )
+        assert is_dup is False
+
+
 class TestRailsSync:
 
     @pytest.mark.asyncio
