@@ -335,6 +335,8 @@ export function KanbanColumnRenderer({
       onDragOver={(e) => onDragOver(e, stageId)}
       onDragLeave={onDragLeave}
       onDrop={(e) => onDrop(e, stageId)}
+      data-testid="kanban-column"
+      data-stage-id={stageId}
     >
       {/* Header da Coluna - Fixo */}
       <div className="flex-shrink-0 p-2.5 pb-1.5">
@@ -400,6 +402,9 @@ export function KanbanColumnRenderer({
         {filteredCandidates.map((candidate, index) => (
           <div
             key={candidate.id}
+            data-testid="candidate-card"
+            data-candidate-id={candidate.id}
+            data-index={index}
             draggable
             onDragStart={(e) => onDragStart(e, candidate, stageId)}
             onDragEnd={onDragEnd}
