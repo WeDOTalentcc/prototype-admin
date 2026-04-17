@@ -31,7 +31,7 @@ The persona YAML contains an `ethical_guidelines` section that covers:
 | File | Usage |
 |------|-------|
 | `app/api/v1/candidates.py` | `check_rejection_reason` from middleware |
-| `app/api/v1/wsi_questions.py` | `check_fairness` from middleware |
+| `app/api/v1/wsi/questions.py` | `check_fairness` from middleware (canonical handler — Task #247) |
 | `app/api/v1/jd_generation.py` | `check_fairness` from middleware |
 | `app/api/v1/interview_notes.py` | Direct `FairnessGuard` import |
 | `app/api/v1/fairness_reports.py` | FairnessGuard referenced |

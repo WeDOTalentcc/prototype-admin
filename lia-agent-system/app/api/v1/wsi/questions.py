@@ -40,10 +40,8 @@ from app.domains.cv_screening.services.screening_question_set_service import (
 from app.domains.cv_screening.services.wsi_question_adjuster import (
     wsi_question_adjuster_service,
 )
-# NOTE: AuditService + check_fairness intentionally not imported here yet.
-# Task #247 (follow-up) will reintroduce FairnessGuard + audit logging on
-# `/wsi/generate-questions` — they were dead-code in the deleted
-# `wsi_questions.py` (shadowed by the canonical handler below).
+from app.shared.compliance.audit_service import AuditService, get_audit_service
+from app.shared.compliance.fairness_guard_middleware import check_fairness
 
 from ._shared import (
     BLOOM_LEVELS,
@@ -217,6 +215,7 @@ async def generate_questions(
     db: AsyncSession = Depends(get_db),
     sqs_svc: ScreeningQuestionSetService = Depends(get_screening_question_set_service),
     wsi_svc: WSIService = Depends(get_wsi_service),
+    audit_svc: AuditService = Depends(get_audit_service),
 ):
     """
     Generate WSI screening questions using the canonical F6 pipeline
@@ -246,9 +245,29 @@ async def generate_questions(
         max_questions=requested_count,
     )
 
+    company_id_for_audit = request.company_id or ""
     questions = []
+    kept_wsi_questions = []
+    fairness_warnings: list[str] = []
+    fairness_blocked_count = 0
     for idx, wq in enumerate(wsi_questions):
-        question_id = f"q_{session_id}_{idx+1}"
+        fg = check_fairness(
+            {"question_text": wq.question_text},
+            context="wsi_generate_questions",
+            company_id=company_id_for_audit,
+        )
+        if fg.is_blocked:
+            fairness_blocked_count += 1
+            logger.warning(
+                "[wsi_generate_questions] FairnessGuard blocked question idx=%d category=%s",
+                idx,
+                fg.blocked_result.category if fg.blocked_result else None,
+            )
+            continue
+        for w in fg.warnings:
+            if w not in fairness_warnings:
+                fairness_warnings.append(w)
+        question_id = f"q_{session_id}_{len(questions)+1}"
         bloom_level = _FRAMEWORK_BLOOM_MAP.get(wq.framework, 3)
         category = _FRAMEWORK_CATEGORY_MAP.get(wq.framework, "technical")
         questions.append(WSIQuestionOutput(
@@ -262,6 +281,14 @@ async def generate_questions(
             category=category,
             is_eliminatory=False
         ))
+        kept_wsi_questions.append(wq)
+    wsi_questions = kept_wsi_questions
+    if fairness_blocked_count > 0:
+        blocked_msg = (
+            f"FairnessGuard removeu {fairness_blocked_count} pergunta(s) com viés discriminatório."
+        )
+        if blocked_msg not in fairness_warnings:
+            fairness_warnings.insert(0, blocked_msg)
 
     try:
         active_qs = await sqs_svc.get_active_version(db, request.job_vacancy_id or "")
@@ -296,10 +323,32 @@ async def generate_questions(
     except Exception as e:
         logger.warning(f"Failed to save to DB: {e}")
 
+    try:
+        await audit_svc.log_decision(
+            company_id=company_id_for_audit,
+            agent_name="wsi_question_generator",
+            decision_type="generate_wsi_questions",
+            action="generate_questions",
+            decision="generated",
+            reasoning=[
+                f"WSI questions generated for '{job_title}' (session={session_id})",
+                f"questions_kept={len(questions)} blocked={fairness_blocked_count}",
+                f"FairnessGuard: {'warnings' if fairness_warnings else 'passed'}",
+            ],
+            criteria_used=["job_title", "skills", "behavioral_competencies", "seniority"],
+            job_vacancy_id=request.job_vacancy_id or None,
+            confidence=1.0,
+            human_review_required=False,
+        )
+    except Exception as audit_err:
+        logger.warning("GOV-01: audit log failed for WSI question generation: %s", audit_err)
+
     return GenerateQuestionsResponse(
         session_id=session_id,
         questions=questions,
-        job_title=job_title
+        job_title=job_title,
+        fairness_warnings=fairness_warnings,
+        fairness_blocked_count=fairness_blocked_count,
     )
 
 

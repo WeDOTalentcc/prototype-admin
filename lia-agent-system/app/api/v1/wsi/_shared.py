@@ -103,6 +103,8 @@ class GenerateQuestionsResponse(BaseModel):
     questions: list[WSIQuestionOutput]
     job_title: str | None
     methodology: str = "WSI (Bloom + Dreyfus + Big Five)"
+    fairness_warnings: list[str] = Field(default_factory=list)
+    fairness_blocked_count: int = 0
 
 
 class BigFiveIndicators(BaseModel):
