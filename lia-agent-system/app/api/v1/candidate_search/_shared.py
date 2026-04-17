@@ -341,6 +341,7 @@ class SearchResponseDTO(BaseModel):
     credits_remaining: int | None = None
     search_time_seconds: float | None = None
     warning_message: str | None = None
+    degraded_sources: list[str] | None = None
     can_load_more: bool = False
     should_expand_to_global: bool = Field(default=False)
     expansion_message: str | None = Field(default=None)

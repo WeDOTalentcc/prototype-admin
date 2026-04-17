@@ -3,7 +3,8 @@ import time as _time
 from typing import Any
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -96,9 +97,10 @@ async def _evaluate_candidates_with_rubrics(
 
 
 
-@router.post("/candidates", response_model=SearchResponseDTO)
+@router.post("/candidates", response_model=None)
 async def search_candidates(
     request: SearchRequestDTO,
+    http_request: Request = None,  # type: ignore[assignment]
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
     pearch_svc: PearchService = Depends(get_pearch_service),
@@ -138,20 +140,42 @@ async def search_candidates(
         _fb_pearch_count = 0
         _fb_search_time = 0.0
         _fb_can_load_more = False
+        _degraded_sources: list[str] = []
+        _total_degradation = False
 
         _pearch_is_open = PEARCH_CIRCUIT.state == CircuitState.OPEN
         _apify_search_is_open = APIFY_SEARCH_CIRCUIT.state == CircuitState.OPEN
 
-        if _pearch_is_open and request.search_pearch and APIFY_SEARCH_FALLBACK_ENABLED and _apify_search_is_open:
-            raise HTTPException(
-                status_code=503,
-                detail="Serviço de busca temporariamente indisponível. Pearch e Apify fallback estão fora do ar. Tente novamente em alguns minutos.",
+        # Task #296: ao invés de 503 imediato quando Pearch + Apify ambos open,
+        # pulamos as fontes externas e tentamos a busca local primeiro. Se a
+        # busca local devolver resultados, retornamos 200 com warning_message
+        # estruturado; só se o local também vier vazio é que devolvemos 503
+        # estruturado (após o hybrid_search).
+        if (
+            _pearch_is_open
+            and request.search_pearch
+            and APIFY_SEARCH_FALLBACK_ENABLED
+            and _apify_search_is_open
+        ):
+            _total_degradation = True
+            _degraded_sources = ["pearch", "apify_search"]
+            hybrid_request.include_pearch = False
+            _apify_fallback_warning = (
+                "Busca externa temporariamente indisponível "
+                "(Pearch e Apify fora do ar). Mostrando apenas resultados locais."
             )
 
-        _skip_pearch = _pearch_is_open and request.search_pearch and APIFY_SEARCH_FALLBACK_ENABLED and not _apify_search_is_open
+        _skip_pearch = (
+            _pearch_is_open
+            and request.search_pearch
+            and APIFY_SEARCH_FALLBACK_ENABLED
+            and not _apify_search_is_open
+            and not _total_degradation
+        )
 
         if _skip_pearch:
             hybrid_request.include_pearch = False
+            _degraded_sources.append("pearch")
 
         result = await pearch_svc.hybrid_search(db, hybrid_request)
 
@@ -242,7 +266,33 @@ async def search_candidates(
             _apify_fallback_warning = get_degraded_response("pearch")
         
         candidates = await enrich_and_filter_candidates(db, candidates)
-        
+
+        # Task #296: degradação total + nenhum resultado local → 503 estruturado.
+        # Mantemos o 503 só para o caso (a) Pearch+Apify ambos open e (b) banco
+        # local não tem nada para mostrar. Caso contrário devolvemos 200 com
+        # warning_message para o frontend renderizar aviso amarelo + lista local.
+        if _total_degradation and not candidates:
+            _rid = getattr(http_request.state, "request_id", "unknown") if http_request else "unknown"
+            logger.warning(
+                "[search_candidates] sourcing_unavailable request_id=%s user_id=%s query=%r",
+                _rid, getattr(current_user, "id", None), request.query,
+            )
+            return JSONResponse(
+                status_code=503,
+                content={
+                    "ok": False,
+                    "error_code": "sourcing_unavailable",
+                    "message": (
+                        "Serviço de busca temporariamente indisponível. "
+                        "Pearch e Apify fallback estão fora do ar e a busca "
+                        "local não retornou resultados. Tente novamente em alguns minutos."
+                    ),
+                    "warning_message": _apify_fallback_warning,
+                    "degraded_sources": _degraded_sources,
+                    "request_id": _rid,
+                },
+            )
+
         # Rubric evaluation if job_id is provided
         if request.job_id and candidates:
             try:
@@ -311,6 +361,7 @@ async def search_candidates(
             credits_remaining=result.pearch_credits_remaining,
             search_time_seconds=_effective_search_time,
             warning_message=_apify_fallback_warning or _credit_warning or result.warning_message,
+            degraded_sources=_degraded_sources or None,
             can_load_more=_effective_can_load_more,
             should_expand_to_global=should_expand,
             expansion_message=expansion_message,
@@ -320,8 +371,19 @@ async def search_candidates(
     except HTTPException:
         raise
     except ValueError as e:
+        # Validação semântica do request — mensagem segura para o cliente.
         raise HTTPException(status_code=400, detail=str(e))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Search failed: {str(e)}")
+    except Exception:
+        # Task #296: não vazar mensagens cruas (LLM/embeddings/RAG/driver) ao cliente.
+        # Stack completo vai pro log com request_id; usuário recebe pt-BR sanitizado.
+        _rid = getattr(http_request.state, "request_id", "unknown") if http_request else "unknown"
+        logger.exception(
+            "[search_candidates] unexpected failure request_id=%s user_id=%s query=%r",
+            _rid, getattr(current_user, "id", None), request.query,
+        )
+        raise HTTPException(
+            status_code=500,
+            detail="Falha ao executar a busca. Tente novamente em instantes.",
+        )
 
 

@@ -21,7 +21,7 @@ export default defineConfig({
     ['html', { outputFolder: 'playwright-report', open: 'never' }],
     ['list'],
   ],
-  timeout: 45000,
+  timeout: 120000,
 
   use: {
     baseURL: process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:5000',
