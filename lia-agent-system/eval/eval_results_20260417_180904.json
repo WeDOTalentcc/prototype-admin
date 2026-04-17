@@ -1,0 +1,41 @@
+[
+  {
+    "id": "JM-001",
+    "category": "JM",
+    "severity": "critical",
+    "title": "List all jobs",
+    "prompt": "mostra todas as vagas",
+    "context": {
+      "scope": "Vagas",
+      "page": "gestao-vagas"
+    },
+    "expected_tools": [
+      "list_jobs"
+    ],
+    "canonical_files": [
+      "app/domains/recruiter_assistant/agents/jobs_mgmt_tool_registry.py",
+      "app/domains/recruiter_assistant/agents/jobs_mgmt_system_prompt.py"
+    ],
+    "success_criteria": [
+      "Response contains at least one job title or ID",
+      "Does not ask for clarification before executing",
+      "Calls list_jobs tool"
+    ],
+    "anti_patterns": [
+      "Says 'Não encontrei nenhuma vaga' without attempting tool call",
+      "Asks 'qual empresa?' before calling the tool",
+      "Says tool not authorized"
+    ],
+    "api_ok": true,
+    "http_status": 200,
+    "latency_ms": 2161,
+    "response": "{'ok': True, 'data': {'message': {'id': '5c3c0391-8b14-44e4-89db-c19bb67e0b83', 'conversation_id': 'be1b7a47-acba-401d-a351-83acb5be11fd', 'role': 'assistant', 'content': 'Não encontrei nenhuma vaga.', 'message_metadata': {'intent': 'agentic_tool_call', 'entities': {}}, 'created_at': '2026-04-17T18:09:03.525535'}, 'conversation': {'id': 'be1b7a47-acba-401d-a351-83acb5be11fd', 'user_id': '13cf82fb-f1f6-4205-9377-758e59040148', 'user_role': 'recruiter', 'title': 'mostra todas as vagas', 'intent': 'agentic_tool_call', 'workflow_type': None, 'workflow_step': 0, 'workflow_data': {}, 'status': 'active', 'created_at': '2026-04-17T18:09:01.406849', 'updated_at': '2026-04-17T18:09:03.525535'}}, 'meta': {'request_id': 'b9eec6d2-12bd-4600-a762-f78fd8895489', 'ts': '2026-04-17T18:09:03.528233+00:00'}}",
+    "error": "",
+    "score": 0,
+    "flags": [
+      "ANTI_PATTERN: Says 'Não encontrei nenhuma vaga' without attempting tool call",
+      "REFUSAL: 'não encontrei nenhuma'"
+    ],
+    "scored_at": "2026-04-17T18:09:03.530054"
+  }
+]

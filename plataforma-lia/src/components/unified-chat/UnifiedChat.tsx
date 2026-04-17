@@ -18,18 +18,27 @@ import { UnifiedChatEmptyState } from "./UnifiedChatEmptyState"
 import { UnifiedMessageList } from "./UnifiedMessageList"
 import type { ChatMode } from "./unified-chat-types"
 
+import {
+  FLOATING_POSITION_STORAGE_KEY as FLOATING_POSITION_KEY,
+  FLOATING_RESET_EVENT,
+  BUBBLE_RESET_EVENT,
+  FLOATING_WIDTH,
+  FLOATING_HEIGHT,
+  FLOATING_DRAG_THRESHOLD,
+  ARROW_STEP,
+  ARROW_STEP_LARGE,
+  FLOATING_VIEWPORT_MARGIN,
+  clampFloatingPosition,
+  defaultFloatingPosition,
+  readPersistedFloatingPosition,
+  type Point,
+} from "./floating-position"
+
 const MODE_STORAGE_KEY = "lia-chat-mode"
 const WIDTH_STORAGE_KEY = "lia-chat-width"
-const FLOATING_POSITION_KEY = "lia-chat-floating-position"
-const FLOATING_RESET_EVENT = "lia:reset-floating-position"
 const DEFAULT_WIDTH = 380
 const MIN_WIDTH = 300
 const MAX_WIDTH = 600
-const FLOATING_WIDTH = 360
-const FLOATING_HEIGHT = 520
-const FLOATING_DRAG_THRESHOLD = 4
-const ARROW_STEP = 8
-const ARROW_STEP_LARGE = 32
 
 function getStoredMode(): ChatMode {
   if (typeof window === "undefined") return "sidebar"
@@ -48,24 +57,12 @@ function getStoredWidth(): number {
   return DEFAULT_WIDTH
 }
 
-function clampFloatingPosition(p: { x: number; y: number }) {
-  const x = Math.max(0, Math.min(window.innerWidth - FLOATING_WIDTH, p.x))
-  const y = Math.max(0, Math.min(window.innerHeight - FLOATING_HEIGHT, p.y))
-  return { x, y }
-}
-
-function getStoredFloatingPosition(): { x: number; y: number } | null {
+function getStoredFloatingPosition(): Point | null {
   if (typeof window === "undefined") return null
-  try {
-    const stored = localStorage.getItem(FLOATING_POSITION_KEY)
-    if (stored) {
-      const parsed = JSON.parse(stored)
-      if (typeof parsed.x === "number" && typeof parsed.y === "number") {
-        return clampFloatingPosition(parsed)
-      }
-    }
-  } catch {}
-  return null
+  return readPersistedFloatingPosition(window.localStorage, {
+    width: window.innerWidth,
+    height: window.innerHeight,
+  })
 }
 
 interface Props {
@@ -153,21 +150,39 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
       if (!ref.moved) return
       setFloatingPosition(clampFloatingPosition({ x: ref.bx + dx, y: ref.by + dy }))
     }
-    const handleUp = () => {
-      floatingDragRef.current = null
+    const cleanup = () => {
       window.removeEventListener("pointermove", handleMove)
       window.removeEventListener("pointerup", handleUp)
       window.removeEventListener("pointercancel", handleUp)
+      window.removeEventListener("keydown", handleKey)
+      try {
+        ;(e.currentTarget as HTMLElement)?.releasePointerCapture?.(e.pointerId)
+      } catch {}
+    }
+    const handleUp = () => {
+      floatingDragRef.current = null
+      cleanup()
+    }
+    const handleKey = (ev: KeyboardEvent) => {
+      if (ev.key !== "Escape") return
+      const ref = floatingDragRef.current
+      if (!ref) return
+      ev.preventDefault()
+      // Restore origin (may be null, meaning back to default position)
+      setFloatingPosition(ref.origin)
+      floatingDragRef.current = null
+      cleanup()
     }
     window.addEventListener("pointermove", handleMove)
     window.addEventListener("pointerup", handleUp)
     window.addEventListener("pointercancel", handleUp)
+    window.addEventListener("keydown", handleKey)
   }, [floatingPosition])
 
   const handleResetFloatingPosition = useCallback(() => {
     setFloatingPosition(null)
     if (typeof window !== "undefined") {
-      window.dispatchEvent(new CustomEvent("lia:reset-bubble-position"))
+      window.dispatchEvent(new CustomEvent(BUBBLE_RESET_EVENT))
     }
   }, [])
 
