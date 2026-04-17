@@ -271,6 +271,18 @@ Padrão correto:
 
 ---
 
+## Observabilidade — Fonte Única (Task #343, ADR-017)
+
+Tracing, structured logging, LLM callbacks, agent monitoring, drift detection (modelo + alertas), token tracking, token budget, WSI observability e configuração do LangSmith vivem **exclusivamente** em `lia-agent-system/app/shared/observability/`. Os 11 caminhos antigos (`app.shared.tracing`, `app.shared.llm.callbacks`, `app.shared.governance.agent_monitoring_service`, `app.shared.services.*`, `app.domains.{ai,lgpd,analytics,credits}.services.*`, `app.config.langsmith`) foram removidos.
+
+- **Detalhes / mapa módulo a módulo:** `lia-agent-system/docs/CANONICAL_SOURCES_SPEC.md` (§1) e `ARCHITECTURE.md` ADR-017.
+- **Lint enforcement:** `lia-agent-system/scripts/check_forbidden_imports.py` (pre-commit hook `G5` + CI). Bloqueia import de qualquer um dos 11 caminhos legados — junto com os caminhos `libs.models.lia_models.*` / `libs.messaging.lia_messaging.*` / `app.models.*` / `app.shared.global_tool_registry` cobertos por ADR-002 / ADR-012.
+- **Rodar localmente:** `cd lia-agent-system && python3 scripts/check_forbidden_imports.py`.
+
+Importe sempre via `from app.shared.observability.<modulo> import …`. Reintroduzir um dos caminhos antigos quebra o build.
+
+---
+
 ## ⛔ DO NOT MODIFY — Configurações Críticas de Integração
 
 > **ATENÇÃO:** As configurações abaixo são essenciais para o funcionamento da integração Microsoft Teams via Azure Bot.

@@ -439,3 +439,71 @@ updates in `docs/specs/CANONICAL_SOURCES_SPEC.md` and the root
 
 *Last updated: 2026-04-17 | ADR-015 (S7.1/S7.2/S7.3) + ADR-016 (S7.4) + ADR-017 (observability canonical location)*
 
+---
+
+## ADR-017: Canonical Observability Layer (2026-04-17) [ENFORCED by CI]
+
+**Rule:** All tracing, structured logging, LLM callbacks, agent monitoring,
+drift detection, token tracking/budget, and LangSmith configuration live in
+**one** package: `app/shared/observability/`. There is no other valid home.
+
+**Background.** Task #343 collapsed eleven scattered modules — previously
+spread across `app/shared/tracing.py`, `app/shared/llm/callbacks.py`,
+`app/shared/governance/`, `app/shared/services/`,
+`app/domains/{ai,lgpd,analytics,credits}/services/`, and
+`app/config/langsmith.py` — into a single canonical package. The legacy
+files and the five re-export shims that briefly bridged the move were then
+deleted to leave a single source of truth.
+
+**Canonical layout — `app/shared/observability/`:**
+
+| Concern | Module |
+|---|---|
+| Sentry / OpenTelemetry tracing | `tracing.py` |
+| Structured logging (structlog) | `structured_logging.py` |
+| LangChain LLM callback handlers | `callbacks.py` |
+| Agent monitoring service | `agent_monitoring_service.py` |
+| Agent health alerting | `agent_health_alert_service.py` |
+| Model drift detection | `model_drift_service.py` |
+| Drift alerting | `drift_alert_service.py` |
+| Token usage tracking | `token_tracking_service.py` |
+| Token / spend budget | `token_budget_service.py` |
+| WSI-specific observability | `wsi_observability.py` |
+| LangSmith configuration | `langsmith.py` |
+
+**Correct imports:**
+```python
+from app.shared.observability.tracing import setup_tracing
+from app.shared.observability.callbacks import LIACallbackHandler
+from app.shared.observability.langsmith import configure_langsmith
+from app.shared.observability.agent_monitoring_service import AgentMonitoringService
+from app.shared.observability.token_tracking_service import TokenTrackingService
+from app.shared.observability.token_budget_service import TokenBudgetService
+from app.shared.observability.model_drift_service import ModelDriftService
+from app.shared.observability.drift_alert_service import DriftAlertService
+from app.shared.observability.wsi_observability import WSIObservability
+```
+
+**Forbidden — every legacy path is rejected by CI:**
+- `from app.shared.tracing …`
+- `from app.shared.structured_logging …`
+- `from app.shared.llm.callbacks …`
+- `from app.shared.governance.agent_monitoring_service …`
+- `from app.shared.services.{agent_health_alert_service,model_drift_service,drift_alert_service,token_tracking_service,token_budget_service} …`
+- `from app.domains.ai.services.model_drift_service …`
+- `from app.domains.lgpd.services.drift_alert_service …`
+- `from app.domains.analytics.services.{token_tracking_service,wsi_observability,agent_monitoring_service} …`
+- `from app.domains.credits.services.token_budget_service …`
+- `from app.config.langsmith …`
+
+**Enforcement:** `scripts/check_forbidden_imports.py` (pre-commit hook **G5**
++ CI). The script's `FORBIDDEN_PATTERNS` list pins all 11 legacy paths; any
+new code reintroducing them fails the build with an actionable diff.
+
+**See also:** `docs/CANONICAL_SOURCES_SPEC.md` for the full module-level
+mapping and the rationale behind the consolidation.
+
+---
+
+*Last updated: 2026-04-17 | ADR-017: canonical observability layer*
+
