@@ -35,6 +35,14 @@ DISCRIMINATORY_TEXTS = [
     # (the canonical "jovem dinâmico" example expressed as the regulated phrase
     #  that triggers the hard age block).
     "Buscamos apenas jovens para essa vaga",
+    # Task #364 — canonical phrases promoted from Layer-2 educational
+    # warning to Layer-1 hard block. They must now fail closed across all
+    # 5 scoring services with a regulator-facing audit entry.
+    "Procuramos candidato com boa aparência",
+    "Exigimos boa apresentação pessoal do candidato",
+    "Buscamos profissional jovem e dinâmico para a equipe",
+    "Queremos alguém com energia jovem para essa função",
+    "Precisamos de sangue novo nesse time",
 ]
 
 

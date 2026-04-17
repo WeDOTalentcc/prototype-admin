@@ -199,6 +199,18 @@ DISCRIMINATORY_CATEGORIES = {
             r"\bage\s*[:<]\s*\d+\b",
             r"\bno\s+older\s+than\s+\d+\b",
             r"\bage\s+limit\b",
+            # Task #364 — canonical phrases "jovem dinâmico" and "energia
+            # jovem" promoted from Layer-2 educational warning to Layer-1
+            # hard block. Brazilian labor jurisprudence (Estatuto do Idoso,
+            # Lei 10.741/03) and EU AI Act guidance treat these as age-
+            # discriminatory on their face. The educational soft-warning
+            # text is preserved via IMPLICIT_BIAS_TERMS["energia jovem"],
+            # which still surfaces alongside the hard block as a user-
+            # facing explanation.
+            r"\bjove(m|ns)\s+(e\s+)?din[âa]mic[oa]s?\b",
+            r"\bdin[âa]mic[oa]s?\s+e\s+jove(m|ns)\b",
+            r"\benergia\s+jovem\b",
+            r"\bsangue\s+novo\b",
         ],
         "message": (
             "A LIA não pode filtrar candidatos por idade. "
@@ -366,6 +378,15 @@ DISCRIMINATORY_CATEGORIES = {
             r"\bperfil\s+atl[eé]tico\b",
             r"\b(ótima|excelente)\s+aparência\s+(f[íi]sica|pessoal)?\b",
             r"\b(otima|excelente)\s+aparencia\b",
+            # Task #364 — canonical phrase "boa aparência" promoted from
+            # Layer-2 educational warning to Layer-1 hard block. Brazilian
+            # labor jurisprudence and EU AI Act guidance treat this as
+            # discriminatory on its face. The educational soft-warning text
+            # is preserved via IMPLICIT_BIAS_TERMS["boa aparencia"], which
+            # still surfaces alongside the hard block as a user-facing
+            # explanation.
+            r"\bboa\s+apar[eê]ncia\b",
+            r"\bboa\s+apresenta[cç][aã]o\s+pessoal\b",
         ],
         "message": (
             "A LIA não pode filtrar candidatos por características físicas como altura, "
@@ -468,7 +489,11 @@ _COMPILED_PATTERNS: dict[str, list[re.Pattern]] = {}
 # Versão dos patterns — incrementar quando patterns forem adicionados para forçar recompilação
 # v3: FAR-1 — 5 novas categorias (antecedentes_criminais, saude_doenca, filiacao_sindical,
 #              aparencia_fisica), expansão IMPLICIT_BIAS_TERMS, fix regex idade
-_PATTERNS_VERSION = 5
+# v6: Task #364 — promoted canonical biased phrases ("boa aparência",
+#                 "boa apresentação pessoal", "jovem dinâmico", "energia jovem",
+#                 "sangue novo") from Layer-2 educational warnings to Layer-1
+#                 hard blocks under aparencia_fisica / idade categories.
+_PATTERNS_VERSION = 6
 
 # ---------------------------------------------------------------------------
 # Interview transcript bias indicators (consolidated from 3 ex-detectors)
