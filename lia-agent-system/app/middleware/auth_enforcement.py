@@ -270,6 +270,22 @@ class AuthEnforcementMiddleware(BaseHTTPMiddleware):
             _current_company_id.set(payload.get("company_id", ""))
             request.state.user_role = payload.get("role", "")
 
+            # Task #353: prime the in-memory tenant LLM config cache so that
+            # synchronous llm_factory.get_provider_for_tenant(...) calls
+            # downstream observe DB-backed per-tenant overrides without
+            # blocking on the DB inside the event loop. Cheap on cache hit,
+            # silently no-ops on failure.
+            jwt_company_id = payload.get("company_id", "")
+            if jwt_company_id:
+                try:
+                    from app.shared.tenant_llm_context import prime_tenant_llm_cache
+                    await prime_tenant_llm_cache(jwt_company_id)
+                except Exception as prime_exc:  # pragma: no cover - defensive
+                    logger.debug(
+                        "[AuthEnforcement] tenant LLM cache prime failed: %s",
+                        prime_exc,
+                    )
+
             # If company_id from X-Company-ID header differs from JWT, reject
             header_company = request.headers.get("X-Company-ID", "")
             jwt_company = payload.get("company_id", "")

@@ -354,8 +354,11 @@ class TestTenantProviderRegistry:
         r = repr(registry)
         assert "repr_tenant" in r
 
-    def test_loads_provider_from_permissions_yaml(self):
-        """TenantProviderRegistry picks up per-tenant llm_provider from YAML."""
+    def test_ignores_per_tenant_yaml_and_uses_global_default(self):
+        """Per Task #353, per-tenant llm_provider in YAML is ignored.
+
+        Tenants without a DB row fall through to the YAML *global* default.
+        """
         import tempfile
         from pathlib import Path
         from app.tools.tool_permissions_loader import ToolPermissionsLoader
@@ -382,12 +385,64 @@ tenants:
         ToolPermissionsLoader.invalidate_cache()
         ToolPermissionsLoader.get_instance(path)
 
+        # Make sure no DB cache entry leaks in from another test.
+        from app.shared.tenant_llm_context import _tenant_configs
+        _tenant_configs.pop("yaml_tenant_t125", None)
+
         registry = TenantProviderRegistry.get_instance()
+        registry.remove_container("yaml_tenant_t125")
         c = registry.get_container("yaml_tenant_t125")
-        assert c.primary_provider == "claude"
-        assert c.fallback_order == ["claude", "gemini"]
+        # YAML per-tenant entry is ignored — falls through to global default.
+        assert c.primary_provider == "gemini"
 
         ToolPermissionsLoader.invalidate_cache()
+
+    def test_db_cache_overrides_yaml_global_default(self):
+        """When a tenant has a cached DB config, the factory uses it."""
+        from app.shared.tenant_llm_context import _tenant_configs
+
+        _register("gemini_dbcache")
+        _register("claude_dbcache")
+        _tenant_configs["db_tenant_t353"] = {
+            "primary_provider": "claude_dbcache",
+            "fallback_order": ["claude_dbcache", "gemini_dbcache"],
+            "providers": {},
+            "routing": {},
+        }
+        try:
+            registry = TenantProviderRegistry.get_instance()
+            registry.remove_container("db_tenant_t353")
+            c = registry.get_container("db_tenant_t353")
+            assert c.primary_provider == "claude_dbcache"
+            assert "claude_dbcache" in c.fallback_order
+        finally:
+            _tenant_configs.pop("db_tenant_t353", None)
+
+    def test_db_cache_resolved_inside_running_event_loop(self):
+        """Inside an asyncio loop the sync resolver must still pick up the
+        DB-backed cache (no blocking DB call required)."""
+        import asyncio
+        from app.shared.tenant_llm_context import _tenant_configs
+
+        _register("gemini_async")
+        _register("claude_async")
+        _tenant_configs["async_tenant_t353"] = {
+            "primary_provider": "claude_async",
+            "fallback_order": ["claude_async", "gemini_async"],
+            "providers": {},
+            "routing": {},
+        }
+
+        async def _inside_loop():
+            registry = TenantProviderRegistry.get_instance()
+            registry.remove_container("async_tenant_t353")
+            return registry.get_container("async_tenant_t353")
+
+        try:
+            container = asyncio.run(_inside_loop())
+            assert container.primary_provider == "claude_async"
+        finally:
+            _tenant_configs.pop("async_tenant_t353", None)
 
 
 # ---------------------------------------------------------------------------

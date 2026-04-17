@@ -329,7 +329,7 @@ class TenantProviderRegistry:
             resolved_fallback = fallback_order
 
             if not resolved_primary or not resolved_fallback:
-                resolved_primary, resolved_fallback = self._load_from_permissions(
+                resolved_primary, resolved_fallback = self._resolve_provider_config(
                     tenant_id, resolved_primary, resolved_fallback
                 )
 
@@ -347,26 +347,113 @@ class TenantProviderRegistry:
         return self._containers[key]
 
     @staticmethod
-    def _load_from_permissions(
+    def _resolve_provider_config(
         tenant_id: str | None,
         primary_override: str | None,
         fallback_override: list[str] | None,
     ) -> tuple[str, list[str]]:
-        """Load provider config from ToolPermissionsLoader (YAML)."""
+        """Resolve provider config for a tenant.
+
+        Per ADR-016 / Task #353, the source of truth is the
+        `tenant_llm_configs` table. Resolution order:
+
+          1. Explicit overrides passed by the caller (highest priority).
+          2. In-memory tenant config cache populated from the DB
+             (`app.shared.tenant_llm_context._tenant_configs`).
+          3. A best-effort synchronous DB load when called from a sync
+             context (skipped if an asyncio loop is already running).
+          4. YAML *global* defaults from `tool_permissions.yaml`.
+          5. Environment defaults / hardcoded fallback.
+
+        Per-tenant entries in `tool_permissions.yaml` are intentionally
+        ignored — those have moved to the database.
+        """
+        if tenant_id:
+            db_primary, db_fallback = TenantProviderRegistry._load_db_config_sync(
+                tenant_id
+            )
+            if db_primary:
+                return (
+                    primary_override or db_primary,
+                    fallback_override or db_fallback or list(FALLBACK_ORDER),
+                )
+
+        # Fall back to YAML global defaults (no per-tenant lookup).
         try:
             from app.tools.tool_permissions_loader import get_permissions
-            cfg = get_permissions(tenant_id)
+            cfg = get_permissions(None)
             primary = primary_override or cfg.llm_provider
             fallback = fallback_override or cfg.llm_fallback_order
             return primary, fallback
         except Exception as exc:
             logger.debug(
-                "[TenantProviderRegistry] Could not load permissions for tenant=%s: %s",
-                tenant_id,
+                "[TenantProviderRegistry] Could not load global permissions: %s",
                 exc,
             )
             default = os.environ.get("LLM_DEFAULT_PROVIDER", "gemini")
-            return primary_override or default, fallback_override or list(FALLBACK_ORDER)
+            return (
+                primary_override or default,
+                fallback_override or list(FALLBACK_ORDER),
+            )
+
+    @staticmethod
+    def _load_db_config_sync(
+        tenant_id: str,
+    ) -> tuple[str | None, list[str] | None]:
+        """Best-effort synchronous lookup of tenant LLM config from the DB.
+
+        Returns ``(primary, fallback)`` or ``(None, None)`` on miss/failure.
+
+        Strategy:
+          1. Read the in-memory cache (cheap, always safe).
+          2. If empty AND no asyncio loop is currently running, drive the
+             async DB lookup with ``asyncio.run`` to populate the cache.
+             When called from inside an event loop we skip the DB hit
+             rather than blocking — callers that need DB freshness inside
+             an async context should use ``get_provider_for_tenant_from_db``.
+        """
+        try:
+            from app.shared.tenant_llm_context import (
+                _tenant_configs,
+                get_tenant_llm_config,
+            )
+        except Exception as exc:  # pragma: no cover - defensive
+            logger.debug(
+                "[TenantProviderRegistry] tenant_llm_context unavailable: %s", exc
+            )
+            return None, None
+
+        cached = _tenant_configs.get(tenant_id)
+        if cached is None:
+            import asyncio
+
+            try:
+                asyncio.get_running_loop()
+                loop_running = True
+            except RuntimeError:
+                loop_running = False
+
+            if not loop_running:
+                try:
+                    cached = asyncio.run(get_tenant_llm_config(tenant_id))
+                except Exception as exc:
+                    logger.debug(
+                        "[TenantProviderRegistry] sync DB load failed for "
+                        "tenant=%s: %s",
+                        tenant_id,
+                        exc,
+                    )
+                    cached = None
+
+        if not cached:
+            return None, None
+
+        primary = cached.get("primary_provider") or None
+        fallback = cached.get("fallback_order") or None
+        return primary, list(fallback) if fallback else None
+
+    # Backwards-compat alias — older callers / tests may still import this.
+    _load_from_permissions = _resolve_provider_config
 
     async def load_from_db(self, tenant_id: str) -> ProviderContainer | None:
         """Load tenant config from DB and create a container with tenant API keys.
@@ -473,9 +560,24 @@ async def get_provider_for_tenant_from_db(
 ) -> ProviderContainer:
     """
     Get a ProviderContainer for the given tenant, loading from DB if available.
+
+    Recommended entry point for async call sites that pass a concrete
+    `tenant_id` (e.g. background workers, agent nodes). Unlike the sync
+    ``get_provider_for_tenant``, this path always touches the DB on a
+    cache miss, so it works even inside a running event loop where the
+    sync resolver would otherwise skip the DB lookup.
+
     Falls back to system defaults if no DB config exists.
     """
     registry = TenantProviderRegistry.get_instance()
+    # Make sure the in-memory cache is warm so a subsequent sync
+    # `get_provider_for_tenant(tenant_id)` from the same request also sees
+    # the DB-backed config.
+    try:
+        from app.shared.tenant_llm_context import prime_tenant_llm_cache
+        await prime_tenant_llm_cache(tenant_id)
+    except Exception:  # pragma: no cover - defensive
+        pass
     container = await registry.load_from_db(tenant_id)
     if container:
         return container

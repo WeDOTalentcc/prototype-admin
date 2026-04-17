@@ -157,6 +157,26 @@ def get_claude_model_for_tenant(company_id: str | None = None):
         return None
 
 
+async def prime_tenant_llm_cache(company_id: str) -> None:
+    """Eagerly populate the in-memory tenant LLM cache for the given tenant.
+
+    Safe to call from any async path (e.g. AuthEnforcementMiddleware). Silently
+    swallows DB / import errors so it never breaks the parent request.
+
+    This is the async-side counterpart that lets the synchronous
+    ``llm_factory._resolve_provider_config`` read DB-backed tenant config
+    without blocking inside a running event loop.
+    """
+    if not company_id:
+        return
+    if company_id in _tenant_configs:
+        return
+    try:
+        await get_tenant_llm_config(company_id)
+    except Exception as exc:  # pragma: no cover - defensive
+        logger.debug("[TenantLLM] prime_tenant_llm_cache(%s) failed: %s", company_id, exc)
+
+
 def clear_tenant_config_cache(company_id: str = ""):
     """Clear cached config when tenant updates their LLM settings."""
     if company_id:

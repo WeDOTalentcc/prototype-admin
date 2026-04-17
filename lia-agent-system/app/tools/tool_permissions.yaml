@@ -242,4 +242,9 @@ restricted_tools:
   - analyze_company_website    # external HTTP call to scrape website
   - import_workforce_plan      # import workforce planning data
 
+# Per-tenant LLM provider config (`llm_provider` / `llm_fallback_order`)
+# is intentionally NOT supported here — that data lives in the
+# `tenant_llm_configs` database table (see ADR-016 / Task #353).
+# Only per-tenant scope `overrides` are honoured under `tenants:` going
+# forward.
 tenants: {}

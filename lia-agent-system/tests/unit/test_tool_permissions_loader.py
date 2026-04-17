@@ -96,14 +96,19 @@ class TestToolPermissionsLoader:
         assert "search_jobs" in cfg.get_tools("job_table", "query")
         assert "generate_report" in cfg.get_tools("global", "action")
 
-    def test_load_tenant_overrides_provider(self):
+    def test_tenant_llm_provider_in_yaml_is_ignored(self):
+        """Per ADR-016 / Task #353: per-tenant llm_provider in YAML is ignored.
+
+        The DB (tenant_llm_configs) is the canonical source.
+        """
         path = _write_yaml(MINIMAL_YAML)
         from app.tools.tool_permissions_loader import ToolPermissionsLoader
         loader = ToolPermissionsLoader(path)
         cfg = loader.get_config(tenant_id="acme_corp")
 
-        assert cfg.llm_provider == "claude"
-        assert cfg.llm_fallback_order == ["claude", "openai"]
+        # Falls through to global default (gemini) — YAML override ignored.
+        assert cfg.llm_provider == "gemini"
+        assert cfg.llm_fallback_order == ["claude", "gemini", "openai"]
 
     def test_global_tenant_uses_default_provider(self):
         path = _write_yaml(MINIMAL_YAML)
@@ -200,7 +205,9 @@ class TestToolPermissionsConfig:
         cfg = self._get_cfg("acme_corp")
         r = repr(cfg)
         assert "acme_corp" in r
-        assert "claude" in r
+        # Per Task #353, per-tenant llm_provider in YAML is ignored — repr
+        # shows the global default.
+        assert "gemini" in r
 
 
 # ---------------------------------------------------------------------------
@@ -299,10 +306,13 @@ tenants:
         global_cfg = loader.get_config(None)
         acme_cfg = loader.get_config("acme_corp")
 
+        # Per Task #353, per-tenant llm_provider in YAML is ignored;
+        # both fall through to the global default.
         assert global_cfg.llm_provider == "gemini"
-        assert acme_cfg.llm_provider == "claude"
+        assert acme_cfg.llm_provider == "gemini"
 
-    def test_provider_config_isolated_per_tenant(self):
+    def test_per_tenant_yaml_llm_provider_is_ignored(self):
+        """Both tenants resolve to the global default — DB is the source of truth."""
         path = _write_yaml(MINIMAL_YAML)
         from app.tools.tool_permissions_loader import ToolPermissionsLoader
         loader = ToolPermissionsLoader(path)
@@ -310,7 +320,7 @@ tenants:
         cfg_acme = loader.get_config("acme_corp")
         cfg_restricted = loader.get_config("restricted_tenant")
 
-        assert cfg_acme.llm_provider == "claude"
+        assert cfg_acme.llm_provider == "gemini"
         assert cfg_restricted.llm_provider == "gemini"
 
 
