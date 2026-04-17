@@ -397,11 +397,10 @@ class DomainWorkflow:
 
         if state.intent_result.confidence < self.confidence_threshold:
             suggestions = state.domain.get_suggestions(state.context)
+            # Use generic message — never expose internal reasoning/debug strings to user
+            _generic_question = "Não tenho certeza do que você precisa. Pode reformular sua solicitação?"
             state.raw_response = DomainResponse.clarification_response(
-                question=(
-                    state.intent_result.reasoning
-                    or "Não tenho certeza do que você precisa. Pode reformular?"
-                ),
+                question=_generic_question,
                 options=suggestions,
                 metadata={
                     "confidence": state.intent_result.confidence,

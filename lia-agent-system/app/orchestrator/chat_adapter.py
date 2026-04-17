@@ -80,7 +80,7 @@ class ChatAdapter:
         pc = page_context or {}
 
         # Extract entity_id from page_context (job_vacancy_id or job_id)
-        entity_id = pc.get("job_vacancy_id") or pc.get("job_id")
+        entity_id = pc.get("entity_id") or pc.get("job_vacancy_id") or pc.get("job_id")
         entity_type = "job" if entity_id else None
 
         context_page = pc.get("page_type") or pc.get("domain") or "general"
