@@ -227,6 +227,425 @@ if jobs.any? && candidates.any?
 end
 
 # ---------------------------------------------------------------------------
+# 10. Demo WSI Screening (fully populated for screenshot/demo)
+# ---------------------------------------------------------------------------
+#
+# The recruiter "modal de triagem" (TriagemDetailsModal in plataforma-lia)
+# reads completed screenings from the wsi_* tables that the Python
+# lia-agent-system owns (wsi_sessions, wsi_questions, wsi_response_analyses,
+# wsi_results, wsi_reports, wsi_feedbacks). The candidate-side
+# conversation lives in `triagem_sessions` / `triagem_messages`. The live
+# schema for both groups is owned by lia-agent-system (see
+# `lia-agent-system/libs/models/lia_models/triagem.py` and
+# `lia-agent-system/database/wsi_schema_corrected.sql`); the Rails
+# migration 20250716000045 in this repo is a stale parallel definition
+# that should be reconciled separately (follow-up task).
+#
+# Because these tables are owned by the Python app:
+#   * we don't touch them through ActiveRecord models (none exist here);
+#   * we gate every block on `table_exists?` so `db:seed` stays safe
+#     against a Rails-only DB where the Python app hasn't created its
+#     tables yet, and it just no-ops with an informational message;
+#   * we use deterministic UUIDs + ON CONFLICT DO NOTHING everywhere so
+#     re-runs (and resumes after a partial failure) don't duplicate rows;
+#   * we set `app.company_id` GUC because `job_vacancies` and
+#     `triagem_sessions` have FORCED row-level security on company_id.
+
+demo_company_id     = "00000000-0000-4000-a000-000000000001"  # matches existing "Demo Company"
+demo_candidate_id   = "11111111-1111-4111-8111-111111111111"
+demo_job_vacancy_id = "22222222-2222-4222-8222-222222222222"
+demo_session_id     = "33333333-3333-4333-8333-333333333333"
+demo_result_id      = "44444444-4444-4444-8444-444444444441"
+demo_report_id      = "44444444-4444-4444-8444-444444444442"
+demo_feedback_id    = "44444444-4444-4444-8444-444444444443"
+demo_triagem_id     = "55555555-5555-4555-8555-555555555555"
+
+demo_candidate_name  = "Maria Silva"
+demo_candidate_email = "maria@example.com"
+demo_job_title       = "Senior Backend Engineer"
+
+conn = ActiveRecord::Base.connection
+q    = ->(v) { conn.quote(v) }
+
+# This block depends on the Python lia-agent-system schema being live
+# (wsi_*, candidate_jobs, Python-shape candidates/job_vacancies with
+# `company_id`). On a Rails-only DB those tables/columns won't exist, so
+# we gate the entire block and just log a skip, leaving `db:seed` happy.
+demo_schema_ok =
+  conn.table_exists?("wsi_sessions") &&
+  conn.table_exists?("candidates") &&
+  conn.table_exists?("job_vacancies") &&
+  conn.table_exists?("candidate_jobs") &&
+  conn.column_exists?("candidates", "company_id") &&
+  conn.column_exists?("job_vacancies", "company_id")
+
+if demo_schema_ok
+
+  # Honour RLS for the tenant-scoped tables we touch below.
+  conn.execute("SELECT set_config('app.company_id', #{q.call(demo_company_id)}, false)")
+
+  # If the existing Rails AR seed already created Maria via `Candidate`,
+  # reuse her real UUID instead of forcing a parallel candidate row, so
+  # the Kanban and modal show the same candidate.
+  existing_maria_id = conn.select_value(
+    "SELECT id::text FROM candidates WHERE email = #{q.call(demo_candidate_email)} LIMIT 1"
+  )
+  demo_candidate_id = existing_maria_id if existing_maria_id
+
+  # 1) Candidate (shared `candidates` table is UUID-keyed; insert only if missing).
+  conn.execute(<<~SQL)
+    INSERT INTO candidates (id, name, email, mobile_phone, current_title,
+                            seniority_level, source, company_id)
+    VALUES (#{q.call(demo_candidate_id)}, #{q.call(demo_candidate_name)},
+            #{q.call(demo_candidate_email)}, '+5511999990001',
+            'Backend Engineer', 'senior', 'seed', #{q.call(demo_company_id)})
+    ON CONFLICT (id) DO NOTHING
+  SQL
+
+  # 2) Matching job_vacancy (RLS-scoped on company_id).
+  conn.execute(<<~SQL)
+    INSERT INTO job_vacancies (id, company_id, title, status, department,
+                               seniority_level, employment_type,
+                               created_at, updated_at)
+    VALUES (#{q.call(demo_job_vacancy_id)}, #{q.call(demo_company_id)},
+            #{q.call(demo_job_title)}, 'Ativa', 'Engineering',
+            'senior', 'clt', NOW(), NOW())
+    ON CONFLICT (id) DO NOTHING
+  SQL
+
+  # 3) Application link so the candidate appears on the Kanban for the vaga.
+  demo_candidate_job_id = "77777777-7777-4777-8777-777777777777"
+  conn.execute(<<~SQL)
+    INSERT INTO candidate_jobs (id, candidate_id, job_vacancy_id,
+                                status, source, applied_at, created_at, updated_at)
+    VALUES (#{q.call(demo_candidate_job_id)}, #{q.call(demo_candidate_id)},
+            #{q.call(demo_job_vacancy_id)}, 'screening', 'seed',
+            NOW(), NOW(), NOW())
+    ON CONFLICT (id) DO NOTHING
+  SQL
+
+# 4) WSI session + 5 questions + 5 response analyses + result + report + feedback.
+#    Owned by lia-agent-system; gate on table existence so a Rails-only DB
+#    just no-ops gracefully.
+if conn.table_exists?("wsi_sessions") &&
+   conn.table_exists?("wsi_questions") &&
+   conn.table_exists?("wsi_response_analyses") &&
+   conn.table_exists?("wsi_results") &&
+   conn.table_exists?("wsi_reports") &&
+   conn.table_exists?("wsi_feedbacks")
+  conn.execute(<<~SQL)
+    INSERT INTO wsi_sessions (id, candidate_id, job_vacancy_id, screening_type,
+                              mode, status, question_set_version, question_set_id,
+                              started_at, completed_at, created_at, updated_at)
+    VALUES (#{q.call(demo_session_id)}, #{q.call(demo_candidate_id)},
+            #{q.call(demo_job_vacancy_id)}, 'chat', 'compact', 'completed',
+            1, 'seed-backend-v1',
+            NOW() - INTERVAL '20 minutes', NOW() - INTERVAL '5 minutes',
+            NOW() - INTERVAL '20 minutes', NOW())
+    ON CONFLICT (id) DO NOTHING
+  SQL
+
+  questions = [
+    { id: "66666666-6666-4666-8666-000000000001",
+      competency: "Ruby on Rails",
+      framework: "Bloom",
+      qtype: "contextual",
+      text: "Conte sobre uma API que voce projetou no Rails. Quais decisoes de modelagem voce tomou e por que?",
+      weight: 1.0,
+      seq: 1,
+      response: "No ultimo projeto desenhei uma API REST para gestao de pedidos. Separei agregados de Order e LineItem, usei service objects para regras de negocio e Sidekiq para o pos-processamento. Optei por chaves UUID para evitar leak de cardinalidade.",
+      auto: 4.5, ctx: 4.7, bloom: 5, dreyfus: 4, score: 4.6,
+      evidences: ["Cita service objects", "Justifica uso de UUID", "Mencao a Sidekiq"],
+      red_flags: [],
+      justification: "Resposta estruturada, com tradeoffs explicitos e exemplos concretos." },
+    { id: "66666666-6666-4666-8666-000000000002",
+      competency: "PostgreSQL",
+      framework: "Dreyfus",
+      qtype: "microcase",
+      text: "Uma query de relatorio passou de 200ms para 8s apos uma migration. Como voce investigaria?",
+      weight: 1.0,
+      seq: 2,
+      response: "Comecaria comparando EXPLAIN ANALYZE antes e depois. Verificaria se algum indice ficou invalido, se o plano mudou para seq scan e se a migration introduziu colunas calculadas. Se preciso, recriaria o indice CONCURRENTLY e revisaria estatisticas com ANALYZE.",
+      auto: 4.2, ctx: 4.4, bloom: 4, dreyfus: 4, score: 4.3,
+      evidences: ["Usa EXPLAIN ANALYZE", "Cita CREATE INDEX CONCURRENTLY", "Revisa estatisticas"],
+      red_flags: [],
+      justification: "Diagnostico metodico, demonstra experiencia em performance tuning." },
+    { id: "66666666-6666-4666-8666-000000000003",
+      competency: "Sistemas Distribuidos",
+      framework: "Bloom",
+      qtype: "situational",
+      text: "Como voce garantiria idempotencia em um endpoint de pagamento?",
+      weight: 1.0,
+      seq: 3,
+      response: "Receberia um Idempotency-Key do cliente, persistiria a chave junto com o hash do payload e o resultado. Em retentativas, retornaria a resposta original sem reprocessar. Adicionaria expiracao da chave depois de algumas horas.",
+      auto: 4.0, ctx: 4.3, bloom: 5, dreyfus: 4, score: 4.2,
+      evidences: ["Idempotency-Key", "Hash do payload", "Expiracao"],
+      red_flags: [],
+      justification: "Padrao reconhecido, aplicado corretamente ao contexto." },
+    { id: "66666666-6666-4666-8666-000000000004",
+      competency: "Colaboracao",
+      framework: "BigFive",
+      qtype: "autodeclaration",
+      text: "Conte uma situacao em que voce discordou de um colega senior. Como conduziu?",
+      weight: 0.8,
+      seq: 4,
+      response: "Discordamos da escolha entre filas SQS vs Kafka. Pedi um espaco para alinhar criterios (volume, ordering, custo) e escrevi um RFC curto. Apos a revisao do time fechamos no SQS por simplicidade operacional, e propus reavaliar em 6 meses.",
+      auto: 4.1, ctx: 4.2, bloom: 4, dreyfus: 4, score: 4.1,
+      evidences: ["Escreveu RFC", "Definiu criterios objetivos", "Acordo com revisao futura"],
+      red_flags: [],
+      justification: "Postura colaborativa, escuta ativa e foco em criterio tecnico." },
+    { id: "66666666-6666-4666-8666-000000000005",
+      competency: "Ownership",
+      framework: "CBI",
+      qtype: "contextual",
+      text: "Conte um incidente em producao que voce liderou. O que aprendeu?",
+      weight: 0.9,
+      seq: 5,
+      response: "Lideramos a resposta a um vazamento de memoria no worker de imports. Coordenei rollback, abri war room e produzi o postmortem com action items. Implementamos limites de memoria por job e alertas no Datadog. A falha nao reincidiu nos meses seguintes.",
+      auto: 4.4, ctx: 4.6, bloom: 5, dreyfus: 5, score: 4.5,
+      evidences: ["Liderou war room", "Postmortem com action items", "Acompanhamento posterior"],
+      red_flags: [],
+      justification: "Demonstra ownership end-to-end e cultura de aprendizado." }
+  ]
+
+  questions.each do |qq|
+    conn.execute(<<~SQL)
+      INSERT INTO wsi_questions (id, session_id, competency, framework,
+                                 question_type, question_text, weight,
+                                 expected_signals, scoring_criteria,
+                                 sequence_order, created_at)
+      VALUES (#{q.call(qq[:id])}, #{q.call(demo_session_id)},
+              #{q.call(qq[:competency])}, #{q.call(qq[:framework])},
+              #{q.call(qq[:qtype])}, #{q.call(qq[:text])},
+              #{qq[:weight]}, '[]'::jsonb, '{}'::jsonb,
+              #{qq[:seq]}, NOW())
+      ON CONFLICT (id) DO NOTHING
+    SQL
+
+    response_analysis_id = qq[:id].sub("66666666-6666-4666-8666",
+                                       "66666666-6666-4666-8667")
+    conn.execute(<<~SQL)
+      INSERT INTO wsi_response_analyses (id, session_id, question_id,
+                                         candidate_id, job_vacancy_id,
+                                         competency, response_text,
+                                         autodeclaration_score, context_score,
+                                         bloom_level, dreyfus_level,
+                                         evidences, red_flags,
+                                         consistency_penalty, final_score,
+                                         justification, created_at)
+      VALUES (#{q.call(response_analysis_id)}, #{q.call(demo_session_id)},
+              #{q.call(qq[:id])},
+              #{q.call(demo_candidate_id)}, #{q.call(demo_job_vacancy_id)},
+              #{q.call(qq[:competency])}, #{q.call(qq[:response])},
+              #{qq[:auto]}, #{qq[:ctx]}, #{qq[:bloom]}, #{qq[:dreyfus]},
+              #{q.call(qq[:evidences].to_json)}::jsonb,
+              #{q.call(qq[:red_flags].to_json)}::jsonb,
+              0, #{qq[:score]}, #{q.call(qq[:justification])}, NOW())
+      ON CONFLICT (id) DO NOTHING
+    SQL
+  end
+
+  conn.execute(<<~SQL)
+    INSERT INTO wsi_results (id, session_id, candidate_id, job_vacancy_id,
+                             technical_wsi, behavioral_wsi, overall_wsi,
+                             classification, percentile, created_at)
+    VALUES (#{q.call(demo_result_id)}, #{q.call(demo_session_id)},
+            #{q.call(demo_candidate_id)}, #{q.call(demo_job_vacancy_id)},
+            4.4, 4.3, 4.35, 'alto', 88, NOW())
+    ON CONFLICT (id) DO NOTHING
+  SQL
+
+  technical_analysis = {
+    pontos_fortes: ["Domina Rails e PostgreSQL", "Diagnostico de performance",
+                    "Padroes de resiliencia (idempotencia)"],
+    gaps: ["Pouca exposicao a Kafka em producao"]
+  }
+  behavioral_analysis = {
+    colaboracao: 4.2,
+    ownership: 4.5,
+    comunicacao: 4.3,
+    destaques: ["Estrutura RFCs antes de decisoes", "Lidera incidentes com calma"]
+  }
+  cultural_fit = {
+    score: 4.4,
+    valores_alinhados: ["Ownership", "Aprendizado continuo"]
+  }
+  recommendation = {
+    decisao: "avancar",
+    nivel_recomendado: "senior",
+    proximos_passos: "Avancar para entrevista tecnica com o tech lead."
+  }
+
+  conn.execute(<<~SQL)
+    INSERT INTO wsi_reports (id, wsi_result_id, candidate_id, executive_summary,
+                             technical_analysis, behavioral_analysis,
+                             cultural_fit, recommendation, created_at)
+    VALUES (#{q.call(demo_report_id)}, #{q.call(demo_result_id)},
+            #{q.call(demo_candidate_id)},
+            'Maria apresenta forte fit tecnico e comportamental para a vaga de Senior Backend Engineer. Demonstrou solidez em Rails, PostgreSQL e padroes de resiliencia, alem de ownership claro em incidentes. Recomendamos avancar para a etapa tecnica.',
+            #{q.call(technical_analysis.to_json)}::jsonb,
+            #{q.call(behavioral_analysis.to_json)}::jsonb,
+            #{q.call(cultural_fit.to_json)}::jsonb,
+            #{q.call(recommendation.to_json)}::jsonb,
+            NOW())
+    ON CONFLICT (id) DO NOTHING
+  SQL
+
+  development_plan = {
+    foco_30_dias: ["Estudo dirigido em Kafka"],
+    foco_90_dias: ["POC de event-streaming no time"]
+  }
+  recommended_resources = [
+    { title: "Designing Data-Intensive Applications", type: "livro" },
+    { title: "Kafka: The Definitive Guide", type: "livro" }
+  ]
+
+  conn.execute(<<~SQL)
+    INSERT INTO wsi_feedbacks (id, wsi_result_id, candidate_id, decision,
+                               main_message, technical_strengths,
+                               development_opportunities, behavioral_strengths,
+                               next_steps, personalized_tip,
+                               development_plan, recommended_resources,
+                               created_at)
+    VALUES (#{q.call(demo_feedback_id)}, #{q.call(demo_result_id)},
+            #{q.call(demo_candidate_id)}, 'aprovado',
+            'Parabens, Maria! Sua triagem demonstrou solidez tecnica e comportamental para a vaga.',
+            #{q.call(["Rails avancado", "Tuning em PostgreSQL", "Padroes de resiliencia"].to_json)}::jsonb,
+            #{q.call(["Aprofundar event-streaming com Kafka"].to_json)}::jsonb,
+            #{q.call(["Comunicacao estruturada", "Lideranca em incidentes"].to_json)}::jsonb,
+            'Convidaremos voce para a entrevista tecnica com o tech lead nos proximos dias.',
+            'Compartilhe um RFC curto sobre uma decisao recente — voce ja faz isso muito bem!',
+            #{q.call(development_plan.to_json)}::jsonb,
+            #{q.call(recommended_resources.to_json)}::jsonb,
+            NOW())
+    ON CONFLICT (id) DO NOTHING
+  SQL
+else
+  puts "  [skip] wsi_* tables not present in this DB; skipping WSI demo block."
+end
+
+# 5) Triagem session + dialogue (candidate-side conversation, RLS-scoped).
+#    Two schemas exist in the wild for these tables:
+#      (a) Python lia-agent-system live shape: `token`, `current_block`,
+#          `wsi_final_score`, `metadata_json`, `triagem_messages.session_id`,
+#          `triagem_messages.wsi_block`, etc.
+#      (b) Rails migration 20250716000045 shape: `progress`, `final_score`,
+#          `scores`, `session_data`, `triagem_messages.triagem_session_id`,
+#          `triagem_messages.metadata`.
+#    We detect which shape is live by probing column names and write to
+#    whichever exists, so the demo modal is filled in either deployment.
+
+dialogue = [
+  { sender: "lia",       block: 0, content: "Oi, Maria! Eu sou a LIA. Vou te fazer algumas perguntas rapidas sobre a vaga de Senior Backend Engineer. Tudo bem comecar?" },
+  { sender: "candidate", block: 0, content: "Tudo otimo, podemos comecar." },
+  { sender: "lia",       block: 1, content: "Conte sobre uma API que voce projetou no Rails. Quais decisoes de modelagem voce tomou e por que?" },
+  { sender: "candidate", block: 1, content: "No ultimo projeto desenhei uma API REST para gestao de pedidos, separando Order e LineItem em agregados, usei service objects e Sidekiq para o pos-processamento. Optei por UUID nas chaves." },
+  { sender: "lia",       block: 2, content: "Otima resposta! Agora um caso pratico: uma query de relatorio passou de 200ms para 8s apos uma migration. Como voce investigaria?" },
+  { sender: "candidate", block: 2, content: "Comparo EXPLAIN ANALYZE antes e depois, verifico indices invalidos, refaco com CREATE INDEX CONCURRENTLY se preciso e revisito ANALYZE." },
+  { sender: "lia",       block: 7, content: "Maravilha, Maria! Triagem concluida. Sua nota foi 4.35 (alto). Vamos te chamar para a entrevista tecnica em breve." }
+]
+
+if conn.table_exists?("triagem_sessions") &&
+   conn.table_exists?("triagem_messages") &&
+   conn.column_exists?("triagem_sessions", "token") &&
+   conn.column_exists?("triagem_messages", "wsi_block")
+  # (a) Python live shape
+  conn.execute(<<~SQL)
+    INSERT INTO triagem_sessions (id, token, candidate_id, candidate_name,
+                                  candidate_email, job_id, job_title,
+                                  company_id, company_name, status,
+                                  current_block, total_blocks, wsi_final_score,
+                                  recommendation, invite_channel, voice_mode,
+                                  expires_at, started_at, completed_at,
+                                  created_at, updated_at, metadata_json)
+    VALUES (#{q.call(demo_triagem_id)},
+            'seed-triagem-maria-silva',
+            #{q.call(demo_candidate_id)}, #{q.call(demo_candidate_name)},
+            #{q.call(demo_candidate_email)},
+            #{q.call(demo_job_vacancy_id)}, #{q.call(demo_job_title)},
+            #{q.call(demo_company_id)}, 'WeDOTalent', 'completed',
+            7, 7, 4.35, 'avancar', 'email', false,
+            NOW() + INTERVAL '7 days',
+            NOW() - INTERVAL '20 minutes',
+            NOW() - INTERVAL '5 minutes',
+            NOW() - INTERVAL '20 minutes', NOW(),
+            #{q.call({ wsi_session_id: demo_session_id, wsi_result_id: demo_result_id, source: "seed" }.to_json)}::json)
+    ON CONFLICT (id) DO NOTHING
+  SQL
+
+  dialogue.each_with_index do |msg, idx|
+    msg_id = "55555555-5555-4555-8556-#{idx.to_s.rjust(12, '0')}"
+    conn.execute(<<~SQL)
+      INSERT INTO triagem_messages (id, session_id, sender, content,
+                                    message_type, wsi_block, score,
+                                    metadata_json, created_at)
+      VALUES (#{q.call(msg_id)}, #{q.call(demo_triagem_id)},
+              #{q.call(msg[:sender])}, #{q.call(msg[:content])},
+              'text', #{msg[:block]}, NULL, '{}'::json,
+              NOW() - INTERVAL '20 minutes' + (#{idx} * INTERVAL '90 seconds'))
+      ON CONFLICT (id) DO NOTHING
+    SQL
+  end
+elsif conn.table_exists?("triagem_sessions") &&
+      conn.table_exists?("triagem_messages") &&
+      conn.column_exists?("triagem_sessions", "progress") &&
+      conn.column_exists?("triagem_messages", "triagem_session_id")
+  # (b) Rails migration 20250716000045 shape
+  scores_json = { technical: 4.4, behavioral: 4.3, overall: 4.35,
+                  classification: "alto" }.to_json
+  session_data_json = { wsi_session_id: demo_session_id,
+                        wsi_result_id: demo_result_id,
+                        recommendation: "avancar",
+                        source: "seed" }.to_json
+  conn.execute(<<~SQL)
+    INSERT INTO triagem_sessions (id, company_id, candidate_id, job_id,
+                                  channel, status, current_question_idx,
+                                  total_questions, progress, final_score,
+                                  scores, session_data,
+                                  started_at, completed_at,
+                                  created_at, updated_at)
+    VALUES (#{q.call(demo_triagem_id)}, #{q.call(demo_company_id)},
+            #{q.call(demo_candidate_id)}, #{q.call(demo_job_vacancy_id)},
+            'web', 'completed', 5, 5, 1.0, 4.35,
+            #{q.call(scores_json)}::jsonb,
+            #{q.call(session_data_json)}::jsonb,
+            NOW() - INTERVAL '20 minutes',
+            NOW() - INTERVAL '5 minutes',
+            NOW() - INTERVAL '20 minutes', NOW())
+    ON CONFLICT (id) DO NOTHING
+  SQL
+
+  dialogue.each_with_index do |msg, idx|
+    msg_id = "55555555-5555-4555-8556-#{idx.to_s.rjust(12, '0')}"
+    conn.execute(<<~SQL)
+      INSERT INTO triagem_messages (id, triagem_session_id, sender, content,
+                                    message_type, metadata,
+                                    created_at, updated_at)
+      VALUES (#{q.call(msg_id)}, #{q.call(demo_triagem_id)},
+              #{q.call(msg[:sender])}, #{q.call(msg[:content])},
+              'text',
+              #{q.call({ wsi_block: msg[:block] }.to_json)}::jsonb,
+              NOW() - INTERVAL '20 minutes' + (#{idx} * INTERVAL '90 seconds'),
+              NOW())
+      ON CONFLICT (id) DO NOTHING
+    SQL
+  end
+else
+  puts "  [skip] triagem_sessions/triagem_messages tables not present in either known shape; skipping triagem demo block."
+end
+
+  puts "Demo WSI screening seeded for #{demo_candidate_name} on #{demo_job_title}"
+  puts "  candidate_id   = #{demo_candidate_id}"
+  puts "  job_vacancy_id = #{demo_job_vacancy_id}"
+  puts "  wsi_result_id  = #{demo_result_id}"
+  puts "  triagem token  = seed-triagem-maria-silva"
+else
+  puts "Demo WSI screening: required Python lia-agent-system tables/columns " \
+       "are not present in this database; skipping the demo block. " \
+       "(seeds.rb section 10 — open follow-up to align schemas)"
+end
+
+# ---------------------------------------------------------------------------
 # Done
 # ---------------------------------------------------------------------------
 
