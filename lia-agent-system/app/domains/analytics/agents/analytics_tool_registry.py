@@ -136,7 +136,7 @@ async def _wrap_generate_job_report(**kwargs: Any) -> dict[str, Any]:
     return result
 
 
-@tool_handler("analytics", require_company=False)
+@tool_handler("analytics")
 async def _wrap_generate_candidate_report(**kwargs: Any) -> dict[str, Any]:
     """Generate comparative candidate report / parecer for one or more candidates."""
     from app.core.database import AsyncSessionLocal

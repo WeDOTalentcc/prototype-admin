@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 _fairness_guard = FairnessGuard()
 
 
-@tool_handler("pipeline", require_company=False)
+@tool_handler("pipeline")
 async def _wrap_get_candidate_profile(**kwargs: Any) -> dict[str, Any]:
     candidate_id = kwargs.get("candidate_id", "")
     if not candidate_id:
@@ -57,7 +57,7 @@ async def _wrap_get_candidate_profile(**kwargs: Any) -> dict[str, Any]:
         return {"success": True, "profile": profile}
 
 
-@tool_handler("pipeline", require_company=False)
+@tool_handler("pipeline")
 async def _wrap_get_candidate_wsi_scores(**kwargs: Any) -> dict[str, Any]:
     candidate_id = kwargs.get("candidate_id", "")
     job_id = kwargs.get("job_id", "")
@@ -94,7 +94,7 @@ async def _wrap_get_candidate_wsi_scores(**kwargs: Any) -> dict[str, Any]:
         return {"success": True, "scores": scores}
 
 
-@tool_handler("pipeline", require_company=False)
+@tool_handler("pipeline")
 async def _wrap_get_candidate_screening_results(**kwargs: Any) -> dict[str, Any]:
     candidate_id = kwargs.get("candidate_id", "")
     job_id = kwargs.get("job_id", "")
@@ -131,7 +131,7 @@ async def _wrap_get_candidate_screening_results(**kwargs: Any) -> dict[str, Any]
         return {"success": True, "results": results}
 
 
-@tool_handler("pipeline", require_company=False)
+@tool_handler("pipeline")
 async def _wrap_get_candidate_salary_info(**kwargs: Any) -> dict[str, Any]:
     candidate_id = kwargs.get("candidate_id", "")
 
@@ -154,7 +154,7 @@ async def _wrap_get_candidate_salary_info(**kwargs: Any) -> dict[str, Any]:
         return {"success": True, "salary_info": salary_info}
 
 
-@tool_handler("pipeline", require_company=False)
+@tool_handler("pipeline")
 async def _wrap_update_candidate_field(**kwargs: Any) -> dict[str, Any]:
     candidate_id = kwargs.get("candidate_id", "")
     field_name = kwargs.get("field_name", "")
@@ -204,7 +204,7 @@ async def _wrap_update_candidate_field(**kwargs: Any) -> dict[str, Any]:
         return {"success": False, "error": str(e)}
 
 
-@tool_handler("pipeline", require_company=False)
+@tool_handler("pipeline")
 async def _wrap_request_data_collection(**kwargs: Any) -> dict[str, Any]:
     candidate_id = kwargs.get("candidate_id", "")
     data_type = kwargs.get("data_type", "")
@@ -233,7 +233,7 @@ async def _wrap_request_data_collection(**kwargs: Any) -> dict[str, Any]:
     }
 
 
-@tool_handler("pipeline", require_company=False)
+@tool_handler("pipeline")
 async def _wrap_get_stage_sub_statuses(**kwargs: Any) -> dict[str, Any]:
     to_stage = kwargs.get("to_stage", "")
     company_id = kwargs.get("company_id", "")
@@ -275,7 +275,7 @@ async def _wrap_get_stage_sub_statuses(**kwargs: Any) -> dict[str, Any]:
         }
 
 
-@tool_handler("pipeline", require_company=False)
+@tool_handler("pipeline")
 async def _wrap_suggest_sub_status(**kwargs: Any) -> dict[str, Any]:
     action_behavior = kwargs.get("action_behavior", "")
     to_stage = kwargs.get("to_stage", "")
@@ -332,6 +332,7 @@ async def _wrap_suggest_sub_status(**kwargs: Any) -> dict[str, Any]:
     }
 
 
+# require_company=False kept: pure NLP/regex on input text, no DB access
 @tool_handler("pipeline", require_company=False)
 async def _wrap_extract_preferences(**kwargs: Any) -> dict[str, Any]:
     text_input = kwargs.get("text", "")
@@ -422,6 +423,7 @@ async def _wrap_extract_preferences(**kwargs: Any) -> dict[str, Any]:
     }
 
 
+# require_company=False kept: pure stage transition logic, no DB access
 @tool_handler("pipeline", require_company=False)
 async def _wrap_validate_transition(**kwargs: Any) -> dict[str, Any]:
     from_stage = kwargs.get("from_stage", "")
@@ -438,7 +440,7 @@ async def _wrap_validate_transition(**kwargs: Any) -> dict[str, Any]:
     }
 
 
-@tool_handler("pipeline", require_company=False)
+@tool_handler("pipeline")
 async def _wrap_get_job_context(**kwargs: Any) -> dict[str, Any]:
     job_id = kwargs.get("job_id", "")
 
@@ -470,6 +472,7 @@ async def _wrap_get_job_context(**kwargs: Any) -> dict[str, Any]:
         return {"success": True, "job": job_data}
 
 
+# require_company=False kept: stub: returns echo dict, no DB access
 @tool_handler("pipeline", require_company=False)
 async def _wrap_schedule_secondary_task(**kwargs: Any) -> dict[str, Any]:
     task_type = kwargs.get("task_type", "")
@@ -485,6 +488,7 @@ async def _wrap_schedule_secondary_task(**kwargs: Any) -> dict[str, Any]:
     }
 
 
+# require_company=False kept: no DB: just formats message tone/style
 @tool_handler("pipeline", require_company=False)
 async def _wrap_personalize_communication(**kwargs: Any) -> dict[str, Any]:
     tone = kwargs.get("tone", "professional")
@@ -504,6 +508,7 @@ async def _wrap_personalize_communication(**kwargs: Any) -> dict[str, Any]:
     }
 
 
+# require_company=False kept: FairnessGuard text check only, no DB access
 @tool_handler("pipeline", require_company=False)
 async def _wrap_check_rejection_fairness(**kwargs: Any) -> dict[str, Any]:
     rejection_reason = kwargs.get("rejection_reason", "")
@@ -556,7 +561,7 @@ async def _wrap_check_rejection_fairness(**kwargs: Any) -> dict[str, Any]:
     }
 
 
-@tool_handler("pipeline", require_company=False)
+@tool_handler("pipeline")
 async def _wrap_check_candidate_availability(**kwargs: Any) -> dict[str, Any]:
     kwargs.get("candidate_id", "")
 
@@ -570,7 +575,7 @@ async def _wrap_check_candidate_availability(**kwargs: Any) -> dict[str, Any]:
     }
 
 
-@tool_handler("pipeline", require_company=False)
+@tool_handler("pipeline")
 async def _wrap_get_recruiter_preferences(**kwargs: Any) -> dict[str, Any]:
     recruiter_id = kwargs.get("recruiter_id", "")
     action_behavior = kwargs.get("action_behavior", "")
@@ -610,7 +615,7 @@ async def _wrap_get_recruiter_preferences(**kwargs: Any) -> dict[str, Any]:
         return {"success": True, "preferences": [], "message": "Sistema de preferências ainda não configurado"}
 
 
-@tool_handler("pipeline", require_company=False)
+@tool_handler("pipeline")
 async def _wrap_save_recruiter_preference(**kwargs: Any) -> dict[str, Any]:
     recruiter_id = kwargs.get("recruiter_id", "")
     preference_key = kwargs.get("preference_key", "")
@@ -713,7 +718,7 @@ async def _get_candidate_phone(candidate_email: str, interview_id: str) -> str |
     return None
 
 
-@tool_handler("pipeline", require_company=False)
+@tool_handler("pipeline")
 async def _wrap_get_interview_details(**kwargs: Any) -> dict[str, Any]:
     """Busca detalhes da entrevista agendada para o candidato na vaga atual."""
     candidate_id = kwargs.get("candidate_id", "") or kwargs.get("vacancy_candidate_id", "")
@@ -767,7 +772,7 @@ async def _wrap_get_interview_details(**kwargs: Any) -> dict[str, Any]:
         return {"success": True, "found": True, "interview": interview}
 
 
-@tool_handler("pipeline", require_company=False)
+@tool_handler("pipeline")
 async def _wrap_cancel_interview(**kwargs: Any) -> dict[str, Any]:
     """
     Cancela a entrevista agendada do candidato.
@@ -911,7 +916,7 @@ async def _wrap_cancel_interview(**kwargs: Any) -> dict[str, Any]:
         return {"success": False, "error": str(e)}
 
 
-@tool_handler("pipeline", require_company=False)
+@tool_handler("pipeline")
 async def _wrap_reschedule_interview(**kwargs: Any) -> dict[str, Any]:
     """
     Reagenda a entrevista para nova data e hora.
