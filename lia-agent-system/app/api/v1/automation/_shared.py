@@ -19,7 +19,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.domains.automation.services.automation_service import AutomationService, automation_service, get_automation_service  # noqa: F401
 from app.domains.automation.services.automation_trigger_service import automation_trigger_service  # noqa: F401
 from app.domains.communication.services.communication_service import CommunicationService, communication_service, get_communication_service  # noqa: F401
-from app.shared.services.audit_service import audit_service
+from app.shared.compliance.audit_service import audit_service
 
 logger = logging.getLogger(__name__)
 

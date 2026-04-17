@@ -33,11 +33,8 @@ def _mask_pii(text: str) -> str:
     """Mask PII before audit logging (GOV: LGPD compliance)."""
     if not text:
         return ""
-    try:
-        from app.services.pii_filter import mask_pii
-        return mask_pii(text[:500])
-    except ImportError:
-        return text[:500] if len(text) > 500 else text
+    from app.shared.pii_masking import mask_pii
+    return mask_pii(text[:500])
 
 
 @register_domain

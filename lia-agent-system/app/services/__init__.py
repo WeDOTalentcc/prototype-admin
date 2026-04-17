@@ -57,7 +57,7 @@ from app.domains.recruiter_assistant.services.conversation_memory import (
     conversation_memory,
 )
 from app.domains.sourcing.services.apify_service import ApifyService, apify_service
-from app.shared.services.audit_service import AuditService, audit_service
+from app.shared.compliance.audit_service import AuditService, audit_service
 from app.shared.services.benefits_service import (
     BENEFIT_CATEGORIES,
     BenefitsService,
