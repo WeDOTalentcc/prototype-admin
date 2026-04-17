@@ -30,6 +30,9 @@ export interface CandidatesSearchContext {
     isLoading: boolean
     showGlobalResults: boolean
     globalDismissed: boolean
+    isEnrichingContacts: boolean
+    filteredNoContact: number
+    enrichmentAttempted: number
   }
   setSearchResults: (v: CandidatesSearchContext['searchResults'] | ((prev: CandidatesSearchContext['searchResults']) => CandidatesSearchContext['searchResults'])) => void
   searchTerm: string

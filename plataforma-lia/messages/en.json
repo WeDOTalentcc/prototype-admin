@@ -2376,6 +2376,7 @@
       "loadingCandidates": "Loading candidates...",
       "enrichingContacts": "Enriching contacts...",
       "filteredNoContact": "{count, plural, one {# candidate dropped because we have no way to contact them (no email or phone after enrichment).} other {# candidates dropped because we have no way to contact them (no email or phone after enrichment).}}",
+      "enrichmentAttempted": "{count, plural, one {# of {total} candidate was enriched via Apify in this search.} other {# of {total} candidates were enriched via Apify in this search.}}",
       "emptyMessage": "No candidates found",
       "emptyTitle": "No results",
       "emptyDescription": "Try adjusting your search or filters",

@@ -50,6 +50,12 @@ export interface CandidatesTableAreaProps {
    * aviso para o usuário entender por que o total caiu.
    */
   filteredNoContact?: number
+  /**
+   * Task #399: número de candidatos que passaram pelo hook de enriquecimento
+   * Apify nesta busca. Mostramos um banner para o usuário entender o custo
+   * real (em chamadas Apify) da busca.
+   */
+  enrichmentAttempted?: number
 }
 
 export function CandidatesTableArea({
@@ -86,6 +92,7 @@ export function CandidatesTableArea({
   onLoadMore,
   isEnrichingContacts,
   filteredNoContact,
+  enrichmentAttempted,
 }: CandidatesTableAreaProps) {
   const t = useTranslations('candidates')
   return (
@@ -129,6 +136,19 @@ export function CandidatesTableArea({
               >
                 <span className="text-sm text-status-warning font-medium">
                   {t('table.filteredNoContact', { count: filteredNoContact })}
+                </span>
+              </div>
+            )}
+
+            {!isEnrichingContacts && enrichmentAttempted !== undefined && enrichmentAttempted > 0 && (
+              <div
+                data-testid="enrichment-attempted-banner"
+                className="flex items-center gap-2 px-4 py-2 bg-status-info/10 border border-status-info/20 rounded-lg mx-2 mt-2"
+                role="status"
+                aria-live="polite"
+              >
+                <span className="text-sm text-status-info font-medium">
+                  {t('table.enrichmentAttempted', { count: enrichmentAttempted, total: sortedCandidates.length })}
                 </span>
               </div>
             )}
