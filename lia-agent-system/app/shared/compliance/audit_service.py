@@ -33,6 +33,7 @@ DECISION_TYPE_MAPPING = {
     "approved": DecisionType.APPROVE_CANDIDATE,
     "generate_jd": DecisionType.GENERATE_FEEDBACK,
     "generate_wsi_questions": DecisionType.GENERATE_FEEDBACK,
+    "job_creation": DecisionType.JOB_CREATION,
 }
 
 PROTECTED_CRITERIA = [
@@ -60,6 +61,7 @@ class AuditService:
         "send_message": 1825,
         "schedule_interview": 365,
         "generate_feedback": 730,
+        "job_creation": 730,
     }
     
     async def log_decision(

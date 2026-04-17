@@ -21,6 +21,7 @@ class DecisionType(str, enum.Enum):
     SEND_MESSAGE = "send_message"
     SCHEDULE_INTERVIEW = "schedule_interview"
     GENERATE_FEEDBACK = "generate_feedback"
+    JOB_CREATION = "job_creation"
 
 
 class AuditLog(Base):
