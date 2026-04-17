@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo, useCallback } from "react"
 import { useAuth } from "@/contexts/auth-context"
+import { useAuthStore } from "@/stores/auth-store"
 import { useKanbanStore } from "@/stores/kanban-store"
 import { useShortList } from "@/hooks/candidates/use-short-list"
 import { useProactiveInsights } from "@/hooks/ai/use-proactive-insights"
@@ -44,6 +45,21 @@ import { useKanbanJobFormInit } from "@/components/pages/job-kanban/hooks/useKan
 import { useKanbanDataEffects } from "@/components/pages/job-kanban/hooks/useKanbanDataEffects"
 import { toast } from "sonner"
 
+/**
+ * Extract the company UUID from the authenticated user shape.
+ * The backend expects a real `company_id` (UUID); historically this hook
+ * read `user.company` (which doesn't exist on AuthenticatedUser) and fell
+ * back to the literal string `'demo'`, which then made the backend reject
+ * the request and return an empty insights list. Returns null when the
+ * user is not yet loaded or has no company_id, so callers can skip the
+ * remote fetch instead of issuing a guaranteed-bad request.
+ */
+export function getCompanyIdFromUser(user: unknown): string | null {
+  if (!user || typeof user !== 'object') return null
+  const candidate = (user as Record<string, unknown>).company_id
+  return typeof candidate === 'string' && candidate.length > 0 ? candidate : null
+}
+
 const EMPTY_JOB_FALLBACK: Record<string, unknown> & { id: number; jobId: string } = {
   id: 0,
   jobId: "",
@@ -57,10 +73,15 @@ const EMPTY_JOB_FALLBACK: Record<string, unknown> & { id: number; jobId: string 
 export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknown>; onBack?: () => void }) {
   const { saveJobsState } = useNavigationPersistence()
   const { user } = useAuth()
+  const authStoreUser = useAuthStore((s) => s.user)
   const talentFunnel = useTalentFunnel()
-  const _companyIdForSL = ((user as Record<string, unknown>)?.company as string) || 'demo'
+  // Read the real `company_id` UUID from the auth store. The `useAuth()`
+  // wrapper omits it, and the previous code mistakenly read `user.company`
+  // (which doesn't exist) and fell back to the literal `'demo'`, causing
+  // the backend to reject every proactive-insights request.
+  const _companyIdForSL = getCompanyIdFromUser(authStoreUser)
   const _jobIdForSL = job?.id?.toString()
-  const { shortLists, createShortList: _createSL, addCandidate: _addToSL, removeCandidate: _removeFromSL } = useShortList(_companyIdForSL, _jobIdForSL)
+  const { shortLists, createShortList: _createSL, addCandidate: _addToSL, removeCandidate: _removeFromSL } = useShortList(_companyIdForSL ?? '', _jobIdForSL)
   const { insights: proactiveInsights, dismiss: dismissInsight } = useProactiveInsights(_jobIdForSL, _companyIdForSL)
   const { suggestions: aiSuggestions, approveSuggestion, rejectSuggestion } = useCandidateSuggestions(job?.id?.toString() || '')
   const pipelineInheritance = usePipelineInheritance(job?.id?.toString())
@@ -289,7 +310,7 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
     allTableCandidates: allTableCandidates as unknown as Parameters<typeof useKanbanLIASuggestions>[0]["allTableCandidates"],
     currentJob,
     liaMessages: uiModals.state.liaMessages,
-    companyId: _companyIdForSL,
+    companyId: _companyIdForSL ?? '',
     setLiaMessages: uiModals.actions.setLiaMessages as unknown as Parameters<typeof useKanbanLIASuggestions>[0]["setLiaMessages"],
   })
 
