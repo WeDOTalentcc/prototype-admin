@@ -384,8 +384,13 @@ async def confirm_cv_and_create_candidate(
         
         candidate_id = uuid.uuid4()
         
+        # Task #346 — propaga tenant do JWT para a row criada.
+        company_id = getattr(current_user, "company_id", None)
+        if not company_id:
+            raise HTTPException(status_code=400, detail="company_id obrigatório.")
         candidate = Candidate(
             id=candidate_id,
+            company_id=str(company_id),
             name=parsed_cv.full_name,
             email=parsed_cv.email or f"unknown_{uuid.uuid4().hex[:8]}@placeholder.com",
             phone=parsed_cv.phone,

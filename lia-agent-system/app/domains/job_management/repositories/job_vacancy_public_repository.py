@@ -51,16 +51,21 @@ class JobVacancyPublicRepository:
 
     # ── apply flow ────────────────────────────────────────────────────────────
 
-    async def get_candidate_by_email(self, email: str):
+    async def get_candidate_by_email(self, email: str, company_id: str | None = None):
+        # Task #346 — escopo (tenant, email) impede cross-tenant reuse na
+        # candidatura pública (mesma pessoa pode existir em várias empresas).
         from app.shared.encryption.encrypted_field_mixin import _sha256_hash
         from sqlalchemy import or_
-        result = await self.db.execute(
-            select(Candidate).where(
-                or_(
-                    Candidate.email_hash == _sha256_hash(email),
-                    Candidate._email_raw == email,
-                )
+        conditions = [
+            or_(
+                Candidate.email_hash == _sha256_hash(email),
+                Candidate._email_raw == email,
             )
+        ]
+        if company_id:
+            conditions.append(Candidate.company_id == str(company_id))
+        result = await self.db.execute(
+            select(Candidate).where(*conditions)
         )
         return result.scalar_one_or_none()
 

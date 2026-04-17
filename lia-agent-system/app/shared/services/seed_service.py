@@ -1263,10 +1263,16 @@ async def seed_demo_data(db: AsyncSession) -> dict[str, Any]:
     education_count = 0
     experience_count = 0
     
+    seed_company_id = get_seed_company_id()
     for candidate_data in candidates_data:
         education_list = candidate_data.pop("education", [])
         work_experience_list = candidate_data.pop("work_experience", [])
-        
+
+        # Task #346 — Candidate.company_id é NOT NULL; injeta o tenant da
+        # seed em cada row demo (evita reescrever generate_demo_candidates
+        # 100x para hard-codar o ID).
+        candidate_data.setdefault("company_id", seed_company_id)
+
         candidate = Candidate(**candidate_data)
         db.add(candidate)
         candidate_ids.append(candidate_data["id"])

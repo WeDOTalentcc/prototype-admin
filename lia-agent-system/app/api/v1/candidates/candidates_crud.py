@@ -427,8 +427,15 @@ async def create_candidate(
     """Create a new candidate. If auto_enrich=True and linkedin_url is provided, enrichment runs in background."""
     try:
         logger.info(f"Creating candidate: {candidate_data.name}")
+        # Task #346 — toda criação propaga o tenant do usuário autenticado.
+        # Em DEV/demo, `current_user.company_id` cai no UUID demo canônico
+        # (ver app.core.tenant.DEMO_COMPANY_UUID).
+        company_id = str(current_user.company_id) if current_user.company_id else None
+        if not company_id:
+            raise HTTPException(status_code=400, detail="company_id obrigatório.")
         candidate = Candidate(
             id=uuid.uuid4(),
+            company_id=company_id,
             name=candidate_data.name,
             email=candidate_data.email,
             phone=candidate_data.phone,
@@ -484,6 +491,9 @@ async def create_candidate(
             "message": "Candidate created successfully",
             "enrichment_scheduled": enrichment_scheduled,
         }
+    except HTTPException:
+        # Preserva semântica 4xx (ex.: tenant ausente vira 400, não 500).
+        raise
     except Exception:
         _rid = getattr(request.state, "request_id", "unknown") if request else "unknown"
         logger.exception(

@@ -77,7 +77,8 @@ class RevealedContactResponse(BaseModel):
 @router.post("/candidates/persist-revealed", response_model=RevealedContactResponse)
 async def persist_revealed_contact(
     request: RevealedContactDTO,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user_or_demo),
 ):
     """
     Persiste dados de contato revelados de candidatos Pearch.
@@ -132,8 +133,11 @@ async def persist_revealed_contact(
             last_name = name_parts[1] if len(name_parts) > 1 else None
             
             new_id = uuid_lib.uuid4()
+            # Task #346 — propaga tenant do JWT (em DEV cai no demo).
+            company_id = get_user_company_id(current_user)
             candidate = Candidate(
                 id=new_id,
+                company_id=company_id,
                 name=request.candidate_name,
                 first_name=first_name,
                 last_name=last_name,

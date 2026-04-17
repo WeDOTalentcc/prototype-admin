@@ -92,13 +92,11 @@ class CandidateRepository:
         ids: list[str] | None = None,
         company_id: str | None = None,
     ):
-        # Tenant scope (task #295). O filtro só é aplicado se a coluna
-        # `company_id` existir no modelo Candidate — hoje ela não existe
-        # (ver auditoria docs/audits/candidates-root-cause-2026-04-16.md
-        # causa raiz #4) e o parâmetro fica como no-op forward-compat.
-        # Quando a migração que adicionar a coluna landar, o filtro já
-        # passa a ser aplicado automaticamente sem mudar o caller.
-        if company_id and hasattr(Candidate, "company_id"):
+        # Tenant scope (task #295 + task #346). A coluna `Candidate.company_id`
+        # foi adicionada pela migration 082, então o filtro é incondicional.
+        # Sem company_id explícito não filtramos — o caller deve ter resolvido
+        # o tenant a partir do JWT/session antes de chegar aqui.
+        if company_id:
             query = query.where(Candidate.company_id == company_id)
 
         if ids:

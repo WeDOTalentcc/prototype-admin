@@ -649,6 +649,12 @@ class RailsAdapter:
         if self.db:
             try:
                 from lia_models.candidate import Candidate
+                # Task #346 — Candidate.company_id é NOT NULL; rejeita
+                # tentativas locais sem tenant resolvido. Caller deve incluir.
+                if not candidate_data.get("company_id"):
+                    raise ValueError(
+                        "rails_adapter.create_candidate: candidate_data['company_id'] é obrigatório"
+                    )
                 candidate = Candidate(**candidate_data)
                 self.db.add(candidate)
                 await self.db.commit()

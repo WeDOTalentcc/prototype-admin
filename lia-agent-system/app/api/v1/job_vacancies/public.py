@@ -308,7 +308,11 @@ async def apply_to_public_vacancy(
         except Exception as e:
             logger.warning(f"CV parsing failed, continuing without parsed data: {e}")
 
-        existing_candidate = await repo.get_candidate_by_email(email)
+        # Task #346 — escopo (tenant da vaga, email) impede cross-tenant reuse.
+        existing_candidate = await repo.get_candidate_by_email(
+            email,
+            company_id=str(job.company_id) if job.company_id else None,
+        )
 
         if existing_candidate:
             candidate = existing_candidate
@@ -326,8 +330,10 @@ async def apply_to_public_vacancy(
             candidate.updated_at = datetime.utcnow()
             await repo.flush_candidate(candidate)
         else:
+            # Task #346 — candidatura pública herda o tenant da própria vaga.
             candidate = Candidate(
                 id=uuid_lib.uuid4(),
+                company_id=str(job.company_id) if job.company_id else None,
                 name=name,
                 email=email,
                 phone=phone,

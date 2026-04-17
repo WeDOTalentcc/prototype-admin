@@ -175,11 +175,13 @@ class TestCandidateFactory:
         db: AsyncSession,
         name: str,
         email: str,
-        source: str = "manual"
+        source: str = "manual",
+        company_id: str = "test_company",
     ) -> Candidate:
         """Create a candidate in the database."""
         candidate = Candidate(
             id=uuid4(),
+            company_id=company_id,
             name=name,
             email=email,
             source=source,

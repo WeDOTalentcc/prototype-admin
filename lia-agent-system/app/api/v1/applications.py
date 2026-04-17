@@ -185,6 +185,9 @@ async def apply_to_vacancy(
             raise HTTPException(status_code=400, detail="Esta vaga nao esta aberta para candidaturas")
 
         candidate_data = application.model_dump()
+        # Task #346 — Candidate.company_id é NOT NULL; injeta o tenant
+        # do usuário autenticado para garantir que create_candidate funcione.
+        candidate_data["company_id"] = company_id
 
         cv_text_for_fairness = ""
         if cv_file:
@@ -288,7 +291,8 @@ async def apply_to_vacancy(
                     },
                 )
 
-        existing_candidate = await repo.get_candidate_by_email(application.email)
+        # Task #346 — escopo (tenant, email) impede cross-tenant reuse.
+        existing_candidate = await repo.get_candidate_by_email(application.email, company_id=company_id)
 
         if existing_candidate:
             candidate = await repo.update_candidate_from_data(existing_candidate, candidate_data)

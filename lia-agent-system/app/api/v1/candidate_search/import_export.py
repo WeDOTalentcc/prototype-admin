@@ -595,8 +595,16 @@ async def promote_candidate_to_main_base(
             if not company_keywords:
                 company_keywords = first_exp.get("company_keywords", [])
         
+        # Task #346 — promoted candidate herda o tenant do perfil staging
+        # (já validado por assert_resource_ownership acima); fallback para
+        # o tenant do usuário se por algum motivo o perfil estiver vazio.
+        promotion_company_id = (
+            str(profile.company_id) if profile.company_id
+            else get_user_company_id(current_user)
+        )
         candidate = Candidate(
             id=new_candidate_id,
+            company_id=promotion_company_id,
             name=profile.name,
             email=profile.email,
             phone=profile.phone,
