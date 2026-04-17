@@ -174,7 +174,24 @@ export function useChatMessages({
           context,
         }),
       })
-      const data = await res.json() as {
+
+      // Trata erros HTTP antes de tentar interpretar o body — sem isso, um
+      // 401 do middleware (dev-auto-login falhou) ou um 5xx do backend cai no
+      // ramo "data.content é undefined" e a UI fica em silent drop (Task #377).
+      if (!res.ok) {
+        let errorMessage: string
+        if (res.status === 401 || res.status === 403) {
+          errorMessage = "Erro de autenticação. Faça login novamente."
+        } else if (res.status >= 500) {
+          errorMessage = `Erro do servidor (HTTP ${res.status}). Tente novamente.`
+        } else {
+          errorMessage = `Erro ao enviar mensagem (HTTP ${res.status}). Tente novamente.`
+        }
+        onCompleteRef.current?.(errorMessage)
+        return
+      }
+
+      type ChatResponse = {
         content?: string
         conversation_id?: string
         needs_clarification?: boolean
@@ -190,6 +207,13 @@ export function useChatMessages({
             collected_params?: Record<string, unknown>
           }
         }
+      }
+      let data: ChatResponse
+      try {
+        data = (await res.json()) as ChatResponse
+      } catch {
+        onCompleteRef.current?.("Resposta inválida do servidor. Tente novamente.")
+        return
       }
       if (data.conversation_id && data.conversation_id !== conversationId) {
         setConversationId(data.conversation_id)
@@ -224,6 +248,10 @@ export function useChatMessages({
 
       if (data.content) {
         onCompleteRef.current?.(data.content)
+      } else if (!pendingAction?.awaiting_confirmation) {
+        // JSON 2xx mas sem `content` e sem outro caminho de UI — antes desta
+        // correção (Task #377) o spinner sumia e nenhuma bolha aparecia.
+        onCompleteRef.current?.("A LIA não retornou uma resposta. Tente novamente.")
       }
     } catch {
       onCompleteRef.current?.("Erro ao conectar com a LIA. Tente novamente.")
