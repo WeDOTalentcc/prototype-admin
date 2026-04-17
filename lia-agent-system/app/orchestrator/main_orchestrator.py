@@ -153,6 +153,21 @@ class ChatResponse(BaseModel):
 # MainOrchestrator
 # ---------------------------------------------------------------------------
 
+
+def _inject_nav_ui_action(response: "ChatResponse", message: str) -> "ChatResponse":
+    """Post-process: add navigate_to ui_action when user intent is navigation (LIA-NAV-01)."""
+    if response.ui_action:
+        return response  # already set by a domain agent
+    try:
+        from app.orchestrator.navigation_intent import detect_navigation_intent
+        _nav = detect_navigation_intent(message)
+        if _nav.page and _nav.confidence >= 0.75:
+            response.ui_action = "navigate_to"
+            response.ui_action_params = {"page": _nav.page, "hint": _nav.hint}
+    except Exception:
+        pass
+    return response
+
 class MainOrchestrator:
     """
     Entry point único consolidado para todas as mensagens da LIA.
@@ -400,7 +415,7 @@ class MainOrchestrator:
                         )
                         if _soft_warnings:
                             _resp.fairness_warnings = _soft_warnings
-                        return _resp
+                        return _inject_nav_ui_action(_resp, ctx.message)
                 except Exception as exc:
                     logger.debug("[LIA-A04] Agentic loop skipped: %s", exc)
 
@@ -419,7 +434,7 @@ class MainOrchestrator:
                 _elapsed_ms, _domain, _phase2_response.intent_detected,
                 getattr(_phase2_response, 'from_cache', False), ctx.user_id,
             )
-            return _phase2_response
+            return _inject_nav_ui_action(_phase2_response, ctx.message)
 
         except Exception as exc:
             logger.error(
