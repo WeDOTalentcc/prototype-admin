@@ -223,6 +223,8 @@ async def send_message(
     }
 
     _c3b_company = str(current_user.company_id) if current_user.company_id else ""
+    from app.core.tenant import normalize_demo_company_id as _norm_cid
+    _c3b_company = _norm_cid(_c3b_company, context="chat.send_message") or _c3b_company
     _c3b_pre = await pre_compliance(
         message_data.content,
         _c3b_company,
@@ -234,7 +236,7 @@ async def send_message(
     orch_result = await _get_chat_adapter().process_message(
         user_message=_c3b_pre.clean_message,
         user_id=user_id,
-        company_id=str(current_user.company_id) if current_user.company_id else "",
+        company_id=_c3b_company,  # A1-B: already normalized above
         conversation_id=conversation_id,
         page_context=page_context,
         db=repo.db,
@@ -886,6 +888,8 @@ async def stream_message(
     # Fetch tenant context (same pattern as MainOrchestrator)
     _tenant_snippet = ""
     _company_id = str(getattr(current_user, "company_id", "")) or ""
+    from app.core.tenant import normalize_demo_company_id as _norm_cid_s
+    _company_id = _norm_cid_s(_company_id, context="chat.stream_message") or _company_id
     if _company_id:
         try:
             from app.shared.services.tenant_context_service import TenantContextService
