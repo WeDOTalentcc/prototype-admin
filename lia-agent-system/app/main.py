@@ -469,6 +469,31 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from app.shared.errors import LIAError, LIAComplianceError
 
 
+from app.shared.compliance.scoring_safeguards import FairnessBlockedError
+
+
+@app.exception_handler(FairnessBlockedError)
+async def fairness_blocked_error_handler(request: FastAPIRequest, exc: FairnessBlockedError):
+    """Fairness-block from candidate-scoring services. Returns 451 with controlled payload."""
+    request_id = getattr(request.state, "request_id", "unknown")
+    logger.warning(
+        f"FairnessGuard blocked scoring decision: category={exc.result.category} "
+        f"blocked_terms={exc.result.blocked_terms} request_id={request_id}"
+    )
+    return JSONResponse(
+        status_code=451,
+        content={
+            "error": {
+                "code": "fairness_blocked",
+                "message": exc.result.educational_message
+                or "Solicitação bloqueada por verificação de fairness.",
+                "category": exc.result.category,
+                "request_id": request_id,
+            }
+        },
+    )
+
+
 @app.exception_handler(LIAComplianceError)
 async def lia_compliance_error_handler(request: FastAPIRequest, exc: LIAComplianceError):
     """Compliance errors return 451 (Unavailable For Legal Reasons). Never silenced."""

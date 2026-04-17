@@ -22,6 +22,13 @@ from typing import Any
 
 
 from app.config.industry_weights import ScoringWeights, get_weights_for_industry
+from app.shared.compliance.scoring_safeguards import (
+    FairnessBlockedError,
+    hash_payload,
+    log_scoring_decision,
+    run_fairness_check,
+    schedule_audit_log,
+)
 
 IndustryWeights = ScoringWeights
 
@@ -648,6 +655,60 @@ class LIAScoreService:
         
         query = criteria.get("query", "")
         filters = criteria.get("filters", {})
+
+        candidate_id_for_audit = str(candidate.get("id") or "") or None
+        company_id_for_audit = (
+            criteria.get("company_id")
+            or candidate.get("company_id")
+        )
+        job_id_for_audit = criteria.get("job_id") or criteria.get("job_vacancy_id")
+        fairness_payload = " ".join(
+            str(p) for p in [query, criteria.get("notes") or ""] if p
+        ).strip()
+        fg_result, fg_unavailable = run_fairness_check(fairness_payload)
+        if fg_unavailable:
+            schedule_audit_log(log_scoring_decision(
+                company_id=company_id_for_audit,
+                agent_name="lia_score_service",
+                decision_type="search_candidates",
+                action="fairness_unavailable",
+                decision="blocked",
+                reasoning=[
+                    "FairnessGuard execution failed; LIA score blocked (fail-closed)",
+                    f"inputs_hash={hash_payload(fairness_payload)}",
+                ],
+                criteria_used=["fairness_guard"],
+                candidate_id=candidate_id_for_audit,
+                job_vacancy_id=str(job_id_for_audit) if job_id_for_audit else None,
+                human_review_required=True,
+            ))
+            from app.shared.compliance.fairness_guard import FairnessCheckResult
+            raise FairnessBlockedError(
+                FairnessCheckResult(
+                    is_blocked=True,
+                    category="fairness_unavailable",
+                    educational_message="Verificação de fairness indisponível.",
+                ),
+                "Verificação de fairness indisponível.",
+            )
+        if fg_result and fg_result.is_blocked:
+            schedule_audit_log(log_scoring_decision(
+                company_id=company_id_for_audit,
+                agent_name="lia_score_service",
+                decision_type="search_candidates",
+                action="fairness_block",
+                decision="rejected",
+                reasoning=[
+                    f"FairnessGuard blocked: category={fg_result.category}",
+                    f"blocked_terms={fg_result.blocked_terms}",
+                    f"inputs_hash={hash_payload(fairness_payload)}",
+                ],
+                criteria_used=["fairness_guard"],
+                candidate_id=candidate_id_for_audit,
+                job_vacancy_id=str(job_id_for_audit) if job_id_for_audit else None,
+                human_review_required=True,
+            ))
+            raise FairnessBlockedError(fg_result)
         
         required_skills = filters.get("skills", []) or self._extract_skills_from_query(query)
         required_experience = filters.get("experience_years_min") or self._extract_experience_years_from_query(query)
@@ -711,7 +772,7 @@ class LIAScoreService:
             breakdown, matched_skills, missing_skills, candidate
         )
         
-        return LIAScoreResult(
+        result = LIAScoreResult(
             score=score,
             breakdown=breakdown,
             reasoning=reasoning,
@@ -720,6 +781,33 @@ class LIAScoreService:
             strengths=strengths,
             concerns=concerns,
         )
+
+        schedule_audit_log(log_scoring_decision(
+            company_id=company_id_for_audit,
+            agent_name="lia_score_service",
+            decision_type="search_candidates",
+            action="calculate_score",
+            decision="scored",
+            reasoning=[
+                f"score={score:.2f}",
+                f"matched_skills={matched_skills[:5]}",
+                f"missing_skills={missing_skills[:5]}",
+            ],
+            criteria_used=[
+                "skills_match",
+                "experience_match",
+                "seniority_match",
+                "location_match",
+                "title_match",
+            ],
+            candidate_id=candidate_id_for_audit,
+            job_vacancy_id=str(job_id_for_audit) if job_id_for_audit else None,
+            score=score,
+            score_breakdown=breakdown.to_dict(),
+            human_review_required=False,
+        ))
+
+        return result
     
     def calculate_scores_batch(
         self,
@@ -746,6 +834,8 @@ class LIAScoreService:
             try:
                 score_result = self.calculate_score(candidate, criteria, industry)
                 results.append((candidate, score_result))
+            except FairnessBlockedError:
+                raise
             except Exception as e:
                 logger.warning(f"Failed to calculate score for candidate: {e}")
                 default_breakdown = LIAScoreBreakdown(
@@ -1201,7 +1291,64 @@ class LIAScoreService:
         has_rubricas = rubricas_score is not None
         has_wsi = wsi_score is not None
         has_prereq = job_requirements is not None
-        
+
+        candidate_id_for_audit = str(candidate.get("id") or "") or None
+        company_id_for_audit = candidate.get("company_id") or (
+            (job_requirements or {}).get("company_id") if job_requirements else None
+        )
+        job_id_for_audit = (job_requirements or {}).get("job_id") if job_requirements else None
+        ranking_fairness_payload = " ".join(
+            str(p) for p in [
+                (job_requirements or {}).get("query", "") if job_requirements else "",
+                (job_requirements or {}).get("notes", "") if job_requirements else "",
+                candidate.get("self_introduction") or "",
+            ] if p
+        ).strip()
+        if ranking_fairness_payload:
+            fg_result, fg_unavailable = run_fairness_check(ranking_fairness_payload)
+            if fg_unavailable:
+                schedule_audit_log(log_scoring_decision(
+                    company_id=company_id_for_audit,
+                    agent_name="lia_score_service",
+                    decision_type="search_candidates",
+                    action="ranking_fairness_unavailable",
+                    decision="blocked",
+                    reasoning=[
+                        "FairnessGuard execution failed; ranking blocked (fail-closed)",
+                        f"inputs_hash={hash_payload(ranking_fairness_payload)}",
+                    ],
+                    criteria_used=["fairness_guard"],
+                    candidate_id=candidate_id_for_audit,
+                    job_vacancy_id=str(job_id_for_audit) if job_id_for_audit else None,
+                    human_review_required=True,
+                ))
+                from app.shared.compliance.fairness_guard import FairnessCheckResult
+                raise FairnessBlockedError(
+                    FairnessCheckResult(
+                        is_blocked=True,
+                        category="fairness_unavailable",
+                        educational_message="Verificação de fairness indisponível.",
+                    )
+                )
+            if fg_result and fg_result.is_blocked:
+                schedule_audit_log(log_scoring_decision(
+                    company_id=company_id_for_audit,
+                    agent_name="lia_score_service",
+                    decision_type="search_candidates",
+                    action="ranking_fairness_block",
+                    decision="rejected",
+                    reasoning=[
+                        f"FairnessGuard blocked: category={fg_result.category}",
+                        f"blocked_terms={fg_result.blocked_terms}",
+                        f"inputs_hash={hash_payload(ranking_fairness_payload)}",
+                    ],
+                    criteria_used=["fairness_guard"],
+                    candidate_id=candidate_id_for_audit,
+                    job_vacancy_id=str(job_id_for_audit) if job_id_for_audit else None,
+                    human_review_required=True,
+                ))
+                raise FairnessBlockedError(fg_result)
+
         if not has_rubricas:
             basic_result = self.calculate_score(candidate, {"query": "", "filters": {}})
             rubricas_score = basic_result.score
@@ -1260,8 +1407,8 @@ class LIAScoreService:
         recommendation = self._get_ranking_recommendation(ranking_score)
         reasoning = self._generate_ranking_reasoning(breakdown, recommendation)
         strengths, concerns = self._identify_ranking_strengths_concerns(breakdown, candidate)
-        
-        return RankingScoreResult(
+
+        ranking_result = RankingScoreResult(
             ranking_score=ranking_score,
             breakdown=breakdown,
             rank_position=None,
@@ -1270,6 +1417,34 @@ class LIAScoreService:
             concerns=concerns,
             reasoning=reasoning,
         )
+
+        schedule_audit_log(log_scoring_decision(
+            company_id=company_id_for_audit,
+            agent_name="lia_score_service",
+            decision_type="search_candidates",
+            action="calculate_ranking_score",
+            decision="scored",
+            reasoning=[
+                f"ranking_score={ranking_score:.2f}",
+                f"recommendation={recommendation}",
+                f"data_availability={data_availability.value}",
+            ],
+            criteria_used=[
+                "rubricas_score",
+                "wsi_score",
+                "prerequisites_score",
+                "recency_boost",
+                "calibration_adjustment",
+                "completeness_factor",
+            ],
+            candidate_id=candidate_id_for_audit,
+            job_vacancy_id=str(job_id_for_audit) if job_id_for_audit else None,
+            score=ranking_score,
+            score_breakdown=breakdown.to_dict(),
+            human_review_required=False,
+        ))
+
+        return ranking_result
     
     async def load_search_feedback_for_ranking(
         self,
@@ -1380,6 +1555,8 @@ class LIAScoreService:
                     last_activity_date=None,
                 )
                 results.append((candidate, result))
+            except FairnessBlockedError:
+                raise
             except Exception as e:
                 logger.warning(f"Failed to calculate ranking score for candidate {candidate_id}: {e}")
                 default_breakdown = RankingScoreBreakdown(

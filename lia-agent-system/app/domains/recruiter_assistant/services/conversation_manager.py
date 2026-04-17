@@ -30,6 +30,7 @@ from app.domains.cv_screening.services.pre_qualification_service import (
     PreQualificationResult,
     pre_qualification_service,
 )
+from app.shared.compliance.scoring_safeguards import FairnessBlockedError
 from lia_models.job_vacancy import JobVacancy
 from lia_models.whatsapp_conversation import ConversationState, WhatsAppConversation, WhatsAppMessage
 
@@ -718,7 +719,29 @@ class ConversationManager:
             )
             
             return pre_qual_output
-            
+
+        except FairnessBlockedError as fb:
+            logger.warning(
+                f"Pre-qualification blocked by FairnessGuard for conversation "
+                f"{conversation.id}: category={fb.result.category}"
+            )
+            from app.domains.cv_screening.services.pre_qualification_service import (
+                PreQualificationOutput,
+                PreQualificationResult,
+            )
+            return PreQualificationOutput(
+                result=PreQualificationResult.VERY_DISTANT,
+                score=0,
+                matched_requirements=[],
+                missing_requirements=[],
+                message=(
+                    fb.result.educational_message
+                    or "Não foi possível realizar a pré-qualificação automática. "
+                    "Um recrutador irá revisar seu cadastro."
+                ),
+                buttons=[],
+                should_ask_confirmation=True,
+            )
         except Exception as e:
             logger.error(f"Error running pre-qualification: {e}", exc_info=True)
             return None
@@ -829,11 +852,22 @@ class ConversationManager:
                 category=current_question.get("category", "general")
             )
             
-            result_status, result_message = eligibility_service.check_answer(
-                question=question_obj,
-                answer=message,
-                reconsideration_count=conversation.reconsideration_count or 0
-            )
+            try:
+                result_status, result_message = eligibility_service.check_answer(
+                    question=question_obj,
+                    answer=message,
+                    reconsideration_count=conversation.reconsideration_count or 0
+                )
+            except FairnessBlockedError as fb:
+                logger.warning(
+                    f"Eligibility check blocked by FairnessGuard for conversation "
+                    f"{conversation.id}: category={fb.result.category}"
+                )
+                result_status = ReconsiderationResult.MAX_RECONSIDERATIONS_REACHED
+                result_message = (
+                    fb.result.educational_message
+                    or "Não foi possível processar a resposta. Um recrutador irá revisar seu cadastro."
+                )
             
             if result_status != ReconsiderationResult.PASSED:
                 # Store eligibility answer for tracking

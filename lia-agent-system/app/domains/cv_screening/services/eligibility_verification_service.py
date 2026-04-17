@@ -15,6 +15,14 @@ from dataclasses import dataclass
 from enum import Enum, StrEnum
 from typing import Any
 
+from app.shared.compliance.scoring_safeguards import (
+    FairnessBlockedError,
+    hash_payload,
+    log_scoring_decision,
+    run_fairness_check,
+    schedule_audit_log,
+)
+
 
 class ReconsiderationResult(StrEnum):
     PASSED = "passed"
@@ -160,26 +168,97 @@ class EligibilityVerificationService:
         Returns:
             Tuple of (result, message)
         """
+        fairness_payload = " ".join(
+            str(p) for p in [question.question_text or "", answer or ""] if p
+        ).strip()
+        fg_result, fg_unavailable = run_fairness_check(fairness_payload)
+        if fg_unavailable:
+            schedule_audit_log(log_scoring_decision(
+                company_id=None,
+                agent_name="eligibility_verification_service",
+                decision_type="screening_evaluation",
+                action="fairness_unavailable",
+                decision="blocked",
+                reasoning=[
+                    "FairnessGuard execution failed; eligibility check blocked (fail-closed)",
+                    f"question_id={question.id}",
+                    f"inputs_hash={hash_payload(fairness_payload)}",
+                ],
+                criteria_used=["fairness_guard"],
+                human_review_required=True,
+            ))
+            from app.shared.compliance.fairness_guard import FairnessCheckResult
+            raise FairnessBlockedError(
+                FairnessCheckResult(
+                    is_blocked=True,
+                    category="fairness_unavailable",
+                    educational_message="Verificação de fairness indisponível.",
+                )
+            )
+        if fg_result and fg_result.is_blocked:
+            schedule_audit_log(log_scoring_decision(
+                company_id=None,
+                agent_name="eligibility_verification_service",
+                decision_type="screening_evaluation",
+                action="fairness_block",
+                decision="rejected",
+                reasoning=[
+                    f"FairnessGuard blocked: category={fg_result.category}",
+                    f"blocked_terms={fg_result.blocked_terms}",
+                    f"question_id={question.id}",
+                    f"inputs_hash={hash_payload(fairness_payload)}",
+                ],
+                criteria_used=["fairness_guard"],
+                human_review_required=True,
+            ))
+            raise FairnessBlockedError(fg_result)
+
         if not question.is_eliminatory:
-            return ReconsiderationResult.PASSED, None
-        
-        if not question.expected_answer:
-            return ReconsiderationResult.PASSED, None
-        
-        if self._answers_match(answer, question.expected_answer, question.question_type):
-            return ReconsiderationResult.PASSED, None
-        
-        if reconsideration_count >= MAX_RECONSIDERATIONS:
+            outcome = (ReconsiderationResult.PASSED, None)
+        elif not question.expected_answer:
+            outcome = (ReconsiderationResult.PASSED, None)
+        elif self._answers_match(answer, question.expected_answer, question.question_type):
+            outcome = (ReconsiderationResult.PASSED, None)
+        elif reconsideration_count >= MAX_RECONSIDERATIONS:
             message = self._get_talent_pool_message(question.category, answer, question.expected_answer)
-            return ReconsiderationResult.MAX_RECONSIDERATIONS_REACHED, message
-        
-        message = self._get_warning_message(
-            question.category,
-            answer,
-            question.expected_answer,
-            question.question_text
-        )
-        return ReconsiderationResult.NEEDS_RECONSIDERATION, message
+            outcome = (ReconsiderationResult.MAX_RECONSIDERATIONS_REACHED, message)
+        else:
+            message = self._get_warning_message(
+                question.category,
+                answer,
+                question.expected_answer,
+                question.question_text
+            )
+            outcome = (ReconsiderationResult.NEEDS_RECONSIDERATION, message)
+
+        result_value = outcome[0].value
+        schedule_audit_log(log_scoring_decision(
+            company_id=None,
+            agent_name="eligibility_verification_service",
+            decision_type="screening_evaluation",
+            action="check_eligibility_answer",
+            decision=result_value,
+            reasoning=[
+                f"question_id={question.id}",
+                f"category={question.category}",
+                f"is_eliminatory={question.is_eliminatory}",
+                f"reconsideration_count={reconsideration_count}",
+                f"result={result_value}",
+            ],
+            criteria_used=[
+                "expected_answer",
+                "question_type",
+                "is_eliminatory",
+                "reconsideration_count",
+            ],
+            score_breakdown={
+                "result": result_value,
+                "reconsideration_count": reconsideration_count,
+                "max_reconsiderations": MAX_RECONSIDERATIONS,
+            },
+            human_review_required=outcome[0] != ReconsiderationResult.PASSED,
+        ))
+        return outcome
     
     def _answers_match(
         self,

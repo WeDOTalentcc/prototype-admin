@@ -13,6 +13,12 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from lia_models.evaluation_criteria import CriterionCategory, EvaluationCriteria
+from app.shared.compliance.scoring_safeguards import (
+    FairnessBlockedError,
+    hash_payload,
+    log_scoring_decision,
+    run_fairness_check,
+)
 from app.shared.services.responsibilities_catalog_service import RESPONSIBILITIES_CATALOG
 from app.shared.services.skills_catalog_service import (
     BEHAVIORAL_COMPETENCIES_CATALOG,
@@ -366,6 +372,49 @@ class EvaluationCriteriaService:
         requirements: list[str],
         min_score: float = 0.4,
     ) -> list[dict[str, Any]]:
+        fairness_payload = " | ".join(str(r) for r in requirements if r).strip()
+        fg_result, fg_unavailable = run_fairness_check(fairness_payload)
+        if fg_unavailable:
+            await log_scoring_decision(
+                company_id=None,
+                agent_name="evaluation_criteria_service",
+                decision_type="screening_evaluation",
+                action="fairness_unavailable",
+                decision="blocked",
+                reasoning=[
+                    "FairnessGuard execution failed; criteria match blocked (fail-closed)",
+                    f"requirement_count={len(requirements)}",
+                    f"inputs_hash={hash_payload(fairness_payload)}",
+                ],
+                criteria_used=["fairness_guard"],
+                human_review_required=True,
+            )
+            from app.shared.compliance.fairness_guard import FairnessCheckResult
+            raise FairnessBlockedError(
+                FairnessCheckResult(
+                    is_blocked=True,
+                    category="fairness_unavailable",
+                    educational_message="Verificação de fairness indisponível.",
+                )
+            )
+        if fg_result and fg_result.is_blocked:
+            await log_scoring_decision(
+                company_id=None,
+                agent_name="evaluation_criteria_service",
+                decision_type="screening_evaluation",
+                action="fairness_block",
+                decision="rejected",
+                reasoning=[
+                    f"FairnessGuard blocked: category={fg_result.category}",
+                    f"blocked_terms={fg_result.blocked_terms}",
+                    f"requirement_count={len(requirements)}",
+                    f"inputs_hash={hash_payload(fairness_payload)}",
+                ],
+                criteria_used=["fairness_guard"],
+                human_review_required=True,
+            )
+            raise FairnessBlockedError(fg_result)
+
         result = await db.execute(
             select(EvaluationCriteria).where(EvaluationCriteria.is_active)
         )
@@ -406,6 +455,38 @@ class EvaluationCriteriaService:
             f"Matched {sum(len(m['matched_criteria']) for m in matches)} criteria "
             f"for {len(requirements)} requirements"
         )
+
+        await log_scoring_decision(
+            company_id=None,
+            agent_name="evaluation_criteria_service",
+            decision_type="screening_evaluation",
+            action="get_criteria_for_requirements",
+            decision="matched",
+            reasoning=[
+                f"requirement_count={len(requirements)}",
+                f"total_matches={sum(len(m['matched_criteria']) for m in matches)}",
+                f"min_score={min_score}",
+            ],
+            criteria_used=[
+                "requirement_similarity",
+                "criteria_name_match",
+                "min_score_threshold",
+            ],
+            score_breakdown={
+                "min_score": min_score,
+                "requirement_count": len(requirements),
+                "matches": [
+                    {
+                        "requirement": m["requirement"],
+                        "match_score": round(m["match_score"], 3),
+                        "matched_count": len(m["matched_criteria"]),
+                    }
+                    for m in matches
+                ],
+            },
+            human_review_required=False,
+        )
+
         return matches
 
     async def update_effectiveness(
