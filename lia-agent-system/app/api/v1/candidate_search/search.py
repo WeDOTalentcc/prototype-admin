@@ -44,6 +44,7 @@ from ._shared import (
     _normalize_priority,
     assert_resource_ownership,
     enrich_and_filter_candidates,
+    persist_search_with_discards,
     get_current_user_or_demo,
     get_cv_parser_service,
     get_db,
@@ -355,6 +356,22 @@ async def search_candidates(
         _effective_search_time = (result.local_search_time or 0) + (result.pearch_search_time or 0) + _fb_search_time
         _effective_can_load_more = (result.pearch_count >= request.pearch_limit) or _fb_can_load_more
 
+        # Task #403 — persiste a execução com a lista de descartados para
+        # que o frontend consiga recuperar após refresh/sessão nova.
+        _search_id = await persist_search_with_discards(
+            db,
+            user=current_user,
+            query=result.query,
+            search_source=("hybrid" if request.search_pearch else "local"),
+            local_count=result.local_count,
+            pearch_count=_effective_pearch_count,
+            total_count=len(candidates),
+            used_global_search=bool(request.search_pearch),
+            discarded=_enrich_stats.filtered_candidates,
+            search_filters=request.search_spec or {},
+            search_duration_ms=int((_effective_search_time or 0) * 1000) or None,
+        )
+
         return SearchResponseDTO(
             query=result.query,
             thread_id=result.thread_id,
@@ -373,6 +390,7 @@ async def search_candidates(
             filtered_no_contact=_enrich_stats.filtered_no_contact,
             enrichment_attempted=_enrich_stats.enrichment_attempted,
             filtered_candidates=_enrich_stats.filtered_candidates,
+            search_id=_search_id,
         )
     
     except HTTPException:

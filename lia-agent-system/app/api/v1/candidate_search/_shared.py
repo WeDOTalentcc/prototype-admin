@@ -383,6 +383,10 @@ class SearchResponseDTO(BaseModel):
     filtered_no_contact: int = Field(default=0)
     enrichment_attempted: int = Field(default=0)
     filtered_candidates: list[DiscardedCandidateDTO] = Field(default_factory=list)
+    # Task #403: id da linha em ``candidate_searches`` que registrou esta
+    # execução. O frontend persiste esse id no histórico para conseguir
+    # recarregar (via GET /search/{id}/discarded) os descartados após refresh.
+    search_id: str | None = None
 
 
 def _build_candidate_data_from_dto(candidate_dto: 'CandidateSearchResultDTO') -> dict[str, Any]:
@@ -608,6 +612,112 @@ class EvaluateForJobResponse(BaseModel):
     evaluated_count: int
     failed_count: int
     results: list[EvaluateForJobResult]
+
+
+async def persist_search_with_discards(
+    db: AsyncSession,
+    *,
+    user: Any,
+    query: str,
+    search_source: str,
+    local_count: int,
+    pearch_count: int,
+    total_count: int,
+    used_global_search: bool,
+    discarded: list[DiscardedCandidateDTO],
+    search_filters: dict[str, Any] | None = None,
+    search_duration_ms: int | None = None,
+) -> str | None:
+    """Task #403 — registra a execução em ``candidate_searches`` com a lista
+    leve de candidatos descartados serializada em JSON.
+
+    Best-effort: qualquer falha (modelo desatualizado, coluna ausente, sessão
+    inválida) é logada como warning e o endpoint segue retornando os dados.
+    Retorna o ``search_id`` gerado quando a persistência funciona.
+    """
+    if not user:
+        return None
+
+    try:
+        from lia_models.candidate import CandidateSearch as _CandidateSearch
+
+        user_id = getattr(user, "id", None) or getattr(user, "email", None)
+        if user_id is None:
+            return None
+
+        record = _CandidateSearch(
+            user_id=str(user_id),
+            search_query=query or "",
+            search_filters=search_filters or {},
+            local_results_count=int(local_count or 0),
+            global_results_count=int(pearch_count or 0),
+            total_results=int(total_count or 0),
+            used_global_search=bool(used_global_search),
+            search_source=search_source or "local",
+            search_duration_ms=search_duration_ms,
+            discarded_candidates=[d.model_dump(mode="json") for d in (discarded or [])],
+        )
+        db.add(record)
+        await db.commit()
+        await db.refresh(record)
+        return str(record.id)
+    except Exception as exc:
+        # Não derruba a busca se a persistência falhar — o usuário ainda
+        # recebe a resposta normalmente.
+        try:
+            await db.rollback()
+        except Exception:
+            pass
+        logger.warning("[Task403] Failed to persist search record with discards: %s", exc)
+        return None
+
+
+async def load_discarded_for_search(
+    db: AsyncSession,
+    *,
+    user: Any,
+    search_id: str,
+) -> list[DiscardedCandidateDTO] | None:
+    """Task #403 — recupera a lista de descartados de uma execução prévia.
+
+    Retorna ``None`` quando o ``search_id`` não existe ou não pertence ao
+    usuário corrente (evita vazar dados entre tenants).
+    """
+    try:
+        from uuid import UUID as _UUID
+        from sqlalchemy import select
+        from lia_models.candidate import CandidateSearch as _CandidateSearch
+
+        try:
+            search_uuid = _UUID(str(search_id))
+        except (ValueError, TypeError):
+            return None
+
+        user_id = getattr(user, "id", None) or getattr(user, "email", None)
+        if user_id is None:
+            return None
+
+        result = await db.execute(
+            select(_CandidateSearch).where(_CandidateSearch.id == search_uuid)
+        )
+        row = result.scalar_one_or_none()
+        if row is None:
+            return None
+        if str(row.user_id) != str(user_id):
+            # Tenant isolation — outro usuário, não revelar.
+            return None
+
+        raw = row.discarded_candidates or []
+        out: list[DiscardedCandidateDTO] = []
+        for item in raw:
+            try:
+                out.append(DiscardedCandidateDTO(**item))
+            except Exception:
+                continue
+        return out
+    except Exception as exc:
+        logger.warning("[Task403] Failed to load discarded candidates: %s", exc)
+        return None
 
 
 async def enrich_and_filter_candidates(

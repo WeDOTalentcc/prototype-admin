@@ -9,8 +9,14 @@ import { LIAIcon } from"@/components/ui/lia-icon"
 import {
   Search, Clock, Repeat, Bookmark, Trash2, ChevronRight,
   Calendar, Users, Brain, Database, Cloud, FileText,
-  Binary, Target, AlertCircle, Check, X
+  Binary, Target, AlertCircle, Check, X, UserX, Loader2
 } from"lucide-react"
+// Task #403 — recuperar descartados (sem email/telefone) de uma execução
+// anterior persistida no backend.
+import {
+  fetchDiscardedForSearch,
+  type DiscardedCandidateDTO,
+} from"@/lib/api/candidate-search"
 import {
   Dialog,
   DialogContent,
@@ -124,6 +130,33 @@ export function HistoryTab({
   const [selectedItem, setSelectedItem] = useState<SearchHistoryItem | null>(null)
   const [saveName, setSaveName] = useState('')
   const [saveDescription, setSaveDescription] = useState('')
+  // Task #403 — cache local de descartados carregados sob demanda por searchId.
+  // 'loading' enquanto a chamada está em voo; null se 404/sem permissão.
+  const [discardedCache, setDiscardedCache] = useState<
+    Record<string, DiscardedCandidateDTO[] | 'loading' | null>
+  >({})
+
+  const handleLoadDiscarded = async (item: SearchHistoryItem, e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (!item.searchId) return
+    // toggle: se já tem dados, esconde; senão, carrega.
+    const existing = discardedCache[item.searchId]
+    if (Array.isArray(existing)) {
+      setDiscardedCache(prev => {
+        const next = { ...prev }
+        delete next[item.searchId!]
+        return next
+      })
+      return
+    }
+    if (existing === 'loading') return
+    setDiscardedCache(prev => ({ ...prev, [item.searchId!]: 'loading' }))
+    const res = await fetchDiscardedForSearch(item.searchId)
+    setDiscardedCache(prev => ({
+      ...prev,
+      [item.searchId!]: res ? res.discarded : null,
+    }))
+  }
 
   const groupedHistory = groupByDate(history)
 
@@ -243,7 +276,63 @@ export function HistoryTab({
                             {item.resultsCount} {item.resultsCount === 1 ? 'resultado' : 'resultados'}
                           </span>
                         )}
+                        {item.searchId && (item.discardedCount ?? 0) > 0 && (
+                          <button
+                            type="button"
+                            onClick={(e) => handleLoadDiscarded(item, e)}
+                            className="flex items-center gap-1 text-status-warning hover:underline"
+                            title="Ver candidatos descartados (sem email/telefone)"
+                          >
+                            {discardedCache[item.searchId] === 'loading' ? (
+                              <Loader2 className="w-3 h-3 animate-spin" />
+                            ) : (
+                              <UserX className="w-3 h-3" />
+                            )}
+                            {item.discardedCount} {item.discardedCount === 1 ? 'descartado' : 'descartados'}
+                          </button>
+                        )}
                       </div>
+                      {item.searchId && Array.isArray(discardedCache[item.searchId]) && (
+                        <div
+                          className="mt-2 rounded-md border border-lia-border-subtle bg-lia-bg-secondary p-2 space-y-1"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <p className="text-xs font-medium text-lia-text-secondary">
+                            Descartados nesta busca (sem email/telefone após enriquecimento):
+                          </p>
+                          {(discardedCache[item.searchId] as DiscardedCandidateDTO[]).length === 0 ? (
+                            <p className="text-xs text-lia-text-tertiary">Nenhum descartado registrado.</p>
+                          ) : (
+                            (discardedCache[item.searchId] as DiscardedCandidateDTO[]).slice(0, 8).map((d) => (
+                              <div key={d.id} className="text-xs text-lia-text-primary truncate">
+                                <span className="font-medium">{d.name}</span>
+                                {d.headline ? ` — ${d.headline}` : ''}
+                                {d.linkedin_url && (
+                                  <>
+                                    {' · '}
+                                    <a
+                                      href={d.linkedin_url}
+                                      target="_blank"
+                                      rel="noreferrer"
+                                      className="text-lia-text-secondary hover:underline"
+                                    >
+                                      LinkedIn
+                                    </a>
+                                  </>
+                                )}
+                              </div>
+                            ))
+                          )}
+                          {(discardedCache[item.searchId] as DiscardedCandidateDTO[]).length > 8 && (
+                            <p className="text-xs text-lia-text-tertiary">
+                              +{(discardedCache[item.searchId] as DiscardedCandidateDTO[]).length - 8} outros descartados
+                            </p>
+                          )}
+                        </div>
+                      )}
+                      {item.searchId && discardedCache[item.searchId] === null && (
+                        <p className="mt-1 text-xs text-status-error">Não foi possível carregar os descartados.</p>
+                      )}
                     </div>
 
                     <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none">

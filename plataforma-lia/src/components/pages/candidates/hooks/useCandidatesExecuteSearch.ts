@@ -194,6 +194,9 @@ export function useCandidatesExecuteSearch(deps: ExecuteSearchDeps) {
       let filteredNoContact = 0
       let enrichmentAttempted = 0
       let filteredCandidates: DiscardedCandidate[] = []
+      // Task #403: id da execução salva no backend — propagado para o histórico
+      // para que possamos recarregar a lista de descartados após refresh.
+      let persistedSearchId: string | null = null
 
       if (mode === 'similar' && metadata) {
         const similarUrl = metadata.similarProfileUrl || metadata.similarProfileUrls?.[0]
@@ -212,6 +215,7 @@ export function useCandidatesExecuteSearch(deps: ExecuteSearchDeps) {
             filteredNoContact = data.filtered_no_contact || 0
             enrichmentAttempted = data.enrichment_attempted || 0
             filteredCandidates = (data.filtered_candidates || []) as DiscardedCandidate[]
+            persistedSearchId = (data.search_id as string | null) ?? null
             if (data.credits_remaining !== undefined) setCreditsRemaining(() => data.credits_remaining)
             if (data.candidates?.length > 0) mappedCandidates = data.candidates.map((c: Record<string, unknown>) => mapCandidateToInternal(c))
           }
@@ -231,6 +235,7 @@ export function useCandidatesExecuteSearch(deps: ExecuteSearchDeps) {
           filteredNoContact = data.filtered_no_contact || 0
           enrichmentAttempted = data.enrichment_attempted || 0
           filteredCandidates = (data.filtered_candidates || []) as DiscardedCandidate[]
+          persistedSearchId = (data.search_id as string | null) ?? null
           if (data.credits_remaining !== undefined) setCreditsRemaining(() => data.credits_remaining)
           if (data.candidates?.length > 0) mappedCandidates = data.candidates.map((c: Record<string, unknown>) => mapCandidateToInternal(c))
         }
@@ -249,6 +254,7 @@ export function useCandidatesExecuteSearch(deps: ExecuteSearchDeps) {
           filteredNoContact = data.filtered_no_contact || 0
           enrichmentAttempted = data.enrichment_attempted || 0
           filteredCandidates = (data.filtered_candidates || []) as DiscardedCandidate[]
+          persistedSearchId = (data.search_id as string | null) ?? null
           if (data.credits_remaining !== undefined) setCreditsRemaining(() => data.credits_remaining)
           if (data.candidates?.length > 0) mappedCandidates = data.candidates.map((c: Record<string, unknown>) => mapCandidateToInternal(c))
         }
@@ -273,6 +279,7 @@ export function useCandidatesExecuteSearch(deps: ExecuteSearchDeps) {
         filteredNoContact = (searchResponse as { filtered_no_contact?: number }).filtered_no_contact || 0
         enrichmentAttempted = (searchResponse as { enrichment_attempted?: number }).enrichment_attempted || 0
         filteredCandidates = ((searchResponse as { filtered_candidates?: DiscardedCandidate[] }).filtered_candidates || [])
+        persistedSearchId = (searchResponse as { search_id?: string | null }).search_id ?? null
         totalCount = searchResponse.total_count || 0; localCount = searchResponse.local_count || 0; pearchCount = searchResponse.pearch_count || 0
         if (searchResponse.credits_remaining !== undefined && searchResponse.credits_remaining !== null) {
           setCreditsRemaining(() => searchResponse.credits_remaining as number)
@@ -294,7 +301,18 @@ export function useCandidatesExecuteSearch(deps: ExecuteSearchDeps) {
       else if (shouldUseHybridForSource) setCurrentSearchSource('hybrid')
       else setCurrentSearchSource('local')
 
-      talentFunnel.addToHistory({ query, mode: mode || 'natural', source: searchSource, entities, metadata, resultsCount: mappedCandidates.length })
+      talentFunnel.addToHistory({
+        query,
+        mode: mode || 'natural',
+        source: searchSource,
+        entities,
+        metadata,
+        resultsCount: mappedCandidates.length,
+        // Task #403 — guarda o id da execução e a contagem de descartados para
+        // permitir reidratação na página /candidates após refresh.
+        searchId: persistedSearchId,
+        discardedCount: filteredCandidates.length,
+      })
 
       const localCandidates = mappedCandidates.filter(c => !isGlobalSource(c.source, Boolean(c.pearch_profile_id)))
       const globalCandidates = mappedCandidates.filter(c => isGlobalSource(c.source, Boolean(c.pearch_profile_id)))

@@ -124,6 +124,31 @@ export interface SearchResponse {
   // o enriquecimento (Apify) não retornou email nem telefone — usada na UI
   // para visualização e exportação CSV.
   filtered_candidates?: DiscardedCandidateDTO[]
+  // Task #403: id da execução persistida em candidate_searches. O frontend
+  // grava esse id no histórico para conseguir recarregar os descartados via
+  // GET /search/{id}/discarded após refresh ou em outra sessão.
+  search_id?: string | null
+}
+
+export interface DiscardedListResponse {
+  search_id: string
+  discarded: DiscardedCandidateDTO[]
+  count: number
+}
+
+/** Task #403 — recupera os descartados de uma execução prévia. */
+export async function fetchDiscardedForSearch(
+  searchId: string,
+): Promise<DiscardedListResponse | null> {
+  try {
+    const response = await fetch(
+      `${API_BASE}/api/backend-proxy/search/${encodeURIComponent(searchId)}/discarded`,
+    )
+    if (!response.ok) return null
+    return (await response.json()) as DiscardedListResponse
+  } catch {
+    return null
+  }
 }
 
 export interface DiscardedCandidateDTO {

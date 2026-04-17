@@ -23,6 +23,7 @@ from ._shared import (
     get_db,
     get_pearch_service,
     logger,
+    persist_search_with_discards,
 )
 
 router = APIRouter()
@@ -113,6 +114,8 @@ class ArchetypeSearchResponse(BaseModel):
     filtered_no_contact: int = 0
     enrichment_attempted: int = 0
     filtered_candidates: list[DiscardedCandidateDTO] = Field(default_factory=list)
+    # Task #403 — id em ``candidate_searches`` para recuperar descartados depois.
+    search_id: str | None = None
 
 
 @router.get("/archetypes", response_model=ArchetypeListResponse)
@@ -878,6 +881,7 @@ async def search_by_archetype(
     db: AsyncSession = Depends(get_db)
 ,
     pearch_svc: PearchService = Depends(get_pearch_service),
+    current_user: User = Depends(get_current_user_or_demo),
 ):
     """
     Executa busca de candidatos usando um arquétipo específico.
@@ -1050,6 +1054,19 @@ async def search_by_archetype(
             created_at=archetype.created_at.isoformat() if archetype.created_at else None
         )
         
+        _search_id = await persist_search_with_discards(
+            db,
+            user=current_user,
+            query=archetype.query,
+            search_source=("hybrid" if request.search_pearch else "local"),
+            local_count=search_result.local_count,
+            pearch_count=search_result.pearch_count,
+            total_count=len(candidates),
+            used_global_search=bool(request.search_pearch),
+            discarded=_enrich_stats.filtered_candidates,
+            search_filters={"mode": "archetype", "archetype_id": archetype_id},
+        )
+
         return ArchetypeSearchResponse(
             archetype=archetype_dto,
             query=archetype.query,
@@ -1064,6 +1081,7 @@ async def search_by_archetype(
             filtered_no_contact=_enrich_stats.filtered_no_contact,
             enrichment_attempted=_enrich_stats.enrichment_attempted,
             filtered_candidates=_enrich_stats.filtered_candidates,
+            search_id=_search_id,
         )
     
     except HTTPException:

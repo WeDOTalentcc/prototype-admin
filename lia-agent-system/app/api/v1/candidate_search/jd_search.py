@@ -14,8 +14,10 @@ from ._shared import (
     SearchResponseDTO,
     SearchType,
     enrich_and_filter_candidates,
+    get_current_user_or_demo,
     get_db,
     get_pearch_service,
+    persist_search_with_discards,
 )
 
 router = APIRouter()
@@ -53,6 +55,8 @@ class JobDescriptionSearchResponse(BaseModel):
     filtered_no_contact: int = 0
     enrichment_attempted: int = 0
     filtered_candidates: list[DiscardedCandidateDTO] = Field(default_factory=list)
+    # Task #403 — id em ``candidate_searches`` para recuperar descartados depois.
+    search_id: str | None = None
 
 
 @router.post("/by-job-description", response_model=JobDescriptionSearchResponse)
@@ -60,6 +64,7 @@ async def search_by_job_description(
     request: JobDescriptionSearchRequest,
     db: AsyncSession = Depends(get_db),
     pearch_svc: PearchService = Depends(get_pearch_service),
+    current_user=Depends(get_current_user_or_demo),
 ):
     """
     Busca candidatos a partir de uma descrição de vaga completa.
@@ -158,7 +163,20 @@ async def search_by_job_description(
             candidates.append(CandidateSearchResultDTO.from_profile(profile, "pearch"))
         
         candidates, _enrich_stats = await enrich_and_filter_candidates(db, candidates)
-        
+
+        _search_id = await persist_search_with_discards(
+            db,
+            user=current_user,
+            query=generated_query,
+            search_source=("hybrid" if request.search_pearch else "local"),
+            local_count=result.local_count,
+            pearch_count=result.pearch_count,
+            total_count=len(candidates),
+            used_global_search=bool(request.search_pearch),
+            discarded=_enrich_stats.filtered_candidates,
+            search_filters={"mode": "jd", "extracted": extracted.model_dump()},
+        )
+
         return JobDescriptionSearchResponse(
             extracted_criteria=extracted,
             query_generated=generated_query,
@@ -171,6 +189,7 @@ async def search_by_job_description(
             filtered_no_contact=_enrich_stats.filtered_no_contact,
             enrichment_attempted=_enrich_stats.enrichment_attempted,
             filtered_candidates=_enrich_stats.filtered_candidates,
+            search_id=_search_id,
         )
     
     except Exception as e:
@@ -185,6 +204,7 @@ async def refine_search(
     db: AsyncSession = Depends(get_db)
 ,
     pearch_svc: PearchService = Depends(get_pearch_service),
+    current_user=Depends(get_current_user_or_demo),
 ):
     """
     Refina uma busca existente usando o thread_id.
@@ -204,7 +224,20 @@ async def refine_search(
         ]
         
         candidates, _enrich_stats = await enrich_and_filter_candidates(db, candidates)
-        
+
+        _search_id = await persist_search_with_discards(
+            db,
+            user=current_user,
+            query=additional_query,
+            search_source="hybrid",
+            local_count=0,
+            pearch_count=len(candidates),
+            total_count=len(candidates),
+            used_global_search=True,
+            discarded=_enrich_stats.filtered_candidates,
+            search_filters={"mode": "refine", "thread_id": thread_id},
+        )
+
         return SearchResponseDTO(
             query=additional_query,
             thread_id=result.thread_id,
@@ -216,6 +249,7 @@ async def refine_search(
             filtered_no_contact=_enrich_stats.filtered_no_contact,
             enrichment_attempted=_enrich_stats.enrichment_attempted,
             filtered_candidates=_enrich_stats.filtered_candidates,
+            search_id=_search_id,
         )
     
     except ValueError as e:
@@ -234,6 +268,7 @@ async def search_local_only(
     db: AsyncSession = Depends(get_db)
 ,
     pearch_svc: PearchService = Depends(get_pearch_service),
+    current_user=Depends(get_current_user_or_demo),
 ):
     """
     Busca APENAS no banco de dados local (sem custo de créditos).
@@ -262,7 +297,25 @@ async def search_local_only(
         ]
         
         candidates, _enrich_stats = await enrich_and_filter_candidates(db, candidates)
-        
+
+        _search_id = await persist_search_with_discards(
+            db,
+            user=current_user,
+            query=query,
+            search_source="local",
+            local_count=len(candidates),
+            pearch_count=0,
+            total_count=len(candidates),
+            used_global_search=False,
+            discarded=_enrich_stats.filtered_candidates,
+            search_filters={
+                "mode": "local",
+                "industries": industries_list or [],
+                "require_email": require_email,
+                "require_phone": require_phone,
+            },
+        )
+
         return SearchResponseDTO(
             query=query,
             candidates=candidates,
@@ -271,6 +324,7 @@ async def search_local_only(
             filtered_no_contact=_enrich_stats.filtered_no_contact,
             enrichment_attempted=_enrich_stats.enrichment_attempted,
             filtered_candidates=_enrich_stats.filtered_candidates,
+            search_id=_search_id,
         )
     
     except Exception as e:

@@ -43,6 +43,7 @@ from ._shared import (
     _normalize_priority,
     assert_resource_ownership,
     enrich_and_filter_candidates,
+    persist_search_with_discards,
     get_current_user_or_demo,
     get_cv_parser_service,
     get_db,
@@ -78,6 +79,8 @@ class SimilarSearchResponse(BaseModel):
     filtered_no_contact: int = 0
     enrichment_attempted: int = 0
     filtered_candidates: list[DiscardedCandidateDTO] = Field(default_factory=list)
+    # Task #403 — id em ``candidate_searches`` para recuperar descartados depois.
+    search_id: str | None = None
 
 
 @router.post("/similar", response_model=SimilarSearchResponse)
@@ -86,6 +89,7 @@ async def search_similar_candidates(
     db: AsyncSession = Depends(get_db)
 ,
     pearch_svc: PearchService = Depends(get_pearch_service),
+    current_user: User = Depends(get_current_user_or_demo),
 ):
     """
     Encontra candidatos similares a um perfil específico.
@@ -181,7 +185,24 @@ async def search_similar_candidates(
             candidates.append(CandidateSearchResultDTO.from_profile(profile, "pearch"))
         
         candidates, _enrich_stats = await enrich_and_filter_candidates(db, candidates)
-        
+
+        _search_id = await persist_search_with_discards(
+            db,
+            user=current_user,
+            query=generated_query,
+            search_source=("hybrid" if request.search_pearch else "local"),
+            local_count=result.local_count,
+            pearch_count=result.pearch_count,
+            total_count=len(candidates),
+            used_global_search=bool(request.search_pearch),
+            discarded=_enrich_stats.filtered_candidates,
+            search_filters={
+                "mode": "similar",
+                "linkedin_url": request.linkedin_url,
+                "candidate_id": request.candidate_id,
+            },
+        )
+
         return SimilarSearchResponse(
             reference_profile=reference_profile,
             query_generated=generated_query,
@@ -194,6 +215,7 @@ async def search_similar_candidates(
             filtered_no_contact=_enrich_stats.filtered_no_contact,
             enrichment_attempted=_enrich_stats.enrichment_attempted,
             filtered_candidates=_enrich_stats.filtered_candidates,
+            search_id=_search_id,
         )
     
     except HTTPException:

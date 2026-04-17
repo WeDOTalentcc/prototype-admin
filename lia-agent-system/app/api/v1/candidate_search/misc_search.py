@@ -10,17 +10,49 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ._shared import (
     CVParserService,
     CandidateSearchResultDTO,
+    DiscardedCandidateDTO,
     HybridSearchRequest,
     PearchService,
     SearchType,
+    get_current_user_or_demo,
     get_cv_parser_service,
     get_db,
     get_pearch_service,
+    load_discarded_for_search,
     logger,
     search_analytics_service,
 )
 
 router = APIRouter()
+
+
+class DiscardedListResponse(BaseModel):
+    """Task #403 — payload do GET /search/{search_id}/discarded."""
+    search_id: str
+    discarded: list[DiscardedCandidateDTO] = Field(default_factory=list)
+    count: int = 0
+
+
+@router.get("/{search_id}/discarded", response_model=DiscardedListResponse)
+async def get_discarded_for_search(
+    search_id: str,
+    db: AsyncSession = Depends(get_db),
+    current_user=Depends(get_current_user_or_demo),
+):
+    """Task #403 — recupera os candidatos descartados (sem email/telefone)
+    de uma execução de busca anterior. Usado pela página /candidates ao
+    recarregar o histórico após refresh.
+
+    Retorna 404 se o search_id não existir ou pertencer a outro usuário.
+    """
+    discarded = await load_discarded_for_search(db, user=current_user, search_id=search_id)
+    if discarded is None:
+        raise HTTPException(status_code=404, detail="Search not found")
+    return DiscardedListResponse(
+        search_id=search_id,
+        discarded=discarded,
+        count=len(discarded),
+    )
 
 class CVSearchResultDTO(BaseModel):
     """Result from CV-based search."""

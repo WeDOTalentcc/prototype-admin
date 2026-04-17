@@ -13,6 +13,11 @@ export interface SearchHistoryItem {
   resultsCount?: number
   entities?: Record<string, unknown>
   metadata?: Record<string, unknown>
+  // Task #403: id da execução persistida no backend (candidate_searches.id) +
+  // contagem de descartados, usados para recarregar a lista de descartados
+  // (sem email/telefone) via GET /search/{searchId}/discarded.
+  searchId?: string | null
+  discardedCount?: number
 }
 
 export interface SavedSearch {
