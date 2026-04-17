@@ -1,4 +1,5 @@
 import { BACKEND_URL, getAuthHeaders } from './base'
+import { throwLiaApiError } from './session'
 import type {
   GenerateQuestionsRequest,
   GenerateQuestionsResponse,
@@ -19,16 +20,24 @@ import type {
   RegenerateWSIQuestionsResponse,
 } from './types'
 
+// Bug #303 / Task #305: every `/api/lia/*` call below funnels its non-OK
+// response through `throwLiaApiError`, which:
+//   - attaches `err.status` so consumers can branch on 401/403 vs 5xx,
+//   - preserves `detail`/`error` from the backend payload,
+//   - on 401/403 fires the same relogin redirect used by `useSessionRefresh`
+//     (`/login?reason=session_expired`), preventing the Next dev overlay
+//     and silent failures in production when the WorkOS session expires.
+// `updateScreeningStatus` and `regenerateWSIQuestions` are intentionally left
+// alone: they hit `BACKEND_URL` directly, outside the middleware gate that
+// produces the 401 we are normalizing.
+
 export async function wsiGenerateQuestions(request: GenerateQuestionsRequest): Promise<GenerateQuestionsResponse> {
   const response = await fetch(`/api/lia/api/wsi/generate-questions`, {
     method: 'POST',
     headers: getAuthHeaders(),
     body: JSON.stringify(request),
   })
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ detail: response.statusText }))
-    throw new Error(error.detail || 'Failed to generate WSI questions')
-  }
+  if (!response.ok) await throwLiaApiError(response, 'Failed to generate WSI questions')
   return response.json()
 }
 
@@ -38,10 +47,7 @@ export async function wsiAnalyzeResponse(request: AnalyzeResponseRequest): Promi
     headers: getAuthHeaders(),
     body: JSON.stringify(request),
   })
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ detail: response.statusText }))
-    throw new Error(error.detail || 'Failed to analyze response')
-  }
+  if (!response.ok) await throwLiaApiError(response, 'Failed to analyze response')
   return response.json()
 }
 
@@ -51,10 +57,7 @@ export async function wsiCalculateScore(request: CalculateWSIRequest): Promise<C
     headers: getAuthHeaders(),
     body: JSON.stringify(request),
   })
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ detail: response.statusText }))
-    throw new Error(error.detail || 'Failed to calculate WSI')
-  }
+  if (!response.ok) await throwLiaApiError(response, 'Failed to calculate WSI')
   return response.json()
 }
 
@@ -62,9 +65,7 @@ export async function wsiGetSession(sessionId: string): Promise<WSISessionRespon
   const response = await fetch(`/api/lia/api/wsi/sessions/${sessionId}`, {
     headers: getAuthHeaders(),
   })
-  if (!response.ok) {
-    throw new Error(`Failed to get WSI session: ${response.statusText}`)
-  }
+  if (!response.ok) await throwLiaApiError(response, 'Failed to get WSI session')
   return response.json()
 }
 
@@ -72,9 +73,7 @@ export async function wsiGetCandidateResults(candidateId: string, limit: number 
   const response = await fetch(`/api/lia/api/wsi/results/candidate/${candidateId}?limit=${limit}`, {
     headers: getAuthHeaders(),
   })
-  if (!response.ok) {
-    throw new Error(`Failed to get candidate WSI results: ${response.statusText}`)
-  }
+  if (!response.ok) await throwLiaApiError(response, 'Failed to get candidate WSI results')
   return response.json()
 }
 
@@ -82,9 +81,7 @@ export async function wsiGetResultDetails(resultId: string): Promise<WSIResultDe
   const response = await fetch(`/api/lia/api/wsi/results/${resultId}/details`, {
     headers: getAuthHeaders(),
   })
-  if (!response.ok) {
-    throw new Error(`Failed to get WSI result details: ${response.statusText}`)
-  }
+  if (!response.ok) await throwLiaApiError(response, 'Failed to get WSI result details')
   return response.json()
 }
 
@@ -92,9 +89,7 @@ export async function wsiGetVacancyRanking(jobVacancyId: string): Promise<WSIVac
   const response = await fetch(`/api/lia/api/wsi/ranking/${jobVacancyId}`, {
     headers: getAuthHeaders(),
   })
-  if (!response.ok) {
-    throw new Error(`Failed to get vacancy ranking: ${response.statusText}`)
-  }
+  if (!response.ok) await throwLiaApiError(response, 'Failed to get vacancy ranking')
   return response.json()
 }
 
@@ -102,9 +97,7 @@ export async function wsiGetCandidateRanking(candidateId: string, jobVacancyId: 
   const response = await fetch(`/api/lia/api/wsi/candidate/${candidateId}/ranking/${jobVacancyId}`, {
     headers: getAuthHeaders(),
   })
-  if (!response.ok) {
-    throw new Error(`Failed to get candidate ranking: ${response.statusText}`)
-  }
+  if (!response.ok) await throwLiaApiError(response, 'Failed to get candidate ranking')
   return response.json()
 }
 
@@ -114,10 +107,7 @@ export async function wsiStartVoiceScreening(request: StartVoiceScreeningRequest
     headers: getAuthHeaders(),
     body: JSON.stringify(request),
   })
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ detail: response.statusText }))
-    throw new Error(error.detail || 'Failed to start voice screening')
-  }
+  if (!response.ok) await throwLiaApiError(response, 'Failed to start voice screening')
   return response.json()
 }
 
@@ -125,9 +115,7 @@ export async function wsiGetVoiceScreeningStatus(sessionId: string): Promise<Voi
   const response = await fetch(`/api/lia/api/wsi/voice-screening/${sessionId}`, {
     headers: getAuthHeaders(),
   })
-  if (!response.ok) {
-    throw new Error(`Failed to get voice screening status: ${response.statusText}`)
-  }
+  if (!response.ok) await throwLiaApiError(response, 'Failed to get voice screening status')
   return response.json()
 }
 
@@ -146,48 +134,12 @@ export async function updateScreeningStatus(jobId: string, status: string, extra
   return response.json()
 }
 
-// Bug #303: 401 do middleware no `/api/lia/*` (sessão expirada) era convertido
-// num `Error` cru, estourando no overlay do Next. Agora:
-//   - Anexa `err.status` para que consumers possam diferenciar 401/403 de 5xx.
-//   - Em 401, dispara o mesmo fluxo de relogin usado pelo restante do app
-//     (mesmo handler do `useSessionRefresh` → `/login?reason=session_expired`),
-//     evitando que o usuário fique preso numa página sem dados.
-//   - Preserva `detail` do backend quando presente.
-//
-// As demais funções deste módulo continuam com o tratamento legado; só foi
-// normalizado o caminho usado pelo kanban (escopo da task #303).
-function handleSessionExpiredRedirect(): void {
-  if (typeof window === 'undefined') return
-  if (window.location.pathname.startsWith('/login')) return
-  window.location.href = '/login?reason=session_expired'
-}
-
-async function buildWsiError(response: Response, fallbackMessage: string): Promise<Error & { status: number }> {
-  let message = fallbackMessage
-  try {
-    const body = await response.json()
-    if (body?.detail && typeof body.detail === 'string') message = body.detail
-    else if (body?.error && typeof body.error === 'string') message = body.error
-  } catch {
-    if (response.statusText) message = `${fallbackMessage}: ${response.statusText}`
-  }
-  const err = new Error(message) as Error & { status: number }
-  err.status = response.status
-  return err
-}
-
 export async function wsiGetCandidatesScores(jobVacancyId: string): Promise<WSICandidatesScores> {
   const response = await fetch(`/api/lia/api/wsi/candidates/${jobVacancyId}/scores`, {
     headers: getAuthHeaders(),
     credentials: 'include',
   })
-  if (!response.ok) {
-    const err = await buildWsiError(response, 'Failed to get candidates WSI scores')
-    if (response.status === 401 || response.status === 403) {
-      handleSessionExpiredRedirect()
-    }
-    throw err
-  }
+  if (!response.ok) await throwLiaApiError(response, 'Failed to get candidates WSI scores')
   return response.json()
 }
 
@@ -196,10 +148,7 @@ export async function wsiTriggerFeedback(resultId: string): Promise<Record<strin
     method: 'POST',
     headers: getAuthHeaders(),
   })
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ detail: response.statusText }))
-    throw new Error(error.detail || 'Failed to trigger feedback')
-  }
+  if (!response.ok) await throwLiaApiError(response, 'Failed to trigger feedback')
   return response.json()
 }
 
@@ -207,10 +156,7 @@ export async function wsiGetFeedbackStatus(resultId: string): Promise<Record<str
   const response = await fetch(`/api/lia/api/wsi/results/${resultId}/feedback-status`, {
     headers: getAuthHeaders(),
   })
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ detail: response.statusText }))
-    throw new Error(error.detail || 'Failed to get feedback status')
-  }
+  if (!response.ok) await throwLiaApiError(response, 'Failed to get feedback status')
   return response.json()
 }
 
@@ -245,10 +191,7 @@ export async function generateJobScreeningQuestions(request: {
     headers: getAuthHeaders(),
     body: JSON.stringify(request),
   })
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ detail: response.statusText }))
-    throw new Error(error.detail || 'Failed to generate screening questions')
-  }
+  if (!response.ok) await throwLiaApiError(response, 'Failed to generate screening questions')
   return response.json()
 }
 
