@@ -143,7 +143,7 @@ class AgenticLoop:
                         self._tool_executor.execute(
                             tool_name=tc.name,
                             parameters=tc.parameters,
-                            agent_type="agentic_loop",
+                            agent_type="orchestrator",
                             context=exec_context,
                         ),
                         timeout=15.0,

@@ -14,10 +14,12 @@ export async function POST(request: NextRequest) {
     if (!bodyResult.success) return bodyResult.response
 
     const body = bodyResult.data
-    
+    // LIA-CHAT-422: backend expects field "content", proxy may receive "message"
+    const mappedBody = { ...body, content: (body as any).content ?? (body as any).message }
+
     const response = await proxyFetchWithRetry(request, '/api/v1/chat', {
       method: 'POST',
-      body: JSON.stringify(body),
+      body: JSON.stringify(mappedBody),
     })
 
     if (!response.ok) {
