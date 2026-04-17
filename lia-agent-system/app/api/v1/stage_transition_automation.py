@@ -18,10 +18,63 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
 from app.domains.automation.services.stage_transition_automation import SubStatusPredictor, stage_transition_service
+from app.shared.compliance.audit_service import audit_service
+from app.shared.compliance.fairness_guard import FairnessGuard
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["Stage Transition Automation"])
+
+_fairness_guard = FairnessGuard()
+
+
+async def _audit_automation_transition(
+    *,
+    candidate_id: str,
+    job_vacancy_id: str | None,
+    from_stage: str | None,
+    to_stage: str,
+    substatus: str | None,
+    reason: str | None,
+    action: str,
+) -> None:
+    """Best-effort audit log for an automatic transition decision.
+
+    Origin is ``automation_engine`` so these entries can be filtered
+    apart from human-driven actions in the audit dashboard.
+    """
+    try:
+        reasoning: list[Any] = [
+            f"automation action: {action}",
+            f"from_stage: {from_stage}",
+            f"to_stage: {to_stage}",
+        ]
+        criteria_used = ["from_stage", "to_stage"]
+        if substatus:
+            reasoning.append(f"substatus: {substatus}")
+            criteria_used.append("substatus")
+        if reason:
+            reasoning.append(f"reason: {reason[:500]}")
+            criteria_used.append("reason")
+
+        decision_type = "reject_candidate" if to_stage == "rejected" else "move_stage"
+        await audit_service.log_decision(
+            company_id="unknown",
+            agent_name="automation_engine",
+            decision_type=decision_type,
+            action=action,
+            decision="executed",
+            reasoning=reasoning,
+            criteria_used=criteria_used,
+            candidate_id=candidate_id,
+            job_vacancy_id=job_vacancy_id,
+            human_review_required=False,
+        )
+    except Exception as exc:
+        logger.warning(
+            "stage_transition_automation: audit log failed action=%s candidate=%s err=%s",
+            action, candidate_id, exc,
+        )
 
 
 async def get_db_session():
@@ -400,6 +453,15 @@ async def bulk_predict_substatus(request: BulkPredictSubStatusRequest):
                 confidence=result.get('confidence', 0.0),
                 reasoning=result.get('reasoning', '')
             ))
+            await _audit_automation_transition(
+                candidate_id=candidate.id,
+                job_vacancy_id=request.job_context.id if request.job_context else None,
+                from_stage=request.from_stage,
+                to_stage=request.to_stage,
+                substatus=result.get('predicted_substatus'),
+                reason=result.get('reasoning'),
+                action="bulk_predict_substatus",
+            )
         except Exception as e:
             logger.error(f"Error predicting substatus for candidate {candidate.id}: {e}")
             predictions.append(CandidatePrediction(
@@ -424,6 +486,7 @@ async def bulk_generate_messages(request: BulkGenerateMessagesRequest):
     to produce individualized communication.
     """
     messages: list[CandidateMessage] = []
+    blocked: list[dict[str, Any]] = []
 
     for candidate in request.candidates:
         substatus = request.substatus_map.get(candidate.id, 'profile_not_aligned')
@@ -437,14 +500,38 @@ async def bulk_generate_messages(request: BulkGenerateMessagesRequest):
                 channel=request.channel
             )
 
+            body_text = result.get('body', '') or ''
+            fg_result = _fairness_guard.check(body_text)
+            if fg_result.is_blocked:
+                logger.warning(
+                    "stage_transition_automation: FairnessGuard blocked generated body candidate=%s category=%s terms=%s",
+                    candidate.id, fg_result.category, fg_result.blocked_terms,
+                )
+                blocked.append({
+                    "candidate_id": candidate.id,
+                    "category": fg_result.category,
+                    "blocked_terms": fg_result.blocked_terms,
+                    "message": fg_result.educational_message,
+                })
+                continue
+
             ai_personalized = result.get('metadata', {}).get('generated_by', '') == 'lia_claude'
 
             messages.append(CandidateMessage(
                 candidate_id=candidate.id,
                 subject=result.get('subject'),
-                body=result.get('body', ''),
+                body=body_text,
                 ai_personalized=ai_personalized
             ))
+            await _audit_automation_transition(
+                candidate_id=candidate.id,
+                job_vacancy_id=request.job_context.id,
+                from_stage=None,
+                to_stage=request.to_stage,
+                substatus=substatus,
+                reason=f"channel={request.channel};message_type={request.message_type}",
+                action="bulk_generate_messages",
+            )
         except Exception as e:
             logger.error(f"Error generating message for candidate {candidate.id}: {e}")
             candidate_name = candidate.name.split()[0] if candidate.name else 'Candidato'
@@ -455,6 +542,17 @@ async def bulk_generate_messages(request: BulkGenerateMessagesRequest):
                 body=f'Olá {candidate_name},\n\nAgradecemos sua participação no processo seletivo para {job_title}. Entraremos em contato em breve.\n\nAtenciosamente,\nEquipe WeDoTalent',
                 ai_personalized=False
             ))
+
+    if blocked:
+        raise HTTPException(
+            status_code=422,
+            detail={
+                "error": "fairness_blocked",
+                "message": "One or more generated messages were blocked by FairnessGuard. Review and edit the offending content before resending.",
+                "blocked": blocked,
+                "needs_review": [b["candidate_id"] for b in blocked],
+            },
+        )
 
     return BulkGenerateMessagesResponse(messages=messages)
 
@@ -520,12 +618,22 @@ async def bulk_predict_substatus_from_db(
         
         predictions = []
         for r in results:
+            vc_id = r.get('vacancy_candidate_id', '')
             predictions.append(DbCandidatePrediction(
-                vacancy_candidate_id=r.get('vacancy_candidate_id', ''),
+                vacancy_candidate_id=vc_id,
                 predicted_substatus=r.get('predicted_substatus', 'profile_not_aligned'),
                 confidence=r.get('confidence', 0.0),
                 reasoning=r.get('reasoning', ''),
             ))
+            await _audit_automation_transition(
+                candidate_id=vc_id,
+                job_vacancy_id=None,
+                from_stage=request.from_stage,
+                to_stage=request.to_stage,
+                substatus=r.get('predicted_substatus'),
+                reason=r.get('reasoning'),
+                action="bulk_predict_substatus_from_db",
+            )
         
         return DbPredictSubStatusResponse(
             predictions=predictions,
