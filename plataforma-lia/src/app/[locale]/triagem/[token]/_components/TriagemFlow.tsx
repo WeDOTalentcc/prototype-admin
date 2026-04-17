@@ -266,12 +266,26 @@ export function TriagemFlow({ hook }: TriagemFlowProps) {
           mode="whatsapp"
           open={whatsappModalOpen}
           onClose={() => setWhatsappModalOpen(false)}
-          onConfirm={(e164: string) => {
-            const digits = e164.replace(/\D/g, "")
-            const text = `Olá LIA, gostaria de iniciar minha triagem para ${config.jobTitle}.`
-            const url = `https://wa.me/${digits}?text=${encodeURIComponent(text)}`
-            window.open(url, "_blank", "noopener,noreferrer")
-            setWhatsappModalOpen(false)
+          onConfirm={async (e164: string) => {
+            try {
+              const resp = await fetch(
+                `/api/backend-proxy/triagem/${encodeURIComponent(token)}/whatsapp-initiate`,
+                {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ phone_number: e164 }),
+                }
+              )
+              const data = await resp.json().catch(() => ({}))
+              if (!resp.ok || !data?.wa_url) {
+                console.error("[Triagem] whatsapp-initiate failed", data)
+                return
+              }
+              window.open(data.wa_url, "_blank", "noopener,noreferrer")
+              setWhatsappModalOpen(false)
+            } catch (err) {
+              console.error("[Triagem] whatsapp-initiate error", err)
+            }
           }}
           initialPhone={config?.candidatePhone ?? null}
         />

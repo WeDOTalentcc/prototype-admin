@@ -502,9 +502,24 @@ export function SCMSectionConfiguracoes({
               </div>
             </div>
 
-            {/* Channels editing */}
+            {/* Channels editing — Task #425: master toggle parity with preview */}
             <div>
-              <h3 className="text-xs font-semibold text-lia-text-tertiary uppercase tracking-wider px-1 mb-3">Canais Habilitados</h3>
+              <div className="flex items-center justify-between px-1 mb-3">
+                <h3 className="text-xs font-semibold text-lia-text-tertiary uppercase tracking-wider">Canais Habilitados</h3>
+                {(() => {
+                  const masterOn = screeningConfig?.channels_master_enabled !== false
+                  return (
+                    <span className={`text-micro font-medium px-2 py-0.5 rounded-full border ${masterOn ? 'border-lia-border-subtle text-lia-text-secondary bg-lia-bg-secondary' : 'border-status-error/30 text-status-error bg-status-error/10'}`}>
+                      {masterOn ? 'Triagem ativa' : 'Triagem desligada'}
+                    </span>
+                  )
+                })()}
+              </div>
+              {screeningConfig?.channels_master_enabled === false && (
+                <div className="mb-2 px-3 py-2 rounded-md border border-status-warning/30 bg-status-warning/10 text-micro text-status-warning">
+                  O master de canais está desligado. Ative o status da Triagem acima para que os candidatos possam usar qualquer canal.
+                </div>
+              )}
               <div className="border border-lia-border-subtle rounded-xl divide-y divide-lia-border-subtle">
                 {([
                   { key: 'chat_web' as const, label: 'Chat Web', icon: Globe },

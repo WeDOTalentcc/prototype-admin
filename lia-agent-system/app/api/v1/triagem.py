@@ -60,6 +60,16 @@ async def get_triagem_session(
                 status_code=410,
                 detail="Este link de triagem expirou. Solicite um novo convite ao recrutador.",
             )
+        if error == "reopen_limit_exceeded":
+            limit = config.get("limit", 2)
+            count = config.get("reopen_count", limit)
+            raise HTTPException(
+                status_code=410,
+                detail=(
+                    f"Esta triagem já foi retomada {count}x e atingiu o limite de "
+                    f"{limit} reaberturas. Procure o recrutador para liberar uma nova tentativa."
+                ),
+            )
 
     return JSONResponse(content=config)
 
@@ -273,8 +283,115 @@ async def start_triagem(
 
     if result.get("error") == "not_found":
         raise HTTPException(status_code=404, detail="Sessão não encontrada")
+    if result.get("error") == "reopen_limit_exceeded":
+        raise HTTPException(
+            status_code=410,
+            detail=result.get(
+                "message",
+                "Esta triagem atingiu o limite de reaberturas. Procure o recrutador.",
+            ),
+        )
+    if result.get("error") == "session_completed":
+        raise HTTPException(
+            status_code=409,
+            detail=result.get("message", "Esta triagem já foi finalizada e não pode ser reaberta."),
+        )
 
     return JSONResponse(content=result)
+
+
+class WhatsAppInitiateRequest(BaseModel):
+    phone_number: str
+
+
+@router.post("/{token}/whatsapp-initiate", response_model=None)
+async def whatsapp_initiate(
+    token: str,
+    request: WhatsAppInitiateRequest,
+    repo: TriagemRepository = Depends(get_triagem_repo),
+    triagem_svc: TriagemSessionService = Depends(get_triagem_service),
+):
+    """Task #425 — backend-mediated WhatsApp channel selection.
+
+    Validates the candidate token (including reopen cap), records that the
+    candidate chose the WhatsApp channel on the session metadata, and returns
+    the wa.me URL so the frontend can open the WhatsApp conversation. This
+    keeps channel orchestration server-side instead of bypassing the backend.
+    """
+    validation = await triagem_svc.validate_token(repo.db, token)
+    if not validation.get("valid"):
+        error = validation.get("error")
+        if error == "not_found":
+            raise HTTPException(status_code=404, detail="Token inválido")
+        if error == "expired":
+            raise HTTPException(status_code=410, detail="Link expirado")
+        if error == "reopen_limit_exceeded":
+            limit = validation.get("limit", 2)
+            count = validation.get("reopen_count", limit)
+            raise HTTPException(
+                status_code=410,
+                detail=(
+                    f"Esta triagem já foi retomada {count}x e atingiu o limite de "
+                    f"{limit} reaberturas. Procure o recrutador."
+                ),
+            )
+    if validation.get("completed"):
+        raise HTTPException(status_code=409, detail="Triagem já foi concluída")
+
+    # Server-side channel gating: master toggle + WhatsApp must be enabled.
+    config = await triagem_svc.get_session_config(repo.db, token)
+    if not config or not config.get("valid"):
+        raise HTTPException(status_code=404, detail="Sessão não encontrada")
+    job_info = config.get("job") or {}
+    if not job_info.get("whatsappEnabled", False):
+        raise HTTPException(
+            status_code=403,
+            detail="O canal WhatsApp não está habilitado para esta vaga. Escolha outro canal.",
+        )
+
+    raw = re.sub(r"\D", "", request.phone_number or "")
+    if len(raw) < 10:
+        raise HTTPException(status_code=400, detail="Telefone inválido")
+    if not raw.startswith("55"):
+        raw = "55" + raw
+
+    job_title = job_info.get("title") or "a vaga"
+    company_info = config.get("company") or {}
+    company_name = company_info.get("name") or "a empresa"
+    candidate_info = config.get("candidate") or {}
+    candidate_name = candidate_info.get("name") or "candidato(a)"
+    from urllib.parse import quote as _urlquote
+    message = (
+        f"Olá! Sou a LIA, assistente da {company_name}. Vamos continuar a sua "
+        f"triagem para a vaga de {job_title}, {candidate_name}."
+    )
+    wa_url = f"https://wa.me/{raw}?text={_urlquote(message)}"
+
+    # Persist channel selection on session metadata (best-effort).
+    try:
+        from sqlalchemy import select as _select
+        from lia_models.triagem import TriagemSession as _TS
+        res = await repo.db.execute(_select(_TS).where(_TS.token == token))
+        sess = res.scalar_one_or_none()
+        if sess is not None:
+            meta = dict(sess.metadata_json or {})
+            meta["candidate_selected_channel"] = "whatsapp"
+            meta["candidate_selected_phone"] = f"+{raw}"
+            sess.metadata_json = meta
+            await repo.db.flush()
+    except Exception as exc:  # pragma: no cover - best-effort persistence
+        logger.warning(
+            f"[Triagem] whatsapp-initiate could not persist channel selection: {exc}"
+        )
+
+    return JSONResponse(
+        content={
+            "success": True,
+            "channel": "whatsapp",
+            "phone": f"+{raw}",
+            "wa_url": wa_url,
+        }
+    )
 
 
 @router.post("/{token}/audio", response_model=None)

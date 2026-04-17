@@ -133,7 +133,7 @@ def _criterion_met(criterion: str, response: str, resp_lower: str) -> bool:
         return True
 
     # --- CONFIRMATION/HITL ---
-    if _re.search(r'confirm|hitl|approval|ask.*before|asks for approval', c):
+    if _re.search(r'confirm|hitl|approval|ask.*before|asks for approval', c):
         confirm = ["confirmar", "confirme", "tem certeza", "deseja confirmar",
                    "quer confirmar", "confirmação", "gostaria de confirmar",
                    "preciso de confirmação", "aprovação", "aprovar",
@@ -141,14 +141,14 @@ def _criterion_met(criterion: str, response: str, resp_lower: str) -> bool:
         return any(p in resp_lower for p in confirm)
 
     # --- LISTING/RANKING ---
-    if _re.search(r'returns?.*(list|ranked|candidates|jobs|names|history|questions)', c):
+    if _re.search(r'returns?.*(list|ranked|candidates|jobs|names|history|questions)', c):
         has_list = bool(_re.search(r'\d+[\.\)]\s', response))
         has_bold = "**" in response
         has_items = bool(_re.search(r'[-•]\s+\w', response))
         return has_list or has_bold or has_items
 
     # --- COUNTS/NUMBERS ---
-    if _re.search(r'numeric|counts?|numbers?|time.*value|percentages?', c):
+    if _re.search(r'numeric|counts?|numbers?|time.*value|percentages?', c):
         return bool(_re.search(r'\d+', response))
 
     # --- STATUS FILTERING ---
@@ -157,7 +157,7 @@ def _criterion_met(criterion: str, response: str, resp_lower: str) -> bool:
                                               "concluída", "concluído", "rascunho",
                                               "aberta", "fechada"])
 
-    if _re.search(r'filters?.*loc|loc.*filter', c):
+    if _re.search(r'filters?.*loc|loc.*filter', c):
         return any(s in resp_lower for s in ["são paulo", "rio", "brasil", "remoto",
                                               "híbrido", "presencial"])
 
@@ -165,10 +165,10 @@ def _criterion_met(criterion: str, response: str, resp_lower: str) -> bool:
         return any(w in resp_lower for w in ["diversidade", "gênero", "raça", "étni", "%"])
 
     # --- SCORE/FIT/RANGE ---
-    if _re.search(r'score|fit.*assess|qualif|per.*question|per.*block', c):
+    if _re.search(r'score|fit.*assess|qualif|per.*question|per.*block', c):
         return "%" in response or bool(_re.search(r'\d+\s*(pontos|%|score|pts)', resp_lower))
 
-    if _re.search(r'salary.*range|range.*min|min.*max|percentile', c):
+    if _re.search(r'salary.*range|range.*min|min.*max|percentile', c):
         return bool(_re.search(r'r\$\s*\d|\d+\.\d{3}', resp_lower)) or "salário" in resp_lower
 
     # --- SALARY FIELD ---
@@ -180,13 +180,13 @@ def _criterion_met(criterion: str, response: str, resp_lower: str) -> bool:
         return ("segunda" in resp_lower or bool(_re.search(r'\d{2}/\d{2}|\d{2}h|amanhã', resp_lower)))
 
     # --- TOOL CALLS ---
-    if _re.search(r'calls?.*tool|uses?.*tool', c):
+    if _re.search(r'calls?.*tool|uses?.*tool', c):
         has_list = bool(_re.search(r'\d+[\.\)]\s', response))
         has_uuid = bool(_re.search(r'[0-9a-f]{8}-[0-9a-f]{4}-', resp_lower))
         return has_list or has_uuid or len(response) > 80
 
     # --- FAIRNESS ---
-    if _re.search(r'fairness|discriminat|raises?.*concern', c):
+    if _re.search(r'fairness|discriminat|raises?.*concern', c):
         return any(w in resp_lower for w in ["discriminação", "discriminatório", "preconceito",
                                               "equidade", "diversidade", "ilegal", "inadequado",
                                               "fairness", "discriminatory", "lgpd"])
@@ -196,7 +196,7 @@ def _criterion_met(criterion: str, response: str, resp_lower: str) -> bool:
         return len(response) > 80 and not bool(_re.search(r'não (posso|consigo|tenho)', resp_lower))
 
     # --- SPECIFICITY ---
-    if _re.search(r'specific.*(skill|qualif|data)', c):
+    if _re.search(r'specific.*(skill|qualif|data)', c):
         return len(response) > 100 and ("**" in response or bool(_re.search(r'\d', response)))
 
     # --- DOMAIN ROUTING ---
@@ -210,11 +210,11 @@ def _criterion_met(criterion: str, response: str, resp_lower: str) -> bool:
         return "v0039" in resp_lower
 
     # --- EXPLAINS/COVERS ---
-    if _re.search(r'explains?|covers?', c):
+    if _re.search(r'explains?|covers?', c):
         return len(response) > 120
 
     # --- CONTENT CREATION ---
-    if _re.search(r'generates?.*(jd|description|structured)|structured.*jd', c):
+    if _re.search(r'generates?.*(jd|description|structured)|structured.*jd', c):
         return len(response) > 200
 
     # --- CANCELLATION ---

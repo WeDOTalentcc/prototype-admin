@@ -204,6 +204,10 @@ export function KanbanPageModalsCore(state: KanbanPageCoreState) {
         candidate={wsiInviteCandidate as any}
         jobTitle={currentJob.title as string | undefined}
         jobId={(currentJob.id as string | number | undefined)?.toString()}
+        companyId={
+          (currentJob?.company_id as string | undefined) ??
+          (currentJob?.companyId as string | undefined)
+        }
         screeningQuestions={
           currentJob.screening_questions && (currentJob.screening_questions as unknown[]).length > 0
             ? (currentJob.screening_questions as Record<string, unknown>[]).map((q: Record<string, unknown>, idx: number) => ({
