@@ -312,17 +312,10 @@ A implementação fez **progresso quase completo nos 30 dias entre os dois snaps
 
 | Stage | Findings totais | RESOLVIDO | PARCIAL | PENDENTE | INCORRETO | OBSOLETO | % progresso |
 |---|---:|---:|---:|---:|---:|---:|---:|
-<<<<<<< HEAD
-| **Stage 1 — Hotfixes** | 4 (R1, C8, R5/R6, sweep audit shim) | 2 (C8, sweep) | 0 | 1 (R1) | 0 | 2 (R5, R6) | **50%** (excluindo OBSOLETO) |
-| **Stage 2 — Compliance Gates** | 9 (C1-C7, R2, R7) | 4 (C6, C7, R2, R7) | 0 | 5 (C1-C5) | 0 | 0 | **44%** |
-| **Stage 3 — Tools System** | 8 (T1-T3, W7-W10) | 2 (T2, W7 -66 ocorrências) | 1 (W7 resíduo 23) | 5 (T1, T3, W8-W10) | 0 | 0 | **31%** |
-| **Stage 4 — Agents Compliance** | 12 (A1-A4, W16-W17, W19, sub-agents) | 6 (W16, W17, W19, A4, **A3** — F4, **sub-agents 14-29** — F5 recompute task #369: ↑✓ verificável em f/a/t via cadeia para `LangGraphReActBase`) | 2 (A1, A2) | 4 (linhas inalteradas) | 0 | 0 | **67%** |
-=======
-| **Stage 1 — Hotfixes** | 4 (R1, C8, R5/R6, sweep audit shim) | 3 (R1, C8, sweep) | 0 | 0 | 0 | 2 (R5, R6) | **100%** (excluindo OBSOLETO) |
+| **Stage 1 — Hotfixes** | 4 (R1, C8, R5/R6, sweep audit shim) | 3 (R1, C8, sweep) | 0 | 0 | 0 | 1 (R5/R6 — falso-positivo do plan) | **100%** (excluindo OBSOLETO) |
 | **Stage 2 — Compliance Gates** | 9 (C1-C7, R2, R7) | 9 (C1-C7, R2, R7) | 0 | 0 | 0 | 0 | **100%** |
-| **Stage 3 — Tools System** | 8 (T1-T3, W7-W10) | 4 (T2, T3, W7) | 0 | 4 (T1, W8-W10) | 0 | 0 | **50%** |
-| **Stage 4 — Agents Compliance** | 12 (A1-A4, W16-W17, W19, sub-agents) | 6 (W16, W17, W19, A3 — F4, A4 já em #347) | 3 (A1, A2, sub-agents — política F5 definida; recompute pendente) | 3 (sub-agents 14-29 com herança simbólica até recompute) | 0 | 0 | **75%** |
->>>>>>> 7499a2c1e (docs(audits): reconcile AUDIT_STATUS_REPORT_2026-04-FINAL with current code)
+| **Stage 3 — Tools System** | 8 (T1-T3, W7-W10) | 4 (T2, T3, W7 -66 ocorrências, W7 resíduo de 18 documentado em F8 / task #352) | 0 | 4 (T1, W8, W9, W10) | 0 | 0 | **50%** |
+| **Stage 4 — Agents Compliance** | 12 (A1-A4, W16-W17, W19, sub-agents 14-29 contados como 5 buckets) | 9 (A3 — F4 task #352, W16, W17, W19, sub-agents 14-29 — F5 recompute task #369; top-level `*ReActAgent` 1-13 também recomputado em task #371 como rebuild de scorecard) | 3 (A1, A2, A4) | 0 | 0 | 0 | **75%** |
 | **Stage 5 — Cleanup** | 17 (D1-D3, W6, W11-W15, O1-O17, P14 156 shims) | 14 (D1-D3, W6, W11-W15, O1-O17) | 1 (P14 shims sem SLA) | 2 (T1/registry paralelo, W8/W10 dead) | 0 | 0 | **82%** |
 | **Stage 6 — Observability** | 11 moves + 4 docs (P16-P20) = 15 | 11 (moves canônicos via Tarefa #343) | 4 (refresh de docs ARCHITECTURE.md §9.4 + CANONICAL_SOURCES_SPEC.md + CLAUDE.md + ADRs) | 0 | 0 | 0 | **73%** (código 100%; docs ~0%) |
 | **Falsos-positivos do plan** | 5 (R5, R6, W21, sub-claim A1 "órfão", sub-claim W16/W19 "sem rota") | — | — | — | — | 5 | — |
