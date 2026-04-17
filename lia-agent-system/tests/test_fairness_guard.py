@@ -130,8 +130,13 @@ class TestFairnessGuardMetadata:
         assert result.original_query == query
 
     def test_get_categories_returns_all(self):
+        from app.shared.compliance.fairness_guard import DISCRIMINATORY_CATEGORIES
+
         categories = self.guard.get_categories()
-        assert len(categories) == 9
+        # get_categories() exposes only core (Portuguese) categories,
+        # excluding the *_en English mirrors.
+        expected = [k for k in DISCRIMINATORY_CATEGORIES.keys() if not k.endswith("_en")]
+        assert len(categories) == len(expected)
         assert "genero" in categories
         assert "raca_etnia" in categories
         assert "idade" in categories
