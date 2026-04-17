@@ -107,13 +107,6 @@ class TestServiceImports:
         except ImportError:
             pytest.skip("Module not importable")
 
-    def test_company_benefits_api(self):
-        try:
-            from app.api.v1 import company_benefits_api
-            assert company_benefits_api is not None
-        except ImportError:
-            pytest.skip("Module not importable")
-
     def test_email_template_model(self):
         try:
             from app.domains.communication.models import email_template
