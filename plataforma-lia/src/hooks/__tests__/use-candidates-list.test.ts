@@ -233,4 +233,23 @@ describe("F3 — useCandidatesListMapped", () => {
     expect(result.current.candidates).toHaveLength(2)
     expect(result.current.total).toBe(2)
   })
+
+  it("aplica mapCandidateLocalToCandidate (CandidateLocal → Candidate)", async () => {
+    const { result } = renderHook(() => useCandidatesListMapped())
+    await waitFor(() => expect(result.current.loading).toBe(false))
+
+    const first = result.current.candidates[0]
+    // Campos preservados do CandidateLocal
+    expect(first.id).toBe("c1")
+    expect(first.name).toBe("Ana Lima")
+    // Campos derivados injetados pelo transform — ausentes no shape original
+    expect(first.candidateId).toBe("C1") // c.id.substring(0,5).toUpperCase()
+    expect(first.position).toBe("Dev Sênior") // current_title fallback → position
+    expect(typeof first.monthlySalary).toBe("number")
+    expect(first.currentSalary).toMatch(/R\$/) // formatBRL
+    expect(first.workModel).toBe("remoto") // default
+    expect(Array.isArray(first.workHistory)).toBe(true)
+    expect(Array.isArray(first.education)).toBe(true)
+    expect(first.liaAnalysis).toBeDefined()
+  })
 })
