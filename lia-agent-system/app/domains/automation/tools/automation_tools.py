@@ -3,14 +3,19 @@
 import logging
 import uuid
 from datetime import UTC, datetime
+from typing import Any
 
-from langchain_core.tools import tool
+from app.shared.tool_handler import tool_handler
 
 logger = logging.getLogger(__name__)
 
 
-@tool
-def trigger_workflow(workflow_id: str, trigger_data: str) -> dict:
+@tool_handler(domain="automation", require_company=True)
+async def trigger_workflow(
+    workflow_id: str = "",
+    trigger_data: str = "",
+    **kwargs: Any,
+) -> dict:
     """Trigger an automated workflow with the provided parameters.
 
     trigger_data should be a JSON string containing the workflow input parameters.
@@ -18,6 +23,7 @@ def trigger_workflow(workflow_id: str, trigger_data: str) -> dict:
     logger.info("trigger_workflow: workflow_id=%s data=%s", workflow_id, trigger_data)
     run_id = f"WF-{uuid.uuid4().hex[:10].upper()}"
     return {
+        "success": True,
         "workflow_run_id": run_id,
         "status": "triggered",
         "workflow_id": workflow_id,
@@ -26,9 +32,12 @@ def trigger_workflow(workflow_id: str, trigger_data: str) -> dict:
     }
 
 
-@tool
-def send_automated_email(
-    template_id: str, recipient_email: str, template_vars: str
+@tool_handler(domain="automation", require_company=True)
+async def send_automated_email(
+    template_id: str = "",
+    recipient_email: str = "",
+    template_vars: str = "",
+    **kwargs: Any,
 ) -> dict:
     """Send an automated email to a recipient using a predefined template.
 
@@ -38,6 +47,7 @@ def send_automated_email(
     logger.info("send_automated_email: template=%s", template_id)
     message_id = f"MSG-{uuid.uuid4().hex[:10].upper()}"
     return {
+        "success": True,
         "message_id": message_id,
         "status": "sent",
         "template_id": template_id,
@@ -47,9 +57,12 @@ def send_automated_email(
     }
 
 
-@tool
-def update_candidate_status(
-    candidate_id: str, new_status: str, pipeline_stage: str
+@tool_handler(domain="automation", require_company=True)
+async def update_candidate_status(
+    candidate_id: str = "",
+    new_status: str = "",
+    pipeline_stage: str = "",
+    **kwargs: Any,
 ) -> dict:
     """Automate a candidate's status update within the recruitment pipeline.
 
@@ -60,6 +73,7 @@ def update_candidate_status(
         candidate_id, new_status, pipeline_stage,
     )
     return {
+        "success": True,
         "candidate_id": candidate_id,
         "old_status": "unknown",
         "new_status": new_status,
@@ -68,9 +82,12 @@ def update_candidate_status(
     }
 
 
-@tool
-def bulk_send_notifications(
-    recipient_ids: str, notification_type: str, message_template: str
+@tool_handler(domain="automation", require_company=True)
+async def bulk_send_notifications(
+    recipient_ids: str = "",
+    notification_type: str = "",
+    message_template: str = "",
+    **kwargs: Any,
 ) -> dict:
     """Send bulk notifications to a set of recipients.
 
@@ -82,6 +99,7 @@ def bulk_send_notifications(
     ids = [r.strip() for r in recipient_ids.split(",") if r.strip()]
     sent_count = len(ids)
     return {
+        "success": True,
         "sent_count": sent_count,
         "failed_count": 0,
         "notification_type": notification_type,
@@ -90,12 +108,13 @@ def bulk_send_notifications(
     }
 
 
-@tool
-def schedule_reminder(
-    entity_id: str,
-    entity_type: str,
-    reminder_datetime: str,
-    reminder_message: str,
+@tool_handler(domain="automation", require_company=True)
+async def schedule_reminder(
+    entity_id: str = "",
+    entity_type: str = "",
+    reminder_datetime: str = "",
+    reminder_message: str = "",
+    **kwargs: Any,
 ) -> dict:
     """Schedule a future reminder for a given entity (candidate, interviewer, job, or application).
 
@@ -107,6 +126,7 @@ def schedule_reminder(
     )
     reminder_id = f"REM-{uuid.uuid4().hex[:8].upper()}"
     return {
+        "success": True,
         "reminder_id": reminder_id,
         "status": "scheduled",
         "trigger_at": reminder_datetime,
@@ -117,15 +137,19 @@ def schedule_reminder(
     }
 
 
-@tool
-def get_automation_logs(workflow_id: str, limit: int = 10) -> dict:
+@tool_handler(domain="automation", require_company=True)
+async def get_automation_logs(
+    workflow_id: str = "",
+    limit: int = 10,
+    **kwargs: Any,
+) -> dict:
     """Retrieve the most recent execution logs for a given workflow.
 
     Returns up to `limit` log entries with simulated execution details.
     """
-    logger.info("get_automation_logs: workflow_id=%s limit=%d", workflow_id, limit)
+    logger.info("get_automation_logs: workflow_id=%s limit=%d", workflow_id, int(limit))
     logs = []
-    for i in range(min(limit, 5)):
+    for i in range(min(int(limit), 5)):
         logs.append(
             {
                 "run_id": f"WF-{uuid.uuid4().hex[:8].upper()}",
@@ -135,6 +159,7 @@ def get_automation_logs(workflow_id: str, limit: int = 10) -> dict:
             }
         )
     return {
+        "success": True,
         "workflow_id": workflow_id,
         "logs": logs,
         "count": len(logs),

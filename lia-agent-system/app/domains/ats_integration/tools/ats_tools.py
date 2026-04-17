@@ -4,14 +4,19 @@ Bidirectional sync with external ATS platforms (Gupy, Greenhouse, Workday, Lever
 import logging
 import uuid
 from datetime import UTC, datetime
+from typing import Any
 
-from langchain_core.tools import tool
+from app.shared.tool_handler import tool_handler
 
 logger = logging.getLogger(__name__)
 
 
-@tool
-def sync_candidate_from_ats(ats_name: str, external_candidate_id: str) -> dict:
+@tool_handler(domain="ats_integration", require_company=True)
+async def sync_candidate_from_ats(
+    ats_name: str = "",
+    external_candidate_id: str = "",
+    **kwargs: Any,
+) -> dict:
     """Syncs a candidate from an external ATS into LIA.
 
     Pulls candidate data (name, email, CV URL, current stage) from the specified ATS
@@ -28,6 +33,7 @@ def sync_candidate_from_ats(ats_name: str, external_candidate_id: str) -> dict:
     logger.info("sync_candidate_from_ats: ats=%s external_id=%s", ats_name, external_candidate_id)
     lia_candidate_id = f"CAND-{str(uuid.uuid4())[:8].upper()}"
     return {
+        "success": True,
         "lia_candidate_id": lia_candidate_id,
         "ats_name": ats_name,
         "external_id": external_candidate_id,
@@ -36,9 +42,13 @@ def sync_candidate_from_ats(ats_name: str, external_candidate_id: str) -> dict:
     }
 
 
-@tool
-def export_decision_to_ats(
-    ats_name: str, external_candidate_id: str, decision: str, notes: str = ""
+@tool_handler(domain="ats_integration", require_company=True)
+async def export_decision_to_ats(
+    ats_name: str = "",
+    external_candidate_id: str = "",
+    decision: str = "",
+    notes: str = "",
+    **kwargs: Any,
 ) -> dict:
     """Exports a LIA hiring decision back to an external ATS (LGPD Art. 20 compliance — feedback).
 
@@ -59,6 +69,7 @@ def export_decision_to_ats(
         ats_name, external_candidate_id, decision,
     )
     return {
+        "success": True,
         "status": "exported",
         "ats_name": ats_name,
         "candidate_id": external_candidate_id,
@@ -68,8 +79,12 @@ def export_decision_to_ats(
     }
 
 
-@tool
-def list_open_positions_from_ats(ats_name: str, department: str = "") -> dict:
+@tool_handler(domain="ats_integration", require_company=True)
+async def list_open_positions_from_ats(
+    ats_name: str = "",
+    department: str = "",
+    **kwargs: Any,
+) -> dict:
     """Pulls the list of open job positions from an external ATS.
 
     Queries the ATS for all currently open requisitions, optionally filtered by
@@ -105,6 +120,7 @@ def list_open_positions_from_ats(ats_name: str, department: str = "") -> dict:
         else sample_positions
     )
     return {
+        "success": True,
         "positions": filtered,
         "count": len(filtered),
         "ats_name": ats_name,
@@ -112,8 +128,12 @@ def list_open_positions_from_ats(ats_name: str, department: str = "") -> dict:
     }
 
 
-@tool
-def create_candidate_in_ats(ats_name: str, candidate_data: str) -> dict:
+@tool_handler(domain="ats_integration", require_company=True)
+async def create_candidate_in_ats(
+    ats_name: str = "",
+    candidate_data: str = "",
+    **kwargs: Any,
+) -> dict:
     """Creates a new candidate record in an external ATS.
 
     Pushes a new applicant entry into the target ATS. Useful when LIA identifies
@@ -129,6 +149,7 @@ def create_candidate_in_ats(ats_name: str, candidate_data: str) -> dict:
     logger.info("create_candidate_in_ats: ats=%s", ats_name)
     external_id = f"EXT-{str(uuid.uuid4())[:8].upper()}"
     return {
+        "success": True,
         "external_id": external_id,
         "ats_name": ats_name,
         "status": "created",
@@ -136,8 +157,11 @@ def create_candidate_in_ats(ats_name: str, candidate_data: str) -> dict:
     }
 
 
-@tool
-def get_ats_sync_status(ats_name: str) -> dict:
+@tool_handler(domain="ats_integration", require_company=True)
+async def get_ats_sync_status(
+    ats_name: str = "",
+    **kwargs: Any,
+) -> dict:
     """Checks the health and connection status of an ATS integration.
 
     Pings the external ATS to verify the integration is operational, returning
@@ -152,6 +176,7 @@ def get_ats_sync_status(ats_name: str) -> dict:
     logger.info("get_ats_sync_status: ats=%s", ats_name)
     # SIMULATION STUB: In production, check real ATS connection health.
     return {
+        "success": True,
         "ats_name": ats_name,
         "status": "connected",
         "last_sync": datetime.now(UTC).isoformat(),
@@ -160,8 +185,12 @@ def get_ats_sync_status(ats_name: str) -> dict:
     }
 
 
-@tool
-def bulk_sync_applications(ats_name: str, job_id: str) -> dict:
+@tool_handler(domain="ats_integration", require_company=True)
+async def bulk_sync_applications(
+    ats_name: str = "",
+    job_id: str = "",
+    **kwargs: Any,
+) -> dict:
     """Bulk syncs all applications for a specific job from an external ATS.
 
     Fetches every applicant record associated with the given job from the ATS
@@ -177,6 +206,7 @@ def bulk_sync_applications(ats_name: str, job_id: str) -> dict:
     logger.info("bulk_sync_applications: ats=%s job_id=%s", ats_name, job_id)
     # SIMULATION STUB: In production, iterate real ATS API pages.
     return {
+        "success": True,
         "job_id": job_id,
         "ats_name": ats_name,
         "synced_count": 37,

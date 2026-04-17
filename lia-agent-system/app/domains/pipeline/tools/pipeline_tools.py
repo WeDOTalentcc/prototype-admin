@@ -4,8 +4,9 @@ Move candidates through hiring pipeline stages, manage offers and rejections.
 import logging
 import uuid
 from datetime import UTC, datetime
+from typing import Any
 
-from langchain_core.tools import tool
+from app.shared.tool_handler import tool_handler
 
 logger = logging.getLogger(__name__)
 
@@ -21,9 +22,13 @@ def _next_stage(current: str) -> str:
         return "screening"
 
 
-@tool
-def move_candidate_to_stage(
-    candidate_id: str, job_id: str, new_stage: str, reason: str = ""
+@tool_handler(domain="pipeline", require_company=True)
+async def move_candidate_to_stage(
+    candidate_id: str = "",
+    job_id: str = "",
+    new_stage: str = "",
+    reason: str = "",
+    **kwargs: Any,
 ) -> dict:
     """Moves a candidate to a new stage in the hiring pipeline.
 
@@ -44,6 +49,7 @@ def move_candidate_to_stage(
         "move_candidate_to_stage: candidate=%s job=%s stage=%s", candidate_id, job_id, new_stage
     )
     return {
+        "success": True,
         "candidate_id": candidate_id,
         "job_id": job_id,
         "old_stage": "unknown",
@@ -53,8 +59,11 @@ def move_candidate_to_stage(
     }
 
 
-@tool
-def get_pipeline_overview(job_id: str) -> dict:
+@tool_handler(domain="pipeline", require_company=True)
+async def get_pipeline_overview(
+    job_id: str = "",
+    **kwargs: Any,
+) -> dict:
     """Gets an overview of all candidates currently in the pipeline for a job.
 
     Returns a count of candidates at each stage of the hiring funnel, allowing
@@ -79,6 +88,7 @@ def get_pipeline_overview(job_id: str) -> dict:
         "rejected": 18,
     }
     return {
+        "success": True,
         "job_id": job_id,
         "stages": stages,
         "total": sum(stages.values()),
@@ -86,9 +96,13 @@ def get_pipeline_overview(job_id: str) -> dict:
     }
 
 
-@tool
-def reject_candidate(
-    candidate_id: str, job_id: str, rejection_reason: str, notify: bool = True
+@tool_handler(domain="pipeline", require_company=True)
+async def reject_candidate(
+    candidate_id: str = "",
+    job_id: str = "",
+    rejection_reason: str = "",
+    notify: bool = True,
+    **kwargs: Any,
 ) -> dict:
     """Rejects a candidate from the hiring process with an optional notification.
 
@@ -108,6 +122,7 @@ def reject_candidate(
         "reject_candidate: candidate=%s job=%s notify=%s", candidate_id, job_id, notify
     )
     return {
+        "success": True,
         "candidate_id": candidate_id,
         "job_id": job_id,
         "status": "rejected",
@@ -117,8 +132,13 @@ def reject_candidate(
     }
 
 
-@tool
-def extend_offer(candidate_id: str, job_id: str, offer_details: str) -> dict:
+@tool_handler(domain="pipeline", require_company=True)
+async def extend_offer(
+    candidate_id: str = "",
+    job_id: str = "",
+    offer_details: str = "",
+    **kwargs: Any,
+) -> dict:
     """Extends a formal job offer to a candidate.
 
     Creates an offer record and advances the candidate to the 'offer' stage.
@@ -135,6 +155,7 @@ def extend_offer(candidate_id: str, job_id: str, offer_details: str) -> dict:
     logger.info("extend_offer: candidate=%s job=%s", candidate_id, job_id)
     offer_id = f"OFR-{str(uuid.uuid4())[:8].upper()}"
     return {
+        "success": True,
         "offer_id": offer_id,
         "candidate_id": candidate_id,
         "job_id": job_id,
@@ -143,8 +164,12 @@ def extend_offer(candidate_id: str, job_id: str, offer_details: str) -> dict:
     }
 
 
-@tool
-def get_candidate_pipeline_history(candidate_id: str, job_id: str) -> dict:
+@tool_handler(domain="pipeline", require_company=True)
+async def get_candidate_pipeline_history(
+    candidate_id: str = "",
+    job_id: str = "",
+    **kwargs: Any,
+) -> dict:
     """Gets the full stage history for a candidate on a specific job.
 
     Returns a chronological log of every pipeline stage the candidate passed
@@ -166,14 +191,20 @@ def get_candidate_pipeline_history(candidate_id: str, job_id: str) -> dict:
         {"stage": "screening", "entered_at": now, "exited_at": None},
     ]
     return {
+        "success": True,
         "candidate_id": candidate_id,
         "job_id": job_id,
         "history": history,
     }
 
 
-@tool
-def bulk_advance_candidates(job_id: str, from_stage: str, candidate_ids: str) -> dict:
+@tool_handler(domain="pipeline", require_company=True)
+async def bulk_advance_candidates(
+    job_id: str = "",
+    from_stage: str = "",
+    candidate_ids: str = "",
+    **kwargs: Any,
+) -> dict:
     """Advances multiple candidates from one pipeline stage to the next.
 
     Takes a comma-separated list of candidate IDs and moves all of them from
@@ -193,6 +224,7 @@ def bulk_advance_candidates(job_id: str, from_stage: str, candidate_ids: str) ->
     ids = [cid.strip() for cid in candidate_ids.split(",") if cid.strip()]
     to_stage = _next_stage(from_stage)
     return {
+        "success": True,
         "advanced_count": len(ids),
         "job_id": job_id,
         "from_stage": from_stage,

@@ -6,14 +6,19 @@ import json
 import logging
 import uuid
 from datetime import UTC, datetime
+from typing import Any
 
-from langchain_core.tools import tool
+from app.shared.tool_handler import tool_handler
 
 logger = logging.getLogger(__name__)
 
 
-@tool
-def check_diversity_targets(job_id: str, current_pipeline: str) -> dict:
+@tool_handler(domain="hiring_policy", require_company=True)
+async def check_diversity_targets(
+    job_id: str = "",
+    current_pipeline: str = "",
+    **kwargs: Any,
+) -> dict:
     """Checks whether the current hiring pipeline meets diversity and inclusion targets.
 
     Computes the disparate impact ratio (min_group_rate / max_group_rate) per
@@ -58,6 +63,7 @@ def check_diversity_targets(job_id: str, current_pipeline: str) -> dict:
     )
 
     return {
+        "success": True,
         "job_id": job_id,
         "targets_met": targets_met,
         "gaps": gaps,
@@ -66,8 +72,12 @@ def check_diversity_targets(job_id: str, current_pipeline: str) -> dict:
     }
 
 
-@tool
-def validate_job_requirements(job_id: str, requirements_text: str) -> dict:
+@tool_handler(domain="hiring_policy", require_company=True)
+async def validate_job_requirements(
+    job_id: str = "",
+    requirements_text: str = "",
+    **kwargs: Any,
+) -> dict:
     """Validates job requirements text for potentially discriminatory language.
 
     Scans the requirements for patterns that may violate LGPD, the EU AI Act
@@ -105,6 +115,7 @@ def validate_job_requirements(job_id: str, requirements_text: str) -> dict:
         severity = "low"
 
     return {
+        "success": True,
         "job_id": job_id,
         "issues": issues,
         "severity": severity,
@@ -112,9 +123,12 @@ def validate_job_requirements(job_id: str, requirements_text: str) -> dict:
     }
 
 
-@tool
-def generate_explanation_report(
-    candidate_id: str, decision: str, decision_factors: str
+@tool_handler(domain="hiring_policy", require_company=True)
+async def generate_explanation_report(
+    candidate_id: str = "",
+    decision: str = "",
+    decision_factors: str = "",
+    **kwargs: Any,
 ) -> dict:
     """Generates a human-readable explanation report for an automated hiring decision.
 
@@ -147,6 +161,7 @@ def generate_explanation_report(
     )
 
     return {
+        "success": True,
         "report_id": f"EXP-{str(uuid.uuid4())[:8].upper()}",
         "candidate_id": candidate_id,
         "decision": decision,
@@ -157,9 +172,13 @@ def generate_explanation_report(
     }
 
 
-@tool
-def audit_hiring_decision(
-    job_id: str, candidate_id: str, decision: str, reviewer_id: str
+@tool_handler(domain="hiring_policy", require_company=True)
+async def audit_hiring_decision(
+    job_id: str = "",
+    candidate_id: str = "",
+    decision: str = "",
+    reviewer_id: str = "",
+    **kwargs: Any,
 ) -> dict:
     """Creates an immutable audit record for a hiring decision (SOX compliance).
 
@@ -180,6 +199,7 @@ def audit_hiring_decision(
         job_id, candidate_id, decision, reviewer_id,
     )
     return {
+        "success": True,
         "audit_id": f"AUD-{str(uuid.uuid4())[:8].upper()}",
         "job_id": job_id,
         "candidate_id": candidate_id,
@@ -190,8 +210,11 @@ def audit_hiring_decision(
     }
 
 
-@tool
-def get_compliance_report(job_id: str) -> dict:
+@tool_handler(domain="hiring_policy", require_company=True)
+async def get_compliance_report(
+    job_id: str = "",
+    **kwargs: Any,
+) -> dict:
     """Generates a full compliance report for a hiring process.
 
     Evaluates the hiring process against LGPD, EU AI Act Annex III (high-risk AI),
@@ -214,6 +237,7 @@ def get_compliance_report(job_id: str) -> dict:
         job_id,
     )
     return {
+        "success": True,
         "job_id": job_id,
         "lgpd_compliant": True,
         "eu_ai_act_compliant": True,
