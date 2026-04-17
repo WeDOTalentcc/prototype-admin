@@ -260,6 +260,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
             setShowEditQueryModal={setShowEditQueryModal}
             setShowAddToVacancyModal={setShowAddToVacancyModal}
             isEnrichingContacts={searchResults?.isEnrichingContacts}
+            filteredNoContact={searchResults?.filteredNoContact}
             error={candidatesError}
             onRetry={refreshCandidatesList}
           />

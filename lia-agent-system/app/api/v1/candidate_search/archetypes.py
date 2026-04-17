@@ -109,6 +109,8 @@ class ArchetypeSearchResponse(BaseModel):
     credits_remaining: int | None = None
     search_time_seconds: float | None = None
     warning_message: str | None = None
+    filtered_no_contact: int = 0
+    enrichment_attempted: int = 0
 
 
 @router.get("/archetypes", response_model=ArchetypeListResponse)
@@ -1026,7 +1028,7 @@ async def search_by_archetype(
             
             candidates.append(candidate_dto)
         
-        candidates = await enrich_and_filter_candidates(db, candidates)
+        candidates, _enrich_stats = await enrich_and_filter_candidates(db, candidates)
         if request.calculate_lia_score:
             candidates.sort(key=lambda x: x.lia_score or 0, reverse=True)
         
@@ -1056,7 +1058,9 @@ async def search_by_archetype(
             total_count=len(candidates),
             credits_remaining=search_result.pearch_credits_remaining,
             search_time_seconds=(search_result.local_search_time or 0) + (search_result.pearch_search_time or 0),
-            warning_message=search_result.warning_message
+            warning_message=search_result.warning_message,
+            filtered_no_contact=_enrich_stats.filtered_no_contact,
+            enrichment_attempted=_enrich_stats.enrichment_attempted,
         )
     
     except HTTPException:

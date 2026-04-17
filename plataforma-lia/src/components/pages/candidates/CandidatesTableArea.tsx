@@ -44,6 +44,12 @@ export interface CandidatesTableAreaProps {
   isLoadingMore: boolean
   onLoadMore: () => void
   isEnrichingContacts?: boolean
+  /**
+   * Task #394: número de candidatos descartados pelo backend após tentativa
+   * de enriquecimento Apify por continuarem sem email/telefone. Mostramos um
+   * aviso para o usuário entender por que o total caiu.
+   */
+  filteredNoContact?: number
 }
 
 export function CandidatesTableArea({
@@ -79,6 +85,7 @@ export function CandidatesTableArea({
   isLoadingMore,
   onLoadMore,
   isEnrichingContacts,
+  filteredNoContact,
 }: CandidatesTableAreaProps) {
   const t = useTranslations('candidates')
   return (
@@ -110,6 +117,19 @@ export function CandidatesTableArea({
               <div className="flex items-center gap-2 px-4 py-2 bg-status-info/10 border border-status-info/20 rounded-lg mx-2 mt-2">
                 <Loader2 className="h-4 w-4 animate-spin text-status-info" />
                 <span className="text-sm text-status-info font-medium">{t('table.enrichingContacts')}</span>
+              </div>
+            )}
+
+            {!isEnrichingContacts && filteredNoContact !== undefined && filteredNoContact > 0 && (
+              <div
+                data-testid="filtered-no-contact-banner"
+                className="flex items-center gap-2 px-4 py-2 bg-status-warning/10 border border-status-warning/20 rounded-lg mx-2 mt-2"
+                role="status"
+                aria-live="polite"
+              >
+                <span className="text-sm text-status-warning font-medium">
+                  {t('table.filteredNoContact', { count: filteredNoContact })}
+                </span>
               </div>
             )}
 

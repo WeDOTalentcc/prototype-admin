@@ -170,6 +170,8 @@ SENÃO:
 
 E após o enriquecimento, o filtro final em `enrich_and_filter_candidates` remove qualquer candidato que ainda esteja sem `email` E sem `phone` (não importa se a chamada ao Apify retornou erro, *no contact* ou foi pulada por dedup).
 
+A função devolve uma tupla `(kept, EnrichmentStats)` (`_shared.py`). O `EnrichmentStats` carrega `enrichment_attempted` (quantos passaram pelo hook de enriquecimento) e `filtered_no_contact` (quantos foram silenciosamente descartados por continuarem sem email/telefone). Esses dois números são propagados para `SearchResponseDTO`, `SimilarSearchResponse`, `JobDescriptionSearchResponse` e `ArchetypeSearchResponse` pelos respectivos endpoints (`search.py`, `similar_search.py`, `jd_search.py`, `archetypes.py`) como `filtered_no_contact` / `enrichment_attempted`. O frontend lê esses campos no `useCandidatesExecuteSearch` e o `CandidatesTableArea` mostra um banner "N candidatos descartados por não termos como contatar" quando `filtered_no_contact > 0`, fechando o gap em que a contagem só vivia em log.
+
 ---
 
 ## 5. Modelo de custo e crédito
@@ -462,7 +464,7 @@ Esses valores **não entram em `credit_accounts`** — são apenas registrados p
 
 7. **`hybrid_search` engole exceções do Pearch silenciosamente** (linhas 1218‑1220) escrevendo apenas `warning_message`; o circuit breaker dispara separadamente via decorator, então a contagem de falhas e o que o usuário vê podem ficar desencaixados em casos raros.
 
-8. **`enrich_and_filter_candidates` filtra candidatos sem contato no caminho REST**, mas o frontend pode não diferenciar "filtrado por falta de contato" de "Pearch retornou pouco". A `warning_message` carrega informação parcial; a contagem de filtrados só vai para o log.
+8. **`enrich_and_filter_candidates` filtra candidatos sem contato no caminho REST** e agora devolve `EnrichmentStats(enrichment_attempted, filtered_no_contact)` junto com a lista. Os 4 endpoints REST de busca expõem `filtered_no_contact`/`enrichment_attempted` no DTO de resposta e o Funil de Talentos mostra um aviso explícito quando há candidatos descartados — antes essa contagem só aparecia em log (Task #394).
 
 ---
 

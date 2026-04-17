@@ -74,6 +74,8 @@ class SimilarSearchResponse(BaseModel):
     total_count: int = 0
     credits_remaining: int | None = None
     search_time_seconds: float | None = None
+    filtered_no_contact: int = 0
+    enrichment_attempted: int = 0
 
 
 @router.post("/similar", response_model=SimilarSearchResponse)
@@ -176,7 +178,7 @@ async def search_similar_candidates(
         for profile in result.pearch_candidates:
             candidates.append(CandidateSearchResultDTO.from_profile(profile, "pearch"))
         
-        candidates = await enrich_and_filter_candidates(db, candidates)
+        candidates, _enrich_stats = await enrich_and_filter_candidates(db, candidates)
         
         return SimilarSearchResponse(
             reference_profile=reference_profile,
@@ -186,7 +188,9 @@ async def search_similar_candidates(
             pearch_count=result.pearch_count,
             total_count=len(candidates),
             credits_remaining=result.pearch_credits_remaining,
-            search_time_seconds=(result.local_search_time or 0) + (result.pearch_search_time or 0)
+            search_time_seconds=(result.local_search_time or 0) + (result.pearch_search_time or 0),
+            filtered_no_contact=_enrich_stats.filtered_no_contact,
+            enrichment_attempted=_enrich_stats.enrichment_attempted,
         )
     
     except HTTPException:

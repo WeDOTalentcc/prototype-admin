@@ -329,6 +329,18 @@ class CandidateSearchResultDTO(BaseModel):
         )
 
 
+class EnrichmentStats(BaseModel):
+    """Estatísticas do passo de enriquecimento de contatos.
+
+    Task #394: o backend filtra silenciosamente candidatos sem email/telefone
+    após tentativa de Apify. Estes contadores permitem o frontend explicar ao
+    usuário por que o total caiu (ex.: "8 candidatos descartados por não termos
+    como contatar").
+    """
+    filtered_no_contact: int = 0
+    enrichment_attempted: int = 0
+
+
 class SearchResponseDTO(BaseModel):
     """Response da busca para o frontend."""
     query: str
@@ -346,6 +358,8 @@ class SearchResponseDTO(BaseModel):
     should_expand_to_global: bool = Field(default=False)
     expansion_message: str | None = Field(default=None)
     high_adherence_count: int = Field(default=0)
+    filtered_no_contact: int = Field(default=0)
+    enrichment_attempted: int = Field(default=0)
 
 
 def _build_candidate_data_from_dto(candidate_dto: 'CandidateSearchResultDTO') -> dict[str, Any]:
@@ -576,7 +590,14 @@ class EvaluateForJobResponse(BaseModel):
 async def enrich_and_filter_candidates(
     db: AsyncSession,
     candidates: list["CandidateSearchResultDTO"],
-) -> list["CandidateSearchResultDTO"]:
+) -> tuple[list["CandidateSearchResultDTO"], EnrichmentStats]:
+    """Enriquece contatos via Apify quando faltam e filtra quem ficou sem contato.
+
+    Returns:
+        Tupla `(kept, stats)` onde `kept` é a lista filtrada e `stats` contém
+        `filtered_no_contact` (descartados após enriquecimento) e
+        `enrichment_attempted` (quantos passaram pelo Apify).
+    """
     from uuid import UUID as _UUID
     from sqlalchemy import select
     from lia_models.candidate import Candidate
@@ -687,4 +708,8 @@ async def enrich_and_filter_candidates(
     if filtered > 0:
         logger.info("[EnrichHook] Filtered %d candidates without contact. Returning %d/%d", filtered, len(kept), len(candidates))
 
-    return kept
+    stats = EnrichmentStats(
+        filtered_no_contact=filtered,
+        enrichment_attempted=len(uuid_enrichment) + len(url_enrichment),
+    )
+    return kept, stats

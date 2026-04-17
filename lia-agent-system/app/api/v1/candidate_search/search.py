@@ -269,7 +269,7 @@ async def search_candidates(
         elif _pearch_is_open and request.search_pearch and not APIFY_SEARCH_FALLBACK_ENABLED:
             _apify_fallback_warning = get_degraded_response("pearch")
         
-        candidates = await enrich_and_filter_candidates(db, candidates)
+        candidates, _enrich_stats = await enrich_and_filter_candidates(db, candidates)
 
         # Task #296: degradação total + nenhum resultado local → 503 estruturado.
         # Mantemos o 503 só para o caso (a) Pearch+Apify ambos open e (b) banco
@@ -369,7 +369,9 @@ async def search_candidates(
             can_load_more=_effective_can_load_more,
             should_expand_to_global=should_expand,
             expansion_message=expansion_message,
-            high_adherence_count=high_adherence_count
+            high_adherence_count=high_adherence_count,
+            filtered_no_contact=_enrich_stats.filtered_no_contact,
+            enrichment_attempted=_enrich_stats.enrichment_attempted,
         )
     
     except HTTPException:

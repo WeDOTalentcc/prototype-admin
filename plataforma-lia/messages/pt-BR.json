@@ -2375,6 +2375,7 @@
       "loadingAriaLabel": "Carregando...",
       "loadingCandidates": "Carregando candidatos...",
       "enrichingContacts": "Enriquecendo contatos...",
+      "filteredNoContact": "{count, plural, one {# candidato descartado por não termos como contatar (sem email nem telefone após enriquecimento).} other {# candidatos descartados por não termos como contatar (sem email nem telefone após enriquecimento).}}",
       "emptyMessage": "Nenhum candidato encontrado",
       "emptyTitle": "Sem resultados",
       "emptyDescription": "Tente ajustar sua busca ou filtros",

@@ -118,6 +118,8 @@ export interface SearchResponse {
   warning_message?: string
   can_load_more: boolean
   is_enriching_contacts?: boolean
+  filtered_no_contact?: number
+  enrichment_attempted?: number
 }
 
 export interface CreditBreakdown {

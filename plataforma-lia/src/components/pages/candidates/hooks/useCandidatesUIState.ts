@@ -81,10 +81,14 @@ export function useCandidatesUIState() {
     localCount: number; globalCount: number; query: string
     isLoading: boolean; showGlobalResults: boolean; globalDismissed: boolean
     isEnrichingContacts: boolean
+    filteredNoContact: number
+    enrichmentAttempted: number
   }>({
     local: [], global: [], localCount: 0, globalCount: 0, query: '',
     isLoading: false, showGlobalResults: false, globalDismissed: false,
     isEnrichingContacts: false,
+    filteredNoContact: 0,
+    enrichmentAttempted: 0,
   })
   const [selectedTemplate, setSelectedTemplate] = useState('')
   const [searchThreadId, setSearchThreadId] = useState<string | undefined>(undefined)

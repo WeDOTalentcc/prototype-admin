@@ -34,4 +34,6 @@ class JobDescriptionSearchResponse(BaseModel):
     total_count: int = 0
     credits_remaining: int | None = None
     search_time_seconds: float | None = None
+    filtered_no_contact: int = 0
+    enrichment_attempted: int = 0
 

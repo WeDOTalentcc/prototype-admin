@@ -175,7 +175,7 @@ async def _wrap_search_candidates(**kwargs: Any) -> dict[str, Any]:
         for profile in result.pearch_candidates:
             candidates.append(CandidateSearchResultDTO.from_profile(profile, "pearch"))
 
-        candidates = await enrich_and_filter_candidates(session, candidates)
+        candidates, _enrich_stats = await enrich_and_filter_candidates(session, candidates)
 
         credit_warning: str | None = None
         if company_id:

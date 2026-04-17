@@ -49,6 +49,8 @@ class JobDescriptionSearchResponse(BaseModel):
     total_count: int = 0
     credits_remaining: int | None = None
     search_time_seconds: float | None = None
+    filtered_no_contact: int = 0
+    enrichment_attempted: int = 0
 
 
 @router.post("/by-job-description", response_model=JobDescriptionSearchResponse)
@@ -153,7 +155,7 @@ async def search_by_job_description(
         for profile in result.pearch_candidates:
             candidates.append(CandidateSearchResultDTO.from_profile(profile, "pearch"))
         
-        candidates = await enrich_and_filter_candidates(db, candidates)
+        candidates, _enrich_stats = await enrich_and_filter_candidates(db, candidates)
         
         return JobDescriptionSearchResponse(
             extracted_criteria=extracted,
@@ -163,7 +165,9 @@ async def search_by_job_description(
             pearch_count=result.pearch_count,
             total_count=len(candidates),
             credits_remaining=result.pearch_credits_remaining,
-            search_time_seconds=(result.local_search_time or 0) + (result.pearch_search_time or 0)
+            search_time_seconds=(result.local_search_time or 0) + (result.pearch_search_time or 0),
+            filtered_no_contact=_enrich_stats.filtered_no_contact,
+            enrichment_attempted=_enrich_stats.enrichment_attempted,
         )
     
     except Exception as e:
@@ -196,7 +200,7 @@ async def refine_search(
             for profile in result.get_candidates()
         ]
         
-        candidates = await enrich_and_filter_candidates(db, candidates)
+        candidates, _enrich_stats = await enrich_and_filter_candidates(db, candidates)
         
         return SearchResponseDTO(
             query=additional_query,
@@ -205,7 +209,9 @@ async def refine_search(
             pearch_count=len(candidates),
             total_count=len(candidates),
             credits_remaining=result.credits_remaining,
-            search_time_seconds=result.search_time_seconds
+            search_time_seconds=result.search_time_seconds,
+            filtered_no_contact=_enrich_stats.filtered_no_contact,
+            enrichment_attempted=_enrich_stats.enrichment_attempted,
         )
     
     except ValueError as e:
@@ -251,13 +257,15 @@ async def search_local_only(
             for profile in profiles
         ]
         
-        candidates = await enrich_and_filter_candidates(db, candidates)
+        candidates, _enrich_stats = await enrich_and_filter_candidates(db, candidates)
         
         return SearchResponseDTO(
             query=query,
             candidates=candidates,
             local_count=len(candidates),
-            total_count=len(candidates)
+            total_count=len(candidates),
+            filtered_no_contact=_enrich_stats.filtered_no_contact,
+            enrichment_attempted=_enrich_stats.enrichment_attempted,
         )
     
     except Exception as e:

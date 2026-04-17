@@ -34,6 +34,10 @@ interface SearchResults {
   showGlobalResults: boolean
   globalDismissed: boolean
   isEnrichingContacts: boolean
+  // Task #394: candidatos descartados pelo backend por não termos email/telefone
+  // mesmo após tentativa de enriquecimento via Apify.
+  filteredNoContact: number
+  enrichmentAttempted: number
 }
 
 interface ExecuteSearchDeps {
@@ -169,6 +173,10 @@ export function useCandidatesExecuteSearch(deps: ExecuteSearchDeps) {
       let localCount = 0
       let pearchCount = 0
       let isEnrichingContacts = false
+      // Task #394: candidatos descartados pelo backend após enriquecimento Apify por
+      // continuarem sem email/telefone. Usado para mostrar aviso no Funil.
+      let filteredNoContact = 0
+      let enrichmentAttempted = 0
 
       if (mode === 'similar' && metadata) {
         const similarUrl = metadata.similarProfileUrl || metadata.similarProfileUrls?.[0]
@@ -184,6 +192,8 @@ export function useCandidatesExecuteSearch(deps: ExecuteSearchDeps) {
             const data = await response.json()
             totalCount = data.total_count || 0; localCount = data.local_count || 0; pearchCount = data.pearch_count || 0; creditsUsed = data.credits_used
             if (data.is_enriching_contacts) isEnrichingContacts = true
+            filteredNoContact = data.filtered_no_contact || 0
+            enrichmentAttempted = data.enrichment_attempted || 0
             if (data.credits_remaining !== undefined) setCreditsRemaining(() => data.credits_remaining)
             if (data.candidates?.length > 0) mappedCandidates = data.candidates.map((c: Record<string, unknown>) => mapCandidateToInternal(c))
           }
@@ -200,6 +210,8 @@ export function useCandidatesExecuteSearch(deps: ExecuteSearchDeps) {
           const data = await response.json()
           totalCount = data.total_count || 0; localCount = data.local_count || 0; pearchCount = data.pearch_count || 0; creditsUsed = data.credits_used
           if (data.is_enriching_contacts) isEnrichingContacts = true
+          filteredNoContact = data.filtered_no_contact || 0
+          enrichmentAttempted = data.enrichment_attempted || 0
           if (data.credits_remaining !== undefined) setCreditsRemaining(() => data.credits_remaining)
           if (data.candidates?.length > 0) mappedCandidates = data.candidates.map((c: Record<string, unknown>) => mapCandidateToInternal(c))
         }
@@ -215,6 +227,8 @@ export function useCandidatesExecuteSearch(deps: ExecuteSearchDeps) {
           const data = await response.json()
           totalCount = data.total_count || 0; localCount = data.local_count || 0; pearchCount = data.pearch_count || 0; creditsUsed = data.credits_used
           if (data.is_enriching_contacts) isEnrichingContacts = true
+          filteredNoContact = data.filtered_no_contact || 0
+          enrichmentAttempted = data.enrichment_attempted || 0
           if (data.credits_remaining !== undefined) setCreditsRemaining(() => data.credits_remaining)
           if (data.candidates?.length > 0) mappedCandidates = data.candidates.map((c: Record<string, unknown>) => mapCandidateToInternal(c))
         }
@@ -236,6 +250,8 @@ export function useCandidatesExecuteSearch(deps: ExecuteSearchDeps) {
         if (searchResponse.thread_id) setSearchThreadId(searchResponse.thread_id)
         creditsUsed = searchResponse.credits_used
         if (searchResponse.is_enriching_contacts) isEnrichingContacts = true
+        filteredNoContact = (searchResponse as { filtered_no_contact?: number }).filtered_no_contact || 0
+        enrichmentAttempted = (searchResponse as { enrichment_attempted?: number }).enrichment_attempted || 0
         totalCount = searchResponse.total_count || 0; localCount = searchResponse.local_count || 0; pearchCount = searchResponse.pearch_count || 0
         if (searchResponse.credits_remaining !== undefined && searchResponse.credits_remaining !== null) {
           setCreditsRemaining(() => searchResponse.credits_remaining as number)
@@ -286,6 +302,8 @@ export function useCandidatesExecuteSearch(deps: ExecuteSearchDeps) {
         query, isLoading: false, showGlobalResults: shouldAutoShowGlobal,
         globalDismissed: prev.globalDismissed,
         isEnrichingContacts,
+        filteredNoContact,
+        enrichmentAttempted,
       }))
 
       setLastSuccessfulQuery(query)

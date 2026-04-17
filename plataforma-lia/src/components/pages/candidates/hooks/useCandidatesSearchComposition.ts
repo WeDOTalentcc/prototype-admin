@@ -34,6 +34,8 @@ interface SearchResults {
   showGlobalResults: boolean
   globalDismissed: boolean
   isEnrichingContacts: boolean
+  filteredNoContact: number
+  enrichmentAttempted: number
 }
 
 interface PendingSearchRequest {
