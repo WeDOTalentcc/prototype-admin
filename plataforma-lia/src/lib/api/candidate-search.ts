@@ -245,8 +245,7 @@ export async function searchCandidates(request: SearchRequest): Promise<SearchRe
   )
 
   if (!response.ok) {
-    const error = await response.text()
-    throw new Error(`Search failed (${response.status}): ${error || response.statusText}`)
+    throw await buildSearchError(response, "Search failed")
   }
 
   return response.json()
@@ -266,11 +265,51 @@ export async function searchLocalCandidates(
   )
 
   if (!response.ok) {
-    const error = await response.text()
-    throw new Error(`Local search failed: ${error}`)
+    throw await buildSearchError(response, "Local search failed")
   }
 
   return response.json()
+}
+
+// Erro tipado para a busca de candidatos. Mantém o status HTTP do backend
+// (401/400/503/504/...) e o corpo já parseado, para que a UI consiga
+// diferenciar circuito Pearch aberto, validação, crédito insuficiente, etc.
+// — em vez de cair no banner genérico "Erro ao conectar com o backend".
+export type SearchCandidatesError = Error & {
+  status?: number
+  body?: unknown
+  code?: string
+}
+
+async function buildSearchError(
+  response: Response,
+  prefix: string,
+): Promise<SearchCandidatesError> {
+  const raw = await response.text().catch(() => "")
+  let body: unknown = raw || undefined
+  let detail: string | undefined
+  let code: string | undefined
+  if (raw) {
+    try {
+      const parsed = JSON.parse(raw)
+      body = parsed
+      if (parsed && typeof parsed === "object") {
+        const obj = parsed as Record<string, unknown>
+        if (typeof obj.detail === "string") detail = obj.detail
+        else if (typeof obj.error === "string") detail = obj.error
+        else if (typeof obj.message === "string") detail = obj.message
+        if (typeof obj.code === "string") code = obj.code
+      }
+    } catch {
+      // Mantém raw text como body se não for JSON
+    }
+  }
+  const message = `${prefix} (${response.status}): ${detail || raw || response.statusText}`
+  const err = new Error(message) as SearchCandidatesError
+  err.status = response.status
+  err.body = body
+  if (code) err.code = code
+  return err
 }
 
 export async function estimateCredits(
