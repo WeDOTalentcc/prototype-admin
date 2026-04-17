@@ -4,10 +4,15 @@ import React, { useState, useRef, useCallback, useEffect } from "react"
 import { Brain } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useLiaChatContext } from "@/contexts/lia-float-context"
+import { useAuthStore } from "@/stores/auth-store"
 import { useTranslations } from 'next-intl'
+import {
+  BUBBLE_POSITION_STORAGE_KEY,
+  BUBBLE_RESET_EVENT,
+  getUserScopedKey,
+} from "./floating-position"
 
-const POSITION_STORAGE_KEY = "lia-bubble-position"
-const RESET_EVENT = "lia:reset-bubble-position"
+const RESET_EVENT = BUBBLE_RESET_EVENT
 const DRAG_THRESHOLD = 4
 const BUTTON_SIZE = 56
 const ARROW_STEP = 8
@@ -23,10 +28,10 @@ function clampPosition(p: { x: number; y: number }) {
   return { x, y }
 }
 
-function getStoredPosition(): { x: number; y: number } | null {
+function readBubblePosition(key: string): { x: number; y: number } | null {
   if (typeof window === "undefined") return null
   try {
-    const stored = localStorage.getItem(POSITION_STORAGE_KEY)
+    const stored = localStorage.getItem(key)
     if (stored) {
       const parsed = JSON.parse(stored)
       if (typeof parsed.x === "number" && typeof parsed.y === "number") {
@@ -37,6 +42,14 @@ function getStoredPosition(): { x: number; y: number } | null {
   return null
 }
 
+function getStoredBubblePositionFor(userId: string | null | undefined): { x: number; y: number } | null {
+  if (typeof window === "undefined") return null
+  // Try the per-user key first, then migrate from the legacy unscoped key.
+  const scoped = readBubblePosition(getUserScopedKey(BUBBLE_POSITION_STORAGE_KEY, userId))
+  if (scoped) return scoped
+  return readBubblePosition(BUBBLE_POSITION_STORAGE_KEY)
+}
+
 function getDefaultPosition(): { x: number; y: number } {
   if (typeof window === "undefined") return { x: 0, y: 0 }
   return { x: window.innerWidth - BUTTON_SIZE - 24, y: window.innerHeight - BUTTON_SIZE - 24 }
@@ -45,20 +58,48 @@ function getDefaultPosition(): { x: number; y: number } {
 export function UnifiedChatBubble({ onOpen }: Props) {
   const { chatIsConnected } = useLiaChatContext()
   const t = useTranslations('chat.bubble')
-  const [position, setPosition] = useState<{ x: number; y: number } | null>(getStoredPosition)
+  const userId = useAuthStore(s => s.user?.id ?? null)
+  const [position, setPosition] = useState<{ x: number; y: number } | null>(
+    () => getStoredBubblePositionFor(userId),
+  )
   const isDragging = useRef(false)
   const dragStart = useRef<{ x: number; y: number; bx: number; by: number } | null>(null)
   const dragOriginPosition = useRef<{ x: number; y: number } | null>(null)
   const hasMoved = useRef(false)
   const buttonRef = useRef<HTMLButtonElement>(null)
 
+  // Reload bubble position when the active user changes (login/logout)
+  const lastUserIdRef = useRef<string | null>(userId)
   useEffect(() => {
+    if (lastUserIdRef.current === userId) return
+    lastUserIdRef.current = userId
+    setPosition(getStoredBubblePositionFor(userId))
+  }, [userId])
+
+  useEffect(() => {
+    const key = getUserScopedKey(BUBBLE_POSITION_STORAGE_KEY, userId)
     if (position) {
-      localStorage.setItem(POSITION_STORAGE_KEY, JSON.stringify(position))
+      localStorage.setItem(key, JSON.stringify(position))
     } else {
-      localStorage.removeItem(POSITION_STORAGE_KEY)
+      localStorage.removeItem(key)
     }
-  }, [position])
+  }, [position, userId])
+
+  // Robust Esc cancel during pointer drag (works even if focus has moved)
+  useEffect(() => {
+    const handleKey = (ev: KeyboardEvent) => {
+      if (ev.key !== "Escape" || !isDragging.current) return
+      ev.preventDefault()
+      const origin = dragOriginPosition.current
+      isDragging.current = false
+      dragStart.current = null
+      hasMoved.current = false
+      dragOriginPosition.current = null
+      setPosition(origin)
+    }
+    window.addEventListener("keydown", handleKey)
+    return () => window.removeEventListener("keydown", handleKey)
+  }, [])
 
   useEffect(() => {
     const handleResize = () => {
@@ -123,6 +164,15 @@ export function UnifiedChatBubble({ onOpen }: Props) {
     }
   }, [])
 
+  // Right-click on the bubble offers a quick "reset position" affordance
+  const handleContextMenu = useCallback((e: React.MouseEvent) => {
+    e.preventDefault()
+    setPosition(null)
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new CustomEvent(BUBBLE_RESET_EVENT))
+    }
+  }, [])
+
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === "Enter" || e.key === " ") {
       e.preventDefault()
@@ -168,7 +218,9 @@ export function UnifiedChatBubble({ onOpen }: Props) {
       onPointerUp={handlePointerUp}
       onPointerCancel={handlePointerCancel}
       onClick={handleClick}
+      onContextMenu={handleContextMenu}
       onKeyDown={handleKeyDown}
+      data-testid="lia-bubble"
       className={cn(
         "fixed z-50 touch-none select-none",
         !position && "bottom-6 right-6",

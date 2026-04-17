@@ -19,7 +19,7 @@ import { UnifiedMessageList } from "./UnifiedMessageList"
 import type { ChatMode } from "./unified-chat-types"
 
 import {
-  FLOATING_POSITION_STORAGE_KEY as FLOATING_POSITION_KEY,
+  FLOATING_POSITION_STORAGE_KEY,
   FLOATING_RESET_EVENT,
   BUBBLE_RESET_EVENT,
   FLOATING_WIDTH,
@@ -27,10 +27,9 @@ import {
   FLOATING_DRAG_THRESHOLD,
   ARROW_STEP,
   ARROW_STEP_LARGE,
-  FLOATING_VIEWPORT_MARGIN,
   clampFloatingPosition,
-  defaultFloatingPosition,
   readPersistedFloatingPosition,
+  getUserScopedKey,
   type Point,
 } from "./floating-position"
 
@@ -57,12 +56,14 @@ function getStoredWidth(): number {
   return DEFAULT_WIDTH
 }
 
-function getStoredFloatingPosition(): Point | null {
+function getStoredFloatingPositionFor(userId: string | null | undefined): Point | null {
   if (typeof window === "undefined") return null
-  return readPersistedFloatingPosition(window.localStorage, {
-    width: window.innerWidth,
-    height: window.innerHeight,
-  })
+  const viewport = { width: window.innerWidth, height: window.innerHeight }
+  // Try the user-scoped key first, then migrate from the legacy unscoped key.
+  const scopedKey = getUserScopedKey(FLOATING_POSITION_STORAGE_KEY, userId)
+  const scoped = readPersistedFloatingPosition(window.localStorage, viewport, scopedKey)
+  if (scoped) return scoped
+  return readPersistedFloatingPosition(window.localStorage, viewport, FLOATING_POSITION_STORAGE_KEY)
 }
 
 interface Props {
@@ -88,19 +89,31 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
   const [sidebarWidthPx, setSidebarWidthPx] = useState(getStoredWidth)
   const [isResizing, setIsResizing] = useState(false)
   const widthRef = useRef(sidebarWidthPx)
-  const [floatingPosition, setFloatingPosition] = useState<{ x: number; y: number } | null>(getStoredFloatingPosition)
+  const userId = useAuthStore(s => s.user?.id ?? null)
+  const [floatingPosition, setFloatingPosition] = useState<{ x: number; y: number } | null>(
+    () => getStoredFloatingPositionFor(userId),
+  )
   const floatingDragRef = useRef<{ startX: number; startY: number; bx: number; by: number; moved: boolean; origin: { x: number; y: number } | null } | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
 
-  // Persist floating position
+  // Reload position when the active user changes (login/logout)
+  const lastUserIdRef = useRef<string | null>(userId)
+  useEffect(() => {
+    if (lastUserIdRef.current === userId) return
+    lastUserIdRef.current = userId
+    setFloatingPosition(getStoredFloatingPositionFor(userId))
+  }, [userId])
+
+  // Persist floating position under a per-user key
   useEffect(() => {
     if (typeof window === "undefined") return
+    const key = getUserScopedKey(FLOATING_POSITION_STORAGE_KEY, userId)
     if (floatingPosition) {
-      localStorage.setItem(FLOATING_POSITION_KEY, JSON.stringify(floatingPosition))
+      localStorage.setItem(key, JSON.stringify(floatingPosition))
     } else {
-      localStorage.removeItem(FLOATING_POSITION_KEY)
+      localStorage.removeItem(key)
     }
-  }, [floatingPosition])
+  }, [floatingPosition, userId])
 
   // Reposition on resize
   useEffect(() => {

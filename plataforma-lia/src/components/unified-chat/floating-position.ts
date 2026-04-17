@@ -1,6 +1,17 @@
 export const FLOATING_POSITION_STORAGE_KEY = "lia-chat-floating-position"
+export const BUBBLE_POSITION_STORAGE_KEY = "lia-bubble-position"
 export const FLOATING_RESET_EVENT = "lia:reset-floating-position"
 export const BUBBLE_RESET_EVENT = "lia:reset-bubble-position"
+
+/**
+ * Returns a per-user storage key. Falls back to ":anon" when no userId is
+ * known (e.g. before login or in SSR). The legacy unscoped key is also
+ * accepted as a read-only fallback by `readPersistedFloatingPosition`.
+ */
+export function getUserScopedKey(baseKey: string, userId: string | null | undefined): string {
+  const scope = userId && userId.length > 0 ? userId : "anon"
+  return `${baseKey}:${scope}`
+}
 
 export const FLOATING_WIDTH = 360
 export const FLOATING_HEIGHT = 520
@@ -43,10 +54,11 @@ export function defaultFloatingPosition(viewport: Viewport): Point {
 export function readPersistedFloatingPosition(
   storage: Pick<Storage, "getItem"> | null | undefined,
   viewport: Viewport,
+  key: string = FLOATING_POSITION_STORAGE_KEY,
 ): Point | null {
   if (!storage) return null
   try {
-    const raw = storage.getItem(FLOATING_POSITION_STORAGE_KEY)
+    const raw = storage.getItem(key)
     if (!raw) return null
     const parsed = JSON.parse(raw) as Partial<Point>
     if (typeof parsed?.x !== "number" || typeof parsed?.y !== "number") return null
