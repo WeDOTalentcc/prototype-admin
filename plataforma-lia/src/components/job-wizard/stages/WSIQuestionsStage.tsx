@@ -3,7 +3,7 @@
 import React, { useState } from 'react'
 import { 
   Phone, Settings, Plus, Trash2, Check, Brain,  
-  Code, Target, MessageCircle, Loader2 
+  Code, Target, MessageCircle, Loader2, ShieldAlert
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useWizardContext } from '../WizardContext'
@@ -39,7 +39,9 @@ export function WSIQuestionsStage() {
     setWsiCandidates,
     companyDefaultQuestions,
     setCompanyDefaultQuestions,
-    isGeneratingWSI
+    isGeneratingWSI,
+    wsiDroppedQuestions,
+    wsiFairnessWarning
   } = useWizardContext()
 
   const [showCustomQuestionForm, setShowCustomQuestionForm] = useState(false)
@@ -228,6 +230,41 @@ export function WSIQuestionsStage() {
           )}
         </div>
       </div>
+
+      {/* Fairness warning: questions removed by FairnessGuard */}
+      {wsiFairnessWarning && (
+        <div
+          role="alert"
+          className="rounded-md border border-status-warning/40 bg-status-warning/10 p-2.5 text-xs text-lia-text-primary"
+          data-testid="wsi-fairness-warning"
+        >
+          <div className="flex items-start gap-2">
+            <ShieldAlert className="w-4 h-4 text-status-warning shrink-0 mt-0.5" />
+            <div className="flex-1 space-y-1">
+              <div className="font-semibold text-status-warning">
+                {wsiFairnessWarning.title}
+              </div>
+              <p className="text-lia-text-secondary leading-snug">
+                {wsiFairnessWarning.message}
+              </p>
+              {wsiDroppedQuestions.length > 0 && (
+                <ul className="mt-1 space-y-1 list-disc list-inside text-lia-text-secondary">
+                  {wsiDroppedQuestions.map((dropped, idx) => (
+                    <li key={idx}>
+                      <span className="italic">&ldquo;{dropped.question}&rdquo;</span>
+                      {dropped.blocked_terms.length > 0 && (
+                        <span className="text-lia-text-tertiary">
+                          {' '}— termos bloqueados: {dropped.blocked_terms.join(', ')}
+                        </span>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Progress bar */}
       <div className="w-full h-1 bg-lia-interactive-active rounded-full overflow-hidden">

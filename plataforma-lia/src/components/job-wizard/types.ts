@@ -211,3 +211,29 @@ export interface CompanyDefaultQuestion {
   enabled: boolean
   fromConfig: boolean
 }
+
+/**
+ * Question removed from the AI-generated WSI list by the FairnessGuard
+ * post-check. Mirrors backend `wsi_dropped_questions` items.
+ */
+export interface WSIDroppedQuestion {
+  question: string
+  category?: string | null
+  blocked_terms: string[]
+  fairness_category?: string | null
+  message: string
+}
+
+/**
+ * Friendly summary of a fairness event during WSI generation. Used by the
+ * wizard to render an inline banner so the recruiter knows why the question
+ * count shrank.
+ */
+export interface WSIFairnessWarning {
+  kind: 'input_blocked' | 'questions_dropped'
+  title: string
+  message: string
+  category?: string | null
+  blocked_terms?: string[]
+  dropped_count: number
+}

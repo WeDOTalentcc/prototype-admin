@@ -155,6 +155,11 @@ class JobCreationState(TypedDict, total=False):
     wsi_questions: List[ScreeningQuestion]
     questions_approved: Optional[bool]  # HITL point 2
     questions_approval_details: List[Dict[str, Any]]  # per-question decisions
+    # Structured record of questions removed by FairnessGuard during F6.
+    # Each item: {question, category, blocked_terms, message}.
+    # Surfaced in ws_stage_payload.data.dropped_questions and in the audit row
+    # so recruiters never see questions silently disappear.
+    wsi_dropped_questions: List[Dict[str, Any]]
 
     # --- Eligibility ---
     eligibility_questions: List[EligibilityQuestion]

@@ -209,6 +209,57 @@ def test_wsi_node_blocks_discriminatory_enriched_input():
     assert result["wsi_questions"] == []
 
 
+def test_wsi_node_post_check_records_dropped_questions_and_warning():
+    """When the LLM emits a biased question, it must be dropped and recorded
+    structurally so the wizard can explain it and the audit trail captures it."""
+    from app.domains.job_creation import graph as job_graph
+
+    biased = SimpleNamespace(model_dump=lambda: {
+        "question": "Voce eh homem jovem sem deficiencia?",
+        "category": "behavioral",
+    })
+    clean = SimpleNamespace(model_dump=lambda: {
+        "question": "Conte sobre um projeto que voce liderou.",
+        "category": "behavioral",
+    })
+    fake_gen = MagicMock()
+    fake_gen.generate_questions.return_value = [biased, clean]
+
+    state = {
+        "jd_enriched": {
+            "about_role": "Liderar squad de produto.",
+            "responsabilidades": ["Mentor"],
+            "skills_obrigatorias": [],
+            "titulo_padronizado": "PM",
+        },
+        "stage_history": [],
+        "seniority_resolved": "senior",
+        "question_distribution": {"technical": 1, "behavioral": 1},
+        "trait_rankings": [],
+    }
+
+    with patch.object(job_graph, "_get_wsi_generator", return_value=fake_gen):
+        result = job_graph.wsi_questions_node(state)
+
+    # Clean question survives; biased question was dropped.
+    assert len(result["wsi_questions"]) == 1
+    dropped = result.get("wsi_dropped_questions") or []
+    assert len(dropped) == 1
+    record = dropped[0]
+    assert record["question"].startswith("Voce eh homem")
+    assert record["blocked_terms"]
+    assert record["message"]
+
+    # Wizard payload surfaces a friendly warning + the dropped list.
+    payload = result.get("ws_stage_payload") or {}
+    data = payload.get("data") or {}
+    warning = data.get("fairness_warning")
+    assert warning is not None
+    assert warning["kind"] == "questions_dropped"
+    assert warning["dropped_count"] == 1
+    assert data.get("dropped_questions") == dropped
+
+
 def test_route_after_jd_terminates_when_fairness_blocks():
     """When fairness blocks the JD stage, routing must NOT loop back to intake."""
     from app.domains.job_creation import graph as job_graph

@@ -18,7 +18,9 @@ import type {
   SalaryBenchmark,
   Message,
   FieldOrigin,
-  CompanyDefaultQuestion
+  CompanyDefaultQuestion,
+  WSIDroppedQuestion,
+  WSIFairnessWarning
 } from './types'
 import {
   WIZARD_STAGES,
@@ -83,6 +85,16 @@ interface WizardContextValue {
   setIsGeneratingWSI: React.Dispatch<React.SetStateAction<boolean>>
   companyDefaultQuestions: CompanyDefaultQuestion[]
   setCompanyDefaultQuestions: React.Dispatch<React.SetStateAction<CompanyDefaultQuestion[]>>
+  /**
+   * Questions removed from the generated WSI set by the FairnessGuard
+   * post-check. The wizard renders an inline warning so the recruiter can
+   * see exactly which questions were dropped and why, instead of the count
+   * shrinking silently. Wired by the WS payload handler when present.
+   */
+  wsiDroppedQuestions: WSIDroppedQuestion[]
+  setWsiDroppedQuestions: React.Dispatch<React.SetStateAction<WSIDroppedQuestion[]>>
+  wsiFairnessWarning: WSIFairnessWarning | null
+  setWsiFairnessWarning: React.Dispatch<React.SetStateAction<WSIFairnessWarning | null>>
   
   // Calibration
   calibrationCandidates: CalibrationCandidate[]
@@ -208,6 +220,8 @@ export function WizardProvider({ children, initialStage = 'input-evaluation', co
   const [wsiCandidates, setWsiCandidates] = useState<WSIQuestionCandidate[]>([])
   const [isGeneratingWSI, setIsGeneratingWSI] = useState(false)
   const [companyDefaultQuestions, setCompanyDefaultQuestions] = useState<CompanyDefaultQuestion[]>([])
+  const [wsiDroppedQuestions, setWsiDroppedQuestions] = useState<WSIDroppedQuestion[]>([])
+  const [wsiFairnessWarning, setWsiFairnessWarning] = useState<WSIFairnessWarning | null>(null)
   
   // Calibration
   const [calibrationCandidates, setCalibrationCandidates] = useState<CalibrationCandidate[]>([])
@@ -448,6 +462,10 @@ export function WizardProvider({ children, initialStage = 'input-evaluation', co
     setIsGeneratingWSI,
     companyDefaultQuestions,
     setCompanyDefaultQuestions,
+    wsiDroppedQuestions,
+    setWsiDroppedQuestions,
+    wsiFairnessWarning,
+    setWsiFairnessWarning,
     calibrationCandidates,
     setCalibrationCandidates,
     currentCalibrationIndex,

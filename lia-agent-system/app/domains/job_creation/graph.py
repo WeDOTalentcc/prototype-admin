@@ -498,9 +498,17 @@ def wsi_questions_node(state: JobCreationState) -> JobCreationState:
 
     from app.domains.job_creation.schemas import EnrichedJobDescription
 
-    # If already approved, skip re-generation (resume path)
+    # Per-attempt drop log; cleared on each (re)generation so a clean retry
+    # doesn't carry over stale fairness warnings.
+    dropped_questions: list[Dict[str, Any]] = []
+    input_block: Optional[Dict[str, Any]] = None
+
+    # If already approved, skip re-generation (resume path). Preserve any
+    # previously surfaced drop log so the recruiter can still see why the
+    # question count is what it is when they revisit the stage.
     if state.get("questions_approved") is not None and state.get("wsi_questions"):
         questions_data = state["wsi_questions"]
+        dropped_questions = list(state.get("wsi_dropped_questions") or [])
     else:
         jd_enriched_dict = state.get("jd_enriched", {})
         enriched = EnrichedJobDescription(**jd_enriched_dict) if jd_enriched_dict else None
@@ -524,6 +532,16 @@ def wsi_questions_node(state: JobCreationState) -> JobCreationState:
                     wsi_pre.category, wsi_pre.blocked_terms,
                 )
                 state.setdefault("fairness_blocked_terms", []).extend(wsi_pre.blocked_terms)
+                input_block = {
+                    "category": wsi_pre.category,
+                    "blocked_terms": list(wsi_pre.blocked_terms),
+                    "message": (
+                        wsi_pre.educational_message
+                        or "A descrição enriquecida contém termos que a LIA "
+                           "considera potencialmente discriminatórios — por "
+                           "isso nenhuma pergunta foi gerada."
+                    ),
+                }
                 questions_data = []
             else:
                 # Mask PII inside the enriched payload before LLM call.
@@ -549,7 +567,6 @@ def wsi_questions_node(state: JobCreationState) -> JobCreationState:
                 questions_data = [q.model_dump() for q in question_objs]
 
             # --- Compliance gate: FairnessGuard post-check on each question ---
-            blocked_questions: list[str] = []
             safe_questions = []
             for q in questions_data:
                 check = check_output_fairness(q.get("question", ""))
@@ -559,21 +576,68 @@ def wsi_questions_node(state: JobCreationState) -> JobCreationState:
                         "category=%s terms=%s",
                         check.category, check.blocked_terms,
                     )
-                    blocked_questions.append(q.get("question", "")[:80])
+                    dropped_questions.append({
+                        "question": q.get("question", ""),
+                        "category": q.get("category") or q.get("block"),
+                        "blocked_terms": list(check.blocked_terms or []),
+                        "fairness_category": check.category,
+                        "message": (
+                            check.educational_message
+                            or "Pergunta removida porque o FairnessGuard "
+                               "detectou termos potencialmente discriminatórios."
+                        ),
+                    })
                     continue
                 safe_questions.append(q)
-            if blocked_questions:
-                state.setdefault("fairness_blocked_terms", []).extend(blocked_questions)
+            if dropped_questions:
+                state.setdefault("fairness_blocked_terms", []).extend(
+                    d["question"][:80] for d in dropped_questions
+                )
             questions_data = safe_questions
         else:
             questions_data = []
 
+    # Compose a recruiter-friendly summary of the fairness drops, if any.
+    total_dropped = len(dropped_questions)
+    fairness_warning: Optional[Dict[str, Any]] = None
+    if input_block is not None:
+        fairness_warning = {
+            "kind": "input_blocked",
+            "title": "Geração bloqueada pela LIA",
+            "message": input_block["message"],
+            "category": input_block.get("category"),
+            "blocked_terms": input_block.get("blocked_terms", []),
+            "dropped_count": 0,
+        }
+    elif total_dropped:
+        fairness_warning = {
+            "kind": "questions_dropped",
+            "title": (
+                "1 pergunta removida pela verificação de imparcialidade"
+                if total_dropped == 1
+                else f"{total_dropped} perguntas removidas pela verificação de imparcialidade"
+            ),
+            "message": (
+                "A LIA detectou linguagem potencialmente discriminatória nas "
+                "perguntas abaixo e as removeu antes de te mostrar a lista. "
+                "Revise se quer continuar com a triagem reduzida ou regenerar."
+            ),
+            "dropped_count": total_dropped,
+        }
+
+    # If FairnessGuard left the recruiter with no questions to approve, the
+    # wizard cannot legitimately request HITL approval — block the step until
+    # they regenerate or revise the JD.
+    has_any_question = bool(questions_data)
+    requires_approval = has_any_question
+
     updates: Dict[str, Any] = {
         "current_stage": "wsi_questions",
         "wsi_questions": questions_data,
+        "wsi_dropped_questions": dropped_questions,
         "stage_history": (state.get("stage_history") or []) + ["wsi_questions"],
         "completeness": calculate_completeness("wsi_questions"),
-        "requires_approval": True,
+        "requires_approval": requires_approval,
         "ws_stage_payload": {
             "type": "wizard_stage",
             "stage": "wsi_questions",
@@ -581,14 +645,23 @@ def wsi_questions_node(state: JobCreationState) -> JobCreationState:
                 "questions": questions_data,
                 "screening_mode": state.get("screening_mode"),
                 "distribution": state.get("question_distribution"),
+                "dropped_questions": dropped_questions,
+                "fairness_warning": fairness_warning,
             },
             "completeness": calculate_completeness("wsi_questions"),
-            "requires_approval": True,
+            "requires_approval": requires_approval,
         },
     }
+    if fairness_warning is not None and not has_any_question:
+        # Surface a top-level error so the wizard UI can also fail loudly
+        # if it doesn't read the structured warning yet.
+        updates["error"] = fairness_warning["message"]
 
     elapsed = (time.time() - t0) * 1000
-    logger.info("[JobCreation:wsi_questions] %d questions | %0.fms", len(questions_data), elapsed)
+    logger.info(
+        "[JobCreation:wsi_questions] %d questions | %d dropped | %0.fms",
+        len(questions_data), total_dropped, elapsed,
+    )
     return {**state, **updates}
 
 
@@ -872,9 +945,28 @@ def handoff_node(state: JobCreationState) -> JobCreationState:
 
     # --- Compliance gate: emit one job_creation audit row ---
     try:
+        # Surface the structured WSI drops as extra reasoning so the audit
+        # row records exactly which questions were removed and why, instead
+        # of just a list of blocked terms.
+        dropped = state.get("wsi_dropped_questions") or []
+        extra: list = []
+        if dropped:
+            extra.append({
+                "wsi_dropped_questions": [
+                    {
+                        "question": d.get("question", "")[:160],
+                        "category": d.get("category"),
+                        "fairness_category": d.get("fairness_category"),
+                        "blocked_terms": d.get("blocked_terms", []),
+                        "message": d.get("message"),
+                    }
+                    for d in dropped
+                ]
+            })
         emit_job_creation_audit(
             {**state, **updates},
             success=True,
+            extra_reasoning=extra or None,
             fairness_blocked=state.get("fairness_blocked_terms") or None,
         )
     except Exception as exc:  # pragma: no cover — defensive
@@ -934,8 +1026,16 @@ def route_after_competency(state: JobCreationState) -> str:
 
 
 def route_after_questions(state: JobCreationState) -> str:
-    """After WSI questions: HITL point 2 — recruiter must approve all questions."""
+    """After WSI questions: HITL point 2 — recruiter must approve all questions.
+
+    If FairnessGuard removed every generated question, terminate cleanly so the
+    wizard surfaces the warning instead of looping into an empty approval.
+    """
     approved = state.get("questions_approved")
+
+    if not state.get("wsi_questions") and state.get("wsi_dropped_questions"):
+        logger.info("[JobCreation:route] wsi_questions -> END (all questions blocked by fairness)")
+        return "end"
 
     if approved is None:
         logger.info("[JobCreation:route] wsi_questions -> END (awaiting approval)")
