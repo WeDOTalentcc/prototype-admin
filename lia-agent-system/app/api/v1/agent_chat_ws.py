@@ -1026,8 +1026,6 @@ class HTTPChatResponse(BaseModel):
     error: str | None = None
 
 
-@router.post("/chat/message", response_model=HTTPChatResponse)
-
 _SCOPE_TO_DOMAIN = {
     "Vagas": "jobs_management", "vagas": "jobs_management",
     "jobs": "jobs_management", "job": "jobs_management",
@@ -1038,6 +1036,8 @@ _SCOPE_TO_DOMAIN = {
     "Sourcing": "sourcing",
 }
 
+
+@router.post("/chat/message", response_model=HTTPChatResponse)
 async def http_chat_message(req: HTTPChatRequest, request: Request):
     """
     HTTP fallback for agent chat when WebSocket is unavailable.
