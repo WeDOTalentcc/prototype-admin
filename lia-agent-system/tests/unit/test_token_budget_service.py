@@ -77,7 +77,7 @@ from app.shared.observability.token_budget_service import check_budget
 class TestCheckBudget:
     async def test_enterprise_skips_redis(self):
         """Plano enterprise não deve consultar Redis — retorna True imediatamente."""
-        with patch("app.services.token_budget_service._get_redis") as mock_get:
+        with patch("app.shared.observability.token_budget_service._get_redis") as mock_get:
             allowed, used, limit = await check_budget("company-1", "enterprise")
         mock_get.assert_not_called()
         assert allowed is True
@@ -85,7 +85,7 @@ class TestCheckBudget:
 
     async def test_redis_unavailable_allows_call(self):
         """Redis indisponível → graceful degradation (permite chamada)."""
-        with patch("app.services.token_budget_service._get_redis", new_callable=AsyncMock) as mock_get:
+        with patch("app.shared.observability.token_budget_service._get_redis", new_callable=AsyncMock) as mock_get:
             mock_get.return_value = None
             allowed, used, limit = await check_budget("company-1", "starter")
         assert allowed is True
@@ -96,7 +96,7 @@ class TestCheckBudget:
         redis_mock = AsyncMock()
         redis_mock.get = AsyncMock(return_value="5000")
         redis_mock.aclose = AsyncMock()
-        with patch("app.services.token_budget_service._get_redis", new_callable=AsyncMock, return_value=redis_mock):
+        with patch("app.shared.observability.token_budget_service._get_redis", new_callable=AsyncMock, return_value=redis_mock):
             allowed, used, limit = await check_budget("company-1", "starter")
         assert allowed is True
         assert used == 5_000
@@ -106,7 +106,7 @@ class TestCheckBudget:
         redis_mock = AsyncMock()
         redis_mock.get = AsyncMock(return_value="10000")
         redis_mock.aclose = AsyncMock()
-        with patch("app.services.token_budget_service._get_redis", new_callable=AsyncMock, return_value=redis_mock):
+        with patch("app.shared.observability.token_budget_service._get_redis", new_callable=AsyncMock, return_value=redis_mock):
             allowed, used, limit = await check_budget("company-1", "starter")
         assert allowed is False
         assert used == 10_000
@@ -115,7 +115,7 @@ class TestCheckBudget:
         redis_mock = AsyncMock()
         redis_mock.get = AsyncMock(return_value="15000")
         redis_mock.aclose = AsyncMock()
-        with patch("app.services.token_budget_service._get_redis", new_callable=AsyncMock, return_value=redis_mock):
+        with patch("app.shared.observability.token_budget_service._get_redis", new_callable=AsyncMock, return_value=redis_mock):
             allowed, used, limit = await check_budget("company-2", "starter")
         assert allowed is False
 
@@ -124,7 +124,7 @@ class TestCheckBudget:
         redis_mock = AsyncMock()
         redis_mock.get = AsyncMock(return_value=None)
         redis_mock.aclose = AsyncMock()
-        with patch("app.services.token_budget_service._get_redis", new_callable=AsyncMock, return_value=redis_mock):
+        with patch("app.shared.observability.token_budget_service._get_redis", new_callable=AsyncMock, return_value=redis_mock):
             allowed, used, limit = await check_budget("company-new", "pro")
         assert allowed is True
         assert used == 0
@@ -134,7 +134,7 @@ class TestCheckBudget:
         redis_mock = AsyncMock()
         redis_mock.get = AsyncMock(side_effect=ConnectionError("redis down"))
         redis_mock.aclose = AsyncMock()
-        with patch("app.services.token_budget_service._get_redis", new_callable=AsyncMock, return_value=redis_mock):
+        with patch("app.shared.observability.token_budget_service._get_redis", new_callable=AsyncMock, return_value=redis_mock):
             allowed, used, limit = await check_budget("company-1", "pro")
         assert allowed is True
 
@@ -142,7 +142,7 @@ class TestCheckBudget:
         redis_mock = AsyncMock()
         redis_mock.get = AsyncMock(return_value="100")
         redis_mock.aclose = AsyncMock()
-        with patch("app.services.token_budget_service._get_redis", new_callable=AsyncMock, return_value=redis_mock):
+        with patch("app.shared.observability.token_budget_service._get_redis", new_callable=AsyncMock, return_value=redis_mock):
             await check_budget("company-1", "pro")
         redis_mock.aclose.assert_called_once()
 
@@ -150,7 +150,7 @@ class TestCheckBudget:
         redis_mock = AsyncMock()
         redis_mock.get = AsyncMock(side_effect=RuntimeError("boom"))
         redis_mock.aclose = AsyncMock()
-        with patch("app.services.token_budget_service._get_redis", new_callable=AsyncMock, return_value=redis_mock):
+        with patch("app.shared.observability.token_budget_service._get_redis", new_callable=AsyncMock, return_value=redis_mock):
             await check_budget("company-1", "pro")
         redis_mock.aclose.assert_called_once()
 
@@ -166,19 +166,19 @@ from app.shared.observability.token_budget_service import increment_usage
 class TestIncrementUsage:
     async def test_zero_tokens_skipped(self):
         """tokens_used <= 0 → retorna 0 sem tocar Redis."""
-        with patch("app.services.token_budget_service._get_redis") as mock_get:
+        with patch("app.shared.observability.token_budget_service._get_redis") as mock_get:
             result = await increment_usage("company-1", 0)
         mock_get.assert_not_called()
         assert result == 0
 
     async def test_negative_tokens_skipped(self):
-        with patch("app.services.token_budget_service._get_redis") as mock_get:
+        with patch("app.shared.observability.token_budget_service._get_redis") as mock_get:
             result = await increment_usage("company-1", -100)
         mock_get.assert_not_called()
         assert result == 0
 
     async def test_redis_unavailable_returns_zero(self):
-        with patch("app.services.token_budget_service._get_redis", new_callable=AsyncMock) as mock_get:
+        with patch("app.shared.observability.token_budget_service._get_redis", new_callable=AsyncMock) as mock_get:
             mock_get.return_value = None
             result = await increment_usage("company-1", 500)
         assert result == 0
@@ -188,7 +188,7 @@ class TestIncrementUsage:
         redis_mock.incrby = AsyncMock(return_value=1500)
         redis_mock.expire = AsyncMock()
         redis_mock.aclose = AsyncMock()
-        with patch("app.services.token_budget_service._get_redis", new_callable=AsyncMock, return_value=redis_mock):
+        with patch("app.shared.observability.token_budget_service._get_redis", new_callable=AsyncMock, return_value=redis_mock):
             result = await increment_usage("company-1", 500)
         redis_mock.incrby.assert_called_once()
         args = redis_mock.incrby.call_args
@@ -200,7 +200,7 @@ class TestIncrementUsage:
         redis_mock.incrby = AsyncMock(return_value=100)
         redis_mock.expire = AsyncMock()
         redis_mock.aclose = AsyncMock()
-        with patch("app.services.token_budget_service._get_redis", new_callable=AsyncMock, return_value=redis_mock):
+        with patch("app.shared.observability.token_budget_service._get_redis", new_callable=AsyncMock, return_value=redis_mock):
             await increment_usage("company-1", 100)
         redis_mock.expire.assert_called_once()
 
@@ -212,7 +212,7 @@ class TestIncrementUsage:
         redis_mock = AsyncMock()
         redis_mock.incrby = AsyncMock(side_effect=Exception("redis error"))
         redis_mock.aclose = AsyncMock()
-        with patch("app.services.token_budget_service._get_redis", new_callable=AsyncMock, return_value=redis_mock):
+        with patch("app.shared.observability.token_budget_service._get_redis", new_callable=AsyncMock, return_value=redis_mock):
             result = await increment_usage("company-1", 100)
         assert result == 0
 
@@ -227,7 +227,7 @@ from app.shared.observability.token_budget_service import get_budget_status
 @pytest.mark.asyncio
 class TestGetBudgetStatus:
     async def test_enterprise_is_unlimited(self):
-        with patch("app.services.token_budget_service._get_redis") as mock_get:
+        with patch("app.shared.observability.token_budget_service._get_redis") as mock_get:
             status = await get_budget_status("company-1", "enterprise")
         assert status["daily_limit"] == -1
         assert status["remaining"] == -1
@@ -238,7 +238,7 @@ class TestGetBudgetStatus:
         redis_mock = AsyncMock()
         redis_mock.get = AsyncMock(return_value="1000")
         redis_mock.aclose = AsyncMock()
-        with patch("app.services.token_budget_service._get_redis", new_callable=AsyncMock, return_value=redis_mock):
+        with patch("app.shared.observability.token_budget_service._get_redis", new_callable=AsyncMock, return_value=redis_mock):
             status = await get_budget_status("company-1", "pro")
         required_keys = {
             "company_id", "plan_code", "daily_limit", "used_today",
@@ -250,7 +250,7 @@ class TestGetBudgetStatus:
         redis_mock = AsyncMock()
         redis_mock.get = AsyncMock(return_value="50000")
         redis_mock.aclose = AsyncMock()
-        with patch("app.services.token_budget_service._get_redis", new_callable=AsyncMock, return_value=redis_mock):
+        with patch("app.shared.observability.token_budget_service._get_redis", new_callable=AsyncMock, return_value=redis_mock):
             status = await get_budget_status("company-1", "pro")
         assert status["used_today"] == 50_000
         assert status["daily_limit"] == 100_000
@@ -262,7 +262,7 @@ class TestGetBudgetStatus:
         redis_mock = AsyncMock()
         redis_mock.get = AsyncMock(return_value="100000")
         redis_mock.aclose = AsyncMock()
-        with patch("app.services.token_budget_service._get_redis", new_callable=AsyncMock, return_value=redis_mock):
+        with patch("app.shared.observability.token_budget_service._get_redis", new_callable=AsyncMock, return_value=redis_mock):
             status = await get_budget_status("company-1", "pro")
         assert status["budget_exhausted"] is True
         assert status["remaining"] == 0
@@ -271,13 +271,13 @@ class TestGetBudgetStatus:
         redis_mock = AsyncMock()
         redis_mock.get = AsyncMock(return_value="0")
         redis_mock.aclose = AsyncMock()
-        with patch("app.services.token_budget_service._get_redis", new_callable=AsyncMock, return_value=redis_mock):
+        with patch("app.shared.observability.token_budget_service._get_redis", new_callable=AsyncMock, return_value=redis_mock):
             status = await get_budget_status("company-1", "starter")
         # reset_at deve ser uma string ISO com T00:00:00
         assert "T00:00:00" in status["reset_at"]
 
     async def test_redis_unavailable_returns_used_zero(self):
-        with patch("app.services.token_budget_service._get_redis", new_callable=AsyncMock) as mock_get:
+        with patch("app.shared.observability.token_budget_service._get_redis", new_callable=AsyncMock) as mock_get:
             mock_get.return_value = None
             status = await get_budget_status("company-1", "pro")
         assert status["used_today"] == 0
@@ -287,7 +287,7 @@ class TestGetBudgetStatus:
         redis_mock = AsyncMock()
         redis_mock.get = AsyncMock(return_value="0")
         redis_mock.aclose = AsyncMock()
-        with patch("app.services.token_budget_service._get_redis", new_callable=AsyncMock, return_value=redis_mock):
+        with patch("app.shared.observability.token_budget_service._get_redis", new_callable=AsyncMock, return_value=redis_mock):
             status = await get_budget_status("acme-corp", "starter")
         assert status["company_id"] == "acme-corp"
 
@@ -295,7 +295,7 @@ class TestGetBudgetStatus:
         redis_mock = AsyncMock()
         redis_mock.get = AsyncMock(return_value="0")
         redis_mock.aclose = AsyncMock()
-        with patch("app.services.token_budget_service._get_redis", new_callable=AsyncMock, return_value=redis_mock):
+        with patch("app.shared.observability.token_budget_service._get_redis", new_callable=AsyncMock, return_value=redis_mock):
             status = await get_budget_status("company-1", None)
         assert status["daily_limit"] == DEFAULT_DAILY_LIMIT
 

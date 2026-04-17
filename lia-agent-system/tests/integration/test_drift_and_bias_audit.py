@@ -124,8 +124,8 @@ class TestDriftAlertService:
         svc = DriftAlertService()
         status = _make_drift_status([_make_trigger("score_drift", triggered=True)])
 
-        with patch("app.services.drift_alert_service.model_drift_service") as mock_drift, \
-             patch("app.services.drift_alert_service.notification_service") as mock_notif:
+        with patch("app.shared.observability.drift_alert_service.model_drift_service") as mock_drift, \
+             patch("app.shared.observability.drift_alert_service.notification_service") as mock_notif:
             mock_drift.evaluate = AsyncMock(return_value=status)
             mock_notif.send_multi_channel_notification = AsyncMock()
 
@@ -142,8 +142,8 @@ class TestDriftAlertService:
             _make_trigger("approval_drift", triggered=True),
         ])
 
-        with patch("app.services.drift_alert_service.model_drift_service") as mock_drift, \
-             patch("app.services.drift_alert_service.notification_service") as mock_notif:
+        with patch("app.shared.observability.drift_alert_service.model_drift_service") as mock_drift, \
+             patch("app.shared.observability.drift_alert_service.notification_service") as mock_notif:
             mock_drift.evaluate = AsyncMock(return_value=status)
             mock_notif.send_multi_channel_notification = AsyncMock()
 
@@ -161,8 +161,8 @@ class TestDriftAlertService:
         svc = DriftAlertService()
         status = _make_drift_status([_make_trigger(triggered=False)])
 
-        with patch("app.services.drift_alert_service.model_drift_service") as mock_drift, \
-             patch("app.services.drift_alert_service.notification_service") as mock_notif:
+        with patch("app.shared.observability.drift_alert_service.model_drift_service") as mock_drift, \
+             patch("app.shared.observability.drift_alert_service.notification_service") as mock_notif:
             mock_drift.evaluate = AsyncMock(return_value=status)
             mock_notif.send_multi_channel_notification = AsyncMock()
 
@@ -176,8 +176,8 @@ class TestDriftAlertService:
         svc = DriftAlertService()
         status = _make_drift_status([_make_trigger(triggered=True)])
 
-        with patch("app.services.drift_alert_service.model_drift_service") as mock_drift, \
-             patch("app.services.drift_alert_service.notification_service") as mock_notif:
+        with patch("app.shared.observability.drift_alert_service.model_drift_service") as mock_drift, \
+             patch("app.shared.observability.drift_alert_service.notification_service") as mock_notif:
             mock_drift.evaluate = AsyncMock(return_value=status)
             mock_notif.send_multi_channel_notification = AsyncMock()
 

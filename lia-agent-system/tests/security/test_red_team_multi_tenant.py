@@ -44,7 +44,7 @@ class TestMultiTenantIsolation:
     def test_drift_service_requires_company_id(self):
         """model_drift_service deve requerer company_id."""
         import inspect
-        import app.services.model_drift_service as mod
+        import app.shared.observability.model_drift_service as mod
         src = inspect.getsource(mod)
         assert "company_id" in src
 
