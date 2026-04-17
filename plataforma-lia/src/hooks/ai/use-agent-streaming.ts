@@ -54,7 +54,7 @@ export interface UseAgentStreamingResult {
   connect: () => void
   disconnect: () => void
   clearTokens: () => void
-  sendMessage: (content: string, context?: Record<string, unknown>, domain?: string) => void
+  sendMessage: (content: string, context?: Record<string, unknown>, domain?: string) => boolean
   sendRaw: (data: Record<string, unknown>) => void
   sendMessageViaSSE: (
     sessionId: string,

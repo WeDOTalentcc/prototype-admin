@@ -49,7 +49,7 @@ export interface UseChatTransportResult {
   connect: () => void
   disconnect: () => void
   clearTokens: () => void
-  sendMessage: (content: string, context?: Record<string, unknown>, domain?: string) => void
+  sendMessage: (content: string, context?: Record<string, unknown>, domain?: string) => boolean
   sendRaw: (data: Record<string, unknown>) => void
   sendMessageViaSSE: (
     sessionId: string,
@@ -252,10 +252,18 @@ export function useChatTransport(
   const clearTokens = useCallback(() => setTokens(""), [])
 
   const sendMessage = useCallback(
-    (content: string, context: Record<string, unknown> = {}, domain = "") => {
+    (content: string, context: Record<string, unknown> = {}, domain = ""): boolean => {
       const ws = wsRef.current
-      if (!ws || ws.readyState !== WebSocket.OPEN) return
-      ws.send(JSON.stringify({ type: "message", content, context, domain }))
+      if (!ws || ws.readyState !== WebSocket.OPEN) return false
+      try {
+        ws.send(JSON.stringify({ type: "message", content, context, domain }))
+        return true
+      } catch {
+        // Task #383 (F2): se ws.send lança (socket entrou em CLOSING entre o
+        // check e o send), reportar falha pra que useChatMessages caia no REST
+        // ao invés de deixar o usuário com spinner eterno.
+        return false
+      }
     },
     [],
   )

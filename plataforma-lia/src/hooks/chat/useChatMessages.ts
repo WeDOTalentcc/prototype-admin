@@ -22,7 +22,7 @@ export interface UseChatMessagesOptions {
   sessionId: string
   isConnected: boolean
   transportMode: TransportMode
-  wsSend: (content: string, context: Record<string, unknown>, domain: string) => void
+  wsSend: (content: string, context: Record<string, unknown>, domain: string) => boolean
   sendRaw: (data: Record<string, unknown>) => void
   clearTokens: () => void
   sendMessageViaSSE: (
@@ -32,6 +32,9 @@ export interface UseChatMessagesOptions {
     context?: Record<string, unknown>,
     conversationId?: string | null,
   ) => void
+  /** Task #383 (F2): tick contador de eventos WS — usado pelo watchdog que cai
+   *  pra REST quando o `wsSend` é aceito mas nenhum evento chega de volta. */
+  wsEventTickRef?: React.MutableRefObject<number>
   hitlRef: React.MutableRefObject<HITLPending | null>
   setHitlPending: React.Dispatch<React.SetStateAction<HITLPending | null>>
   onMessageComplete?: (
@@ -63,6 +66,7 @@ export function useChatMessages({
   sendRaw,
   clearTokens,
   sendMessageViaSSE,
+  wsEventTickRef,
   hitlRef,
   setHitlPending,
   onMessageComplete,
@@ -137,30 +141,12 @@ export function useChatMessages({
     return ctx
   }, [])
 
-  const sendMessage = useCallback(async (content: string, domain = "", scope?: string) => {
-    clearTokens()
-    // BUG-13: acender "LIA digitando" imediatamente — no caminho WS isso seria
-    // feito pelo evento "thinking", mas em REST/SSE (e até a primeira resposta
-    // do WS chegar) o indicador ficava invisível, dando sensação de chat morto.
+  const sendViaRest = useCallback(async (
+    content: string,
+    domain: string,
+    context: Record<string, unknown>,
+  ) => {
     setIsThinking?.(true)
-    const context: Record<string, unknown> = scope ? { scope } : {}
-    if (conversationId) {
-      context.conversation_id = conversationId
-    }
-
-    const pageContext = getPageContext()
-    Object.assign(context, pageContext)
-
-    if (isConnected && transportMode === "ws") {
-      wsSend(content, context, domain)
-      return
-    }
-
-    if (isConnected && transportMode === "sse") {
-      sendMessageViaSSE(sessionId, content, domain || "recruiter_assistant", context, conversationId)
-      return
-    }
-
     try {
       const res = await fetch("/api/backend-proxy/chat/message", {
         method: "POST",
@@ -261,7 +247,68 @@ export function useChatMessages({
       setIsThinking?.(false)
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [wsSend, clearTokens, isConnected, transportMode, sessionId, conversationId, getPageContext, hitlRef, setHitlPending, sendMessageViaSSE, setIsThinking])
+  }, [sessionId, conversationId, hitlRef, setHitlPending, setIsThinking])
+
+  // Task #383 (F2): timeout para "WS aceitou send mas nunca respondeu". O
+  // backend costuma emitir `thinking` em ~200ms; se nada chegar em N segundos,
+  // assumimos que o frame foi engolido (proxy/edge/buffer) e caímos pro REST.
+  // Pode ser sobrescrito em testes via `window.__LIA_WS_RESPONSE_TIMEOUT_MS`.
+  const getWsTimeoutMs = useCallback((): number => {
+    if (typeof window !== "undefined") {
+      const override = (window as unknown as { __LIA_WS_RESPONSE_TIMEOUT_MS?: number }).__LIA_WS_RESPONSE_TIMEOUT_MS
+      if (typeof override === "number" && override > 0) return override
+    }
+    return 8000
+  }, [])
+
+  const sendMessage = useCallback(async (content: string, domain = "", scope?: string) => {
+    clearTokens()
+    // BUG-13: acender "LIA digitando" imediatamente — no caminho WS isso seria
+    // feito pelo evento "thinking", mas em REST/SSE (e até a primeira resposta
+    // do WS chegar) o indicador ficava invisível, dando sensação de chat morto.
+    setIsThinking?.(true)
+    const context: Record<string, unknown> = scope ? { scope } : {}
+    if (conversationId) {
+      context.conversation_id = conversationId
+    }
+
+    const pageContext = getPageContext()
+    Object.assign(context, pageContext)
+
+    if (isConnected && transportMode === "ws") {
+      // Task #383 (F2): tira snapshot do tick ANTES do send. Se nenhum evento
+      // WS chegar dentro do timeout, caímos pro REST + bolha de aviso.
+      const tickAtSend = wsEventTickRef?.current ?? 0
+      const accepted = wsSend(content, context, domain)
+      if (!accepted) {
+        // Socket entrou em CLOSING/CLOSED entre o `isConnected=true` e o send —
+        // não fica preso no spinner; vai direto pro REST.
+        await sendViaRest(content, domain, context)
+        return
+      }
+
+      const timeoutMs = getWsTimeoutMs()
+      setTimeout(() => {
+        // Se algum evento (thinking/message/error/...) chegou, o tick mudou e
+        // a resposta normal está no caminho — não fazemos nada.
+        if (!wsEventTickRef || wsEventTickRef.current !== tickAtSend) return
+        // Caso contrário: o WS engoliu o send. Avisa o usuário e reenvia REST.
+        onCompleteRef.current?.(
+          "Conexão instável com a LIA. Tentando novamente...",
+        )
+        void sendViaRest(content, domain, context)
+      }, timeoutMs)
+      return
+    }
+
+    if (isConnected && transportMode === "sse") {
+      sendMessageViaSSE(sessionId, content, domain || "recruiter_assistant", context, conversationId)
+      return
+    }
+
+    await sendViaRest(content, domain, context)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [wsSend, clearTokens, isConnected, transportMode, sessionId, conversationId, getPageContext, sendMessageViaSSE, setIsThinking, sendViaRest, wsEventTickRef, getWsTimeoutMs])
 
   const sendApproval = useCallback((approved: boolean) => {
     const pending = hitlRef.current

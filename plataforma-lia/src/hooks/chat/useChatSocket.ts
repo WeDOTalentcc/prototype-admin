@@ -37,8 +37,11 @@ export interface UseChatSocketReturn {
   transportMode: TransportMode
   connect: () => void
   disconnect: () => void
-  wsSend: (content: string, context: Record<string, unknown>, domain: string) => void
+  wsSend: (content: string, context: Record<string, unknown>, domain: string) => boolean
   sendRaw: (data: Record<string, unknown>) => void
+  /** Task #383 (F2): bumped on every WS event recebido. useChatMessages usa
+   *  pra detectar "send aceito mas zero respostas" e cair pro REST. */
+  wsEventTickRef: React.MutableRefObject<number>
   clearTokens: () => void
   sendMessageViaSSE: (
     sessionId: string,
@@ -82,6 +85,10 @@ export function useChatSocket({
   const [backgroundTasks, setBackgroundTasks] = useState<BackgroundTaskEvent[]>([])
   const [wsAuthToken, setWsAuthToken] = useState<string | undefined>(undefined)
   const [conversationIdFromWs, setConversationIdFromWs] = useState<string | null>(null)
+  // Task #383 (F2): contador monotônico bumpado a cada evento WS recebido.
+  // useChatMessages tira snapshot antes do wsSend e checa após N segundos —
+  // se o tick não mudou, o send foi engolido e ele cai pro REST.
+  const wsEventTickRef = useRef(0)
 
   useEffect(() => {
     // BUG-AUDIT #277 / H2a+H4: o ws-token pode demorar (cold-start backend do
@@ -123,6 +130,26 @@ export function useChatSocket({
   useEffect(() => { onPanelUpdateRef.current = onPanelUpdate }, [onPanelUpdate])
 
   const handleEvent = useCallback((event: StreamingEvent) => {
+    // Task #383 (F2): só contam eventos que provam que o backend RECEBEU e
+    // está RESPONDENDO ao último `message` enviado. `pong` (keep-alive) e
+    // outros eventos de housekeeping NÃO suprimem o watchdog — senão um
+    // socket "vivo mas surdo" continuaria escondendo o silent drop.
+    const RESPONSE_RELEVANT_EVENTS: ReadonlySet<string> = new Set([
+      "thinking",
+      "token",
+      "token_done",
+      "message",
+      "clarification",
+      "error",
+      "approval_required",
+      "approval_confirmed",
+      "plan_progress",
+      "panel_update",
+      "background_task_update",
+    ])
+    if (RESPONSE_RELEVANT_EVENTS.has(event.type)) {
+      wsEventTickRef.current += 1
+    }
     switch (event.type) {
       case "thinking":
         setIsThinking(true)
@@ -325,6 +352,7 @@ export function useChatSocket({
     sendRaw,
     clearTokens,
     sendMessageViaSSE,
+    wsEventTickRef,
     hitlPending,
     hitlRef,
     setHitlPending,

@@ -46,6 +46,7 @@ export function useLiaChatConnection({
     sendRaw: socket.sendRaw,
     clearTokens: socket.clearTokens,
     sendMessageViaSSE: socket.sendMessageViaSSE,
+    wsEventTickRef: socket.wsEventTickRef,
     hitlRef: socket.hitlRef,
     setHitlPending: socket.setHitlPending,
     onMessageComplete,
