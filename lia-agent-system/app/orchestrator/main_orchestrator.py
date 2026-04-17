@@ -789,6 +789,18 @@ class MainOrchestrator:
 
         result = await self._inject_module_tasting_hints(ctx, result, db)
 
+        # LIA-NAV-01: Inject navigation ui_action when message targets a platform page.
+        # Only fires when the orchestrator did not already set ui_action.
+        if not result.get("ui_action"):
+            try:
+                from app.orchestrator.navigation_intent import detect_navigation_intent
+                _nav = detect_navigation_intent(ctx.message)
+                if _nav.page and _nav.confidence >= 0.75:
+                    result["ui_action"] = "navigate_to"
+                    result["ui_action_params"] = {"page": _nav.page, "hint": _nav.hint}
+            except Exception as _nav_exc:
+                logger.debug("[LIA-NAV-01] Navigation intent detection skipped: %s", _nav_exc)
+
         return ChatResponse.from_orchestrator_result(result, conv_id=conv_id)
 
     async def _try_cache_lookup(

@@ -112,6 +112,17 @@ _PATTERNS: list[tuple[list[tuple[str, float]], str, str]] = [
         "Painel de Controle",
         "Quer que eu abra o Painel de Controle?",
     ),
+
+    # 7. Indicadores — BUG-NAV-10.4: page declared in docstring but had no patterns
+    (
+        [("indicadores", 1.0), ("métricas", 0.7), ("metricas", 0.7),
+         ("relatório", 0.5), ("relatorio", 0.5), ("kpis", 1.0), ("kpi", 0.8),
+         ("ver indicadores", 1.0), ("analytics", 0.5), ("desempenho", 0.4),
+         ("performance recrutamento", 1.0), ("taxa de conversão", 0.7),
+         ("tempo de contratação", 0.7)],
+        "Indicadores",
+        "Quer que eu abra os Indicadores?",
+    ),
 ]
 
 _HAS_STRONG_PHRASE_THRESHOLD = 0.7

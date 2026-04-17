@@ -201,11 +201,20 @@ def _build_agent_input(
     user_id: str,
     conversation_history: list,
 ):
-    """Constrói AgentInput a partir dos dados da mensagem WS."""
+    """Constroì AgentInput a partir dos dados da mensagem WS."""
     from lia_agents_core.agent_interface import AgentInput
+    # LIA-CTX-01: inject company_id so domain agents never ask the user for it.
+    ctx = dict(context)
+    if company_id and not ctx.get("tenant_context_snippet"):
+        ctx["tenant_context_snippet"] = (
+            "Empresa autenticada: company_id=" + company_id + ". "
+            "Nao peca ao usuario o ID da empresa - ja esta disponivel no contexto."
+        )
+    ctx.setdefault("company_id", company_id)
+    ctx.setdefault("user_id", user_id)
     return AgentInput(
         message=content,
-        context=context,
+        context=ctx,
         session_id=session_id,
         company_id=company_id,
         user_id=user_id,
