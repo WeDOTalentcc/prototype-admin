@@ -15,7 +15,7 @@ from typing import Any
 from lia_agents_core.react_loop import ToolDefinition
 from sqlalchemy import text
 
-from app.core.database import AsyncSessionLocal
+from app.core.database import AsyncSessionLocal, get_tenant_aware_session
 from app.shared.compliance.fairness_guard import FairnessGuard
 from app.shared.tool_handler import tool_handler
 
@@ -30,7 +30,7 @@ async def _wrap_get_candidate_profile(**kwargs: Any) -> dict[str, Any]:
     if not candidate_id:
         return {"success": False, "error": "candidate_id é obrigatório"}
 
-    async with AsyncSessionLocal() as db:
+    async with get_tenant_aware_session() as db:
         result = await db.execute(
             text("""
                 SELECT c.id, c.name, c.email, c.phone, c.linkedin_url,
@@ -63,7 +63,7 @@ async def _wrap_get_candidate_wsi_scores(**kwargs: Any) -> dict[str, Any]:
     candidate_id = kwargs.get("candidate_id", "")
     job_id = kwargs.get("job_id", "")
 
-    async with AsyncSessionLocal() as db:
+    async with get_tenant_aware_session() as db:
         query = """
             SELECT lo.id, lo.score, lo.wsi_score, lo.opinion_type, lo.source,
                    lo.recommendation, lo.technical_analysis, lo.behavioral_analysis,
@@ -100,7 +100,7 @@ async def _wrap_get_candidate_screening_results(**kwargs: Any) -> dict[str, Any]
     candidate_id = kwargs.get("candidate_id", "")
     job_id = kwargs.get("job_id", "")
 
-    async with AsyncSessionLocal() as db:
+    async with get_tenant_aware_session() as db:
         query = """
             SELECT st.id, st.status, st.channel, st.screening_type,
                    st.responses, st.lia_analysis, st.score,
@@ -136,7 +136,7 @@ async def _wrap_get_candidate_screening_results(**kwargs: Any) -> dict[str, Any]
 async def _wrap_get_candidate_salary_info(**kwargs: Any) -> dict[str, Any]:
     candidate_id = kwargs.get("candidate_id", "")
 
-    async with AsyncSessionLocal() as db:
+    async with get_tenant_aware_session() as db:
         result = await db.execute(
             text("""
                 SELECT c.salary_expectation_clt, c.salary_expectation_pj,
@@ -183,7 +183,7 @@ async def _wrap_update_candidate_field(**kwargs: Any) -> dict[str, Any]:
         return {"success": False, "error": f"Campo '{field_name}' contém caracteres inválidos."}
 
     try:
-        async with AsyncSessionLocal() as db:
+        async with get_tenant_aware_session() as db:
             await db.execute(
                 text(f"UPDATE candidates SET {field_name} = :val, updated_at = NOW() WHERE id = :cid"),
                 {"val": field_value, "cid": candidate_id},
@@ -239,7 +239,7 @@ async def _wrap_get_stage_sub_statuses(**kwargs: Any) -> dict[str, Any]:
     to_stage = kwargs.get("to_stage", "")
     company_id = kwargs.get("company_id", "")
 
-    async with AsyncSessionLocal() as db:
+    async with get_tenant_aware_session() as db:
         result = await db.execute(
             text("""
                 SELECT rs.name AS stage_name,
@@ -285,7 +285,7 @@ async def _wrap_suggest_sub_status(**kwargs: Any) -> dict[str, Any]:
     # Try to get default sub-status from DB first
     if to_stage and company_id:
         try:
-            async with AsyncSessionLocal() as db:
+            async with get_tenant_aware_session() as db:
                 result = await db.execute(
                     text("""
                         SELECT ss.name, ss.display_name
@@ -448,7 +448,7 @@ async def _wrap_get_job_context(**kwargs: Any) -> dict[str, Any]:
     if not job_id:
         return {"success": False, "error": "job_id é obrigatório"}
 
-    async with AsyncSessionLocal() as db:
+    async with get_tenant_aware_session() as db:
         result = await db.execute(
             text("""
                 SELECT jv.id, jv.title, jv.department, jv.description,
@@ -585,7 +585,7 @@ async def _wrap_get_recruiter_preferences(**kwargs: Any) -> dict[str, Any]:
         return {"success": True, "preferences": [], "message": "Sem preferências salvas"}
 
     try:
-        async with AsyncSessionLocal() as db:
+        async with get_tenant_aware_session() as db:
             result = await db.execute(
                 text("""
                     SELECT preference_key, preference_value, frequency, context, last_used
@@ -631,7 +631,7 @@ async def _wrap_save_recruiter_preference(**kwargs: Any) -> dict[str, Any]:
         return {"success": False, "error": "recruiter_id e preference_key são obrigatórios"}
 
     try:
-        async with AsyncSessionLocal() as db:
+        async with get_tenant_aware_session() as db:
             existing = await db.execute(
                 text("""
                     SELECT id, frequency FROM recruiter_preferences
@@ -692,7 +692,7 @@ async def _wrap_save_recruiter_preference(**kwargs: Any) -> dict[str, Any]:
 async def _get_candidate_phone(candidate_email: str, interview_id: str) -> str | None:
     """Busca telefone do candidato na tabela candidates usando email ou interview_id como fallback."""
     try:
-        async with AsyncSessionLocal() as db:
+        async with get_tenant_aware_session() as db:
             if candidate_email:
                 result = await db.execute(
                     text("SELECT phone FROM candidates WHERE email = :email LIMIT 1"),
@@ -726,7 +726,7 @@ async def _wrap_get_interview_details(**kwargs: Any) -> dict[str, Any]:
     if not candidate_id:
         return {"success": False, "error": "candidate_id é obrigatório"}
 
-    async with AsyncSessionLocal() as db:
+    async with get_tenant_aware_session() as db:
         result = await db.execute(
             text("""
                 SELECT
@@ -791,7 +791,7 @@ async def _wrap_cancel_interview(**kwargs: Any) -> dict[str, Any]:
     graph_status = "not_attempted"
 
     try:
-        async with AsyncSessionLocal() as db:
+        async with get_tenant_aware_session() as db:
             result = await db.execute(
                 text("""
                     SELECT id::text, candidate_email, candidate_name,
@@ -878,7 +878,7 @@ async def _wrap_cancel_interview(**kwargs: Any) -> dict[str, Any]:
                     notifications_sent.append({"channel": "whatsapp", "status": "failed"})
 
         try:
-            async with AsyncSessionLocal() as db:
+            async with get_tenant_aware_session() as db:
                 await db.execute(
                     text("""
                         INSERT INTO notifications (id, user_id, title, message, notification_type, category, priority, source_agent, source_trigger, created_at)
@@ -944,7 +944,7 @@ async def _wrap_reschedule_interview(**kwargs: Any) -> dict[str, Any]:
                 "error": f"Formato de data inválido: {new_start_time_str}. Use ISO 8601 (ex: 2025-03-15T14:00:00)",
             }
 
-        async with AsyncSessionLocal() as db:
+        async with get_tenant_aware_session() as db:
             result = await db.execute(
                 text("""
                     SELECT id::text, candidate_email, candidate_name,
@@ -1028,7 +1028,7 @@ async def _wrap_reschedule_interview(**kwargs: Any) -> dict[str, Any]:
                     notifications_sent.append({"channel": "whatsapp", "status": "failed"})
 
         try:
-            async with AsyncSessionLocal() as db:
+            async with get_tenant_aware_session() as db:
                 await db.execute(
                     text("""
                         INSERT INTO notifications (id, user_id, title, message, notification_type, category, priority, source_agent, source_trigger, created_at)
@@ -1377,7 +1377,7 @@ def get_pipeline_transition_tools(
 async def _wrap_view_candidate_profile(**kwargs: Any) -> dict[str, Any]:
     candidate_id = kwargs.get("candidate_id", "unknown")
     logger.info(f"[pipeline_tools] view_candidate_profile called for candidate={candidate_id}")
-    async with AsyncSessionLocal() as session:
+    async with get_tenant_aware_session() as session:
         result = await session.execute(
             text("""
                 SELECT c.id, c.name, c.email, c.phone, c.current_title, c.current_company,
@@ -1425,7 +1425,7 @@ async def _wrap_move_candidate(**kwargs: Any) -> dict[str, Any]:
     target_stage = kwargs.get("target_stage", "unknown")
     reason = kwargs.get("reason", "")
     logger.warning(f"[pipeline_tools] move_candidate called: candidate={candidate_id} target={target_stage} reason={reason}")
-    async with AsyncSessionLocal() as session:
+    async with get_tenant_aware_session() as session:
         prev = await session.execute(
             text("SELECT stage, status FROM vacancy_candidates WHERE candidate_id = :candidate_id ORDER BY updated_at DESC LIMIT 1"),
             {"candidate_id": candidate_id},
@@ -1460,7 +1460,7 @@ async def _wrap_move_candidate(**kwargs: Any) -> dict[str, Any]:
 async def _wrap_analyze_cv(**kwargs: Any) -> dict[str, Any]:
     candidate_id = kwargs.get("candidate_id", "unknown")
     logger.info(f"[pipeline_tools] analyze_cv called for candidate={candidate_id}")
-    async with AsyncSessionLocal() as session:
+    async with get_tenant_aware_session() as session:
         result = await session.execute(
             text("""
                 SELECT c.id, c.name, c.current_title, c.current_company, c.seniority_level,
@@ -1508,7 +1508,7 @@ async def _wrap_run_wsi_screening(**kwargs: Any) -> dict[str, Any]:
     candidate_id = kwargs.get("candidate_id", "unknown")
     vacancy_id = kwargs.get("vacancy_id", "unknown")
     logger.info(f"[pipeline_tools] run_wsi_screening called: candidate={candidate_id} vacancy={vacancy_id}")
-    async with AsyncSessionLocal() as session:
+    async with get_tenant_aware_session() as session:
         wsi = await session.execute(
             text("""
                 SELECT id, technical_wsi, behavioral_wsi, overall_wsi, classification, percentile, created_at
@@ -1567,7 +1567,7 @@ async def _wrap_schedule_interview(**kwargs: Any) -> dict[str, Any]:
     interview_datetime = kwargs.get("datetime", "")
     interview_type = kwargs.get("type", "video")
     logger.info(f"[pipeline_tools] schedule_interview called: candidate={candidate_id} datetime={interview_datetime} type={interview_type}")
-    async with AsyncSessionLocal() as session:
+    async with get_tenant_aware_session() as session:
         cand = await session.execute(
             text("SELECT name, email FROM candidates WHERE id = :candidate_id"),
             {"candidate_id": candidate_id},
@@ -1635,7 +1635,7 @@ async def _wrap_send_communication(**kwargs: Any) -> dict[str, Any]:
     channel = kwargs.get("channel", "email")
     message_text = kwargs.get("message", "")
     logger.info(f"[pipeline_tools] send_communication called: candidate={candidate_id} channel={channel}")
-    async with AsyncSessionLocal() as session:
+    async with get_tenant_aware_session() as session:
         cand = await session.execute(
             text("SELECT name, email, phone FROM candidates WHERE id = :candidate_id"),
             {"candidate_id": candidate_id},
@@ -1691,7 +1691,7 @@ async def _wrap_add_notes(**kwargs: Any) -> dict[str, Any]:
     candidate_id = kwargs.get("candidate_id", "unknown")
     note_text = kwargs.get("note_text", "")
     logger.info(f"[pipeline_tools] add_notes called for candidate={candidate_id}")
-    async with AsyncSessionLocal() as session:
+    async with get_tenant_aware_session() as session:
         existing = await session.execute(
             text("SELECT notes FROM vacancy_candidates WHERE candidate_id = :candidate_id ORDER BY updated_at DESC LIMIT 1"),
             {"candidate_id": candidate_id},
@@ -1728,7 +1728,7 @@ async def _wrap_batch_move(**kwargs: Any) -> dict[str, Any]:
     logger.info(f"[pipeline_tools] batch_move called: candidates={len(candidate_ids)} target={target_stage}")
     if not candidate_ids:
         return {"success": False, "data": {}, "message": "Nenhum candidato fornecido para movimentação em massa."}
-    async with AsyncSessionLocal() as session:
+    async with get_tenant_aware_session() as session:
         result = await session.execute(
             text("""
                 UPDATE vacancy_candidates
@@ -1754,7 +1754,7 @@ async def _wrap_batch_move(**kwargs: Any) -> dict[str, Any]:
 async def _wrap_add_to_shortlist(**kwargs: Any) -> dict[str, Any]:
     candidate_id = kwargs.get("candidate_id", "unknown")
     logger.info(f"[pipeline_tools] add_to_shortlist called for candidate={candidate_id}")
-    async with AsyncSessionLocal() as session:
+    async with get_tenant_aware_session() as session:
         check = await session.execute(
             text("SELECT status FROM vacancy_candidates WHERE candidate_id = :candidate_id ORDER BY updated_at DESC LIMIT 1"),
             {"candidate_id": candidate_id},
@@ -1783,7 +1783,7 @@ async def _wrap_add_to_shortlist(**kwargs: Any) -> dict[str, Any]:
 async def _wrap_view_screening_results(**kwargs: Any) -> dict[str, Any]:
     candidate_id = kwargs.get("candidate_id", "unknown")
     logger.info(f"[pipeline_tools] view_screening_results called for candidate={candidate_id}")
-    async with AsyncSessionLocal() as session:
+    async with get_tenant_aware_session() as session:
         vc = await session.execute(
             text("""
                 SELECT vc.lia_score, vc.match_percentage, vc.status, vc.stage, vc.vacancy_id,
@@ -1836,7 +1836,7 @@ async def _wrap_view_screening_results(**kwargs: Any) -> dict[str, Any]:
 async def _wrap_view_interview_notes(**kwargs: Any) -> dict[str, Any]:
     candidate_id = kwargs.get("candidate_id", "unknown")
     logger.info(f"[pipeline_tools] view_interview_notes called for candidate={candidate_id}")
-    async with AsyncSessionLocal() as session:
+    async with get_tenant_aware_session() as session:
         interviews = await session.execute(
             text("""
                 SELECT id, title, interview_type, start_time, status,
@@ -1896,7 +1896,7 @@ async def _wrap_view_interview_notes(**kwargs: Any) -> dict[str, Any]:
 async def _wrap_generate_offer(**kwargs: Any) -> dict[str, Any]:
     candidate_id = kwargs.get("candidate_id", "unknown")
     logger.info(f"[pipeline_tools] generate_offer called for candidate={candidate_id}")
-    async with AsyncSessionLocal() as session:
+    async with get_tenant_aware_session() as session:
         result = await session.execute(
             text("""
                 SELECT c.id, c.name, c.email, c.current_title, c.current_company,
@@ -1949,7 +1949,7 @@ async def _wrap_generate_offer(**kwargs: Any) -> dict[str, Any]:
 async def _wrap_finalize_hiring(**kwargs: Any) -> dict[str, Any]:
     candidate_id = kwargs.get("candidate_id", "unknown")
     logger.info(f"[pipeline_tools] finalize_hiring called for candidate={candidate_id}")
-    async with AsyncSessionLocal() as session:
+    async with get_tenant_aware_session() as session:
         check = await session.execute(
             text("""
                 SELECT vc.stage, vc.status, c.name
@@ -1993,7 +1993,7 @@ async def _wrap_update_status(**kwargs: Any) -> dict[str, Any]:
     candidate_id = kwargs.get("candidate_id", "unknown")
     status = kwargs.get("status", "unknown")
     logger.info(f"[pipeline_tools] update_status called: candidate={candidate_id} status={status}")
-    async with AsyncSessionLocal() as session:
+    async with get_tenant_aware_session() as session:
         check = await session.execute(
             text("SELECT status FROM vacancy_candidates WHERE candidate_id = :candidate_id ORDER BY updated_at DESC LIMIT 1"),
             {"candidate_id": candidate_id},
@@ -2034,7 +2034,7 @@ async def _wrap_generate_report(**kwargs: Any) -> dict[str, Any]:
     report_id = f"rpt_{uuid.uuid4().hex[:12]}"
     summary: dict[str, Any] = {}
     try:
-        async with AsyncSessionLocal() as session:
+        async with get_tenant_aware_session() as session:
             row = await session.execute(text("""
                 SELECT COUNT(*) AS total,
                     COUNT(*) FILTER (WHERE status = 'screening') AS screening,

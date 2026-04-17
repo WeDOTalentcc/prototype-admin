@@ -37,7 +37,7 @@ _CONFIRMATION_WORDS = {
 
 from app.shared.agents.agent_registry import register_agent
 
-@register_agent("jobs_management", aliases=['jobs_mgmt'])
+@register_agent("jobs_management", aliases=['jobs_mgmt', 'job_management'])
 class JobsManagementReActAgent(LangGraphReActBase, EnhancedAgentMixin):
     DOMAIN_INSTRUCTIONS = JOBS_MGMT_DOMAIN_SPECIFIC + "\n\n" + JOBS_MGMT_FEW_SHOT_EXAMPLES + "\n\n" + JOBS_MGMT_REASONING_PROMPT.format(memory_summary="", stage_context="")
 

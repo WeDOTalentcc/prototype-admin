@@ -1,0 +1,40 @@
+[
+  {
+    "id": "JM-001",
+    "category": "JM",
+    "severity": "critical",
+    "title": "List all jobs",
+    "prompt": "mostra todas as vagas",
+    "context": {
+      "scope": "Vagas",
+      "page": "gestao-vagas"
+    },
+    "expected_tools": [
+      "list_jobs"
+    ],
+    "canonical_files": [
+      "app/domains/recruiter_assistant/agents/jobs_mgmt_tool_registry.py",
+      "app/domains/recruiter_assistant/agents/jobs_mgmt_system_prompt.py"
+    ],
+    "success_criteria": [
+      "Response contains at least one job title or ID",
+      "Does not ask for clarification before executing",
+      "Calls list_jobs tool"
+    ],
+    "anti_patterns": [
+      "Says 'Não encontrei nenhuma vaga' without attempting tool call",
+      "Asks 'qual empresa?' before calling the tool",
+      "Says tool not authorized"
+    ],
+    "api_ok": true,
+    "http_status": 200,
+    "latency_ms": 9393,
+    "response": "Aqui estão todas as vagas que encontrei:\n\n1.  E2E Duplicado 1776375444672 - B\n2.  E2E Duplicado 1776375444672 - A\n3.  E2E Ação & Inovação – Développeur «Senior» 1776375421970\n4.  E2E SemTriagem 1776375376720\n5.  E2E Lifecycle 1776375329544 (Departamento: Tecnologia, Modelo: remoto)\n6.  E2E Rascunho 1776375289474\n7.  E2E Full 1776375245793 (Departamento: Tecnologia, Modelo: remoto)\n8.  E2E Edit 1776374438042 (Departamento: Tecnologia, Modelo: remoto)\n9.  E2E Completa 1776374416501 (Departamento: Tecnologia, Modelo: remoto)\n10. E2E Minima 1776374395090\n11. E2E Duplicado 1776374052443 - B\n12. E2E Duplicado 1776374052443 - A\n13. E2E Ação & Inovação – Développeur «Senior» 1776374029594\n14. E2E SemTriagem 1776373984984\n15. E2E Lifecycle 1776373940012 (Departamento: Tecnologia, Modelo: remoto)\n16. E2E Rascunho 1776373898820\n17. E2E Full 1776373854793 (Departamento: Tecnologia, Modelo: remoto)\n18. E2E Edit 1776373052020 (Departamento: Tecnologia, Modelo: remoto)\n19. E2E Completa 1776373030213 (Departamento: Tecnologia, Modelo: remoto)\n20. E2E Minima 1776373008873",
+    "error": "",
+    "score": 0,
+    "flags": [
+      "ANTI_PATTERN: Says 'Não encontrei nenhuma vaga' without attempting tool call"
+    ],
+    "scored_at": "2026-04-17T19:39:11.373716"
+  }
+]

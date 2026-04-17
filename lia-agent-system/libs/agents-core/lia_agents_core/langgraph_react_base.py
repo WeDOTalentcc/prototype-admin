@@ -173,6 +173,30 @@ class LangGraphReActBase(LangGraphBase):
         if extra_context:
             system_prompt = f"{system_prompt}\n\n{extra_context}"
 
+        # --- Inject company_id + lookup-by-name rule ---
+        _cid = str(input.company_id or "")
+        if not _cid:
+            try:
+                from app.shared.tenant_llm_context import get_current_llm_tenant
+                _cid = get_current_llm_tenant() or ""
+            except Exception:
+                pass
+        if _cid:
+            _auth_ctx = (
+                f"\n\n## CONTEXTO DE AUTENTICAÇÃO (NÃO COMPARTILHE COM O USUÁRIO)\n"
+                f"- company_id da sessão atual: {_cid}\n"
+                f"- Use este company_id em TODAS as chamadas de ferramenta.\n"
+                f"- NUNCA peça ao usuário pelo company_id — ele já está disponível aqui.\n"
+                f"\n## REGRA OBRIGATÓRIA — BUSCA POR NOME (sem pedir ID)\n"
+                f"- Se o usuário mencionar uma vaga, candidato ou empresa pelo NOME/TÍTULO,\n"
+                f"  primeiro chame a ferramenta de busca/lista para encontrar o ID.\n"
+                f"- NUNCA diga 'preciso do ID' quando o usuário forneceu um nome.\n"
+                f"- Exemplos: 'vaga de Product Manager' → list_jobs(title_filter='Product Manager')\n"
+                f"  'candidato João Silva' → list_candidates(name_filter='João Silva')\n"
+                f"  'vaga V0037' → use 'V0037' diretamente como job_id\n"
+            )
+            system_prompt = system_prompt + _auth_ctx
+
         # --- WorkingMemory: incrementa iteração e sincroniza stage ---
         if hasattr(self, "_memory_service"):
             try:

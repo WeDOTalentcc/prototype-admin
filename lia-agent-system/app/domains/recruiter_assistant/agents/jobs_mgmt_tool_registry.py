@@ -11,7 +11,7 @@ from typing import Any
 from lia_agents_core.react_loop import ToolDefinition
 from sqlalchemy import text
 
-from app.core.database import AsyncSessionLocal
+from app.core.database import AsyncSessionLocal, get_tenant_aware_session
 from app.domains.hiring_policy.agents.policy_tool_registry import INDUSTRY_BENCHMARKS
 from app.shared.compliance.fairness_guard import FairnessGuard
 
@@ -38,7 +38,7 @@ async def _wrap_get_recruitment_benchmarks(**kwargs: Any) -> dict[str, Any]:
     filled_jobs = 0
 
     try:
-        async with AsyncSessionLocal() as session:
+        async with get_tenant_aware_session() as session:
             result = await session.execute(
                 text("""
                     SELECT
@@ -109,11 +109,16 @@ async def _wrap_list_jobs(**kwargs: Any) -> dict[str, Any]:
     department = kwargs.get("department", "all")
     company_id = kwargs.get("company_id", "")
     limit = int(kwargs.get("limit", 30))
+    # Normalize Portuguese "all" synonyms
+    if str(status).lower() in ("todas", "todos", "tudo", "qualquer", "any", "none", ""):
+        status = "all"
+    if str(department).lower() in ("todos", "todas", "tudo", "qualquer", "any", "none", ""):
+        department = "all"
     logger.info(f"[jobs_mgmt_tools] list_jobs called: status={status} department={department}")
     jobs = []
     total = 0
     try:
-        async with AsyncSessionLocal() as session:
+        async with get_tenant_aware_session() as session:
             rows = await session.execute(
                 text("""
                     SELECT id, title, status, priority, department, location,
@@ -171,7 +176,7 @@ async def _wrap_list_jobs(**kwargs: Any) -> dict[str, Any]:
 async def _wrap_view_job_details(**kwargs: Any) -> dict[str, Any]:
     job_id = kwargs.get("job_id", "")
     logger.info(f"[jobs_mgmt_tools] view_job_details called for job={job_id}")
-    async with AsyncSessionLocal() as session:
+    async with get_tenant_aware_session() as session:
         row = await session.execute(
             text("""
                 SELECT id, title, status, priority, department, location,
@@ -227,7 +232,7 @@ async def _wrap_get_portfolio_metrics(**kwargs: Any) -> dict[str, Any]:
     logger.info(f"[jobs_mgmt_tools] get_portfolio_metrics called: period={period}")
     metrics: dict[str, Any] = {}
     try:
-        async with AsyncSessionLocal() as session:
+        async with get_tenant_aware_session() as session:
             row = await session.execute(
                 text("""
                     SELECT
@@ -273,7 +278,7 @@ async def _wrap_compare_jobs(**kwargs: Any) -> dict[str, Any]:
     comparison = []
     try:
         if job_ids:
-            async with AsyncSessionLocal() as session:
+            async with get_tenant_aware_session() as session:
                 rows = await session.execute(
                     text("""
                         SELECT jv.id, jv.title, jv.status, jv.priority, jv.department,
@@ -320,7 +325,7 @@ async def _wrap_check_sla(**kwargs: Any) -> dict[str, Any]:
     at_risk_jobs = []
     compliant_count = 0
     try:
-        async with AsyncSessionLocal() as session:
+        async with get_tenant_aware_session() as session:
             rows = await session.execute(
                 text("""
                     SELECT id, title, status, deadline,
@@ -372,7 +377,7 @@ async def _wrap_analyze_bottlenecks(**kwargs: Any) -> dict[str, Any]:
     logger.info(f"[jobs_mgmt_tools] analyze_bottlenecks called: department={department}")
     bottlenecks = []
     try:
-        async with AsyncSessionLocal() as session:
+        async with get_tenant_aware_session() as session:
             rows = await session.execute(
                 text("""
                     SELECT jv.id, jv.title, jv.department,
@@ -436,7 +441,7 @@ async def _wrap_pause_job(**kwargs: Any) -> dict[str, Any]:
     reason = kwargs.get("reason", "")
     company_id = kwargs.get("company_id", "")
     logger.info(f"[jobs_mgmt_tools] pause_job called: job={job_id} reason={reason}")
-    async with AsyncSessionLocal() as session:
+    async with get_tenant_aware_session() as session:
         result = await session.execute(
             text("""
                 UPDATE job_vacancies SET status = 'Pausada', updated_at = NOW()
@@ -456,7 +461,7 @@ async def _wrap_reopen_job(**kwargs: Any) -> dict[str, Any]:
     job_id = kwargs.get("job_id", "")
     company_id = kwargs.get("company_id", "")
     logger.info(f"[jobs_mgmt_tools] reopen_job called: job={job_id}")
-    async with AsyncSessionLocal() as session:
+    async with get_tenant_aware_session() as session:
         result = await session.execute(
             text("""
                 UPDATE job_vacancies SET status = 'Ativa', updated_at = NOW()
@@ -477,7 +482,7 @@ async def _wrap_close_job(**kwargs: Any) -> dict[str, Any]:
     reason = kwargs.get("reason", "")
     company_id = kwargs.get("company_id", "")
     logger.info(f"[jobs_mgmt_tools] close_job called: job={job_id} reason={reason}")
-    async with AsyncSessionLocal() as session:
+    async with get_tenant_aware_session() as session:
         result = await session.execute(
             text("""
                 UPDATE job_vacancies SET status = 'Concluída', updated_at = NOW()
@@ -501,7 +506,7 @@ async def _wrap_update_priority(**kwargs: Any) -> dict[str, Any]:
                     "alta": "alta", "média": "média", "baixa": "baixa"}
     priority_pt = priority_map.get(priority.lower(), priority)
     logger.info(f"[jobs_mgmt_tools] update_priority called: job={job_id} priority={priority_pt}")
-    async with AsyncSessionLocal() as session:
+    async with get_tenant_aware_session() as session:
         prev = await session.execute(
             text("SELECT priority FROM job_vacancies WHERE id = :jid AND (:cid = '' OR company_id = :cid)"),
             {"jid": job_id, "cid": company_id},
@@ -527,7 +532,7 @@ async def _wrap_generate_report(**kwargs: Any) -> dict[str, Any]:
     report_id = f"rpt_{uuid.uuid4().hex[:12]}"
     summary: dict[str, Any] = {}
     try:
-        async with AsyncSessionLocal() as session:
+        async with get_tenant_aware_session() as session:
             row = await session.execute(
                 text("""
                     SELECT

@@ -24,8 +24,8 @@ Estes documentos descrevem metodologias, integrações e workflows. Não definem
 
 | Arquivo | Descrição |
 |---------|-----------|
-| [AI_WSI_EVALUATION_GUIDE.md](methodology/wsi/AI_WSI_EVALUATION_GUIDE.md) | Guia técnico WSI: especificação, schemas, scoring (rubricas 4 níveis), processamento LLM, guardrails |
-| [AI_WSI_INTERVIEW_TEMPLATES.md](methodology/wsi/AI_WSI_INTERVIEW_TEMPLATES.md) | Templates de entrevista: CBI/Bloom/Dreyfus/Big Five, calibração, pareceres |
+| `attached_assets/WSI_FLOW_PONTA_A_PONTA_(1)_1776425690186.md` | Fluxo WSI ponta-a-ponta (canônico) — fluxo completo F1–F12 |
+| `attached_assets/WSI_METHODOLOGY_COMPLETE_v2.bak_1776458966926.md` | Metodologia WSI v2 (canônico, complementar) — princípios, scoring, gates |
 | [AI_SOURCING_METHODOLOGY.md](methodology/AI_SOURCING_METHODOLOGY.md) | Sourcing inteligente: 5 camadas (boolean, Pearch, PG Vector, WRF, scoring) |
 | [AI_GOVERNANCE.md](methodology/AI_GOVERNANCE.md) | Governança IA: compliance LGPD, SOX, EU AI Act, anti-viés |
 

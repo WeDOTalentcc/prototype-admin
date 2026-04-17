@@ -12,7 +12,7 @@ from typing import Any
 from lia_agents_core.react_loop import ToolDefinition
 from sqlalchemy import text
 
-from app.core.database import AsyncSessionLocal
+from app.core.database import AsyncSessionLocal, get_tenant_aware_session
 from app.shared.compliance.fairness_guard import FairnessGuard
 from app.shared.tool_handler import tool_handler
 
@@ -89,7 +89,7 @@ async def _wrap_get_pipeline_benchmarks(**kwargs: Any) -> dict[str, Any]:
     company_averages = {}
 
     try:
-        async with AsyncSessionLocal() as session:
+        async with get_tenant_aware_session() as session:
             if vacancy_id:
                 stage_result = await session.execute(
                     text("""
@@ -424,7 +424,7 @@ async def _wrap_get_pipeline_summary(**kwargs: Any) -> dict[str, Any]:
     stages: dict[str, int] = {}
     total = 0
     try:
-        async with AsyncSessionLocal() as session:
+        async with get_tenant_aware_session() as session:
             rows = await session.execute(
                 text("""
                     SELECT stage, COUNT(*) AS cnt
@@ -472,7 +472,7 @@ async def _wrap_get_stage_metrics(**kwargs: Any) -> dict[str, Any]:
     logger.info(f"[kanban_tools] get_stage_metrics called: stage={stage} vacancy={vacancy_id or 'all'}")
     metrics: dict[str, Any] = {"stage": stage, "vacancy_id": vacancy_id or "all"}
     try:
-        async with AsyncSessionLocal() as session:
+        async with get_tenant_aware_session() as session:
             row = await session.execute(
                 text("""
                     SELECT COUNT(*) AS cnt,
@@ -518,7 +518,7 @@ async def _wrap_list_stage_candidates(**kwargs: Any) -> dict[str, Any]:
     candidates = []
     total = 0
     try:
-        async with AsyncSessionLocal() as session:
+        async with get_tenant_aware_session() as session:
             rows = await session.execute(
                 text("""
                     SELECT vc.candidate_id, vc.stage, vc.status, vc.lia_score, vc.match_percentage,
@@ -617,7 +617,7 @@ async def _wrap_identify_bottlenecks(**kwargs: Any) -> dict[str, Any]:
     bottlenecks = []
     critical_stages = []
     try:
-        async with AsyncSessionLocal() as session:
+        async with get_tenant_aware_session() as session:
             rows = await session.execute(
                 text("""
                     SELECT stage,
@@ -667,7 +667,7 @@ async def _wrap_get_candidate_aging(**kwargs: Any) -> dict[str, Any]:
     logger.info(f"[kanban_tools] get_candidate_aging called: stage={stage or 'all'} threshold={days_threshold}d")
     aging_candidates = []
     try:
-        async with AsyncSessionLocal() as session:
+        async with get_tenant_aware_session() as session:
             rows = await session.execute(
                 text("""
                     SELECT vc.candidate_id, vc.stage, vc.status, vc.lia_score,
@@ -741,7 +741,7 @@ async def _wrap_suggest_movements(**kwargs: Any) -> dict[str, Any]:
     logger.info(f"[kanban_tools] suggest_movements called: stage={stage} vacancy={vacancy_id or 'all'}")
     suggestions = []
     try:
-        async with AsyncSessionLocal() as session:
+        async with get_tenant_aware_session() as session:
             rows = await session.execute(
                 text("""
                     SELECT vc.candidate_id, vc.stage, vc.lia_score, vc.match_percentage,
@@ -801,7 +801,7 @@ async def _wrap_batch_move_candidates(**kwargs: Any) -> dict[str, Any]:
         return {"success": False, "data": {}, "message": "Parametros 'candidate_ids' e 'target_stage' sao obrigatorios."}
     moved = 0
     try:
-        async with AsyncSessionLocal() as session:
+        async with get_tenant_aware_session() as session:
             result = await session.execute(
                 text("""
                     UPDATE vacancy_candidates
@@ -910,7 +910,7 @@ async def _wrap_view_candidate_full_profile(**kwargs: Any) -> dict[str, Any]:
 
     profile: dict[str, Any] = {"candidate_id": candidate_id, "profile_loaded": False}
     try:
-        async with AsyncSessionLocal() as session:
+        async with get_tenant_aware_session() as session:
             row = await session.execute(
                 text("""
                     SELECT id, name, email, current_title, current_company,

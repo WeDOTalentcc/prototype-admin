@@ -12,7 +12,7 @@ from typing import Any
 from lia_agents_core.react_loop import ToolDefinition
 from sqlalchemy import text
 
-from app.core.database import AsyncSessionLocal
+from app.core.database import AsyncSessionLocal, get_tenant_aware_session
 from app.shared.compliance.fairness_guard import FairnessGuard
 
 from app.shared.tool_handler import tool_handler
@@ -34,7 +34,7 @@ async def _wrap_search_candidates(**kwargs: Any) -> dict[str, Any]:
     results = []
     total = 0
     try:
-        async with AsyncSessionLocal() as session:
+        async with get_tenant_aware_session() as session:
             location = filters.get("location", "") if isinstance(filters, dict) else ""
             min_exp = filters.get("min_experience", 0) if isinstance(filters, dict) else 0
 
@@ -118,7 +118,7 @@ async def _wrap_list_candidates(**kwargs: Any) -> dict[str, Any]:
     candidates = []
     total = 0
     try:
-        async with AsyncSessionLocal() as session:
+        async with get_tenant_aware_session() as session:
             rows = await session.execute(
                 text("""
                     SELECT vc.id AS vc_id, vc.vacancy_id, vc.candidate_id,
@@ -182,7 +182,7 @@ async def _wrap_view_candidate_profile(**kwargs: Any) -> dict[str, Any]:
 
     profile: dict[str, Any] = {"candidate_id": candidate_id, "profile_loaded": False}
     try:
-        async with AsyncSessionLocal() as session:
+        async with get_tenant_aware_session() as session:
             row = await session.execute(
                 text("""
                     SELECT id, name, email, current_title, current_company,
@@ -291,7 +291,7 @@ async def _wrap_rank_candidates(**kwargs: Any) -> dict[str, Any]:
 
     order_col = "vc.match_percentage" if criteria == "skills" else "vc.lia_score"
     ranking = []
-    async with AsyncSessionLocal() as session:
+    async with get_tenant_aware_session() as session:
         rows = await session.execute(
             text(f"""
                 SELECT vc.candidate_id, vc.status, vc.stage,
@@ -344,7 +344,7 @@ async def _wrap_analyze_skills(**kwargs: Any) -> dict[str, Any]:
     match_percentage = 0.0
 
     try:
-        async with AsyncSessionLocal() as session:
+        async with get_tenant_aware_session() as session:
             c_row = await session.execute(
                 text("SELECT technical_skills, soft_skills FROM candidates WHERE id = :cid"),
                 {"cid": candidate_id},
@@ -410,7 +410,7 @@ async def _wrap_recommend_actions(**kwargs: Any) -> dict[str, Any]:
     recommendations = []
     try:
         if candidate_ids:
-            async with AsyncSessionLocal() as session:
+            async with get_tenant_aware_session() as session:
                 rows = await session.execute(
                     text("""
                         SELECT id, name, status, lia_score, skills_match_percentage,
@@ -484,7 +484,7 @@ async def _wrap_create_shortlist(**kwargs: Any) -> dict[str, Any]:
     logger.info(
         f"[talent_tools] create_shortlist called: candidates={len(candidate_ids)} vacancy={vacancy_id}"
     )
-    async with AsyncSessionLocal() as session:
+    async with get_tenant_aware_session() as session:
         shortlist_id = str(uuid.uuid4())
         list_name = f"Shortlist vaga {vacancy_id}" if vacancy_id else "Shortlist LIA"
         await session.execute(
@@ -539,7 +539,7 @@ async def _wrap_export_report(**kwargs: Any) -> dict[str, Any]:
 
     try:
         if candidate_ids:
-            async with AsyncSessionLocal() as session:
+            async with get_tenant_aware_session() as session:
                 rows = await session.execute(
                     text("""
                         SELECT name, current_title, lia_score, skills_match_percentage, status
@@ -655,7 +655,7 @@ async def _wrap_get_talent_pool_benchmarks(**kwargs: Any) -> dict[str, Any]:
     stage_distribution: dict[str, int] = {}
 
     try:
-        async with AsyncSessionLocal() as session:
+        async with get_tenant_aware_session() as session:
             result = await session.execute(
                 text("""
                     SELECT
@@ -723,7 +723,7 @@ async def _wrap_check_pool_health(**kwargs: Any) -> dict[str, Any]:
     stagnant_count = 0
 
     try:
-        async with AsyncSessionLocal() as session:
+        async with get_tenant_aware_session() as session:
             pool_result = await session.execute(
                 text("""
                     SELECT
@@ -968,7 +968,7 @@ async def _wrap_generate_report(**kwargs: Any) -> dict[str, Any]:
     report_id = f"rpt_{uuid.uuid4().hex[:12]}"
     summary: dict[str, Any] = {}
     try:
-        async with AsyncSessionLocal() as session:
+        async with get_tenant_aware_session() as session:
             row = await session.execute(
                 text("""
                     SELECT

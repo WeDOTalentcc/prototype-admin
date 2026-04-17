@@ -377,8 +377,8 @@ Documentos de referência em `lia-agent-system/docs/` que servem como guias, spe
 | 15.3 | `lia-agent-system/docs/RUNBOOK_DEGRADATION.md` | Runbook de degradação graceful | Referência operacional |
 | 15.4 | `lia-agent-system/docs/RUNBOOK_INCIDENT_PLAYBOOKS.md` | Playbooks de incidentes | Referência operacional |
 | 15.5 | `lia-agent-system/docs/API_REFERENCE.md` | Referência completa da API (362+ endpoints) | Referência (OpenAPI auto-gerado) |
-| 15.6 | `lia-agent-system/docs/methodology/wsi/AI_WSI_EVALUATION_GUIDE.md` | Guia de avaliação WSI (Bloom + Dreyfus + Big Five) | Referência metodológica — informa `wsi_constants.py` |
-| 15.7 | `lia-agent-system/docs/methodology/wsi/AI_WSI_INTERVIEW_TEMPLATES.md` | Templates de entrevista WSI por competência | Referência metodológica — informa `wsi_service.py` |
+| 15.6 | `attached_assets/WSI_FLOW_PONTA_A_PONTA_(1)_1776425690186.md` | Fluxo WSI ponta-a-ponta (canônico) | Referência metodológica autoritativa |
+| 15.7 | `attached_assets/WSI_METHODOLOGY_COMPLETE_v2.bak_1776458966926.md` | Metodologia WSI v2 (canônico, complementar) | Referência metodológica autoritativa |
 | 15.8 | `lia-agent-system/docs/methodology/AI_GOVERNANCE.md` | Governança de IA: princípios, guardrails, HITL | Referência — informa FairnessGuard e Policy Engine |
 | 15.9 | `lia-agent-system/docs/methodology/AI_SOURCING_METHODOLOGY.md` | Metodologia de sourcing: boolean search, canais, estratégias | Referência — informa Sourcing Agent prompts |
 | 15.10 | `lia-agent-system/docs/ai-prompts/AI_PROMPT_CREATION_GUIDE.md` | Guia de criação de prompts: boas práticas, CoT, few-shot | Referência — informa `cot.py` e few-shot design |

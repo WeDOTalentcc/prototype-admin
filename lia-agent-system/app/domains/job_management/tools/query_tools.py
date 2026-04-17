@@ -64,16 +64,24 @@ async def search_jobs(
     """
     context = _extract_context(kwargs)
     company_id = context.company_id if context else None
-    
+
+    # Fallback: read from AuthEnforcementMiddleware contextvar (LangGraph path)
+    if not company_id:
+        try:
+            from app.shared.tenant_llm_context import get_current_llm_tenant
+            company_id = get_current_llm_tenant() or None
+        except Exception:
+            pass
+
     logger.info(f"🔍 Searching jobs with filters (company: {company_id})")
     
     try:
         from sqlalchemy import and_, select
 
-        from app.core.database import AsyncSessionLocal
+        from app.core.database import get_tenant_aware_session
         from lia_models.job_vacancy import JobVacancy
-        
-        async with AsyncSessionLocal() as db:
+
+        async with get_tenant_aware_session() as db:
             query = select(JobVacancy)
             conditions = [JobVacancy.company_id == company_id]
             
@@ -109,7 +117,6 @@ async def search_jobs(
             query = query.where(and_(*conditions))
             query = query.order_by(JobVacancy.created_at.desc())
             query = query.limit(limit)
-            
             result = await db.execute(query)
             jobs = result.scalars().all()
             logger.info(f"🔍 search_jobs DB result: {len(jobs)} rows, company_id={company_id}")

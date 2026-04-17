@@ -19,6 +19,7 @@ from lia_config.database import (  # noqa: F401
     async_session_factory,
     engine,
     get_db,
+    get_tenant_aware_session,
 )
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession

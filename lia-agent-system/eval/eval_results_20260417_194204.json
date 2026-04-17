@@ -1,0 +1,272 @@
+[
+  {
+    "id": "JM-001",
+    "category": "JM",
+    "severity": "critical",
+    "title": "List all jobs",
+    "prompt": "mostra todas as vagas",
+    "context": {
+      "scope": "Vagas",
+      "page": "gestao-vagas"
+    },
+    "expected_tools": [
+      "list_jobs"
+    ],
+    "canonical_files": [
+      "app/domains/recruiter_assistant/agents/jobs_mgmt_tool_registry.py",
+      "app/domains/recruiter_assistant/agents/jobs_mgmt_system_prompt.py"
+    ],
+    "success_criteria": [
+      "Response contains at least one job title or ID",
+      "Does not ask for clarification before executing",
+      "Calls list_jobs tool"
+    ],
+    "anti_patterns": [
+      "Says 'Não encontrei nenhuma vaga' without attempting tool call",
+      "Asks 'qual empresa?' before calling the tool",
+      "Says tool not authorized"
+    ],
+    "api_ok": true,
+    "http_status": 200,
+    "latency_ms": 9980,
+    "response": "Encontrei 20 vagas:\n\n1.  **E2E Duplicado 1776375444672 - B** (ID: `65a8b319-e7c2-4995-8b69-8cc3f6794107`) - Status: Rascunho\n2.  **E2E Duplicado 1776375444672 - A** (ID: `1cff657e-7d0b-4e45-9055-da7184553fab`) - Status: Rascunho\n3.  **E2E Ação & Inovação – Développeur «Senior» 1776375421970** (ID: `6fd1e2d0-35c1-422e-af0a-4c61ee54ce88`) - Status: Rascunho\n4.  **E2E SemTriagem 1776375376720** (ID: `2233601a-ce48-44b0-b27a-f86abd38fa5c`) - Status: Rascunho\n5.  **E2E Lifecycle 1776375329544** (ID: `04d3ba97-6609-4405-a7ea-f68f8db34c36`) - Departamento: Tecnologia, Modelo de trabalho: Remoto, Status: Rascunho\n6.  **E2E Rascunho 1776375289474** (ID: `030018db-33ac-4517-bc91-e6f461968b61`) - Status: Rascunho\n7.  **E2E Full 1776375245793** (ID: `ca173485-b413-44c5-89e5-fdb081bdd14e`) - Departamento: Tecnologia, Modelo de trabalho: Remoto, Status: Rascunho\n8.  **E2E Edit 1776374438042** (ID: `314a1b20-fc27-44dc-a4a3-e098d1651197`) - Departamento: Tecnologia, Modelo de trabalho: Remoto, Status: Rascunho\n9.  **E2E Completa 1776373030213** (ID: `9141d8bc-6e6c-4ae1-ab2b-487fef82a272`) - Departamento: Tecnologia, Modelo de trabalho: Remoto, Status: Rascunho\n10. **E2E Minima 1776373008873** (ID: `49379e14-1f45-449f-a928-79d5f49b0399`) - Status: Rascunho\n11. **E2E Duplicado 1776374052443 - B** (ID: `60ada801-7f9f-43d0-9995-3b45e7656d8a`) - Status: Rascunho\n12. **E2E Duplicado 1776374052443 - A** (ID: `d3192526-9ddf-4174-8c57-d933da535f2a`) - Status: Rascunho\n13. **E2E Ação & Inovação – Développeur «Senior» 1776374029594** (ID: `7a83d939-7926-48dc-94ee-37ecff4fefb3`) - Status: Rascunho\n14. **E2E SemTriagem 1776373984984** (ID: `00082409-98fe-4d6e-8e15-7ef8dc9bcb7a`) - Status: Rascunho\n15. **E2E Lifecycle 1776373940012** (ID: `5f34dc9e-59f8-4022-9bfe-80e24409f59b`) - Departamento: Tecnologia, Modelo de trabalho: Remoto, Status: Rascunho\n16. **E2E Rascunho 1776373898820** (ID: `0beb9074-083a-4445-824d-4a9db68d91a3`) - Status: Rascunho\n17. **E2E Full 1776373854793** (ID: `689d21db-7b23-4f8c-832c-94216a8ad0ef`) - Departamento: Tecnologia, Modelo de trabalho: Remoto, Status: Rascunho\n18. **E2E Edit 1776373052020** (ID: `c424f63f-5ffa-42b2-9d38-dd56dae89cca`) - Departamento: Tecnologia, Modelo de trabalho: Remoto, Status: Rascunho\n19. **E2E Completa 1776373030213** (ID: `d2b52ff7-4d93-4b12-af91-b557a7e2b31c`) - Departamento: Tecnologia, Modelo de trabalho: Remoto, Status: Rascunho\n20. **E2E Minima 1776373008873** (ID: `c4a680db-7588-47a8-ae84-6fbaa4b657d6`) - Status: Rascunho\n\nTodas as vagas estão no status de \"Rascunho\" e a maioria não possui departamento, localização ou modelo de trabalho definidos, com exceção de algumas que são para o departamento de \"Tecnologia\" e modelo \"remoto\".",
+    "error": "",
+    "score": 1,
+    "flags": [],
+    "scored_at": "2026-04-17T19:41:17.223403"
+  },
+  {
+    "id": "JM-002",
+    "category": "JM",
+    "severity": "critical",
+    "title": "List active jobs only",
+    "prompt": "quais vagas estão ativas?",
+    "context": {
+      "scope": "Vagas",
+      "page": "gestao-vagas"
+    },
+    "expected_tools": [
+      "list_jobs"
+    ],
+    "canonical_files": [
+      "app/domains/recruiter_assistant/agents/jobs_mgmt_tool_registry.py"
+    ],
+    "success_criteria": [
+      "Filters by status=active or ativa",
+      "Returns job list with status indicator"
+    ],
+    "anti_patterns": [
+      "Returns all jobs without filtering",
+      "Cannot find any jobs"
+    ],
+    "api_ok": true,
+    "http_status": 200,
+    "latency_ms": 5953,
+    "response": "Atualmente, há 20 vagas ativas:\n\n1.  **Product Manager** (Product, Pleno) - São Paulo, SP (híbrido) - Salário: R$15.000-R$22.000\n2.  **Tech Lead — Backend** (Engineering, Especialista) - São Paulo, SP (presencial) - Salário: R$22.000-R$32.000\n3.  **Engenheiro Senior teste** (Tecnologia, Pleno) - Não especificado (hibrido)\n4.  **Engenheiro Senior teste** (Tecnologia) - (hibrido)\n5.  **DevOps Engineer** (Engineering, Sênior) - Remoto - Salário: R$16.000-R$24.000\n6.  **Analista de RH Pleno** (Hr, Pleno) - São Paulo, SP (híbrido) - Salário: R$7.000-R$10.000\n7.  **UX/UI Designer Pleno** (Design, Pleno) - Remoto - Salário: R$10.000-R$15.000\n8.  **Advogado(a) Trabalhista** (Legal, Sênior) - São Paulo, SP (presencial) - Salário: R$12.000-R$18.000\n9.  **Engenheiro(a) de Software Sênior** (Engineering, Sênior) - São Paulo, SP (híbrido) - Salário: R$18.000-R$25.000\n10. **Analista de Dados Sênior** (Data, Sênior) - São Paulo, SP (híbrido) - Salário: R$14.000-R$20.000\n11. **Engenheiro(a) de Machine Learning** (Data, Sênior) - Remoto - Salário: R$20.000-R$30.000\n12. **[DEMO] UX/UI Designer Sênior** (Design, Sênior) - Rio de Janeiro, RJ (Híbrido) - Salário: R$12.000-R$18.000\n13. **[DEMO] Product Manager Pleno** (Produto, Pleno) - São Paulo, SP (Remoto) - Salário: R$15.000-R$20.000\n14. **[DEMO] Desenvolvedor(a) Backend Júnior** (Tecnologia, Júnior) - Campinas, SP (Híbrido) - Salário: R$4.000-R$6.000\n15. **[DEMO] Tech Lead Mobile** (Tecnologia, Especialista) - Florianópolis, SC (Remoto) - Salário: R$22.000-R$30.000\n16. **[DEMO] Executivo(a) de Contas Enterprise** (Comercial, Sênior) - São Paulo, SP (Presencial) - Salário: R$15.000-R$25.000\n17. **[DEMO] Desenvolvedor(a) Full Stack Sênior** (Tecnologia, Sênior) - São Paulo, SP (Híbrido) - Salário: R$18.000-R$25.000\n18. **Gerente De P** (Tecnologia/TI, Pleno) - São Paulo, SP (Híbrido)\n19. **[DEMO] DevOps Engineer Sênior** (Infraestrutura, Sênior) - São Paulo, SP (Híbrido) - Salário: R$20.000-R$28.000\n20. **[DEMO] Analista de Dados Pleno** (Dados, Pleno) - São Paulo, SP (Remoto) - Salário: R$10.000-R$14.000",
+    "error": "",
+    "score": 2,
+    "flags": [],
+    "scored_at": "2026-04-17T19:41:23.677555"
+  },
+  {
+    "id": "JM-003",
+    "category": "JM",
+    "severity": "high",
+    "title": "Pause a specific job",
+    "prompt": "pausa a vaga de Product Manager",
+    "context": {
+      "scope": "Vagas",
+      "page": "gestao-vagas"
+    },
+    "expected_tools": [
+      "list_jobs",
+      "pause_job"
+    ],
+    "canonical_files": [
+      "app/domains/recruiter_assistant/agents/jobs_mgmt_tool_registry.py"
+    ],
+    "success_criteria": [
+      "Identifies the correct job",
+      "Asks for confirmation before pausing (HITL)",
+      "Confirms action was taken or asks to confirm"
+    ],
+    "anti_patterns": [
+      "Pauses without asking for confirmation",
+      "Says cannot perform write operations"
+    ],
+    "api_ok": true,
+    "http_status": 200,
+    "latency_ms": 1005,
+    "response": "Para pausar a vaga de Product Manager, preciso do Job ID. Você pode me fornecer o Job ID da vaga que deseja pausar?",
+    "error": "",
+    "score": 1,
+    "flags": [],
+    "scored_at": "2026-04-17T19:41:25.183146"
+  },
+  {
+    "id": "JM-004",
+    "category": "JM",
+    "severity": "high",
+    "title": "Get job details",
+    "prompt": "me conta mais sobre a vaga V0037",
+    "context": {
+      "scope": "Vagas",
+      "page": "gestao-vagas"
+    },
+    "expected_tools": [
+      "get_job_details"
+    ],
+    "canonical_files": [
+      "app/domains/recruiter_assistant/agents/jobs_mgmt_tool_registry.py"
+    ],
+    "success_criteria": [
+      "Returns job title, status, candidate count",
+      "Uses V0037 as job identifier"
+    ],
+    "anti_patterns": [
+      "Says job not found",
+      "Returns generic information"
+    ],
+    "api_ok": true,
+    "http_status": 200,
+    "latency_ms": 2675,
+    "response": "Pelo visto, \"V0037\" não é um código de UUID válido. Você pode me informar o ID correto da vaga?",
+    "error": "",
+    "score": 2,
+    "flags": [],
+    "scored_at": "2026-04-17T19:41:28.358753"
+  },
+  {
+    "id": "JM-005",
+    "category": "JM",
+    "severity": "high",
+    "title": "List urgent jobs",
+    "prompt": "quais vagas estão urgentes ou em risco?",
+    "context": {
+      "scope": "Vagas",
+      "page": "gestao-vagas"
+    },
+    "expected_tools": [
+      "list_jobs"
+    ],
+    "canonical_files": [
+      "app/domains/recruiter_assistant/agents/jobs_mgmt_tool_registry.py"
+    ],
+    "success_criteria": [
+      "Filters for urgent/at-risk jobs",
+      "Explains why each job is at risk"
+    ],
+    "anti_patterns": [
+      "Returns all jobs without filtering"
+    ],
+    "api_ok": true,
+    "http_status": 200,
+    "latency_ms": 6717,
+    "response": "Encontrei 20 vagas marcadas como urgentes. Todas elas estão com o status de \"Rascunho\".\n\nNão foram encontrados alertas de alto risco para nenhuma vaga no momento.",
+    "error": "",
+    "score": 1,
+    "flags": [],
+    "scored_at": "2026-04-17T19:41:35.575917"
+  },
+  {
+    "id": "JM-006",
+    "category": "JM",
+    "severity": "medium",
+    "title": "Close a job",
+    "prompt": "fecha a vaga Tech Lead Backend — preenchemos a posição",
+    "context": {
+      "scope": "Vagas",
+      "page": "gestao-vagas"
+    },
+    "expected_tools": [
+      "list_jobs",
+      "close_job"
+    ],
+    "canonical_files": [
+      "app/domains/recruiter_assistant/agents/jobs_mgmt_tool_registry.py"
+    ],
+    "success_criteria": [
+      "Identifies correct job",
+      "Confirms before executing",
+      "Reports success"
+    ],
+    "anti_patterns": [
+      "Closes without confirmation",
+      "Cannot find job"
+    ],
+    "api_ok": true,
+    "http_status": 200,
+    "latency_ms": 1546,
+    "response": "Para eu fechar a vaga, preciso do ID da vaga Tech Lead Backend e, se tiver, o ID do candidato contratado. Você pode me fornecer essas informações?",
+    "error": "",
+    "score": 1,
+    "flags": [],
+    "scored_at": "2026-04-17T19:41:37.622487"
+  },
+  {
+    "id": "JM-007",
+    "category": "JM",
+    "severity": "medium",
+    "title": "Update job salary range",
+    "prompt": "atualiza o salário da vaga de Marketing Digital para até R$12.000",
+    "context": {
+      "scope": "Vagas",
+      "page": "gestao-vagas"
+    },
+    "expected_tools": [
+      "list_jobs",
+      "update_job"
+    ],
+    "canonical_files": [
+      "app/domains/recruiter_assistant/agents/jobs_mgmt_tool_registry.py"
+    ],
+    "success_criteria": [
+      "Updates salary field",
+      "Asks for confirmation"
+    ],
+    "anti_patterns": [
+      "Says cannot update",
+      "Asks which job when it was specified"
+    ],
+    "api_ok": true,
+    "http_status": 200,
+    "latency_ms": 32,
+    "response": "Qual candidato você quer atualizar?",
+    "error": "",
+    "score": 1,
+    "flags": [],
+    "scored_at": "2026-04-17T19:41:38.155546"
+  },
+  {
+    "id": "JM-008",
+    "category": "JM",
+    "severity": "low",
+    "title": "Count jobs by status",
+    "prompt": "quantas vagas tenho abertas, pausadas e concluídas?",
+    "context": {
+      "scope": "Vagas",
+      "page": "gestao-vagas"
+    },
+    "expected_tools": [
+      "list_jobs"
+    ],
+    "canonical_files": [
+      "app/domains/recruiter_assistant/agents/jobs_mgmt_tool_registry.py"
+    ],
+    "success_criteria": [
+      "Returns numeric counts",
+      "Differentiates by status"
+    ],
+    "anti_patterns": [
+      "Lists all jobs instead of counts"
+    ],
+    "api_ok": true,
+    "http_status": 200,
+    "latency_ms": 24856,
+    "response": "Não há nenhuma vaga cadastrada na sua conta ainda — nem abertas, nem pausadas, nem concluídas.\n\nSe quiser, posso ajudar você a criar a primeira vaga agora. É só me dizer o cargo e o departamento para começarmos!",
+    "error": "",
+    "score": 1,
+    "flags": [],
+    "scored_at": "2026-04-17T19:42:03.512366"
+  }
+]
