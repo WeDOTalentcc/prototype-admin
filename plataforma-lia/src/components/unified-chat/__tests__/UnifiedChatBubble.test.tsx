@@ -127,4 +127,20 @@ describe("UnifiedChatBubble — per-user persistence", () => {
     expect(btn.style.left).toBe("42px")
     expect(btn.style.top).toBe("42px")
   })
+
+  it("reset is durable: legacy key is wiped on reset so reload stays at default", () => {
+    // User had data in the legacy unscoped key
+    localStorage.setItem(BUBBLE_POSITION_STORAGE_KEY, JSON.stringify({ x: 42, y: 42 }))
+    const { unmount } = render(<UnifiedChatBubble onOpen={vi.fn()} />)
+    // Reset (right-click)
+    fireEvent.contextMenu(screen.getByTestId("lia-bubble"))
+    expect(localStorage.getItem(SCOPED_KEY)).toBeNull()
+    expect(localStorage.getItem(BUBBLE_POSITION_STORAGE_KEY)).toBeNull()
+    unmount()
+    // Simulate a reload — bubble should mount at the default position (no inline left/top)
+    render(<UnifiedChatBubble onOpen={vi.fn()} />)
+    const btn = screen.getByTestId("lia-bubble") as HTMLElement
+    expect(btn.style.left).toBe("")
+    expect(btn.style.top).toBe("")
+  })
 })

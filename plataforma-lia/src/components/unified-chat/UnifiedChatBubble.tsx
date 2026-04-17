@@ -83,6 +83,9 @@ export function UnifiedChatBubble({ onOpen }: Props) {
     } else {
       localStorage.removeItem(key)
     }
+    // Always drop the legacy unscoped key so resets are durable for users
+    // who had been migrated from the old global key.
+    localStorage.removeItem(BUBBLE_POSITION_STORAGE_KEY)
   }, [position, userId])
 
   // Robust Esc cancel during pointer drag (works even if focus has moved)

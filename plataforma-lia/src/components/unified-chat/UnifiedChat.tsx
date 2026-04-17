@@ -104,7 +104,9 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
     setFloatingPosition(getStoredFloatingPositionFor(userId))
   }, [userId])
 
-  // Persist floating position under a per-user key
+  // Persist floating position under a per-user key.
+  // Always also drop the legacy unscoped key so that resets are durable
+  // for users who had been migrated from the old global key.
   useEffect(() => {
     if (typeof window === "undefined") return
     const key = getUserScopedKey(FLOATING_POSITION_STORAGE_KEY, userId)
@@ -113,6 +115,7 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
     } else {
       localStorage.removeItem(key)
     }
+    localStorage.removeItem(FLOATING_POSITION_STORAGE_KEY)
   }, [floatingPosition, userId])
 
   // Reposition on resize
