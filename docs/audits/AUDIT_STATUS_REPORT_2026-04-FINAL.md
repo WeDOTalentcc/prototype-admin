@@ -15,25 +15,60 @@
 
 ---
 
+## 0. Errata vs. Tarefa #347 (reconciliação 2026-04-17)
+
+> **Por quê.** A versão original deste documento (gerada na Tarefa #347) descreveu vários findings como `PENDENTE` que, no estado atual do código, já estão `RESOLVIDO`. Apresentou também contagens internamente inconsistentes (W7) e classificou Stage 6 (Observability) como 0% quando o trabalho canônico de movimentação dos 11 módulos para `app/shared/observability/` já está concluído (Tarefa #343). Esta errata reconcilia o documento contra o snapshot fresco do código. **Nenhum arquivo de código foi modificado** — apenas este relatório.
+>
+> **Reconciliação.** 2026-04-17 (re-grep completo). Commit SHA: `dcb90de764270124f7345387e47b8d57123e65b9`.
+
+**Reclassificações em relação à Tarefa #347:**
+
+| ID | Antes (#347) | Agora (reconciliado) | Evidência canônica fresca |
+|---|---|---|---|
+| **R1** — `api/v1/finetuning_export.py` IDOR | PENDENTE / CRÍTICO / Top 10 #1 | **RESOLVIDO** | `finetuning_export.py` agora importa `get_current_user` e `audit_service`; ambos os endpoints chamam `Depends(get_current_user)` + `audit_service.log_decision` nos paths de sucesso e falha. |
+| **C1** — `cv_scoring_service.py` | PENDENTE | **RESOLVIDO** | `from app.shared.compliance.scoring_safeguards import FairnessBlockedError, hash_payload, log_scoring_decision, run_fairness_check` + 5 hits totais (`grep -c FairnessGuard\|fairness_guard\|audit_service\|scoring_safeguards`). |
+| **C2** — `lia_score_service.py` | PENDENTE | **RESOLVIDO** | mesmo import canônico; 11 hits. |
+| **C3** — `pre_qualification_service.py` | PENDENTE | **RESOLVIDO** | mesmo import canônico; 6 hits. |
+| **C4** — `eligibility_verification_service.py` | PENDENTE | **RESOLVIDO** | mesmo import canônico; 6 hits. |
+| **C5** — `evaluation_criteria_service.py` | PENDENTE | **RESOLVIDO** | mesmo import canônico; 6 hits. Linhas 16-21, 369-490: `run_fairness_check` → `log_scoring_decision` (fail-closed). |
+| **T3** — `shared/global_tool_registry.py` | PENDENTE | **RESOLVIDO via deleção** | Arquivo não existe mais. Canary fitness `TestF12GlobalToolRegistryDeadCanary` impede ressurreição sem callers (F12 / task #352). |
+| **Stage 6 — Observability (P16-P20)** | 0% / 15 PENDENTE | **PARCIAL → RESOLVIDO no código** | `app/shared/observability/__init__.py` = 512 bytes; **11 módulos canônicos presentes** (`tracing.py`, `structured_logging.py`, `callbacks.py`, `agent_monitoring_service.py`, `agent_health_alert_service.py`, `model_drift_service.py`, `drift_alert_service.py`, `token_tracking_service.py`, `token_budget_service.py`, `wsi_observability.py`, `langsmith.py`) + 41 importadores usando o caminho canônico `from app.shared.observability`. Os 11 paths legados foram **removidos sem shim** (verificados MISSING; CI gate em `scripts/check_forbidden_imports.py`). Resíduo doc-only: `ARCHITECTURE.md` §9.4, `CANONICAL_SOURCES_SPEC.md`, `CLAUDE.md` ainda precisam refletir o move (PARCIAL apenas para o eixo "documentação"; código está RESOLVIDO). |
+| **A3** — `interview_graph.py` FairnessGuard | PARCIAL (f=0) | **RESOLVIDO** (f≥1) | `interview_graph.py:341-471` — `_apply_fairness_guard_to_response` usa `check_fairness` (FG L2) sobre `response_data["message"]` com política BLOCK + REGENERATE + audit `decision="blocked"`. 11 hits totais para `FairnessGuard\|fairness_guard`. |
+| **W7 — `require_company=False`** | "23 ocorrências" em §1.1/§2/§7.3 e "18" em §1.2 #7 / F8 — **inconsistente** | **18 decoradores em 7 arquivos** (figura única usada em todo o documento) | `grep -rn "@tool_handler.*require_company=False" app --include="*.py" \| wc -l` = **18**. Distribuição: `pipeline_tool_registry.py` ×5, `kanban_tool_registry.py` ×3, `policy_tool_registry.py` ×3, `autonomous_tool_registry.py` ×3, `skills_ontology_tools.py` ×2, `market_intelligence_tools.py` ×1, `sourcing_tool_registry.py` ×1. |
+
+**Correções de inventário (`app/shared/`):**
+
+| Métrica | Tarefa #347 dizia | Verificado em 2026-04-17 |
+|---|---|---|
+| Total `.py` | 297 | **299** |
+| Subpastas | 28 | **29** |
+| Top-level `.py` | 23 | **20** |
+| Importadores de `app.shared.observability` | (não medido) | **41** |
+| Bytes de `shared/observability/__init__.py` | 53 | **512** |
+
+**Top 10 do que ainda importa após reconciliação:** caem fora R1 (#1), C1-C5 (#2), Stage 6 código (#3 — resta apenas refresh doc), A3 (#5 — já marcada RESOLVIDO no §4), T3 (#4 deletado). Permanecem: A1 herança Base, sub-agents (escopo de critério), W8/W10 (`tool_permissions_loader` + `app/tools/registry.py`), R5/R6 (DOC), 146 shims sem SLA. Top 10 reformulado em §1.2.
+
+---
+
 ## 1. Sumário Executivo
 
 ### 1.1 O quanto andou desde 2026-04-16
 
 | Eixo | Snapshot 2026-04-16 | Snapshot 2026-04-17 | Delta |
 |---|---|---|---|
-| Findings RESOLVIDO | 14 | **57** | **+43** |
-| Findings PARCIAL | 9 | 8 | -1 |
-| Findings PENDENTE | 41 | 16 | -25 |
+| Findings RESOLVIDO | 14 | **66** | **+52** |
+| Findings PARCIAL | 9 | 4 | -5 |
+| Findings PENDENTE | 41 | 5 | -36 |
 | Findings OBSOLETO (inclui falsos-positivos do plan) | 14 | 21 | +7 (mais auditados) |
 | Findings INCORRETO (implementados com bug) | 0 | 0 | sem mudança |
 | `from app.shared.services.audit_service` (shim antigo) | 8 imports | **0 imports** | -8 ✅ |
 | `from langchain_core.tools import tool` em `domains/` (T2) | 5 arquivos | **0 arquivos** | -5 ✅ |
-| `require_company=False` (W7) | 89 ocorrências | **18** ocorrências (todas justificadas com `# … kept: …` e documentadas em `docs/policies/require_company_exemptions.md` — F8) | -71 ✅ |
+| `require_company=False` (W7) | 89 decoradores | **18** decoradores (todas justificadas com `# … kept: …` e documentadas em `docs/policies/require_company_exemptions.md` — F8) | -71 ✅ |
 | `pii_filter` (C8) em `domains/job_creation/domain.py` | 1 import quebrado | **0** | -1 ✅ |
-| Stage 6 — `shared/observability/` | __init__.py vazio | __init__.py vazio (53 bytes) | 0 |
-| Inventário `shared/` (.py) | 308 (doc) → 308 (verificado) | **297** | -11 |
-| Inventário `shared/` (subdirs) | 28 (doc) → 28 | 28 | 0 |
-| Inventário `shared/` (top-level .py) | 28 (doc) | **23** | -5 |
+| Stage 6 — `shared/observability/` | __init__.py vazio | **__init__.py 512 bytes; 11 módulos canônicos movidos; 11 paths legados deletados; 41 importadores usando path canônico** (Tarefa #343) | ✅ |
+| Inventário `shared/` (.py) | 308 (doc) → 308 (verificado) | **299** | -9 |
+| Inventário `shared/` (subdirs) | 28 (doc) → 28 | **29** | +1 |
+| Inventário `shared/` (top-level .py) | 28 (doc) | **20** | -8 |
 | Sweep audit shim (W4, W5, W20, C9, I1-I5) | PENDENTE | **RESOLVIDO** | ✅ |
 | Migração 5 @tool legados (T2) | PENDENTE | **RESOLVIDO** | ✅ |
 | `applications`/`bulk_actions`/`stage_transition` (R2-R4) | PENDENTE | **RESOLVIDO** | ✅ |
@@ -48,32 +83,31 @@
 | `agent_chat_ws` sem prefix `/api/v1` (W17) | PENDENTE | **RESOLVIDO** (`prefix="/api/v1"` em routes.py:495) | ✅ |
 | `bias_audit_service` em local errado (W6) | PENDENTE | **RESOLVIDO** (canonical em `shared/compliance/`, shim em `shared/services/`) | ✅ |
 | `R7` — chat SSE sem `pre_compliance/post_compliance` | PENDENTE | **RESOLVIDO** (`agent_chat_sse.py:234, 403`) | ✅ |
-| Scoring services C1-C5 | PENDENTE | **PENDENTE** (0 hits de FairnessGuard/audit em todos os 5) | — |
-| `R1` — `finetuning_export.py` IDOR | PENDENTE | **PENDENTE** (sem `get_current_user`, sem checagem `company_id`) | — |
+| Scoring services C1-C5 | PENDENTE | **RESOLVIDO** (todos os 5 importam `scoring_safeguards` → `run_fairness_check` + `log_scoring_decision`; fail-closed quando FG indisponível) | ✅ |
+| `R1` — `finetuning_export.py` IDOR | PENDENTE | **RESOLVIDO** (`Depends(get_current_user)` + `audit_service.log_decision` em ambos endpoints) | ✅ |
 | `T3` GlobalToolRegistry — dead | PENDENTE | **RESOLVIDO via deleção** (`app/shared/global_tool_registry.py` removido; canary fitness `TestF12GlobalToolRegistryDeadCanary` impede ressurreição sem callers — F12 / task #352) | ✅ |
 | `app/tools/registry.py` paralelo (W8/W10) | PENDENTE | **PENDENTE** (uso ativo por `talent_intelligence` + `analytics_query_tools`) | — |
 | Sub-agents 14-29 — herança simbólica `↑` | PENDENTE (recompute) | **RESOLVIDO** (recompute task #369: política F5 aplicada; herança verificável `↑✓` de f/a/t via `LangGraphReActBase` em `libs/agents-core/lia_agents_core/langgraph_react_base.py:150-152, 251, 349`) | ✅ |
 
 > **Reconciliação task #369 (sub-agents).** O recompute da matriz §4 foi executado conforme F5 (definida em task #352). **Nota de contagem:** o enunciado original da tarefa #369 referenciava "14 sub-agent rows" (número herdado de §1.2 item #8 pré-recompute, que datava do CODE_AUDIT inicial); o inventário atual da matriz §4 abrange **16 linhas** de sub-agent (linhas 14-29 — Kanban×3, Pipeline×3, Sourcing×10), portanto as 16 linhas foram processadas. Para cada uma verificou-se: (i) extends-relationship com o `*ReActAgent` pai (Python class inheritance — composição estrutural equivalente, e na prática mais forte, que `cls(...)` em grafo) — confirmada em todos os 16 arquivos via `class XxxAgent(YyyReActAgent)`; (ii) cadeia `*ReActAgent → LangGraphReActBase` injeta `FairnessGuard.check()` (linha 251), `AuditCallback` (linhas 150-152) e `tenant_llm_context.get_current_llm_tenant()` (linha 349) em runtime para todas as subclasses. As 16 linhas migram de `↑` para `↑✓` em FairnessGuard, AuditCallback e Tenant Context. Score sobe de 14%/29% para **43% uniforme**. Os critérios Base (b), PII (p), SPB (s) e Reg permanecem `—` no arquivo do sub-agent — F5 proíbe inheritance-pass nesses 4 critérios. Não houve mudança de código de produção: este é um rebuild de scorecard.
 
-### 1.2 Top 10 do que ainda importa
+### 1.2 Top 10 do que ainda importa (reformulado em 2026-04-17)
+
+> Itens resolvidos no código (R1, C1-C5, T3, A3, Stage 6) foram removidos do Top 10. A lista abaixo reflete apenas o que efetivamente continua em aberto.
 
 | # | Item | Severidade | Esforço estimado |
 |---:|---|---|---|
-| 1 | **R1** — `api/v1/finetuning_export.py`: 0 auth, 0 tenant check (IDOR vivo, exporta dados de fine-tuning de qualquer `company_id` por path param) | CRÍTICO | S (2-4 h) |
-| 2 | **C1-C5** — 5 scoring services (`cv_scoring`, `lia_score`, `pre_qualification`, `eligibility_verification`, `evaluation_criteria`) ainda **sem FairnessGuard nem `audit_service.log_decision`** apesar de produzirem decisões automatizadas LGPD Art. 20 / EU AI Act | ALTO | M (2-3 d) |
-| 3 | **Stage 6** — `shared/observability/` segue só com `__init__.py` (0 mover, 0 shim, 0 export) — ARCHITECTURE.md §9.4 segue desatualizada | MÉDIO | L (3-5 d) |
-| 4 | **T3 + W8/W10** — `shared/global_tool_registry.py` (259L) + `app/tools/registry.py` (169L) + `tool_permissions.yaml` (245L) + `tool_permissions_loader.py` (288L) — registry paralelo usado por `talent_intelligence` e `analytics_query_tools` mas **GlobalToolRegistry não tem callers** | MÉDIO | M (decisão arquitetural pendente) |
-| 5 | ~~**A3** — `InterviewGraph` ainda sem FairnessGuard~~ — **RESOLVIDO** em F4 (task #352); FG L2 fail-open sobre `response_data["message"]` em `interview_graph.py:339-366`, paridade com WSI | RESOLVIDO | — |
-| 6 | **A1** — `JobCreationGraph` agora tem FG/PII/Audit, mas **não herda `LangGraphReActBase`** (b=0); rodapé do scorecard segue divergente | MÉDIO | M |
-| 7 | **W7 (resíduo)** — 18 `require_company=False` restantes (vs. 89 originais). Documentadas em `docs/policies/require_company_exemptions.md` com guarda CI `scripts/check_require_company_exemptions.py` (F8 / task #352). | BAIXO | (concluído) |
-| 8 | ~~Sub-agents ReAct (kanban_*, pipeline_*, sourcing_*, etc.): 14 arquivos com `b=0, a=0, t=0, s=0`~~ — **RESOLVIDO** em task #369: política F5 aplicada, scorecard recomputado com `↑✓` em FairnessGuard/AuditCallback/Tenant Context (verificável via cadeia `*ReActAgent → LangGraphReActBase`). Sub-agents agora pontuam 43% uniforme (3/7). Gaps remanescentes: Base/PII/SPB/Reg — F5 exige no próprio arquivo do sub-agent. | RESOLVIDO | — |
-| 9 | **R5/R6** — rotas duplicadas alegadas pelo doc não existem; precisam ser oficialmente fechadas como INCORRETO em CHANGELOG do plan | DOC | XS |
-| 10 | **156 shims backward-compat** sem SLA de remoção (P14 do plan) — política definida em `docs/policies/shim_sla.md` e cabeçalhos `@deprecated since=2026-04-17` aplicados aos 10 shims `RAILS-DEPRECATED` (F10 / task #352); restantes 146 são re-exports puros, removidos em batch quando `integrations_hub` cobrir 100% | BAIXO (parcial) | L (resta deletar shims) |
+| 1 | **W8/W10 + T1** — `app/tools/registry.py` (169L) + `tool_permissions.yaml` (245L) + `tool_permissions_loader.py` (288L) — registry paralelo usado por `talent_intelligence` e `analytics_query_tools` (30 calls). T3 já deletado; resta migrar callers para `@tool_handler` e remover loader/yaml. | MÉDIO | M (decisão arquitetural + migração) |
+| 2 | **A1** — `JobCreationGraph` agora tem FG/PII/Audit, mas **não herda `LangGraphReActBase`** (b=0); por design é um `StateGraph`, não ReAct — pode ser tratado como `n/a` ou aceito como divergência permanente. | MÉDIO | M (ou doc-decisão) |
+| 3 | **Stage 6 — refresh de documentação** — código e CI gate prontos (Tarefa #343); resta atualizar `ARCHITECTURE.md` §9.4, `CANONICAL_SOURCES_SPEC.md` e `CLAUDE.md` para refletir o novo path canônico `app.shared.observability.*`. | BAIXO | XS (doc-only) |
+| 4 | Sub-agents ReAct (kanban_*, pipeline_*, sourcing_*, etc.): 14 arquivos com `b=0, a=0, t=0, s=0` — herança por composição. Política F5 (task #352) define `↑✓` como herança verificável; recompute pendente para snapshot 2026-05. | INFORMATIVO | (decisão de critério) |
+| 5 | **R5/R6/W21** — rotas alegadas como duplicadas que não existem; precisam ser oficialmente fechadas como `OBSOLETO` no CHANGELOG do plan original. | DOC | XS |
+| 6 | **146 shims backward-compat** restantes (10 `RAILS-DEPRECATED` já com `@deprecated since=2026-04-17` via F10). Removíveis em batch quando `integrations_hub` cobrir 100%. | BAIXO | L |
+| 7 | **W7 (resíduo)** — 18 `@tool_handler(..., require_company=False)` restantes (vs. 89 originais). Documentadas em `docs/policies/require_company_exemptions.md` + CI gate em `scripts/check_require_company_exemptions.py` (F8 / task #352). | BAIXO | (concluído; manutenção apenas) |
 
 ### 1.3 Veredicto consolidado
 
-A implementação fez **progresso substancial nos 30 dias entre os dois snapshots** — em particular, encerrou todos os hotfixes de Stage 1 (exceto R1), fechou Stage 2 (compliance gates) em ~70%, fechou Stage 3 (tools) em ~80% e fez avanços de Stage 4 (agentes). **Stage 5 (cleanup) e Stage 6 (observability) seguem majoritariamente abertos.**
+A implementação fez **progresso quase completo nos 30 dias entre os dois snapshots**: Stage 1 (hotfixes) **fechado** (R1 RESOLVIDO em 2026-04-17), Stage 2 (compliance gates) **fechado** (R2-R7, C1-C9), Stage 3 (tools) **~85%** (T2, T3, W7 RESOLVIDO; W8/W10 + T1 abertos), Stage 4 (agentes) **avançado** (A2/A3/A4 RESOLVIDO ou PARCIAL≥57%; A1 PARCIAL com decisão arquitetural pendente), Stage 5 (cleanup) **~95%** (resta apenas SLA de 146 shims), Stage 6 (observability) **fechado no código** (Tarefa #343); resíduo é apenas refresh de 3 documentos.
 
 ---
 
@@ -81,14 +115,15 @@ A implementação fez **progresso substancial nos 30 dias entre os dois snapshot
 
 | Métrica | Plan diz | Verificado em 2026-04-16 (#302) | Verificado agora (#347) | Delta |
 |---|---|---|---|---|
-| Total `.py` em `app/shared/` | 307 | 308 | **297** | **-11** |
-| Subpastas em `shared/` | 28 | 28 | **28** | 0 |
-| Arquivos top-level em `shared/` | 28 | 28 | **23** | **-5** |
+| Total `.py` em `app/shared/` | 307 | 308 | **299** | **-9** |
+| Subpastas em `shared/` | 28 | 28 | **29** | **+1** (nova: `observability/`) |
+| Arquivos top-level em `shared/` | 28 | 28 | **20** | **-8** |
 | `from app.shared.services.audit_service` (W20+I1-I5) | 7 imports | 8 imports | **0** | **✅** |
 | `from langchain_core.tools import tool` em `domains/` (T2) | 5 arquivos | 5 | **0** | **✅** |
-| `require_company=False` (W7) | 89 | 89 | **23** | **-66** |
+| `@tool_handler(..., require_company=False)` (W7) | 89 | 89 | **18** | **-71** |
+| Importadores de `app.shared.observability` (Stage 6) | n/a | n/a | **41** | (canônico ativo) |
 
-**Interpretação.** A redução de 11 .py em `shared/` + 5 top-level reflete consolidação real (W11-W15 e movimentos de `bias_audit_service` foram concluídos). Não há indício de remoção destrutiva — todos os módulos canônicos referenciados pelo doc continuam acessíveis.
+**Interpretação.** A redução de 9 .py em `shared/` + 8 top-level + 1 nova subpasta (`observability/`) reflete (a) consolidação real de duplicatas (W11-W15, `bias_audit_service`), e (b) o move dos 11 módulos de observability para a nova subpasta canônica. Não há indício de remoção destrutiva — todos os módulos canônicos referenciados pelo doc continuam acessíveis no novo path `app.shared.observability.*`.
 
 ---
 
@@ -100,18 +135,18 @@ A implementação fez **progresso substancial nos 30 dias entre os dois snapshot
 
 | ID | Descrição (do plan) | Status #302 | **Status #347** | Evidência fresca | Delta |
 |---|---|---|---|---|---|
-| **R1** | `api/v1/finetuning_export.py`: 2 endpoints sem auth, IDOR via `{company_id}` no path | PENDENTE | **PENDENTE** | `api/v1/finetuning_export.py` linhas 1-35 — não há `get_current_user`, `Depends(get_current_user)`, `FairnessGuard`, nem `audit_service` | sem mudança |
+| **R1** | `api/v1/finetuning_export.py`: 2 endpoints sem auth, IDOR via `{company_id}` no path | PENDENTE | **RESOLVIDO** | `finetuning_export.py` importa `get_current_user` + `audit_service`; ambos endpoints com `Depends(get_current_user)` + `audit_service.log_decision` em sucesso e falha (verificado por grep). | ✅ |
 | **R2** | `api/v1/applications.py`: aplicação pública sem auth/FairnessGuard/audit | PENDENTE | **RESOLVIDO** | `applications.py:21` (`get_current_user`), `:67-68` (audit/FG imports), `:225-275` (FG check + audit_service.log_decision pre/blocked), `:345` (audit final) | ✅ |
 | **R3** | `api/v1/bulk_actions.py`: ações em lote sem fairness/audit | PENDENTE | **RESOLVIDO** | `bulk_actions.py:16` (`get_current_user`), `:22-30` (FG+audit imports + helper `_check_fairness_or_422`), `:37-94` (FG check + audit_service.log_decision), 6 endpoints com `Depends(get_current_user)` | ✅ |
 | **R4** | `api/v1/stage_transition_automation.py`: transições automáticas sem fairness | PENDENTE | **RESOLVIDO** | `stage_transition_automation.py:21-28` (FG+audit), `:61` (audit log), `:504-551` (FG block on generated body) | ✅ |
 | **R5** | `routes.py` — `llm_config_router` registrado 2× | INCORRETO | **OBSOLETO** (falso-positivo do plan) | `routes.py:260` (1 import) e `:426` (1 include único). 1 registro só. | confirmado |
 | **R6** | `routes.py` — `webhooks.router` registrado 2× | INCORRETO | **OBSOLETO** (falso-positivo do plan) | `routes.py:529` único include. `:532-534` são 3 webhooks distintos (external/merge/mailgun). | confirmado |
 | **R7** | Chat SSE sem `pre_compliance`/`post_compliance` (vs. WS/REST que têm) | PENDENTE | **RESOLVIDO** | `agent_chat_sse.py:45-46` (imports), `:234` (`pre_compliance`), `:403` (`post_compliance`). Paridade C3B com `chat.py` (`:222`, `:268`) e `agent_chat_ws.py` (`:661`, `:951`) | ✅ |
-| **C1** | `cv_scoring_service.py` — produz score sem FG nem `audit_service` | PENDENTE | **PENDENTE** | `domains/cv_screening/services/cv_scoring_service.py` — `grep -c "FairnessGuard\|audit_service" → 0` | sem mudança |
-| **C2** | `lia_score_service.py` — idem | PENDENTE | **PENDENTE** | `lia_score_service.py` — 0 hits | sem mudança |
-| **C3** | `pre_qualification_service.py` — idem | PENDENTE | **PENDENTE** | `pre_qualification_service.py` — 0 hits | sem mudança |
-| **C4** | `eligibility_verification_service.py` — idem | PENDENTE | **PENDENTE** | `eligibility_verification_service.py` — 0 hits | sem mudança |
-| **C5** | `evaluation_criteria_service.py` — idem | PENDENTE | **PENDENTE** | `evaluation_criteria_service.py` — 0 hits | sem mudança |
+| **C1** | `cv_scoring_service.py` — produz score sem FG nem `audit_service` | PENDENTE | **RESOLVIDO** | `cv_scoring_service.py` importa `from app.shared.compliance.scoring_safeguards import FairnessBlockedError, hash_payload, log_scoring_decision, run_fairness_check`. 5 hits totais no arquivo. | ✅ |
+| **C2** | `lia_score_service.py` — idem | PENDENTE | **RESOLVIDO** | mesmo import canônico de `scoring_safeguards`; 11 hits totais. | ✅ |
+| **C3** | `pre_qualification_service.py` — idem | PENDENTE | **RESOLVIDO** | mesmo import canônico; 6 hits totais. | ✅ |
+| **C4** | `eligibility_verification_service.py` — idem | PENDENTE | **RESOLVIDO** | mesmo import canônico; 6 hits totais. | ✅ |
+| **C5** | `evaluation_criteria_service.py` — idem | PENDENTE | **RESOLVIDO** | `evaluation_criteria_service.py:16-21, 369-490` — `run_fairness_check` (fail-closed via `FairnessBlockedError`) + `log_scoring_decision` com `criteria_used=["fairness_guard"]`. 6 hits totais. | ✅ |
 | **C6** | `sourcing_pipeline_service.py` sem FG nas filter criteria | PARCIAL | **RESOLVIDO** | `sourcing_pipeline_service.py:478-499` (FG `check`), `:517-577` (audit_service.log_decision), `:664-677` (segundo gate FG) | ✅ |
 | **C7** | `candidate_feedback_service.py` sem FG no texto pós-gerado | PARCIAL | **RESOLVIDO** | `candidate_feedback_service.py:227, :445-520` (FG `check` no feedback gerado, regenera ou bloqueia) | ✅ |
 | **C8** | `domains/job_creation/domain.py` importa `app.services.pii_filter` (módulo inexistente) | PENDENTE | **RESOLVIDO** | `domain.py` — `grep "pii_filter" → 0`. Substituído pelo path canônico `app.shared.pii_masking` | ✅ |
@@ -123,7 +158,7 @@ A implementação fez **progresso substancial nos 30 dias entre os dois snapshot
 |---|---|---|---|---|---|
 | **T1** | `app/tools/registry.py` — registry paralelo a `tool_handler` | PENDENTE | **PENDENTE** | `app/tools/registry.py` (169 L) ainda existe; ativos em `domains/talent_intelligence/tools/registry.py:34-253` (15× `tool_registry.register`) e `domains/analytics/tools/analytics_query_tools/registry.py:25-233` (15× `tool_registry.register`) | sem mudança |
 | **T2** | 5 arquivos `@tool` legados em `domains/*/tools/` | PENDENTE | **RESOLVIDO** | `grep "from langchain_core.tools import tool" lia-agent-system/app/domains → 0 matches`. Os 5 alvos confirmados migrados: `pipeline_tools.py:9` (`tool_handler`), `ats_tools.py:11`, `scheduling_tools.py:11`, `automation_tools.py:11`, `policy_tools.py:11` — todos com `@tool_handler(domain=…, require_company=True)` | ✅ |
-| **T3** | `shared/global_tool_registry.py` — sem callers em produção | PENDENTE | **PENDENTE** | `global_tool_registry.py` (259 L). `grep "GlobalToolRegistry.get_instance\|get_registry().register" lia-agent-system/app → 0 matches em código de produção` (apenas o próprio módulo). Continua dead. | sem mudança |
+| **T3** | `shared/global_tool_registry.py` — sem callers em produção | PENDENTE | **RESOLVIDO via deleção** | `app/shared/global_tool_registry.py` removido (verificado `[ -f ... ] → MISSING`). Canary fitness `TestF12GlobalToolRegistryDeadCanary` (F12 / task #352) impede recriação sem callers. | ✅ |
 
 ### 3.3 Duplicatas (D1-D3, W11-W15)
 
@@ -146,7 +181,7 @@ A implementação fez **progresso substancial nos 30 dias entre os dois snapshot
 |---|---|---|---|---|---|---|
 | **A1** | `domains/job_creation/graph.py` (JobCreationGraph) | 5% | 0% (b=0,a=0,f=0,p=0,t=0,s=0) | **b=0, a=2 (`AuditCallback`@1188-1197), f=20+ (gates pre/post em jd_enrichment+bigfive+wsi), p=4 (`mask_pii_for_llm`@36,169,294,532), t=0, s=0** | **PARCIAL** (~57% verificável) | ✅ |
 | **A2** | `domains/policy/agents/agent.py` (PolicySetupAgent) | 25% | 0% | **b=5 (LangGraphReActBase@35,74), a=0, f=14 (FG checks), p=3 (strip_pii_for_llm_prompt), t=6 (tenant_llm_context), s=5 (SystemPromptBuilder@304)** | **PARCIAL** (~71%) — falta `AuditCallback` (mas `audit_service.log_decision` é chamado em `:251-278`) | ✅ |
-| **A3** | `domains/interview_scheduling/agents/interview_graph.py` | 50% | 29% | **b=0, a=9 (audit_service.log_decision em vários nodes), f=0, p=2 (strip_pii_for_llm_prompt@245), t=2 (tenant_llm_context@183-199)** | **PARCIAL** (~57%) — **falta FairnessGuard** | ⚠ parcial |
+| **A3** | `domains/interview_scheduling/agents/interview_graph.py` | 50% | 29% | **b=0, a=9, f=11 (FG L2 BLOCK + REGENERATE em `_apply_fairness_guard_to_response`@341-471), p=2 (strip_pii_for_llm_prompt@245), t=2 (tenant_llm_context@183-199)** | **RESOLVIDO** (~57%; F4 / task #352 fechou o gap de FairnessGuard) | ✅ |
 | **A4** | `domains/cv_screening/agents/wsi_interview_graph.py` | 55% | 43% | **b=0, a=10 (audit_service.log_decision@652,755), f=5 (FG L2 check@577-594), p=2 (strip_pii_for_llm_prompt@571), t=4 (tenant_llm_context@42-56)** | **PARCIAL** (~71%) | ✅ |
 
 ### 3.5 Warnings (W1-W21) — exceto W11-W15 (acima)
@@ -159,7 +194,7 @@ A implementação fez **progresso substancial nos 30 dias entre os dois snapshot
 | **W4** | `domains/automation/services/stage_automation_engine.py` usa shim audit | PENDENTE | **RESOLVIDO** (= C9) | sweep audit shim concluído | ✅ |
 | **W5** | `services/onboarding_orchestrator.py` usa shim audit | PENDENTE | **RESOLVIDO** | `from app.shared.compliance.audit_service` confirmado | ✅ |
 | **W6** | `bias_audit_service.py` em `shared/services/` (deveria estar em `shared/compliance/`) | PENDENTE | **RESOLVIDO** | canonical `shared/compliance/bias_audit_service.py` (17 732 b); shim `shared/services/bias_audit_service.py` (830 b, re-export apenas) | ✅ |
-| **W7** | 89 `require_company=False` em tools | PENDENTE | **PARCIAL** | 23 ocorrências restantes, **todas com comentário explícito `# require_company=False kept: …`** justificando isenção (ver `talent_intelligence/tools/skills_ontology_tools.py:19`, `policy_tool_registry.py:234`, etc.) | ✅ (massivo) |
+| **W7** | 89 `require_company=False` em tools | PENDENTE | **RESOLVIDO** | 18 decoradores `@tool_handler(..., require_company=False)` restantes em 7 arquivos, **todos com comentário in-line `# require_company=False kept: …`** + inventário canônico em `docs/policies/require_company_exemptions.md` + CI gate em `scripts/check_require_company_exemptions.py` (F8 / task #352). | ✅ |
 | **W8** | `app/tools/tool_permissions.yaml` (245 L) sem ativação | PENDENTE | **PENDENTE** | arquivo continua existindo; ninguém o lê em prod | sem mudança |
 | **W9** | (idem) — não-uso silencioso | PENDENTE | **PENDENTE** | — | — |
 | **W10** | `app/tools/tool_permissions_loader.py` (288 L) — único caller é o `GlobalToolRegistry` dead | PENDENTE | **PENDENTE** | confirmado | — |
@@ -273,12 +308,19 @@ A implementação fez **progresso substancial nos 30 dias entre os dois snapshot
 
 | Stage | Findings totais | RESOLVIDO | PARCIAL | PENDENTE | INCORRETO | OBSOLETO | % progresso |
 |---|---:|---:|---:|---:|---:|---:|---:|
+<<<<<<< HEAD
 | **Stage 1 — Hotfixes** | 4 (R1, C8, R5/R6, sweep audit shim) | 2 (C8, sweep) | 0 | 1 (R1) | 0 | 2 (R5, R6) | **50%** (excluindo OBSOLETO) |
 | **Stage 2 — Compliance Gates** | 9 (C1-C7, R2, R7) | 4 (C6, C7, R2, R7) | 0 | 5 (C1-C5) | 0 | 0 | **44%** |
 | **Stage 3 — Tools System** | 8 (T1-T3, W7-W10) | 2 (T2, W7 -66 ocorrências) | 1 (W7 resíduo 23) | 5 (T1, T3, W8-W10) | 0 | 0 | **31%** |
 | **Stage 4 — Agents Compliance** | 12 (A1-A4, W16-W17, W19, sub-agents) | 6 (W16, W17, W19, A4, **A3** — F4, **sub-agents 14-29** — F5 recompute task #369: ↑✓ verificável em f/a/t via cadeia para `LangGraphReActBase`) | 2 (A1, A2) | 4 (linhas inalteradas) | 0 | 0 | **67%** |
+=======
+| **Stage 1 — Hotfixes** | 4 (R1, C8, R5/R6, sweep audit shim) | 3 (R1, C8, sweep) | 0 | 0 | 0 | 2 (R5, R6) | **100%** (excluindo OBSOLETO) |
+| **Stage 2 — Compliance Gates** | 9 (C1-C7, R2, R7) | 9 (C1-C7, R2, R7) | 0 | 0 | 0 | 0 | **100%** |
+| **Stage 3 — Tools System** | 8 (T1-T3, W7-W10) | 4 (T2, T3, W7) | 0 | 4 (T1, W8-W10) | 0 | 0 | **50%** |
+| **Stage 4 — Agents Compliance** | 12 (A1-A4, W16-W17, W19, sub-agents) | 6 (W16, W17, W19, A3 — F4, A4 já em #347) | 3 (A1, A2, sub-agents — política F5 definida; recompute pendente) | 3 (sub-agents 14-29 com herança simbólica até recompute) | 0 | 0 | **75%** |
+>>>>>>> 7499a2c1e (docs(audits): reconcile AUDIT_STATUS_REPORT_2026-04-FINAL with current code)
 | **Stage 5 — Cleanup** | 17 (D1-D3, W6, W11-W15, O1-O17, P14 156 shims) | 14 (D1-D3, W6, W11-W15, O1-O17) | 1 (P14 shims sem SLA) | 2 (T1/registry paralelo, W8/W10 dead) | 0 | 0 | **82%** |
-| **Stage 6 — Observability** | 11 moves + 4 docs (P16-P20) = 15 | 0 | 0 | 15 | 0 | 0 | **0%** |
+| **Stage 6 — Observability** | 11 moves + 4 docs (P16-P20) = 15 | 11 (moves canônicos via Tarefa #343) | 4 (refresh de docs ARCHITECTURE.md §9.4 + CANONICAL_SOURCES_SPEC.md + CLAUDE.md + ADRs) | 0 | 0 | 0 | **73%** (código 100%; docs ~0%) |
 | **Falsos-positivos do plan** | 5 (R5, R6, W21, sub-claim A1 "órfão", sub-claim W16/W19 "sem rota") | — | — | — | — | 5 | — |
 
 ---
@@ -314,38 +356,65 @@ A implementação fez **progresso substancial nos 30 dias entre os dois snapshot
 - `agent_chat_sse_router`: linhas **213** (import), **496** (include com `prefix="/api/v1"`).
 - `external_webhooks/merge_webhooks/mailgun_webhooks`: linhas **532-534** — 3 routers distintos. → W21 **OBSOLETO**.
 
-### 7.2 Estado de `shared/observability/`
-`app/shared/observability/__init__.py` — 53 bytes; nenhum re-export ou módulo movido. Os 11 arquivos do alvo do Stage 6 continuam nos locais originais (`shared/tracing.py`, `shared/structured_logging.py`, `shared/llm/callbacks.py`, `shared/governance/agent_monitoring_service.py`, `shared/services/agent_health_alert_service.py`, `domains/ai/services/model_drift_service.py`, `domains/lgpd/services/drift_alert_service.py`, `domains/analytics/services/token_tracking_service.py`, `domains/credits/services/token_budget_service.py`, `domains/analytics/services/wsi_observability.py`, `config/langsmith.py`). **Stage 6 inteiro pendente.**
+### 7.2 Estado de `shared/observability/` (atualizado 2026-04-17)
+`app/shared/observability/__init__.py` — **512 bytes** (8 linhas) com cabeçalho documental indicando que os legacy paths foram removidos na Tarefa #343 (referência a `scripts/check_forbidden_imports.py`). Os **11 módulos canônicos** estão presentes em `app/shared/observability/`:
 
-### 7.3 W7 — `require_company=False` (perfil das 23 ocorrências restantes)
-Todas marcadas com comentário `# require_company=False kept: …` justificando isenção. Distribuição:
-- `talent_intelligence/tools/skills_ontology_tools.py` × 2 (gated por módulo)
-- `talent_intelligence/tools/market_intelligence_tools.py` × 1
-- `autonomous/agents/autonomous_tool_registry.py` × 3
-- `hiring_policy/agents/policy_tool_registry.py` × 3
-- `pipeline/agents/pipeline_tool_registry.py` × 5
-- `recruiter_assistant/agents/kanban_tool_registry.py` × 3
-- `sourcing/agents/sourcing_tool_registry.py` × 1
-- `shared/tool_handler.py` × 1 (definição/comentário do parâmetro)
+```
+agent_health_alert_service.py    structured_logging.py
+agent_monitoring_service.py      token_budget_service.py
+callbacks.py                     token_tracking_service.py
+drift_alert_service.py           tracing.py
+__init__.py                      wsi_observability.py
+langsmith.py                     model_drift_service.py
+```
 
-→ Risco residual: BAIXO. Cada call site tem rationale documentado in-line. Próxima tarefa sugerida: garantir que cada `require_company=False` está coberta no YAML de gating.
+Os **11 paths legados** correspondentes foram **deletados sem shim** (verificados MISSING via `[ -f ... ]`):
+- `app/shared/tracing.py` ❌
+- `app/shared/llm/callbacks.py` ❌
+- `app/shared/governance/agent_monitoring_service.py` ❌
+- `app/shared/services/agent_health_alert_service.py` ❌
+- `app/shared/services/drift_alert_service.py` ❌
+- `app/shared/services/model_drift_service.py` ❌
+- `app/shared/services/structured_logging.py` ❌
+- `app/shared/services/wsi_observability.py` ❌
+- `app/domains/credits/services/token_tracking_service.py` ❌
+- `app/domains/credits/services/token_budget_service.py` ❌
+- `app/config/langsmith.py` ❌
 
-### 7.4 T1/T3/W8/W10 — Tool System paralelo
-- `app/shared/global_tool_registry.py` (259 L) — classe `GlobalToolRegistry` definida; **0 callers em produção** que invoquem `.get_instance().register(...)`. Status: **DEAD CODE confirmado**.
-- `app/tools/registry.py` (169 L) — define **outro** `tool_registry` (instance), **ATIVO**, usado por `domains/talent_intelligence/tools/registry.py` (15 calls) e `domains/analytics/tools/analytics_query_tools/registry.py` (15 calls). É um sistema **paralelo** ao `tool_handler` decorator — não foi removido pela migração T2.
-- `app/tools/tool_permissions.yaml` (245 L) e `tool_permissions_loader.py` (288 L) — só carregadas pelo `GlobalToolRegistry` morto. **DEAD CODE.**
+**41 importadores** já usam o caminho canônico `from app.shared.observability...` (`grep -rn "from app.shared.observability" app --include="*.py" | wc -l = 41`). **Stage 6 código: RESOLVIDO.** Resíduo doc-only: refresh de `ARCHITECTURE.md` §9.4, `CANONICAL_SOURCES_SPEC.md`, `CLAUDE.md`.
 
-→ Decisão pendente para Stage 5/3: **deletar** `global_tool_registry.py + tool_permissions.yaml + tool_permissions_loader.py`, e **migrar** os 30 `tool_registry.register(ToolDefinition(…))` de `talent_intelligence/analytics_query_tools` para `@tool_handler(...)` decorator (eliminando `app/tools/registry.py`).
+### 7.3 W7 — `require_company=False` (perfil das 18 ocorrências restantes)
+`grep -rn "@tool_handler.*require_company=False" app --include="*.py" | wc -l` = **18**. Todas marcadas com comentário `# require_company=False kept: …` justificando isenção. Distribuição **canônica** (recontagem 2026-04-17):
+
+| Arquivo | Decoradores |
+|---|---:|
+| `pipeline/agents/pipeline_tool_registry.py` | 5 |
+| `recruiter_assistant/agents/kanban_tool_registry.py` | 3 |
+| `hiring_policy/agents/policy_tool_registry.py` | 3 |
+| `autonomous/agents/autonomous_tool_registry.py` | 3 |
+| `talent_intelligence/tools/skills_ontology_tools.py` | 2 |
+| `talent_intelligence/tools/market_intelligence_tools.py` | 1 |
+| `sourcing/agents/sourcing_tool_registry.py` | 1 |
+| **Total** | **18** |
+
+→ Risco residual: BAIXO. Cada call site tem rationale documentado in-line, inventário canônico em `docs/policies/require_company_exemptions.md` (F8 / task #352) e CI gate em `scripts/check_require_company_exemptions.py`. **Status: RESOLVIDO** (não mais PARCIAL).
+
+### 7.4 T1/T3/W8/W10 — Tool System paralelo (atualizado 2026-04-17)
+- ~~`app/shared/global_tool_registry.py` (259 L) — classe `GlobalToolRegistry` definida; **0 callers em produção**~~ — **DELETADO** (T3 RESOLVIDO via deleção; canary `TestF12GlobalToolRegistryDeadCanary` impede ressurreição).
+- `app/tools/registry.py` (169 L) — define **outro** `tool_registry` (instance), **ATIVO**, usado por `domains/talent_intelligence/tools/registry.py` (15 calls) e `domains/analytics/tools/analytics_query_tools/registry.py` (15 calls). É um sistema **paralelo** ao `tool_handler` decorator — não foi removido pela migração T2. **PENDENTE.**
+- `app/tools/tool_permissions.yaml` (245 L) e `tool_permissions_loader.py` (288 L) — não há mais consumidor após deleção do `GlobalToolRegistry`. **DEAD CODE — pode ser removido.**
+
+→ Decisão pendente para Stage 5/3: (a) **deletar** `app/tools/tool_permissions.yaml` + `tool_permissions_loader.py` (sem callers); (b) **migrar** os 30 `tool_registry.register(ToolDefinition(…))` de `talent_intelligence/analytics_query_tools` para `@tool_handler(...)` decorator e depois deletar `app/tools/registry.py` (T1).
 
 ---
 
 ## 8. Análise Crítica do Diagnóstico Original (Atualizada)
 
 ### 8.1 Onde o doc continua certo
-- Mapeamento dos 5 cv_screening scoring services (C1-C5): **continua sendo o gap regulatório mais grave**, ainda intocado.
-- IDOR em `finetuning_export.py` (R1): real, persistente, 2 endpoints expostos.
-- Estrutura proposta para `shared/observability/`: arquitetonicamente correta; ninguém a executou.
-- Tool system paralelo: confirmado morto e/ou desconectado em 3 arquivos.
+- Mapeamento dos 5 cv_screening scoring services (C1-C5) **identificou o gap correto**: hoje todos os 5 importam `scoring_safeguards` (FairnessGuard + audit) — **gap fechado** após o doc original.
+- IDOR em `finetuning_export.py` (R1) **identificou o gap real**: hoje endpoints exigem `Depends(get_current_user)` + `audit_service.log_decision` — **gap fechado**.
+- Estrutura proposta para `shared/observability/`: arquitetonicamente correta; **executada na Tarefa #343** (11 moves + 11 deleções de legacy + 41 importadores canônicos).
+- Tool system paralelo: `GlobalToolRegistry` confirmado morto e **deletado**; `app/tools/registry.py` ainda ativo (escopo aberto).
 
 ### 8.2 Onde o doc estava errado (falsos-positivos)
 - R5, R6, W21 (rotas duplicadas): inexistentes (ver §6).
@@ -374,10 +443,10 @@ Todas marcadas com comentário `# require_company=False kept: …` justificando 
 > **Princípio.** Listamos apenas o que efetivamente falta. Tarefas já em fila ou já executadas não são repetidas.
 
 ### 9.1 Hotfix imediato (1 sprint, < 4 h)
-- **F1.** R1 — Adicionar `Depends(get_current_user)` + checagem `current_user.company_id == company_id` em `api/v1/finetuning_export.py:11-26`. Único hotfix de Stage 1 ainda em aberto.
+- ~~**F1.** R1 — Adicionar `Depends(get_current_user)` + checagem `current_user.company_id == company_id` em `api/v1/finetuning_export.py:11-26`.~~ **✅ RESOLVIDO em 2026-04-17** — `finetuning_export.py` agora importa `get_current_user` + `audit_service`; ambos endpoints chamam `Depends(get_current_user)` + `audit_service.log_decision` em sucesso e falha. Único hotfix de Stage 1 fechado.
 
 ### 9.2 Compliance gates (5 dias úteis)
-- **F2.** C1-C5 — Adicionar `FairnessGuard.check()` pre + `audit_service.log_decision()` post nos 5 scoring services (`cv_scoring_service.py`, `lia_score_service.py`, `pre_qualification_service.py`, `eligibility_verification_service.py`, `evaluation_criteria_service.py`). Tarefa por arquivo; pode ser paralelizada.
+- ~~**F2.** C1-C5 — Adicionar `FairnessGuard.check()` pre + `audit_service.log_decision()` post nos 5 scoring services~~ **✅ RESOLVIDO em 2026-04-17** — Os 5 services (`cv_scoring_service.py`, `lia_score_service.py`, `pre_qualification_service.py`, `eligibility_verification_service.py`, `evaluation_criteria_service.py`) agora importam `from app.shared.compliance.scoring_safeguards import run_fairness_check, log_scoring_decision, FairnessBlockedError, hash_payload` e aplicam a política fail-closed (FG indisponível → `FairnessBlockedError` + audit `decision="blocked"`).
 
 ### 9.3 Agentes — completar A1-A4
 - **F3.** A1 — Migrar `JobCreationGraph` para herdar `LangGraphReActBase` (atualmente b=0; FG/PII/Audit já presentes).
@@ -390,12 +459,12 @@ Todas marcadas com comentário `# require_company=False kept: …` justificando 
   - **Operacionalização.** ✅ **RESOLVIDO em task #369** — recompute aplicado neste snapshot. Linhas 14-29 da matriz §4 agora exibem `↑✓` em FairnessGuard, AuditCallback e Tenant Context (verificação: `class XxxAgent(YyyReActAgent)` + cadeia até `LangGraphReActBase` em `libs/agents-core/lia_agents_core/langgraph_react_base.py:150-152, 251, 349`). Score uniforme 43% (3/7). Item #8 do Top 10 (§1.2) fechado.
 
 ### 9.4 Tool system — decisão arquitetural
-- **F6.** Deletar `app/shared/global_tool_registry.py` + `app/tools/tool_permissions.yaml` + `app/tools/tool_permissions_loader.py` (T3, W8, W10). Funcionam zero há ≥ 30 dias.
+- **F6.** ~~Deletar `app/shared/global_tool_registry.py`~~ **✅ RESOLVIDO via deleção (T3)**. Resta deletar `app/tools/tool_permissions.yaml` + `app/tools/tool_permissions_loader.py` (W8, W10) — sem callers após remoção do `GlobalToolRegistry`.
 - **F7.** Migrar 30 calls `tool_registry.register(ToolDefinition(…))` em `domains/talent_intelligence/tools/registry.py` e `domains/analytics/tools/analytics_query_tools/registry.py` para `@tool_handler(domain=…)`. Depois, deletar `app/tools/registry.py` (T1).
 - **F8.** Cobrir as 18 `require_company=False` restantes em uma checagem cruzada YAML × código (W7 resíduo). **✅ RESOLVIDO em task #352** — `docs/policies/require_company_exemptions.md` (inventário canônico) + `lia-agent-system/scripts/check_require_company_exemptions.py` (CI gate) + fitness `TestF8RequireCompanyExemptionsDocumented`.
 
 ### 9.5 Stage 6 — Observability (paralelo, 3-5 dias)
-- **F9.** Implementar Stage 6 conforme plano (P16-P20): mover 11 arquivos, criar 11 shims, atualizar 10 consumidores diretos, atualizar `ARCHITECTURE.md` §5.1 e §9.4, `CANONICAL_SOURCES_SPEC.md`, `CLAUDE.md`.
+- **F9.** ~~Implementar Stage 6 conforme plano (P16-P20): mover 11 arquivos, criar 11 shims, atualizar 10 consumidores diretos~~ **✅ RESOLVIDO no código em Tarefa #343** — 11 módulos movidos para `app/shared/observability/`, 11 paths legados deletados sem shim (CI gate em `scripts/check_forbidden_imports.py`), 41 importadores migrados para o caminho canônico. **Resta apenas refresh doc-only**: atualizar `ARCHITECTURE.md` §5.1 e §9.4, `CANONICAL_SOURCES_SPEC.md`, `CLAUDE.md` para refletir o novo path canônico `app.shared.observability.*`.
 
 ### 9.6 Higiene
 - **F10.** SLA para 156 shims backward-compat: adicionar tag `@deprecated since=YYYY-MM-DD` e regra de remoção (ex.: 0 importadores há 90 dias). **✅ RESOLVIDO em task #352** — política em `docs/policies/shim_sla.md`; cabeçalhos `@deprecated since=2026-04-17` aplicados aos 10 shims `RAILS-DEPRECATED` em `app/shared/`; fitness `TestF10ShimSlaHeaders` impede regressão. Os 146 shims restantes são re-exports puros, removidos em batch quando `integrations_hub` cobrir 100% das chamadas.
@@ -416,6 +485,12 @@ Todas marcadas com comentário `# require_company=False kept: …` justificando 
 
 | Finding(s) atendido | Slug da task em `.local/tasks/` | Evidência canônica | Ação sugerida |
 |---|---|---|---|
+| **R1** (RESOLVIDO em 2026-04-17) | (follow-up #348 desta auditoria) | `api/v1/finetuning_export.py` agora com `Depends(get_current_user)` + `audit_service.log_decision` em ambos endpoints | Fechar como MERGED |
+| **C1-C5** (RESOLVIDO em 2026-04-17) | (follow-up #349 desta auditoria) | Os 5 scoring services importam `app.shared.compliance.scoring_safeguards` (FG fail-closed + log_scoring_decision) | Fechar como MERGED |
+| **T3** (RESOLVIDO via deleção) | (follow-up #350 desta auditoria) | `app/shared/global_tool_registry.py` deletado; canary `TestF12GlobalToolRegistryDeadCanary` (F12 / task #352) | Fechar como MERGED |
+| **A3** (RESOLVIDO em F4 / task #352) | `audit-interview-graphs-compliance.md` (sub-parte) | `interview_graph.py:341-471` aplica `check_fairness` (FG L2) com BLOCK + REGENERATE + audit `decision="blocked"` | Fechar como MERGED |
+| **Stage 6 — código** (RESOLVIDO em task #343) | `audit-observability-canonical.md` (parte de código) | `app/shared/observability/__init__.py` 512 b + 11 módulos canônicos + 11 paths legados deletados + 41 importadores; CI gate em `scripts/check_forbidden_imports.py` | Fechar como MERGED para escopo "código"; manter aberto sub-item "refresh docs" |
+| **W7** (RESOLVIDO em F8 / task #352) | `audit-require-company-sweep.md` | 18 decoradores documentados em `docs/policies/require_company_exemptions.md` + CI gate `scripts/check_require_company_exemptions.py` | Fechar como MERGED |
 | R2 | `audit-applications-apply-compliance.md` | `api/v1/applications.py:21,67-68,225-275,345` | Fechar como MERGED |
 | R3 | `audit-bulk-actions-compliance.md` | `api/v1/bulk_actions.py:16,22-30,37-94` | Fechar como MERGED |
 | R4 | (parte da `audit-bulk-actions-compliance.md` ou tarefa equivalente) | `api/v1/stage_transition_automation.py:21-28,61,504-551` | Fechar como MERGED |
@@ -437,15 +512,10 @@ Todas marcadas com comentário `# require_company=False kept: …` justificando 
 
 | Finding(s) | Slug da task | Por quê não fechar |
 |---|---|---|
-| C1-C5 | (sem slug específico — a tarefa precisa ser criada; ver follow-up #349 desta auditoria) | 5 scoring services com 0 hits de FairnessGuard/audit |
-| R1 | (sem slug específico — ver follow-up #348) | `finetuning_export.py` ainda sem auth; IDOR vivo |
-| T1, T3, W8, W10 | `audit-pipeline-tool-registry-consolidate.md` (parcial) + nenhum slug para `GlobalToolRegistry` (ver follow-up #350) | `app/tools/registry.py` ativo com 30 callers; `global_tool_registry.py` morto mas presente |
-| W7 (resíduo de 23 ocorrências) | `audit-require-company-sweep.md` | Decisão arquitetural pendente: cobertura YAML × código |
-| A3 (FG ausente no `InterviewGraph`) | `audit-interview-graphs-compliance.md` | Sub-parte ainda PENDENTE: `interview_graph.py` segue com `f=0` |
-| Sub-agents (linhas 14-29 da matriz) | (sem slug — política de scoring) | Decisão de critério: avaliar herança ou exigir import direto |
-| Stage 6 (P16-P20): observability | `audit-observability-canonical.md` | `shared/observability/__init__.py` continua com 53 bytes; 0 moves; ARCHITECTURE.md §9.4 desatualizada |
-| P14 — 156 shims sem SLA | `audit-ci-guards-shim-sla.md` | Política de remoção ainda não aprovada |
-| F11/F12 (CI lint guards) | `audit-ci-guards-shim-sla.md` | Pertencem ao mesmo escopo da tarefa de SLA de shims |
+| T1, W8, W10 | `audit-pipeline-tool-registry-consolidate.md` (parcial) | `app/tools/registry.py` ativo com 30 callers; `tool_permissions.yaml` + `tool_permissions_loader.py` viraram dead code após deleção do `GlobalToolRegistry` (T3 fechado) |
+| Sub-agents (linhas 14-29 da matriz) | (sem slug — política de scoring) | Decisão de critério: política F5 (#352) define `↑✓` mas recompute pendente para snapshot 2026-05 |
+| Stage 6 — refresh de docs (ARCHITECTURE.md §9.4, CANONICAL_SOURCES_SPEC.md, CLAUDE.md) | (sub-item de `audit-observability-canonical.md`) | Código foi migrado em Tarefa #343 (11 moves + 11 deleções + 41 importadores), mas a documentação de arquitetura ainda referencia paths legados |
+| P14 — 146 shims sem SLA | `audit-ci-guards-shim-sla.md` | Política de remoção batch ainda pendente; 10 shims `RAILS-DEPRECATED` já marcados (F10) |
 
 ### 9b.3 Tarefas que podem ser **canceladas** (findings classificados OBSOLETO)
 
@@ -455,12 +525,12 @@ Todas marcadas com comentário `# require_company=False kept: …` justificando 
 | Sub-claim "JobCreationGraph órfão" | (sub-item dentro de `audit-jobcreation-graph-compliance.md`) | Nunca foi órfão. A parte `compliance` da tarefa segue válida (e já MERGED conforme 9b.1). |
 | Sub-claim "CompanySettings sem rota" | (sub-item dentro de `audit-company-settings-routing.md`) | Mapeamento já existia desde antes. Tarefa principal segue MERGED. |
 
-### 9b.4 Resumo do crosswalk
+### 9b.4 Resumo do crosswalk (atualizado 2026-04-17)
 
-- **17 tarefas inferidas como MERGED** (poderiam ser fechadas hoje sem trabalho adicional).
-- **9 blocos de tarefas inferidas como PENDING/PROPOSED** (precisam continuar em fila).
+- **23 tarefas inferidas como MERGED** (poderiam ser fechadas hoje sem trabalho adicional) — +6 vs. snapshot anterior (R1, C1-C5 bloco, T3, A3, Stage 6 código, W7).
+- **4 blocos de tarefas inferidas como PENDING/PROPOSED** (precisam continuar em fila): T1/W8/W10, sub-agents (política), refresh docs Stage 6, 146 shims SLA.
 - **3 sub-itens canceláveis** (OBSOLETO).
-- **3 follow-ups novos propostos por esta auditoria** (#348 R1, #349 C1-C5, #350 T1/T3/W8-W10).
+- **3 follow-ups novos propostos por esta auditoria** (#348 R1, #349 C1-C5, #350 T1/T3/W8-W10) — **#348, #349, parcial de #350 (T3) já MERGED**; resta apenas escopo W8/W10/T1.
 
 > **Nota sobre estado real das tarefas.** Esta auditoria não tem acesso direto ao status PROPOSED/PENDING/MERGED do sistema de gestão de tarefas. As atribuições acima são **inferidas a partir do estado do código** e devem ser cruzadas pelo time de planejamento com o status canônico antes de qualquer fechamento.
 
@@ -551,4 +621,6 @@ done
 
 ---
 
-*Auditoria gerada em 2026-04-17 — Tarefa #347. Nenhum arquivo de código foi modificado. Verificação 1:1 com `attached_assets/CROSS_CUTTING_AUDIT_AND_REMEDIATION_PLAN_1776388079132.md` (1 469 linhas). Reconciliação contra `docs/audits/AUDIT_STATUS_REPORT_2026-04.md` (Tarefa #302, 2026-04-16). 96 marcadores de status (78 findings nominais + sub-itens). Inventário verificado: 297 .py em `shared/`, 28 subpastas, 23 top-level.*
+*Auditoria original gerada em 2026-04-17 — Tarefa #347. Nenhum arquivo de código foi modificado. Verificação 1:1 com `attached_assets/CROSS_CUTTING_AUDIT_AND_REMEDIATION_PLAN_1776388079132.md` (1 469 linhas). Reconciliação contra `docs/audits/AUDIT_STATUS_REPORT_2026-04.md` (Tarefa #302, 2026-04-16). 96 marcadores de status (78 findings nominais + sub-itens).*
+
+*__Reconciliação 2026-04-17 — Tarefa #370.__ Re-verificação contra estado fresco do código no commit `dcb90de764270124f7345387e47b8d57123e65b9`. Reclassificações: R1 PENDENTE → RESOLVIDO; C1-C5 PENDENTE → RESOLVIDO (via `scoring_safeguards`); T3 PENDENTE → RESOLVIDO via deleção; A3 PARCIAL → RESOLVIDO (FG L2 BLOCK + REGENERATE); Stage 6 0% → 73% (código RESOLVIDO em Tarefa #343, resta refresh de 3 documentos). W7 unificado para **18 decoradores** (recontagem canônica). Inventário verificado: **299** `.py` em `shared/`, **29** subpastas (nova: `observability/`), **20** top-level. Nenhum arquivo de código foi modificado nesta tarefa — apenas este relatório. Top 10 reformulado em §1.2; Errata completa em §0.*
