@@ -244,6 +244,52 @@ class TestPolicyAgentAuditTrail:
         assert call_kwargs["decision_type"] == "policy_update"
 
     @pytest.mark.asyncio
+    async def test_actor_user_id_flows_to_audit_log(self):
+        """Task #337: actor_user_id from chat must reach audit_service.log_decision.
+
+        Simulates the chat orchestrator dispatching to PolicySetupAgent.process
+        with the logged-in user's id. The audit reasoning must contain the real
+        user id (not "unknown").
+        """
+        from app.domains.policy.agents.agent import PolicySetupAgent
+
+        agent = PolicySetupAgent()
+
+        mock_llm = MagicMock()
+        mock_response = MagicMock()
+        mock_response.content = '{"value": 2}'
+        mock_llm.claude = AsyncMock()
+        mock_llm.claude.ainvoke = AsyncMock(return_value=mock_response)
+        agent._llm = mock_llm
+
+        current_policy = {
+            "pipeline_rules": {},
+            "scheduling_rules": {},
+            "communication_rules": {},
+            "screening_rules": {},
+            "lia_autonomy": {},
+        }
+
+        with patch("app.shared.compliance.audit_service.audit_service") as mock_audit:
+            mock_audit.log_decision = AsyncMock()
+            # Use the LangGraph-native entrypoint with `user_id` in the input
+            # dict — this mirrors how the chat orchestrator dispatches.
+            result = await agent.process({
+                "message": "2 entrevistas",
+                "company_id": "test-company",
+                "session_id": "test-session-actor",
+                "current_policy": current_policy,
+                "user_id": "user-42",
+            })
+
+        assert result is not None
+        mock_audit.log_decision.assert_called_once()
+        reasoning = mock_audit.log_decision.call_args.kwargs.get("reasoning", [])
+        joined = "\n".join(reasoning)
+        assert "actor_user_id=user-42" in joined
+        assert "actor_user_id=unknown" not in joined
+
+    @pytest.mark.asyncio
     async def test_audit_trail_fails_gracefully(self):
         """If audit_service raises, the agent should still return a result."""
         from app.domains.policy.agents.agent import PolicySetupAgent

@@ -95,6 +95,7 @@ class ChatAdapter:
             entity_type=entity_type,
             selected_candidate_ids=pc.get("candidate_ids"),
             job_context=pc.get("job_context"),
+            actor_user_id=user_id,
         )
 
         # Passo 2: ChatRepository remains memory owner until M2

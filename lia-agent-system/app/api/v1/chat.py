@@ -115,7 +115,11 @@ async def _invoke_orchestrator_legacy(
             "workflow_data": {},
         }
 
-    orch_context: dict[str, Any] = {"company_id": company_id}
+    orch_context: dict[str, Any] = {
+        "company_id": company_id,
+        "user_id": user_id,
+        "actor_user_id": user_id,
+    }
     if page_context:
         if page_context.get("job_vacancy_id"):
             orch_context["job_vacancy_id"] = page_context["job_vacancy_id"]

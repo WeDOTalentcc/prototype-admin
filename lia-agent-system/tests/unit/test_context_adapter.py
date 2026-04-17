@@ -32,6 +32,20 @@ class TestUniversalContextToOrchestratorContext:
         assert result["context_id"] == "42"
         assert result["channel"] == "rest"
 
+    def test_includes_user_id_and_actor_user_id(self):
+        """Task #337: orchestrator context must carry user identity so
+        downstream domain dispatch (e.g. PolicySetupAgent) can record
+        actor_user_id in audit entries instead of 'unknown'."""
+        ctx = UniversalContext(
+            message="set policy",
+            user_id="user-42",
+            company_id="c1",
+            context_page="company_settings",
+        )
+        result = ctx.to_orchestrator_context()
+        assert result["user_id"] == "user-42"
+        assert result["actor_user_id"] == "user-42"
+
     def test_includes_candidates(self):
         candidates = [{"id": 1, "name": "Ana"}, {"id": 2, "name": "Bob"}]
         ctx = UniversalContext(

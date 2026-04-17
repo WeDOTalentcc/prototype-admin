@@ -80,6 +80,8 @@ class UniversalContext:
             "selected_candidate_ids": self.selected_candidate_ids,
             "channel": self.channel,
             "company_id": self.company_id,
+            "user_id": self.user_id,
+            "actor_user_id": self.user_id,
             "user_name": self.user_name,
             "user_role": self.user_role,
             "context_page": self.context_page,
