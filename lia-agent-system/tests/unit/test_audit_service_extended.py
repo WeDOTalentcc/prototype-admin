@@ -67,6 +67,50 @@ class TestLogDecision:
                 pass  # Non-blocking errors may propagate in some implementations
 
 
+class TestActorUserIdStructuredField:
+    """Task #366 — actor_user_id must be persisted as a structured column."""
+
+    def _run(self, coro):
+        return asyncio.run(coro)
+
+    def test_actor_user_id_passed_to_audit_log_row(self):
+        from app.shared.compliance.audit_service import AuditService
+
+        service = AuditService()
+        captured: dict = {}
+
+        mock_session = AsyncMock()
+        mock_session.__aenter__ = AsyncMock(return_value=mock_session)
+        mock_session.__aexit__ = AsyncMock(return_value=False)
+
+        def _capture(row):
+            # Capture the AuditLog instance fields the service constructs.
+            captured["actor_user_id"] = getattr(row, "actor_user_id", None)
+            captured["agent_name"] = getattr(row, "agent_name", None)
+
+        mock_session.add = MagicMock(side_effect=_capture)
+        mock_session.commit = AsyncMock()
+        mock_session.refresh = AsyncMock()
+
+        with patch(
+            "app.shared.compliance.audit_service.AsyncSessionLocal",
+            return_value=mock_session,
+        ):
+            self._run(service.log_decision(
+                company_id="co-1",
+                agent_name="policy_setup_agent",
+                decision_type="policy_update",
+                action="policy_field_updated:min_interviews_before_offer",
+                decision="in_progress",
+                reasoning=["Q1: ..."],
+                criteria_used=["min_interviews_before_offer"],
+                actor_user_id="user-42",
+            ))
+
+        assert captured["actor_user_id"] == "user-42"
+        assert captured["agent_name"] == "policy_setup_agent"
+
+
 class TestGetCandidateDecisions:
     def _run(self, coro):
         return asyncio.run(coro)

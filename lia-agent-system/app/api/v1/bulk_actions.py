@@ -74,7 +74,6 @@ async def _audit_bulk_item(
     try:
         reasoning: list[Any] = [
             f"bulk action: {action}",
-            f"actor_user_id: {actor_user_id}",
         ]
         if from_stage is not None:
             reasoning.append(f"from_stage: {from_stage}")
@@ -83,7 +82,9 @@ async def _audit_bulk_item(
         if reason:
             reasoning.append(f"reason: {reason[:500]}")
 
-        criteria_used = ["actor_user_id"]
+        # Task #366 — actor_user_id is a structured column now, no longer
+        # stuffed into reasoning/criteria_used.
+        criteria_used: list[Any] = []
         if from_stage is not None:
             criteria_used.append("from_stage")
         if to_stage is not None:
@@ -102,6 +103,7 @@ async def _audit_bulk_item(
             candidate_id=candidate_id,
             job_vacancy_id=job_vacancy_id,
             human_review_required=False,
+            actor_user_id=actor_user_id,
         )
     except Exception as exc:  # never block the bulk flow on audit failures
         logger.warning(

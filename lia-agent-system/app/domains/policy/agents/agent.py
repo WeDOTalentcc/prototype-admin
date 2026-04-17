@@ -257,10 +257,10 @@ class PolicySetupAgent(LangGraphReActBase, EnhancedAgentMixin):
                 decision="blocked",
                 reasoning=[
                     f"FairnessGuard blocked policy input (category={getattr(fg_result, 'category', '?')})",
-                    f"actor_user_id={actor_user_id or 'unknown'}",
                 ],
                 criteria_used=[getattr(fg_result, "category", "fairness")],
                 human_review_required=True,
+                actor_user_id=actor_user_id,
             )
         except Exception as exc:  # pragma: no cover
             logger.debug("[PolicySetupAgent] block audit skipped: %s", exc)
@@ -291,10 +291,10 @@ class PolicySetupAgent(LangGraphReActBase, EnhancedAgentMixin):
                 decision="completed" if completed else "in_progress",
                 reasoning=[
                     f"Q{question.get('id')}: {(question.get('question') or '')[:80]}",
-                    f"actor_user_id={actor_user_id or 'unknown'}",
                     f"policy_diff={json.dumps(policy_diff, ensure_ascii=False, default=str)}",
                 ],
                 criteria_used=[question.get("field", "")],
+                actor_user_id=actor_user_id,
             )
         except Exception as exc:  # pragma: no cover
             logger.debug("[PolicySetupAgent] AuditService skipped: %s", exc)

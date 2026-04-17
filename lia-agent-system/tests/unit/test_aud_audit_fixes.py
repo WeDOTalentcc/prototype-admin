@@ -284,10 +284,13 @@ class TestPolicyAgentAuditTrail:
 
         assert result is not None
         mock_audit.log_decision.assert_called_once()
-        reasoning = mock_audit.log_decision.call_args.kwargs.get("reasoning", [])
+        # Task #366 — actor_user_id is now a structured kwarg, not stuffed
+        # into the reasoning array.
+        call_kwargs = mock_audit.log_decision.call_args.kwargs
+        assert call_kwargs.get("actor_user_id") == "user-42"
+        reasoning = call_kwargs.get("reasoning", [])
         joined = "\n".join(reasoning)
-        assert "actor_user_id=user-42" in joined
-        assert "actor_user_id=unknown" not in joined
+        assert "actor_user_id=" not in joined
 
     @pytest.mark.asyncio
     async def test_audit_trail_fails_gracefully(self):

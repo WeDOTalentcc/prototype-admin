@@ -505,6 +505,13 @@ def register_all_routes(app: FastAPI) -> None:
     app.include_router(trust_center.router, prefix="/api/v1", tags=["trust-center"])
     app.include_router(audit_logs.router, prefix="/api/v1", tags=["audit-logs"])
     app.include_router(audit_timeline_router)
+    # Task #366 — admin filter for AI decisions by user (actor_user_id column).
+    from app.api.v1 import admin_audit_decisions
+    app.include_router(
+        admin_audit_decisions.router,
+        prefix="/api/v1",
+        tags=["admin-audit-decisions"],
+    )
     app.include_router(data_subject_requests.router, prefix="/api/v1", tags=["data-subject-requests"])
     app.include_router(consent_management.router, prefix="/api/v1", tags=["consent-management"])
     app.include_router(granular_consent_router, prefix="/api/v1", tags=["granular-consent"])
