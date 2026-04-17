@@ -238,7 +238,8 @@ test.describe('Unified Chat — Auditoria (Task #292)', () => {
     const flush = instrumentPage(page, testInfo)
 
     // Bloqueia upgrade WS ANTES da navegação para forçar o branch REST.
-    await context.route('**/ws/chat/**', (route) => route.abort())
+    // Path canônico (Task #319): /api/v1/ws/chat/{session_id}.
+    await context.route('**/api/v1/ws/chat/**', (route) => route.abort())
 
     const restPromise = page.waitForRequest(
       (r) => r.url().includes('/api/backend-proxy/chat/message'),

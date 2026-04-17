@@ -1,5 +1,5 @@
 """
-WebSocket de Chat com Agentes — /ws/chat/{session_id}
+WebSocket de Chat com Agentes — /api/v1/ws/chat/{session_id}
 
 Endpoint bidirecional para conversa em tempo real com os agentes LIA.
 

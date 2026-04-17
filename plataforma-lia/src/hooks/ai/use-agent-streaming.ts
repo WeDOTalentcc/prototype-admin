@@ -1,7 +1,7 @@
 /**
  * useAgentStreaming — recebe tokens LangGraph em tempo real via WebSocket/SSE.
  *
- * Conecta ao endpoint WS do backend (/ws/chat/{session_id}) e escuta:
+ * Conecta ao endpoint WS do backend (/api/v1/ws/chat/{session_id}) e escuta:
  *   { type: "token",      content: "..." }  — token incremental do LLM
  *   { type: "token_done", tokens_sent: N }  — streaming concluído
  *   { type: "message",    content: "..." }  — resposta final completa

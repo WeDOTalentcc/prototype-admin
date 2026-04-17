@@ -97,7 +97,7 @@ export function useChatTransport(
 
   const buildWsUrl = useCallback((): string => {
     const base = WS_BASE_URL.replace(/\/$/, "")
-    const url = `${base}/ws/chat/${sessionId}`
+    const url = `${base}/api/v1/ws/chat/${sessionId}`
     return authToken ? `${url}?token=${encodeURIComponent(authToken)}` : url
   }, [sessionId, authToken])
 

@@ -264,3 +264,31 @@ These fully-qualified paths cause duplicate SQLAlchemy class registrations becau
 
 *Last updated: 2026-04-16 | ADR-013: dev auto-login canonical contract*
 
+---
+
+## ADR-014: Canonical API Surface — `/api/v1` (2026-04-17)
+
+**Rule:** Every public HTTP and WebSocket endpoint MUST be mounted under
+the `/api/v1` prefix. Routers are declared with relative paths (e.g.
+`@router.websocket("/ws/chat/{session_id}")`) and the prefix is applied
+at `app.include_router(..., prefix="/api/v1")` time.
+
+**Why:** auth middleware, reverse proxy rules, CORS configuration, and
+rate-limit policies all key off the `/api/v1` prefix. An endpoint mounted
+at the bare root silently bypasses every one of those controls.
+
+**Audit history:** findings W17 + W2 (Task #319, 2026-04-17) confirmed
+that `agent_chat_ws_router` was being mounted **without** a prefix at
+`app/api/routes.py:495`, exposing the chat WebSocket as
+`/ws/chat/{session_id}`. Fix: include the router with
+`prefix="/api/v1"`. Public path is now
+`wss://<host>/api/v1/ws/chat/{session_id}`. Frontend touchpoint:
+`plataforma-lia/src/hooks/chat/useChatTransport.ts` (`buildWsUrl`).
+
+**Enforcement:** regression test
+`tests/unit/test_agent_chat_ws_prefix.py` pins the canonical path. Any
+new router must follow the same `include_router(..., prefix="/api/v1")`
+pattern; the only sanctioned exceptions are health/liveness probes and
+the legacy `jobs_ws.router` (tracked separately).
+
+
