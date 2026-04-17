@@ -71,6 +71,7 @@ PUBLIC_PATHS = {
     "/api/v1/health/performance",
     "/api/v1/health/",
     "/api/v1/health/langgraph",
+    "/api/v1/health/providers",
     "/api/v1/navigation-intent",
     # Calendar OAuth callbacks — provider redirects do not carry Bearer tokens;
     # CSRF protection is enforced via HMAC-signed state parameter in each callback handler.

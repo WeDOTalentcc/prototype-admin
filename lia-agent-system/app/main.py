@@ -69,13 +69,18 @@ async def lifespan(app: FastAPI):
         logger.warning("⚠️  Microsoft Graph API NOT configured (AZURE_CLIENT_ID/SECRET/TENANT_ID missing)")
         logger.warning("   Calendar/scheduling features will not work until credentials are added")
     
-    # Validate Pearch AI configuration
-    pearch_api_key = os.getenv("PEARCH_API_KEY")
-    if pearch_api_key:
-        logger.info("✅ Pearch AI configured (candidate search in 190M+ profiles enabled)")
-    else:
-        logger.warning("⚠️  Pearch AI NOT configured (PEARCH_API_KEY missing)")
-        logger.warning("   Candidate search features will not work until API key is added")
+    # Structured provider healthcheck — Task #297
+    # Reports OK/WARN/FAIL for Pearch, Apify, OpenAI, Anthropic, Gemini,
+    # WorkOS, DEV_MODE based on env-var presence. Non-blocking in dev.
+    try:
+        from app.shared.health.providers_health import (
+            collect_provider_health,
+            log_boot_report,
+        )
+        _provider_report = collect_provider_health()
+        log_boot_report(_provider_report)
+    except Exception as exc:
+        logger.warning("⚠️  Provider healthcheck error (non-blocking): %s", exc)
 
     # ─── Validate global LLM provider keys ────────────────────────────────────
     # The platform uses a hybrid LLM provisioning strategy:

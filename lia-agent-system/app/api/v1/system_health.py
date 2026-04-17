@@ -404,6 +404,38 @@ async def system_health(db: AsyncSession = Depends(get_db)):
     )
 
 
+@router.get("/health/providers", response_model=None)
+async def providers_health():
+    """
+    Structured per-provider configuration check (Task #297).
+
+    Reports OK/WARN/FAIL for Pearch, Apify, OpenAI, Anthropic, Gemini, WorkOS,
+    and DEV_MODE based on env-var presence. Same data used by boot logger.
+
+    Returns:
+        200 if overall OK or WARN
+        503 if overall FAIL (some user-facing feature is broken)
+    """
+    from app.shared.health.providers_health import (
+        collect_provider_health,
+        overall_status,
+    )
+
+    report = collect_provider_health()
+    overall = overall_status(report)
+    status_code = 503 if overall == "fail" else 200
+
+    return JSONResponse(
+        status_code=status_code,
+        content={
+            "overall": overall,
+            "providers": report,
+            "runbook": "docs/runbooks/sourcing-env-vars.md",
+            "timestamp": datetime.utcnow().isoformat(),
+        },
+    )
+
+
 @router.get("/health/ready", response_model=None)
 async def readiness_check(db: AsyncSession = Depends(get_db)):
     """
