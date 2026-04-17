@@ -3,13 +3,15 @@
 import React from"react"
 import { Button } from"@/components/ui/button"
 import { Badge } from"@/components/ui/badge"
-import { Users, Loader2 } from"lucide-react"
+import { Users, Loader2, Eye } from"lucide-react"
 import { UnifiedCandidateTable } from"@/components/tables"
 import type { TableCandidate } from"@/components/tables"
 import { CandidatesLoadMoreFooter } from"./CandidatesLoadMoreFooter"
 import type { Candidate } from"./types"
 import type { TableColumn } from"./CandidateSearchResultsView.types"
 import { useTranslations } from "next-intl"
+import { FilteredNoContactModal } from "./FilteredNoContactModal"
+import type { DiscardedCandidate } from "./hooks/useCandidatesExecuteSearch"
 
 export interface CandidatesTableAreaProps {
   sortedCandidates: Candidate[]
@@ -56,6 +58,11 @@ export interface CandidatesTableAreaProps {
    * real (em chamadas Apify) da busca.
    */
   enrichmentAttempted?: number
+  /**
+   * Task #400: lista de candidatos descartados (id, nome, linkedin etc.) para
+   * o usuário inspecionar e exportar via CSV — clicando no aviso.
+   */
+  filteredCandidates?: DiscardedCandidate[]
 }
 
 export function CandidatesTableArea({
@@ -93,8 +100,11 @@ export function CandidatesTableArea({
   isEnrichingContacts,
   filteredNoContact,
   enrichmentAttempted,
+  filteredCandidates,
 }: CandidatesTableAreaProps) {
   const t = useTranslations('candidates')
+  const [showFilteredModal, setShowFilteredModal] = React.useState(false)
+  const discardedList = filteredCandidates ?? []
   return (
     <div data-testid="candidates-table-area" className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md transition-colors motion-reduce:transition-none duration-300 flex-1 min-w-0 h-full">
       <div className="h-full flex flex-col overflow-hidden">
@@ -130,13 +140,26 @@ export function CandidatesTableArea({
             {!isEnrichingContacts && filteredNoContact !== undefined && filteredNoContact > 0 && (
               <div
                 data-testid="filtered-no-contact-banner"
-                className="flex items-center gap-2 px-4 py-2 bg-status-warning/10 border border-status-warning/20 rounded-lg mx-2 mt-2"
+                className="flex items-center justify-between gap-2 px-4 py-2 bg-status-warning/10 border border-status-warning/20 rounded-lg mx-2 mt-2"
                 role="status"
                 aria-live="polite"
               >
                 <span className="text-sm text-status-warning font-medium">
                   {t('table.filteredNoContact', { count: filteredNoContact })}
                 </span>
+                {discardedList.length > 0 && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="h-7 shrink-0"
+                    onClick={() => setShowFilteredModal(true)}
+                    data-testid="filtered-no-contact-view-button"
+                  >
+                    <Eye className="h-3.5 w-3.5 mr-1" />
+                    {t('table.viewDiscarded')}
+                  </Button>
+                )}
               </div>
             )}
 
@@ -152,6 +175,12 @@ export function CandidatesTableArea({
                 </span>
               </div>
             )}
+
+            <FilteredNoContactModal
+              open={showFilteredModal}
+              onOpenChange={setShowFilteredModal}
+              candidates={discardedList}
+            />
 
             {!isLoading && sortedCandidates.length > 0 && (
               <UnifiedCandidateTable

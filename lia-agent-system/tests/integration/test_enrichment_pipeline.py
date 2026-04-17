@@ -222,6 +222,11 @@ class TestEnrichmentStats:
         assert len(kept) == 1
         assert stats.filtered_no_contact == 2
         assert stats.enrichment_attempted == 2
+        # Task #400: também devolvemos a lista detalhada dos descartados.
+        assert len(stats.filtered_candidates) == 2
+        discarded_ids = {c.id for c in stats.filtered_candidates}
+        assert discarded_ids == {"2", "3"}
+        assert all(c.linkedin_url for c in stats.filtered_candidates)
 
     @pytest.mark.asyncio
     async def test_stats_zero_when_nothing_filtered(self):
@@ -242,6 +247,7 @@ class TestEnrichmentStats:
         assert len(kept) == 1
         assert stats.filtered_no_contact == 0
         assert stats.enrichment_attempted == 0
+        assert stats.filtered_candidates == []
 
 
 class TestToolRegistryInclusion:

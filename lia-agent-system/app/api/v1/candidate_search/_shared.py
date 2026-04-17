@@ -329,6 +329,24 @@ class CandidateSearchResultDTO(BaseModel):
         )
 
 
+class DiscardedCandidateDTO(BaseModel):
+    """Resumo leve de um candidato descartado por não ter contato.
+
+    Task #400: além de contar quantos foram descartados, devolvemos uma lista
+    leve para o frontend exibir/exportar e permitir reaproveitamento manual
+    (ex.: re-enriquecer pelo LinkedIn ou abrir o perfil para enviar mensagem).
+    """
+    id: str
+    name: str
+    headline: str | None = None
+    current_title: str | None = None
+    current_company: str | None = None
+    location: str | None = None
+    linkedin_url: str | None = None
+    picture_url: str | None = None
+    source: str | None = None
+
+
 class EnrichmentStats(BaseModel):
     """Estatísticas do passo de enriquecimento de contatos.
 
@@ -336,9 +354,13 @@ class EnrichmentStats(BaseModel):
     após tentativa de Apify. Estes contadores permitem o frontend explicar ao
     usuário por que o total caiu (ex.: "8 candidatos descartados por não termos
     como contatar").
+
+    Task #400: também devolvemos a lista (`filtered_candidates`) com dados
+    mínimos para o usuário inspecionar/exportar quem foi descartado.
     """
     filtered_no_contact: int = 0
     enrichment_attempted: int = 0
+    filtered_candidates: list[DiscardedCandidateDTO] = Field(default_factory=list)
 
 
 class SearchResponseDTO(BaseModel):
@@ -360,6 +382,7 @@ class SearchResponseDTO(BaseModel):
     high_adherence_count: int = Field(default=0)
     filtered_no_contact: int = Field(default=0)
     enrichment_attempted: int = Field(default=0)
+    filtered_candidates: list[DiscardedCandidateDTO] = Field(default_factory=list)
 
 
 def _build_candidate_data_from_dto(candidate_dto: 'CandidateSearchResultDTO') -> dict[str, Any]:
@@ -689,6 +712,7 @@ async def enrich_and_filter_candidates(
             logger.warning("[EnrichHook] Failed to reload enriched contacts from DB: %s", e)
 
     kept = []
+    discarded: list[DiscardedCandidateDTO] = []
     for cand in candidates:
         has_email = bool(cand.email or getattr(cand, "best_personal_email", None) or getattr(cand, "best_business_email", None))
         has_phone = bool(getattr(cand, "phone", None) or getattr(cand, "phone_numbers", None))
@@ -703,6 +727,19 @@ async def enrich_and_filter_candidates(
             kept.append(cand)
         else:
             logger.debug("[EnrichHook] Filtering candidate %s — no contact", cand.id)
+            def _s(value: object) -> str | None:
+                return value if isinstance(value, str) and value else None
+            discarded.append(DiscardedCandidateDTO(
+                id=str(cand.id),
+                name=_s(getattr(cand, "name", None)) or "",
+                headline=_s(getattr(cand, "headline", None)),
+                current_title=_s(getattr(cand, "current_title", None)),
+                current_company=_s(getattr(cand, "current_company", None)),
+                location=_s(getattr(cand, "location", None)),
+                linkedin_url=_s(getattr(cand, "linkedin_url", None)),
+                picture_url=_s(getattr(cand, "picture_url", None)),
+                source=_s(getattr(cand, "source", None)),
+            ))
 
     filtered = len(candidates) - len(kept)
     if filtered > 0:
@@ -711,5 +748,6 @@ async def enrich_and_filter_candidates(
     stats = EnrichmentStats(
         filtered_no_contact=filtered,
         enrichment_attempted=len(uuid_enrichment) + len(url_enrichment),
+        filtered_candidates=discarded,
     )
     return kept, stats

@@ -14,6 +14,20 @@ import type { ChatMessage } from "./candidates-core"
 
 export type SearchSource = 'local' | 'global' | 'hybrid'
 
+// Task #400: dados leves do candidato descartado pelo backend (sem email/telefone
+// após enriquecimento). Permite exibir e exportar para reaproveitamento manual.
+export interface DiscardedCandidate {
+  id: string
+  name: string
+  headline?: string | null
+  current_title?: string | null
+  current_company?: string | null
+  location?: string | null
+  linkedin_url?: string | null
+  picture_url?: string | null
+  source?: string | null
+}
+
 interface PearchSearchOptions {
   searchType: 'fast'
   limit: number
@@ -38,6 +52,8 @@ interface SearchResults {
   // mesmo após tentativa de enriquecimento via Apify.
   filteredNoContact: number
   enrichmentAttempted: number
+  // Task #400: lista leve dos descartados para inspeção/exportação manual.
+  filteredCandidates: DiscardedCandidate[]
 }
 
 interface ExecuteSearchDeps {
@@ -177,6 +193,7 @@ export function useCandidatesExecuteSearch(deps: ExecuteSearchDeps) {
       // continuarem sem email/telefone. Usado para mostrar aviso no Funil.
       let filteredNoContact = 0
       let enrichmentAttempted = 0
+      let filteredCandidates: DiscardedCandidate[] = []
 
       if (mode === 'similar' && metadata) {
         const similarUrl = metadata.similarProfileUrl || metadata.similarProfileUrls?.[0]
@@ -194,6 +211,7 @@ export function useCandidatesExecuteSearch(deps: ExecuteSearchDeps) {
             if (data.is_enriching_contacts) isEnrichingContacts = true
             filteredNoContact = data.filtered_no_contact || 0
             enrichmentAttempted = data.enrichment_attempted || 0
+            filteredCandidates = (data.filtered_candidates || []) as DiscardedCandidate[]
             if (data.credits_remaining !== undefined) setCreditsRemaining(() => data.credits_remaining)
             if (data.candidates?.length > 0) mappedCandidates = data.candidates.map((c: Record<string, unknown>) => mapCandidateToInternal(c))
           }
@@ -212,6 +230,7 @@ export function useCandidatesExecuteSearch(deps: ExecuteSearchDeps) {
           if (data.is_enriching_contacts) isEnrichingContacts = true
           filteredNoContact = data.filtered_no_contact || 0
           enrichmentAttempted = data.enrichment_attempted || 0
+          filteredCandidates = (data.filtered_candidates || []) as DiscardedCandidate[]
           if (data.credits_remaining !== undefined) setCreditsRemaining(() => data.credits_remaining)
           if (data.candidates?.length > 0) mappedCandidates = data.candidates.map((c: Record<string, unknown>) => mapCandidateToInternal(c))
         }
@@ -229,6 +248,7 @@ export function useCandidatesExecuteSearch(deps: ExecuteSearchDeps) {
           if (data.is_enriching_contacts) isEnrichingContacts = true
           filteredNoContact = data.filtered_no_contact || 0
           enrichmentAttempted = data.enrichment_attempted || 0
+          filteredCandidates = (data.filtered_candidates || []) as DiscardedCandidate[]
           if (data.credits_remaining !== undefined) setCreditsRemaining(() => data.credits_remaining)
           if (data.candidates?.length > 0) mappedCandidates = data.candidates.map((c: Record<string, unknown>) => mapCandidateToInternal(c))
         }
@@ -252,6 +272,7 @@ export function useCandidatesExecuteSearch(deps: ExecuteSearchDeps) {
         if (searchResponse.is_enriching_contacts) isEnrichingContacts = true
         filteredNoContact = (searchResponse as { filtered_no_contact?: number }).filtered_no_contact || 0
         enrichmentAttempted = (searchResponse as { enrichment_attempted?: number }).enrichment_attempted || 0
+        filteredCandidates = ((searchResponse as { filtered_candidates?: DiscardedCandidate[] }).filtered_candidates || [])
         totalCount = searchResponse.total_count || 0; localCount = searchResponse.local_count || 0; pearchCount = searchResponse.pearch_count || 0
         if (searchResponse.credits_remaining !== undefined && searchResponse.credits_remaining !== null) {
           setCreditsRemaining(() => searchResponse.credits_remaining as number)
@@ -304,6 +325,7 @@ export function useCandidatesExecuteSearch(deps: ExecuteSearchDeps) {
         isEnrichingContacts,
         filteredNoContact,
         enrichmentAttempted,
+        filteredCandidates,
       }))
 
       setLastSuccessfulQuery(query)

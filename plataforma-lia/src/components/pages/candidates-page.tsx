@@ -262,6 +262,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
             isEnrichingContacts={searchResults?.isEnrichingContacts}
             filteredNoContact={searchResults?.filteredNoContact}
             enrichmentAttempted={searchResults?.enrichmentAttempted}
+            filteredCandidates={searchResults?.filteredCandidates}
             error={candidatesError}
             onRetry={refreshCandidatesList}
           />

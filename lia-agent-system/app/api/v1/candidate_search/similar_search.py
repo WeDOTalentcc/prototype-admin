@@ -11,6 +11,7 @@ from ._shared import (
     CandidateProfile,
     CandidateSearchResultDTO,
     CreditEstimateDTO,
+    DiscardedCandidateDTO,
     EducationDTO,
     EvaluateForJobRequest,
     EvaluateForJobResponse,
@@ -76,6 +77,7 @@ class SimilarSearchResponse(BaseModel):
     search_time_seconds: float | None = None
     filtered_no_contact: int = 0
     enrichment_attempted: int = 0
+    filtered_candidates: list[DiscardedCandidateDTO] = Field(default_factory=list)
 
 
 @router.post("/similar", response_model=SimilarSearchResponse)
@@ -191,6 +193,7 @@ async def search_similar_candidates(
             search_time_seconds=(result.local_search_time or 0) + (result.pearch_search_time or 0),
             filtered_no_contact=_enrich_stats.filtered_no_contact,
             enrichment_attempted=_enrich_stats.enrichment_attempted,
+            filtered_candidates=_enrich_stats.filtered_candidates,
         )
     
     except HTTPException:

@@ -36,6 +36,7 @@ interface SearchResults {
   isEnrichingContacts: boolean
   filteredNoContact: number
   enrichmentAttempted: number
+  filteredCandidates: import('./useCandidatesExecuteSearch').DiscardedCandidate[]
 }
 
 interface PendingSearchRequest {

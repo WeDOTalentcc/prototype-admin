@@ -120,6 +120,22 @@ export interface SearchResponse {
   is_enriching_contacts?: boolean
   filtered_no_contact?: number
   enrichment_attempted?: number
+  // Task #400: lista detalhada dos candidatos descartados pelo backend porque
+  // o enriquecimento (Apify) não retornou email nem telefone — usada na UI
+  // para visualização e exportação CSV.
+  filtered_candidates?: DiscardedCandidateDTO[]
+}
+
+export interface DiscardedCandidateDTO {
+  id: string
+  name: string
+  headline?: string | null
+  current_title?: string | null
+  current_company?: string | null
+  location?: string | null
+  linkedin_url?: string | null
+  picture_url?: string | null
+  source?: string | null
 }
 
 export interface CreditBreakdown {

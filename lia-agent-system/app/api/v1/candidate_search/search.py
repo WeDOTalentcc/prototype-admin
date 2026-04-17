@@ -372,6 +372,7 @@ async def search_candidates(
             high_adherence_count=high_adherence_count,
             filtered_no_contact=_enrich_stats.filtered_no_contact,
             enrichment_attempted=_enrich_stats.enrichment_attempted,
+            filtered_candidates=_enrich_stats.filtered_candidates,
         )
     
     except HTTPException:

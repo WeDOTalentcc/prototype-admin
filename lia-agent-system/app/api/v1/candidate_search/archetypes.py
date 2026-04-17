@@ -11,6 +11,7 @@ from ._shared import (
     ArchetypeFromSearchResponse,
     ArchetypeResponse,
     CandidateSearchResultDTO,
+    DiscardedCandidateDTO,
     HybridSearchRequest,
     PearchService,
     SearchType,
@@ -111,6 +112,7 @@ class ArchetypeSearchResponse(BaseModel):
     warning_message: str | None = None
     filtered_no_contact: int = 0
     enrichment_attempted: int = 0
+    filtered_candidates: list[DiscardedCandidateDTO] = Field(default_factory=list)
 
 
 @router.get("/archetypes", response_model=ArchetypeListResponse)
@@ -1061,6 +1063,7 @@ async def search_by_archetype(
             warning_message=search_result.warning_message,
             filtered_no_contact=_enrich_stats.filtered_no_contact,
             enrichment_attempted=_enrich_stats.enrichment_attempted,
+            filtered_candidates=_enrich_stats.filtered_candidates,
         )
     
     except HTTPException:

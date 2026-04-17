@@ -110,6 +110,7 @@ export interface CandidateSearchResultsViewProps {
   isEnrichingContacts?: boolean
   filteredNoContact?: number
   enrichmentAttempted?: number
+  filteredCandidates?: import('./hooks/useCandidatesExecuteSearch').DiscardedCandidate[]
   error?: string | null
   onRetry?: () => void
   // Column config
@@ -259,6 +260,7 @@ export function CandidateSearchResultsView({
   isEnrichingContacts,
   filteredNoContact,
   enrichmentAttempted,
+  filteredCandidates,
   error,
   onRetry,
 }: CandidateSearchResultsViewProps) {
@@ -457,6 +459,7 @@ export function CandidateSearchResultsView({
           isEnrichingContacts={isEnrichingContacts}
           filteredNoContact={filteredNoContact}
           enrichmentAttempted={enrichmentAttempted}
+          filteredCandidates={filteredCandidates}
           error={error}
           onRetry={onRetry}
         />

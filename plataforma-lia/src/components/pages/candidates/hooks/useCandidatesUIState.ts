@@ -83,12 +83,14 @@ export function useCandidatesUIState() {
     isEnrichingContacts: boolean
     filteredNoContact: number
     enrichmentAttempted: number
+    filteredCandidates: import('./useCandidatesExecuteSearch').DiscardedCandidate[]
   }>({
     local: [], global: [], localCount: 0, globalCount: 0, query: '',
     isLoading: false, showGlobalResults: false, globalDismissed: false,
     isEnrichingContacts: false,
     filteredNoContact: 0,
     enrichmentAttempted: 0,
+    filteredCandidates: [],
   })
   const [selectedTemplate, setSelectedTemplate] = useState('')
   const [searchThreadId, setSearchThreadId] = useState<string | undefined>(undefined)
