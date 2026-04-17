@@ -43,6 +43,15 @@ DISCRIMINATORY_TEXTS = [
     "Buscamos profissional jovem e dinâmico para a equipe",
     "Queremos alguém com energia jovem para essa função",
     "Precisamos de sangue novo nesse time",
+    # Task #386 — English equivalents promoted from Layer-2 educational
+    # warning (IMPLICIT_BIAS_TERMS_EN) to Layer-1 hard block under
+    # appearance_en / age_en. Must fail closed across the same 5 services
+    # so multi-language tenants get symmetric enforcement.
+    "We are looking for a good looking candidate",
+    "Candidate must be presentable for client meetings",
+    "We need a young and dynamic professional",
+    "Looking for young blood in our team",
+    "Seeking energetic professionals for this role",
 ]
 
 

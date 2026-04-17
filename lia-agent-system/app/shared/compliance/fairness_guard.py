@@ -434,6 +434,19 @@ DISCRIMINATORY_CATEGORIES_EN = {
             r"\b(young|youthful)\s+(candidate|professional|team\s+member)\b",
             r"\bno\s+older\s+than\s+\d+\b",
             r"\bage\s+limit\b",
+            # Task #386 — English equivalents of the PT canonical phrases
+            # promoted in task #364 ("jovem dinâmico", "energia jovem",
+            # "sangue novo"). Multi-language tenants previously got
+            # asymmetric enforcement: the same intent in English was only
+            # a Layer-2 educational warning. The educational soft-warning
+            # text is preserved via IMPLICIT_BIAS_TERMS_EN so the user
+            # still sees the explanation alongside the hard block.
+            r"\byoung[\s,]+(and\s+)?dynamic\b",
+            r"\bdynamic[\s,]+(and\s+)?young\b",
+            r"\byoung\s+blood\b",
+            r"\bfresh\s+blood\b",
+            r"\bnew\s+blood\b",
+            r"\benergetic\b",
         ],
         "message": (
             "Age-based filtering may violate age discrimination laws "
@@ -468,6 +481,26 @@ DISCRIMINATORY_CATEGORIES_EN = {
             "This violates the ADA, CRPD, and Lei 13.146/15 (Estatuto da Pessoa com Deficiência)."
         ),
     },
+    "appearance_en": {
+        "terms": [
+            # Task #386 — English equivalents of "boa aparência" / "boa
+            # apresentação pessoal" promoted in task #364. The Layer-2
+            # educational soft-warning text remains in
+            # IMPLICIT_BIAS_TERMS_EN so it surfaces as the user-facing
+            # explanation alongside the hard block.
+            r"\bgood[\s-]?looking\b",
+            r"\bgreat[\s-]?looking\b",
+            r"\bnice[\s-]?looking\b",
+            r"\bpresentable\b",
+            r"\bclean[\s-]?cut\b",
+            r"\battractive\s+(candidate|professional|applicant|appearance|person)\b",
+        ],
+        "message": (
+            "LIA cannot filter candidates by physical appearance. "
+            "Esthetic discrimination violates Lei 9.029/95, Title VII, EU Directive 2000/78 "
+            "and labor jurisprudence — only objective functional requirements are admissible."
+        ),
+    },
     "socioeconomic_en": {
         "terms": [
             r"\b(only|just)\s+from\s+(affluent|wealthy|rich|upper\s*class)\b",
@@ -493,7 +526,11 @@ _COMPILED_PATTERNS: dict[str, list[re.Pattern]] = {}
 #                 "boa apresentação pessoal", "jovem dinâmico", "energia jovem",
 #                 "sangue novo") from Layer-2 educational warnings to Layer-1
 #                 hard blocks under aparencia_fisica / idade categories.
-_PATTERNS_VERSION = 6
+# v7: Task #386 — promoted English equivalents ("good looking", "presentable",
+#                 "young and dynamic", "young blood", "energetic", etc.) from
+#                 Layer-2 educational warnings (IMPLICIT_BIAS_TERMS_EN) to
+#                 Layer-1 hard blocks under appearance_en / age_en categories.
+_PATTERNS_VERSION = 7
 
 # ---------------------------------------------------------------------------
 # Interview transcript bias indicators (consolidated from 3 ex-detectors)
