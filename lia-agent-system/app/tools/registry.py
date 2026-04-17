@@ -1,8 +1,19 @@
 """
-Tool Registry - Manages tool definitions for LLM function calling.
+Tool Registry — execution router, NOT an authoring surface.
 
-Provides a central registry for all tools that LLM agents can invoke,
-including schema definitions and access control per agent type.
+This module owns the in-memory index that ``ActionExecutor``, ``agentic_loop``
+and the orchestrator consult by name to obtain ``ToolDefinition.handler`` +
+schema. It is **not** the place to author new tools.
+
+Author tools with the ``@tool_handler`` decorator under
+``app/domains/<domain>/tools/`` and expose them via ``get_<domain>_tools()``
+in ``app/domains/<domain>/agents/<thing>_tool_registry.py``. The only file
+allowed to call ``tool_registry.register(...)`` is
+``app/tools/__init__.py:initialize_tools()``, which aggregates the
+``get_*_tools()`` from each domain.
+
+See ADR-016 (``docs/specs/ai/ADR-016-tool-registration-canonical.md``) and the
+``S7.5`` guard (``scripts/check_tool_authoring_surface.py``).
 """
 import logging
 from collections.abc import Awaitable, Callable

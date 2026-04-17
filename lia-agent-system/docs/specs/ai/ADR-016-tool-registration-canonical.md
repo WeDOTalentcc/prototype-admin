@@ -68,7 +68,7 @@ Escopo: apenas o que muda *além* do que já está pronto. Cada item é uma task
    - 4b. Mudar `llm_factory._load_from_permissions` para ser apenas o fallback de sistema (sem `tenant_id`); o caminho normal vira `load_from_db(tenant_id)`.
    - 4c. Remover de `tool_permissions.yaml` quaisquer entradas que sejam config-por-tenant (manter só defaults globais).
    - 4d. Migration de dados: ler YAML existente, popular `tenant_llm_config` para tenants já configurados.
-5. **Guard de CI (S7.4):** adicionar `scripts/check_tool_authoring_surface.py` que falha se aparecer `tool_registry.register(` fora de `app/tools/__init__.py` / `app/tools/registry.py`. Espelha o estilo dos guards S7.1–S7.3.
+5. **Guard de CI (S7.5):** ✅ Task #354 — `scripts/check_tool_authoring_surface.py` falha se aparecer `tool_registry.register(` fora de `app/tools/__init__.py` / `app/tools/registry.py`. Espelha o estilo dos guards S7.1–S7.3, com `ALLOW_LIST` grandfathereando os 12 módulos pré-existentes; novos arquivos são bloqueados desde o dia 1. Wired no pre-commit como `tool-authoring-surface` e documentado em `ARCHITECTURE.md` §S7.5.
 6. **Atualizar onboarding/README** do `lia-agent-system` para descrever os três papéis (autoria / execução / escopo) com um exemplo de "como adicionar uma tool nova".
 
 Itens 2-3 são pequenos. Item 4 é o maior (data migration). Item 5-6 são polimento e podem ir junto com qualquer task que mexa em tools.

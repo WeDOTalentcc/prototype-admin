@@ -363,6 +363,37 @@ só lugar.
 
 Detalhes, plano de migração e não-decisões: `docs/specs/ai/ADR-016-tool-registration-canonical.md`.
 
+### S7.5 — Direct `tool_registry.register(` calls blocked outside the canonical entry point (Task #354)
+
+The S7.4 contract above is only as strong as the guard that enforces it.
+Without an automated check, a future contributor will quietly bypass tenant
+checks and HITL by calling `tool_registry.register(...)` from a new domain
+module — exactly the regression that S7.1–S7.3 already prevent for the
+other rules.
+
+**Rule:** the literal call `tool_registry.register(` is banned everywhere
+under `app/` except the two canonical files:
+
+- `app/tools/__init__.py` — `initialize_tools()` aggregates
+  `get_*_tools()` from each domain and is the **only** legitimate caller.
+- `app/tools/registry.py` — defines `ToolRegistry.register` itself.
+
+A small `ALLOW_LIST` inside the script grandfathers the domain modules that
+pre-date ADR-016 (`app/domains/*/tools/*.py` + `app/shared/tools/export_tools.py`)
+so the guard can land without a big-bang migration. New entries to the allow
+list are **not** accepted; existing entries should be removed as each domain
+flips to `@tool_handler` + `get_<domain>_tools()` and `initialize_tools()`
+starts aggregating its tools.
+
+**Enforcement:** `scripts/check_tool_authoring_surface.py` (pre-commit hook
+`tool-authoring-surface` + CI job "S7.5"). The header docstring of
+`app/tools/registry.py` cross-references this guard so a contributor reading
+the registry source learns the rule from either direction.
+
+```bash
+python3 scripts/check_tool_authoring_surface.py
+```
+
 ---
 
 ## ADR-017: Canonical Observability Location — `app.shared.observability.*` (2026-04-17) [ENFORCED by CI]

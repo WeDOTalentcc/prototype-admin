@@ -81,3 +81,11 @@ repos:
         files: ^app/domains/.*/tools/.*\.py$
         pass_filenames: false
         always_run: false
+
+      - id: tool-authoring-surface
+        name: "S7.5: No `tool_registry.register(` outside app/tools/__init__.py (ADR-016)"
+        language: system
+        entry: python3 scripts/check_tool_authoring_surface.py
+        files: ^app/.*\.py$
+        pass_filenames: false
+        always_run: false
