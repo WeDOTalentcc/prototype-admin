@@ -42,7 +42,7 @@ from app.domains.company.repositories.global_settings_repository import GlobalSe
 from app.domains.company.repositories.ideal_profile_repository import IdealProfileRepository
 from app.domains.company.repositories.technical_test_repository import TechnicalTestRepository
 from app.domains.company.repositories.tenant_repository import TenantRepository
-from app.domains.company.repositories.user_repository import UserRepository
+from app.domains.auth.repositories.user_repository import UserRepository
 from app.domains.sourcing.services.apify_service import apify_service
 from app.schemas.company import (
     ApproverCreate,

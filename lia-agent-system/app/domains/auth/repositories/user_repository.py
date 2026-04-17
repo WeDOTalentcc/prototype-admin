@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.models import User
 from app.shared.encryption.encrypted_field_mixin import _sha256_hash
+from lia_models.job_vacancy import JobVacancy
 
 logger = logging.getLogger(__name__)
 
@@ -50,6 +51,7 @@ class UserRepository:
         role: str | None = None,
         workos_only: bool = False,
         scim_only: bool = False,
+        is_active: bool | None = None,
         limit: int = 50,
         offset: int = 0,
     ) -> list[User]:
@@ -60,9 +62,25 @@ class UserRepository:
             query = query.where(User.workos_id.isnot(None))
         if scim_only:
             query = query.where(User.is_scim_managed == True)  # noqa: E712
+        if is_active is not None:
+            query = query.where(User.is_active == is_active)
         query = query.order_by(User.created_at.desc()).limit(limit).offset(offset)
         result = await self.db.execute(query)
         return list(result.scalars().all())
+
+    async def count_active_jobs_by_email(self, emails: list[str]) -> dict[str, int]:
+        """Return map of email -> active job count."""
+        if not emails:
+            return {}
+        query = select(
+            JobVacancy.recruiter_email,
+            func.count(JobVacancy.id).label("count"),
+        ).where(
+            JobVacancy.recruiter_email.in_(emails),
+            JobVacancy.status.in_(["Ativa", "Publicada", "Em Andamento"]),
+        ).group_by(JobVacancy.recruiter_email)
+        result = await self.db.execute(query)
+        return {row.recruiter_email: row.count for row in result}
 
     async def count_for_company(
         self,

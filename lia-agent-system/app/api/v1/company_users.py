@@ -24,7 +24,7 @@ from app.domains.company.dependencies import (
 from app.domains.company.repositories.company_profile_repository import CompanyProfileRepository
 from app.domains.company.repositories.department_repository import DepartmentRepository
 from app.domains.company.repositories.global_settings_repository import GlobalSettingsRepository
-from app.domains.company.repositories.user_repository import UserRepository
+from app.domains.auth.repositories.user_repository import UserRepository
 from app.schemas.company import (
     CatalogStatusResponse,
     CompanyUserResponse,

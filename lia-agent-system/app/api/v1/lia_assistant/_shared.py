@@ -12,7 +12,7 @@ from uuid import UUID, uuid4
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.domains.job_management.services.job_insights_service import job_insights_service
+from app.domains.analytics.services.job_insights_service import job_insights_service
 from app.domains.analytics.services.market_benchmark_service import market_benchmark_service
 from app.domains.analytics.services.feedback_learning_service import feedback_learning_service
 from app.domains.cv_screening.services.config_completeness_service import config_completeness_service as completeness_service

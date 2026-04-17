@@ -22,8 +22,11 @@ from app.domains.job_creation.state import (
     JobCreationState,
     calculate_completeness,
 )
+from app.domains.cv_screening.services.seniority_resolver import (
+    SENIORITY_DISPLAY_NAMES,
+    resolve_seniority_full,
+)
 from app.domains.job_creation.services.jd_enrichment import JdEnrichmentService
-from app.domains.job_creation.services.seniority_resolver import resolve_seniority
 from app.domains.job_creation.services.wsi_question_generator import WSIQuestionGenerator
 from app.domains.job_creation.api_client import JobCreationAPIClient
 
@@ -248,16 +251,28 @@ def competency_node(state: JobCreationState) -> JobCreationState:
     jd_enriched = state.get("jd_enriched", {})
     skills = [s.get("skill", "") for s in jd_enriched.get("skills_obrigatorias", [])]
 
-    # F4: Resolve seniority using 5 signals
-    seniority_result = resolve_seniority(
+    # F4: Resolve seniority using 5 signals (canonical cv_screening resolver)
+    _salary_min = state.get("salary_min")
+    seniority_resolution = resolve_seniority_full(
         explicit_seniority=state.get("parsed_seniority"),
         job_title=jd_enriched.get("titulo_padronizado") or state.get("parsed_title"),
         job_description=jd_enriched.get("about_role", ""),
-        skills=skills,
-        salary_min=state.get("salary_min"),
+        salary_min=float(_salary_min) if _salary_min else None,
+        salary_max=None,
+        technical_skills=skills,
     )
-
-    seniority = seniority_result.final_level
+    seniority = seniority_resolution.level or "pleno"
+    seniority_signals_used = [
+        {
+            "signal": s.source,
+            "value": s.level,
+            "weight": round(s.weight, 4),
+            "confidence": round(s.confidence, 4),
+            "evidence": s.evidence,
+        }
+        for s in seniority_resolution.signals
+        if s.level is not None
+    ]
     screening_mode = state.get("screening_mode")
 
     # F5: Question distribution by mode (deterministic)
@@ -284,7 +299,7 @@ def competency_node(state: JobCreationState) -> JobCreationState:
     updates: Dict[str, Any] = {
         "current_stage": "competency",
         "seniority_resolved": seniority,
-        "seniority_signals": seniority_result.signals_used,
+        "seniority_signals": seniority_signals_used,
         "question_distribution": distribution,
         "competency_tree": competency_tree,
         "stage_history": (state.get("stage_history") or []) + ["competency"],
@@ -295,9 +310,9 @@ def competency_node(state: JobCreationState) -> JobCreationState:
             "stage": "competency",
             "data": {
                 "seniority": seniority,
-                "seniority_display": seniority_result.display_name,
-                "seniority_confidence": seniority_result.confidence,
-                "seniority_signals": seniority_result.signals_used,
+                "seniority_display": SENIORITY_DISPLAY_NAMES.get(seniority, seniority.title()),
+                "seniority_confidence": seniority_resolution.confidence,
+                "seniority_signals": seniority_signals_used,
                 "screening_mode": screening_mode,
                 "distribution": distribution,
                 "competency_tree": competency_tree,
