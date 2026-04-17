@@ -10,33 +10,22 @@
  *   npx playwright test e2e/tests/kanban/kanban-full-audit.spec.ts --reporter=html
  */
 
-import { test, expect } from '../../fixtures/auth.fixture'
+import { test, expect, KANBAN_JOBS } from '../../fixtures/kanban-auth.fixture'
 import type { Page } from '@playwright/test'
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────
 
-const BASE = process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:5000'
-
-/** Navega para a lista de vagas e abre o primeiro kanban disponível */
-async function goToFirstKanban(page: Page): Promise<string | null> {
-  await page.goto('/vagas')
-  await page.waitForLoadState('networkidle')
-
-  // Tenta clicar no primeiro job card disponível
-  const jobRow = page.locator('[data-testid="job-card"], [class*="job-row"], [class*="JobRow"], tr[data-job-id]').first()
-  const jobLink = page.locator('a[href*="/vagas/"]').first()
-
-  if (await jobLink.isVisible({ timeout: 8000 }).catch(() => false)) {
-    const href = await jobLink.getAttribute('href')
-    await jobLink.click()
-    await page.waitForLoadState('networkidle')
-    return href
-  } else if (await jobRow.isVisible({ timeout: 5000 }).catch(() => false)) {
-    await jobRow.click()
-    await page.waitForLoadState('networkidle')
-    return page.url()
+/** Navega diretamente ao kanban do Product Manager (tem seed data) */
+async function goToFirstKanban(page: Page): Promise<string> {
+  // Fixture já navegou — verifica se kanban já carregou, caso contrário aguarda
+  const isAlreadyLoaded = await page.locator('[data-testid="kanban-column"]').first().isVisible({ timeout: 1000 }).catch(() => false)
+  if (!isAlreadyLoaded) {
+    const url = KANBAN_JOBS.productManager.url
+    await page.goto(url)
+    await page.waitForLoadState('domcontentloaded')
+    await page.waitForSelector('[data-testid="kanban-column"]', { timeout: 40000 }).catch(() => {})
   }
-  return null
+  return KANBAN_JOBS.productManager.url
 }
 
 /** Garante que há pelo menos um card visível no kanban */
@@ -49,10 +38,6 @@ async function ensureKanbanLoaded(page: Page): Promise<boolean> {
 async function snap(page: Page, name: string) {
   await page.screenshot({ path: `playwright-report/screenshots/${name}.png`, fullPage: false })
 }
-
-// ─── Fixture: Setup único para todos os testes da suite ────────────────────────
-
-let _kanbanUrl: string | null = null
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // 1. SETUP E NAVEGAÇÃO

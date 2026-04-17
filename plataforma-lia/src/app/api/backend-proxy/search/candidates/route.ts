@@ -1,81 +1,17 @@
+import { createProxyHandlers } from "@/lib/api/proxy-handler"
+
+const postHandlers = createProxyHandlers({
+  backendPath: "/api/v1/search/candidates",
+  methods: ["POST"],
+  backendTarget: "fastapi",
+})
+
+const getHandlers = createProxyHandlers({
+  backendPath: "/api/v1/search/candidates/local",
+  methods: ["GET"],
+  backendTarget: "fastapi",
+})
+
 export const dynamic = "force-dynamic"
-import { NextRequest, NextResponse } from 'next/server'
-import { validateBody } from '@/lib/api/validate'
-import { getAuthHeaders } from '@/lib/api/auth-headers'
-import { z } from 'zod'
-
-const BACKEND_URL = process.env.BACKEND_URL || 'http://127.0.0.1:8001'
-
-const _bodySchema = z.record(z.string(), z.unknown())
-
-function unwrapEnvelope(json: Record<string, unknown>): Record<string, unknown> {
-  if (json && typeof json === 'object' && 'ok' in json && 'data' in json && json.data && typeof json.data === 'object') {
-    return json.data as Record<string, unknown>
-  }
-  return json
-}
-
-export async function POST(request: NextRequest) {
-  try {
-    const bodyResult = await validateBody(request, _bodySchema)
-
-    if (!bodyResult.success) return bodyResult.response
-
-    const body = bodyResult.data
-    
-    const backendUrl = `${BACKEND_URL}/api/v1/search/candidates`
-    
-    const response = await fetch(backendUrl, {
-      method: 'POST',
-      headers: getAuthHeaders(request),
-      body: JSON.stringify(body),
-    })
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}))
-      return NextResponse.json(
-        { error: 'Erro ao buscar candidatos', details: errorData },
-        { status: response.status }
-      )
-    }
-
-    const data = await response.json()
-    return NextResponse.json(unwrapEnvelope(data))
-  } catch (error) {
-    return NextResponse.json(
-      { error: 'Erro ao conectar com o backend' },
-      { status: 500 }
-    )
-  }
-}
-
-export async function GET(request: NextRequest) {
-  try {
-    const { searchParams } = new URL(request.url)
-    const query = searchParams.get('query') || ''
-    const limit = searchParams.get('limit') || '20'
-    
-    const backendUrl = `${BACKEND_URL}/api/v1/search/candidates/local?query=${encodeURIComponent(query)}&limit=${limit}`
-    
-    const response = await fetch(backendUrl, {
-      method: 'GET',
-      headers: getAuthHeaders(request),
-    })
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}))
-      return NextResponse.json(
-        { error: 'Erro na busca local', details: errorData },
-        { status: response.status }
-      )
-    }
-
-    const data = await response.json()
-    return NextResponse.json(unwrapEnvelope(data))
-  } catch (error) {
-    return NextResponse.json(
-      { error: 'Erro ao conectar com o backend' },
-      { status: 500 }
-    )
-  }
-}
+export const POST = postHandlers.POST
+export const GET = getHandlers.GET
