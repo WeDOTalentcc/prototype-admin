@@ -89,15 +89,12 @@ async def lifespan(app: FastAPI):
     #   2. Global env vars as fallback for tenants without their own config
     # Without at least ONE provider key, agents will fail at runtime when the
     # first chat message arrives — silent outage. Warn loudly here.
-    has_anthropic = bool(
-        getattr(settings, "AI_INTEGRATIONS_ANTHROPIC_API_KEY", None)
-        or getattr(settings, "ANTHROPIC_API_KEY", None)
-    )
-    has_gemini = bool(getattr(settings, "AI_INTEGRATIONS_GEMINI_API_KEY", None))
-    has_openai = bool(
-        getattr(settings, "AI_INTEGRATIONS_OPENAI_API_KEY", None)
-        or getattr(settings, "OPENAI_API_KEY", None)
-    )
+    # Source-of-truth for key detection lives in providers_health so /health/providers
+    # and the boot LLM gate never disagree (Task #297 code-review follow-up).
+    _llm_report = _provider_report if "_provider_report" in dir() else {}
+    has_anthropic = _llm_report.get("anthropic", {}).get("status") == "ok"
+    has_gemini = _llm_report.get("gemini", {}).get("status") == "ok"
+    has_openai = _llm_report.get("openai", {}).get("status") == "ok"
     if has_anthropic or has_gemini or has_openai:
         providers = [
             name
