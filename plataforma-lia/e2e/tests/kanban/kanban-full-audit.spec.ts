@@ -13,6 +13,9 @@
 import { test, expect, KANBAN_JOBS } from '../../fixtures/kanban-auth.fixture'
 import type { Page } from '@playwright/test'
 
+// ─── Module-level state ────────────────────────────────────────────────────────
+let _kanbanUrl = ''
+
 // ─── Helpers ───────────────────────────────────────────────────────────────────
 
 /** Navega diretamente ao kanban do Product Manager (tem seed data) */
