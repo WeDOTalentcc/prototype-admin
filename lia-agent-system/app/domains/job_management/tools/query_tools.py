@@ -112,6 +112,7 @@ async def search_jobs(
             
             result = await db.execute(query)
             jobs = result.scalars().all()
+            logger.info(f"🔍 search_jobs DB result: {len(jobs)} rows, company_id={company_id}")
             
             jobs_list = []
             for j in jobs:
