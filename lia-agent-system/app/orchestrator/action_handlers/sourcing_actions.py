@@ -132,7 +132,7 @@ async def _rank_candidates(params: dict[str, Any], context: dict[str, Any]):
             """
             bind: dict[str, Any] = {"job_id": str(job_id), "lim": limit}
             if company_id:
-                sql += " AND vc.company_id = CAST(:co AS uuid)"
+                sql += " AND vc.company_id = :co"
                 bind["co"] = str(company_id)
             sql += " ORDER BY COALESCE(vc.lia_score, vc.score, 0) DESC LIMIT :lim"
             result = await db.execute(text(sql), bind)
@@ -284,7 +284,7 @@ async def _search_candidates(params: dict[str, Any], context: dict[str, Any]):
             """
             bind = {"q": search_term, "raw_q": query}
             if company_id:
-                sql += " AND vc.company_id = CAST(:co AS uuid)"
+                sql += " AND vc.company_id = :co"
                 bind["co"] = str(company_id)
             sql += " ORDER BY c.name LIMIT :lim"
             bind["lim"] = limit
@@ -509,7 +509,7 @@ async def _export_candidates(params: dict[str, Any], context: dict[str, Any]):
                 """
                 export_bind: dict[str, Any] = {"jid": str(job_id)}
                 if company_id:
-                    export_sql += " AND vc.company_id = CAST(:co AS uuid)"
+                    export_sql += " AND vc.company_id = :co"
                     export_bind["co"] = str(company_id)
                 export_sql += " ORDER BY c.name"
                 result = await db.execute(text(export_sql), export_bind)
