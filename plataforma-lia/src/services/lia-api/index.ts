@@ -12,7 +12,14 @@ export * from './voice-api'
 export * from './feedback-api'
 export * from './autonomous-api'
 
-export { BACKEND_URL, getAuthHeaders, getAuthHeadersForFormData } from './base'
+export {
+  BACKEND_URL,
+  getAuthHeaders,
+  getAuthHeadersForFormData,
+  fetchWithRetry,
+  HttpError,
+  parseRetryAfterMs,
+} from './base'
 
 import * as chatApi from './chat-api'
 import * as candidatesApi from './candidates-api'

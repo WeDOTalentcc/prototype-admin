@@ -3,7 +3,7 @@
 
 import { formatBRL } from "@/lib/pricing"
 import { useState, useEffect, useRef, useCallback } from "react"
-import { liaApi } from "@/services/lia-api"
+import { liaApi, HttpError } from "@/services/lia-api"
 import type { Job } from "@/components/jobs"
 
 interface UseJobsDataReturn {
@@ -24,48 +24,43 @@ interface UseJobsDataReturn {
   }
 }
 
-async function waitForServer(maxWaitMs = 60_000): Promise<boolean> {
-  const start = Date.now()
-  while (Date.now() - start < maxWaitMs) {
-    try {
-      const r = await fetch('/api/backend-proxy/health', { signal: AbortSignal.timeout(5000) })
-      if (r.ok) return true
-    } catch {}
-    await new Promise(r => setTimeout(r, 3000))
-  }
-  return false
-}
-
-let serverReady = false
-
-async function fetchWithRetry<T>(
-  fn: () => Promise<T>,
-  retries = 3,
-  baseDelayMs = 3000,
-): Promise<T> {
-  if (!serverReady) {
-    console.debug('[useJobsData] waiting for server readiness...')
-    serverReady = await waitForServer(20_000)
-    if (!serverReady) {
-      console.warn('[useJobsData] server not ready after 90s, attempting fetch anyway')
+/**
+ * Translates a fetch failure into a user-actionable message.
+ *
+ * Distinguishes (task #345):
+ *   - 429 rate-limit ("muitas requisições — tentando novamente em Xs")
+ *   - 504 / timeout ("backend demorando para responder")
+ *   - 502 / 503 / network ("sem conexão com o servidor")
+ *   - Other HTTP errors (preserves status)
+ */
+export function describeJobsLoadError(error: unknown): string {
+  if (error instanceof HttpError) {
+    if (error.status === 429) {
+      const seconds = error.retryAfterMs ? Math.ceil(error.retryAfterMs / 1000) : null
+      return seconds
+        ? `Muitas requisições ao servidor — tentando novamente em ${seconds}s.`
+        : 'Muitas requisições ao servidor — tentando novamente em instantes.'
     }
-  }
-
-  for (let attempt = 0; attempt <= retries; attempt++) {
-    try {
-      return await fn()
-    } catch (err) {
-      if (attempt === retries) throw err
-      const delay = Math.min(baseDelayMs * Math.pow(1.5, attempt), 15000)
-      console.warn(`[useJobsData] fetch attempt ${attempt + 1} failed, retrying in ${Math.round(delay)}ms`, err instanceof Error ? err.message : err)
-      await new Promise(r => setTimeout(r, delay))
+    if (error.status === 504) {
+      return 'O backend está demorando para responder. Tente novamente em instantes.'
     }
+    if (error.status === 502 || error.status === 503) {
+      return 'Sem conexão com o servidor. Tente novamente em instantes.'
+    }
+    return `Erro ao carregar vagas (HTTP ${error.status}).`
   }
-  throw new Error("unreachable")
+  if (error instanceof DOMException && (error.name === 'TimeoutError' || error.name === 'AbortError')) {
+    return 'O backend está demorando para responder. Tente novamente em instantes.'
+  }
+  if (error instanceof TypeError) {
+    return 'Sem conexão com o servidor. Verifique sua rede e tente novamente.'
+  }
+  return error instanceof Error ? error.message : 'Falha ao carregar vagas.'
 }
 
 export function useJobsData(): UseJobsDataReturn {
   const mountedRef = useRef(false)
+  const inflightRef = useRef<Promise<void> | null>(null)
   const [hasMounted, setHasMounted] = useState(false)
   const [backendJobs, setBackendJobs] = useState<Job[]>([])
   const [isLoadingJobs, setIsLoadingJobs] = useState(true)
@@ -81,15 +76,21 @@ export function useJobsData(): UseJobsDataReturn {
     return () => { mountedRef.current = false }
   }, [])
 
-  const loadBackendJobs = useCallback(async () => {
+  const loadBackendJobs = useCallback(async (): Promise<void> => {
     if (!mountedRef.current) return
-    try {
-      setIsLoadingJobs(true)
-      setJobsError(null)
+    // Concurrency guard (task #345): if a load is already in flight, callers
+    // join the same promise instead of spawning parallel requests that would
+    // amplify rate-limits.
+    if (inflightRef.current) return inflightRef.current
 
-      console.debug('[useJobsData] fetching job vacancies...')
-      const response = await fetchWithRetry(() => liaApi.listJobVacancies(undefined, 0, 50))
-      console.debug('[useJobsData] response received, items:', response?.items?.length ?? 'none')
+    const run = async () => {
+      try {
+        setIsLoadingJobs(true)
+        setJobsError(null)
+
+        console.debug('[useJobsData] fetching job vacancies...')
+        const response = await liaApi.listJobVacancies(undefined, 0, 50)
+        console.debug('[useJobsData] response received, items:', response?.items?.length ?? 'none')
 
       if (!mountedRef.current) return
 
@@ -252,13 +253,28 @@ export function useJobsData(): UseJobsDataReturn {
         setDashboardStats(stats)
         setIsLoadingStats(false)
       }
-    } catch (error) {
-      if (!mountedRef.current) return
-      console.error('[useJobsData] loadBackendJobs failed after retries', error instanceof Error ? error.message : error)
-      setJobsError(error instanceof Error ? error.message : 'Failed to load jobs')
-      setIsLoadingStats(false)
-      setIsLoadingJobs(false)
+      } catch (error) {
+        if (!mountedRef.current) return
+        const message = describeJobsLoadError(error)
+        console.error(
+          '[useJobsData] loadBackendJobs failed:',
+          error instanceof HttpError
+            ? `HttpError ${error.status} (${error.message})`
+            : error instanceof Error
+              ? `${error.name}: ${error.message}`
+              : error,
+        )
+        setJobsError(message)
+        setIsLoadingStats(false)
+        setIsLoadingJobs(false)
+      }
     }
+
+    const promise = run().finally(() => {
+      inflightRef.current = null
+    })
+    inflightRef.current = promise
+    return promise
   }, [])
 
   useEffect(() => {
@@ -268,7 +284,10 @@ export function useJobsData(): UseJobsDataReturn {
 
   useEffect(() => {
     const onFocus = () => {
-      if (mountedRef.current && jobsError) {
+      // Only refetch on focus when there is an error AND no load is currently
+      // in flight — prevents the focus listener from amplifying load on the
+      // backend while a retry is already happening (task #345).
+      if (mountedRef.current && jobsError && !inflightRef.current) {
         loadBackendJobs()
       }
     }

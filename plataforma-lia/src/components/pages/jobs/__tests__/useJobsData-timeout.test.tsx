@@ -23,12 +23,18 @@ vi.stubGlobal("fetch", mockFetch)
 
 const mockListJobVacancies = vi.fn()
 
-vi.mock("@/services/lia-api", () => ({
-  liaApi: {
-    listJobVacancies: (...args: unknown[]) => mockListJobVacancies(...args),
-    getJobVacanciesOverview: vi.fn().mockRejectedValue(new Error("overview not needed")),
-  },
-}))
+vi.mock("@/services/lia-api", async () => {
+  const real = await vi.importActual<typeof import("@/services/lia-api/base")>(
+    "@/services/lia-api/base",
+  )
+  return {
+    HttpError: real.HttpError,
+    liaApi: {
+      listJobVacancies: (...args: unknown[]) => mockListJobVacancies(...args),
+      getJobVacanciesOverview: vi.fn().mockRejectedValue(new Error("overview not needed")),
+    },
+  }
+})
 
 vi.mock("@/lib/pricing", () => ({
   formatBRL: (n: number) => `R$ ${n}`,

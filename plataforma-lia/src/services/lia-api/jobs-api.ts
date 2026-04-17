@@ -1,4 +1,11 @@
-import { BACKEND_URL, getAuthHeaders, checkPaymentRequired } from './base'
+import {
+  BACKEND_URL,
+  getAuthHeaders,
+  checkPaymentRequired,
+  fetchWithRetry,
+  HttpError,
+  parseRetryAfterMs,
+} from './base'
 import type {
   JobVacancy,
   JobVacancyCreateRequest,
@@ -32,23 +39,23 @@ export async function listJobVacancies(status?: string, skip: number = 0, limit:
 
   const url = `${BACKEND_URL}/job-vacancies?${params}`
 
-  const controller = new AbortController()
-  const timeout = setTimeout(() => controller.abort(), 15000)
+  const response = await fetchWithRetry(
+    url,
+    { headers: getAuthHeaders() },
+    { timeoutMs: 15000 },
+  )
 
-  try {
-    const response = await fetch(url, {
-      headers: getAuthHeaders(),
-      signal: controller.signal,
-    })
-
-    if (!response.ok) {
-      throw new Error(`Failed to fetch job vacancies: ${response.statusText}`)
-    }
-
-    return response.json()
-  } finally {
-    clearTimeout(timeout)
+  if (!response.ok) {
+    const retryAfterMs = parseRetryAfterMs(response.headers.get('Retry-After')) ?? undefined
+    const detail = response.statusText || `HTTP ${response.status}`
+    throw new HttpError(
+      response.status,
+      `Failed to fetch job vacancies: ${detail}`,
+      { retryAfterMs },
+    )
   }
+
+  return response.json()
 }
 
 export async function getJobVacancy(id: string): Promise<JobVacancy> {
@@ -396,13 +403,20 @@ export async function getJobVacanciesOverview(recruiterEmail?: string): Promise<
   const queryString = params.toString()
   const url = `${BACKEND_URL}/job-vacancies/stats/overview${queryString ? `?${queryString}` : ''}`
 
-  const response = await fetch(url, {
-    headers: getAuthHeaders(),
-  })
+  const response = await fetchWithRetry(
+    url,
+    { headers: getAuthHeaders() },
+    { timeoutMs: 15000 },
+  )
 
   if (!response.ok) {
+    const retryAfterMs = parseRetryAfterMs(response.headers.get('Retry-After')) ?? undefined
     const error = await response.json().catch(() => ({ detail: response.statusText })) as { detail?: string }
-    throw new Error(error.detail || 'Failed to fetch job vacancies overview')
+    throw new HttpError(
+      response.status,
+      error.detail || `Failed to fetch job vacancies overview: HTTP ${response.status}`,
+      { retryAfterMs },
+    )
   }
 
   return response.json()
