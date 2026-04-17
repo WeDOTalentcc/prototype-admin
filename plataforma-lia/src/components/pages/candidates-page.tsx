@@ -263,6 +263,50 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
             filteredNoContact={searchResults?.filteredNoContact}
             enrichmentAttempted={searchResults?.enrichmentAttempted}
             filteredCandidates={searchResults?.filteredCandidates}
+            onDiscardedCandidateEnriched={({ candidate, email, phone }) => {
+              // Task #402: ao re-enriquecer um descartado com sucesso, movemos
+              // ele para a lista principal e o tiramos do conjunto de descartados
+              // (e do contador) para o aviso refletir a realidade atualizada.
+              const enrichedCandidate = {
+                id: candidate.id,
+                candidateId: candidate.id?.substring(0, 8).toUpperCase() || 'CAND',
+                name: candidate.name,
+                email: email || '',
+                phone: phone || '',
+                mobile_phone: phone || undefined,
+                current_title: candidate.current_title || candidate.headline || '',
+                current_company: candidate.current_company || '',
+                location: candidate.location || '',
+                linkedin_url: candidate.linkedin_url || undefined,
+                avatar_url: candidate.picture_url || undefined,
+                avatar: candidate.picture_url || undefined,
+                linkedin: candidate.linkedin_url || '',
+                position: candidate.current_title || candidate.headline || '',
+                source: candidate.source || 'pearch',
+                has_email: !!email,
+                has_phone: !!phone,
+                technical_skills: [],
+                skills: [],
+                experiences: [],
+                workHistory: [],
+                education: [],
+                liaAnalysis: { score: 75, strengths: [], concerns: [], recommendation: '' },
+                score: 75,
+                workModel: 'remoto' as const,
+                contractType: 'CLT' as const,
+                monthlySalary: 0,
+                experience: 0,
+              } as unknown as Candidate
+              setCandidates((prev) => {
+                const exists = prev.some((c) => c.id === candidate.id)
+                return exists ? prev : [enrichedCandidate, ...prev]
+              })
+              setSearchResults((prev) => ({
+                ...prev,
+                filteredCandidates: (prev.filteredCandidates || []).filter((c) => c.id !== candidate.id),
+                filteredNoContact: Math.max(0, (prev.filteredNoContact || 0) - 1),
+              }))
+            }}
             error={candidatesError}
             onRetry={refreshCandidatesList}
           />

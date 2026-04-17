@@ -10,7 +10,7 @@ import { CandidatesLoadMoreFooter } from"./CandidatesLoadMoreFooter"
 import type { Candidate } from"./types"
 import type { TableColumn } from"./CandidateSearchResultsView.types"
 import { useTranslations } from "next-intl"
-import { FilteredNoContactModal } from "./FilteredNoContactModal"
+import { FilteredNoContactModal, type DiscardedEnrichmentResult } from "./FilteredNoContactModal"
 import type { DiscardedCandidate } from "./hooks/useCandidatesExecuteSearch"
 
 export interface CandidatesTableAreaProps {
@@ -63,6 +63,13 @@ export interface CandidatesTableAreaProps {
    * o usuário inspecionar e exportar via CSV — clicando no aviso.
    */
   filteredCandidates?: DiscardedCandidate[]
+  /**
+   * Task #402: callback executado quando o usuário re-enriquece um candidato
+   * descartado e o Apify finalmente devolve email/telefone. O parent deve
+   * adicionar o candidato à lista principal de resultados e removê-lo do
+   * conjunto de descartados.
+   */
+  onDiscardedCandidateEnriched?: (result: DiscardedEnrichmentResult) => void
 }
 
 export function CandidatesTableArea({
@@ -101,6 +108,7 @@ export function CandidatesTableArea({
   filteredNoContact,
   enrichmentAttempted,
   filteredCandidates,
+  onDiscardedCandidateEnriched,
 }: CandidatesTableAreaProps) {
   const t = useTranslations('candidates')
   const [showFilteredModal, setShowFilteredModal] = React.useState(false)
@@ -180,6 +188,7 @@ export function CandidatesTableArea({
               open={showFilteredModal}
               onOpenChange={setShowFilteredModal}
               candidates={discardedList}
+              onCandidateEnriched={onDiscardedCandidateEnriched}
             />
 
             {!isLoading && sortedCandidates.length > 0 && (
