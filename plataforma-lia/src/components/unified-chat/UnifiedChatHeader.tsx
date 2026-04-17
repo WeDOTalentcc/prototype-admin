@@ -140,6 +140,9 @@ export function UnifiedChatHeader({
       )}
       title={isDraggable ? t('dragHandle') : undefined}
       data-drag-handle={isDraggable || undefined}
+      tabIndex={isDraggable ? 0 : undefined}
+      role={isDraggable ? "toolbar" : undefined}
+      aria-label={isDraggable ? t('dragHandle') : undefined}
     >
       <div className="flex items-center gap-2 min-w-0">
         <Brain className="w-4 h-4 text-wedo-cyan flex-shrink-0" strokeWidth={2} />
