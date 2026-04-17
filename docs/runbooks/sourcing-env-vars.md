@@ -148,3 +148,41 @@ auditoria `docs/audits/candidates-root-cause-2026-04-16.md`:
 - #6 — Pearch/Apify sem chaves/flag no Repl.
 - #7 — `OPENAI_API_KEY` ausente derruba embeddings/rubric.
 - #9 — `STRICT_RAILS_ONLY` / `LIA_DEV_MODE` mal configurados em produção.
+
+---
+
+## Apêndice: `/api/auth/ws-token` 503 em dev
+
+**Sintoma**: logs do `dev-server` mostram `GET /api/auth/ws-token 503` em
+loop quando a página é aberta.
+
+**Diagnóstico** (Task #298): a rota só devolve 503 com
+`code: 'dev_auto_login_failed'` quando o backend FastAPI não responde a
+`POST /api/v1/auth/login` para o usuário demo. Causas comuns:
+
+1. **Backend ainda subindo** (cold-start até ~15s após restart). 503 é
+   transitório; o cliente faz backoff (`useChatSocket`/`useFloatStreaming`
+   tentam 3x com backoff exponencial 1.5s/3s/6s).
+2. **Credenciais `DEV_AUTO_LOGIN_EMAIL`/`DEV_AUTO_LOGIN_PASSWORD` inválidas**
+   ou usuário demo ausente do banco. Resolvido via seed do `demo_user` no
+   `app/auth/dependencies.py:ensure_demo_user`.
+3. **Backend fora do ar** (workflow `lia-backend` parado). 503 vira
+   permanente até restart. Loop visível = página recarregando.
+
+**Mitigação aplicada**:
+- Respostas de erro do `/api/auth/ws-token` agora carregam
+  `Cache-Control: no-store`, evitando que browsers/proxies guardem 503
+  transitório e contaminem ciclos de relogin.
+- `useFloatStreaming` foi alinhado com `useChatSocket` (3 tentativas com
+  backoff). Antes era single-shot, deixando o token undefined até unmount.
+
+**Workaround se persistir em dev**:
+1. Restart `lia-backend` (`Run` na aba Workflows ou `Shell`:
+   `pkill -f uvicorn; ...`).
+2. Confirmar que `/api/v1/auth/login` responde 200 com token via
+   `curl -X POST http://127.0.0.1:8001/api/v1/auth/login -H 'Content-Type: application/json' -d '{"email":"demo@wedotalent.com","password":"demo123"}'`.
+3. Limpar cookie `lia_access_token` no browser e recarregar — força
+   re-emissão via dev-auto-login.
+
+Se mesmo assim continuar, abra task linkada a esta seção: trata-se de
+problema novo, não do loop documentado pela auditoria #287.
