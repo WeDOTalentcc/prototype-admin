@@ -236,10 +236,20 @@ async def list_candidates(
 ):
     """List candidates. When RAILS_API_URL is configured, tries Rails first then falls back to local DB.
 
-    Task #295: passa a exigir auth via `get_current_user_or_demo` (em DEV_MODE
-    cai no usuário demo). O `company_id` do usuário é propagado para o repo
-    como filtro forward-compat (no-op enquanto a coluna não existir no
-    modelo Candidate — ver auditoria #287, causa raiz #4).
+    Security contract (tasks #290 + #295):
+      1. Endpoint depends on `get_current_user_or_demo`, which raises 401
+         outside DEV_MODE when no valid token is presented. The upstream
+         `AuthEnforcementMiddleware` provides a second line of defence.
+      2. The authenticated user's `company_id` is propagated to BOTH
+         `count_candidates` and `list_candidates`; the repo layer applies
+         `Candidate.company_id == cid` so a recruiter in tenant A can never
+         see rows belonging to tenant B.
+      3. Any exception raised below the repo boundary is logged with full
+         context and re-raised as a sanitized HTTP 500 — the global
+         StarletteHTTPException handler in `app.main` further rewrites the
+         body to `{"message": "Internal server error", ...}` so DB driver
+         strings, DSNs and tracebacks never reach the client.
+      Regression coverage: tests/integration/test_candidates_tenant_isolation.py
     """
     _company_id = str(current_user.company_id) if current_user.company_id else None
     _request_id = getattr(request.state, "request_id", "unknown") if request else "unknown"
