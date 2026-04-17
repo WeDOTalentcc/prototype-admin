@@ -46,7 +46,7 @@ async function snap(page: Page, name: string) {
 test.describe('01 · Setup e Navegação', () => {
   test('página /vagas carrega sem erros', async ({ authenticatedPage: page }) => {
     await page.goto('/vagas')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     await snap(page, '01-vagas-list')
 
     // Verifica ausência de erros críticos de JS
@@ -101,8 +101,8 @@ test.describe('02 · Colunas e Layout Visual', () => {
     for (let i = 0; i < Math.min(count, 7); i++) {
       const col = columns.nth(i)
       const stageId = await col.getAttribute('data-stage-id')
-      const badge = col.locator('span[class*="badge"], [class*="Badge"]').first()
-      const name  = col.locator('span[class*="font-medium"], span[class*="stage-name"]').first()
+      const badge = col.locator('span[class*="text-micro"]').first()
+      const name  = col.locator('h3').first()
 
       await expect.soft(name, `Coluna ${i} deve ter nome visível`).toBeVisible({ timeout: 3000 })
       await expect.soft(badge, `Coluna ${i} deve ter badge de contagem`).toBeVisible({ timeout: 3000 })
@@ -123,8 +123,8 @@ test.describe('02 · Colunas e Layout Visual', () => {
 
   test('tabs Kanban / Tabela estão presentes', async ({ authenticatedPage: page }) => {
     // Ref: src/components/pages/job-kanban/KanbanContentArea.tsx
-    const kanbanTab = page.getByRole('tab', { name: /kanban/i }).or(page.locator('[data-tab="kanban"]'))
-    const tableTab  = page.getByRole('tab', { name: /tabela|table|lista/i }).or(page.locator('[data-tab="table"]'))
+    const kanbanTab = page.getByRole('button', { name: /^Kanban$/i }).or(page.locator('[data-tab="kanban"]'))
+    const tableTab  = page.getByRole('button', { name: /^Tabela$/i }).or(page.locator('[data-tab="table"]'))
 
     await expect.soft(kanbanTab.first(), 'Tab Kanban deve existir').toBeVisible({ timeout: 5000 })
     await expect.soft(tableTab.first(), 'Tab Tabela deve existir').toBeVisible({ timeout: 5000 })
@@ -155,8 +155,8 @@ test.describe('03 · Card do Candidato', () => {
     await expect.soft(card, 'Card deve ser visível').toBeVisible()
 
     // Verifica estrutura interna do card
-    const name    = card.locator('span[class*="font-medium"]').first()
-    const avatar  = card.locator('[class*="Avatar"]').first()
+    const name    = card.locator('h4').first()
+    const avatar  = card.locator('span[class*="overflow-hidden"]').first()
     await expect.soft(name, 'Nome do candidato deve aparecer').toBeVisible({ timeout: 3000 })
     await expect.soft(avatar, 'Avatar deve aparecer').toBeVisible({ timeout: 3000 })
   })
@@ -1315,7 +1315,7 @@ test.describe('15 · APIs e Integrações — Verificação de Chamadas', () => 
       return
     }
 
-    const candidateName = await card.locator('span[class*="font-medium"]').first().textContent().catch(() => '')
+    const candidateName = await card.locator('h4').first().textContent().catch(() => '')
     const candidateId   = await card.getAttribute('data-candidate-id')
 
     const isMock = /test|lorem|mock|exemplo|demo|fake/i.test(candidateName || '')
@@ -1337,7 +1337,7 @@ test.describe('16 · Visão em Tabela', () => {
   })
 
   test('switch para view tabela funciona', async ({ authenticatedPage: page }) => {
-    const tableTab = page.getByRole('tab', { name: /tabela|table|lista/i }).first()
+    const tableTab = page.getByRole('button', { name: /^Tabela$/i }).first()
       .or(page.locator('[data-tab="table"], [value="table"]').first())
 
     if (!await tableTab.isVisible({ timeout: 5000 }).catch(() => false)) {
