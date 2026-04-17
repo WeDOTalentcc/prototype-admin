@@ -15,7 +15,11 @@ type WsTokenError = {
 }
 
 function errorResponse(status: number, body: WsTokenError) {
-  return NextResponse.json(body, { status })
+  // no-store evita que browsers/proxies guardem 401/503 transitórios e
+  // contaminem o ciclo de relogin (Task #298, audit causa #8).
+  const res = NextResponse.json(body, { status })
+  res.headers.set('Cache-Control', 'no-store')
+  return res
 }
 
 export async function GET(request: NextRequest) {

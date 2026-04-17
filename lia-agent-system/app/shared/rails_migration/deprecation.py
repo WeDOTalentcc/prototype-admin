@@ -56,6 +56,36 @@ def _rails_url() -> str:
     return os.environ.get("RAILS_API_URL", "").rstrip("/")
 
 
+# Estado para emitir o ERROR de guard apenas uma vez por boot, em vez de
+# poluir o log a cada request. Resetado naturalmente no próximo restart.
+_strict_mode_guard_logged = False
+
+
+def _strict_mode_is_safe() -> bool:
+    """Validate that STRICT_RAILS_ONLY pode realmente ser honrado.
+
+    Task #298 / audit causa raiz #9: se alguém liga STRICT_RAILS_ONLY=true sem
+    ter `RAILS_API_URL` configurado (ou sem rails-adapter pronto), todas as
+    rotas guardadas devolvem 410 Gone — e a UI mostra erro genérico,
+    derrubando o Funil de Talentos inteiro. Esta função atua como guard:
+    quando strict mode está ligado mas a URL do Rails está em branco, logamos
+    ERROR uma vez e devolvemos False, fazendo o caller ignorar o kill-switch
+    e cair no fallback Python local com o header `Deprecation` ainda
+    presente. Operador vê o erro nos logs, usuário não vê 410 surpresa.
+    """
+    global _strict_mode_guard_logged
+    if _rails_url():
+        return True
+    if not _strict_mode_guard_logged:
+        logger.error(
+            "[rails-migration] STRICT_RAILS_ONLY=true mas RAILS_API_URL está "
+            "vazio — kill-switch IGNORADO para não derrubar endpoints. "
+            "Configure RAILS_API_URL ou desligue STRICT_RAILS_ONLY."
+        )
+        _strict_mode_guard_logged = True
+    return False
+
+
 def deprecated_in_favor_of_rails(
     *,
     resource: str,
@@ -102,7 +132,7 @@ def deprecated_in_favor_of_rails(
                 f'<{rails_url}{rails_path}>; rel="successor-version"'
             )
 
-        if _is_strict_mode():
+        if _is_strict_mode() and _strict_mode_is_safe():
             detail = {
                 "error": "resource_moved",
                 "resource": resource,

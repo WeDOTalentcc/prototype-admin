@@ -59,13 +59,37 @@ export function useFloatStreaming(
   const [wsAuthToken, setWsAuthToken] = useState<string | undefined>(undefined)
 
   useEffect(() => {
+    // Task #298 / audit causa #8: alinhar com useChatSocket — ws-token pode
+    // devolver 503 transitório (cold-start do dev-auto-login até ~15s). Sem
+    // backoff o token ficava undefined permanentemente. 401 é definitivo
+    // (sem credenciais), não insiste.
     let cancelled = false
-    fetch('/api/auth/ws-token')
-      .then(r => r.ok ? r.json() : null)
-      .then(data => {
-        if (!cancelled && data?.token) setWsAuthToken(data.token)
-      })
-      .catch((err) => { console.warn('[useFloatStreaming] ws-token fetch failed', err) })
+    const maxAttempts = 3
+    const baseDelay = 1500
+
+    const attempt = async (n: number): Promise<void> => {
+      if (cancelled) return
+      try {
+        const r = await fetch('/api/auth/ws-token')
+        if (cancelled) return
+        if (r.ok) {
+          const data = await r.json() as { token?: string }
+          if (!cancelled && data?.token) {
+            setWsAuthToken(data.token)
+            return
+          }
+        }
+        if (r.status === 401) return
+      } catch (err) {
+        if (cancelled) return
+        console.warn('[useFloatStreaming] ws-token fetch failed (attempt', n + 1, ')', err)
+      }
+      if (n + 1 < maxAttempts && !cancelled) {
+        setTimeout(() => { void attempt(n + 1) }, baseDelay * Math.pow(2, n))
+      }
+    }
+
+    void attempt(0)
     return () => { cancelled = true }
   }, [])
 
