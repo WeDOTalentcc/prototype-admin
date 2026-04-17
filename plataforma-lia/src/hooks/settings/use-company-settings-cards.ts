@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef, useMemo } from "react"
 import { useLiaChatContext } from "@/contexts/lia-float-context"
+import { useLoadingWatchdog } from "@/hooks/shared/use-loading-watchdog"
 import type { CompanyData } from "@/components/settings/companyTeamHub.types"
 
 export interface CardBlock {
@@ -242,6 +243,11 @@ export function useCompanySettingsCards() {
 
   const { switchChatContext } = useLiaChatContext()
   const prevFieldSnapshotRef = useRef<Map<string, string>>(new Map())
+
+  useLoadingWatchdog(loading, () => {
+    setLoading(false)
+    setError("Tempo limite de carregamento excedido")
+  }, 20_000)
 
   const fetchCompanyProfile = useCallback(async () => {
     try {
