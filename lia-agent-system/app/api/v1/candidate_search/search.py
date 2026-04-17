@@ -97,7 +97,7 @@ async def _evaluate_candidates_with_rubrics(
 
 
 
-@router.post("/candidates", response_model=None)
+@router.post("/candidates", response_model=SearchResponseDTO)
 async def search_candidates(
     request: SearchRequestDTO,
     http_request: Request = None,  # type: ignore[assignment]
@@ -243,9 +243,13 @@ async def search_candidates(
                 )
             except CircuitBreakerError:
                 _apify_fallback_warning = get_degraded_response("apify_search")
+                if "apify_search" not in _degraded_sources:
+                    _degraded_sources.append("apify_search")
                 logger.warning("[SearchFallback] Apify search circuit opened during call")
             except Exception as _fb_err:
                 _apify_fallback_warning = "Busca fallback via Apify falhou. Tente novamente em instantes."
+                if "apify_search" not in _degraded_sources:
+                    _degraded_sources.append("apify_search")
                 logger.error("[SearchFallback] Apify fallback error: %s", _fb_err)
                 if _company_id:
                     try:
