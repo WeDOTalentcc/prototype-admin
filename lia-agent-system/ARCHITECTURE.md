@@ -365,5 +365,77 @@ Detalhes, plano de migração e não-decisões: `docs/specs/ai/ADR-016-tool-regi
 
 ---
 
-*Last updated: 2026-04-17 | ADR-015 (S7.1/S7.2/S7.3) + ADR-016 (S7.4)*
+## ADR-017: Canonical Observability Location — `app.shared.observability.*` (2026-04-17) [ENFORCED by CI]
+
+**Decision.** All observability code — tracing, structured logging, LLM
+callbacks, agent monitoring/health, model drift, token tracking/budget,
+WSI observability, and LangSmith configuration — lives under the single
+package `app/shared/observability/`. There is **one** canonical import
+path per module and **no** re-export shims.
+
+**Canonical modules (11):**
+
+| Concern | Canonical path |
+|---|---|
+| Sentry / OpenTelemetry tracing | `app.shared.observability.tracing` |
+| Structured logging | `app.shared.observability.structured_logging` |
+| LLM callbacks (Langfuse + audit) | `app.shared.observability.callbacks` |
+| Agent monitoring service | `app.shared.observability.agent_monitoring_service` |
+| Agent health alerts | `app.shared.observability.agent_health_alert_service` |
+| Model drift detection | `app.shared.observability.model_drift_service` |
+| Drift alerting | `app.shared.observability.drift_alert_service` |
+| Token tracking | `app.shared.observability.token_tracking_service` |
+| Token budget enforcement | `app.shared.observability.token_budget_service` |
+| WSI-specific observability | `app.shared.observability.wsi_observability` |
+| LangSmith configuration | `app.shared.observability.langsmith` |
+
+**Deleted legacy paths (forbidden, do not reintroduce — 11 concerns
+across 16 distinct import paths, since some concerns had duplicates in
+both `shared/services/` and `domains/*/services/`):**
+
+- `app.shared.tracing`
+- `app.shared.structured_logging`
+- `app.shared.llm.callbacks`
+- `app.shared.governance.agent_monitoring_service`
+- `app.shared.services.agent_health_alert_service`
+- `app.shared.services.model_drift_service`
+- `app.shared.services.drift_alert_service`
+- `app.shared.services.token_tracking_service`
+- `app.shared.services.token_budget_service`
+- `app.domains.ai.services.model_drift_service`
+- `app.domains.lgpd.services.drift_alert_service`
+- `app.domains.analytics.services.token_tracking_service`
+- `app.domains.analytics.services.wsi_observability`
+- `app.domains.analytics.services.agent_monitoring_service`
+- `app.domains.credits.services.token_budget_service`
+- `app.config.langsmith`
+
+**Why.** Before Tarefa #343 these eleven modules and several re-export
+shims were spread across `app/shared/{tracing,structured_logging}`,
+`app/shared/llm/callbacks.py`, `app/shared/governance/`,
+`app/shared/services/`, four `app/domains/*/services/` folders, and
+`app/config/langsmith.py`. Multiple call sites imported the same
+behavior from different paths, which made it impossible to reason about
+which callbacks/handlers were actually wired in, fragmented LangSmith
+configuration, and let drift / token-budget logic drift between domain
+copies. Collapsing to one package gives every consumer a single source
+of truth and lets the package-level `__init__.py` document the contract.
+
+**Enforcement.** `scripts/check_forbidden_imports.py` (pre-commit hook
+**G5** + CI) blocks every legacy path listed above. Any reintroduction
+fails CI with the same `ADR-012`-style violation message. The package
+header at `app/shared/observability/__init__.py` cross-references the CI
+guard so future contributors discover the rule from either direction.
+
+**Audit history.** Reconciliation in
+`docs/audits/AUDIT_STATUS_REPORT_2026-04-FINAL.md` §0 / Top-10 #3
+confirmed code at 100% (11/11 modules canonical, 41 importers on the new
+path, 0 importers on legacy paths) and flagged the documentation refresh
+as the only remaining residual — closed by this ADR plus the parallel
+updates in `docs/specs/CANONICAL_SOURCES_SPEC.md` and the root
+`CLAUDE.md`.
+
+---
+
+*Last updated: 2026-04-17 | ADR-015 (S7.1/S7.2/S7.3) + ADR-016 (S7.4) + ADR-017 (observability canonical location)*
 

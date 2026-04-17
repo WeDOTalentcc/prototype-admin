@@ -193,7 +193,8 @@ Serviço central: `app/services/notification_service.py`
 | FairnessGuard (3 camadas) | `app/shared/fairness/fairness_guard.py` | Layer 3 opt-in via `FAIRNESS_LAYER3_ENABLED` |
 | Bias Audit (Four-Fifths) | `bias_audit_service.py`, `bias_audit.py` | `GET /api/v1/bias-audit/job/{job_id}` |
 | BiasAuditSnapshot | `bias_audit_snapshot.py` | `GET /api/v1/bias-audit/job/{job_id}/history` |
-| Model Drift Detection | `model_drift_service.py`, `drift_alert_service.py` | `GET /api/v1/drift/status` |
+| Model Drift Detection | `app/shared/observability/model_drift_service.py`, `app/shared/observability/drift_alert_service.py` | `GET /api/v1/drift/status` |
+| Observabilidade (canônica) | `app/shared/observability/` (11 módulos: tracing, structured_logging, callbacks, agent_monitoring_service, agent_health_alert_service, model_drift_service, drift_alert_service, token_tracking_service, token_budget_service, wsi_observability, langsmith) | CI guard: `lia-agent-system/scripts/check_forbidden_imports.py` (Tarefa #343, ADR-017) |
 | HITL | `hitl_service.py`, `hitl.py` | `POST /api/v1/hitl/{thread_id}/approve` |
 | AuditService | `audit_service.py` | 14/14 agentes com audit trail |
 | Circuit Breakers | `circuit_breaker.py`, `admin_circuit_breakers.py` | `GET /api/v1/admin/circuit-breakers` |
