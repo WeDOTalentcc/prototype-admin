@@ -149,14 +149,13 @@ function applyAuthHeaders(request: NextRequest, token: string): NextResponse {
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  if (pathname === '/' || pathname.startsWith('/en/') || pathname === '/en') {
+  if (pathname === '/') {
     const base = getBaseUrl(request)
-    const ptPath = pathname === '/' || pathname === '/en'
-      ? '/pt/'
-      : '/pt/' + pathname.slice(4)
-    const response = NextResponse.redirect(new URL(ptPath, base))
-    response.cookies.set('NEXT_LOCALE', 'pt', { path: '/', maxAge: 60 * 60 * 24 * 365 })
-    return response
+    const cookieLocale = request.cookies.get('NEXT_LOCALE')?.value
+    const preferredLocale = (locales as readonly string[]).includes(cookieLocale ?? '')
+      ? (cookieLocale as string)
+      : defaultLocale
+    return NextResponse.redirect(new URL(`/${preferredLocale}/`, base))
   }
 
   if (isStaticOrApiPath(pathname)) {
