@@ -508,9 +508,9 @@ async def resubmit_cv(
     candidate_id: str = Query(..., description="ID do candidato"),
     token: str = Query(..., description="Token de reenvio"),
     cv_file: UploadFile = File(..., description="Curriculo atualizado"),
-    repo: ApplicationRepository = Depends(get_application_repo)
-,
+    repo: ApplicationRepository = Depends(get_application_repo),
     cv_parser_svc: CVParserService = Depends(get_cv_parser_service),
+    current_user: User = Depends(_require_auth_401),
 ):
     """
     Processa reenvio de CV apos feedback de baixa aderencia.
@@ -518,11 +518,18 @@ async def resubmit_cv(
     Workflow:
     1. Validar token de reenvio
     2. Atualizar perfil do candidato com novos dados do CV
-    3. Recalcular score de aderencia
-    4. Registrar melhoria no feedback original
+    3. Recalcular score de aderencia (com FairnessGuard sobre o texto do CV)
+    4. Registrar melhoria no feedback original e auditar a decisao automatizada
     5. Se novo score >= 50%: adicionar ao pipeline
     """
     try:
+        company_id = str(current_user.company_id) if current_user.company_id else None
+        if not company_id:
+            raise HTTPException(
+                status_code=400,
+                detail="Usuario autenticado nao possui empresa associada.",
+            )
+
         feedback = await repo.get_feedback_by_token(candidate_id, vacancy_id, token)
 
         if not feedback:
@@ -538,11 +545,90 @@ async def resubmit_cv(
         if not vacancy:
             raise HTTPException(status_code=404, detail="Vaga nao encontrada")
 
+        if vacancy.company_id and str(vacancy.company_id) != company_id:
+            raise HTTPException(
+                status_code=403,
+                detail="Voce nao tem permissao para acessar esta vaga.",
+            )
+
         cv_content = await cv_file.read()
         parsed_cv = await cv_parser_svc.parse_cv(
             file_content=cv_content,
             filename=cv_file.filename
         )
+
+        cv_text_for_fairness = parsed_cv.get("raw_text") or parsed_cv.get("text") or ""
+        fairness_payload = cv_text_for_fairness.strip()
+        if fairness_payload:
+            fairness_unavailable = False
+            try:
+                fairness_result = FairnessGuard().check(fairness_payload)
+            except Exception as fg_err:
+                logger.error(
+                    "FairnessGuard execution failed on resubmit; failing closed: %s", fg_err
+                )
+                fairness_result = None
+                fairness_unavailable = True
+
+            if fairness_unavailable:
+                try:
+                    await audit_service.log_decision(
+                        company_id=company_id,
+                        agent_name="applications_api",
+                        decision_type="application_resubmit",
+                        action="fairness_unavailable",
+                        decision="blocked",
+                        reasoning=[
+                            "FairnessGuard execution failed; resubmission blocked (fail-closed)",
+                            f"inputs_hash={hashlib.sha256(fairness_payload.encode('utf-8')).hexdigest()}",
+                        ],
+                        criteria_used=["fairness_guard"],
+                        candidate_id=str(candidate_id),
+                        job_vacancy_id=vacancy_id,
+                        human_review_required=True,
+                    )
+                except Exception as audit_err:
+                    logger.warning(f"audit log_decision (fairness_unavailable resubmit) failed: {audit_err}")
+                raise HTTPException(
+                    status_code=503,
+                    detail={
+                        "error": "fairness_unavailable",
+                        "message": "Verificacao de fairness indisponivel. Tente novamente em instantes.",
+                    },
+                )
+
+            if fairness_result and fairness_result.is_blocked:
+                logger.warning(
+                    "FairnessGuard blocked resubmission: vacancy=%s category=%s",
+                    vacancy_id, fairness_result.category,
+                )
+                try:
+                    await audit_service.log_decision(
+                        company_id=company_id,
+                        agent_name="applications_api",
+                        decision_type="application_resubmit",
+                        action="fairness_block",
+                        decision="rejected",
+                        reasoning=[
+                            f"FairnessGuard blocked: category={fairness_result.category}",
+                            f"inputs_hash={hashlib.sha256(fairness_payload.encode('utf-8')).hexdigest()}",
+                        ],
+                        criteria_used=["fairness_guard"],
+                        candidate_id=str(candidate_id),
+                        job_vacancy_id=vacancy_id,
+                        human_review_required=True,
+                    )
+                except Exception as audit_err:
+                    logger.warning(f"audit log_decision (fairness_block resubmit) failed: {audit_err}")
+                raise HTTPException(
+                    status_code=422,
+                    detail={
+                        "error": "fairness_block",
+                        "message": fairness_result.educational_message
+                            or "Conteudo bloqueado pelo guardrail de fairness.",
+                        "category": fairness_result.category,
+                    },
+                )
 
         if parsed_cv.get("skills"):
             candidate.technical_skills = list(set(
@@ -591,6 +677,39 @@ async def resubmit_cv(
         )
 
         qualified = new_adherence_score >= candidate_feedback_service.ADHERENCE_THRESHOLD
+
+        try:
+            inputs_for_hash = {
+                "vacancy_id": vacancy_id,
+                "candidate_id": str(candidate_id),
+                "skills": sorted(candidate.technical_skills or []),
+                "experience_years": candidate.years_of_experience,
+                "current_title": candidate.current_title,
+                "location": candidate.location_city,
+            }
+            inputs_hash = hashlib.sha256(
+                json.dumps(inputs_for_hash, sort_keys=True, default=str).encode("utf-8")
+            ).hexdigest()
+            decision_label = "approved" if qualified else "rejected"
+            await audit_service.log_decision(
+                company_id=company_id,
+                agent_name="applications_api",
+                decision_type="application_resubmit",
+                action="adherence_score_recalculated",
+                decision=decision_label,
+                reasoning=[
+                    f"new_adherence_score={new_adherence_score}",
+                    f"previous_adherence_score={previous_score}",
+                    f"improvement={improvement}",
+                    f"inputs_hash={inputs_hash}",
+                ],
+                criteria_used=["skills_match", "experience_match", "location_match"],
+                candidate_id=str(candidate_id),
+                job_vacancy_id=vacancy_id,
+                score=float(new_adherence_score),
+            )
+        except Exception as audit_err:
+            logger.warning(f"audit log_decision (application_resubmit) failed: {audit_err}")
 
         if qualified:
             existing_vc = await repo.get_vacancy_candidate(vacancy_id, candidate.id)
