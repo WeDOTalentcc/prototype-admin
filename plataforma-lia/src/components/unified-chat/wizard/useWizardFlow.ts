@@ -156,6 +156,11 @@ export function useWizardFlow() {
 
   const handleStagePayload = useCallback((payload: WizardStagePayload) => {
     dispatch({ type: "STAGE_UPDATE", payload })
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(
+        new CustomEvent("lia:wizard-stage-payload", { detail: payload }),
+      )
+    }
   }, [])
 
   const approveStage = useCallback(() => {

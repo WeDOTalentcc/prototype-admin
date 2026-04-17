@@ -150,7 +150,7 @@ export function useChatSocket({
     if (RESPONSE_RELEVANT_EVENTS.has(event.type)) {
       wsEventTickRef.current += 1
     }
-    switch (event.type) {
+    switch (event.type as string) {
       case "thinking":
         setIsThinking(true)
         if (event.content) {
@@ -226,6 +226,29 @@ export function useChatSocket({
           detail: { pending_id: event.pending_id },
         }))
         break
+
+      case "wizard_stage": {
+        // Bridge backend wizard stage payloads (ws_stage_payload) to the
+        // job-wizard WizardContext via a window event. Subscribers (the
+        // WizardProvider) hydrate stage-specific state such as the
+        // FairnessGuard `dropped_questions` / `fairness_warning` so the
+        // wizard banner reflects what the backend actually sent.
+        if (typeof window !== "undefined") {
+          const wsEvent = event as unknown as Record<string, unknown>
+          window.dispatchEvent(
+            new CustomEvent("lia:wizard-stage-payload", {
+              detail: {
+                type: "wizard_stage",
+                stage: wsEvent.stage,
+                data: (wsEvent.data as Record<string, unknown>) || {},
+                completeness: (wsEvent.completeness as number) ?? 0,
+                requires_approval: Boolean(wsEvent.requires_approval),
+              },
+            }),
+          )
+        }
+        break
+      }
 
       case "panel_update": {
         const panelEvent = event as unknown as Record<string, unknown>

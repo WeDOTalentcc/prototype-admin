@@ -222,6 +222,39 @@ export function WizardProvider({ children, initialStage = 'input-evaluation', co
   const [companyDefaultQuestions, setCompanyDefaultQuestions] = useState<CompanyDefaultQuestion[]>([])
   const [wsiDroppedQuestions, setWsiDroppedQuestions] = useState<WSIDroppedQuestion[]>([])
   const [wsiFairnessWarning, setWsiFairnessWarning] = useState<WSIFairnessWarning | null>(null)
+
+  // Bridge: hydrate FairnessGuard fields from backend `wizard_stage` payloads.
+  // The WS handler (useChatSocket) and the unified-chat useWizardFlow hook both
+  // dispatch `lia:wizard-stage-payload` window events whose `detail.data`
+  // mirrors `ws_stage_payload.data`. For the `wsi_questions` stage we copy the
+  // FairnessGuard drop list and warning summary into context so
+  // `WSIQuestionsStage` can render its inline banner. Without this listener the
+  // banner would stay hidden in real recruiter sessions even when the backend
+  // sent the data over the wire.
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    function handleStagePayload(event: Event) {
+      const detail = (event as CustomEvent).detail as
+        | {
+            stage?: string
+            data?: {
+              dropped_questions?: WSIDroppedQuestion[] | null
+              fairness_warning?: WSIFairnessWarning | null
+            }
+          }
+        | undefined
+      if (!detail || detail.stage !== 'wsi_questions') return
+      const data = detail.data ?? {}
+      setWsiDroppedQuestions(Array.isArray(data.dropped_questions) ? data.dropped_questions : [])
+      setWsiFairnessWarning(data.fairness_warning ?? null)
+    }
+
+    window.addEventListener('lia:wizard-stage-payload', handleStagePayload as EventListener)
+    return () => {
+      window.removeEventListener('lia:wizard-stage-payload', handleStagePayload as EventListener)
+    }
+  }, [])
   
   // Calibration
   const [calibrationCandidates, setCalibrationCandidates] = useState<CalibrationCandidate[]>([])
