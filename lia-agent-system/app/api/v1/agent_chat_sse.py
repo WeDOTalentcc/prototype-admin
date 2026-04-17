@@ -45,7 +45,7 @@ from app.shared.compliance.c3b_layer import (
     pre_compliance,
     post_compliance,
 )
-from app.domains.credits.services.token_budget_service import (
+from app.shared.observability.token_budget_service import (
     check_budget,
     get_plan_for_company,
     increment_usage,

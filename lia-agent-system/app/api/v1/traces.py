@@ -24,7 +24,7 @@ async def get_recent_traces(
     _: None = Depends(require_admin),
 ):
     """Retorna spans recentes capturados pelo LightweightTracer interno."""
-    from app.shared.tracing import get_recent_traces
+    from app.shared.observability.tracing import get_recent_traces
     return get_recent_traces(limit=limit)
 
 
@@ -37,7 +37,7 @@ async def get_trace_stats(
     Inclui breakdown por tier (tier_name/span_name) e por serviço.
     Campos por tier/service: count, errors, error_rate, avg_ms, max_ms, total_ms.
     """
-    from app.shared.tracing import get_trace_stats
+    from app.shared.observability.tracing import get_trace_stats
     return get_trace_stats()
 
 
@@ -48,7 +48,7 @@ async def get_tracer_status(
     """Retorna o status atual do exporter de traces."""
     import os
 
-    from app.shared.tracing import _TRACES_ENABLED, is_otlp_active
+    from app.shared.observability.tracing import _TRACES_ENABLED, is_otlp_active
     otlp = is_otlp_active()
     return {
         "traces_enabled": _TRACES_ENABLED,

@@ -619,7 +619,7 @@ async def gemini_live_stream_websocket(
 
         try:
             from app.core.database import AsyncSessionLocal
-            from app.shared.services.token_tracking_service import TokenTrackingService
+            from app.shared.observability.token_tracking_service import TokenTrackingService
             async with AsyncSessionLocal() as tok_db:
                 token_svc = TokenTrackingService(db=tok_db)
                 total_latency = sum(session.turn_latencies_ms) if session.turn_latencies_ms else 0.0

@@ -96,7 +96,7 @@ class ConsumptionTrackingService:
         await ConsumptionTrackingService._check_budget_alert(db, company_id, "apify")
 
         try:
-            from app.domains.analytics.services.token_tracking_service import TokenTrackingService
+            from app.shared.observability.token_tracking_service import TokenTrackingService
             async with AsyncSessionLocal() as ai_db:
                 tts = TokenTrackingService(ai_db)
                 await tts.record_apify_usage(

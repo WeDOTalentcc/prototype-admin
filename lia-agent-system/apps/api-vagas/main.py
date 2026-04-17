@@ -21,7 +21,7 @@ from app.core.config import settings
 from app.core.database import init_db
 from app.core.logging_config import configure_logging
 from app.shared.pii_masking import install_global_pii_masking
-from app.config.langsmith import configure_langsmith
+from app.shared.observability.langsmith import configure_langsmith
 from app.middleware.rate_limiter import RateLimitMiddleware
 from app.middleware.request_id import RequestIdMiddleware
 from app.core.logging_middleware import StructuredLoggingMiddleware

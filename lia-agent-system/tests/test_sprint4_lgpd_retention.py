@@ -32,7 +32,7 @@ class TestTokenTrackingSetsRetention:
 
     @pytest.mark.asyncio
     async def test_record_usage_sets_scheduled_deletion_365_days(self):
-        from app.shared.services.token_tracking_service import TokenTrackingService
+        from app.shared.observability.token_tracking_service import TokenTrackingService
 
         fake_db = AsyncMock()
         fake_db.add = MagicMock()

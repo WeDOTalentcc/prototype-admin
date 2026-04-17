@@ -128,7 +128,7 @@ class LLMService:
             company_id: Optional company ID for tenant-specific model routing.
                         If set and tenant has custom keys, uses tenant model.
         """
-        from app.shared.llm.callbacks import PIIStripCallback, AuditLogCallback
+        from app.shared.observability.callbacks import PIIStripCallback, AuditLogCallback
         import inspect
 
         frame = inspect.currentframe()

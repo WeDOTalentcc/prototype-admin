@@ -232,7 +232,7 @@ async def _wrap_get_search_analytics(**kwargs: Any) -> dict[str, Any]:
 async def _wrap_get_agent_performance(**kwargs: Any) -> dict[str, Any]:
     """Get AI agent performance and cost metrics for a company."""
     from app.core.database import AsyncSessionLocal
-    from app.shared.governance.agent_monitoring_service import AgentMonitoringService
+    from app.shared.observability.agent_monitoring_service import AgentMonitoringService
 
     company_id = kwargs.get("company_id", "")
     agent_type = kwargs.get("agent_type")

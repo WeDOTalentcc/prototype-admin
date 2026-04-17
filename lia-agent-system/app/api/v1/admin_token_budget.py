@@ -12,7 +12,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 
 from app.core.auth import get_current_user
-from app.domains.credits.services.token_budget_service import (
+from app.shared.observability.token_budget_service import (
     check_budget,
     get_budget_status,
 )

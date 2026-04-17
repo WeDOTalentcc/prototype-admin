@@ -9,7 +9,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.domains.analytics.services.wsi_observability import wsi_observability_service
+from app.shared.observability.wsi_observability import wsi_observability_service
 
 logger = logging.getLogger(__name__)
 

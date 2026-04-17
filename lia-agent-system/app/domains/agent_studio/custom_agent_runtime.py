@@ -226,7 +226,7 @@ class CustomAgentRuntime(LangGraphReActBase, EnhancedAgentMixin):
         }
         # === 2.4 + 2.5: Auto-inject PII strip + Audit callbacks ===
         try:
-            from app.shared.llm.callbacks import AuditLogCallback, PIIStripCallback
+            from app.shared.observability.callbacks import AuditLogCallback, PIIStripCallback
             auto_callbacks = [
                 PIIStripCallback(),
                 AuditLogCallback(

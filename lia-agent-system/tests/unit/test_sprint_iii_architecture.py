@@ -128,7 +128,7 @@ class TestLearningLoopDriftConnection:
 
 class TestModelDriftCheckTrigger:
     def test_model_drift_service_has_check_trigger(self):
-        from app.shared.services.model_drift_service import ModelDriftService
+        from app.shared.observability.model_drift_service import ModelDriftService
         svc = ModelDriftService()
         assert hasattr(svc, "check_drift_trigger")
         assert callable(svc.check_drift_trigger)
@@ -136,7 +136,7 @@ class TestModelDriftCheckTrigger:
     @pytest.mark.asyncio
     async def test_check_drift_trigger_invalid_company_id(self):
         """check_drift_trigger não deve propagar exceções para IDs inválidos."""
-        from app.shared.services.model_drift_service import ModelDriftService
+        from app.shared.observability.model_drift_service import ModelDriftService
         svc = ModelDriftService()
         # ID inválido — deve falhar silenciosamente
         await svc.check_drift_trigger("not-a-valid-uuid", "learning_feedback")

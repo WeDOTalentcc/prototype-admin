@@ -34,7 +34,7 @@ from pydantic import BaseModel
 
 from app.api.v1.ws_manager import ws_manager, get_ws_manager, WSManager
 from app.core.config import settings
-from app.domains.credits.services.token_budget_service import (
+from app.shared.observability.token_budget_service import (
     check_budget,
     get_plan_for_company,
     increment_usage,

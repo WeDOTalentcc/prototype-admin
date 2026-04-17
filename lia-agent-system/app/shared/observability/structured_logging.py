@@ -5,7 +5,7 @@ Provides JSON-formatted log output with consistent fields for
 log aggregation services (ELK, CloudWatch, Datadog).
 
 Usage:
-    from app.shared.structured_logging import setup_structured_logging
+    from app.shared.observability.structured_logging import setup_structured_logging
     
     setup_structured_logging(level="INFO", json_output=True)
 """

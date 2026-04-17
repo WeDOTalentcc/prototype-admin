@@ -8,7 +8,7 @@ Executar de: /home/runner/workspace/lia-agent-system/
 import os
 
 SHIM_MAP = {
-    'agent_monitoring_service': 'app.domains.analytics.services.agent_monitoring_service',
+    'agent_monitoring_service': 'app.shared.observability.agent_monitoring_service',
     'apify_mcp_client': 'app.domains.sourcing.services.apify_mcp_client',
     'apify_service': 'app.domains.sourcing.services.apify_service',
     'ats_job_history_service': 'app.domains.job_management.services.ats_job_history_service',

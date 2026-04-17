@@ -62,7 +62,7 @@ ANALYTICS_TOOLS = [
         "tool_id": "analytics_monitoring",
         "name": "Monitoramento de Agentes",
         "description": "Dados de monitoramento de desempenho dos agentes de IA",
-        "handler": "app.domains.analytics.services.agent_monitoring_service.get_monitoring_data",
+        "handler": "app.shared.observability.agent_monitoring_service.get_monitoring_data",
     },
 ]
 

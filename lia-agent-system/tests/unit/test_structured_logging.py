@@ -12,7 +12,7 @@ import pytest
 
 pytestmark = pytest.mark.easy
 
-from app.shared.structured_logging import JSONFormatter, ContextLogger
+from app.shared.observability.structured_logging import JSONFormatter, ContextLogger
 
 
 # ---------------------------------------------------------------------------

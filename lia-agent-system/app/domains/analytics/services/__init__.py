@@ -1,4 +1,4 @@
-from app.domains.analytics.services.agent_monitoring_service import *
+from app.shared.observability.agent_monitoring_service import *
 from app.domains.analytics.services.candidate_report_service import *
 from app.domains.analytics.services.job_analytics_prompt_service import *
 from app.domains.analytics.services.job_insights_service import *

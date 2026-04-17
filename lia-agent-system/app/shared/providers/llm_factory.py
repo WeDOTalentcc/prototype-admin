@@ -11,7 +11,7 @@ import logging
 import os
 from typing import Optional
 
-from app.domains.credits.services.token_budget_service import check_request_budget_before_llm
+from app.shared.observability.token_budget_service import check_request_budget_before_llm
 from app.shared.providers.llm_provider import LLMProviderABC
 
 logger = logging.getLogger(__name__)
@@ -182,7 +182,7 @@ class ProviderContainer:
 
         try:
             if plan_code is None and company_id is not None:
-                from app.domains.credits.services.token_budget_service import get_plan_for_company
+                from app.shared.observability.token_budget_service import get_plan_for_company
                 plan_code = await get_plan_for_company(str(company_id))
         except Exception as exc:
             logger.warning(

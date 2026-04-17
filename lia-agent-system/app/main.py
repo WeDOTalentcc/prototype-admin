@@ -20,7 +20,7 @@ from app.core.sentry import init_sentry
 init_sentry()
 
 from app.api import orchestrator_routes
-from app.config.langsmith import configure_langsmith
+from app.shared.observability.langsmith import configure_langsmith
 from app.core.config import settings
 from app.core.database import AsyncSessionLocal, init_db
 from app.core.logging_middleware import StructuredLoggingMiddleware
@@ -544,7 +544,7 @@ async def http_exception_handler(request: FastAPIRequest, exc: StarletteHTTPExce
     )
 
 
-from app.domains.credits.services.token_budget_service import RequestBudgetExceededError
+from app.shared.observability.token_budget_service import RequestBudgetExceededError
 
 
 @app.exception_handler(RequestBudgetExceededError)

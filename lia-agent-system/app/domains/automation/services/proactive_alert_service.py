@@ -640,7 +640,7 @@ class ProactiveAlertService:
             logger.debug(f"Error checking ATS sync: {e}")
         
         try:
-            from app.domains.analytics.services.agent_monitoring_service import AgentMonitoringService
+            from app.shared.observability.agent_monitoring_service import AgentMonitoringService
             
             agent_monitor = AgentMonitoringService(db)
             global_metrics = await agent_monitor.get_global_metrics()

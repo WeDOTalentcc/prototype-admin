@@ -34,7 +34,7 @@ def _make_db():
 
 
 def _make_trigger(name="score_drift", triggered=True):
-    from app.shared.services.model_drift_service import DriftTrigger
+    from app.shared.observability.model_drift_service import DriftTrigger
     return DriftTrigger(
         name=name,
         baseline_value=0.75,
@@ -47,7 +47,7 @@ def _make_trigger(name="score_drift", triggered=True):
 
 
 def _make_drift_status(triggers):
-    from app.shared.services.model_drift_service import DriftStatus
+    from app.shared.observability.model_drift_service import DriftStatus
     now = datetime.utcnow()
     triggered = [t for t in triggers if t.triggered]
     status = DriftStatus(
@@ -70,7 +70,7 @@ class TestModelDriftService:
 
     @pytest.mark.asyncio
     async def test_no_drift_when_no_triggers_fired(self):
-        from app.shared.services.model_drift_service import ModelDriftService
+        from app.shared.observability.model_drift_service import ModelDriftService
         svc = ModelDriftService()
         status = _make_drift_status([
             _make_trigger("score_drift", triggered=False),
@@ -83,7 +83,7 @@ class TestModelDriftService:
 
     @pytest.mark.asyncio
     async def test_warning_on_one_trigger(self):
-        from app.shared.services.model_drift_service import ModelDriftService
+        from app.shared.observability.model_drift_service import ModelDriftService
         svc = ModelDriftService()
         status = _make_drift_status([_make_trigger("score_drift", triggered=True)])
         with patch.object(svc, "evaluate", new_callable=AsyncMock, return_value=status):
@@ -93,7 +93,7 @@ class TestModelDriftService:
 
     @pytest.mark.asyncio
     async def test_critical_on_two_triggers(self):
-        from app.shared.services.model_drift_service import ModelDriftService
+        from app.shared.observability.model_drift_service import ModelDriftService
         svc = ModelDriftService()
         status = _make_drift_status([
             _make_trigger("score_drift", triggered=True),
@@ -120,7 +120,7 @@ class TestDriftAlertService:
 
     @pytest.mark.asyncio
     async def test_notification_sent_when_drift_warning(self):
-        from app.shared.services.drift_alert_service import DriftAlertService
+        from app.shared.observability.drift_alert_service import DriftAlertService
         svc = DriftAlertService()
         status = _make_drift_status([_make_trigger("score_drift", triggered=True)])
 
@@ -135,7 +135,7 @@ class TestDriftAlertService:
 
     @pytest.mark.asyncio
     async def test_notification_sent_when_drift_critical(self):
-        from app.shared.services.drift_alert_service import DriftAlertService
+        from app.shared.observability.drift_alert_service import DriftAlertService
         svc = DriftAlertService()
         status = _make_drift_status([
             _make_trigger("score_drift", triggered=True),
@@ -157,7 +157,7 @@ class TestDriftAlertService:
 
     @pytest.mark.asyncio
     async def test_no_notification_when_ok(self):
-        from app.shared.services.drift_alert_service import DriftAlertService
+        from app.shared.observability.drift_alert_service import DriftAlertService
         svc = DriftAlertService()
         status = _make_drift_status([_make_trigger(triggered=False)])
 
@@ -172,7 +172,7 @@ class TestDriftAlertService:
 
     @pytest.mark.asyncio
     async def test_no_notify_user_id_no_notification(self):
-        from app.shared.services.drift_alert_service import DriftAlertService
+        from app.shared.observability.drift_alert_service import DriftAlertService
         svc = DriftAlertService()
         status = _make_drift_status([_make_trigger(triggered=True)])
 

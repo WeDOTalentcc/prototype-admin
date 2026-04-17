@@ -95,32 +95,32 @@ class TestTokenBudgetServiceContract:
     """Funções públicas do service devem ter assinatura correta."""
 
     def test_check_budget_is_coroutine(self):
-        from app.domains.credits.services.token_budget_service import check_budget
+        from app.shared.observability.token_budget_service import check_budget
         import inspect
         assert inspect.iscoroutinefunction(check_budget)
 
     def test_increment_usage_is_coroutine(self):
-        from app.domains.credits.services.token_budget_service import increment_usage
+        from app.shared.observability.token_budget_service import increment_usage
         import inspect
         assert inspect.iscoroutinefunction(increment_usage)
 
     def test_get_budget_status_is_coroutine(self):
-        from app.domains.credits.services.token_budget_service import get_budget_status
+        from app.shared.observability.token_budget_service import get_budget_status
         import inspect
         assert inspect.iscoroutinefunction(get_budget_status)
 
     def test_get_plan_limit_returns_int(self):
-        from app.domains.credits.services.token_budget_service import get_plan_limit
+        from app.shared.observability.token_budget_service import get_plan_limit
         result = get_plan_limit("pro")
         assert isinstance(result, int)
         assert result > 0
 
     def test_enterprise_limit_is_minus_one(self):
-        from app.domains.credits.services.token_budget_service import get_plan_limit
+        from app.shared.observability.token_budget_service import get_plan_limit
         assert get_plan_limit("enterprise") == -1
 
     def test_plan_daily_limits_has_required_plans(self):
-        from app.domains.credits.services.token_budget_service import PLAN_DAILY_LIMITS
+        from app.shared.observability.token_budget_service import PLAN_DAILY_LIMITS
         required_plans = {"starter", "pro", "business", "enterprise"}
         assert required_plans.issubset(PLAN_DAILY_LIMITS.keys())
 
@@ -133,19 +133,19 @@ class TestMultiTenantBudgetIsolation:
     """Redis keys devem ser isoladas por company_id — um tenant não afeta outro."""
 
     def test_redis_key_different_per_company(self):
-        from app.domains.credits.services.token_budget_service import _redis_key
+        from app.shared.observability.token_budget_service import _redis_key
         key_a = _redis_key("company-a")
         key_b = _redis_key("company-b")
         assert key_a != key_b
 
     def test_redis_key_contains_company_id(self):
-        from app.domains.credits.services.token_budget_service import _redis_key
+        from app.shared.observability.token_budget_service import _redis_key
         key = _redis_key("tenant-xyz")
         assert "tenant-xyz" in key
 
     def test_redis_key_pattern_isolation(self):
         """Chaves de companies diferentes não podem colidir."""
-        from app.domains.credits.services.token_budget_service import _redis_key
+        from app.shared.observability.token_budget_service import _redis_key
         keys = [_redis_key(f"company-{i}") for i in range(10)]
         assert len(set(keys)) == 10  # todas únicas
 

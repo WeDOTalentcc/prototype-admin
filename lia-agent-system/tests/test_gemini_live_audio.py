@@ -852,11 +852,11 @@ class TestFallbackChainFull:
 class TestTokenTrackingIntegration:
 
     def test_token_tracking_service_importable(self):
-        from app.shared.services.token_tracking_service import TokenTrackingService
+        from app.shared.observability.token_tracking_service import TokenTrackingService
         assert TokenTrackingService is not None
 
     def test_token_tracking_has_record_usage_method(self):
-        from app.shared.services.token_tracking_service import TokenTrackingService
+        from app.shared.observability.token_tracking_service import TokenTrackingService
         mock_db = MagicMock()
         svc = TokenTrackingService(db=mock_db)
         assert hasattr(svc, "record_usage")

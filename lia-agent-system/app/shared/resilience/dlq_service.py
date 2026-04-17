@@ -19,7 +19,7 @@ import uuid
 from datetime import UTC, datetime
 from typing import Any
 
-from app.shared.tracing import trace_span
+from app.shared.observability.tracing import trace_span
 
 logger = logging.getLogger(__name__)
 

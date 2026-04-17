@@ -23,7 +23,7 @@ from app.core.config import settings
 from app.orchestrator.domain_mappings import AGENT_TYPE_TO_DOMAIN, resolve_domain
 from app.orchestrator.fast_router import FastRouter
 from app.orchestrator.semantic_cache import SemanticCache
-from app.shared.tracing import get_tracer, trace_span
+from app.shared.observability.tracing import get_tracer, trace_span
 
 logger = logging.getLogger(__name__)
 

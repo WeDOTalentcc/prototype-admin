@@ -657,7 +657,7 @@ async def get_studio_quota(
         )
         quota = result.scalar_one_or_none()
         if not quota:
-            from app.domains.credits.services.token_budget_service import get_plan_for_company
+            from app.shared.observability.token_budget_service import get_plan_for_company
             plan_code = await get_plan_for_company(company_id)
             limits = get_limits_for_plan(plan_code)
             return {

@@ -8,7 +8,7 @@ from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.domains.analytics.services.agent_monitoring_service import AgentMonitoringService
+from app.shared.observability.agent_monitoring_service import AgentMonitoringService
 
 router = APIRouter(prefix="/agent-monitoring", tags=["Agent Monitoring"])
 

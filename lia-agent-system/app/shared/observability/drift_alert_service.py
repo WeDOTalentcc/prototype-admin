@@ -16,7 +16,7 @@ from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.shared.services.model_drift_service import DriftStatus, model_drift_service
+from app.shared.observability.model_drift_service import DriftStatus, model_drift_service
 from app.services.notification_service import (
     NotificationChannel,
     NotificationType,

@@ -35,7 +35,7 @@ Cobertura de traces (Z6-02 + Task #121):
   - ReAct loop _act() → span "react.act"
 
 Usage:
-    from app.shared.tracing import trace_span, get_tracer
+    from app.shared.observability.tracing import trace_span, get_tracer
 
     @trace_span("domain.execute", attributes={"domain": "job_management"})
     async def execute_action(...):

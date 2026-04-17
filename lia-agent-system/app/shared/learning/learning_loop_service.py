@@ -21,7 +21,7 @@ from typing import Any
 from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.shared.tracing import trace_span
+from app.shared.observability.tracing import trace_span
 
 logger = logging.getLogger(__name__)
 
@@ -263,7 +263,7 @@ class LearningLoopService:
                 if capture.outcome in (FeedbackOutcome.REJECTED, FeedbackOutcome.IGNORED):
                     import asyncio
 
-                    from app.shared.services.model_drift_service import ModelDriftService
+                    from app.shared.observability.model_drift_service import ModelDriftService
                     asyncio.create_task(
                         ModelDriftService().check_drift_trigger(
                             company_id=capture.company_id,
