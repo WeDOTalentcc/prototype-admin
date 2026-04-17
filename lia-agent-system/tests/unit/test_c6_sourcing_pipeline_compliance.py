@@ -19,13 +19,14 @@ from app.domains.sourcing.services.sourcing_pipeline_service import (
 )
 
 
-def _make_job(title="Engenheiro Backend", desc="Vaga remota", reqs=None, company_id="comp-1"):
+def _make_job(title="Engenheiro Backend", desc="Vaga remota", reqs=None, company_id="comp-1", created_by=None):
     job = MagicMock()
     job.id = "job-1"
     job.title = title
     job.description = desc
     job.location = "Remoto"
     job.company_id = company_id
+    job.created_by = created_by
     job.requirements = reqs or ["Python", "FastAPI"]
     return job
 
@@ -134,6 +135,74 @@ class TestFairnessBlocking:
         assert kwargs["decision"] == "rejected"
         assert kwargs["decision_type"] == "reject_candidate"
         assert kwargs["company_id"] == "comp-1"
+
+
+# ─────────────────────────────────────────────
+# Recruiter is notified in real-time when blocked
+# ─────────────────────────────────────────────
+
+
+class TestRecruiterBlockNotification:
+    @pytest.mark.asyncio
+    async def test_block_creates_bell_notification_for_recruiter(self):
+        svc = SourcingPipelineService()
+        job = _make_job(
+            title="Atendente",
+            desc="Buscamos apenas homens para a vaga, idade máxima 30 anos",
+            reqs=["comunicação"],
+            created_by="user-recruiter-42",
+        )
+
+        with patch(
+            "app.shared.compliance.audit_service.audit_service.log_decision",
+            new_callable=AsyncMock,
+        ), patch(
+            "app.shared.compliance.fairness_guard.FairnessGuard.log_check",
+            new_callable=AsyncMock,
+        ), patch(
+            "app.services.notification_service.notification_service.create_notification",
+            new_callable=AsyncMock,
+        ) as mock_notify:
+            blocked, _category, _phash = await svc._check_fairness_on_criteria(
+                job, ["comunicação"], context="sourcing_pipeline_local"
+            )
+
+        assert blocked is True
+        assert mock_notify.await_count == 1
+        kwargs = mock_notify.await_args.kwargs
+        assert kwargs["user_id"] == "user-recruiter-42"
+        assert kwargs["related_job_id"] == "job-1"
+        assert kwargs["action_url"] == "/jobs/job-1"
+        assert kwargs["source_trigger"] == "fairness_block"
+        assert "bell" in kwargs["channels"]
+        assert "Atendente" in kwargs["title"]
+
+    @pytest.mark.asyncio
+    async def test_block_without_recruiter_skips_notification(self):
+        svc = SourcingPipelineService()
+        job = _make_job(
+            title="Atendente",
+            desc="Buscamos apenas homens para a vaga",
+            reqs=["comunicação"],
+            created_by=None,
+        )
+
+        with patch(
+            "app.shared.compliance.audit_service.audit_service.log_decision",
+            new_callable=AsyncMock,
+        ), patch(
+            "app.shared.compliance.fairness_guard.FairnessGuard.log_check",
+            new_callable=AsyncMock,
+        ), patch(
+            "app.services.notification_service.notification_service.create_notification",
+            new_callable=AsyncMock,
+        ) as mock_notify:
+            blocked, _category, _phash = await svc._check_fairness_on_criteria(
+                job, ["comunicação"], context="sourcing_pipeline_local"
+            )
+
+        assert blocked is True
+        assert mock_notify.await_count == 0
 
 
 # ─────────────────────────────────────────────

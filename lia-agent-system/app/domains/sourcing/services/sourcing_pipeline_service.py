@@ -494,11 +494,82 @@ class SourcingPipelineService:
                     "category=%s terms=%s context=%s",
                     job.id, fg_result.category, fg_result.blocked_terms, context,
                 )
+                await self._notify_recruiter_of_block(
+                    job=job,
+                    category=fg_result.category,
+                    blocked_terms=list(fg_result.blocked_terms or []),
+                    educational_message=getattr(fg_result, "educational_message", None),
+                    context=context,
+                )
                 return True, fg_result.category, criteria_hash
         except Exception as exc:
             logger.debug("[SourcingPipeline] FairnessGuard check skipped: %s", exc)
 
         return False, None, criteria_hash
+
+    async def _notify_recruiter_of_block(
+        self,
+        *,
+        job: JobVacancy,
+        category: str | None,
+        blocked_terms: list[str],
+        educational_message: str | None,
+        context: str,
+    ) -> None:
+        """Best-effort: surface a real-time bell notification when a sourcing run is blocked.
+
+        The notification is delivered to the recruiter that created the job (mirroring the
+        pattern used by the WSI abandoned-session alert). The frontend's notification poller
+        picks it up within ~60s and triggers a Sonner toast — the recruiter no longer needs
+        to reopen the job page to discover that FairnessGuard rejected the criteria.
+        """
+        recipient = str(getattr(job, "created_by", "") or "").strip()
+        if not recipient:
+            return
+
+        category_label = (category or "criterio_restrito").replace("_", " ")
+        title = f"Busca bloqueada: {job.title or 'vaga'}"
+        terms_preview = ", ".join(blocked_terms[:3]) if blocked_terms else ""
+        message = (
+            f"A busca por candidatos foi bloqueada por critério discriminatório "
+            f"({category_label})."
+        )
+        if terms_preview:
+            message += f" Termos identificados: {terms_preview}."
+        if educational_message:
+            message += f" {educational_message}"
+
+        action_url = f"/jobs/{job.id}" if getattr(job, "id", None) else None
+
+        try:
+            from app.services.notification_service import (
+                NotificationType,
+                notification_service,
+            )
+
+            await notification_service.create_notification(
+                user_id=recipient,
+                title=title,
+                message=message,
+                notification_type=NotificationType.URGENT,
+                category="pipeline",
+                source_agent="sourcing_pipeline_service",
+                source_trigger="fairness_block",
+                related_job_id=str(job.id) if getattr(job, "id", None) else None,
+                action_url=action_url,
+                action_label="Abrir vaga",
+                channels=["bell", "in_app"],
+                metadata={
+                    "fairness_category": category,
+                    "blocked_terms": blocked_terms[:10],
+                    "context": context,
+                },
+                expires_in_hours=72,
+            )
+        except Exception as exc:
+            logger.debug(
+                "[SourcingPipeline] recruiter fairness-block notification skipped: %s", exc
+            )
 
     async def _audit_sourcing_decision(
         self,
