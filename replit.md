@@ -22,6 +22,41 @@ Plataforma LIA (Learning Intelligence Assistant) is an AI-powered recruitment an
 - Transições via confirmação textual - O recrutador confirma avanço de etapa escrevendo no chat, não clicando em botões
 - A LIA deve entender variações naturais de confirmação em português
 
+# Regras de Desenvolvimento (OBRIGATÓRIAS)
+
+Estas regras valem para toda sessão de trabalho — humana ou IA — antes de qualquer edição. Violar qualquer uma delas é motivo para reverter o trabalho.
+
+1. **Identifique o arquivo canônico antes de editar.** Antes de qualquer fix ou feature, mapeie a fonte da verdade (qual arquivo/rota/hook/serviço é o dono daquela responsabilidade). Se houver mais de um candidato, pare e consolide primeiro.
+   - ❌ Não fazer: editar o primeiro arquivo que apareceu no grep e seguir adiante.
+   - ✅ Fazer: rodar busca, listar todos os candidatos, escolher o canônico, marcar os demais para deleção.
+
+2. **Corrija na origem, nunca no consumidor.** Se o bug está num serviço/endpoint/hook usado por N telas, conserte lá — não em cada chamada.
+   - ❌ Não fazer: adicionar um `if (!data) return []` na tela X para esconder que o endpoint Y devolve `null`.
+   - ✅ Fazer: ajustar o endpoint Y para devolver `[]` (ou tipar/validar a resposta no serviço compartilhado).
+
+3. **Proibido workaround.** Sem `try/except` mascarando erro, sem fallback silencioso, sem cópia de lógica para "ganhar tempo", sem flag improvisada para desviar do bug.
+   - ❌ Não fazer: `try: real_call() except: return mock_data` para o build não quebrar.
+   - ✅ Fazer: deixar o erro explodir explicitamente, logar com contexto e corrigir a causa raiz.
+
+4. **Arquitetura canônica e unificada.** Uma responsabilidade = um arquivo. Um endpoint = uma rota. Um domínio = um hook/serviço. Sem duplicatas, sem "v2" convivendo com "v1" sem plano de remoção.
+   - ❌ Não fazer: manter `useCandidates.ts` e `useCandidatesNew.ts` ativos ao mesmo tempo.
+   - ✅ Fazer: migrar consumidores para o canônico e deletar o legado na mesma task.
+
+5. **Clean code enterprise.** Nomes claros, funções pequenas (<50 linhas), sem dead code, contratos tipados (Pydantic no backend, types no frontend), separação real de concerns frontend/backend/IA. Sem `any` gratuito, sem `print()`, sem segredo hardcoded.
+   - ❌ Não fazer: função de 300 linhas que faz fetch, transforma, valida, persiste e renderiza.
+   - ✅ Fazer: dividir em funções nomeadas por intenção, cada uma testável isoladamente.
+
+6. **Antes de marcar concluído.** Rode a auditoria de 14 dimensões (skill `feature-audit`) e, quando o trabalho envolveu correção de código existente, rode também a checagem da skill `canonical-fix`. Se qualquer dimensão ficar ⚠️ ou ❌, conserte antes de fechar a task.
+   - ❌ Não fazer: marcar `completed` porque "compilou e a tela abriu".
+   - ✅ Fazer: passar pelas 14 dimensões, anexar o resultado, só então fechar.
+
+**Skills relacionadas:**
+- `feature-audit` — auditoria obrigatória de 14 dimensões antes de marcar qualquer task como concluída.
+- `lia-planning` — metodologia de planning unificada (GSD + spec-driven + brainstorming) para qualquer trabalho significativo.
+- `canonical-fix` — protocolo para identificar arquivo canônico e corrigir na origem, sem workaround (a ser criada em task dependente).
+- `vue-migration-prep` — garante que o código novo já nasce preparado para a futura migração Vue/Nuxt.
+- `design-standardize` — padronização visual React+Tailwind conforme Design System LIA v4.2.1.
+
 # System Architecture
 The platform uses Next.js, React, and TypeScript for the frontend, styled with Radix UI, shadcn/ui, and Tailwind CSS. The backend is built with FastAPI (Python) and PostgreSQL. AI agents are orchestrated with LangGraph and primarily powered by Claude Sonnet.
 
