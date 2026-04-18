@@ -235,17 +235,45 @@ async def _wrap_get_job_suggestions(**kwargs: Any) -> dict[str, Any]:
     return await _get_job_suggestions(**kwargs)
 @tool_handler("wizard")
 async def _wrap_save_job_draft(**kwargs: Any) -> dict[str, Any]:
-    """Wrapper for save_job_draft that handles errors gracefully."""
+    """Wrapper for save_job_draft — auto-injects company_id from JWT context if not supplied."""
+    if not kwargs.get("company_id"):
+        try:
+            from app.shared.tenant_llm_context import get_current_llm_tenant
+            _cid = get_current_llm_tenant()
+            if _cid:
+                kwargs["company_id"] = _cid
+        except Exception:
+            pass
     logger.info(f"[wizard_tools] save_job_draft called with: {list(kwargs.keys())}")
     return await _save_job_draft(**kwargs)
 @tool_handler("wizard")
 async def _wrap_get_company_config(**kwargs: Any) -> dict[str, Any]:
-    """Wrapper for get_company_config that handles errors gracefully."""
+    """Wrapper for get_company_config — auto-injects company_id from JWT context if not supplied."""
+    # Auto-inject company_id: never ask the user for it
+    if not kwargs.get("company_id"):
+        try:
+            from app.shared.tenant_llm_context import get_current_llm_tenant
+            _cid = get_current_llm_tenant()
+            if _cid:
+                kwargs["company_id"] = _cid
+                logger.info(f"[wizard_tools] get_company_config: auto-injected company_id={_cid}")
+        except Exception as _e:
+            logger.debug(f"[wizard_tools] get_company_config: could not auto-inject company_id: {_e}")
     logger.info(f"[wizard_tools] get_company_config called with: {list(kwargs.keys())}")
     return await _get_company_config(**kwargs)
 @tool_handler("wizard")
 async def _wrap_generate_enriched_jd(**kwargs: Any) -> dict[str, Any]:
-    """Wrapper for generate_enriched_jd that handles errors gracefully."""
+    """Wrapper for generate_enriched_jd — auto-injects company_id from JWT context if not supplied."""
+    # Auto-inject company_id: never ask the user for it
+    if not kwargs.get("company_id"):
+        try:
+            from app.shared.tenant_llm_context import get_current_llm_tenant
+            _cid = get_current_llm_tenant()
+            if _cid:
+                kwargs["company_id"] = _cid
+                logger.info(f"[wizard_tools] generate_enriched_jd: auto-injected company_id={_cid}")
+        except Exception as _e:
+            logger.debug(f"[wizard_tools] generate_enriched_jd: could not auto-inject company_id: {_e}")
     logger.info(f"[wizard_tools] generate_enriched_jd called with: {list(kwargs.keys())}")
     return await _generate_enriched_jd(**kwargs)
 @tool_handler("wizard")
@@ -388,41 +416,41 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
     ),
     ToolDefinition(
         name="save_job_draft",
-        description="Salva o rascunho atual da vaga no banco de dados. Use quando o usuario confirmar dados ou quiser salvar progresso.",
+        description="Salva o rascunho atual da vaga no banco de dados. Use quando o usuario confirmar dados ou quiser salvar progresso. IMPORTANTE: company_id e auto-injetado da sessao — nao peca ao usuario.",
         parameters={
             "type": "object",
             "properties": {
                 "draft_id": {"type": "string", "description": "UUID do rascunho"},
                 "updates": {"type": "object", "description": "Campos a atualizar"},
                 "recruiter_id": {"type": "string", "description": "ID do recrutador"},
-                "company_id": {"type": "string", "description": "ID da empresa"},
+                "company_id": {"type": "string", "description": "ID da empresa (OPCIONAL — auto-injetado da sessao JWT)"},
             },
-            "required": ["draft_id", "updates", "recruiter_id", "company_id"],
+            "required": ["draft_id", "updates", "recruiter_id"],
         },
         function=_wrap_save_job_draft,
     ),
     ToolDefinition(
         name="get_company_config",
-        description="Busca configuracoes da empresa: beneficios, politicas salariais, templates de pipeline, perguntas de triagem e cultura.",
+        description="Busca configuracoes da empresa: beneficios, politicas salariais, templates de pipeline, perguntas de triagem e cultura. IMPORTANTE: company_id e injetado automaticamente a partir da sessao autenticada — NUNCA peca ao usuario pelo company_id.",
         parameters={
             "type": "object",
             "properties": {
-                "company_id": {"type": "string", "description": "ID da empresa"},
+                "company_id": {"type": "string", "description": "ID da empresa (OPCIONAL — auto-injetado da sessao JWT, nao pergunte ao usuario)"},
                 "config_type": {"type": "string", "description": "Tipo de config: all, benefits, salary_levels, pipeline_templates, screening_questions, communication, culture, ai_context"},
                 "seniority": {"type": "string", "description": "Nivel de senioridade para filtrar beneficios"},
             },
-            "required": ["company_id"],
+            "required": [],
         },
         function=_wrap_get_company_config,
     ),
     ToolDefinition(
         name="generate_enriched_jd",
-        description="Gera descricao de vaga enriquecida com sugestoes de responsabilidades, skills, competencias e remuneracao baseadas em benchmarks de mercado.",
+        description="Gera descricao de vaga enriquecida com sugestoes de responsabilidades, skills, competencias e remuneracao baseadas em benchmarks de mercado. IMPORTANTE: company_id e injetado automaticamente — NUNCA peca ao usuario pelo company_id. Chame diretamente com o titulo da vaga.",
         parameters={
             "type": "object",
             "properties": {
                 "title": {"type": "string", "description": "Titulo do cargo"},
-                "company_id": {"type": "string", "description": "ID da empresa"},
+                "company_id": {"type": "string", "description": "ID da empresa (OPCIONAL — auto-injetado da sessao JWT, nao pergunte ao usuario)"},
                 "seniority": {"type": "string", "description": "Nivel de senioridade"},
                 "location": {"type": "string", "description": "Localizacao"},
                 "detected_responsibilities": {"type": "array", "items": {"type": "string"}, "description": "Responsabilidades ja detectadas"},
@@ -431,7 +459,7 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
                 "salary_min": {"type": "number", "description": "Salario minimo"},
                 "salary_max": {"type": "number", "description": "Salario maximo"},
             },
-            "required": ["title", "company_id"],
+            "required": ["title"],
         },
         function=_wrap_generate_enriched_jd,
     ),

@@ -869,10 +869,19 @@ MESSAGE_INTENT_PATTERNS: list[tuple] = [
         r"(ranking|rank)\s+(d[eo]s?\s+)?(candidatos?)",
         r"(quais?\s+)?(melhores?|top|piores?)\s+(candidatos?)",
     ]),
+    # Analisar perfil de candidato (CM-001)
+    ("analisar_perfil", [
+        r"(avali[ae]r?|analisa[rn]?)\s+(o\s+)?(currículo|curriculo|cv|perfil)\s+(d[eo]\s+|do?\s+candidato\s+)?",
+        r"(avalia|analisa)\s+.{2,40}\s+(para|pra)\s+(a\s+)?(vaga|posição)",
+        r"(currículo|curriculo|cv|perfil)\s+(d[eo]\s+)?.{3,40}\s+(para|pra)\s+(a\s+)?(vaga|posição)",
+        r"(faz[er]?|realiza[rn]?)\s+(um[a]?\s+)?(análise|analise|avaliação|avaliacao)\s+(d[eo]\s+)?(currículo|curriculo|cv|perfil)",
+    ]),
     # Comparar candidatos
     ("comparar_candidatos", [
         r"(compara[rn]?|comparação|comparar?)\s+(os?\s+)?(candidatos?|perfis?)",
         r"(candidatos?)\s+(lado a lado|versus|vs|comparação|compara)",
+        r"compara[rn]?\s+[A-Z].{2,30}\s+e\s+[A-Z].{2,30}",
+        r"compara[rn]?\s+[a-z].{2,20}\s+e\s+[a-z].{2,20}\s+(para|pra)\s+(a\s+)?(vaga|posição)",
     ]),
     # Buscar candidatos
     ("buscar_candidatos", [

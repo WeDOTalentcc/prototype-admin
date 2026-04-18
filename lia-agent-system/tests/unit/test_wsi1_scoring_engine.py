@@ -272,6 +272,205 @@ class TestSeniorityWeightsIntegration:
         # t=0.625×4 + b=0.375×2 = 2.5 + 0.75 = 3.25
         assert result["final_score"] == pytest.approx(3.25, abs=0.05)
 
+    def test_state_serialization_includes_counts_marker(self):
+        # placeholder ancora — preserva nome original abaixo
+        pass
+
+
+# ---------------------------------------------------------------------------
+# Audit task #510 — Regressões metodológicas (M02 Bloom, M07 Dreyfus, M08 Gates)
+# ---------------------------------------------------------------------------
+
+class TestBloomAlignmentRegression:
+    """M02 — Indicadores Bloom não devem produzir falso positivo de N6."""
+
+    def test_substantivo_projeto_nao_dispara_n6(self):
+        from app.domains.cv_screening.services.wsi_deterministic_scorer import (
+            calculate_bloom_level,
+        )
+        text = "Trabalhei em um projeto de migração de dados na empresa anterior."
+        level, _ = calculate_bloom_level(text)
+        # Não deve subir para 6 só porque a palavra "projeto" aparece
+        assert level < 6, f"esperava < 6, recebeu {level}"
+
+    def test_n6_so_dispara_com_expressao_composta(self):
+        from app.domains.cv_screening.services.wsi_deterministic_scorer import (
+            calculate_bloom_level,
+        )
+        text = "Desenvolvi do zero a arquitetura de microsserviços e fundei a área."
+        level, _ = calculate_bloom_level(text)
+        assert level == 6
+
+    def test_word_boundary_evita_substring(self):
+        from app.domains.cv_screening.services.wsi_deterministic_scorer import (
+            calculate_bloom_level,
+        )
+        # "abuso" contém "uso" (N3), mas \b deve impedir match
+        text = "Houve um abuso de confiança no time anterior."
+        level, _ = calculate_bloom_level(text)
+        assert level == 1, f"'abuso' não deve ser confundido com 'uso' N3 (recebeu N{level})"
+
+    def test_n3_aplico_real_dispara_n3(self):
+        from app.domains.cv_screening.services.wsi_deterministic_scorer import (
+            calculate_bloom_level,
+        )
+        text = "Aplico Python e implemento serviços REST."
+        level, _ = calculate_bloom_level(text)
+        assert level == 3
+
+
+class TestDreyfusBehavioral:
+    """M07 — Skills comportamentais usam ladder distinto."""
+
+    def test_default_skill_type_is_technical(self):
+        from app.domains.cv_screening.services.wsi_deterministic_scorer import (
+            calculate_dreyfus_level, DREYFUS_LEVELS,
+        )
+        # 2.5 anos: técnico = Intermediário (range [2,3))
+        level, name = calculate_dreyfus_level(2.5, context_score=7.0)
+        assert level == 3
+        assert name == DREYFUS_LEVELS[3]["name"]
+
+    def test_behavioral_promotes_earlier(self):
+        from app.domains.cv_screening.services.wsi_deterministic_scorer import (
+            calculate_dreyfus_level, DREYFUS_LEVELS, DREYFUS_LEVELS_BEHAVIORAL,
+        )
+        # 2 anos: técnico = Básico/Intermediário; comportamental = Intermediário
+        tech_level, _ = calculate_dreyfus_level(2.0, 7.0, skill_type="technical")
+        beh_level, _ = calculate_dreyfus_level(2.0, 7.0, skill_type="behavioral")
+        # Behavioral ladder deve resultar nível >= técnico para mesmos anos
+        assert beh_level >= tech_level
+
+    def test_behavioral_4_anos_avancado(self):
+        from app.domains.cv_screening.services.wsi_deterministic_scorer import (
+            calculate_dreyfus_level,
+        )
+        # 4 anos comportamental + contexto neutro = Avançado (range [3,6))
+        level, _ = calculate_dreyfus_level(4.0, context_score=7.0, skill_type="behavioral")
+        assert level == 4
+
+    def test_behavioral_ladder_keys_match_technical(self):
+        from app.domains.cv_screening.services.wsi_deterministic_scorer import (
+            DREYFUS_LEVELS, DREYFUS_LEVELS_BEHAVIORAL,
+        )
+        assert set(DREYFUS_LEVELS.keys()) == set(DREYFUS_LEVELS_BEHAVIORAL.keys())
+
+
+class TestGatesAbsolutePrecedence:
+    """M08 — Qualquer gate falhado é rejeição clara, não 'ambíguo'."""
+
+    def test_g2_failed_alone_returns_alta_no_review(self):
+        from app.api.v1.wsi.reports import _compute_decision_confidence
+        conf, review = _compute_decision_confidence(
+            overall_wsi=8.5,
+            failed_gates=["G2"],
+            llm_fallback_count=0,
+            score_variance=0.5,
+        )
+        assert conf == "alta"
+        assert review is False
+
+    def test_g5_failed_alone_returns_alta_no_review(self):
+        from app.api.v1.wsi.reports import _compute_decision_confidence
+        conf, review = _compute_decision_confidence(
+            overall_wsi=7.0,
+            failed_gates=["G5"],
+            llm_fallback_count=0,
+            score_variance=0.5,
+        )
+        assert conf == "alta"
+        assert review is False
+
+    def test_g6_failed_alone_returns_alta_no_review(self):
+        from app.api.v1.wsi.reports import _compute_decision_confidence
+        conf, review = _compute_decision_confidence(
+            overall_wsi=8.0,
+            failed_gates=["G6"],
+            llm_fallback_count=0,
+            score_variance=0.5,
+        )
+        assert conf == "alta"
+        assert review is False
+
+    def test_llm_fallback_still_marks_baixa_review(self):
+        from app.api.v1.wsi.reports import _compute_decision_confidence
+        conf, review = _compute_decision_confidence(
+            overall_wsi=8.5,
+            failed_gates=[],
+            llm_fallback_count=2,
+            score_variance=0.5,
+        )
+        assert conf == "baixa"
+        assert review is True
+
+    def test_failed_gate_overrides_high_fallback(self):
+        """Borda crítica M08: gate falhado COM fallback alto continua ('alta', False).
+        Garante que precedência absoluta de gates é avaliada antes do sinal de
+        pipeline ruidoso — caso contrário G2 prompt-injection com LLM fallback
+        seria reabilitado por revisor humano.
+        """
+        from app.api.v1.wsi.reports import _compute_decision_confidence
+        conf, review = _compute_decision_confidence(
+            overall_wsi=8.0,
+            failed_gates=["G2"],
+            llm_fallback_count=3,
+            score_variance=0.5,
+        )
+        assert conf == "alta"
+        assert review is False
+
+    def test_failed_gate_overrides_high_variance(self):
+        """Borda crítica M08: gate falhado COM variância alta continua ('alta', False)."""
+        from app.api.v1.wsi.reports import _compute_decision_confidence
+        conf, review = _compute_decision_confidence(
+            overall_wsi=8.0,
+            failed_gates=["G6"],
+            llm_fallback_count=0,
+            score_variance=3.5,
+        )
+        assert conf == "alta"
+        assert review is False
+
+    def test_failed_gate_overrides_both_pipeline_signals(self):
+        """Borda crítica M08: gate falhado COM ambos sinais ruidosos continua ('alta', False)."""
+        from app.api.v1.wsi.reports import _compute_decision_confidence
+        conf, review = _compute_decision_confidence(
+            overall_wsi=7.5,
+            failed_gates=["G5"],
+            llm_fallback_count=4,
+            score_variance=4.0,
+        )
+        assert conf == "alta"
+        assert review is False
+
+    def test_no_gates_high_score_alta_no_review(self):
+        from app.api.v1.wsi.reports import _compute_decision_confidence
+        conf, review = _compute_decision_confidence(
+            overall_wsi=9.5,
+            failed_gates=[],
+            llm_fallback_count=0,
+            score_variance=0.5,
+        )
+        assert conf == "alta"
+        assert review is False
+
+    def test_mid_band_marks_review(self):
+        from app.api.v1.wsi.reports import _compute_decision_confidence
+        conf, review = _compute_decision_confidence(
+            overall_wsi=6.5,
+            failed_gates=[],
+            llm_fallback_count=0,
+            score_variance=0.5,
+        )
+        assert conf == "media"
+        assert review is True
+
+
+# ---------------------------------------------------------------------------
+# Original test (kept for compat)
+# ---------------------------------------------------------------------------
+
+class TestStateSerializationCompat:
     def test_state_serialization_includes_counts(self):
         """Contadores de score devem sobreviver à serialização/deserialização."""
         from app.domains.cv_screening.agents.wsi_interview_graph import (

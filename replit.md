@@ -1,5 +1,11 @@
 # Recent Changes
 
+- **Task #510 — Correções metodológicas WSI scorer (M02 Bloom + M07 Dreyfus + M08 Gates)**:
+  - **M02 Bloom keyword overlap (FIXED):** `BLOOM_LEVELS[3]` removeu `"projeto"` (substantivo ambíguo); `BLOOM_LEVELS[6]` agora usa expressões compostas (`"do zero"`, `"arquitetei"`, `"fundei"`, `"concebi"`, `"inovei"`, `"criei do zero"`, `"projetei do zero"`). `calculate_bloom_level` reescrito com **regex word-boundary `\b`** — elimina falsos matches de substring (ex: `"uso"` em `"abuso"`).
+  - **M07 Dreyfus behavioral vs technical (FIXED):** novo `DREYFUS_LEVELS_BEHAVIORAL` com ranges distintos (Iniciante 0–0.5a, Básico 0.5–1.5a, Intermediário 1.5–3a, Avançado 3–6a, Especialista 6+a) — promove cedo em soft skills. `calculate_dreyfus_level(skill_type="technical"|"behavioral")` parametrizado; `WSIResponseAnalyzer` deriva `question_type` do framework e propaga até o scorer.
+  - **M08 Gates absolute precedence (FIXED):** `_compute_decision_confidence` em `reports.py` eliminou `ambiguous_gates = {G2, G5, G6}` que rebaixava confidence/ativava review. Qualquer gate falhado ⇒ `("alta", False)` (rejeição clara). `human_review_required` permanece como flag separada acionada apenas por `llm_fallback_count >= 2` ou `score_variance > 2.0`. Prompt RAG do `report_generator.py` ganhou regra explícita de "PRECEDÊNCIA ABSOLUTA DOS GATES".
+  - **Tests:** 3 classes novas em `test_wsi1_scoring_engine.py` — `TestBloomAlignmentRegression` (4/4 PASSED), `TestDreyfusBehavioral` (4/4 PASSED), `TestGatesAbsolutePrecedence` (6 testes; importação validada via boot). Backend HTTP 200 com 1531 endpoints pós-edição. Audit doc atualizado para revisão 12.
+
 - **Task #497 PR2 — Flip atômico escala WSI 0-5 → 0-10 (engine + DB + Pydantic)**:
   - `wsi_scale.py` flipado integralmente: `SCALE_MAX 5→10`, `WSI_CUTOFFS 7.5/6.0`, `GATE_G3 4.0`, `CLASSIFY_*` ×2, indicadores de inflação ×2, todas as constantes Dreyfus/STAR/justificação ×2. Mantidas chaves `AUTODECLARATION_LEVEL_KEYWORDS` em 1.0–5.0 (input do candidato; engine reescala via fator `legacy_to_engine = SCALE_MAX/5.0`).
   - **M04 endereçado** — penalidades alinhadas à spec §8.2: `−1.5/−1.0/−2.5` (não double linear). Bonuses ×2 (`1.0/0.6/2.0`).

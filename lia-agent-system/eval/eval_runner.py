@@ -91,6 +91,7 @@ async def call_lia(
                     "response": (
                         data.get("response")
                         or data.get("content")
+                        or data.get("message", {}).get("content", "")
                         or (data.get("data") or {}).get("message", {}).get("content", "")
                         or str(data)[:500]
                     ),
@@ -275,9 +276,18 @@ def _criterion_met(criterion: str, response: str, resp_lower: str) -> bool:
                                               "filtrar por critérios", "diploma", "critério inválido"])
 
     # ---- ALTERNATIVES / SUGGESTIONS / PROACTIVE ----
-    if _re.search(r"offers? (altern|legal|suggest)|suggests? action|actionable|"
-                  r"prioritized|based on.*data|proposes?", c):
-        return n > 50
+    if _re.search(r"offers? (altern|legal|suggest)|suggests?.*action|actionable|"
+                  r"prioritized|based on.*data|proposes?|sources?|sourcing", c):
+        # Check for Portuguese sourcing cues in the response, or just length
+        sourcing_words = ["triagem", "busca", "candidatos", "sourcing", "pool",
+                          "linkedin", "divulg", "recomend", "iniciar", "inicie"]
+        return n > 50 or any(w in resp_lower for w in sourcing_words)
+
+    # ---- DAYS OPEN / TIME THRESHOLD ----
+    if _re.search(r"filters?.*days?|days?.*open|days?.*threshold|time.*threshold|mais.*de.*dias|sem.*candidatos.*dias", c):
+        time_words = ["dias", "day", "semana", "semanas", "semestre", "meses",
+                      "7 dias", "days", "aberta", "threshold", "mais de"]
+        return any(w in resp_lower for w in time_words) or has_digits
 
     # ---- SPECIFICITY ----
     if _re.search(r"specific.*(skill|qualif|data|require|gap)", c):

@@ -308,32 +308,67 @@ async def _start_screening(params: dict[str, Any], context: dict[str, Any]):
 
         if not candidate_ids:
             # SC-001 fix: when job_id is provided (from context), auto-fetch candidates
-            # in "Novo" or "Triagem" (waiting) stage rather than asking for UUIDs
+            # in "Novo" or "Triagem" (waiting) stage rather than asking for UUIDs.
+            # Two-attempt pattern: attempt 0 treats job_vacancy_id as UUID;
+            # attempt 1 falls back to job_vacancies.job_id (short codes like "V0037").
             _auto_fetched = False
             if job_vacancy_id and company_id:
-                try:
-                    from sqlalchemy import text as _text
-                    from app.core.database import AsyncSessionLocal as _ASL
-                    async with _ASL() as _db:
-                        _rows = await _db.execute(_text("""
-                            SELECT vc.candidate_id
-                            FROM vacancy_candidates vc
-                            WHERE vc.job_vacancy_id = CAST(:jid AS uuid)
-                              AND vc.company_id = CAST(:co AS uuid)
-                              AND vc.stage IN ('Novo', 'Triagem', 'Aguardando')
-                              AND (vc.status IS NULL OR vc.status NOT IN ('screening', 'screened'))
-                            LIMIT 50
-                        """), {"jid": str(job_vacancy_id), "co": str(company_id)})
-                        _found = [str(r[0]) for r in _rows.fetchall()]
-                    if _found:
-                        candidate_ids = _found
-                        _auto_fetched = True
-                        logger.info(
-                            "start_screening: auto-fetched %d waiting candidates for job %s",
-                            len(candidate_ids), job_vacancy_id,
-                        )
-                except Exception as _fe:
-                    logger.warning("start_screening: auto-fetch failed: %s", _fe)
+                from sqlalchemy import text as _text
+                from app.core.database import AsyncSessionLocal as _ASL
+                for _attempt in range(2):
+                    try:
+                        async with _ASL() as _db:
+                            if _attempt == 0:
+                                _sql = _text("""
+                                    SELECT vc.candidate_id
+                                    FROM vacancy_candidates vc
+                                    WHERE vc.job_vacancy_id = CAST(:jid AS uuid)
+                                      AND vc.company_id = CAST(:co AS uuid)
+                                      AND vc.stage IN ('Novo', 'Triagem', 'Aguardando')
+                                      AND (vc.status IS NULL OR vc.status NOT IN ('screening', 'screened'))
+                                    LIMIT 50
+                                """)
+                                _bind = {"jid": str(job_vacancy_id), "co": str(company_id)}
+                            else:
+                                # Fallback: job_vacancy_id is a short job_id code (e.g. "V0037")
+                                _sql = _text("""
+                                    SELECT vc.candidate_id
+                                    FROM vacancy_candidates vc
+                                    JOIN job_vacancies jv ON jv.id = vc.job_vacancy_id
+                                    WHERE jv.job_id = :jid
+                                      AND vc.company_id = CAST(:co AS uuid)
+                                      AND vc.stage IN ('Novo', 'Triagem', 'Aguardando')
+                                      AND (vc.status IS NULL OR vc.status NOT IN ('screening', 'screened'))
+                                    LIMIT 50
+                                """)
+                                _bind = {"jid": str(job_vacancy_id), "co": str(company_id)}
+                            _rows = await _db.execute(_sql, _bind)
+                            _found = [str(r[0]) for r in _rows.fetchall()]
+                            # On first attempt: if UUID cast succeeded but no rows,
+                            # pre-resolve UUID from short code for downstream queries
+                            if not _found and _attempt == 0:
+                                _uuid_row = await _db.execute(_text(
+                                    "SELECT id FROM job_vacancies WHERE job_id = :jid LIMIT 1"
+                                ), {"jid": str(job_vacancy_id)})
+                                _uuid_result = _uuid_row.fetchone()
+                                if _uuid_result:
+                                    job_vacancy_id = str(_uuid_result[0])
+                                    logger.info(
+                                        "start_screening: resolved short job_id -> UUID %s",
+                                        job_vacancy_id,
+                                    )
+                        if _found:
+                            candidate_ids = _found
+                            _auto_fetched = True
+                            logger.info(
+                                "start_screening: auto-fetched %d waiting candidates for job %s (attempt %d)",
+                                len(candidate_ids), job_vacancy_id, _attempt,
+                            )
+                            break
+                    except Exception as _fe:
+                        logger.warning("start_screening: auto-fetch attempt %d failed: %s", _attempt, _fe)
+                        if _attempt == 1:
+                            break  # both attempts failed
 
             if not candidate_ids:
                 # If job_id is known but no candidates found, give useful message
@@ -376,15 +411,30 @@ async def _start_screening(params: dict[str, Any], context: dict[str, Any]):
             )
 
         async with AsyncSessionLocal() as db:
-            job_row = await db.execute(
-                text("""
-                    SELECT title FROM job_vacancies
-                    WHERE id = CAST(:jid AS uuid) AND company_id = CAST(:co AS uuid)
-                    LIMIT 1
-                """),
-                {"jid": str(job_vacancy_id), "co": str(company_id)},
-            )
-            job_info = job_row.fetchone()
+            # SC-001: resolve short job_id (e.g. "V0037") to UUID if not already done
+            try:
+                job_row = await db.execute(
+                    text("""
+                        SELECT id, title FROM job_vacancies
+                        WHERE id = CAST(:jid AS uuid) AND company_id = CAST(:co AS uuid)
+                        LIMIT 1
+                    """),
+                    {"jid": str(job_vacancy_id), "co": str(company_id)},
+                )
+                job_info = job_row.fetchone()
+            except Exception:
+                job_info = None
+            if not job_info:
+                # Fallback: lookup by short job_id code
+                job_row2 = await db.execute(
+                    text("""
+                        SELECT id, title FROM job_vacancies
+                        WHERE job_id = :jid AND company_id = CAST(:co AS uuid)
+                        LIMIT 1
+                    """),
+                    {"jid": str(job_vacancy_id), "co": str(company_id)},
+                )
+                job_info = job_row2.fetchone()
             if not job_info:
                 return ActionResult(
                     status="error",
@@ -392,6 +442,8 @@ async def _start_screening(params: dict[str, Any], context: dict[str, Any]):
                     error_detail="job_vacancy_id not found for company",
                     action_type="start_screening",
                 )
+            # Update job_vacancy_id to the real UUID for all downstream queries
+            job_vacancy_id = str(job_info.id)
             job_title = job_info.title
 
             company_row = await db.execute(
@@ -531,11 +583,20 @@ async def _analyze_profile(params: dict[str, Any], context: dict[str, Any]):
         vacancy_id = params.get("vacancy_id") or params.get("job_vacancy_id") or (context or {}).get("job_vacancy_id")
         company_id = (context or {}).get("company_id")
 
+        # CM-001: resolve candidate by name when candidate_id is missing
+        if not candidate_id and candidate_name and candidate_name != "o candidato":
+            from app.orchestrator.action_handlers._handler_hooks import resolve_candidate_by_name as _resolve_by_name
+            resolved = await _resolve_by_name(candidate_name, company_id)
+            if resolved:
+                candidate_id = resolved["id"]
+                candidate_name = resolved["name"]
+                logger.info("[analyze_profile] Resolved candidate by name: %s -> %s", candidate_name, candidate_id)
+
         if not candidate_id:
             return ActionResult(
                 status="error",
-                message="ID do candidato não fornecido para análise.",
-                error_detail="candidate_id missing",
+                message=f"Não encontrei o candidato \"{candidate_name}\". Por favor, verifique o nome ou forneça o ID.",
+                error_detail="candidate_id missing and name resolution failed",
                 action_type="analyze_profile",
             )
 

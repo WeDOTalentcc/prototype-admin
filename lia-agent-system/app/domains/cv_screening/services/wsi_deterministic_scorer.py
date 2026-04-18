@@ -17,19 +17,30 @@ from typing import Any
 
 logger = logging.getLogger(__name__)
 
+# Audit task #510 (M02) — Indicadores Bloom revisados:
+#  - Removida keyword ambígua "projeto" do nível 3 (colidia com N6 e produzia
+#    falsos positivos sistemáticos: substantivo "projeto" em qualquer resposta
+#    técnica era classificado como N6 "Criar").
+#  - N6 agora usa expressões compostas que sinalizam criação original
+#    ("desenvolvi do zero", "do zero", "arquitetei", "fundei", "concebi",
+#    "criei do zero"), evitando match acidental.
+#  - Match em `calculate_bloom_level` usa word boundary regex (\b) — keywords
+#    multi-palavra são tratadas como literais; keywords mono-palavra exigem
+#    boundary completo para impedir match parcial (ex: "uso" em "abuso").
 BLOOM_LEVELS = {
-    1: {"name": "Recordar", "description": "Recordar fatos e conceitos básicos", 
+    1: {"name": "Recordar", "description": "Recordar fatos e conceitos básicos",
         "indicators": ["lembro", "sei", "conheço", "aprendi", "estudei", "vi", "ouvi"]},
-    2: {"name": "Compreender", "description": "Explicar ideias ou conceitos", 
+    2: {"name": "Compreender", "description": "Explicar ideias ou conceitos",
         "indicators": ["entendo", "explico", "compreendo", "descrevo", "interpreto", "resumo"]},
-    3: {"name": "Aplicar", "description": "Usar conhecimento na prática", 
-        "indicators": ["aplico", "uso", "implemento", "desenvolvo", "construo", "projeto", "faço"]},
-    4: {"name": "Analisar", "description": "Fazer conexões entre ideias", 
+    3: {"name": "Aplicar", "description": "Usar conhecimento na prática",
+        "indicators": ["aplico", "uso", "implemento", "desenvolvo", "construo", "faço"]},
+    4: {"name": "Analisar", "description": "Fazer conexões entre ideias",
         "indicators": ["analiso", "comparo", "diferencio", "diagnostico", "investigo", "otimizo"]},
-    5: {"name": "Avaliar", "description": "Justificar decisões", 
+    5: {"name": "Avaliar", "description": "Justificar decisões",
         "indicators": ["avalio", "julgo", "recomendo", "decido", "valido", "defendo", "escolhi"]},
-    6: {"name": "Criar", "description": "Produzir trabalho original", 
-        "indicators": ["crio", "arquiteto", "projeto", "inovo", "lidero", "fundei", "desenvolvi do zero"]}
+    6: {"name": "Criar", "description": "Produzir trabalho original",
+        "indicators": ["criei do zero", "desenvolvi do zero", "do zero", "arquitetei",
+                       "concebi", "inovei", "fundei", "lidero criação", "projetei do zero"]}
 }
 
 DREYFUS_LEVELS = {
@@ -38,6 +49,25 @@ DREYFUS_LEVELS = {
     3: {"name": "Intermediário","description": "Planeja e prioriza",              "years_range": (2, 3)},
     4: {"name": "Avançado",     "description": "Visão holística",                 "years_range": (3, 5)},
     5: {"name": "Especialista", "description": "Intuição transcende análise",     "years_range": (5, 99)}
+}
+
+# Audit task #510 (M07) — Ladder Dreyfus comportamental:
+# Skills comportamentais (CBI, BigFive, soft skills) maturam em ritmo distinto
+# das técnicas. Aplicar a tabela técnica produzia subestimação sistemática
+# (ex: 2 anos liderando virava "Básico" mesmo com evidências fortes de
+# autonomia e julgamento). A spec WeDOTalent §F8 prevê duas escalas. Os
+# ranges abaixo refletem a curva de maturidade interpessoal:
+#   - Iniciante (0–6 meses): reage seguindo regras gerais
+#   - Básico (6m–1.5a): identifica padrões interpessoais
+#   - Intermediário (1.5–3a): adapta comportamento ao contexto
+#   - Avançado (3–6a): lidera com julgamento próprio
+#   - Especialista (6+): mentora outros, intuição madura
+DREYFUS_LEVELS_BEHAVIORAL = {
+    1: {"name": "Iniciante",    "description": "Reage segundo regras gerais",      "years_range": (0, 0.5)},
+    2: {"name": "Básico",       "description": "Identifica padrões interpessoais", "years_range": (0.5, 1.5)},
+    3: {"name": "Intermediário","description": "Adapta comportamento ao contexto", "years_range": (1.5, 3)},
+    4: {"name": "Avançado",     "description": "Lidera com julgamento próprio",    "years_range": (3, 6)},
+    5: {"name": "Especialista", "description": "Mentora outros, intuição madura",  "years_range": (6, 99)}
 }
 
 from app.domains.cv_screening.constants.wsi_constants import (
@@ -296,19 +326,24 @@ def calculate_context_score(text: str, evidences: list[str] | None = None) -> fl
 def calculate_bloom_level(text: str) -> tuple[int, str]:
     """
     Classifica nível Bloom baseado em indicadores de texto.
-    
+
+    Audit task #510 (M02) — Match com word boundary (\\b) elimina falso
+    positivo de substring (ex: "uso" em "abuso", "vi" em "previ"). Para
+    indicadores multi-palavra, usa-se o literal escapado entre boundaries.
+
     Returns: (level, name)
     """
     text_lower = text.lower()
     detected_level = 1
-    
+
     for level in range(6, 0, -1):
         level_data = BLOOM_LEVELS[level]
         for indicator in level_data["indicators"]:
-            if indicator in text_lower:
+            pattern = r"\b" + re.escape(indicator) + r"\b"
+            if re.search(pattern, text_lower):
                 detected_level = max(detected_level, level)
                 break
-    
+
     return detected_level, BLOOM_LEVELS[detected_level]["name"]
 
 
@@ -316,19 +351,24 @@ def calculate_dreyfus_level(
     years_experience: float,
     context_score: float,
     years_reference: dict[str, tuple[float, float]] | None = None,
+    skill_type: str = "technical",
 ) -> tuple[int, str]:
     """
     Classifica nível Dreyfus baseado em anos de experiência e qualidade do contexto.
-    
+
     Args:
         years_experience: Anos de experiência do candidato
         context_score: Score de contexto (1-5)
         years_reference: Ranges contextuais do calibrador (ex: {"junior": (0,2), "pleno": (2,4), ...}).
-                         Se None, usa DREYFUS_LEVELS estáticos.
-    
+                         Se None, usa DREYFUS_LEVELS / DREYFUS_LEVELS_BEHAVIORAL estáticos.
+        skill_type: "technical" (default) ou "behavioral". Audit task #510 (M07):
+                    skills comportamentais usam ladder distinto (mais sensível
+                    em ranges baixos), evitando subestimação sistemática.
+
     Returns: (level, name)
     """
     base_level = 1
+    ladder = DREYFUS_LEVELS_BEHAVIORAL if skill_type == "behavioral" else DREYFUS_LEVELS
 
     if years_reference:
         seniority_to_dreyfus_map = {
@@ -350,18 +390,18 @@ def calculate_dreyfus_level(
             if years_experience >= years_reference[max_key][1]:
                 base_level = seniority_to_dreyfus_map.get(max_key, 5)
     else:
-        for level, data in DREYFUS_LEVELS.items():
+        for level, data in ladder.items():
             min_years, max_years = data["years_range"]
             if min_years <= years_experience < max_years:
                 base_level = level
                 break
-    
+
     if context_score >= DREYFUS_PROMOTE_CONTEXT_MIN:
         base_level = min(5, base_level + 1)
     elif context_score < DREYFUS_DEMOTE_CONTEXT_MAX:
         base_level = max(1, base_level - 1)
-    
-    return base_level, DREYFUS_LEVELS[base_level]["name"]
+
+    return base_level, ladder[base_level]["name"]
 
 
 def extract_years_experience(text: str) -> float:
@@ -575,7 +615,13 @@ def calculate_wsi_deterministic(
     bloom_align = calculate_bloom_alignment(bloom_level, bloom_expected)
 
     years = years_experience if years_experience is not None else extract_years_experience(response_text)
-    dreyfus_level, dreyfus_name = calculate_dreyfus_level(years, context_score, years_reference=years_reference)
+    # Audit task #510 (M07) — propaga question_type para usar ladder
+    # Dreyfus correto (técnico vs comportamental).
+    dreyfus_level, dreyfus_name = calculate_dreyfus_level(
+        years, context_score,
+        years_reference=years_reference,
+        skill_type=question_type,
+    )
 
     red_flags = detect_red_flags(response_text, autodeclaracao, context_score)
 

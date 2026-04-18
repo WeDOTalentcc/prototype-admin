@@ -77,7 +77,13 @@ CRITÉRIOS OBJETIVOS PARA DECISÃO (OBRIGATÓRIO seguir — WSI_CUTOFFS canônic
 - WSI Geral >= 7.5 → decisao = "APROVADO"
 - WSI Geral >= 6.0 e < 7.5 → decisao = "AGUARDANDO" / "EM_AVALIACAO"
 - WSI Geral < 6.0 → decisao = "NÃO APROVADO"
-- EXCEÇÃO: Se WSI Geral >= 7.5 MAS há red_flags graves → rebaixa para "AGUARDANDO"
+- PRECEDÊNCIA ABSOLUTA DOS GATES (audit task #510 / spec §F10): qualquer
+  gate falhado (G1 elegibilidade, G2 prompt injection, G3 piso técnico,
+  G4 competência crítica, G5 engajamento, G6 inflação) força decisão =
+  "NÃO APROVADO" independente do WSI Geral. Gates NÃO são "indícios
+  ambíguos" — são contratos hard.
+- EXCEÇÃO menor: Se WSI Geral >= 7.5, sem gates falhados, MAS há red_flags
+  qualitativos → rebaixa para "AGUARDANDO".
 
 REGRAS DE QUALIDADE DO PARECER:
 1. **Sumário Executivo** DEVE ter 2-3 frases completas (mínimo 100 caracteres), incluindo: perfil resumido, principal ponto forte e recomendação clara

@@ -57,10 +57,16 @@ class WSIResponseAnalyzer:
         NENHUM LLM é usado para calcular scores.
         """
         try:
+            # Audit task #510 (M07) — deriva question_type do framework
+            # canônico para que o scorer use o ladder Dreyfus correto
+            # (técnico vs comportamental) e a fórmula tri-componente certa.
+            derived_category = _category_from_framework(question.framework)
+            question_type = derived_category if derived_category in ("technical", "behavioral") else "technical"
             result: DeterministicWSIResult = calculate_wsi_deterministic(
                 response_text=response,
                 competency_name=question.competency,
-                question_framework=question.framework
+                question_framework=question.framework,
+                question_type=question_type,
             )
             
             return ResponseAnalysis(

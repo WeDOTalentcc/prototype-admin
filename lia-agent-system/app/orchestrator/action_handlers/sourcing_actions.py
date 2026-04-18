@@ -114,10 +114,35 @@ async def _rank_candidates(params: dict[str, Any], context: dict[str, Any]):
         company_id = context.get("company_id") if context else None
         limit = int(params.get("limit", 10))
 
+        # If job_id not provided, attempt to resolve by title (e.g. "Product Manager")
+        if not job_id:
+            job_title_hint = (
+                params.get("job_title")
+                or params.get("title")
+                or (context or {}).get("job_title")
+            )
+            if job_title_hint:
+                try:
+                    from sqlalchemy import text as _text
+                    from app.core.database import AsyncSessionLocal as _ASL
+                    async with _ASL() as _db:
+                        _sql = "SELECT id FROM job_vacancies WHERE title ILIKE :t"
+                        _bind: dict[str, Any] = {"t": f"%{job_title_hint}%"}
+                        if company_id:
+                            _sql += " AND company_id = CAST(:co AS uuid)"
+                            _bind["co"] = str(company_id)
+                        _sql += " ORDER BY created_at DESC LIMIT 1"
+                        _row = (await _db.execute(_text(_sql), _bind)).fetchone()
+                        if _row:
+                            job_id = str(_row[0])
+                            logger.info(f"[rank_candidates] resolved job_id={job_id} from title='{job_title_hint}'")
+                except Exception as _le:
+                    logger.warning(f"[rank_candidates] title lookup failed: {_le}")
+
         if not job_id:
             return ActionResult(
                 status="error",
-                message="Informe a vaga para rankear os candidatos.",
+                message="Informe a vaga para rankear os candidatos (ID ou título).",
                 error_detail="Missing job_id",
                 action_type="rank_candidates",
             )

@@ -150,29 +150,43 @@ def _compute_decision_confidence(
     llm_fallback_count: int,
     score_variance: float,
 ) -> tuple:
-    """F10-6 — Computa decision.confidence e human_review_required de forma determinística."""
-    ambiguous_gates = {"G2", "G5", "G6"}
-    clear_reject_gates = {"G1", "G3", "G4"}
-    if (
-        "G2" in failed_gates
-        or llm_fallback_count >= 2
-        or score_variance > 2.0
-    ):
+    """F10-6 — Computa decision.confidence e human_review_required de forma determinística.
+
+    Audit task #510 (M08) — Precedência absoluta de gates:
+    A spec WeDOTalent §F10 não distingue gates "claros" de "ambíguos". G1
+    (eligibility), G2 (prompt injection), G3 (technical floor), G4 (critical
+    competency), G5 (engagement) e G6 (inflation) têm TODOS precedência
+    absoluta sobre o overall_wsi — qualquer falha gera rejeição clara.
+
+    A categoria "ambiguous_gates = {G2, G5, G6}" eliminada nesta task fazia
+    G2/G5/G6 derrubarem a confiança para "media" + human_review_required,
+    permitindo que casos de injection ou inflation fossem reabilitados pelo
+    revisor humano. Isso violava o gate como contrato hard.
+
+    `human_review_required` permanece como flag de auditoria SEPARADA da
+    decisão final, acionada apenas por sinais de baixa qualidade do
+    pipeline (LLM fallback acumulado ou variância anormal entre scores).
+
+    ORDEM IMPORTA: failed_gates é avaliado ANTES de fallback/variance
+    para garantir precedência absoluta — caso contrário um gate falhado
+    com pipeline ruidoso seria rebaixado para ("baixa", True) e cairia
+    em revisão humana, reabrindo o vetor que esta task fechou.
+    """
+    if failed_gates:
+        # Gate falhado = rejeição clara, alta confiança, sem human review.
+        # Avaliado primeiro para precedência absoluta sobre sinais de pipeline.
+        return "alta", False
+
+    if llm_fallback_count >= 2 or score_variance > 2.0:
         return "baixa", True
 
-    if overall_wsi >= 9.0 and not failed_gates:
+    if overall_wsi >= 9.0:
         return "alta", False
 
-    if failed_gates and clear_reject_gates.intersection(failed_gates) and not ambiguous_gates.intersection(failed_gates):
-        return "alta", False
-
-    if 6.0 <= overall_wsi < 7.5:
-        return "media", True
-
-    if 7.5 <= overall_wsi < 9.0 and not failed_gates:
+    if 7.5 <= overall_wsi < 9.0:
         return "media", False
 
-    if failed_gates and ambiguous_gates.issuperset(failed_gates):
+    if 6.0 <= overall_wsi < 7.5:
         return "media", True
 
     return "media", overall_wsi < 7.5
