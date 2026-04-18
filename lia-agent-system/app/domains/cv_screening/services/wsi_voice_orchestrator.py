@@ -509,9 +509,33 @@ class WSIVoiceOrchestrator:
                     )
                 )
                 weights[question.competency] = question.weight
-                # Sem análise bem-sucedida não há response_text canônico
-                # para hashear — não persistimos audit trail neste caso
-                # (registros parciais corromperiam a base de auditoria).
+
+                # Round 3 (audit comment): mesmo no fallback de análise,
+                # persistimos a trilha imutável (wsi_responses) com o
+                # response_text bruto do candidato. EU AI Act Art. 12 exige
+                # que TODA resposta do candidato seja auditável — falha
+                # da análise não pode justificar perda da trilha.
+                resp_hash_fb = hash_response(response_text, session_id, question.id)
+                await session.execute(
+                    text(
+                        """
+                        INSERT INTO wsi_responses (
+                            session_id, question_id, raw_text, response_hash,
+                            candidate_id, company_id
+                        )
+                        VALUES (:session_id, :question_id, :raw_text, :response_hash,
+                                :candidate_id, :company_id)
+                        """
+                    ),
+                    {
+                        "session_id": session_id,
+                        "question_id": question.id,
+                        "raw_text": response_text or "",
+                        "response_hash": resp_hash_fb,
+                        "candidate_id": candidate_id,
+                        "company_id": company_id,
+                    },
+                )
                 continue
 
             # Sucesso da análise — append + persistência FAIL-FAST.

@@ -53,6 +53,22 @@ def upgrade() -> None:
     if not _table_exists(conn, "wsi_responses"):
         return
 
+    # 0. Round 3 — preflight: detecta valores não-UUID antes do CAST.
+    # Sem isso, o ALTER TABLE abaixo abortaria com erro genérico do Postgres
+    # em deploy. Falhamos cedo com mensagem acionável.
+    invalid = conn.execute(sa.text(
+        "SELECT COUNT(*) FROM wsi_responses "
+        "WHERE session_id !~ "
+        "'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-"
+        "[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'"
+    )).scalar()
+    if invalid and int(invalid) > 0:
+        raise RuntimeError(
+            f"Migration 092 abortada: {invalid} linha(s) em wsi_responses "
+            "com session_id inválido (não-UUID). Limpe ou normalize antes "
+            "de aplicar (ver runbook EU-AI-Act #511)."
+        )
+
     # 1. Cast VARCHAR -> UUID. USING garante que a conversão use o valor existente.
     op.execute(sa.text(
         "ALTER TABLE wsi_responses "
