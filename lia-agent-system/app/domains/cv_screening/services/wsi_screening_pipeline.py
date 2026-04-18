@@ -100,6 +100,7 @@ class WSIScreeningPipeline:
         company_questions_raw: list[dict[str, Any]],
     ) -> WSIScreeningPipelineResponse:
         seniority_resolution_meta = None
+        seniority_default_warning: str | None = None
         if SENIORITY_RESOLVER_ENABLED:
             resolution = resolve_seniority_full(
                 explicit_seniority=request.seniority,
@@ -152,16 +153,28 @@ class WSIScreeningPipeline:
             self.logger.info(f"Seniority from explicit input: {effective_seniority}")
         else:
             effective_seniority = "pleno"
+            seniority_default_warning = (
+                "Senioridade não foi informada e o resolver multi-sinal está "
+                "desabilitado. Usando fallback 'pleno' — confirme a senioridade "
+                "antes de prosseguir, pois isso afeta a calibração das perguntas WSI."
+            )
             seniority_resolution_meta = {
                 "resolved": False,
                 "source": "default",
                 "effective_level": effective_seniority,
                 "explicit_input": None,
+                "requires_confirmation": True,
+                "warning": seniority_default_warning,
             }
-            self.logger.info(f"Seniority defaulted to: {effective_seniority}")
+            self.logger.warning(
+                "Seniority defaulted to '%s' (no explicit input, resolver disabled)",
+                effective_seniority,
+            )
 
         all_questions: list[UnifiedScreeningQuestion] = []
         quality_warnings: list[str] = []
+        if seniority_default_warning:
+            quality_warnings.append(seniority_default_warning)
 
         seniority_dist = SENIORITY_DISTRIBUTIONS.get(request.format, SENIORITY_DISTRIBUTIONS["full"])
         model = seniority_dist.get(effective_seniority, MODEL_DISTRIBUTIONS.get(request.format, MODEL_DISTRIBUTIONS["full"]))

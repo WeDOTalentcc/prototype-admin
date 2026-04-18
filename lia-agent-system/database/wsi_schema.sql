@@ -46,14 +46,14 @@ CREATE TABLE IF NOT EXISTS wsi_response_analyses (
     competency VARCHAR NOT NULL,
     response_text TEXT NOT NULL,
     response_audio_url VARCHAR,  -- Recording URL (Twilio MediaUrl ou Gemini Live transcript artifact)
-    autodeclaration_score DECIMAL(3,2) CHECK (autodeclaration_score BETWEEN 1 AND 5),
-    context_score DECIMAL(3,2) CHECK (context_score BETWEEN 1 AND 5),
-    bloom_level INT CHECK (bloom_level BETWEEN 1 AND 5),
+    autodeclaration_score DECIMAL(3,2) CHECK (autodeclaration_score BETWEEN 0 AND 10),
+    context_score DECIMAL(3,2) CHECK (context_score BETWEEN 0 AND 10),
+    bloom_level INT CHECK (bloom_level BETWEEN 1 AND 6),
     dreyfus_level INT CHECK (dreyfus_level BETWEEN 1 AND 5),
     evidences JSONB,
     red_flags JSONB,
     consistency_penalty DECIMAL(3,2) DEFAULT 0,
-    final_score DECIMAL(3,2) NOT NULL CHECK (final_score BETWEEN 1 AND 5),
+    final_score DECIMAL(3,2) NOT NULL CHECK (final_score BETWEEN 0 AND 10),
     justification TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -64,9 +64,9 @@ CREATE TABLE IF NOT EXISTS wsi_results (
     session_id VARCHAR NOT NULL UNIQUE REFERENCES wsi_sessions(id) ON DELETE CASCADE,
     candidate_id VARCHAR NOT NULL,
     job_vacancy_id VARCHAR NOT NULL,
-    technical_wsi DECIMAL(3,2) NOT NULL CHECK (technical_wsi BETWEEN 1 AND 5),
-    behavioral_wsi DECIMAL(3,2) NOT NULL CHECK (behavioral_wsi BETWEEN 1 AND 5),
-    overall_wsi DECIMAL(3,2) NOT NULL CHECK (overall_wsi BETWEEN 1 AND 5),
+    technical_wsi DECIMAL(3,2) NOT NULL CHECK (technical_wsi BETWEEN 0 AND 10),
+    behavioral_wsi DECIMAL(3,2) NOT NULL CHECK (behavioral_wsi BETWEEN 0 AND 10),
+    overall_wsi DECIMAL(3,2) NOT NULL CHECK (overall_wsi BETWEEN 0 AND 10),
     classification VARCHAR NOT NULL CHECK (classification IN ('excelente', 'alto', 'medio', 'regular', 'baixo')),
     percentile INT CHECK (percentile BETWEEN 0 AND 100),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -146,16 +146,18 @@ GROUP BY r.id, r.candidate_id, r.job_vacancy_id, r.overall_wsi, r.technical_wsi,
          r.behavioral_wsi, r.classification, r.percentile, s.screening_type, s.completed_at;
 
 -- View: Red Flags Summary
+-- candidate_id é derivado via JOIN com wsi_sessions (wsi_response_analyses só armazena session_id)
 CREATE OR REPLACE VIEW wsi_red_flags_summary AS
 SELECT 
     ra.session_id,
-    ra.candidate_id,
+    s.candidate_id,
     ra.competency,
     JSONB_ARRAY_LENGTH(ra.red_flags) as red_flags_count,
     ra.red_flags,
     ra.final_score,
     ra.created_at
 FROM wsi_response_analyses ra
+JOIN wsi_sessions s ON s.id = ra.session_id
 WHERE JSONB_ARRAY_LENGTH(ra.red_flags) > 0
 ORDER BY JSONB_ARRAY_LENGTH(ra.red_flags) DESC, ra.created_at DESC;
 
@@ -178,7 +180,7 @@ FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 COMMENT ON TABLE wsi_sessions IS 'WSI screening sessions (voice, chat, hybrid)';
 COMMENT ON TABLE wsi_questions IS 'Generated WSI questions per session';
-COMMENT ON TABLE wsi_response_analyses IS 'Analyzed candidate responses with scores 1-5';
+COMMENT ON TABLE wsi_response_analyses IS 'Analyzed candidate responses with scores 0-10';
 COMMENT ON TABLE wsi_results IS 'Final WSI scores (technical, behavioral, overall)';
 COMMENT ON TABLE wsi_reports IS 'Structured reports for recruiters';
 COMMENT ON TABLE wsi_feedbacks IS 'Constructive feedbacks for candidates';
